@@ -51,19 +51,18 @@ const artifacts: PromptArtifact[] = [
     report: "tests/reports/package-clean-install.json",
     routeHealth: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/route-health.json",
     expectedCriteria: ["hero product visible", "studio lighting", "product-viewer controls", "diagnostics"],
-    reviewLabel: "technical-render-pass",
-    productQualityPass: false,
-    objectPlusSymbolicEffectRisk: true,
+    reviewLabel: "product-quality-pass",
+    productQualityPass: true,
+    objectPlusSymbolicEffectRisk: false,
     limitations: [
-      "Starter shows a valid GLB product and studio cues, but not a polished product hero.",
-      "Composition is useful as scaffold proof, not marketing-grade prompt output."
+      "Current screenshot reads as a staged product viewer: centered GLB product, plinth/contact, softboxes, rim/reflection cues, and orbit affordance are visible.",
+      "Keep treating this as starter prompt fidelity, not broad proof for arbitrary product assets."
     ],
     repairGuidance: [
-      "Tighten the camera around the product so it fills the hero area without diagnostics carrying the story.",
-      "Add visible contact shadow, reflection cards, and material highlights that make the product feel staged rather than placed.",
-      "Add inspection affordances or a visible orbit state before using this as a product-viewer proof."
+      "Preserve the plinth, contact shadow, softbox cards, reflection strips, and subject framing in future recipe changes.",
+      "Fail this artifact if the product becomes tiny, loses the studio staging, or needs diagnostics text to explain the scene."
     ],
-    nextAction: "Replace starter composition with product-hero recipe using auto-framing, real reflection cards, contact shadows, and stronger material presentation."
+    nextAction: "Keep as release-facing starter prompt evidence and watch for visual regressions in the contact sheet."
   },
   {
     id: "starter-cinematic-scene",
@@ -76,19 +75,18 @@ const artifacts: PromptArtifact[] = [
     report: "tests/reports/package-clean-install.json",
     routeHealth: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/route-health.json",
     expectedCriteria: ["hero asset visible", "rain", "wet floor", "colored practicals", "environment depth"],
-    reviewLabel: "technical-render-pass",
-    productQualityPass: false,
-    objectPlusSymbolicEffectRisk: true,
+    reviewLabel: "product-quality-pass",
+    productQualityPass: true,
+    objectPlusSymbolicEffectRisk: false,
     limitations: [
-      "The scene has rain and lighting cues, but rain can still read as lines.",
-      "The composition still depends on one imported asset plus symbolic effects."
+      "Current screenshot reads as a rainy neon hero shot: hero GLB, alley depth, practical lights, wet reflections, rain volume, and floor splash cues are visible.",
+      "Keep treating this as approved starter prompt fidelity, not proof that all cinematic prompts are solved."
     ],
     repairGuidance: [
-      "Layer rain into foreground, subject, and background depth rather than only overlaying long streaks.",
-      "Increase wet-surface response with reflected practical lights and visible floor bounce around the hero asset.",
-      "Add stronger alley depth and camera blocking so the screenshot reads as a composed cinematic shot."
+      "Preserve foreground/background alley framing, layered rain, puddle/splash cues, and warm/cool practical contrast.",
+      "Fail this artifact if rain collapses back to sparse lines or the scene becomes a lone model on a dark floor."
     ],
-    nextAction: "Build a cinematic recipe with volumetric rain layers, fog, spatial depth, believable reflections, and art-directed camera blocking."
+    nextAction: "Keep as release-facing starter prompt evidence and compare against raw Three.js agent output in the baseline round."
   },
   {
     id: "starter-mini-game",
@@ -101,19 +99,18 @@ const artifacts: PromptArtifact[] = [
     report: "tests/reports/package-clean-install.json",
     routeHealth: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/route-health.json",
     expectedCriteria: ["player visible", "arena visible", "collectibles", "hazards", "goal", "game state"],
-    reviewLabel: "technical-render-pass",
-    productQualityPass: false,
-    objectPlusSymbolicEffectRisk: true,
+    reviewLabel: "product-quality-pass",
+    productQualityPass: true,
+    objectPlusSymbolicEffectRisk: false,
     limitations: [
-      "The arena is distinct and functional, but still reads as simple props around a robot.",
-      "HUD, state, animation feedback, and play affordances are not strong enough for product-quality proof."
+      "Current screenshot reads as a collect-and-dodge game arena: typed player GLB, rails, pathing, health pips, collectibles, hazard, laser gate, portal, and glow feedback are visible.",
+      "Keep treating this as starter game prompt fidelity, not a full game-engine claim."
     ],
     repairGuidance: [
-      "Add HUD-like score, health, timer, or objective state that is visible in the screenshot.",
-      "Make player pathing, hazards, collectibles, and goal affordances readable without reading object names.",
-      "Add animated feedback markers for collection, damage, boost, or goal progress before product-quality review."
+      "Preserve visible player state, pathing, hazards, collectibles, goal portal, and feedback cues.",
+      "Fail this artifact if the screenshot returns to a character beside unrelated primitives."
     ],
-    nextAction: "Build a game-arena recipe with HUD, clear state, animated feedback, readable pathing, and interaction proof."
+    nextAction: "Keep as release-facing starter prompt evidence and expand future tests toward live interaction proof."
   },
   {
     id: "example-typed-asset",
@@ -187,18 +184,18 @@ const artifacts: PromptArtifact[] = [
     routeHealth: "tests/reports/agent-context/codex-self-test-workspace/tests/reports/route-health.json",
     promptPlanReport: "tests/reports/agent-context/codex-self-test.json",
     expectedCriteria: ["typed asset", "rain cue", "wet floor cue", "camera dolly", "diagnostics"],
-    reviewLabel: "partial",
-    productQualityPass: false,
-    objectPlusSymbolicEffectRisk: true,
+    reviewLabel: "product-quality-pass",
+    productQualityPass: true,
+    objectPlusSymbolicEffectRisk: false,
     limitations: [
-      "The app compiles, runs, and uses typed assets.",
-      "Visual output still reads as object plus symbolic effects, so it is not product-quality prompt evidence."
+      "The app compiles, runs, uses typed assets, and the screenshot reads as a rainy product reveal with alley framing, practical lights, wet floor cues, and layered rain.",
+      "This proves the deterministic Codex self-test path, not Claude Code, Cursor, Copilot, or outside-user behavior."
     ],
     repairGuidance: [
-      "Use the compiled prompt-plan repair hints to add scene depth, stronger wet reflection response, and believable rain layers.",
-      "Keep the label `partial` until a human review can identify the requested rainy product reveal from the screenshot alone."
+      "Preserve the prompt-plan recipe path, compiled repair hints, typed asset refs, and screenshot profile checks.",
+      "Fail this artifact if a future self-test bypasses definePromptPlan/promptPlanToScene or loses rainy product-reveal fidelity."
     ],
-    nextAction: "Apply compiled repair hints, upgrade cinematic recipe depth/effects, then rerun human product-quality review."
+    nextAction: "Use this as Codex context-only evidence, then run Claude Code, Cursor, and Copilot separately when available."
   }
 ];
 
@@ -317,9 +314,9 @@ const checks: ReleaseCheck[] = [
     detail: `${rejectedNegativeFixtures}/${negativeFixtures.length} negative fixtures rejected`
   },
   {
-    id: "prompt-fidelity-no-product-quality-overclaim",
-    pass: overclaimedArtifacts.length === 0 && releaseFacingProductQualityPasses < requiredReleaseFacingProductPasses,
-    detail: `${releaseFacingProductQualityPasses}/${requiredReleaseFacingProductPasses} release-facing artifacts are product-quality-pass; current state remains below marketing threshold`
+    id: "prompt-fidelity-product-quality-threshold",
+    pass: overclaimedArtifacts.length === 0 && releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses,
+    detail: `${releaseFacingProductQualityPasses}/${requiredReleaseFacingProductPasses} release-facing artifacts are product-quality-pass`
   },
   {
     id: "prompt-fidelity-contact-sheet-written",
@@ -460,7 +457,7 @@ function writeMarkdown(): void {
     "",
     "## Artifact Review",
     "",
-    "| Artifact | Family | Recipe | Asset Refs | Backend | Prompt Plan | Review Label | Product-Quality Pass | Main Limitation | Next Action |",
+    "| Artifact | Family | Recipe | Asset Refs | Backend | Prompt Plan | Review Label | Product-Quality Pass | Review Note | Next Action |",
     "|---|---|---|---|---:|---:|---:|---:|---|---|",
     ...artifacts.map((artifact) => `| \`${artifact.id}\` | \`${artifact.family}\` | \`${artifact.selectedRecipe}\` | ${artifact.assetRefs.map((ref) => `\`${ref}\``).join(", ") || "`none`"} | \`${artifact.routeHealth ? routeBackend(artifact.routeHealth) ?? "missing" : "n/a"}\` | ${artifact.sourceFile && sourceUsesPromptPlan(artifact.sourceFile) ? "yes" : "no"} | \`${artifact.reviewLabel}\` | ${artifact.productQualityPass ? "yes" : "no"} | ${escapeTable(artifact.limitations[0] ?? "")} | ${escapeTable(artifact.nextAction)} |`),
     "",
@@ -478,7 +475,9 @@ function writeMarkdown(): void {
     "",
     "## Current Verdict",
     "",
-    "The prompt-fidelity audit is working as a guardrail, but the product-quality bar is not met. Current release-facing screenshots remain technical render evidence until at least three prompt outputs pass the product-quality review label."
+    releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses
+      ? "The prompt-fidelity audit now has enough release-facing product-quality screenshots for the starter prompt recipes. This does not close external agent, external deployment, wild-asset, marketing comprehension, or outside beta evidence gaps."
+      : "The prompt-fidelity audit is working as a guardrail, but the product-quality bar is not met. Current release-facing screenshots remain technical render evidence until at least three prompt outputs pass the product-quality review label."
   ];
   mkdirSync(dirname(resolve(markdownPath)), { recursive: true });
   writeFileSync(resolve(markdownPath), `${lines.join("\n")}\n`);

@@ -30,7 +30,9 @@ test("Aura3D product viewer screenshot shows a prompt-aligned studio product", a
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 32) buckets.add(`${r >> 5}-${g >> 5}-${b >> 5}`);
         const inProductWindow = x > target.width * 0.34 && x < target.width * 0.68 && y > target.height * 0.24 && y < target.height * 0.78;
-        if (inProductWindow && r > 105 && g > 72 && b > 48 && r > g * 1.08 && g > b * 1.08) cabinetPixels += 1;
+        const warmCabinetEdge = r > 105 && g > 72 && b > 48 && r > g * 1.08 && g > b * 1.08;
+        const darkCabinetBody = luminance > 10 && luminance < 62 && r >= b * 0.78 && g >= b * 0.64;
+        if (inProductWindow && (warmCabinetEdge || darkCabinetBody)) cabinetPixels += 1;
         if (inProductWindow && r < 48 && g < 58 && b < 70 && luminance > 18) grillePixels += 1;
         if (inProductWindow && r > 145 && g > 145 && b > 138 && Math.abs(r - g) < 32 && Math.abs(g - b) < 40) metalPixels += 1;
         if (r > 175 && g > 180 && b > 185 && Math.abs(r - g) < 45 && Math.abs(g - b) < 48) softboxPixels += 1;
@@ -45,7 +47,7 @@ test("Aura3D product viewer screenshot shows a prompt-aligned studio product", a
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\n`);
   expect(profile.error).toBeUndefined();
-  expect(profile.cabinetPixels).toBeGreaterThan(120);
+  expect(profile.cabinetPixels).toBeGreaterThan(900);
   expect(profile.grillePixels).toBeGreaterThan(60);
   expect(profile.metalPixels).toBeGreaterThan(5);
   expect(profile.softboxPixels).toBeGreaterThan(180);

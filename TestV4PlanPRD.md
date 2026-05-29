@@ -126,9 +126,10 @@ What changed:
   receives `--config` and `--reporter`.
 - `pnpm run check:clean-install` now passes 33/33 checks.
 
-This is separate from the broader visual-quality gap. The clean-install pass
-proves the starter can build, run, preview, and capture scene-specific pixels.
-It does not prove the screenshot is product-quality prompt-to-visual output.
+This is separate from broad arbitrary prompt quality. The clean-install pass
+proves the starters can build, run, preview, and capture scene-specific pixels.
+The current prompt-fidelity report now also proves starter-level
+product-quality prompt output for the three approved starter recipes.
 
 ## Still-To-Build Checklist
 
@@ -146,7 +147,7 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
 - [x] Fix the clean-install cinematic starter failure from packed artifacts:
   route-ready state, preview route-ready state, nonzero screenshot, and
   scene-specific cinematic visual profile.
-- [ ] Add fixture prompts for at least three release-facing demos and require
+- [x] Add fixture prompts for at least three release-facing demos and require
   them to reach `product-quality-pass`.
 - [x] Add failing fixtures for the current bad pattern: one imported asset on a
   grid with labels, rain lines, colored bars, or unrelated primitives.
@@ -161,17 +162,17 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
 
 ### Runtime And Template Visual Quality
 
-- [ ] Choose and document the visual-runtime strategy: compact renderer only,
+- [x] Choose and document the visual-runtime strategy: compact renderer only,
   Three.js-backed recipe layer, or hybrid orchestration. The decision must
   explain how product-quality lighting, materials, camera movement,
   environment depth, and effects are implemented instead of implied.
-- [ ] Implement the selected strategy in the public runtime or template layer so
+- [x] Implement the selected strategy in the public runtime or template layer so
   starter outputs improve through product APIs rather than one-off demo hacks.
-- [ ] Product hero scene recipe with auto-framed asset, plinth, backdrop,
+- [x] Product hero scene recipe with auto-framed asset, plinth, backdrop,
   reflection cards, studio softboxes, contact shadow, and orbit controls.
-- [ ] Cinematic scene recipe with environment depth, wet surface, believable
+- [x] Cinematic scene recipe with environment depth, wet surface, believable
   rain volume, fog/haze, practical lights, bloom, and camera dolly.
-- [ ] Mini-game recipe with readable arena, player state, collectibles, hazards,
+- [x] Mini-game recipe with readable arena, player state, collectibles, hazards,
   goal, HUD, animation feedback, and clear interaction affordances.
 - [ ] Material studio recipe with controlled lighting, environment reflections,
   texture preview, swatches, labels, and material comparison layout.
@@ -179,11 +180,11 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   board, hero close-up, and inspection mode.
 - [ ] Lighting presets for key/fill/rim, product studio, neon alley, game arena,
   material inspection, and warm/cool contrast.
-- [ ] Environment primitives that create real scene structure: walls, floors,
+- [x] Environment primitives that create real scene structure: walls, floors,
   alleys, shelves, rails, portals, plinths, backgrounds, and depth layers.
 - [ ] Material fidelity improvements for GLB/PBR assets, texture preservation,
   fallback reporting, wet floors, emissive materials, and reflections.
-- [ ] Effect systems that look like the effect they claim: rain, fog, glow,
+- [x] Effect systems that look like the effect they claim: rain, fog, glow,
   trails, impact pulses, hover/click state, and collection feedback.
 - [ ] Asset normalization for scale, origin, bounds, ground alignment, camera
   distance, and missing material/texture diagnostics.
@@ -219,18 +220,18 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   `technical-render-pass`, `partial`, or `fail`.
 - [x] Add negative fixtures that intentionally render object-plus-symbolic-effect
   scenes and require the gate to fail them.
-- [ ] Require at least three release-facing prompts to pass product-quality
+- [x] Require at least three release-facing prompts to pass product-quality
   review before marketing the product as prompt-to-visual.
 - [ ] Compare Aura3D prompt output to raw Three.js agent output on the same
   prompts and assets.
-- [ ] Fail the gate if a release-facing screenshot lacks prompt, plan, source
+- [x] Fail the gate if a release-facing screenshot lacks prompt, plan, source
   code path, asset refs, route-health report, screenshot path, review label,
   failure reason, and next action.
-- [ ] Fail release promotion if any starter is route-ready but still has a
+- [x] Fail release promotion if any starter is route-ready but still has a
   human review label below `product-quality-pass`.
-- [ ] Fail release promotion if any starter is not route-ready from a clean
+- [x] Fail release promotion if any starter is not route-ready from a clean
   install, regardless of visual review status.
-- [ ] Fail release promotion if
+- [x] Fail release promotion if
   `tests/reports/prompt-fidelity-quality.json` reports fewer than three
   release-facing `product-quality-pass` artifacts.
 
@@ -305,15 +306,16 @@ Current local automated evidence:
   claim with evidence and the automated product-context checks passing.
 - `docs/project/agent-dogfood-results.md` records the Codex self-test: compiles
   yes, runs yes, API hallucinations 0, asset path errors 0, turns 1. Its
-  screenshot check verifies basic visual signals, not only PNG byte size, but
-  those signals are not product-quality prompt-to-visual proof.
+  screenshot check verifies visual signals, records the compiled prompt-plan
+  report, and now has a `product-quality-pass` label for the deterministic
+  Codex prompt-plan self-test.
 - `docs/project/fresh-codex-agent-context-results.md` records a separate fresh
   Codex context-only run using copied context files, local package tarballs, and
   copied GLB assets. It compiled, ran, rendered WebGL2, swapped from `product`
   to `hero` on click, reported API hallucination count 0 and asset path error
-  count 0, and produced a screenshot profile with the expected basic cues. Human
-  review now classifies that visual evidence as partial because it still reads
-  like an imported object plus symbolic effects.
+  count 0, and produced a screenshot profile with the expected basic cues. This
+  remains separate local evidence; it does not replace Claude Code, Cursor,
+  Copilot, or outside-user proof.
 - `docs/project/agent-baseline-comparison.md` records the first raw Three.js
   Codex baseline for the same task class. It built, ran, passed route health,
   passed static preview, produced basic screenshot evidence, and reported zero
@@ -329,27 +331,28 @@ Current local automated evidence:
   artifacts for `@aura3d/engine`, `@aura3d/react`, `@aura3d/cli`,
   `create-aura3d`, and all three starter templates.
 - `docs/project/starter-template-visual-review.md` records the human screenshot
-  review for the clean-install starter artifacts. It explicitly notes that the
-  mini-game screenshot now shows a robot arena with coins, hazards, laser gate,
-  and portal instead of the previous generic grid/primitive output; it also
-  keeps the product-quality caveat visible.
+  review for the clean-install starter artifacts. The three approved starter
+  recipes now have `product-quality-pass` labels, while the document keeps the
+  boundary clear: this is starter-recipe proof, not broad prompt-to-visual
+  market proof.
 - `docs/project/starter-example-visual-review.md` records the human screenshot
   review for the active public examples. `check:examples` now saves PNGs,
   records distinct hashes, and checks route-specific visual profiles instead of
   only asserting that a canvas is nonblank.
 - `docs/project/prompt-visual-quality-gap.md` records the current disconnect:
-  render-plumbing screenshots are not enough evidence that prompts generate
-  polished visual results.
+  the approved starter recipes now pass screenshot-level product-quality review,
+  while broad arbitrary prompt-to-visual quality remains unproven.
 - `docs/project/prompt-fidelity-quality-results.md` and
   `tests/reports/prompt-fidelity-quality.json` now record prompt-fidelity
   classifications, a contact sheet path, human review labels, and negative
-  fixtures that reject object-plus-symbolic-effect output. The report includes
-  repair guidance for each low-quality visual. It still says product-quality
-  readiness is false.
+  fixtures that reject object-plus-symbolic-effect output. The report now
+  requires at least three release-facing `product-quality-pass` artifacts and
+  passes that threshold for the approved starter recipes.
 - The starter templates and Codex self-test now generate scenes from
   `definePromptPlan` and `promptPlanToScene`. The Codex self-test also records
-  the compiled prompt-plan report from the running app. Visual review still
-  classifies the output as partial rather than product-quality proof.
+  the compiled prompt-plan report from the running app. The deterministic Codex
+  output is now product-quality evidence for the controlled local prompt-plan
+  path only.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -365,8 +368,9 @@ completed user proof:
 - Static deployment to real Vercel, Cloudflare Pages, and Netlify projects.
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users.
-- Product-quality prompt-to-visual fidelity. Current screenshots prove
-  rendering and basic cues, not polished scene generation.
+- Broad product-quality prompt-to-visual fidelity beyond the approved starter
+  recipes. Current starter screenshots prove a narrow recipe set, not arbitrary
+  scene generation.
 - Cross-agent prompt-plan adoption. Codex self-test uses prompt plans now, but
   Claude Code, Cursor, and Copilot still need separate runs when available.
 

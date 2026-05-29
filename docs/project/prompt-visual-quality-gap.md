@@ -1,19 +1,21 @@
 # Prompt Visual Quality Gap
 
-Generated: 2026-05-28
+Generated: 2026-05-29
 
 ## Verdict
 
-The current Aura3D screenshots are not product-quality proof.
+The approved starter prompt recipes now pass screenshot-level product-quality
+review.
 
-They prove technical rendering: GLB loading, typed assets, WebGL2 draw calls,
-diagnostics, screenshots, route health, and basic visual cues. They do not yet
-prove that a prompt produces a visually desirable result.
+`product-viewer`, `cinematic-scene`, `mini-game`, and the deterministic Codex
+context self-test now produce screenshots that a human reviewer can identify as
+matching their prompts without reading source code. The prompt-fidelity report
+records those artifacts as `product-quality-pass`.
 
-The current failure mode is clear: a scene can pass because it contains an
-imported object plus symbolic effects. Rain can be a set of lines. Cinematic
-lighting can be colored bars. A game arena can be primitive shapes around a
-robot. That is not enough for the product promise.
+The broad prompt-to-visual quality is still not fully proven. The current pass
+applies to the approved starter recipes and deterministic Codex dogfood, not to
+arbitrary prompts, arbitrary GLB assets, external agents, outside users, or
+public deployment environments.
 
 ## Root Cause
 
@@ -21,9 +23,9 @@ This is both a runtime/product problem and an evaluation problem.
 
 | Layer | Current State | Gap |
 |---|---|---|
-| Runtime and templates | Can load assets, create scenes, add lights/effects, capture screenshots, and run diagnostics. | Missing enough art-directed presets, visual composition helpers, material fidelity, animation helpers, and believable environment/effect systems. |
-| Agent prompt workflow | Agents can write valid Aura3D code from context and typed assets; the public API now includes first-pass `PromptPlan` recipe helpers. | Agents still need to prove they consistently use the prompt-plan path, follow repair guidance, and produce screenshots that meet the prompt. |
-| Tests and evidence | Pixel profiles check for route-specific visual cues, and prompt-fidelity reports now reject object-plus-symbolic-effect negative fixtures. | Positive release-facing screenshots still need to reach `product-quality-pass`. |
+| Runtime and templates | Can load assets, create scenes, add lights/effects, capture screenshots, run diagnostics, and produce product-quality starter screenshots for product viewer, cinematic scene, and mini-game recipes. | Needs broader recipe coverage, material fidelity, richer animation helpers, and corpus evidence across arbitrary assets. |
+| Agent prompt workflow | Agents can write valid Aura3D code from context and typed assets; the public API includes `PromptPlan` recipe helpers; deterministic Codex dogfood now passes product-quality visual review. | Claude Code, Cursor, Copilot, repair-loop turns, and outside-user agent runs remain unproven. |
+| Tests and evidence | Pixel profiles check route-specific visual cues, prompt-fidelity rejects object-plus-symbolic-effect negative fixtures, and positive starter screenshots now reach `product-quality-pass`. | More positive fixtures, broad asset coverage, external deployment, marketing comprehension, and beta dogfood remain open. |
 
 ## Prompt Fidelity Acceptance Bar
 
@@ -46,11 +48,11 @@ all of these checks:
 
 ### Runtime Visual Quality
 
-- [ ] Product hero recipe with plinth, backdrop, reflection, studio lights,
+- [x] Product hero recipe with plinth, backdrop, reflection, studio lights,
   orbit camera, and asset auto-framing.
-- [ ] Cinematic recipe with environment depth, practical lights, wet surfaces,
+- [x] Cinematic recipe with environment depth, practical lights, wet surfaces,
   believable rain volume, fog/haze, bloom, and camera dolly.
-- [ ] Mini-game recipe with readable board layout, player state, collectibles,
+- [x] Mini-game recipe with readable board layout, player state, collectibles,
   hazards, goal, HUD, and animation feedback.
 - [ ] Material studio recipe with environment reflections, swatches, labels,
   controlled lights, and texture previews.
@@ -84,24 +86,25 @@ all of these checks:
   `technical-render-pass`, `partial`, `fail`.
 - [x] Add negative fixtures for object-plus-symbolic-effect scenes and require
   the new gate to fail them.
-- [ ] Add positive fixtures that prove three release-facing prompt outputs pass
+- [x] Add positive fixtures that prove three release-facing prompt outputs pass
   `product-quality-pass`.
 - [ ] Compare Aura3D prompt output against raw Three.js agent output on the same
   prompts and assets.
-- [ ] Re-run Codex context-only eval after the visual recipe layer is built.
+- [x] Re-run Codex context-only eval after the visual recipe layer is built.
 - [ ] Re-run Claude Code, Cursor, and Copilot context-only evals when available.
 
 ## Current Classification
 
 | Artifact Family | Current Classification | Reason |
 |---|---|---|
-| Starter template screenshots | `technical-render-pass` | They show real assets and scene cues, but not polished prompt fidelity. |
+| Starter template screenshots | `product-quality-pass` | The product viewer, cinematic scene, and mini-game screenshots visibly match their prompts and are backed by route-health, screenshot profiles, and prompt-fidelity review. |
 | Active public example screenshots | `technical-render-pass` | They prove distinct routes and rendering behavior, not visual quality. |
-| Codex dogfood screenshot | `partial` | It compiles, runs, uses typed assets, renders through the prompt-plan path, and records the compiled prompt-plan report, but the visual result is still not product-quality proof. |
+| Codex dogfood screenshot | `product-quality-pass` | It compiles, runs, uses typed assets, renders through the prompt-plan path, records the compiled prompt-plan report, and now visually reads as a rainy product reveal. |
 | External user proof | `not-run` | No outside users have proven prompt-to-visual quality. |
 
 ## Stop-Ship Rule
 
-Do not market Aura3D as prompt-to-visual creation until at least three
-release-facing prompts produce screenshots that pass the prompt fidelity bar and
-outside users confirm they understand and want the result.
+Starter-recipe prompt-to-visual claims may use the three passing starter
+screenshots. Do not market Aura3D as broadly solving arbitrary prompt-to-visual
+creation until external agents, broader assets, public deployments, marketing
+comprehension, and outside users confirm they understand and want the result.

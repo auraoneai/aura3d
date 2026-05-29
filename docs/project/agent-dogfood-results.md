@@ -1,6 +1,6 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-29T01:07:15.830Z
+Generated: 2026-05-29T02:28:24.912Z
 
 ## Codex Self-Test
 
@@ -32,8 +32,8 @@ Generated: 2026-05-29T01:07:15.830Z
 | `codex-generated-app-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
-| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=11 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=271614, profile={"yellowPixels":3139,"rainPixels":1102,"centerObjectPixels":7688,"uniqueBuckets":147} |
+| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=21 |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=303523, profile={"yellowPixels":5799,"rainPixels":1761,"centerObjectPixels":10690,"uniqueBuckets":148} |
 
 ## Remaining Agent Runs
 

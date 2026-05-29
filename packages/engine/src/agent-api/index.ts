@@ -556,17 +556,24 @@ export const promptRecipes = {
       .background("#070b10")
       .add(primitives.plane({ name: "charcoal sweep backdrop", material: material.emissive({ color: "#111923", emissive: "#182433" }) }).position(0, 1.02, -2.2).rotate(1.5708, 0, 0).scale([5.4, 1, 2.75]))
       .add(primitives.plane({ name: "matte graphite product table", material: material.pbr({ color: "#242c31", roughness: 0.48, metallic: 0.06 }) }).position(0, -0.06, -0.55).scale([4.8, 1, 3.25]))
+      .add(primitives.box({ name: "low product plinth", material: material.pbr({ color: "#161c22", roughness: 0.38, metallic: 0.2 }) }).position(-0.06, 0.0, -0.66).scale([1.72, 0.11, 1.22]))
+      .add(primitives.box({ name: "deep contact shadow", material: material.pbr({ color: "#06080a", roughness: 0.84, metallic: 0 }) }).position(-0.06, 0.065, -0.65).scale([1.28, 0.025, 0.82]))
       .add(primitives.box({ name: "left vertical softbox", material: material.emissive({ color: "#eef6ff", emissive: "#eef6ff" }) }).position(-1.9, 0.86, -0.92).rotate(0, 0.22, 0).scale([0.08, 1.24, 1.58]))
       .add(primitives.box({ name: "right cool flag", material: material.emissive({ color: "#35506c", emissive: "#4d708f" }) }).position(1.98, 0.75, -1.05).rotate(0, -0.18, 0).scale([0.08, 0.95, 1.38]))
+      .add(primitives.box({ name: "top inspection strip", material: material.emissive({ color: "#dbeaff", emissive: "#f1f7ff" }) }).position(-0.36, 1.72, -1.88).rotate(0.02, 0.04, 0.01).scale([1.04, 0.055, 0.08]))
+      .add(primitives.box({ name: "rear horizon seam", material: material.emissive({ color: "#4b6277", emissive: "#58758d" }) }).position(0, 0.38, -2.02).scale([4.55, 0.035, 0.08]))
+      .add(primitives.box({ name: "cool floor reflection card", material: material.emissive({ color: "#244b60", emissive: "#32738f" }) }).position(-0.78, -0.008, 0.02).rotate(0, 0.08, 0).scale([0.82, 0.028, 0.14]))
       .add(primitives.box({ name: "warm table reflection", material: material.emissive({ color: "#7a5a39", emissive: "#9f7145" }) }).position(0.72, -0.01, 0.36).rotate(0, -0.12, 0).scale([1.1, 0.03, 0.18]))
-      .add(model(asset, { name: plan.subject.label }).position(0, 0.02, -0.68).rotate(-0.12, -0.42, 0.02).scale(0.96))
+      .add(primitives.sphere({ name: "orbit handle left", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(-1.02, 0.32, -0.16).scale(0.09))
+      .add(primitives.sphere({ name: "orbit handle right", material: material.emissive({ color: "#ffd29a", emissive: "#ffd29a" }) }).position(1.12, 0.34, -0.22).scale(0.09))
+      .add(model(asset, { name: plan.subject.label }).position(-0.08, 0.08, -0.68).rotate(-0.12, -0.42, 0.02).scale(1.02))
       .add(lights.ambient({ intensity: 0.28, color: "#e8f1ff" }))
       .add(lights.point({ name: "large cool softbox", position: [-2.2, 2.45, 2.25], color: "#eef6ff", intensity: 2.75 }))
       .add(lights.point({ name: "front product fill", position: [0.35, 1.25, 2.2], color: "#f7fbff", intensity: 1.8 }))
       .add(lights.point({ name: "warm product rim", position: [2.1, 1.72, 0.15], color: "#ffd09a", intensity: 1.22 }))
       .add(effects.bloom({ intensity: 0.18, color: "#cfefff" }))
       .add(interactionNode(plan.interaction ?? "orbit"))
-      .camera(camera.dolly({ from: [0.22, 1.12, 4.55], to: [0.05, 1.0, 3.55], target: [0, 0.58, -0.68], seconds: 7 }))
+      .camera(camera.dolly({ from: [0.14, 1.12, 4.05], to: [0.0, 1.0, 3.18], target: [-0.06, 0.62, -0.68], seconds: 7, fov: 40 }))
       .timeline(timeline.loop({ seconds: 7 })),
 
   "cinematic-scene": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
@@ -576,12 +583,19 @@ export const promptRecipes = {
       .add(primitives.plane({ name: "black wet asphalt", material: material.pbr({ color: "#03070c", roughness: 0.08, metallic: 0.5 }) }).position(0, -0.07, -0.55).scale([7.0, 1, 5.9]))
       .add(primitives.box({ name: "left alley slab", material: material.pbr({ color: "#03060b", roughness: 0.46, metallic: 0.1 }) }).position(-2.9, 0.9, -0.95).rotate(0, 0.18, 0).scale([0.42, 2.25, 3.25]))
       .add(primitives.box({ name: "right alley slab", material: material.pbr({ color: "#03050a", roughness: 0.46, metallic: 0.1 }) }).position(2.95, 0.92, -1.05).rotate(0, -0.16, 0).scale([0.42, 2.35, 3.15]))
+      .add(primitives.box({ name: "foreground left shadow frame", material: material.pbr({ color: "#010207", roughness: 0.5, metallic: 0.05 }) }).position(-3.35, 0.72, 1.0).rotate(0, -0.18, 0).scale([0.5, 1.72, 1.65]))
+      .add(primitives.box({ name: "foreground right shadow frame", material: material.pbr({ color: "#010207", roughness: 0.5, metallic: 0.05 }) }).position(3.28, 0.7, 0.96).rotate(0, 0.18, 0).scale([0.5, 1.72, 1.65]))
+      .add(primitives.box({ name: "rear door depth plane", material: material.pbr({ color: "#07111c", roughness: 0.35, metallic: 0.18 }) }).position(0.02, 0.6, -2.38).scale([1.14, 1.18, 0.08]))
       .add(primitives.box({ name: "cyan neon sign", material: material.emissive({ color: "#32ddff", emissive: "#32ddff" }) }).position(-2.22, 1.35, -1.55).rotate(0.05, 0, -0.24).scale([0.055, 1.48, 0.12]))
       .add(primitives.box({ name: "short cyan practical", material: material.emissive({ color: "#63eaff", emissive: "#63eaff" }) }).position(-1.82, 0.74, -1.85).rotate(0.05, 0, 0.12).scale([0.045, 0.76, 0.12]))
       .add(primitives.sphere({ name: "warm street practical", material: material.emissive({ color: "#ffbd68", emissive: "#ffbd68" }) }).position(1.86, 0.78, -1.28).scale(0.34))
       .add(primitives.box({ name: "amber wet reflection", material: material.emissive({ color: "#b36d39", emissive: "#c77f45" }) }).position(1.62, -0.005, -0.42).rotate(0, -0.08, 0).scale([0.86, 0.035, 0.24]))
       .add(primitives.box({ name: "cyan wet reflection", material: material.emissive({ color: "#1a6d86", emissive: "#2398b7" }) }).position(-1.22, -0.005, -0.34).rotate(0, 0.16, 0).scale([0.72, 0.03, 0.18]))
-      .add(model(asset, { name: plan.subject.label }).position(-0.08, 0.02, -0.86).rotate(-0.08, -0.74, 0.02).scale(1.42))
+      .add(primitives.box({ name: "long cyan puddle streak", material: material.emissive({ color: "#0f4356", emissive: "#1b8ba8" }) }).position(-0.34, -0.002, 0.28).rotate(0, 0.22, 0).scale([1.18, 0.026, 0.12]))
+      .add(primitives.box({ name: "warm puddle streak", material: material.emissive({ color: "#835331", emissive: "#be7a43" }) }).position(0.9, -0.002, 0.12).rotate(0, -0.16, 0).scale([0.92, 0.026, 0.13]))
+      .add(primitives.sphere({ name: "rain splash foreground", material: material.emissive({ color: "#c8f4ff", emissive: "#c8f4ff" }) }).position(-0.88, 0.035, 0.72).scale([0.07, 0.018, 0.07]))
+      .add(primitives.sphere({ name: "rain splash key side", material: material.emissive({ color: "#ffe1ad", emissive: "#ffe1ad" }) }).position(1.14, 0.035, 0.44).scale([0.08, 0.018, 0.08]))
+      .add(model(asset, { name: plan.subject.label }).position(-0.08, 0.02, -0.86).rotate(-0.08, -0.74, 0.02).scale(1.48))
       .add(lights.ambient({ intensity: 0.07, color: "#839dc6" }))
       .add(lights.point({ name: "hard cyan rim", position: [-2.35, 2.65, 0.85], color: "#38d6ff", intensity: 3.25 }))
       .add(lights.point({ name: "warm practical key", position: [2.35, 1.7, -0.25], color: "#ffd08a", intensity: 1.6 }))
@@ -590,7 +604,7 @@ export const promptRecipes = {
       .add(effects.fog({ density: 0.08, color: "#32435a" }))
       .add(effects.bloom({ intensity: 0.36, color: "#6edfff" }))
       .add(interactionNode(plan.interaction ?? "orbit"))
-      .camera(camera.dolly({ from: [0.5, 1.05, 4.65], to: [0.08, 0.86, 3.45], target: [-0.08, 0.52, -0.86], seconds: 8 }))
+      .camera(camera.dolly({ from: [0.46, 1.05, 4.28], to: [0.08, 0.86, 3.14], target: [-0.08, 0.56, -0.86], seconds: 8, fov: 39 }))
       .timeline(timeline.loop({ seconds: 8 })),
 
   "mini-game": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
@@ -601,13 +615,22 @@ export const promptRecipes = {
       .add(primitives.box({ name: "south glass rail", material: material.pbr({ color: "#18313e", roughness: 0.42, metallic: 0.12 }) }).position(0, 0.18, 1.52).scale([5.85, 0.32, 0.14]))
       .add(primitives.box({ name: "left glass rail", material: material.pbr({ color: "#172f3c", roughness: 0.42, metallic: 0.12 }) }).position(-2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
       .add(primitives.box({ name: "right glass rail", material: material.emissive({ color: "#1b5e70", emissive: "#228aa4" }) }).position(2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
+      .add(primitives.box({ name: "hud score panel", material: material.pbr({ color: "#06131a", roughness: 0.34, metallic: 0.18 }) }).position(-1.82, 0.075, 1.05).scale([1.2, 0.045, 0.24]))
+      .add(primitives.sphere({ name: "health pip 1", material: material.emissive({ color: "#5cff87", emissive: "#5cff87" }) }).position(-2.28, 0.17, 1.06).scale(0.12))
+      .add(primitives.sphere({ name: "health pip 2", material: material.emissive({ color: "#5cff87", emissive: "#5cff87" }) }).position(-2.02, 0.17, 1.06).scale(0.12))
+      .add(primitives.sphere({ name: "health pip 3", material: material.emissive({ color: "#5cff87", emissive: "#5cff87" }) }).position(-1.76, 0.17, 1.06).scale(0.12))
+      .add(primitives.box({ name: "timer bar", material: material.emissive({ color: "#55e7ff", emissive: "#55e7ff" }) }).position(-0.22, 0.11, 1.04).scale([1.18, 0.052, 0.1]))
+      .add(primitives.box({ name: "objective bar", material: material.emissive({ color: "#ffd84a", emissive: "#ffd84a" }) }).position(1.34, 0.11, 1.04).scale([0.96, 0.052, 0.1]))
       .add(primitives.box({ name: "start lane glow", material: material.emissive({ color: "#55e7ff", emissive: "#55e7ff" }) }).position(-1.98, 0.03, 0.62).scale([0.94, 0.045, 0.15]))
       .add(primitives.box({ name: "center lane stripe", material: material.emissive({ color: "#225f75", emissive: "#2c91ad" }) }).position(0.1, 0.025, 0.3).rotate(0, -0.28, 0).scale([1.75, 0.035, 0.08]))
       .add(model(asset, { name: plan.subject.label ?? "player" }).position(-1.42, 0.02, 0.54).rotate(0, 0.72, 0).scale(0.74))
       .add(primitives.box({ name: "orange boost pack", material: material.emissive({ color: "#ff8a4c", emissive: "#ff8a4c" }) }).position(-1.08, 0.42, 0.48).rotate(0, 0.52, 0).scale([0.28, 0.08, 0.12]))
       .add(primitives.sphere({ name: "player shield ring", material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff" }) }).position(-1.42, 0.08, 0.54).scale([0.72, 0.06, 0.72]))
       .add(primitives.box({ name: "cyan motion trail", material: material.emissive({ color: "#4fd7ff", emissive: "#4fd7ff" }) }).position(-2.08, 0.1, 0.58).scale([0.82, 0.075, 0.16]))
+      .add(primitives.box({ name: "route arrow shaft", material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff" }) }).position(-0.86, 0.08, 0.18).rotate(0, -0.42, 0).scale([0.86, 0.04, 0.08]))
+      .add(primitives.box({ name: "route arrow head", material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff" }) }).position(-0.42, 0.1, -0.04).rotate(0, -0.42, 0.78).scale([0.28, 0.045, 0.08]))
       .add(primitives.box({ name: "moving red hazard", material: material.emissive({ color: "#ff445f", emissive: "#ff445f" }) }).position(-0.18, 0.34, -0.18).rotate(0, 0.56, 0).scale([0.76, 0.52, 0.34]))
+      .add(primitives.sphere({ name: "hazard warning pulse", material: material.emissive({ color: "#ff91a3", emissive: "#ff91a3" }) }).position(-0.18, 0.82, -0.18).scale(0.18))
       .add(primitives.box({ name: "laser gate lower", material: material.emissive({ color: "#ff3159", emissive: "#ff3159" }) }).position(0.95, 0.22, -0.9).rotate(0, -0.14, 0).scale([1.02, 0.055, 0.08]))
       .add(primitives.box({ name: "laser gate upper", material: material.emissive({ color: "#ff3159", emissive: "#ff3159" }) }).position(0.95, 0.58, -0.9).rotate(0, -0.14, 0).scale([1.02, 0.055, 0.08]))
       .add(primitives.sphere({ name: "coin 1", material: material.emissive({ color: "#ffd84a", emissive: "#ffd84a" }) }).position(-0.42, 0.48, 0.8).scale(0.34))
@@ -621,7 +644,7 @@ export const promptRecipes = {
       .add(lights.point({ name: "goal glow", position: [2.0, 1.16, -1.2], color: "#ff9d5c", intensity: 2.0 }))
       .add(effects.bloom({ intensity: 0.28, color: "#9af0ff" }))
       .add(interactionNode(plan.interaction ?? "keyboard", "player"))
-      .camera(camera.perspective({ position: [0, 3.05, 4.55], target: [0, 0.22, -0.35], fov: 41 }))
+      .camera(camera.perspective({ position: [0, 3.22, 4.38], target: [0, 0.26, -0.42], fov: 39 }))
       .timeline(timeline.loop({ seconds: 6 })),
 
   "material-studio": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
@@ -1028,7 +1051,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   if (snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")) {
     const rain = createThreeRain(THREE);
     threeScene.add(rain);
-    disposables.push(rain.geometry, rain.material);
+    disposables.push(rain);
   }
 
   const cameraObject = new THREE.PerspectiveCamera(snapshot.camera.fov ?? 45, canvas.width / Math.max(1, canvas.height), 0.05, 100);
@@ -1144,17 +1167,39 @@ function applyThreeTransform(object: any, node: AuraTransformSpec, baseScale: Au
 }
 
 function createThreeRain(THREE: typeof import("three")): any {
-  const lineCount = 150;
-  const vertices: number[] = [];
-  for (let index = 0; index < lineCount; index += 1) {
-    const x = ((index * 37) % 100) / 16 - 3.1;
-    const z = ((index * 53) % 100) / 17 - 2.9;
-    const y = 0.52 + ((index * 29) % 100) / 36;
-    vertices.push(x, y, z, x - 0.08, y - 0.52, z + 0.035);
+  const group = new THREE.Group();
+  const makeStreaks = (lineCount: number, yBase: number, yRange: number, zOffset: number, length: number, opacity: number) => {
+    const vertices: number[] = [];
+    for (let index = 0; index < lineCount; index += 1) {
+      const x = ((index * 37) % 120) / 15 - 4.0;
+      const z = ((index * 53) % 120) / 17 - 3.5 + zOffset;
+      const y = yBase + ((index * 29) % 120) / yRange;
+      vertices.push(x, y, z, x - 0.08, y - length, z + 0.035);
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+    return new THREE.LineSegments(
+      geometry,
+      new THREE.LineBasicMaterial({ color: "#c9e8ff", transparent: true, opacity })
+    );
+  };
+
+  group.add(makeStreaks(110, 0.75, 42, -1.35, 0.38, 0.46));
+  group.add(makeStreaks(70, 0.46, 34, 0.15, 0.58, 0.72));
+  group.add(makeStreaks(36, 0.2, 30, 1.05, 0.78, 0.86));
+
+  const splashVertices: number[] = [];
+  for (let index = 0; index < 56; index += 1) {
+    splashVertices.push(((index * 31) % 100) / 18 - 2.75, 0.018, ((index * 47) % 100) / 20 - 1.9);
   }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-  return new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: "#c9e8ff", transparent: true, opacity: 0.74 }));
+  const splashGeometry = new THREE.BufferGeometry();
+  splashGeometry.setAttribute("position", new THREE.Float32BufferAttribute(splashVertices, 3));
+  group.add(new THREE.Points(
+    splashGeometry,
+    new THREE.PointsMaterial({ color: "#d6f6ff", size: 0.035, transparent: true, opacity: 0.72 })
+  ));
+
+  return group;
 }
 
 function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, cameraSpec: AuraCameraSpec, canvas: HTMLCanvasElement, time: number): void {

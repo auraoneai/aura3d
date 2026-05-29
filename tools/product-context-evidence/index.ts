@@ -213,9 +213,9 @@ const checks: ReleaseCheck[] = [
       starterVisualReview.includes("product-viewer") &&
       starterVisualReview.includes("cinematic-scene") &&
       starterVisualReview.includes("mini-game") &&
-      starterVisualReview.includes("technical pass") &&
-      starterVisualReview.includes("not product-quality proof"),
-    detail: starterVisualReview ? "starter-template visual review documents current screenshots and product-quality boundary" : "missing docs/project/starter-template-visual-review.md"
+      starterVisualReview.includes("product-quality-pass") &&
+      starterVisualReview.includes("approved starter recipes"),
+    detail: starterVisualReview ? "starter-template visual review documents current starter product-quality screenshots and boundary" : "missing docs/project/starter-template-visual-review.md"
   },
   {
     id: "starter-example-visual-review-present",
@@ -229,17 +229,17 @@ const checks: ReleaseCheck[] = [
   {
     id: "prompt-visual-quality-gap-tracked",
     pass:
-      promptVisualQualityGap.includes("not product-quality proof") &&
-      promptVisualQualityGap.includes("object plus symbolic effects") &&
+      promptVisualQualityGap.includes("starter prompt recipes now pass") &&
+      promptVisualQualityGap.includes("broad prompt-to-visual quality is still not fully proven") &&
       promptVisualQualityGap.includes("Prompt Fidelity Acceptance Bar"),
-    detail: promptVisualQualityGap ? "prompt-to-visual quality gap is documented as unresolved" : "missing docs/project/prompt-visual-quality-gap.md"
+    detail: promptVisualQualityGap ? "prompt-to-visual quality boundary is documented with starter pass and broad remaining gaps" : "missing docs/project/prompt-visual-quality-gap.md"
   },
   {
     id: "prompt-fidelity-quality-report-present",
     pass:
       promptFidelityReport.pass === true &&
-      promptFidelityReport.productQualityReady === false &&
-      Number(promptFidelityReport.releaseFacingProductQualityPasses ?? -1) < 3 &&
+      promptFidelityReport.productQualityReady === true &&
+      Number(promptFidelityReport.releaseFacingProductQualityPasses ?? -1) >= 3 &&
       (promptFidelityReport.negativeFixtures ?? []).every((fixture) => fixture.rejected === true),
     detail: promptFidelityReport.pass === true
       ? `productQualityReady=${String(promptFidelityReport.productQualityReady)}, releaseFacingPasses=${promptFidelityReport.releaseFacingProductQualityPasses ?? "missing"}`
@@ -279,8 +279,9 @@ const claims: ClaimEvidence[] = [
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
   claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
-  claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, and screenshot profile checks, but remains partial visual proof.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
+  claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" && checkStatus("prompt-fidelity-quality-report-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
+  claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),
@@ -296,9 +297,9 @@ const claims: ClaimEvidence[] = [
 
 const knownGaps: KnownGapEvidence[] = [
   {
-    gap: "Prompt-to-visual product quality is not proven.",
+    gap: "Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven.",
     owner: "Product/Runtime QA",
-    nextAction: "Replace object-plus-cue screenshot checks with a prompt-fidelity gate that rejects scenes made from one imported asset plus symbolic effects. Add art-directed scene recipes, stronger camera/light/material/environment helpers, and human-reviewed acceptance screenshots before claiming prompt-to-visual quality.",
+    nextAction: "Keep the starter product-quality screenshots under regression review, then add more positive prompt fixtures, broader asset coverage, repair-loop evidence, and external agent/user dogfood before claiming broad arbitrary prompt-to-visual quality.",
     targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"]
   },
   {

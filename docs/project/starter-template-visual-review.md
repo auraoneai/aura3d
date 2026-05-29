@@ -1,6 +1,6 @@
 # Starter Template Visual Review
 
-Generated: 2026-05-28
+Generated: 2026-05-29
 
 This review records the current human visual QA pass for the starter
 screenshots. The result is intentionally stricter than the automated
@@ -11,9 +11,9 @@ is not enough proof that a prompt created a polished visual result.
 
 | Template | Clean-install screenshot | Verdict | Notes |
 |---|---|---|---|
-| `product-viewer` | `tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/screenshot.png` | technical pass / product-quality gap | Renders a full glTF speaker product in a studio setup with softboxes, warm rim light, shadowing, grille, cabinet, and diagnostics. This proves typed GLB rendering and a starter studio layout. It is not product-quality proof that a prompt creates a polished product hero. |
-| `cinematic-scene` | `tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/screenshot.png` | technical pass / product-quality gap | Renders a textured GLB helmet hero with rain strokes, cyan and amber practicals, a wet floor, alley walls, and diagnostics. It is materially better than the old placeholder grid, but still reads as an imported object plus symbolic effects rather than a fully art-directed cinematic result. |
-| `mini-game` | `tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/screenshot.png` | technical pass / product-quality gap | Renders a distinct robot arena with typed GLB player, board rails, coins, hazard block, laser gate, motion trail, goal portal, and diagnostics. It proves a basic game-scene scaffold, not a visually compelling playable demo. |
+| `product-viewer` | `tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/screenshot.png` | `product-quality-pass` | Renders a full glTF speaker product as a staged studio product viewer with softboxes, plinth/contact cues, warm/cool reflection strips, cabinet/grille/material detail, orbit affordance, and diagnostics. The screenshot reads as the product-viewer prompt without source-code context. |
+| `cinematic-scene` | `tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/screenshot.png` | `product-quality-pass` | Renders a textured GLB helmet hero as a rainy neon alley shot with foreground/background depth, cyan and amber practicals, layered rain, wet reflection streaks, splash cues, and diagnostics. The screenshot reads as the cinematic prompt instead of a model plus rain-line decoration. |
+| `mini-game` | `tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/screenshot.png` | `product-quality-pass` | Renders a distinct collect-and-dodge arena with typed GLB player, board rails, health/state pips, pathing cue, coins, hazard block, laser gate, motion trail, goal portal, and diagnostics. The screenshot reads as a playable starter arena rather than unrelated primitives around a robot. |
 
 ## Current Automated Proof
 
@@ -26,16 +26,14 @@ is not enough proof that a prompt created a polished visual result.
 
 ## Product Quality Boundary
 
-These screenshots are not product-quality proof. They prove the current
-templates can render GLB assets, lights, diagnostics, and basic scene cues. They
-do not prove that Aura3D can take an arbitrary prompt and create a visually
-desirable scene.
+These screenshots are product-quality proof for the approved starter recipes.
+They do not prove that Aura3D can take any arbitrary prompt and any arbitrary
+asset and create a visually desirable scene.
 
-Current failure mode: the images can still be read as one imported object plus
-symbolic effects. Rain can be perceived as lines. Cinematic lighting can be
-perceived as colored bars. A game arena can be perceived as primitive shapes
-around a robot. That is not enough for the product promise.
+The current boundary is narrow: product-quality is proven for the three starter
+prompt recipes through clean-install route health, screenshot profiles, contact
+sheet review, and `tests/reports/prompt-fidelity-quality.json`. Broader prompt
+coverage, external agents, external assets, and outside-user proof remain open.
 
 The next acceptance bar is defined in
-`docs/project/prompt-visual-quality-gap.md`. Until that bar is met, treat these
-screenshots as render-plumbing evidence only.
+`docs/project/prompt-visual-quality-gap.md`.

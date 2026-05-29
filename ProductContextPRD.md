@@ -46,8 +46,9 @@ There are therefore two separate problems to fix:
   "the app compiled and rendered recognizable cues" instead of "the final image
   looks like the prompt asked for." That let object-plus-symbolic-effect scenes
   pass even when the human visual result was not good enough. The new
-  prompt-fidelity report catches that failure mode, but the positive
-  product-quality screenshots still do not pass.
+  prompt-fidelity report now catches that failure mode, records passing
+  starter-level examples, and keeps broad arbitrary prompt quality as an open
+  product gap instead of overclaiming it.
 
 ### Root Cause Breakdown
 
@@ -85,9 +86,10 @@ Every release-facing prompt demo must produce this evidence bundle:
 - Human review label.
 - Failure reason and next action when the label is not `product-quality-pass`.
 
-Until at least three release-facing prompt demos pass that bundle, Aura3D should
-be described as agent-facing browser 3D SDK/tooling with prompt-planning
-plumbing, not as proven prompt-to-visual generation.
+The three approved starter prompt demos now pass this bundle locally, so they
+can be used as narrow starter-recipe proof. Aura3D still should not be described
+as proven broad prompt-to-visual generation until arbitrary prompts, arbitrary
+assets, external agents, deployments, and outside users pass the same standard.
 
 ### Current Technical Gate State
 
@@ -103,23 +105,26 @@ and package contents:
   default template ports.
 - `pnpm run check:clean-install` now passes 33/33 checks.
 
-That resolves the technical clean-install blocker. It does **not** resolve the
-product-quality gap: prompt-to-visual output still needs to be judged by
-whether the screenshots look like the requested scene, not only by route health
-or pixel-profile counters.
+That resolves the technical clean-install blocker. The starter prompt-fidelity
+gap is now closed for the three public starter recipes, but broad
+prompt-to-visual quality still needs to be judged by whether each screenshot
+looks like the requested scene, not only by route health or pixel-profile
+counters.
 
 So the honest current product state is:
 
-- **Proven:** agent-readable API surface, typed assets, clean starter
+- **Proven locally:** agent-readable API surface, typed assets, clean starter
   scaffolding path, GLB render path, diagnostics, screenshots, package audits,
-  and local dogfood for the pieces that passed their focused checks.
-- **Partially proven:** `product-viewer`, `cinematic-scene`, and `mini-game`
-  currently pass clean-install render checks with real assets and
-  scene-specific visual cues; the starter templates now use `definePromptPlan`
-  and `promptPlanToScene`.
-- **Not proven:** polished prompt-to-visual output, broad asset visual fidelity,
-  cinematic composition quality, recipe-driven agent dogfood across multiple
-  agents, or user-desirable generated demos.
+  packed clean-install starter checks, and deterministic Codex dogfood for the
+  focused checks that passed.
+- **Proven for approved starter recipes:** `product-viewer`,
+  `cinematic-scene`, and `mini-game` now pass clean-install render checks,
+  route health, scene-specific screenshot profiles, and human
+  `product-quality-pass` review in `tests/reports/prompt-fidelity-quality.json`.
+  The starter templates use `definePromptPlan` and `promptPlanToScene`.
+- **Not proven broadly:** arbitrary prompt-to-visual quality, broad asset visual
+  fidelity, cross-agent recipe adoption, external deployments, outside users,
+  and market-desirable generated demos beyond the approved starter recipes.
 
 ## Product-Quality Definition
 
@@ -149,15 +154,18 @@ For Aura3D, that means:
   templates.
 - The three starter templates render through WebGL2 using the compact Aura3D
   scene API and the lazy Three.js glTF render path, and have screenshot tests
-  with scene-specific pixel profiles, not only non-empty PNG checks. These are
-  render-plumbing checks, not product-quality prompt-to-visual proof.
-- `product-viewer` renders a real glTF speaker product on a studio setup, not
-  a placeholder polygon.
-- `cinematic-scene` renders a real GLB hero asset with rain, colored practicals,
-  a wet floor, WebGL2 diagnostics, and clean-install screenshot-profile
-  evidence. Treat this as render-plumbing proof, not product-quality proof.
+  with scene-specific pixel profiles, not only non-empty PNG checks.
+- `product-viewer` renders a real glTF speaker product as a staged product
+  viewer with softboxes, plinth/contact cues, warm/cool reflection strips,
+  material highlights, orbit affordance, WebGL2 diagnostics, and a
+  `product-quality-pass` prompt-fidelity review label.
+- `cinematic-scene` renders a real GLB hero asset as a rainy neon alley shot
+  with foreground/background depth, practical lights, layered rain, splash
+  points, wet reflections, WebGL2 diagnostics, and a `product-quality-pass`
+  prompt-fidelity review label.
 - `mini-game` renders a distinct WebGL2 arena scene with a typed GLB player,
-  motion trail, hazards, coins, and a goal portal.
+  visible health/state pips, path cue, motion trail, hazards, coins, laser
+  gate, goal portal, and a `product-quality-pass` prompt-fidelity review label.
 - `docs/project/starter-template-visual-review.md` records the current human
   screenshot review. The mini-game clean-install screenshot now shows the robot
   arena prompt instead of the previous generic grid/primitive output.
@@ -175,23 +183,25 @@ For Aura3D, that means:
 - Codex self-dogfood now generates through `definePromptPlan`,
   `compilePromptPlan`, and `promptPlanToScene`; it compiles, runs, renders a
   WebGL2 screenshot, uses typed asset refs, records the compiled prompt-plan
-  report, and reports zero API hallucinations and zero asset-path errors. A
-  separate fresh Codex context-only run also compiled and ran, but remains
-  partial visual evidence.
+  report, reports zero API hallucinations and zero asset-path errors, and now
+  has a `product-quality-pass` prompt-fidelity review label for the
+  deterministic self-test. A separate fresh Codex context-only run also
+  compiled and ran, but it remains separate local evidence rather than
+  cross-agent proof.
 - The first raw Three.js baseline comparison is recorded in
   `docs/project/agent-baseline-comparison.md`.
 - `tools/prompt-fidelity-quality/index.ts` now writes
   `tests/reports/prompt-fidelity-quality.json`, a release screenshot contact
-  sheet, and `docs/project/prompt-fidelity-quality-results.md`. It classifies
-  current screenshots as technical/partial evidence and rejects
-  object-plus-symbolic-effect negative fixtures. The report also stores repair
-  guidance for low-quality screenshots.
+  sheet, and `docs/project/prompt-fidelity-quality-results.md`. It now records
+  four release-facing `product-quality-pass` artifacts: the three starter
+  recipes plus deterministic Codex context dogfood. It still rejects
+  object-plus-symbolic-effect negative fixtures and stores regression guidance.
 - The public agent API now includes `definePromptPlan`, `compilePromptPlan`,
   `promptPlanToScene`, and `promptRecipes` so agents can select an approved
   scene recipe before rendering. `compilePromptPlan` reports visual systems,
   negative criteria, and repair hints. The three starter templates use that
-  prompt plan flow. This is prompt-plumbing progress, not proof of
-  product-quality visuals.
+  prompt plan flow and now have positive starter-level product-quality
+  screenshot evidence.
 - The reset evidence now distinguishes prompt-plumbing success from
   product-quality visual success. A screenshot can pass WebGL2, route-health,
   and pixel-profile checks while still failing the product promise.
@@ -202,23 +212,21 @@ For Aura3D, that means:
   clean-install, and scene-specific screenshot-profile level, but broad product
   confidence still depends on focused dogfood and user evidence, not aggregate
   monorepo test counts.
-- Prompt-to-visual product quality is not proven. Current screenshots show real
-  GLB loading and basic scene cues, but several still read as one imported
-  object plus symbolic effects. Do not present them as proof that a natural
-  language prompt produces a polished visual result.
+- Broad prompt-to-visual product quality is still not fully proven. The approved
+  starter recipes now pass prompt-fidelity review, but that does not prove
+  arbitrary prompts, arbitrary assets, external agents, or outside users.
 - The previous cinematic clean-install blocker has been fixed, but it was a
-  harness/package-content issue rather than product-quality proof. The current
-  clean-install pass still must not be marketed as proof of polished
-  prompt-to-visual generation.
+  harness/package-content issue. The current clean-install plus
+  prompt-fidelity pass can be used as starter-recipe proof, not broad proof of
+  arbitrary prompt-to-visual generation.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
   richer scene composition, and lazy Three.js-backed material loading, but it is
   still a compact Aura3D render path, not a full physically based Three.js
   replacement. GLB material/texture fidelity needs more corpus testing before it
   can be marketed as production-grade asset parity.
-- The `product-viewer` starter is clean-install proven with product-viewer
-  visual cues, but it remains a stylized starter render, not a polished
-  product-marketing render.
-  Do not oversell it externally.
+- The `product-viewer` starter is clean-install and product-quality reviewed,
+  but it remains a stylized starter recipe, not a guarantee that every product
+  asset will become a polished product-marketing render.
 - The active example routes are visually distinct, but `hello-world-typed-asset`
   and `camera-path` are compact examples, not polished showcase demos.
 - Extra `apps/*` routes remain active as classified engine evidence. They are
@@ -244,9 +252,9 @@ For Aura3D, that means:
 - [x] Restore `cinematic-scene` clean-install readiness: dev route health,
   static preview route health, screenshot bytes, and cinematic visual profile
   must pass from the packed `create-aura3d` and `@aura3d/engine` tarballs.
-- [ ] Build product-quality scene recipes for the three public starter promises:
+- [x] Build product-quality scene recipes for the three public starter promises:
   product viewer, cinematic scene, and mini-game.
-- [ ] Replace or withhold release-facing screenshots that remain
+- [x] Replace or withhold release-facing screenshots that remain
   `technical-render-pass` or `partial`; only `product-quality-pass` screenshots
   should be used as marketing/product proof.
 - [ ] Add before/after evidence for each fixed starter showing the source
@@ -254,22 +262,22 @@ For Aura3D, that means:
   was corrected.
 - [x] Update agent docs so a context-only agent chooses recipes, assets, camera,
   lighting, effects, and acceptance criteria deliberately.
-- [ ] Add a product-quality review gate that blocks promotion when screenshots
+- [x] Add a product-quality review gate that blocks promotion when screenshots
   still look like one GLB plus symbolic decorations.
 - [x] Re-run the Codex context-only self-test through the prompt-plan flow and
   record whether the generated screenshot improves beyond `partial`.
 
 ### Visual Runtime And Scene Quality
 
-- [ ] Decide the renderer strategy for product-quality visuals: either extend
+- [x] Decide the renderer strategy for product-quality visuals: either extend
   the compact Aura3D renderer enough for polished demos, expose a first-class
   Three.js-backed recipe layer, or clearly scope Aura3D as typed scene
   orchestration over external renderers.
-- [ ] Implement the selected renderer strategy in code, not only in docs, and
+- [x] Implement the selected renderer strategy in code, not only in docs, and
   update starter templates to use it.
-- [ ] Add art-directed scene recipes for product hero, cinematic rain scene,
+- [x] Add art-directed scene recipes for product hero, cinematic rain scene,
   material studio, and game arena outputs.
-- [ ] Make recipe output visually opinionated by default: focal subject,
+- [x] Make recipe output visually opinionated by default: focal subject,
   foreground/background structure, environment depth, contact, contrast, and
   clear interaction state must be visible before custom edits.
 - [ ] Add camera rig presets for product orbit, dolly push-in, turntable,
@@ -277,12 +285,12 @@ For Aura3D, that means:
 - [ ] Add lighting rigs that create real visual structure: key/fill/rim,
   studio softbox, practical neon, product reflection cards, and game arena
   readability.
-- [ ] Add environment helpers for plinths, backdrops, alleys, rooms, arenas,
+- [x] Add environment helpers for plinths, backdrops, alleys, rooms, arenas,
   shelves, rails, portals, and staged foreground/background depth.
 - [ ] Improve materials so product assets do not look flat: PBR defaults,
   environment reflections, contact shadows, wet floors, emissive surfaces, and
   texture-preserving GLB material handling.
-- [ ] Replace symbolic weather/effects with believable visual systems where
+- [x] Replace symbolic weather/effects with believable visual systems where
   relevant: rain volume, splash/reflection response, fog/haze, glow, bloom,
   depth of field, and motion trails.
 - [ ] Add animation helpers for idle product motion, camera dolly, object
@@ -304,7 +312,7 @@ For Aura3D, that means:
   Aura3D recipe calls.
 - [x] Give agents initial visual vocabulary and examples that map prompts to
   concrete scene recipes instead of ad hoc primitive placement.
-- [ ] Prove the prompt contract is strong enough by generating at least three
+- [x] Prove the prompt contract is strong enough by generating at least three
   prompt-plan scenes that pass `product-quality-pass`.
 - [ ] Make the recipe compiler reject or warn on vague plans that cannot produce
   visible prompt fidelity, such as "make it cinematic" without subject,
@@ -313,7 +321,7 @@ For Aura3D, that means:
   missing the subject, or just an object plus decorative cues.
 - [ ] Feed repair guidance back into the generated scene and rerun the screenshot
   review until the artifact either passes or is explicitly marked blocked.
-- [ ] Add support for prompt-specific expected artifacts, such as HUD for a
+- [x] Add support for prompt-specific expected artifacts, such as HUD for a
   game prompt, wet reflections for a rain prompt, and inspection controls for a
   product-viewer prompt.
 - [ ] Make generated scenes expose their prompt, visual intent, and diagnostic
@@ -332,8 +340,8 @@ For Aura3D, that means:
 - [x] Build a contact-sheet report for all release-facing screenshots so visual
   regressions are reviewed together.
 - [x] Add negative fixtures proving object-plus-symbolic-effect output fails.
-- [ ] Add positive fixtures proving new art-directed scenes pass.
-- [ ] Block release-facing promotion when `releaseFacingProductQualityPasses` is
+- [x] Add positive fixtures proving new art-directed scenes pass.
+- [x] Block release-facing promotion when `releaseFacingProductQualityPasses` is
   below three in `tests/reports/prompt-fidelity-quality.json`.
 - [ ] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
   same prompts and assets.

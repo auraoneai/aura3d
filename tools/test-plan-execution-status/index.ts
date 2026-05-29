@@ -12,6 +12,7 @@ interface RoundEvidence {
 
 const rawThreeBaselinePassed = reportPass("tests/reports/agent-baseline-comparison.json");
 const marketingComprehensionPassed = marketingComprehensionComplete();
+const promptFidelityProductQualityReady = promptFidelityReady();
 
 const rounds: RoundEvidence[] = [
   round("Round 0: Product Context Evidence Matrix", "automated-pass", ["docs/project/product-context-evidence.md", "tests/reports/product-context-evidence.json"]),
@@ -21,19 +22,26 @@ const rounds: RoundEvidence[] = [
   round("Round 4: Package Tarball Audit", reportPass("tests/reports/package-tarball-audit.json") ? "automated-pass" : "partial", ["tests/reports/package-tarball-audit.json"]),
   round("Round 5: Clean Install Smoke", reportPass("tests/reports/package-clean-install.json") ? "automated-pass" : "partial", ["docs/project/clean-install-results.md", "tests/reports/package-clean-install.json"]),
   round("Round 6: Public API Compactness And Correctness", reportPass("tests/reports/public-api-contract.json") ? "automated-pass" : "partial", ["docs/project/public-api-contract.md", "tests/reports/public-api-contract.json"]),
-  round("Round 7: Agent Context Evaluation", reportPass("tests/reports/agent-context/codex-self-test.json") && existsSync("docs/project/fresh-codex-agent-context-results.md") ? "partial" : "external-gap", ["docs/project/agent-dogfood-results.md", "docs/project/fresh-codex-agent-context-results.md", "tests/reports/agent-context/codex-self-test.json"], "Codex prompt-plan self-test is proven; Claude Code, Cursor, and Copilot remain external/subscription runs."),
+  round("Round 7: Agent Context Evaluation", reportPass("tests/reports/agent-context/codex-self-test.json") && existsSync("docs/project/fresh-codex-agent-context-results.md") ? "partial" : "external-gap", ["docs/project/agent-dogfood-results.md", "docs/project/fresh-codex-agent-context-results.md", "tests/reports/agent-context/codex-self-test.json"], "Codex prompt-plan self-test is proven with product-quality visual review; Claude Code, Cursor, and Copilot remain external/subscription runs."),
   round("Round 8: Raw Three.js Baseline", rawThreeBaselinePassed ? "manual-pass" : "partial", ["tests/reports/agent-baseline-comparison.json", "docs/project/agent-baseline-comparison.md"], rawThreeBaselinePassed ? undefined : "Complete the same-task raw Three.js baseline and compare against Aura3D dogfood."),
   round("Round 9: Asset Corpus Validation", reportPass("tests/reports/asset-corpus.json") ? "partial" : "external-gap", ["docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"], "Generated/adversarial assets plus pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures are proven; separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants remain external corpus work."),
   round("Round 10: Typed Asset Reference IDE Test", reportPass("tests/reports/asset-cli.json") && reportPass("tests/reports/public-api-contract.json") ? "automated-pass" : "partial", ["tests/reports/asset-cli.json", "tests/reports/public-api-contract.json"]),
   round("Round 11: Template Lifecycle Dogfood", reportPass("tests/reports/package-clean-install.json") ? "automated-pass" : "partial", ["docs/project/clean-install-results.md", "tests/reports/package-clean-install.json"]),
-  round("Round 12: Diagnostics And Screenshot Quality", "partial", ["tests/reports/package-clean-install.json", "tests/reports/agent-devtools.json", "tests/reports/error-message-quality.json", "docs/project/starter-template-visual-review.md", "docs/project/starter-example-visual-review.md", "docs/project/prompt-visual-quality-gap.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"], "Current screenshots prove rendering, diagnostics, and basic visual cues. Prompt-fidelity audit now rejects object-plus-symbolic-effect fixtures, but current screenshots do not prove product-quality prompt-to-visual fidelity."),
+  round(
+    "Round 12: Diagnostics And Screenshot Quality",
+    reportPass("tests/reports/package-clean-install.json") && promptFidelityProductQualityReady ? "automated-pass" : "partial",
+    ["tests/reports/package-clean-install.json", "tests/reports/agent-devtools.json", "tests/reports/error-message-quality.json", "docs/project/starter-template-visual-review.md", "docs/project/starter-example-visual-review.md", "docs/project/prompt-visual-quality-gap.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"],
+    reportPass("tests/reports/package-clean-install.json") && promptFidelityProductQualityReady
+      ? undefined
+      : "Current screenshots prove rendering, diagnostics, and basic visual cues, but fewer than three release-facing prompt artifacts have product-quality review labels."
+  ),
   round("Round 13: Static Deployment Checks", reportPass("tests/reports/agent-deployment.json") ? "partial" : "external-gap", ["tests/reports/agent-deployment.json", "tests/reports/package-clean-install.json", "docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"], "Local static/deploy checks are proven. Vercel deploy was attempted but blocked by HTTP 401 deployment protection; Cloudflare Pages and Netlify credentials are missing."),
   round("Round 14: Built Bundle Size Proof", reportPass("tests/reports/bundle-size.json") ? "automated-pass" : "partial", ["BUNDLE_SIZES.md", "tests/reports/bundle-size.json"]),
   round("Round 15: Docs Codeblock Execution", reportPass("tests/reports/docs-codeblocks.json") ? "automated-pass" : "partial", ["tests/reports/docs-codeblocks.json"]),
   round("Round 16: Error Message Quality", reportPass("tests/reports/error-message-quality.json") ? "automated-pass" : "partial", ["tests/reports/error-message-quality.json"]),
   round("Round 17: Marketing Link And Copy-Button Audit", reportPass("tests/reports/marketing-link-audit.json") ? "automated-pass" : "partial", ["tests/reports/marketing-link-audit.json"]),
   round("Round 18: Marketing Comprehension Test", marketingComprehensionPassed ? "manual-pass" : "external-gap", ["docs/project/marketing-comprehension-results.md"], marketingComprehensionPassed ? undefined : "Requires three real participants who do not know the codebase."),
-  round("Round 19: Product Rebuild From Context Alone", "partial", ["docs/project/fresh-codex-agent-context-results.md", "docs/project/agent-dogfood-results.md", "docs/project/prompt-visual-quality-gap.md"], "Fresh Codex context-only work compiled, ran, used typed assets, and avoided hallucinated APIs. The deterministic Codex self-test now uses prompt plans. Visual output remains partial rather than product-quality prompt fidelity."),
+  round("Round 19: Product Rebuild From Context Alone", promptFidelityProductQualityReady && reportPass("tests/reports/agent-context/codex-self-test.json") ? "manual-pass" : "partial", ["docs/project/fresh-codex-agent-context-results.md", "docs/project/agent-dogfood-results.md", "docs/project/prompt-visual-quality-gap.md"], promptFidelityProductQualityReady && reportPass("tests/reports/agent-context/codex-self-test.json") ? undefined : "Fresh Codex context-only work compiled, ran, used typed assets, and avoided hallucinated APIs, but visual output still needs product-quality prompt fidelity."),
   round("Round 20: Outside Beta Dogfood", existsSync("docs/project/outside-beta-dogfood-results.md") ? "partial" : "external-gap", ["docs/project/outside-beta-dogfood-results.md"], "Requires beta publication and external users.")
 ];
 
@@ -78,6 +86,20 @@ function marketingComprehensionComplete(): boolean {
   if (!existsSync("docs/project/marketing-comprehension-results.md")) return false;
   const text = readFileSync("docs/project/marketing-comprehension-results.md", "utf8");
   return !/not run|pending/i.test(text) && /Participant/i.test(text) && /pass/i.test(text);
+}
+
+function promptFidelityReady(): boolean {
+  if (!existsSync("tests/reports/prompt-fidelity-quality.json")) return false;
+  try {
+    const parsed = JSON.parse(readFileSync("tests/reports/prompt-fidelity-quality.json", "utf8")) as {
+      readonly pass?: unknown;
+      readonly productQualityReady?: unknown;
+      readonly releaseFacingProductQualityPasses?: unknown;
+    };
+    return parsed.pass === true && parsed.productQualityReady === true && Number(parsed.releaseFacingProductQualityPasses) >= 3;
+  } catch {
+    return false;
+  }
 }
 
 function writeMarkdown(rounds: readonly RoundEvidence[], checks: readonly ReleaseCheck[]): void {
