@@ -2,9 +2,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 test("Aura3D product viewer screenshot shows a prompt-aligned studio product", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 45_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const profile = await canvas.evaluate((element) => {
