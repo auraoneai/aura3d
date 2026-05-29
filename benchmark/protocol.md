@@ -102,6 +102,27 @@ Use `scoring/README.md` for the scoring handoff.
 - No in-repo scorer decides visual quality or final wins.
 - No self-authored evidence report can replace the benchmark.
 - Any standard change requires an amendment commit before a new run starts.
+- No Round 1 run can start until Phase A is signed off by `gchahal1982` using
+  `results/phase-a-signoff-template.md`.
+
+## Amendment Commits
+
+Any standard change after Phase A sign-off must use the commit-message prefix:
+
+```text
+PRD-AMENDMENT: <short description>
+```
+
+The commit body must include:
+
+- reason
+- files changed
+- prior benchmark result invalidated
+- `New benchmark round required: yes`
+- `User approval: gchahal1982, <date>`
+
+Use `results/amendment-template.md`. A commit that does not follow this format
+does not change the release standard.
 
 ## Results
 

@@ -11,6 +11,10 @@ the in-flight benchmark. Edits between runs require an explicit "amendment"
 commit that states what is being changed and why, and the prior benchmark
 result is invalidated.
 
+An amendment commit must use the commit-message prefix `PRD-AMENDMENT:` and
+must include the reason, exact files changed, prior benchmark result being
+invalidated, and user approval from `gchahal1982`.
+
 ## Product Statement
 
 Aura3D is a browser 3D library that competes directly with Three.js. Its
@@ -237,6 +241,22 @@ them voids the benchmark.
 8. **No marketing comprehension as a release gate.** It is a separate
    product-marketing question. It does not gate the library.
 
+### Amendment Commit Template
+
+Any standard change after this PRD is committed must use this format:
+
+```text
+PRD-AMENDMENT: <short description>
+
+Reason:
+Files changed:
+Prior result invalidated:
+New benchmark round required: yes
+User approval: gchahal1982, <date>
+```
+
+An amendment without this format does not change the release standard.
+
 ### Pass Criteria
 
 The benchmark passes when, summed across the 10 prompts and across both
@@ -302,6 +322,45 @@ This decision closes the prior open question of "engine vs. agent layer."
 Both. Engine is the product. Agent layer is the differentiator on top of the
 engine.
 
+## Engine Parity Benchmark
+
+The agent prompt benchmark measures developer and agent productivity. It does
+not, by itself, prove engine quality. Because Aura3D competes with Three.js,
+Round 1 also includes a non-agent engine parity benchmark.
+
+Build each reference scene twice: once with Aura3D and once with raw Three.js.
+The two versions must aim for the same visual target.
+
+| Scene | Required Coverage |
+|---|---|
+| `engine-01-material-grid` | PBR materials, glass, metal, clearcoat, emissive, studio lighting, environment reflections |
+| `engine-02-city-block` | Procedural geometry scale, many objects, windows, streets, day/night lighting |
+| `engine-03-particles-vfx` | Particles, bloom, fog/depth falloff, trails or sparks |
+| `engine-04-physics-ramp` | Rigid bodies, contacts, constraints or collision behavior, runtime stability |
+| `engine-05-sneaker-product` | glTF/GLB loading, auto-scale/framing, studio lights, orbit controls, turntable |
+
+Record screenshot, route health, first usable render time, p50 FPS after
+warmup, p95 frame time after warmup, draw calls, triangle count if available,
+JS heap peak, GPU memory if available, gzip build bytes, source lines of code,
+and neutral visual parity score.
+
+The engine benchmark passes only if all of these are true:
+
+- Visual parity is at least 4 of 5 for every scene.
+- No scene drops below 30 FPS on the agreed local benchmark machine.
+- Aura3D p50 FPS is no worse than 20% below Three.js in at least 4 of 5 scenes.
+- Aura3D p50 FPS is no worse than 35% below Three.js in any scene.
+- Aura3D JS heap peak is no worse than 25% above Three.js in at least 4 of 5
+  scenes.
+- Aura3D JS heap peak is no worse than 50% above Three.js in any scene.
+- Draw-call differences above 25% are explained in the result file.
+- Aura3D does not add more than 250 KB gzip over the Three.js reference for any
+  scene unless `gchahal1982` accepts the written justification.
+
+`benchmark/engine/README.md` is the executable spec for this benchmark. It may
+add detail, but it cannot weaken the requirements above without a
+`PRD-AMENDMENT:` commit.
+
 ## Implementation Plan
 
 Phases run in order. Each phase has a single explicit exit criterion. No
@@ -336,7 +395,10 @@ the required files and their owners:
 | `benchmark/assets/README.md` | License and hash record for the required sneaker fixture. | Phase A exit |
 | `benchmark/assets/sneaker.glb` | Provided asset for prompt 10. Agents must not search for substitutes. | Phase A exit |
 | `benchmark/results/template.md` | Required result format for every round. | Phase A exit |
+| `benchmark/results/phase-a-signoff-template.md` | Required user sign-off format before Round 1 can start. | Phase A exit |
+| `benchmark/results/amendment-template.md` | Required PRD amendment format. | Phase A exit |
 | `benchmark/results/round-1.md` | Signed, dated Round 1 benchmark result. | Phase B exit |
+| `benchmark/results/round-1-engine.md` | Signed, dated Round 1 engine parity result. | Phase B exit |
 | `benchmark/results/round-1-decision.md` | Written ship/fix/no-ship decision from Round 1. | Phase C exit |
 
 ### Cleanup Checklist
@@ -379,9 +441,15 @@ core library.
 - [ ] Commit a `sneaker.glb` fixture under `benchmark/assets/sneaker.glb` from
       a clearly-licensed source.
 - [ ] Set up a results template at `benchmark/results/template.md`.
+- [ ] Set up Phase A sign-off template at
+      `benchmark/results/phase-a-signoff-template.md`.
+- [ ] Set up amendment template at `benchmark/results/amendment-template.md`.
+- [ ] Get written Phase A approval from `gchahal1982` before starting Round 1.
 
 Exit: a third party who has not seen this repo can run the benchmark using
-only the `benchmark/` directory.
+only the `benchmark/` directory, and `gchahal1982` has confirmed in writing
+that the benchmark package is ready to run. Without that user sign-off, Phase A
+is not complete and Round 1 cannot start.
 
 ### Phase B: Run Round 1
 

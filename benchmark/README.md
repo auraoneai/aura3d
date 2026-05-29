@@ -20,6 +20,8 @@ The benchmark answers one question:
 - `assets/README.md` documents the required product-viewer GLB fixture.
 - `assets/sneaker.glb` is required before Phase A can exit.
 - `results/template.md` is the required results format.
+- `results/phase-a-signoff-template.md` is the required user sign-off format before Round 1 starts.
+- `results/amendment-template.md` is the required format for later PRD amendments.
 
 ## Release Rule
 
@@ -29,4 +31,4 @@ The prompt benchmark measures agent productivity and visual outcomes. The engine
 
 ## Status
 
-Phase A is not complete until every required file above exists and `assets/sneaker.glb` is committed from a clearly licensed source.
+Phase A is not complete until every required file above exists, `assets/sneaker.glb` is committed from a clearly licensed source, and `gchahal1982` signs off in writing that the benchmark package is ready to run.
