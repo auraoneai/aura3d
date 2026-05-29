@@ -457,7 +457,7 @@ core library.
 - [x] Set up Phase A sign-off template at
       `benchmark/results/phase-a-signoff-template.md`.
 - [x] Set up amendment template at `benchmark/results/amendment-template.md`.
-- [ ] Get written Phase A approval from `gchahal1982` before starting Round 1.
+- [x] Get written Phase A approval from `gchahal1982` before starting Round 1.
 
 Exit: a third party who has not seen this repo can run the benchmark using
 only the `benchmark/` directory, and `gchahal1982` has confirmed in writing
