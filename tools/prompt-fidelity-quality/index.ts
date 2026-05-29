@@ -34,6 +34,20 @@ interface NegativeFixture {
   readonly reason: string;
 }
 
+interface RepairLoopCase {
+  readonly id: string;
+  readonly failedFixtureId: string;
+  readonly failedLabel: ReviewLabel;
+  readonly failureReason: string;
+  readonly appliedRepairHints: readonly string[];
+  readonly repairedArtifactId: string;
+  readonly repairedSourceFile: string;
+  readonly repairedScreenshot: string;
+  readonly repairedRouteHealth: string;
+  readonly repairedLabel: ReviewLabel;
+  readonly repairTurnCount: number;
+}
+
 const reportPath = "tests/reports/prompt-fidelity-quality.json";
 const markdownPath = "docs/project/prompt-fidelity-quality-results.md";
 const contactSheetPath = "tests/reports/prompt-fidelity/contact-sheet.png";
@@ -218,6 +232,43 @@ const negativeFixtures: NegativeFixture[] = [
   })
 ];
 
+const repairLoopCases: RepairLoopCase[] = [
+  {
+    id: "symbolic-rain-to-cinematic-repair",
+    failedFixtureId: "single-asset-with-rain-lines",
+    failedLabel: "fail",
+    failureReason: "One centered asset with symbolic rain lines did not satisfy the cinematic rainy hero prompt.",
+    appliedRepairHints: [
+      "Add foreground, midground, and background alley structure.",
+      "Replace sparse symbolic lines with layered rain, wet reflection strips, splash cues, fog, and practical lights.",
+      "Use a tighter dolly camera and visible warm/cool light separation."
+    ],
+    repairedArtifactId: "starter-cinematic-scene",
+    repairedSourceFile: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
+    repairedScreenshot: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/screenshot.png",
+    repairedRouteHealth: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/route-health.json",
+    repairedLabel: "product-quality-pass",
+    repairTurnCount: 1
+  },
+  {
+    id: "primitive-board-to-game-arena-repair",
+    failedFixtureId: "primitive-game-board",
+    failedLabel: "fail",
+    failureReason: "Robot plus unrelated primitives did not satisfy the mini-game prompt because it lacked readable state, hazards, collectibles, goal, and feedback.",
+    appliedRepairHints: [
+      "Add visible player state and HUD-like health/score cues.",
+      "Add hazards, collectible coins, a route cue, a goal portal, and interaction feedback.",
+      "Use a game-board camera with readable arena boundaries."
+    ],
+    repairedArtifactId: "starter-mini-game",
+    repairedSourceFile: "packages/create-aura3d/templates/mini-game/src/main.ts",
+    repairedScreenshot: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/screenshot.png",
+    repairedRouteHealth: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/route-health.json",
+    repairedLabel: "product-quality-pass",
+    repairTurnCount: 1
+  }
+];
+
 const releaseFacingArtifacts = artifacts.filter((artifact) => artifact.family === "starter-template" || artifact.family === "agent-context");
 const releaseFacingProductQualityPasses = releaseFacingArtifacts.filter((artifact) => artifact.productQualityPass).length;
 const missingScreenshots = artifacts.filter((artifact) => !existsSync(resolve(artifact.screenshot)));
@@ -239,6 +290,7 @@ const routeBackendGaps = artifacts
   .filter((artifact) => routeBackend(artifact.routeHealth as string) !== "webgl2");
 const codexCompiledRepairHints = readCompiledRepairHints("tests/reports/agent-context/codex-self-test.json");
 const rejectedNegativeFixtures = negativeFixtures.filter((fixture) => fixture.rejected).length;
+const repairLoopGaps = repairLoopCases.filter((repairCase) => !repairLoopCaseComplete(repairCase));
 const contactSheet = writeContactSheet(artifacts.map((artifact) => artifact.screenshot).filter((path) => existsSync(resolve(path))));
 
 const checks: ReleaseCheck[] = [
@@ -314,6 +366,13 @@ const checks: ReleaseCheck[] = [
     detail: `${rejectedNegativeFixtures}/${negativeFixtures.length} negative fixtures rejected`
   },
   {
+    id: "prompt-fidelity-repair-loop-recorded",
+    pass: repairLoopGaps.length === 0,
+    detail: repairLoopGaps.length === 0
+      ? `${repairLoopCases.length} failed-fixture repair loops record repaired artifact, screenshot, route-health, applied hints, and repair turn count`
+      : `repair loop gaps: ${repairLoopGaps.map((repairCase) => repairCase.id).join(", ")}`
+  },
+  {
     id: "prompt-fidelity-product-quality-threshold",
     pass: overclaimedArtifacts.length === 0 && releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses,
     detail: `${releaseFacingProductQualityPasses}/${requiredReleaseFacingProductPasses} release-facing artifacts are product-quality-pass`
@@ -332,7 +391,8 @@ writeReport(reportPath, "aura3d-prompt-fidelity-quality", checks, {
   releaseFacingProductQualityPasses,
   contactSheetPath,
   artifacts,
-  negativeFixtures
+  negativeFixtures,
+  repairLoopCases
 });
 
 function classifyNegativeFixture(input: {
@@ -354,6 +414,25 @@ function classifyNegativeFixture(input: {
     rejected: actualLabel === input.expectedLabel && actualLabel === "fail",
     reason: "Rejected because it matches the object-plus-symbolic-effect failure mode instead of the prompt fidelity bar."
   };
+}
+
+function repairLoopCaseComplete(repairCase: RepairLoopCase): boolean {
+  const repairedArtifact = artifacts.find((artifact) => artifact.id === repairCase.repairedArtifactId);
+  const failedFixture = negativeFixtures.find((fixture) => fixture.id === repairCase.failedFixtureId);
+  return Boolean(
+    failedFixture?.rejected === true &&
+    repairCase.failedLabel !== "product-quality-pass" &&
+    repairCase.failureReason &&
+    repairCase.appliedRepairHints.length > 0 &&
+    repairCase.repairTurnCount > 0 &&
+    repairedArtifact?.reviewLabel === "product-quality-pass" &&
+    repairedArtifact.productQualityPass === true &&
+    repairCase.repairedLabel === "product-quality-pass" &&
+    existsSync(resolve(repairCase.repairedSourceFile)) &&
+    existsSync(resolve(repairCase.repairedScreenshot)) &&
+    existsSync(resolve(repairCase.repairedRouteHealth)) &&
+    routeBackend(repairCase.repairedRouteHealth) === "webgl2"
+  );
 }
 
 function sourceUsesPromptPlan(sourceFile: string): boolean {
@@ -472,6 +551,12 @@ function writeMarkdown(): void {
     "| Fixture | Expected | Actual | Rejected | Reason |",
     "|---|---:|---:|---:|---|",
     ...negativeFixtures.map((fixture) => `| \`${fixture.id}\` | \`${fixture.expectedLabel}\` | \`${fixture.actualLabel}\` | ${fixture.rejected ? "yes" : "no"} | ${escapeTable(fixture.reason)} |`),
+    "",
+    "## Repair Loop Evidence",
+    "",
+    "| Case | Failed Fixture | Repaired Artifact | Turn Count | Repaired Label | Applied Repair Hints |",
+    "|---|---|---|---:|---:|---|",
+    ...repairLoopCases.map((repairCase) => `| \`${repairCase.id}\` | \`${repairCase.failedFixtureId}\` | \`${repairCase.repairedArtifactId}\` | ${repairCase.repairTurnCount} | \`${repairCase.repairedLabel}\` | ${escapeTable(repairCase.appliedRepairHints.join(" "))} |`),
     "",
     "## Current Verdict",
     "",

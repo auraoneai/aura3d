@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T03:50:50.632Z
+Generated: 2026-05-29T04:00:27.355Z
 
 ## Summary
 
@@ -74,7 +74,7 @@ Generated: 2026-05-29T03:50:50.632Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6422,"rainPixels":1950,"centerObjectPixels":11392,"uniqueBuckets":151} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6430,"rainPixels":1946,"centerObjectPixels":11409,"uniqueBuckets":154} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |

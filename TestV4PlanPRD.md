@@ -207,7 +207,7 @@ product-quality prompt output for the three approved starter recipes.
   selected recipe, visual systems, repair hints, and negative anti-patterns.
 - [x] Reject or warn on prompt plans that omit the minimum visual information
   needed for the selected recipe.
-- [ ] Feed failed screenshot review back into the next generated scene and
+- [x] Feed failed screenshot review back into the next generated scene and
   record the repair turn count.
 - [ ] Prove a context-only Codex run can improve a failed screenshot by applying
   repair hints instead of manual source browsing.

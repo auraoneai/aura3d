@@ -326,7 +326,7 @@ For Aura3D, that means:
   environment, lighting, camera, and acceptance criteria.
 - [x] Add repair guidance when output is generic, badly framed, too dark,
   missing the subject, or just an object plus decorative cues.
-- [ ] Feed repair guidance back into the generated scene and rerun the screenshot
+- [x] Feed repair guidance back into the generated scene and rerun the screenshot
   review until the artifact either passes or is explicitly marked blocked.
 - [x] Add support for prompt-specific expected artifacts, such as HUD for a
   game prompt, wet reflections for a rain prompt, and inspection controls for a

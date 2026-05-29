@@ -1,6 +1,6 @@
 # Prompt Fidelity Quality Results
 
-Generated: 2026-05-29T03:50:49.737Z
+Generated: 2026-05-29T04:00:26.436Z
 
 ## Summary
 
@@ -38,6 +38,13 @@ Generated: 2026-05-29T03:50:49.737Z
 |---|---:|---:|---:|---|
 | `single-asset-with-rain-lines` | `fail` | `fail` | yes | Rejected because it matches the object-plus-symbolic-effect failure mode instead of the prompt fidelity bar. |
 | `primitive-game-board` | `fail` | `fail` | yes | Rejected because it matches the object-plus-symbolic-effect failure mode instead of the prompt fidelity bar. |
+
+## Repair Loop Evidence
+
+| Case | Failed Fixture | Repaired Artifact | Turn Count | Repaired Label | Applied Repair Hints |
+|---|---|---|---:|---:|---|
+| `symbolic-rain-to-cinematic-repair` | `single-asset-with-rain-lines` | `starter-cinematic-scene` | 1 | `product-quality-pass` | Add foreground, midground, and background alley structure. Replace sparse symbolic lines with layered rain, wet reflection strips, splash cues, fog, and practical lights. Use a tighter dolly camera and visible warm/cool light separation. |
+| `primitive-board-to-game-arena-repair` | `primitive-game-board` | `starter-mini-game` | 1 | `product-quality-pass` | Add visible player state and HUD-like health/score cues. Add hazards, collectible coins, a route cue, a goal portal, and interaction feedback. Use a game-board camera with readable arena boundaries. |
 
 ## Current Verdict
 
