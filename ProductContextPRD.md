@@ -205,9 +205,13 @@ For Aura3D, that means:
   `docs/project/agent-baseline-comparison.md`.
 - `tools/prompt-fidelity-quality/index.ts` now writes
   `tests/reports/prompt-fidelity-quality.json`, a release screenshot contact
-  sheet, and `docs/project/prompt-fidelity-quality-results.md`. It now records
-  four release-facing `product-quality-pass` artifacts: the three starter
-  recipes plus deterministic Codex context dogfood. It still rejects
+  sheet, a starter before/after contact sheet, and
+  `docs/project/prompt-fidelity-quality-results.md`. It now records four
+  release-facing `product-quality-pass` artifacts: the three starter recipes
+  plus deterministic Codex context dogfood. It also records controlled failure
+  fixtures for each fixed starter, the corrected failure mode, source prompt,
+  generated code path, after screenshot, route-health report, and
+  `product-quality-pass` human verdict. It still rejects
   object-plus-symbolic-effect negative fixtures and stores regression guidance.
 - The public agent API now includes `definePromptPlan`, `compilePromptPlan`,
   `promptPlanToScene`, and `promptRecipes` so agents can select an approved
@@ -270,7 +274,7 @@ For Aura3D, that means:
 - [x] Replace or withhold release-facing screenshots that remain
   `technical-render-pass` or `partial`; only `product-quality-pass` screenshots
   should be used as marketing/product proof.
-- [ ] Add before/after evidence for each fixed starter showing the source
+- [x] Add before/after evidence for each fixed starter showing the source
   prompt, generated code path, screenshot, human verdict, and failure mode that
   was corrected.
 - [x] Update agent docs so a context-only agent chooses recipes, assets, camera,

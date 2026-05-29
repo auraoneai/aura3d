@@ -139,6 +139,16 @@ const promptFidelityReport = readJson<{
   readonly productQualityReady?: boolean;
   readonly releaseFacingProductQualityPasses?: number;
   readonly negativeFixtures?: readonly { readonly rejected?: boolean }[];
+  readonly starterBeforeAfterCases?: readonly {
+    readonly id?: string;
+    readonly starter?: string;
+    readonly beforeScreenshot?: string;
+    readonly generatedCodePath?: string;
+    readonly afterScreenshot?: string;
+    readonly afterRouteHealth?: string;
+    readonly humanVerdict?: string;
+    readonly failureModeCorrected?: string;
+  }[];
 }>("tests/reports/prompt-fidelity-quality.json");
 const agentApiSource = readText("packages/engine/src/agent-api/index.ts");
 const agentApiTestSource = readText("tests/unit/agent-api/agent-api.test.ts");
@@ -356,6 +366,27 @@ const checks: ReleaseCheck[] = [
       : "missing or failing tests/reports/prompt-fidelity-quality.json"
   },
   {
+    id: "starter-before-after-evidence-present",
+    pass:
+      promptFidelityReport.pass === true &&
+      (promptFidelityReport.starterBeforeAfterCases ?? []).length === 3 &&
+      (promptFidelityReport.starterBeforeAfterCases ?? []).every((entry) =>
+        entry.beforeScreenshot &&
+        entry.generatedCodePath &&
+        entry.afterScreenshot &&
+        entry.afterRouteHealth &&
+        entry.humanVerdict === "product-quality-pass" &&
+        entry.failureModeCorrected &&
+        existsSync(entry.beforeScreenshot) &&
+        existsSync(entry.generatedCodePath) &&
+        existsSync(entry.afterScreenshot) &&
+        existsSync(entry.afterRouteHealth)
+      ),
+    detail: (promptFidelityReport.starterBeforeAfterCases ?? []).length === 3
+      ? `${promptFidelityReport.starterBeforeAfterCases?.length ?? 0} starter before/after cases recorded`
+      : `starter before/after cases=${promptFidelityReport.starterBeforeAfterCases?.length ?? 0}`
+  },
+  {
     id: "prompt-plan-api-and-starters-present",
     pass:
       ["definePromptPlan", "compilePromptPlan", "promptPlanToScene", "promptRecipes"].every((name) => agentApiSource.includes(`export ${name === "promptRecipes" ? "const" : "function"} ${name}`)) &&
@@ -410,6 +441,7 @@ const claims: ClaimEvidence[] = [
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("Prompt-plan reports warn when required visual information is missing from vague plans.", checkStatus("prompt-plan-vague-plan-warnings-tested"), ["packages/engine/src/agent-api/index.ts", "tests/unit/agent-api/agent-api.test.ts"]),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
+  claim("Each fixed starter has before/after prompt-fidelity evidence with source prompt, corrected failure mode, code path, screenshots, route health, and human verdict.", checkStatus("starter-before-after-evidence-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/before-after-contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),

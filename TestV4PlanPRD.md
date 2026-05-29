@@ -216,6 +216,9 @@ product-quality prompt output for the three approved starter recipes.
 
 - [x] Add `prompt-fidelity-quality.json`.
 - [x] Add a release screenshot contact sheet.
+- [x] Add starter before/after evidence that records each fixed starter's
+  source prompt, controlled failure screenshot, corrected failure mode,
+  generated code path, fixed screenshot, route health, and human verdict.
 - [x] Require human review labels: `product-quality-pass`,
   `technical-render-pass`, `partial`, or `fail`.
 - [x] Add negative fixtures that intentionally render object-plus-symbolic-effect
@@ -344,10 +347,11 @@ Current local automated evidence:
   while broad arbitrary prompt-to-visual quality remains unproven.
 - `docs/project/prompt-fidelity-quality-results.md` and
   `tests/reports/prompt-fidelity-quality.json` now record prompt-fidelity
-  classifications, a contact sheet path, human review labels, and negative
-  fixtures that reject object-plus-symbolic-effect output. The report now
-  requires at least three release-facing `product-quality-pass` artifacts and
-  passes that threshold for the approved starter recipes.
+  classifications, a contact sheet path, a before/after contact sheet path,
+  human review labels, negative fixtures that reject object-plus-symbolic-effect
+  output, and three starter before/after evidence cases. The report now requires
+  at least three release-facing `product-quality-pass` artifacts and passes that
+  threshold for the approved starter recipes.
 - The starter templates and Codex self-test now generate scenes from
   `definePromptPlan` and `promptPlanToScene`. The Codex self-test also records
   the compiled prompt-plan report from the running app. The deterministic Codex

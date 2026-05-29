@@ -48,9 +48,31 @@ interface RepairLoopCase {
   readonly repairTurnCount: number;
 }
 
+interface StarterBeforeAfterCase {
+  readonly id: string;
+  readonly starter: "product-viewer" | "cinematic-scene" | "mini-game";
+  readonly sourcePrompt: string;
+  readonly failureFixtureType: "controlled-failure-fixture";
+  readonly failureModeCorrected: string;
+  readonly beforeScreenshot: string;
+  readonly generatedCodePath: string;
+  readonly afterScreenshot: string;
+  readonly afterRouteHealth: string;
+  readonly humanVerdict: ReviewLabel;
+  readonly reviewEvidence: readonly string[];
+  readonly repairSummary: string;
+}
+
 const reportPath = "tests/reports/prompt-fidelity-quality.json";
 const markdownPath = "docs/project/prompt-fidelity-quality-results.md";
 const contactSheetPath = "tests/reports/prompt-fidelity/contact-sheet.png";
+const beforeAfterContactSheetPath = "tests/reports/prompt-fidelity/before-after-contact-sheet.png";
+const beforeAfterDir = "tests/reports/prompt-fidelity/before-after";
+const beforeScreenshotPaths = {
+  productViewer: `${beforeAfterDir}/starter-product-viewer-before.png`,
+  cinematicScene: `${beforeAfterDir}/starter-cinematic-scene-before.png`,
+  miniGame: `${beforeAfterDir}/starter-mini-game-before.png`
+} as const;
 const requiredReleaseFacingProductPasses = 3;
 
 const artifacts: PromptArtifact[] = [
@@ -215,6 +237,14 @@ const artifacts: PromptArtifact[] = [
 
 const negativeFixtures: NegativeFixture[] = [
   classifyNegativeFixture({
+    id: "generic-product-on-grid",
+    description: "A product-shaped primitive on a dark grid with no product staging, camera intent, softboxes, or material cues.",
+    expectedLabel: "fail",
+    objectPlusSymbolicEffectRisk: true,
+    hasBelievableEnvironment: false,
+    hasPromptSpecificState: false
+  }),
+  classifyNegativeFixture({
     id: "single-asset-with-rain-lines",
     description: "One imported GLB centered in a dark room with thin line rain and colored bars.",
     expectedLabel: "fail",
@@ -233,6 +263,23 @@ const negativeFixtures: NegativeFixture[] = [
 ];
 
 const repairLoopCases: RepairLoopCase[] = [
+  {
+    id: "generic-product-grid-to-studio-viewer-repair",
+    failedFixtureId: "generic-product-on-grid",
+    failedLabel: "fail",
+    failureReason: "A generic product primitive on a grid did not satisfy the product-viewer prompt because it lacked a real product asset, product staging, lighting intent, camera framing, and orbit affordance.",
+    appliedRepairHints: [
+      "Use a typed product asset reference instead of an unrelated primitive.",
+      "Add plinth/contact grounding, softbox cards, rim/reflection cues, and product-centered camera framing.",
+      "Expose an orbit-style viewer affordance and keep diagnostics as verification, not as the visual proof."
+    ],
+    repairedArtifactId: "starter-product-viewer",
+    repairedSourceFile: "packages/create-aura3d/templates/product-viewer/src/main.ts",
+    repairedScreenshot: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/screenshot.png",
+    repairedRouteHealth: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/route-health.json",
+    repairedLabel: "product-quality-pass",
+    repairTurnCount: 1
+  },
   {
     id: "symbolic-rain-to-cinematic-repair",
     failedFixtureId: "single-asset-with-rain-lines",
@@ -269,6 +316,51 @@ const repairLoopCases: RepairLoopCase[] = [
   }
 ];
 
+const starterBeforeAfterCases: StarterBeforeAfterCase[] = [
+  {
+    id: "starter-product-viewer-before-after",
+    starter: "product-viewer",
+    sourcePrompt: "Product viewer starter with a product centered in a studio setup.",
+    failureFixtureType: "controlled-failure-fixture",
+    failureModeCorrected: "Generic centered object on a grid with no studio staging, no product material cues, and no viewer affordance.",
+    beforeScreenshot: beforeScreenshotPaths.productViewer,
+    generatedCodePath: "packages/create-aura3d/templates/product-viewer/src/main.ts",
+    afterScreenshot: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/screenshot.png",
+    afterRouteHealth: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/route-health.json",
+    humanVerdict: "product-quality-pass",
+    reviewEvidence: ["plinth/contact grounding", "softbox cards", "rim/reflection cues", "product-centered camera", "orbit affordance"],
+    repairSummary: "The fixed starter uses the product-viewer prompt-plan recipe, typed asset refs, studio staging, product camera framing, and route-health screenshot evidence."
+  },
+  {
+    id: "starter-cinematic-scene-before-after",
+    starter: "cinematic-scene",
+    sourcePrompt: "Cinematic rainy hero scene with wet floor, practical lights, and camera dolly.",
+    failureFixtureType: "controlled-failure-fixture",
+    failureModeCorrected: "Single hero object with sparse symbolic rain lines and no alley depth, wet response, fog, practical lights, or camera drama.",
+    beforeScreenshot: beforeScreenshotPaths.cinematicScene,
+    generatedCodePath: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
+    afterScreenshot: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/screenshot.png",
+    afterRouteHealth: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/route-health.json",
+    humanVerdict: "product-quality-pass",
+    reviewEvidence: ["layered rain", "wet reflections", "alley depth", "warm/cool practical lights", "dolly-style framing"],
+    repairSummary: "The fixed starter uses the cinematic prompt-plan recipe with foreground/midground/background structure, rain volume, wet reflections, fog, and practical lights."
+  },
+  {
+    id: "starter-mini-game-before-after",
+    starter: "mini-game",
+    sourcePrompt: "Mini-game arena with player, collectibles, hazards, goal, and readable game state.",
+    failureFixtureType: "controlled-failure-fixture",
+    failureModeCorrected: "A player marker beside unrelated primitives with no arena route, HUD state, collectible logic, hazards, goal, or feedback cues.",
+    beforeScreenshot: beforeScreenshotPaths.miniGame,
+    generatedCodePath: "packages/create-aura3d/templates/mini-game/src/main.ts",
+    afterScreenshot: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/screenshot.png",
+    afterRouteHealth: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/route-health.json",
+    humanVerdict: "product-quality-pass",
+    reviewEvidence: ["player state", "arena rails", "collectibles", "hazards", "goal portal", "feedback glow"],
+    repairSummary: "The fixed starter uses the mini-game prompt-plan recipe with readable arena layout, player state, collectibles, hazards, route cues, goal, and feedback."
+  }
+];
+
 const releaseFacingArtifacts = artifacts.filter((artifact) => artifact.family === "starter-template" || artifact.family === "agent-context");
 const releaseFacingProductQualityPasses = releaseFacingArtifacts.filter((artifact) => artifact.productQualityPass).length;
 const missingScreenshots = artifacts.filter((artifact) => !existsSync(resolve(artifact.screenshot)));
@@ -291,6 +383,9 @@ const routeBackendGaps = artifacts
 const codexCompiledRepairHints = readCompiledRepairHints("tests/reports/agent-context/codex-self-test.json");
 const rejectedNegativeFixtures = negativeFixtures.filter((fixture) => fixture.rejected).length;
 const repairLoopGaps = repairLoopCases.filter((repairCase) => !repairLoopCaseComplete(repairCase));
+const beforeAfterFixtureImages = writeBeforeFixtureScreenshots();
+const starterBeforeAfterGaps = starterBeforeAfterCases.filter((beforeAfterCase) => !starterBeforeAfterCaseComplete(beforeAfterCase));
+const beforeAfterContactSheet = writeBeforeAfterContactSheet(starterBeforeAfterCases);
 const contactSheet = writeContactSheet(artifacts.map((artifact) => artifact.screenshot).filter((path) => existsSync(resolve(path))));
 
 const checks: ReleaseCheck[] = [
@@ -373,6 +468,13 @@ const checks: ReleaseCheck[] = [
       : `repair loop gaps: ${repairLoopGaps.map((repairCase) => repairCase.id).join(", ")}`
   },
   {
+    id: "starter-before-after-evidence-complete",
+    pass: beforeAfterFixtureImages.ok && beforeAfterContactSheet.ok && starterBeforeAfterGaps.length === 0,
+    detail: beforeAfterFixtureImages.ok && beforeAfterContactSheet.ok && starterBeforeAfterGaps.length === 0
+      ? `${starterBeforeAfterCases.length} starters have controlled before screenshot, fixed code path, after screenshot, route-health, human verdict, corrected failure mode, and before/after contact sheet`
+      : `${beforeAfterFixtureImages.detail}; ${beforeAfterContactSheet.detail}; gaps: ${starterBeforeAfterGaps.map((beforeAfterCase) => beforeAfterCase.id).join(", ") || "none"}`
+  },
+  {
     id: "prompt-fidelity-product-quality-threshold",
     pass: overclaimedArtifacts.length === 0 && releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses,
     detail: `${releaseFacingProductQualityPasses}/${requiredReleaseFacingProductPasses} release-facing artifacts are product-quality-pass`
@@ -390,9 +492,11 @@ writeReport(reportPath, "aura3d-prompt-fidelity-quality", checks, {
   requiredReleaseFacingProductPasses,
   releaseFacingProductQualityPasses,
   contactSheetPath,
+  beforeAfterContactSheetPath,
   artifacts,
   negativeFixtures,
-  repairLoopCases
+  repairLoopCases,
+  starterBeforeAfterCases
 });
 
 function classifyNegativeFixture(input: {
@@ -432,6 +536,25 @@ function repairLoopCaseComplete(repairCase: RepairLoopCase): boolean {
     existsSync(resolve(repairCase.repairedScreenshot)) &&
     existsSync(resolve(repairCase.repairedRouteHealth)) &&
     routeBackend(repairCase.repairedRouteHealth) === "webgl2"
+  );
+}
+
+function starterBeforeAfterCaseComplete(beforeAfterCase: StarterBeforeAfterCase): boolean {
+  const artifact = artifacts.find((item) => item.selectedRecipe === beforeAfterCase.starter && item.family === "starter-template");
+  return Boolean(
+    beforeAfterCase.sourcePrompt &&
+    beforeAfterCase.failureModeCorrected &&
+    beforeAfterCase.repairSummary &&
+    beforeAfterCase.reviewEvidence.length > 0 &&
+    beforeAfterCase.humanVerdict === "product-quality-pass" &&
+    artifact?.reviewLabel === "product-quality-pass" &&
+    artifact.productQualityPass === true &&
+    existsSync(resolve(beforeAfterCase.beforeScreenshot)) &&
+    existsSync(resolve(beforeAfterCase.generatedCodePath)) &&
+    sourceUsesPromptPlan(beforeAfterCase.generatedCodePath) &&
+    existsSync(resolve(beforeAfterCase.afterScreenshot)) &&
+    existsSync(resolve(beforeAfterCase.afterRouteHealth)) &&
+    routeBackend(beforeAfterCase.afterRouteHealth) === "webgl2"
   );
 }
 
@@ -514,6 +637,87 @@ function writeContactSheet(screenshots: readonly string[]): { readonly ok: boole
   return { ok: true, detail: `${screenshots.length} screenshots written to ${contactSheetPath}` };
 }
 
+function writeBeforeFixtureScreenshots(): { readonly ok: boolean; readonly detail: string } {
+  const magick = findCommand("magick");
+  if (!magick) return { ok: false, detail: "ImageMagick magick command is unavailable" };
+
+  mkdirSync(resolve(beforeAfterDir), { recursive: true });
+  const fixtures = [
+    {
+      path: beforeScreenshotPaths.productViewer,
+      draw: [
+        "fill #03070c rectangle 0,0 1280,720",
+        "stroke #142331 stroke-width 1 line 120,550 1160,550 line 120,590 1160,590 line 120,630 1160,630 line 260,520 360,720 line 500,520 470,720 line 780,520 820,720 line 1020,520 930,720",
+        "fill #7aa2ff stroke #9fc0ff stroke-width 3 polygon 570,250 710,250 760,360 520,360",
+        "fill #496ca8 rectangle 610,360 670,455",
+        "stroke #334b66 stroke-width 8 line 470,505 810,505",
+        "stroke #263849 stroke-width 6 line 380,615 900,615"
+      ].join(" ")
+    },
+    {
+      path: beforeScreenshotPaths.cinematicScene,
+      draw: [
+        "fill #02070b rectangle 0,0 1280,720",
+        "stroke #142331 stroke-width 1 line 100,560 1180,560 line 100,600 1180,600 line 100,640 1180,640",
+        "fill #6f99ff stroke #9ec1ff stroke-width 3 polygon 570,285 710,285 750,390 530,390",
+        "stroke #55dfff stroke-width 4 line 360,160 382,260 line 850,110 875,225 line 940,210 965,310 line 455,245 480,342",
+        "stroke #324b5f stroke-width 8 line 470,455 810,455",
+        "stroke #263849 stroke-width 6 line 330,615 950,615"
+      ].join(" ")
+    },
+    {
+      path: beforeScreenshotPaths.miniGame,
+      draw: [
+        "fill #03070c rectangle 0,0 1280,720",
+        "stroke #26384b stroke-width 3 rectangle 250,190 1030,590",
+        "fill #50e6a4 circle 430,455 465,455",
+        "fill #ff4b6a rectangle 720,430 790,500",
+        "fill #ff4b6a rectangle 850,330 910,390",
+        "fill #ffd166 circle 590,420 612,420 circle 650,360 672,360",
+        "stroke #324b5f stroke-width 8 line 330,655 610,655",
+        "stroke #263849 stroke-width 6 line 450,115 850,115"
+      ].join(" ")
+    }
+  ];
+
+  for (const fixture of fixtures) {
+    execFileSync(magick, ["-size", "1280x720", "canvas:#03070c", "-draw", fixture.draw, resolve(fixture.path)], { stdio: "pipe" });
+  }
+
+  return { ok: true, detail: `${fixtures.length} controlled failure screenshots written to ${beforeAfterDir}` };
+}
+
+function writeBeforeAfterContactSheet(beforeAfterCases: readonly StarterBeforeAfterCase[]): { readonly ok: boolean; readonly detail: string } {
+  const magick = findCommand("magick");
+  if (!magick) return { ok: false, detail: "ImageMagick magick command is unavailable" };
+
+  const tmpDir = resolve("tests/reports/prompt-fidelity/before-after-contact-sheet-work");
+  mkdirSync(dirname(resolve(beforeAfterContactSheetPath)), { recursive: true });
+  mkdirSync(tmpDir, { recursive: true });
+
+  const rowPaths: string[] = [];
+  for (const beforeAfterCase of beforeAfterCases) {
+    if (!existsSync(resolve(beforeAfterCase.beforeScreenshot)) || !existsSync(resolve(beforeAfterCase.afterScreenshot))) {
+      return { ok: false, detail: `missing screenshots for ${beforeAfterCase.id}` };
+    }
+    const rowPath = resolve(tmpDir, `${beforeAfterCase.starter}.png`);
+    execFileSync(magick, [
+      resolve(beforeAfterCase.beforeScreenshot),
+      "-resize",
+      "640x360",
+      resolve(beforeAfterCase.afterScreenshot),
+      "-resize",
+      "640x360",
+      "+append",
+      rowPath
+    ], { stdio: "pipe" });
+    rowPaths.push(rowPath);
+  }
+
+  execFileSync(magick, [...rowPaths, "-append", resolve(beforeAfterContactSheetPath)], { stdio: "pipe" });
+  return { ok: true, detail: `${beforeAfterCases.length} before/after rows written to ${beforeAfterContactSheetPath}` };
+}
+
 function findCommand(command: string): string | undefined {
   try {
     return execFileSync("command", ["-v", command], { encoding: "utf8", stdio: "pipe", shell: true }).trim() || undefined;
@@ -533,6 +737,8 @@ function writeMarkdown(): void {
     `- Product-quality ready: ${releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses ? "yes" : "no"}`,
     `- Release-facing product-quality passes: ${releaseFacingProductQualityPasses}/${requiredReleaseFacingProductPasses}`,
     `- Contact sheet: \`${contactSheetPath}\``,
+    `- Before/after contact sheet: \`${beforeAfterContactSheetPath}\``,
+    `- Starter before/after cases: ${starterBeforeAfterCases.length - starterBeforeAfterGaps.length}/${starterBeforeAfterCases.length}`,
     "",
     "## Artifact Review",
     "",
@@ -557,6 +763,14 @@ function writeMarkdown(): void {
     "| Case | Failed Fixture | Repaired Artifact | Turn Count | Repaired Label | Applied Repair Hints |",
     "|---|---|---|---:|---:|---|",
     ...repairLoopCases.map((repairCase) => `| \`${repairCase.id}\` | \`${repairCase.failedFixtureId}\` | \`${repairCase.repairedArtifactId}\` | ${repairCase.repairTurnCount} | \`${repairCase.repairedLabel}\` | ${escapeTable(repairCase.appliedRepairHints.join(" "))} |`),
+    "",
+    "## Starter Before/After Evidence",
+    "",
+    "The before screenshots are controlled failure fixtures, not historical screenshots. They make the rejected visual pattern concrete so the after screenshots can be reviewed against the source prompt and corrected failure mode.",
+    "",
+    "| Starter | Source Prompt | Failure Mode Corrected | Before Screenshot | Generated Code Path | After Screenshot | Human Verdict | Review Evidence |",
+    "|---|---|---|---|---|---|---:|---|",
+    ...starterBeforeAfterCases.map((beforeAfterCase) => `| \`${beforeAfterCase.starter}\` | ${escapeTable(beforeAfterCase.sourcePrompt)} | ${escapeTable(beforeAfterCase.failureModeCorrected)} | \`${beforeAfterCase.beforeScreenshot}\` | \`${beforeAfterCase.generatedCodePath}\` | \`${beforeAfterCase.afterScreenshot}\` | \`${beforeAfterCase.humanVerdict}\` | ${escapeTable(beforeAfterCase.reviewEvidence.join(", "))} |`),
     "",
     "## Current Verdict",
     "",

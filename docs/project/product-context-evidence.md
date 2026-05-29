@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T04:22:01.331Z
+Generated: 2026-05-29T04:42:32.006Z
 
 ## Summary
 
-- Claims with evidence: 33/33
+- Claims with evidence: 34/34
 - Known gaps tracked: 6/6
-- Automated checks passing: 27/27
+- Automated checks passing: 28/28
 
 ## Claim Matrix
 
@@ -34,6 +34,7 @@ Generated: 2026-05-29T04:22:01.331Z
 | The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`packages/create-aura3d/templates/*/src/main.ts`<br>`templates/*/src/main.ts`<br>`tools/prompt-fidelity-quality/index.ts` |  |
 | Prompt-plan reports warn when required visual information is missing from vague plans. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`tests/unit/agent-api/agent-api.test.ts` |  |
 | The three release-facing starter prompt recipes pass product-quality screenshot review. | `automated-pass` | `docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json`<br>`tests/reports/prompt-fidelity/contact-sheet.png` |  |
+| Each fixed starter has before/after prompt-fidelity evidence with source prompt, corrected failure mode, code path, screenshots, route health, and human verdict. | `automated-pass` | `docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json`<br>`tests/reports/prompt-fidelity/before-after-contact-sheet.png` |  |
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
 | The active starter-template directory contains only the three starter templates. | `automated-pass` | `packages/create-aura3d/templates` |  |
@@ -75,7 +76,7 @@ Generated: 2026-05-29T04:22:01.331Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6404,"rainPixels":1930,"centerObjectPixels":11366,"uniqueBuckets":151} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6402,"rainPixels":1910,"centerObjectPixels":11342,"uniqueBuckets":147} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
 | `codex-repair-eval-present` | pass | initial=fail, repaired=product-quality-pass, turns=1 |
@@ -84,8 +85,9 @@ Generated: 2026-05-29T04:22:01.331Z
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
 | `prompt-visual-quality-gap-tracked` | pass | prompt-to-visual quality boundary is documented with starter pass and broad remaining gaps |
 | `prompt-fidelity-quality-report-present` | pass | productQualityReady=true, releaseFacingPasses=4 |
+| `starter-before-after-evidence-present` | pass | 3 starter before/after cases recorded |
 | `prompt-plan-api-and-starters-present` | pass | prompt-plan API exports and active packaged starters are present |
 | `prompt-plan-vague-plan-warnings-tested` | pass | agent API test covers warnings for vague prompt plans |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 33/33 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 34/34 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
 
