@@ -1,5 +1,12 @@
 # Prompt Visual Quality Gap
 
+Status: historical supporting note.
+
+This document records the old starter-template visual-quality cleanup. It is
+not the current release standard. The current standard is the neutral Aura3D
+versus raw Three.js benchmark defined in `FinalizedPromptPlan.md` and
+`benchmark/protocol.md`.
+
 Generated: 2026-05-29
 
 ## Verdict
@@ -86,7 +93,9 @@ all of these checks:
 
 ### Evaluation
 
-- [x] Add `tests/reports/prompt-fidelity-quality.json`.
+- [x] Previously added a local prompt-fidelity report. That report has now
+      been removed from the release gate because the current standard requires
+      neutral Aura3D versus Three.js benchmark scoring.
 - [x] Add a contact-sheet artifact for all release-facing screenshots.
 - [x] Add human review fields: `product-quality-pass`,
   `technical-render-pass`, `partial`, `fail`.

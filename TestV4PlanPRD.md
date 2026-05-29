@@ -1,5 +1,12 @@
 # Aura3D Product Context Test Plan PRD
 
+Status: superseded by `FinalizedPromptPlan.md`.
+
+This document is retained as historical context only. It is not the current
+release standard, test plan, or completion gate. The current standard is the
+Aura3D versus raw Three.js benchmark defined in `FinalizedPromptPlan.md` and
+the files under `benchmark/`.
+
 ## Purpose
 
 This PRD defines the validation plan for proving that `ProductContextPRD.md`

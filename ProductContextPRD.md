@@ -1,5 +1,12 @@
 # Aura3D Product Context PRD
 
+Status: superseded by `FinalizedPromptPlan.md`.
+
+This document is retained as historical context only. It is not the current
+release standard, test plan, or completion gate. The current standard is the
+Aura3D versus raw Three.js benchmark defined in `FinalizedPromptPlan.md` and
+the files under `benchmark/`.
+
 Aura3D is the editable scene layer for agent-written browser 3D. AI coding
 agents write TypeScript or JavaScript against a compact public API, users bring
 their own assets, and Aura3D provides typed asset references, templates,

@@ -30,10 +30,10 @@ These screenshots are product-quality proof for the approved starter recipes.
 They do not prove that Aura3D can take any arbitrary prompt and any arbitrary
 asset and create a visually desirable scene.
 
-The current boundary is narrow: product-quality is proven for the three starter
-prompt recipes through clean-install route health, screenshot profiles, contact
-sheet review, and `tests/reports/prompt-fidelity-quality.json`. Broader prompt
-coverage, external agents, external assets, and outside-user proof remain open.
+The current boundary is narrow: product-quality is shown for the three starter
+prompt recipes through clean-install route health, screenshot profiles, and
+manual review. These screenshots are supporting evidence only. They are not the
+release proof that Aura3D beats raw Three.js.
 
-The next acceptance bar is defined in
-`docs/project/prompt-visual-quality-gap.md`.
+The current release acceptance bar is defined in `FinalizedPromptPlan.md` and
+`benchmark/protocol.md`.

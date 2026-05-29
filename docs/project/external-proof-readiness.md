@@ -123,5 +123,7 @@ until real testers run the install/scaffold flow and file evidence.
 - Meshy export/API access.
 - Netlify credentials and project target.
 - npm auth or an approved GitHub-release beta artifact path.
-- Three real marketing-comprehension participants.
-- Five outside beta testers, with at least three starter renders recorded.
+- Three real marketing-comprehension participants, if validating marketing
+  copy. This is not library release proof under `FinalizedPromptPlan.md`.
+- Five outside beta testers, with at least three starter renders recorded, for
+  post-1.0 product feedback rather than the library release gate.

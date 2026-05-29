@@ -74,8 +74,7 @@ function listActiveSourceFiles(): string[] {
       "CinematicPrevisPRD.md",
       "ProductContextPRD.md",
       "TestV4PlanPRD.md",
-      "tools/package-tarball-audit/index.ts",
-      "tools/product-context-evidence/index.ts"
+      "tools/package-tarball-audit/index.ts"
     ].includes(path))
     .filter((path) => isTextSource(path));
 }
