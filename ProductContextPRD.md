@@ -272,17 +272,18 @@ For Aura3D, that means:
 - Bundle-size proof measures built bundles with size-limit, including starter
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
-- Cursor, Copilot, outside developers, Cloudflare/Netlify deployments,
-  authenticated Sketchfab CC0 downloads, and Meshy export runs remain external
-  dogfood work. Vercel public smoke now renders the product-viewer artifact, but
-  one host is not enough to claim complete external deployment proof. The local
-  Codex and Claude Code five-task passes must not be presented as broad market
-  proof.
+- Cursor, Copilot, outside developers, Netlify deployment, and Meshy export
+  runs remain external dogfood work. Vercel and Cloudflare Pages public smoke
+  now render the product-viewer artifact, but Netlify is still missing, so the
+  full three-host external deployment proof is incomplete. Authenticated
+  Sketchfab CC0 download/add/validate/typegen proof now passes. The local Codex
+  and Claude Code five-task passes must not be presented as broad market proof.
 - `docs/project/external-proof-readiness.md` records current external-service
-  probes: Cursor agent is usage-limited, Copilot CLI is not installed, Sketchfab
-  CC0 download requires auth, Meshy credentials are absent, Cloudflare/Netlify
-  credentials are absent, npm publish auth is absent, and GitHub beta issue
-  intake is ready but unexercised by outside users.
+  probes: Cursor agent is usage-limited, Copilot CLI is not installed,
+  Sketchfab CC0 proof now passes with authenticated API access, Meshy API access
+  is unavailable for the current free-user account, Netlify credentials are
+  absent, npm publish auth is absent, and GitHub beta issue intake is ready but
+  unexercised by outside users.
 
 ## Build Checklist Still Required
 
@@ -402,12 +403,13 @@ For Aura3D, that means:
 - [ ] Run the context-only agent eval with Cursor and Copilot when available.
   Codex and Claude Code are recorded as passes; the remaining subscribed-agent
   surfaces are not complete.
-- [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0
-  and real Draco-compressed assets now pass the executable corpus; authenticated
-  Sketchfab CC0 downloads and Meshy exports remain.
-- [ ] Deploy at least one polished prompt-fidelity demo publicly to Cloudflare
-  Pages and Netlify without authentication walls. Vercel public smoke is now
-  recorded as a rendered WebGL2 canvas for the product-viewer artifact.
+- [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0,
+  real Draco-compressed assets, and authenticated Sketchfab CC0 downloads now
+  pass executable corpus checks; Meshy exports remain unavailable from the
+  current free-user account.
+- [ ] Deploy at least one polished prompt-fidelity demo publicly to Netlify
+  without authentication walls. Vercel and Cloudflare Pages public smoke are now
+  recorded as rendered WebGL2 canvases for the product-viewer artifact.
 - [ ] Run marketing comprehension interviews after the marketing site only
   shows visuals that meet the product-quality bar.
 - [ ] Run outside beta dogfood with real users and record whether they can turn

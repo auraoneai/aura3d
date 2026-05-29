@@ -382,18 +382,19 @@ Current local automated evidence:
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
 - `docs/project/external-deployment-results.md` and
-  `tests/reports/external-deployment-smoke.json` now record a real public
-  Vercel smoke pass for the deployed product-viewer artifact:
-  `https://aura3d-vercel-smoke.vercel.app` returns HTTP 200, reaches
-  `data-aura3d-ready="true"`, renders WebGL2 with draw calls, serves the GLB
-  with `model/gltf-binary`, and has screenshot pixel evidence. Cloudflare Pages
-  and Netlify are still blocked by missing credentials/project targets.
+  `tests/reports/external-deployment-smoke.json` now record real public smoke
+  passes for deployed product-viewer artifacts on Vercel and Cloudflare Pages:
+  `https://aura3d-vercel-smoke.vercel.app` and
+  `https://aura3d-product-context-smoke.pages.dev` return HTTP 200, reach
+  `data-aura3d-ready="true"`, render WebGL2 with draw calls, serve the GLB with
+  `model/gltf-binary`, and have screenshot pixel evidence. Netlify is still
+  blocked by missing credentials/project target.
 - `docs/project/external-proof-readiness.md` records current blocker probes for
   remaining external items: Cursor agent exits with a usage-limit error,
-  `gh copilot` is not installed, Sketchfab CC0 search works but authenticated
-  download returns HTTP 401 without credentials, Meshy credentials are absent,
-  Cloudflare/Netlify credentials are absent, npm publish auth returns E401, and
-  the beta GitHub issue template is present.
+  `gh copilot` is not installed, authenticated Sketchfab CC0 corpus proof now
+  passes, Meshy API access is unavailable for the current free-user account,
+  Netlify credentials are absent, npm publish auth returns E401, and the beta
+  GitHub issue template is present.
 
 ### Still Not Proven By Local Automation
 
@@ -404,12 +405,11 @@ completed user proof:
   usage is exhausted on this machine and no `gh copilot` command is installed.
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
-  Sketchfab CC0 downloads and Meshy exports remain. Current probes show
-  Sketchfab public search works but the download endpoint requires auth, and no
-  Meshy credentials are present.
-- Static deployment to real Cloudflare Pages and Netlify projects. Vercel public
-  smoke now passes for the product-viewer artifact, but the full three-host
-  Round 13 requirement is still incomplete.
+  Sketchfab CC0 download/add/validate/typegen now passes; Meshy exports remain
+  unavailable from the current free-user account.
+- Static deployment to a real Netlify project. Vercel and Cloudflare Pages
+  public smoke now pass for the product-viewer artifact, but the full three-host
+  Round 13 requirement is still incomplete until Netlify is proven.
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users. GitHub issue intake is
   ready, but npm publish auth is absent and no outside tester evidence exists.
@@ -815,22 +815,22 @@ rendered output.
 
 ### Asset Corpus
 
-- [ ] Valid small GLB.
-- [ ] Large GLB over budget.
+- [x] Valid small GLB.
+- [x] Large GLB over budget.
 - [x] Draco-compressed glTF.
-- [ ] KTX2 texture GLB.
-- [ ] GLTF with external `.bin`.
-- [ ] GLTF with missing `.bin`.
-- [ ] GLB with missing texture.
-- [ ] Malformed binary file.
-- [ ] File extension that lies.
-- [ ] File with spaces in path.
-- [ ] File with unicode in path.
-- [ ] Duplicate asset name.
-- [ ] Nested directory asset.
-- [ ] Blender export.
+- [x] KTX2 texture GLB.
+- [x] GLTF with external `.bin`.
+- [x] GLTF with missing `.bin`.
+- [x] GLB with missing texture.
+- [x] Malformed binary file.
+- [x] File extension that lies.
+- [x] File with spaces in path.
+- [x] File with unicode in path.
+- [x] Duplicate asset name.
+- [x] Nested directory asset.
+- [x] Blender export.
 - [ ] Meshy generation.
-- [ ] Sketchfab CC0 asset.
+- [x] Sketchfab CC0 asset.
 - [x] Poly Haven asset.
 
 ### Commands Per Asset
@@ -845,15 +845,15 @@ npm run build
 
 ### Tasks
 
-- [ ] Create `fixtures/asset-corpus/README.md` with source and license notes.
-- [ ] Run every asset through the CLI.
-- [ ] Record success/failure state.
-- [ ] Verify valid assets generate typed refs.
-- [ ] Verify invalid assets fail with actionable errors.
-- [ ] Verify no normal user error produces an unhandled stack trace.
+- [x] Create `fixtures/asset-corpus/README.md` with source and license notes.
+- [x] Run every available asset through the CLI.
+- [x] Record success/failure state.
+- [x] Verify valid assets generate typed refs.
+- [x] Verify invalid assets fail with actionable errors.
+- [x] Verify no normal user error produces an unhandled stack trace.
 - [ ] Verify rendered templates display valid assets.
-- [ ] Write `docs/project/asset-corpus-results.md`.
-- [ ] Write `tests/reports/asset-corpus.json`.
+- [x] Write `docs/project/asset-corpus-results.md`.
+- [x] Write `tests/reports/asset-corpus.json`.
 
 ### Pass Criteria
 
@@ -1001,8 +1001,8 @@ For each starter:
 
 Deploy at least one starter to each:
 
-- [ ] Cloudflare Pages.
-- [ ] Vercel.
+- [x] Cloudflare Pages.
+- [x] Vercel.
 - [ ] Netlify.
 
 ### Pass Criteria

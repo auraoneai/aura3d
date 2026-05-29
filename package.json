@@ -368,6 +368,7 @@
     "check:test-plan-status": "pnpm exec tsx --tsconfig tsconfig.base.json tools/test-plan-execution-status/index.ts",
     "audit:effects-vfx": "pnpm exec tsx --tsconfig tsconfig.base.json tools/effects-vfx-visual-audit/index.ts",
     "check:effects-vfx": "pnpm exec tsx --tsconfig tsconfig.base.json tools/effects-vfx-visual-audit/index.ts --strict",
+    "audit:sketchfab-asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/sketchfab-asset-corpus/index.ts",
     "audit:external-deployment-smoke": "pnpm exec tsx --tsconfig tsconfig.base.json tools/external-deployment-smoke/index.ts",
     "dogfood:templates": "pnpm run check:templates",
     "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts",

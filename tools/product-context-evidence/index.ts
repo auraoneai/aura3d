@@ -157,6 +157,12 @@ const effectsVfxAuditReport = readJson<{
 const externalDeploymentReport = readJson<{
   readonly checks?: readonly { readonly id?: string; readonly pass?: boolean; readonly detail?: string }[];
 }>("tests/reports/external-deployment-smoke.json");
+const sketchfabAssetCorpusReport = readJson<{
+  readonly pass?: boolean;
+  readonly modelName?: string;
+  readonly modelUid?: string;
+  readonly format?: string;
+}>("tests/reports/sketchfab-asset-corpus.json");
 const promptFidelityReport = readJson<{
   readonly pass?: boolean;
   readonly productQualityReady?: boolean;
@@ -179,6 +185,9 @@ const promptPlanTemplateSources = [
   ...starterTemplates.map((template) => `packages/create-aura3d/templates/${template}/src/main.ts`),
   ...starterTemplates.map((template) => `templates/${template}/src/main.ts`)
 ];
+const vercelPublicSmokePassed = (externalDeploymentReport.checks ?? []).some((check) => check.id === "vercel-public-smoke" && check.pass === true);
+const cloudflarePublicSmokePassed = (externalDeploymentReport.checks ?? []).some((check) => check.id === "cloudflare-pages-public-smoke" && check.pass === true);
+const sketchfabAssetCorpusPassed = sketchfabAssetCorpusReport?.pass === true;
 
 const versionTerms = [/\bV[234]\b/i, /Path A/i, /Path B/i, /path-a/i, /path-b/i, /check:v4/i, /__v4/i, /aura3d-v4/i];
 const draftTerms = [
@@ -483,7 +492,7 @@ const checks: ReleaseCheck[] = [
 const claims: ClaimEvidence[] = [
   claim("Aura3D is the editable scene layer for agent-written browser 3D.", "automated-pass", ["ProductContextPRD.md", "README.md", "marketing/index.html"]),
   claim("AI coding agents write TypeScript or JavaScript against a compact public API.", statusFrom("check:agent-api"), ["pnpm run check:agent-api", "tests/reports/agent-api-surface.json"]),
-  claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tests/reports/asset-corpus.json"], "Run and expand asset corpus against real external GLBs."),
+  claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tools/sketchfab-asset-corpus/index.ts", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"], sketchfabAssetCorpusPassed ? "Asset corpus includes authenticated Sketchfab CC0 proof; Meshy exports remain external." : "Run and expand asset corpus against real external GLBs."),
   claim("Aura3D provides typed asset references.", statusFrom("check:assets-cli"), ["pnpm run check:assets-cli", "tests/unit/aura3d-cli/assets.test.ts"]),
   claim("Aura3D provides starter templates.", statusFrom("check:templates"), ["pnpm run check:templates", "packages/create-aura3d/templates"]),
   claim("Starter templates render through WebGL2 and have scene-specific render-plumbing screenshot profile checks.", statusFrom("check:templates"), ["packages/create-aura3d/templates/*/tests/screenshot.spec.ts", "tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json", "docs/project/starter-template-visual-review.md"]),
@@ -550,14 +559,18 @@ const knownGaps: KnownGapEvidence[] = [
   {
     gap: "Licensed wild-asset corpus is not broad enough.",
     owner: "Assets QA",
-    nextAction: "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
-    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "docs/project/external-proof-readiness.md", "tests/reports/asset-corpus.json"]
+    nextAction: sketchfabAssetCorpusPassed
+      ? "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB. Add Meshy exports with source/license notes, then run add/validate/typegen/render."
+      : "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
+    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "docs/project/sketchfab-asset-corpus-results.md", "docs/project/external-proof-readiness.md", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"]
   },
   {
     gap: "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
     owner: "Release Engineering",
-    nextAction: (externalDeploymentReport.checks ?? []).some((check) => check.id === "vercel-public-smoke" && check.pass === true)
-      ? "Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts."
+    nextAction: vercelPublicSmokePassed && cloudflarePublicSmokePassed
+      ? "Vercel and Cloudflare Pages public smoke now render WebGL2 Aura3D canvases from deployed product-viewer artifacts. Provide Netlify credentials or a project target, then record public URL, route health, screenshot, MIME checks, and deployment-check output for that host."
+      : vercelPublicSmokePassed
+        ? "Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts."
       : "Vercel public smoke is not yet passing. Provide or repair a public Vercel smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
     targetEvidence: ["docs/project/external-deployment-results.md", "docs/project/external-proof-readiness.md", "tests/reports/external-deployment-smoke.json"]
   },

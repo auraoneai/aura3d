@@ -1,4 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { chromium, type Page } from "@playwright/test";
 
@@ -67,7 +68,7 @@ for (const url of vercelPublicUrls) {
   attempts.push(await runVercelSmoke(url));
 }
 
-attempts.push(cloudflareAttempt());
+attempts.push(await runCloudflarePagesSmoke());
 attempts.push(netlifyAttempt());
 
 const pass = ["vercel", "cloudflare-pages", "netlify"].every((host) =>
@@ -106,8 +107,12 @@ if (process.argv.includes("--strict") && !pass) {
 }
 
 async function runVercelSmoke(url: string): Promise<HostAttempt> {
+  return runHostedSmoke("vercel", url, `tests/reports/external-deployment-smoke/${hostSlug(url)}.png`);
+}
+
+async function runHostedSmoke(host: HostAttempt["host"], url: string, screenshotPath: string): Promise<HostAttempt> {
   try {
-    const smoke = await browserSmoke(url, `tests/reports/external-deployment-smoke/${hostSlug(url)}.png`);
+    const smoke = await browserSmoke(url, screenshotPath);
     const modelMimesOk = smoke.resources.models.every((resource) =>
       /model\/gltf-binary|model\/gltf\+json|application\/octet-stream/i.test(resource.contentType)
     );
@@ -115,19 +120,20 @@ async function runVercelSmoke(url: string): Promise<HostAttempt> {
     const cssMimesOk = smoke.resources.css.every((resource) => /text\/css|text\/plain/i.test(resource.contentType));
     const visualPass = smoke.ready && smoke.canvasBytes > 1_000 && smoke.profile.litPixels > 2_000 && smoke.profile.uniqueBuckets > 24;
     const mimePass = modelMimesOk && jsMimesOk && cssMimesOk;
+    const hostLabel = host === "cloudflare-pages" ? "Cloudflare Pages" : host === "netlify" ? "Netlify" : "Vercel";
     return {
-      host: "vercel",
+      host,
       status: visualPass && mimePass ? "public-smoke-pass" : "failed",
       url,
       httpStatus: smoke.httpStatus,
       detail: visualPass && mimePass
-        ? `Public Vercel route rendered Aura3D canvas with ${smoke.profile.litPixels} lit sample pixels and ${smoke.profile.uniqueBuckets} color buckets.`
-        : `Public Vercel route failed visual or MIME checks: visualPass=${visualPass}, mimePass=${mimePass}.`,
+        ? `Public ${hostLabel} route rendered Aura3D canvas with ${smoke.profile.litPixels} lit sample pixels and ${smoke.profile.uniqueBuckets} color buckets.`
+        : `Public ${hostLabel} route failed visual or MIME checks: visualPass=${visualPass}, mimePass=${mimePass}.`,
       evidence: smoke
     };
   } catch (error) {
     return {
-      host: "vercel",
+      host,
       status: "failed",
       url,
       detail: error instanceof Error ? error.message : String(error)
@@ -231,16 +237,48 @@ async function getHttpStatus(url: string): Promise<number> {
   }
 }
 
-function cloudflareAttempt(): HostAttempt {
+async function runCloudflarePagesSmoke(): Promise<HostAttempt> {
   const hasToken = Boolean(process.env.CLOUDFLARE_API_TOKEN);
   const hasAccount = Boolean(process.env.CLOUDFLARE_ACCOUNT_ID);
-  return {
-    host: "cloudflare-pages",
-    status: hasToken && hasAccount ? "not-run" : "credential-blocked",
-    detail: hasToken && hasAccount
-      ? "Cloudflare credentials are present, but this audit runner does not yet deploy a Pages project automatically."
-      : "Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
-  };
+  if (!hasToken || !hasAccount) {
+    return {
+      host: "cloudflare-pages",
+      status: "credential-blocked",
+      detail: "Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
+    };
+  }
+
+  try {
+    const projectName = process.env.CLOUDFLARE_PAGES_PROJECT?.trim() || "aura3d-product-context-smoke";
+    const branch = process.env.CLOUDFLARE_PAGES_BRANCH?.trim() || "main";
+    const deployDir = prepareCloudflareDeployDir();
+    const output = deployCloudflarePages(deployDir, projectName, branch);
+    const candidateUrls = [...new Set([`https://${projectName}.pages.dev`, ...parseCloudflarePagesUrls(output)])];
+    if (candidateUrls.length === 0) {
+      return {
+        host: "cloudflare-pages",
+        status: "failed",
+        detail: `Cloudflare Pages deploy completed, but no pages.dev URL was found in Wrangler output: ${summarizeCommandOutput(output)}`
+      };
+    }
+    let firstFailure: HostAttempt | undefined;
+    for (const url of candidateUrls) {
+      const attempt = await runHostedSmoke("cloudflare-pages", url, `tests/reports/external-deployment-smoke/${hostSlug(url)}.png`);
+      if (attempt.status === "public-smoke-pass") return attempt;
+      firstFailure ??= attempt;
+    }
+    return firstFailure ?? {
+      host: "cloudflare-pages",
+      status: "failed",
+      detail: `Cloudflare Pages deploy completed, but no candidate URL could be smoked: ${candidateUrls.join(", ")}`
+    };
+  } catch (error) {
+    return {
+      host: "cloudflare-pages",
+      status: "failed",
+      detail: `Cloudflare Pages deployment failed: ${summarizeCommandError(error)}`
+    };
+  }
 }
 
 function netlifyAttempt(): HostAttempt {
@@ -260,6 +298,103 @@ function summarizeHost(host: string): string {
     .filter((attempt) => attempt.host === host)
     .map((attempt) => `${attempt.status}${attempt.url ? ` ${attempt.url}` : ""}: ${attempt.detail}`)
     .join(" | ");
+}
+
+function prepareCloudflareDeployDir(): string {
+  const cleanInstallApp = resolve("tests/reports/package-clean-install-workspace/templates/product-viewer/demo");
+  if (!existsSync(resolve(cleanInstallApp, "node_modules"))) {
+    throw new Error("product-viewer clean-install app is missing node_modules; run pnpm check:clean-install before Cloudflare deployment smoke.");
+  }
+  const buildApp = resolve("tests/reports/external-deployment-smoke/cloudflare-build-app");
+  const target = resolve("tests/reports/external-deployment-smoke/cloudflare-dist");
+  rmSync(buildApp, { recursive: true, force: true });
+  rmSync(target, { recursive: true, force: true });
+  mkdirSync(buildApp, { recursive: true });
+
+  for (const file of ["index.html", "package.json", "tsconfig.json"]) {
+    copyFileSync(resolve(cleanInstallApp, file), resolve(buildApp, file));
+  }
+  symlinkSync(resolve(cleanInstallApp, "node_modules"), resolve(buildApp, "node_modules"), "dir");
+  cpSync(resolve("packages/create-aura3d/templates/product-viewer/src"), resolve(buildApp, "src"), { recursive: true });
+  cpSync(resolve("packages/create-aura3d/templates/product-viewer/public"), resolve(buildApp, "public"), { recursive: true });
+
+  execFileSync("npm", ["run", "build"], {
+    cwd: buildApp,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 20 * 1024 * 1024
+  });
+
+  cpSync(resolve(buildApp, "dist"), target, { recursive: true });
+  rmSync(resolve(target, ".vercel"), { recursive: true, force: true });
+  rmSync(resolve(target, ".gitignore"), { force: true });
+  return target;
+}
+
+function deployCloudflarePages(deployDir: string, projectName: string, branch: string): string {
+  try {
+    return execWrangler(["pages", "deploy", deployDir, "--project-name", projectName, "--branch", branch, "--commit-dirty=true"]);
+  } catch (error) {
+    const output = summarizeCommandError(error).toLowerCase();
+    if (!output.includes("not found") && !output.includes("does not exist") && !output.includes("create a project")) {
+      throw error;
+    }
+    ensureCloudflarePagesProject(projectName, branch);
+    return execWrangler(["pages", "deploy", deployDir, "--project-name", projectName, "--branch", branch, "--commit-dirty=true"]);
+  }
+}
+
+function ensureCloudflarePagesProject(projectName: string, branch: string): void {
+  try {
+    execWrangler(["pages", "project", "create", projectName, "--production-branch", branch]);
+  } catch (error) {
+    const output = summarizeCommandError(error).toLowerCase();
+    if (!output.includes("already exists") && !output.includes("project exists")) {
+      throw error;
+    }
+  }
+}
+
+function execWrangler(args: readonly string[]): string {
+  return execFileSync("pnpm", ["dlx", "wrangler@latest", ...args], {
+    env: process.env,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 20 * 1024 * 1024
+  });
+}
+
+function parseCloudflarePagesUrls(output: string): string[] {
+  return output.match(/https:\/\/[^\s]+\.pages\.dev/gi) ?? [];
+}
+
+function summarizeCommandOutput(output: string): string {
+  return output
+    .replace(/cfat_[A-Za-z0-9_-]+/g, "[redacted-cloudflare-token]")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(-8)
+    .join(" ")
+    .slice(0, 1000);
+}
+
+function summarizeCommandError(error: unknown): string {
+  if (error && typeof error === "object") {
+    const parts = [
+      bufferLikeToString((error as { stdout?: unknown }).stdout),
+      bufferLikeToString((error as { stderr?: unknown }).stderr),
+      error instanceof Error ? error.message : ""
+    ].filter(Boolean);
+    return summarizeCommandOutput(parts.join("\n"));
+  }
+  return summarizeCommandOutput(String(error));
+}
+
+function bufferLikeToString(value: unknown): string {
+  if (Buffer.isBuffer(value)) return value.toString("utf8");
+  if (typeof value === "string") return value;
+  return "";
 }
 
 function hostSlug(url: string): string {
@@ -283,11 +418,12 @@ function writeMarkdown(currentReport: typeof report): void {
     "|---|---|---|---|",
     ...currentReport.attempts.map((attempt) => `| ${attempt.host} | ${attempt.status} | ${attempt.url ? `\`${attempt.url}\`` : "environment check"} | ${escapeTable(attempt.detail)} |`),
     "",
-    "## Public Vercel Smoke Detail",
+    "## Public Host Smoke Detail",
     "",
     ...currentReport.attempts
-      .filter((attempt) => attempt.host === "vercel" && attempt.status === "public-smoke-pass" && attempt.evidence)
+      .filter((attempt) => attempt.status === "public-smoke-pass" && attempt.evidence)
       .flatMap((attempt) => [
+        `- Host: ${attempt.host}`,
         `- URL: \`${attempt.url}\``,
         `- Ready: ${attempt.evidence!.ready}`,
         `- Backend: ${attempt.evidence!.backend ?? "unknown"}`,
@@ -301,19 +437,31 @@ function writeMarkdown(currentReport: typeof report): void {
       ]),
     "## Current Verdict",
     "",
-    currentReport.pass
-      ? "External deployment smoke is complete across Vercel, Cloudflare Pages, and Netlify."
-      : "External deployment smoke is not complete. Vercel now has public rendered-canvas smoke evidence, but Cloudflare Pages and Netlify remain blocked by missing credentials or project targets.",
+    deploymentVerdict(currentReport),
     "",
     "## Next Action",
     "",
-    "Provide Cloudflare Pages and Netlify credentials or pre-created project",
-    "targets, then run the same build/deploy/HTTP/canvas/screenshot/MIME checks",
-    "for those hosts. Keep the Vercel public URL smoke green while those hosts",
-    "are added.",
+    deploymentNextAction(currentReport),
     ""
   ];
   writeFileSync("docs/project/external-deployment-results.md", `${lines.join("\n")}\n`);
+}
+
+function deploymentVerdict(currentReport: typeof report): string {
+  if (currentReport.pass) return "External deployment smoke is complete across Vercel, Cloudflare Pages, and Netlify.";
+  const passed = ["vercel", "cloudflare-pages", "netlify"].filter((host) =>
+    currentReport.attempts.some((attempt) => attempt.host === host && attempt.status === "public-smoke-pass")
+  );
+  const missing = ["vercel", "cloudflare-pages", "netlify"].filter((host) => !passed.includes(host));
+  return `External deployment smoke is not complete. Passing public hosts: ${passed.join(", ") || "none"}. Remaining hosts: ${missing.join(", ")}.`;
+}
+
+function deploymentNextAction(currentReport: typeof report): string {
+  const missing = ["vercel", "cloudflare-pages", "netlify"].filter((host) =>
+    !currentReport.attempts.some((attempt) => attempt.host === host && attempt.status === "public-smoke-pass")
+  );
+  if (missing.length === 0) return "Keep all public host smoke URLs green on release candidates.";
+  return `Provide credentials or project targets for ${missing.join(", ")}, then run the same build/deploy/HTTP/canvas/screenshot/MIME checks for those hosts.`;
 }
 
 function escapeTable(value: string): string {

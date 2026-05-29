@@ -1,6 +1,6 @@
 # External Proof Readiness
 
-Generated: 2026-05-29T07:18:00Z
+Generated: 2026-05-29T07:40:00Z
 
 This document records the current machine state for the `TestV4PlanPRD.md`
 items that require external services, subscriptions, credentials, or real
@@ -13,9 +13,9 @@ specific and reproducible instead of vague.
 |---|---|---|
 | Cursor agent eval | `cursor agent --trust 'Reply with exactly: cursor-agent-ready'` exits with `You've hit your usage limit`. | blocked by Cursor usage/subscription limit |
 | GitHub Copilot eval | `gh copilot --help` exits with `unknown command "copilot"`. | blocked by missing Copilot CLI/extension path |
-| Sketchfab CC0 corpus | Public Sketchfab search finds a downloadable CC0 model, but `GET /v3/models/{uid}/download` returns HTTP 401 with `Authentication credentials were not provided.` | blocked by missing Sketchfab auth token |
-| Meshy corpus | No `MESHY_*` credential is present in the environment. | blocked by missing Meshy auth/API access |
-| Cloudflare Pages deployment | No `CLOUDFLARE_API_TOKEN` or `CLOUDFLARE_ACCOUNT_ID` is present. | blocked by missing Cloudflare credentials/project target |
+| Sketchfab CC0 corpus | Authenticated Sketchfab API access downloaded a CC0 GLB, then Aura3D `assets add`, `assets validate`, and typegen passed. | pass |
+| Meshy corpus | Meshy does not provide API access for the current free-user account. | blocked by unavailable Meshy auth/API access |
+| Cloudflare Pages deployment | Authenticated Cloudflare Pages deployment and public browser smoke passed at `https://aura3d-product-context-smoke.pages.dev`. | pass |
 | Netlify deployment | No `NETLIFY_AUTH_TOKEN` or `NETLIFY_SITE_ID` is present. | blocked by missing Netlify credentials/project target |
 | npm beta publish | `npm whoami` returns `E401 Unauthorized`. | blocked by missing npm auth |
 | GitHub beta intake | `gh auth status` is logged in as `gchahal1982`; `.github/ISSUE_TEMPLATE/aura3d_beta_dogfood.yml` exists. | intake template ready, but no outside users have run it |
@@ -55,35 +55,47 @@ Public search works:
 }
 ```
 
-Actual download link retrieval fails without auth:
+Authenticated download and import now pass:
 
-```text
-GET https://api.sketchfab.com/v3/models/01371cd3990f4d9587d40244b5e2a0a8/download
-HTTP/2 401
-{"detail":"Authentication credentials were not provided."}
+```json
+{
+  "model": "Mermaid2",
+  "uid": "01371cd3990f4d9587d40244b5e2a0a8",
+  "license": "CC0 Public Domain",
+  "format": "glb",
+  "checks": [
+    "sketchfab-download",
+    "sketchfab-assets-add",
+    "sketchfab-assets-validate",
+    "sketchfab-typegen-created"
+  ]
+}
 ```
 
-This keeps the authenticated Sketchfab CC0 corpus item open.
+Evidence: `docs/project/sketchfab-asset-corpus-results.md` and
+`tests/reports/sketchfab-asset-corpus.json`. Secret values were supplied only
+through process environment for the run and were not written to repository
+files.
 
 ### Meshy
 
-No Meshy environment variables are present:
+Meshy API access is unavailable for the current free-user account:
 
 ```text
-MESHY_*: none
+MESHY_*: unavailable for current account
 ```
 
 This keeps the Meshy export corpus item open.
 
 ### Deployment Hosts
 
-Vercel public smoke now passes separately in
-`tests/reports/external-deployment-smoke.json`. Cloudflare Pages and Netlify
-remain credential-blocked.
+Vercel and Cloudflare Pages public smoke now pass in
+`tests/reports/external-deployment-smoke.json`. Netlify remains
+credential-blocked.
 
 ```text
-CLOUDFLARE_API_TOKEN: missing
-CLOUDFLARE_ACCOUNT_ID: missing
+CLOUDFLARE_API_TOKEN: supplied for run, not recorded
+CLOUDFLARE_ACCOUNT_ID: supplied for run, not recorded
 NETLIFY_AUTH_TOKEN: missing
 NETLIFY_SITE_ID: missing
 ```
@@ -107,9 +119,7 @@ until real testers run the install/scaffold flow and file evidence.
 
 - Cursor agent usage or a subscribed Cursor environment.
 - Copilot agent/CLI access.
-- Sketchfab auth capable of downloading a CC0 model.
 - Meshy export/API access.
-- Cloudflare Pages credentials and project target.
 - Netlify credentials and project target.
 - npm auth or an approved GitHub-release beta artifact path.
 - Three real marketing-comprehension participants.

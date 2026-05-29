@@ -1,6 +1,6 @@
 # Asset Corpus Results
 
-Generated: 2026-05-29T06:39:02.303Z
+Generated: 2026-05-29T07:54:36.193Z
 
 | Case | Expected | Result | Message |
 |---|---|---:|---|
@@ -67,5 +67,6 @@ Generated: 2026-05-29T06:39:02.303Z
 ## Remaining External Corpus Work
 
 - The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 model, and a downloaded Khronos Draco-compressed glTF.
-- Sketchfab CC0 direct model downloads require authenticated API access, and Meshy exports require a generated/exported user asset or API credential.
-- Run the same add/validate/typegen/render flow against Sketchfab CC0 and Meshy exports when credentials or licensed files are available before claiming broad asset compatibility.
+- Authenticated Sketchfab CC0 download proof passes in `tests/reports/sketchfab-asset-corpus.json` and `docs/project/sketchfab-asset-corpus-results.md`: `Mermaid2` (`01371cd3990f4d9587d40244b5e2a0a8`) as glb through add/validate/typegen.
+- Meshy exports still require a generated/exported user asset or API credential.
+- Run the same add/validate/typegen/render flow against Meshy exports when credentials or licensed files are available before claiming broad generated-asset compatibility.

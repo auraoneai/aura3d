@@ -1,0 +1,1009 @@
+{
+  "schema": "aura3d-asset-corpus",
+  "generatedAt": "2026-05-29T07:54:36.196Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "valid-small-glb",
+      "pass": true,
+      "detail": "Added validSmall -> /aura-assets/validSmall.ae556abc.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "large-glb-warning",
+      "pass": true,
+      "detail": "Added largeModel -> /aura-assets/largeModel.dcd98aa6.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-external-bin",
+      "pass": true,
+      "detail": "Added externalBin -> /aura-assets/externalBin.b508b3b6.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-external-texture",
+      "pass": true,
+      "detail": "Added externalTexture -> /aura-assets/externalTexture.0660f35b.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-missing-bin",
+      "pass": true,
+      "detail": "Aura3D assets add failed: referenced asset file missing: missing.bin. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "gltf-missing-texture",
+      "pass": true,
+      "detail": "Aura3D assets add failed: referenced asset file missing: missing.png. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "glb-missing-external-texture",
+      "pass": true,
+      "detail": "Aura3D assets add failed: referenced asset file missing: missing.png. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "malformed-glb",
+      "pass": true,
+      "detail": "Invalid GLB header. Suggested fix: re-export the asset as binary glTF (.glb)."
+    },
+    {
+      "id": "file-extension-lies",
+      "pass": true,
+      "detail": "Invalid GLB header. Suggested fix: re-export the asset as binary glTF (.glb)."
+    },
+    {
+      "id": "unsupported-extension",
+      "pass": true,
+      "detail": "Unsupported Aura3D asset format: txt. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, or ogg."
+    },
+    {
+      "id": "file-with-spaces",
+      "pass": true,
+      "detail": "Added fileWithSpaces -> /aura-assets/fileWithSpaces.abb4e814.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "unicode-file-name",
+      "pass": true,
+      "detail": "Added unicodeModel -> /aura-assets/unicodeModel.456d511a.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "duplicate-asset-id",
+      "pass": true,
+      "detail": "Added duplicateModel -> /aura-assets/duplicateModel.0fe67e10.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "nested-directory-asset",
+      "pass": true,
+      "detail": "Added nestedModel -> /aura-assets/nestedModel.ce6f1067.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "ktx2-texture-extension",
+      "pass": true,
+      "detail": "Added ktxTexture -> /aura-assets/ktxTexture.23035988.ktx2; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "external-polyhaven-armchair-cc0-gltf",
+      "pass": true,
+      "detail": "Added polyhavenArmChair -> /aura-assets/polyhavenArmChair.91e39d5b.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "external-khronos-draco-box-gltf",
+      "pass": true,
+      "detail": "Added khronosDracoBox -> /aura-assets/khronosDracoBox.3c46acec.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-khronos-duck-glb",
+      "pass": true,
+      "detail": "Added realDuck -> /aura-assets/realDuck.65bf938f.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-damaged-helmet-glb",
+      "pass": true,
+      "detail": "Added damagedHelmet -> /aura-assets/damagedHelmet.4028ccbc.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-antique-camera-product-glb",
+      "pass": true,
+      "detail": "Added antiqueCamera -> /aura-assets/antiqueCamera.7480f9be.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-boom-box-cc0-product-glb",
+      "pass": true,
+      "detail": "Added boomBox -> /aura-assets/boomBox.de9d5954.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-avocado-cc0-organic-glb",
+      "pass": true,
+      "detail": "Added avocado -> /aura-assets/avocado.2713a264.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-clear-coat-material-glb",
+      "pass": true,
+      "detail": "Added clearCoatTest -> /aura-assets/clearCoatTest.c3a1cbe3.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-sheen-material-grid-glb",
+      "pass": true,
+      "detail": "Added sheenGrid -> /aura-assets/sheenGrid.b3d82dde.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-khronos-fox-animation-glb",
+      "pass": true,
+      "detail": "Added foxAnimation -> /aura-assets/foxAnimation.d97044e7.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-blender-export-gltf",
+      "pass": true,
+      "detail": "Added blenderPrimitives -> /aura-assets/blenderPrimitives.171a3473.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "real-ktx2-texture",
+      "pass": true,
+      "detail": "Added ribNormalKtx2 -> /aura-assets/ribNormalKtx2.7bbd1d77.ktx2; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "asset-corpus-final-validation",
+      "pass": true,
+      "detail": "21 generated assets validate"
+    },
+    {
+      "id": "asset-corpus-typegen-created",
+      "pass": true,
+      "detail": "src/aura-assets.ts generated"
+    }
+  ],
+  "failures": [],
+  "workspace": "tests/reports/asset-corpus-workspace",
+  "results": [
+    {
+      "id": "valid-small-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added validSmall -> /aura-assets/validSmall.ae556abc.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "large-glb-warning",
+      "expect": "success",
+      "pass": true,
+      "message": "Added largeModel -> /aura-assets/largeModel.dcd98aa6.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-external-bin",
+      "expect": "success",
+      "pass": true,
+      "message": "Added externalBin -> /aura-assets/externalBin.b508b3b6.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-external-texture",
+      "expect": "success",
+      "pass": true,
+      "message": "Added externalTexture -> /aura-assets/externalTexture.0660f35b.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "gltf-missing-bin",
+      "expect": "failure",
+      "pass": true,
+      "message": "Aura3D assets add failed: referenced asset file missing: missing.bin. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "gltf-missing-texture",
+      "expect": "failure",
+      "pass": true,
+      "message": "Aura3D assets add failed: referenced asset file missing: missing.png. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "glb-missing-external-texture",
+      "expect": "failure",
+      "pass": true,
+      "message": "Aura3D assets add failed: referenced asset file missing: missing.png. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb."
+    },
+    {
+      "id": "malformed-glb",
+      "expect": "failure",
+      "pass": true,
+      "message": "Invalid GLB header. Suggested fix: re-export the asset as binary glTF (.glb)."
+    },
+    {
+      "id": "file-extension-lies",
+      "expect": "failure",
+      "pass": true,
+      "message": "Invalid GLB header. Suggested fix: re-export the asset as binary glTF (.glb)."
+    },
+    {
+      "id": "unsupported-extension",
+      "expect": "failure",
+      "pass": true,
+      "message": "Unsupported Aura3D asset format: txt. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, or ogg."
+    },
+    {
+      "id": "file-with-spaces",
+      "expect": "success",
+      "pass": true,
+      "message": "Added fileWithSpaces -> /aura-assets/fileWithSpaces.abb4e814.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "unicode-file-name",
+      "expect": "success",
+      "pass": true,
+      "message": "Added unicodeModel -> /aura-assets/unicodeModel.456d511a.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "duplicate-asset-id",
+      "expect": "success",
+      "pass": true,
+      "message": "Added duplicateModel -> /aura-assets/duplicateModel.0fe67e10.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "nested-directory-asset",
+      "expect": "success",
+      "pass": true,
+      "message": "Added nestedModel -> /aura-assets/nestedModel.ce6f1067.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "ktx2-texture-extension",
+      "expect": "success",
+      "pass": true,
+      "message": "Added ktxTexture -> /aura-assets/ktxTexture.23035988.ktx2; Wrote aura.assets.json; Wrote src/aura-assets.ts"
+    },
+    {
+      "id": "external-polyhaven-armchair-cc0-gltf",
+      "expect": "success",
+      "pass": true,
+      "message": "Added polyhavenArmChair -> /aura-assets/polyhavenArmChair.91e39d5b.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "external-download",
+        "source": "Poly Haven API/files: ArmChair_01 1k glTF",
+        "license": "CC0",
+        "notes": "Downloaded at test time into tests/reports only; verifies a real external CC0 model with .gltf, .bin, and external JPG texture dependencies."
+      }
+    },
+    {
+      "id": "external-khronos-draco-box-gltf",
+      "expect": "success",
+      "pass": true,
+      "message": "Added khronosDracoBox -> /aura-assets/khronosDracoBox.3c46acec.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "external-download",
+        "source": "Khronos glTF Sample Models: Box/glTF-Draco",
+        "license": "CC-BY-4.0",
+        "notes": "Downloaded at test time into tests/reports only; verifies a real glTF using KHR_draco_mesh_compression and an external .bin buffer."
+      }
+    },
+    {
+      "id": "real-khronos-duck-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added realDuck -> /aura-assets/realDuck.65bf938f.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/duck.glb",
+        "license": "Khronos glTF Sample Assets metadata; local fixture used for importer validation only",
+        "notes": "Small real GLB fixture used to verify the CLI handles non-synthetic product/prop assets."
+      }
+    },
+    {
+      "id": "real-damaged-helmet-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added damagedHelmet -> /aura-assets/damagedHelmet.4028ccbc.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/damaged-helmet.glb",
+        "license": "Khronos glTF Sample Assets metadata; local fixture used for importer validation only",
+        "notes": "Textured PBR GLB fixture used to verify real-material metadata, typed refs, and validation."
+      }
+    },
+    {
+      "id": "real-antique-camera-product-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added antiqueCamera -> /aura-assets/antiqueCamera.7480f9be.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/antique-camera.glb",
+        "license": "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+        "notes": "Large product-form GLB fixture used to verify typed refs and validation on a realistic inspectable object."
+      }
+    },
+    {
+      "id": "real-boom-box-cc0-product-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added boomBox -> /aura-assets/boomBox.de9d5954.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/boom-box.glb",
+        "license": "CC0-1.0",
+        "notes": "CC0 Khronos Boom Box fixture used to verify a larger textured product asset through add/validate/typegen."
+      }
+    },
+    {
+      "id": "real-avocado-cc0-organic-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added avocado -> /aura-assets/avocado.2713a264.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/avocado.glb",
+        "license": "CC0-1.0",
+        "notes": "CC0 Khronos Avocado fixture used to verify an organic PBR asset with texture metadata."
+      }
+    },
+    {
+      "id": "real-clear-coat-material-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added clearCoatTest -> /aura-assets/clearCoatTest.c3a1cbe3.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/clear-coat-test.glb",
+        "license": "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+        "notes": "Clearcoat material-extension fixture used to verify metadata extraction on non-basic PBR material coverage."
+      }
+    },
+    {
+      "id": "real-sheen-material-grid-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added sheenGrid -> /aura-assets/sheenGrid.b3d82dde.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "fixtures/asset-corpus/sheen-test-grid.glb",
+        "license": "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+        "notes": "Sheen material-extension grid used to verify metadata extraction on non-basic PBR material coverage."
+      }
+    },
+    {
+      "id": "real-khronos-fox-animation-glb",
+      "expect": "success",
+      "pass": true,
+      "message": "Added foxAnimation -> /aura-assets/foxAnimation.d97044e7.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "tests/assets/corpus/khronos/Fox/Fox.glb",
+        "license": "CC-BY-4.0",
+        "notes": "Pinned Khronos animated/skinned character fixture with source details in tests/assets/corpus/khronos/Fox/README.md."
+      }
+    },
+    {
+      "id": "real-blender-export-gltf",
+      "expect": "success",
+      "pass": true,
+      "message": "Added blenderPrimitives -> /aura-assets/blenderPrimitives.171a3473.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "tests/assets/corpus/blender/vulkan-samples/primitives.gltf",
+        "license": "Apache-2.0",
+        "notes": "Pinned Blender-exported Vulkan Samples fixture; source manifest is tests/assets/corpus/blender/blender-export-fixtures.manifest.json."
+      }
+    },
+    {
+      "id": "real-ktx2-texture",
+      "expect": "success",
+      "pass": true,
+      "message": "Added ribNormalKtx2 -> /aura-assets/ribNormalKtx2.7bbd1d77.ktx2; Wrote aura.assets.json; Wrote src/aura-assets.ts",
+      "source": {
+        "kind": "pinned-local-fixture",
+        "source": "tests/assets/corpus/ktx2/Rib_N.ktx2",
+        "license": "local repository fixture; source review required before product use",
+        "notes": "Real KTX2 texture fixture used to prove the asset CLI handles KTX2 file typegen/validation."
+      }
+    }
+  ],
+  "warnings": [
+    "antiqueCamera: asset exceeds 25 MB; consider compression before deployment",
+    "blenderPrimitives: no texture references detected",
+    "boomBox: asset exceeds 25 MB; consider compression before deployment",
+    "duplicateModel: no texture references detected",
+    "externalBin: no texture references detected",
+    "fileWithSpaces: no texture references detected",
+    "khronosDracoBox: no texture references detected",
+    "ktxTexture: bounds could not be extracted",
+    "largeModel: asset exceeds 25 MB; consider compression before deployment",
+    "largeModel: no texture references detected",
+    "nestedModel: no texture references detected",
+    "ribNormalKtx2: bounds could not be extracted",
+    "unicodeModel: no texture references detected",
+    "validSmall: no texture references detected"
+  ],
+  "manifest": {
+    "schema": "aura3d.assets/1.0",
+    "assetBasePath": "/aura-assets/",
+    "outputDir": "public/aura-assets",
+    "typegen": "src/aura-assets.ts",
+    "assets": [
+      {
+        "id": "antiqueCamera",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/antique-camera.glb",
+        "outputPath": "public/aura-assets/antiqueCamera.7480f9be.glb",
+        "url": "/aura-assets/antiqueCamera.7480f9be.glb",
+        "hash": "sha256-7480f9bed3918fe63ce1da0e54dcd235bd11fe54c5006fa0f7a0a31ddcc274c1",
+        "sizeBytes": 32375420,
+        "bounds": [
+          5.955,
+          13.645,
+          4.557
+        ],
+        "materials": [
+          "camera",
+          "tripod"
+        ],
+        "animations": [],
+        "textures": [
+          "camera_camera_Normal",
+          "camera_camera_BaseColor",
+          "camera_tripod_BaseColor",
+          "camera_tripod_Normal",
+          "camera_camera_Roughness",
+          "camera_tripod_Roughness"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/antiqueCamera.thumb.svg",
+        "warnings": [
+          "asset exceeds 25 MB; consider compression before deployment"
+        ]
+      },
+      {
+        "id": "avocado",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/avocado.glb",
+        "outputPath": "public/aura-assets/avocado.2713a264.glb",
+        "url": "/aura-assets/avocado.2713a264.glb",
+        "hash": "sha256-2713a264e3e16f3850028f5a10db9f18e38257965ad2ca5caff693d1a1991a1e",
+        "sizeBytes": 7256224,
+        "bounds": [
+          0.043,
+          0.063,
+          0.028
+        ],
+        "materials": [
+          "2256_Avocado_d"
+        ],
+        "animations": [],
+        "textures": [
+          "image-0",
+          "image-1",
+          "image-2"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/avocado.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "blenderPrimitives",
+        "type": "model",
+        "format": "gltf",
+        "source": "assets/real/blender-primitives.gltf",
+        "outputPath": "public/aura-assets/blenderPrimitives.171a3473.gltf",
+        "url": "/aura-assets/blenderPrimitives.171a3473.gltf",
+        "hash": "sha256-171a3473d137021e88fe3621a99333d8cc2d9a0f9d1a9bed1235642e6de28a73",
+        "sizeBytes": 163964,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "Material.003",
+          "Material.005",
+          "m0material898.001",
+          "Material.008",
+          "Material.009",
+          "Material.007"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/blenderPrimitives.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "boomBox",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/boom-box.glb",
+        "outputPath": "public/aura-assets/boomBox.de9d5954.glb",
+        "url": "/aura-assets/boomBox.de9d5954.glb",
+        "hash": "sha256-de9d5954855c16ff2593e914ae672baaeb4cf23a3262022b32164cc4621f93d6",
+        "sizeBytes": 38383804,
+        "bounds": [
+          0.02,
+          0.02,
+          0.02
+        ],
+        "materials": [
+          "BoomBox_Mat"
+        ],
+        "animations": [],
+        "textures": [
+          "image-0",
+          "image-1",
+          "image-2",
+          "image-3"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/boomBox.thumb.svg",
+        "warnings": [
+          "asset exceeds 25 MB; consider compression before deployment"
+        ]
+      },
+      {
+        "id": "clearCoatTest",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/clear-coat-test.glb",
+        "outputPath": "public/aura-assets/clearCoatTest.c3a1cbe3.glb",
+        "url": "/aura-assets/clearCoatTest.c3a1cbe3.glb",
+        "hash": "sha256-c3a1cbe318cd043b937130af4eb83ec2ea0b03613387b1b7d769dfab4ac15948",
+        "sizeBytes": 258048,
+        "bounds": [
+          4,
+          2,
+          1.11
+        ],
+        "materials": [
+          "Simple_Base",
+          "Simple_Coated",
+          "Simple_Coating",
+          "Partial_Base",
+          "Partial_Coated",
+          "Partial_Coating",
+          "RoughVariations_Base",
+          "RoughVariations_Coated",
+          "RoughVariations_Coating",
+          "BaseNorm_Base",
+          "BaseNorm_Coated",
+          "BaseNorm_Coating",
+          "CoatNorm_Base",
+          "CoatNorm_Coated",
+          "CoatNorm_Coating",
+          "SharedNorm_Base",
+          "SharedNorm_Coated",
+          "SharedNorm_Coating",
+          "LabelMaterial"
+        ],
+        "animations": [],
+        "textures": [
+          "PartialCoating",
+          "PartialCoating_Alpha",
+          "RoughnessStripes",
+          "RibsNormal",
+          "PlasticWrap_normals",
+          "ClearCoatLabels"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/clearCoatTest.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "damagedHelmet",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/damaged-helmet.glb",
+        "outputPath": "public/aura-assets/damagedHelmet.4028ccbc.glb",
+        "url": "/aura-assets/damagedHelmet.4028ccbc.glb",
+        "hash": "sha256-4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656",
+        "sizeBytes": 3773916,
+        "bounds": [
+          2,
+          2.187,
+          2
+        ],
+        "materials": [
+          "Material_MR"
+        ],
+        "animations": [],
+        "textures": [
+          "image-0",
+          "image-1",
+          "image-2",
+          "image-3",
+          "image-4"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/damagedHelmet.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "duplicateModel",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/dupe-b.glb",
+        "outputPath": "public/aura-assets/duplicateModel.0fe67e10.glb",
+        "url": "/aura-assets/duplicateModel.0fe67e10.glb",
+        "hash": "sha256-0fe67e106205bd2582a2cfe82f85b428b160a3c63736319db104079d15edb6e1",
+        "sizeBytes": 164,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "duplicateB"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/duplicateModel.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "externalBin",
+        "type": "model",
+        "format": "gltf",
+        "source": "assets/external/model.gltf",
+        "outputPath": "public/aura-assets/externalBin.b508b3b6.gltf",
+        "url": "/aura-assets/externalBin.b508b3b6.gltf",
+        "hash": "sha256-b508b3b6e0043fa260e0ec0ec543a165549bfd026929ed6d1c97263cfae0953c",
+        "sizeBytes": 387,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "externalBin"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [
+          "model.bin"
+        ],
+        "thumbnailUrl": "/aura-assets/externalBin.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "externalTexture",
+        "type": "model",
+        "format": "gltf",
+        "source": "assets/external-texture/model.gltf",
+        "outputPath": "public/aura-assets/externalTexture.0660f35b.gltf",
+        "url": "/aura-assets/externalTexture.0660f35b.gltf",
+        "hash": "sha256-0660f35b7bb7733c72a5a365c0853e265a1b0c03d3eff65c6f595f3d49580869",
+        "sizeBytes": 432,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "externalTexture"
+        ],
+        "animations": [],
+        "textures": [
+          "albedo.png"
+        ],
+        "dependencies": [
+          "albedo.png",
+          "model.bin"
+        ],
+        "thumbnailUrl": "/aura-assets/externalTexture.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "fileWithSpaces",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/file with spaces.glb",
+        "outputPath": "public/aura-assets/fileWithSpaces.abb4e814.glb",
+        "url": "/aura-assets/fileWithSpaces.abb4e814.glb",
+        "hash": "sha256-abb4e81478db10a287bff099d3c12c1555f9c6ae3bf417afce9fa3f892ffe7b7",
+        "sizeBytes": 168,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "fileWithSpaces"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/fileWithSpaces.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "foxAnimation",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/Fox.glb",
+        "outputPath": "public/aura-assets/foxAnimation.d97044e7.glb",
+        "url": "/aura-assets/foxAnimation.d97044e7.glb",
+        "hash": "sha256-d97044e701822bac5a62696459b27d7b375aada5de8574ed4362edbba94771f7",
+        "sizeBytes": 162852,
+        "bounds": [
+          25.185,
+          79.029,
+          154.72
+        ],
+        "materials": [
+          "fox_material"
+        ],
+        "animations": [
+          "Survey",
+          "Walk",
+          "Run"
+        ],
+        "textures": [
+          "image-0"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/foxAnimation.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "khronosDracoBox",
+        "type": "model",
+        "format": "gltf",
+        "source": "assets/external/khronos-draco-box/Box.gltf",
+        "outputPath": "public/aura-assets/khronosDracoBox.3c46acec.gltf",
+        "url": "/aura-assets/khronosDracoBox.3c46acec.gltf",
+        "hash": "sha256-3c46acecdfa90b012ec9052d8a1dfa61358e6d56a9e333504189cc78a2de4d1b",
+        "sizeBytes": 2427,
+        "bounds": [
+          2.016,
+          2.016,
+          2.016
+        ],
+        "materials": [
+          "Red"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [
+          "Box.bin"
+        ],
+        "thumbnailUrl": "/aura-assets/khronosDracoBox.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "ktxTexture",
+        "type": "texture",
+        "format": "ktx2",
+        "source": "assets/texture.ktx2",
+        "outputPath": "public/aura-assets/ktxTexture.23035988.ktx2",
+        "url": "/aura-assets/ktxTexture.23035988.ktx2",
+        "hash": "sha256-230359881a29ce9dedffa094bba8f35369c5491a9a0e1af6cbf0760cafb0c0a5",
+        "sizeBytes": 16,
+        "materials": [],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/ktxTexture.thumb.svg",
+        "warnings": [
+          "bounds could not be extracted"
+        ]
+      },
+      {
+        "id": "largeModel",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/large.glb",
+        "outputPath": "public/aura-assets/largeModel.dcd98aa6.glb",
+        "url": "/aura-assets/largeModel.dcd98aa6.glb",
+        "hash": "sha256-dcd98aa6c39258e7cf43ea6f5e532772757c862562d134d9e88d0a0f814bf75b",
+        "sizeBytes": 27262976,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "largeModel"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/largeModel.thumb.svg",
+        "warnings": [
+          "asset exceeds 25 MB; consider compression before deployment",
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "nestedModel",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/nested/deep/model.glb",
+        "outputPath": "public/aura-assets/nestedModel.ce6f1067.glb",
+        "url": "/aura-assets/nestedModel.ce6f1067.glb",
+        "hash": "sha256-ce6f10670e9e0e7f645911c223d160b4c5a87919ef492c98cab62dc5a20dc779",
+        "sizeBytes": 168,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "nestedModel"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/nestedModel.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "polyhavenArmChair",
+        "type": "model",
+        "format": "gltf",
+        "source": "assets/external/polyhaven-armchair/ArmChair_01_1k.gltf",
+        "outputPath": "public/aura-assets/polyhavenArmChair.91e39d5b.gltf",
+        "url": "/aura-assets/polyhavenArmChair.91e39d5b.gltf",
+        "hash": "sha256-91e39d5b35f36c8074b7b6432f6fd77f5f1a257c4d6af3924c0b263eb674286b",
+        "sizeBytes": 2643,
+        "bounds": [
+          0.848,
+          1.065,
+          0.766
+        ],
+        "materials": [
+          "Armchair_01"
+        ],
+        "animations": [],
+        "textures": [
+          "textures/Armchair_01_nor_gl_1k.jpg",
+          "textures/Armchair_01_diff_1k.jpg",
+          "textures/Armchair_01_arm_1k.jpg"
+        ],
+        "dependencies": [
+          "textures/Armchair_01_nor_gl_1k.jpg",
+          "textures/Armchair_01_diff_1k.jpg",
+          "textures/Armchair_01_arm_1k.jpg",
+          "ArmChair_01.bin"
+        ],
+        "thumbnailUrl": "/aura-assets/polyhavenArmChair.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "realDuck",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/duck.glb",
+        "outputPath": "public/aura-assets/realDuck.65bf938f.glb",
+        "url": "/aura-assets/realDuck.65bf938f.glb",
+        "hash": "sha256-65bf938f54d6073e619e76e007820bbf980cdc3dc0daec0d94830ffc4ae54ab5",
+        "sizeBytes": 120484,
+        "bounds": [
+          165.478,
+          164.97,
+          115.253
+        ],
+        "materials": [
+          "blinn3-fx"
+        ],
+        "animations": [],
+        "textures": [
+          "image-0"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/realDuck.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "ribNormalKtx2",
+        "type": "texture",
+        "format": "ktx2",
+        "source": "assets/real/Rib_N.ktx2",
+        "outputPath": "public/aura-assets/ribNormalKtx2.7bbd1d77.ktx2",
+        "url": "/aura-assets/ribNormalKtx2.7bbd1d77.ktx2",
+        "hash": "sha256-7bbd1d7776a087b48d3f7d50395d24840fd00dc5ab2622f8dce5685995df94d3",
+        "sizeBytes": 622,
+        "materials": [],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/ribNormalKtx2.thumb.svg",
+        "warnings": [
+          "bounds could not be extracted"
+        ]
+      },
+      {
+        "id": "sheenGrid",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/real/sheen-test-grid.glb",
+        "outputPath": "public/aura-assets/sheenGrid.b3d82dde.glb",
+        "url": "/aura-assets/sheenGrid.b3d82dde.glb",
+        "hash": "sha256-b3d82dde0ae6b93bef1a8085ec05540b21139f9917bfe771135c5aed9ba1c101",
+        "sizeBytes": 1841064,
+        "bounds": [
+          0.904,
+          0.1,
+          0.652
+        ],
+        "materials": [
+          "Backdrop",
+          "sheenColor0_sheenRough0",
+          "Text",
+          "Text Backdrop",
+          "sheenColor0_sheenRough0.33",
+          "sheenColor0_sheenRough0.66",
+          "sheenColor0_sheenRough1",
+          "sheenColor0.33_sheenRough0",
+          "sheenColor0.33_sheenRough0.33",
+          "sheenColor0.33_sheenRough0.66",
+          "sheenColor0.33_sheenRough1",
+          "sheenColor0.66_sheenRough0",
+          "sheenColor0.66_sheenRough0.33",
+          "sheenColor0.66_sheenRough0.66",
+          "sheenColor0.66_sheenRough1",
+          "sheenColor1_sheenRough0",
+          "sheenColor1_sheenRough0.33",
+          "sheenColor1_sheenRough0.66",
+          "sheenColor1_sheenRough1"
+        ],
+        "animations": [],
+        "textures": [
+          "image-0"
+        ],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/sheenGrid.thumb.svg",
+        "warnings": []
+      },
+      {
+        "id": "unicodeModel",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/unicode-模型.glb",
+        "outputPath": "public/aura-assets/unicodeModel.456d511a.glb",
+        "url": "/aura-assets/unicodeModel.456d511a.glb",
+        "hash": "sha256-456d511a494b4e0047593df0f0d3695d09265a37ec46baf46f5e867d35d5b691",
+        "sizeBytes": 168,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "unicodeModel"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/unicodeModel.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      },
+      {
+        "id": "validSmall",
+        "type": "model",
+        "format": "glb",
+        "source": "assets/valid-small.glb",
+        "outputPath": "public/aura-assets/validSmall.ae556abc.glb",
+        "url": "/aura-assets/validSmall.ae556abc.glb",
+        "hash": "sha256-ae556abc040c8a3651e173301be7c14f04a47a0adc09764a2216a18ab4cd942a",
+        "sizeBytes": 164,
+        "bounds": [
+          2,
+          2,
+          2
+        ],
+        "materials": [
+          "validSmall"
+        ],
+        "animations": [],
+        "textures": [],
+        "dependencies": [],
+        "thumbnailUrl": "/aura-assets/validSmall.thumb.svg",
+        "warnings": [
+          "no texture references detected"
+        ]
+      }
+    ]
+  }
+}

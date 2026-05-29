@@ -1,17 +1,17 @@
 {
   "schema": "aura3d-external-deployment-smoke-summary",
-  "generatedAt": "2026-05-29T07:07:52.642Z",
+  "generatedAt": "2026-05-29T07:49:20.504Z",
   "pass": false,
   "checks": [
     {
       "id": "vercel-public-smoke",
       "pass": true,
-      "detail": "protected https://dist-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-gchahal1982-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-3n5lgxoky-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | public-smoke-pass https://aura3d-vercel-smoke.vercel.app: Public Vercel route rendered Aura3D canvas with 35498 lit sample pixels and 80 color buckets. | failed https://dist-gray-iota-68.vercel.app: Public Vercel route failed visual or MIME checks: visualPass=false, mimePass=true."
+      "detail": "protected https://dist-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-gchahal1982-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-3n5lgxoky-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | public-smoke-pass https://aura3d-vercel-smoke.vercel.app: Public Vercel route rendered Aura3D canvas with 36770 lit sample pixels and 78 color buckets. | failed https://dist-gray-iota-68.vercel.app: Public Vercel route failed visual or MIME checks: visualPass=false, mimePass=true."
     },
     {
       "id": "cloudflare-pages-public-smoke",
-      "pass": false,
-      "detail": "credential-blocked: Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
+      "pass": true,
+      "detail": "public-smoke-pass https://aura3d-product-context-smoke.pages.dev: Public Cloudflare Pages route rendered Aura3D canvas with 31873 lit sample pixels and 75 color buckets."
     },
     {
       "id": "netlify-public-smoke",
@@ -46,7 +46,7 @@
       "status": "public-smoke-pass",
       "url": "https://aura3d-vercel-smoke.vercel.app",
       "httpStatus": 200,
-      "detail": "Public Vercel route rendered Aura3D canvas with 35498 lit sample pixels and 80 color buckets.",
+      "detail": "Public Vercel route rendered Aura3D canvas with 36770 lit sample pixels and 78 color buckets.",
       "evidence": {
         "httpStatus": 200,
         "title": "Aura3D Product Viewer",
@@ -54,12 +54,12 @@
         "backend": "webgl2",
         "drawCalls": 32,
         "diagnosticsVisible": true,
-        "canvasBytes": 343059,
+        "canvasBytes": 299112,
         "screenshotPath": "tests/reports/external-deployment-smoke/aura3d-vercel-smoke-vercel-app.png",
         "profile": {
-          "litPixels": 35498,
-          "uniqueBuckets": 80,
-          "centerObjectPixels": 10496
+          "litPixels": 36770,
+          "uniqueBuckets": 78,
+          "centerObjectPixels": 10366
         },
         "resources": {
           "js": [
@@ -141,8 +141,52 @@
     },
     {
       "host": "cloudflare-pages",
-      "status": "credential-blocked",
-      "detail": "Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
+      "status": "public-smoke-pass",
+      "url": "https://aura3d-product-context-smoke.pages.dev",
+      "httpStatus": 200,
+      "detail": "Public Cloudflare Pages route rendered Aura3D canvas with 31873 lit sample pixels and 75 color buckets.",
+      "evidence": {
+        "httpStatus": 200,
+        "title": "Aura3D Product Viewer",
+        "ready": true,
+        "backend": "webgl2",
+        "drawCalls": 32,
+        "diagnosticsVisible": true,
+        "canvasBytes": 340000,
+        "screenshotPath": "tests/reports/external-deployment-smoke/aura3d-product-context-smoke-pages-dev.png",
+        "profile": {
+          "litPixels": 31873,
+          "uniqueBuckets": 75,
+          "centerObjectPixels": 10797
+        },
+        "resources": {
+          "js": [
+            {
+              "url": "https://aura3d-product-context-smoke.pages.dev/assets/index-DHvpEy9U.js",
+              "status": 200,
+              "contentType": "application/javascript"
+            },
+            {
+              "url": "https://aura3d-product-context-smoke.pages.dev/assets/three.module-Du6oIqpS.js",
+              "status": 200,
+              "contentType": "application/javascript"
+            },
+            {
+              "url": "https://aura3d-product-context-smoke.pages.dev/assets/GLTFLoader-CeMWdL2l.js",
+              "status": 200,
+              "contentType": "application/javascript"
+            }
+          ],
+          "css": [],
+          "models": [
+            {
+              "url": "https://aura3d-product-context-smoke.pages.dev/aura-assets/product-fixture.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary"
+            }
+          ]
+        }
+      }
     },
     {
       "host": "netlify",

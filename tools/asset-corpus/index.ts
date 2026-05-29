@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { addAsset, validateAssets } from "../../packages/aura3d-cli/src/index";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
@@ -450,7 +450,7 @@ checks.push({
 
 writeAssetCorpusMarkdown(results, validation.warnings);
 writeReport("tests/reports/asset-corpus.json", "aura3d-asset-corpus", checks, {
-  workspace,
+  workspace: repoRelative(workspace),
   results,
   warnings: validation.warnings,
   manifest: validation.manifest
@@ -538,6 +538,21 @@ function minimalPng(): Buffer {
 
 function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: readonly string[]): void {
   const sourceNotes = results.filter((result) => result.source);
+  const sketchfabReport = readOptionalReport("tests/reports/sketchfab-asset-corpus.json") as {
+    readonly pass?: boolean;
+    readonly modelName?: string;
+    readonly modelUid?: string;
+    readonly format?: string;
+  } | undefined;
+  const sketchfabLines = sketchfabReport?.pass === true
+    ? [
+        `- Authenticated Sketchfab CC0 download proof passes in \`tests/reports/sketchfab-asset-corpus.json\` and \`docs/project/sketchfab-asset-corpus-results.md\`: \`${sketchfabReport.modelName ?? "Sketchfab model"}\` (\`${sketchfabReport.modelUid ?? "unknown uid"}\`) as ${sketchfabReport.format ?? "model"} through add/validate/typegen.`,
+        "- Meshy exports still require a generated/exported user asset or API credential."
+      ]
+    : [
+        "- Sketchfab CC0 direct model downloads require authenticated API access; run `pnpm audit:sketchfab-asset-corpus` with `SKETCHFAB_API_TOKEN` to refresh proof.",
+        "- Meshy exports require a generated/exported user asset or API credential."
+      ];
   const lines = [
     "# Asset Corpus Results",
     "",
@@ -560,12 +575,25 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
     "## Remaining External Corpus Work",
     "",
     "- The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 model, and a downloaded Khronos Draco-compressed glTF.",
-    "- Sketchfab CC0 direct model downloads require authenticated API access, and Meshy exports require a generated/exported user asset or API credential.",
-    "- Run the same add/validate/typegen/render flow against Sketchfab CC0 and Meshy exports when credentials or licensed files are available before claiming broad asset compatibility.",
+    ...sketchfabLines,
+    "- Run the same add/validate/typegen/render flow against Meshy exports when credentials or licensed files are available before claiming broad generated-asset compatibility.",
     ""
   ];
   mkdirSync("docs/project", { recursive: true });
   writeFileSync("docs/project/asset-corpus-results.md", lines.join("\n"));
+}
+
+function readOptionalReport(path: string): unknown {
+  if (!existsSync(path)) return undefined;
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
+function repoRelative(path: string): string {
+  return relative(process.cwd(), path).replaceAll("\\", "/");
 }
 
 function escapeTable(value: string): string {

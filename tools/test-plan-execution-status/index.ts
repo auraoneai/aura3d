@@ -17,6 +17,8 @@ const codexFiveTaskEvalPassed = reportCheckPass("tests/reports/agent-context/cod
 const codexRepairEvalPassed = reportCheckPass("tests/reports/agent-context/codex-self-test.json", "codex-repair-screenshot-improves-to-product-quality");
 const claudeCodeEvalPassed = reportPass("tests/reports/agent-context/claude-code-eval.json") && existsSync("docs/project/claude-code-agent-context-results.md");
 const vercelPublicSmokePassed = reportCheckPass("tests/reports/external-deployment-smoke.json", "vercel-public-smoke");
+const cloudflarePublicSmokePassed = reportCheckPass("tests/reports/external-deployment-smoke.json", "cloudflare-pages-public-smoke");
+const sketchfabAssetCorpusPassed = reportPass("tests/reports/sketchfab-asset-corpus.json");
 
 const rounds: RoundEvidence[] = [
   round("Round 0: Product Context Evidence Matrix", "automated-pass", ["docs/project/product-context-evidence.md", "tests/reports/product-context-evidence.json"]),
@@ -30,7 +32,9 @@ const rounds: RoundEvidence[] = [
     ? `Codex prompt-plan self-test, Codex five-task eval, ${codexRepairEvalPassed ? "Codex repair eval" : "the Codex repair eval gap"}, and ${claudeCodeEvalPassed ? "Claude Code five-task eval" : "the Claude Code eval gap"} are recorded; Cursor and Copilot remain external/subscription runs.`
     : "Codex prompt-plan self-test is proven with product-quality visual review, but the Codex five-task eval is missing or failing; Claude Code, Cursor, and Copilot remain external/subscription runs."),
   round("Round 8: Raw Three.js Baseline", rawThreeBaselinePassed ? "manual-pass" : "partial", ["tests/reports/agent-baseline-comparison.json", "docs/project/agent-baseline-comparison.md"], rawThreeBaselinePassed ? undefined : "Complete the same-task raw Three.js baseline and compare against Aura3D dogfood."),
-  round("Round 9: Asset Corpus Validation", reportPass("tests/reports/asset-corpus.json") ? "partial" : "external-gap", ["docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"], "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, and downloaded Khronos Draco glTF are proven; authenticated Sketchfab CC0 downloads and Meshy exports remain external corpus work."),
+  round("Round 9: Asset Corpus Validation", reportPass("tests/reports/asset-corpus.json") ? "partial" : "external-gap", ["docs/project/asset-corpus-results.md", "docs/project/sketchfab-asset-corpus-results.md", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"], sketchfabAssetCorpusPassed
+    ? "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB are proven; Meshy exports remain external corpus work."
+    : "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, and downloaded Khronos Draco glTF are proven; authenticated Sketchfab CC0 downloads and Meshy exports remain external corpus work."),
   round("Round 10: Typed Asset Reference IDE Test", reportPass("tests/reports/asset-cli.json") && reportPass("tests/reports/public-api-contract.json") ? "automated-pass" : "partial", ["tests/reports/asset-cli.json", "tests/reports/public-api-contract.json"]),
   round("Round 11: Template Lifecycle Dogfood", reportPass("tests/reports/package-clean-install.json") ? "automated-pass" : "partial", ["docs/project/clean-install-results.md", "tests/reports/package-clean-install.json"]),
   round(
@@ -41,9 +45,11 @@ const rounds: RoundEvidence[] = [
       ? undefined
       : "Current screenshots prove rendering, diagnostics, and basic visual cues, but fewer than three release-facing prompt artifacts have product-quality review labels."
   ),
-  round("Round 13: Static Deployment Checks", reportPass("tests/reports/agent-deployment.json") ? "partial" : "external-gap", ["tests/reports/agent-deployment.json", "tests/reports/package-clean-install.json", "docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"], vercelPublicSmokePassed
-    ? "Local static/deploy checks are proven and Vercel public smoke now renders a WebGL2 Aura3D canvas. Cloudflare Pages and Netlify credentials/project targets are still missing."
-    : "Local static/deploy checks are proven. Vercel public smoke is missing or failing; Cloudflare Pages and Netlify credentials are missing."),
+  round("Round 13: Static Deployment Checks", reportPass("tests/reports/agent-deployment.json") ? "partial" : "external-gap", ["tests/reports/agent-deployment.json", "tests/reports/package-clean-install.json", "docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"], vercelPublicSmokePassed && cloudflarePublicSmokePassed
+    ? "Local static/deploy checks are proven, and Vercel plus Cloudflare Pages public smoke now render WebGL2 Aura3D canvases. Netlify credentials/project targets are still missing."
+    : vercelPublicSmokePassed
+      ? "Local static/deploy checks are proven and Vercel public smoke now renders a WebGL2 Aura3D canvas. Cloudflare Pages and Netlify credentials/project targets are still missing."
+      : "Local static/deploy checks are proven. Vercel public smoke is missing or failing; Cloudflare Pages and Netlify credentials are missing."),
   round("Round 14: Built Bundle Size Proof", reportPass("tests/reports/bundle-size.json") ? "automated-pass" : "partial", ["BUNDLE_SIZES.md", "tests/reports/bundle-size.json"]),
   round("Round 15: Docs Codeblock Execution", reportPass("tests/reports/docs-codeblocks.json") ? "automated-pass" : "partial", ["tests/reports/docs-codeblocks.json"]),
   round("Round 16: Error Message Quality", reportPass("tests/reports/error-message-quality.json") ? "automated-pass" : "partial", ["tests/reports/error-message-quality.json"]),

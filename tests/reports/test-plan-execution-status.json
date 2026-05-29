@@ -1,0 +1,207 @@
+{
+  "schema": "aura3d-test-plan-execution-status",
+  "generatedAt": "2026-05-29T07:54:44.381Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "test-plan-rounds-classified",
+      "pass": true,
+      "detail": "21/21 rounds classified"
+    },
+    {
+      "id": "local-evidence-does-not-hide-external-gaps",
+      "pass": true,
+      "detail": "5 rounds have remaining manual/external evidence noted"
+    },
+    {
+      "id": "local-automated-proof-present",
+      "pass": true,
+      "detail": "16/21 rounds are fully proven by current local/manual evidence; remaining rounds are classified instead of hidden"
+    }
+  ],
+  "failures": [],
+  "rounds": [
+    {
+      "round": "Round 0: Product Context Evidence Matrix",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/product-context-evidence.md",
+        "tests/reports/product-context-evidence.json"
+      ]
+    },
+    {
+      "round": "Round 1: Release Gate Verification",
+      "status": "automated-pass",
+      "evidence": [
+        "pnpm run check:release",
+        "pnpm run typecheck",
+        "tests/reports/product-context-evidence.json"
+      ]
+    },
+    {
+      "round": "Round 2: Product-Cycle Language Guard",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/marketing-truth.json",
+        "tests/reports/docs-site.json"
+      ]
+    },
+    {
+      "round": "Round 3: Archive Isolation",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/product-cutover.json",
+        "tests/reports/package-tarball-audit.json"
+      ]
+    },
+    {
+      "round": "Round 4: Package Tarball Audit",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/package-tarball-audit.json"
+      ]
+    },
+    {
+      "round": "Round 5: Clean Install Smoke",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/clean-install-results.md",
+        "tests/reports/package-clean-install.json"
+      ]
+    },
+    {
+      "round": "Round 6: Public API Compactness And Correctness",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/public-api-contract.md",
+        "tests/reports/public-api-contract.json"
+      ]
+    },
+    {
+      "round": "Round 7: Agent Context Evaluation",
+      "status": "partial",
+      "evidence": [
+        "docs/project/agent-dogfood-results.md",
+        "docs/project/fresh-codex-agent-context-results.md",
+        "docs/project/claude-code-agent-context-results.md",
+        "tests/reports/agent-context/codex-self-test.json",
+        "tests/reports/agent-context/claude-code-eval.json"
+      ],
+      "remaining": "Codex prompt-plan self-test, Codex five-task eval, Codex repair eval, and Claude Code five-task eval are recorded; Cursor and Copilot remain external/subscription runs."
+    },
+    {
+      "round": "Round 8: Raw Three.js Baseline",
+      "status": "manual-pass",
+      "evidence": [
+        "tests/reports/agent-baseline-comparison.json",
+        "docs/project/agent-baseline-comparison.md"
+      ]
+    },
+    {
+      "round": "Round 9: Asset Corpus Validation",
+      "status": "partial",
+      "evidence": [
+        "docs/project/asset-corpus-results.md",
+        "docs/project/sketchfab-asset-corpus-results.md",
+        "tests/reports/asset-corpus.json",
+        "tests/reports/sketchfab-asset-corpus.json"
+      ],
+      "remaining": "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB are proven; Meshy exports remain external corpus work."
+    },
+    {
+      "round": "Round 10: Typed Asset Reference IDE Test",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/asset-cli.json",
+        "tests/reports/public-api-contract.json"
+      ]
+    },
+    {
+      "round": "Round 11: Template Lifecycle Dogfood",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/clean-install-results.md",
+        "tests/reports/package-clean-install.json"
+      ]
+    },
+    {
+      "round": "Round 12: Diagnostics And Screenshot Quality",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/package-clean-install.json",
+        "tests/reports/agent-devtools.json",
+        "tests/reports/error-message-quality.json",
+        "docs/project/starter-template-visual-review.md",
+        "docs/project/starter-example-visual-review.md",
+        "docs/project/prompt-visual-quality-gap.md",
+        "docs/project/prompt-fidelity-quality-results.md",
+        "tests/reports/prompt-fidelity-quality.json"
+      ]
+    },
+    {
+      "round": "Round 13: Static Deployment Checks",
+      "status": "partial",
+      "evidence": [
+        "tests/reports/agent-deployment.json",
+        "tests/reports/package-clean-install.json",
+        "docs/project/external-deployment-results.md",
+        "tests/reports/external-deployment-smoke.json"
+      ],
+      "remaining": "Local static/deploy checks are proven, and Vercel plus Cloudflare Pages public smoke now render WebGL2 Aura3D canvases. Netlify credentials/project targets are still missing."
+    },
+    {
+      "round": "Round 14: Built Bundle Size Proof",
+      "status": "automated-pass",
+      "evidence": [
+        "BUNDLE_SIZES.md",
+        "tests/reports/bundle-size.json"
+      ]
+    },
+    {
+      "round": "Round 15: Docs Codeblock Execution",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/docs-codeblocks.json"
+      ]
+    },
+    {
+      "round": "Round 16: Error Message Quality",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/error-message-quality.json"
+      ]
+    },
+    {
+      "round": "Round 17: Marketing Link And Copy-Button Audit",
+      "status": "automated-pass",
+      "evidence": [
+        "tests/reports/marketing-link-audit.json"
+      ]
+    },
+    {
+      "round": "Round 18: Marketing Comprehension Test",
+      "status": "external-gap",
+      "evidence": [
+        "docs/project/marketing-comprehension-results.md"
+      ],
+      "remaining": "Requires three real participants who do not know the codebase."
+    },
+    {
+      "round": "Round 19: Product Rebuild From Context Alone",
+      "status": "manual-pass",
+      "evidence": [
+        "docs/project/fresh-codex-agent-context-results.md",
+        "docs/project/agent-dogfood-results.md",
+        "docs/project/prompt-visual-quality-gap.md"
+      ]
+    },
+    {
+      "round": "Round 20: Outside Beta Dogfood",
+      "status": "partial",
+      "evidence": [
+        "docs/project/outside-beta-dogfood-results.md"
+      ],
+      "remaining": "Requires beta publication and external users."
+    }
+  ]
+}
