@@ -194,7 +194,14 @@ For Aura3D, that means:
   It uses typed asset refs, reports zero API hallucinations and zero asset-path
   errors, runs from a production static preview bundle, and has screenshot-level
   product-quality evidence. This is still local Codex evidence, not proof that
-  Claude Code, Cursor, Copilot, or outside users will produce the same result.
+  Cursor, Copilot, or outside users will produce the same result.
+- A controlled Claude Code context-only eval is now recorded in
+  `docs/project/claude-code-agent-context-results.md`. Claude Code used only the
+  agent context bundle, public package tarballs, and copied GLB assets, completed
+  the same five-task product viewer/camera-rain/reflective-floor/click-swap/
+  static-bundle scope, reported zero API hallucinations and zero asset-path
+  errors, and received a `product-quality-pass` review label. This is one
+  external-agent pass, not proof for Cursor, Copilot, or outside users.
 - A controlled Codex repair eval now starts from a deliberately failed rainy
   product screenshot, applies prompt-plan repair hints, rebuilds the generated
   app, reruns route health and screenshot capture, and records one repair turn.
@@ -265,10 +272,10 @@ For Aura3D, that means:
 - Bundle-size proof measures built bundles with size-limit, including starter
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
-- Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
-  Netlify deployments, authenticated Sketchfab CC0 downloads, and Meshy export
-  runs remain external dogfood work. The local Codex five-task pass must not be
-  presented as broad market proof.
+- Cursor, Copilot, outside developers, real Vercel/Cloudflare/Netlify
+  deployments, authenticated Sketchfab CC0 downloads, and Meshy export runs
+  remain external dogfood work. The local Codex and Claude Code five-task passes
+  must not be presented as broad market proof.
 
 ## Build Checklist Still Required
 
@@ -385,8 +392,9 @@ For Aura3D, that means:
 
 ### Product Proof
 
-- [ ] Run the context-only agent eval with Codex, Claude Code, Cursor, and
-  Copilot when available.
+- [ ] Run the context-only agent eval with Cursor and Copilot when available.
+  Codex and Claude Code are recorded as passes; the remaining subscribed-agent
+  surfaces are not complete.
 - [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0
   and real Draco-compressed assets now pass the executable corpus; authenticated
   Sketchfab CC0 downloads and Meshy exports remain.

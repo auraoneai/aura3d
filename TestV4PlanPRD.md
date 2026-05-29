@@ -331,8 +331,15 @@ Current local automated evidence:
   copied GLB assets. It compiled, ran, rendered WebGL2, swapped from `product`
   to `hero` on click, reported API hallucination count 0 and asset path error
   count 0, and produced a screenshot profile with the expected basic cues. This
-  remains separate local evidence; it does not replace Claude Code, Cursor,
+  remains separate local evidence; it does not replace subscribed Cursor,
   Copilot, or outside-user proof.
+- `docs/project/claude-code-agent-context-results.md` records a controlled
+  Claude Code context-only five-task run using only the allowed agent context
+  bundle, public package tarballs, and copied GLB assets. It compiled, ran,
+  rendered WebGL2, used typed asset refs, passed static deploy-bundle checks,
+  reported zero API hallucinations and zero asset-path errors, and received a
+  `product-quality-pass` visual review label. This is one external-agent pass;
+  Cursor and Copilot remain separate subscription runs.
 - `docs/project/agent-baseline-comparison.md` records the first raw Three.js
   Codex baseline for the same task class. It built, ran, passed route health,
   passed static preview, produced basic screenshot evidence, and reported zero
@@ -380,7 +387,7 @@ Current local automated evidence:
 These remain external or manual evidence items and must not be represented as
 completed user proof:
 
-- Claude Code, Cursor, and Copilot context-only agent runs.
+- Cursor and Copilot context-only agent runs.
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
   Sketchfab CC0 downloads and Meshy exports remain.
@@ -390,8 +397,9 @@ completed user proof:
 - Broad product-quality prompt-to-visual fidelity beyond the approved starter
   recipes. Current starter screenshots prove a narrow recipe set, not arbitrary
   scene generation.
-- Cross-agent prompt-plan adoption. Codex self-test uses prompt plans now, but
-  Claude Code, Cursor, and Copilot still need separate runs when available.
+- Cross-agent prompt-plan adoption. Codex and Claude Code context-only runs use
+  the documented surface now, but Cursor and Copilot still need separate runs
+  when available.
 
 The current gate proves local automated product shape, one deterministic Codex
 self-test, and one fresh Codex context-only dogfood run. It does not yet prove
@@ -742,7 +750,9 @@ For each task and agent, record:
   `product-quality-pass`. This is local Codex evidence only.
 - Fresh Codex context-only run: pass. See
   `docs/project/fresh-codex-agent-context-results.md`.
-- Claude Code: not run.
+- Claude Code: pass. See
+  `docs/project/claude-code-agent-context-results.md` and
+  `tests/reports/agent-context/claude-code-eval.json`.
 - Cursor: not run.
 - GitHub Copilot: not run.
 

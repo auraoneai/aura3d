@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T06:12:45.224Z
+Generated: 2026-05-29T06:43:20.712Z
 
 ## Summary
 
-- Claims with evidence: 36/36
+- Claims with evidence: 37/37
 - Known gaps tracked: 7/7
-- Automated checks passing: 30/30
+- Automated checks passing: 31/31
 
 ## Claim Matrix
 
@@ -26,8 +26,9 @@ Generated: 2026-05-29T06:12:45.224Z
 | @aura3d/react is an optional thin React adapter. | `automated-pass` | `packages/react/src/index.ts`<br>`tools/public-api-contract/index.ts` |  |
 | @aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows. | `automated-pass` | `packages/aura3d-cli/src/cli.ts`<br>`packages/aura3d-cli/src/index.ts` |  |
 | create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game. | `automated-pass` | `packages/create-aura3d`<br>`tools/agent-templates/index.ts` |  |
-| Agent-readable context is useful. | `automated-pass` | `docs/agents/*`<br>`tests/reports/agent-context/codex-self-test.json` | Codex self-test and Codex five-task eval pass locally; run Claude Code, Cursor, and Copilot separately when available. |
-| A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
+| Agent-readable context is useful. | `automated-pass` | `docs/agents/*`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/claude-code-eval.json` | Codex and Claude Code context evals pass; run Cursor and Copilot separately when available. |
+| A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Cursor and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
+| Claude Code can complete the five-task context-only eval from agent context and public tarballs. | `manual-pass` | `docs/project/claude-code-agent-context-results.md`<br>`tests/reports/agent-context/claude-code-eval.json` | This is one external-agent pass; Cursor and Copilot remain separate subscription runs. |
 | Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test. | `automated-pass` | `tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
 | Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations. | `automated-pass` | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts` | This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof. |
 | Codex repair eval improves a failed screenshot to product-quality by applying prompt-plan repair hints with a recorded repair turn. | `automated-pass` | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-repair-workspace/tests/reports/initial-screenshot.json`<br>`tests/reports/agent-context/codex-repair-workspace/tests/reports/repaired-screenshot.json`<br>`tools/agent-dogfood/index.ts` | This is local Codex evidence only; run external agent repair turns separately before claiming broad repair-loop behavior. |
@@ -55,7 +56,7 @@ Generated: 2026-05-29T06:12:45.224Z
 |---|---|---|---|
 | The broader effects/VFX/postprocess surface is contact-sheet proven only at starter/helper level. | Runtime/VFX QA | Keep check:effects-vfx passing, then add route-level screenshots and human review before marketing particle presets, cinematic approximations, or compatibility VFX as premium production VFX. | `docs/project/effects-vfx-visual-audit.md`<br>`tests/reports/effects-vfx-visual-audit.json`<br>`tools/effects-vfx-visual-audit/index.ts` |
 | Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven. | Product/Runtime QA | Keep the starter product-quality screenshots under regression review, then add more positive prompt fixtures, broader asset coverage, repair-loop evidence, and external agent/user dogfood before claiming broad arbitrary prompt-to-visual quality. | `docs/project/prompt-visual-quality-gap.md`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json` |
-| Claude Code, Cursor, and Copilot context-only agent runs are not complete. | Product QA | Codex five-task local evidence now passes. Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/*.json` |
+| Cursor and Copilot context-only agent runs are not complete. | Product QA | Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`docs/project/claude-code-agent-context-results.md`<br>`tests/reports/agent-context/*.json` |
 | Licensed wild-asset corpus is not broad enough. | Assets QA | The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
 | Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
 | Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
@@ -67,7 +68,7 @@ Generated: 2026-05-29T06:12:45.224Z
 |---|---:|---|
 | `product-context-prd-exists` | pass | ProductContextPRD.md is present |
 | `test-plan-prd-exists` | pass | TestV4PlanPRD.md is present |
-| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:product-context && pnpm check:test-plan-status |
+| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:effects-vfx && pnpm check:product-context && pnpm check:test-plan-status |
 | `product-context-script-registered` | pass | check:product-context=pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts |
 | `active-template-directory-exactly-three` | pass | active template dirs: cinematic-scene, mini-game, product-viewer |
 | `held-back-template-archive-present` | pass | archive/held-back-create-aura3d-templates/README.md documents held-back templates |
@@ -79,11 +80,12 @@ Generated: 2026-05-29T06:12:45.224Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6402,"rainPixels":1910,"centerObjectPixels":11342,"uniqueBuckets":147} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":5342,"rainPixels":4149,"centerObjectPixels":11684,"uniqueBuckets":162} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
 | `codex-repair-eval-present` | pass | initial=fail, repaired=product-quality-pass, turns=1 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
+| `claude-code-context-result-documented` | pass | Claude Code checks=9/9 |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current starter product-quality screenshots and boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
 | `prompt-visual-quality-gap-tracked` | pass | prompt-to-visual quality boundary is documented with starter pass and broad remaining gaps |
@@ -94,5 +96,5 @@ Generated: 2026-05-29T06:12:45.224Z
 | `prompt-facing-effects-upgraded` | pass | public prompt-facing rain and bloom have renderer-owned Three paths beyond symbolic lines/no-op |
 | `effects-vfx-visual-audit-present` | pass | effects audit total=25, pass=25, partial=0, fail=0, contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 7/7 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 36/36 claims have pass evidence; 0/0 claim gaps and 7/7 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 37/37 claims have pass evidence; 0/0 claim gaps and 7/7 known gaps are tracked |
 

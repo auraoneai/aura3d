@@ -1,6 +1,6 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-29T04:40:15.644Z
+Generated: 2026-05-29T06:41:10.655Z
 
 ## Codex Self-Test
 
@@ -54,15 +54,15 @@ Source prompt: Repair a failed rainy product reveal that currently looks like on
 | `codex-generated-app-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
-| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=21 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=305044, profile={"yellowPixels":6402,"rainPixels":1910,"centerObjectPixels":11342,"uniqueBuckets":147} |
+| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=40 |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=439939, profile={"yellowPixels":5342,"rainPixels":4149,"centerObjectPixels":11684,"uniqueBuckets":162} |
 | `codex-five-task-context-files-copied` | pass | 10 context files copied |
 | `codex-five-task-assets-validate` | pass | 2 typed assets validate |
 | `codex-five-task-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-five-task-no-asset-path-errors` | pass | uses assets.sneaker and assets.shoe2 typed refs; no raw GLB URLs |
 | `codex-five-task-builds` | pass | vite build passed |
 | `codex-five-task-static-preview-runs` | pass | ready=true, backend=webgl2, staticPreview=true |
-| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=262328, profile={"subjectPixels":9575,"softboxPixels":7901,"rainPixels":7107,"reflectionPixels":2499,"uniqueBuckets":83} |
+| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=417577, profile={"subjectPixels":10064,"softboxPixels":10697,"rainPixels":10444,"reflectionPixels":4464,"uniqueBuckets":90} |
 | `codex-five-task-click-swap` | pass | before=sneaker, after=shoe2 |
 | `codex-five-task-completes-at-least-four-of-five` | pass | 5/5 tasks passed |
 | `codex-repair-context-files-copied` | pass | 10 context files copied |
@@ -72,7 +72,7 @@ Source prompt: Repair a failed rainy product reveal that currently looks like on
 | `codex-repair-no-asset-path-errors` | pass | uses assets.repairProduct typed ref with no raw GLB URLs |
 | `codex-repair-repaired-app-builds-and-runs` | pass | ready=true, backend=webgl2 |
 | `codex-repair-applies-prompt-plan-repair-hints` | pass | 6 compiled repair hints recorded |
-| `codex-repair-screenshot-improves-to-product-quality` | pass | initial={"subjectPixels":786,"rainPixels":204,"reflectionPixels":49,"environmentPixels":0,"uniqueBuckets":36}; repaired={"subjectPixels":10280,"rainPixels":3474,"reflectionPixels":3341,"environmentPixels":13014,"uniqueBuckets":98} |
+| `codex-repair-screenshot-improves-to-product-quality` | pass | initial={"subjectPixels":786,"rainPixels":204,"reflectionPixels":49,"environmentPixels":0,"uniqueBuckets":36}; repaired={"subjectPixels":10700,"rainPixels":3777,"reflectionPixels":4689,"environmentPixels":15605,"uniqueBuckets":107} |
 | `codex-repair-turn-count-recorded` | pass | 1 repair turn recorded |
 
 ## Remaining Agent Runs

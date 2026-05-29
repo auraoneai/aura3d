@@ -130,7 +130,12 @@ const codexAgentReport = readJson<{
     };
   };
 }>("tests/reports/agent-context/codex-self-test.json");
+const claudeCodeAgentReport = readJson<{
+  readonly pass?: boolean;
+  readonly checks?: readonly { readonly id?: string; readonly pass?: boolean; readonly detail?: string }[];
+}>("tests/reports/agent-context/claude-code-eval.json");
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
+const claudeCodeResult = readText("docs/project/claude-code-agent-context-results.md");
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
 const starterExampleVisualReview = readText("docs/project/starter-example-visual-review.md");
 const promptVisualQualityGap = readText("docs/project/prompt-visual-quality-gap.md");
@@ -343,6 +348,19 @@ const checks: ReleaseCheck[] = [
     detail: freshCodexResult ? "fresh Codex context-only result is documented" : "missing docs/project/fresh-codex-agent-context-results.md"
   },
   {
+    id: "claude-code-context-result-documented",
+    pass:
+      claudeCodeAgentReport.pass === true &&
+      (claudeCodeAgentReport.checks ?? []).every((check) => check.pass === true) &&
+      (claudeCodeAgentReport.checks ?? []).some((check) => check.id === "claude-no-api-hallucinations" && check.pass === true) &&
+      (claudeCodeAgentReport.checks ?? []).some((check) => check.id === "claude-no-asset-path-errors" && check.pass === true) &&
+      claudeCodeResult.includes("Manual external-agent pass for Claude Code") &&
+      claudeCodeResult.includes("Human review label: `product-quality-pass`"),
+    detail: claudeCodeAgentReport.pass === true
+      ? `Claude Code checks=${claudeCodeAgentReport.checks?.filter((check) => check.pass === true).length ?? 0}/${claudeCodeAgentReport.checks?.length ?? 0}`
+      : "missing or failing tests/reports/agent-context/claude-code-eval.json"
+  },
+  {
     id: "starter-template-visual-review-present",
     pass:
       starterVisualReview.includes("product-viewer") &&
@@ -474,8 +492,9 @@ const claims: ClaimEvidence[] = [
   claim("@aura3d/react is an optional thin React adapter.", statusFrom("check:public-api"), ["packages/react/src/index.ts", "tools/public-api-contract/index.ts"]),
   claim("@aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows.", statusFrom("check:assets-cli"), ["packages/aura3d-cli/src/cli.ts", "packages/aura3d-cli/src/index.ts"]),
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
-  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Codex self-test and Codex five-task eval pass locally; run Claude Code, Cursor, and Copilot separately when available."),
-  claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
+  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/claude-code-eval.json"], "Codex and Claude Code context evals pass; run Cursor and Copilot separately when available."),
+  claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Cursor and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
+  claim("Claude Code can complete the five-task context-only eval from agent context and public tarballs.", checkStatus("claude-code-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/claude-code-agent-context-results.md", "tests/reports/agent-context/claude-code-eval.json"], "This is one external-agent pass; Cursor and Copilot remain separate subscription runs."),
   claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" && checkStatus("prompt-fidelity-quality-report-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations.", checkStatus("codex-five-task-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof."),
   claim("Codex repair eval improves a failed screenshot to product-quality by applying prompt-plan repair hints with a recorded repair turn.", checkStatus("codex-repair-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/initial-screenshot.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/repaired-screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run external agent repair turns separately before claiming broad repair-loop behavior."),
@@ -512,10 +531,10 @@ const knownGaps: KnownGapEvidence[] = [
     targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"]
   },
   {
-    gap: "Claude Code, Cursor, and Copilot context-only agent runs are not complete.",
+    gap: "Cursor and Copilot context-only agent runs are not complete.",
     owner: "Product QA",
-    nextAction: "Codex five-task local evidence now passes. Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments.",
-    targetEvidence: ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/*.json"]
+    nextAction: "Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments.",
+    targetEvidence: ["docs/project/agent-dogfood-results.md", "docs/project/claude-code-agent-context-results.md", "tests/reports/agent-context/*.json"]
   },
   ...statusFromReport("tests/reports/agent-baseline-comparison.json") === "automated-pass"
     ? []
