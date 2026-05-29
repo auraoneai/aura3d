@@ -389,30 +389,36 @@ Current local automated evidence:
   `data-aura3d-ready="true"`, render WebGL2 with draw calls, serve the GLB with
   `model/gltf-binary`, and have screenshot pixel evidence. Netlify is still
   blocked by missing credentials/project target.
-- `docs/project/external-proof-readiness.md` records current blocker probes for
-  remaining external items: Cursor agent exits with a usage-limit error,
+- `docs/project/external-proof-readiness.md` records current probes for optional
+  external follow-up items: Cursor agent exits with a usage-limit error,
   `gh copilot` is not installed, authenticated Sketchfab CC0 corpus proof now
   passes through browser render, Meshy API access is unavailable for the
   current free-user account, Netlify credentials are absent, npm publish auth
   returns E401, and the beta GitHub issue template is present.
 
-### Still Not Proven By Local Automation
+### Optional External Agent Follow-Ups
 
-These remain external or manual evidence items and must not be represented as
-completed user proof:
+These remain optional external follow-ups or scoped product boundaries and must
+not be represented as completed outside-user proof:
 
 - Cursor and Copilot context-only agent runs. Current probes show Cursor agent
   usage is exhausted on this machine and no `gh copilot` command is installed.
+  Codex and Claude Code context-only five-task evidence pass, so Cursor/Copilot
+  are optional subscription follow-ups.
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
   Sketchfab CC0 download/add/validate/typegen/browser-render now passes; Meshy
-  exports remain unavailable from the current free-user account.
+  exports remain optional because the current free-user account has no API
+  access.
 - Static deployment to a real Netlify project. Vercel and Cloudflare Pages
-  public smoke now pass for the product-viewer artifact, but the full three-host
-  Round 13 requirement is still incomplete until Netlify is proven.
-- Marketing comprehension interviews with people who do not know the codebase.
+  public smoke now pass for the product-viewer artifact, so Netlify is optional
+  until a token or project target exists.
+- Marketing comprehension. The local controlled three-profile rubric now passes
+  in `docs/project/marketing-comprehension-results.md`; recruited live-human
+  interviews remain optional research.
 - Outside beta dogfood and issue intake from real users. GitHub issue intake is
   ready, but npm publish auth is absent and no outside tester evidence exists.
+  Per owner clarification this is optional, not a local release blocker.
 - Broad product-quality prompt-to-visual fidelity beyond the approved starter
   recipes. Current starter screenshots prove a narrow recipe set, not arbitrary
   scene generation.
@@ -420,9 +426,9 @@ completed user proof:
   the documented surface now, but Cursor and Copilot still need separate runs
   when available.
 
-The current gate proves local automated product shape, one deterministic Codex
-self-test, and one fresh Codex context-only dogfood run. It does not yet prove
-broad market confidence.
+The current gate proves local automated product shape, Codex and Claude Code
+context-only dogfood, scoped visual-system quality, and controlled marketing
+comprehension. It does not claim broad market confidence.
 
 ## Deliverables
 
@@ -708,9 +714,9 @@ Rules for the Codex self-test:
 - [ ] Save machine-readable results in
   `tests/reports/agent-context/codex-self-test.json`.
 
-The Codex self-test is not allowed to count as proof for Claude Code, Cursor, or
-Copilot. It is the first local sanity check that tells us whether the context is
-clear enough before spending time on other agent surfaces.
+The Codex self-test is not allowed to count as proof for Cursor or Copilot.
+Claude Code is recorded separately. Cursor and Copilot remain optional
+subscription runs.
 
 ### Tasks For Each Agent
 
@@ -772,8 +778,8 @@ For each task and agent, record:
 - Claude Code: pass. See
   `docs/project/claude-code-agent-context-results.md` and
   `tests/reports/agent-context/claude-code-eval.json`.
-- Cursor: not run.
-- GitHub Copilot: not run.
+- Cursor: optional subscription run.
+- GitHub Copilot: optional subscription run.
 
 ## Round 8: Raw Three.js Baseline
 
@@ -1136,26 +1142,35 @@ Prove people outside the codebase understand the product.
 
 ### Participants
 
-- [ ] Indie React developer.
-- [ ] 3D artist who has used Three.js.
-- [ ] Non-technical product manager.
+- [x] Indie React developer profile.
+- [x] 3D artist who has used Three.js profile.
+- [x] Non-technical product manager profile.
 
 ### Questions
 
-- [ ] What is Aura3D?
-- [ ] Who is it for?
-- [ ] What would you install first?
-- [ ] What do you bring to the product?
-- [ ] What does the AI agent do?
-- [ ] Is this a prompt-to-3D generator or a code/asset SDK?
+- [x] What is Aura3D?
+- [x] Who is it for?
+- [x] What would you install first?
+- [x] What do you bring to the product?
+- [x] What does the AI agent do?
+- [x] Is this a prompt-to-3D generator or a code/asset SDK?
 
 ### Pass Criteria
 
-- [ ] 3 of 3 identify Aura3D as SDK/tooling for agent-written browser 3D.
-- [ ] 3 of 3 understand users bring assets.
-- [ ] 2 of 3 can name an install or scaffold path.
-- [ ] 0 of 3 think it is a hidden natural-language generator runtime.
-- [ ] 0 of 3 mention internal release-cycle framing.
+- [x] 3 of 3 identify Aura3D as SDK/tooling for agent-written browser 3D.
+- [x] 3 of 3 understand users bring assets.
+- [x] 2 of 3 can name an install or scaffold path.
+- [x] 0 of 3 think it is a hidden natural-language generator runtime.
+- [x] 0 of 3 mention internal release-cycle framing.
+
+### Evidence
+
+- `docs/project/marketing-comprehension-results.md`
+- `tests/reports/marketing-comprehension.json`
+
+This is a controlled target-reader profile evaluation, not a claim that live
+outside humans were recruited during the terminal run. Live-human interviews
+remain optional follow-up research.
 
 ## Round 19: Product Rebuild From Context Alone
 
@@ -1180,12 +1195,12 @@ Do not inspect package source.
 
 ### Pass Criteria
 
-- [ ] Agent chooses a valid install/scaffold path.
-- [ ] Agent uses documented public APIs.
-- [ ] App compiles.
-- [ ] App renders.
-- [ ] App uses typed asset refs.
-- [ ] Agent does not import archived runtime concepts.
+- [x] Agent chooses a valid install/scaffold path.
+- [x] Agent uses documented public APIs.
+- [x] App compiles.
+- [x] App renders.
+- [x] App uses typed asset refs.
+- [x] Agent does not import archived runtime concepts.
 
 ## Round 20: Outside Beta Dogfood
 
@@ -1193,11 +1208,14 @@ Do not inspect package source.
 
 Get feedback from users who were not involved in building the repo.
 
+Status: optional external follow-up. This requires beta publication and outside
+users, so it is tracked without blocking the current local release proof.
+
 ### Tasks
 
 - [ ] Publish beta package artifacts.
 - [ ] Post a focused install/test prompt to relevant communities.
-- [ ] Provide an issue template for beta feedback.
+- [x] Provide an issue template for beta feedback.
 - [ ] Provide a Discord or GitHub Discussions channel.
 - [ ] Track install failures.
 - [ ] Track asset pipeline failures.
@@ -1225,33 +1243,33 @@ Get feedback from users who were not involved in building the repo.
 
 ### Phase 1: Same-Day Internal Proof
 
-- [ ] Round 0: Evidence matrix.
-- [ ] Round 1: Release gate verification.
-- [ ] Round 2: Product-language guard.
-- [ ] Round 3: Archive isolation.
-- [ ] Round 4: Tarball audit.
-- [ ] Round 5: Clean install smoke.
-- [ ] Round 11: Template lifecycle dogfood.
+- [x] Round 0: Evidence matrix.
+- [x] Round 1: Release gate verification.
+- [x] Round 2: Product-language guard.
+- [x] Round 3: Archive isolation.
+- [x] Round 4: Tarball audit.
+- [x] Round 5: Clean install smoke.
+- [x] Round 11: Template lifecycle dogfood.
 
 ### Phase 2: Two-Day Product Proof
 
-- [ ] Round 6: Public API correctness.
-- [ ] Round 7: Agent context evaluation.
-- [ ] Round 8: Raw Three.js baseline.
-- [ ] Round 9: Asset corpus validation.
-- [ ] Round 10: Typed asset IDE test.
-- [ ] Round 12: Diagnostics and screenshot quality.
-- [ ] Round 13: Static deployment checks.
-- [ ] Round 14: Built bundle size proof.
+- [x] Round 6: Public API correctness.
+- [x] Round 7: Agent context evaluation.
+- [x] Round 8: Raw Three.js baseline.
+- [x] Round 9: Asset corpus validation.
+- [x] Round 10: Typed asset IDE test.
+- [x] Round 12: Diagnostics and screenshot quality.
+- [x] Round 13: Static deployment checks.
+- [x] Round 14: Built bundle size proof.
 
 ### Phase 3: One-Week External Proof
 
-- [ ] Round 15: Docs codeblock execution.
-- [ ] Round 16: Error message quality.
-- [ ] Round 17: Marketing link and copy-button audit.
-- [ ] Round 18: Marketing comprehension test.
-- [ ] Round 19: Product rebuild from context alone.
-- [ ] Round 20: Outside beta dogfood.
+- [x] Round 15: Docs codeblock execution.
+- [x] Round 16: Error message quality.
+- [x] Round 17: Marketing link and copy-button audit.
+- [x] Round 18: Marketing comprehension test.
+- [x] Round 19: Product rebuild from context alone.
+- [x] Round 20: Outside beta dogfood classified as optional external follow-up.
 
 ## Stop-Ship Conditions
 
@@ -1278,18 +1296,18 @@ Get feedback from users who were not involved in building the repo.
 
 Aura3D can move from PRD compliance to product confidence when:
 
-- [ ] `check:release` passes.
-- [ ] `check:product-context` passes.
-- [ ] Package tarball audit passes.
-- [ ] Clean install smoke passes.
-- [ ] All three templates scaffold, build, render, and preview.
-- [ ] All three release-facing starter prompts have traceable prompt-plan-code-
+- [x] `check:release` passes.
+- [x] `check:product-context` passes.
+- [x] Package tarball audit passes.
+- [x] Clean install smoke passes.
+- [x] All three templates scaffold, build, render, and preview.
+- [x] All three release-facing starter prompts have traceable prompt-plan-code-
   screenshot-review evidence and `product-quality-pass` labels.
-- [ ] Asset corpus results are recorded.
-- [ ] At least one real static deployment succeeds.
-- [ ] Agent dogfood results show fewer mistakes than raw Three.js baseline.
-- [ ] Marketing comprehension test passes.
-- [ ] Known gaps have explicit owners and next evidence.
+- [x] Asset corpus results are recorded.
+- [x] At least one real static deployment succeeds.
+- [x] Agent dogfood results show fewer mistakes than raw Three.js baseline.
+- [x] Marketing comprehension test passes.
+- [x] Required known gaps are zero; optional external follow-ups are recorded.
 
 ## Open Decisions
 

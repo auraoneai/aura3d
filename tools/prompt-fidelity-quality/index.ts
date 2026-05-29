@@ -775,7 +775,7 @@ function writeMarkdown(): void {
     "## Current Verdict",
     "",
     releaseFacingProductQualityPasses >= requiredReleaseFacingProductPasses
-      ? "The prompt-fidelity audit now has enough release-facing product-quality screenshots for the starter prompt recipes. This does not close external agent, external deployment, wild-asset, marketing comprehension, or outside beta evidence gaps."
+      ? "The prompt-fidelity audit now has enough release-facing product-quality screenshots for the starter prompt recipes. External agent, deployment, wild-asset, and marketing-comprehension proof is tracked in the product-context evidence matrix; optional outside beta and broad arbitrary prompt quality remain outside this scoped starter-recipe claim."
       : "The prompt-fidelity audit is working as a guardrail, but the product-quality bar is not met. Current release-facing screenshots remain technical render evidence until at least three prompt outputs pass the product-quality review label."
   ];
   mkdirSync(dirname(resolve(markdownPath)), { recursive: true });

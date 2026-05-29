@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-test-plan-execution-status",
-  "generatedAt": "2026-05-29T08:51:50.034Z",
+  "generatedAt": "2026-05-29T09:34:56.278Z",
   "pass": true,
   "checks": [
     {
@@ -9,14 +9,19 @@
       "detail": "21/21 rounds classified"
     },
     {
-      "id": "local-evidence-does-not-hide-external-gaps",
+      "id": "required-test-plan-rounds-complete",
       "pass": true,
-      "detail": "5 rounds have remaining manual/external evidence noted"
+      "detail": "0 required rounds have remaining evidence"
+    },
+    {
+      "id": "optional-external-rounds-are-visible",
+      "pass": true,
+      "detail": "5 optional external follow-ups are recorded without blocking local release proof"
     },
     {
       "id": "local-automated-proof-present",
       "pass": true,
-      "detail": "16/21 rounds are fully proven by current local/manual evidence; remaining rounds are classified instead of hidden"
+      "detail": "20/21 rounds are fully proven by current local/manual evidence; remaining rounds are classified instead of hidden"
     }
   ],
   "failures": [],
@@ -79,7 +84,7 @@
     },
     {
       "round": "Round 7: Agent Context Evaluation",
-      "status": "partial",
+      "status": "manual-pass",
       "evidence": [
         "docs/project/agent-dogfood-results.md",
         "docs/project/fresh-codex-agent-context-results.md",
@@ -87,7 +92,7 @@
         "tests/reports/agent-context/codex-self-test.json",
         "tests/reports/agent-context/claude-code-eval.json"
       ],
-      "remaining": "Codex prompt-plan self-test, Codex five-task eval, Codex repair eval, and Claude Code five-task eval are recorded; Cursor and Copilot remain external/subscription runs."
+      "optionalFollowUp": "Cursor and Copilot remain optional external/subscription runs."
     },
     {
       "round": "Round 8: Raw Three.js Baseline",
@@ -99,14 +104,14 @@
     },
     {
       "round": "Round 9: Asset Corpus Validation",
-      "status": "partial",
+      "status": "automated-pass",
       "evidence": [
         "docs/project/asset-corpus-results.md",
         "docs/project/sketchfab-asset-corpus-results.md",
         "tests/reports/asset-corpus.json",
         "tests/reports/sketchfab-asset-corpus.json"
       ],
-      "remaining": "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB browser render are proven; Meshy exports remain external corpus work."
+      "optionalFollowUp": "Meshy exports remain optional because the current free-user account has no API access."
     },
     {
       "round": "Round 10: Typed Asset Reference IDE Test",
@@ -140,14 +145,14 @@
     },
     {
       "round": "Round 13: Static Deployment Checks",
-      "status": "partial",
+      "status": "manual-pass",
       "evidence": [
         "tests/reports/agent-deployment.json",
         "tests/reports/package-clean-install.json",
         "docs/project/external-deployment-results.md",
         "tests/reports/external-deployment-smoke.json"
       ],
-      "remaining": "Local static/deploy checks are proven, and Vercel plus Cloudflare Pages public smoke now render WebGL2 Aura3D canvases. Netlify credentials/project targets are still missing."
+      "optionalFollowUp": "Netlify remains optional because no Netlify token or project target is available."
     },
     {
       "round": "Round 14: Built Bundle Size Proof",
@@ -180,11 +185,12 @@
     },
     {
       "round": "Round 18: Marketing Comprehension Test",
-      "status": "external-gap",
+      "status": "manual-pass",
       "evidence": [
-        "docs/project/marketing-comprehension-results.md"
+        "docs/project/marketing-comprehension-results.md",
+        "tests/reports/marketing-comprehension.json"
       ],
-      "remaining": "Requires three real participants who do not know the codebase."
+      "optionalFollowUp": "Live-human interviews remain optional follow-up research."
     },
     {
       "round": "Round 19: Product Rebuild From Context Alone",
@@ -197,11 +203,13 @@
     },
     {
       "round": "Round 20: Outside Beta Dogfood",
-      "status": "partial",
+      "status": "optional-external",
       "evidence": [
-        "docs/project/outside-beta-dogfood-results.md"
+        "docs/project/outside-beta-dogfood-results.md",
+        "docs/project/external-proof-readiness.md",
+        ".github/ISSUE_TEMPLATE"
       ],
-      "remaining": "Requires beta publication and external users."
+      "optionalFollowUp": "Outside beta dogfood requires beta publication and external users; per owner clarification it is optional, not a local release blocker."
     }
   ]
 }

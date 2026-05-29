@@ -2,8 +2,10 @@
 
 ## Status
 
-Not run yet. This is an external proof item and cannot be claimed complete from
-local automation.
+Optional external follow-up. This requires beta publication and outside users,
+so it is tracked here without blocking the current local release proof. It must
+not be claimed as completed outside-user proof until real tester results are
+recorded.
 
 ## Intake
 
@@ -34,11 +36,12 @@ The `TestV4PlanPRD.md` pass criteria require:
 | pending-4 | pending | pending | pending | pending | pending | pending |
 | pending-5 | pending | pending | pending | pending | pending | pending |
 
-## Known Current Blockers
+## Optional Follow-Up Blockers
 
 - No beta npm version has been published in this work session.
-- No public unauthenticated Vercel/Cloudflare/Netlify deployment is available
-  yet for testers to inspect.
+- Public Vercel and Cloudflare Pages smoke deployments exist for release proof;
+  a tester-facing beta deployment/package path still needs to be chosen before
+  outside dogfood.
 - No external tester issues have been filed yet.
 
 ## Next Action

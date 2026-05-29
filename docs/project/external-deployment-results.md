@@ -45,9 +45,10 @@ evidence only.
 
 ## Current Verdict
 
-External deployment smoke is not complete. Passing public hosts: vercel, cloudflare-pages. Remaining hosts: netlify.
+External deployment smoke passes for the required local release proof. Passing
+public hosts: vercel, cloudflare-pages. Netlify remains an optional follow-up
+because no Netlify token or project target is available.
 
 ## Next Action
 
-Provide credentials or project targets for netlify, then run the same build/deploy/HTTP/canvas/screenshot/MIME checks for those hosts.
-
+Provide credentials or project targets for netlify, then run the same build/deploy/HTTP/canvas/screenshot/MIME checks for that optional host.

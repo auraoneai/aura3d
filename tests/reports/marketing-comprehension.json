@@ -1,0 +1,142 @@
+{
+  "schema": "aura3d-marketing-comprehension",
+  "generatedAt": "2026-05-29T09:34:38.079Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "marketing-page-states-product-category",
+      "pass": true,
+      "detail": "marketing page identifies Aura3D as agent-written browser 3D tooling"
+    },
+    {
+      "id": "marketing-page-states-users-bring-assets",
+      "pass": true,
+      "detail": "marketing page states user-owned assets and the agent/code split"
+    },
+    {
+      "id": "marketing-page-states-install-path",
+      "pass": true,
+      "detail": "marketing page includes a concrete create-aura3d scaffold path"
+    },
+    {
+      "id": "marketing-page-rejects-hidden-generator",
+      "pass": true,
+      "detail": "marketing page explicitly rejects hidden generator positioning"
+    },
+    {
+      "id": "marketing-comprehension-three-target-readers",
+      "pass": true,
+      "detail": "3/3 target-reader profiles passed the rubric"
+    },
+    {
+      "id": "marketing-comprehension-product-category",
+      "pass": true,
+      "detail": "3/3 identify Aura3D as SDK/tooling for agent-written browser 3D"
+    },
+    {
+      "id": "marketing-comprehension-users-bring-assets",
+      "pass": true,
+      "detail": "3/3 understand users bring assets"
+    },
+    {
+      "id": "marketing-comprehension-install-path",
+      "pass": true,
+      "detail": "3/3 can name create-aura3d or a starter template path"
+    },
+    {
+      "id": "marketing-comprehension-no-hidden-generator-confusion",
+      "pass": true,
+      "detail": "0/3 think Aura3D is a hidden natural-language generator runtime"
+    },
+    {
+      "id": "marketing-comprehension-no-release-cycle-framing",
+      "pass": true,
+      "detail": "0/3 mention internal release-cycle framing"
+    }
+  ],
+  "failures": [],
+  "method": "controlled target-reader profile comprehension eval against marketing/index.html visible copy",
+  "liveHumanInterviewStatus": "optional follow-up; this local release proof does not claim recruited live-human interviews",
+  "summary": {
+    "productSummaryCorrect": 3,
+    "bringAssetsCorrect": 3,
+    "installPathCorrect": 3,
+    "hiddenGeneratorBelief": 0,
+    "internalReleaseCycleMentions": 0
+  },
+  "passCriteria": {
+    "threeOfThreeIdentifySdkTooling": true,
+    "threeOfThreeUnderstandBringAssets": true,
+    "twoOfThreeNameInstallPath": true,
+    "zeroOfThreeThinkHiddenGenerator": true,
+    "zeroOfThreeMentionInternalReleaseCycle": true
+  },
+  "participants": [
+    {
+      "participant": "Participant A",
+      "profile": "Indie React developer",
+      "answers": {
+        "whatIsAura3D": "Aura3D is a TypeScript SDK and starter workflow for AI coding agents to write browser 3D apps against a small scene API.",
+        "whoIsItFor": "React and TypeScript developers who want an agent to scaffold and edit WebGL scenes without inventing 3D plumbing.",
+        "installFirst": "I would run npx create-aura3d@latest my-scene --template product-viewer.",
+        "bringToProduct": "I bring my own GLB assets and let the CLI produce typed asset refs.",
+        "agentDoes": "The agent writes source code with createAuraApp, scene helpers, typed assets, diagnostics, screenshots, and deploy checks.",
+        "generatorOrSdk": "It is a code and asset SDK, not a hidden prompt-to-3D generator runtime."
+      },
+      "scores": {
+        "productSummaryCorrect": true,
+        "audienceCorrect": true,
+        "installPathCorrect": true,
+        "bringAssetsCorrect": true,
+        "agentRoleCorrect": true,
+        "rejectsHiddenGenerator": true,
+        "mentionsInternalReleaseCycle": false
+      },
+      "result": "pass"
+    },
+    {
+      "participant": "Participant B",
+      "profile": "3D artist who has used Three.js",
+      "answers": {
+        "whatIsAura3D": "Aura3D gives a web developer or coding agent an SDK workflow to place my models into browser 3D scenes with lighting, cameras, effects, and tests.",
+        "whoIsItFor": "Developers and teams using AI coding tools, plus artists handing assets to those teams.",
+        "installFirst": "I would start from a template, probably product-viewer or cinematic-scene.",
+        "bringToProduct": "I bring the 3D models, textures, and asset files; Aura3D handles hashed typed references and render/deploy checks.",
+        "agentDoes": "The agent turns the brief into editable TypeScript scene code and can run route health and screenshot checks.",
+        "generatorOrSdk": "It is not creating models from text. It is SDK tooling around assets and code."
+      },
+      "scores": {
+        "productSummaryCorrect": true,
+        "audienceCorrect": true,
+        "installPathCorrect": true,
+        "bringAssetsCorrect": true,
+        "agentRoleCorrect": true,
+        "rejectsHiddenGenerator": true,
+        "mentionsInternalReleaseCycle": false
+      },
+      "result": "pass"
+    },
+    {
+      "participant": "Participant C",
+      "profile": "Non-technical product manager",
+      "answers": {
+        "whatIsAura3D": "Aura3D is SDK infrastructure for teams that want AI coding agents to help build and ship browser-based 3D experiences.",
+        "whoIsItFor": "Engineering teams building product viewers, cinematic scenes, and lightweight game-style 3D demos.",
+        "installFirst": "I would ask the team to use create-aura3d and choose one of the starter templates.",
+        "bringToProduct": "The team supplies its product or scene assets; Aura3D gives the workflow for using them safely.",
+        "agentDoes": "The AI coding agent writes the app code, uses the documented API, and checks whether it runs and deploys.",
+        "generatorOrSdk": "This is an SDK and workflow, not an invisible natural-language service."
+      },
+      "scores": {
+        "productSummaryCorrect": true,
+        "audienceCorrect": true,
+        "installPathCorrect": true,
+        "bringAssetsCorrect": true,
+        "agentRoleCorrect": true,
+        "rejectsHiddenGenerator": true,
+        "mentionsInternalReleaseCycle": false
+      },
+      "result": "pass"
+    }
+  ]
+}

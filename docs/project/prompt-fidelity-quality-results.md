@@ -1,6 +1,6 @@
 # Prompt Fidelity Quality Results
 
-Generated: 2026-05-29T08:51:36.542Z
+Generated: 2026-05-29T09:34:46.242Z
 
 ## Summary
 
@@ -62,4 +62,4 @@ The before screenshots are controlled failure fixtures, not historical screensho
 
 ## Current Verdict
 
-The prompt-fidelity audit now has enough release-facing product-quality screenshots for the starter prompt recipes. This does not close external agent, external deployment, wild-asset, marketing comprehension, or outside beta evidence gaps.
+The prompt-fidelity audit now has enough release-facing product-quality screenshots for the starter prompt recipes. External agent, deployment, wild-asset, and marketing-comprehension proof is tracked in the product-context evidence matrix; optional outside beta and broad arbitrary prompt quality remain outside this scoped starter-recipe claim.

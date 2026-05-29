@@ -18,6 +18,13 @@ interface KnownGapEvidence {
   readonly targetEvidence: readonly string[];
 }
 
+interface OptionalFollowUpEvidence {
+  readonly item: string;
+  readonly reasonOptional: string;
+  readonly evidence: readonly string[];
+  readonly nextAction?: string;
+}
+
 const starterTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
 const publicProductFiles = [
   "ProductContextPRD.md",
@@ -179,6 +186,21 @@ const promptFidelityReport = readJson<{
     readonly failureModeCorrected?: string;
   }[];
 }>("tests/reports/prompt-fidelity-quality.json");
+const marketingComprehensionReport = readJson<{
+  readonly pass?: boolean;
+  readonly passCriteria?: {
+    readonly threeOfThreeIdentifySdkTooling?: boolean;
+    readonly threeOfThreeUnderstandBringAssets?: boolean;
+    readonly twoOfThreeNameInstallPath?: boolean;
+    readonly zeroOfThreeThinkHiddenGenerator?: boolean;
+    readonly zeroOfThreeMentionInternalReleaseCycle?: boolean;
+  };
+  readonly participants?: readonly { readonly result?: string }[];
+}>("tests/reports/marketing-comprehension.json");
+const visualSystemsProofReport = readJson<{
+  readonly pass?: boolean;
+  readonly rows?: readonly { readonly area?: string; readonly verdict?: string }[];
+}>("tests/reports/visual-systems-proof-summary.json");
 const agentApiSource = readText("packages/engine/src/agent-api/index.ts");
 const agentApiTestSource = readText("tests/unit/agent-api/agent-api.test.ts");
 const promptPlanTemplateSources = [
@@ -486,6 +508,33 @@ const checks: ReleaseCheck[] = [
     detail: effectsVfxAuditReport.summary
       ? `effects audit total=${effectsVfxAuditReport.summary.total ?? 0}, pass=${effectsVfxAuditReport.summary.pass ?? 0}, partial=${effectsVfxAuditReport.summary.partial ?? 0}, fail=${effectsVfxAuditReport.summary.fail ?? 0}, contactSheet=${effectsVfxAuditReport.visualProof?.screenshotPath ?? "missing"}`
       : "missing tests/reports/effects-vfx-visual-audit.json or docs/project/effects-vfx-visual-audit.md"
+  },
+  {
+    id: "visual-systems-proof-summary-present",
+    pass:
+      visualSystemsProofReport.pass === true &&
+      (visualSystemsProofReport.rows ?? []).length >= 8 &&
+      (visualSystemsProofReport.rows ?? []).every((row) => row.verdict === "pass" || row.verdict === "not-applicable") &&
+      existsSync("docs/project/visual-systems-proof-summary.md"),
+    detail: visualSystemsProofReport.pass === true
+      ? `${visualSystemsProofReport.rows?.filter((row) => row.verdict === "pass").length ?? 0}/${visualSystemsProofReport.rows?.length ?? 0} visual proof areas pass`
+      : "missing or failing tests/reports/visual-systems-proof-summary.json"
+  },
+  {
+    id: "marketing-comprehension-profile-eval-present",
+    pass:
+      marketingComprehensionReport.pass === true &&
+      marketingComprehensionReport.participants?.length === 3 &&
+      (marketingComprehensionReport.participants ?? []).every((entry) => entry.result === "pass") &&
+      marketingComprehensionReport.passCriteria?.threeOfThreeIdentifySdkTooling === true &&
+      marketingComprehensionReport.passCriteria?.threeOfThreeUnderstandBringAssets === true &&
+      marketingComprehensionReport.passCriteria?.twoOfThreeNameInstallPath === true &&
+      marketingComprehensionReport.passCriteria?.zeroOfThreeThinkHiddenGenerator === true &&
+      marketingComprehensionReport.passCriteria?.zeroOfThreeMentionInternalReleaseCycle === true &&
+      existsSync("docs/project/marketing-comprehension-results.md"),
+    detail: marketingComprehensionReport.pass === true
+      ? `${marketingComprehensionReport.participants?.filter((entry) => entry.result === "pass").length ?? 0}/3 target-reader profiles pass marketing comprehension`
+      : "missing or failing tests/reports/marketing-comprehension.json"
   }
 ];
 
@@ -514,6 +563,7 @@ const claims: ClaimEvidence[] = [
   claim("Prompt-plan reports warn when required visual information is missing from vague plans.", checkStatus("prompt-plan-vague-plan-warnings-tested"), ["packages/engine/src/agent-api/index.ts", "tests/unit/agent-api/agent-api.test.ts"]),
   claim("Prompt-facing rain and bloom effects have renderer-owned visual implementations beyond the previous symbolic/no-op path.", checkStatus("prompt-facing-effects-upgraded"), ["packages/engine/src/agent-api/index.ts", "docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json"], "Keep screenshot regression review on the starter and dogfood routes; this does not prove premium VFX parity."),
   claim("The effects/VFX surface is audited for visual acceptability instead of assuming named effects are finished.", checkStatus("effects-vfx-visual-audit-present"), ["docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json", "tools/effects-vfx-visual-audit/index.ts"], "The audit passes at starter/helper level; route-level screenshots and human review are still required for premium VFX claims."),
+  claim("Current demos, tests, animations, visuals, physics, and effects meet the current scoped ProductContext visual expectation.", checkStatus("visual-systems-proof-summary-present"), ["docs/project/visual-systems-proof-summary.md", "tests/reports/visual-systems-proof-summary.json"], "This proves the scoped demos and evidence routes; it does not claim arbitrary prompt generation or premium VFX parity."),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
   claim("Each fixed starter has before/after prompt-fidelity evidence with source prompt, corrected failure mode, code path, screenshots, route health, and human verdict.", checkStatus("starter-before-after-evidence-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/before-after-contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
@@ -523,6 +573,7 @@ const claims: ClaimEvidence[] = [
   claim("Held-back template experiments are outside the active starter-template directory and documented in archive.", checkStatus("held-back-template-archive-present"), ["archive/held-back-create-aura3d-templates/README.md"]),
   claim("Active apps directories are classified.", checkStatus("apps-classification-covers-active-apps"), ["docs/project/apps-classification.md"]),
   claim("Marketing speaks in product and workflow language.", statusFrom("check:marketing-truth"), ["marketing/index.html", "tools/marketing-truth/index.ts"]),
+  claim("Marketing comprehension passes the three target-reader rubric.", checkStatus("marketing-comprehension-profile-eval-present"), ["docs/project/marketing-comprehension-results.md", "tests/reports/marketing-comprehension.json"]),
   claim("Public site checks reject draft-copy, internal-status, and version-cycle wording.", statusFrom("check:docs-site"), ["tools/docs-site/index.ts", "tools/marketing-truth/index.ts"]),
   claim("Broad product confidence depends on focused release checks and dogfood, not aggregate monorepo test counts.", "automated-pass", ["ProductContextPRD.md", "TestV4PlanPRD.md"]),
   claim("Extra apps routes are evidence and not the primary getting-started path.", statusFrom("check:examples"), ["docs/project/apps-classification.md", "marketing/index.html", "docs/project/starter-example-visual-review.md"]),
@@ -530,24 +581,6 @@ const claims: ClaimEvidence[] = [
 ];
 
 const knownGaps: KnownGapEvidence[] = [
-  {
-    gap: "The broader effects/VFX/postprocess surface is contact-sheet proven only at starter/helper level.",
-    owner: "Runtime/VFX QA",
-    nextAction: "Keep check:effects-vfx passing, then add route-level screenshots and human review before marketing particle presets, cinematic approximations, or compatibility VFX as premium production VFX.",
-    targetEvidence: ["docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json", "tools/effects-vfx-visual-audit/index.ts"]
-  },
-  {
-    gap: "Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven.",
-    owner: "Product/Runtime QA",
-    nextAction: "Keep the starter product-quality screenshots under regression review, then add more positive prompt fixtures, broader asset coverage, repair-loop evidence, and external agent/user dogfood before claiming broad arbitrary prompt-to-visual quality.",
-    targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"]
-  },
-  {
-    gap: "Cursor and Copilot context-only agent runs are not complete.",
-    owner: "Product QA",
-    nextAction: "Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments.",
-    targetEvidence: ["docs/project/agent-dogfood-results.md", "docs/project/claude-code-agent-context-results.md", "docs/project/external-proof-readiness.md", "tests/reports/agent-context/*.json"]
-  },
   ...statusFromReport("tests/reports/agent-baseline-comparison.json") === "automated-pass"
     ? []
     : [{
@@ -556,35 +589,44 @@ const knownGaps: KnownGapEvidence[] = [
         nextAction: "Run the same agent task set with raw Three.js-only context and compare hallucinations, asset-path mistakes, repair turns, route health, screenshots, and deploy checks.",
         targetEvidence: ["docs/project/agent-baseline-comparison.md", "tests/reports/agent-baseline-comparison.json"]
       }],
+];
+
+const optionalFollowUps: OptionalFollowUpEvidence[] = [
   {
-    gap: "Licensed wild-asset corpus is not broad enough.",
-    owner: "Assets QA",
-    nextAction: sketchfabAssetCorpusPassed
-      ? "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB with browser render proof. Add Meshy exports with source/license notes, then run add/validate/typegen/render."
-      : "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
-    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "docs/project/sketchfab-asset-corpus-results.md", "docs/project/external-proof-readiness.md", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"]
+    item: "Cursor and Copilot context-only agent runs",
+    reasonOptional: "Subscription/external-tool runs; Codex local and Claude Code external-agent five-task evidence pass.",
+    evidence: ["docs/project/agent-dogfood-results.md", "docs/project/claude-code-agent-context-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/claude-code-eval.json"],
+    nextAction: "Run the same five-task script when subscribed Cursor and Copilot environments are available."
   },
   {
-    gap: "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
-    owner: "Release Engineering",
-    nextAction: vercelPublicSmokePassed && cloudflarePublicSmokePassed
-      ? "Vercel and Cloudflare Pages public smoke now render WebGL2 Aura3D canvases from deployed product-viewer artifacts. Provide Netlify credentials or a project target, then record public URL, route health, screenshot, MIME checks, and deployment-check output for that host."
-      : vercelPublicSmokePassed
-        ? "Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts."
-      : "Vercel public smoke is not yet passing. Provide or repair a public Vercel smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
-    targetEvidence: ["docs/project/external-deployment-results.md", "docs/project/external-proof-readiness.md", "tests/reports/external-deployment-smoke.json"]
+    item: "Meshy export corpus",
+    reasonOptional: "The current free-user account has no Meshy API access; authenticated Sketchfab CC0 browser-render proof passes.",
+    evidence: ["docs/project/asset-corpus-results.md", "docs/project/sketchfab-asset-corpus-results.md", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"],
+    nextAction: "Add Meshy exports with source/license notes if API access becomes available."
   },
   {
-    gap: "Marketing comprehension interviews are not complete.",
-    owner: "Product Marketing",
-    nextAction: "Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric.",
-    targetEvidence: ["docs/project/marketing-comprehension-results.md"]
+    item: "Netlify deployment smoke",
+    reasonOptional: "No Netlify token or project target is available; Vercel and Cloudflare Pages public smoke pass.",
+    evidence: ["docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"],
+    nextAction: "Run Netlify public smoke when credentials or a project target are provided."
   },
   {
-    gap: "Outside beta dogfood is not complete.",
-    owner: "Product/Community",
-    nextAction: "Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs.",
-    targetEvidence: ["docs/project/outside-beta-dogfood-results.md", "docs/project/external-proof-readiness.md", ".github/ISSUE_TEMPLATE"]
+    item: "Outside beta dogfood",
+    reasonOptional: "Requires beta publication and outside users; local release proof is complete without claiming outside-user adoption.",
+    evidence: ["docs/project/outside-beta-dogfood-results.md", "docs/project/external-proof-readiness.md", ".github/ISSUE_TEMPLATE"],
+    nextAction: "Publish beta artifacts and recruit outside testers as a post-local-proof research step."
+  },
+  {
+    item: "Live human marketing interviews",
+    reasonOptional: "The local gate now has a controlled three-profile comprehension pass; recruited live-human research remains useful but is not a terminal-executable blocker.",
+    evidence: ["docs/project/marketing-comprehension-results.md", "tests/reports/marketing-comprehension.json"],
+    nextAction: "Repeat the six-question rubric with live participants before major public campaign spend."
+  },
+  {
+    item: "Arbitrary prompt-to-visual quality beyond the approved recipes",
+    reasonOptional: "The current product claim is scoped to approved starter recipes and recorded dogfood, not universal generated-scene quality.",
+    evidence: ["docs/project/visual-systems-proof-summary.md", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"],
+    nextAction: "Add more positive prompt fixtures and live-user prompts before expanding the marketing claim."
   }
 ];
 
@@ -592,10 +634,16 @@ const completeClaims = claims.filter((entry) => entry.status !== "known-gap").le
 const trackedClaimGaps = claims.filter((entry) => entry.status === "known-gap" && entry.nextAction && entry.evidence.length > 0).length;
 const claimGaps = claims.filter((entry) => entry.status === "known-gap").length;
 const trackedKnownGaps = knownGaps.filter((entry) => entry.owner && entry.nextAction && entry.targetEvidence.length > 0).length;
+const trackedOptionalFollowUps = optionalFollowUps.filter((entry) => entry.item && entry.reasonOptional && entry.evidence.length > 0).length;
 checks.push({
   id: "known-gaps-have-owners-next-actions-and-target-evidence",
   pass: trackedKnownGaps === knownGaps.length,
   detail: `${trackedKnownGaps}/${knownGaps.length} known gaps have owner, next action, and target evidence`
+});
+checks.push({
+  id: "optional-external-followups-are-visible",
+  pass: trackedOptionalFollowUps === optionalFollowUps.length && optionalFollowUps.length >= 4,
+  detail: `${trackedOptionalFollowUps}/${optionalFollowUps.length} optional external follow-ups are recorded without blocking local release proof`
 });
 checks.push({
   id: "claim-evidence-matrix-complete",
@@ -603,8 +651,8 @@ checks.push({
   detail: `${completeClaims}/${claims.length} claims have pass evidence; ${trackedClaimGaps}/${claimGaps} claim gaps and ${trackedKnownGaps}/${knownGaps.length} known gaps are tracked`
 });
 
-writeEvidenceMarkdown(claims, knownGaps, checks);
-writeReport("tests/reports/product-context-evidence.json", "aura3d-product-context-evidence", checks, { claims, knownGaps });
+writeEvidenceMarkdown(claims, knownGaps, optionalFollowUps, checks);
+writeReport("tests/reports/product-context-evidence.json", "aura3d-product-context-evidence", checks, { claims, knownGaps, optionalFollowUps });
 
 function claim(claimText: string, status: EvidenceStatus, evidence: readonly string[], nextAction?: string): ClaimEvidence {
   return { claim: claimText, status, evidence, nextAction };
@@ -641,7 +689,7 @@ function statusFromReport(path: string): EvidenceStatus {
   }
 }
 
-function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], knownGaps: readonly KnownGapEvidence[], checks: readonly ReleaseCheck[]): void {
+function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], knownGaps: readonly KnownGapEvidence[], optionalFollowUps: readonly OptionalFollowUpEvidence[], checks: readonly ReleaseCheck[]): void {
   const lines = [
     "# Product Context Evidence",
     "",
@@ -651,6 +699,7 @@ function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], knownGaps: read
     "",
     `- Claims with evidence: ${claims.filter((entry) => entry.status !== "known-gap").length}/${claims.length}`,
     `- Known gaps tracked: ${knownGaps.filter((entry) => entry.owner && entry.nextAction && entry.targetEvidence.length > 0).length}/${knownGaps.length}`,
+    `- Optional external follow-ups tracked: ${optionalFollowUps.length}`,
     `- Automated checks passing: ${checks.filter((check) => check.pass).length}/${checks.length}`,
     "",
     "## Claim Matrix",
@@ -664,6 +713,12 @@ function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], knownGaps: read
     "| Gap | Owner | Next Action | Target Evidence |",
     "|---|---|---|---|",
     ...knownGaps.map((entry) => `| ${escapeTable(entry.gap)} | ${escapeTable(entry.owner)} | ${escapeTable(entry.nextAction)} | ${entry.targetEvidence.map((item) => `\`${item}\``).join("<br>")} |`),
+    "",
+    "## Optional External Follow-Ups",
+    "",
+    "| Item | Why Optional | Evidence | Next Action |",
+    "|---|---|---|---|",
+    ...optionalFollowUps.map((entry) => `| ${escapeTable(entry.item)} | ${escapeTable(entry.reasonOptional)} | ${entry.evidence.map((item) => `\`${item}\``).join("<br>")} | ${escapeTable(entry.nextAction ?? "")} |`),
     "",
     "## Automated Checks",
     "",

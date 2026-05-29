@@ -60,9 +60,11 @@ turns compared with the raw baseline.
 
 ## Current Status
 
-Codex self-test evidence is recorded in
-`docs/project/agent-dogfood-results.md` and
-`tests/reports/agent-context/codex-self-test.json`.
+Codex self-test, Codex five-task, Codex repair, fresh Codex context-only,
+Claude Code five-task, and raw Three.js baseline evidence are recorded in
+`docs/project/agent-dogfood-results.md`,
+`docs/project/fresh-codex-agent-context-results.md`,
+`docs/project/claude-code-agent-context-results.md`,
+`docs/project/agent-baseline-comparison.md`, and the matching JSON reports.
 
-Claude Code, Cursor, Copilot, and raw Three.js baseline runs are not completed
-yet.
+Cursor and Copilot remain optional subscription follow-up runs.

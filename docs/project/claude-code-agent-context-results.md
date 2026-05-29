@@ -4,9 +4,10 @@ Generated: 2026-05-29T05:06:17Z
 
 ## Status
 
-Manual external-agent pass for Claude Code. This advances Round 7 of
-`TestV4PlanPRD.md`, but it does not complete the round because Cursor and
-GitHub Copilot still need separate runs.
+Manual external-agent pass for Claude Code. Together with the Codex self-test,
+five-task eval, repair eval, and fresh Codex context-only run, this completes
+the required Round 7 local/external-agent proof. Cursor and GitHub Copilot are
+optional subscription follow-up runs.
 
 ## Controlled Input
 
@@ -75,7 +76,7 @@ as marketing hero proof. It does prove that Claude Code could use the agent
 context plus public packages to create a visually coherent Aura3D scene without
 hallucinating archived APIs or raw asset URLs.
 
-## Remaining Agent Runs
+## Optional Agent Runs
 
-- Cursor: not run.
-- GitHub Copilot: not run.
+- Cursor: optional subscription run, not a local release blocker.
+- GitHub Copilot: optional subscription run, not a local release blocker.

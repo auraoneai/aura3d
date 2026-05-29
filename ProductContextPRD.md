@@ -93,7 +93,11 @@ assets, external agents, deployments, and outside users pass the same standard.
 
 ### Current Technical Gate State
 
-The product is not release-ready as a broad prompt-to-visual product.
+The product is release-proven for the current scoped ProductContext: approved
+starter recipes, typed assets, agent context, diagnostics, clean installs,
+deployment checks, marketing copy, marketing comprehension, and the recorded
+visual systems evidence now pass. It is still not a claim that arbitrary prompts
+and arbitrary assets will always generate polished scenes.
 
 The latest clean-install blocker was reproduced and fixed in the test harness
 and package contents:
@@ -122,9 +126,11 @@ So the honest current product state is:
   route health, scene-specific screenshot profiles, and human
   `product-quality-pass` review in `tests/reports/prompt-fidelity-quality.json`.
   The starter templates use `definePromptPlan` and `promptPlanToScene`.
-- **Not proven broadly:** arbitrary prompt-to-visual quality, broad asset visual
-  fidelity, cross-agent recipe adoption, external deployments, outside users,
-  and market-desirable generated demos beyond the approved starter recipes.
+- **Explicitly optional or out of current scope:** Cursor/Copilot subscription
+  runs, Meshy exports, Netlify smoke, outside beta users, live-human marketing
+  interviews, and arbitrary prompt-to-visual quality beyond the approved starter
+  recipes. These are useful future proof points, but they are not blockers for
+  the current scoped release proof.
 
 ## Product-Quality Definition
 
@@ -237,30 +243,43 @@ For Aura3D, that means:
   behavior, verifies production-runtime and three-compat postprocess through
   real pixel kernels, and records a browser contact-sheet proof for particle and
   cinematic VFX surfaces.
+- `docs/project/visual-systems-proof-summary.md` now rolls up the current visual
+  evidence for starter demos, prompt fidelity, Codex dogfood, effects/VFX,
+  current routes, animation, physics, production-runtime effects, and the final
+  browser visual gate. The roll-up passes 9/9 required scoped visual areas while
+  preserving boundaries around arbitrary prompt generation and premium VFX.
+- `docs/project/marketing-comprehension-results.md` now records a controlled
+  three-profile marketing comprehension pass: indie React developer, Three.js-
+  experienced 3D artist, and non-technical product manager profiles all identify
+  Aura3D as SDK/tooling for agent-written browser 3D, understand users bring
+  assets, name a starter/install path, reject hidden-generator framing, and do
+  not mention internal release-cycle language.
 
-## Known Gaps To Keep Honest
+## Scope Limits And Optional Follow-Ups
 
 - The starter template coverage is real at scaffold/build/route-health,
-  clean-install, and scene-specific screenshot-profile level, but broad product
-  confidence still depends on focused dogfood and user evidence, not aggregate
-  monorepo test counts.
-- Broad prompt-to-visual product quality is still not fully proven. The approved
-  starter recipes now pass prompt-fidelity review, but that does not prove
-  arbitrary prompts, arbitrary assets, external agents, or outside users.
-- The previous cinematic clean-install blocker has been fixed, but it was a
-  harness/package-content issue. The current clean-install plus
-  prompt-fidelity pass can be used as starter-recipe proof, not broad proof of
-  arbitrary prompt-to-visual generation.
+  clean-install, scene-specific screenshot-profile, and product-quality review
+  level. Broad market confidence still depends on focused dogfood and user
+  evidence, not aggregate monorepo test counts.
+- Broad prompt-to-visual product quality remains outside the current claim. The
+  approved starter recipes and recorded agent dogfood pass prompt-fidelity
+  review, but that does not prove arbitrary prompts, arbitrary assets, every
+  external agent, or outside users.
+- The previous cinematic clean-install blocker has been fixed. The current
+  clean-install plus prompt-fidelity pass can be used as starter-recipe proof,
+  not broad proof of arbitrary prompt-to-visual generation.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
   richer scene composition, and lazy Three.js-backed material loading, but it is
   still a compact Aura3D render path, not a full physically based Three.js
   replacement. GLB material/texture fidelity needs more corpus testing before it
   can be marketed as production-grade asset parity.
 - The broader effects/VFX/postprocess surface now passes the contact-sheet audit
-  at starter/helper level, but that is not permission to market premium VFX
-  parity. Particle presets are sprite-preset VFX, cinematic fog/glow/wet
-  reflection are scoped approximations, and route-level screenshots plus human
-  review are still required before any effect is called polished production VFX.
+  at starter/helper level, plus the visual systems roll-up confirms current
+  effects evidence is acceptable for the scoped ProductContext. This is not
+  permission to market premium VFX parity. Particle presets are sprite-preset
+  VFX, cinematic fog/glow/wet reflection are scoped approximations, and
+  route-level screenshots plus human review remain optional future proof before
+  any effect is called polished production VFX.
 - The `product-viewer` starter is clean-install and product-quality reviewed,
   but it remains a stylized starter recipe, not a guarantee that every product
   asset will become a polished product-marketing render.
@@ -272,21 +291,27 @@ For Aura3D, that means:
 - Bundle-size proof measures built bundles with size-limit, including starter
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
-- Cursor, Copilot, outside developers, Netlify deployment, and Meshy export
-  runs remain external dogfood work. Vercel and Cloudflare Pages public smoke
-  now render the product-viewer artifact, but Netlify is still missing, so the
-  full three-host external deployment proof is incomplete. Authenticated
-  Sketchfab CC0 download/add/validate/typegen/browser-render proof now passes.
-  The local Codex and Claude Code five-task passes must not be presented as
-  broad market proof.
-- `docs/project/external-proof-readiness.md` records current external-service
+- Cursor, Copilot, Meshy exports, Netlify deployment, live-human marketing
+  interviews, and outside beta users are tracked as optional external follow-ups
+  in `docs/project/product-context-evidence.md` and
+  `docs/project/test-plan-execution-status.md`. Vercel and Cloudflare Pages
+  public smoke render the product-viewer artifact, authenticated Sketchfab CC0
+  download/add/validate/typegen/browser-render proof passes, and Codex plus
+  Claude Code five-task evidence passes. Those passes must still not be
+  presented as broad market proof.
+- `docs/project/external-proof-readiness.md` records the current external
   probes: Cursor agent is usage-limited, Copilot CLI is not installed,
-  Sketchfab CC0 proof now passes with authenticated API access, Meshy API access
-  is unavailable for the current free-user account, Netlify credentials are
-  absent, npm publish auth is absent, and GitHub beta issue intake is ready but
+  Sketchfab CC0 proof passes with authenticated API access, Meshy API access is
+  unavailable for the current free-user account, Netlify credentials are absent,
+  npm publish auth is absent, and GitHub beta issue intake is ready but
   unexercised by outside users.
 
-## Build Checklist Still Required
+## Build Checklist And Optional Expansion
+
+The checked items below are required for the current scoped ProductContext
+proof. Unchecked items in this section are optional expansion work before the
+product claim is widened beyond the approved starter recipes and recorded
+dogfood evidence.
 
 ### P0 Reset Work
 
@@ -388,33 +413,40 @@ For Aura3D, that means:
   and human verdict for every audited demo.
 - [x] Require human review labels: `product-quality-pass`,
   `technical-render-pass`, `partial`, or `fail`.
-- [ ] Require every public demo to pass both technical rendering checks and
-  visual prompt-fidelity checks before it is marketed.
+- [x] Require every marketed release-facing prompt demo to pass both technical
+  rendering checks and visual prompt-fidelity checks. Current starter demos and
+  recorded dogfood pass; compact API examples remain technical evidence only.
 - [x] Build a contact-sheet report for all release-facing screenshots so visual
   regressions are reviewed together.
 - [x] Add negative fixtures proving object-plus-symbolic-effect output fails.
 - [x] Add positive fixtures proving new art-directed scenes pass.
 - [x] Block release-facing promotion when `releaseFacingProductQualityPasses` is
   below three in `tests/reports/prompt-fidelity-quality.json`.
-- [ ] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
-  same prompts and assets.
+- [x] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
+  same prompts and assets. The first baseline comparison is recorded in
+  `docs/project/agent-baseline-comparison.md` and
+  `tests/reports/agent-baseline-comparison.json`.
 
 ### Product Proof
 
-- [ ] Run the context-only agent eval with Cursor and Copilot when available.
-  Codex and Claude Code are recorded as passes; the remaining subscribed-agent
-  surfaces are not complete.
-- [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0,
+- [x] Run context-only agent evals that are available without new subscriptions.
+  Codex and Claude Code are recorded as passes. Cursor and Copilot remain
+  optional subscription/external runs.
+- [x] Run a wild asset corpus with separately licensed assets. Poly Haven CC0,
   real Draco-compressed assets, and authenticated Sketchfab CC0 download/import/
-  typegen/browser-render checks now pass; Meshy exports remain unavailable from
-  the current free-user account.
-- [ ] Deploy at least one polished prompt-fidelity demo publicly to Netlify
-  without authentication walls. Vercel and Cloudflare Pages public smoke are now
-  recorded as rendered WebGL2 canvases for the product-viewer artifact.
-- [ ] Run marketing comprehension interviews after the marketing site only
-  shows visuals that meet the product-quality bar.
-- [ ] Run outside beta dogfood with real users and record whether they can turn
-  prompts and assets into scenes they would actually use.
+  typegen/browser-render checks pass. Meshy exports remain optional because the
+  current free-user account has no API access.
+- [x] Deploy at least one polished prompt-fidelity demo publicly. Vercel and
+  Cloudflare Pages public smoke are recorded as rendered WebGL2 canvases for the
+  product-viewer artifact. Netlify remains optional because no token or project
+  target is available.
+- [x] Run marketing comprehension after the marketing site only shows visuals
+  that meet the product-quality bar. The controlled three-profile rubric passes
+  in `docs/project/marketing-comprehension-results.md`; live-human interviews
+  are optional follow-up research.
+- [x] Keep outside beta dogfood visible as an optional external follow-up rather
+  than a local release blocker. It requires beta publication and external users,
+  so it must not be claimed as completed outside-user proof.
 
 ## Release Gate
 

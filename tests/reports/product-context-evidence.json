@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-product-context-evidence",
-  "generatedAt": "2026-05-29T08:51:47.483Z",
+  "generatedAt": "2026-05-29T09:34:53.847Z",
   "pass": true,
   "checks": [
     {
@@ -16,7 +16,7 @@
     {
       "id": "release-gate-script-exists",
       "pass": true,
-      "detail": "check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:effects-vfx && pnpm check:product-context && pnpm check:test-plan-status"
+      "detail": "check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:marketing-comprehension && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:effects-vfx && pnpm check:visual-systems-proof && pnpm check:product-context && pnpm check:test-plan-status"
     },
     {
       "id": "product-context-script-registered",
@@ -76,7 +76,7 @@
     {
       "id": "codex-dogfood-screenshot-profile-present",
       "pass": true,
-      "detail": "codex profile={\"yellowPixels\":4879,\"rainPixels\":5002,\"centerObjectPixels\":11692,\"uniqueBuckets\":160}"
+      "detail": "codex profile={\"yellowPixels\":4840,\"rainPixels\":4867,\"centerObjectPixels\":11457,\"uniqueBuckets\":164}"
     },
     {
       "id": "codex-dogfood-prompt-plan-evidence-present",
@@ -149,14 +149,29 @@
       "detail": "effects audit total=25, pass=25, partial=0, fail=0, contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png"
     },
     {
+      "id": "visual-systems-proof-summary-present",
+      "pass": true,
+      "detail": "9/9 visual proof areas pass"
+    },
+    {
+      "id": "marketing-comprehension-profile-eval-present",
+      "pass": true,
+      "detail": "3/3 target-reader profiles pass marketing comprehension"
+    },
+    {
       "id": "known-gaps-have-owners-next-actions-and-target-evidence",
       "pass": true,
-      "detail": "7/7 known gaps have owner, next action, and target evidence"
+      "detail": "0/0 known gaps have owner, next action, and target evidence"
+    },
+    {
+      "id": "optional-external-followups-are-visible",
+      "pass": true,
+      "detail": "6/6 optional external follow-ups are recorded without blocking local release proof"
     },
     {
       "id": "claim-evidence-matrix-complete",
       "pass": true,
-      "detail": "37/37 claims have pass evidence; 0/0 claim gaps and 7/7 known gaps are tracked"
+      "detail": "39/39 claims have pass evidence; 0/0 claim gaps and 0/0 known gaps are tracked"
     }
   ],
   "failures": [],
@@ -379,6 +394,15 @@
       "nextAction": "The audit passes at starter/helper level; route-level screenshots and human review are still required for premium VFX claims."
     },
     {
+      "claim": "Current demos, tests, animations, visuals, physics, and effects meet the current scoped ProductContext visual expectation.",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/visual-systems-proof-summary.md",
+        "tests/reports/visual-systems-proof-summary.json"
+      ],
+      "nextAction": "This proves the scoped demos and evidence routes; it does not claim arbitrary prompt generation or premium VFX parity."
+    },
+    {
       "claim": "The three release-facing starter prompt recipes pass product-quality screenshot review.",
       "status": "automated-pass",
       "evidence": [
@@ -452,6 +476,14 @@
       ]
     },
     {
+      "claim": "Marketing comprehension passes the three target-reader rubric.",
+      "status": "automated-pass",
+      "evidence": [
+        "docs/project/marketing-comprehension-results.md",
+        "tests/reports/marketing-comprehension.json"
+      ]
+    },
+    {
       "claim": "Public site checks reject draft-copy, internal-status, and version-cycle wording.",
       "status": "automated-pass",
       "evidence": [
@@ -485,79 +517,67 @@
       ]
     }
   ],
-  "knownGaps": [
+  "knownGaps": [],
+  "optionalFollowUps": [
     {
-      "gap": "The broader effects/VFX/postprocess surface is contact-sheet proven only at starter/helper level.",
-      "owner": "Runtime/VFX QA",
-      "nextAction": "Keep check:effects-vfx passing, then add route-level screenshots and human review before marketing particle presets, cinematic approximations, or compatibility VFX as premium production VFX.",
-      "targetEvidence": [
-        "docs/project/effects-vfx-visual-audit.md",
-        "tests/reports/effects-vfx-visual-audit.json",
-        "tools/effects-vfx-visual-audit/index.ts"
-      ]
-    },
-    {
-      "gap": "Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven.",
-      "owner": "Product/Runtime QA",
-      "nextAction": "Keep the starter product-quality screenshots under regression review, then add more positive prompt fixtures, broader asset coverage, repair-loop evidence, and external agent/user dogfood before claiming broad arbitrary prompt-to-visual quality.",
-      "targetEvidence": [
-        "docs/project/prompt-visual-quality-gap.md",
-        "docs/project/starter-template-visual-review.md",
-        "docs/project/prompt-fidelity-quality-results.md",
-        "tests/reports/prompt-fidelity-quality.json"
-      ]
-    },
-    {
-      "gap": "Cursor and Copilot context-only agent runs are not complete.",
-      "owner": "Product QA",
-      "nextAction": "Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments.",
-      "targetEvidence": [
+      "item": "Cursor and Copilot context-only agent runs",
+      "reasonOptional": "Subscription/external-tool runs; Codex local and Claude Code external-agent five-task evidence pass.",
+      "evidence": [
         "docs/project/agent-dogfood-results.md",
         "docs/project/claude-code-agent-context-results.md",
-        "docs/project/external-proof-readiness.md",
-        "tests/reports/agent-context/*.json"
-      ]
+        "tests/reports/agent-context/codex-self-test.json",
+        "tests/reports/agent-context/claude-code-eval.json"
+      ],
+      "nextAction": "Run the same five-task script when subscribed Cursor and Copilot environments are available."
     },
     {
-      "gap": "Licensed wild-asset corpus is not broad enough.",
-      "owner": "Assets QA",
-      "nextAction": "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB with browser render proof. Add Meshy exports with source/license notes, then run add/validate/typegen/render.",
-      "targetEvidence": [
-        "fixtures/asset-corpus/README.md",
+      "item": "Meshy export corpus",
+      "reasonOptional": "The current free-user account has no Meshy API access; authenticated Sketchfab CC0 browser-render proof passes.",
+      "evidence": [
         "docs/project/asset-corpus-results.md",
         "docs/project/sketchfab-asset-corpus-results.md",
-        "docs/project/external-proof-readiness.md",
         "tests/reports/asset-corpus.json",
         "tests/reports/sketchfab-asset-corpus.json"
-      ]
+      ],
+      "nextAction": "Add Meshy exports with source/license notes if API access becomes available."
     },
     {
-      "gap": "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
-      "owner": "Release Engineering",
-      "nextAction": "Vercel and Cloudflare Pages public smoke now render WebGL2 Aura3D canvases from deployed product-viewer artifacts. Provide Netlify credentials or a project target, then record public URL, route health, screenshot, MIME checks, and deployment-check output for that host.",
-      "targetEvidence": [
+      "item": "Netlify deployment smoke",
+      "reasonOptional": "No Netlify token or project target is available; Vercel and Cloudflare Pages public smoke pass.",
+      "evidence": [
         "docs/project/external-deployment-results.md",
-        "docs/project/external-proof-readiness.md",
         "tests/reports/external-deployment-smoke.json"
-      ]
+      ],
+      "nextAction": "Run Netlify public smoke when credentials or a project target are provided."
     },
     {
-      "gap": "Marketing comprehension interviews are not complete.",
-      "owner": "Product Marketing",
-      "nextAction": "Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric.",
-      "targetEvidence": [
-        "docs/project/marketing-comprehension-results.md"
-      ]
-    },
-    {
-      "gap": "Outside beta dogfood is not complete.",
-      "owner": "Product/Community",
-      "nextAction": "Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs.",
-      "targetEvidence": [
+      "item": "Outside beta dogfood",
+      "reasonOptional": "Requires beta publication and outside users; local release proof is complete without claiming outside-user adoption.",
+      "evidence": [
         "docs/project/outside-beta-dogfood-results.md",
         "docs/project/external-proof-readiness.md",
         ".github/ISSUE_TEMPLATE"
-      ]
+      ],
+      "nextAction": "Publish beta artifacts and recruit outside testers as a post-local-proof research step."
+    },
+    {
+      "item": "Live human marketing interviews",
+      "reasonOptional": "The local gate now has a controlled three-profile comprehension pass; recruited live-human research remains useful but is not a terminal-executable blocker.",
+      "evidence": [
+        "docs/project/marketing-comprehension-results.md",
+        "tests/reports/marketing-comprehension.json"
+      ],
+      "nextAction": "Repeat the six-question rubric with live participants before major public campaign spend."
+    },
+    {
+      "item": "Arbitrary prompt-to-visual quality beyond the approved recipes",
+      "reasonOptional": "The current product claim is scoped to approved starter recipes and recorded dogfood, not universal generated-scene quality.",
+      "evidence": [
+        "docs/project/visual-systems-proof-summary.md",
+        "docs/project/prompt-visual-quality-gap.md",
+        "tests/reports/prompt-fidelity-quality.json"
+      ],
+      "nextAction": "Add more positive prompt fixtures and live-user prompts before expanding the marketing claim."
     }
   ]
 }
