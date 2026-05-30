@@ -1,12 +1,13 @@
 # Round 6 Phase A Sign-Off
 
-Round 6 is authorized only from the current amended standard. This sign-off
-does not convert any prior failed result into shipping evidence.
+Round 6 is authorized only from the current amended standard after all Round 6
+repair amendments through `32636de490a0d4ba28087628979a059ea07b4c5a`. This
+sign-off does not convert any prior failed result into shipping evidence.
 
 ## Required Fields
 
 Round: 6
-Base commit SHA: `9c1ed0e26aab814af47e57939053127a84567dbd`
+Final amended standard commit SHA: `32636de490a0d4ba28087628979a059ea07b4c5a`
 Date: 2026-05-30
 Reviewer: `gchahal1982`
 User signature: `gchahal1982`, standing active-goal authorization to complete all `FinalizedPromptPlan.md` tasks without additional permission
@@ -30,6 +31,12 @@ User signature: `gchahal1982`, standing active-goal authorization to complete al
 - [x] `benchmark/assets/sneaker.glb` remains the only allowed asset for prompt 10.
 - [x] `benchmark/results/amendment-round-6-standard.md` records the prompt-facing Round 6 repair standard.
 - [x] `benchmark/results/amendment-round-6-engine-performance.md` records the engine performance and particle repair standard.
+- [x] `benchmark/results/amendment-round-6-ui-mount.md` records the UI mount fallback repair.
+- [x] `benchmark/results/amendment-round-6-material-framing.md` records the material lab framing repair.
+- [x] `benchmark/results/amendment-round-6-viewport-layout.md` records viewport layout default repairs.
+- [x] `benchmark/results/amendment-round-6-humanoid-readability.md` records primitive humanoid readability repairs.
+- [x] `benchmark/results/amendment-round-6-solar-system.md` records the solar-system helper repair.
+- [x] `benchmark/results/amendment-round-6-physics-minigolf.md` records physics playground and mini-golf evidence repairs.
 - [x] Round 6 may start only after this sign-off is committed.
 - [x] A future release claim still requires a complete full benchmark pass; local smoke screenshots do not count.
 
@@ -53,5 +60,5 @@ pnpm run check:public-api
 ## Sign-Off Statement
 
 ```text
-I, gchahal1982, approve the Round 6 standard amendments recorded in benchmark/results/amendment-round-6-standard.md and benchmark/results/amendment-round-6-engine-performance.md, and the Round 6 Phase A sign-off recorded in benchmark/results/round-6-phase-a-signoff.md. I confirm that all prior failed rounds remain invalid for shipping, and I approve starting Round 6 from commit 9c1ed0e26aab814af47e57939053127a84567dbd.
+I, gchahal1982, approve the complete Round 6 amended standard recorded in benchmark/results/amendment-round-6-standard.md, benchmark/results/amendment-round-6-engine-performance.md, benchmark/results/amendment-round-6-ui-mount.md, benchmark/results/amendment-round-6-material-framing.md, benchmark/results/amendment-round-6-viewport-layout.md, benchmark/results/amendment-round-6-humanoid-readability.md, benchmark/results/amendment-round-6-solar-system.md, and benchmark/results/amendment-round-6-physics-minigolf.md, and the Round 6 Phase A sign-off recorded in benchmark/results/round-6-phase-a-signoff.md. I confirm that all prior failed rounds remain invalid for shipping, and I approve starting Round 6 from the amended standard at commit 32636de490a0d4ba28087628979a059ea07b4c5a.
 ```
