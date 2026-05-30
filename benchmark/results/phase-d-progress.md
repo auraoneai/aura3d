@@ -219,3 +219,31 @@ Local smoke screenshots:
 
 This is still not a benchmark pass. It is targeted repair evidence before the
 next required full benchmark round.
+
+## Round 6 UI Mount Repair
+
+`benchmark/results/amendment-round-6-ui-mount.md` records a repair discovered
+from the partial Round 6 diagnostic output. Codex/Aura prompt 08 compiled and
+captured a screenshot, but the screenshot was blank except for the toggle
+button. The cause was `ui.html("#app", markup)` inserting a nested `#scene`
+container after a full-height `#app`, placing the canvas below the viewport.
+
+Repair:
+
+- `ui.html(target, markup)` now defaults to `beforeend`, so markup is inserted
+  inside the target.
+- Agent docs now say nested scene containers and HUD markup are safe with the
+  default `ui.html("#app", markup)` behavior.
+- A unit test locks the default insertion point.
+- The Aura3D context manifest was regenerated after the docs update.
+
+Diagnostic evidence:
+
+- Before repair: partial Round 6 `codex-aura3d` prompt 08 screenshot was blank
+  except for the toggle despite route health reporting one full-size canvas.
+- After repair: `/tmp/aura3d-ui-mount-city-smoke.png` renders the generated
+  prompt-08 city in viewport, and `/tmp/aura3d-ui-mount-city-smoke.json` shows
+  `#app`, `#scene`, and the canvas all at `1440 x 960`, `x=0`, `y=0`.
+
+The partial `benchmark/runs/round-6/` tree remains diagnostic only and must not
+be scored or committed as a valid benchmark result.

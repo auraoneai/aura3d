@@ -108,6 +108,19 @@ describe("agent API", () => {
     });
   });
 
+  test("mounts UI markup inside the target by default", () => {
+    const calls: Array<[InsertPosition, string]> = [];
+    const element = {
+      insertAdjacentHTML(position: InsertPosition, markup: string) {
+        calls.push([position, markup]);
+      }
+    } as HTMLElement;
+
+    ui.html(element, `<div id="scene"></div>`);
+
+    expect(calls).toEqual([["beforeend", `<div id="scene"></div>`]]);
+  });
+
   test("compiles prompt plans into approved visual recipes", () => {
     const plan = definePromptPlan({
       sceneType: "cinematic-scene",

@@ -503,7 +503,7 @@ export const ui = {
   root: (selector = "#app"): HTMLElement => resolveUiElement<HTMLElement>(selector, "root"),
   text: (selector: string): HTMLElement => resolveUiElement<HTMLElement>(selector, "text"),
   button: (selector: string): HTMLButtonElement => resolveUiElement<HTMLButtonElement>(selector, "button"),
-  html: (target: AuraUiTarget, markup: string, position: InsertPosition = "afterend"): HTMLElement => {
+  html: (target: AuraUiTarget, markup: string, position: InsertPosition = "beforeend"): HTMLElement => {
     const element = resolveUiElement<HTMLElement>(target, "html mount");
     element.insertAdjacentHTML(position, markup);
     return element;

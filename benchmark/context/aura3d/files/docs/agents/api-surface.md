@@ -54,6 +54,10 @@ ui.onClick(".toggle", (button) => {
 });
 ```
 
+`ui.html("#app", markup)` inserts inside the target by default. Use it for
+mounting HUDs and nested scene containers; pass an explicit `InsertPosition`
+only when you intentionally need sibling markup.
+
 React adapter:
 
 ```ts

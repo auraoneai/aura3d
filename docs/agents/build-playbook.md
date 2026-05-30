@@ -86,7 +86,9 @@ Round 1 failure repairs:
   implement the actual viewer in raw Three.js inside an Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
   `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
-  because those patterns caused Round 5 TypeScript compile failures.
+  because those patterns caused Round 5 TypeScript compile failures. By
+  default, `ui.html("#app", markup)` inserts markup inside `#app`, so nested
+  scene containers remain visible within the viewport.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. Do not claim physics from cosmetic floating boxes only.
