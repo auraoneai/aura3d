@@ -27,6 +27,10 @@ run finite commands such as `npm install` and `npm run build`, and stop. Do not
 run `npm run dev`, Playwright, browser screenshots, or manual visual
 verification from inside the benchmark agent process.
 
+`createAuraApp("#app", ...)` supplies viewport-safe layout defaults for a
+direct empty app container. Do not add CSS merely to remove body margin or make
+the canvas fill the screenshot; add CSS only for overlays and controls.
+
 Minimal prompt-plan shape:
 
 ```ts

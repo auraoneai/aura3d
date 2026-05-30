@@ -3070,10 +3070,28 @@ function resolveCanvas(target: string | HTMLElement | HTMLCanvasElement): HTMLCa
 }
 
 function appendCanvas(target: HTMLElement): HTMLCanvasElement {
+  applyDefaultCanvasMountLayout(target);
   const canvas = document.createElement("canvas");
   canvas.dataset.aura3dCanvas = "true";
   target.append(canvas);
   return canvas;
+}
+
+function applyDefaultCanvasMountLayout(target: HTMLElement): void {
+  if (typeof window === "undefined") return;
+  if (target.parentElement === document.body && !target.hasAttribute("data-aura3d-preserve-page-layout")) {
+    document.documentElement.style.width ||= "100%";
+    document.documentElement.style.height ||= "100%";
+    document.body.style.width ||= "100%";
+    document.body.style.height ||= "100%";
+    document.body.style.margin ||= "0";
+    document.body.style.overflow ||= "hidden";
+  }
+  target.style.width ||= "100%";
+  target.style.height ||= "100vh";
+  target.style.minHeight ||= "100vh";
+  target.style.position ||= "relative";
+  target.style.overflow ||= "hidden";
 }
 
 function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: boolean): void {
@@ -3084,6 +3102,8 @@ function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: 
   const parent = canvas.parentElement;
   const cssWidth = rect.width || canvas.clientWidth || parent?.clientWidth || (typeof window !== "undefined" ? window.innerWidth : 960) || 960;
   const cssHeight = rect.height || canvas.clientHeight || parent?.clientHeight || (typeof window !== "undefined" ? window.innerHeight : 540) || 540;
+  canvas.style.width = `${cssWidth}px`;
+  canvas.style.height = `${cssHeight}px`;
   const width = Math.max(320, Math.round(cssWidth * pixelRatio));
   const height = Math.max(220, Math.round(cssHeight * pixelRatio));
   canvas.width = resize ? width : canvas.width || width;

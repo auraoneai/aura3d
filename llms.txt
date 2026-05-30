@@ -72,6 +72,10 @@ scene()
   .camera(camera.orbit({ distance: 4 }));
 ```
 
+`createAuraApp("#app", ...)` gives a direct empty app container viewport-safe
+layout by default. Agent-authored benchmark scenes do not need custom CSS just
+to remove browser body margin or make the canvas fill the screenshot.
+
 ```ts
 scene()
   .background("#05070d")

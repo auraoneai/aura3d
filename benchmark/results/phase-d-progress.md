@@ -275,3 +275,35 @@ Diagnostic evidence:
 
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
+
+## Round 6 Viewport Layout Repair
+
+`benchmark/results/amendment-round-6-viewport-layout.md` records a default
+layout repair discovered from the partial Round 6 diagnostic contact sheet.
+Recipe-based scenes could render with browser default body margin and a
+partial-height canvas when agents did not add CSS, leaving white bands in
+benchmark screenshots.
+
+Repair:
+
+- `createAuraApp("#app", ...)` now applies viewport-safe layout defaults for a
+  direct empty app container.
+- Direct body child app containers get zero body margin, hidden overflow,
+  full-page html/body sizing, and `100vh` app container sizing unless they opt
+  out with `data-aura3d-preserve-page-layout`.
+- Canvas CSS size is pinned to the measured viewport size during configuration.
+- `llms.txt` and the build playbook now tell agents not to add CSS merely to
+  make benchmark canvases fill the screenshot.
+- The Aura3D context manifest was regenerated after the context docs update.
+
+Diagnostic evidence:
+
+- Before repair: `/tmp/aura3d-no-css-humanoid-smoke.png` showed a white band
+  below the no-CSS humanoid recipe; its readout measured `#app` and canvas at
+  `1424 x 712`, `x=8`, `y=8`.
+- After repair: `/tmp/aura3d-no-css-humanoid-smoke-fixed.png` fills the
+  viewport; its readout measured `#app` and canvas at `1440 x 960`, `x=0`,
+  `y=0`, with body margin `0px`.
+
+This is targeted repair evidence only. A future release claim still requires a
+clean full benchmark round from the amended standard.
