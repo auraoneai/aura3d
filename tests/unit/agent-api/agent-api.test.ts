@@ -63,13 +63,18 @@ describe("agent API", () => {
     expect(snapshot.camera.mode).toBe("follow");
   });
 
-  test("exposes Round 1 repair helpers for particles, city, materials, product staging, and physics cues", () => {
+  test("exposes repair helpers for particles, city, materials, products, physics, charts, games, and characters", () => {
     const snapshot = scene()
       .addMany(prefabs.particleFountain({ count: 1400 }))
       .addMany(prefabs.cityBlock({ blocks: 4 }))
       .addMany(prefabs.materialSwatches())
       .addMany(prefabs.productStage())
       .addMany(prefabs.physicsRamp())
+      .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+      .addMany(prefabs.dataBars3D({ grid: 6 }))
+      .addMany(prefabs.neonTunnel({ rings: 10 }))
+      .addMany(prefabs.miniGolfHole())
+      .addMany(prefabs.primitiveHumanoid())
       .add(primitives.cylinder({ name: "typed cylinder plinth", material: material.glass() }).animate({ clip: "float", speed: 0.7 }))
       .add(effects.particles({ emitter: "swirl", particleCount: 1500 }))
       .camera(camera.orbit({ distance: 5.2 }))
@@ -82,6 +87,12 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.transmission)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.clearcoat)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "rigid physics ramp")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("visible rigid body cube 50"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
+    expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
   });
 
   test("compiles prompt plans into approved visual recipes", () => {

@@ -371,12 +371,21 @@ export const camera = {
     target: options.target ?? [0, 0.8, 0],
     fov: options.fov ?? 45
   }),
-  orbit: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
-    mode: "orbit",
-    distance: options.distance ?? 4,
-    target: options.target ?? [0, 0.8, 0],
-    fov: options.fov ?? 45
-  }),
+  orbit: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => {
+    const distance = options.distance ?? 4;
+    const target = options.target ?? [0, 0.8, 0];
+    return {
+      mode: "orbit",
+      distance,
+      target,
+      position: options.position ?? [
+        target[0] + distance * 0.62,
+        target[1] + distance * 0.42,
+        target[2] + distance * 0.78
+      ],
+      fov: options.fov ?? 45
+    };
+  },
   dolly: (options: Omit<AuraCameraSpec, "mode"> & { readonly from: AuraVec3; readonly to: AuraVec3 }): AuraCameraSpec => ({
     mode: "dolly",
     from: options.from,
@@ -541,53 +550,90 @@ export function scene(): AuraSceneBuilder {
   return new AuraSceneBuilder();
 }
 
+function dataBarColor(value: number): AuraColor {
+  if (value < 0.34) return "#20d6f2";
+  if (value < 0.67) return "#ffd166";
+  return "#ef476f";
+}
+
+function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex: number): AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [];
+  const floors = Math.max(3, Math.floor(height * 3.2));
+  for (let floor = 0; floor < floors; floor += 1) {
+    const y = 0.22 + floor * 0.28;
+    const warm = (floor + towerIndex) % 3 !== 0;
+    const windowMaterial = material.emissive({
+      color: warm ? "#ffd98a" : "#8bdcff",
+      emissive: warm ? "#ffd98a" : "#8bdcff"
+    });
+    nodes.push(primitives.box({
+      name: `front lit window band ${towerIndex + 1}-${floor + 1}`,
+      material: windowMaterial
+    }).position(x, y, z + 0.315).scale([0.46, 0.052, 0.032]).toJSON());
+    nodes.push(primitives.box({
+      name: `side lit window band ${towerIndex + 1}-${floor + 1}`,
+      material: windowMaterial
+    }).position(x + 0.375, y, z).scale([0.032, 0.052, 0.34]).toJSON());
+  }
+  return nodes;
+}
+
 export const prefabs = {
   particleFountain: (options: { readonly color?: AuraColor; readonly count?: number } = {}): readonly AuraSceneNode[] => [
-    primitives.cylinder({ name: "visible particle emitter base", material: material.metal({ color: "#1c2934", roughness: 0.24 }) }).position(0, 0.03, 0).scale([0.52, 0.08, 0.52]).toJSON(),
-    primitives.sphere({ name: "fountain glow core", material: material.emissive({ color: options.color ?? "#7dfcff", emissive: options.color ?? "#7dfcff" }) }).position(0, 0.18, 0).scale(0.14).toJSON(),
-    effects.particles({ name: "high density fountain particles", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1200, radius: 1.05, height: 2.8 }).toJSON(),
-    effects.bloom({ intensity: 0.42, color: options.color ?? "#7dfcff" }).toJSON()
+    primitives.cylinder({ name: "visible particle emitter base", material: material.metal({ color: "#263747", roughness: 0.2 }) }).position(0, 0.035, 0).scale([0.62, 0.09, 0.62]).toJSON(),
+    primitives.cylinder({ name: "particle collision ground disc", material: material.pbr({ color: "#101923", roughness: 0.7, metallic: 0.05 }) }).position(0, 0.005, 0).scale([1.8, 0.02, 1.8]).toJSON(),
+    primitives.sphere({ name: "fountain glow core", material: material.emissive({ color: options.color ?? "#7dfcff", emissive: options.color ?? "#7dfcff" }) }).position(0, 0.2, 0).scale(0.16).toJSON(),
+    effects.particles({ name: "high density fountain particle arcs", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1800, radius: 1.35, height: 3.05, intensity: 1.35, speed: 1.12 }).toJSON(),
+    effects.bloom({ intensity: 0.55, color: options.color ?? "#7dfcff" }).toJSON()
   ],
 
   cityBlock: (options: { readonly blocks?: number; readonly litWindows?: boolean } = {}): readonly AuraSceneNode[] => {
-    const blocks = Math.max(3, Math.min(7, options.blocks ?? 5));
+    const blocks = Math.max(3, Math.min(24, options.blocks ?? 20));
     const nodes: AuraSceneNode[] = [
       primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: "#111820", roughness: 0.72, metallic: 0.04 }) }).position(0, -0.04, -0.65).scale([7.4, 1, 5.2]).toJSON(),
       primitives.box({ name: "main avenue stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0, 0.01, -0.65).scale([0.06, 0.018, 5.1]).toJSON(),
-      primitives.box({ name: "cross street stripe", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.012, -0.65).scale([7.0, 0.018, 0.045]).toJSON()
+      primitives.box({ name: "cross street stripe", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.012, -0.65).scale([7.0, 0.018, 0.045]).toJSON(),
+      primitives.box({ name: "left lane divider", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(-0.36, 0.013, -0.65).scale([0.035, 0.018, 4.8]).toJSON(),
+      primitives.box({ name: "right lane divider", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0.36, 0.013, -0.65).scale([0.035, 0.018, 4.8]).toJSON()
     ];
     for (let index = 0; index < blocks; index += 1) {
-      const x = -2.4 + index * 1.2;
-      const height = 0.75 + (index % 3) * 0.42;
-      const z = -1.5 + (index % 2) * 1.8;
+      const col = index % 6;
+      const row = Math.floor(index / 6);
+      const x = -3.0 + col * 1.08;
+      const z = -2.15 + row * 1.05 + (col % 2) * 0.12;
+      const height = 0.78 + ((index * 7) % 9) * 0.16;
       nodes.push(primitives.box({
         name: `city tower ${index + 1}`,
         material: material.pbr({ color: index % 2 === 0 ? "#26313d" : "#1d2733", roughness: 0.5, metallic: 0.08 })
-      }).position(x, height / 2, z).scale([0.72, height, 0.58]).toJSON());
+      }).position(x, height / 2, z).scale([0.72, height, 0.62]).toJSON());
       if (options.litWindows !== false) {
-        for (let floor = 0; floor < Math.max(2, Math.floor(height * 3)); floor += 1) {
-          nodes.push(primitives.box({
-            name: `lit window row ${index + 1}-${floor + 1}`,
-            material: material.emissive({ color: floor % 2 === 0 ? "#ffd98a" : "#8bdcff", emissive: floor % 2 === 0 ? "#ffd98a" : "#8bdcff" })
-          }).position(x, 0.24 + floor * 0.24, z + 0.3).scale([0.42, 0.045, 0.028]).toJSON());
-        }
+        nodes.push(...makeBuildingWindowRows(x, z, height, index));
       }
+    }
+    for (let index = 0; index < 8; index += 1) {
+      const x = -3.15 + (index % 4) * 2.1;
+      const z = index < 4 ? 0.35 : -1.75;
+      nodes.push(primitives.cylinder({ name: `street light pole ${index + 1}`, material: material.metal({ color: "#6f7d86", roughness: 0.32 }) }).position(x, 0.34, z).scale([0.035, 0.68, 0.035]).toJSON());
+      nodes.push(primitives.sphere({ name: `warm street lamp ${index + 1}`, material: material.emissive({ color: "#ffd98a", emissive: "#ffd98a" }) }).position(x, 0.74, z).scale(0.09).toJSON());
     }
     return nodes;
   },
 
   materialSwatches: (): readonly AuraSceneNode[] => [
-    primitives.sphere({ name: "brushed metal swatch", material: material.metal() }).position(-1.35, 0.48, -0.75).scale(0.42).toJSON(),
-    primitives.sphere({ name: "transmission glass swatch", material: material.glass({ color: "#bdefff" }) }).position(-0.45, 0.48, -0.75).scale(0.42).toJSON(),
-    primitives.sphere({ name: "matte rubber swatch", material: material.rubber() }).position(0.45, 0.48, -0.75).scale(0.42).toJSON(),
-    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#e33645" }) }).position(1.35, 0.48, -0.75).scale(0.42).toJSON(),
-    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#202731", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.75).scale([3.6, 0.08, 0.22]).toJSON()
+    primitives.sphere({ name: "brushed metal swatch", material: material.metal({ color: "#dce6ee", roughness: 0.12 }) }).position(-1.8, 0.52, -0.72).scale(0.42).toJSON(),
+    primitives.sphere({ name: "transparent glass swatch", material: material.glass({ color: "#bdefff", opacity: 0.24, transmission: 0.96 }) }).position(-0.9, 0.52, -0.72).scale(0.42).toJSON(),
+    primitives.sphere({ name: "matte rubber swatch", material: material.rubber({ color: "#07090d" }) }).position(0, 0.52, -0.72).scale(0.42).toJSON(),
+    primitives.sphere({ name: "emissive pink swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(0.9, 0.52, -0.72).scale(0.42).toJSON(),
+    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#26d3d0", roughness: 0.12, clearcoat: 1 }) }).position(1.8, 0.52, -0.72).scale(0.42).toJSON(),
+    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#202731", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.72).scale([4.35, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "glass contrast card", material: material.emissive({ color: "#dff8ff", emissive: "#dff8ff" }) }).position(-0.9, 0.52, -1.18).scale([0.5, 0.34, 0.035]).toJSON(),
+    effects.bloom({ intensity: 0.22, color: "#ff42c8" }).toJSON()
   ],
 
   productStage: (): readonly AuraSceneNode[] => [
-    primitives.plane({ name: "curved studio backdrop cue", material: material.pbr({ color: "#141a21", roughness: 0.4, metallic: 0.1 }) }).position(0, 0.86, -2.25).rotate(1.5708, 0, 0).scale([5.4, 1, 2.4]).toJSON(),
-    primitives.cylinder({ name: "thick product inspection plinth", material: material.clearcoat({ color: "#1c232c", roughness: 0.18 }) }).position(0, 0.03, -0.65).scale([1.28, 0.16, 1.28]).toJSON(),
-    primitives.box({ name: "soft contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94 }) }).position(0, 0.13, -0.65).scale([1.1, 0.018, 0.7]).toJSON(),
+    primitives.plane({ name: "curved studio backdrop cue", material: material.pbr({ color: "#dfe6ee", roughness: 0.46, metallic: 0.02 }) }).position(0, 0.86, -2.25).rotate(1.5708, 0, 0).scale([5.4, 1, 2.4]).toJSON(),
+    primitives.cylinder({ name: "round white product inspection plinth", material: material.clearcoat({ color: "#f6f8fb", roughness: 0.2 }) }).position(0, 0.03, -0.65).scale([1.34, 0.18, 1.34]).toJSON(),
+    primitives.cylinder({ name: "soft elliptical contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94, opacity: 0.42 }) }).position(0, 0.135, -0.65).scale([0.92, 0.012, 0.62]).toJSON(),
     primitives.box({ name: "left inspection softbox", material: material.emissive({ color: "#edf7ff", emissive: "#edf7ff" }) }).position(-1.9, 0.92, -0.8).scale([0.08, 1.3, 1.45]).toJSON(),
     primitives.box({ name: "right rim softbox", material: material.emissive({ color: "#ffd6a0", emissive: "#ffd6a0" }) }).position(1.92, 0.82, -0.9).scale([0.08, 1.0, 1.3]).toJSON()
   ],
@@ -598,6 +644,100 @@ export const prefabs = {
     primitives.box({ name: "settled rigid body cube 1", material: material.clearcoat({ color: "#6ee7ff" }) }).position(0.18, 0.22, -0.58).rotate(0.12, 0.34, 0.08).scale(0.24).toJSON(),
     primitives.box({ name: "settled rigid body cube 2", material: material.clearcoat({ color: "#ffd166" }) }).position(0.52, 0.22, -0.42).rotate(-0.18, 0.2, -0.12).scale(0.24).toJSON(),
     primitives.box({ name: "settled rigid body cube 3", material: material.clearcoat({ color: "#ef476f" }) }).position(0.82, 0.22, -0.72).rotate(0.08, -0.28, 0.2).scale(0.24).toJSON()
+  ],
+
+  physicsPlayground: (options: { readonly cubes?: number } = {}): readonly AuraSceneNode[] => {
+    const count = Math.max(12, Math.min(80, options.cubes ?? 50));
+    const nodes: AuraSceneNode[] = [
+      primitives.box({ name: "wide tilted collision ramp", material: material.pbr({ color: "#2c3948", roughness: 0.5, metallic: 0.1 }) }).position(-0.35, 0.34, -0.8).rotate(0, 0, -0.34).scale([3.4, 0.16, 1.35]).toJSON(),
+      primitives.box({ name: "lower catch platform", material: material.pbr({ color: "#141b23", roughness: 0.64, metallic: 0.06 }) }).position(0.86, 0.04, -0.68).scale([2.6, 0.12, 1.65]).toJSON()
+    ];
+    const palette = ["#f97316", "#38bdf8", "#a3e635", "#f43f5e", "#facc15", "#c084fc"];
+    for (let index = 0; index < count; index += 1) {
+      const col = index % 10;
+      const row = Math.floor(index / 10);
+      const x = -1.45 + col * 0.32 + (row % 2) * 0.08;
+      const y = 0.34 + row * 0.22 + (col % 3) * 0.045;
+      const z = -1.22 + (index % 5) * 0.22;
+      nodes.push(primitives.box({
+        name: `visible rigid body cube ${index + 1}`,
+        material: material.clearcoat({ color: palette[index % palette.length], roughness: 0.2 })
+      }).position(x, y, z).rotate(index * 0.08, index * 0.13, index * 0.05).scale(0.18).toJSON());
+    }
+    for (let index = 0; index < 8; index += 1) {
+      nodes.push(primitives.box({
+        name: `red contact normal vector ${index + 1}`,
+        material: material.emissive({ color: "#ff5151", emissive: "#ff5151" })
+      }).position(0.02 + index * 0.16, 0.44 + index * 0.025, -1.22 + (index % 4) * 0.2).rotate(0, 0, -0.58).scale([0.035, 0.32, 0.035]).toJSON());
+    }
+    return nodes;
+  },
+
+  dataBars3D: (options: { readonly grid?: number } = {}): readonly AuraSceneNode[] => {
+    const grid = Math.max(3, Math.min(8, options.grid ?? 6));
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "matte chart floor", material: material.pbr({ color: "#16242a", roughness: 0.68, metallic: 0.08 }) }).position(0, -0.025, 0).scale([4.3, 1, 4.3]).toJSON(),
+      primitives.box({ name: "x axis rail", material: material.emissive({ color: "#d9f8ff", emissive: "#d9f8ff" }) }).position(0, 0.025, 1.95).scale([3.75, 0.035, 0.035]).toJSON(),
+      primitives.box({ name: "z axis rail", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-1.95, 0.025, 0).scale([0.035, 0.035, 3.75]).toJSON(),
+      primitives.box({ name: "height axis rail", material: material.emissive({ color: "#f4fbff", emissive: "#f4fbff" }) }).position(-1.95, 1.18, 1.95).scale([0.04, 2.36, 0.04]).toJSON()
+    ];
+    for (let row = 0; row < grid; row += 1) {
+      for (let col = 0; col < grid; col += 1) {
+        const normalized = ((row * 5 + col * 7) % 17) / 16;
+        const height = 0.32 + normalized * 2.05;
+        const x = (col - (grid - 1) / 2) * 0.58;
+        const z = (row - (grid - 1) / 2) * 0.58;
+        nodes.push(primitives.box({
+          name: `height-colored data bar ${row + 1}-${col + 1}`,
+          material: material.clearcoat({
+            color: dataBarColor(normalized),
+            emissive: dataBarColor(normalized),
+            roughness: 0.24,
+            clearcoat: 0.62
+          })
+        }).position(x, height / 2, z).scale([0.36, height, 0.36]).animate({ clip: "pulse", speed: 0.24 + normalized * 0.36 }).onPointer({ cursor: "pointer", onHover: "highlight bar and show value" }).toJSON());
+      }
+    }
+    return nodes;
+  },
+
+  neonTunnel: (options: { readonly rings?: number } = {}): readonly AuraSceneNode[] => {
+    const rings = Math.max(8, Math.min(28, options.rings ?? 16));
+    const nodes: AuraSceneNode[] = [];
+    const palette = ["#22d3ee", "#ff42c8", "#ffd166", "#8b5cf6"];
+    for (let index = 0; index < rings; index += 1) {
+      const z = -0.3 - index * 0.34;
+      const scale = 1 + index * 0.035;
+      const color = palette[index % palette.length];
+      const mat = material.emissive({ color, emissive: color });
+      nodes.push(primitives.box({ name: `neon tunnel top segment ${index + 1}`, material: mat }).position(0, 1.22 * scale, z).scale([1.8 * scale, 0.055, 0.05]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel bottom segment ${index + 1}`, material: mat }).position(0, -0.42 * scale, z).scale([1.8 * scale, 0.055, 0.05]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel left segment ${index + 1}`, material: mat }).position(-0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel right segment ${index + 1}`, material: mat }).position(0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).toJSON());
+    }
+    nodes.push(effects.fog({ density: 0.2, color: "#3b4f7a" }).toJSON());
+    nodes.push(effects.bloom({ intensity: 0.72, color: "#ff42c8" }).toJSON());
+    return nodes;
+  },
+
+  miniGolfHole: (): readonly AuraSceneNode[] => [
+    primitives.plane({ name: "flat putting green", material: material.pbr({ color: "#2f8f48", roughness: 0.62 }) }).position(0, -0.03, -0.4).scale([4.8, 1, 3.2]).toJSON(),
+    primitives.cylinder({ name: "single red obstacle", material: material.clearcoat({ color: "#e11d48", roughness: 0.18 }) }).position(0.35, 0.28, -0.65).scale([0.34, 0.56, 0.34]).toJSON(),
+    primitives.sphere({ name: "white physics golf ball", material: material.clearcoat({ color: "#f8fafc", roughness: 0.12 }) }).position(-1.35, 0.12, 0.45).scale(0.16).toJSON(),
+    primitives.box({ name: "cyan aim direction line", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(-0.86, 0.08, 0.16).rotate(0, -0.42, 0).scale([0.9, 0.035, 0.055]).toJSON(),
+    primitives.cylinder({ name: "dark cup hole", material: material.pbr({ color: "#050608", roughness: 0.9 }) }).position(1.55, 0.012, -1.1).scale([0.2, 0.02, 0.2]).toJSON(),
+    primitives.box({ name: "flag pole", material: material.metal({ color: "#f8fafc" }) }).position(1.7, 0.48, -1.1).scale([0.025, 0.9, 0.025]).toJSON(),
+    primitives.box({ name: "orange flag", material: material.emissive({ color: "#fb923c", emissive: "#fb923c" }) }).position(1.9, 0.78, -1.1).scale([0.32, 0.18, 0.035]).toJSON()
+  ],
+
+  primitiveHumanoid: (): readonly AuraSceneNode[] => [
+    primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#1f5130", roughness: 0.7 }) }).position(0, -0.04, -0.5).scale([4.4, 1, 2.8]).toJSON(),
+    primitives.cylinder({ name: "humanoid torso", material: material.clearcoat({ color: "#2563eb" }) }).position(0, 0.92, -0.55).scale([0.25, 0.68, 0.25]).animate({ clip: "pulse", speed: 0.3 }).toJSON(),
+    primitives.sphere({ name: "humanoid head", material: material.clearcoat({ color: "#f5d0a9" }) }).position(0, 1.55, -0.55).scale(0.22).toJSON(),
+    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(-0.42, 0.9, -0.5).rotate(0.48, 0, -0.34).scale([0.12, 0.62, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
+    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(0.42, 0.9, -0.6).rotate(-0.48, 0, 0.34).scale([0.12, 0.62, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
+    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#111827" }) }).position(-0.18, 0.32, -0.38).rotate(-0.42, 0, -0.12).scale([0.14, 0.74, 0.14]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
+    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#111827" }) }).position(0.22, 0.32, -0.72).rotate(0.42, 0, 0.12).scale([0.14, 0.74, 0.14]).animate({ clip: "pulse", speed: 0.62 }).toJSON()
   ]
 } as const;
 
@@ -1706,7 +1846,7 @@ function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, cam
   let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
   if (cameraSpec.mode === "orbit") {
     const distance = cameraSpec.distance ?? 4;
-    eye = [target[0], target[1] + 0.55, target[2] + distance];
+    eye = cameraSpec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
   }
   if (cameraSpec.mode === "dolly") {
     const seconds = cameraSpec.seconds ?? 6;
@@ -2602,7 +2742,7 @@ function createViewProjection(cameraSpec: AuraCameraSpec, aspect: number, time: 
   let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
   if (cameraSpec.mode === "orbit") {
     const distance = cameraSpec.distance ?? 4;
-    eye = [target[0], target[1] + 0.55, target[2] + distance];
+    eye = cameraSpec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
   }
   if (cameraSpec.mode === "dolly") {
     const seconds = cameraSpec.seconds ?? 6;
