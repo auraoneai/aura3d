@@ -152,3 +152,12 @@ Repair target:
 - Commit the Round 5 standard amendment.
 - Run a finite Claude/Aura one-prompt process smoke as diagnostic evidence.
 - Re-run the entire Phase B benchmark from scratch. Partial reruns do not count.
+
+## Round 5 Readiness Smoke
+
+`benchmark/results/round-5-process-smoke.md` records a diagnostic Claude/Aura
+prompt-01 smoke after the Round 5 amendment. Claude exited normally in 111939
+ms, copied the matching benchmark recipe, used `prefabs.physicsPlayground`, ran
+`npm install` and `npm run build`, and did not start a dev server or visual
+capture inside the agent process. The independent build passed and a screenshot
+was captured outside the agent process at `/tmp/aura3d-round5-smoke-p01.png`.
