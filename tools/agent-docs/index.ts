@@ -160,7 +160,7 @@ function normalizeSnippet(code: string): string {
   const prelude = [
     'import * as AuraDocPrelude from "@aura3d/engine";',
     'import { assets as auraDocAssets } from "./aura-assets";',
-    importsEngine ? "" : "const { createAuraApp, scene, model, camera, lights, material, effects, timeline, interactions, defineAuraAssets, definePromptPlan, promptPlanToScene, compilePromptPlan, unsafeModelUrl } = AuraDocPrelude;",
+    importsEngine ? "" : "const { createAuraApp, scene, model, primitives, prefabs, camera, lights, material, effects, timeline, interactions, defineAuraAssets, definePromptPlan, promptPlanToScene, compilePromptPlan, unsafeModelUrl } = AuraDocPrelude;",
     importsAssets ? "" : "const assets = auraDocAssets;",
     "void [AuraDocPrelude, auraDocAssets];"
   ].filter(Boolean).join("\n");

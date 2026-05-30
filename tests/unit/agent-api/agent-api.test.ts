@@ -8,6 +8,7 @@ import {
   lights,
   material,
   model,
+  prefabs,
   primitives,
   promptPlanToScene,
   scene,
@@ -60,6 +61,27 @@ describe("agent API", () => {
       .toJSON();
     expect(snapshot.nodes[0]).toMatchObject({ kind: "primitive", primitive: "sphere" });
     expect(snapshot.camera.mode).toBe("follow");
+  });
+
+  test("exposes Round 1 repair helpers for particles, city, materials, product staging, and physics cues", () => {
+    const snapshot = scene()
+      .addMany(prefabs.particleFountain({ count: 1400 }))
+      .addMany(prefabs.cityBlock({ blocks: 4 }))
+      .addMany(prefabs.materialSwatches())
+      .addMany(prefabs.productStage())
+      .addMany(prefabs.physicsRamp())
+      .add(primitives.cylinder({ name: "typed cylinder plinth", material: material.glass() }).animate({ clip: "float", speed: 0.7 }))
+      .add(effects.particles({ emitter: "swirl", particleCount: 1500 }))
+      .camera(camera.orbit({ distance: 5.2 }))
+      .timeline(timeline.loop({ seconds: 6 }))
+      .toJSON();
+
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.particleCount === 1400)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("city tower"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.primitive === "cylinder")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.transmission)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.clearcoat)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "rigid physics ramp")).toBe(true);
   });
 
   test("compiles prompt plans into approved visual recipes", () => {

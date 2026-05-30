@@ -71,6 +71,10 @@ export interface AuraMaterialSpec {
   readonly roughness?: number;
   readonly metallic?: number;
   readonly emissive?: AuraColor;
+  readonly opacity?: number;
+  readonly transmission?: number;
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
   readonly texture?: AuraAssetRef<"texture">;
 }
 
@@ -121,7 +125,7 @@ export interface AuraModelNode extends AuraTransformSpec {
 
 export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly kind: "primitive";
-  readonly primitive: "box" | "sphere" | "plane";
+  readonly primitive: "box" | "sphere" | "plane" | "cylinder";
   readonly name?: string;
   readonly material?: AuraMaterialSpec;
   readonly size?: number | AuraVec3;
@@ -139,17 +143,21 @@ export interface AuraLightNode extends AuraTransformSpec {
   readonly intensity: number;
 }
 
-export type AuraEffectType = "fog" | "bloom" | "rain";
+export type AuraEffectType = "fog" | "bloom" | "rain" | "particles";
 
 export interface AuraEffectNode {
   readonly kind: "effect";
   readonly effect: AuraEffectType;
+  readonly name?: string;
   readonly intensity?: number;
   readonly density?: number;
   readonly color?: AuraColor;
   readonly speed?: number;
   readonly wind?: AuraVec3;
   readonly particleCount?: number;
+  readonly emitter?: "fountain" | "swirl" | "ambient";
+  readonly radius?: number;
+  readonly height?: number;
   readonly splashes?: boolean;
   readonly mist?: boolean;
 }
@@ -252,7 +260,8 @@ function primitive(primitiveName: AuraPrimitiveNode["primitive"], options: AuraP
 export const primitives = {
   box: (options?: AuraPrimitiveOptions) => primitive("box", options),
   sphere: (options?: AuraPrimitiveOptions) => primitive("sphere", options),
-  plane: (options?: AuraPrimitiveOptions) => primitive("plane", options)
+  plane: (options?: AuraPrimitiveOptions) => primitive("plane", options),
+  cylinder: (options?: AuraPrimitiveOptions) => primitive("cylinder", options)
 } as const;
 
 export const material = {
@@ -267,6 +276,38 @@ export const material = {
     emissive: options.emissive ?? options.color ?? "#38d6ff",
     roughness: options.roughness ?? 0.35,
     metallic: options.metallic ?? 0,
+    ...options
+  }),
+  metal: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
+    color: options.color ?? "#dce6ee",
+    roughness: options.roughness ?? 0.18,
+    metallic: options.metallic ?? 1,
+    clearcoat: options.clearcoat ?? 0.18,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.2,
+    ...options
+  }),
+  rubber: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
+    color: options.color ?? "#111317",
+    roughness: options.roughness ?? 0.86,
+    metallic: options.metallic ?? 0,
+    ...options
+  }),
+  glass: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
+    color: options.color ?? "#d8f2ff",
+    roughness: options.roughness ?? 0.04,
+    metallic: options.metallic ?? 0,
+    opacity: options.opacity ?? 0.32,
+    transmission: options.transmission ?? 0.82,
+    clearcoat: options.clearcoat ?? 1,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.04,
+    ...options
+  }),
+  clearcoat: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
+    color: options.color ?? "#e8edf5",
+    roughness: options.roughness ?? 0.22,
+    metallic: options.metallic ?? 0,
+    clearcoat: options.clearcoat ?? 1,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.08,
     ...options
   })
 } as const;
@@ -396,6 +437,20 @@ export const effects = {
       particleCount: options.particleCount,
       splashes: options.splashes ?? true,
       mist: options.mist ?? true
+    }),
+  particles: (options: Omit<AuraEffectNode, "kind" | "effect"> = {}) =>
+    new AuraNodeBuilder<AuraEffectNode>({
+      kind: "effect",
+      effect: "particles",
+      name: options.name ?? `${options.emitter ?? "swirl"} particle system`,
+      intensity: options.intensity ?? 0.8,
+      density: options.density ?? 1,
+      color: options.color ?? "#7dfcff",
+      speed: options.speed ?? 1,
+      particleCount: options.particleCount ?? 900,
+      emitter: options.emitter ?? "swirl",
+      radius: options.radius ?? 1.15,
+      height: options.height ?? 2.4
     })
 } as const;
 
@@ -448,6 +503,11 @@ export class AuraSceneBuilder {
     return this;
   }
 
+  addMany(nodes: readonly (AuraNodeBuilder<AuraSceneNode> | AuraSceneNode)[]): this {
+    for (const node of nodes) this.add(node);
+    return this;
+  }
+
   camera(next: AuraCameraSpec): this {
     this.cameraSpec = next;
     return this;
@@ -481,8 +541,68 @@ export function scene(): AuraSceneBuilder {
   return new AuraSceneBuilder();
 }
 
+export const prefabs = {
+  particleFountain: (options: { readonly color?: AuraColor; readonly count?: number } = {}): readonly AuraSceneNode[] => [
+    primitives.cylinder({ name: "visible particle emitter base", material: material.metal({ color: "#1c2934", roughness: 0.24 }) }).position(0, 0.03, 0).scale([0.52, 0.08, 0.52]).toJSON(),
+    primitives.sphere({ name: "fountain glow core", material: material.emissive({ color: options.color ?? "#7dfcff", emissive: options.color ?? "#7dfcff" }) }).position(0, 0.18, 0).scale(0.14).toJSON(),
+    effects.particles({ name: "high density fountain particles", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1200, radius: 1.05, height: 2.8 }).toJSON(),
+    effects.bloom({ intensity: 0.42, color: options.color ?? "#7dfcff" }).toJSON()
+  ],
+
+  cityBlock: (options: { readonly blocks?: number; readonly litWindows?: boolean } = {}): readonly AuraSceneNode[] => {
+    const blocks = Math.max(3, Math.min(7, options.blocks ?? 5));
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: "#111820", roughness: 0.72, metallic: 0.04 }) }).position(0, -0.04, -0.65).scale([7.4, 1, 5.2]).toJSON(),
+      primitives.box({ name: "main avenue stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0, 0.01, -0.65).scale([0.06, 0.018, 5.1]).toJSON(),
+      primitives.box({ name: "cross street stripe", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.012, -0.65).scale([7.0, 0.018, 0.045]).toJSON()
+    ];
+    for (let index = 0; index < blocks; index += 1) {
+      const x = -2.4 + index * 1.2;
+      const height = 0.75 + (index % 3) * 0.42;
+      const z = -1.5 + (index % 2) * 1.8;
+      nodes.push(primitives.box({
+        name: `city tower ${index + 1}`,
+        material: material.pbr({ color: index % 2 === 0 ? "#26313d" : "#1d2733", roughness: 0.5, metallic: 0.08 })
+      }).position(x, height / 2, z).scale([0.72, height, 0.58]).toJSON());
+      if (options.litWindows !== false) {
+        for (let floor = 0; floor < Math.max(2, Math.floor(height * 3)); floor += 1) {
+          nodes.push(primitives.box({
+            name: `lit window row ${index + 1}-${floor + 1}`,
+            material: material.emissive({ color: floor % 2 === 0 ? "#ffd98a" : "#8bdcff", emissive: floor % 2 === 0 ? "#ffd98a" : "#8bdcff" })
+          }).position(x, 0.24 + floor * 0.24, z + 0.3).scale([0.42, 0.045, 0.028]).toJSON());
+        }
+      }
+    }
+    return nodes;
+  },
+
+  materialSwatches: (): readonly AuraSceneNode[] => [
+    primitives.sphere({ name: "brushed metal swatch", material: material.metal() }).position(-1.35, 0.48, -0.75).scale(0.42).toJSON(),
+    primitives.sphere({ name: "transmission glass swatch", material: material.glass({ color: "#bdefff" }) }).position(-0.45, 0.48, -0.75).scale(0.42).toJSON(),
+    primitives.sphere({ name: "matte rubber swatch", material: material.rubber() }).position(0.45, 0.48, -0.75).scale(0.42).toJSON(),
+    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#e33645" }) }).position(1.35, 0.48, -0.75).scale(0.42).toJSON(),
+    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#202731", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.75).scale([3.6, 0.08, 0.22]).toJSON()
+  ],
+
+  productStage: (): readonly AuraSceneNode[] => [
+    primitives.plane({ name: "curved studio backdrop cue", material: material.pbr({ color: "#141a21", roughness: 0.4, metallic: 0.1 }) }).position(0, 0.86, -2.25).rotate(1.5708, 0, 0).scale([5.4, 1, 2.4]).toJSON(),
+    primitives.cylinder({ name: "thick product inspection plinth", material: material.clearcoat({ color: "#1c232c", roughness: 0.18 }) }).position(0, 0.03, -0.65).scale([1.28, 0.16, 1.28]).toJSON(),
+    primitives.box({ name: "soft contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94 }) }).position(0, 0.13, -0.65).scale([1.1, 0.018, 0.7]).toJSON(),
+    primitives.box({ name: "left inspection softbox", material: material.emissive({ color: "#edf7ff", emissive: "#edf7ff" }) }).position(-1.9, 0.92, -0.8).scale([0.08, 1.3, 1.45]).toJSON(),
+    primitives.box({ name: "right rim softbox", material: material.emissive({ color: "#ffd6a0", emissive: "#ffd6a0" }) }).position(1.92, 0.82, -0.9).scale([0.08, 1.0, 1.3]).toJSON()
+  ],
+
+  physicsRamp: (): readonly AuraSceneNode[] => [
+    primitives.box({ name: "rigid physics ramp", material: material.pbr({ color: "#2c3642", roughness: 0.52, metallic: 0.12 }) }).position(-0.35, 0.28, -0.8).rotate(0, 0, -0.42).scale([2.4, 0.16, 0.82]).toJSON(),
+    primitives.box({ name: "static catch platform", material: material.pbr({ color: "#151b22", roughness: 0.62, metallic: 0.08 }) }).position(0.65, 0.02, -0.55).scale([2.4, 0.12, 1.2]).toJSON(),
+    primitives.box({ name: "settled rigid body cube 1", material: material.clearcoat({ color: "#6ee7ff" }) }).position(0.18, 0.22, -0.58).rotate(0.12, 0.34, 0.08).scale(0.24).toJSON(),
+    primitives.box({ name: "settled rigid body cube 2", material: material.clearcoat({ color: "#ffd166" }) }).position(0.52, 0.22, -0.42).rotate(-0.18, 0.2, -0.12).scale(0.24).toJSON(),
+    primitives.box({ name: "settled rigid body cube 3", material: material.clearcoat({ color: "#ef476f" }) }).position(0.82, 0.22, -0.72).rotate(0.08, -0.28, 0.2).scale(0.24).toJSON()
+  ]
+} as const;
+
 export type AuraPromptSceneType = "product-viewer" | "cinematic-scene" | "mini-game" | "material-studio";
-export type AuraPromptEffectId = "rain" | "fog" | "bloom" | "wet-reflection" | "motion-trail" | "hud";
+export type AuraPromptEffectId = "rain" | "fog" | "bloom" | "particles" | "wet-reflection" | "motion-trail" | "hud";
 export type AuraPromptCameraPreset = "product-orbit" | "cinematic-dolly" | "game-board" | "material-inspection";
 export type AuraPromptLightingPreset = "studio-softbox" | "neon-practicals" | "game-readable" | "material-studio";
 export type AuraPromptInteractionMode = "orbit" | "keyboard" | "pointer";
@@ -984,7 +1104,7 @@ async function startProductionRender(
   if (!renderableNode) {
     throw new AuraRuntimeError(
       "missing-asset",
-      "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), or primitives.plane()."
+      "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), primitives.cylinder(), or primitives.plane()."
       );
   }
 
@@ -1085,12 +1205,14 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       });
       const pivot = normalizeThreeModel(THREE, modelRoot, node);
       threeScene.add(pivot);
+      registerThreeNodeAnimation(pivot, node, frameUpdaters);
       disposables.push(modelRoot);
       continue;
     }
     if (node.kind === "primitive") {
       const mesh = createThreePrimitive(THREE, node);
       threeScene.add(mesh);
+      registerThreeNodeAnimation(mesh, node, frameUpdaters);
       disposables.push(mesh.geometry, mesh.material);
       continue;
     }
@@ -1110,6 +1232,14 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
     threeScene.add(rain);
     disposables.push(rain, rain.userData.mistTexture);
     if (typeof rain.userData.update === "function") frameUpdaters.push(rain.userData.update);
+  }
+
+  const particleEffects = snapshot.nodes.filter((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "particles");
+  for (const particleEffect of particleEffects) {
+    const particles = createThreeParticles(THREE, particleEffect);
+    threeScene.add(particles);
+    disposables.push(particles, particles.geometry, particles.material);
+    if (typeof particles.userData.update === "function") frameUpdaters.push(particles.userData.update);
   }
 
   const cameraObject = new THREE.PerspectiveCamera(snapshot.camera.fov ?? 45, canvas.width / Math.max(1, canvas.height), 0.05, 100);
@@ -1168,7 +1298,9 @@ function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitive
     ? new THREE.SphereGeometry(0.5, 40, 24)
     : node.primitive === "box"
       ? new THREE.BoxGeometry(1, 1, 1)
-      : new THREE.PlaneGeometry(1, 1, 1, 1).rotateX(-Math.PI / 2);
+      : node.primitive === "cylinder"
+        ? new THREE.CylinderGeometry(0.5, 0.5, 1, 48, 1)
+        : new THREE.PlaneGeometry(1, 1, 1, 1).rotateX(-Math.PI / 2);
   const materialValue = createThreeMaterial(THREE, node.material ?? material.pbr());
   const mesh = new THREE.Mesh(geometry, materialValue);
   mesh.castShadow = node.primitive !== "plane" && !node.material?.emissive;
@@ -1179,11 +1311,24 @@ function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitive
 
 function createThreeMaterial(THREE: typeof import("three"), spec: AuraMaterialSpec): any {
   const color = new THREE.Color(spec.color ?? "#d7dee8");
-  const materialValue = new THREE.MeshStandardMaterial({
-    color,
-    roughness: spec.roughness ?? 0.54,
-    metalness: spec.metallic ?? 0
-  });
+  const usePhysical = spec.transmission !== undefined || spec.clearcoat !== undefined || spec.opacity !== undefined;
+  const materialValue = usePhysical
+    ? new THREE.MeshPhysicalMaterial({
+      color,
+      roughness: spec.roughness ?? 0.54,
+      metalness: spec.metallic ?? 0,
+      transparent: spec.opacity !== undefined && spec.opacity < 1,
+      opacity: spec.opacity ?? 1,
+      transmission: spec.transmission ?? 0,
+      clearcoat: spec.clearcoat ?? 0,
+      clearcoatRoughness: spec.clearcoatRoughness ?? 0.18,
+      depthWrite: spec.opacity === undefined || spec.opacity >= 0.96
+    })
+    : new THREE.MeshStandardMaterial({
+      color,
+      roughness: spec.roughness ?? 0.54,
+      metalness: spec.metallic ?? 0
+    });
   if (spec.emissive) {
     materialValue.emissive = new THREE.Color(spec.emissive);
     materialValue.emissiveIntensity = 1.55;
@@ -1223,6 +1368,27 @@ function applyThreeTransform(object: any, node: AuraTransformSpec, baseScale: Au
   object.rotation.set(rotation[0], rotation[1], rotation[2]);
   object.scale.set(baseScale[0] * scaleValue[0], baseScale[1] * scaleValue[1], baseScale[2] * scaleValue[2]);
   if (node.lookAt) object.lookAt(node.lookAt[0], node.lookAt[1], node.lookAt[2]);
+}
+
+function registerThreeNodeAnimation(object: any, node: AuraModelNode | AuraPrimitiveNode, frameUpdaters: Array<(time: number) => void>): void {
+  if (!node.animation) return;
+  const baseRotation = node.rotation ?? [0, 0, 0];
+  const speed = Math.max(0.05, node.animation.speed ?? 1);
+  frameUpdaters.push((time: number) => {
+    const seconds = time / 1000;
+    if (node.animation?.clip === "float") {
+      object.position.y = (node.position?.[1] ?? 0) + Math.sin(seconds * speed) * 0.08;
+      object.rotation.y = baseRotation[1] + seconds * speed * 0.28;
+      return;
+    }
+    if (node.animation?.clip === "pulse") {
+      const pulse = 1 + Math.sin(seconds * speed * 2) * 0.08;
+      object.scale.multiplyScalar(pulse / (object.userData.lastAuraPulse ?? 1));
+      object.userData.lastAuraPulse = pulse;
+      return;
+    }
+    object.rotation.y = baseRotation[1] + seconds * speed;
+  });
 }
 
 function createThreeBloom(THREE: typeof import("three"), snapshot: AuraSceneSnapshot, effect: AuraEffectNode): any {
@@ -1421,6 +1587,80 @@ function createThreeRain(THREE: typeof import("three"), effect: AuraEffectNode):
   return group;
 }
 
+function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectNode): any {
+  const count = Math.max(120, Math.min(6000, effect.particleCount ?? 900));
+  const radius = Math.max(0.1, effect.radius ?? 1.15);
+  const height = Math.max(0.2, effect.height ?? 2.4);
+  const intensity = Math.max(0.1, Math.min(1.8, effect.intensity ?? 0.8));
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(count * 3);
+  const colors = new Float32Array(count * 3);
+  const baseColor = new THREE.Color(effect.color ?? "#7dfcff");
+  const accentColor = new THREE.Color("#ffd166");
+  for (let index = 0; index < count; index += 1) {
+    writeParticlePosition(positions, index, 0, effect.emitter ?? "swirl", radius, height);
+    const mixAmount = seededRange(index, 173, 0, 0.42);
+    const color = baseColor.clone().lerp(accentColor, mixAmount);
+    colors[index * 3] = color.r;
+    colors[index * 3 + 1] = color.g;
+    colors[index * 3 + 2] = color.b;
+  }
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  const materialValue = new THREE.PointsMaterial({
+    size: 0.028 + intensity * 0.018,
+    vertexColors: true,
+    transparent: true,
+    opacity: Math.min(0.95, 0.48 + intensity * 0.22),
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+  });
+  const points = new THREE.Points(geometry, materialValue);
+  points.name = effect.name ?? "aura-particle-system";
+  points.userData.update = (time: number) => {
+    const seconds = time / 1000 * (effect.speed ?? 1);
+    const attribute = geometry.getAttribute("position");
+    const values = attribute.array as Float32Array;
+    for (let index = 0; index < count; index += 1) {
+      writeParticlePosition(values, index, seconds, effect.emitter ?? "swirl", radius, height);
+    }
+    attribute.needsUpdate = true;
+  };
+  return points;
+}
+
+function writeParticlePosition(
+  positions: Float32Array,
+  index: number,
+  seconds: number,
+  emitter: AuraEffectNode["emitter"],
+  radius: number,
+  height: number,
+  seedIndex = index
+): void {
+  const phase = seededRange(seedIndex, 181, 0, 1);
+  const angle = phase * Math.PI * 2 + seconds * (emitter === "swirl" ? 1.45 : 0.35);
+  const radial = radius * (0.18 + seededRange(seedIndex, 191, 0, 0.82));
+  let x = Math.cos(angle) * radial;
+  let y = seededRange(seedIndex, 197, 0.08, height);
+  let z = Math.sin(angle) * radial;
+  if (emitter === "fountain") {
+    const rise = (phase + seconds * 0.34) % 1;
+    const arc = Math.sin(rise * Math.PI);
+    const spread = radius * rise;
+    x = Math.cos(angle) * spread;
+    y = 0.12 + arc * height;
+    z = Math.sin(angle) * spread;
+  } else if (emitter === "ambient") {
+    x = seededRange(seedIndex, 211, -radius * 2, radius * 2);
+    y = seededRange(seedIndex, 223, 0.08, height);
+    z = seededRange(seedIndex, 227, -radius * 1.4, radius * 1.4);
+  }
+  positions[index * 3] = x;
+  positions[index * 3 + 1] = y;
+  positions[index * 3 + 2] = z;
+}
+
 function applyRainInstance(
   dummy: { position: { set(x: number, y: number, z: number): void }; rotation: { set(x: number, y: number, z: number): void }; scale: { set(x: number, y: number, z: number): void }; updateMatrix(): void; matrix: unknown },
   mesh: { setMatrixAt(index: number, matrix: unknown): void },
@@ -1592,7 +1832,10 @@ async function createWebGLSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   const rainModels = snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")
     ? [createWebGLRainModel(gl)]
     : [];
-  const models = [...assetModels, ...primitiveModels, ...rainModels];
+  const particleModels = snapshot.nodes
+    .filter((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "particles")
+    .map((node) => createWebGLParticleModel(gl, node));
+  const models = [...assetModels, ...primitiveModels, ...rainModels, ...particleModels];
   const background = colorToClearColor(snapshot.background);
   gl.enable(gl.DEPTH_TEST);
   gl.disable(gl.CULL_FACE);
@@ -1768,7 +2011,13 @@ function createWebGLModel(gl: WebGL2RenderingContext, node: AuraModelNode, model
 }
 
 function createWebGLPrimitiveModel(gl: WebGL2RenderingContext, node: AuraPrimitiveNode): WebGLModel {
-  const primitive = node.primitive === "sphere" ? createSphereGeometry() : node.primitive === "box" ? createBoxGeometry() : createPlaneGeometry();
+  const primitive = node.primitive === "sphere"
+    ? createSphereGeometry()
+    : node.primitive === "box"
+      ? createBoxGeometry()
+      : node.primitive === "cylinder"
+        ? createCylinderGeometry()
+        : createPlaneGeometry();
   return {
     node,
     bounds: primitive.bounds,
@@ -1803,6 +2052,39 @@ function createWebGLRainModel(gl: WebGL2RenderingContext): WebGLModel {
   return {
     bounds: { min: [-3, 0, -3], max: [3, 3, 3] },
     color: [0.62, 0.82, 1],
+    normalizeToUnit: false,
+    modelMatrix: identity4(),
+    primitives: [{
+      position: createBuffer(gl, gl.ARRAY_BUFFER, positions),
+      normal: createBuffer(gl, gl.ARRAY_BUFFER, normals),
+      index: createBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, indices),
+      count: indices.length,
+      mode: gl.LINES,
+      indexType: gl.UNSIGNED_SHORT
+    }]
+  };
+}
+
+function createWebGLParticleModel(gl: WebGL2RenderingContext, effect: AuraEffectNode): WebGLModel {
+  const count = Math.max(120, Math.min(1800, effect.particleCount ?? 900));
+  const positions = new Float32Array(count * 2 * 3);
+  const normals = new Float32Array(count * 2 * 3);
+  const indices = new Uint16Array(count * 2);
+  const radius = effect.radius ?? 1.15;
+  const height = effect.height ?? 2.4;
+  for (let index = 0; index < count; index += 1) {
+    const base = index * 6;
+    writeParticlePosition(positions, index * 2, 0, effect.emitter ?? "swirl", radius, height, index);
+    positions[base + 3] = positions[base] + seededRange(index, 239, -0.025, 0.025);
+    positions[base + 4] = positions[base + 1] + 0.035;
+    positions[base + 5] = positions[base + 2] + seededRange(index, 241, -0.025, 0.025);
+    normals.set([0, 1, 0, 0, 1, 0], base);
+    indices[index * 2] = index * 2;
+    indices[index * 2 + 1] = index * 2 + 1;
+  }
+  return {
+    bounds: { min: [-radius * 2, 0, -radius * 2], max: [radius * 2, height, radius * 2] },
+    color: colorToRgb(effect.color ?? "#7dfcff"),
     normalizeToUnit: false,
     modelMatrix: identity4(),
     primitives: [{
@@ -2112,6 +2394,41 @@ function createSphereGeometry(): { readonly positions: Float32Array; readonly no
       const b = a + columns + 1;
       indices.push(a, b, a + 1, b, b + 1, a + 1);
     }
+  }
+  return {
+    positions: new Float32Array(positions),
+    normals: new Float32Array(normals),
+    indices: new Uint16Array(indices),
+    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }
+  };
+}
+
+function createCylinderGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+  const segments = 24;
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+  for (let segment = 0; segment <= segments; segment += 1) {
+    const angle = (segment / segments) * Math.PI * 2;
+    const x = Math.cos(angle) * 0.5;
+    const z = Math.sin(angle) * 0.5;
+    positions.push(x, -0.5, z, x, 0.5, z);
+    normals.push(Math.cos(angle), 0, Math.sin(angle), Math.cos(angle), 0, Math.sin(angle));
+  }
+  for (let segment = 0; segment < segments; segment += 1) {
+    const base = segment * 2;
+    indices.push(base, base + 1, base + 3, base, base + 3, base + 2);
+  }
+  const topCenter = positions.length / 3;
+  positions.push(0, 0.5, 0);
+  normals.push(0, 1, 0);
+  const bottomCenter = positions.length / 3;
+  positions.push(0, -0.5, 0);
+  normals.push(0, -1, 0);
+  for (let segment = 0; segment < segments; segment += 1) {
+    const base = segment * 2;
+    indices.push(topCenter, base + 1, base + 3);
+    indices.push(bottomCenter, base + 2, base);
   }
   return {
     positions: new Float32Array(positions),
@@ -2673,6 +2990,12 @@ function drawRenderableNode(
     context.beginPath();
     context.arc(x, y + phase, size * 0.46, 0, Math.PI * 2);
     context.fill();
+  } else if (node.kind === "primitive" && node.primitive === "cylinder") {
+    context.beginPath();
+    context.ellipse(x, y - size * 0.34 + phase, size * 0.46, size * 0.16, 0, 0, Math.PI * 2);
+    context.rect(x - size * 0.46, y - size * 0.34 + phase, size * 0.92, size * 0.68);
+    context.ellipse(x, y + size * 0.34 + phase, size * 0.46, size * 0.16, 0, 0, Math.PI * 2);
+    context.fill();
   } else if (node.kind === "primitive" && node.primitive === "plane") {
     context.fillRect(x - size * 0.7, y - size * 0.16, size * 1.4, size * 0.32);
   } else {
@@ -2743,6 +3066,23 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
         context.ellipse(x, y, radius * 1.9, radius * 0.42, 0, 0, Math.PI * 2);
         context.stroke();
       }
+    }
+  }
+  if (node.effect === "particles") {
+    const count = Math.max(120, Math.min(1600, node.particleCount ?? 900));
+    const radius = Math.max(0.1, node.radius ?? 1.15);
+    const height3d = Math.max(0.2, node.height ?? 2.4);
+    const color = String(node.color ?? "#7dfcff");
+    context.fillStyle = toAlphaColor(color, Math.min(0.9, 0.38 + (node.intensity ?? 0.8) * 0.22));
+    for (let index = 0; index < count; index += 1) {
+      const position = new Float32Array(3);
+      writeParticlePosition(position, 0, time / 1000 * (node.speed ?? 1), node.emitter ?? "swirl", radius, height3d, index);
+      const jitterX = seededRange(index, 251, -radius, radius);
+      const jitterZ = seededRange(index, 257, -radius, radius);
+      const x = width * 0.5 + (position[0] + jitterX * 0.18) * width * 0.09;
+      const y = height * 0.68 - position[1] * height * 0.16 + jitterZ * height * 0.02;
+      const size = seededRange(index, 263, 1.1, 2.9);
+      context.fillRect(x, y, size, size);
     }
   }
   context.restore();

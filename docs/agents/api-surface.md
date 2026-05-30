@@ -10,6 +10,7 @@ import {
   model,
   unsafeModelUrl,
   primitives,
+  prefabs,
   camera,
   lights,
   material,
@@ -19,6 +20,20 @@ import {
   createAuraRouteHealthSnapshot,
   captureAuraAppScreenshot
 } from "@aura3d/engine";
+```
+
+Round 1 repair helpers:
+
+```ts
+scene()
+  .addMany(prefabs.particleFountain({ count: 1400 }))
+  .add(effects.particles({ emitter: "swirl", particleCount: 1200 }))
+  .addMany(prefabs.cityBlock({ blocks: 5 }))
+  .addMany(prefabs.materialSwatches())
+  .addMany(prefabs.productStage())
+  .addMany(prefabs.physicsRamp())
+  .add(primitives.cylinder({ material: material.clearcoat() }))
+  .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
 
 React adapter:

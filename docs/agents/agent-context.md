@@ -26,3 +26,12 @@ Prompt-to-visual workflow:
 - Render with `promptPlanToScene(plan)`.
 - Reject output that is only one imported asset on a grid with symbolic lines,
   labels, or unrelated primitives.
+- For particle, city, material-lab, product-viewer, and physics-ramp prompts,
+  start from `prefabs.particleFountain`, `prefabs.cityBlock`,
+  `prefabs.materialSwatches`, `prefabs.productStage`, or
+  `prefabs.physicsRamp` before custom primitive placement.
+- Use `effects.particles(...)` for live particle systems. Do not claim particle
+  success from a cone, label, or HUD counter without visible particles.
+- Use `.animate({ clip: "float" | "pulse", speed })` and `timeline.loop(...)`
+  for runtime motion. Build/test, then terminate normally; do not leave a dev
+  server running as the final state.

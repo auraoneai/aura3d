@@ -30,6 +30,8 @@ import {
   lights,
   material,
   effects,
+  prefabs,
+  primitives,
   timeline,
   interactions,
   defineAuraAssets
@@ -81,6 +83,43 @@ scene()
   .timeline(timeline.loop({ seconds: 8 }));
 ```
 
+Round 1 repair patterns:
+```ts
+// Real particle system, not a symbolic cone or HUD counter.
+scene()
+  .background("#030711")
+  .addMany(prefabs.particleFountain({ count: 1400 }))
+  .add(lights.studio({ intensity: 1.15 }))
+  .camera(camera.orbit({ distance: 4.2 }));
+
+// City prompts need streets, scale, windows, and framing.
+scene()
+  .background("#061018")
+  .addMany(prefabs.cityBlock({ blocks: 5 }))
+  .add(effects.fog({ density: 0.06 }))
+  .add(effects.bloom({ intensity: 0.24 }))
+  .camera(camera.perspective({ position: [0, 2.6, 5.4], target: [0, 0.55, -0.7] }));
+
+// Material labs need distinct material classes.
+scene()
+  .addMany(prefabs.materialSwatches())
+  .add(primitives.sphere({ material: material.glass() }).position(0, 1.18, -0.75))
+  .add(lights.studio());
+
+// Product viewers should use fit-to-bounds model normalization plus a plinth.
+scene()
+  .addMany(prefabs.productStage())
+  .add(model(assets.product).position(0, 0.18, -0.65).animate({ clip: "float", speed: 0.5 }))
+  .add(interactions.orbit())
+  .camera(camera.orbit({ distance: 4 }));
+
+// Physics demos must expose real state/cues, not cosmetic falling boxes only.
+scene()
+  .addMany(prefabs.physicsRamp())
+  .add(lights.studio())
+  .camera(camera.perspective({ position: [0.4, 1.8, 4.0], target: [0.25, 0.28, -0.62] }));
+```
+
 Templates:
 - `product-viewer`: product or asset inspection scenes.
 - `cinematic-scene`: camera path, lighting, rain/fog/bloom scenes.
@@ -90,6 +129,10 @@ Visual acceptance:
 - Use prompt plans and recipe scenes before custom primitive placement.
 - A nonblank screenshot is not enough. The image must visibly match the prompt.
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.
+- For particles, use `effects.particles(...)` or `prefabs.particleFountain(...)`;
+  do not draw an emitter cone and claim particles exist.
+- For city, material, product, and physics prompts, start from the matching
+  `prefabs.*` helper before custom primitive placement.
 - If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
   before changing the scene or review label.
 

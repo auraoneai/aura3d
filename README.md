@@ -28,8 +28,9 @@ createAuraApp("#app", {
 
 ## Public Surfaces
 
-- `@aura3d/engine`: `createAuraApp`, `scene`, `model`, `camera`, `lights`,
-  `material`, `effects`, `timeline`, `interactions`, diagnostics, screenshots.
+- `@aura3d/engine`: `createAuraApp`, `scene`, `model`, `primitives`,
+  `prefabs`, `camera`, `lights`, `material`, `effects`, `timeline`,
+  `interactions`, diagnostics, screenshots.
 - `@aura3d/react`: optional thin React adapter with `AuraCanvas`, `Scene`,
   `Model`, `Camera`, `Lights`, and `Effect`.
 - `@aura3d/cli`: `assets add`, `assets validate`, `assets typegen`,
