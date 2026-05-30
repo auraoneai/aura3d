@@ -95,7 +95,13 @@ Round 1 failure repairs:
   scene containers remain visible within the viewport.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
-  simulating state. Do not claim physics from cosmetic floating boxes only.
+  simulating state. For prompt-01-style playgrounds, use
+  `prefabs.physicsPlayground({ cubes: 50 })` so falling cubes, settled cubes,
+  contact patches, normal vectors, and gravity cues are visible. Do not claim
+  physics from cosmetic floating boxes only.
+- Mini-golf prompts: use `prefabs.miniGolfHole()`, `interactions.pointer()`,
+  `camera.follow({ targetNode: "white physics golf ball" })`, and a visible
+  score HUD. Do not build gameplay only in a detached 2D overlay.
 - Solar-system prompts: use `prefabs.solarSystem()` and add a small `ui.html`
   label overlay for the six planet names. Do not ship a sun plus only three
   unlabeled planets.

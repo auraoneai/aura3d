@@ -276,6 +276,45 @@ Diagnostic evidence:
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
 
+## Round 6 Physics and Mini-Golf Evidence Repair
+
+`benchmark/results/amendment-round-6-physics-minigolf.md` records prompt 01 and
+prompt 06 repairs discovered from the latest local smoke sheet and prior
+benchmark scorer notes. The smoke sheet was no longer blank or cropped, but
+physics/contact evidence and mini-golf gameplay cues were still likely scoring
+risks.
+
+Repair:
+
+- `prefabs.physicsPlayground({ cubes: 50 })` now includes a contact grid floor,
+  visible falling cubes, settled cubes, fall streaks, a bright contact patch,
+  red contact normal vectors, and gravity direction cues.
+- `prefabs.miniGolfHole()` now includes course boundary walls, a tee mat, ball
+  aim selection ring, dotted shot preview, cup capture ring, score cue, and a
+  pointer interaction on the named golf ball.
+- `camera.follow({ targetNode })` now resolves named model/primitive nodes in
+  the runtime camera path, so mini-golf recipes can frame the ball.
+- The prompt 06 benchmark recipe now uses the follow camera and a visible
+  strokes HUD.
+- Agent docs and frozen context now instruct agents to avoid detached 2D-only
+  gameplay for mini-golf and to rely on the repaired helper evidence.
+- Unit tests lock the new physics contact/falling-state cues, mini-golf score
+  and aim cues, and follow-camera target contract.
+
+Diagnostic evidence:
+
+- `/tmp/aura3d-prompt-01-physics-gameplay-smoke.png` shows the repaired physics
+  playground with ramp, falling cubes, settled pile, contact patch/vectors,
+  reset control, and contact count.
+- `/tmp/aura3d-prompt-06-physics-gameplay-smoke.png` shows a coherent mini-golf
+  course with ball-centered follow framing, one obstacle, aim/shot cues,
+  cup/flag, course bounds, and a strokes HUD.
+- `/tmp/aura3d-physics-minigolf-smoke.json` measured full `1440 x 960`
+  canvases and body margin `0px` for both captures.
+
+This is targeted repair evidence only. A future release claim still requires a
+clean full benchmark round from the amended standard.
+
 ## Round 6 Solar System Repair
 
 `benchmark/results/amendment-round-6-solar-system.md` records a prompt-03

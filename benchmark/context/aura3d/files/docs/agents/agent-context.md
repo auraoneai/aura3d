@@ -37,6 +37,9 @@ Prompt-to-visual workflow:
   humanoid prompts, start from `prefabs.physicsPlayground`,
   `prefabs.solarSystem`, `prefabs.dataBars3D`, `prefabs.neonTunnel`,
   `prefabs.miniGolfHole`, or `prefabs.primitiveHumanoid`.
+- Mini-golf scenes should pair `prefabs.miniGolfHole()` with
+  `camera.follow({ targetNode: "white physics golf ball" })` and a visible
+  strokes HUD.
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles.
 - For product viewers, place normalized products around

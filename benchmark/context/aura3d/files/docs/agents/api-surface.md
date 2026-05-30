@@ -43,6 +43,14 @@ scene()
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
 
+Follow camera:
+
+```ts
+scene()
+  .addMany(prefabs.miniGolfHole())
+  .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }));
+```
+
 Small HUDs and toggles:
 
 ```ts

@@ -92,11 +92,13 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.clearcoat)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "rigid physics ramp")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("visible rigid body cube 50"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "glowing labeled sun")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn visible ring")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "score counter plinth")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "short humanoid neck connector")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "left humanoid eye")).toBe(true);
@@ -151,6 +153,35 @@ describe("agent API", () => {
     expect(orbitSegments).toHaveLength(96);
     expect(labelPlinths).toHaveLength(6);
     expect(bloom).toMatchObject({ kind: "effect", effect: "bloom" });
+  });
+
+  test("shows physics playground contact and falling-state evidence", () => {
+    const nodes = prefabs.physicsPlayground({ cubes: 50 });
+    const fallingCubes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("falling visible rigid body cube") === true);
+    const settledCubes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("settled visible rigid body cube") === true);
+    const contactVectors = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("red contact normal vector") === true);
+
+    expect(fallingCubes).toHaveLength(8);
+    expect(settledCubes).toHaveLength(42);
+    expect(contactVectors).toHaveLength(8);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "gravity direction arrow shaft")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
+  });
+
+  test("shows mini-golf scoring, aiming, cup, and follow-camera target cues", () => {
+    const nodes = prefabs.miniGolfHole();
+    const ball = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "white physics golf ball");
+    const snapshot = scene()
+      .addMany(nodes)
+      .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }))
+      .toJSON();
+
+    expect(ball?.animation?.clip).toBe("roll");
+    expect(ball?.interaction).toMatchObject({ cursor: "crosshair", onClick: "aim and shoot ball" });
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "ball aim selection ring")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cup capture ring")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "score counter plinth")).toBe(true);
+    expect(snapshot.camera).toMatchObject({ mode: "follow", targetNode: "white physics golf ball" });
   });
 
   test("keeps material swatches framed in a compact inspection row", () => {

@@ -91,7 +91,8 @@ scene()
 Round 1 repair patterns:
 ```ts
 // Physics playgrounds need renderable scene evidence; do not build only a
-// custom 2D canvas around the physics package.
+// custom 2D canvas around the physics package. The prefab includes falling
+// cubes, settled cubes, contact patches, normal vectors, and gravity cues.
 scene()
   .background("#070b12")
   .addMany(prefabs.physicsPlayground({ cubes: 50 }))
@@ -170,6 +171,8 @@ Visual acceptance:
   do not draw an emitter cone and claim particles exist.
 - For city, solar-system, material, product, and physics prompts, start from the matching
   `prefabs.*` helper before custom primitive placement.
+- For mini-golf, use `prefabs.miniGolfHole()` with `camera.follow({ targetNode:
+  "white physics golf ball" })` and a visible score HUD.
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
   `prefabs.primitiveHumanoid`; the humanoid prefab includes connected body

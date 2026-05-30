@@ -34,8 +34,18 @@ scene()
   .addMany(prefabs.materialSwatches())
   .addMany(prefabs.productStage())
   .addMany(prefabs.physicsRamp())
+  .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+  .addMany(prefabs.miniGolfHole())
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
+```
+
+Follow camera:
+
+```ts
+scene()
+  .addMany(prefabs.miniGolfHole())
+  .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }));
 ```
 
 Small HUDs and toggles:

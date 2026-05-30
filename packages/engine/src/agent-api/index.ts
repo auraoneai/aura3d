@@ -697,20 +697,31 @@ export const prefabs = {
   physicsPlayground: (options: { readonly cubes?: number } = {}): readonly AuraSceneNode[] => {
     const count = Math.max(12, Math.min(80, options.cubes ?? 50));
     const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "physics contact grid floor", material: material.pbr({ color: "#0b1118", roughness: 0.82, metallic: 0.04 }) }).position(0.35, -0.04, -0.68).scale([4.8, 1, 3.25]).toJSON(),
       primitives.box({ name: "wide tilted collision ramp", material: material.pbr({ color: "#2c3948", roughness: 0.5, metallic: 0.1 }) }).position(-0.35, 0.34, -0.8).rotate(0, 0, -0.34).scale([3.4, 0.16, 1.35]).toJSON(),
-      primitives.box({ name: "lower catch platform", material: material.pbr({ color: "#141b23", roughness: 0.64, metallic: 0.06 }) }).position(0.86, 0.04, -0.68).scale([2.6, 0.12, 1.65]).toJSON()
+      primitives.box({ name: "lower catch platform", material: material.pbr({ color: "#141b23", roughness: 0.64, metallic: 0.06 }) }).position(0.86, 0.04, -0.68).scale([2.6, 0.12, 1.65]).toJSON(),
+      primitives.box({ name: "gravity direction arrow shaft", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(-1.9, 1.15, -0.95).rotate(0, 0, 1.5708).scale([0.58, 0.035, 0.04]).toJSON(),
+      primitives.box({ name: "gravity direction arrow head", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(-1.9, 0.78, -0.95).rotate(0, 0, 0.82).scale([0.18, 0.035, 0.04]).toJSON(),
+      primitives.cylinder({ name: "bright collision contact patch", material: material.emissive({ color: "#ff5151", emissive: "#ff5151" }) }).position(0.48, 0.13, -0.78).scale([0.72, 0.018, 0.42]).toJSON()
     ];
     const palette = ["#f97316", "#38bdf8", "#a3e635", "#f43f5e", "#facc15", "#c084fc"];
     for (let index = 0; index < count; index += 1) {
       const col = index % 10;
       const row = Math.floor(index / 10);
-      const x = -1.45 + col * 0.32 + (row % 2) * 0.08;
-      const y = 0.34 + row * 0.22 + (col % 3) * 0.045;
-      const z = -1.22 + (index % 5) * 0.22;
+      const isFalling = index < 8;
+      const x = isFalling ? -1.65 + col * 0.32 : -1.45 + col * 0.32 + (row % 2) * 0.08;
+      const y = isFalling ? 1.12 + (index % 4) * 0.18 : 0.34 + row * 0.22 + (col % 3) * 0.045;
+      const z = isFalling ? -1.28 + (index % 4) * 0.2 : -1.22 + (index % 5) * 0.22;
       nodes.push(primitives.box({
-        name: `visible rigid body cube ${index + 1}`,
+        name: `${isFalling ? "falling" : "settled"} visible rigid body cube ${index + 1}`,
         material: material.clearcoat({ color: palette[index % palette.length], roughness: 0.2 })
-      }).position(x, y, z).rotate(index * 0.08, index * 0.13, index * 0.05).scale(0.18).toJSON());
+      }).position(x, y, z).rotate(index * 0.08, index * 0.13, index * 0.05).scale(0.18).animate(isFalling ? { clip: "float", speed: 0.42 + index * 0.03 } : { clip: "pulse", speed: 0.12 }).toJSON());
+      if (isFalling) {
+        nodes.push(primitives.box({
+          name: `fall path streak ${index + 1}`,
+          material: material.emissive({ color: palette[index % palette.length], emissive: palette[index % palette.length] })
+        }).position(x - 0.08, y - 0.24, z).rotate(0, 0, -0.34).scale([0.035, 0.46, 0.035]).toJSON());
+      }
     }
     for (let index = 0; index < 8; index += 1) {
       nodes.push(primitives.box({
@@ -817,13 +828,22 @@ export const prefabs = {
   },
 
   miniGolfHole: (): readonly AuraSceneNode[] => [
-    primitives.plane({ name: "flat putting green", material: material.pbr({ color: "#2f8f48", roughness: 0.62 }) }).position(0, -0.03, -0.4).scale([4.8, 1, 3.2]).toJSON(),
+    primitives.plane({ name: "flat putting green", material: material.pbr({ color: "#2f8f48", roughness: 0.62 }) }).position(0, -0.03, -0.4).scale([5.2, 1, 3.4]).toJSON(),
+    primitives.box({ name: "left course boundary wall", material: material.pbr({ color: "#14532d", roughness: 0.72 }) }).position(-2.52, 0.12, -0.4).scale([0.08, 0.22, 3.28]).toJSON(),
+    primitives.box({ name: "right course boundary wall", material: material.pbr({ color: "#14532d", roughness: 0.72 }) }).position(2.52, 0.12, -0.4).scale([0.08, 0.22, 3.28]).toJSON(),
+    primitives.box({ name: "back course boundary wall", material: material.pbr({ color: "#14532d", roughness: 0.72 }) }).position(0, 0.12, -2.08).scale([5.05, 0.22, 0.08]).toJSON(),
+    primitives.box({ name: "tee mat", material: material.pbr({ color: "#166534", roughness: 0.56 }) }).position(-1.35, 0.012, 0.45).scale([0.72, 0.024, 0.46]).toJSON(),
     primitives.cylinder({ name: "single red obstacle", material: material.clearcoat({ color: "#e11d48", roughness: 0.18 }) }).position(0.35, 0.28, -0.65).scale([0.34, 0.56, 0.34]).toJSON(),
-    primitives.sphere({ name: "white physics golf ball", material: material.clearcoat({ color: "#f8fafc", roughness: 0.12 }) }).position(-1.35, 0.12, 0.45).scale(0.16).toJSON(),
+    primitives.sphere({ name: "white physics golf ball", material: material.clearcoat({ color: "#f8fafc", roughness: 0.12 }) }).position(-1.35, 0.16, 0.45).scale(0.16).animate({ clip: "roll", speed: 0.72 }).onPointer({ cursor: "crosshair", onClick: "aim and shoot ball" }).toJSON(),
+    primitives.cylinder({ name: "ball aim selection ring", material: material.emissive({ color: "#e0f2fe", emissive: "#e0f2fe" }) }).position(-1.35, 0.035, 0.45).scale([0.34, 0.014, 0.34]).toJSON(),
     primitives.box({ name: "cyan aim direction line", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(-0.86, 0.08, 0.16).rotate(0, -0.42, 0).scale([0.9, 0.035, 0.055]).toJSON(),
+    primitives.box({ name: "dotted shot preview 1", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd" }) }).position(-0.56, 0.07, -0.02).rotate(0, -0.42, 0).scale([0.22, 0.026, 0.04]).toJSON(),
+    primitives.box({ name: "dotted shot preview 2", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd" }) }).position(-0.22, 0.07, -0.22).rotate(0, -0.42, 0).scale([0.22, 0.026, 0.04]).toJSON(),
     primitives.cylinder({ name: "dark cup hole", material: material.pbr({ color: "#050608", roughness: 0.9 }) }).position(1.55, 0.012, -1.1).scale([0.2, 0.02, 0.2]).toJSON(),
+    primitives.cylinder({ name: "cup capture ring", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(1.55, 0.026, -1.1).scale([0.28, 0.012, 0.28]).toJSON(),
     primitives.box({ name: "flag pole", material: material.metal({ color: "#f8fafc" }) }).position(1.7, 0.48, -1.1).scale([0.025, 0.9, 0.025]).toJSON(),
-    primitives.box({ name: "orange flag", material: material.emissive({ color: "#fb923c", emissive: "#fb923c" }) }).position(1.9, 0.78, -1.1).scale([0.32, 0.18, 0.035]).toJSON()
+    primitives.box({ name: "orange flag", material: material.emissive({ color: "#fb923c", emissive: "#fb923c" }) }).position(1.9, 0.78, -1.1).scale([0.32, 0.18, 0.035]).toJSON(),
+    primitives.box({ name: "score counter plinth", material: material.emissive({ color: "#fef3c7", emissive: "#fef3c7" }) }).position(-1.92, 0.08, -1.86).scale([0.62, 0.06, 0.18]).toJSON()
   ],
 
   primitiveHumanoid: (): readonly AuraSceneNode[] => [
@@ -1513,7 +1533,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
         renderer.setSize(canvas.width, canvas.height, false);
       }
       for (const update of frameUpdaters) update(time);
-      updateThreeCamera(THREE, cameraObject, snapshot.camera, canvas, time);
+      updateThreeCamera(THREE, cameraObject, snapshot, canvas, time);
       renderer.render(threeScene, cameraObject);
       return Math.max(1, renderer.info.render.calls);
     },
@@ -2045,12 +2065,28 @@ function seededRange(index: number, salt: number, min: number, max: number): num
   return min + (max - min) * normalized;
 }
 
-function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, cameraSpec: AuraCameraSpec, canvas: HTMLCanvasElement, time: number): void {
-  const target = cameraSpec.target ?? [0, 0.7, 0];
+function resolveCameraTarget(snapshot: AuraSceneSnapshot, cameraSpec: AuraCameraSpec): AuraVec3 {
+  if (cameraSpec.mode === "follow" && cameraSpec.targetNode) {
+    const targetNode = snapshot.nodes.find((node): node is AuraModelNode | AuraPrimitiveNode =>
+      (node.kind === "model" || node.kind === "primitive") &&
+      (node.name === cameraSpec.targetNode || (node.kind === "model" && node.asset.id === cameraSpec.targetNode))
+    );
+    if (targetNode?.position) return targetNode.position;
+  }
+  return cameraSpec.target ?? [0, 0.7, 0];
+}
+
+function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, snapshot: AuraSceneSnapshot, canvas: HTMLCanvasElement, time: number): void {
+  const cameraSpec = snapshot.camera;
+  const target = resolveCameraTarget(snapshot, cameraSpec);
   let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
   if (cameraSpec.mode === "orbit") {
     const distance = cameraSpec.distance ?? 4;
     eye = cameraSpec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
+  }
+  if (cameraSpec.mode === "follow") {
+    const distance = cameraSpec.distance ?? 4;
+    eye = cameraSpec.position ?? [target[0] - distance * 0.38, target[1] + distance * 0.52, target[2] + distance * 0.82];
   }
   if (cameraSpec.mode === "dolly") {
     const seconds = cameraSpec.seconds ?? 6;
@@ -2192,7 +2228,7 @@ async function createWebGLSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       let drawCalls = backdrop.render();
       gl.useProgram(program.program);
       gl.enable(gl.DEPTH_TEST);
-      const viewProjection = createViewProjection(snapshot.camera, canvas.width / Math.max(1, canvas.height), time);
+      const viewProjection = createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time);
       gl.uniformMatrix4fv(program.uniforms.viewProjection, false, viewProjection);
       gl.uniform3fv(program.uniforms.lightDirection, new Float32Array(normalize3([0.45, 0.82, 0.36])));
       for (const modelEntry of models) {
@@ -2941,12 +2977,17 @@ function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
   };
 }
 
-function createViewProjection(cameraSpec: AuraCameraSpec, aspect: number, time: number): Float32Array {
-  const target = cameraSpec.target ?? [0, 0.7, 0];
+function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time: number): Float32Array {
+  const cameraSpec = snapshot.camera;
+  const target = resolveCameraTarget(snapshot, cameraSpec);
   let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
   if (cameraSpec.mode === "orbit") {
     const distance = cameraSpec.distance ?? 4;
     eye = cameraSpec.position ?? [target[0] + distance * 0.62, target[1] + distance * 0.42, target[2] + distance * 0.78];
+  }
+  if (cameraSpec.mode === "follow") {
+    const distance = cameraSpec.distance ?? 4;
+    eye = cameraSpec.position ?? [target[0] - distance * 0.38, target[1] + distance * 0.52, target[2] + distance * 0.82];
   }
   if (cameraSpec.mode === "dolly") {
     const seconds = cameraSpec.seconds ?? 6;
