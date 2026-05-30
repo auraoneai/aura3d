@@ -28,8 +28,10 @@ User signature: `gchahal1982`
 - [x] `benchmark/engine/README.md` requires FPS calibration before FPS thresholds are used.
 - [x] `benchmark/runs/README.md` documents `fpsCalibration` fields in engine metrics.
 - [x] `benchmark/runner/fps-calibration.mjs` exists and has focused unit coverage.
+- [x] `benchmark/runs/round-2/_tools/run-agent.mjs` records agent nontermination with a 20-minute timeout instead of requiring manual cleanup.
 - [x] `benchmark/assets/sneaker.glb` remains the only allowed asset for prompt 10.
 - [x] `benchmark/results/amendment-round-2-standard.md` identifies standard changes and invalidated prior results.
+- [x] `benchmark/results/amendment-round-2-agent-timeout.md` identifies the timeout rule and voids the partial pre-timeout local Round 2 attempt.
 - [x] User approval from `gchahal1982` is recorded in the amendment commit body.
 - [x] The final amendment commit message starts with `PRD-AMENDMENT:`.
 
@@ -43,6 +45,8 @@ cd ../../threejs/files
 shasum -a 256 -c ../manifest.sha256
 
 pnpm exec vitest run tests/unit/tools/benchmark-fps-calibration.test.ts --reporter=default
+
+node --check benchmark/runs/round-2/_tools/run-agent.mjs
 ```
 
 ## Sign-Off Statement
