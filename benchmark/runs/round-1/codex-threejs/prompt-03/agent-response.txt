@@ -1,0 +1,26 @@
+Implemented the procedural solar system in `./source`.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev -- --port 5173
+```
+
+Port `5173` was already occupied during my run, so Vite started it at:
+```text
+http://127.0.0.1:5174/
+```
+
+Verified:
+- `npm run build` passes.
+- Headless Chrome screenshot shows 1 sun, 6 labeled planets, distinct orbit distances, sun glow/bloom, and the full system framed.
+
+Assumptions:
+- `llms.txt` was requested by the agent instructions, but no `llms.txt` exists in the provided prompt directory or context bundle.
+- No assets were used; everything is procedural.

@@ -1,0 +1,35 @@
+I've reviewed all the files. Here is my scoring analysis.
+
+Both screenshots show recognizable, polished procedural city blocks meeting the prompt requirements. The Aura3D render is a dramatic street-level view with clearly varied building heights, plainly visible lit/dark windows, asphalt streets with dashed lane markers, street-light poles with bulbs, and a working "Switch to Night" toggle in day mode. The Three.js render is a clean isometric diorama showing ~20 varied buildings, a cross-street layout with sidewalks, visible (smaller) windows, and a day/night HUD toggle.
+
+```json
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Codex",
+  "visualMatch": {
+    "aura3d": 4,
+    "threejs": 4,
+    "reason": "Both are strong prompt matches. Aura3D shows an immersive street-level block with clearly varied building heights, prominent lit/dark windows, asphalt streets with dashed lane markers, visible street-light poles and bulbs, and a Day toggle. Three.js shows a clean isometric diorama with ~20 varied buildings, a cross-street grid, sidewalks, visible windows, street lights, and a day/night HUD toggle; its distant framing makes windows and lamps smaller but they remain recognizable. Both satisfy all required visual evidence with comparable polish."
+  },
+  "modifiability": {
+    "aura3d": 4,
+    "threejs": 4,
+    "reason": "Aura3D uses a clean declarative builder with well-factored procedural helpers (createBuildings, addWindows, addStreetLights) and data-driven specs, though day/night is handled by disposing and rebuilding the whole scene. Three.js is imperative but equally well-structured with footprint/lamp arrays, reusable addBox/addWindows helpers, and an elegant in-place setMode that updates lights and materials. Both are readable and straightforward to extend."
+  },
+  "metrics": [
+    {"metric": "compiles", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both compile."},
+    {"metric": "runsInBrowser", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both run in the browser."},
+    {"metric": "linesOfUserCode", "aura3d": "330", "threejs": "356", "winner": "Aura3D", "reason": "Aura3D uses fewer lines."},
+    {"metric": "filesCreated", "aura3d": "2", "threejs": "2", "winner": "tie", "reason": "Equal file count."},
+    {"metric": "hallucinatedApis", "aura3d": "null", "threejs": "null", "winner": "tie", "reason": "Treated as 0 for both; no API issues evident in source or notes."},
+    {"metric": "inventedAssetPaths", "aura3d": "0", "threejs": "0", "winner": "tie", "reason": "Neither invented asset paths (prompt is fully procedural)."},
+    {"metric": "repairTurns", "aura3d": "0", "threejs": "0", "winner": "tie", "reason": "No repair turns needed for either."},
+    {"metric": "timeToFirstUsableRenderMs", "aura3d": "296503", "threejs": "389751", "winner": "Aura3D", "reason": "Aura3D reached a usable render faster."},
+    {"metric": "bundleSizeGzipBytes", "aura3d": "204080", "threejs": "123137", "winner": "Three.js", "reason": "Three.js produced a smaller gzipped bundle."},
+    {"metric": "visualMatch", "aura3d": "4", "threejs": "4", "winner": "tie", "reason": "Both are strong, polished matches with all required evidence."},
+    {"metric": "modifiability", "aura3d": "4", "threejs": "4", "winner": "tie", "reason": "Both are cleanly structured and easy to extend."}
+  ],
+  "finalResult": "Aura3D win",
+  "reason": "Among non-tied metrics, Aura3D wins linesOfUserCode and timeToFirstUsableRenderMs while Three.js wins bundleSizeGzipBytes, giving Aura3D a 2-of-3 majority of non-tied metrics. Visual match is equal (4 vs 4), satisfying the at-least-as-high requirement, so Aura3D wins."
+}
+```

@@ -1,0 +1,100 @@
+{
+  "prompt": "10-sneaker",
+  "agent": "Claude Code",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs; not the agent under test",
+  "visualMatch": {
+    "aura3d": 5,
+    "threejs": 4,
+    "reason": "Aura3D screenshot is a strong sneaker product render with plinth and studio lighting. Three.js also succeeds, though the sneaker is smaller/less premium in the frame."
+  },
+  "modifiability": {
+    "aura3d": 3,
+    "threejs": 4,
+    "reason": "Aura3D output works visually but uses raw Three.js for the live render and a hand-written asset module, which weakens library-level modifiability. Three.js is more straightforward."
+  },
+  "metrics": [
+    {
+      "metric": "compiles",
+      "aura3d": "true",
+      "threejs": "true",
+      "winner": "tie",
+      "reason": "Tie by benchmark threshold or equal value."
+    },
+    {
+      "metric": "runsInBrowser",
+      "aura3d": "true",
+      "threejs": "true",
+      "winner": "tie",
+      "reason": "Tie by benchmark threshold or equal value."
+    },
+    {
+      "metric": "linesOfUserCode",
+      "aura3d": "267",
+      "threejs": "207",
+      "winner": "Three.js",
+      "reason": "Three.js has the stronger value for linesOfUserCode."
+    },
+    {
+      "metric": "filesCreated",
+      "aura3d": "3",
+      "threejs": "2",
+      "winner": "Three.js",
+      "reason": "Three.js has the stronger value for filesCreated."
+    },
+    {
+      "metric": "hallucinatedApis",
+      "aura3d": "null",
+      "threejs": "null",
+      "winner": "tie",
+      "reason": "Tie by benchmark threshold or equal value."
+    },
+    {
+      "metric": "inventedAssetPaths",
+      "aura3d": "2",
+      "threejs": "1",
+      "winner": "Three.js",
+      "reason": "Three.js has the stronger value for inventedAssetPaths."
+    },
+    {
+      "metric": "repairTurns",
+      "aura3d": "0",
+      "threejs": "0",
+      "winner": "tie",
+      "reason": "Tie by benchmark threshold or equal value."
+    },
+    {
+      "metric": "timeToFirstUsableRenderMs",
+      "aura3d": "null",
+      "threejs": "982280",
+      "winner": "Three.js",
+      "reason": "Three.js has the stronger value for timeToFirstUsableRenderMs."
+    },
+    {
+      "metric": "bundleSizeGzipBytes",
+      "aura3d": "155517",
+      "threejs": "149382",
+      "winner": "tie",
+      "reason": "Tie by benchmark threshold or equal value."
+    },
+    {
+      "metric": "visualMatch",
+      "aura3d": "5",
+      "threejs": "4",
+      "winner": "Aura3D",
+      "reason": "Aura3D screenshot is a strong sneaker product render with plinth and studio lighting. Three.js also succeeds, though the sneaker is smaller/less premium in the frame."
+    },
+    {
+      "metric": "modifiability",
+      "aura3d": "3",
+      "threejs": "4",
+      "winner": "Three.js",
+      "reason": "Aura3D output works visually but uses raw Three.js for the live render and a hand-written asset module, which weakens library-level modifiability. Three.js is more straightforward."
+    }
+  ],
+  "finalResult": "tie",
+  "reason": "Final result derived from non-tied metric winners and the visual-score rule in benchmark/rubric.md.",
+  "notes": [
+    "Aura3D agent did not terminate; time metric treated as unavailable/noncompliant despite later captured source."
+  ]
+}

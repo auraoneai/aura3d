@@ -1,0 +1,15 @@
+{
+  "prompt": "06-mini-golf-hole",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 426,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 278128,
+  "bundleSizeGzipBytes": 205056,
+  "screenshot": "screenshot.png"
+}

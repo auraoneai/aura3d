@@ -1,0 +1,27 @@
+Implemented the procedural Neon Tunnel Flythrough in [src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-aura3d/prompt-04/source/src/main.ts).
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev -- --port 4177
+```
+
+Local URL currently running:
+```text
+http://127.0.0.1:4177/
+```
+
+Verification:
+```bash
+npm run build
+```
+passed. I also captured a browser screenshot at runtime and confirmed the faceted tunnel interior, emissive neon segments, glow/bloom, fog/depth falloff, and dolly flythrough framing are visible.
+
+Assumptions:
+- No external assets are used.
+- The tunnel is built procedurally from Aura3D primitives rather than imported geometry.
+- Bloom/fog use the public Aura3D `effects` API.

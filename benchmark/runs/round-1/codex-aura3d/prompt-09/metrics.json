@@ -1,0 +1,15 @@
+{
+  "prompt": "09-animated-primitive-humanoid",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 251,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 329230,
+  "bundleSizeGzipBytes": 119732,
+  "screenshot": "screenshot.png"
+}

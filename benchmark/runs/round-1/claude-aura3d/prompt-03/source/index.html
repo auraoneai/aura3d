@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aura3D Procedural Solar System</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #05060d;
+        overflow: hidden;
+      }
+      #app {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+      #app canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      /* HTML overlay that holds the planet name labels. The 3D engine exposes
+         no text primitive, so labels are projected onto this DOM layer using
+         the same (deterministic) orbit-camera transform the renderer uses. */
+      #labels {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 2;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        overflow: hidden;
+      }
+      .planet-label {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        white-space: nowrap;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        will-change: left, top;
+      }
+      .planet-label .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        box-shadow: 0 0 6px currentColor;
+        background: currentColor;
+      }
+      .planet-label .name {
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #f2f6ff;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: rgba(8, 12, 24, 0.62);
+        border: 1px solid rgba(150, 180, 230, 0.35);
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+      }
+      .planet-label .meta {
+        font-size: 10px;
+        color: #aab6d6;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+      }
+      #title {
+        position: absolute;
+        top: 18px;
+        left: 22px;
+        z-index: 3;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+        color: #eaf0ff;
+        pointer-events: none;
+      }
+      #title h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      #title p {
+        margin: 4px 0 0;
+        font-size: 12px;
+        color: #9fb0d6;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="title">
+        <h1>PROCEDURAL SOLAR SYSTEM</h1>
+        <p>Sun + 6 planets · distinct orbits &amp; speeds · orbit camera</p>
+      </div>
+      <div id="labels"></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

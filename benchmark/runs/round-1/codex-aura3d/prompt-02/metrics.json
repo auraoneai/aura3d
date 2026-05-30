@@ -1,0 +1,15 @@
+{
+  "prompt": "02-particle-fountain",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 468,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 509540,
+  "bundleSizeGzipBytes": 205087,
+  "screenshot": "screenshot.png"
+}

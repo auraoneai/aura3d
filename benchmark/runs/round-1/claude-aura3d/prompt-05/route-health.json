@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 233,
+  "bodyTextSample": "3D Data Visualization\n\n6×6 grid · 36 bars · heights animate from random values\n\nLOW\nHIGH\n\nDrag to orbit · scroll to zoom · hover a bar to highlight it\n\nC1\nC2\nC3\nC4\nC5\nC6\nR1\nR2\nR3\nR4\nR5\nR6\nCOLUMNS (X)\nROWS (Z)\n0\n25\n50\n75\n100\nVALUE (Y)"
+}

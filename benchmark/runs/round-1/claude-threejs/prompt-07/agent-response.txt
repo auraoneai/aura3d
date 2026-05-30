@@ -1,0 +1,31 @@
+The app builds and serves cleanly. Done.
+
+## Material Lab — implemented
+
+I replaced `source/src/main.ts` with a Three.js material lab and added a fullscreen canvas style to `source/index.html`. Nothing outside `source/` was touched.
+
+### What it does (maps to required visual evidence)
+- **Five spheres visible** — a row of five `SphereGeometry` meshes, evenly spaced and centered.
+- **Five visually distinct materials:**
+  - **Metal** — `MeshStandardMaterial`, `metalness: 1`, low roughness → sharp mirror-like reflections.
+  - **Glass** — `MeshPhysicalMaterial` with `transmission: 1`, `ior: 1.5`, `thickness` → see-through refraction.
+  - **Rubber** — matte `MeshStandardMaterial`, dark, `roughness: 0.95`, low env intensity.
+  - **Emissive** — glowing orange `emissive` + a matching `PointLight` so it lights its surroundings.
+  - **Clearcoat** — red `MeshPhysicalMaterial` with `clearcoat: 1` and a glossy coat over a duller base.
+- **Studio lighting** — soft ambient + key/fill/rim `DirectionalLight`s and a specular `PointLight`; the key light casts **PCF soft shadows** onto a ground plane.
+- **Environment lighting/reflection** — `RoomEnvironment` baked through `PMREMGenerator` into `scene.environment`, giving real studio reflections on the metal/clearcoat/glass.
+- **Orbit controls** — `OrbitControls` with damping, distance and polar-angle limits.
+
+Renderer uses `ACESFilmicToneMapping` for a clean studio look, with resize handling.
+
+### Commands
+- **Install:** `npm install` (run in `source/`)
+- **Build:** `npm run build` (runs `tsc --noEmit` typecheck + `vite build`)
+- **Run (dev):** `npm run dev -- --port <assigned-port>`
+
+Verified: `npm run build` passes typecheck and builds; dev server returns HTTP 200 for the page and `main.ts`.
+
+### Assumptions
+- `three@0.165.0` is installed from npm (already declared in `source/package.json`); the `OrbitControls` and `RoomEnvironment` addons are imported via `three/addons/...`, matching the copies in the context bundle.
+- The environment map is generated **procedurally** from `RoomEnvironment` (no asset files), per the "built procedurally / do not search for assets" instruction.
+- App renders fullscreen; camera starts at a three-quarter view showing all five spheres.

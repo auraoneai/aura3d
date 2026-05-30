@@ -1,0 +1,28 @@
+Everything works. The build, typecheck, and dev server all pass.
+
+## Summary
+
+I built a procedurally generated city block in `source/src/main.ts` using Three.js 0.165.0 (Vite + TypeScript scaffold, `three` from npm, `OrbitControls` addon).
+
+**What it renders:**
+- **20 buildings** — a 5×4 grid of box buildings (shared unit `BoxGeometry`, scaled per building), each with a deterministically-seeded random footprint and **height ranging 12–60 units** so heights clearly vary.
+- **Windows** — each building gets a procedurally drawn canvas facade texture: a diffuse map (warm-lit vs. dark glass cells) plus a matching emissive map so only lit windows glow. Side faces use the window facade; the top/bottom use a dark roof material.
+- **Streets** — dark asphalt road strips run between every building row and column (plus outer edges), each with dashed yellow lane markings, laid over a sidewalk-toned ground plane.
+- **Street lights** — poles with arms, lamp heads, and `PointLight`s placed at every road intersection.
+- **Day/night toggle** — an on-screen button switches between full `DAY`/`NIGHT` states that change: sky background color, fog color, hemisphere/ambient/sun light color+intensity, sun-vs-moon disc position/color, tone-mapping exposure, window emissive glow, street-light lamp glow + point-light intensity, and star visibility (stars appear only at night).
+
+Orbit controls (drag to rotate, scroll to zoom) let the reviewer frame the whole block.
+
+## Commands
+
+From the `source/` directory:
+
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` typecheck then `vite build`)
+- **Run (dev):** `npm run dev -- --port <assigned-port>` (serves on `127.0.0.1`)
+
+## Assumptions
+
+- Despite the project `CLAUDE.md` referencing `@aura3d/engine`, this run is a **Three.js** benchmark (per `run-metadata.json`, the scaffold `package.json`, and the context bundle being the three.js library), so I used Three.js public imports only.
+- The layout uses a fixed RNG seed, so the block is identical on every load (stable visual evidence). The day/night toggle starts in **day** mode.
+- No external assets are loaded — the facade window textures, roads, lights, and stars are all generated procedurally in code, as required.

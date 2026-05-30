@@ -1,0 +1,15 @@
+{
+  "scene": "engine-04-physics-ramp",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 6022,
+  "p50Fps": 7.501875468867258,
+  "p95FrameTimeMs": 266.7000000000007,
+  "drawCalls": 62,
+  "triangleCount": 734,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 120034,
+  "sourceLoc": 55,
+  "screenshot": "screenshot.png"
+}

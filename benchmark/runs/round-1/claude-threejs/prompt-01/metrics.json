@@ -1,0 +1,15 @@
+{
+  "prompt": "01-physics-playground",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 473,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 580288,
+  "bundleSizeGzipBytes": 124318,
+  "screenshot": "screenshot.png"
+}

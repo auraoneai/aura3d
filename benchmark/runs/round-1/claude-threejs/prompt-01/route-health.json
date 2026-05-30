@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 110,
+  "bodyTextSample": "Physics Playground\nCubes\n50\nLive contacts\n2\nFPS\n3\nReset (R)\nDrag to orbit · scroll to zoom · right-drag to pan"
+}

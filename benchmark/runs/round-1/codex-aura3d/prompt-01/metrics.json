@@ -1,0 +1,15 @@
+{
+  "prompt": "01-physics-playground",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 242,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 186969,
+  "bundleSizeGzipBytes": 203752,
+  "screenshot": "screenshot.png"
+}

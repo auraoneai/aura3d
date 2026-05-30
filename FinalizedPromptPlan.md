@@ -468,16 +468,16 @@ is not complete and Round 1 cannot start.
 
 Goal: get a real result.
 
-- [ ] Run Codex + Aura3D across all 10 prompts. Record results.
-- [ ] Run Codex + raw Three.js across all 10 prompts. Record results.
-- [ ] Run Claude Code + Aura3D across all 10 prompts. Record results.
-- [ ] Run Claude Code + raw Three.js across all 10 prompts. Record results.
-- [ ] Run the engine parity benchmark in `benchmark/engine/README.md`.
-- [ ] Submit each prompt's outputs to a neutral scorer (human or
+- [x] Run Codex + Aura3D across all 10 prompts. Record results.
+- [x] Run Codex + raw Three.js across all 10 prompts. Record results.
+- [x] Run Claude Code + Aura3D across all 10 prompts. Record results.
+- [x] Run Claude Code + raw Three.js across all 10 prompts. Record results.
+- [x] Run the engine parity benchmark in `benchmark/engine/README.md`.
+- [x] Submit each prompt's outputs to a neutral scorer (human or
       opposite-vendor model). Record scores.
-- [ ] Submit each engine scene's screenshots and metrics to a neutral scorer.
-- [ ] Commit results to `benchmark/results/round-1.md`.
-- [ ] Commit engine results to `benchmark/results/round-1-engine.md`.
+- [x] Submit each engine scene's screenshots and metrics to a neutral scorer.
+- [x] Commit results to `benchmark/results/round-1.md`.
+- [x] Commit engine results to `benchmark/results/round-1-engine.md`.
 
 Exit: Round 1 results are committed, signed by the neutral scorer, signed by
 the user (`gchahal1982`), and dated. No edits permitted after commit.
@@ -492,10 +492,10 @@ Goal: decide what the result means.
 - [ ] If pass criteria are met for one agent but not the other: investigate
       the per-agent gap. Either the context bundle for that agent needs work,
       or that agent has model-specific limits. Decide which.
-- [ ] If pass criteria are not met: the library is not yet a Three.js
+- [x] If pass criteria are not met: the library is not yet a Three.js
       competitor. Identify the specific prompts where Aura3D lost and the
       specific metrics it lost on. Library work targets those gaps.
-- [ ] If the engine parity benchmark fails: do not ship as a Three.js
+- [x] If the engine parity benchmark fails: do not ship as a Three.js
       competitor. Identify renderer, material, VFX, physics, performance, or
       bundle-size gaps and fix the library before rerunning.
 

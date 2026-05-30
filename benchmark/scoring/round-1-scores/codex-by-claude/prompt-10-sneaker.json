@@ -1,0 +1,31 @@
+```json
+{
+  "prompt": "10-product-viewer-sneaker",
+  "agent": "Codex",
+  "visualMatch": {
+    "aura3d": 4,
+    "threejs": 5,
+    "reason": "Both render the actual sneaker.glb, centered, auto-scaled, on a plinth with readable studio lighting and turntable framing — a strong, real prompt match in each case. Aura3D shows a clean blue knit sneaker on a white box plinth in a dark studio, but a diagnostic overlay clutters the frame and the plinth is a rectangular box. Three.js is more polished: a clean light studio, a proper round turntable plinth with bevel ring, soft contact shadow, and product-shot lighting, reading as a finished viewer."
+  },
+  "modifiability": {
+    "aura3d": 4,
+    "threejs": 4,
+    "reason": "Aura3D's declarative scene graph (named primitives, material/light helpers, single orbit+timeline chain) is concise and easy to retune, though much of the studio look is faked with emissive box 'cards.' Three.js is verbose but idiomatic and transparent: explicit GLTFLoader, bounding-box auto-centering/scaling, lights, OrbitControls, and a turntable group are all directly editable. Both are comfortably modifiable for their respective audiences."
+  },
+  "metrics": [
+    {"metric": "compiles", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both compile."},
+    {"metric": "runsInBrowser", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both run in the browser."},
+    {"metric": "linesOfUserCode", "aura3d": "151", "threejs": "192", "winner": "Aura3D", "reason": "Aura3D needs fewer lines for an equivalent scene."},
+    {"metric": "filesCreated", "aura3d": "4", "threejs": "2", "winner": "Three.js", "reason": "Three.js created fewer files for comparable quality."},
+    {"metric": "hallucinatedApis", "aura3d": "null", "threejs": "null", "winner": "tie", "reason": "Both null (treated as 0); no hallucinated APIs evident in source or notes."},
+    {"metric": "inventedAssetPaths", "aura3d": "1", "threejs": "0", "winner": "Three.js", "reason": "Three.js used the allowed /benchmark/assets/sneaker.glb path; Aura3D recorded 1 invented asset path."},
+    {"metric": "repairTurns", "aura3d": "0", "threejs": "0", "winner": "tie", "reason": "Neither required repair turns."},
+    {"metric": "timeToFirstUsableRenderMs", "aura3d": "274451", "threejs": "184478", "winner": "Three.js", "reason": "Three.js reached first usable render faster."},
+    {"metric": "bundleSizeGzipBytes", "aura3d": "203246", "threejs": "148368", "winner": "Three.js", "reason": "Three.js produced a smaller gzipped bundle."},
+    {"metric": "visualMatch", "aura3d": "4", "threejs": "5", "winner": "Three.js", "reason": "Three.js is a more polished product viewer; Aura3D is strong but cluttered by overlay and a boxy plinth."},
+    {"metric": "modifiability", "aura3d": "4", "threejs": "4", "winner": "tie", "reason": "Both are readily modifiable in their respective styles."}
+  ],
+  "finalResult": "Aura3D loss",
+  "reason": "Both outputs genuinely satisfy the prompt with a real, recognizable sneaker. Aura3D wins only linesOfUserCode among non-tied metrics, while Three.js wins filesCreated, inventedAssetPaths, timeToFirstUsableRender, bundleSize, and visual match (5 vs 4). Three.js is strictly better on a majority of non-tied metrics including visual quality, so Aura3D does not meet the win condition and loses."
+}
+```

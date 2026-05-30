@@ -1,0 +1,15 @@
+{
+  "scene": "engine-03-particles-vfx",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 6285,
+  "p50Fps": 2.1427040925648133,
+  "p95FrameTimeMs": 716.7999999999993,
+  "drawCalls": 452,
+  "triangleCount": 75698,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 121241,
+  "sourceLoc": 57,
+  "screenshot": "screenshot.png"
+}

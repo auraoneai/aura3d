@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "runId": "codex-threejs",
+  "agent": "Codex",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/04-neon-tunnel-flythrough.md",
+  "sourceDirectory": "benchmark/runs/round-1/codex-threejs/prompt-04/source",
+  "preparedAt": "2026-05-29T20:25:56.906Z",
+  "agentCommand": "codex",
+  "agentCommandArgs": [
+    "exec",
+    "--skip-git-repo-check",
+    "--ignore-rules",
+    "--ignore-user-config",
+    "--ephemeral",
+    "-s",
+    "danger-full-access",
+    "-C",
+    "/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-threejs/prompt-04",
+    "--output-last-message",
+    "agent-response.txt",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\n# Prompt 04: Neon Tunnel Flythrough\n\nBuild a neon tunnel flythrough: procedurally generated tube geometry with emissive segments, camera animated through the tunnel, bloom postprocess, fog falloff.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- A tunnel or tube interior must be visible.\n- Emissive segments must be visible along the tunnel.\n- Bloom or glow must be visible.\n- Fog or depth falloff must be visible.\n- Camera animation must be captured in runtime evidence, and the screenshot must read as a flythrough scene.\n"
+  ],
+  "agentStartedAt": "2026-05-29T20:55:36.508Z",
+  "agentFinishedAt": "2026-05-29T20:59:55.011Z",
+  "agentDurationMs": 258503,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

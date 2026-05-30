@@ -1,0 +1,27 @@
+The build passes (typecheck + Vite) and the app is verified rendering. Here's the summary.
+
+## Neon Tunnel Flythrough — complete
+
+Built entirely with the public `@aura3d/engine` API in `source/src/main.ts`. Since the engine only exposes `box`/`sphere`/`plane` primitives (no tube/cylinder), the tube is **procedurally generated**:
+
+- **Tube geometry** — 12 long Z-aligned rib boxes rotated around the circle form a faceted tube wall (dark, slightly metallic) that converges to a vanishing point.
+- **Emissive segments** — 12 neon hoops spaced down the tunnel, each made of 12 emissive box segments cycling a cyan/magenta/violet/green palette (`material.emissive`, self-glow via the engine's `emissiveIntensity`).
+- **Bloom** — `effects.bloom`; the engine collects glow halos from the first 10 emissive primitives, so I emit 10 distributed "beacon" boxes *first* (one per hoop, spiraling) to spread additive glow down the whole tunnel rather than clustering it on the near ring.
+- **Fog falloff** — `effects.fog` (`FogExp2`) tuned so the tunnel fades into the dark depth gradient.
+- **Flythrough camera** — `camera.dolly` ping-pongs `from [0,0,4] → to [0,0,-22]` while holding a fixed `lookAt` target far down the axis (`z=-64`), keeping the camera *inside* the tube the entire path so every frame reads as an immersive interior flythrough; looped on a 14s timeline.
+
+I also added CSS to `index.html` so the canvas fills the viewport (it was collapsing to a partial-height canvas).
+
+**Verification:** rendered headlessly via Chrome/WebGL2 (1280×720, no console errors). Captured frames across the loop confirm: tube interior visible, glowing neon hoops, bloom halos + strong point-light flares, fog depth falloff to black, and clear camera motion between frames.
+
+### Commands (run from `source/`)
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` then `vite build`)
+- **Run (dev):** `npm run dev -- --port <port>` → serves on `http://127.0.0.1:<port>/`
+- **Preview built output:** `npm run preview`
+
+### Assumptions
+- No assets used — fully procedural, as required (no `src/aura-assets.ts` needed).
+- `three` is pulled in transitively as a dependency of `@aura3d/engine`; the engine's production renderer uses it, and Vite bundles it automatically (the ~674 kB three chunk is expected).
+- The dark far end of the tunnel is intentional — it's the fog depth-falloff reading ("depth into haze"), not missing geometry.
+- The lone runtime 404 seen during capture is the browser's default favicon request, not an app error.

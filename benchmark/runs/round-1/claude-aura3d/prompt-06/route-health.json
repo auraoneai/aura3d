@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 164,
+  "bodyTextSample": "⛳ Mini-Golf — Hole 1\nStrokes\n0\nPar\n3\nBest\n—\nClick & drag toward the hole, release to putt.\n↻ Reset\nDrag from the ball to aim · longer drag = more power · R to reset"
+}

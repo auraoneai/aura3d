@@ -1,0 +1,15 @@
+{
+  "scene": "engine-02-city-block",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 6189,
+  "p50Fps": 4.6040515653775165,
+  "p95FrameTimeMs": 383.39999999999964,
+  "drawCalls": 199,
+  "triangleCount": 668,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 120049,
+  "sourceLoc": 55,
+  "screenshot": "screenshot.png"
+}

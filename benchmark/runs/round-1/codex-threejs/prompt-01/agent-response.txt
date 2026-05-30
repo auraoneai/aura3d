@@ -1,0 +1,20 @@
+Implemented the procedural Three.js physics playground in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-threejs/prompt-01/source/src/main.ts).
+
+It includes 50 cubes, tilted ramp collision response, cube contact approximation, orbit camera controls, reset button, and a live contact count overlay. I verified `npm run build` passes and checked a headless browser screenshot for visible cubes, ramp, contacts, and overlay.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev -- --port 4174
+```
+
+Current dev server:
+```text
+http://127.0.0.1:4174/
+```
+
+Assumptions: no external assets were allowed or used; physics is implemented procedurally with lightweight custom collision response because the provided scaffold only depends on `three`.

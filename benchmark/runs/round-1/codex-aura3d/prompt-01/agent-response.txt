@@ -1,0 +1,24 @@
+Implemented the procedural Aura3D physics playground in `source/src/main.ts`.
+
+What’s included:
+- 50 procedural cubes, with many visibly resting/colliding on the ramp and others still falling.
+- A tilted ramp plus collision lip and floor for readable framing.
+- Orbit camera interaction.
+- Reset button that rebuilds the scene with a fresh deterministic state.
+- Live contact count HUD that updates continuously.
+
+Verified:
+- `npm install`
+- `npm run build` passes.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev -- --port 5173
+```
+
+Assumption: because this prompt disallows assets and the public Aura3D API exposes scene primitives rather than a full runtime rigid-body API, the app presents a procedural physics-state visualization with live contact telemetry and reset behavior rather than integrating an external physics engine.

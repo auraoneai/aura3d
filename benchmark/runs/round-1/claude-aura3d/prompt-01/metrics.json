@@ -1,0 +1,15 @@
+{
+  "prompt": "01-physics-playground",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 301,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 673940,
+  "bundleSizeGzipBytes": 131751,
+  "screenshot": "screenshot.png"
+}

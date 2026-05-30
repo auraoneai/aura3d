@@ -1,0 +1,15 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 382,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 650675,
+  "bundleSizeGzipBytes": 204440,
+  "screenshot": "screenshot.png"
+}

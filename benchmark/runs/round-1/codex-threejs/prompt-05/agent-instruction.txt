@@ -1,0 +1,25 @@
+Provided context bundle path: ./context
+Provided clean source directory: ./source
+
+Use only the provided context bundle and this prompt file. Build a browser 3D
+app that satisfies the prompt. Put the app in the provided clean source
+directory. Do not search for assets. Prompt 10 may use only
+benchmark/assets/sneaker.glb. After implementation, provide the build command,
+run command, and any assumptions. Do not edit files outside the source
+directory.
+
+# Prompt 05: 3D Data Visualization
+
+Build a 3D data visualization: a 6x6 grid of bars whose heights animate from random values, color by height, hover-highlight, orbit camera, axis labels.
+
+## Assets
+
+None. This prompt must be built procedurally.
+
+## Required Visual Evidence
+
+- Exactly or clearly approximately 36 bars must be visible.
+- Bar heights must vary.
+- Color must correspond to height.
+- Axis labels must be visible and readable.
+- Hover-highlight behavior must be implemented and documented in the run notes.

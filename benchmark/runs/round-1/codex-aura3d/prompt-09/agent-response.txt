@@ -1,0 +1,26 @@
+Implemented the procedural animated humanoid in `./source`.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev -- --port 5173
+```
+
+Current dev server is running at:
+```text
+http://127.0.0.1:5175/
+```
+
+Verification:
+```bash
+npm run build
+npx playwright screenshot --wait-for-timeout=1500 http://127.0.0.1:5175/ /tmp/aura3d-prompt09.png
+```
+
+Assumptions:
+- No external assets were used.
+- I used procedural Three.js primitives because the local Aura3D public primitive API exposes `box`, `sphere`, and `plane`, but not cylinder or per-frame primitive transform animation. The scene includes a sphere head, cylinder torso, box limbs, visible ground plane, ghosted prior poses, and a looped walk cycle moving across the ground.

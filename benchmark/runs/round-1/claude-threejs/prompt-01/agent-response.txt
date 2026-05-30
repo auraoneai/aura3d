@@ -1,0 +1,32 @@
+Done. The Physics Playground is built, builds cleanly, and is verified running in a real browser.
+
+## What was built
+
+A browser 3D physics playground in `source/src/main.ts` (Three.js 0.165.0 + OrbitControls, TypeScript + Vite). Since no physics library is in the context bundle, the rigid-body simulation is implemented procedurally:
+
+- **50 falling cubes** — dynamic rigid bodies with position, orientation, linear + angular velocity, mass and (scalar, isotropic) inertia.
+- **Tilted ramp** (~24°) plus ground and four boundary walls, all as static oriented-box (OBB) colliders.
+- **Collision response** — a sequential-impulse solver: each cube's 8 corners are tested point-vs-OBB (minimum-penetration axis) against the static geometry; cube-vs-cube uses a bounding-sphere approximation so they pile without tunnelling. Restitution + Coulomb friction + Baumgarte positional bias, run over 4 substeps × 10 iterations per frame.
+- **Camera orbit** — OrbitControls (drag/zoom/pan, damped), framed on the ramp.
+- **Reset button** — "Reset (R)" button and `R` key re-drop the cubes (seeded RNG → reproducible layout).
+- **Live contact-count overlay** — HUD showing cube count, live contact count, FPS, and controls hint.
+
+## Verification
+
+Captured via headless Chrome over CDP after the cubes fell: 50 cubes piled and resting on the tilted ramp, **184→192 live contacts**, stable (no solver blow-up). All required visual evidence is present: many cubes, visible tilted ramp, active collision/contact behavior, reset control + live overlay, and clear camera framing.
+
+## Commands
+
+All run from the `source/` directory:
+
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` typecheck, then `vite build`)
+- **Run (dev):** `npm run dev -- --port <assigned-port>` (serves on `127.0.0.1`)
+- **Run (preview built):** `npm run preview`
+
+## Assumptions
+
+- "Built procedurally" includes the physics engine itself — implemented from scratch on Three.js rather than pulling in an external physics package (none was provided in the bundle, and asset/dependency searching was disallowed).
+- Cube-vs-cube collision uses a bounding-sphere approximation (cube-vs-static uses exact OBB corners); chosen for solver stability with 50 bodies while keeping pile behavior visually faithful.
+- Gravity is set to 22 m/s² (rather than 9.8) for a snappier, more legible demo, and four faint boundary walls corral the pile so the scene stays readable. Ramp tilt (~24°) sits near the friction-slip threshold so cubes visibly rest and partially slide — making collision response obvious.
+- Only files inside `source/` were modified.

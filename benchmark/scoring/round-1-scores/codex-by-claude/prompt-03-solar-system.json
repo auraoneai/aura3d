@@ -1,0 +1,33 @@
+Based on my review of all files, here is the scoring:
+
+```json
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Codex",
+  "visualMatch": {
+    "aura3d": 4,
+    "threejs": 3,
+    "reason": "Aura3D renders a clean, readable solar system: a softly bloomed sun, all six planets as distinct lit spheres, clearly different dashed concentric orbits, a subtle starfield, and legible labels annotated with orbital speed multipliers. It satisfies every required visual evidence item in a polished way. Three.js also shows a sun with strong orange bloom, six labeled planets, distinct orbit rings, and a title, but harsh point-light phase shading reduces several planets to dim crescents (Maris, Nereid) and blows Aster out into a bloom blob, hurting readability — recognizable with clear flaws."
+  },
+  "modifiability": {
+    "aura3d": 3,
+    "threejs": 4,
+    "reason": "Aura3D's code is concise and declarative with a tidy planet data array, but it leans on hacks that undercut maintainability: per-planet 'speed' is only a cosmetic label string with no actual orbital animation, labels are placed via hardcoded screen-percentage positions decoupled from the 3D scene, and each orbit is faked from 56 stretched boxes. Three.js uses proper pivot Groups driving real speed-based orbital motion, 3D-projected auto-tracking labels, real LineLoop orbits, and a clean PlanetConfig array — more functionally correct and easier to extend despite more lines."
+  },
+  "metrics": [
+    {"metric": "compiles", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both compile."},
+    {"metric": "runsInBrowser", "aura3d": "true", "threejs": "true", "winner": "tie", "reason": "Both run in the browser with no runtime failure."},
+    {"metric": "linesOfUserCode", "aura3d": "162", "threejs": "257", "winner": "Aura3D", "reason": "Aura3D uses fewer lines of user code (lower is better)."},
+    {"metric": "filesCreated", "aura3d": "3", "threejs": "2", "winner": "Three.js", "reason": "Three.js created fewer files with comparable quality (lower is better)."},
+    {"metric": "hallucinatedApis", "aura3d": "null", "threejs": "null", "winner": "tie", "reason": "Null treated as 0 for both; notes/source reveal no API issues."},
+    {"metric": "inventedAssetPaths", "aura3d": "0", "threejs": "0", "winner": "tie", "reason": "Procedural prompt; neither invented asset paths."},
+    {"metric": "repairTurns", "aura3d": "0", "threejs": "0", "winner": "tie", "reason": "Neither required repair turns."},
+    {"metric": "timeToFirstUsableRenderMs", "aura3d": "403961", "threejs": "296530", "winner": "Three.js", "reason": "Three.js reached first usable render faster (lower is better)."},
+    {"metric": "bundleSizeGzipBytes", "aura3d": "203214", "threejs": "126826", "winner": "Three.js", "reason": "Three.js produced a smaller gzipped bundle (lower is better)."},
+    {"metric": "visualMatch", "aura3d": "4", "threejs": "3", "winner": "Aura3D", "reason": "Aura3D presents a cleaner, more readable solar system; Three.js's phase lighting reduces some planets to dim crescents."},
+    {"metric": "modifiability", "aura3d": "3", "threejs": "4", "winner": "Three.js", "reason": "Three.js implements real speed-driven orbits and 3D-tracked labels, while Aura3D fakes speed labels, label positions, and orbit rings."}
+  ],
+  "finalResult": "tie",
+  "reason": "Among non-tied metrics, Aura3D wins linesOfUserCode and visualMatch, while Three.js wins filesCreated, timeToFirstUsableRender, bundleSize, and modifiability. Three.js is strictly better on more secondary metrics, so Aura3D does not earn a win. However, Aura3D holds the higher visual match (4 vs 3), so the loss condition — which requires Three.js to be strictly better including visual quality — is not met. With the objective metrics favoring Three.js but visual quality favoring Aura3D, the result settles on a tie."
+}
+```

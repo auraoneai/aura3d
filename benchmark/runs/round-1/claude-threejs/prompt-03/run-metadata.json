@@ -1,0 +1,27 @@
+{
+  "round": 1,
+  "runId": "claude-threejs",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/03-procedural-solar-system.md",
+  "sourceDirectory": "benchmark/runs/round-1/claude-threejs/prompt-03/source",
+  "preparedAt": "2026-05-29T20:25:57.815Z",
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\n# Prompt 03: Procedural Solar System\n\nBuild a procedural solar system: sun, 6 planets at different orbital distances and speeds, label each planet, bloom on the sun, orbit camera.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- One sun and 6 planets must be visible.\n- Orbit distances must be visibly different.\n- Planet labels must be visible and readable.\n- Sun glow or bloom must be visible.\n- Orbit camera setup must frame the whole system.\n"
+  ],
+  "agentStartedAt": "2026-05-29T20:58:11.539Z",
+  "agentFinishedAt": "2026-05-29T21:02:10.563Z",
+  "agentDurationMs": 239024,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

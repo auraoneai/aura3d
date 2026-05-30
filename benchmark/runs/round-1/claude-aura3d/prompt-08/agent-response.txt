@@ -1,0 +1,28 @@
+The app is complete and verified. Both day and night render correctly with all required visual evidence.
+
+## Summary
+
+I built a procedurally generated city block in `source/src/main.ts` using **only public `@aura3d/engine` imports** (`scene`, `primitives`, `material`, `lights`, `camera`, `effects`, `interactions`, `createAuraApp`). Since the prompt forbids assets and the prompt-plan API requires a model asset, I used the lower-level scene/primitives API (documented as fully supported in `llms.txt`).
+
+**What it does**
+- **20 box buildings** on a deterministic 5×4 lot grid (seeded PRNG so layout is stable across toggles).
+- **Varying heights** — a mix of low-rise (~5–11 units) and towers (~12–22 units).
+- **Windows** — emissive box panes generated in grids on each building's two camera-facing faces; at night ~⅔ glow (warm/cool tints) and the rest stay dark.
+- **Streets** — an asphalt road grid laid between lots with dashed, mildly-emissive lane markings.
+- **Street lights** — pole + arm + emissive lamp head; at night, real `lights.point` lamps cast warm pools onto nearby façades.
+- **Day/night toggle** — a visible overlay button. Toggling rebuilds the scene (dispose + recreate) with a different `background` (sky: light blue ↔ deep navy) and a different lighting rig (sun + sky fill ↔ moon + ambient + lamp point lights + fog + bloom).
+
+**Verification** — Headless-Chrome screenshots of both modes confirmed: ~20 buildings, varied heights, visible windows, visible streets/lane-markings, street-lamp glow, and a sky+lighting change between day and night. `npm run build` (which runs `tsc --noEmit` then `vite build`) passes cleanly.
+
+### Commands
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run (dev):** `npm run dev -- --port <port>` (e.g. `npm run dev -- --port 5191`), then open the printed `http://127.0.0.1:<port>/`
+- **Preview production build:** `npm run preview`
+
+### Assumptions
+- Used the lower-level `scene()`/`primitives` API rather than `definePromptPlan` because the prompt plan path requires a model asset and this prompt forbids assets.
+- The day/night toggle is implemented as dispose-and-recreate of the Aura app, since `createAuraApp` consumes an immutable scene snapshot — this is the supported way to change background/lighting at runtime.
+- The engine renders via its Three.js backend; `three` is a declared dependency of `@aura3d/engine`, so `npm install` brings it in and Vite bundles it (hence the large `three.module` chunk and harmless chunk-size warning).
+- Added a convenience `?mode=night` URL parameter to set the initial mode (used for verification); default is day.
+- All changes are confined to the `source/` directory.

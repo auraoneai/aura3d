@@ -1,0 +1,25 @@
+Implemented the Three.js product viewer in `source/src/main.ts`.
+
+It loads only `/benchmark/assets/sneaker.glb`, auto-centers and scales the sneaker with `Box3`, places it on a visible plinth, adds studio lighting/shadows, enables `OrbitControls`, and rotates the turntable continuously.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev -- --port 4174
+```
+
+Verified:
+```bash
+npm run build
+npx playwright screenshot --wait-for-timeout=4000 http://127.0.0.1:4174/ ./render-check.png
+```
+
+Assumptions:
+- The provided asset is intentionally available at `source/public/benchmark/assets/sneaker.glb`, which Vite serves as `/benchmark/assets/sneaker.glb`.
+- No remote assets or substitute model paths are used.

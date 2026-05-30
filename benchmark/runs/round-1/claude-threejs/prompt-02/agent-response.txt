@@ -1,0 +1,27 @@
+Everything builds and serves cleanly. The app is complete.
+
+## Summary
+
+I built a procedural particle fountain in `source/src/main.ts` (with overlay styling in `source/index.html`) using three.js 0.165.0 + Vite.
+
+**How it satisfies each visual-evidence requirement:**
+
+- **Identifiable emitter** — a glowing metallic nozzle cone + emissive torus ring at the emission point, lit by a pulsing point light, sits at the fountain's base.
+- **Upward-and-falling arc** — each particle gets an upward initial velocity (~6.5–9.5 u/s) plus a small radial spread, then is integrated under constant gravity (−9.8 u/s²) every frame, producing a real ballistic arc rather than static dots.
+- **Lifetime color variation** — particle color is recomputed every frame from `age / life` through a 5-stop ramp: white → yellow → orange → magenta → blue, so young particles are hot/bright and old ones cool blue.
+- **Ground plane** — a 60×60 `MeshStandardMaterial` plane with a grid helper at `y=0`; particles collide against it and bounce (restitution 0.45 + horizontal friction), with near-stationary ones retired.
+- **Emission-rate control** — a labeled range slider (0–5000 /s) in a top-left HUD live-controls spawn rate, alongside a live particle count.
+
+Implementation notes: struct-of-arrays typed buffers with a free-list pool (20k cap) feed a single `THREE.Points` with additive-blended soft round sprites; OrbitControls for camera; frame-delta clamped to avoid spawn bursts on tab refocus.
+
+**Commands** (run from `source/`):
+- Install: `npm install`
+- Build: `npm run build` (runs `tsc --noEmit` typecheck + `vite build`)
+- Run (dev): `npm run dev -- --port <port>` → serves at `http://127.0.0.1:<port>/`
+- Preview production build: `npm run preview`
+
+**Assumptions:**
+- The provided context bundle is three.js itself (the package is plain `three`, imported via the documented `three` / `three/addons/*` entry points); I used only those public imports — no `@aura3d/engine`, which isn't present in this bundle.
+- No assets were used or fetched; everything (geometry, particle sprite, colors) is generated procedurally, as the prompt requires.
+- World units are arbitrary (gravity = 9.8 u/s²); tuned so the arc and bounce read clearly at the default camera framing.
+- Verified: typecheck + production build pass, and the dev server returns 200 for the page and the compiled module. I did not capture an in-browser screenshot in this environment, so visual confirmation is from the build/serve checks plus the code.

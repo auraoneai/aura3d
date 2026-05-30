@@ -1,0 +1,16 @@
+{
+  "status": "pass",
+  "canvasCount": 2,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 187,
+  "bodyTextSample": "Particle Fountain\n\nGravity-fed particles erupt from the glowing emitter, arc upward, and fall back to collide with the ground plane.\n\nEmission rate\n0 /s\nyoung\nold\n0 live particles · 2 fps"
+}

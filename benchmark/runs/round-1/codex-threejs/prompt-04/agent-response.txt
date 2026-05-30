@@ -1,0 +1,21 @@
+Implemented the Neon Tunnel Flythrough in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-threejs/prompt-04/source/src/main.ts). It is fully procedural: generated tube interior, animated flythrough camera, emissive wall segments/rings, point glows, bloom postprocess, and exponential fog/depth falloff.
+
+Build verified:
+
+```bash
+npm run build
+```
+
+Run command:
+
+```bash
+npm run dev -- --port 5174
+```
+
+The dev server is running at:
+
+```text
+http://127.0.0.1:5174/
+```
+
+I also captured runtime evidence at `source/runtime-evidence.png`. Assumption: `llms.txt` was requested by the instructions, but no `llms.txt` file exists under this prompt directory.

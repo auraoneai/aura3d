@@ -1,0 +1,15 @@
+{
+  "scene": "engine-02-city-block",
+  "library": "Aura3D",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 5735,
+  "p50Fps": 4.980079681274874,
+  "p95FrameTimeMs": 300,
+  "drawCalls": 21,
+  "triangleCount": null,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 202857,
+  "sourceLoc": 67,
+  "screenshot": "screenshot.png"
+}

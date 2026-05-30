@@ -1,0 +1,15 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 357,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 248206,
+  "bundleSizeGzipBytes": 123510,
+  "screenshot": "screenshot.png"
+}

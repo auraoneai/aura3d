@@ -1,0 +1,25 @@
+Provided context bundle path: ./context
+Provided clean source directory: ./source
+
+Use only the provided context bundle and this prompt file. Build a browser 3D
+app that satisfies the prompt. Put the app in the provided clean source
+directory. Do not search for assets. Prompt 10 may use only
+benchmark/assets/sneaker.glb. After implementation, provide the build command,
+run command, and any assumptions. Do not edit files outside the source
+directory.
+
+# Prompt 08: Procedural City Block
+
+Build a procedurally generated city block: 20 box buildings of varying heights with windows, streets, street lights, and a day/night toggle that changes lighting and sky.
+
+## Assets
+
+None. This prompt must be built procedurally.
+
+## Required Visual Evidence
+
+- About 20 buildings must be visible.
+- Building heights must vary.
+- Windows must be visible.
+- Streets and street lights must be visible.
+- Day/night toggle must be visible and must change lighting and sky.

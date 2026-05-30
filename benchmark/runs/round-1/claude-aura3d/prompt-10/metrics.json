@@ -1,0 +1,15 @@
+{
+  "prompt": "10-product-viewer-sneaker",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 267,
+  "filesCreated": 3,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 2,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 46745,
+  "bundleSizeGzipBytes": 155517,
+  "screenshot": "screenshot.png"
+}

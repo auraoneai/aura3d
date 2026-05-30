@@ -1,0 +1,15 @@
+{
+  "prompt": "09-animated-primitive-humanoid",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 196,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 21412,
+  "bundleSizeGzipBytes": 203023,
+  "screenshot": "screenshot.png"
+}

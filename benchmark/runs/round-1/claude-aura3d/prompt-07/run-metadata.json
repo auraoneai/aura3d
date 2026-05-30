@@ -1,0 +1,17 @@
+{
+  "round": 1,
+  "runId": "claude-aura3d",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "contextBundle": "benchmark/context/aura3d/files",
+  "promptFile": "benchmark/prompts/07-material-lab.md",
+  "sourceDirectory": "benchmark/runs/round-1/claude-aura3d/prompt-07/source",
+  "preparedAt": "2026-05-29T20:25:57.521Z",
+  "agentStartedAt": "2026-05-29T21:59:03Z",
+  "agentFinishedAt": "2026-05-29T22:26:44Z",
+  "agentDurationMs": 1661000,
+  "agentExitCode": null,
+  "agentSignal": "SIGTERM",
+  "failureStage": "agent-generation-timeout",
+  "failureReason": "Claude Code process remained alive for more than 25 minutes and left source/src/main.ts as the untouched scaffold."
+}

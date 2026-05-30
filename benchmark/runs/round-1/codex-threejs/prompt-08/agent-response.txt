@@ -1,0 +1,29 @@
+Implemented the procedural city block app in `./source`.
+
+Changes:
+- Built a Three.js scene with exactly 20 procedural box buildings.
+- Added varied building heights, visible window grids, roads, curbs, sidewalks, lane stripes, and street lights.
+- Added a visible Day/Night toggle that changes sky color, fog, ambient/sun/moon lighting, street light intensity, and window emission.
+- Updated the page title to `Procedural City Block`.
+
+Verification:
+- `npm run build` passed.
+- Headless Chrome screenshot confirmed the city block renders with buildings, streets, windows, lights, and the toggle visible.
+
+Commands:
+```bash
+npm run build
+npm run dev -- --port 5173
+```
+
+Run URL:
+```text
+http://127.0.0.1:5174/
+```
+
+Port `5173` was already in use, so Vite selected `5174`.
+
+Assumptions:
+- No `llms.txt` was present in the provided prompt directory.
+- No external assets were used; the scene is fully procedural.
+- The existing `three` dependency in `source/package.json` is the intended rendering stack.

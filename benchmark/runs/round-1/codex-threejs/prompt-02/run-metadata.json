@@ -1,0 +1,30 @@
+{
+  "round": 1,
+  "runId": "codex-threejs",
+  "agent": "Codex",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/02-particle-fountain.md",
+  "sourceDirectory": "benchmark/runs/round-1/codex-threejs/prompt-02/source",
+  "preparedAt": "2026-05-29T20:25:56.845Z",
+  "agentCommand": "codex",
+  "agentCommandArgs": [
+    "exec",
+    "--skip-git-repo-check",
+    "--ignore-rules",
+    "--ignore-user-config",
+    "--ephemeral",
+    "-s",
+    "danger-full-access",
+    "-C",
+    "/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-threejs/prompt-02",
+    "--output-last-message",
+    "agent-response.txt",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\n# Prompt 02: Particle Fountain\n\nBuild a particle fountain: gravity-affected particles emitted upward from a point, colored by lifetime, with a ground plane they collide against and a controllable emission rate.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- The fountain emitter must be identifiable.\n- Particles must form an upward-and-falling arc, not static random dots.\n- Lifetime color variation must be visible.\n- A ground plane must be visible.\n- An emission-rate control must be visible.\n"
+  ],
+  "agentStartedAt": "2026-05-29T20:44:55.002Z",
+  "agentFinishedAt": "2026-05-29T20:50:57.614Z",
+  "agentDurationMs": 362612,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

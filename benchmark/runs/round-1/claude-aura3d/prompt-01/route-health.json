@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 185,
+  "bodyTextSample": "Physics Playground\n\n50 rigid-body cubes · tilted ramp · Aura3D physics\n\nLIVE CONTACTS\n38\nCUBES\n50\nSETTLED\n1\nFPS\n11\n⟳ Reset Simulation\n\nDrag to orbit · scroll to zoom · right-drag to pan"
+}

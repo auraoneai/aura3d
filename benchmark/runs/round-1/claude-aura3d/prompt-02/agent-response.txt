@@ -1,0 +1,29 @@
+Done. The build passes (typecheck + Vite) and all five visual-evidence requirements are verified via headless screenshots.
+
+## What I built
+
+A particle fountain in `source/`, structured as two aligned layers sharing one camera:
+
+- **Aura3D layer** (`src/aura-scene.ts`) — authored with the public `@aura3d/engine` API (`scene`, `primitives`, `lights`, `material`, `effects.bloom`, `camera.perspective`): a 40-unit **ground plane**, an **emitter** (metal base + emissive cyan nozzle that bloom makes glow), lighting, and a fixed perspective camera.
+- **Particle layer** (`src/fountain.ts`) — a transparent overlay canvas. The declarative Aura3D API has no per-particle simulation hook, so the fountain itself (gravity integration, ground-collision bounce with friction, lifetime coloring, live emission rate) is simulated here and drawn with Three.js (the same renderer Aura3D uses internally). Its camera mirrors `src/config.ts` exactly so particles sit on the Aura-rendered ground and rise from the Aura-rendered nozzle.
+- `src/main.ts` orchestrates both, the emission-rate slider, and a HUD; `src/config.ts` holds shared camera/physics/color constants; `src/styles.css` the UI.
+
+**Verified evidence** (headless Chrome screenshots): emitter clearly identifiable; particles form a wide upward-and-falling arc; lifetime color variation visible (cyan → azure → blue → violet → warm); ground plane visible; emission-rate slider visible and functional — **50 live particles at 120/s** vs **600 at 1800/s**.
+
+## Commands
+
+```bash
+# from source/
+npm install          # installs @aura3d/engine tarball, three, vite
+npm run build        # tsc --noEmit + vite build   (build command)
+npm run dev -- --port <assigned-port>   # run command (dev server, 127.0.0.1)
+# or: npm run preview -- --port <assigned-port>   # serve the production build
+```
+
+## Assumptions
+
+- **Three.js used directly for the particle overlay.** Aura3D's public scene API is a static declarative compiler with no per-frame/per-particle simulation or custom-geometry hook, so a real gravity-driven, ground-colliding, rate-controlled fountain can't be expressed through it alone. I used Aura3D for everything it does cover (ground, emitter, lights, bloom, camera) and layered the simulation on a matching Three.js canvas. I added `three@0.165.0` (the exact version `@aura3d/engine` already depends on, so it dedupes) and `@types/three` to `source/package.json` — the only files I changed are inside `source/`.
+- **No assets**, as required — everything is procedural primitives plus a generated radial sprite texture.
+- **Camera alignment** relies on Aura3D's documented camera build (`PerspectiveCamera(fov, w/h, 0.05, 100)` at `position`/`target`); both layers read identical constants from `config.ts`. On resize the Aura app is rebuilt and the overlay re-mirrored, since Aura3D's renderer only sizes its canvas at construction.
+- Optional `?rate=N` query param sets the initial emission rate (used for verification; defaults to 700/s).
+- The Vite "chunk > 500 kB" warning is just Three.js bundle size, not an error.
