@@ -1,0 +1,17 @@
+Implemented the physics playground in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-2/codex-aura3d/prompt-01/source/src/main.ts). It uses Aura3D’s physics API for 50 dynamic cube bodies colliding with a tilted ramp plane, with procedural 3D canvas rendering, orbit drag, reset button, live contact count, and red contact vectors for collision evidence.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev
+```
+
+Verification: `npm run build` passes.
+
+Assumptions: no external assets are used; the scene is fully procedural. The visual renderer is custom canvas projection while the simulation/collision state comes from `@aura3d/engine/physics`.

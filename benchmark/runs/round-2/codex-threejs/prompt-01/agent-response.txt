@@ -1,0 +1,20 @@
+Implemented the procedural physics playground in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-2/codex-threejs/prompt-01/source/src/main.ts).
+
+It includes 50 falling cubes, a tilted ramp, cube/ramp/floor/cube collision response, orbit camera controls, reset button, live contact count overlay, and visible contact rings from a short deterministic pre-roll so screenshots immediately show impact evidence.
+
+Verification:
+`npm run build` passes.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev -- --port 4177
+```
+
+Assumptions: no `llms.txt` was present anywhere under the prompt directory, and this prompt uses no external assets. I did not leave a dev server running.

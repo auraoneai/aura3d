@@ -1,0 +1,15 @@
+{
+  "prompt": "10-product-viewer-sneaker",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 125,
+  "filesCreated": 3,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 1,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 279558,
+  "bundleSizeGzipBytes": 205842,
+  "screenshot": "screenshot.png"
+}

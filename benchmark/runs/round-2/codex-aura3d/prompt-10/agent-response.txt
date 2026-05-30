@@ -1,0 +1,27 @@
+Implemented the Aura3D product viewer in `source`.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev
+```
+
+Verification run:
+```bash
+npm run build
+node node_modules/@aura3d/engine/dist/aura3d-cli/cli.js assets validate
+node node_modules/@aura3d/engine/dist/aura3d-cli/cli.js check-deploy --dist dist
+```
+
+All passed. I also started a dev server briefly for smoke verification and stopped it before finishing.
+
+Assumptions:
+- Used only the provided `source/public/benchmark/assets/sneaker.glb`.
+- The public `npx @aura3d/cli@latest` registry lookup failed, so I used the bundled Aura3D CLI from the installed local engine package to generate `aura.assets.json`, `public/aura-assets/*`, and `src/aura-assets.ts`.
+- The scene uses the generated typed asset `assets.sneaker`, not a string asset id.

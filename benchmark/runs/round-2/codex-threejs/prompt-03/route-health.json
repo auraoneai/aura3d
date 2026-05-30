@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 41,
+  "bodyTextSample": "SUN\nMercury\nVenus\nTerra\nAres\nJovia\nNereid"
+}

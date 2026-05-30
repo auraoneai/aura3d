@@ -1,0 +1,40 @@
+{
+  "scene": "engine-01-material-grid",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 326,
+  "p50Fps": 7.06214689265544,
+  "p95FrameTimeMs": 250.1999999999989,
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 11,
+  "triangleCount": 35736,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 121091,
+  "sourceLoc": 60,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "p50FrameTimeMs": 8.200000000000045,
+      "p95FrameTimeMs": 10,
+      "p50Fps": 121.95121951219444
+    },
+    "webglControl": {
+      "sampleCount": 178,
+      "p50FrameTimeMs": 16.599999999999454,
+      "p95FrameTimeMs": 31.800000000000182,
+      "p50Fps": 60.240963855423665
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

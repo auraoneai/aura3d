@@ -1,0 +1,14 @@
+{
+  "prompt": "02",
+  "visualQualityAura": 4,
+  "visualQualityThree": 2,
+  "winner": "Aura3D win",
+  "reason": "Aura3D renders a live particle fountain: a clearly identifiable emitter (glowing point over a cyan disk), strong upward-and-falling parabolic arcs of particles, a visible ground plane, an emission-rate slider (1,200 particles/sec), and some lifetime color variation (white in flight, amber dots near the ground). Three.js produced a polished emitter nozzle, a grid ground plane, an emission-rate slider, and a color legend, but the screenshot shows NO particles at all in flight — the single most important required evidence (an upward-and-falling arc colored by lifetime) is entirely absent. A nice emitter with zero particles fails the core of the prompt, so Aura3D wins decisively.",
+  "auraFailures": [
+    "Lifetime color variation is present but subtle; most particles read as white/blue with only faint amber tint near the ground"
+  ],
+  "threeFailures": [
+    "No particles are visible in the scene — the upward-and-falling arc is completely absent",
+    "Lifetime color variation cannot be evaluated because no particles render; only a static legend is shown"
+  ]
+}

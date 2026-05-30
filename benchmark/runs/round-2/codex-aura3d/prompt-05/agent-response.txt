@@ -1,0 +1,23 @@
+Implemented the procedural Aura3D app in `./source/src/main.ts`.
+
+It renders a 6x6 animated 3D bar grid with varied random heights, height-based color gradient, visible X/Z/height axis labels, orbit-by-drag camera behavior, and hover highlighting with a value readout.
+
+Verification run:
+- `npm run typecheck` passed
+- `npm run build` passed
+- Smoke checked `npm run dev -- --port 5178` with HTTP 200, then stopped the server
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev
+```
+
+Assumptions:
+- No external assets are used.
+- Hover-highlight is implemented by moving the pointer over the chart area; the hovered bar turns white/gold and the top-right readout shows row, column, and value.
+- Drag horizontally on the visualization to orbit the camera around the grid.

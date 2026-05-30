@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 96,
+  "bodyTextSample": "STROKES\n0\nPAR\n3\nClick & drag from the ball to aim — release to shoot. Right-drag to look around."
+}

@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 265,
+  "bodyTextSample": "A\nB\nC\nD\nE\nF\n1\n2\n3\n4\n5\n6\nX AXIS · COLUMNS A–F\nZ AXIS · ROWS 1–6\n0.0\n1.5\n3.0\n4.5\n6.0\nVALUE (Y)\n6×6 Bar Chart\n\n36 bars animate from random values. Colour maps to height (blue → green → red). Hover a bar to highlight it; drag to orbit, scroll to zoom.\n\nRandomize values"
+}

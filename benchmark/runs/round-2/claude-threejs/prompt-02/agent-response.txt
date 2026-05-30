@@ -1,0 +1,26 @@
+Done. The particle fountain is implemented in `source/src/main.ts` and builds cleanly.
+
+## What was built
+
+A Three.js particle fountain (CPU-simulated, rendered as a single `THREE.Points` system, up to 6000 live particles) covering every required visual:
+
+- **Identifiable emitter** — a glowing cyan nozzle cone + pulsing torus ring + point light sits at the fountain origin, where all particles spawn.
+- **Upward-and-falling arc** — particles launch in a narrow upward cone with randomized speed, then gravity (`-18 m/s²`) integrates them into real parabolic arcs (not static dots).
+- **Lifetime color variation** — each particle is colored by its normalized age via a ramp: cyan (new) → yellow → orange → deep red (old), using per-vertex colors.
+- **Ground plane** — a large lit plane + grid at `y=0` that particles **collide and bounce** against (restitution 0.45, horizontal friction on impact).
+- **Emission-rate control** — an HTML range slider (0–3000 particles/sec) in the top-left HUD with a live readout, plus a color legend explaining the lifetime ramp.
+
+OrbitControls (drag to orbit, scroll to zoom) is included via the installed `three` package's addon.
+
+## Commands
+
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` then `vite build` — passes)
+- **Run:** `npm run dev` (Vite dev server on `127.0.0.1`; append `-- --port <port>` to pick a port)
+
+## Assumptions
+
+- Built procedurally with no assets, as required.
+- `OrbitControls` is imported from `three/examples/jsm/...` (the installed npm package) rather than the relative context bundle path, so it resolves correctly in both `vite dev` and `vite build` without reaching outside the `source/` directory.
+- Particle simulation runs on the CPU (clear, deterministic, and easily inspectable for the benchmark); 6000-particle pool with round-robin recycling and a frame-time clamp keeps it smooth.
+- Verified: `npm run build` succeeds and the dev server returns HTTP 200 for both the page and the transformed module. The dev server was started only for this check and has been stopped.

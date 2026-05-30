@@ -1,0 +1,30 @@
+Done. The mini-golf hole is built in `source/` and compiles cleanly.
+
+## What it does
+
+A single procedural mini-golf hole built with three.js only (no asset files, no external physics engine):
+
+- **Flat green** — a striped, mown-grass putting surface (procedural canvas texture) bordered by wooden walls, sitting on a wider grass field.
+- **One obstacle** — a brick block (procedural brick texture) placed between the tee and the cup, so you have to putt around it; the ball physically bounces off it.
+- **Ball with physics** — a self-contained 2D rolling simulation on the XZ plane: exponential friction, wall reflections, circle-vs-box obstacle collision, sub-stepped each frame to avoid tunneling, and the sphere visibly rolls in its travel direction.
+- **Click-to-aim-and-shoot** — left-click-drag from the ball: a yellow ground arrow shows direction, drag distance sets power (a power meter fills green→red). Release to shoot. Each shot increments the stroke counter. Right-drag orbits the camera to line up putts.
+- **Score counter** — a HUD scorecard showing **Strokes** and **Par (3)**. Sinking the ball shows the result (Hole-in-one / Birdie / Par / Bogey…) with a "Play again" button.
+- **Follow camera** — trails behind the ball, swinging to follow its velocity while moving and facing the hole when at rest, with smooth position/look-at chasing.
+
+## Commands
+
+```bash
+# from source/
+npm install        # install deps (three, vite, typescript)
+npm run build      # typecheck (tsc --noEmit) + vite production build
+npm run dev        # run locally: vite dev server (e.g. npm run dev -- --port 5173)
+```
+
+## Assumptions
+
+- "One obstacle" = the single brick block; the perimeter walls are course boundaries, not the obstacle.
+- Physics is a custom flat-green model (top-down rolling with friction/restitution) rather than a full 3D rigid-body engine — appropriate since the green is flat and none was provided in the context bundle.
+- Par is fixed at 3. Hole capture requires the ball to be over the cup and below a speed threshold (fast balls lip out and keep rolling).
+- Aiming points the ball toward the cursor with power proportional to drag distance (capped); I chose this over slingshot pull-back as more direct for "click-to-aim."
+
+I ran only finite commands (`npm install`, `npm run build`); no dev server is left running.

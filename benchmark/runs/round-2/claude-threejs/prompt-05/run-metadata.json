@@ -1,0 +1,29 @@
+{
+  "round": 2,
+  "runId": "claude-threejs",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/05-3d-data-visualization.md",
+  "sourceDirectory": "benchmark/runs/round-2/claude-threejs/prompt-05/source",
+  "preparedAt": "2026-05-30T06:22:04.159Z",
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\nBenchmark process rule: do not leave a long-running dev server attached to\nyour agent process. You may run finite commands such as npm install, npm run\ntypecheck, and npm run build. If you start npm run dev or another server for\nmanual verification, stop it before your final response.\n\n# Prompt 05: 3D Data Visualization\n\nBuild a 3D data visualization: a 6x6 grid of bars whose heights animate from random values, color by height, hover-highlight, orbit camera, axis labels.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- Exactly or clearly approximately 36 bars must be visible.\n- Bar heights must vary.\n- Color must correspond to height.\n- Axis labels must be visible and readable.\n- Hover-highlight behavior must be implemented and documented in the run notes.\n"
+  ],
+  "agentStartedAt": "2026-05-30T09:31:01.902Z",
+  "agentFinishedAt": "2026-05-30T09:35:16.309Z",
+  "agentDurationMs": 254407,
+  "agentTimeoutMs": 600000,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

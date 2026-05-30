@@ -1,0 +1,15 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 239,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 221021,
+  "bundleSizeGzipBytes": 127793,
+  "screenshot": "screenshot.png"
+}

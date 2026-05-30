@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 42,
+  "bodyTextSample": "EMISSION RATE\n1,200 particles/sec\nlow\nhigh"
+}

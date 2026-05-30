@@ -1,0 +1,23 @@
+Implemented the procedural city block in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-2/codex-threejs/prompt-08/source/src/main.ts).
+
+It includes 20 procedural box buildings with varied heights, visible window grids, cross streets, sidewalks, lane markings, street lights, and a visible day/night toggle that changes sky, fog, sun/ambient lighting, window glow, and lamp intensity.
+
+Verified with:
+
+```bash
+npm run build
+```
+
+Build command:
+
+```bash
+cd source && npm run build
+```
+
+Run command:
+
+```bash
+cd source && npm run dev
+```
+
+Assumptions: `llms.txt` was requested by the AGENTS instructions, but it was not present in the provided context bundle or prompt directory. No assets were used, per Prompt 08. No long-running dev server was left attached.

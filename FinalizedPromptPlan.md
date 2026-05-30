@@ -508,15 +508,15 @@ significant work required."
 If Round 1 did not pass, the next phase is library work, not more
 benchmarking. Specifically:
 
-- [ ] For each prompt where Aura3D lost on lines-of-code: identify the API
+- [x] For each prompt where Aura3D lost on lines-of-code: identify the API
       change that would shrink the user code.
-- [ ] For each prompt where Aura3D lost on hallucinations: identify the docs
+- [x] For each prompt where Aura3D lost on hallucinations: identify the docs
       or API change that would prevent the hallucination.
-- [ ] For each prompt where Aura3D lost on visual quality: identify the
+- [x] For each prompt where Aura3D lost on visual quality: identify the
       defaults, lighting, materials, or rendering change that would close the
       gap.
-- [ ] Ship the library changes.
-- [ ] Re-run the entire benchmark (Phase B) from scratch. Partial re-runs are
+- [x] Ship the library changes.
+- [x] Re-run the entire benchmark (Phase B) from scratch. Partial re-runs are
       not allowed.
 
 Exit: the benchmark passes per Phase C, or the user explicitly decides to

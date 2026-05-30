@@ -1,0 +1,15 @@
+{
+  "prompt": "06-mini-golf-hole",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 493,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 317192,
+  "bundleSizeGzipBytes": 122263,
+  "screenshot": "screenshot.png"
+}

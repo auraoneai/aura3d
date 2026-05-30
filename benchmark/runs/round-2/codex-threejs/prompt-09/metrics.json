@@ -1,0 +1,15 @@
+{
+  "prompt": "09-animated-primitive-humanoid",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 215,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 134749,
+  "bundleSizeGzipBytes": 118956,
+  "screenshot": "screenshot.png"
+}

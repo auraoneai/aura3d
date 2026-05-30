@@ -1,0 +1,15 @@
+{
+  "prompt": "10-product-viewer-sneaker",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 226,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 1,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 189132,
+  "bundleSizeGzipBytes": 148574,
+  "screenshot": "screenshot.png"
+}

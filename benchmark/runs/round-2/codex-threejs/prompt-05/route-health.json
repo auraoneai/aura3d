@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 93,
+  "bodyTextSample": "Animated 6 x 6 Data Grid\nX Category\nZ Category\nValue / Height\n1\n1\n2\n2\n3\n3\n4\n4\n5\n5\n6\n6\n0\n2\n4\n6"
+}

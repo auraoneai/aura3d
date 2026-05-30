@@ -1,0 +1,46 @@
+{
+  "scene": "engine-04-physics-ramp",
+  "library": "Aura3D",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 220,
+  "p50Fps": null,
+  "p95FrameTimeMs": null,
+  "fpsInstrumentationStatus": "invalid",
+  "fpsInstrumentationFailures": [
+    "WebGL control p50 FPS 39.8 < 45",
+    "WebGL control p95 frame time 41.8ms > 34ms"
+  ],
+  "drawCalls": 61,
+  "triangleCount": 732,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 128639,
+  "sourceLoc": 74,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 361,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 9.900000000000091,
+      "p50Fps": 120.48192771084403
+    },
+    "webglControl": {
+      "sampleCount": 116,
+      "p50FrameTimeMs": 25.100000000000364,
+      "p95FrameTimeMs": 41.80000000000018,
+      "p50Fps": 39.84063745019863
+    },
+    "verdict": {
+      "status": "invalid",
+      "failures": [
+        "WebGL control p50 FPS 39.8 < 45",
+        "WebGL control p95 frame time 41.8ms > 34ms"
+      ],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

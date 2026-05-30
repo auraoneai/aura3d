@@ -1,0 +1,15 @@
+{
+  "prompt": "04-neon-tunnel-flythrough",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 124,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 615569,
+  "bundleSizeGzipBytes": 204210,
+  "screenshot": "screenshot.png"
+}

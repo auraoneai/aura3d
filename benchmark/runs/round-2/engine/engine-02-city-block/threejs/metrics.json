@@ -1,0 +1,40 @@
+{
+  "scene": "engine-02-city-block",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 214,
+  "p50Fps": 10.881392818280675,
+  "p95FrameTimeMs": 233.39999999999964,
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 199,
+  "triangleCount": 668,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 120049,
+  "sourceLoc": 55,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 361,
+      "p50FrameTimeMs": 8.300000000000068,
+      "p95FrameTimeMs": 9.900000000000091,
+      "p50Fps": 120.48192771084238
+    },
+    "webglControl": {
+      "sampleCount": 163,
+      "p50FrameTimeMs": 16.800000000000182,
+      "p95FrameTimeMs": 32.899999999999636,
+      "p50Fps": 59.52380952380888
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

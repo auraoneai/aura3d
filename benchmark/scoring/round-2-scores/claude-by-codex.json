@@ -1,0 +1,191 @@
+{
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "prompts": [
+    {
+      "prompt": "01",
+      "visualQualityAura": 1,
+      "visualQualityThree": 1,
+      "winner": "tie",
+      "reason": "Both Claude outputs are process-noncompliant due timeout. Aura screenshot is blank white; Three.js also timed out, so no compliant winner is awarded.",
+      "auraFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "threeFailures": [
+        "agent timeout"
+      ],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 124,
+      "threeTimedOut": true,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "02",
+      "visualQualityAura": 1,
+      "visualQualityThree": 4,
+      "winner": "Three.js win",
+      "reason": "Aura3D timed out and did not produce a successful browser capture. Three.js returned normally and rendered a dense particle fountain with emitter, lifetime colors, ground, and controls.",
+      "auraFailures": [
+        "agent timeout",
+        "capture/build failed"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": false,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "03",
+      "visualQualityAura": 4,
+      "visualQualityThree": 4,
+      "winner": "tie",
+      "reason": "Both returned normally and rendered a recognizable labeled solar system with orbit paths and planets. Neither has a decisive visual advantage.",
+      "auraFailures": [],
+      "threeFailures": [],
+      "auraAgentExitCode": 0,
+      "auraTimedOut": false,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "04",
+      "visualQualityAura": 3,
+      "visualQualityThree": 5,
+      "winner": "Three.js win",
+      "reason": "Aura3D produced a recognizable neon tunnel screenshot but the agent timed out. Three.js returned normally and renders a stronger glowing flythrough.",
+      "auraFailures": [
+        "agent timeout"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "05",
+      "visualQualityAura": 1,
+      "visualQualityThree": 4,
+      "winner": "Three.js win",
+      "reason": "Aura3D timed out and captured as blank/white. Three.js returned normally with a clear 3D bar chart.",
+      "auraFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "06",
+      "visualQualityAura": 1,
+      "visualQualityThree": 4,
+      "winner": "Three.js win",
+      "reason": "Aura3D timed out and captured as blank/white. Three.js returned normally with a visible mini-golf green, ball, obstacle, score, and interaction note.",
+      "auraFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "07",
+      "visualQualityAura": 1,
+      "visualQualityThree": 1,
+      "winner": "tie",
+      "reason": "Aura3D timed out and captured as blank/white. Three.js also timed out and captured as blank/white, so no compliant winner is awarded.",
+      "auraFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "threeFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 124,
+      "threeTimedOut": true,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "08",
+      "visualQualityAura": 3,
+      "visualQualityThree": 4,
+      "winner": "Three.js win",
+      "reason": "Aura3D rendered a recognizable city but timed out. Three.js returned normally and rendered a comparable city block, so the compliant output wins.",
+      "auraFailures": [
+        "agent timeout"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "09",
+      "visualQualityAura": 1,
+      "visualQualityThree": 3,
+      "winner": "Three.js win",
+      "reason": "Aura3D timed out and captured as blank/white. Three.js returned normally with a primitive humanoid on a ground plane.",
+      "auraFailures": [
+        "agent timeout",
+        "blank/white capture"
+      ],
+      "threeFailures": [],
+      "auraAgentExitCode": 124,
+      "auraTimedOut": true,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    },
+    {
+      "prompt": "10",
+      "visualQualityAura": 4,
+      "visualQualityThree": 4,
+      "winner": "tie",
+      "reason": "Both returned normally and loaded the sneaker on a product stage/plinth with lighting. Visual quality is close enough to call a tie.",
+      "auraFailures": [],
+      "threeFailures": [],
+      "auraAgentExitCode": 0,
+      "auraTimedOut": false,
+      "threeAgentExitCode": 0,
+      "threeTimedOut": false,
+      "auraCaptureOk": true,
+      "threeCaptureOk": true
+    }
+  ],
+  "summary": {
+    "auraWins": 0,
+    "threeWins": 6,
+    "ties": 4,
+    "hardPromptAuraWins": 0,
+    "overallPass": false,
+    "reason": "Claude Aura3D fails: 8/10 agent attempts timed out, one prompt failed capture, and Aura3D recorded 0 wins."
+  }
+}

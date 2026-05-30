@@ -1,0 +1,15 @@
+{
+  "prompt": "05-3d-data-visualization",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 382,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 265431,
+  "bundleSizeGzipBytes": 123392,
+  "screenshot": "screenshot.png"
+}

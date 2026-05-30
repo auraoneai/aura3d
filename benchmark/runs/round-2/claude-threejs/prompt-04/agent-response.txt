@@ -1,0 +1,31 @@
+The neon tunnel flythrough is complete, builds cleanly, and renders correctly (verified via headless screenshots, no console errors).
+
+## What was built
+
+A procedural neon tunnel flythrough in `source/src/main.ts` (Three.js 0.165.0 + Vite + TypeScript):
+
+- **Procedural tube geometry** — a closed winding `CatmullRomCurve3` path drives a `TubeGeometry` (600 tubular segments), rendered `BackSide` so the camera sees the tunnel interior.
+- **Emissive segments** — 90 bright `TorusGeometry` ring "gates" placed and tangent-aligned along the curve (pulsing cyan/magenta/blue/pink), plus a procedurally-generated canvas `emissiveMap` of glowing ring bands and longitudinal neon strips on the tube wall.
+- **Bloom postprocess** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (threshold 0.45 so only neon blooms) → `OutputPass` (ACES tone mapping + sRGB).
+- **Fog falloff** — `FogExp2` (density 0.045) fades distant segments into the dark for depth.
+- **Camera animation** — the camera flies along the curve each frame, looking slightly ahead with a gentle roll; travelling colored point lights catch the metallic wall. Loops seamlessly.
+
+I added `@types/three@0.165.0` to `source/package.json` devDependencies (needed for the TypeScript `typecheck` step). No files outside `source/` were modified.
+
+## Commands
+
+```bash
+# from the source/ directory
+npm install        # install deps
+npm run build      # runs tsc --noEmit typecheck, then vite build  ✅ passes
+npm run dev -- --port <assigned-port>   # dev server (Vite, host 127.0.0.1)
+```
+
+Run command for the benchmark: `npm run dev -- --port <assigned-port>` (or `npm run preview -- --port <assigned-port>` to serve the production build).
+
+## Assumptions
+
+- Network access during `npm install` is available to fetch `three`, `@types/three`, `vite`, and `typescript`.
+- WebGL2 is available in the evaluation browser (standard for Three.js + UnrealBloom).
+- `three/addons/postprocessing/OutputPass.js` ships with the installed `three@0.165.0` package (it does); the context bundle's addon subset was used only as an API reference.
+- Verified locally with a headless Chromium screenshot pass, then the preview server was stopped — no server is left attached to my process.

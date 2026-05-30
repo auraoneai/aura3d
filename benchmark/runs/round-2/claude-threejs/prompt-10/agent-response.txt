@@ -1,0 +1,23 @@
+Everything checks out — typecheck passes, build succeeds, and the GLB is correctly served at `/benchmark/assets/sneaker.glb` in both dev and production. No dev server left running.
+
+## Summary
+
+Built a Three.js sneaker product viewer in `source/`. The single app entry is `src/main.ts` with UI/styles in `index.html`.
+
+**What it does (maps to required evidence):**
+- **Loaded & visible** — `GLTFLoader` loads `/benchmark/assets/sneaker.glb` (the only permitted asset; it's the uncompressed `KHR_materials_variants` shoe model, handled natively, no Draco needed).
+- **Centered & auto-scaled** — bounding-box driven: fits the largest dimension to a target size, recenters X/Z, and rests the model's bottom on the plinth's top face (`y = 0`).
+- **Plinth/base** — a light cylinder plinth plus a dark catcher floor that receives a grounded contact shadow.
+- **Studio lighting** — `RoomEnvironment` via `PMREMGenerator` for IBL (makes PBR materials read correctly) plus a three-point rig (key light w/ soft shadows, cool fill, rim) and a hemisphere fill; ACES filmic tone mapping.
+- **Orbit controls + turntable** — `OrbitControls` with damping; the sneaker sits in a pivot `Group` rotated every frame (frame-rate-independent via `Clock`). A bottom button pauses/resumes the turntable.
+
+**Commands** (run from `source/`):
+- Install: `npm install`
+- Build: `npm run build` (runs `tsc --noEmit` then `vite build`)
+- Run (dev): `npm run dev -- --port <assigned-port>`
+
+**Assumptions:**
+- The provided `sneaker.glb` lives in `source/public/benchmark/assets/`, so Vite serves it at the root-relative URL `/benchmark/assets/sneaker.glb` in both dev and the built `dist/` — no invented or remote paths.
+- Auto-scale targets ~1.9 world units for the model's largest axis (plinth radius 1.35) so the sneaker reads well on the base regardless of the model's intrinsic units.
+- `maxPolarAngle` is clamped just below horizontal so the camera stays above the floor.
+- The ~577 kB JS chunk warning is just bundled Three.js core + addons and is expected.

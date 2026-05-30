@@ -1,0 +1,15 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 328,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 188122,
+  "bundleSizeGzipBytes": 119697,
+  "screenshot": "screenshot.png"
+}

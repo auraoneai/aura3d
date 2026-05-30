@@ -1,0 +1,15 @@
+{
+  "prompt": "01-physics-playground",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 420,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 275830,
+  "bundleSizeGzipBytes": 124068,
+  "screenshot": "screenshot.png"
+}

@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 214,
+  "bodyTextSample": "Aura3D diagnostics\nbackend: webgl2\nfps: 60\ndraw calls: 429\nrender size: 1440 x 960\nassets: none\nSun\nbloom core\nMercury\n4.1x orbit\nVenus\n3.1x orbit\nTerra\n2.4x orbit\nAres\n1.8x orbit\nJovia\n1.1x orbit\nNereid\n0.7x orbit"
+}

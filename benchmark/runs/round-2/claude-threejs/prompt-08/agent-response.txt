@@ -1,0 +1,27 @@
+Done. The procedural city block is built in `source/`, the build passes, and the dev server is stopped.
+
+## What was built
+
+A single-file Three.js app (`source/src/main.ts`) that procedurally generates a city block:
+
+- **20 buildings** — a 5×4 grid of box buildings, seeded by a deterministic PRNG.
+- **Varying heights** — each building is 4–16 floors (≈13–51 units tall) with randomized footprints.
+- **Windows** — canvas-generated facade textures give every building a grid of glass panes (visible in daylight via the color map) that glow at night (via an emissive map lighting a random subset of windows). Texture repeats scale per building so window size stays consistent.
+- **Streets** — a full road grid (asphalt planes with dashed yellow lane markings) running between and around all lots, over a ground plate.
+- **Street lights** — poles with arms, emissive lamp heads, and `PointLight`s along every inner road and the outer edges.
+- **Day/Night toggle** — a fixed-position button (also the `N` key). It swaps the sky background, fog color, sun direction/color/intensity, hemisphere + ambient light, tone-mapping exposure, building-window emissive glow, street-light point lights, lamp emissive, and a star field — so both lighting and sky visibly change.
+
+Orbit controls (drag/zoom), soft shadows, and ACES tone mapping round it out.
+
+## Commands (run from `source/`)
+
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` typecheck + `vite build`)
+- **Run:** `npm run dev -- --port <assigned-port>`
+
+## Assumptions
+
+- No assets used — everything (geometry, window/facade textures, stars) is generated procedurally in code, as the prompt requires.
+- The city uses a fixed RNG seed so reloads produce the same stable layout (helps reproducible visual evidence); heights/footprints/window-lighting are still randomized across the 20 buildings.
+- The scene loads in **Day** mode by default; click the top-left button (or press `N`) to switch to Night.
+- Kept the provided scaffold's `three@0.165.0`, Vite, and TypeScript-strict config unchanged; only `src/main.ts` was modified.

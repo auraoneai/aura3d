@@ -1,0 +1,15 @@
+{
+  "prompt": "04",
+  "visualQualityAura": 2,
+  "visualQualityThree": 5,
+  "winner": "Three.js win",
+  "reason": "The Three.js render is a textbook neon tunnel flythrough: concentric emissive rings recede into the distance on a dark background, vivid neon colors (cyan, magenta, pink, yellow) show strong bloom/glow halos, and clear depth/fog falloff toward the vanishing point — it reads convincingly as a flythrough. The Aura3D render shows flat white/purple/yellow rectangular streaks radiating from a center on a pale blue-grey background; it reads as a generic starburst/warp rather than a tube interior, with no visible bloom, no dark-to-glow contrast, and no fog falloff, failing most of the required visual evidence.",
+  "auraFailures": [
+    "No tube/tunnel interior is legible — only flat streaks radiating from a point",
+    "No emissive segments along a tunnel wall; pale background gives no glow contrast",
+    "Bloom/glow not visible (flat rectangles, no halos)",
+    "No fog or depth falloff visible against the flat light background",
+    "Does not read as a flythrough tunnel scene"
+  ],
+  "threeFailures": []
+}

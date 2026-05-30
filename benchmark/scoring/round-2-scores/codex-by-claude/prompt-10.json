@@ -1,0 +1,15 @@
+{
+  "prompt": "10",
+  "visualQualityAura": 3,
+  "visualQualityThree": 5,
+  "winner": "Three.js win",
+  "reason": "Both load the sneaker centered and auto-scaled on a plinth with studio lighting, orbit/turntable implied. Three.js renders at far higher fidelity: crisp woven-mesh material detail, clean white circular plinth, soft studio lighting and a natural contact shadow resembling real product photography. Aura3D's render is flatter with washed material detail, a dark background, and a distracting ghost double-shadow artifact behind the shoe.",
+  "auraFailures": [
+    "Distracting dark ghost/double-shadow artifact behind the sneaker",
+    "Flat, low-fidelity material rendering with washed-out mesh detail",
+    "Invented asset path (inventedAssetPaths: 1)"
+  ],
+  "threeFailures": [
+    "Invented asset path (inventedAssetPaths: 1)"
+  ]
+}

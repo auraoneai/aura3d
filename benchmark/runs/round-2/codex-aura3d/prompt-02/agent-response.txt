@@ -1,0 +1,20 @@
+Implemented the procedural particle fountain in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-2/codex-aura3d/prompt-02/source/src/main.ts).
+
+It includes a visible emitter, animated Aura3D fountain particles, lifetime-colored arc markers, a ground collision plane with splash/ripple cues, and a visible emission-rate slider that rebuilds the particle count.
+
+Verified:
+- `npm install`
+- `npm run typecheck`
+- `npm run build`
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no assets are used; the fountain is fully procedural through Aura3D primitives/effects.

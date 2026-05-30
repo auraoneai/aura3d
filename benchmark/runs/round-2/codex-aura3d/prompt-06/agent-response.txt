@@ -1,0 +1,19 @@
+Implemented the procedural mini-golf app in `./source`.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev -- --port 5173
+```
+
+Verification completed:
+```bash
+npm run build
+curl -I http://127.0.0.1:5173/
+```
+
+Assumptions: no external assets were used; the obstacle is a procedural red circular bumper; click on the green aims and shoots in one action. The dev server used for the smoke check was stopped before finishing.

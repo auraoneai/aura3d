@@ -1,0 +1,15 @@
+{
+  "prompt": "07-material-lab",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 272,
+  "filesCreated": 5,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 610850,
+  "bundleSizeGzipBytes": 399,
+  "screenshot": "screenshot.png"
+}
