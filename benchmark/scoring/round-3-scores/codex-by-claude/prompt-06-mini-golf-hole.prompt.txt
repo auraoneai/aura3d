@@ -1,0 +1,11 @@
+You are a neutral benchmark scorer for Aura3D vs raw Three.js. Read only the files named here. Score Codex-generated outputs for prompt 06-mini-golf-hole.md. Inputs:
+- prompt: benchmark/prompts/06-mini-golf-hole.md
+- Aura3D screenshot: benchmark/runs/round-3/codex-aura3d/prompt-06/screenshot.png
+- Three.js screenshot: benchmark/runs/round-3/codex-threejs/prompt-06/screenshot.png
+- Aura3D metrics: benchmark/runs/round-3/codex-aura3d/prompt-06/metrics.json
+- Three.js metrics: benchmark/runs/round-3/codex-threejs/prompt-06/metrics.json
+- Aura3D notes: benchmark/runs/round-3/codex-aura3d/prompt-06/notes.md
+- Three.js notes: benchmark/runs/round-3/codex-threejs/prompt-06/notes.md
+- Aura3D source: benchmark/runs/round-3/codex-aura3d/prompt-06/source/src/main.ts
+- Three.js source: benchmark/runs/round-3/codex-threejs/prompt-06/source/src/main.ts
+Return strict JSON only: {"prompt":"06-mini-golf-hole.md","scorer":"Claude Code","scorerNeutrality":"opposite-vendor model scoring Codex outputs","auraVisual":number,"threeVisual":number,"auraModularity":number,"threeModularity":number,"winner":"Aura3D win"|"Three.js win"|"tie","hardPromptPass":boolean,"reason":string,"failedThresholds":[string]}. Visual and modularity scores are 1-5. Winner should be Aura3D win only if Aura is materially better overall, Three.js win only if Three is materially better overall, otherwise tie. For hard prompts 07, 08, and 10, hardPromptPass is true only if Aura3D satisfies the prompt at production quality. Treat timeout/nontermination from notes/metadata as a failed threshold if present. Do not fabricate; if the screenshots and metrics disagree, say so in reason.

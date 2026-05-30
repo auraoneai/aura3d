@@ -1,0 +1,20 @@
+I've reviewed the prompt, both screenshots, both metrics files, both notes, and both `main.ts` sources. Here is my neutral scoring.
+
+```json
+{
+  "prompt": "08-procedural-city-block.md",
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring Codex outputs",
+  "auraVisual": 3,
+  "threeVisual": 5,
+  "auraModularity": 4,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Both compile, run, and terminate cleanly (agentTimedOut=false, exit 0 on both), so no termination threshold failed. The Aura3D output is concise and declarative (224 LOC) by leaning on prefabs.cityBlock({blocks:20,litWindows:true}) plus clean day/night node builders, and its render shows ~15-20 box buildings with clearly varied heights and crisp lit windows under a blue day sky with a working 'Switch to night' toggle. However, prompt 08 explicitly requires streets AND street lights to be visible, and in the Aura day screenshot the streets read only as a small dark slab with a couple of faint white dashes and street lights as a single barely-visible thin pole; the scene reads as a compact toy diorama rather than a production city block. The code does implement night lamps/bloom/fog/sky swap robustly, but only the day frame was captured, so night behavior is asserted by code not by evidence. The Three.js output (369 LOC) is materially richer and matches the required visual evidence far better: a full road grid with yellow lane markings and crosswalks, curbs, ~20 varied buildings with grid windows and a 6-color palette, and clearly visible lamp posts with poles/arms/bulbs plus a gradient sky dome and sun/moon discs. Screenshots and metrics broadly agree (Aura: smaller code 224 LOC but larger 208KB gzip bundle from engine overhead vs Three 120KB; faster TTFUR 184s vs 231s). Modularity is roughly even: Aura is shorter and more declarative but offloads the core city to one opaque prefab and rebuilds the entire app on every toggle (dispose + innerHTML clear) rather than mutating state, while Three.js uses clean reusable helpers (addBox/addRoads/addBuilding/addWindowsOnFace/addStreetLight/setNightMode) but is more verbose and manages light/window state via arrays. Overall Three.js is materially better on the prompt's dominant visual-fidelity axis with comparable modularity, so Three.js wins, and because Aura does not clearly show streets/street lights at production quality, the hard-prompt bar is not met.",
+  "failedThresholds": [
+    "Aura3D required visual evidence weak: streets and street lights only marginally visible in the captured render (below production quality for hard prompt 08)",
+    "Aura3D night/day toggle behavior asserted in code but not shown in screenshot evidence (only day frame captured)"
+  ]
+}
+```

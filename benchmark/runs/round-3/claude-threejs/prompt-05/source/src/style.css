@@ -1,0 +1,100 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #12151c;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* CSS2D axis labels rendered into the 3D scene. */
+.axis-tick {
+  color: #cdd6e6;
+  font-size: 13px;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.axis-tick--y {
+  color: #9fe0ff;
+}
+
+.axis-title {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Hover tooltip. */
+#tooltip {
+  position: absolute;
+  z-index: 10;
+  padding: 6px 10px;
+  background: rgba(18, 21, 28, 0.92);
+  border: 1px solid #3a4a66;
+  border-radius: 6px;
+  color: #eef3fb;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+/* Legend / instructions overlay. */
+#legend {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+  padding: 12px 14px;
+  background: rgba(18, 21, 28, 0.82);
+  border: 1px solid #2a3346;
+  border-radius: 8px;
+  color: #cdd6e6;
+  font-size: 12.5px;
+  line-height: 1.55;
+  pointer-events: none;
+  max-width: 260px;
+}
+
+#legend h1 {
+  font-size: 14px;
+  color: #fff;
+  margin-bottom: 6px;
+}
+
+#legend .ramp {
+  height: 10px;
+  border-radius: 5px;
+  margin: 7px 0 3px;
+  background: linear-gradient(
+    90deg,
+    #2c7bb6,
+    #00a6ca,
+    #66c2a5,
+    #f9d057,
+    #f29e2e,
+    #d7191c
+  );
+}
+
+#legend .ramp-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9aa6bd;
+}

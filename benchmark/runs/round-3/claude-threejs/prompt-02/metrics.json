@@ -1,0 +1,16 @@
+{
+  "prompt": "02-particle-fountain",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 278,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 176995,
+  "bundleSizeGzipBytes": 124428,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

@@ -1,0 +1,22 @@
+Implemented the Material Lab in `./source/src/main.ts`.
+
+It includes five procedural spheres for metal, glass, rubber, emissive, and clearcoat materials, with PMREM room environment reflections, visible softbox panels, studio lights, soft shadows, labels, and enabled OrbitControls.
+
+Build verified successfully.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev -- --port <port>
+```
+
+Assumptions:
+- No `llms.txt` file was present in the provided bundle, so I used the provided context and prompt files only.
+- No external assets were used; the scene is fully procedural.
+- The temporary dev server used for smoke testing was stopped before this response.

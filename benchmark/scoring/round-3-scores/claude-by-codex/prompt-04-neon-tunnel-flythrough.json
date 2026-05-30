@@ -1,0 +1,13 @@
+{
+  "prompt": "04-neon-tunnel-flythrough.md",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "auraVisual": 4,
+  "threeVisual": 4,
+  "auraModularity": 4,
+  "threeModularity": 4,
+  "winner": "tie",
+  "hardPromptPass": false,
+  "reason": "Both outputs satisfy the neon tunnel prompt: Aura has a crisp geometric receding tunnel; Three.js has a bright tunnel/flythrough effect. Neither is materially better overall.",
+  "failedThresholds": []
+}

@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 94,
+  "bodyTextSample": "Physics Playground\nCubes: 50\nLive contacts: 125\nFPS: 20\n↻ Reset\nDrag to orbit · scroll to zoom",
+  "httpStatus": 200,
+  "messages": [
+    "debug: [vite] connecting...",
+    "debug: [vite] connected.",
+    "warning: [.WebGL-0x114001c8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c8a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ]
+}

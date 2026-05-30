@@ -1,0 +1,21 @@
+Implemented the procedural physics playground in `source`:
+
+- 50 falling cubes with gravity, ramp collision, floor collision, and cube-to-cube contact response.
+- Visible tilted ramp, camera orbit controls, reset button, and live contact count overlay.
+- Responsive framing checked at desktop and mobile sizes.
+- No external assets used.
+
+Validation run:
+
+```bash
+npm install
+npm run build
+```
+
+Run command:
+
+```bash
+npm run dev -- --port 4177
+```
+
+Assumptions: no `llms.txt` was present in the provided bundle, and this prompt required no Aura3D assets because it is fully procedural. I started Vite only for verification and stopped it before finishing.

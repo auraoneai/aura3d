@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1424,
+      "height": 712
+    }
+  ],
+  "bodyTextLength": 106,
+  "bodyTextSample": "Aura3D diagnostics\nbackend: webgl2\nfps: 60\ndraw calls: 16\nrender size: 1424 x 712\nassets: none\nwarnings: 1",
+  "httpStatus": 200,
+  "messages": [
+    "debug: [vite] connecting...",
+    "debug: [vite] connected.",
+    "warning: [.WebGL-0x13c00158a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x13c00158a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x13c00158a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x13c00158a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ]
+}

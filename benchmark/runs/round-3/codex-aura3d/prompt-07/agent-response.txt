@@ -1,0 +1,24 @@
+Implemented the Material Lab in `source`.
+
+What’s included:
+- Five procedural spheres via `prefabs.materialSwatches()`: metal, glass, rubber, emissive, clearcoat.
+- Studio floor/backdrop, visible softbox panels, reflection strips, ambient/key/rim/studio lights.
+- Bloom and orbit controls enabled.
+- No external assets used.
+
+Verified:
+- `npm run build` passes.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev
+```
+
+Assumption: since the prompt forbids assets, the environment/reflection setup is procedural: visible studio softboxes, reflection cards, ambient fill, and reflective materials instead of an external HDR/environment texture. No long-running dev server is attached.

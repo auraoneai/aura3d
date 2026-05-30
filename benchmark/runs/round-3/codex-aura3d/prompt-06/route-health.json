@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1424,
+      "height": 712
+    }
+  ],
+  "bodyTextLength": 74,
+  "bodyTextSample": "STROKES 0\nClick and drag from the ball to aim\nFollow camera locked on ball",
+  "httpStatus": 200,
+  "messages": [
+    "debug: [vite] connecting...",
+    "debug: [vite] connected.",
+    "warning: [.WebGL-0x10c001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ]
+}

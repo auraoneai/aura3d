@@ -1,0 +1,16 @@
+{
+  "prompt": "02-particle-fountain",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 266,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 143155,
+  "bundleSizeGzipBytes": 120448,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

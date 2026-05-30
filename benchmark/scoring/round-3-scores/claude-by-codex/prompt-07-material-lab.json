@@ -1,0 +1,15 @@
+{
+  "prompt": "07-material-lab.md",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "auraVisual": 4,
+  "threeVisual": 5,
+  "auraModularity": 4,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": true,
+  "reason": "Claude/Aura renders five material swatches and satisfies the hard material-lab floor, but Three.js has clearer labels, more readable glass/metal/clearcoat distinction, and better framing.",
+  "failedThresholds": [
+    "Three.js visual quality materially higher"
+  ]
+}

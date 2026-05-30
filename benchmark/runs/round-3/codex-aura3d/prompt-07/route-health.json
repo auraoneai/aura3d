@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 2160,
+      "height": 1440
+    }
+  ],
+  "bodyTextLength": 0,
+  "bodyTextSample": "",
+  "httpStatus": 200,
+  "messages": [
+    "debug: [vite] connecting...",
+    "debug: [vite] connected.",
+    "warning: [.WebGL-0x114001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x114001c4800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ]
+}

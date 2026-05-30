@@ -1,0 +1,13 @@
+{
+  "prompt": "06-mini-golf-hole.md",
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring Codex outputs",
+  "auraVisual": 2,
+  "threeVisual": 4,
+  "auraModularity": 3,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Three.js is materially better. Its screenshot is a coherent, polished mini-golf scene (striped green, clear obstacle, sand trap, flagged cup, crisp ball) and its code implements genuine 3D gameplay: physics/drag, wall and obstacle collision, ball roll, raycaster aim-and-shoot, hole detection, and a follow camera tracking the actual moving 3D ball. Aura3D renders all required elements but is visually broken: it stacks prefabs.miniGolfHole() on a hand-built duplicate course (overlapping/duplicate geometry) and runs all physics/aim/shoot on a 2D CSS overlay that does not align with the 3D scene; the 3D ball is static so the 'follow camera' tracks a stationary node, leaving an oversized ball filling the foreground and disconnected overlay markers (floating cup disc, mismatched ball/obstacle). Metrics for both are clean (compiles, runsInBrowser, exit 0, no timeout), so screenshot vs metrics disagree for Aura: metrics look healthy while the visual output is incoherent. 06 is not a designated hard prompt, so hardPromptPass is false.",
+  "failedThresholds": []
+}

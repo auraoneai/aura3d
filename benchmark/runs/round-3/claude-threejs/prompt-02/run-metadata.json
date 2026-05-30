@@ -1,0 +1,31 @@
+{
+  "round": 3,
+  "runId": "claude-threejs",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/02-particle-fountain.md",
+  "sourceDirectory": "benchmark/runs/round-3/claude-threejs/prompt-02/source",
+  "repoCommit": "68388cbb6543c932a7124bcb690fe673f661d0e1",
+  "auraPackageTarball": null,
+  "preparedAt": "2026-05-30T11:04:37.121Z",
+  "agentTimeoutMs": 600000,
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\nBenchmark process rule: do not leave a long-running dev server attached to\nyour agent process. You may run finite commands such as npm install, npm run\ntypecheck, and npm run build. If you start npm run dev or another server for\nmanual verification, stop it before your final response.\n\n# Prompt 02: Particle Fountain\n\nBuild a particle fountain: gravity-affected particles emitted upward from a point, colored by lifetime, with a ground plane they collide against and a controllable emission rate.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- The fountain emitter must be identifiable.\n- Particles must form an upward-and-falling arc, not static random dots.\n- Lifetime color variation must be visible.\n- A ground plane must be visible.\n- An emission-rate control must be visible.\n"
+  ],
+  "agentStartedAt": "2026-05-30T13:31:57.328Z",
+  "agentFinishedAt": "2026-05-30T13:34:54.323Z",
+  "agentDurationMs": 176995,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

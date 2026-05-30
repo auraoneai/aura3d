@@ -1,0 +1,16 @@
+{
+  "prompt": "02-particle-fountain",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 231,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 397288,
+  "bundleSizeGzipBytes": 204896,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

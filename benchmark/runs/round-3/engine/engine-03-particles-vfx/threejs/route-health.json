@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "url": "http://127.0.0.1:6805",
+  "readout": {
+    "routeHealth": "pass",
+    "drawCalls": 452,
+    "triangleCount": 75698
+  },
+  "httpOk": true
+}

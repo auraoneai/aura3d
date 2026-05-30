@@ -1,0 +1,16 @@
+{
+  "prompt": "10-product-viewer-sneaker",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 180,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 1,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 169871,
+  "bundleSizeGzipBytes": 148053,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

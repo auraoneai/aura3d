@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Procedural City Block</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: #05070f;
+        overflow: hidden;
+      }
+      #app { position: fixed; inset: 0; }
+      #stage { position: absolute; inset: 0; }
+      #stage canvas { display: block; width: 100%; height: 100%; }
+
+      #ui {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+      }
+      #ui .panel {
+        pointer-events: auto;
+        background: rgba(8, 14, 26, 0.62);
+        border: 1px solid rgba(150, 190, 255, 0.22);
+        backdrop-filter: blur(8px);
+        border-radius: 14px;
+        padding: 12px 14px;
+        max-width: 280px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      }
+      #ui h1 {
+        margin: 0 0 4px;
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: 0.2px;
+        color: #eaf2ff;
+      }
+      #ui p {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #9fb2d6;
+      }
+      #toggle {
+        pointer-events: auto;
+        appearance: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0b1220;
+        border: none;
+        border-radius: 999px;
+        padding: 11px 18px;
+        transition: transform 0.12s ease, box-shadow 0.2s ease, background 0.3s ease;
+      }
+      #toggle:hover { transform: translateY(-1px); }
+      #toggle:active { transform: translateY(0); }
+      #toggle .glyph { font-size: 16px; line-height: 1; }
+      body[data-mode="day"] #toggle {
+        background: linear-gradient(135deg, #ffe49b, #ffb25e);
+        box-shadow: 0 8px 22px rgba(255, 178, 94, 0.4);
+      }
+      body[data-mode="night"] #toggle {
+        background: linear-gradient(135deg, #a9c4ff, #6d8fe6);
+        color: #08101f;
+        box-shadow: 0 8px 22px rgba(109, 143, 230, 0.4);
+      }
+    </style>
+  </head>
+  <body data-mode="day">
+    <div id="app"><div id="stage"></div></div>
+    <div id="ui">
+      <div class="panel">
+        <h1>Procedural City Block</h1>
+        <p id="caption">Daytime — 20 buildings, lit windows, streets &amp; street lights.</p>
+      </div>
+      <button id="toggle" type="button">
+        <span class="glyph">🌙</span><span id="toggle-label">Switch to Night</span>
+      </button>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

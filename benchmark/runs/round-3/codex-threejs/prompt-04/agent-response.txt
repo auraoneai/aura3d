@@ -1,0 +1,23 @@
+Implemented the neon tunnel flythrough in `source`.
+
+What’s included:
+- Procedural curved tube interior with shader-based neon ribs.
+- Emissive cyan, magenta, and amber wall panels.
+- UnrealBloomPass glow/bloom.
+- Exponential fog/depth falloff.
+- Animated flythrough camera with runtime state exposed as `window.__NEON_TUNNEL_STATE__`.
+
+Verification:
+- `npm run build` passes.
+
+Commands:
+```bash
+cd source
+npm run build
+npm run dev
+```
+
+Assumptions:
+- `llms.txt` was not present in the provided prompt directory or context bundle.
+- No external assets were used; the scene is fully procedural.
+- I did not leave a dev server running.

@@ -1,0 +1,49 @@
+{
+  "round": 3,
+  "scene": "engine-02-city-block",
+  "side": "aura3d",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 10133,
+  "p50Fps": 30.674846625766527,
+  "p95FrameTimeMs": 57.100000000000364,
+  "drawCalls": 30,
+  "triangleCount": null,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleGzipBytes": 206139,
+  "sourceLoc": 35,
+  "fpsInstrumentationStatus": "valid",
+  "fpsSample": {
+    "sampleCount": 146,
+    "p50FrameTimeMs": 32.600000000000364,
+    "p95FrameTimeMs": 57.100000000000364,
+    "p50Fps": 30.674846625766527
+  },
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "p50FrameTimeMs": 8.200000000000273,
+      "p95FrameTimeMs": 10.099999999999909,
+      "p50Fps": 121.95121951219106
+    },
+    "webglControl": {
+      "sampleCount": 342,
+      "p50FrameTimeMs": 8.200000000000728,
+      "p95FrameTimeMs": 10.300000000000182,
+      "p50Fps": 121.9512195121843
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

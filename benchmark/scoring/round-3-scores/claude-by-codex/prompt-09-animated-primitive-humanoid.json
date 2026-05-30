@@ -1,0 +1,15 @@
+{
+  "prompt": "09-animated-primitive-humanoid.md",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "auraVisual": 3,
+  "threeVisual": 4,
+  "auraModularity": 3,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Claude/Aura shows a primitive humanoid but the composition is sparse and the agent timed out. Claude/Three.js produces a cleaner humanoid walking scene with better ground/framing.",
+  "failedThresholds": [
+    "Aura agent timed out at 600s"
+  ]
+}

@@ -1,0 +1,21 @@
+Implemented the procedural solar system in `source` using Aura3D primitives only. It includes one emissive sun with bloom, 6 differently sized/colored planets at distinct orbital distances, flat orbit-distance guides, readable planet labels with speed values, and an orbit camera framing the full system.
+
+Verification passed:
+
+```bash
+npm run build
+```
+
+Build command:
+
+```bash
+cd source && npm run build
+```
+
+Run command:
+
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no external assets are used; planet speed is represented through distinct animation speeds and visible label values because the prompt’s required visual evidence focuses on the sun, 6 planets, distances, labels, bloom, and orbit camera framing. No dev server was left running.

@@ -1,0 +1,15 @@
+{
+  "prompt": "02-particle-fountain.md",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "auraVisual": 3,
+  "threeVisual": 5,
+  "auraModularity": 4,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Claude/Aura shows an emitter and curve paths but not a dense live particle fountain. Claude/Three.js renders a dense bright fountain/spray with many particles and better prompt evidence.",
+  "failedThresholds": [
+    "Aura particle density/visual evidence below Three.js"
+  ]
+}

@@ -1,0 +1,28 @@
+Implemented the Aura3D sneaker product viewer in `./source`.
+
+Key files:
+- [src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-3/codex-aura3d/prompt-10/source/src/main.ts:16): centered auto-scaled sneaker, plinth/product stage, studio lights, orbit controls, looping turntable rotation.
+- [src/aura-assets.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-3/codex-aura3d/prompt-10/source/src/aura-assets.ts:3): typed `assets.sneaker` generated from `public/benchmark/assets/sneaker.glb`.
+- [index.html](/Users/gurbakshchahal/aura3d/benchmark/runs/round-3/codex-aura3d/prompt-10/source/index.html:7): full-viewport browser canvas.
+
+Verified:
+- `npm run build`
+- `node node_modules/@aura3d/engine/dist/aura3d-cli/cli.js assets validate`
+- `node node_modules/@aura3d/engine/dist/aura3d-cli/cli.js check-deploy`
+- Short Vite smoke probe, then stopped the server.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev
+```
+
+Assumptions:
+- `source/public/benchmark/assets/sneaker.glb` is the provided allowed `benchmark/assets/sneaker.glb`.
+- The registry package `@aura3d/cli@latest` was unavailable, so I used the local CLI bundled in `@aura3d/engine` to generate and validate the typed asset.

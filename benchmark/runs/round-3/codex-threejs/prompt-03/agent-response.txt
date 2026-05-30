@@ -1,0 +1,26 @@
+Implemented the procedural solar system in `source/src/main.ts`.
+
+It includes one glowing/bloomed sun, 6 labeled planets with visibly different orbit radii and speeds, orbit guide rings, a star field, and OrbitControls framing the full system. No external assets were used.
+
+Build command:
+```bash
+cd source
+npm run build
+```
+
+Run command:
+```bash
+cd source
+npm run dev
+```
+
+Verification:
+```bash
+npm install
+npm run build
+```
+Build passed. I also started Vite briefly at `http://127.0.0.1:4177/`, confirmed it served HTTP 200, then stopped it.
+
+Assumptions:
+- The allowed context did not contain `llms.txt`, so I used only the provided Three.js context and source scaffold.
+- Procedural labels use Three.js `CSS2DRenderer`; bloom uses `UnrealBloomPass`.

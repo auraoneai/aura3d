@@ -1,0 +1,21 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1424,
+      "height": 712
+    }
+  ],
+  "bodyTextLength": 299,
+  "bodyTextSample": "Aura3D diagnostics\nbackend: webgl2\nfps: 60\ndraw calls: 68\nrender size: 1424 x 712\nassets: none\nPhysics Playground\n50 rigid cubes · tilted ramp · contact solver\n80 live contacts\nPhaseSettling\nSettled47 / 50\nCube–ramp28\nCube–cube37\nCube–floor15\nSim time2.5s\n⟳ Reset drop\nDrag to orbit · Scroll to zoom",
+  "httpStatus": 200,
+  "messages": [
+    "debug: [vite] connecting...",
+    "debug: [vite] connected.",
+    "warning: [.WebGL-0x10c001cc000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001cc000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001cc000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels",
+    "warning: [.WebGL-0x10c001cc000]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+  ]
+}

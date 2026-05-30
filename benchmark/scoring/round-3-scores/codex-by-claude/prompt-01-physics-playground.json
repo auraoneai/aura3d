@@ -1,0 +1,13 @@
+{
+  "prompt": "01-physics-playground.md",
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring Codex outputs",
+  "auraVisual": 3,
+  "threeVisual": 4,
+  "auraModularity": 4,
+  "threeModularity": 3,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Both compile and run (exit 0, no timeout). The Aura3D scene is built with a clean declarative API (scene().addMany(prefabs.physicsPlayground({cubes:50})), camera/lights/effects composition) and is the more modular source, but it delegates all physics to an opaque prefab and—critically—does NOT satisfy the prompt's functional intent: the 'live contact count' (24) is fabricated by a sine-wave telemetry function (updateTelemetry), and the 'contact glow' spheres and 'fall path streak' boxes are hardcoded decorative nodes, not real collisions. The Aura screenshot shows a frozen, symmetric star-burst arrangement of cubes that reads as a static decorative layout rather than a settled physics state, so the required collision/contact evidence is staged. Three.js hand-rolls an actual integrator (gravity, ramp/floor/cube-pair collision response, restitution, fixed-step accumulator) and derives the overlay count (127) from real per-frame contacts; its screenshot shows 50 cubes realistically piled and sliding down a clearly tilted ramp with shadows, plus a reset control and live overlay. Three.js is more verbose (361 vs 267 lines) and less elegantly structured, hence weaker modularity, but it materially better fulfills the prompt's collision/contact-count requirements at genuine production quality, so it wins overall. Note the screenshot/metrics-vs-source disagreement on the Aura side: metrics report runsInBrowser=true but the source reveals the contact metric and collision evidence are simulated, not physically derived. This is prompt 01 (not a hard prompt 07/08/10), so hardPromptPass is false.",
+  "failedThresholds": []
+}

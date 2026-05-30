@@ -1,0 +1,31 @@
+Provided context bundle path: ./context
+Provided clean source directory: ./source
+
+Use only the provided context bundle and this prompt file. Build a browser 3D
+app that satisfies the prompt. Put the app in the provided clean source
+directory. Do not search for assets. Prompt 10 may use only
+benchmark/assets/sneaker.glb. After implementation, provide the build command,
+run command, and any assumptions. Do not edit files outside the source
+directory.
+
+Benchmark process rule: do not leave a long-running dev server attached to
+your agent process. You may run finite commands such as npm install, npm run
+typecheck, and npm run build. If you start npm run dev or another server for
+manual verification, stop it before your final response.
+
+# Prompt 06: Mini-Golf Hole
+
+Build a mini-golf hole: a flat green with one obstacle, a ball with physics, click-to-aim-and-shoot, score counter, follow camera on the ball.
+
+## Assets
+
+None. This prompt must be built procedurally.
+
+## Required Visual Evidence
+
+- A mini-golf green must be visible.
+- One obstacle must be visible.
+- A ball must be visible.
+- Aim or shot interaction must be present.
+- Score counter must be visible.
+- Camera framing must follow or emphasize the ball.

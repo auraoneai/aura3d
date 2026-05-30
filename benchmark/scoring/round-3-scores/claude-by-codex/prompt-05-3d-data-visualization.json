@@ -1,0 +1,16 @@
+{
+  "prompt": "05-3d-data-visualization.md",
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "auraVisual": 1,
+  "threeVisual": 4,
+  "auraModularity": 1,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Claude/Aura screenshot is blank except for the scaffold text \"Benchmark app not implemented yet\" and the agent timed out. Claude/Three.js renders a height-varied labelled 3D bar chart.",
+  "failedThresholds": [
+    "Aura agent timed out at 600s",
+    "Aura scaffold/unimplemented screen"
+  ]
+}

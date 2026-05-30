@@ -1,0 +1,13 @@
+{
+  "prompt": "05-3d-data-visualization.md",
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring Codex outputs",
+  "auraVisual": 4,
+  "threeVisual": 4,
+  "auraModularity": 4,
+  "threeModularity": 4,
+  "winner": "Three.js win",
+  "hardPromptPass": false,
+  "reason": "Both compile, run, and render ~36 height-varied bars with height-mapped color and readable axis labels; screenshots agree with metrics (no timeouts, exit 0). Three.js is materially better on data-viz correctness: genuine raycaster hover-highlight that emissively highlights the actual bar, per-frame color recomputed from the animating height, and 3D-anchored axis+tick+value labels (CSS2DRenderer). Aura3D's hover is a DOM-overlay button grid that updates a text panel without highlighting the real 3D bar, and its color is fixed at creation while bars only run a generic 'pulse' clip, so color does not track animated height. Visual polish and code modularity are comparable (4/4 each), but the functional gaps make Three.js materially better overall. Note: prompt 05 is not a designated hard prompt, so hardPromptPass is false. Caveat: neither run's notes.md documents the hover-highlight behavior the prompt asked to be documented, but this affects both equally and is not a timeout/nontermination threshold.",
+  "failedThresholds": []
+}

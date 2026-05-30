@@ -1,0 +1,30 @@
+Provided context bundle path: ./context
+Provided clean source directory: ./source
+
+Use only the provided context bundle and this prompt file. Build a browser 3D
+app that satisfies the prompt. Put the app in the provided clean source
+directory. Do not search for assets. Prompt 10 may use only
+benchmark/assets/sneaker.glb. After implementation, provide the build command,
+run command, and any assumptions. Do not edit files outside the source
+directory.
+
+Benchmark process rule: do not leave a long-running dev server attached to
+your agent process. You may run finite commands such as npm install, npm run
+typecheck, and npm run build. If you start npm run dev or another server for
+manual verification, stop it before your final response.
+
+# Prompt 09: Animated Primitive Humanoid
+
+Build an animated character placeholder: a humanoid figure built from primitive shapes (sphere head, cylinder body, box limbs) with a procedural walk-cycle animation moving across the ground plane.
+
+## Assets
+
+None. This prompt must be built procedurally.
+
+## Required Visual Evidence
+
+- The figure must read as humanoid.
+- Head, torso, arms, and legs must be made from primitives.
+- A ground plane must be visible.
+- Walk-cycle movement must be visible in runtime evidence.
+- The screenshot must show a pose that implies animation, not a static stick figure.

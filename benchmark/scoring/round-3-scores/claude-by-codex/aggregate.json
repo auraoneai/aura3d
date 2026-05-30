@@ -1,0 +1,135 @@
+{
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "results": [
+    {
+      "prompt": "01-physics-playground.md",
+      "auraVisual": 3,
+      "threeVisual": 4,
+      "auraModularity": 3,
+      "threeModularity": 3,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura rendered visible cubes, ramp, and overlay but the agent timed out and the screenshot includes an awkward white page area/debug text. Claude/Three.js is a cleaner physics playground with a more readable ramp/cube setup.",
+      "failedThresholds": [
+        "Aura agent timed out at 600s"
+      ]
+    },
+    {
+      "prompt": "02-particle-fountain.md",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura shows an emitter and curve paths but not a dense live particle fountain. Claude/Three.js renders a dense bright fountain/spray with many particles and better prompt evidence.",
+      "failedThresholds": [
+        "Aura particle density/visual evidence below Three.js"
+      ]
+    },
+    {
+      "prompt": "03-procedural-solar-system.md",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "tie",
+      "hardPromptPass": false,
+      "reason": "Both outputs show a labelled procedural solar system with multiple planets, orbits, and dark-space framing. Three.js has a richer starfield, while Aura is acceptable and similarly structured.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "04-neon-tunnel-flythrough.md",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "tie",
+      "hardPromptPass": false,
+      "reason": "Both outputs satisfy the neon tunnel prompt: Aura has a crisp geometric receding tunnel; Three.js has a bright tunnel/flythrough effect. Neither is materially better overall.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "05-3d-data-visualization.md",
+      "auraVisual": 1,
+      "threeVisual": 4,
+      "auraModularity": 1,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura screenshot is blank except for the scaffold text \"Benchmark app not implemented yet\" and the agent timed out. Claude/Three.js renders a height-varied labelled 3D bar chart.",
+      "failedThresholds": [
+        "Aura agent timed out at 600s",
+        "Aura scaffold/unimplemented screen"
+      ]
+    },
+    {
+      "prompt": "06-mini-golf-hole.md",
+      "auraVisual": 1,
+      "threeVisual": 5,
+      "auraModularity": 1,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura screenshot is the unimplemented scaffold and the agent timed out. Claude/Three.js renders a coherent mini-golf hole with ball, obstacle, flag, bounds, and strokes UI.",
+      "failedThresholds": [
+        "Aura agent timed out at 600s",
+        "Aura scaffold/unimplemented screen"
+      ]
+    },
+    {
+      "prompt": "07-material-lab.md",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": true,
+      "reason": "Claude/Aura renders five material swatches and satisfies the hard material-lab floor, but Three.js has clearer labels, more readable glass/metal/clearcoat distinction, and better framing.",
+      "failedThresholds": [
+        "Three.js visual quality materially higher"
+      ]
+    },
+    {
+      "prompt": "08-procedural-city-block.md",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": true,
+      "reason": "Claude/Aura renders a recognizable lit city block and satisfies the hard city floor. Claude/Three.js is richer, denser, and more city-like with streets and many windowed buildings.",
+      "failedThresholds": [
+        "Three.js visual quality materially higher"
+      ]
+    },
+    {
+      "prompt": "09-animated-primitive-humanoid.md",
+      "auraVisual": 3,
+      "threeVisual": 4,
+      "auraModularity": 3,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura shows a primitive humanoid but the composition is sparse and the agent timed out. Claude/Three.js produces a cleaner humanoid walking scene with better ground/framing.",
+      "failedThresholds": [
+        "Aura agent timed out at 600s"
+      ]
+    },
+    {
+      "prompt": "10-product-viewer-sneaker.md",
+      "auraVisual": 3,
+      "threeVisual": 4,
+      "auraModularity": 4,
+      "threeModularity": 4,
+      "winner": "Three.js win",
+      "hardPromptPass": false,
+      "reason": "Claude/Aura loads the sneaker and stage but the shoe is dark/small and the agent timed out. Claude/Three.js presents the sneaker more clearly on a product plinth; Aura does not satisfy production-quality hard prompt output.",
+      "failedThresholds": [
+        "Aura agent timed out at 600s",
+        "hard prompt 10 production floor not met"
+      ]
+    }
+  ]
+}
