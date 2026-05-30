@@ -1228,6 +1228,8 @@ export interface AuraScreenshot {
   readonly height: number;
 }
 
+export type AuraAppTarget = string | HTMLElement | HTMLCanvasElement | null | undefined;
+
 export class AuraRuntimeError extends Error {
   readonly code:
     | "missing-canvas"
@@ -1243,7 +1245,7 @@ export class AuraRuntimeError extends Error {
   }
 }
 
-export function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, options: AuraCreateAppOptions): AuraApp {
+export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
   const snapshot = normalizeSceneSnapshot(options.scene);
   const diagnosticsState = createInitialDiagnostics(snapshot);
   const canvas = resolveCanvas(target);
@@ -3171,7 +3173,13 @@ function normalizeSceneSnapshot(value: AuraSceneBuilder | AuraSceneSnapshot): Au
   return value instanceof AuraSceneBuilder ? value.toJSON() : value;
 }
 
-function resolveCanvas(target: string | HTMLElement | HTMLCanvasElement): HTMLCanvasElement {
+function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement {
+  if (!target) {
+    throw new AuraRuntimeError(
+      "missing-canvas",
+      "Aura3D could not mount because the app target was null or undefined. Suggested fix: pass a selector like createAuraApp(\"#app\", ...) or check document.querySelector before mounting."
+    );
+  }
   if (typeof target === "string") {
     if (typeof document === "undefined") {
       throw new AuraRuntimeError(

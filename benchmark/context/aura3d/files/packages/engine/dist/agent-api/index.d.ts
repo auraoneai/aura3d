@@ -292,6 +292,7 @@ export declare const prefabs: {
     readonly physicsPlayground: (options?: {
         readonly cubes?: number;
     }) => readonly AuraSceneNode[];
+    readonly solarSystem: () => readonly AuraSceneNode[];
     readonly dataBars3D: (options?: {
         readonly grid?: number;
     }) => readonly AuraSceneNode[];
@@ -398,11 +399,12 @@ export interface AuraScreenshot {
     readonly width: number;
     readonly height: number;
 }
+export type AuraAppTarget = string | HTMLElement | HTMLCanvasElement | null | undefined;
 export declare class AuraRuntimeError extends Error {
     readonly code: "missing-canvas" | "missing-asset" | "failed-glb-load" | "unsupported-texture" | "backend-fallback";
     constructor(code: AuraRuntimeError["code"], message: string);
 }
-export declare function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, options: AuraCreateAppOptions): AuraApp;
+export declare function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp;
 export declare function createAuraRouteHealthSnapshot(app: AuraApp): {
     readonly status: "ready" | "error";
     readonly diagnostics: AuraDiagnostics;

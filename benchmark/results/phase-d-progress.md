@@ -276,6 +276,25 @@ Diagnostic evidence:
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
 
+## Round 6 Prompt 08 Diagnostic Failure
+
+After the final Round 6 sign-off alignment at
+`87d6663796bd15e08195fb06f3b5ebb38ea5cee5`, a clean Codex/Aura prompt run was
+started. Codex/Aura generated all 10 prompts without agent timeout, and capture
+passed for 9 of 10 prompts. Prompt 08 failed at TypeScript compile:
+
+```text
+src/main.ts(40,24): error TS2345: Argument of type 'HTMLCanvasElement | null'
+is not assignable to parameter of type 'string | HTMLElement |
+HTMLCanvasElement'.
+```
+
+The generated source had checked the queried canvas for null before mounting,
+but TypeScript did not preserve that narrowing inside the nested city app
+helper. `benchmark/results/amendment-round-7-nullable-target.md` records the
+targeted API repair: `createAuraApp` now accepts nullable DOM query results and
+throws a clear runtime error if the target is actually missing.
+
 ## Round 6 Physics and Mini-Golf Evidence Repair
 
 `benchmark/results/amendment-round-6-physics-minigolf.md` records prompt 01 and

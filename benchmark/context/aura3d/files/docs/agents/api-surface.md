@@ -27,7 +27,7 @@ Round 1 repair helpers:
 
 ```ts
 scene()
-  .addMany(prefabs.particleFountain({ count: 2400 }))
+  .addMany(prefabs.particleFountain({ count: 1400 }))
   .add(effects.particles({ emitter: "swirl", particleCount: 1200 }))
   .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
   .addMany(prefabs.solarSystem())
@@ -35,10 +35,7 @@ scene()
   .addMany(prefabs.productStage())
   .addMany(prefabs.physicsRamp())
   .addMany(prefabs.physicsPlayground({ cubes: 50 }))
-  .addMany(prefabs.dataBars3D({ grid: 6 }))
-  .addMany(prefabs.neonTunnel({ rings: 16 }))
   .addMany(prefabs.miniGolfHole())
-  .addMany(prefabs.primitiveHumanoid())
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
@@ -66,6 +63,19 @@ ui.onClick(".toggle", (button) => {
 `ui.html("#app", markup)` inserts inside the target by default. Use it for
 mounting HUDs and nested scene containers; pass an explicit `InsertPosition`
 only when you intentionally need sibling markup.
+
+Mount targets:
+
+```ts
+createAuraApp("#app", { scene: scene().add(lights.studio()) });
+
+const canvas = document.querySelector<HTMLCanvasElement>("#scene");
+createAuraApp(canvas, { scene: scene().add(lights.studio()) });
+```
+
+`createAuraApp` accepts selector strings, elements, canvases, and nullable DOM
+query results. Nullable targets throw a clear runtime error if the element is
+missing, which keeps agent-authored `querySelector` code type-safe.
 
 React adapter:
 

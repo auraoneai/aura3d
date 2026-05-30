@@ -92,7 +92,10 @@ Round 1 failure repairs:
   `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
   default, `ui.html("#app", markup)` inserts markup inside `#app`, so nested
-  scene containers remain visible within the viewport.
+  scene containers remain visible within the viewport. If you query a canvas or
+  container with `document.querySelector`, you may pass that nullable result to
+  `createAuraApp`; missing targets throw a clear Aura runtime error instead of
+  creating TypeScript friction around nested helper functions.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. For prompt-01-style playgrounds, use

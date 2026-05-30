@@ -75,6 +75,9 @@ scene()
 `createAuraApp("#app", ...)` gives a direct empty app container viewport-safe
 layout by default. Agent-authored benchmark scenes do not need custom CSS just
 to remove browser body margin or make the canvas fill the screenshot.
+`createAuraApp` also accepts nullable `document.querySelector(...)` results and
+throws a clear runtime error if the target is missing, so nested mount helper
+functions can stay TypeScript-safe.
 
 ```ts
 scene()

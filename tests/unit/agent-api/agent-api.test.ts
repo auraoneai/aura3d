@@ -14,7 +14,8 @@ import {
   promptPlanToScene,
   scene,
   timeline,
-  ui
+  ui,
+  createAuraApp
 } from "../../../packages/engine/src";
 
 const assets = defineAuraAssets({
@@ -216,6 +217,10 @@ describe("agent API", () => {
     ui.html(element, `<div id="scene"></div>`);
 
     expect(calls).toEqual([["beforeend", `<div id="scene"></div>`]]);
+  });
+
+  test("accepts nullable DOM query targets at the public type boundary", () => {
+    expect(() => createAuraApp(null, { scene: scene() })).toThrow(/target was null or undefined/);
   });
 
   test("compiles prompt plans into approved visual recipes", () => {
