@@ -26,9 +26,9 @@ Round 1 repair helpers:
 
 ```ts
 scene()
-  .addMany(prefabs.particleFountain({ count: 1400 }))
+  .addMany(prefabs.particleFountain({ count: 2400 }))
   .add(effects.particles({ emitter: "swirl", particleCount: 1200 }))
-  .addMany(prefabs.cityBlock({ blocks: 5 }))
+  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
   .addMany(prefabs.materialSwatches())
   .addMany(prefabs.productStage())
   .addMany(prefabs.physicsRamp())

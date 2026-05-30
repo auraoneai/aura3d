@@ -558,9 +558,9 @@ function dataBarColor(value: number): AuraColor {
 
 function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex: number): AuraSceneNode[] {
   const nodes: AuraSceneNode[] = [];
-  const floors = Math.max(3, Math.floor(height * 3.2));
+  const floors = Math.max(3, Math.floor(height / 0.45));
   for (let floor = 0; floor < floors; floor += 1) {
-    const y = 0.22 + floor * 0.28;
+    const y = 0.45 + floor * 0.45;
     const warm = (floor + towerIndex) % 3 !== 0;
     const windowMaterial = material.emissive({
       color: warm ? "#ffd98a" : "#8bdcff",
@@ -569,11 +569,11 @@ function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex
     nodes.push(primitives.box({
       name: `front lit window band ${towerIndex + 1}-${floor + 1}`,
       material: windowMaterial
-    }).position(x, y, z + 0.315).scale([0.46, 0.052, 0.032]).toJSON());
+    }).position(x, y, z + 0.66).scale([0.18, 0.18, 0.032]).toJSON());
     nodes.push(primitives.box({
       name: `side lit window band ${towerIndex + 1}-${floor + 1}`,
       material: windowMaterial
-    }).position(x + 0.375, y, z).scale([0.032, 0.052, 0.34]).toJSON());
+    }).position(x + 0.64, y, z).scale([0.032, 0.18, 0.18]).toJSON());
   }
   return nodes;
 }
@@ -588,24 +588,26 @@ export const prefabs = {
   ],
 
   cityBlock: (options: { readonly blocks?: number; readonly litWindows?: boolean } = {}): readonly AuraSceneNode[] => {
-    const blocks = Math.max(3, Math.min(24, options.blocks ?? 20));
+    const blocks = Math.max(3, Math.min(30, options.blocks ?? 20));
     const nodes: AuraSceneNode[] = [
-      primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: "#111820", roughness: 0.72, metallic: 0.04 }) }).position(0, -0.04, -0.65).scale([7.4, 1, 5.2]).toJSON(),
-      primitives.box({ name: "main avenue stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0, 0.01, -0.65).scale([0.06, 0.018, 5.1]).toJSON(),
-      primitives.box({ name: "cross street stripe", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.012, -0.65).scale([7.0, 0.018, 0.045]).toJSON(),
-      primitives.box({ name: "left lane divider", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(-0.36, 0.013, -0.65).scale([0.035, 0.018, 4.8]).toJSON(),
-      primitives.box({ name: "right lane divider", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0.36, 0.013, -0.65).scale([0.035, 0.018, 4.8]).toJSON()
+      primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: "#a7b09d", roughness: 0.86, metallic: 0.02 }) }).position(0, -0.04, 0).scale([20, 1, 20]).toJSON(),
+      primitives.box({ name: "main north south road", material: material.pbr({ color: "#171b1d", roughness: 0.78 }) }).position(0, 0.012, 0).scale([0.22, 0.024, 16]).toJSON(),
+      primitives.box({ name: "main east west road", material: material.pbr({ color: "#171b1d", roughness: 0.78 }) }).position(0, 0.014, 0).scale([16, 0.024, 0.22]).toJSON(),
+      primitives.box({ name: "left road stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(-0.18, 0.032, 0).scale([0.035, 0.02, 15.2]).toJSON(),
+      primitives.box({ name: "right road stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0.18, 0.032, 0).scale([0.035, 0.02, 15.2]).toJSON(),
+      primitives.box({ name: "cross street white line", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.034, 0.24).scale([15.4, 0.02, 0.035]).toJSON()
     ];
     for (let index = 0; index < blocks; index += 1) {
-      const col = index % 6;
-      const row = Math.floor(index / 6);
-      const x = -3.0 + col * 1.08;
-      const z = -2.15 + row * 1.05 + (col % 2) * 0.12;
-      const height = 0.78 + ((index * 7) % 9) * 0.16;
+      const col = index % 5;
+      const row = Math.floor(index / 5);
+      const x = (col - 2) * 2.2;
+      const z = (row - 1.5) * 2.2;
+      const height = 1.2 + ((index * 7) % 6) * 0.45;
+      const color = index % 3 === 0 ? "#6c7a7e" : index % 3 === 1 ? "#8a7558" : "#415665";
       nodes.push(primitives.box({
         name: `city tower ${index + 1}`,
-        material: material.pbr({ color: index % 2 === 0 ? "#26313d" : "#1d2733", roughness: 0.5, metallic: 0.08 })
-      }).position(x, height / 2, z).scale([0.72, height, 0.62]).toJSON());
+        material: material.pbr({ color, roughness: 0.68, metallic: 0.06 })
+      }).position(x, height / 2, z).scale([1.25, height, 1.25]).toJSON());
       if (options.litWindows !== false) {
         nodes.push(...makeBuildingWindowRows(x, z, height, index));
       }
@@ -620,22 +622,22 @@ export const prefabs = {
   },
 
   materialSwatches: (): readonly AuraSceneNode[] => [
-    primitives.sphere({ name: "brushed metal swatch", material: material.metal({ color: "#dce6ee", roughness: 0.12 }) }).position(-1.8, 0.52, -0.72).scale(0.42).toJSON(),
-    primitives.sphere({ name: "transparent glass swatch", material: material.glass({ color: "#bdefff", opacity: 0.24, transmission: 0.96 }) }).position(-0.9, 0.52, -0.72).scale(0.42).toJSON(),
-    primitives.sphere({ name: "matte rubber swatch", material: material.rubber({ color: "#07090d" }) }).position(0, 0.52, -0.72).scale(0.42).toJSON(),
-    primitives.sphere({ name: "emissive pink swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(0.9, 0.52, -0.72).scale(0.42).toJSON(),
-    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#26d3d0", roughness: 0.12, clearcoat: 1 }) }).position(1.8, 0.52, -0.72).scale(0.42).toJSON(),
-    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#202731", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.72).scale([4.35, 0.08, 0.24]).toJSON(),
-    primitives.box({ name: "glass contrast card", material: material.emissive({ color: "#dff8ff", emissive: "#dff8ff" }) }).position(-0.9, 0.52, -1.18).scale([0.5, 0.34, 0.035]).toJSON(),
+    primitives.sphere({ name: "brushed metal swatch", material: material.metal({ color: "#dce6ee", roughness: 0.12 }) }).position(-3.7, 1.0, -0.72).scale(1.64).toJSON(),
+    primitives.sphere({ name: "transparent glass swatch", material: material.glass({ color: "#bdefff", opacity: 0.34, transmission: 0.96 }) }).position(-1.85, 1.0, -0.72).scale(1.64).toJSON(),
+    primitives.sphere({ name: "matte rubber swatch", material: material.rubber({ color: "#050507", roughness: 0.94 }) }).position(0, 1.0, -0.72).scale(1.64).toJSON(),
+    primitives.sphere({ name: "emissive pink swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(1.85, 1.0, -0.72).scale(1.64).toJSON(),
+    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#ffcf91", roughness: 0.12, clearcoat: 1 }) }).position(3.7, 1.0, -0.72).scale(1.64).toJSON(),
+    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#4a525d", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.72).scale([10.5, 0.18, 2.3]).toJSON(),
+    primitives.box({ name: "glass contrast card", material: material.emissive({ color: "#dff8ff", emissive: "#dff8ff" }) }).position(-1.85, 1.0, -1.54).scale([0.82, 0.62, 0.04]).toJSON(),
     effects.bloom({ intensity: 0.22, color: "#ff42c8" }).toJSON()
   ],
 
   productStage: (): readonly AuraSceneNode[] => [
-    primitives.plane({ name: "curved studio backdrop cue", material: material.pbr({ color: "#dfe6ee", roughness: 0.46, metallic: 0.02 }) }).position(0, 0.86, -2.25).rotate(1.5708, 0, 0).scale([5.4, 1, 2.4]).toJSON(),
-    primitives.cylinder({ name: "round white product inspection plinth", material: material.clearcoat({ color: "#f6f8fb", roughness: 0.2 }) }).position(0, 0.03, -0.65).scale([1.34, 0.18, 1.34]).toJSON(),
-    primitives.cylinder({ name: "soft elliptical contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94, opacity: 0.42 }) }).position(0, 0.135, -0.65).scale([0.92, 0.012, 0.62]).toJSON(),
-    primitives.box({ name: "left inspection softbox", material: material.emissive({ color: "#edf7ff", emissive: "#edf7ff" }) }).position(-1.9, 0.92, -0.8).scale([0.08, 1.3, 1.45]).toJSON(),
-    primitives.box({ name: "right rim softbox", material: material.emissive({ color: "#ffd6a0", emissive: "#ffd6a0" }) }).position(1.92, 0.82, -0.9).scale([0.08, 1.0, 1.3]).toJSON()
+    primitives.plane({ name: "clean studio backdrop sweep", material: material.pbr({ color: "#eef2f6", roughness: 0.42, metallic: 0.02 }) }).position(0, 1.05, -2.6).rotate(1.5708, 0, 0).scale([6.0, 1, 3.0]).toJSON(),
+    primitives.cylinder({ name: "round white product inspection plinth", material: material.clearcoat({ color: "#f6f8fb", roughness: 0.2 }) }).position(0, 0.28, -0.65).scale([5.0, 0.55, 5.0]).toJSON(),
+    primitives.cylinder({ name: "soft elliptical contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94, opacity: 0.42 }) }).position(0, 0.575, -0.65).scale([2.4, 0.018, 1.35]).toJSON(),
+    primitives.box({ name: "left inspection softbox", material: material.emissive({ color: "#edf7ff", emissive: "#edf7ff" }) }).position(-2.75, 1.35, -0.95).scale([0.08, 1.7, 1.9]).toJSON(),
+    primitives.box({ name: "right rim softbox", material: material.emissive({ color: "#ffd6a0", emissive: "#ffd6a0" }) }).position(2.72, 1.18, -1.02).scale([0.08, 1.34, 1.7]).toJSON()
   ],
 
   physicsRamp: (): readonly AuraSceneNode[] => [
@@ -1779,18 +1781,21 @@ function writeParticlePosition(
   seedIndex = index
 ): void {
   const phase = seededRange(seedIndex, 181, 0, 1);
-  const angle = phase * Math.PI * 2 + seconds * (emitter === "swirl" ? 1.45 : 0.35);
-  const radial = radius * (0.18 + seededRange(seedIndex, 191, 0, 0.82));
+  const angleSeed = seededRange(seedIndex, 191, 0, 1);
+  const angle = angleSeed * Math.PI * 2 + seconds * (emitter === "swirl" ? 1.45 : 0.14);
+  const radial = radius * (0.18 + seededRange(seedIndex, 193, 0, 0.82));
   let x = Math.cos(angle) * radial;
   let y = seededRange(seedIndex, 197, 0.08, height);
   let z = Math.sin(angle) * radial;
   if (emitter === "fountain") {
-    const rise = (phase + seconds * 0.34) % 1;
+    const jet = seededRange(seedIndex, 199, 0.42, 1);
+    const rise = (phase + seconds * 0.34 * jet) % 1;
     const arc = Math.sin(rise * Math.PI);
-    const spread = radius * rise;
-    x = Math.cos(angle) * spread;
-    y = 0.12 + arc * height;
-    z = Math.sin(angle) * spread;
+    const spread = radius * (0.16 + rise * 0.92) * seededRange(seedIndex, 203, 0.42, 1);
+    const wobble = Math.sin(seconds * 1.7 + angleSeed * Math.PI * 2) * 0.12;
+    x = Math.cos(angle + wobble) * spread;
+    y = 0.12 + arc * height + seededRange(seedIndex, 207, -0.08, 0.08);
+    z = Math.sin(angle + wobble) * spread;
   } else if (emitter === "ambient") {
     x = seededRange(seedIndex, 211, -radius * 2, radius * 2);
     y = seededRange(seedIndex, 223, 0.08, height);

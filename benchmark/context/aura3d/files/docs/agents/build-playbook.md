@@ -57,7 +57,9 @@ Round 1 failure repairs:
 
 - Particle/VFX prompts: start with `prefabs.particleFountain(...)` or
   `effects.particles({ emitter: "fountain" | "swirl", particleCount: 1000 })`.
-  Do not accept a visible emitter with zero live particles.
+  Use high counts for fountains (`prefabs.particleFountain({ count: 2400 })`)
+  when the screenshot must prove dense live particles. Do not accept a visible
+  emitter, HUD counter, or single trail curve with no particle volume.
 - Physics playground prompts: start with
   `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
   evidence, then add real `@aura3d/engine/physics` state if needed. Do not
@@ -69,18 +71,22 @@ Round 1 failure repairs:
   `material.metal()`, `material.glass()`, `material.rubber()`,
   `material.emissive()`, and `material.clearcoat()` so material classes are
   visible without reading labels.
-- City prompts: use `prefabs.cityBlock(...)` before custom buildings. A city
-  scene needs streets, lit windows, scale variation, fog or depth, and a camera
-  angle that makes the block readable.
+- City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
+  before custom buildings. A city scene needs streets, lit windows, scale
+  variation, fog or depth, and a camera angle that makes the block readable.
 - Product prompts: use `prefabs.productStage()`, typed `model(assets.product)`,
-  `interactions.orbit()`, and product camera framing. Do not implement the
-  actual viewer in raw Three.js inside an Aura3D app.
+  `interactions.orbit()`, and product camera framing. Place normalized products
+  near `position(0, 0.65, -0.65)` so they sit on the round plinth. Do not
+  implement the actual viewer in raw Three.js inside an Aura3D app.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. Do not claim physics from cosmetic floating boxes only.
 - Animation prompts: prefer `.animate({ clip: "float" | "pulse", speed })` and
   `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running.
+- Benchmark prompts: write the smallest complete scene first, run finite
+  commands such as `npm run build`, and exit. Do not keep a dev server attached
+  as the agent's final process.
 - Neon tunnel, mini-golf, and humanoid prompts: start from
   `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
   `prefabs.primitiveHumanoid` before custom primitive placement.

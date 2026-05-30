@@ -2,10 +2,10 @@
 
 Date: 2026-05-30
 Base failed rounds: `benchmark/results/round-1.md`,
-`benchmark/results/round-2.md`
+`benchmark/results/round-2.md`, `benchmark/results/round-3.md`
 
-Round 1 and Round 2 remain failed. These commits are repair work before a
-required full Phase B rerun.
+Round 1, Round 2, and Round 3 remain failed. These commits are repair work
+before a required full Phase B rerun.
 
 ## Landed Repairs
 
@@ -94,6 +94,31 @@ Verification:
   sampled `nonDark=5071`, `colorful=2220`.
 - `cd benchmark/context/aura3d/files && shasum -a 256 -c ../manifest.sha256`
 
-## Remaining Work Before Round 3
+### Pending - Round 3 engine/prompt repair set
+
+Targeted Round 3 gaps:
+
+- Engine material parity: scale and frame `prefabs.materialSwatches()` so the
+  five material classes are readable at benchmark camera distance.
+- Engine particle parity: distribute `prefabs.particleFountain(...)` particles
+  as a dense volume instead of a single curve.
+- Engine and prompt city parity: make `prefabs.cityBlock(...)` default to a
+  20-building street-grid composition with larger lit windows.
+- Product staging: enlarge the round plinth and document product placement at
+  `position(0, 0.65, -0.65)`.
+- Claude process reliability: update the context bundle with a shorter finite
+  benchmark path and explicit instruction not to leave `npm run dev` attached.
+
+Verification:
+
+- `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts --reporter=dot`
+- `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false`
+- `pnpm build`
+- `pnpm run check:agent-api`
+- Disposable browser smoke: `/tmp/aura3d-round4-prefab-smoke.png`, sampled
+  `nonDark=604250`, `colorful=164554`
+- `cd benchmark/context/aura3d/files && shasum -a 256 -c ../manifest.sha256`
+
+## Remaining Work Before Round 4
 
 - Re-run the entire Phase B benchmark from scratch. Partial reruns do not count.

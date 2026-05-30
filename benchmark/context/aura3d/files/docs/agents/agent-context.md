@@ -36,6 +36,9 @@ Prompt-to-visual workflow:
   `prefabs.primitiveHumanoid`.
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles.
+- For product viewers, place normalized products around
+  `position(0, 0.65, -0.65)` after `prefabs.productStage()` so they sit on the
+  round plinth.
 - Use `.animate({ clip: "float" | "pulse", speed })` and `timeline.loop(...)`
   for runtime motion. Build/test, then terminate normally; do not leave a dev
   server running as the final state.

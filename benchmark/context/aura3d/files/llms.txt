@@ -93,17 +93,17 @@ scene()
   .add(lights.studio({ intensity: 1.15 }))
   .camera(camera.orbit({ distance: 5.2 }));
 
-// Real particle system, not a symbolic cone or HUD counter.
+// Real dense particle system, not a symbolic cone, single curve, or HUD counter.
 scene()
   .background("#030711")
-  .addMany(prefabs.particleFountain({ count: 1400 }))
+  .addMany(prefabs.particleFountain({ count: 2400 }))
   .add(lights.studio({ intensity: 1.15 }))
   .camera(camera.orbit({ distance: 4.2 }));
 
 // City prompts need streets, scale, windows, and framing.
 scene()
   .background("#061018")
-  .addMany(prefabs.cityBlock({ blocks: 5 }))
+  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
   .add(effects.fog({ density: 0.06 }))
   .add(effects.bloom({ intensity: 0.24 }))
   .camera(camera.perspective({ position: [0, 2.6, 5.4], target: [0, 0.55, -0.7] }));
@@ -125,7 +125,7 @@ scene()
 // Product viewers should use fit-to-bounds model normalization plus a plinth.
 scene()
   .addMany(prefabs.productStage())
-  .add(model(assets.product).position(0, 0.18, -0.65).animate({ clip: "float", speed: 0.5 }))
+  .add(model(assets.product).position(0, 0.65, -0.65).animate({ clip: "float", speed: 0.5 }))
   .add(interactions.orbit())
   .camera(camera.orbit({ distance: 4 }));
 
@@ -155,6 +155,9 @@ Visual acceptance:
 - Do not call `dispose()` and `createAuraApp()` every animation frame. Create
   one app, use `.animate(...)`, `timeline.loop(...)`, or update ordinary DOM
   overlays separately.
+- For benchmark work, write the smallest complete Aura scene first, run finite
+  commands like `npm run build`, and exit. Do not keep `npm run dev` attached to
+  the agent process.
 - If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
   before changing the scene or review label.
 
