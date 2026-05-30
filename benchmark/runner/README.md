@@ -99,3 +99,27 @@ If a step fails, still create the artifact directory and write:
 
 Use `screenshot.png` only when an actual browser screenshot exists. Do not
 create placeholder screenshots.
+
+## Engine FPS Calibration
+
+Engine FPS is valid only if the browser measurement path is calibrated before
+scene sampling. Run the controls in `benchmark/runner/fps-calibration.mjs` in
+the same Playwright browser instance and record the result in each engine
+`metrics.json` under `fpsCalibration`.
+
+Required controls:
+
+- Empty `requestAnimationFrame` page: p50 FPS must be at least 55.
+- Minimal WebGL control scene: p50 FPS must be at least 45 and p95 frame time
+  must be no worse than 34 ms.
+
+If either control fails, set scene `p50Fps` and `p95FrameTimeMs` to `null`, set
+`fpsInstrumentationStatus` to `"invalid"`, record
+`fpsInstrumentationFailures`, and do not use the FPS threshold to make an
+engine-quality claim for that run. The result file must still report that the
+frozen threshold was unavailable because instrumentation failed.
+
+The calibration requirement prevents the Round 1 failure mode where both
+Aura3D and raw Three.js measured at 1-8 FPS on scenes that were visually
+rendering, making the FPS numbers browser/sampling evidence rather than
+credible renderer-performance evidence.

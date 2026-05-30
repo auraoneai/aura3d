@@ -26,6 +26,10 @@ Scene 5 uses only `benchmark/assets/sneaker.glb`.
 Use the same machine, viewport, warmup, and sampling window defined in
 `../runner/README.md` and `../metrics/README.md`.
 
+Before using FPS thresholds, run the engine FPS calibration controls defined in
+`../runner/README.md`. If calibration fails, record FPS as instrumentation
+invalid and do not treat the scene FPS numbers as renderer-quality evidence.
+
 ## Metrics
 
 Record these for Aura3D and Three.js:

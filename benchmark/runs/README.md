@@ -81,6 +81,12 @@ Each engine-side `metrics.json` must include:
   "firstUsableRenderMs": 0,
   "p50Fps": 0,
   "p95FrameTimeMs": 0,
+  "fpsInstrumentationStatus": "pass",
+  "fpsCalibration": {
+    "emptyRaf": { "p50Fps": 120, "p95FrameTimeMs": 9 },
+    "webglControl": { "p50Fps": 60, "p95FrameTimeMs": 18 },
+    "verdict": { "status": "pass", "failures": [] }
+  },
   "drawCalls": 0,
   "triangleCount": 0,
   "jsHeapPeakBytes": 0,
@@ -92,6 +98,9 @@ Each engine-side `metrics.json` must include:
 ```
 
 Use `metrics/README.md` for measurement definitions.
+
+If FPS calibration fails, set `fpsInstrumentationStatus` to `"invalid"`, record
+`fpsInstrumentationFailures`, and set `p50Fps` and `p95FrameTimeMs` to `null`.
 
 ## `notes.md`
 

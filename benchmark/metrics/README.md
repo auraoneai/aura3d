@@ -55,6 +55,12 @@ For each engine scene and each implementation, record:
 - `firstUsableRenderMs`: same start/stop rule as prompt runs.
 - `p50Fps`: median FPS after warmup.
 - `p95FrameTimeMs`: 95th percentile frame time after warmup.
+- `fpsCalibration`: required for engine captures. It must include empty rAF and
+  minimal WebGL control measurements from `benchmark/runner/fps-calibration.mjs`.
+- `fpsInstrumentationStatus`: omit or use `"pass"` only when calibration passes.
+  Use `"invalid"` when controls fail; in that case `p50Fps` and
+  `p95FrameTimeMs` must be `null` and the run cannot make a renderer-quality
+  FPS claim.
 - `drawCalls`: renderer-reported draw calls where available.
 - `triangleCount`: renderer-reported or estimated triangles where available.
 - `jsHeapPeakBytes`: peak JS heap from browser performance APIs where
