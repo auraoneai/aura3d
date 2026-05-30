@@ -779,17 +779,30 @@ export const prefabs = {
   ],
 
   primitiveHumanoid: (): readonly AuraSceneNode[] => [
-    primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#1f5130", roughness: 0.7 }) }).position(0, -0.04, -0.5).scale([4.4, 1, 2.8]).toJSON(),
-    primitives.cylinder({ name: "readable blue humanoid torso", material: material.clearcoat({ color: "#2563eb" }) }).position(0, 0.95, -0.55).scale([0.3, 0.72, 0.3]).animate({ clip: "pulse", speed: 0.3 }).toJSON(),
-    primitives.sphere({ name: "humanoid head", material: material.clearcoat({ color: "#f5d0a9" }) }).position(0, 1.62, -0.55).scale(0.25).toJSON(),
-    primitives.box({ name: "shoulder bar connecting arms", material: material.clearcoat({ color: "#60a5fa" }) }).position(0, 1.16, -0.55).scale([0.78, 0.12, 0.14]).toJSON(),
-    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(-0.48, 0.88, -0.47).rotate(0.5, 0, -0.32).scale([0.12, 0.66, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
-    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(0.48, 0.88, -0.63).rotate(-0.5, 0, 0.32).scale([0.12, 0.66, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
-    primitives.box({ name: "hip bar connecting legs", material: material.clearcoat({ color: "#1d4ed8" }) }).position(0, 0.54, -0.55).scale([0.48, 0.12, 0.16]).toJSON(),
-    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#172033" }) }).position(-0.18, 0.3, -0.36).rotate(-0.42, 0, -0.1).scale([0.15, 0.76, 0.15]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
-    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#172033" }) }).position(0.22, 0.3, -0.74).rotate(0.42, 0, 0.1).scale([0.15, 0.76, 0.15]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
-    primitives.box({ name: "forward foot", material: material.clearcoat({ color: "#0f172a" }) }).position(-0.3, 0.08, -0.18).rotate(0, -0.12, 0).scale([0.32, 0.1, 0.18]).toJSON(),
-    primitives.box({ name: "back foot", material: material.clearcoat({ color: "#0f172a" }) }).position(0.34, 0.08, -0.92).rotate(0, 0.12, 0).scale([0.32, 0.1, 0.18]).toJSON()
+    primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#1f5130", roughness: 0.7 }) }).position(0, -0.04, -0.5).scale([4.8, 1, 3]).toJSON(),
+    primitives.box({ name: "painted walking path", material: material.pbr({ color: "#2d3748", roughness: 0.78 }) }).position(0, 0.01, -0.45).scale([3.8, 0.025, 0.42]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 1", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(-1.05, 0.04, -0.45).scale([0.42, 0.025, 0.045]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 2", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(0.05, 0.04, -0.45).scale([0.42, 0.025, 0.045]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 3", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(1.15, 0.04, -0.45).scale([0.42, 0.025, 0.045]).toJSON(),
+    primitives.box({ name: "cyan walk motion arrow shaft", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(0.76, 0.06, -0.23).rotate(0, -0.18, 0).scale([0.58, 0.025, 0.035]).toJSON(),
+    primitives.box({ name: "cyan walk motion arrow head", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(1.07, 0.06, -0.17).rotate(0, -0.18, -0.72).scale([0.18, 0.025, 0.035]).toJSON(),
+    primitives.cylinder({ name: "humanoid contact shadow", material: material.pbr({ color: "#050608", roughness: 0.94, opacity: 0.48 }) }).position(0.04, 0.035, -0.5).scale([0.82, 0.018, 0.5]).toJSON(),
+    primitives.cylinder({ name: "connected blue humanoid torso", material: material.clearcoat({ color: "#2563eb", roughness: 0.16 }) }).position(0, 0.92, -0.55).scale([0.34, 0.78, 0.28]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.cylinder({ name: "short humanoid neck connector", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.22 }) }).position(0, 1.36, -0.55).scale([0.13, 0.24, 0.13]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.sphere({ name: "humanoid head", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.2 }) }).position(0, 1.55, -0.55).scale(0.27).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.sphere({ name: "left humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a" }) }).position(-0.075, 1.59, -0.3).scale(0.035).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.sphere({ name: "right humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a" }) }).position(0.075, 1.59, -0.3).scale(0.035).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.box({ name: "humanoid mouth line", material: material.emissive({ color: "#7f1d1d", emissive: "#7f1d1d" }) }).position(0, 1.48, -0.285).scale([0.13, 0.018, 0.02]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.box({ name: "shoulder bar connecting arms", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0, 1.16, -0.55).scale([0.82, 0.12, 0.14]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(-0.5, 0.88, -0.39).rotate(0.55, 0, -0.24).scale([0.12, 0.64, 0.12]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0.5, 0.88, -0.7).rotate(-0.55, 0, 0.24).scale([0.12, 0.64, 0.12]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.sphere({ name: "left humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(-0.56, 0.7, -0.38).scale(0.095).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.sphere({ name: "right humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(0.56, 0.7, -0.74).scale(0.095).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.box({ name: "hip bar connecting legs", material: material.clearcoat({ color: "#1d4ed8", roughness: 0.2 }) }).position(0, 0.52, -0.55).scale([0.52, 0.12, 0.16]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(-0.2, 0.29, -0.28).rotate(-0.46, 0, -0.08).scale([0.15, 0.74, 0.15]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(0.22, 0.29, -0.78).rotate(0.46, 0, 0.08).scale([0.15, 0.74, 0.15]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+    primitives.box({ name: "forward foot planted on path", material: material.clearcoat({ color: "#0f172a", roughness: 0.2 }) }).position(-0.35, 0.08, -0.08).rotate(0, -0.12, 0).scale([0.38, 0.1, 0.2]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+    primitives.box({ name: "back foot pushing off path", material: material.clearcoat({ color: "#0f172a", roughness: 0.2 }) }).position(0.38, 0.08, -0.98).rotate(0, 0.12, 0).scale([0.38, 0.1, 0.2]).animate({ clip: "walk", speed: 0.95 }).toJSON()
   ]
 } as const;
 
@@ -1625,10 +1638,35 @@ function applyThreeTransform(object: any, node: AuraTransformSpec, baseScale: Au
 
 function registerThreeNodeAnimation(object: any, node: AuraModelNode | AuraPrimitiveNode, frameUpdaters: Array<(time: number) => void>): void {
   if (!node.animation) return;
+  const basePosition = node.position ?? [0, 0, 0];
   const baseRotation = node.rotation ?? [0, 0, 0];
+  const nodeName = node.name?.toLowerCase() ?? "";
   const speed = Math.max(0.05, node.animation.speed ?? 1);
   frameUpdaters.push((time: number) => {
     const seconds = time / 1000;
+    if (node.animation?.clip === "walk") {
+      const phase = seconds * speed * Math.PI * 2;
+      const oppositeStride = nodeName.includes("right") || nodeName.includes("back") ? Math.PI : 0;
+      const travel = Math.sin(seconds * speed * 0.72) * 0.24;
+      const bodyBob = Math.abs(Math.sin(phase)) * 0.028;
+      object.position.x = basePosition[0] + travel;
+      object.position.y = basePosition[1];
+      object.position.z = basePosition[2];
+      object.rotation.x = baseRotation[0];
+      object.rotation.y = baseRotation[1];
+      object.rotation.z = baseRotation[2];
+      if (nodeName.includes("torso") || nodeName.includes("neck") || nodeName.includes("head") || nodeName.includes("eye") || nodeName.includes("mouth") || nodeName.includes("shoulder") || nodeName.includes("hip")) {
+        object.position.y = basePosition[1] + bodyBob;
+      }
+      if (nodeName.includes("arm") || nodeName.includes("leg")) {
+        object.rotation.x = baseRotation[0] + Math.sin(phase + oppositeStride) * 0.42;
+      }
+      if (nodeName.includes("hand") || nodeName.includes("foot")) {
+        object.rotation.x = baseRotation[0] + Math.sin(phase + oppositeStride) * 0.18;
+        object.position.y = basePosition[1] + Math.max(0, Math.sin(phase + oppositeStride)) * 0.055;
+      }
+      return;
+    }
     if (node.animation?.clip === "float") {
       object.position.y = (node.position?.[1] ?? 0) + Math.sin(seconds * speed) * 0.08;
       object.rotation.y = baseRotation[1] + seconds * speed * 0.28;

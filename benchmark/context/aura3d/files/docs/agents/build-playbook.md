@@ -96,9 +96,11 @@ Round 1 failure repairs:
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. Do not claim physics from cosmetic floating boxes only.
-- Animation prompts: prefer `.animate({ clip: "float" | "pulse", speed })` and
-  `timeline.loop(...)`; agents must stop after build/test commands and not
-  leave dev servers running.
+- Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk", speed })`
+  and `timeline.loop(...)`; agents must stop after build/test commands and not
+  leave dev servers running. For primitive character prompts, start from
+  `prefabs.primitiveHumanoid()` so the connected body, path, contact shadow,
+  face cues, and walk-cycle animation are visible.
 - Benchmark prompts: write the smallest complete scene first, run finite
   commands such as `npm run build`, and exit. Do not run dev servers,
   Playwright, browser screenshot capture, or manual visual verification from

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  type AuraPrimitiveNode,
   camera,
   compilePromptPlan,
   defineAuraAssets,
@@ -94,9 +95,39 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "forward foot")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "short humanoid neck connector")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "left humanoid eye")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "forward foot planted on path")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white softbox reflection strip")).toBe(true);
     expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
+  });
+
+  test("keeps primitive humanoid readable as a connected animated walk cycle", () => {
+    const nodes = prefabs.primitiveHumanoid();
+    const names = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
+    const animatedWalkNodes = nodes.filter((node) => node.kind === "primitive" && node.animation?.clip === "walk");
+    const primitiveByName = (name: string): AuraPrimitiveNode | undefined =>
+      nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === name);
+    const head = primitiveByName("humanoid head");
+    const neck = primitiveByName("short humanoid neck connector");
+    const torso = primitiveByName("connected blue humanoid torso");
+
+    expect(names).toEqual(expect.arrayContaining([
+      "painted walking path",
+      "humanoid contact shadow",
+      "short humanoid neck connector",
+      "left humanoid eye",
+      "right humanoid eye",
+      "humanoid mouth line",
+      "cyan walk motion arrow shaft",
+      "cyan walk motion arrow head",
+      "forward foot planted on path",
+      "back foot pushing off path"
+    ]));
+    expect(animatedWalkNodes.length).toBeGreaterThanOrEqual(14);
+    expect(head?.position?.[1]).toBeLessThan(1.6);
+    expect(neck?.position?.[1]).toBeGreaterThan(torso?.position?.[1] ?? 0);
+    expect(head?.position?.[1] ?? 0).toBeGreaterThan(neck?.position?.[1] ?? 999);
   });
 
   test("keeps material swatches framed in a compact inspection row", () => {

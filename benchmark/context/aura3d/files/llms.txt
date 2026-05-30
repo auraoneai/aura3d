@@ -164,7 +164,8 @@ Visual acceptance:
   `prefabs.*` helper before custom primitive placement.
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
-  `prefabs.primitiveHumanoid`.
+  `prefabs.primitiveHumanoid`; the humanoid prefab includes connected body
+  parts, path cues, face details, and a procedural `walk` animation clip.
 - For small HUD text, counters, and buttons, use `ui.html`, `ui.setText`, and
   `ui.onClick`. Do not use `HTMLStrongElement` or untyped
   `event.currentTarget` in benchmark TypeScript.

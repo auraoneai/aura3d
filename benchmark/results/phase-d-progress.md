@@ -276,6 +276,40 @@ Diagnostic evidence:
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
 
+## Round 6 Humanoid Readability Repair
+
+`benchmark/results/amendment-round-6-humanoid-readability.md` records a
+prompt-09 repair discovered from the latest local recipe smoke sheet. The
+viewport bug was fixed, but the primitive humanoid still read as disconnected
+parts rather than a clear animated character placeholder.
+
+Repair:
+
+- `prefabs.primitiveHumanoid()` now builds a connected character with a neck,
+  face cues, hands, planted feet, a contact shadow, walking path, stride
+  markers, and a motion arrow.
+- Primitive nodes now support `.animate({ clip: "walk", speed })`, which moves
+  the character across the path, adds a body bob, and swings arms, legs, hands,
+  and feet.
+- The prompt-09 benchmark recipe now uses a front-biased perspective camera so
+  the connected body and face cues are visible in the screenshot.
+- Agent docs and frozen context now document the `walk` clip and humanoid
+  helper as the starting point for character prompts.
+- A unit test locks the neck/head/body relationship, face/path cues, feet, and
+  walk animation coverage.
+
+Diagnostic evidence:
+
+- Before repair: `/tmp/aura3d-ten-recipe-smoke-sheet.png` showed prompt 09 as a
+  full-screen but weak humanoid with detached-looking head/body proportions.
+- After repair: `/tmp/aura3d-humanoid-readability-smoke.png` shows a connected
+  humanoid on a walking path with stride markers, face details, contact shadow,
+  and a visible walk pose. Its readout measured `#app` and canvas at
+  `1440 x 960`, `x=0`, `y=0`, with body margin `0px`.
+
+This is targeted repair evidence only. A future release claim still requires a
+clean full benchmark round from the amended standard.
+
 ## Round 6 Viewport Layout Repair
 
 `benchmark/results/amendment-round-6-viewport-layout.md` records a default
