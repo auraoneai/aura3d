@@ -32,6 +32,11 @@ scene()
   .addMany(prefabs.materialSwatches())
   .addMany(prefabs.productStage())
   .addMany(prefabs.physicsRamp())
+  .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+  .addMany(prefabs.dataBars3D({ grid: 6 }))
+  .addMany(prefabs.neonTunnel({ rings: 16 }))
+  .addMany(prefabs.miniGolfHole())
+  .addMany(prefabs.primitiveHumanoid())
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```

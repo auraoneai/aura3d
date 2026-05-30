@@ -11,6 +11,11 @@
 - Material lab looks like identical spheres: use `material.metal()`,
   `material.glass()`, `material.rubber()`, `material.emissive()`, and
   `material.clearcoat()` in the same scene.
+- Empty data-viz screenshot: use `prefabs.dataBars3D({ grid: 6 })`, make the
+  Aura canvas container fill the viewport, and do not recreate the app every
+  animation frame.
+- Physics screenshot shows only an overlay: use `prefabs.physicsPlayground()`
+  so the 3D ramp, cubes, and contact cues are renderable by Aura3D.
 - Dev server never exits in an agent run: run the build/test commands needed for
   verification, then stop the server or rely on the benchmark harness to launch
   preview. Do not leave `npm run dev` as the final command.

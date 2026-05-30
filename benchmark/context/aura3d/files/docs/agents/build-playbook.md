@@ -58,6 +58,13 @@ Round 1 failure repairs:
 - Particle/VFX prompts: start with `prefabs.particleFountain(...)` or
   `effects.particles({ emitter: "fountain" | "swirl", particleCount: 1000 })`.
   Do not accept a visible emitter with zero live particles.
+- Physics playground prompts: start with
+  `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
+  evidence, then add real `@aura3d/engine/physics` state if needed. Do not
+  build only a custom 2D canvas around the physics package.
+- 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`
+  and add DOM axis labels/readouts around the single Aura app. Do not call
+  `dispose()` and `createAuraApp()` in a frame loop to animate bar heights.
 - Material lab prompts: use `prefabs.materialSwatches()` plus
   `material.metal()`, `material.glass()`, `material.rubber()`,
   `material.emissive()`, and `material.clearcoat()` so material classes are
@@ -74,6 +81,9 @@ Round 1 failure repairs:
 - Animation prompts: prefer `.animate({ clip: "float" | "pulse", speed })` and
   `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running.
+- Neon tunnel, mini-golf, and humanoid prompts: start from
+  `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
+  `prefabs.primitiveHumanoid` before custom primitive placement.
 
 Keep edits scoped to active product paths. Archived legacy runtime files are
 historical reference only.

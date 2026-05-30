@@ -30,8 +30,15 @@ Prompt-to-visual workflow:
   start from `prefabs.particleFountain`, `prefabs.cityBlock`,
   `prefabs.materialSwatches`, `prefabs.productStage`, or
   `prefabs.physicsRamp` before custom primitive placement.
+- For physics playground, data visualization, neon tunnel, mini-golf, and
+  humanoid prompts, start from `prefabs.physicsPlayground`,
+  `prefabs.dataBars3D`, `prefabs.neonTunnel`, `prefabs.miniGolfHole`, or
+  `prefabs.primitiveHumanoid`.
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles.
 - Use `.animate({ clip: "float" | "pulse", speed })` and `timeline.loop(...)`
   for runtime motion. Build/test, then terminate normally; do not leave a dev
   server running as the final state.
+- Create one Aura app per route. Do not animate by repeatedly disposing and
+  recreating `createAuraApp(...)`; use scene animations and separate DOM
+  overlays instead.

@@ -85,6 +85,14 @@ scene()
 
 Round 1 repair patterns:
 ```ts
+// Physics playgrounds need renderable scene evidence; do not build only a
+// custom 2D canvas around the physics package.
+scene()
+  .background("#070b12")
+  .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+  .add(lights.studio({ intensity: 1.15 }))
+  .camera(camera.orbit({ distance: 5.2 }));
+
 // Real particle system, not a symbolic cone or HUD counter.
 scene()
   .background("#030711")
@@ -103,8 +111,16 @@ scene()
 // Material labs need distinct material classes.
 scene()
   .addMany(prefabs.materialSwatches())
-  .add(primitives.sphere({ material: material.glass() }).position(0, 1.18, -0.75))
   .add(lights.studio());
+
+// 3D data visualization prompts should use renderable bar geometry once, not
+// dispose/recreate the app in a requestAnimationFrame loop.
+scene()
+  .background("#071017")
+  .addMany(prefabs.dataBars3D({ grid: 6 }))
+  .add(lights.studio({ intensity: 1.1 }))
+  .add(interactions.orbit())
+  .camera(camera.orbit({ distance: 5.4, target: [0, 0.9, 0] }));
 
 // Product viewers should use fit-to-bounds model normalization plus a plinth.
 scene()
@@ -133,6 +149,12 @@ Visual acceptance:
   do not draw an emitter cone and claim particles exist.
 - For city, material, product, and physics prompts, start from the matching
   `prefabs.*` helper before custom primitive placement.
+- For data-viz, mini-game, tunnel, and humanoid prompts, start from
+  `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
+  `prefabs.primitiveHumanoid`.
+- Do not call `dispose()` and `createAuraApp()` every animation frame. Create
+  one app, use `.animate(...)`, `timeline.loop(...)`, or update ordinary DOM
+  overlays separately.
 - If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
   before changing the scene or review label.
 
