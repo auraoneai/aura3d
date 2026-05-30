@@ -83,6 +83,7 @@ describe("agent API", () => {
       .toJSON();
 
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.particleCount === 1400)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "multicolor particle cloud halo" && node.particleCount === 1050)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("city tower"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.primitive === "cylinder")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.transmission)).toBe(true);

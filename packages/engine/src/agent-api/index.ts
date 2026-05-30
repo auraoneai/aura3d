@@ -622,6 +622,7 @@ export const prefabs = {
     primitives.cylinder({ name: "particle collision ground disc", material: material.pbr({ color: "#101923", roughness: 0.7, metallic: 0.05 }) }).position(0, 0.005, 0).scale([1.8, 0.02, 1.8]).toJSON(),
     primitives.sphere({ name: "fountain glow core", material: material.emissive({ color: options.color ?? "#7dfcff", emissive: options.color ?? "#7dfcff" }) }).position(0, 0.2, 0).scale(0.16).toJSON(),
     effects.particles({ name: "high density fountain particle arcs", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1800, radius: 1.35, height: 3.05, intensity: 1.35, speed: 1.12 }).toJSON(),
+    effects.particles({ name: "multicolor particle cloud halo", emitter: "swirl", color: "#ff7ad9", particleCount: Math.round((options.count ?? 1800) * 0.75), radius: 1.75, height: 1.95, intensity: 1.35, speed: 0.72 }).toJSON(),
     effects.bloom({ intensity: 0.55, color: options.color ?? "#7dfcff" }).toJSON()
   ],
 
@@ -1378,6 +1379,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   const loader = new GLTFLoader();
   const disposables: any[] = [];
   const frameUpdaters: Array<(time: number) => void> = [];
+  const primitiveBatchNodes: AuraPrimitiveNode[] = [];
 
   for (const node of snapshot.nodes) {
     if (node.kind === "model" && isRenderableModelNode(node)) {
@@ -1401,12 +1403,21 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       continue;
     }
     if (node.kind === "primitive") {
+      if (!node.animation) {
+        primitiveBatchNodes.push(node);
+        continue;
+      }
       const mesh = createThreePrimitive(THREE, node);
       threeScene.add(mesh);
       registerThreeNodeAnimation(mesh, node, frameUpdaters);
       disposables.push(mesh.geometry, mesh.material);
       continue;
     }
+  }
+
+  for (const batch of createThreePrimitiveBatches(THREE, primitiveBatchNodes)) {
+    threeScene.add(batch);
+    disposables.push(batch, batch.geometry, batch.material);
   }
 
   const bloomEffect = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
@@ -1472,7 +1483,7 @@ function addThreeLights(THREE: typeof import("three"), threeScene: any, nodes: r
       const light = new THREE.PointLight(color, Math.max(0.1, node.intensity * 26), 16, 1.65);
       const position = node.position ?? [2, 2.5, 1.5];
       light.position.set(position[0], position[1], position[2]);
-      light.castShadow = true;
+      light.castShadow = false;
       threeScene.add(light);
       continue;
     }
@@ -1484,14 +1495,62 @@ function addThreeLights(THREE: typeof import("three"), threeScene: any, nodes: r
   }
 }
 
-function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitiveNode): any {
-  const geometry = node.primitive === "sphere"
+function createThreePrimitiveBatches(THREE: typeof import("three"), nodes: readonly AuraPrimitiveNode[]): any[] {
+  const groups = new Map<string, AuraPrimitiveNode[]>();
+  for (const node of nodes) {
+    const key = primitiveBatchKey(node);
+    const existing = groups.get(key);
+    if (existing) existing.push(node);
+    else groups.set(key, [node]);
+  }
+
+  const meshes: any[] = [];
+  for (const group of groups.values()) {
+    const first = group[0];
+    if (!first) continue;
+    if (group.length === 1) {
+      meshes.push(createThreePrimitive(THREE, first));
+      continue;
+    }
+
+    const geometry = createThreePrimitiveGeometry(THREE, first.primitive);
+    const materialValue = createThreeMaterial(THREE, first.material ?? material.pbr());
+    const mesh = new THREE.InstancedMesh(geometry, materialValue, group.length);
+    mesh.name = `aura-instanced-${first.primitive}-${group.length}`;
+    mesh.castShadow = first.primitive !== "plane" && !first.material?.emissive;
+    mesh.receiveShadow = true;
+    const dummy = new THREE.Object3D();
+    group.forEach((node, index) => {
+      applyThreeTransform(dummy, node, primitiveSize(node));
+      dummy.updateMatrix();
+      mesh.setMatrixAt(index, dummy.matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    meshes.push(mesh);
+  }
+  return meshes;
+}
+
+function primitiveBatchKey(node: AuraPrimitiveNode): string {
+  return JSON.stringify({
+    primitive: node.primitive,
+    material: node.material ?? material.pbr(),
+    castShadow: node.primitive !== "plane" && !node.material?.emissive
+  });
+}
+
+function createThreePrimitiveGeometry(THREE: typeof import("three"), primitiveName: AuraPrimitiveNode["primitive"]): any {
+  return primitiveName === "sphere"
     ? new THREE.SphereGeometry(0.5, 40, 24)
-    : node.primitive === "box"
+    : primitiveName === "box"
       ? new THREE.BoxGeometry(1, 1, 1)
-      : node.primitive === "cylinder"
+      : primitiveName === "cylinder"
         ? new THREE.CylinderGeometry(0.5, 0.5, 1, 48, 1)
         : new THREE.PlaneGeometry(1, 1, 1, 1).rotateX(-Math.PI / 2);
+}
+
+function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitiveNode): any {
+  const geometry = createThreePrimitiveGeometry(THREE, node.primitive);
   const materialValue = createThreeMaterial(THREE, node.material ?? material.pbr());
   const mesh = new THREE.Mesh(geometry, materialValue);
   mesh.castShadow = node.primitive !== "plane" && !node.material?.emissive;
@@ -1502,7 +1561,7 @@ function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitive
 
 function createThreeMaterial(THREE: typeof import("three"), spec: AuraMaterialSpec): any {
   const color = new THREE.Color(spec.color ?? "#d7dee8");
-  const usePhysical = spec.transmission !== undefined || spec.clearcoat !== undefined || spec.opacity !== undefined;
+  const usePhysical = spec.transmission !== undefined || spec.clearcoat !== undefined;
   const materialValue = usePhysical
     ? new THREE.MeshPhysicalMaterial({
       color,
@@ -1518,7 +1577,10 @@ function createThreeMaterial(THREE: typeof import("three"), spec: AuraMaterialSp
     : new THREE.MeshStandardMaterial({
       color,
       roughness: spec.roughness ?? 0.54,
-      metalness: spec.metallic ?? 0
+      metalness: spec.metallic ?? 0,
+      transparent: spec.opacity !== undefined && spec.opacity < 1,
+      opacity: spec.opacity ?? 1,
+      depthWrite: spec.opacity === undefined || spec.opacity >= 0.96
     });
   if (spec.emissive) {
     materialValue.emissive = new THREE.Color(spec.emissive);
@@ -1783,6 +1845,7 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
   const radius = Math.max(0.1, effect.radius ?? 1.15);
   const height = Math.max(0.2, effect.height ?? 2.4);
   const intensity = Math.max(0.1, Math.min(1.8, effect.intensity ?? 0.8));
+  const multicolor = effect.name?.includes("multicolor") || effect.emitter === "swirl";
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
@@ -1790,8 +1853,9 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
   const accentColor = new THREE.Color("#ffd166");
   for (let index = 0; index < count; index += 1) {
     writeParticlePosition(positions, index, 0, effect.emitter ?? "swirl", radius, height);
-    const mixAmount = seededRange(index, 173, 0, 0.42);
-    const color = baseColor.clone().lerp(accentColor, mixAmount);
+    const color = multicolor
+      ? new THREE.Color().setHSL(seededRange(index, 173, 0, 1), 0.84, 0.64)
+      : baseColor.clone().lerp(accentColor, seededRange(index, 173, 0, 0.42));
     colors[index * 3] = color.r;
     colors[index * 3 + 1] = color.g;
     colors[index * 3 + 2] = color.b;
@@ -1799,10 +1863,10 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   const materialValue = new THREE.PointsMaterial({
-    size: 0.028 + intensity * 0.018,
+    size: (multicolor ? 0.042 : 0.028) + intensity * (multicolor ? 0.024 : 0.018),
     vertexColors: true,
     transparent: true,
-    opacity: Math.min(0.95, 0.48 + intensity * 0.22),
+    opacity: Math.min(0.98, (multicolor ? 0.62 : 0.48) + intensity * 0.22),
     depthWrite: false,
     blending: THREE.AdditiveBlending
   });

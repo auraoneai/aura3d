@@ -196,3 +196,26 @@ post-Round-5 repair amendment. It addresses:
 
 This is not a benchmark pass. It is repair work that requires a future full
 benchmark round after the remaining Round 5 gaps are also addressed.
+
+## Round 6 Engine Performance and Particle Repair
+
+`benchmark/results/amendment-round-6-engine-performance.md` records the second
+targeted post-Round-5 repair amendment. It addresses:
+
+- Engine city performance: batch repeated non-animated primitive nodes into
+  instanced Three.js meshes. The local city smoke reported `drawCalls=11`,
+  compared with the Round 5 Aura city benchmark's high primitive draw pressure.
+- Engine product/sneaker performance: disable point-light shadows by default
+  and avoid `MeshPhysicalMaterial` for opacity-only materials.
+- Engine particle parity: add a multicolor swirl halo to
+  `prefabs.particleFountain(...)` and render swirl/multicolor particles with
+  per-particle color variation, larger point size, and stronger opacity.
+
+Local smoke screenshots:
+
+- `/tmp/aura3d-round6-city-smoke.png`
+- `/tmp/aura3d-round6-particles-smoke.png`
+- `/tmp/aura3d-round6-product-smoke.png`
+
+This is still not a benchmark pass. It is targeted repair evidence before the
+next required full benchmark round.
