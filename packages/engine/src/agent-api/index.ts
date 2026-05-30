@@ -162,6 +162,12 @@ export interface AuraEffectNode {
   readonly mist?: boolean;
 }
 
+declare global {
+  // Some TypeScript DOM libs expose <strong> as HTMLElement only. Agents often
+  // use this element for HUD counters, so keep that code portable.
+  interface HTMLStrongElement extends HTMLElement {}
+}
+
 export interface AuraInteractionNode {
   readonly kind: "interaction";
   readonly mode: "orbit" | "pointer" | "keyboard";
@@ -484,6 +490,38 @@ export const interactions = {
     })
 } as const;
 
+type AuraUiTarget<TElement extends HTMLElement = HTMLElement> = string | TElement;
+
+function resolveUiElement<TElement extends HTMLElement>(target: AuraUiTarget<TElement>, label: string): TElement {
+  if (typeof target !== "string") return target;
+  const element = document.querySelector<TElement>(target);
+  if (!element) throw new Error(`Aura3D UI helper could not find ${label}: ${target}`);
+  return element;
+}
+
+export const ui = {
+  root: (selector = "#app"): HTMLElement => resolveUiElement<HTMLElement>(selector, "root"),
+  text: (selector: string): HTMLElement => resolveUiElement<HTMLElement>(selector, "text"),
+  button: (selector: string): HTMLButtonElement => resolveUiElement<HTMLButtonElement>(selector, "button"),
+  html: (target: AuraUiTarget, markup: string, position: InsertPosition = "afterend"): HTMLElement => {
+    const element = resolveUiElement<HTMLElement>(target, "html mount");
+    element.insertAdjacentHTML(position, markup);
+    return element;
+  },
+  setText: (target: AuraUiTarget, value: string | number): void => {
+    resolveUiElement<HTMLElement>(target, "text").textContent = String(value);
+  },
+  setPressed: (target: AuraUiTarget<HTMLButtonElement>, pressed: boolean): void => {
+    const button = resolveUiElement<HTMLButtonElement>(target, "button");
+    button.setAttribute("aria-pressed", String(pressed));
+  },
+  onClick: (target: AuraUiTarget<HTMLButtonElement>, handler: (button: HTMLButtonElement, event: MouseEvent) => void): HTMLButtonElement => {
+    const button = resolveUiElement<HTMLButtonElement>(target, "button");
+    button.onclick = (event) => handler(button, event);
+    return button;
+  }
+} as const;
+
 export interface AuraSceneSnapshot {
   readonly schema: "aura3d-scene-snapshot/1.0";
   readonly background: AuraColor;
@@ -622,14 +660,21 @@ export const prefabs = {
   },
 
   materialSwatches: (): readonly AuraSceneNode[] => [
-    primitives.sphere({ name: "brushed metal swatch", material: material.metal({ color: "#dce6ee", roughness: 0.12 }) }).position(-3.7, 1.0, -0.72).scale(1.64).toJSON(),
-    primitives.sphere({ name: "transparent glass swatch", material: material.glass({ color: "#bdefff", opacity: 0.34, transmission: 0.96 }) }).position(-1.85, 1.0, -0.72).scale(1.64).toJSON(),
-    primitives.sphere({ name: "matte rubber swatch", material: material.rubber({ color: "#050507", roughness: 0.94 }) }).position(0, 1.0, -0.72).scale(1.64).toJSON(),
-    primitives.sphere({ name: "emissive pink swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(1.85, 1.0, -0.72).scale(1.64).toJSON(),
-    primitives.sphere({ name: "clearcoat paint swatch", material: material.clearcoat({ color: "#ffcf91", roughness: 0.12, clearcoat: 1 }) }).position(3.7, 1.0, -0.72).scale(1.64).toJSON(),
-    primitives.box({ name: "material comparison rail", material: material.pbr({ color: "#4a525d", roughness: 0.42, metallic: 0.18 }) }).position(0, 0.03, -0.72).scale([10.5, 0.18, 2.3]).toJSON(),
-    primitives.box({ name: "glass contrast card", material: material.emissive({ color: "#dff8ff", emissive: "#dff8ff" }) }).position(-1.85, 1.0, -1.54).scale([0.82, 0.62, 0.04]).toJSON(),
-    effects.bloom({ intensity: 0.22, color: "#ff42c8" }).toJSON()
+    primitives.box({ name: "matte studio floor for material comparison", material: material.pbr({ color: "#7b8490", roughness: 0.58, metallic: 0.04 }) }).position(0, -0.03, -0.72).scale([10.8, 0.14, 2.45]).toJSON(),
+    primitives.box({ name: "cool material backdrop", material: material.pbr({ color: "#b5c1cc", roughness: 0.46, metallic: 0.02 }) }).position(0, 1.05, -1.82).scale([10.8, 2.2, 0.08]).toJSON(),
+    primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff" }) }).position(0, 2.18, -1.72).scale([8.4, 0.16, 0.08]).toJSON(),
+    primitives.sphere({ name: "bright chrome metal swatch", material: material.metal({ color: "#eef6ff", roughness: 0.08, clearcoat: 0.28 }) }).position(-3.7, 1.0, -0.72).scale(1.42).toJSON(),
+    primitives.sphere({ name: "transparent blue glass swatch", material: material.glass({ color: "#c8f4ff", opacity: 0.42, transmission: 0.96 }) }).position(-1.85, 1.0, -0.72).scale(1.42).toJSON(),
+    primitives.sphere({ name: "dark rubber swatch with readable rim", material: material.rubber({ color: "#151922", roughness: 0.9 }) }).position(0, 1.0, -0.72).scale(1.42).toJSON(),
+    primitives.sphere({ name: "emissive magenta swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(1.85, 1.0, -0.72).scale(1.42).toJSON(),
+    primitives.sphere({ name: "gold clearcoat paint swatch", material: material.clearcoat({ color: "#ffd89f", roughness: 0.1, clearcoat: 1 }) }).position(3.7, 1.0, -0.72).scale(1.42).toJSON(),
+    primitives.box({ name: "metal label plinth", material: material.emissive({ color: "#dff4ff", emissive: "#dff4ff" }) }).position(-3.7, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "glass label plinth", material: material.emissive({ color: "#7dd3fc", emissive: "#7dd3fc" }) }).position(-1.85, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "rubber label plinth", material: material.emissive({ color: "#475569", emissive: "#475569" }) }).position(0, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "emissive label plinth", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8" }) }).position(1.85, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "clearcoat label plinth", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(3.7, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
+    primitives.box({ name: "glass contrast card", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(-1.85, 1.0, -1.5).scale([0.82, 0.62, 0.04]).toJSON(),
+    effects.bloom({ intensity: 0.24, color: "#ff42c8" }).toJSON()
   ],
 
   productStage: (): readonly AuraSceneNode[] => [
@@ -734,12 +779,16 @@ export const prefabs = {
 
   primitiveHumanoid: (): readonly AuraSceneNode[] => [
     primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#1f5130", roughness: 0.7 }) }).position(0, -0.04, -0.5).scale([4.4, 1, 2.8]).toJSON(),
-    primitives.cylinder({ name: "humanoid torso", material: material.clearcoat({ color: "#2563eb" }) }).position(0, 0.92, -0.55).scale([0.25, 0.68, 0.25]).animate({ clip: "pulse", speed: 0.3 }).toJSON(),
-    primitives.sphere({ name: "humanoid head", material: material.clearcoat({ color: "#f5d0a9" }) }).position(0, 1.55, -0.55).scale(0.22).toJSON(),
-    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(-0.42, 0.9, -0.5).rotate(0.48, 0, -0.34).scale([0.12, 0.62, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
-    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(0.42, 0.9, -0.6).rotate(-0.48, 0, 0.34).scale([0.12, 0.62, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
-    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#111827" }) }).position(-0.18, 0.32, -0.38).rotate(-0.42, 0, -0.12).scale([0.14, 0.74, 0.14]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
-    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#111827" }) }).position(0.22, 0.32, -0.72).rotate(0.42, 0, 0.12).scale([0.14, 0.74, 0.14]).animate({ clip: "pulse", speed: 0.62 }).toJSON()
+    primitives.cylinder({ name: "readable blue humanoid torso", material: material.clearcoat({ color: "#2563eb" }) }).position(0, 0.95, -0.55).scale([0.3, 0.72, 0.3]).animate({ clip: "pulse", speed: 0.3 }).toJSON(),
+    primitives.sphere({ name: "humanoid head", material: material.clearcoat({ color: "#f5d0a9" }) }).position(0, 1.62, -0.55).scale(0.25).toJSON(),
+    primitives.box({ name: "shoulder bar connecting arms", material: material.clearcoat({ color: "#60a5fa" }) }).position(0, 1.16, -0.55).scale([0.78, 0.12, 0.14]).toJSON(),
+    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(-0.48, 0.88, -0.47).rotate(0.5, 0, -0.32).scale([0.12, 0.66, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
+    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa" }) }).position(0.48, 0.88, -0.63).rotate(-0.5, 0, 0.32).scale([0.12, 0.66, 0.12]).animate({ clip: "pulse", speed: 0.55 }).toJSON(),
+    primitives.box({ name: "hip bar connecting legs", material: material.clearcoat({ color: "#1d4ed8" }) }).position(0, 0.54, -0.55).scale([0.48, 0.12, 0.16]).toJSON(),
+    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#172033" }) }).position(-0.18, 0.3, -0.36).rotate(-0.42, 0, -0.1).scale([0.15, 0.76, 0.15]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
+    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#172033" }) }).position(0.22, 0.3, -0.74).rotate(0.42, 0, 0.1).scale([0.15, 0.76, 0.15]).animate({ clip: "pulse", speed: 0.62 }).toJSON(),
+    primitives.box({ name: "forward foot", material: material.clearcoat({ color: "#0f172a" }) }).position(-0.3, 0.08, -0.18).rotate(0, -0.12, 0).scale([0.32, 0.1, 0.18]).toJSON(),
+    primitives.box({ name: "back foot", material: material.clearcoat({ color: "#0f172a" }) }).position(0.34, 0.08, -0.92).rotate(0, 0.12, 0).scale([0.32, 0.1, 0.18]).toJSON()
   ]
 } as const;
 

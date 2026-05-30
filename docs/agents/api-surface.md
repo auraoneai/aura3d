@@ -17,6 +17,7 @@ import {
   effects,
   timeline,
   interactions,
+  ui,
   createAuraRouteHealthSnapshot,
   captureAuraAppScreenshot
 } from "@aura3d/engine";
@@ -34,6 +35,18 @@ scene()
   .addMany(prefabs.physicsRamp())
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
+```
+
+Small HUDs and toggles:
+
+```ts
+import { ui } from "@aura3d/engine";
+
+ui.html("#app", `<button class="toggle" type="button">switch to night</button>`);
+ui.onClick(".toggle", (button) => {
+  ui.setText(button, "switch to day");
+  ui.setPressed(button, true);
+});
 ```
 
 React adapter:

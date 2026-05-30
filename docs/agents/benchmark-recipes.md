@@ -19,22 +19,21 @@ import {
   prefabs,
   primitives,
   scene,
-  timeline
+  timeline,
+  ui
 } from "@aura3d/engine";
 ```
 
 ## 01 Physics Playground
 
 ```ts
-import { camera, createAuraApp, interactions, lights, prefabs, scene } from "@aura3d/engine";
+import { camera, createAuraApp, interactions, lights, prefabs, scene, ui } from "@aura3d/engine";
 import "./style.css";
 
-document.querySelector<HTMLDivElement>("#app")!.insertAdjacentHTML("afterend", `
+ui.html("#app", `
   <div class="hud"><button id="reset" type="button">reset</button><span>contacts: <b id="contacts">24</b></span></div>
 `);
-document.querySelector<HTMLButtonElement>("#reset")!.onclick = () => {
-  document.querySelector("#contacts")!.textContent = "24";
-};
+ui.onClick("#reset", () => ui.setText("#contacts", "24"));
 
 createAuraApp("#app", {
   scene: scene()
@@ -129,12 +128,18 @@ createAuraApp("#app", {
 ## 08 Procedural City Block
 
 ```ts
-import { camera, createAuraApp, effects, lights, prefabs, scene } from "@aura3d/engine";
+import { camera, createAuraApp, effects, lights, prefabs, scene, ui } from "@aura3d/engine";
 import "./style.css";
 
-document.querySelector<HTMLDivElement>("#app")!.insertAdjacentHTML("afterend", `
+ui.html("#app", `
   <button class="toggle" type="button">switch to night</button>
 `);
+let isNight = false;
+ui.onClick(".toggle", (button) => {
+  isNight = !isNight;
+  ui.setText(button, isNight ? "switch to day" : "switch to night");
+  ui.setPressed(button, isNight);
+});
 
 createAuraApp("#app", {
   scene: scene()

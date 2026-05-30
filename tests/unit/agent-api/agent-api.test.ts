@@ -12,7 +12,8 @@ import {
   primitives,
   promptPlanToScene,
   scene,
-  timeline
+  timeline,
+  ui
 } from "../../../packages/engine/src";
 
 const assets = defineAuraAssets({
@@ -92,7 +93,18 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "forward foot")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white softbox reflection strip")).toBe(true);
     expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
+  });
+
+  test("exposes typed UI helpers for benchmark HUDs", () => {
+    expect(ui).toMatchObject({
+      html: expect.any(Function),
+      setText: expect.any(Function),
+      setPressed: expect.any(Function),
+      onClick: expect.any(Function)
+    });
   });
 
   test("compiles prompt plans into approved visual recipes", () => {

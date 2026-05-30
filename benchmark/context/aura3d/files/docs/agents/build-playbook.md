@@ -84,6 +84,9 @@ Round 1 failure repairs:
   `interactions.orbit()`, and product camera framing. Place normalized products
   near `position(0, 0.65, -0.65)` so they sit on the round plinth. Do not
   implement the actual viewer in raw Three.js inside an Aura3D app.
+- Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
+  `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
+  because those patterns caused Round 5 TypeScript compile failures.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. Do not claim physics from cosmetic floating boxes only.

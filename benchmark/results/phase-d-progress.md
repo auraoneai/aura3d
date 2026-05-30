@@ -179,3 +179,20 @@ This round is useful evidence, not a reason to keep rerunning immediately. The
 next work is targeted repair: Codex/Aura compile failures on prompts 06 and 08,
 material readability, city reliability, humanoid readability, product framing,
 particle parity, and city/sneaker engine performance.
+
+## Round 6 Standard Amendment Work
+
+`benchmark/results/amendment-round-6-standard.md` records the first targeted
+post-Round-5 repair amendment. It addresses:
+
+- Prompt 06 TypeScript HUD compile failure by adding public `ui` helpers and a
+  portable `HTMLStrongElement` declaration.
+- Prompt 08 TypeScript toggle compile failure by documenting `ui.onClick`
+  instead of untyped `event.currentTarget`.
+- Prompt 07 material readability by brightening `prefabs.materialSwatches()`
+  with a studio floor, backdrop, reflection strip, and label plinths.
+- Prompt 09 humanoid readability by adding shoulder/hip connectors and feet to
+  `prefabs.primitiveHumanoid()`.
+
+This is not a benchmark pass. It is repair work that requires a future full
+benchmark round after the remaining Round 5 gaps are also addressed.

@@ -34,7 +34,8 @@ import {
   primitives,
   timeline,
   interactions,
-  defineAuraAssets
+  defineAuraAssets,
+  ui
 } from "@aura3d/engine";
 ```
 
@@ -160,6 +161,9 @@ Visual acceptance:
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
   `prefabs.primitiveHumanoid`.
+- For small HUD text, counters, and buttons, use `ui.html`, `ui.setText`, and
+  `ui.onClick`. Do not use `HTMLStrongElement` or untyped
+  `event.currentTarget` in benchmark TypeScript.
 - Do not call `dispose()` and `createAuraApp()` every animation frame. Create
   one app, use `.animate(...)`, `timeline.loop(...)`, or update ordinary DOM
   overlays separately.

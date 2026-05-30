@@ -120,6 +120,10 @@ export interface AuraEffectNode {
     readonly splashes?: boolean;
     readonly mist?: boolean;
 }
+declare global {
+    interface HTMLStrongElement extends HTMLElement {
+    }
+}
 export interface AuraInteractionNode {
     readonly kind: "interaction";
     readonly mode: "orbit" | "pointer" | "keyboard";
@@ -237,6 +241,16 @@ export declare const interactions: {
     readonly keyboard: (options?: {
         readonly target?: string;
     }) => AuraNodeBuilder<AuraInteractionNode>;
+};
+type AuraUiTarget<TElement extends HTMLElement = HTMLElement> = string | TElement;
+export declare const ui: {
+    readonly root: (selector?: string) => HTMLElement;
+    readonly text: (selector: string) => HTMLElement;
+    readonly button: (selector: string) => HTMLButtonElement;
+    readonly html: (target: AuraUiTarget, markup: string, position?: InsertPosition) => HTMLElement;
+    readonly setText: (target: AuraUiTarget, value: string | number) => void;
+    readonly setPressed: (target: AuraUiTarget<HTMLButtonElement>, pressed: boolean) => void;
+    readonly onClick: (target: AuraUiTarget<HTMLButtonElement>, handler: (button: HTMLButtonElement, event: MouseEvent) => void) => HTMLButtonElement;
 };
 export interface AuraSceneSnapshot {
     readonly schema: "aura3d-scene-snapshot/1.0";
