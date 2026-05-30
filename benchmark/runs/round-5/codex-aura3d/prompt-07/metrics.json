@@ -1,0 +1,16 @@
+{
+  "prompt": "07-material-lab",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 17,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": null,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 41818,
+  "bundleSizeGzipBytes": 207763,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

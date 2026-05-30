@@ -1,0 +1,16 @@
+{
+  "prompt": "09-animated-primitive-humanoid",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 278,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": null,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 125084,
+  "bundleSizeGzipBytes": 123143,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": "screenshot.png"
+}

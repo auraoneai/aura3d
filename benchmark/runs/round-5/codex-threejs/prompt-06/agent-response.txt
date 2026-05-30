@@ -1,0 +1,12 @@
+Implemented the mini-golf app in `source/src/main.ts` and `source/src/style.css`.
+
+Build command: `npm run build`
+Run command: `npm run dev`
+
+Build result: failed during TypeScript typecheck with:
+
+```text
+src/main.ts(20,44): error TS2552: Cannot find name 'HTMLStrongElement'. Did you mean 'HTMLButtonElement'?
+```
+
+Assumptions: `./context/llms.txt` and the benchmark recipe file were not present, so I used the provided Three.js scaffold and procedural geometry only. No assets were used.

@@ -1,0 +1,25 @@
+Implemented the procedural city block app in `./source` using the Aura3D Prompt 08 recipe shape.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev
+```
+
+Build result: failed during TypeScript typecheck.
+
+Key errors:
+```text
+Cannot find module '@aura3d/engine' ... Consider updating moduleResolution to node16, nodenext, or bundler.
+'button' is possibly 'null'
+Property 'textContent' does not exist on type 'EventTarget'
+```
+
+Assumptions:
+- No external assets are used.
+- The city uses `prefabs.cityBlock({ blocks: 20, litWindows: true })`.
+- The day/night toggle recreates the scene only when clicked, changing sky color, fog density, and light intensity.

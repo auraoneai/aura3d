@@ -1,0 +1,16 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 8,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": null,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 600152,
+  "bundleSizeGzipBytes": 846,
+  "agentTimedOut": true,
+  "agentExitCode": 143,
+  "screenshot": "screenshot.png"
+}

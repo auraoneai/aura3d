@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 30,
+    "text": "Drag to orbit · Scroll to zoom"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 82,
+    "text": "HEIGHT\nX CATEGORY\nZ CATEGORY\nLow\nHigh\nHover a bar cell to highlight and read value"
+  }
+}

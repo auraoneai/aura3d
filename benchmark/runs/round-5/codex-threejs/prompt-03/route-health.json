@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 47,
+    "text": "SUN\nMercuria\nAurelia\nTellus\nVermis\nJovia\nCaelus"
+  }
+}

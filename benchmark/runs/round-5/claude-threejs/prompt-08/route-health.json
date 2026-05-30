@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 86,
+    "text": "Procedural City Block\nDrag to orbit • scroll to zoom • 20 buildings\n🌙 Switch to Night"
+  }
+}

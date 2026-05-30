@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 109,
+    "text": "6×6 Bar Chart\nValue / Height (Y)\nCategory X axis\nCategory Z axis\n\nDrag to orbit · hover a bar to highlight it"
+  }
+}

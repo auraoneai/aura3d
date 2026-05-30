@@ -1,0 +1,1 @@
+claude --no-session-persistence --permission-mode bypassPermissions --tools default --output-format text --print <instruction>

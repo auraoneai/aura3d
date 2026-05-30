@@ -1,0 +1,18 @@
+Implemented the product viewer in `./source` and verified the production build succeeds.
+
+Build command:
+```bash
+cd /Users/gurbakshchahal/aura3d/benchmark/runs/round-5/codex-threejs/prompt-10/source
+npm run build
+```
+
+Run command:
+```bash
+cd /Users/gurbakshchahal/aura3d/benchmark/runs/round-5/codex-threejs/prompt-10/source
+npm run dev
+```
+
+Assumptions:
+- `./context/llms.txt` and `./context/docs/agents/benchmark-recipes.md` were not present in the provided bundle.
+- The allowed asset path is `/Users/gurbakshchahal/aura3d/benchmark/assets/sneaker.glb`, referenced from source as `../../../../../../assets/sneaker.glb`.
+- I did not run a dev server or visual verification, per the benchmark rules.

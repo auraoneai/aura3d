@@ -1,0 +1,33 @@
+{
+  "scene": "engine-03-particles-vfx",
+  "engine": "threejs",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "linesOfUserCode": 62,
+  "bundleSizeGzipBytes": 121833,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "ok": true,
+    "empty": {
+      "samples": 191,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 9.199999999999989,
+      "p50Fps": 120.48192771084403
+    },
+    "webgl": {
+      "samples": 194,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 9.099999999999909,
+      "p50Fps": 120.48192771084403
+    },
+    "failures": []
+  },
+  "fpsInstrumentationStatus": "valid",
+  "fpsInstrumentationFailures": [],
+  "p50Fps": 17.035775127768233,
+  "p95FrameTimeMs": 92.19999999999982,
+  "drawCalls": 452,
+  "triangleCount": 75698,
+  "jsHeapPeakBytes": 11200000
+}

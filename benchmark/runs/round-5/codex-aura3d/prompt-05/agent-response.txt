@@ -1,0 +1,16 @@
+Implemented the 3D data visualization app in `./source`.
+
+Build command: `npm run build`
+Run command: `npm run dev`
+
+Build result: failed during typecheck with:
+
+```text
+Cannot find module '@aura3d/engine' or its corresponding type declarations.
+Consider updating moduleResolution to 'node16', 'nodenext', or 'bundler'.
+```
+
+Assumptions:
+- No external assets were used.
+- The local Aura3D package did not expose `prefabs.dataBars3D` in its installed runtime/types, so the chart uses Aura3D public primitives procedurally.
+- Hover-highlight is implemented with 6x6 pointer targets over the chart plus per-bar hover readout; bars also include Aura pointer metadata.

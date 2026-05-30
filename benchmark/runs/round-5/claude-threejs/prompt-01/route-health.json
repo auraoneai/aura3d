@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 81,
+    "text": "Physics Playground\nCubes\n50\nLive contacts\n13\nReset\nDrag to orbit · scroll to zoom"
+  }
+}

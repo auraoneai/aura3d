@@ -1,0 +1,31 @@
+{
+  "round": 5,
+  "runId": "claude-threejs",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/08-procedural-city-block.md",
+  "sourceDirectory": "benchmark/runs/round-5/claude-threejs/prompt-08/source",
+  "repoCommit": "37662888ba5b0ac21038c9b5468e8f11f0926404",
+  "auraPackageTarball": null,
+  "preparedAt": "2026-05-30T17:26:36.533Z",
+  "agentTimeoutMs": 600000,
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "Provided context bundle path: ./context\nProvided clean source directory: ./source\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command, and any assumptions. Do not edit files outside the source\ndirectory.\n\nBenchmark execution rules:\n- Read ./context/llms.txt first.\n- If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy\n  that recipe shape and make only prompt-required edits.\n- Use public helpers and prefabs before custom primitives. Do not build a\n  custom physics engine, game engine, chart engine, material renderer, city\n  generator, or animation system when the context bundle exposes a matching\n  Aura3D API.\n- Do not run npm run dev, npm run preview, Playwright, browser screenshot\n  capture, or any other long-running server/manual visual verification inside\n  the agent process.\n- You may run finite commands such as npm install and npm run build.\n- After npm run build completes or fails, stop work and return the build\n  command, run command, and assumptions. Do not continue investigating.\n\n# Prompt 08: Procedural City Block\n\nBuild a procedurally generated city block: 20 box buildings of varying heights with windows, streets, street lights, and a day/night toggle that changes lighting and sky.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- About 20 buildings must be visible.\n- Building heights must vary.\n- Windows must be visible.\n- Streets and street lights must be visible.\n- Day/night toggle must be visible and must change lighting and sky.\n"
+  ],
+  "agentStartedAt": "2026-05-30T19:16:44.886Z",
+  "agentFinishedAt": "2026-05-30T19:20:04.262Z",
+  "agentDurationMs": 199370,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "agentSignal": null
+}

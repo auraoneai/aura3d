@@ -1,0 +1,16 @@
+{
+  "prompt": "06-mini-golf-hole",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": false,
+  "runsInBrowser": false,
+  "linesOfUserCode": 434,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": null,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 130266,
+  "bundleSizeGzipBytes": null,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "screenshot": null
+}

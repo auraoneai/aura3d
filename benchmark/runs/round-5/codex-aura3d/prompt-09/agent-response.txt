@@ -1,0 +1,20 @@
+Implemented the Prompt 09 Aura3D app in `./source/src/main.ts` using the matching benchmark recipe: `prefabs.primitiveHumanoid()`, studio lighting, orbit camera, and a looping timeline.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev
+```
+
+Build result: failed during TypeScript resolution.
+
+```text
+src/main.ts(9,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+Consider updating moduleResolution to node16, nodenext, or bundler.
+```
+
+Assumptions: the provided `prefabs.primitiveHumanoid()` includes the primitive humanoid, ground plane, and walk-cycle runtime evidence as specified by the matching benchmark recipe. I stopped after the build failure per the benchmark execution rules.

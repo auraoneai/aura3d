@@ -1,0 +1,40 @@
+Provided context bundle path: ./context
+Provided clean source directory: ./source
+
+Use only the provided context bundle and this prompt file. Build a browser 3D
+app that satisfies the prompt. Put the app in the provided clean source
+directory. Do not search for assets. Prompt 10 may use only
+benchmark/assets/sneaker.glb. After implementation, provide the build command,
+run command, and any assumptions. Do not edit files outside the source
+directory.
+
+Benchmark execution rules:
+- Read ./context/llms.txt first.
+- If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy
+  that recipe shape and make only prompt-required edits.
+- Use public helpers and prefabs before custom primitives. Do not build a
+  custom physics engine, game engine, chart engine, material renderer, city
+  generator, or animation system when the context bundle exposes a matching
+  Aura3D API.
+- Do not run npm run dev, npm run preview, Playwright, browser screenshot
+  capture, or any other long-running server/manual visual verification inside
+  the agent process.
+- You may run finite commands such as npm install and npm run build.
+- After npm run build completes or fails, stop work and return the build
+  command, run command, and assumptions. Do not continue investigating.
+
+# Prompt 01: Physics Playground
+
+Build a physics playground: 50 falling cubes onto a tilted ramp with collision response, camera orbit, reset button, and live contact count overlay.
+
+## Assets
+
+None. This prompt must be built procedurally.
+
+## Required Visual Evidence
+
+- Many cubes must be visible.
+- A tilted ramp must be visible.
+- Collision/contact behavior must be visible in either the screenshot state or captured route evidence.
+- A reset control and live contact count overlay must be visible.
+- Camera framing must make the physics setup understandable without reading source code.

@@ -1,0 +1,142 @@
+I've now reviewed all 10 prompts for both sides. Here is my neutral scoring.
+
+```json
+{
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring Codex outputs",
+  "prompts": [
+    {
+      "prompt": "01",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 4,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Both compile and run with all required elements (cubes, tilted ramp, reset, live contact count). Three.js frames a single clearly tilted ramp with colorful cubes, clean shadows, and a readable 'LIVE CONTACTS' overlay. Aura3D (101 vs 424 LOC) reads less clearly: the ramp forms an odd V and cubes pile ambiguously, though contacts:43 and Reset are present.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "02",
+      "auraVisual": 4,
+      "threeVisual": 1,
+      "auraCoverage": 4,
+      "threeCoverage": 1,
+      "auraCode": 4,
+      "threeCode": 2,
+      "winner": "Aura3D",
+      "reason": "Aura3D renders a real upward-and-falling fountain arc with a glowing emitter, ground disc, and emission-rate slider (lifetime color variation is weak). Three.js builds and shows the emitter cone, grid ground, and rate control but NO particles at all — the core required visual (the fountain arc) is entirely absent.",
+      "failedThresholds": ["Three.js: no particles / no upward-and-falling arc visible", "Three.js: lifetime color variation absent"]
+    },
+    {
+      "prompt": "03",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraCoverage": 3,
+      "threeCoverage": 5,
+      "auraCode": 4,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Three.js shows a sun with strong bloom, six labeled planets on clearly distinct orbit rings (one with Saturn-like rings), and great framing. Aura3D has a sun + six labeled planets but the 'bloom' renders as a horizontal smear artifact, no orbit rings, and orbital distances are not clearly differentiated.",
+      "failedThresholds": ["Aura3D: orbit distances not clearly differentiated", "Aura3D: bloom renders as streak artifact"]
+    },
+    {
+      "prompt": "04",
+      "auraVisual": 2,
+      "threeVisual": 5,
+      "auraCoverage": 2,
+      "threeCoverage": 5,
+      "auraCode": 3,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Three.js renders an unmistakable neon tube interior with concentric emissive rings receding into bloom and fog — reads exactly as a flythrough. Aura3D (only 25 LOC) shows flat vertical pastel bars with no tube interior, no real depth/fog falloff, and weak/no bloom; it does not read as a tunnel.",
+      "failedThresholds": ["Aura3D: tunnel/tube interior not legible", "Aura3D: bloom and fog falloff not visible"]
+    },
+    {
+      "prompt": "05",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraCoverage": 5,
+      "threeCoverage": 5,
+      "auraCode": 4,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Both render ~36 bars with height-mapped color, axis labels, and a documented hover-highlight. Three.js adds a numeric height scale, per-cell X/Z tick labels, a ground grid, and smoother shading. Aura3D has a clear Low→High legend but harsh fully-black unlit bar faces that hurt fidelity. Narrow Three.js edge.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "06",
+      "auraVisual": 1,
+      "threeVisual": 1,
+      "auraCoverage": 1,
+      "threeCoverage": 1,
+      "auraCode": 1,
+      "threeCode": 1,
+      "winner": "tie",
+      "reason": "Both sides fail to compile with the identical Codex typo `HTMLStrongElement` (TS2552), producing no screenshot, no route-health, and no browser route. Severe failure for both; neither side's library is implicated.",
+      "failedThresholds": ["Aura3D: compile failure, missing screenshot, no browser route", "Three.js: compile failure, missing screenshot, no browser route"]
+    },
+    {
+      "prompt": "07",
+      "auraVisual": 2,
+      "threeVisual": 5,
+      "auraCoverage": 2,
+      "threeCoverage": 5,
+      "auraCode": 3,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Hard prompt. Three.js shows five visually distinct materials (chrome metal, glass, black rubber, gold, blue clearcoat) on pedestals with visible studio softbox lights and environment reflections. Aura3D (17 LOC) renders a very dark scene where only ~4 spheres are distinguishable, three are near-black with no distinct material identity, and studio lighting is barely present.",
+      "failedThresholds": ["Aura3D: five materials not visually distinct", "Aura3D: studio lighting/environment reflection barely visible"]
+    },
+    {
+      "prompt": "08",
+      "auraVisual": 1,
+      "threeVisual": 5,
+      "auraCoverage": 1,
+      "threeCoverage": 5,
+      "auraCode": 1,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Hard prompt. Aura3D fails to compile (TS18047/TS2339 null + EventTarget errors), yielding no screenshot or browser route — a severe failure. Three.js compiles and delivers ~20 varied-height buildings with windows, streets, street lights, and a working night-mode toggle that changes lighting/sky.",
+      "failedThresholds": ["Aura3D: compile failure, missing screenshot, no browser route"]
+    },
+    {
+      "prompt": "09",
+      "auraVisual": 2,
+      "threeVisual": 4,
+      "auraCoverage": 3,
+      "threeCoverage": 4,
+      "auraCode": 3,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Three.js shows a clearly readable, well-proportioned primitive humanoid (sphere head, cylinder/box torso, arm and leg primitives with feet) on a ground plane. Aura3D's figure is dark with detached floating arm-boxes and legs visible only as a walk-pose shadow; the body barely reads as humanoid, though the shadow implies the walk cycle.",
+      "failedThresholds": ["Aura3D: limbs poorly connected / legs not legible as geometry"]
+    },
+    {
+      "prompt": "10",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 4,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Hard prompt. Both correctly load the provided sneaker.glb with no invented asset paths, on a plinth with studio lighting. Three.js produces a polished, well-centered product render with soft studio gradient lighting and fully readable material/sole detail. Aura3D loads the sneaker on a plinth with a visible light panel but framing is off-center and lighting is flatter.",
+      "failedThresholds": ["Aura3D: model not well centered in frame"]
+    }
+  ],
+  "summary": {
+    "auraWins": 1,
+    "threeWins": 8,
+    "ties": 1,
+    "hardPromptWins": {
+      "07": "Three.js",
+      "08": "Three.js",
+      "10": "Three.js"
+    },
+    "releaseBarMet": false,
+    "reason": "Three.js wins 8 of 10 prompts; Aura3D wins only 02 (where Three.js rendered zero particles) and ties 06 (both fail an identical Codex typo). Aura3D sweeps no hard prompt — it loses all three (07 dark/indistinct materials, 08 outright compile failure, 10 weaker framing). It also suffers a second build failure (08) beyond the shared 06 failure, and several runs that do compile are visually weak (flat neon bars in 04, streak-bloom solar system in 03, dark barely-humanoid in 09). Despite consistently lower LOC and clean asset usage (no hallucinated APIs or invented asset paths anywhere), the visual-fidelity and prompt-coverage gap is large and one-directional, so the release bar is not met."
+  }
+}
+```

@@ -1,0 +1,13 @@
+Implemented the particle fountain app in `./source` using `prefabs.particleFountain({ count })`, with a visible emission-rate slider that re-creates the Aura3D scene on committed changes.
+
+Build command:
+`npm run build`
+
+Run command:
+`npm run dev`
+
+Build result:
+Failed at typecheck because `tsconfig.json` cannot resolve `@aura3d/engine` with the current module resolution setting. The error recommends `node16`, `nodenext`, or `bundler`.
+
+Assumption:
+The Aura3D prefab provides the visible emitter, ground collision disc, upward/falling particle arcs, and lifetime color variation as required by the benchmark recipe.

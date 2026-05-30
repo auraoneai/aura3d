@@ -1,0 +1,21 @@
+Implemented the Material Lab scene in [src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-5/codex-aura3d/prompt-07/source/src/main.ts:1) using the matching Prompt 07 recipe: material swatches, studio lighting, orbit controls, and orbit camera.
+
+Build command:
+
+```bash
+npm run build
+```
+
+Run command:
+
+```bash
+npm run dev
+```
+
+Build result: failed at typecheck because `@aura3d/engine` could not be resolved:
+
+```text
+src/main.ts(1,77): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Assumptions: no assets are required for this prompt; the scene relies on `prefabs.materialSwatches()` to provide the five procedural material spheres.

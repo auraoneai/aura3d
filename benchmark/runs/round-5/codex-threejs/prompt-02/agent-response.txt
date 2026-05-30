@@ -1,0 +1,17 @@
+Implemented the particle fountain app in `./source`.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command:
+```bash
+npm run dev
+```
+
+Verification: `npm run build` completed successfully.
+
+Assumptions:
+- The missing `./context/llms.txt` and recipe file were not available in the provided bundle, so I used the bundled Three.js context and clean scaffold.
+- No external assets were used; the fountain is fully procedural.

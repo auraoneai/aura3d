@@ -1,0 +1,13 @@
+Implemented the neon tunnel app in `source/src/main.ts` using `prefabs.neonTunnel`, looping `camera.dolly`, `effects.bloom`, and `effects.fog`.
+
+Build command:
+`cd source && npm run build`
+
+Run command:
+`cd source && npm run dev`
+
+Build result:
+`npm run build` failed during typecheck because TypeScript could not resolve `@aura3d/engine` with the current `tsconfig` module resolution setting. The error recommends `node16`, `nodenext`, or `bundler`.
+
+Assumptions:
+The benchmark rules said to stop after the build completed or failed, so I did not make further changes after the failed build.

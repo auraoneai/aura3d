@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 67,
+    "text": "Procedural Solar System\nSun\nMercury\nVenus\nEarth\nMars\nJupiter\nSaturn"
+  }
+}

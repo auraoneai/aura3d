@@ -161,3 +161,21 @@ ms, copied the matching benchmark recipe, used `prefabs.physicsPlayground`, ran
 `npm install` and `npm run build`, and did not start a dev server or visual
 capture inside the agent process. The independent build passed and a screenshot
 was captured outside the agent process at `/tmp/aura3d-round5-smoke-p01.png`.
+
+## Round 5 Result
+
+Round 5 was run from `3766288` and is recorded in:
+
+- `benchmark/results/round-5.md`
+- `benchmark/results/round-5-engine.md`
+- `benchmark/results/round-5-decision.md`
+
+Round 5 failed the release bar. Codex/Aura won 1/10 prompts, Claude/Aura won
+2/10 prompts, and neither agent won any of hard prompts 7, 8, or 10. Engine
+visual parity improved to 4/5 scenes, but overall engine parity still failed on
+performance thresholds and the particles VFX visual target.
+
+This round is useful evidence, not a reason to keep rerunning immediately. The
+next work is targeted repair: Codex/Aura compile failures on prompts 06 and 08,
+material readability, city reliability, humanoid readability, product framing,
+particle parity, and city/sneaker engine performance.

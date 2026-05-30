@@ -1,0 +1,33 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0b0e14;
+  font-family: system-ui, sans-serif;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+}
+
+#app canvas {
+  display: block;
+}
+
+#hud {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  color: #c8d3e0;
+  font-size: 13px;
+  line-height: 1.5;
+  pointer-events: none;
+  text-shadow: 0 1px 2px #000;
+}
+
+#hud b {
+  color: #fff;
+}

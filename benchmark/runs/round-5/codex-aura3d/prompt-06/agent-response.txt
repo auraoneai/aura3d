@@ -1,0 +1,19 @@
+Implemented the mini-golf scene in `./source` using the Aura3D `prefabs.miniGolfHole()` recipe shape, with a visible HUD for strokes, shot power feedback, click-to-shoot interaction, and follow-camera label.
+
+Build command:
+`npm run build`
+
+Run command:
+`npm run dev`
+
+Build result: failed during TypeScript checking.
+
+Errors:
+```text
+src/main.ts(1,77): Cannot find module '@aura3d/engine' under current moduleResolution.
+src/main.ts(25,45): Cannot find name 'HTMLStrongElement'.
+```
+
+Assumptions:
+- `prefabs.miniGolfHole()` provides the procedural green, obstacle, ball, and physics behavior required by the prompt.
+- Per benchmark rules, I stopped after the first `npm run build` failure and did not continue investigating or editing.

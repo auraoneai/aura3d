@@ -1,0 +1,33 @@
+{
+  "scene": "engine-05-sneaker-product",
+  "engine": "threejs",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "linesOfUserCode": 64,
+  "bundleSizeGzipBytes": 147972,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "ok": true,
+    "empty": {
+      "samples": 191,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 9.199999999999989,
+      "p50Fps": 120.48192771084403
+    },
+    "webgl": {
+      "samples": 194,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 9.099999999999909,
+      "p50Fps": 120.48192771084403
+    },
+    "failures": []
+  },
+  "fpsInstrumentationStatus": "valid",
+  "fpsInstrumentationFailures": [],
+  "p50Fps": 23.980815347721926,
+  "p95FrameTimeMs": 58.19999999999982,
+  "drawCalls": 2,
+  "triangleCount": 23084,
+  "jsHeapPeakBytes": 27600000
+}

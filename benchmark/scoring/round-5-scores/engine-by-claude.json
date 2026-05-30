@@ -1,0 +1,54 @@
+{
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring hand-authored engine parity outputs",
+  "scenes": [
+    {
+      "scene": "engine-01-material-grid",
+      "visualParity": 4,
+      "pass": false,
+      "reason": "Same composition: five spheres (black metal, glass/transmissive, dark, pink emissive, tan) on a tilted slab; materials match closely with only minor framing and glass-reflection differences. Aura p50Fps 3.87 vs threejs 2.66 (Aura actually faster), but both fall below the 30fps floor — rig-limited rather than an Aura-specific regression. Heap equal (10MB), bundle +84KB gzip.",
+      "failedThresholds": [
+        "p50Fps>=30 (aura 3.87; threejs also 2.66, rig-limited)"
+      ]
+    },
+    {
+      "scene": "engine-02-city-block",
+      "visualParity": 4,
+      "pass": false,
+      "reason": "Equivalent low-poly city: blue/tan buildings with white windows on gray streets under light-blue sky; Aura screenshot is rendered at much smaller resolution but content matches. Aura p50Fps 5.71 vs threejs 9.25 (~38% slower) and heap 17.1MB vs 10MB (+71%) are genuine Aura-side regressions beyond the shared sub-30fps floor. Bundle +85KB gzip.",
+      "failedThresholds": [
+        "p50Fps>=30 (aura 5.71)",
+        "auraFpsGap<=20% (~38% slower than threejs)",
+        "heapGap<=25% (aura 17.1MB vs 10MB, +71%)"
+      ]
+    },
+    {
+      "scene": "engine-03-particles-vfx",
+      "visualParity": 3,
+      "pass": false,
+      "reason": "Both are particle VFX but materially different: Aura shows a tall white particle fountain/plume rising from a glowing emitter on a dark disc, while threejs shows a dispersed multicolored (pink/blue/yellow) spherical particle cloud around a blue cone emitter. Recognizable category match but different color, shape, and emitter. Performance is an Aura win (59.88 vs 17.04 fps, lighter heap 10 vs 11.2MB); bundle +84KB gzip.",
+      "failedThresholds": [
+        "visualParity>=4 (3 — different particle color/shape/emitter)"
+      ]
+    },
+    {
+      "scene": "engine-04-physics-ramp",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Very close: pile of pastel multicolored cubes tumbled on a blue inclined ramp; minor cube-position differences expected from physics simulation. Aura p50Fps 29.94 vs threejs 30.03 — effectively at the 30fps threshold and within noise of each other. Heap equal (10MB), bundle delta only +8KB gzip.",
+      "failedThresholds": []
+    },
+    {
+      "scene": "engine-05-sneaker-product",
+      "visualParity": 4,
+      "pass": false,
+      "reason": "Same blue mesh sneaker with white sole on a white circular podium against dark background; Aura frames closer and adds studio reflector panels. Clearly equivalent product render. Aura p50Fps 15.0 vs threejs 23.98 (~37% slower) is a real relative regression, though Aura uses far less heap (10MB vs 27.6MB). Bundle +59KB gzip.",
+      "failedThresholds": [
+        "p50Fps>=30 (aura 15.0)",
+        "auraFpsGap<=20% (~37% slower than threejs)"
+      ]
+    }
+  ],
+  "overallPass": false,
+  "summary": "Visual parity is strong — 4 of 5 scenes score >=4 (material grid, city block, physics ramp, sneaker), meeting the parity-count criterion; only the particles scene differs materially (white fountain vs colorful cloud). routeHealth passes and FPS instrumentation is valid for all scenes, and Aura bundle deltas (+8KB to +86KB gzip) stay well under the 250KB cap. However, the run fails performance thresholds: absolute p50Fps is below 30 for both engines on most scenes (rig-limited, since threejs also misses 30 on 4/5), and Aura shows genuine relative regressions — ~38% slower with +71% heap on city-block and ~37% slower on sneaker. Aura wins on particles (60 vs 17 fps) and uses far less heap on sneaker (10 vs 27.6MB). overallPass is false on the FPS-gap/heap-gap/p50Fps thresholds despite good visual parity."
+}

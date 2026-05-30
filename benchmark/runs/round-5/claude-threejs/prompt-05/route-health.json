@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "errors": [],
+  "health": {
+    "canvas": {
+      "width": 1440,
+      "height": 960
+    },
+    "textLength": 108,
+    "text": "3D Data Visualization\n6×6 grid of bars · color by height · hover to highlight\nDrag to orbit · scroll to zoom"
+  }
+}
