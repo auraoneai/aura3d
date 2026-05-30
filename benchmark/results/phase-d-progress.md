@@ -247,3 +247,31 @@ Diagnostic evidence:
 
 The partial `benchmark/runs/round-6/` tree remains diagnostic only and must not
 be scored or committed as a valid benchmark result.
+
+## Round 6 Material Lab Framing Repair
+
+`benchmark/results/amendment-round-6-material-framing.md` records a material
+lab repair discovered from the partial Round 6 diagnostic contact sheet.
+Codex/Aura prompt 07 used the intended material helper, but the row was too
+wide and diagonal for the documented orbit camera, causing edge swatches to
+crop or dominate the screenshot.
+
+Repair:
+
+- `prefabs.materialSwatches()` now uses a tighter five-swatch inspection row.
+- Edge swatches, label plinths, backdrop, floor, softbox, and glass contrast
+  card are narrowed to match the frame.
+- The material-lab benchmark recipe now uses a front-biased perspective camera
+  instead of an oblique orbit camera.
+- A unit test locks the compact swatch x-range.
+- The Aura3D context manifest was regenerated after the recipe update.
+
+Diagnostic evidence:
+
+- Before repair: `/tmp/aura3d-round6-sheets/codex-aura3d.png` showed prompt 07
+  cropped and diagonal.
+- After repair: `/tmp/aura3d-material-framing-smoke-perspective.png` shows all
+  five material swatches visible in one front-facing row.
+
+This is targeted repair evidence only. A future release claim still requires a
+clean full benchmark round from the amended standard.

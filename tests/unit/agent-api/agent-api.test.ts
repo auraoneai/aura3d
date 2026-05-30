@@ -99,6 +99,18 @@ describe("agent API", () => {
     expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
   });
 
+  test("keeps material swatches framed in a compact inspection row", () => {
+    const positions = prefabs.materialSwatches().flatMap((node) =>
+      node.kind === "primitive" && node.name?.includes("swatch") && node.primitive === "sphere"
+        ? [node.position?.[0] ?? 0]
+        : []
+    );
+
+    expect(positions).toHaveLength(5);
+    expect(Math.min(...positions)).toBeGreaterThanOrEqual(-2.8);
+    expect(Math.max(...positions)).toBeLessThanOrEqual(2.8);
+  });
+
   test("exposes typed UI helpers for benchmark HUDs", () => {
     expect(ui).toMatchObject({
       html: expect.any(Function),
