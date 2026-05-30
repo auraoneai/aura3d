@@ -142,6 +142,14 @@ Templates:
 - `mini-game`: primitive interactive game slice.
 
 Visual acceptance:
+- Benchmark prompts: read `docs/agents/benchmark-recipes.md` and copy the
+  smallest matching recipe before writing custom scene logic.
+- For benchmark runs, do not run `npm run dev`, `npm run preview`, Playwright,
+  browser screenshot capture, or manual visual verification inside the agent
+  process. Run finite commands such as `npm install` and `npm run build`, then
+  stop and report the build/run commands.
+- Do not build custom physics, game, chart, material, city, or animation
+  engines when a matching `prefabs.*` helper exists.
 - Use prompt plans and recipe scenes before custom primitive placement.
 - A nonblank screenshot is not enough. The image must visibly match the prompt.
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.

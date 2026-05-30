@@ -94,7 +94,7 @@ Verification:
   sampled `nonDark=5071`, `colorful=2220`.
 - `cd benchmark/context/aura3d/files && shasum -a 256 -c ../manifest.sha256`
 
-### Pending - Round 3 engine/prompt repair set
+### `c34f2e8` - Round 3 engine/prompt repair set
 
 Targeted Round 3 gaps:
 
@@ -119,6 +119,36 @@ Verification:
   `nonDark=604250`, `colorful=164554`
 - `cd benchmark/context/aura3d/files && shasum -a 256 -c ../manifest.sha256`
 
-## Remaining Work Before Round 4
+### Pending - Round 4 diagnostic process repair
 
+Round 4 was started after `c34f2e8` but stopped before capture/scoring because
+the partial Claude/Aura run was already invalid. It is a diagnostic attempt,
+not a benchmark result.
+
+Observed Round 4 diagnostic failures:
+
+- Claude/Aura prompt 01 timed out after producing a custom physics
+  implementation instead of staying on the shortest `prefabs.physicsPlayground`
+  path.
+- Claude/Aura prompts 03, 04, 05, and 06 produced large custom scene/game/chart
+  code before timeout.
+- Claude/Aura prompt 08 used the city prefab but still added a custom rebuild
+  flow and did not complete as valid benchmark evidence.
+- The generic instruction still allowed too much manual verification behavior;
+  future runs need a stricter finite process rule.
+
+Repair target:
+
+- Add a frozen benchmark recipe file to the Aura3D context bundle.
+- Amend the runner prompt-delivery contract to forbid `npm run dev`,
+  Playwright, screenshot capture, and manual visual verification inside the
+  agent process.
+- Require agents to stop after `npm run build` completes or fails.
+- Regenerate the Aura3D context manifest and commit with `PRD-AMENDMENT:`.
+
+## Remaining Work Before Round 5
+
+- Verify the amended context manifest.
+- Commit the Round 5 standard amendment.
+- Run a finite Claude/Aura one-prompt process smoke as diagnostic evidence.
 - Re-run the entire Phase B benchmark from scratch. Partial reruns do not count.

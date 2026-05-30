@@ -8,6 +8,7 @@ checks the project.
 Read these first:
 
 - `llms.txt`
+- `docs/agents/benchmark-recipes.md`
 - `docs/agents/api-surface.md`
 - `docs/agents/asset-workflow.md`
 - `docs/agents/templates.md`
@@ -35,3 +36,8 @@ createAuraApp("#app", {
   scene: scene().add(model(assets.robot)).add(lights.studio())
 });
 ```
+
+Benchmark rule: if a prompt matches `docs/agents/benchmark-recipes.md`, copy
+the smallest matching recipe, run `npm run build`, and stop. Do not run a dev
+server, Playwright, browser screenshots, or manual visual verification inside
+the benchmark agent process.

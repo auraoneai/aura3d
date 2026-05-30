@@ -63,12 +63,28 @@ benchmark/assets/sneaker.glb. After implementation, provide the build command,
 run command, and any assumptions. Do not edit files outside the source
 directory.
 
+Benchmark execution rules:
+- Read ./context/llms.txt first.
+- If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy
+  that recipe shape and make only prompt-required edits.
+- Use public helpers and prefabs before custom primitives. Do not build a
+  custom physics engine, game engine, chart engine, material renderer, city
+  generator, or animation system when the context bundle exposes a matching
+  Aura3D API.
+- Do not run `npm run dev`, `npm run preview`, Playwright, browser screenshot
+  capture, or any other long-running server/manual visual verification inside
+  the agent process.
+- You may run finite commands such as `npm install` and `npm run build`.
+- After `npm run build` completes or fails, stop work and return the build
+  command, run command, and assumptions. Do not continue investigating.
+
 <contents of benchmark/prompts/XX-name.md>
 ```
 
-Do not add hints, visual suggestions, API names, or repair advice beyond that
-text. If the agent asks a question, record it as a repair turn and answer only
-by pointing back to the prompt and context bundle.
+Do not add prompt-specific hints, visual suggestions, API names, or repair
+advice beyond that text. The generic benchmark execution rules above are part
+of the amended standard. If the agent asks a question, record it as a repair
+turn and answer only by pointing back to the prompt and context bundle.
 
 ## Runtime Capture
 

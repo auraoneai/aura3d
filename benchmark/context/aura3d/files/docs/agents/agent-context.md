@@ -16,6 +16,9 @@ Do not use archived `archive/legacy-ai-runtime/` files from active code.
 
 Prompt-to-visual workflow:
 
+- For frozen benchmark prompts, first open
+  `docs/agents/benchmark-recipes.md`. Copy the smallest matching recipe and
+  make only prompt-required edits.
 - Start with `definePromptPlan(...)`.
 - Use one supported `sceneType`: `product-viewer`, `cinematic-scene`,
   `mini-game`, or `material-studio`.
@@ -40,8 +43,9 @@ Prompt-to-visual workflow:
   `position(0, 0.65, -0.65)` after `prefabs.productStage()` so they sit on the
   round plinth.
 - Use `.animate({ clip: "float" | "pulse", speed })` and `timeline.loop(...)`
-  for runtime motion. Build/test, then terminate normally; do not leave a dev
-  server running as the final state.
+  for runtime motion. Build/test, then terminate normally; do not run
+  `npm run dev`, Playwright, browser screenshots, or manual visual verification
+  from inside the benchmark agent process.
 - Create one Aura app per route. Do not animate by repeatedly disposing and
   recreating `createAuraApp(...)`; use scene animations and separate DOM
   overlays instead.

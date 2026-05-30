@@ -21,6 +21,12 @@ Build order:
 6. Enable diagnostics with `diagnostics: { overlay: true }`.
 7. Run build, route-health, screenshot, prompt-fidelity, and deployment checks.
 
+Benchmark exception: for frozen benchmark prompts, use
+`docs/agents/benchmark-recipes.md` first. Copy the smallest matching recipe,
+run finite commands such as `npm install` and `npm run build`, and stop. Do not
+run `npm run dev`, Playwright, browser screenshots, or manual visual
+verification from inside the benchmark agent process.
+
 Minimal prompt-plan shape:
 
 ```ts
@@ -85,8 +91,9 @@ Round 1 failure repairs:
   `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running.
 - Benchmark prompts: write the smallest complete scene first, run finite
-  commands such as `npm run build`, and exit. Do not keep a dev server attached
-  as the agent's final process.
+  commands such as `npm run build`, and exit. Do not run dev servers,
+  Playwright, browser screenshot capture, or manual visual verification from
+  inside the agent process.
 - Neon tunnel, mini-golf, and humanoid prompts: start from
   `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
   `prefabs.primitiveHumanoid` before custom primitive placement.
