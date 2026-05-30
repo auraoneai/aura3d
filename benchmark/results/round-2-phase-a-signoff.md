@@ -32,6 +32,7 @@ User signature: `gchahal1982`
 - [x] `benchmark/assets/sneaker.glb` remains the only allowed asset for prompt 10.
 - [x] `benchmark/results/amendment-round-2-standard.md` identifies standard changes and invalidated prior results.
 - [x] `benchmark/results/amendment-round-2-agent-timeout.md` identifies the timeout rule and voids the partial pre-timeout local Round 2 attempt.
+- [x] `benchmark/results/amendment-round-2-agent-termination.md` identifies the explicit dev-server termination instruction and voids partial local Round 2 attempts before that amendment.
 - [x] User approval from `gchahal1982` is recorded in the amendment commit body.
 - [x] The final amendment commit message starts with `PRD-AMENDMENT:`.
 

@@ -123,6 +123,11 @@ function writePromptInstruction(promptDir, promptFile) {
     "run command, and any assumptions. Do not edit files outside the source",
     "directory.",
     "",
+    "Benchmark process rule: do not leave a long-running dev server attached to",
+    "your agent process. You may run finite commands such as npm install, npm run",
+    "typecheck, and npm run build. If you start npm run dev or another server for",
+    "manual verification, stop it before your final response.",
+    "",
     promptText
   ].join("\n");
 
