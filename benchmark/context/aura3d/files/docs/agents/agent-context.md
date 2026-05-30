@@ -33,10 +33,10 @@ Prompt-to-visual workflow:
   start from `prefabs.particleFountain`, `prefabs.cityBlock`,
   `prefabs.materialSwatches`, `prefabs.productStage`, or
   `prefabs.physicsRamp` before custom primitive placement.
-- For physics playground, data visualization, neon tunnel, mini-golf, and
+- For physics playground, solar-system, data visualization, neon tunnel, mini-golf, and
   humanoid prompts, start from `prefabs.physicsPlayground`,
-  `prefabs.dataBars3D`, `prefabs.neonTunnel`, `prefabs.miniGolfHole`, or
-  `prefabs.primitiveHumanoid`.
+  `prefabs.solarSystem`, `prefabs.dataBars3D`, `prefabs.neonTunnel`,
+  `prefabs.miniGolfHole`, or `prefabs.primitiveHumanoid`.
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles.
 - For product viewers, place normalized products around

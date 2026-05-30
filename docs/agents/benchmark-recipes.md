@@ -60,16 +60,20 @@ createAuraApp("#app", {
 ## 03 Procedural Solar System
 
 ```ts
+ui.html("#app", `
+  <div style="position:absolute;right:18px;top:18px;display:grid;gap:6px;color:white;font:700 13px system-ui">
+    <span style="color:#cbd5e1">Mercury</span><span style="color:#fbbf24">Venus</span>
+    <span style="color:#38bdf8">Earth</span><span style="color:#f97316">Mars</span>
+    <span style="color:#f5d0a9">Jupiter</span><span style="color:#fde68a">Saturn</span>
+  </div>
+`);
+
 createAuraApp("#app", {
   scene: scene()
     .background("#020617")
-    .add(primitives.sphere({ material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).scale(0.42))
-    .add(primitives.sphere({ material: material.clearcoat({ color: "#60a5fa" }) }).position(1.15, 0, 0).scale(0.14).animate({ clip: "float", speed: 0.4 }))
-    .add(primitives.sphere({ material: material.clearcoat({ color: "#f97316" }) }).position(1.75, 0, -0.35).scale(0.18).animate({ clip: "float", speed: 0.28 }))
-    .add(primitives.sphere({ material: material.clearcoat({ color: "#a78bfa" }) }).position(2.35, 0, 0.25).scale(0.12).animate({ clip: "float", speed: 0.22 }))
-    .add(effects.bloom({ intensity: 0.36 }))
+    .addMany(prefabs.solarSystem())
     .add(lights.studio())
-    .camera(camera.orbit({ distance: 4.6, target: [0.8, 0, 0] }))
+    .camera(camera.perspective({ position: [0, 3.8, 6.2], target: [0, 0, 0], fov: 46 }))
     .timeline(timeline.loop({ seconds: 10 }))
 });
 ```

@@ -276,6 +276,38 @@ Diagnostic evidence:
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
 
+## Round 6 Solar System Repair
+
+`benchmark/results/amendment-round-6-solar-system.md` records a prompt-03
+repair discovered from the updated ten-recipe smoke sheet after the humanoid
+fix. The smoke app still used an ad-hoc sun plus a few planets, matching the
+Round 5 Codex/Aura weakness where raw Three.js produced a stronger solar-system
+composition.
+
+Repair:
+
+- Added `prefabs.solarSystem()`.
+- The helper creates a glowing sun, six named planets, segmented orbit paths,
+  starfield points, per-planet label plinths, a Saturn ring cue, and bloom.
+- The benchmark recipe for prompt 03 now starts from `prefabs.solarSystem()`
+  and adds a small `ui.html` overlay listing all six planet names.
+- Agent docs and frozen context now tell agents to start solar-system prompts
+  from the prefab instead of hand-rolling a partial scene.
+- A unit test locks the six named planets, 96 orbit path segments, six label
+  plinths, and bloom.
+
+Diagnostic evidence:
+
+- Before repair: `/tmp/aura3d-ten-recipe-smoke-sheet-updated.png` showed
+  prompt 03 as a sparse sun plus a few planets with no visible labels.
+- After repair: `/tmp/aura3d-solar-system-smoke.png` shows six planets, orbit
+  paths, starfield, bloom, Saturn ring cue, and the six-name label overlay.
+  Its readout measured a full `1440 x 960` canvas, body margin `0px`, and label
+  text for all six planets.
+
+This is targeted repair evidence only. A future release claim still requires a
+clean full benchmark round from the amended standard.
+
 ## Round 6 Humanoid Readability Repair
 
 `benchmark/results/amendment-round-6-humanoid-readability.md` records a

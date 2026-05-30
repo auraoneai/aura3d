@@ -73,6 +73,7 @@ describe("agent API", () => {
       .addMany(prefabs.productStage())
       .addMany(prefabs.physicsRamp())
       .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+      .addMany(prefabs.solarSystem())
       .addMany(prefabs.dataBars3D({ grid: 6 }))
       .addMany(prefabs.neonTunnel({ rings: 10 }))
       .addMany(prefabs.miniGolfHole())
@@ -91,6 +92,8 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.clearcoat)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "rigid physics ramp")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("visible rigid body cube 50"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "glowing labeled sun")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn visible ring")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
@@ -128,6 +131,26 @@ describe("agent API", () => {
     expect(head?.position?.[1]).toBeLessThan(1.6);
     expect(neck?.position?.[1]).toBeGreaterThan(torso?.position?.[1] ?? 0);
     expect(head?.position?.[1] ?? 0).toBeGreaterThan(neck?.position?.[1] ?? 999);
+  });
+
+  test("builds a six-planet solar-system prefab with orbit paths and labels", () => {
+    const nodes = prefabs.solarSystem();
+    const planetNodes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("labeled orbiting planet") === true);
+    const orbitSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("orbit path segment") === true);
+    const labelPlinths = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("visible label plinth") === true);
+    const bloom = nodes.find((node) => node.kind === "effect" && node.effect === "bloom");
+
+    expect(planetNodes.map((node) => node.name)).toEqual([
+      "Mercury labeled orbiting planet",
+      "Venus labeled orbiting planet",
+      "Earth labeled orbiting planet",
+      "Mars labeled orbiting planet",
+      "Jupiter labeled orbiting planet",
+      "Saturn labeled orbiting planet"
+    ]);
+    expect(orbitSegments).toHaveLength(96);
+    expect(labelPlinths).toHaveLength(6);
+    expect(bloom).toMatchObject({ kind: "effect", effect: "bloom" });
   });
 
   test("keeps material swatches framed in a compact inspection row", () => {

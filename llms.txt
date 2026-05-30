@@ -113,6 +113,14 @@ scene()
   .add(effects.bloom({ intensity: 0.24 }))
   .camera(camera.perspective({ position: [0, 2.6, 5.4], target: [0, 0.55, -0.7] }));
 
+// Solar-system prompts need six planets, orbit paths, labels, sun bloom, and
+// whole-system framing.
+scene()
+  .background("#020617")
+  .addMany(prefabs.solarSystem())
+  .add(lights.studio())
+  .camera(camera.perspective({ position: [0, 3.8, 6.2], target: [0, 0, 0], fov: 46 }));
+
 // Material labs need distinct material classes.
 scene()
   .addMany(prefabs.materialSwatches())
@@ -160,7 +168,7 @@ Visual acceptance:
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.
 - For particles, use `effects.particles(...)` or `prefabs.particleFountain(...)`;
   do not draw an emitter cone and claim particles exist.
-- For city, material, product, and physics prompts, start from the matching
+- For city, solar-system, material, product, and physics prompts, start from the matching
   `prefabs.*` helper before custom primitive placement.
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and

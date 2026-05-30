@@ -721,6 +721,54 @@ export const prefabs = {
     return nodes;
   },
 
+  solarSystem: (): readonly AuraSceneNode[] => {
+    const planets = [
+      { name: "Mercury", radius: 0.82, size: 0.07, color: "#cbd5e1", speed: 1.4, angle: 0.2 },
+      { name: "Venus", radius: 1.12, size: 0.1, color: "#fbbf24", speed: 1.1, angle: 1.05 },
+      { name: "Earth", radius: 1.46, size: 0.11, color: "#38bdf8", speed: 0.86, angle: 2.0 },
+      { name: "Mars", radius: 1.78, size: 0.09, color: "#f97316", speed: 0.68, angle: 2.82 },
+      { name: "Jupiter", radius: 2.18, size: 0.18, color: "#f5d0a9", speed: 0.42, angle: 3.7 },
+      { name: "Saturn", radius: 2.6, size: 0.16, color: "#fde68a", speed: 0.32, angle: 4.56 }
+    ] as const;
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "deep space reference plane", material: material.pbr({ color: "#020617", roughness: 0.9 }) }).position(0, -0.08, 0).scale([6.2, 1, 6.2]).toJSON(),
+      primitives.sphere({ name: "glowing labeled sun", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(0, 0.12, 0).scale(0.38).animate({ clip: "pulse", speed: 0.32 }).toJSON(),
+      effects.bloom({ intensity: 0.48, color: "#ffd166" }).toJSON()
+    ];
+    for (let index = 0; index < 26; index += 1) {
+      nodes.push(primitives.sphere({
+        name: `background star ${index + 1}`,
+        material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" })
+      }).position(seededRange(index, 701, -3.1, 3.1), seededRange(index, 702, 0.08, 0.55), seededRange(index, 703, -2.9, 2.6)).scale(seededRange(index, 704, 0.012, 0.028)).toJSON());
+    }
+    for (const planet of planets) {
+      const segments = 16;
+      const segmentLength = (Math.PI * 2 * planet.radius) / segments * 0.45;
+      for (let segment = 0; segment < segments; segment += 1) {
+        const angle = (segment / segments) * Math.PI * 2;
+        nodes.push(primitives.box({
+          name: `${planet.name} orbit path segment ${segment + 1}`,
+          material: material.emissive({ color: "#334155", emissive: "#334155" })
+        }).position(Math.cos(angle) * planet.radius, 0, Math.sin(angle) * planet.radius).rotate(0, Math.PI / 2 - angle, 0).scale([segmentLength, 0.012, 0.018]).toJSON());
+      }
+      const x = Math.cos(planet.angle) * planet.radius;
+      const z = Math.sin(planet.angle) * planet.radius;
+      nodes.push(primitives.sphere({
+        name: `${planet.name} labeled orbiting planet`,
+        material: material.clearcoat({ color: planet.color, roughness: 0.18 })
+      }).position(x, 0.12, z).scale(planet.size).animate({ clip: "float", speed: planet.speed }).toJSON());
+      nodes.push(primitives.box({
+        name: `${planet.name} visible label plinth`,
+        material: material.emissive({ color: planet.color, emissive: planet.color })
+      }).position(x, 0.025, z + 0.16).scale([planet.size * 2.4, 0.025, 0.055]).toJSON());
+    }
+    nodes.push(primitives.cylinder({
+      name: "Saturn visible ring",
+      material: material.emissive({ color: "#fde68a", emissive: "#fde68a" })
+    }).position(Math.cos(4.56) * 2.6, 0.12, Math.sin(4.56) * 2.6).rotate(0.9, 0.2, 0.1).scale([0.32, 0.012, 0.32]).toJSON());
+    return nodes;
+  },
+
   dataBars3D: (options: { readonly grid?: number } = {}): readonly AuraSceneNode[] => {
     const grid = Math.max(3, Math.min(8, options.grid ?? 6));
     const nodes: AuraSceneNode[] = [

@@ -96,6 +96,9 @@ Round 1 failure repairs:
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. Do not claim physics from cosmetic floating boxes only.
+- Solar-system prompts: use `prefabs.solarSystem()` and add a small `ui.html`
+  label overlay for the six planet names. Do not ship a sun plus only three
+  unlabeled planets.
 - Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk", speed })`
   and `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running. For primitive character prompts, start from
