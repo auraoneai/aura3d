@@ -129,9 +129,9 @@ createAuraApp("#app", {
   scene: scene()
     .background("#10151f")
     .addMany(prefabs.materialSwatches())
-    .add(lights.studio({ intensity: 1.3 }))
+    .add(lights.studio({ intensity: 1.45 }))
     .add(interactions.orbit())
-    .camera(camera.perspective({ position: [0, 1.45, 7.8], target: [0, 0.72, -0.72], fov: 42 }))
+    .camera(camera.perspective({ position: [0, 1.45, 7.9], target: [0, 0.78, -0.72], fov: 44 }))
 });
 ```
 
@@ -155,9 +155,10 @@ createAuraApp("#app", {
   scene: scene()
     .background("#87ceeb")
     .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
-    .add(effects.fog({ density: 0.04 }))
+    .add(effects.fog({ density: 0.035 }))
+    .add(effects.bloom({ intensity: 0.14 }))
     .add(lights.studio({ intensity: 1.08 }))
-    .camera(camera.perspective({ position: [0, 3.6, 7.2], target: [0, 0.55, -0.8] }))
+    .camera(camera.perspective({ position: [0.6, 5.2, 9.2], target: [0, 0.42, -0.4], fov: 58 }))
 });
 ```
 
@@ -184,10 +185,10 @@ createAuraApp("#app", {
   scene: scene()
     .background("#0b1020")
     .addMany(prefabs.productStage())
-    .add(model(assets.sneaker).position(0, 0.65, -0.65).animate({ clip: "float", speed: 0.35 }))
+    .add(model(assets.sneaker).position(0, 0.54, -0.65).animate({ clip: "float", speed: 0.35 }))
     .add(lights.studio({ intensity: 1.35 }))
     .add(interactions.orbit())
-    .camera(camera.orbit({ distance: 4.2, target: [0, 0.55, -0.65] }))
+    .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.7, -0.65], fov: 38 }))
 });
 ```
 

@@ -8,11 +8,12 @@ Prompt-family helpers are available from `prefabs` even when a full template is
 not a perfect fit:
 
 - `prefabs.particleFountain(...)` for high-density VFX and fountain prompts.
-- `prefabs.cityBlock(...)` for architecture, streets, windows, and city scale.
+- `prefabs.cityBlock(...)` for architecture, streets, crosswalks, lit window
+  columns, and city scale.
 - `prefabs.materialSwatches()` for metal, glass/transmission, rubber, emissive,
-  and clearcoat comparison scenes.
+  and clearcoat comparison scenes with built-in reflection/contrast cards.
 - `prefabs.productStage()` for product plinths, softboxes, contact shadows, and
-  orbit-ready inspection scenes.
+  three-quarter inspection scenes.
 - `prefabs.physicsRamp()` for visible rigid-body ramp/cube demo cues.
 - `prefabs.physicsPlayground({ cubes: 50 })` for visible falling-cube/ramp
   playground evidence with contact vectors.

@@ -186,7 +186,8 @@ describe("agent API", () => {
   });
 
   test("keeps material swatches framed in a compact inspection row", () => {
-    const positions = prefabs.materialSwatches().flatMap((node) =>
+    const nodes = prefabs.materialSwatches();
+    const positions = nodes.flatMap((node) =>
       node.kind === "primitive" && node.name?.includes("swatch") && node.primitive === "sphere"
         ? [node.position?.[0] ?? 0]
         : []
@@ -195,6 +196,30 @@ describe("agent API", () => {
     expect(positions).toHaveLength(5);
     expect(Math.min(...positions)).toBeGreaterThanOrEqual(-2.8);
     expect(Math.max(...positions)).toBeLessThanOrEqual(2.8);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "black reflection contrast strip")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "glass dark contrast card")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "red automotive clearcoat swatch")).toBe(true);
+  });
+
+  test("uses city-scale cues without per-floor window node explosions", () => {
+    const nodes = prefabs.cityBlock({ blocks: 20, litWindows: true });
+    const towers = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("city tower"));
+    const windowColumns = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("window column"));
+    const oldWindowBands = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("lit window band"));
+
+    expect(towers).toHaveLength(20);
+    expect(windowColumns).toHaveLength(80);
+    expect(oldWindowBands).toHaveLength(0);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "zebra crosswalk near stripe 1")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "front cross street")).toBe(true);
+  });
+
+  test("keeps product stage tight for three-quarter product framing", () => {
+    const nodes = prefabs.productStage();
+
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "front low product highlight card")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.7)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow" && node.position?.[1] === 0.535)).toBe(true);
   });
 
   test("exposes typed UI helpers for benchmark HUDs", () => {

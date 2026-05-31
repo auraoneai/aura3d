@@ -306,6 +306,36 @@ Round 7 is therefore a failed benchmark round with real progress, not shipping
 evidence. The next amendment should target the remaining hard-prompt and engine
 FPS failures before any future full rerun.
 
+## Round 8 Hard Prompt and FPS Repair
+
+`benchmark/results/amendment-round-8-hard-prompt-performance.md` records the
+targeted post-Round-7 amendment. It addresses the remaining hard-prompt and
+engine FPS blockers without running another blind full benchmark.
+
+Repair:
+
+- `prefabs.materialSwatches()` now has stronger black/white reflection contrast,
+  cyan glass contrast cards, and a red automotive clearcoat swatch. The recipe
+  camera is widened so all five material classes stay visible.
+- `prefabs.cityBlock(...)` now uses cross streets, crosswalk stripes, roofline
+  signs, and tall emissive window columns. The previous per-floor window boxes
+  are removed to reduce city primitive pressure.
+- `prefabs.productStage()` now uses a tighter product plinth, smaller highlight
+  card, cleaner softboxes, and a three-quarter product camera recipe.
+- Agent API primitive tessellation is reduced for spheres and cylinders to cut
+  screenshot-scene geometry cost without changing the public authoring API.
+- The root docs and frozen Aura3D context recipes are updated to direct agents
+  toward the amended material, city, and product framing.
+
+Diagnostic evidence:
+
+- `/tmp/aura3d-round8-material-smoke.png`
+- `/tmp/aura3d-round8-city-smoke.png`
+- `/tmp/aura3d-round8-product-smoke.png`
+
+These are targeted repair screenshots only. Round 8 still requires a future
+clean full benchmark run from the amended standard before any release claim.
+
 ## Round 6 Prompt 08 Diagnostic Failure
 
 After the final Round 6 sign-off alignment at

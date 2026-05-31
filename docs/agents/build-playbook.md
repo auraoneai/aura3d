@@ -80,13 +80,16 @@ Round 1 failure repairs:
 - Material lab prompts: use `prefabs.materialSwatches()` plus
   `material.metal()`, `material.glass()`, `material.rubber()`,
   `material.emissive()`, and `material.clearcoat()` so material classes are
-  visible without reading labels.
+  visible without reading labels. Keep the contrast wall and softbox strips in
+  frame; they are what make glass, chrome, and clearcoat read in screenshots.
 - City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
   before custom buildings. A city scene needs streets, lit windows, scale
-  variation, fog or depth, and a camera angle that makes the block readable.
+  variation, crosswalks, fog or depth, and a camera angle that makes the block
+  readable.
 - Product prompts: use `prefabs.productStage()`, typed `model(assets.product)`,
   `interactions.orbit()`, and product camera framing. Place normalized products
-  near `position(0, 0.65, -0.65)` so they sit on the round plinth. Do not
+  near `position(0, 0.54, -0.65)` so they sit on the round plinth. Use a
+  three-quarter product camera instead of a distant flat orbit. Do not
   implement the actual viewer in raw Three.js inside an Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
   `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
