@@ -1,0 +1,26 @@
+The build succeeded (typecheck + Vite bundle). Stopping here per the benchmark rules.
+
+## Summary
+
+Built a complete mini-golf hole in raw Three.js 0.165.0 (Vite + strict TypeScript) in `source/src/main.ts`.
+
+**What's implemented:**
+- **Green** — flat striped `PlaneGeometry` surface with shadow receiving.
+- **One obstacle** — a red brick block mid-course (AABB collision).
+- **Ball with physics** — white sphere with velocity integration, friction (exponential decay), rolling rotation, wall/obstacle bounce (restitution), sub-stepped for stability, and hole-capture detection.
+- **Click-to-aim-and-shoot** — slingshot model: pointer-down + drag from the ball projects onto the ground plane via raycaster; a yellow `ArrowHelper` shows direction and grows with power; release shoots and increments the stroke count.
+- **Score counter** — fixed HUD overlay showing strokes, live power %, rolling/ready status, and a "Holed in N strokes" win message.
+- **Follow camera** — perspective camera that smoothly lerps to track the ball's position and look target.
+
+## Deliverables for the runner
+
+- **Build command:** `npm run build` (run in `source/`)
+- **Run command:** `npm run dev -- --port <assigned-port>`
+- **Install:** `npm install` (run in `source/`)
+
+## Assumptions
+
+- Added `@types/three@0.165.0` to `devDependencies` (Three.js ships no bundled type declarations, and the scaffold's `npm run build` runs `tsc --noEmit` under `strict`, which requires them). This is a types-only dev dependency matching the pinned `three` version — no new runtime/asset dependency.
+- Added a minimal CSS reset in `index.html` so the canvas fills the viewport.
+- Procedural-only build (no assets), as required. Simple custom kinematics are used for the ball since the raw Three.js bundle exposes no physics API.
+- All changes confined to the `source/` directory.

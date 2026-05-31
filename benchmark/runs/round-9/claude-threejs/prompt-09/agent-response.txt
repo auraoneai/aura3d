@@ -1,0 +1,23 @@
+The build succeeds — both the strict typecheck and the Vite production build pass.
+
+## Summary
+
+I built an **animated primitive humanoid** with a procedural walk cycle in `source/src/main.ts` using only `three@0.165.0`.
+
+**What it satisfies:**
+- **Reads as humanoid** — sphere head (with eyes), short cylinder neck, cylinder torso, box upper/lower arms and legs, sphere hands, box shoes; correct proportions and faces its direction of travel.
+- **Primitives only** — `SphereGeometry`, `CylinderGeometry`, and `BoxGeometry`, no imported models.
+- **Visible ground plane** — an 80×80 shadow-receiving `PlaneGeometry` plus a faint grid that makes the forward motion legible.
+- **Walk-cycle motion** — limbs are rigged as joint pivots (shoulders/hips) with nested knee/elbow pivots. Legs swing in opposite phase with knee flex, arms counter-swing the legs, and the body bobs vertically per footfall. The whole figure strides along +X across the plane with wrap-around so it keeps crossing the view.
+- **Animated pose in a still frame** — a `PHASE_OFFSET` starts the figure mid-stride, so even the first rendered frame shows split legs and swinging arms rather than a static stance.
+
+**Assumptions:**
+- Added `@types/three@0.165.0` as a devDependency — three@0.165 ships no type declarations, and the scaffold's `build` runs strict `tsc --noEmit`, which would otherwise fail on `import * as THREE from 'three'`. This is the only `package.json` change.
+- Fixed angled camera (no controls), since the runner captures the default view; the looping path keeps the figure on-screen at any capture moment.
+
+**Commands:**
+- Install: `npm install`
+- Build: `npm run build`
+- Run (for the runner): `npm run dev -- --port <assigned-port>`
+
+All work is confined to the `source/` directory.

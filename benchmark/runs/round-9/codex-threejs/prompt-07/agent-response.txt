@@ -1,0 +1,15 @@
+Implemented the procedural Three.js material lab in `source/src/main.ts`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build status: `npm run build` succeeded.
+
+Assumptions: no external assets are needed; environment lighting uses the bundled Three.js `RoomEnvironment`, and orbit controls use the bundled `OrbitControls`.

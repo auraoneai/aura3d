@@ -103,7 +103,9 @@ For each prompt:
 
 1. Install dependencies.
 2. Run the build command.
-3. Start the app with the recorded run command.
+3. Start the app with the recorded run command. For engine parity captures,
+   use production preview after a successful build, not Vite dev server:
+   `npm run preview -- --port <assigned-port> --strictPort`.
 4. Open it in Playwright Chromium at 1440 x 960.
 5. Wait up to 10 seconds after the first successful page load for animation or
    assets to settle.
@@ -146,10 +148,30 @@ If either control fails, set scene `p50Fps` and `p95FrameTimeMs` to `null`, set
 engine-quality claim for that run. The result file must still report that the
 frozen threshold was unavailable because instrumentation failed.
 
+Scene sampling must also fail closed. The runner must not sample scene FPS until
+the page has loaded, `__ENGINE_READY__` is true, route health has passed, and a
+real canvas route is present. If scene sampling does not run, times out, or does
+not produce finite p50 FPS and p95 frame-time values, set scene `p50Fps` and
+`p95FrameTimeMs` to `null`, set `fpsInstrumentationStatus` to `"invalid"`, and
+record the scene-sampling failure in `fpsInstrumentationFailures`.
+
 The calibration requirement prevents the Round 1 failure mode where both
 Aura3D and raw Three.js measured at 1-8 FPS on scenes that were visually
 rendering, making the FPS numbers browser/sampling evidence rather than
 credible renderer-performance evidence.
+
+Engine setup/capture tools for the next proof round live in this directory:
+
+```sh
+node benchmark/runner/setup-engine.mjs --round=round-N
+node benchmark/runner/capture-engine-batch.mjs --round=round-N
+```
+
+`setup-engine.mjs` writes fresh hand-authored parity scenes under
+`benchmark/runs/round-N/engine/`, packs the current Aura3D package once for that
+round, and keeps scene setup intentionally lean enough for the FPS floor while
+preserving the benchmark visual targets. It does not reuse prior captured
+artifacts.
 
 ## Standard Cleanliness Check
 

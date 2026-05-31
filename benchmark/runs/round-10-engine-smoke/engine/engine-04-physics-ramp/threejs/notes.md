@@ -1,0 +1,28 @@
+scene: engine-04-physics-ramp
+library: Three.js
+install command: npm install
+build command: npm run build
+run command: npm run preview -- --port <assigned-port> --strictPort
+capture mode: production preview after Vite build
+
+capture timestamp: 2026-05-31T05:57:00.012Z
+capture mode: production preview after Vite build
+install status: 0
+build status: pass
+route/browser status: pass
+screenshot timestamp: 2026-05-31T05:57:00.014Z
+FPS calibration status: invalid
+failure stage: none
+failure reason: none
+heap peak: 10000000
+
+capture timestamp: 2026-05-31T06:09:23.992Z
+capture mode: production preview after Vite build
+install status: 0
+build status: pass
+route/browser status: pass
+screenshot timestamp: 2026-05-31T06:09:23.993Z
+FPS calibration status: pass
+failure stage: none
+failure reason: none
+heap peak: 10000000

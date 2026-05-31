@@ -50,6 +50,17 @@ createAuraApp("#app", {
 ## 02 Particle Fountain
 
 ```ts
+ui.html("#app", `
+  <button id="rate" type="button" style="position:absolute;left:18px;top:18px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(15,23,42,.78);color:white;font:700 14px system-ui">
+    emission rate: high
+  </button>
+`);
+let highRate = true;
+ui.onClick("#rate", (button) => {
+  highRate = !highRate;
+  ui.setText(button, highRate ? "emission rate: high" : "emission rate: low");
+});
+
 createAuraApp("#app", {
   scene: scene()
     .background("#030711")
@@ -62,25 +73,23 @@ createAuraApp("#app", {
 ## 03 Procedural Solar System
 
 ```ts
-ui.html("#app", `
-  <div style="position:absolute;right:18px;top:18px;display:grid;gap:6px;color:white;font:700 13px system-ui">
-    <span style="color:#cbd5e1">Mercury</span><span style="color:#fbbf24">Venus</span>
-    <span style="color:#38bdf8">Earth</span><span style="color:#f97316">Mars</span>
-    <span style="color:#f5d0a9">Jupiter</span><span style="color:#fde68a">Saturn</span>
-  </div>
-`);
-
 createAuraApp("#app", {
   scene: scene()
     .background("#020617")
-    .addMany(prefabs.solarSystem())
-    .add(lights.studio())
-    .camera(camera.perspective({ position: [0, 3.8, 6.2], target: [0, 0, 0], fov: 46 }))
+    .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 }))
+    .add(lights.studio({ intensity: 0.85 }))
+    .add(interactions.orbit())
+    .camera(camera.perspective({ position: [0, 4.15, 6.45], target: [0, 0.16, 0], fov: 45 }))
     .timeline(timeline.loop({ seconds: 10 }))
 });
 ```
 
 ## 04 Neon Tunnel
+
+The prefab already supplies octagonal emissive rings, diagonal braces,
+perspective floor rails, glossy reflections, fog, bloom, sparks, and ambient
+particles. Keep the dolly camera so the screenshot reads as a tunnel
+flythrough, not a flat portal or CSS background.
 
 ```ts
 createAuraApp("#app", {
@@ -93,6 +102,11 @@ createAuraApp("#app", {
 ```
 
 ## 05 3D Data Visualization
+
+The prefab already supplies 3D bars, top caps, base shadows, floor guides,
+axis rails, wall tick marks, label chips, a selected-metric callout, a trend
+ribbon, bloom, and hover metadata. Add DOM labels or readouts around the Aura
+canvas if needed, but keep one Aura app and do not recreate it per frame.
 
 ```ts
 createAuraApp("#app", {
@@ -110,9 +124,17 @@ createAuraApp("#app", {
 ```ts
 ui.html("#app", `
   <div style="position:absolute;left:18px;top:18px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(15,23,42,.76);color:white;font:700 14px system-ui">
-    strokes: <span id="strokes">1</span>
+    strokes: <span id="strokes">1</span> | power: medium
   </div>
+  <button id="shoot" type="button" style="position:absolute;left:18px;top:58px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(8,47,73,.82);color:white;font:700 14px system-ui">
+    aim and shoot
+  </button>
 `);
+let strokes = 1;
+ui.onClick("#shoot", () => {
+  strokes += 1;
+  ui.setText("#strokes", strokes);
+});
 
 createAuraApp("#app", {
   scene: scene()
@@ -121,6 +143,7 @@ createAuraApp("#app", {
     .add(lights.studio({ intensity: 1.15 }))
     .add(interactions.pointer())
     .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2, target: [-0.9, 0.08, 0.1], fov: 48 }))
+    .timeline(timeline.loop({ seconds: 5 }))
 });
 ```
 
@@ -144,12 +167,12 @@ import { camera, createAuraApp, effects, lights, prefabs, scene, ui } from "@aur
 import "./style.css";
 
 ui.html("#app", `
-  <button class="toggle" type="button" aria-pressed="true">night mode active</button>
+  <button class="toggle" type="button" aria-pressed="true">night mode active; sun/moon markers visible</button>
 `);
 let isNight = true;
 ui.onClick(".toggle", (button) => {
   isNight = !isNight;
-  ui.setText(button, isNight ? "night mode active" : "day mode requested");
+  ui.setText(button, isNight ? "night mode active; sun/moon markers visible" : "day mode requested; sun/moon markers visible");
   ui.setPressed(button, isNight);
 });
 
@@ -164,15 +187,21 @@ createAuraApp("#app", {
 });
 ```
 
+`prefabs.cityBlock(...)` already includes 20 varied towers, window columns,
+storefronts, awnings, roof detail, crosswalks, vehicles, traffic lights, street
+lights, and in-frame sun/moon state markers. Keep the camera above or slightly
+behind the foreground street so the day/night board and intersection evidence
+stay visible.
+
 ## 09 Animated Primitive Humanoid
 
 ```ts
 createAuraApp("#app", {
   scene: scene()
     .background("#08111f")
-    .addMany(prefabs.primitiveHumanoid())
+    .addMany(prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true }))
     .add(lights.studio({ intensity: 1.15 }))
-    .camera(camera.perspective({ position: [1.2, 1.55, 3.4], target: [0, 0.82, -0.55], fov: 42 }))
+    .camera(camera.perspective({ position: [1.25, 1.48, 3.25], target: [0, 0.86, -0.55], fov: 40 }))
     .timeline(timeline.loop({ seconds: 4 }))
 });
 ```
@@ -195,10 +224,20 @@ createAuraApp("#app", {
 });
 ```
 
-Before writing the scene, add the user-approved asset with `npx
-@aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker`, then import
-`assets` from the generated `./aura-assets` module. Do not write
-`model("sneaker")` or invent asset URLs.
+Before writing the scene, add the user-approved asset and read the generated
+typed module:
+
+```bash
+npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
+sed -n '1,120p' src/aura-assets.ts
+```
+
+Then import `assets` from the generated `./aura-assets` module and use
+`model(assets.sneaker)`. Do not write `model("sneaker")`, do not use
+`unsafeModelUrl(...)`, and do not invent asset URLs. `prefabs.productStage()`
+includes plinth, contact shadow, turntable/orbit cues, softboxes, reflection
+cards, and fit-to-bounds brackets so the normalized model reads as a deliberate
+product viewer instead of a lone GLB.
 
 Use CSS only for small overlays, toggles, labels, and page sizing. Do not use
 DOM or canvas as the main 3D rendering path in Aura3D runs.

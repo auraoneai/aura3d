@@ -1,0 +1,24 @@
+Build succeeded. The implementation is complete.
+
+## Summary
+
+I built Prompt 09 (Animated Primitive Humanoid) by following the benchmark workflow: read `context/llms.txt` first, then `docs/agents/README.md` and `docs/agents/benchmark-recipes.md`, which contains an exact-match recipe (#09 Animated Primitive Humanoid).
+
+I copied that recipe shape into `source/src/main.ts`, using the public `prefabs.primitiveHumanoid()` helper rather than hand-placing custom primitives. Per the context docs, this prefab provides the connected sphere head / cylinder torso / box-limb body, a ground plane with path cues, face details, and a procedural `walk` animation clip; `timeline.loop({ seconds: 4 })` drives the walk-cycle motion across the ground plane.
+
+`npm install` and `npm run build` (typecheck + vite build) both passed.
+
+**Build command:**
+```
+npm install && npm run build
+```
+(run inside the `source/` directory)
+
+**Run command (for the runner):**
+```
+npm run dev -- --port <assigned-port>
+```
+
+**Assumptions:**
+- The `prefabs.primitiveHumanoid()` prefab supplies the humanoid figure (primitive head/torso/arms/legs), the visible ground plane, and the procedural `walk` clip, as documented in the context bundle; the recipe's `timeline.loop` produces the visible walk-cycle/animated pose. No assets were added (none required — built procedurally).
+- Only files inside `source/` were modified; the scaffold's `index.html`, `package.json`, and `tsconfig.json` were left as provided.

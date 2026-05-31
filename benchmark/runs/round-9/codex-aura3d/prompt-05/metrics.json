@@ -1,0 +1,31 @@
+{
+  "prompt": "05-3d-data-visualization",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6105/",
+  "runCommand": "npm run dev -- --port 6105",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 92,
+  "filesCreated": 3,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 109935,
+  "bundleSizeGzipBytes": 213513,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 3,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

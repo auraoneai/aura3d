@@ -1,0 +1,18 @@
+Implemented the app in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-aura3d/prompt-04/source/src/main.ts:1): recipe-based `prefabs.neonTunnel`, dolly camera loop, explicit bloom, and fog falloff. No assets used.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for runner:
+```bash
+cd source && npm run dev
+```
+
+Build result: failed during typecheck because `@aura3d/engine` was not found in installed dependencies/types:
+```text
+src/main.ts(1,74): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Assumption: the runner will install package dependencies before running build/dev, since `source/package.json` points `@aura3d/engine` at the provided local tarball.

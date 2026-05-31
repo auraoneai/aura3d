@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 38,
+  "bodyTextSample": "PARTICLE FOUNTAIN\nEmission rate\n2400/s",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6302/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6302/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 31,
+    "lumaRange": 255
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6302/",
+  "runCommand": "npm run dev -- --port 6302"
+}

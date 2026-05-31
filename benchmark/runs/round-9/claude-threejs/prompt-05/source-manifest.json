@@ -1,0 +1,12 @@
+[
+  {
+    "path": "index.html",
+    "bytes": 531,
+    "nonBlankLines": 17
+  },
+  {
+    "path": "src/main.ts",
+    "bytes": 9823,
+    "nonBlankLines": 258
+  }
+]

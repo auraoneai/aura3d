@@ -1,0 +1,452 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------------------------------------------------------------------------
+// Renderer
+// ---------------------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+
+const app = document.getElementById('app') as HTMLDivElement;
+app.appendChild(renderer.domElement);
+
+// ---------------------------------------------------------------------------
+// Scene & camera
+// ---------------------------------------------------------------------------
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(
+  55,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  2000,
+);
+camera.position.set(95, 70, 110);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.target.set(0, 8, 0);
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.minDistance = 30;
+controls.maxDistance = 320;
+
+// ---------------------------------------------------------------------------
+// Deterministic PRNG so the city looks the same every run
+// ---------------------------------------------------------------------------
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rand = mulberry32(1337);
+const randRange = (min: number, max: number) => min + rand() * (max - min);
+
+// ---------------------------------------------------------------------------
+// Lighting (mutated by the day/night toggle)
+// ---------------------------------------------------------------------------
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444466, 1.0);
+scene.add(hemiLight);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+
+const sunLight = new THREE.DirectionalLight(0xffffff, 2.2);
+sunLight.position.set(120, 160, 80);
+sunLight.castShadow = true;
+sunLight.shadow.mapSize.set(2048, 2048);
+sunLight.shadow.camera.near = 10;
+sunLight.shadow.camera.far = 600;
+sunLight.shadow.camera.left = -160;
+sunLight.shadow.camera.right = 160;
+sunLight.shadow.camera.top = 160;
+sunLight.shadow.camera.bottom = -160;
+sunLight.shadow.bias = -0.0004;
+scene.add(sunLight);
+
+// ---------------------------------------------------------------------------
+// Window texture generator
+//   Returns a colour map plus a matching emissive map (lit windows glow).
+// ---------------------------------------------------------------------------
+function makeBuildingTextures(
+  cols: number,
+  rows: number,
+  facadeColor: string,
+): { map: THREE.CanvasTexture; emissive: THREE.CanvasTexture } {
+  const cell = 16;
+  const pad = 5;
+  const w = cols * cell;
+  const h = rows * cell;
+
+  const colorCanvas = document.createElement('canvas');
+  colorCanvas.width = w;
+  colorCanvas.height = h;
+  const cc = colorCanvas.getContext('2d')!;
+
+  const emiCanvas = document.createElement('canvas');
+  emiCanvas.width = w;
+  emiCanvas.height = h;
+  const ec = emiCanvas.getContext('2d')!;
+
+  // Facade base.
+  cc.fillStyle = facadeColor;
+  cc.fillRect(0, 0, w, h);
+  ec.fillStyle = '#000000';
+  ec.fillRect(0, 0, w, h);
+
+  const windowDark = '#10131c';
+  const windowGlow = ['#ffd98a', '#ffe9b0', '#cfe8ff', '#fff4cf'];
+
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const px = x * cell + pad;
+      const py = y * cell + pad;
+      const sw = cell - pad * 2;
+      const sh = cell - pad * 2;
+      const lit = rand() < 0.45;
+      const glow = windowGlow[(rand() * windowGlow.length) | 0];
+
+      // Colour map window.
+      cc.fillStyle = lit ? glow : windowDark;
+      cc.fillRect(px, py, sw, sh);
+
+      // Emissive map: only lit windows emit.
+      if (lit) {
+        ec.fillStyle = glow;
+        ec.fillRect(px, py, sw, sh);
+      }
+    }
+  }
+
+  const map = new THREE.CanvasTexture(colorCanvas);
+  const emissive = new THREE.CanvasTexture(emiCanvas);
+  for (const t of [map, emissive]) {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.magFilter = THREE.NearestFilter;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    t.anisotropy = 4;
+  }
+  return { map, emissive };
+}
+
+// ---------------------------------------------------------------------------
+// Ground / streets
+// ---------------------------------------------------------------------------
+const GRID_COLS = 5;
+const GRID_ROWS = 4; // 5 x 4 = 20 buildings
+const PITCH = 30; // distance between lot centres
+const ROAD_WIDTH = 12;
+
+const cityWidth = GRID_COLS * PITCH;
+const cityDepth = GRID_ROWS * PITCH;
+const groundSize = Math.max(cityWidth, cityDepth) + 120;
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(groundSize, groundSize),
+  new THREE.MeshStandardMaterial({ color: 0x2b2f37, roughness: 1.0 }),
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Asphalt roads laid out as a grid between the lots.
+const roadMat = new THREE.MeshStandardMaterial({ color: 0x1a1c22, roughness: 1 });
+const markingMat = new THREE.MeshStandardMaterial({
+  color: 0xf2e9c0,
+  roughness: 0.8,
+});
+
+const colX: number[] = [];
+for (let c = 0; c < GRID_COLS; c++) colX.push((c - (GRID_COLS - 1) / 2) * PITCH);
+const rowZ: number[] = [];
+for (let r = 0; r < GRID_ROWS; r++) rowZ.push((r - (GRID_ROWS - 1) / 2) * PITCH);
+
+// Road centre lines sit halfway between lots (and around the edges).
+const roadXLines: number[] = [];
+for (let c = 0; c <= GRID_COLS; c++) roadXLines.push((c - GRID_COLS / 2) * PITCH);
+const roadZLines: number[] = [];
+for (let r = 0; r <= GRID_ROWS; r++) roadZLines.push((r - GRID_ROWS / 2) * PITCH);
+
+const halfRoadSpanX = (GRID_COLS / 2) * PITCH + ROAD_WIDTH / 2;
+const halfRoadSpanZ = (GRID_ROWS / 2) * PITCH + ROAD_WIDTH / 2;
+
+function addRoad(x: number, z: number, w: number, d: number, vertical: boolean) {
+  const road = new THREE.Mesh(new THREE.PlaneGeometry(w, d), roadMat);
+  road.rotation.x = -Math.PI / 2;
+  road.position.set(x, 0.02, z);
+  road.receiveShadow = true;
+  scene.add(road);
+
+  // Dashed centre marking.
+  const dashLen = 4;
+  const gap = 4;
+  const length = vertical ? d : w;
+  const count = Math.floor(length / (dashLen + gap));
+  for (let i = 0; i < count; i++) {
+    const dash = new THREE.Mesh(
+      new THREE.PlaneGeometry(vertical ? 0.6 : dashLen, vertical ? dashLen : 0.6),
+      markingMat,
+    );
+    dash.rotation.x = -Math.PI / 2;
+    const offset = -length / 2 + dashLen / 2 + i * (dashLen + gap);
+    dash.position.set(
+      vertical ? x : x + offset,
+      0.04,
+      vertical ? z + offset : z,
+    );
+    scene.add(dash);
+  }
+}
+
+for (const lx of roadXLines) addRoad(lx, 0, ROAD_WIDTH, halfRoadSpanZ * 2, true);
+for (const lz of roadZLines) addRoad(0, lz, halfRoadSpanX * 2, ROAD_WIDTH, false);
+
+// ---------------------------------------------------------------------------
+// Buildings
+// ---------------------------------------------------------------------------
+const facadeColors = ['#6d7585', '#7e8694', '#5d6675', '#8a8f9c', '#69707d'];
+const windowMaterials: THREE.MeshStandardMaterial[] = [];
+
+const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+
+for (let r = 0; r < GRID_ROWS; r++) {
+  for (let c = 0; c < GRID_COLS; c++) {
+    const footprint = randRange(11, 15);
+    const height = randRange(16, 60); // varied heights
+    const floors = Math.max(3, Math.round(height / 5));
+    const windowsPerSide = Math.max(2, Math.round(footprint / 4));
+
+    const facade = facadeColors[(rand() * facadeColors.length) | 0];
+    const { map, emissive } = makeBuildingTextures(windowsPerSide, floors, facade);
+
+    const mat = new THREE.MeshStandardMaterial({
+      map,
+      emissiveMap: emissive,
+      emissive: 0xffffff,
+      emissiveIntensity: 0.0, // raised at night
+      roughness: 0.75,
+      metalness: 0.15,
+    });
+    windowMaterials.push(mat);
+
+    const building = new THREE.Mesh(boxGeo, mat);
+    building.scale.set(footprint, height, footprint);
+    building.position.set(colX[c], height / 2, rowZ[r]);
+    building.castShadow = true;
+    building.receiveShadow = true;
+    scene.add(building);
+
+    // Simple roof cap so the top isn't a glowing window.
+    const cap = new THREE.Mesh(
+      new THREE.BoxGeometry(footprint * 1.02, 1.2, footprint * 1.02),
+      new THREE.MeshStandardMaterial({ color: 0x3a3f49, roughness: 0.9 }),
+    );
+    cap.position.set(colX[c], height + 0.4, rowZ[r]);
+    cap.castShadow = true;
+    scene.add(cap);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Street lights  (pole + lamp head + point light enabled at night)
+// ---------------------------------------------------------------------------
+const lampLights: THREE.PointLight[] = [];
+const lampHeads: THREE.MeshStandardMaterial[] = [];
+const poleMat = new THREE.MeshStandardMaterial({
+  color: 0x2c2f36,
+  roughness: 0.6,
+  metalness: 0.7,
+});
+const lampMat = new THREE.MeshStandardMaterial({
+  color: 0xfff0c0,
+  emissive: 0xffd27f,
+  emissiveIntensity: 0.0,
+});
+
+const poleGeo = new THREE.CylinderGeometry(0.25, 0.35, 9, 8);
+const armGeo = new THREE.CylinderGeometry(0.18, 0.18, 2.4, 6);
+const headGeo = new THREE.SphereGeometry(0.7, 12, 12);
+
+function addStreetLight(x: number, z: number, dir: number) {
+  const group = new THREE.Group();
+
+  const pole = new THREE.Mesh(poleGeo, poleMat);
+  pole.position.y = 4.5;
+  pole.castShadow = true;
+  group.add(pole);
+
+  const arm = new THREE.Mesh(armGeo, poleMat);
+  arm.rotation.z = Math.PI / 2;
+  arm.position.set(dir * 1.2, 8.8, 0);
+  group.add(arm);
+
+  const head = new THREE.Mesh(headGeo, lampMat.clone());
+  head.position.set(dir * 2.3, 8.6, 0);
+  group.add(head);
+  lampHeads.push(head.material as THREE.MeshStandardMaterial);
+
+  const light = new THREE.PointLight(0xffd27f, 0, 26, 1.6);
+  light.position.set(dir * 2.3, 8.2, 0);
+  group.add(light);
+  lampLights.push(light);
+
+  group.position.set(x, 0, z);
+  scene.add(group);
+}
+
+// Place lamps along the inner cross streets, alternating which side they face.
+let toggleDir = 1;
+for (let i = 1; i < roadXLines.length - 1; i++) {
+  const lx = roadXLines[i];
+  for (const lz of rowZ) {
+    addStreetLight(lx - ROAD_WIDTH / 2 - 1.5, lz, toggleDir);
+    toggleDir *= -1;
+  }
+}
+for (const lz of [roadZLines[0], roadZLines[roadZLines.length - 1]]) {
+  for (const cx of colX) {
+    addStreetLight(
+      cx,
+      lz + (lz < 0 ? ROAD_WIDTH / 2 + 1.5 : -ROAD_WIDTH / 2 - 1.5),
+      toggleDir,
+    );
+    toggleDir *= -1;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sky helpers
+// ---------------------------------------------------------------------------
+const dayTop = new THREE.Color(0x7ec3ff);
+const dayBottom = new THREE.Color(0xdff1ff);
+const nightTop = new THREE.Color(0x05060f);
+const nightBottom = new THREE.Color(0x141a30);
+
+function makeSkyTexture(top: THREE.Color, bottom: THREE.Color, stars: boolean) {
+  const cv = document.createElement('canvas');
+  cv.width = 16;
+  cv.height = 256;
+  const ctx = cv.getContext('2d')!;
+  const grad = ctx.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, `#${top.getHexString()}`);
+  grad.addColorStop(1, `#${bottom.getHexString()}`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 16, 256);
+  if (stars) {
+    ctx.fillStyle = '#ffffff';
+    for (let i = 0; i < 60; i++) {
+      const sx = (rand() * 16) | 0;
+      const sy = (rand() * 150) | 0;
+      ctx.globalAlpha = 0.4 + rand() * 0.6;
+      ctx.fillRect(sx, sy, 1, 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.mapping = THREE.EquirectangularReflectionMapping;
+  return tex;
+}
+
+const daySky = makeSkyTexture(dayTop, dayBottom, false);
+const nightSky = makeSkyTexture(nightTop, nightBottom, true);
+
+// ---------------------------------------------------------------------------
+// Day / night state
+// ---------------------------------------------------------------------------
+let isNight = false;
+
+function applyDay() {
+  scene.background = daySky;
+  scene.fog = new THREE.Fog(0xcfe6ff, 200, 600);
+  hemiLight.color.set(0xbfd6ff);
+  hemiLight.groundColor.set(0x6b6f5a);
+  hemiLight.intensity = 1.0;
+  ambientLight.intensity = 0.45;
+  sunLight.color.set(0xfff4e0);
+  sunLight.intensity = 2.4;
+  sunLight.position.set(120, 160, 80);
+  for (const m of windowMaterials) m.emissiveIntensity = 0.05;
+  for (const l of lampLights) l.intensity = 0;
+  for (const h of lampHeads) h.emissiveIntensity = 0.0;
+  lampMat.emissiveIntensity = 0.0;
+  renderer.toneMappingExposure = 1.05;
+}
+
+function applyNight() {
+  scene.background = nightSky;
+  scene.fog = new THREE.Fog(0x0a0e1c, 160, 520);
+  hemiLight.color.set(0x35406b);
+  hemiLight.groundColor.set(0x05060c);
+  hemiLight.intensity = 0.25;
+  ambientLight.intensity = 0.08;
+  sunLight.color.set(0x9fb4ff); // moonlight
+  sunLight.intensity = 0.35;
+  sunLight.position.set(-100, 120, -60);
+  for (const m of windowMaterials) m.emissiveIntensity = 1.6;
+  for (const l of lampLights) l.intensity = 22;
+  for (const h of lampHeads) h.emissiveIntensity = 1.6;
+  renderer.toneMappingExposure = 1.2;
+}
+
+function setNight(night: boolean) {
+  isNight = night;
+  if (night) applyNight();
+  else applyDay();
+  button.textContent = isNight ? '☀ Switch to Day' : '🌙 Switch to Night';
+}
+
+// ---------------------------------------------------------------------------
+// UI
+// ---------------------------------------------------------------------------
+const ui = document.createElement('div');
+ui.style.cssText =
+  'position:fixed;top:16px;left:16px;z-index:10;font-family:system-ui,sans-serif;';
+
+const title = document.createElement('div');
+title.textContent = 'Procedural City Block';
+title.style.cssText =
+  'color:#fff;font-weight:600;font-size:18px;margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.7);';
+ui.appendChild(title);
+
+const button = document.createElement('button');
+button.style.cssText =
+  'padding:10px 16px;font-size:15px;border:none;border-radius:8px;cursor:pointer;' +
+  'background:#1e88e5;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+button.onclick = () => setNight(!isNight);
+ui.appendChild(button);
+
+const hint = document.createElement('div');
+hint.textContent = 'Drag to orbit · scroll to zoom';
+hint.style.cssText =
+  'color:#dfe6f2;font-size:12px;margin-top:8px;text-shadow:0 1px 3px rgba(0,0,0,.7);';
+ui.appendChild(hint);
+
+document.body.appendChild(ui);
+document.body.style.margin = '0';
+document.body.style.overflow = 'hidden';
+
+setNight(false); // start in daytime
+
+// ---------------------------------------------------------------------------
+// Resize + render loop
+// ---------------------------------------------------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+});

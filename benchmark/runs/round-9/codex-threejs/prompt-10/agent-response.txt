@@ -1,0 +1,17 @@
+Implemented the Three.js product viewer in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- The provided asset is served by Vite from `source/public/benchmark/assets/sneaker.glb` at `/benchmark/assets/sneaker.glb`.
+- No recipe file existed at `context/docs/agents/benchmark-recipes.md`, so I used the raw Three.js scaffold directly.

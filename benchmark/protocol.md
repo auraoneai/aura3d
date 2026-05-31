@@ -128,6 +128,27 @@ per-metric winner table needed to support the majority-of-metrics result.
 - No Round 1 run can start until Phase A is signed off by `gchahal1982` using
   `results/phase-a-signoff-template.md`.
 
+## Failed-Round Repair Standard
+
+After a complete failed round, do not rerun the same standard unchanged. The
+next proof round must start from a committed `PRD-AMENDMENT:` repair standard
+that identifies:
+
+- the failed result files invalidated for shipping
+- the exact failed prompt gates and engine thresholds
+- the prompt families targeted for repair
+- the required screenshot-visible acceptance criteria for each targeted prompt
+- the engine performance, instrumentation, or explanatory evidence required
+  before the next run
+- the verification commands and smoke evidence that prove the repair before
+  the full matrix starts
+
+The amendment may tighten agent guidance, public helper behavior, engine
+reference scenes, runner instrumentation, or release-proof docs. It may not
+change the frozen benchmark prompts, scoring rubric, prompt pass thresholds, or
+neutrality rules unless the amendment explicitly calls out that standard change
+and restarts the round from scratch.
+
 ## Amendment Commits
 
 Any standard change after Phase A sign-off must use the commit-message prefix:

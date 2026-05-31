@@ -1,0 +1,36 @@
+.hud {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #f8fafc;
+  font: 700 14px system-ui, sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.hud button {
+  cursor: pointer;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 14px;
+  background: #38bdf8;
+  color: #04121f;
+  font: 700 13px system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.hud button:hover {
+  background: #7dd3fc;
+}
+
+.hud .contacts b {
+  color: #4ade80;
+  font-variant-numeric: tabular-nums;
+}

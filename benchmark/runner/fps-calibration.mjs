@@ -2,7 +2,8 @@ export const DEFAULT_FPS_CALIBRATION_THRESHOLDS = Object.freeze({
   emptyRafMinFps: 55,
   webglControlMinFps: 45,
   maxP95FrameTimeMs: 34,
-  minControlSamples: 90
+  minControlSamples: 90,
+  minSceneSamples: 2
 });
 
 export function summarizeFrameTimes(frameTimes, options = {}) {
@@ -44,6 +45,31 @@ export function classifyFpsCalibration(calibration, thresholds = DEFAULT_FPS_CAL
   }
   if ((calibration.webglControl?.p95FrameTimeMs ?? Number.POSITIVE_INFINITY) > thresholds.maxP95FrameTimeMs) {
     failures.push(`WebGL control p95 frame time ${formatMs(calibration.webglControl?.p95FrameTimeMs)} > ${thresholds.maxP95FrameTimeMs}ms`);
+  }
+  return {
+    status: failures.length === 0 ? "pass" : "invalid",
+    failures,
+    thresholds
+  };
+}
+
+export function classifySceneFpsSample(fpsSample, thresholds = DEFAULT_FPS_CALIBRATION_THRESHOLDS) {
+  const failures = [];
+  if (!fpsSample) {
+    failures.push("scene FPS sampling did not run");
+  } else {
+    if ((fpsSample.sampleCount ?? 0) < thresholds.minSceneSamples) {
+      failures.push(`scene FPS sample count ${formatCount(fpsSample.sampleCount)} < ${thresholds.minSceneSamples}`);
+    }
+    if (fpsSample.timedOut === true) {
+      failures.push("scene FPS sampling timed out before the requested window completed");
+    }
+    if (!Number.isFinite(fpsSample.p50Fps)) {
+      failures.push("scene FPS p50 unavailable");
+    }
+    if (!Number.isFinite(fpsSample.p95FrameTimeMs)) {
+      failures.push("scene FPS p95 frame time unavailable");
+    }
   }
   return {
     status: failures.length === 0 ? "pass" : "invalid",
@@ -135,8 +161,9 @@ export async function runFpsCalibration(browser, options = {}) {
 
 export function applyFpsCalibrationToMetrics(metrics, calibration) {
   const verdict = calibration.verdict ?? classifyFpsCalibration(calibration);
+  const sceneVerdict = classifySceneFpsSample(metrics.fpsSample, verdict.thresholds);
   const fpsCalibration = { ...calibration, verdict };
-  if (verdict.status === "pass") {
+  if (verdict.status === "pass" && sceneVerdict.status === "pass") {
     return {
       ...metrics,
       fpsInstrumentationStatus: "pass",
@@ -149,7 +176,9 @@ export function applyFpsCalibrationToMetrics(metrics, calibration) {
     p50Fps: null,
     p95FrameTimeMs: null,
     fpsInstrumentationStatus: "invalid",
-    fpsInstrumentationFailures: verdict.failures.length > 0 ? verdict.failures : ["FPS calibration did not pass."],
+    fpsInstrumentationFailures: [...verdict.failures, ...sceneVerdict.failures].length > 0
+      ? [...verdict.failures, ...sceneVerdict.failures]
+      : ["FPS calibration did not pass."],
     fpsCalibration
   };
 }

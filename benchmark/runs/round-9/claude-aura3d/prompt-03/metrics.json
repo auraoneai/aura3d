@@ -1,0 +1,31 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6303/",
+  "runCommand": "npm run dev -- --port 6303",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 43,
+  "filesCreated": 2,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 1034494,
+  "bundleSizeGzipBytes": 213601,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

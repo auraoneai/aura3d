@@ -1,0 +1,27 @@
+Implemented the procedural solar system app in `source/src/main.ts` using the matching Aura3D recipe shape, with:
+
+- `prefabs.solarSystem()` for sun, 6 planets, orbit paths, and procedural scene elements
+- visible planet label overlay
+- explicit `effects.bloom(...)` for sun glow
+- `interactions.orbit()` and whole-system camera framing
+- timeline loop for orbital motion
+
+Build command run:
+
+```bash
+npm run build
+```
+
+Build result: failed at typecheck because `@aura3d/engine` could not be resolved:
+
+```text
+src/main.ts(11,8): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Runner command to execute later:
+
+```bash
+npm run dev
+```
+
+Assumption: dependencies may need to be installed in `source` first with `npm install` before building/running.

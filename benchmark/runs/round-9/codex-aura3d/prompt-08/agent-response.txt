@@ -1,0 +1,18 @@
+Implemented the Procedural City Block app in `source/`.
+
+Build succeeded with:
+
+```bash
+npm run build
+```
+
+Runner command:
+
+```bash
+npm run dev
+```
+
+Assumptions:
+- The runner will execute commands from `source/`.
+- The day/night toggle can recreate the Aura scene on click; it does not run a loop or server-side visual verification.
+- No external assets are used; the scene is procedural via `prefabs.cityBlock({ blocks: 20, litWindows: true })`.

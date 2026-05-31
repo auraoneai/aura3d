@@ -1,0 +1,20 @@
+Implemented in `source/`.
+
+Build command:
+```bash
+cd /Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-aura3d/prompt-05/source
+npm run build
+```
+
+Run command for the runner:
+```bash
+cd /Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-aura3d/prompt-05/source
+npm run dev
+```
+
+Assumptions/run notes:
+- No assets are used; the chart is procedural via `prefabs.dataBars3D({ grid: 6 })`.
+- The prefab provides 36 height-varied, height-colored animated bars.
+- Hover-highlight is implemented by the Aura3D data bar prefab’s per-bar pointer interaction (`onHover: "highlight bar and show value"`).
+- DOM overlays provide readable X, Z, and Height axis labels plus a height color key.
+- `npm run build` completed successfully. Vite emitted only a nonfatal large chunk warning.

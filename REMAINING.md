@@ -10,6 +10,8 @@ runs as completion evidence.
 - Round 7 failed.
 - Round 8 Phase A sign-off exists, but the attempted run was aborted and does
   not count as benchmark evidence.
+- Round 9 completed clean generation, capture, and neutral scoring, then failed
+  both the prompt benchmark and engine benchmark. It is invalid for shipping.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark and engine parity benchmark both pass, or the user explicitly signs
   a below-bar shipping decision.
@@ -100,8 +102,12 @@ runs as completion evidence.
   - `node benchmark/runner/verify-context-manifests.mjs` passed:
     `aura3d: 38 files verified`, `threejs: 15 files verified`,
     `runner contract: finite execution guardrails verified`.
-  - The `PRD-AMENDMENT:` commit is still pending for the current standard
-    changes; task 7 remains open until that amendment/sign-off state is clean.
+  - The current standard changes are recorded in
+    `benchmark/results/amendment-round-10-targeted-repair-standard.md`.
+  - The Round 10 Phase A sign-off is recorded in
+    `benchmark/results/round-10-phase-a-signoff.md`.
+  - These files must be committed with a `PRD-AMENDMENT:` prefix before Round
+    10 starts.
 
 - [x] 7. Confirm the benchmark standard is clean before the next round.
   Evidence required:
@@ -113,17 +119,18 @@ runs as completion evidence.
   - No uncommitted benchmark standard changes.
   - Prompts and rubric have not drifted.
   Evidence checked:
-  - `benchmark/results/amendment-round-9-final-proof-standard.md` records the
-    active standard change.
-  - `benchmark/results/round-9-phase-a-signoff.md` records the active Phase A
+  - `benchmark/results/amendment-round-10-targeted-repair-standard.md` records
+    the active targeted repair standard.
+  - `benchmark/results/round-10-phase-a-signoff.md` records the active Phase A
     sign-off.
   - `node benchmark/runner/verify-context-manifests.mjs` passed.
   - `git diff --check` passed.
   - Prompts and rubric were not edited by this repair pass.
   - This item is completed by the same `PRD-AMENDMENT:` commit that records the
-    Round 9 standard and removes uncommitted benchmark-standard drift.
+    Round 10 targeted repair standard and removes uncommitted
+    benchmark-standard drift before Round 10 starts.
 
-- [ ] 8. Run one clean full final prompt benchmark round.
+- [x] 8. Run one clean full final prompt benchmark round.
   Evidence required:
   - Codex + Aura3D completes all 10 prompts.
   - Codex + raw Three.js completes all 10 prompts.
@@ -133,8 +140,18 @@ runs as completion evidence.
   - No human edits occur during the run.
   - No prompt, rubric, or context changes occur during the run.
   - No result cherry-picking.
+  Evidence checked:
+  - Round 9 runner tooling was committed and pushed first:
+    `d6c23ea Add reproducible Round 9 benchmark runner`.
+  - The initial untracked/partial matrix attempt was stopped and removed; it is
+    not counted as evidence.
+  - Fresh Round 9 prompt directories were prepared after the runner commit.
+  - `benchmark/runs/round-9/*/prompt-*/run-metadata.json` verifies all 40
+    agent generations completed with `agentExitCode === 0`:
+    `codex-aura3d: 10/10`, `codex-threejs: 10/10`,
+    `claude-aura3d: 10/10`, `claude-threejs: 10/10`.
 
-- [ ] 9. Capture runtime evidence for every prompt.
+- [x] 9. Capture runtime evidence for every prompt.
   Evidence required for every generated app:
   - Screenshot.
   - Route health.
@@ -148,8 +165,16 @@ runs as completion evidence.
   - Time to first usable render.
   - Bundle size.
   - Modifiability input for scorer.
+  Evidence checked:
+  - `benchmark/runs/round-9/{codex-aura3d,codex-threejs,claude-aura3d,claude-threejs}/prompt-01..prompt-10/`
+    each contain `screenshot.png`, `route-health.json`, `metrics.json`,
+    `source-listing.md`, `source-manifest.json`, and `notes.md`.
+  - Validation script confirmed `40/40` prompt captures have
+    `compiles === true`, `runsInBrowser === true`, `routeHealth === "pass"`,
+    numeric LOC/file/API/asset/repair/time/bundle metrics, and source-listing
+    evidence for scorer modifiability review.
 
-- [ ] 10. Run the engine parity benchmark cleanly.
+- [x] 10. Run the engine parity benchmark cleanly.
   Evidence required:
   - `engine-01-material-grid` metrics and screenshot.
   - `engine-02-city-block` metrics and screenshot.
@@ -164,8 +189,17 @@ runs as completion evidence.
   - Aura3D JS heap peak no worse than 50% above Three.js in any scene.
   - Draw-call differences above 25% are explained.
   - Gzip delta over Three.js is not above 250 KB unless explicitly accepted.
+  Evidence checked:
+  - `benchmark/runs/round-9/engine/engine-01-material-grid..engine-05-sneaker-product/{aura3d,threejs}/`
+    contains metrics, route health, screenshots, notes, and source for all 10
+    engine sides.
+  - Engine capture completed without process failures for all five scenes.
+  - Neutral scoring in
+    `benchmark/scoring/round-9-scores/engine-by-claude.json` confirms visual
+    parity reached `5/5` scenes at `>=4`, but the engine benchmark does not
+    pass task 13 because captured FPS thresholds failed.
 
-- [ ] 11. Complete neutral scoring.
+- [x] 11. Complete neutral scoring.
   Evidence required:
   - Prompt outputs submitted to neutral scorer.
   - Engine screenshots/metrics submitted to neutral scorer.
@@ -173,6 +207,18 @@ runs as completion evidence.
   - Claude/Anthropic does not grade Claude output.
   - Scorer sees prompt, screenshot, code listing, and metrics, not context
     bundles.
+  Evidence checked:
+  - `benchmark/scoring/round-9-scores/codex-by-claude.json`: Claude Code scored
+    Codex-generated outputs. The initial full handoff hung with zero output, so
+    the same allowed Codex artifacts were split into prompts 01-05 and 06-10,
+    then combined into this JSON.
+  - `benchmark/scoring/round-9-scores/claude-by-codex.json`: Codex scored
+    Claude-generated outputs.
+  - `benchmark/scoring/round-9-scores/engine-by-claude.json`: Claude Code
+    scored hand-authored engine parity outputs.
+  - Scorer prompt files list only prompt, screenshot, metrics, route-health,
+    notes, source listing/source manifest, and engine source files. They
+    explicitly exclude context bundles, prior results, and old scoring files.
 
 - [ ] 12. Pass the main prompt benchmark.
   Evidence required:
@@ -207,7 +253,7 @@ runs as completion evidence.
   - Failing benchmark decision says fix specific gaps and rerun, or
   - Below-bar ship decision includes explicit user acknowledgment.
 
-- [ ] 16. Verify no regression of shipped features.
+- [x] 16. Verify no regression of shipped features.
   Evidence required:
   - TypeScript build/typecheck passes.
   - Agent API unit tests pass.
@@ -218,6 +264,33 @@ runs as completion evidence.
   - Targeted browser/screenshot checks for changed visual systems pass.
   - Benchmark runner checks pass.
   - FPS calibration checks pass.
+  Evidence checked:
+  - `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts tests/unit/tools/benchmark-fps-calibration.test.ts --reporter=default`
+    passed: 31 tests.
+  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
+  - `pnpm build` passed when run alone. A prior concurrent invocation failed
+    because `check:public-api` was writing `dist/` at the same time; rerunning
+    without overlapping `dist` writers passed.
+  - `pnpm run check:agent-docs` passed.
+  - `pnpm run check:agent-api` passed: 28 tests.
+  - `pnpm run check:public-api` passed.
+  - `node benchmark/runner/verify-context-manifests.mjs` passed:
+    `aura3d: 38 files verified`, `threejs: 15 files verified`,
+    `runner contract: finite execution guardrails verified`.
+  - `git diff --check` passed.
+  - Runner syntax checks passed for `benchmark/runner/fps-calibration.mjs`,
+    `benchmark/runner/setup-engine.mjs`,
+    `benchmark/runner/capture-engine.mjs`, and
+    `benchmark/runner/capture-engine-batch.mjs`.
+  - Fresh current-worktree visual smoke passed for particle, solar, neon, data,
+    mini-golf, material, city, humanoid, and product prefabs with nonzero draw
+    calls and no runtime errors. Contact sheet:
+    `/tmp/aura3d-current-repair-smoke/contact-sheet.png`.
+  - Round evidence visual sheets:
+    `/tmp/aura3d-current-sheets/round9-codex-aura3d.png`,
+    `/tmp/aura3d-current-sheets/round9-claude-aura3d.png`,
+    `/tmp/aura3d-current-sheets/round9-engine.png`, and
+    `/tmp/aura3d-current-sheets/round10-engine-smoke.png`.
 
 - [ ] 17. Write release notes.
   Evidence required:

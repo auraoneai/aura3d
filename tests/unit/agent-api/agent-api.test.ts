@@ -87,7 +87,7 @@ describe("agent API", () => {
       .toJSON();
 
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.particleCount === 1400)).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "multicolor particle cloud halo" && node.particleCount === 1050)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "multicolor particle cloud halo" && node.particleCount === 770)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("city tower"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.primitive === "cylinder")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.transmission)).toBe(true);
@@ -96,6 +96,7 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("visible rigid body cube 50"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "glowing labeled sun")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Earth readable planet label")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn visible ring")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
@@ -107,6 +108,49 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "forward foot planted on path")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white softbox reflection strip")).toBe(true);
     expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
+  });
+
+  test("particle fountain prefab exposes control, collision, and lifetime color evidence", () => {
+    const nodes = prefabs.particleFountain({ count: 2400 });
+    const primitiveNames = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
+    const particleEffects = nodes.filter((node) => node.kind === "effect" && node.effect === "particles");
+
+    expect(primitiveNames).toEqual(expect.arrayContaining([
+      "wide particle collision ground plane",
+      "painted particle collision splash ring",
+      "visible particle emitter base",
+      "emission rate control slider track",
+      "emission rate control knob high",
+      "hot young particle color swatch",
+      "cool old particle color swatch"
+    ]));
+    expect(particleEffects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "lifetime colored gravity fountain arcs", emitter: "fountain", particleCount: 2400 }),
+      expect.objectContaining({ name: "falling collision sparkle particles", emitter: "fountain", particleCount: 1008 }),
+      expect.objectContaining({ name: "multicolor particle cloud halo", emitter: "swirl", particleCount: 1320 })
+    ]));
+  });
+
+  test("mini golf prefab exposes shot control, contact, score, and follow evidence", () => {
+    const nodes = prefabs.miniGolfHole();
+    const names = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
+    const ball = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "white physics golf ball");
+
+    expect(names).toEqual(expect.arrayContaining([
+      "flat putting green",
+      "single red obstacle",
+      "white physics golf ball",
+      "ball contact shadow on green",
+      "transparent moving ball ghost 1",
+      "shot power meter track",
+      "click drag control marker",
+      "orange obstacle contact flash",
+      "rebound path preview after obstacle",
+      "score counter stroke digit bar",
+      "follow camera target beacon above ball"
+    ]));
+    expect(ball?.animation?.clip).toBe("roll");
+    expect(ball?.interaction?.onClick).toContain("aim and shoot");
   });
 
   test("keeps primitive humanoid readable as a connected animated walk cycle", () => {
@@ -126,6 +170,9 @@ describe("agent API", () => {
       "left humanoid eye",
       "right humanoid eye",
       "humanoid mouth line",
+      "left shoulder ball joint",
+      "forward knee hinge",
+      "translucent previous stride torso ghost",
       "cyan walk motion arrow shaft",
       "cyan walk motion arrow head",
       "forward foot planted on path",
@@ -135,14 +182,21 @@ describe("agent API", () => {
     expect(head?.position?.[1]).toBeLessThan(1.6);
     expect(neck?.position?.[1]).toBeGreaterThan(torso?.position?.[1] ?? 0);
     expect(head?.position?.[1] ?? 0).toBeGreaterThan(neck?.position?.[1] ?? 999);
+    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("joint")).length).toBeGreaterThanOrEqual(4);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon")).toBe(true);
+    expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "left shoulder ball joint")).toBe(false);
+    expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon")).toBe(false);
   });
 
-  test("builds a six-planet solar-system prefab with orbit paths and labels", () => {
+  test("builds a six-planet solar-system prefab with orbit paths and attached readable labels", () => {
     const nodes = prefabs.solarSystem();
     const planetNodes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("labeled orbiting planet") === true);
     const orbitSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("orbit path segment") === true);
     const labelPlinths = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("visible label plinth") === true);
+    const readableLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.endsWith("readable planet label") === true);
+    const leaderLines = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("attached label leader line") === true);
     const bloom = nodes.find((node) => node.kind === "effect" && node.effect === "bloom");
+    const pointLight = nodes.find((node) => node.kind === "light" && node.name === "warm solar key light");
 
     expect(planetNodes.map((node) => node.name)).toEqual([
       "Mercury labeled orbiting planet",
@@ -152,9 +206,23 @@ describe("agent API", () => {
       "Jupiter labeled orbiting planet",
       "Saturn labeled orbiting planet"
     ]);
-    expect(orbitSegments).toHaveLength(96);
+    expect(orbitSegments).toHaveLength(144);
     expect(labelPlinths).toHaveLength(6);
-    expect(bloom).toMatchObject({ kind: "effect", effect: "bloom" });
+    expect(readableLabels.map((node) => node.name)).toEqual([
+      "Mercury readable planet label",
+      "Venus readable planet label",
+      "Earth readable planet label",
+      "Mars readable planet label",
+      "Jupiter readable planet label",
+      "Saturn readable planet label"
+    ]);
+    expect(leaderLines).toHaveLength(6);
+    expect(bloom).toMatchObject({ kind: "effect", effect: "bloom", intensity: 0.72 });
+    expect(pointLight).toMatchObject({ kind: "light", light: "point" });
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "transparent golden sun corona")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "Jupiter visible equator band")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "Earth small moon")).toBe(true);
+    expect(prefabs.solarSystem({ labels: "none", orbitSegments: 16, starCount: 18 }).filter((node) => node.kind === "primitive" && node.name?.endsWith("readable planet label")).length).toBe(0);
   });
 
   test("shows physics playground contact and falling-state evidence", () => {
@@ -168,6 +236,47 @@ describe("agent API", () => {
     expect(contactVectors).toHaveLength(8);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "gravity direction arrow shaft")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
+  });
+
+  test("keeps data visualization rich with axes, labels, caps, and trend evidence", () => {
+    const nodes = prefabs.dataBars3D({ grid: 6 });
+    const bars = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("height-colored data bar") === true);
+    const caps = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("bright data bar top cap") === true);
+    const footprints = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("soft data bar footprint") === true);
+    const trendRibbon = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floating trend ribbon segment") === true);
+    const columnLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("column label chip") === true);
+    const rowLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("row label chip") === true);
+
+    expect(bars).toHaveLength(36);
+    expect(caps).toHaveLength(36);
+    expect(footprints).toHaveLength(36);
+    expect(trendRibbon).toHaveLength(5);
+    expect(columnLabels).toHaveLength(6);
+    expect(rowLabels).toHaveLength(6);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "dark rear chart wall")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "selected metric callout slab")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "height tick 4 back wall line")).toBe(true);
+    expect(nodes.some((node) => node.kind === "effect" && node.effect === "bloom")).toBe(true);
+  });
+
+  test("keeps neon tunnel cinematic with octagonal rings, reflections, and motion cues", () => {
+    const nodes = prefabs.neonTunnel({ rings: 10 });
+    const topSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("neon tunnel top segment") === true);
+    const diagonalBraces = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("diagonal brace") === true);
+    const floorReflections = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floor reflection streak") === true);
+    const speedDashes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("wall speed dash") === true);
+    const sparks = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floating tunnel spark") === true);
+
+    expect(topSegments).toHaveLength(10);
+    expect(diagonalBraces).toHaveLength(40);
+    expect(floorReflections).toHaveLength(10);
+    expect(speedDashes).toHaveLength(10);
+    expect(sparks).toHaveLength(14);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "glossy black neon tunnel floor")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vanishing light rail")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "distant portal glow panel")).toBe(true);
+    expect(nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "ambient tunnel dust particles" && node.particleCount === 900)).toBe(true);
+    expect(nodes.some((node) => node.kind === "effect" && node.effect === "bloom")).toBe(true);
   });
 
   test("shows mini-golf scoring, aiming, cup, and follow-camera target cues", () => {
@@ -228,6 +337,8 @@ describe("agent API", () => {
     const crosswalkStripes = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("zebra crosswalk"));
     const sidewalks = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("sidewalk slab"));
     const storefronts = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("street-level lit storefront"));
+    const awnings = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("striped storefront awning"));
+    const addressPlaques = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("street address plaque"));
     const rooftopCaps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("rooftop mechanical cap"));
     const streetLamps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("warm street lamp"));
     const vehicles = nodes.filter((node) => node.kind === "primitive" && node.name?.includes(" car body"));
@@ -238,6 +349,8 @@ describe("agent API", () => {
     expect(crosswalkStripes.length).toBeGreaterThanOrEqual(20);
     expect(sidewalks).toHaveLength(4);
     expect(storefronts).toHaveLength(20);
+    expect(awnings).toHaveLength(20);
+    expect(addressPlaques).toHaveLength(20);
     expect(rooftopCaps).toHaveLength(20);
     expect(streetLamps).toHaveLength(12);
     expect(vehicles).toHaveLength(4);
@@ -245,7 +358,21 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "front cross street")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "back cross street")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "active night state toggle knob")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "foreground day night state board")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "large day sun state marker")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "large night moon state marker")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "foreground active night state bar")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "night streetlight glow proof strip")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "red traffic signal over intersection")).toBe(true);
+  });
+
+  test("switches city-block scene markers for day state evidence", () => {
+    const nodes = prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "day" });
+
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "active day state toggle knob")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "foreground active day state bar")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "large day sun state marker")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "large night moon state marker")).toBe(true);
   });
 
   test("keeps product stage tight for three-quarter product framing", () => {
@@ -255,9 +382,17 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.7)).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow" && node.position?.[1] === 0.535)).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring" && node.position?.[1] === 0.526 && node.material?.opacity === 0.22)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan orbit control arc")).toBe(true);
     expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("turntable rotation tick")).length).toBe(3);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "fit to bounds centerline guide")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left normalized asset height bracket")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "right normalized asset height bracket")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "top normalized asset fit bracket")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vertical studio softbox")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "right warm rim softbox")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "overhead rectangular softbox reflection")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "rear cool reflection card")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "rear warm reflection card")).toBe(true);
   });
 
   test("compiles product viewer plans to normalized plinth placement with turntable evidence", () => {

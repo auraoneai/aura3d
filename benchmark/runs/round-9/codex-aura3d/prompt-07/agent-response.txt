@@ -1,0 +1,21 @@
+Implemented the Prompt 07 material lab in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-aura3d/prompt-07/source/src/main.ts:1) using the matching Aura3D recipe shape: `prefabs.materialSwatches()`, studio lighting, orbit controls, and a perspective camera.
+
+Build result: failed because dependencies are not installed/resolvable:
+
+```text
+src/main.ts(1,77): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Build command:
+
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+
+```bash
+cd source && npm run dev
+```
+
+Assumption: the runner will install dependencies first, or otherwise make the local `@aura3d/engine` package available from `package.json`.

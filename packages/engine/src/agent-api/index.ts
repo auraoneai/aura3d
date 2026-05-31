@@ -665,6 +665,12 @@ function makeBuildingDetails(x: number, z: number, height: number, towerIndex: n
     color: timeOfDay === "night" ? "#fef3c7" : "#dff6ff",
     emissive: timeOfDay === "night" ? "#fbbf24" : "#7dd3fc"
   });
+  const awningMaterial = material.clearcoat({
+    color: towerIndex % 2 === 0 ? "#ef4444" : "#2563eb",
+    roughness: 0.28,
+    clearcoat: 0.75,
+    clearcoatRoughness: 0.08
+  });
   const roofColor = towerIndex % 2 === 0 ? "#1f2933" : "#26313a";
   const nodes: AuraSceneNode[] = [
     primitives.box({
@@ -675,6 +681,14 @@ function makeBuildingDetails(x: number, z: number, height: number, towerIndex: n
       name: `street-level lit storefront ${towerIndex + 1}`,
       material: storefrontMaterial
     }).position(x, 0.26, z + 0.67).scale([0.72, 0.22, 0.038]).toJSON(),
+    primitives.box({
+      name: `striped storefront awning ${towerIndex + 1}`,
+      material: awningMaterial
+    }).position(x, 0.44, z + 0.71).rotate(-0.16, 0, 0).scale([0.82, 0.055, 0.18]).toJSON(),
+    primitives.box({
+      name: `street address plaque ${towerIndex + 1}`,
+      material: material.emissive({ color: "#f8fafc", emissive: timeOfDay === "night" ? "#dbeafe" : "#93c5fd" })
+    }).position(x - 0.42, 0.38, z + 0.713).scale([0.12, 0.08, 0.024]).toJSON(),
     primitives.box({
       name: `dark vertical facade reveal ${towerIndex + 1}`,
       material: material.pbr({ color: "#111827", roughness: 0.8, metallic: 0.02 })
@@ -715,13 +729,30 @@ function makeCityVehicle(name: string, x: number, z: number, color: AuraColor, r
   ];
 }
 
+export interface AuraSolarSystemPrefabOptions {
+  readonly orbitSegments?: number;
+  readonly starCount?: number;
+  readonly labels?: "attached" | "none";
+}
+
+export interface AuraPrimitiveHumanoidPrefabOptions {
+  readonly showJoints?: boolean;
+  readonly motionTrail?: boolean;
+}
+
 export const prefabs = {
   particleFountain: (options: { readonly color?: AuraColor; readonly count?: number } = {}): readonly AuraSceneNode[] => [
+    primitives.plane({ name: "wide particle collision ground plane", material: material.pbr({ color: "#101923", roughness: 0.78, metallic: 0.04 }) }).position(0, -0.02, 0).scale([4.6, 1, 4.6]).toJSON(),
+    primitives.cylinder({ name: "painted particle collision splash ring", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", opacity: 0.52 }) }).position(0, 0.012, 0).scale([1.42, 0.012, 1.42]).toJSON(),
     primitives.cylinder({ name: "visible particle emitter base", material: material.metal({ color: "#263747", roughness: 0.2 }) }).position(0, 0.035, 0).scale([0.62, 0.09, 0.62]).toJSON(),
-    primitives.cylinder({ name: "particle collision ground disc", material: material.pbr({ color: "#101923", roughness: 0.7, metallic: 0.05 }) }).position(0, 0.005, 0).scale([1.8, 0.02, 1.8]).toJSON(),
     primitives.sphere({ name: "fountain glow core", material: material.emissive({ color: options.color ?? "#7dfcff", emissive: options.color ?? "#7dfcff" }) }).position(0, 0.2, 0).scale(0.16).toJSON(),
-    effects.particles({ name: "high density fountain particle arcs", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1800, radius: 1.35, height: 3.05, intensity: 1.35, speed: 1.12 }).toJSON(),
-    effects.particles({ name: "multicolor particle cloud halo", emitter: "swirl", color: "#ff7ad9", particleCount: Math.round((options.count ?? 1800) * 0.75), radius: 1.75, height: 1.95, intensity: 1.35, speed: 0.72 }).toJSON(),
+    primitives.box({ name: "emission rate control slider track", material: material.pbr({ color: "#cbd5e1", roughness: 0.42 }) }).position(-1.95, 0.08, 1.92).scale([1.05, 0.04, 0.06]).toJSON(),
+    primitives.box({ name: "emission rate control knob high", material: material.emissive({ color: "#facc15", emissive: "#facc15" }) }).position(-1.48, 0.16, 1.92).scale([0.12, 0.18, 0.12]).toJSON(),
+    primitives.box({ name: "hot young particle color swatch", material: material.emissive({ color: "#fff7ad", emissive: "#fff7ad" }) }).position(1.74, 0.08, 1.9).scale([0.18, 0.11, 0.08]).toJSON(),
+    primitives.box({ name: "cool old particle color swatch", material: material.emissive({ color: "#60a5fa", emissive: "#60a5fa" }) }).position(2.0, 0.08, 1.9).scale([0.18, 0.11, 0.08]).toJSON(),
+    effects.particles({ name: "lifetime colored gravity fountain arcs", emitter: "fountain", color: options.color ?? "#7dfcff", particleCount: options.count ?? 1800, radius: 1.5, height: 3.18, intensity: 1.48, speed: 1.12 }).toJSON(),
+    effects.particles({ name: "falling collision sparkle particles", emitter: "fountain", color: "#ff7ad9", particleCount: Math.round((options.count ?? 1800) * 0.42), radius: 1.7, height: 1.25, intensity: 1.18, speed: 1.28 }).toJSON(),
+    effects.particles({ name: "multicolor particle cloud halo", emitter: "swirl", color: "#ff7ad9", particleCount: Math.round((options.count ?? 1800) * 0.55), radius: 1.95, height: 1.9, intensity: 1.18, speed: 0.72 }).toJSON(),
     effects.bloom({ intensity: 0.55, color: options.color ?? "#7dfcff" }).toJSON()
   ],
 
@@ -789,6 +820,14 @@ export const prefabs = {
       ...makeCityVehicle("blue southbound", 0.2, 1.78, "#2563eb", 3.1416),
       ...makeCityVehicle("yellow crosstown taxi", -2.0, 0.22, "#facc15", 1.5708),
       ...makeCityVehicle("white crosstown van", 2.0, -0.22, "#f8fafc", -1.5708),
+      primitives.box({ name: "foreground day night state board", material: material.pbr({ color: "#08111f", roughness: 0.48, metallic: 0.16 }) }).position(-1.38, 0.22, 4.92).scale([1.72, 0.22, 0.08]).toJSON(),
+      primitives.sphere({ name: "large day sun state marker", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-2.0, 0.58, 4.9).scale(0.22).toJSON(),
+      primitives.sphere({ name: "large night moon state marker", material: material.emissive({ color: "#dbeafe", emissive: "#93c5fd" }) }).position(-0.76, 0.58, 4.9).scale(0.22).toJSON(),
+      primitives.box({
+        name: timeOfDay === "night" ? "foreground active night state bar" : "foreground active day state bar",
+        material: material.emissive({ color: timeOfDay === "night" ? "#93c5fd" : "#fde047", emissive: timeOfDay === "night" ? "#93c5fd" : "#fde047" })
+      }).position(timeOfDay === "night" ? -0.76 : -2.0, 0.34, 4.82).scale([0.42, 0.06, 0.045]).toJSON(),
+      primitives.box({ name: "night streetlight glow proof strip", material: material.emissive({ color: timeOfDay === "night" ? "#fbbf24" : "#fde68a", emissive: timeOfDay === "night" ? "#fbbf24" : "#fde68a" }) }).position(1.36, 0.045, 3.72).scale([1.1, 0.018, 0.16]).toJSON(),
       primitives.box({ name: "day night toggle pedestal", material: material.pbr({ color: "#0f172a", roughness: 0.62, metallic: 0.08 }) }).position(-4.95, 0.09, 4.82).scale([0.88, 0.16, 0.34]).toJSON(),
       primitives.sphere({ name: "gold sun icon on day night toggle", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-5.28, 0.32, 4.82).scale(0.16).toJSON(),
       primitives.sphere({ name: "silver moon icon on day night toggle", material: material.emissive({ color: "#dbeafe", emissive: "#93c5fd" }) }).position(-4.62, 0.32, 4.82).scale(0.16).toJSON(),
@@ -839,11 +878,19 @@ export const prefabs = {
     primitives.cylinder({ name: "round white product inspection plinth", material: material.clearcoat({ color: "#f8fafc", roughness: 0.16 }) }).position(0, 0.26, -0.65).scale([3.7, 0.52, 3.7]).toJSON(),
     primitives.cylinder({ name: "soft elliptical contact shadow", material: material.pbr({ color: "#020617", roughness: 0.94, opacity: 0.36 }) }).position(0, 0.535, -0.65).scale([2.05, 0.014, 1.08]).toJSON(),
     primitives.cylinder({ name: "thin brushed turntable rotation ring", material: material.pbr({ color: "#dbeafe", roughness: 0.22, metallic: 0.12, opacity: 0.22 }) }).position(0, 0.526, -0.65).scale([2.84, 0.008, 2.84]).toJSON(),
+    primitives.cylinder({ name: "cyan orbit control arc", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9", opacity: 0.34 }) }).position(0, 0.572, -0.65).scale([3.08, 0.006, 3.08]).toJSON(),
     primitives.box({ name: "front turntable rotation tick", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(0, 0.562, 0.62).scale([0.42, 0.018, 0.045]).toJSON(),
     primitives.box({ name: "left turntable rotation tick", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(-1.28, 0.562, -0.65).rotate(0, 1.5708, 0).scale([0.42, 0.018, 0.045]).toJSON(),
     primitives.box({ name: "right turntable rotation tick", material: material.emissive({ color: "#ffd29a", emissive: "#ffd29a" }) }).position(1.28, 0.562, -0.65).rotate(0, 1.5708, 0).scale([0.42, 0.018, 0.045]).toJSON(),
+    primitives.box({ name: "fit to bounds centerline guide", material: material.emissive({ color: "#7dd3fc", emissive: "#7dd3fc", opacity: 0.38 }) }).position(0, 1.22, -0.65).scale([0.035, 1.34, 0.035]).toJSON(),
+    primitives.box({ name: "left normalized asset height bracket", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd", opacity: 0.42 }) }).position(-0.96, 1.28, -0.64).scale([0.035, 1.48, 0.04]).toJSON(),
+    primitives.box({ name: "right normalized asset height bracket", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd", opacity: 0.42 }) }).position(0.96, 1.28, -0.64).scale([0.035, 1.48, 0.04]).toJSON(),
+    primitives.box({ name: "top normalized asset fit bracket", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd", opacity: 0.42 }) }).position(0, 2.0, -0.64).scale([1.96, 0.035, 0.04]).toJSON(),
     primitives.box({ name: "left vertical studio softbox", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff" }) }).position(-2.58, 1.32, -1.18).scale([0.07, 1.52, 1.56]).toJSON(),
     primitives.box({ name: "right warm rim softbox", material: material.emissive({ color: "#ffe2b8", emissive: "#ffe2b8" }) }).position(2.45, 1.08, -1.1).scale([0.07, 1.12, 1.38]).toJSON(),
+    primitives.box({ name: "overhead rectangular softbox reflection", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 2.52, -0.9).rotate(0.08, 0, 0).scale([1.88, 0.08, 0.62]).toJSON(),
+    primitives.box({ name: "rear cool reflection card", material: material.emissive({ color: "#bdefff", emissive: "#bdefff" }) }).position(-1.62, 1.08, -2.1).rotate(0, 0.18, 0).scale([0.68, 0.9, 0.045]).toJSON(),
+    primitives.box({ name: "rear warm reflection card", material: material.emissive({ color: "#ffd7a3", emissive: "#ffd7a3" }) }).position(1.62, 1.0, -2.08).rotate(0, -0.18, 0).scale([0.62, 0.82, 0.045]).toJSON(),
     primitives.box({ name: "front low product highlight card", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 0.58, 0.62).scale([1.18, 0.045, 0.04]).toJSON()
   ],
 
@@ -893,97 +940,227 @@ export const prefabs = {
     return nodes;
   },
 
-  solarSystem: (): readonly AuraSceneNode[] => {
+  solarSystem: (options: AuraSolarSystemPrefabOptions = {}): readonly AuraSceneNode[] => {
+    const orbitSegments = Math.max(16, Math.min(48, options.orbitSegments ?? 24));
+    const starCount = Math.max(18, Math.min(80, options.starCount ?? 42));
+    const labels = options.labels ?? "attached";
     const planets = [
-      { name: "Mercury", radius: 0.82, size: 0.07, color: "#cbd5e1", speed: 1.4, angle: 0.2 },
-      { name: "Venus", radius: 1.12, size: 0.1, color: "#fbbf24", speed: 1.1, angle: 1.05 },
-      { name: "Earth", radius: 1.46, size: 0.11, color: "#38bdf8", speed: 0.86, angle: 2.0 },
-      { name: "Mars", radius: 1.78, size: 0.09, color: "#f97316", speed: 0.68, angle: 2.82 },
-      { name: "Jupiter", radius: 2.18, size: 0.18, color: "#f5d0a9", speed: 0.42, angle: 3.7 },
-      { name: "Saturn", radius: 2.6, size: 0.16, color: "#fde68a", speed: 0.32, angle: 4.56 }
+      { name: "Mercury", radius: 0.82, size: 0.09, color: "#cbd5e1", speed: 1.4, angle: 0.2 },
+      { name: "Venus", radius: 1.12, size: 0.12, color: "#fbbf24", speed: 1.1, angle: 1.05 },
+      { name: "Earth", radius: 1.46, size: 0.13, color: "#38bdf8", speed: 0.86, angle: 2.0 },
+      { name: "Mars", radius: 1.78, size: 0.105, color: "#f97316", speed: 0.68, angle: 2.82 },
+      { name: "Jupiter", radius: 2.18, size: 0.22, color: "#f5d0a9", speed: 0.42, angle: 3.7 },
+      { name: "Saturn", radius: 2.6, size: 0.19, color: "#fde68a", speed: 0.32, angle: 4.56 }
     ] as const;
     const nodes: AuraSceneNode[] = [
-      primitives.plane({ name: "deep space reference plane", material: material.pbr({ color: "#020617", roughness: 0.9 }) }).position(0, -0.08, 0).scale([6.2, 1, 6.2]).toJSON(),
-      primitives.sphere({ name: "glowing labeled sun", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(0, 0.12, 0).scale(0.38).animate({ clip: "pulse", speed: 0.32 }).toJSON(),
-      effects.bloom({ intensity: 0.48, color: "#ffd166" }).toJSON()
+      primitives.sphere({ name: "glowing labeled sun", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(0, 0.14, 0).scale(0.44).animate({ clip: "pulse", speed: 0.32 }).toJSON(),
+      primitives.sphere({ name: "transparent golden sun corona", material: material.emissive({ color: "#ff9f1c", emissive: "#ffd166", opacity: 0.32 }) }).position(0, 0.14, 0).scale(0.76).animate({ clip: "pulse", speed: 0.22 }).toJSON(),
+      primitives.sphere({ name: "wide amber solar glow halo", material: material.emissive({ color: "#7c2d12", emissive: "#f97316", opacity: 0.18 }) }).position(0, 0.14, 0).scale(1.08).animate({ clip: "pulse", speed: 0.18 }).toJSON(),
+      lights.point({ name: "warm solar key light", position: [0, 0.72, 0], color: "#ffd166", intensity: 1.9 }).toJSON(),
+      effects.bloom({ intensity: 0.72, color: "#ffd166" }).toJSON()
     ];
-    for (let index = 0; index < 26; index += 1) {
+    for (let index = 0; index < starCount; index += 1) {
       nodes.push(primitives.sphere({
         name: `background star ${index + 1}`,
         material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" })
-      }).position(seededRange(index, 701, -3.1, 3.1), seededRange(index, 702, 0.08, 0.55), seededRange(index, 703, -2.9, 2.6)).scale(seededRange(index, 704, 0.012, 0.028)).toJSON());
+      }).position(seededRange(index, 701, -3.45, 3.45), seededRange(index, 702, 0.12, 1.2), seededRange(index, 703, -3.35, 3.05)).scale(seededRange(index, 704, 0.012, 0.034)).toJSON());
     }
     for (const planet of planets) {
-      const segments = 16;
-      const segmentLength = (Math.PI * 2 * planet.radius) / segments * 0.45;
-      for (let segment = 0; segment < segments; segment += 1) {
-        const angle = (segment / segments) * Math.PI * 2;
+      const segmentLength = (Math.PI * 2 * planet.radius) / orbitSegments * 0.58;
+      for (let segment = 0; segment < orbitSegments; segment += 1) {
+        const angle = (segment / orbitSegments) * Math.PI * 2;
         nodes.push(primitives.box({
           name: `${planet.name} orbit path segment ${segment + 1}`,
-          material: material.emissive({ color: "#334155", emissive: "#334155" })
-        }).position(Math.cos(angle) * planet.radius, 0, Math.sin(angle) * planet.radius).rotate(0, Math.PI / 2 - angle, 0).scale([segmentLength, 0.012, 0.018]).toJSON());
+          material: material.emissive({ color: "#64748b", emissive: "#475569", opacity: 0.78 })
+        }).position(Math.cos(angle) * planet.radius, 0.012, Math.sin(angle) * planet.radius).rotate(0, Math.PI / 2 - angle, 0).scale([segmentLength, 0.014, 0.02]).toJSON());
       }
       const x = Math.cos(planet.angle) * planet.radius;
       const z = Math.sin(planet.angle) * planet.radius;
       nodes.push(primitives.sphere({
         name: `${planet.name} labeled orbiting planet`,
         material: material.clearcoat({ color: planet.color, roughness: 0.18 })
-      }).position(x, 0.12, z).scale(planet.size).animate({ clip: "float", speed: planet.speed }).toJSON());
-      nodes.push(primitives.box({
-        name: `${planet.name} visible label plinth`,
-        material: material.emissive({ color: planet.color, emissive: planet.color })
-      }).position(x, 0.025, z + 0.16).scale([planet.size * 2.4, 0.025, 0.055]).toJSON());
+      }).position(x, 0.14, z).scale(planet.size).animate({ clip: "float", speed: planet.speed }).toJSON());
+      if (labels === "attached") {
+        const labelDirection = x >= 0 ? 1 : -1;
+        const labelX = x + labelDirection * (0.34 + planet.size * 0.95);
+        const labelZ = z + 0.18;
+        nodes.push(
+          primitives.box({
+            name: `${planet.name} attached label leader line`,
+            material: material.emissive({ color: planet.color, emissive: planet.color, opacity: 0.88 })
+          }).position((x + labelX) / 2, 0.19, (z + labelZ) / 2).rotate(0, labelDirection > 0 ? -0.26 : 0.26, 0).scale([Math.abs(labelX - x), 0.018, 0.022]).toJSON(),
+          primitives.box({
+            name: `${planet.name} visible label plinth`,
+            material: material.emissive({ color: planet.color, emissive: planet.color })
+          }).position(labelX, 0.095, labelZ).scale([0.34 + planet.name.length * 0.035, 0.035, 0.09]).toJSON(),
+          primitives.plane({
+            name: `${planet.name} readable planet label`,
+            material: material.emissive({ color: "#020617", emissive: planet.color, opacity: 0.94 })
+          }).position(labelX, 0.34, labelZ).scale([0.52 + planet.name.length * 0.06, 1, 0.2]).toJSON()
+        );
+      }
     }
     nodes.push(primitives.cylinder({
       name: "Saturn visible ring",
       material: material.emissive({ color: "#fde68a", emissive: "#fde68a" })
-    }).position(Math.cos(4.56) * 2.6, 0.12, Math.sin(4.56) * 2.6).rotate(0.9, 0.2, 0.1).scale([0.32, 0.012, 0.32]).toJSON());
+    }).position(Math.cos(4.56) * 2.6, 0.14, Math.sin(4.56) * 2.6).rotate(0.9, 0.2, 0.1).scale([0.4, 0.012, 0.4]).toJSON());
+    nodes.push(
+      primitives.box({ name: "Jupiter visible equator band", material: material.emissive({ color: "#b45309", emissive: "#b45309" }) }).position(Math.cos(3.7) * 2.18, 0.16, Math.sin(3.7) * 2.18 + 0.01).scale([0.34, 0.026, 0.035]).toJSON(),
+      primitives.sphere({ name: "Earth small moon", material: material.emissive({ color: "#e2e8f0", emissive: "#cbd5e1" }) }).position(Math.cos(2.0) * 1.46 + 0.22, 0.17, Math.sin(2.0) * 1.46 + 0.08).scale(0.035).animate({ clip: "float", speed: 1.2 }).toJSON()
+    );
     return nodes;
   },
 
   dataBars3D: (options: { readonly grid?: number } = {}): readonly AuraSceneNode[] => {
     const grid = Math.max(3, Math.min(8, options.grid ?? 6));
+    const halfSpan = ((grid - 1) / 2) * 0.58;
+    const floorSpan = Math.max(4.3, grid * 0.72);
+    const maxHeight = 2.37;
     const nodes: AuraSceneNode[] = [
-      primitives.plane({ name: "matte chart floor", material: material.pbr({ color: "#16242a", roughness: 0.68, metallic: 0.08 }) }).position(0, -0.025, 0).scale([4.3, 1, 4.3]).toJSON(),
-      primitives.box({ name: "x axis rail", material: material.emissive({ color: "#d9f8ff", emissive: "#d9f8ff" }) }).position(0, 0.025, 1.95).scale([3.75, 0.035, 0.035]).toJSON(),
-      primitives.box({ name: "z axis rail", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-1.95, 0.025, 0).scale([0.035, 0.035, 3.75]).toJSON(),
-      primitives.box({ name: "height axis rail", material: material.emissive({ color: "#f4fbff", emissive: "#f4fbff" }) }).position(-1.95, 1.18, 1.95).scale([0.04, 2.36, 0.04]).toJSON()
+      primitives.plane({ name: "matte chart floor", material: material.pbr({ color: "#16242a", roughness: 0.68, metallic: 0.08 }) }).position(0, -0.025, 0).scale([floorSpan, 1, floorSpan]).toJSON(),
+      primitives.box({ name: "dark rear chart wall", material: material.pbr({ color: "#0b1217", roughness: 0.52, metallic: 0.1, opacity: 0.72 }) }).position(0, 1.12, -halfSpan - 0.55).scale([floorSpan, 2.3, 0.055]).toJSON(),
+      primitives.box({ name: "left analytics side wall", material: material.pbr({ color: "#101923", roughness: 0.58, metallic: 0.08, opacity: 0.58 }) }).position(-halfSpan - 0.55, 1.0, 0).scale([0.055, 2.0, floorSpan]).toJSON(),
+      primitives.box({ name: "x axis rail", material: material.emissive({ color: "#d9f8ff", emissive: "#d9f8ff" }) }).position(0, 0.025, halfSpan + 0.36).scale([floorSpan - 0.55, 0.035, 0.035]).toJSON(),
+      primitives.box({ name: "z axis rail", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-halfSpan - 0.36, 0.025, 0).scale([0.035, 0.035, floorSpan - 0.55]).toJSON(),
+      primitives.box({ name: "height axis rail", material: material.emissive({ color: "#f4fbff", emissive: "#f4fbff" }) }).position(-halfSpan - 0.36, maxHeight / 2, halfSpan + 0.36).scale([0.04, maxHeight, 0.04]).toJSON(),
+      primitives.box({ name: "selected metric callout slab", material: material.glass({ color: "#dff8ff", opacity: 0.18, transmission: 0.55, thickness: 0.2 }) }).position(halfSpan + 0.44, 1.45, -halfSpan - 0.48).rotate(0, -0.34, 0).scale([1.08, 0.48, 0.045]).toJSON(),
+      primitives.box({ name: "selected metric callout title bar", material: material.emissive({ color: "#8ff3ff", emissive: "#8ff3ff" }) }).position(halfSpan + 0.44, 1.66, -halfSpan - 0.43).rotate(0, -0.34, 0).scale([0.82, 0.05, 0.035]).toJSON(),
+      primitives.box({ name: "selected metric callout value bar", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(halfSpan + 0.44, 1.42, -halfSpan - 0.43).rotate(0, -0.34, 0).scale([0.58, 0.08, 0.035]).toJSON()
     ];
+    // Dense grid rails, back-wall ticks, caps, shadows, and a trend ribbon make
+    // the prefab read as an authored analytics scene rather than raw boxes.
+    for (let index = 0; index < grid; index += 1) {
+      const offset = (index - (grid - 1) / 2) * 0.58;
+      nodes.push(primitives.box({
+        name: `x grid floor guide ${index + 1}`,
+        material: material.emissive({ color: "#244b5a", emissive: "#2e7187" })
+      }).position(offset, 0.004, 0).scale([0.018, 0.012, floorSpan - 0.8]).toJSON());
+      nodes.push(primitives.box({
+        name: `z grid floor guide ${index + 1}`,
+        material: material.emissive({ color: "#5f5228", emissive: "#8a7636" })
+      }).position(0, 0.006, offset).scale([floorSpan - 0.8, 0.012, 0.018]).toJSON());
+      nodes.push(primitives.box({
+        name: `column label chip ${index + 1}`,
+        material: material.emissive({ color: index % 2 === 0 ? "#7dd3fc" : "#c084fc", emissive: index % 2 === 0 ? "#7dd3fc" : "#c084fc" })
+      }).position(offset, 0.07, halfSpan + 0.58).scale([0.28, 0.055, 0.09]).toJSON());
+      nodes.push(primitives.box({
+        name: `row label chip ${index + 1}`,
+        material: material.emissive({ color: index % 2 === 0 ? "#fde68a" : "#fb7185", emissive: index % 2 === 0 ? "#fde68a" : "#fb7185" })
+      }).position(-halfSpan - 0.58, 0.07, offset).scale([0.09, 0.055, 0.28]).toJSON());
+    }
+    for (let tick = 1; tick <= 4; tick += 1) {
+      const y = tick * 0.52;
+      nodes.push(primitives.box({
+        name: `height tick ${tick} back wall line`,
+        material: material.emissive({ color: "#44606f", emissive: "#5f8498" })
+      }).position(0, y, -halfSpan - 0.51).scale([floorSpan - 0.85, 0.018, 0.028]).toJSON());
+      nodes.push(primitives.box({
+        name: `height tick ${tick} marker chip`,
+        material: material.emissive({ color: "#e2e8f0", emissive: "#e2e8f0" })
+      }).position(-halfSpan - 0.48, y, halfSpan + 0.36).scale([0.16, 0.034, 0.05]).toJSON());
+    }
+    const trendPoints: Array<{ readonly x: number; readonly y: number; readonly z: number; readonly color: AuraColor }> = [];
     for (let row = 0; row < grid; row += 1) {
+      let rowPeak = 0;
+      let rowPeakColumn = 0;
       for (let col = 0; col < grid; col += 1) {
         const normalized = ((row * 5 + col * 7) % 17) / 16;
         const height = 0.32 + normalized * 2.05;
         const x = (col - (grid - 1) / 2) * 0.58;
         const z = (row - (grid - 1) / 2) * 0.58;
+        const color = dataBarColor(normalized);
+        if (height > rowPeak) {
+          rowPeak = height;
+          rowPeakColumn = col;
+        }
+        nodes.push(primitives.box({
+          name: `soft data bar footprint ${row + 1}-${col + 1}`,
+          material: material.pbr({ color: "#020617", roughness: 0.94, opacity: 0.34 })
+        }).position(x, 0.012, z).scale([0.44, 0.014, 0.44]).toJSON());
+        nodes.push(primitives.box({
+          name: `glowing data bar base ${row + 1}-${col + 1}`,
+          material: material.emissive({ color, emissive: color })
+        }).position(x, 0.045, z).scale([0.44, 0.035, 0.44]).toJSON());
         nodes.push(primitives.box({
           name: `height-colored data bar ${row + 1}-${col + 1}`,
           material: material.clearcoat({
-            color: dataBarColor(normalized),
-            emissive: dataBarColor(normalized),
+            color,
+            emissive: color,
             roughness: 0.24,
             clearcoat: 0.62
           })
         }).position(x, height / 2, z).scale([0.36, height, 0.36]).animate({ clip: "pulse", speed: 0.24 + normalized * 0.36 }).onPointer({ cursor: "pointer", onHover: "highlight bar and show value" }).toJSON());
+        nodes.push(primitives.box({
+          name: `bright data bar top cap ${row + 1}-${col + 1}`,
+          material: material.emissive({ color, emissive: color })
+        }).position(x, height + 0.035, z).scale([0.4, 0.052, 0.4]).animate({ clip: "pulse", speed: 0.18 + normalized * 0.3 }).toJSON());
+        if (normalized > 0.72) {
+          nodes.push(primitives.sphere({
+            name: `hotspot value marker ${row + 1}-${col + 1}`,
+            material: material.emissive({ color: "#ffffff", emissive: color })
+          }).position(x, height + 0.18, z).scale(0.09).animate({ clip: "float", speed: 0.26 + normalized * 0.22 }).toJSON());
+        }
       }
+      const peakX = (rowPeakColumn - (grid - 1) / 2) * 0.58;
+      const peakZ = (row - (grid - 1) / 2) * 0.58;
+      trendPoints.push({ x: peakX, y: rowPeak + 0.18, z: peakZ, color: dataBarColor(Math.min(1, (rowPeak - 0.32) / 2.05)) });
     }
+    for (let index = 0; index < trendPoints.length - 1; index += 1) {
+      const current = trendPoints[index];
+      const next = trendPoints[index + 1];
+      const dx = next.x - current.x;
+      const dz = next.z - current.z;
+      const length = Math.hypot(dx, dz);
+      nodes.push(primitives.box({
+        name: `floating trend ribbon segment ${index + 1}`,
+        material: material.emissive({ color: current.color, emissive: current.color })
+      }).position((current.x + next.x) / 2, (current.y + next.y) / 2, (current.z + next.z) / 2).rotate(0, Math.atan2(dz, dx), 0).scale([Math.max(0.28, length), 0.045, 0.055]).toJSON());
+    }
+    nodes.push(effects.bloom({ intensity: 0.32, color: "#7dd3fc" }).toJSON());
     return nodes;
   },
 
   neonTunnel: (options: { readonly rings?: number } = {}): readonly AuraSceneNode[] => {
     const rings = Math.max(8, Math.min(28, options.rings ?? 16));
-    const nodes: AuraSceneNode[] = [];
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "glossy black neon tunnel floor", material: material.pbr({ color: "#05070d", roughness: 0.24, metallic: 0.16 }) }).position(0, -0.49, -3.8).scale([4.7, 1, 8.4]).toJSON(),
+      primitives.box({ name: "left vanishing light rail", material: material.emissive({ color: "#1591ff", emissive: "#1591ff" }) }).position(-1.05, -0.38, -3.55).rotate(0, -0.08, 0).scale([0.045, 0.035, 7.4]).toJSON(),
+      primitives.box({ name: "right vanishing light rail", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8" }) }).position(1.05, -0.38, -3.55).rotate(0, 0.08, 0).scale([0.045, 0.035, 7.4]).toJSON(),
+      primitives.box({ name: "center perspective lane glow", material: material.emissive({ color: "#1f5f75", emissive: "#2d98ba" }) }).position(0, -0.47, -3.55).scale([0.035, 0.024, 7.2]).toJSON(),
+      primitives.box({ name: "distant portal glow panel", material: material.emissive({ color: "#28174f", emissive: "#713dff" }) }).position(0, 0.42, -9.92).scale([1.24, 1.24, 0.05]).toJSON()
+    ];
     const palette = ["#22d3ee", "#ff42c8", "#ffd166", "#8b5cf6"];
+    // Each ring is an octagonal doorway with corner braces, reflections, and
+    // speed dashes so the default screenshot reads as a finished flythrough.
     for (let index = 0; index < rings; index += 1) {
       const z = -0.3 - index * 0.34;
       const scale = 1 + index * 0.035;
       const color = palette[index % palette.length];
       const mat = material.emissive({ color, emissive: color });
-      nodes.push(primitives.box({ name: `neon tunnel top segment ${index + 1}`, material: mat }).position(0, 1.22 * scale, z).scale([1.8 * scale, 0.055, 0.05]).toJSON());
-      nodes.push(primitives.box({ name: `neon tunnel bottom segment ${index + 1}`, material: mat }).position(0, -0.42 * scale, z).scale([1.8 * scale, 0.055, 0.05]).toJSON());
-      nodes.push(primitives.box({ name: `neon tunnel left segment ${index + 1}`, material: mat }).position(-0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).toJSON());
-      nodes.push(primitives.box({ name: `neon tunnel right segment ${index + 1}`, material: mat }).position(0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).toJSON());
+      const sideGlow = palette[(index + 1) % palette.length];
+      nodes.push(primitives.box({ name: `neon tunnel top segment ${index + 1}`, material: mat }).position(0, 1.22 * scale, z).scale([1.8 * scale, 0.055, 0.05]).animate({ clip: "pulse", speed: 0.18 + (index % 4) * 0.05 }).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel bottom segment ${index + 1}`, material: mat }).position(0, -0.42 * scale, z).scale([1.8 * scale, 0.055, 0.05]).animate({ clip: "pulse", speed: 0.18 + (index % 4) * 0.05 }).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel left segment ${index + 1}`, material: mat }).position(-0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).animate({ clip: "pulse", speed: 0.2 + (index % 3) * 0.04 }).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel right segment ${index + 1}`, material: mat }).position(0.92 * scale, 0.4, z).scale([0.055, 1.6 * scale, 0.05]).animate({ clip: "pulse", speed: 0.2 + (index % 3) * 0.04 }).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel upper left diagonal brace ${index + 1}`, material: material.emissive({ color: sideGlow, emissive: sideGlow }) }).position(-0.65 * scale, 0.98 * scale, z).rotate(0, 0, -0.78).scale([0.58 * scale, 0.042, 0.048]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel upper right diagonal brace ${index + 1}`, material: material.emissive({ color: sideGlow, emissive: sideGlow }) }).position(0.65 * scale, 0.98 * scale, z).rotate(0, 0, 0.78).scale([0.58 * scale, 0.042, 0.048]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel lower left diagonal brace ${index + 1}`, material: material.emissive({ color: sideGlow, emissive: sideGlow }) }).position(-0.65 * scale, -0.18 * scale, z).rotate(0, 0, 0.78).scale([0.52 * scale, 0.038, 0.048]).toJSON());
+      nodes.push(primitives.box({ name: `neon tunnel lower right diagonal brace ${index + 1}`, material: material.emissive({ color: sideGlow, emissive: sideGlow }) }).position(0.65 * scale, -0.18 * scale, z).rotate(0, 0, -0.78).scale([0.52 * scale, 0.038, 0.048]).toJSON());
+      nodes.push(primitives.box({ name: `floor reflection streak ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.44 }) }).position(0, -0.465, z + 0.06).scale([1.25 * scale, 0.018, 0.09]).toJSON());
+      if (index % 2 === 0) {
+        nodes.push(primitives.box({ name: `left wall speed dash ${index + 1}`, material: material.emissive({ color: "#dff8ff", emissive: color }) }).position(-1.28 * scale, 0.62, z + 0.08).scale([0.32, 0.035, 0.04]).toJSON());
+        nodes.push(primitives.box({ name: `right wall speed dash ${index + 1}`, material: material.emissive({ color: "#ffe3fb", emissive: sideGlow }) }).position(1.28 * scale, 0.2, z - 0.06).scale([0.32, 0.035, 0.04]).toJSON());
+      }
+    }
+    for (let index = 0; index < 14; index += 1) {
+      const color = palette[index % palette.length];
+      nodes.push(primitives.sphere({
+        name: `floating tunnel spark ${index + 1}`,
+        material: material.emissive({ color, emissive: color })
+      }).position(seededRange(index, 901, -0.72, 0.72), seededRange(index, 902, -0.14, 0.98), seededRange(index, 903, -8.2, -0.8)).scale(seededRange(index, 904, 0.022, 0.045)).animate({ clip: "float", speed: seededRange(index, 905, 0.18, 0.42) }).toJSON());
     }
     nodes.push(effects.fog({ density: 0.2, color: "#3b4f7a" }).toJSON());
+    nodes.push(effects.particles({ name: "ambient tunnel dust particles", emitter: "ambient", color: "#a5f3fc", particleCount: 900, radius: 2.2, height: 1.4, intensity: 0.45, speed: 0.38 }).toJSON());
     nodes.push(effects.bloom({ intensity: 0.72, color: "#ff42c8" }).toJSON());
     return nodes;
   },
@@ -995,19 +1172,33 @@ export const prefabs = {
     primitives.box({ name: "back course boundary wall", material: material.pbr({ color: "#14532d", roughness: 0.72 }) }).position(0, 0.12, -2.08).scale([5.05, 0.22, 0.08]).toJSON(),
     primitives.box({ name: "tee mat", material: material.pbr({ color: "#166534", roughness: 0.56 }) }).position(-1.35, 0.012, 0.45).scale([0.72, 0.024, 0.46]).toJSON(),
     primitives.cylinder({ name: "single red obstacle", material: material.clearcoat({ color: "#e11d48", roughness: 0.18 }) }).position(0.35, 0.28, -0.65).scale([0.34, 0.56, 0.34]).toJSON(),
+    primitives.cylinder({ name: "orange obstacle contact flash", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", opacity: 0.72 }) }).position(0.18, 0.58, -0.36).rotate(1.2, 0, 0.18).scale([0.18, 0.012, 0.18]).toJSON(),
+    primitives.cylinder({ name: "ball contact shadow on green", material: material.pbr({ color: "#052e16", roughness: 0.9, opacity: 0.42 }) }).position(-1.35, 0.018, 0.45).scale([0.24, 0.01, 0.18]).toJSON(),
     primitives.sphere({ name: "white physics golf ball", material: material.clearcoat({ color: "#f8fafc", roughness: 0.12 }) }).position(-1.35, 0.16, 0.45).scale(0.16).animate({ clip: "roll", speed: 0.72 }).onPointer({ cursor: "crosshair", onClick: "aim and shoot ball" }).toJSON(),
+    primitives.sphere({ name: "transparent moving ball ghost 1", material: material.clearcoat({ color: "#dbeafe", roughness: 0.16, opacity: 0.36 }) }).position(-0.84, 0.135, 0.16).scale(0.12).toJSON(),
+    primitives.sphere({ name: "transparent moving ball ghost 2", material: material.clearcoat({ color: "#93c5fd", roughness: 0.18, opacity: 0.26 }) }).position(-0.32, 0.135, -0.18).scale(0.1).toJSON(),
+    primitives.sphere({ name: "transparent moving ball ghost 3", material: material.clearcoat({ color: "#67e8f9", roughness: 0.2, opacity: 0.18 }) }).position(0.2, 0.135, -0.48).scale(0.085).toJSON(),
     primitives.cylinder({ name: "ball aim selection ring", material: material.emissive({ color: "#e0f2fe", emissive: "#e0f2fe" }) }).position(-1.35, 0.035, 0.45).scale([0.34, 0.014, 0.34]).toJSON(),
     primitives.box({ name: "cyan aim direction line", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9" }) }).position(-0.86, 0.08, 0.16).rotate(0, -0.42, 0).scale([0.9, 0.035, 0.055]).toJSON(),
+    primitives.box({ name: "shot power meter track", material: material.pbr({ color: "#082f49", roughness: 0.56 }) }).position(-2.08, 0.075, 0.72).scale([0.08, 0.04, 0.86]).toJSON(),
+    primitives.box({ name: "shot power meter fill", material: material.emissive({ color: "#22c55e", emissive: "#22c55e" }) }).position(-2.08, 0.13, 0.5).scale([0.1, 0.08, 0.42]).toJSON(),
+    primitives.box({ name: "click drag control marker", material: material.emissive({ color: "#fde68a", emissive: "#fde68a" }) }).position(-1.76, 0.08, 0.82).rotate(0, -0.74, 0).scale([0.42, 0.03, 0.05]).toJSON(),
     primitives.box({ name: "dotted shot preview 1", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd" }) }).position(-0.56, 0.07, -0.02).rotate(0, -0.42, 0).scale([0.22, 0.026, 0.04]).toJSON(),
     primitives.box({ name: "dotted shot preview 2", material: material.emissive({ color: "#bae6fd", emissive: "#bae6fd" }) }).position(-0.22, 0.07, -0.22).rotate(0, -0.42, 0).scale([0.22, 0.026, 0.04]).toJSON(),
+    primitives.box({ name: "rebound path preview after obstacle", material: material.emissive({ color: "#fef08a", emissive: "#fef08a" }) }).position(0.78, 0.07, -0.84).rotate(0, 0.42, 0).scale([0.48, 0.028, 0.045]).toJSON(),
     primitives.cylinder({ name: "dark cup hole", material: material.pbr({ color: "#050608", roughness: 0.9 }) }).position(1.55, 0.012, -1.1).scale([0.2, 0.02, 0.2]).toJSON(),
     primitives.cylinder({ name: "cup capture ring", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(1.55, 0.026, -1.1).scale([0.28, 0.012, 0.28]).toJSON(),
     primitives.box({ name: "flag pole", material: material.metal({ color: "#f8fafc" }) }).position(1.7, 0.48, -1.1).scale([0.025, 0.9, 0.025]).toJSON(),
     primitives.box({ name: "orange flag", material: material.emissive({ color: "#fb923c", emissive: "#fb923c" }) }).position(1.9, 0.78, -1.1).scale([0.32, 0.18, 0.035]).toJSON(),
-    primitives.box({ name: "score counter plinth", material: material.emissive({ color: "#fef3c7", emissive: "#fef3c7" }) }).position(-1.92, 0.08, -1.86).scale([0.62, 0.06, 0.18]).toJSON()
+    primitives.box({ name: "score counter plinth", material: material.emissive({ color: "#fef3c7", emissive: "#fef3c7" }) }).position(-1.92, 0.08, -1.86).scale([0.62, 0.06, 0.18]).toJSON(),
+    primitives.box({ name: "score counter stroke digit bar", material: material.pbr({ color: "#0f172a", roughness: 0.44 }) }).position(-1.92, 0.18, -1.86).scale([0.055, 0.22, 0.035]).toJSON(),
+    primitives.sphere({ name: "follow camera target beacon above ball", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", opacity: 0.58 }) }).position(-1.35, 0.62, 0.45).scale(0.065).toJSON()
   ],
 
-  primitiveHumanoid: (): readonly AuraSceneNode[] => [
+  primitiveHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => {
+    const showJoints = options.showJoints ?? true;
+    const motionTrail = options.motionTrail ?? true;
+    const nodes: AuraSceneNode[] = [
     primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#1f5130", roughness: 0.7 }) }).position(0, -0.04, -0.5).scale([4.8, 1, 3]).toJSON(),
     primitives.box({ name: "painted walking path", material: material.pbr({ color: "#2d3748", roughness: 0.78 }) }).position(0, 0.01, -0.45).scale([3.8, 0.025, 0.42]).toJSON(),
     primitives.box({ name: "white dashed stride marker 1", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(-1.05, 0.04, -0.45).scale([0.42, 0.025, 0.045]).toJSON(),
@@ -1023,16 +1214,38 @@ export const prefabs = {
     primitives.sphere({ name: "right humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a" }) }).position(0.075, 1.59, -0.3).scale(0.035).animate({ clip: "walk", speed: 0.78 }).toJSON(),
     primitives.box({ name: "humanoid mouth line", material: material.emissive({ color: "#7f1d1d", emissive: "#7f1d1d" }) }).position(0, 1.48, -0.285).scale([0.13, 0.018, 0.02]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
     primitives.box({ name: "shoulder bar connecting arms", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0, 1.16, -0.55).scale([0.82, 0.12, 0.14]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
-    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(-0.5, 0.88, -0.39).rotate(0.55, 0, -0.24).scale([0.12, 0.64, 0.12]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
-    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0.5, 0.88, -0.7).rotate(-0.55, 0, 0.24).scale([0.12, 0.64, 0.12]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
-    primitives.sphere({ name: "left humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(-0.56, 0.7, -0.38).scale(0.095).animate({ clip: "walk", speed: 0.9 }).toJSON(),
-    primitives.sphere({ name: "right humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(0.56, 0.7, -0.74).scale(0.095).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.box({ name: "left swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(-0.44, 0.9, -0.42).rotate(0.5, 0, -0.2).scale([0.13, 0.62, 0.13]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.box({ name: "right swinging arm", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0.44, 0.9, -0.68).rotate(-0.5, 0, 0.2).scale([0.13, 0.62, 0.13]).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.sphere({ name: "left humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(-0.5, 0.65, -0.32).scale(0.105).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+    primitives.sphere({ name: "right humanoid hand", material: material.clearcoat({ color: "#f5d0a9", roughness: 0.24 }) }).position(0.5, 0.65, -0.8).scale(0.105).animate({ clip: "walk", speed: 0.9 }).toJSON(),
     primitives.box({ name: "hip bar connecting legs", material: material.clearcoat({ color: "#1d4ed8", roughness: 0.2 }) }).position(0, 0.52, -0.55).scale([0.52, 0.12, 0.16]).animate({ clip: "walk", speed: 0.78 }).toJSON(),
-    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(-0.2, 0.29, -0.28).rotate(-0.46, 0, -0.08).scale([0.15, 0.74, 0.15]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
-    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(0.22, 0.29, -0.78).rotate(0.46, 0, 0.08).scale([0.15, 0.74, 0.15]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+    primitives.box({ name: "forward walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(-0.18, 0.31, -0.3).rotate(-0.44, 0, -0.08).scale([0.16, 0.76, 0.16]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+    primitives.box({ name: "back walking leg", material: material.clearcoat({ color: "#172033", roughness: 0.24 }) }).position(0.2, 0.31, -0.78).rotate(0.44, 0, 0.08).scale([0.16, 0.76, 0.16]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
     primitives.box({ name: "forward foot planted on path", material: material.clearcoat({ color: "#0f172a", roughness: 0.2 }) }).position(-0.35, 0.08, -0.08).rotate(0, -0.12, 0).scale([0.38, 0.1, 0.2]).animate({ clip: "walk", speed: 0.95 }).toJSON(),
     primitives.box({ name: "back foot pushing off path", material: material.clearcoat({ color: "#0f172a", roughness: 0.2 }) }).position(0.38, 0.08, -0.98).rotate(0, 0.12, 0).scale([0.38, 0.1, 0.2]).animate({ clip: "walk", speed: 0.95 }).toJSON()
-  ]
+    ];
+    if (showJoints) {
+      nodes.push(
+        primitives.sphere({ name: "left shoulder ball joint", material: material.clearcoat({ color: "#93c5fd", roughness: 0.16 }) }).position(-0.42, 1.16, -0.55).scale(0.095).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+        primitives.sphere({ name: "right shoulder ball joint", material: material.clearcoat({ color: "#93c5fd", roughness: 0.16 }) }).position(0.42, 1.16, -0.55).scale(0.095).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+        primitives.sphere({ name: "left elbow hinge", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(-0.48, 0.82, -0.37).scale(0.082).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+        primitives.sphere({ name: "right elbow hinge", material: material.clearcoat({ color: "#60a5fa", roughness: 0.18 }) }).position(0.48, 0.82, -0.73).scale(0.082).animate({ clip: "walk", speed: 0.9 }).toJSON(),
+        primitives.sphere({ name: "left hip ball joint", material: material.clearcoat({ color: "#1d4ed8", roughness: 0.18 }) }).position(-0.23, 0.52, -0.55).scale(0.09).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+        primitives.sphere({ name: "right hip ball joint", material: material.clearcoat({ color: "#1d4ed8", roughness: 0.18 }) }).position(0.23, 0.52, -0.55).scale(0.09).animate({ clip: "walk", speed: 0.78 }).toJSON(),
+        primitives.sphere({ name: "forward knee hinge", material: material.clearcoat({ color: "#172033", roughness: 0.18 }) }).position(-0.26, 0.24, -0.2).scale(0.086).animate({ clip: "walk", speed: 0.95 }).toJSON(),
+        primitives.sphere({ name: "back knee hinge", material: material.clearcoat({ color: "#172033", roughness: 0.18 }) }).position(0.28, 0.24, -0.88).scale(0.086).animate({ clip: "walk", speed: 0.95 }).toJSON()
+      );
+    }
+    if (motionTrail) {
+      nodes.push(
+        primitives.cylinder({ name: "translucent previous stride torso ghost", material: material.emissive({ color: "#1e3a8a", emissive: "#60a5fa", opacity: 0.22 }) }).position(-0.62, 0.84, -0.62).scale([0.24, 0.62, 0.2]).toJSON(),
+        primitives.sphere({ name: "translucent previous stride head ghost", material: material.emissive({ color: "#7dd3fc", emissive: "#7dd3fc", opacity: 0.2 }) }).position(-0.62, 1.42, -0.62).scale(0.2).toJSON(),
+        primitives.box({ name: "cyan body motion trail ribbon", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", opacity: 0.36 }) }).position(-0.38, 0.9, -0.64).rotate(0, -0.08, 0).scale([0.74, 0.05, 0.08]).toJSON(),
+        primitives.box({ name: "orange forward foot motion streak", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", opacity: 0.58 }) }).position(-0.15, 0.075, -0.22).rotate(0, -0.26, 0).scale([0.62, 0.036, 0.055]).toJSON()
+      );
+    }
+    return nodes;
+  }
 } as const;
 
 export type AuraPromptSceneType = "product-viewer" | "cinematic-scene" | "mini-game" | "material-studio";
@@ -1535,6 +1748,7 @@ async function startProductionRender(
   }
 
   const renderer = await createProductionSceneRenderer(canvas, snapshot);
+  const continuousRender = shouldContinuouslyRender(snapshot);
 
   let disposed = false;
   let animationHandle = 0;
@@ -1546,7 +1760,7 @@ async function startProductionRender(
     diagnosticsState.drawCalls = drawCalls;
     diagnosticsState.renderSize = [canvas.width, canvas.height];
     overlay?.update();
-    if (options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+    if (continuousRender && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
       animationHandle = requestAnimationFrame(renderFrame);
     }
   };
@@ -1560,6 +1774,16 @@ async function startProductionRender(
       renderer.dispose();
     }
   };
+}
+
+function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
+  if (snapshot.timeline?.mode === "loop") return true;
+  if (snapshot.camera.mode === "dolly" || snapshot.camera.mode === "follow") return true;
+  return snapshot.nodes.some((node) => {
+    if ((node.kind === "model" || node.kind === "primitive") && node.animation) return true;
+    if (node.kind !== "effect") return false;
+    return node.effect === "particles" || node.effect === "rain";
+  });
 }
 
 async function createProductionSceneRenderer(canvas: HTMLCanvasElement, snapshot: AuraSceneSnapshot): Promise<WebGLSceneRenderer> {
@@ -1643,6 +1867,12 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       continue;
     }
     if (node.kind === "primitive") {
+      if (isThreeReadableTextLabel(node)) {
+        const label = createThreeReadableTextLabel(THREE, node);
+        threeScene.add(label);
+        disposables.push(label, label.material, label.material.map);
+        continue;
+      }
       if (!node.animation) {
         primitiveBatchNodes.push(node);
         continue;
@@ -1797,6 +2027,52 @@ function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitive
   mesh.receiveShadow = true;
   applyThreeTransform(mesh, node, primitiveSize(node));
   return mesh;
+}
+
+function isThreeReadableTextLabel(node: AuraPrimitiveNode): boolean {
+  return node.primitive === "plane" && node.name?.endsWith("readable planet label") === true;
+}
+
+function createThreeReadableTextLabel(THREE: typeof import("three"), node: AuraPrimitiveNode): any {
+  const label = (node.name ?? "label").replace(/\s*readable planet label$/, "");
+  const color = String(node.material?.emissive ?? node.material?.color ?? "#ffffff");
+  const texture = createThreeTextTexture(THREE, label, color);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false
+  }));
+  const position = node.position ?? [0, 0.4, 0];
+  const scale = typeof node.scale === "number" ? [node.scale, node.scale, node.scale] as const : node.scale ?? [0.8, 1, 0.24] as const;
+  sprite.name = node.name ?? label;
+  sprite.position.set(position[0], position[1], position[2]);
+  sprite.scale.set(scale[0], scale[2] * 1.35, 1);
+  return sprite;
+}
+
+function createThreeTextTexture(THREE: typeof import("three"), text: string, color: string): any {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 160;
+  const context = canvas.getContext("2d");
+  if (context) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "rgba(2,6,23,0.86)";
+    context.fillRect(8, 18, canvas.width - 16, canvas.height - 36);
+    context.strokeStyle = color;
+    context.lineWidth = 8;
+    context.strokeRect(12, 22, canvas.width - 24, canvas.height - 44);
+    context.fillStyle = color;
+    context.font = "700 64px system-ui, -apple-system, BlinkMacSystemFont, sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(text, canvas.width / 2, canvas.height / 2 + 2);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 async function createThreeMaterialInspectionEnvironment(
@@ -2151,19 +2427,41 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
   const height = Math.max(0.2, effect.height ?? 2.4);
   const intensity = Math.max(0.1, Math.min(1.8, effect.intensity ?? 0.8));
   const multicolor = effect.name?.includes("multicolor") || effect.emitter === "swirl";
+  const lifetimeColor = effect.emitter === "fountain" || effect.name?.includes("lifetime");
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const baseColor = new THREE.Color(effect.color ?? "#7dfcff");
   const accentColor = new THREE.Color("#ffd166");
+  const hotColor = new THREE.Color("#fff7ad");
+  const midColor = baseColor.clone();
+  const fallingColor = new THREE.Color("#ff7ad9");
+  const oldColor = new THREE.Color("#60a5fa");
+  const scratchColor = new THREE.Color();
+  const writeColor = (index: number, seconds: number) => {
+    if (lifetimeColor) {
+      const life = getParticleLife(index, seconds, effect.emitter ?? "swirl");
+      if (life < 0.28) {
+        scratchColor.copy(hotColor).lerp(accentColor, life / 0.28);
+      } else if (life < 0.56) {
+        scratchColor.copy(accentColor).lerp(midColor, (life - 0.28) / 0.28);
+      } else if (life < 0.82) {
+        scratchColor.copy(midColor).lerp(fallingColor, (life - 0.56) / 0.26);
+      } else {
+        scratchColor.copy(fallingColor).lerp(oldColor, (life - 0.82) / 0.18);
+      }
+    } else if (multicolor) {
+      scratchColor.setHSL(seededRange(index, 173, 0, 1), 0.84, 0.64);
+    } else {
+      scratchColor.copy(baseColor).lerp(accentColor, seededRange(index, 173, 0, 0.42));
+    }
+    colors[index * 3] = scratchColor.r;
+    colors[index * 3 + 1] = scratchColor.g;
+    colors[index * 3 + 2] = scratchColor.b;
+  };
   for (let index = 0; index < count; index += 1) {
     writeParticlePosition(positions, index, 0, effect.emitter ?? "swirl", radius, height);
-    const color = multicolor
-      ? new THREE.Color().setHSL(seededRange(index, 173, 0, 1), 0.84, 0.64)
-      : baseColor.clone().lerp(accentColor, seededRange(index, 173, 0, 0.42));
-    colors[index * 3] = color.r;
-    colors[index * 3 + 1] = color.g;
-    colors[index * 3 + 2] = color.b;
+    writeColor(index, 0);
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
@@ -2181,12 +2479,22 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
     const seconds = time / 1000 * (effect.speed ?? 1);
     const attribute = geometry.getAttribute("position");
     const values = attribute.array as Float32Array;
+    const colorAttribute = geometry.getAttribute("color");
     for (let index = 0; index < count; index += 1) {
       writeParticlePosition(values, index, seconds, effect.emitter ?? "swirl", radius, height);
+      if (lifetimeColor) writeColor(index, seconds);
     }
     attribute.needsUpdate = true;
+    if (lifetimeColor) colorAttribute.needsUpdate = true;
   };
   return points;
+}
+
+function getParticleLife(seedIndex: number, seconds: number, emitter: AuraEffectNode["emitter"]): number {
+  if (emitter !== "fountain") return (seededRange(seedIndex, 181, 0, 1) + seconds * 0.18) % 1;
+  const phase = seededRange(seedIndex, 181, 0, 1);
+  const jet = seededRange(seedIndex, 199, 0.42, 1);
+  return (phase + seconds * 0.34 * jet) % 1;
 }
 
 function writeParticlePosition(
@@ -2198,7 +2506,6 @@ function writeParticlePosition(
   height: number,
   seedIndex = index
 ): void {
-  const phase = seededRange(seedIndex, 181, 0, 1);
   const angleSeed = seededRange(seedIndex, 191, 0, 1);
   const angle = angleSeed * Math.PI * 2 + seconds * (emitter === "swirl" ? 1.45 : 0.14);
   const radial = radius * (0.18 + seededRange(seedIndex, 193, 0, 0.82));
@@ -2207,7 +2514,7 @@ function writeParticlePosition(
   let z = Math.sin(angle) * radial;
   if (emitter === "fountain") {
     const jet = seededRange(seedIndex, 199, 0.42, 1);
-    const rise = (phase + seconds * 0.34 * jet) % 1;
+    const rise = getParticleLife(seedIndex, seconds, emitter);
     const arc = Math.sin(rise * Math.PI);
     const spread = radius * (0.16 + rise * 0.92) * seededRange(seedIndex, 203, 0.42, 1);
     const wobble = Math.sin(seconds * 1.7 + angleSeed * Math.PI * 2) * 0.12;

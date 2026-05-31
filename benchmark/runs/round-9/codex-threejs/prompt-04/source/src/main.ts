@@ -1,0 +1,201 @@
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+const app = document.querySelector<HTMLDivElement>('#app');
+
+if (!app) {
+  throw new Error('Missing #app element');
+}
+
+document.body.style.margin = '0';
+document.body.style.overflow = 'hidden';
+document.body.style.background = '#02030a';
+app.style.width = '100vw';
+app.style.height = '100vh';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x02030a);
+scene.fog = new THREE.FogExp2(0x081126, 0.018);
+
+const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.05, 180);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+app.appendChild(renderer.domElement);
+
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+composer.addPass(
+  new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.55,
+    0.65,
+    0.08,
+  ),
+);
+
+const points: THREE.Vector3[] = [];
+const pathLength = 240;
+for (let i = 0; i <= 96; i += 1) {
+  const t = i / 96;
+  const z = 28 - t * pathLength;
+  const wave = t * Math.PI * 9.5;
+  points.push(new THREE.Vector3(Math.sin(wave) * 6.5, Math.cos(wave * 0.72) * 4.2, z));
+}
+
+const curve = new THREE.CatmullRomCurve3(points, false, 'catmullrom', 0.36);
+const tunnelRadius = 4.6;
+
+const tunnelGeometry = new THREE.TubeGeometry(curve, 640, tunnelRadius, 42, false);
+const tunnelMaterial = new THREE.MeshStandardMaterial({
+  color: 0x07101d,
+  roughness: 0.72,
+  metalness: 0.18,
+  side: THREE.BackSide,
+  emissive: 0x071a31,
+  emissiveIntensity: 0.25,
+});
+scene.add(new THREE.Mesh(tunnelGeometry, tunnelMaterial));
+
+const ribMaterial = new THREE.MeshBasicMaterial({ color: 0x10244a, side: THREE.BackSide });
+const ribGeometry = new THREE.TorusGeometry(tunnelRadius * 0.992, 0.015, 6, 96);
+for (let i = 0; i < 90; i += 1) {
+  const t = 0.012 + i * 0.0108;
+  const rib = new THREE.Mesh(ribGeometry, ribMaterial);
+  rib.position.copy(curve.getPointAt(t));
+  rib.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), curve.getTangentAt(t).normalize());
+  scene.add(rib);
+}
+
+const neonMaterials = [
+  new THREE.MeshBasicMaterial({ color: 0x00f5ff }),
+  new THREE.MeshBasicMaterial({ color: 0xff2bf2 }),
+  new THREE.MeshBasicMaterial({ color: 0x84ff00 }),
+  new THREE.MeshBasicMaterial({ color: 0xffa100 }),
+];
+const haloMaterials = neonMaterials.map(
+  (material) =>
+    new THREE.MeshBasicMaterial({
+      color: material.color,
+      transparent: true,
+      opacity: 0.22,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+);
+const bandGeometry = new THREE.TorusGeometry(tunnelRadius * 1.006, 0.075, 10, 128);
+const haloGeometry = new THREE.TorusGeometry(tunnelRadius * 1.012, 0.28, 10, 128);
+
+for (let i = 0; i < 34; i += 1) {
+  const t = 0.018 + i * 0.028;
+  const tangent = curve.getTangentAt(t).normalize();
+  const position = curve.getPointAt(t);
+  const colorIndex = i % neonMaterials.length;
+
+  const band = new THREE.Mesh(bandGeometry, neonMaterials[colorIndex]);
+  band.position.copy(position);
+  band.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tangent);
+  scene.add(band);
+
+  const halo = new THREE.Mesh(haloGeometry, haloMaterials[colorIndex]);
+  halo.position.copy(position);
+  halo.quaternion.copy(band.quaternion);
+  scene.add(halo);
+}
+
+const dashGeometry = new THREE.BoxGeometry(0.22, 1.4, 0.18);
+const radial = new THREE.Vector3();
+const binormal = new THREE.Vector3();
+const forward = new THREE.Vector3();
+const normalBasis = new THREE.Vector3(0, 1, 0);
+for (let i = 0; i < 180; i += 1) {
+  const t = 0.018 + i * 0.0053;
+  forward.copy(curve.getTangentAt(t)).normalize();
+  binormal.crossVectors(forward, normalBasis).normalize();
+  if (binormal.lengthSq() < 0.01) {
+    binormal.set(1, 0, 0);
+  }
+  radial.crossVectors(binormal, forward).normalize();
+  const angle = i * 2.399963 + Math.sin(i * 0.37) * 0.5;
+  const outward = radial
+    .clone()
+    .multiplyScalar(Math.cos(angle))
+    .add(binormal.clone().multiplyScalar(Math.sin(angle)))
+    .normalize();
+  const dash = new THREE.Mesh(dashGeometry, neonMaterials[(i + 1) % neonMaterials.length]);
+  dash.position.copy(curve.getPointAt(t)).add(outward.multiplyScalar(tunnelRadius - 0.18));
+  dash.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), outward);
+  dash.rotateZ(Math.PI * 0.5);
+  scene.add(dash);
+}
+
+const particleGeometry = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(900);
+for (let i = 0; i < 300; i += 1) {
+  const t = 0.01 + Math.random() * 0.95;
+  const tangent = curve.getTangentAt(t).normalize();
+  const side = new THREE.Vector3().crossVectors(tangent, new THREE.Vector3(0, 1, 0)).normalize();
+  const up = new THREE.Vector3().crossVectors(side, tangent).normalize();
+  const angle = Math.random() * Math.PI * 2;
+  const radius = tunnelRadius * (0.12 + Math.random() * 0.68);
+  const p = curve
+    .getPointAt(t)
+    .add(side.multiplyScalar(Math.cos(angle) * radius))
+    .add(up.multiplyScalar(Math.sin(angle) * radius));
+  particlePositions[i * 3] = p.x;
+  particlePositions[i * 3 + 1] = p.y;
+  particlePositions[i * 3 + 2] = p.z;
+}
+particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+scene.add(
+  new THREE.Points(
+    particleGeometry,
+    new THREE.PointsMaterial({
+      color: 0xb7f8ff,
+      size: 0.045,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    }),
+  ),
+);
+
+scene.add(new THREE.AmbientLight(0x27415f, 0.55));
+
+const lookAhead = new THREE.Vector3();
+const clock = new THREE.Clock();
+
+function animate(): void {
+  const elapsed = clock.getElapsedTime();
+  const travel = (elapsed * 0.055) % 0.86;
+  const t = 0.05 + travel;
+  const aheadT = Math.min(t + 0.032, 0.985);
+  const bank = Math.sin(elapsed * 1.6) * 0.16 + Math.sin(t * Math.PI * 24) * 0.05;
+
+  camera.position.copy(curve.getPointAt(t));
+  lookAhead.copy(curve.getPointAt(aheadT));
+  camera.lookAt(lookAhead);
+  camera.rotateZ(bank);
+
+  composer.render();
+}
+
+renderer.setAnimationLoop(animate);
+
+function resize(): void {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+  composer.setSize(width, height);
+}
+
+window.addEventListener('resize', resize);

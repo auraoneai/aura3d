@@ -1,0 +1,14 @@
+Implemented the procedural Three.js city block in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+`npm run build`
+
+Run command for the benchmark runner:
+`npm run dev`
+
+Assumptions:
+- No recipe file existed at `context/docs/agents/benchmark-recipes.md`, so I implemented directly from the prompt.
+- No external assets were used; buildings, windows, streets, street lights, lighting, and toggle UI are all procedural.
+- I did not run a dev server or visual verification, per benchmark rules.

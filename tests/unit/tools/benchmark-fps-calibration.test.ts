@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyFpsCalibrationToMetrics,
   classifyFpsCalibration,
+  classifySceneFpsSample,
   runFpsCalibration,
   summarizeFrameTimes
 } from "../../../benchmark/runner/fps-calibration.mjs";
@@ -78,6 +79,7 @@ describe("benchmark FPS calibration", () => {
     const metrics = applyFpsCalibrationToMetrics({
       p50Fps: 58,
       p95FrameTimeMs: 22,
+      fpsSample: { sampleCount: 180, p50Fps: 58, p95FrameTimeMs: 22, timedOut: false },
       fpsInstrumentationStatus: "not-run",
       fpsInstrumentationFailures: ["stale failure"]
     }, calibration);
@@ -88,6 +90,33 @@ describe("benchmark FPS calibration", () => {
       fpsInstrumentationStatus: "pass",
       fpsInstrumentationFailures: []
     });
+  });
+
+  it("invalidates scene FPS metrics when scene sampling never ran", () => {
+    const calibration = {
+      emptyRaf: { sampleCount: 180, p50Fps: 120, p95FrameTimeMs: 8.5 },
+      webglControl: { sampleCount: 180, p50Fps: 60, p95FrameTimeMs: 18 },
+      verdict: classifyFpsCalibration({
+        emptyRaf: { sampleCount: 180, p50Fps: 120, p95FrameTimeMs: 8.5 },
+        webglControl: { sampleCount: 180, p50Fps: 60, p95FrameTimeMs: 18 }
+      })
+    };
+
+    const metrics = applyFpsCalibrationToMetrics({ p50Fps: 120, p95FrameTimeMs: 9 }, calibration);
+
+    expect(metrics).toMatchObject({
+      p50Fps: null,
+      p95FrameTimeMs: null,
+      fpsInstrumentationStatus: "invalid"
+    });
+    expect(metrics.fpsInstrumentationFailures?.join(" ")).toContain("scene FPS sampling did not run");
+  });
+
+  it("invalidates scene FPS metrics when scene sampling times out", () => {
+    const verdict = classifySceneFpsSample({ sampleCount: 5, p50Fps: 12, p95FrameTimeMs: 160, timedOut: true } as never);
+
+    expect(verdict.status).toBe("invalid");
+    expect(verdict.failures.join(" ")).toContain("scene FPS sampling timed out");
   });
 
   it("returns an invalid verdict instead of throwing when a control page fails", async () => {

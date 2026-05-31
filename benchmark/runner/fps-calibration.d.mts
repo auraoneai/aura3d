@@ -14,6 +14,7 @@ export interface FpsCalibrationThresholds {
   readonly webglControlMinFps: number;
   readonly maxP95FrameTimeMs: number;
   readonly minControlSamples: number;
+  readonly minSceneSamples: number;
 }
 
 export interface FpsCalibrationInput {
@@ -44,6 +45,11 @@ export function summarizeFrameTimes(
 
 export function classifyFpsCalibration(
   calibration: FpsCalibrationInput,
+  thresholds?: FpsCalibrationThresholds
+): FpsCalibrationVerdict;
+
+export function classifySceneFpsSample(
+  fpsSample: FpsSummary | null | undefined,
   thresholds?: FpsCalibrationThresholds
 ): FpsCalibrationVerdict;
 

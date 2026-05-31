@@ -71,14 +71,20 @@ Round 1 failure repairs:
   `effects.particles({ emitter: "fountain" | "swirl", particleCount: 1000 })`.
   Use high counts for fountains (`prefabs.particleFountain({ count: 2400 })`)
   when the screenshot must prove dense live particles. Do not accept a visible
-  emitter, HUD counter, or single trail curve with no particle volume.
+  emitter, HUD counter, or single trail curve with no particle volume. For the
+  fountain benchmark, add a visible emission-rate control and keep the prefab's
+  ground plane, splash ring, lifetime color swatches, and upward/falling arcs in
+  frame.
 - Physics playground prompts: start with
   `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
   evidence, then add real `@aura3d/engine/physics` state if needed. Do not
   build only a custom 2D canvas around the physics package.
-- 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`
-  and add DOM axis labels/readouts around the single Aura app. Do not call
-  `dispose()` and `createAuraApp()` in a frame loop to animate bar heights.
+- 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`.
+  It already includes bars, top caps, base shadows, floor guides, axis rails,
+  wall ticks, label chips, a selected-metric callout, a trend ribbon, bloom,
+  and hover metadata. Add DOM axis labels/readouts around the single Aura app
+  only if needed. Do not call `dispose()` and `createAuraApp()` in a frame loop
+  to animate bar heights.
 - Material lab prompts: use `prefabs.materialSwatches()` plus
   `material.metal()`, `material.glass()`, `material.rubber()`,
   `material.emissive()`, and `material.clearcoat()` so material classes are
@@ -88,14 +94,18 @@ Round 1 failure repairs:
 - City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
   before custom buildings. A city scene needs streets, lit windows, scale
   variation, crosswalks, sidewalks, street lights, storefront/roof detail,
-  fog or depth, and an obvious day/night state or toggle marker.
+  fog or depth, and an obvious day/night state or toggle marker. Prefer
+  `timeOfDay: "night"` for screenshots because lit windows, street lamps, and
+  the foreground sun/moon state board read clearly.
 - Product prompts: use `prefabs.productStage()`, typed `model(assets.product)`,
   `interactions.orbit()`, and product camera framing. Place normalized products
   at `position(0, 0.54, -0.65)` so the fit-to-bounds model sits on the round
   plinth, then use `.animate({ clip: "turntable", speed: 0.42 })` or another
-  visible rotation cue. Use a three-quarter product camera instead of a distant
-  flat orbit. Do not implement the actual viewer in raw Three.js inside an
-  Aura3D app.
+  visible rotation cue. Do not hide the built-in fit brackets, plinth contact
+  shadow, softboxes, or reflection cards; those prove the asset is normalized
+  and staged. Use a three-quarter product camera instead of a distant flat
+  orbit. Do not implement the actual viewer in raw Three.js inside an Aura3D
+  app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
   `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
@@ -112,15 +122,20 @@ Round 1 failure repairs:
   physics from cosmetic floating boxes only.
 - Mini-golf prompts: use `prefabs.miniGolfHole()`, `interactions.pointer()`,
   `camera.follow({ targetNode: "white physics golf ball" })`, and a visible
-  score HUD. Do not build gameplay only in a detached 2D overlay.
-- Solar-system prompts: use `prefabs.solarSystem()` and add a small `ui.html`
-  label overlay for the six planet names. Do not ship a sun plus only three
-  unlabeled planets.
+  score HUD. Keep the aim line, shot-power meter, ball ghosts, contact shadow,
+  obstacle contact flash, cup, and follow-camera ball framing visible. Do not
+  build gameplay only in a detached 2D overlay.
+- Solar-system prompts: use
+  `prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 })`
+  so the six readable planet labels are attached to their planets in the 3D
+  scene. Do not ship a detached legend, a sun plus only three unlabeled
+  planets, or a tilted floor-like plate in place of space.
 - Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })`
   and `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running. For primitive character prompts, start from
-  `prefabs.primitiveHumanoid()` so the connected body, path, contact shadow,
-  face cues, and walk-cycle animation are visible.
+  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })` so the
+  connected body, joint hinges, path, contact shadow, face cues, ghost stride,
+  and walk-cycle animation are visible.
 - Benchmark prompts: write the smallest complete scene first, run finite
   commands such as `npm run build`, and exit. Do not run dev servers,
   Playwright, browser screenshot capture, or manual visual verification from
@@ -128,6 +143,10 @@ Round 1 failure repairs:
 - Neon tunnel, mini-golf, and humanoid prompts: start from
   `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
   `prefabs.primitiveHumanoid` before custom primitive placement.
+- Neon tunnel scenes should keep the prefab's octagonal rings, diagonal braces,
+  perspective rails, floor reflections, fog, bloom, sparks, ambient particles,
+  and dolly camera in frame. Do not replace it with a single portal, flat
+  gradient, or CSS-only animation.
 
 Keep edits scoped to active product paths. Archived legacy runtime files are
 historical reference only.

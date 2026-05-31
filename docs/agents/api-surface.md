@@ -30,15 +30,20 @@ scene()
   .addMany(prefabs.particleFountain({ count: 1400 }))
   .add(effects.particles({ emitter: "swirl", particleCount: 1200 }))
   .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
-  .addMany(prefabs.solarSystem())
+  .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24 }))
   .addMany(prefabs.materialSwatches())
   .addMany(prefabs.productStage())
   .addMany(prefabs.physicsRamp())
   .addMany(prefabs.physicsPlayground({ cubes: 50 }))
   .addMany(prefabs.miniGolfHole())
+  .addMany(prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true }))
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
+
+Particle-fountain benchmark scenes should also add a visible emission-rate
+control with `ui.html`/`ui.onClick`; the prefab supplies the emitter, ground
+collision plane, splash ring, lifetime color swatches, and dense arcs.
 
 Follow camera:
 
@@ -47,6 +52,10 @@ scene()
   .addMany(prefabs.miniGolfHole())
   .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }));
 ```
+
+The mini-golf prefab includes green, obstacle, ball, aim line, shot-power meter,
+ball trail ghosts, contact flash, score counter geometry, cup, and a follow
+target beacon. Pair it with a visible strokes HUD for benchmark prompt 06.
 
 Small HUDs and toggles:
 

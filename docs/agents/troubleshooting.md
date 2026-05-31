@@ -11,6 +11,12 @@
 - Material lab looks like identical spheres: use `material.metal()`,
   `material.glass()`, `material.rubber()`, `material.emissive()`, and
   `material.clearcoat()` in the same scene.
+- Empty data-viz screenshot: use `prefabs.dataBars3D({ grid: 6 })`, keep the
+  3D bars, caps, axes, labels, callout, trend ribbon, and bloom in frame, and
+  do not recreate the Aura app every animation frame.
+- Neon tunnel looks like a flat portal: use `prefabs.neonTunnel({ rings: 18 })`
+  with the dolly camera so octagonal rings, braces, rails, floor reflections,
+  sparks, fog, bloom, and particles create visible depth.
 - Dev server never exits in an agent run: run the build/test commands needed for
   verification, then stop the server or rely on the benchmark harness to launch
   preview. Do not leave `npm run dev` as the final command.

@@ -1,0 +1,28 @@
+The recipe-aligned rebuild is confirmed: **`BUILD_EXIT=0`**, `tsc --noEmit` typecheck passed, and `dist/index.html` + assets were emitted. Build is done — stopping here per the benchmark rules.
+
+## Summary
+
+Implemented Prompt 06 (Mini-Golf Hole) by copying the canonical **Recipe 06 Mini Golf** shape from `context/docs/agents/benchmark-recipes.md`, using `@aura3d/engine` public imports only. The single edited file is `source/src/main.ts`.
+
+What the scene provides (all required visual evidence):
+- **Green + obstacle + ball + hole** → `prefabs.miniGolfHole()` (flat green, one obstacle, the cup, and the "white physics golf ball").
+- **Aim/shot interaction** → `interactions.pointer()` (click-to-aim-and-shoot), reinforced by a pointer listener that increments the counter per shot.
+- **Score counter** → in-app `ui.html` HUD showing `strokes` + `par`, updated live via `ui.setText` (the documented HUD path, not a detached 2D overlay).
+- **Follow camera on the ball** → `camera.follow({ targetNode: "white physics golf ball", distance: 4.2, target: [-0.9, 0.08, 0.1], fov: 48 })`.
+
+Every API call was verified against `context/packages/engine/dist/agent-api/index.d.ts`.
+
+## Commands for the runner
+
+- **Install:** `npm install` (run in `source/`) — already run; 57 packages, 0 vulnerabilities.
+- **Build:** `npm run build` (runs `tsc --noEmit` then `vite build`) — already run, exit 0, output in `source/dist/`.
+- **Run (runner executes later):** `npm run dev -- --port <assigned-port>` (per `notes.md`). Equivalent static serve: `npm run preview -- --port <assigned-port>` against the built `dist/`.
+
+## Assumptions
+
+- The prompt maps to the existing `prefabs.miniGolfHole()` recipe, so the green, the one obstacle, the hole, and the physics ball (node name `"white physics golf ball"`) come from the prefab rather than custom primitives — matching the "use public prefabs before custom primitives" rule.
+- No assets were used (prompt specifies procedural; `sneaker.glb` is reserved for Prompt 10).
+- Only `source/src/main.ts` was modified; the scaffold's `package.json`, `index.html`, and `tsconfig.json` were left untouched.
+- I could not run a dev server / screenshot per benchmark rules, so visual confirmation is left to the runner; correctness is established via the passing typecheck + production build and faithful use of the documented recipe.
+
+Note: tool-result display in my session was heavily delayed/batched, so several commands appear repeated — these were retries to surface output, not changes to the deliverable. The final state is a single clean `source/src/main.ts` and a successful build.

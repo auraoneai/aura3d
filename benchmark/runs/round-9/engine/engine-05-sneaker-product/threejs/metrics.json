@@ -1,0 +1,63 @@
+{
+  "scene": "engine-05-sneaker-product",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "routeHealthMethod": "__ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "routeHealthEvidence": "route-health.json",
+  "routeUrl": "http://127.0.0.1:7052/",
+  "firstUsableRenderMs": 3077,
+  "p50Fps": 4.120313143798916,
+  "p95FrameTimeMs": 509.3000000000029,
+  "fpsSample": {
+    "sampleCount": 61,
+    "totalFrameTimeMs": 15190.2,
+    "minFrameTimeMs": 24.600000000000364,
+    "maxFrameTimeMs": 633.2999999999993,
+    "p50FrameTimeMs": 242.70000000000073,
+    "p95FrameTimeMs": 509.3000000000029,
+    "p50Fps": 4.120313143798916,
+    "timedOut": false
+  },
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 2,
+  "triangleCount": 23084,
+  "jsHeapPeakBytes": 27600000,
+  "heapSampleCount": 13,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 147408,
+  "sourceLoc": 65,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "totalFrameTimeMs": 3007.8999999999996,
+      "minFrameTimeMs": 6.5,
+      "maxFrameTimeMs": 17.600000000000023,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 9.900000000000091,
+      "p50Fps": 120.48192771084074,
+      "timedOut": false
+    },
+    "webglControl": {
+      "sampleCount": 228,
+      "totalFrameTimeMs": 3016.3,
+      "minFrameTimeMs": 6.5,
+      "maxFrameTimeMs": 58.80000000000018,
+      "p50FrameTimeMs": 9.199999999999818,
+      "p95FrameTimeMs": 33.29999999999927,
+      "p50Fps": 108.69565217391519,
+      "timedOut": false
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34,
+        "minControlSamples": 90
+      }
+    }
+  }
+}

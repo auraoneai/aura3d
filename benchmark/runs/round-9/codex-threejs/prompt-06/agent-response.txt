@@ -1,0 +1,15 @@
+Implemented the mini-golf hole in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-threejs/prompt-06/source/src/main.ts): procedural green, rails, cup/flag, one visible obstacle, ball physics, click-drag aim/shoot, stroke counter, power meter, and a camera that follows the ball.
+
+Build completed successfully.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command for the runner:
+```bash
+npm run dev
+```
+
+Assumptions: no assets are used; the app is fully procedural and uses only Three.js from the provided source setup.

@@ -1,0 +1,26 @@
+The build succeeded — typecheck passed and Vite produced a production bundle (note the included `RoomEnvironment` chunk, confirming the engine applies an environment map for reflections). Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Implemented Prompt 07 (Material Lab) by copying benchmark recipe #07 — the exact matching recipe. The single source file `source/src/main.ts` builds a `prefabs.materialSwatches()` scene under `lights.studio()` with `interactions.orbit()` and a perspective camera.
+
+**Required visual evidence — all covered by the prefab:**
+- **Five spheres** — metal (mirror chrome), glass (transparent cyan), rubber (matte charcoal), emissive (magenta), clearcoat (red automotive).
+- **Visually distinct materials** — each uses a different `material.*` preset (metal/glass/rubber/emissive/clearcoat) with contrasting color, roughness, and transmission.
+- **Studio lighting** — `lights.studio({ intensity: 1.55 })` plus softbox reflection strips/cards in the prefab produce highlights and reflections.
+- **Environment lighting/reflection** — the engine bundles a `RoomEnvironment` env map; metal and clearcoat swatches set `envMapIntensity`, and reflection panels surround the spheres.
+- **Orbit controls** — `interactions.orbit()`.
+
+## Commands for the runner
+
+- **Build command:** `npm run build` (runs `tsc --noEmit` typecheck + `vite build`)
+- **Run command:** `npm run dev -- --port <assigned-port>`
+- **Install (if needed):** `npm install`
+
+Run all commands from `benchmark/runs/round-9/claude-aura3d/prompt-07/source`.
+
+## Assumptions
+
+- Treated the prompt as matching benchmark recipe #07 (Material Lab) and copied it with no edits, since `prefabs.materialSwatches()` already supplies exactly the five requested material spheres, environment-reflection panels, and studio softbox highlights. No prompt-required edits were needed beyond using the recipe's standard imports.
+- No assets were added (prompt specifies "None / procedural"), so no `aura-assets.ts` import is needed.
+- Only `source/` was modified; the scaffold's `index.html`, `package.json`, and `tsconfig.json` were left unchanged.

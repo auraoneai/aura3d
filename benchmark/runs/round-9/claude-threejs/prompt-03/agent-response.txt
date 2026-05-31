@@ -1,0 +1,23 @@
+Build succeeded. Per the benchmark rules, I'll stop here and report.
+
+## Done
+
+The procedural solar system app is built and the production build passes (typecheck + Vite build clean).
+
+**What it does** (`source/src/main.ts`, raw Three.js 0.165.0):
+- **Sun + 6 planets** — a bright `MeshBasicMaterial` sun with a `PointLight`, and Mercury → Saturn each on its own rotating pivot.
+- **Visibly different orbits/speeds** — distances 18/27/37/48/62/78 with faster inner orbits (0.90 → 0.18 rad/s), each drawn with a visible orbit ring; Saturn has a ring.
+- **Readable labels** — `CSS2DRenderer` HTML chips floating above the Sun and every planet.
+- **Bloom on the sun** — `EffectComposer` + `RenderPass` + `UnrealBloomPass` (threshold 0.6 so only the bright sun glows).
+- **Orbit camera** — `OrbitControls` with damping, positioned at (0, 70, 150) framing the whole system; plus a starfield backdrop.
+
+**Commands for the runner:**
+- Install: `npm install`
+- Build: `npm run build`
+- Run: `npm run dev -- --port <assigned-port>`
+
+**Assumptions:**
+- Added `@types/three@0.165.0` to `devDependencies` — the scaffold shipped only `three` (no bundled types), and the strict `tsc --noEmit` step would otherwise fail. Version pinned to match `three`.
+- Used the bundled official `three/addons/*` modules only (OrbitControls, CSS2DRenderer, EffectComposer/RenderPass/UnrealBloomPass). No external assets.
+- Planet sizes, colors, and orbital values are stylized for clarity, not to scale.
+- The label overlay is `pointerEvents:none` and OrbitControls is bound to the label layer so dragging still rotates the camera.

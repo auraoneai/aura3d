@@ -1,0 +1,21 @@
+Implemented the Prompt 09 app in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-9/codex-aura3d/prompt-09/source/src/main.ts:1), using the matching `prefabs.primitiveHumanoid()` recipe with studio lighting, camera framing, and a 4-second loop timeline.
+
+Build command run:
+
+```bash
+npm run build
+```
+
+Build result: failed because dependencies are not installed/resolved:
+
+```text
+src/main.ts(1,73): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Run command for the runner later:
+
+```bash
+npm run dev
+```
+
+Assumption: the runner will install dependencies in `source` first, since `@aura3d/engine` is declared as a local file dependency in `source/package.json`.

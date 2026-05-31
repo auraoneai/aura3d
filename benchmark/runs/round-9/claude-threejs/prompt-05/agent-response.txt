@@ -1,0 +1,27 @@
+Build succeeded — typecheck passed and Vite produced `dist/`. Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built a 3D data visualization in `source/src/main.ts` using raw Three.js (`three@0.165.0`) with bundled addons `OrbitControls` and `CSS2DRenderer`. The build passed (`tsc --noEmit` + `vite build`, 7 modules transformed).
+
+### How each requirement is met
+- **36 bars** — a 6×6 grid (`GRID = 6`, `COUNT = 36`) of `BoxGeometry` bars, spaced on the XZ plane.
+- **Heights animate from random values** — each bar lerps (frame-rate-independent smoothing) from 0 toward a random target height; targets are re-randomized every ~2.6 s so the grid continuously animates.
+- **Color by height** — `heightToColor()` maps the live height to an HSL hue sweep (blue→red, low→high), updated every frame.
+- **Hover-highlight** — a `Raycaster` driven by `pointermove` finds the bar under the cursor and boosts its material `emissive`; clearing on a new target or `pointerleave`.
+- **Orbit camera** — `OrbitControls` with damping, polar clamp (stays above floor), and zoom limits.
+- **Readable axis labels** — `CSS2DRenderer` HTML overlays: per-column `C1…C6` (X), per-row `R1…R6` (Z), a vertical value axis with numeric ticks `0…6` plus a drawn axis line, and bold axis titles `X — COLUMN`, `Z — ROW`, `Y — VALUE`.
+- Extras: floor + grid helper, shadow-casting key light, hemisphere/ambient fill, HUD with interaction hints, resize handling for both renderers.
+
+### Run notes — hover-highlight
+Moving the mouse over any bar raycasts against the 36 bar meshes; the intersected bar's `emissive` is set to a grey (`0x4d4d4d`) so it visibly brightens, and is reset to black when the pointer moves to another bar or leaves the canvas. Only one bar is highlighted at a time.
+
+### Commands
+- **Install:** `npm install`
+- **Build command:** `npm run build`
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+### Assumptions
+- Raw Three.js benchmark (per `context/llms.txt`); used only `three` + bundled `three/addons/*` (OrbitControls, CSS2DRenderer). No external assets — fully procedural.
+- `npm install` emitted an `allow-scripts` warning for esbuild's postinstall, but the build completed successfully, so no script approval was needed.
+- App runs at the assigned Vite dev port and fills the viewport; labels are DOM overlays positioned over the WebGL canvas.

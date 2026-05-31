@@ -103,6 +103,7 @@ scene()
   .camera(camera.orbit({ distance: 5.2 }));
 
 // Real dense particle system, not a symbolic cone, single curve, or HUD counter.
+// Add a visible emission-rate control for the benchmark prompt.
 scene()
   .background("#030711")
   .addMany(prefabs.particleFountain({ count: 2400 }))
@@ -122,9 +123,9 @@ scene()
 // whole-system framing.
 scene()
   .background("#020617")
-  .addMany(prefabs.solarSystem())
-  .add(lights.studio())
-  .camera(camera.perspective({ position: [0, 3.8, 6.2], target: [0, 0, 0], fov: 46 }));
+  .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 }))
+  .add(lights.studio({ intensity: 0.85 }))
+  .camera(camera.perspective({ position: [0, 4.15, 6.45], target: [0, 0.16, 0], fov: 45 }));
 
 // Material labs need distinct material classes and contrast/reflection cues.
 scene()
@@ -175,15 +176,20 @@ Visual acceptance:
 - A nonblank screenshot is not enough. The image must visibly match the prompt.
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.
 - For particles, use `effects.particles(...)` or `prefabs.particleFountain(...)`;
-  do not draw an emitter cone and claim particles exist.
+  do not draw an emitter cone and claim particles exist. For the fountain
+  prompt, add a visible emission-rate control and frame upward/falling arcs,
+  lifetime color variation, and ground collision/splash evidence.
 - For city, solar-system, material, product, and physics prompts, start from the matching
   `prefabs.*` helper before custom primitive placement.
 - For mini-golf, use `prefabs.miniGolfHole()` with `camera.follow({ targetNode:
-  "white physics golf ball" })` and a visible score HUD.
+  "white physics golf ball" })` and a visible score HUD. Keep the aim line,
+  shot-power meter, ball trail, contact shadow, obstacle contact flash, and cup
+  in frame.
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
-  `prefabs.primitiveHumanoid`; the humanoid prefab includes connected body
-  parts, path cues, face details, and a procedural `walk` animation clip.
+  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })`; the
+  humanoid prefab includes connected body parts, joint hinges, path cues, face
+  details, ghost stride evidence, and a procedural `walk` animation clip.
 - For small HUD text, counters, and buttons, use `ui.html`, `ui.setText`, and
   `ui.onClick`. Do not use `HTMLStrongElement` or untyped
   `event.currentTarget` in benchmark TypeScript.

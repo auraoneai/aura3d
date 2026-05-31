@@ -103,6 +103,7 @@ scene()
   .camera(camera.orbit({ distance: 5.2 }));
 
 // Real dense particle system, not a symbolic cone, single curve, or HUD counter.
+// Add a visible emission-rate control for the benchmark prompt.
 scene()
   .background("#030711")
   .addMany(prefabs.particleFountain({ count: 2400 }))
@@ -110,7 +111,8 @@ scene()
   .camera(camera.orbit({ distance: 4.2 }));
 
 // City prompts need streets, scale, windows, crosswalks, street lights,
-// storefront detail, a day/night state marker, and readable framing.
+// storefront detail, foreground sun/moon day-night markers, and readable
+// framing.
 scene()
   .background("#061018")
   .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
@@ -122,9 +124,19 @@ scene()
 // whole-system framing.
 scene()
   .background("#020617")
-  .addMany(prefabs.solarSystem())
-  .add(lights.studio())
-  .camera(camera.perspective({ position: [0, 3.8, 6.2], target: [0, 0, 0], fov: 46 }));
+  .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 }))
+  .add(lights.studio({ intensity: 0.85 }))
+  .camera(camera.perspective({ position: [0, 4.15, 6.45], target: [0, 0.16, 0], fov: 45 }));
+
+// Neon tunnel prompts need an actual flythrough corridor: repeated emissive
+// octagonal rings, perspective rails, floor reflections, fog, bloom, particles,
+// and a dolly camera. Do not submit a flat gradient, one portal, or CSS-only
+// animation.
+scene()
+  .background("#020617")
+  .addMany(prefabs.neonTunnel({ rings: 18 }))
+  .camera(camera.dolly({ from: [0, 0.45, 2.7], to: [0, 0.45, -2.8], target: [0, 0.45, -2.6], seconds: 8 }))
+  .timeline(timeline.loop({ seconds: 8 }));
 
 // Material labs need distinct material classes and contrast/reflection cues.
 scene()
@@ -133,8 +145,10 @@ scene()
   .add(lights.studio({ intensity: 1.55 }))
   .camera(camera.perspective({ position: [0, 1.55, 8.35], target: [0, 0.82, -0.72], fov: 42 }));
 
-// 3D data visualization prompts should use renderable bar geometry once, not
-// dispose/recreate the app in a requestAnimationFrame loop.
+// 3D data visualization prompts should use renderable bar geometry once: bars,
+// caps, base shadows, grid rails, wall ticks, labels, callout, trend ribbon, and
+// orbit controls. Do not dispose/recreate the app in a requestAnimationFrame loop
+// or replace the scene with a flat DOM chart.
 scene()
   .background("#071017")
   .addMany(prefabs.dataBars3D({ grid: 6 }))
@@ -142,7 +156,8 @@ scene()
   .add(interactions.orbit())
   .camera(camera.orbit({ distance: 5.4, target: [0, 0.9, 0] }));
 
-// Product viewers should use fit-to-bounds model normalization plus a plinth.
+// Product viewers should use fit-to-bounds model normalization plus a plinth,
+// contact shadow, softboxes, reflection cards, and orbit/turntable cues.
 scene()
   .addMany(prefabs.productStage())
   .add(model(assets.product).position(0, 0.54, -0.65).rotate(0, -0.38, 0).animate({ clip: "turntable", speed: 0.42 }))
@@ -175,15 +190,20 @@ Visual acceptance:
 - A nonblank screenshot is not enough. The image must visibly match the prompt.
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.
 - For particles, use `effects.particles(...)` or `prefabs.particleFountain(...)`;
-  do not draw an emitter cone and claim particles exist.
+  do not draw an emitter cone and claim particles exist. For the fountain
+  prompt, add a visible emission-rate control and frame upward/falling arcs,
+  lifetime color variation, and ground collision/splash evidence.
 - For city, solar-system, material, product, and physics prompts, start from the matching
   `prefabs.*` helper before custom primitive placement.
 - For mini-golf, use `prefabs.miniGolfHole()` with `camera.follow({ targetNode:
-  "white physics golf ball" })` and a visible score HUD.
+  "white physics golf ball" })` and a visible score HUD. Keep the aim line,
+  shot-power meter, ball trail, contact shadow, obstacle contact flash, and cup
+  in frame.
 - For data-viz, mini-game, tunnel, and humanoid prompts, start from
   `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
-  `prefabs.primitiveHumanoid`; the humanoid prefab includes connected body
-  parts, path cues, face details, and a procedural `walk` animation clip.
+  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })`; the
+  humanoid prefab includes connected body parts, joint hinges, path cues, face
+  details, ghost stride evidence, and a procedural `walk` animation clip.
 - For small HUD text, counters, and buttons, use `ui.html`, `ui.setText`, and
   `ui.onClick`. Do not use `HTMLStrongElement` or untyped
   `event.currentTarget` in benchmark TypeScript.
@@ -193,6 +213,10 @@ Visual acceptance:
 - For benchmark work, write the smallest complete Aura scene first, run finite
   commands like `npm run build`, and exit. Do not keep `npm run dev` attached to
   the agent process.
+- For product-viewer asset prompts, first run
+  `npx @aura3d/cli@latest assets add ./assets/product.glb --name product`, read
+  `src/aura-assets.ts`, and use `model(assets.product)`. Do not use string ids,
+  invented URLs, or `unsafeModelUrl(...)` for benchmark product proof.
 - If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
   before changing the scene or review label.
 

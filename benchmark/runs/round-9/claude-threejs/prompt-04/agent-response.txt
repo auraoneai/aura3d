@@ -1,0 +1,25 @@
+Build succeeded — typecheck passed and Vite produced the bundle. Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built a **Neon Tunnel Flythrough** in `source/src/main.ts` using `three@0.165.0` and bundled official addons only.
+
+**What it does (maps to required visual evidence):**
+- **Tunnel/tube interior** — `THREE.TubeGeometry` swept along a procedural winding `CatmullRomCurve3` (6 turns), rendered `BackSide` so the camera flies *inside* it.
+- **Emissive segments** — a procedural canvas neon-grid `emissiveMap` on the wall, plus 120 bright `TorusGeometry` ring segments along the path cycling/pulsing through a 5-color neon palette.
+- **Bloom/glow** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (strength 1.25, radius 0.8, threshold 0.12), with ACES tone mapping.
+- **Fog/depth falloff** — `THREE.FogExp2` (dark `0x05010f`, density 0.055); rings and walls fade into the distance.
+- **Camera animation** — camera is driven along the curve via `getPointAt(t)` each frame, looking further down the tunnel with a subtle roll; the scrolling emissive grid adds a sense of speed. Any captured frame reads as a forward flythrough.
+
+**Commands**
+
+- Build command: `npm run build` (runs `tsc --noEmit` typecheck + `vite build`)
+- Run command (for the runner): `npm run dev -- --port <assigned-port>`
+
+Both run from the `source/` directory.
+
+**Assumptions**
+- Added `@types/three@0.165.0` to `devDependencies` so the strict `tsc` typecheck passes (version-matched to the pinned `three`).
+- Used the bundled `three/addons/postprocessing/*` modules (EffectComposer/RenderPass/UnrealBloomPass) present in the context bundle; their internal shader deps ship inside the npm `three` package.
+- Tunnel built fully procedurally (no assets), per the prompt.
+- The animation runs via `setAnimationLoop`; the runner captures runtime evidence of the moving camera (no dev server / screenshot capture was run in-agent, per the rules).

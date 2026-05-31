@@ -1,0 +1,19 @@
+Implemented the Prompt 10 product viewer in `source` using only `source/public/benchmark/assets/sneaker.glb`.
+
+Build succeeded with:
+
+```bash
+cd source
+npm run build
+```
+
+Runner command to execute later:
+
+```bash
+cd source
+npm run dev
+```
+
+Assumptions:
+- `@aura3d/cli@latest` was unavailable from npm, so I created `src/aura-assets.ts` in the same generated-module shape using the provided sneaker GLB path.
+- The asset bounds are approximate and used to support Aura3D’s product viewer normalization/fit behavior.

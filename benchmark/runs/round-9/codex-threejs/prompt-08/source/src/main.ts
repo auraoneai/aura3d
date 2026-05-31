@@ -1,0 +1,369 @@
+import * as THREE from "three";
+
+type Theme = "day" | "night";
+
+const app = document.querySelector<HTMLDivElement>("#app");
+
+if (!app) {
+  throw new Error("Missing #app container");
+}
+
+document.body.style.margin = "0";
+document.body.style.overflow = "hidden";
+document.body.style.fontFamily =
+  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+app.style.width = "100vw";
+app.style.height = "100vh";
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xaed8ff);
+scene.fog = new THREE.Fog(0xaed8ff, 42, 105);
+
+const camera = new THREE.PerspectiveCamera(
+  48,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  220,
+);
+camera.position.set(30, 30, 48);
+camera.lookAt(0, 7, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+app.appendChild(renderer.domElement);
+
+const hemiLight = new THREE.HemisphereLight(0xcfe9ff, 0x627462, 2.25);
+scene.add(hemiLight);
+
+const sun = new THREE.DirectionalLight(0xfff0c4, 4.1);
+sun.position.set(-28, 42, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -55;
+sun.shadow.camera.right = 55;
+sun.shadow.camera.top = 55;
+sun.shadow.camera.bottom = -55;
+scene.add(sun);
+
+const moon = new THREE.DirectionalLight(0xaec9ff, 0);
+moon.position.set(22, 36, -28);
+scene.add(moon);
+
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(96, 82),
+  new THREE.MeshStandardMaterial({ color: 0x536552, roughness: 0.95 }),
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const streetMaterial = new THREE.MeshStandardMaterial({
+  color: 0x252a2d,
+  roughness: 0.78,
+});
+const laneMaterial = new THREE.MeshBasicMaterial({ color: 0xf5e68c });
+
+function addBox(
+  size: THREE.Vector3,
+  position: THREE.Vector3,
+  material: THREE.Material,
+) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(size.x, size.y, size.z),
+    material,
+  );
+  mesh.position.copy(position);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+  return mesh;
+}
+
+addBox(
+  new THREE.Vector3(88, 0.08, 10),
+  new THREE.Vector3(0, 0.04, 0),
+  streetMaterial,
+);
+addBox(
+  new THREE.Vector3(10, 0.09, 78),
+  new THREE.Vector3(0, 0.08, 0),
+  streetMaterial,
+);
+
+for (let x = -40; x <= 40; x += 8) {
+  addBox(
+    new THREE.Vector3(3.6, 0.1, 0.18),
+    new THREE.Vector3(x, 0.13, 0),
+    laneMaterial,
+  );
+}
+
+for (let z = -32; z <= 32; z += 8) {
+  addBox(
+    new THREE.Vector3(0.18, 0.11, 3.6),
+    new THREE.Vector3(0, 0.16, z),
+    laneMaterial,
+  );
+}
+
+const sidewalkMaterial = new THREE.MeshStandardMaterial({
+  color: 0xb8b1a2,
+  roughness: 0.9,
+});
+
+for (const z of [-7.2, 7.2]) {
+  addBox(
+    new THREE.Vector3(88, 0.14, 2.1),
+    new THREE.Vector3(0, 0.12, z),
+    sidewalkMaterial,
+  );
+}
+
+for (const x of [-7.2, 7.2]) {
+  addBox(
+    new THREE.Vector3(2.1, 0.15, 78),
+    new THREE.Vector3(x, 0.16, 0),
+    sidewalkMaterial,
+  );
+}
+
+const buildingColors = [
+  0x7b8794, 0x9a8f82, 0x68798a, 0x8d7672, 0x6d8581,
+  0x97875e, 0x74777e, 0x8f988c, 0x6d7084, 0x927b67,
+];
+const windowDay = new THREE.MeshStandardMaterial({
+  color: 0x9ed5ff,
+  emissive: 0x244d66,
+  emissiveIntensity: 0.08,
+  roughness: 0.25,
+  metalness: 0.15,
+});
+const windowNight = new THREE.MeshStandardMaterial({
+  color: 0xffd87a,
+  emissive: 0xffb83d,
+  emissiveIntensity: 1.25,
+  roughness: 0.18,
+});
+const windowMeshes: THREE.Mesh[] = [];
+const buildingFootprints = [
+  [-34, -25], [-22, -26], [-34, -15], [-22, -15], [-34, 16],
+  [-22, 17], [-34, 28], [-22, 28], [21, -27], [34, -27],
+  [21, -16], [34, -15], [21, 15], [34, 15], [21, 27],
+  [34, 27], [-40, -2], [-25, 2], [25, -2], [40, 2],
+];
+
+function addWindowRows(
+  cx: number,
+  cz: number,
+  width: number,
+  depth: number,
+  height: number,
+) {
+  const rows = Math.max(2, Math.floor(height / 2.4));
+  const colsX = Math.max(2, Math.floor(width / 1.55));
+  const colsZ = Math.max(2, Math.floor(depth / 1.55));
+  const windowGeometry = new THREE.PlaneGeometry(0.62, 0.72);
+
+  for (const side of ["front", "right"] as const) {
+    const cols = side === "front" ? colsX : colsZ;
+    for (let row = 0; row < rows; row += 1) {
+      for (let col = 0; col < cols; col += 1) {
+        if ((row + col) % 7 === 0) {
+          continue;
+        }
+
+        const windowMesh = new THREE.Mesh(windowGeometry, windowDay.clone());
+        const y = 1.8 + row * 1.85;
+
+        if (side === "front") {
+          const x = cx - width * 0.36 + (col / Math.max(1, cols - 1)) * width * 0.72;
+          windowMesh.position.set(x, y, cz + depth / 2 + 0.035);
+        } else {
+          const z = cz - depth * 0.36 + (col / Math.max(1, cols - 1)) * depth * 0.72;
+          windowMesh.position.set(cx + width / 2 + 0.035, y, z);
+          windowMesh.rotation.y = Math.PI / 2;
+        }
+
+        windowMeshes.push(windowMesh);
+        scene.add(windowMesh);
+      }
+    }
+  }
+}
+
+buildingFootprints.forEach(([x, z], index) => {
+  const height = 5 + ((index * 7) % 19) + (index % 3) * 2.2;
+  const width = 5.2 + (index % 4) * 0.75;
+  const depth = 5.6 + ((index + 2) % 3) * 0.9;
+  const material = new THREE.MeshStandardMaterial({
+    color: buildingColors[index % buildingColors.length],
+    roughness: 0.72,
+    metalness: 0.05,
+  });
+  addBox(
+    new THREE.Vector3(width, height, depth),
+    new THREE.Vector3(x, height / 2, z),
+    material,
+  );
+
+  addBox(
+    new THREE.Vector3(width + 0.45, 0.28, depth + 0.45),
+    new THREE.Vector3(x, height + 0.14, z),
+    new THREE.MeshStandardMaterial({ color: 0x3c4045, roughness: 0.86 }),
+  );
+
+  addWindowRows(x, z, width, depth, height);
+});
+
+const lampLights: THREE.PointLight[] = [];
+const lampPostMaterial = new THREE.MeshStandardMaterial({
+  color: 0x1a1d20,
+  roughness: 0.48,
+  metalness: 0.35,
+});
+const lampGlassMaterial = new THREE.MeshStandardMaterial({
+  color: 0xffd88a,
+  emissive: 0xffa12b,
+  emissiveIntensity: 0.2,
+  transparent: true,
+  opacity: 0.9,
+});
+
+function addStreetLamp(x: number, z: number) {
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 4.2, 14), lampPostMaterial);
+  pole.position.set(x, 2.1, z);
+  pole.castShadow = true;
+  scene.add(pole);
+
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.08, 0.08), lampPostMaterial);
+  arm.position.set(x + (x < 0 ? 0.46 : -0.46), 4.18, z);
+  arm.castShadow = true;
+  scene.add(arm);
+
+  const glass = new THREE.Mesh(new THREE.SphereGeometry(0.28, 18, 12), lampGlassMaterial.clone());
+  glass.position.set(x + (x < 0 ? 0.96 : -0.96), 3.95, z);
+  scene.add(glass);
+
+  const light = new THREE.PointLight(0xffb35a, 0.75, 16, 2.3);
+  light.position.copy(glass.position);
+  lampLights.push(light);
+  scene.add(light);
+}
+
+for (const x of [-8.8, 8.8]) {
+  for (const z of [-30, -18, -6, 6, 18, 30]) {
+    addStreetLamp(x, z);
+  }
+}
+
+for (const z of [-8.8, 8.8]) {
+  for (const x of [-38, -26, -14, 14, 26, 38]) {
+    addStreetLamp(x, z);
+  }
+}
+
+const ui = document.createElement("div");
+ui.style.position = "fixed";
+ui.style.top = "18px";
+ui.style.left = "18px";
+ui.style.display = "flex";
+ui.style.alignItems = "center";
+ui.style.gap = "10px";
+ui.style.padding = "10px 12px";
+ui.style.borderRadius = "8px";
+ui.style.background = "rgba(18, 24, 30, 0.78)";
+ui.style.color = "#f7fbff";
+ui.style.backdropFilter = "blur(8px)";
+ui.style.boxShadow = "0 12px 30px rgba(0, 0, 0, 0.24)";
+ui.style.zIndex = "2";
+
+const label = document.createElement("span");
+label.textContent = "Day";
+label.style.fontSize = "14px";
+label.style.fontWeight = "700";
+label.style.minWidth = "42px";
+
+const toggle = document.createElement("button");
+toggle.type = "button";
+toggle.setAttribute("aria-pressed", "false");
+toggle.setAttribute("aria-label", "Toggle day and night city lighting");
+toggle.style.width = "64px";
+toggle.style.height = "32px";
+toggle.style.border = "1px solid rgba(255, 255, 255, 0.32)";
+toggle.style.borderRadius = "999px";
+toggle.style.padding = "3px";
+toggle.style.background = "#5fb1ff";
+toggle.style.cursor = "pointer";
+toggle.style.transition = "background 180ms ease";
+
+const knob = document.createElement("span");
+knob.style.display = "block";
+knob.style.width = "24px";
+knob.style.height = "24px";
+knob.style.borderRadius = "50%";
+knob.style.background = "#fff7cf";
+knob.style.boxShadow = "0 2px 8px rgba(0, 0, 0, 0.32)";
+knob.style.transform = "translateX(0)";
+knob.style.transition = "transform 180ms ease, background 180ms ease";
+toggle.appendChild(knob);
+ui.append(label, toggle);
+document.body.appendChild(ui);
+
+let theme: Theme = "day";
+
+function applyTheme(nextTheme: Theme) {
+  theme = nextTheme;
+  const isNight = theme === "night";
+
+  scene.background = new THREE.Color(isNight ? 0x08111f : 0xaed8ff);
+  scene.fog = new THREE.Fog(isNight ? 0x08111f : 0xaed8ff, isNight ? 28 : 42, isNight ? 86 : 105);
+  hemiLight.intensity = isNight ? 0.42 : 2.25;
+  hemiLight.color.set(isNight ? 0x253859 : 0xcfe9ff);
+  hemiLight.groundColor.set(isNight ? 0x161a22 : 0x627462);
+  sun.intensity = isNight ? 0 : 4.1;
+  moon.intensity = isNight ? 1.8 : 0;
+  lampLights.forEach((light) => {
+    light.intensity = isNight ? 2.8 : 0.75;
+  });
+  windowMeshes.forEach((mesh) => {
+    mesh.material = isNight ? windowNight.clone() : windowDay.clone();
+  });
+
+  label.textContent = isNight ? "Night" : "Day";
+  toggle.setAttribute("aria-pressed", String(isNight));
+  toggle.style.background = isNight ? "#1c2a45" : "#5fb1ff";
+  knob.style.transform = isNight ? "translateX(32px)" : "translateX(0)";
+  knob.style.background = isNight ? "#d8e2ff" : "#fff7cf";
+}
+
+toggle.addEventListener("click", () => {
+  applyTheme(theme === "day" ? "night" : "day");
+});
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+const clock = new THREE.Clock();
+
+function animate() {
+  const elapsed = clock.getElapsedTime();
+  const radius = 56;
+  const angle = -0.93 + Math.sin(elapsed * 0.06) * 0.06;
+  camera.position.x = Math.cos(angle) * radius;
+  camera.position.z = Math.sin(angle) * radius;
+  camera.position.y = 30 + Math.sin(elapsed * 0.18) * 1.1;
+  camera.lookAt(0, 7.5, 0);
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+
+applyTheme("day");
+animate();
