@@ -1,8 +1,0 @@
-Implemented the procedural particle fountain in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-1/codex-aura3d/prompt-02/source/src/main.ts). It includes an identifiable emitter, visible ground collision plane/grid, animated gravity particles with falling arcs, lifetime-based color variation, and a visible emission-rate slider.
-
-Build command: `npm run build`
-Run command: `npm run dev -- --port 5174`
-
-Verification: `npm run build` passes. I also captured a Playwright screenshot from the running app. The dev server is currently running at `http://127.0.0.1:5174/`.
-
-Assumptions: no assets are used; the fountain is fully procedural.

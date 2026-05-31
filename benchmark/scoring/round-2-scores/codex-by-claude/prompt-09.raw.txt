@@ -1,9 +1,0 @@
-Both runs compiled, ran in-browser, no hallucinated APIs, and produced a primitive humanoid on a ground plane with a walk-implied pose. Comparing the visuals:
-
-**Aura3D**: Clear humanoid from primitives (sphere head, cylinder torso, box limbs), legs split in a convincing mid-stride pose, and a footprint trail on the grid floor reinforces walking. However, the scene is dark/sparse, the figure is shown from behind (no face), and there's a translucent box artifact floating around the right arm that reads as a glitch.
-
-**Three.js**: Equally clear humanoid with added character (face with eyes, colored hands/feet), set in a fuller environment — green ground, a brown walking path with footprint decals, sky, and a grid. More polished and visually complete; the walk pose is subtler (legs only slightly apart) and arms are a bit stiff, but no rendering artifacts.
-
-```json
-{"prompt":"09","visualQualityAura":3,"visualQualityThree":4,"winner":"Three.js win","reason":"Both produce a clear primitive humanoid on a visible ground plane with a walk-implied pose and clean metrics. Three.js wins on visual polish: a richer environment (sky, green ground, brown path with footprint decals, grid) plus facial features and colored extremities, with no rendering artifacts. Aura3D's figure is solid and its split-leg stride reads as walking more strongly, but the scene is dark and sparse, the figure faces away (no face), and a translucent box artifact near the right arm looks like a glitch.","auraFailures":["Translucent/overlapping box artifact around the right arm reads as a rendering glitch","Figure shown from behind with no facial features; sparse dark environment reduces visual appeal"],"threeFailures":["Walk pose is subtle (legs only slightly apart) and arms hang stiffly, so animation is less obvious in the still"]}
-```
