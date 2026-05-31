@@ -1,0 +1,47 @@
+{
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring hand-authored engine parity outputs",
+  "scenes": [
+    {
+      "scene": "engine-01-material-grid",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Both render the five PBR/emissive sphere swatches (metal, glass, rubber, pink emissive, red clearcoat) on a grey plinth with the white softbox strip. Object set and material identities match; the only difference is camera framing (Aura front-on at [0,2,7.2] vs Three angled at [6,4.2,7]). Aura p50 120fps vs Three 100fps (Aura faster), heap parity (10MB each), bundle delta ~85KB gzip.",
+      "failedThresholds": []
+    },
+    {
+      "scene": "engine-02-city-block",
+      "visualParity": 5,
+      "pass": true,
+      "reason": "Near-identical city block: same 20-building grid with matching color palette, emissive window bands, ground plane, corner street-light poles and glow spheres, and equivalent camera. Aura adds subtle street strips but composition is visually equivalent. Aura p50 120fps vs Three 29fps (Aura far faster), heap parity, bundle delta ~85KB gzip.",
+      "failedThresholds": []
+    },
+    {
+      "scene": "engine-03-particles-vfx",
+      "visualParity": 3,
+      "pass": false,
+      "reason": "Both are recognizable particle VFX on a dark background, but the composition is materially different: Aura shows a tall upward fountain spray (450 particles) over a glowing emitter disk on a dark floor with bloom/fog, while Three shows a compact flat swirl of colored dots around a cyan cone with no floor. Same intent, materially different result, so parity below the 4 bar. Metrics are healthy (Aura p50 58fps vs Three 20fps, heap parity, bundle delta ~94KB gzip).",
+      "failedThresholds": [
+        "visualParity>=4"
+      ]
+    },
+    {
+      "scene": "engine-04-physics-ramp",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Identical blue ramp geometry and camera; both show colored cubes settled against the ramp. Aura (real @aura3d physics solver) shows ~12 cubes stacked in a cascade on the ramp face; Three (scripted fake fall) shows a few cubes scattered at the lower edge. Recognizable and close, with the cube distribution differing. Aura is slower here (40.98fps vs Three 58.82fps = 30.3% gap), within the 35% per-scene cap; one of five scenes permitted to exceed the 20% band. Heap parity, bundle delta ~8KB gzip.",
+      "failedThresholds": [
+        "auraFpsGap<=20% (30.3%, within 35% cap; 1-of-5 tolerated)"
+      ]
+    },
+    {
+      "scene": "engine-05-sneaker-product",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Same blue sneaker GLB asset rendered cleanly on a cylindrical plinth in both. Aura wraps it in a lit product-studio environment (light backdrop, glass display panels, softbox) via productStage; Three shows the bare shoe + plinth on a dark background. The product (focal subject) is visually equivalent; staging/environment differs. Aura p50 120fps vs Three 12fps (Aura far faster), heap gap ~6% (19.3MB vs 18.2MB), bundle delta ~69KB gzip.",
+      "failedThresholds": []
+    }
+  ],
+  "overallPass": true,
+  "summary": "Aura3D meets engine parity for Round 12. Route health and FPS instrumentation pass for both libraries in all 5 scenes, and Aura p50 FPS >=30 everywhere (40.98-120.48). Aura is faster than Three.js in 4 of 5 scenes; the lone exception is engine-04-physics-ramp where Aura runs a real physics solver (30.3% slower, within the 35% per-scene cap and the 1-of-5 allowance on the 20% band). Heap is at parity (>=25%-margin satisfied in all 5; max gap ~6%), and Aura bundle deltas (~8-94KB gzip) stay well under the 250KB allowance, justified by the engine abstraction (declarative scene API, prefabs, physics, post-effects). Visual parity is >=4 in 4 of 5 scenes (5,5,4,4); only engine-03-particles-vfx scores 3 because Aura's fountain composition diverges materially from Three.js's flat particle swirl. All aggregate thresholds are satisfied, so overall pass."
+}

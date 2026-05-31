@@ -1,0 +1,64 @@
+{
+  "scene": "engine-02-city-block",
+  "library": "Aura3D",
+  "routeHealth": "pass",
+  "routeHealthMethod": "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "routeHealthEvidence": "route-health.json",
+  "routeUrl": "http://127.0.0.1:7021/",
+  "firstUsableRenderMs": 978,
+  "p50Fps": 120.48192771085394,
+  "p95FrameTimeMs": 10,
+  "fpsSample": {
+    "sampleCount": 1801,
+    "totalFrameTimeMs": 15010.099999999999,
+    "minFrameTimeMs": 6.299999999999272,
+    "maxFrameTimeMs": 10.400000000001455,
+    "p50FrameTimeMs": 8.299999999999272,
+    "p95FrameTimeMs": 10,
+    "p50Fps": 120.48192771085394,
+    "timedOut": false
+  },
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 11,
+  "triangleCount": null,
+  "jsHeapPeakBytes": 10000000,
+  "heapSampleCount": 20,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 207517,
+  "sourceLoc": 73,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "totalFrameTimeMs": 3009.899999999999,
+      "minFrameTimeMs": 6.400000000000091,
+      "maxFrameTimeMs": 16.59999999999991,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 9.900000000000091,
+      "p50Fps": 120.48192771084074,
+      "timedOut": false
+    },
+    "webglControl": {
+      "sampleCount": 282,
+      "totalFrameTimeMs": 3009.999999999999,
+      "minFrameTimeMs": 6.599999999999454,
+      "maxFrameTimeMs": 25.900000000000546,
+      "p50FrameTimeMs": 8.799999999999272,
+      "p95FrameTimeMs": 17.199999999999818,
+      "p50Fps": 113.63636363637303,
+      "timedOut": false
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34,
+        "minControlSamples": 90,
+        "minSceneSamples": 2
+      }
+    }
+  }
+}

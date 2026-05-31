@@ -1,0 +1,23 @@
+{
+  "status": "pass",
+  "method": "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "url": "http://127.0.0.1:7021/",
+  "ready": true,
+  "hasRenderedFrame": true,
+  "readout": {
+    "routeHealth": "pass",
+    "drawCalls": 11
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [],
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 13,
+  "bodyTextSample": "02 city block"
+}

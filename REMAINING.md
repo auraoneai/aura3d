@@ -23,9 +23,11 @@ runs as completion evidence.
   gap rule. Round 12 starts from
   `benchmark/results/amendment-round-12-engine-gap-repair.md` and
   `benchmark/results/round-12-phase-a-signoff.md`.
+- Round 12 engine proof passed the engine gate. The main prompt benchmark still
+  has not passed after Round 9.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
-  benchmark and engine parity benchmark both pass, or the user explicitly signs
-  a below-bar shipping decision.
+  benchmark passes and final result/decision/release tasks are complete, or the
+  user explicitly signs a below-bar shipping decision.
 
 ## Tasks
 
@@ -243,11 +245,25 @@ runs as completion evidence.
   - Claude Code: no Aura3D visual-quality score below 3.
   - Claude Code: at least 2 Aura3D wins come from prompts 7, 8, and 10.
 
-- [ ] 13. Pass the engine benchmark.
+- [x] 13. Pass the engine benchmark.
   Evidence required:
   - Required engine result file is recorded.
   - All engine benchmark thresholds pass.
   - Any failure keeps Aura3D not live as a proven Three.js competitor.
+  Evidence checked:
+  - Clean Round 12 engine capture completed for all five engine scenes and both
+    libraries under `benchmark/runs/round-12/engine/`.
+  - `benchmark/results/round-12-engine.md` records the passing engine result.
+  - `benchmark/scoring/round-12-scores/engine-by-claude.json` records neutral
+    scoring by Claude Code with `overallPass: true`.
+  - Numeric threshold audit passed: route health `5/5`, FPS instrumentation
+    `5/5`, Aura3D p50 FPS floor `5/5`, comparative FPS within 20% in `4/5`
+    scenes, comparative FPS within 35% in every scene, heap thresholds `5/5`,
+    and gzip deltas under 250 KB in every scene.
+  - Visual parity reached `>=4` in `4/5` scenes, satisfying the aggregate
+    engine visual threshold.
+  - Local screenshot sheet:
+    `/tmp/aura3d-round12-sheets/engine-contact-sheet.png`.
 
 - [ ] 14. Write final result files.
   Evidence required:

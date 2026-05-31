@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "method": "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "url": "http://127.0.0.1:7032/",
+  "ready": true,
+  "hasRenderedFrame": true,
+  "readout": {
+    "routeHealth": "pass",
+    "drawCalls": 261,
+    "triangleCount": 20872
+  },
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [],
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 16,
+  "bodyTextSample": "03 particles vfx"
+}
