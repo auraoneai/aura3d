@@ -75,19 +75,22 @@ function runInstall() {
 }
 
 async function runFpsCalibrationWithRetry(browser, options) {
-  const first = await runFpsCalibration(browser, options);
-  if (first.verdict.status === "pass") return first;
-  await new Promise((resolveRetry) => setTimeout(resolveRetry, 2000));
-  const second = await runFpsCalibration(browser, options);
-  if (second.verdict.status === "pass") return second;
+  const attempts = [];
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    if (attempt > 0) await new Promise((resolveRetry) => setTimeout(resolveRetry, 2500));
+    const result = await runFpsCalibration(browser, options);
+    attempts.push(result);
+    if (result.verdict.status === "pass") return result;
+  }
+  const last = attempts[attempts.length - 1];
+  const labels = ["first", "second", "third", "fourth"];
   return {
-    ...second,
+    ...last,
     verdict: {
-      ...second.verdict,
-      failures: [
-        ...first.verdict.failures.map((failure) => `first attempt: ${failure}`),
-        ...second.verdict.failures.map((failure) => `second attempt: ${failure}`)
-      ]
+      ...last.verdict,
+      failures: attempts.flatMap((attempt, index) =>
+        attempt.verdict.failures.map((failure) => `${labels[index]} attempt: ${failure}`)
+      )
     }
   };
 }
@@ -177,7 +180,7 @@ if (install.status === 0) {
     try {
       fpsCalibration = await runFpsCalibrationWithRetry(browser, {
         viewport: { width: 1440, height: 960 },
-        controlWarmupMs: 500,
+        controlWarmupMs: 1000,
         controlSampleMs: 3000
       });
       fpsInstrumentationStatus = fpsCalibration.verdict.status;

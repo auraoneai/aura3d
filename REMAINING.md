@@ -12,6 +12,10 @@ runs as completion evidence.
   not count as benchmark evidence.
 - Round 9 completed clean generation, capture, and neutral scoring, then failed
   both the prompt benchmark and engine benchmark. It is invalid for shipping.
+- Round 10 engine proof was started after the targeted repair amendment and
+  failed before the full prompt matrix started: material-grid Aura3D had invalid
+  FPS instrumentation and particles Aura3D measured below the 30 FPS floor.
+  It is invalid for shipping and does not complete task 13.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark and engine parity benchmark both pass, or the user explicitly signs
   a below-bar shipping decision.

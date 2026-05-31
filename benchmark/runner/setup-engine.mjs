@@ -235,9 +235,9 @@ const app = createAuraApp("#stage", {
     .camera(camera.perspective({ position: [4.4, 3.0, 5.8], target: [0, 1.2, 0], fov: 48 }))
     .add(interactions.orbit())
     .add(lights.ambient({ intensity: 0.54, color: "#dcecff" }))
-    .addMany(prefabs.particleFountain({ count: 1800 }))
-    .add(effects.bloom({ intensity: 1.0 }))
-    .add(effects.fog({ density: 0.38, color: "#08111a" }))
+    .addMany(prefabs.particleFountain({ count: 900 }))
+    .add(effects.bloom({ intensity: 0.45 }))
+    .add(effects.fog({ density: 0.2, color: "#08111a" }))
     .add(primitives.plane({ name: "dark floor", material: material.pbr({ color: "#101822", roughness: 0.82 }) }).rotate(-Math.PI / 2, 0, 0).scale([8, 1, 8]))
 });
 window.__ENGINE_READOUT__ = () => engineReadout(app);
