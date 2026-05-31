@@ -235,9 +235,9 @@ const app = createAuraApp("#stage", {
     .camera(camera.perspective({ position: [4.4, 3.0, 5.8], target: [0, 1.2, 0], fov: 48 }))
     .add(interactions.orbit())
     .add(lights.ambient({ intensity: 0.54, color: "#dcecff" }))
-    .addMany(prefabs.particleFountain({ count: 900 }))
-    .add(effects.bloom({ intensity: 0.45 }))
-    .add(effects.fog({ density: 0.2, color: "#08111a" }))
+    .addMany(prefabs.particleFountain({ count: 450 }))
+    .add(effects.bloom({ intensity: 0.25 }))
+    .add(effects.fog({ density: 0.12, color: "#08111a" }))
     .add(primitives.plane({ name: "dark floor", material: material.pbr({ color: "#101822", roughness: 0.82 }) }).rotate(-Math.PI / 2, 0, 0).scale([8, 1, 8]))
 });
 window.__ENGINE_READOUT__ = () => engineReadout(app);
@@ -274,7 +274,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { PhysicsWorld, Shape, type RigidBody } from "@aura3d/engine/physics";
 ${threePrelude("04 Aura3D physics ramp", { shadows: false })}
-const world = new PhysicsWorld({ gravity: [0, -10, 0], fixedDelta: 1 / 60, solverIterations: 2 });
+const world = new PhysicsWorld({ gravity: [0, -10, 0], fixedDelta: 1 / 60, solverIterations: 1 });
 const bodyGround = world.createRigidBody({ type: "static", position: [0, 0, 0], friction: 0.7 });
 world.createCollider(bodyGround, { shape: Shape.plane([0, 1, 0], 0), material: { friction: 0.7, restitution: 0.05 } });
 const rampBody = world.createRigidBody({ type: "static", position: [0, 0, 0], friction: 0.55 });
@@ -283,10 +283,10 @@ const ramp = new THREE.Mesh(new THREE.BoxGeometry(8, 0.32, 3.4), new THREE.MeshS
 ramp.rotation.z = -0.35; ramp.position.set(-0.06, 1.1, 0); scene.add(ramp);
 const cubeGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
 const cubes: { body: RigidBody; mesh: THREE.Mesh }[] = [];
-for (let i = 0; i < 16; i += 1) {
+for (let i = 0; i < 12; i += 1) {
   const body = world.createRigidBody({ type: "dynamic", position: [-1.65 + (i % 4) * 0.65, 2.55 + Math.floor(i / 4) * 0.58, -1.0 + (i % 4) * 0.55], mass: 1, friction: 0.45, restitution: 0.08 });
   world.createCollider(body, { shape: Shape.box(0.275, 0.275, 0.275), material: { friction: 0.45, restitution: 0.08 } });
-  const mesh = new THREE.Mesh(cubeGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / 16, 0.58, 0.58), roughness: 0.48 }));
+  const mesh = new THREE.Mesh(cubeGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / 12, 0.58, 0.58), roughness: 0.48 }));
   scene.add(mesh); cubes.push({ body, mesh });
 }
 function sync() {
