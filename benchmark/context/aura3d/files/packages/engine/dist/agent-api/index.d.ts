@@ -46,10 +46,16 @@ export interface AuraMaterialSpec {
     readonly roughness?: number;
     readonly metallic?: number;
     readonly emissive?: AuraColor;
+    readonly emissiveIntensity?: number;
     readonly opacity?: number;
     readonly transmission?: number;
     readonly clearcoat?: number;
     readonly clearcoatRoughness?: number;
+    readonly thickness?: number;
+    readonly ior?: number;
+    readonly attenuationColor?: AuraColor;
+    readonly attenuationDistance?: number;
+    readonly envMapIntensity?: number;
     readonly texture?: AuraAssetRef<"texture">;
 }
 export interface AuraModelOptions extends AuraTransformSpec {
@@ -117,6 +123,10 @@ export interface AuraEffectNode {
     readonly emitter?: "fountain" | "swirl" | "ambient";
     readonly radius?: number;
     readonly height?: number;
+    readonly emissionRate?: number;
+    readonly gravity?: number;
+    readonly groundCollision?: boolean;
+    readonly lifetimeColorRamp?: readonly AuraColor[];
     readonly splashes?: boolean;
     readonly mist?: boolean;
 }
@@ -251,6 +261,8 @@ export declare const ui: {
     readonly setText: (target: AuraUiTarget, value: string | number) => void;
     readonly setPressed: (target: AuraUiTarget<HTMLButtonElement>, pressed: boolean) => void;
     readonly onClick: (target: AuraUiTarget<HTMLButtonElement>, handler: (button: HTMLButtonElement, event: MouseEvent) => void) => HTMLButtonElement;
+    readonly range: (selector: string) => HTMLInputElement;
+    readonly onInput: (target: AuraUiTarget<HTMLInputElement>, handler: (input: HTMLInputElement, event: Event) => void) => HTMLInputElement;
 };
 export interface AuraSceneSnapshot {
     readonly schema: "aura3d-scene-snapshot/1.0";
@@ -277,22 +289,39 @@ export declare class AuraSceneBuilder {
     toJSON(): AuraSceneSnapshot;
 }
 export declare function scene(): AuraSceneBuilder;
+type CityBlockTimeOfDay = "day" | "night";
+export interface AuraSolarSystemPrefabOptions {
+    readonly orbitSegments?: number;
+    readonly starCount?: number;
+    readonly labels?: "attached" | "none";
+}
+export interface AuraPrimitiveHumanoidPrefabOptions {
+    readonly showJoints?: boolean;
+    readonly motionTrail?: boolean;
+}
 export declare const prefabs: {
     readonly particleFountain: (options?: {
         readonly color?: AuraColor;
         readonly count?: number;
+        readonly emissionRate?: number;
     }) => readonly AuraSceneNode[];
     readonly cityBlock: (options?: {
         readonly blocks?: number;
         readonly litWindows?: boolean;
+        readonly timeOfDay?: CityBlockTimeOfDay;
     }) => readonly AuraSceneNode[];
     readonly materialSwatches: () => readonly AuraSceneNode[];
-    readonly productStage: () => readonly AuraSceneNode[];
+    readonly productStage: (options?: {
+        readonly style?: "clean" | "inspection";
+    }) => readonly AuraSceneNode[];
+    readonly productViewer: (asset: AuraAssetRef<"model">, options?: {
+        readonly stageStyle?: "clean" | "inspection";
+    }) => readonly AuraSceneNode[];
     readonly physicsRamp: () => readonly AuraSceneNode[];
     readonly physicsPlayground: (options?: {
         readonly cubes?: number;
     }) => readonly AuraSceneNode[];
-    readonly solarSystem: () => readonly AuraSceneNode[];
+    readonly solarSystem: (options?: AuraSolarSystemPrefabOptions) => readonly AuraSceneNode[];
     readonly dataBars3D: (options?: {
         readonly grid?: number;
     }) => readonly AuraSceneNode[];
@@ -300,7 +329,7 @@ export declare const prefabs: {
         readonly rings?: number;
     }) => readonly AuraSceneNode[];
     readonly miniGolfHole: () => readonly AuraSceneNode[];
-    readonly primitiveHumanoid: () => readonly AuraSceneNode[];
+    readonly primitiveHumanoid: (options?: AuraPrimitiveHumanoidPrefabOptions) => readonly AuraSceneNode[];
 };
 export type AuraPromptSceneType = "product-viewer" | "cinematic-scene" | "mini-game" | "material-studio";
 export type AuraPromptEffectId = "rain" | "fog" | "bloom" | "particles" | "wet-reflection" | "motion-trail" | "hud";

@@ -27,6 +27,10 @@ runs as completion evidence.
 - Round 12 prompt benchmark completed generation, capture, and neutral scoring,
   then failed task 12: Codex/Aura3D reached 2/10 wins and Claude/Aura3D
   reached 6/10 wins. Required is 7/10 for both agents.
+- Round 13 task-12 repair work is approved for the `PRD-AMENDMENT:` state in
+  `benchmark/results/amendment-round-13-task12-repair.md` and
+  `benchmark/results/round-13-phase-a-signoff.md`. A valid prompt matrix may
+  start only from that committed standard with a clean working tree.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark passes and final result/decision/release tasks are complete, or the
   user explicitly signs a below-bar shipping decision.
@@ -65,7 +69,8 @@ runs as completion evidence.
   Evidence required:
   - 20-building city block reads as rich city geometry, not sparse boxes.
   - Streets, crosswalks, windows, and street lights are visible.
-  - Day/night toggle evidence is present in UI or scene state.
+  - Day/night control visibly changes 3D sky/background, lighting, windows,
+    street lights, and state marker; text-only toggles do not count.
   - Focused tests and a screenshot/smoke artifact verify the result.
   Evidence checked:
   - `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts tests/unit/tools/benchmark-fps-calibration.test.ts --reporter=default`
@@ -114,15 +119,17 @@ runs as completion evidence.
   - Any standard changes are committed with a `PRD-AMENDMENT:` message and the
     required template content.
   Evidence checked:
-  - `node benchmark/runner/verify-context-manifests.mjs` passed:
-    `aura3d: 38 files verified`, `threejs: 15 files verified`,
+  - Earlier rounds had valid manifests at the time they were started.
+  - Post-Round-12 Round 13 repair changes modify the Aura3D context bundle and
+    metric interpretation.
+  - Current manifest verification now passes in the worktree:
+    `node benchmark/runner/verify-context-manifests.mjs` reported
+    `aura3d: 38 files verified`, `threejs: 15 files verified`, and
     `runner contract: finite execution guardrails verified`.
-  - The current standard changes are recorded in
-    `benchmark/results/amendment-round-10-targeted-repair-standard.md`.
-  - The Round 10 Phase A sign-off is recorded in
-    `benchmark/results/round-10-phase-a-signoff.md`.
-  - These files must be committed with a `PRD-AMENDMENT:` prefix before Round
-    10 starts.
+  - `packages/engine/dist/agent-api/index.d.ts` matches
+    `benchmark/context/aura3d/files/packages/engine/dist/agent-api/index.d.ts`.
+  - This task is completed by the approved `PRD-AMENDMENT:` commit that records
+    the matching manifest and sign-off files.
 
 - [x] 7. Confirm the benchmark standard is clean before the next round.
   Evidence required:
@@ -134,17 +141,14 @@ runs as completion evidence.
   - No uncommitted benchmark standard changes.
   - Prompts and rubric have not drifted.
   Evidence checked:
-  - `benchmark/results/amendment-round-12-engine-gap-repair.md` records the
-    active engine FPS gap repair standard after the failed Round 11 engine
-    attempt.
-  - `benchmark/results/round-12-phase-a-signoff.md` records the active Phase A
-    sign-off.
-  - `node benchmark/runner/verify-context-manifests.mjs` passed.
-  - `git diff --check` passed.
-  - Prompts and rubric were not edited by this repair pass.
-  - This item is completed by the same `PRD-AMENDMENT:` commit that records the
-    Round 10 targeted repair standard and removes uncommitted
-    benchmark-standard drift before Round 10 starts.
+  - Round 12 had a clean signed standard and is recorded as a failed historical
+    result.
+  - Round 13 task-12 repair amendment and Phase A sign-off are approved by
+    `gchahal1982` for the `PRD-AMENDMENT:` commit.
+  - Prompts and rubric have not been edited by the current repair pass.
+  - No Round 13 prompt matrix may start from uncommitted standard changes; it
+    must start from the approved `PRD-AMENDMENT:` state with a clean working
+    tree.
 
 - [x] 8. Run one clean full final prompt benchmark round.
   Evidence required:
@@ -157,6 +161,9 @@ runs as completion evidence.
   - No prompt, rubric, or context changes occur during the run.
   - No result cherry-picking.
   Evidence checked:
+  - This is a historical Round 9 completion record for generation coverage. It
+    does not authorize Round 13 and does not satisfy the still-open Task 12 pass
+    requirement.
   - Round 9 runner tooling was committed and pushed first:
     `d6c23ea Add reproducible Round 9 benchmark runner`.
   - The initial untracked/partial matrix attempt was stopped and removed; it is
@@ -182,6 +189,9 @@ runs as completion evidence.
   - Bundle size.
   - Modifiability input for scorer.
   Evidence checked:
+  - This is a historical Round 9 completion record for runtime capture
+    coverage. It does not replace the fresh capture evidence required for a
+    future passing Task 12 round.
   - `benchmark/runs/round-9/{codex-aura3d,codex-threejs,claude-aura3d,claude-threejs}/prompt-01..prompt-10/`
     each contain `screenshot.png`, `route-health.json`, `metrics.json`,
     `source-listing.md`, `source-manifest.json`, and `notes.md`.
@@ -224,6 +234,8 @@ runs as completion evidence.
   - Scorer sees prompt, screenshot, code listing, and metrics, not context
     bundles.
   Evidence checked:
+  - This is a historical Round 9 completion record for neutral scoring coverage.
+    It does not score the Round 13 repair standard.
   - `benchmark/scoring/round-9-scores/codex-by-claude.json`: Claude Code scored
     Codex-generated outputs. The initial full handoff hung with zero output, so
     the same allowed Codex artifacts were split into prompts 01-05 and 06-10,
@@ -259,6 +271,38 @@ runs as completion evidence.
     >=4, 0 visual scores below 3, and 3/3 hard-prompt wins.
   - This task remains incomplete because both agents require at least 7/10
     Aura3D wins.
+  - Post-Round-12 targeted repair work is in progress and does not count as a
+    benchmark pass yet. Current repair evidence:
+    `benchmark/results/amendment-round-13-task12-repair.md`,
+    `benchmark/results/round-13-phase-a-signoff.md`,
+    `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts --reporter=default`
+    passed with 23 tests,
+    `pnpm exec vitest run tests/unit/tools/prompt-asset-audit.test.ts --reporter=default`
+    passed with 22 tests, `node --check benchmark/runner/prompt-asset-audit.mjs`
+    and `node --check benchmark/runner/task12-repair-smoke.mjs` passed,
+    `node benchmark/runner/task12-repair-smoke.mjs` produced focused repair
+    screenshots, `pnpm run check:agent-api` passed with 29 tests,
+    `pnpm run check:agent-docs` passed, `pnpm run check:public-api` passed,
+    `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed,
+    `pnpm build` passed,
+    `node benchmark/runner/verify-context-manifests.mjs` passed, and
+    `git diff --check` passed.
+  - Current focused smoke screenshots:
+    `/tmp/aura3d-task12-repair-smoke/task12-repair-contact-sheet.png`,
+    `/tmp/aura3d-task12-repair-smoke/particle-control.png`,
+    `/tmp/aura3d-task12-repair-smoke/neon-frame-1.png`,
+    `/tmp/aura3d-task12-repair-smoke/neon-frame-2.png`,
+    `/tmp/aura3d-task12-repair-smoke/data-default.png`,
+    `/tmp/aura3d-task12-repair-smoke/data-hover.png`,
+    `/tmp/aura3d-task12-repair-smoke/city-day.png`,
+    `/tmp/aura3d-task12-repair-smoke/city-night.png`,
+    `/tmp/aura3d-task12-repair-smoke/product-landscape.png`,
+    `/tmp/aura3d-task12-repair-smoke/humanoid-frame-1.png`, and
+    `/tmp/aura3d-task12-repair-smoke/humanoid-frame-2.png`.
+  - A fresh Round 13 prompt matrix is valid only from the approved
+    `PRD-AMENDMENT:` state with a clean working tree.
+  - This task still remains incomplete until a fresh signed full prompt round
+    proves the required 7/10 wins for both agents and the hard-prompt floor.
 
 - [x] 13. Pass the engine benchmark.
   Evidence required:
@@ -333,6 +377,25 @@ runs as completion evidence.
     `aura3d: 38 files verified`, `threejs: 15 files verified`,
     `runner contract: finite execution guardrails verified`.
   - `git diff --check` passed.
+  - Current post-Round-12 task-12 repair verification passed after adding the
+    prompt-10 typed asset audit:
+    `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts tests/unit/tools/prompt-asset-audit.test.ts tests/unit/tools/release-proof-guard.test.ts tests/unit/tools/benchmark-fps-calibration.test.ts --reporter=default`
+    passed with 58 tests, `pnpm run check:agent-api` passed with 29 tests,
+    `pnpm run check:agent-docs` passed, `pnpm run check:public-api` passed and
+    ran `pnpm build`, `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false`
+    passed, `node benchmark/runner/verify-context-manifests.mjs` passed,
+    source/frozen agent docs mirror check passed, and `git diff --check`
+    passed.
+  - `pnpm exec vitest run tests/unit/tools/prompt-asset-audit.test.ts --reporter=default`
+    passed after public-GLB audit hardening with 22 tests, including the
+    fail-closed missing canonical asset case, library-gated typed Aura evidence,
+    hard-coded generated URL rejection, broader model extensions, remote URL
+    normalization, and string asset-id rejection.
+  - `node benchmark/runner/task12-repair-smoke.mjs` passed and produced the
+    focused repair screenshots listed under task 12.
+  - Current focused smoke screenshots already produced:
+    `/tmp/aura3d-task12-repair-smoke/task12-repair-contact-sheet.png` and
+    `/tmp/aura3d-task12-repair-smoke/product-landscape.png`.
   - Runner syntax checks passed for `benchmark/runner/fps-calibration.mjs`,
     `benchmark/runner/setup-engine.mjs`,
     `benchmark/runner/capture-engine.mjs`, and
@@ -351,6 +414,15 @@ runs as completion evidence.
   Evidence required:
   - 1.0.0 release notes cite the passing benchmark result.
   - Release notes link to `benchmark/results/round-N.md` for the passing round.
+  Evidence checked:
+  - Pre-release note hygiene is current: `CHANGELOG.md` now cites Round 12 as
+    the latest failed prompt round and explicitly says the Round 12 engine pass
+    is not enough to ship without a passing prompt benchmark.
+  - `docs/project/final-proof-release-readiness.md` now cites Round 12/Round 13
+    state instead of stale Round 7/Round 8 state and keeps local smoke/internal
+    verification out of release proof.
+  - This task remains incomplete until a future passing prompt benchmark exists
+    and `CHANGELOG.md` cites that passing `benchmark/results/round-N.md`.
 
 - [ ] 18. Publish / go live.
   Evidence required:
@@ -361,3 +433,30 @@ runs as completion evidence.
   - Release tag pushed.
   - Release commit pushed.
   - Public claim is made only after benchmark proof exists.
+  Evidence checked:
+  - Pre-publish automation hygiene is improved: `.github/workflows/release.yml`
+    now uses pnpm 11.1.3, Node 22, existing release verification scripts,
+    `pnpm pack`, and `@aura3d/engine` install/package names instead of stale
+    `a3d`/`test:coverage` release commands.
+  - The release workflow now runs `tools/release-proof-guard.mjs` before
+    publish. The guard blocks release unless a selected round has prompt,
+    engine, and decision result files, the decision contains a signed standalone
+    `Decision: ship` line, `REMAINING.md` tasks 12 and 17 are checked, and
+    `CHANGELOG.md` cites the passing result files without contradictory
+    failed/no-ship wording for the selected round. Without an explicit round
+    argument, the guard evaluates the latest decision round rather than falling
+    back to an older passing round.
+  - `node --check tools/release-proof-guard.mjs` passed.
+  - `pnpm exec vitest run tests/unit/tools/release-proof-guard.test.ts --reporter=default`
+    passed with 4 tests covering latest-round no-ship blocking, explicit
+    signed ship pass, signed decision requirement, and contradictory changelog
+    rejection.
+  - `node tools/release-proof-guard.mjs` was intentionally blocked because the
+    latest decision round is Round 12 and Round 12 is a no-ship result.
+  - `node tools/release-proof-guard.mjs 12` was intentionally blocked because
+    Round 12 is a no-ship result, proving the guard currently prevents publish
+    from the failed round.
+  - `docs/project/release-process.md` no longer describes the release workflow
+    as stale, but this task remains incomplete until the benchmark proof,
+    release notes, final package verification, publish, tag, deployment, and
+    pushed release commit exist.

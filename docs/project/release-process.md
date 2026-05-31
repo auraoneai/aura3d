@@ -4,6 +4,11 @@ Version: 1.0.0
 
 ## Process
 
+Current release state: `benchmark/results/round-12-decision.md` is a no-ship
+decision. The Round 13 amendment/sign-off files are approved for a
+`PRD-AMENDMENT:` repair commit, but Round 13 still has no passing prompt
+benchmark result. Do not publish or tag a public release from this state.
+
 1. Make code and docs changes.
 2. Regenerate generated docs or reports that are affected by the change.
 3. Run focused tests for the affected packages/routes.
@@ -11,7 +16,9 @@ Version: 1.0.0
 5. Run the final proof pipeline in
    `docs/project/final-proof-release-readiness.md`.
 6. Update release notes to cite the passing benchmark result files.
-7. Keep release notes and public copy narrower than the evidence.
+7. Run the release-proof guard for the passing round before publishing:
+   `pnpm check:release-proof <round-number>`.
+8. Keep release notes and public copy narrower than the evidence.
 
 ## Useful Commands
 
@@ -26,6 +33,7 @@ pnpm verify:package-install-smoke:fresh
 pnpm verify:package-provenance
 pnpm verify:release:quick
 pnpm verify:release
+pnpm check:release-proof <round-number>
 ```
 
 The competitive proof commands are not package scripts. They are the frozen
@@ -43,7 +51,22 @@ No Docker, Docker Compose, Vercel, Netlify, Render, Fly.io, Railway, Cloudflare 
 
 ## CI Caveat
 
-Some older GitHub workflows still contain stale commands or copy, including `pnpm test:coverage`, `pnpm lint`, `pnpm test:bench`, `a3d@...`, and `A3D 5.0` wording. Those do not match the current root package scripts or package name `@aura3d/engine`. Treat the commands in this document and `docs/project/release-checklist.md` as the current release command set until those workflows are updated.
+Some older non-release GitHub workflows still contain stale commands or copy,
+including `pnpm test:coverage`, `pnpm lint`, and `pnpm test:bench`. Those do
+not match the current root package scripts. Treat the commands in this document
+and `docs/project/release-checklist.md` as the current release command set
+until those workflows are updated.
+
+The release workflow itself runs `tools/release-proof-guard.mjs` before publish.
+That guard intentionally blocks npm/GitHub release creation unless the selected
+round has prompt, engine, and decision result files, the decision file contains
+a standalone `Decision: ship` line with user signature, `REMAINING.md` tasks 12
+and 17 are checked, and `CHANGELOG.md` cites the passing result files without
+contradictory failed/no-ship wording for that round. Without an explicit round
+argument, the guard evaluates the latest decision round rather than falling
+back to an older passing round. While Task 12 is still open, the guard must
+fail. Local release operators can run the same guard with
+`pnpm check:release-proof <round-number>`.
 
 ## Report Storage
 

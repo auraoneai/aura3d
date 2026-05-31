@@ -72,18 +72,20 @@ Round 1 failure repairs:
   Use high counts for fountains (`prefabs.particleFountain({ count: 2400 })`)
   when the screenshot must prove dense live particles. Do not accept a visible
   emitter, HUD counter, or single trail curve with no particle volume. For the
-  fountain benchmark, add a visible emission-rate control and keep the prefab's
-  ground plane, splash ring, lifetime color swatches, and upward/falling arcs in
-  frame.
+  fountain benchmark, add a real `ui.range`/`ui.onInput` emission-rate control
+  and keep the prefab's nozzle, ground plane, splash ring, lifetime color
+  swatches, and upward/falling arcs in frame. A label-only button does not
+  satisfy the control requirement.
 - Physics playground prompts: start with
   `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
   evidence, then add real `@aura3d/engine/physics` state if needed. Do not
   build only a custom 2D canvas around the physics package.
 - 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`.
   It already includes bars, top caps, base shadows, floor guides, axis rails,
-  wall ticks, label chips, a selected-metric callout, a trend ribbon, bloom,
-  and hover metadata. Add DOM axis labels/readouts around the single Aura app
-  only if needed. Do not call `dispose()` and `createAuraApp()` in a frame loop
+  wall ticks, label chips, a grounded legend, a selected-metric callout, bloom,
+  and hover metadata. Add DOM title, X/Z/height axis labels, numeric ticks, and
+  hover/readout text around the single Aura app; these labels are mandatory for
+  benchmark proof. Do not call `dispose()` and `createAuraApp()` in a frame loop
   to animate bar heights.
 - Material lab prompts: use `prefabs.materialSwatches()` plus
   `material.metal()`, `material.glass()`, `material.rubber()`,
@@ -94,20 +96,17 @@ Round 1 failure repairs:
 - City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
   before custom buildings. A city scene needs streets, lit windows, scale
   variation, crosswalks, sidewalks, street lights, storefront/roof detail,
-  fog or depth, and an obvious day/night state or toggle marker. Prefer
-  `timeOfDay: "night"` for screenshots because lit windows, street lamps, and
-  the foreground sun/moon state board read clearly.
-- Product prompts: use `prefabs.productStage()`, typed `model(assets.product)`,
-  `interactions.orbit()`, and product camera framing. Place normalized products
-  at `position(0, 0.54, -0.65)` so the fit-to-bounds model sits on the round
-  plinth, then use `.animate({ clip: "turntable", speed: 0.42 })` or another
-  visible rotation cue. Do not hide the built-in fit brackets, plinth contact
-  shadow, softboxes, or reflection cards; those prove the asset is normalized
-  and staged. Use a three-quarter product camera instead of a distant flat
-  orbit. Do not implement the actual viewer in raw Three.js inside an Aura3D
-  app.
-- Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
-  `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
+  fog or depth, and an obvious day/night state or toggle marker. A day/night
+  toggle must change the 3D scene's sky/background, lighting, windows, street
+  lights, and state marker; text-only toggles fail the prompt.
+- Product prompts: use `prefabs.productViewer(assets.product)`,
+  `interactions.orbit()`, and product camera framing. The helper keeps the
+  typed asset, plinth, contact shadow, softboxes, clean turntable cue, and
+  normalized placement together. Use `prefabs.productStage({ style:
+  "inspection" })` only when the prompt asks for explicit fit brackets. Do not
+  implement the actual viewer in raw Three.js inside an Aura3D app.
+- Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`,
+  `ui.onClick`, `ui.range`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
   default, `ui.html("#app", markup)` inserts markup inside `#app`, so nested
   scene containers remain visible within the viewport. If you query a canvas or

@@ -363,6 +363,7 @@
     "check:docs-codeblocks": "pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts",
     "check:marketing-links": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-link-audit/index.ts",
     "check:error-quality": "pnpm exec tsx --tsconfig tsconfig.base.json tools/error-message-quality/index.ts",
+    "check:release-proof": "node tools/release-proof-guard.mjs",
     "audit:effects-vfx": "pnpm exec tsx --tsconfig tsconfig.base.json tools/effects-vfx-visual-audit/index.ts",
     "check:effects-vfx": "pnpm exec tsx --tsconfig tsconfig.base.json tools/effects-vfx-visual-audit/index.ts --strict",
     "audit:sketchfab-asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/sketchfab-asset-corpus/index.ts",

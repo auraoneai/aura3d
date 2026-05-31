@@ -1,6 +1,7 @@
 # Phase D Progress
 
 Date: 2026-05-30
+Last updated: 2026-05-31
 Base failed rounds: `benchmark/results/round-1.md`,
 `benchmark/results/round-2.md`, `benchmark/results/round-3.md`
 
@@ -218,7 +219,66 @@ Local smoke screenshots:
 - `/tmp/aura3d-round6-product-smoke.png`
 
 This is still not a benchmark pass. It is targeted repair evidence before the
-next required full benchmark round.
+next full proof round.
+
+## Round 13 Task 12 Prompt Repair
+
+Approved status: approved by `gchahal1982` on 2026-05-31 for a
+`PRD-AMENDMENT:` commit and paired with the Round 13 Phase A sign-off. A future
+benchmark rerun must start from that committed standard with a clean working
+tree.
+
+`benchmark/results/amendment-round-13-task12-repair.md` records proposed
+targeted post-Round-12 prompt repair work. It addresses the specific Round 12
+task-12 failures without starting another blind full matrix:
+
+- Prompt 02 particles: real `ui.range`/`ui.onInput` emission-rate control
+  guidance and particle effect metadata for emission rate, gravity,
+  ground-collision, and lifetime color ramps.
+- Prompt 04 neon tunnel: stronger inside-the-tube default framing, receding
+  rings, wall chords, fog, and bloom evidence.
+- Prompt 05 data visualization: mandatory DOM title/axis/tick/readout evidence
+  and stronger prefab label/readout/legend geometry.
+- Prompt 07 material lab: stronger emissive intensity, glow halo, floor spill,
+  and bloom evidence.
+- Prompt 08 city: recipes now require a real one-click scene remount/update for
+  day/night state instead of text-only toggles.
+- Prompt 09 humanoid: default motion trails no longer include detached previous
+  head/torso ghosts; limbs and feet are tightened for connected readability.
+- Prompt 10 product: added `prefabs.productViewer(assets.product)` and fixed
+  the benchmark metric policy so Aura CLI-generated
+  `/aura-assets/sneaker.<hash>.glb` URLs derived from the provided sneaker
+  source asset are not counted as invented paths.
+
+Verification:
+
+- `pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts --reporter=default`
+- `pnpm exec vitest run tests/unit/tools/prompt-asset-audit.test.ts --reporter=default`
+- `node benchmark/runner/task12-repair-smoke.mjs`
+- `pnpm run check:agent-api`
+- `pnpm run check:agent-docs`
+- `pnpm run check:public-api`
+- `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false`
+- `pnpm build`
+- `node benchmark/runner/verify-context-manifests.mjs`
+- `git diff --check`
+
+Focused smoke screenshots:
+
+- `/tmp/aura3d-task12-repair-smoke/task12-repair-contact-sheet.png`
+- `/tmp/aura3d-task12-repair-smoke/particle-control.png`
+- `/tmp/aura3d-task12-repair-smoke/neon-frame-1.png`
+- `/tmp/aura3d-task12-repair-smoke/neon-frame-2.png`
+- `/tmp/aura3d-task12-repair-smoke/data-default.png`
+- `/tmp/aura3d-task12-repair-smoke/data-hover.png`
+- `/tmp/aura3d-task12-repair-smoke/city-day.png`
+- `/tmp/aura3d-task12-repair-smoke/city-night.png`
+- `/tmp/aura3d-task12-repair-smoke/product-landscape.png`
+- `/tmp/aura3d-task12-repair-smoke/humanoid-frame-1.png`
+- `/tmp/aura3d-task12-repair-smoke/humanoid-frame-2.png`
+
+This is still not a benchmark pass. A future full prompt benchmark round is
+required from the approved `PRD-AMENDMENT:` state with a clean working tree.
 
 ## Round 6 UI Mount Repair
 

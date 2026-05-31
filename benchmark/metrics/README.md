@@ -18,7 +18,16 @@ These definitions apply to the prompt benchmark and engine parity benchmark.
   config keys, or CLI commands that are not present in the selected context
   bundle or installed public package.
 - `inventedAssetPaths`: count asset paths not provided by the prompt. For
-  prompt 10, only `benchmark/assets/sneaker.glb` is allowed.
+  prompt 10, `benchmark/assets/sneaker.glb` is the only source asset allowed.
+  Typed Aura CLI outputs generated from that source, such as
+  `/aura-assets/sneaker.<hash>.glb`, do not count as invented only when the run
+  includes typed evidence: generated `src/aura-assets.ts` has a `sneaker`
+  entry for that URL, app source imports `assets` from `./aura-assets`, app
+  source uses `assets.sneaker`, and the source does not use
+  `unsafeModelUrl(...)`. The runner-copied
+  `public/benchmark/assets/sneaker.glb` fixture is allowed only when its hash
+  matches the prompt asset. Unrelated copied public `.glb` files, hand-written
+  generated Aura URLs, and unrelated asset URLs still count as invented paths.
 - `repairTurns`: count every post-prompt agent interaction needed before a
   usable render or final failure.
 - `timeToFirstUsableRenderMs`: wall-clock from initial prompt delivery to the

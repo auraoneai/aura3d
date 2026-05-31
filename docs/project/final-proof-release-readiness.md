@@ -9,13 +9,18 @@ Three.js benchmark.
 
 ## Current State
 
-- Latest complete prompt benchmark result: `benchmark/results/round-7.md`.
-- Latest complete engine result: `benchmark/results/round-7-engine.md`.
-- Latest complete decision: `benchmark/results/round-7-decision.md`.
-- Round 7 decision: do not ship as a proven Three.js competitor.
-- Round 8 status: Phase A sign-off exists in
-  `benchmark/results/round-8-phase-a-signoff.md`; no completed Round 8 result
-  file is present.
+- Latest complete prompt benchmark result: `benchmark/results/round-12.md`.
+- Latest complete engine result: `benchmark/results/round-12-engine.md`.
+- Latest complete decision: `benchmark/results/round-12-decision.md`.
+- Round 12 engine decision: engine parity passed.
+- Round 12 prompt decision: do not ship as a proven Three.js competitor;
+  Codex/Aura3D reached 2/10 prompt wins and Claude/Aura3D reached 6/10 prompt
+  wins, below the required 7/10 for both agents.
+- Round 13 status: task-12 repair amendment and Phase A sign-off are approved
+  in `benchmark/results/amendment-round-13-task12-repair.md` and
+  `benchmark/results/round-13-phase-a-signoff.md` for a `PRD-AMENDMENT:`
+  commit. Round 13 is not a passing benchmark result; it is only the next
+  authorized prompt-benchmark standard once committed.
 - Release state: not go-live ready until a later full round passes and is
   signed.
 
@@ -87,15 +92,21 @@ are committed and signed.
 These commands support release confidence after code fixes. They are not
 benchmark proof.
 
-Focused commands from the current Round 8 sign-off and amendments:
+Focused commands from the current Round 13 repair and amendments:
 
 ```bash
 pnpm exec vitest run tests/unit/agent-api/agent-api.test.ts --reporter=default
+pnpm exec vitest run tests/unit/tools/prompt-asset-audit.test.ts --reporter=default
+pnpm exec vitest run tests/unit/tools/release-proof-guard.test.ts --reporter=default
+node benchmark/runner/task12-repair-smoke.mjs
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
 pnpm build
 pnpm run check:agent-docs
 pnpm run check:agent-api
 pnpm run check:public-api
+node benchmark/runner/verify-context-manifests.mjs
+node --check tools/release-proof-guard.mjs
+pnpm check:release-proof 12 # expected to fail while Round 12 is no-ship
 git diff --check
 ```
 
@@ -132,9 +143,10 @@ benchmark/results/round-N-engine.md
 benchmark/results/round-N-decision.md
 ```
 
-Do not cite Round 7 or any earlier failed round as shipping evidence. Do not
-cite local smoke screenshots, generated internal reports, `pnpm verify:release`,
-or aggregate test counts as proof that Aura3D beats raw Three.js.
+Do not cite Round 12 or any earlier failed prompt round as shipping evidence.
+Do not cite the Round 12 engine pass by itself, local smoke screenshots,
+generated internal reports, `pnpm verify:release`, or aggregate test counts as
+proof that Aura3D beats raw Three.js.
 
 ## Go-Live Checklist
 
@@ -146,6 +158,8 @@ or aggregate test counts as proof that Aura3D beats raw Three.js.
 - [ ] `gchahal1982` user signature is present in all final result files.
 - [ ] Release notes cite the passing round result files by path.
 - [ ] Regression verification commands above have passed for the final commit.
+- [ ] `node tools/release-proof-guard.mjs <round-number>` passes for the
+      selected shipping round.
 - [ ] `docs/project/release-artifacts.json` references the final package
       artifact, version, path or URL, SHA-256, and creation time.
 - [ ] Public copy does not claim benchmark success beyond the committed passing

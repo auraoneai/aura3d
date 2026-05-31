@@ -182,55 +182,24 @@ server.stderr.on("data", (chunk) => {
 let browser;
 try {
   browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-  page.setDefaultTimeout(60_000);
   const url = `http://127.0.0.1:${port}/`;
-  await waitForServer(page, `${url}?scene=particle`);
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "particle-panel", "particle-control.png");
-  await page.goto(`${url}?scene=neon`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "neon-panel", "neon-frame-1.png");
-  await page.waitForTimeout(1800);
-  await capturePanel(page, "neon-panel", "neon-frame-2.png");
-  await page.goto(`${url}?scene=data`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "data-panel", "data-default.png");
-  await page.goto(`${url}?scene=data&hover=1`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "data-panel", "data-hover.png");
-  await page.goto(`${url}?scene=city&mode=day`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "city-panel", "city-day.png");
-  await page.goto(`${url}?scene=city&mode=night`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(1500);
-  await capturePanel(page, "city-panel", "city-night.png");
-  await page.goto(`${url}?scene=product`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(3500);
-  await capturePanel(page, "product-panel", "product-landscape.png");
-  await page.goto(`${url}?scene=humanoid`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
-  await page.waitForTimeout(900);
-  await capturePanel(page, "humanoid-panel", "humanoid-frame-1.png");
-  await page.waitForTimeout(1200);
-  await capturePanel(page, "humanoid-panel", "humanoid-frame-2.png");
+  const summary = {
+    url,
+    port,
+    captures: [],
+    serverLog: ""
+  };
+  await captureRoute(browser, `${url}?scene=particle`, "particle-panel", [["particle-control.png", 1500]], summary);
+  await captureRoute(browser, `${url}?scene=neon`, "neon-panel", [["neon-frame-1.png", 1500], ["neon-frame-2.png", 1800]], summary);
+  await captureRoute(browser, `${url}?scene=data`, "data-panel", [["data-default.png", 1500]], summary);
+  await captureRoute(browser, `${url}?scene=data&hover=1`, "data-panel", [["data-hover.png", 1500]], summary);
+  await captureRoute(browser, `${url}?scene=city&mode=day`, "city-panel", [["city-day.png", 1500]], summary);
+  await captureRoute(browser, `${url}?scene=city&mode=night`, "city-panel", [["city-night.png", 1500]], summary);
+  await captureRoute(browser, `${url}?scene=product`, "product-panel", [["product-landscape.png", 3500]], summary);
+  await captureRoute(browser, `${url}?scene=humanoid`, "humanoid-panel", [["humanoid-frame-1.png", 900], ["humanoid-frame-2.png", 1200]], summary);
 
   await createContactSheet(browser);
-  const summary = await page.evaluate(() => ({
-    ready: document.body.dataset.aura3dReady,
-    drawCalls: document.body.dataset.aura3dDrawCalls,
-    canvases: document.querySelectorAll("canvas").length,
-    route: (window).__AURA3D_ROUTE_READY__?.diagnostics ?? null,
-    dataReadout: document.querySelector("#data-readout")?.textContent ?? null,
-    cityTitle: document.querySelector("#city-title")?.textContent ?? null
-  }));
+  summary.serverLog = serverLog;
   writeFileSync(join(outDir, "summary.json"), `${JSON.stringify({ url, port, summary, serverLog }, null, 2)}\n`);
   console.log(join(outDir, "task12-repair-contact-sheet.png"));
 } finally {
@@ -250,6 +219,31 @@ async function waitForServer(page, url) {
     }
   }
   throw new Error(`smoke server did not become ready: ${lastError}\n${serverLog}`);
+}
+
+async function captureRoute(browserInstance, routeUrl, panelId, captures, summary) {
+  const page = await browserInstance.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+  try {
+    page.setDefaultTimeout(60_000);
+    await waitForServer(page, routeUrl);
+    await page.waitForFunction(() => document.querySelectorAll("canvas").length >= 1, undefined, { timeout: 60_000 });
+    for (const [fileName, waitMs] of captures) {
+      await page.waitForTimeout(waitMs);
+      await capturePanel(page, panelId, fileName);
+      summary.captures.push({
+        fileName,
+        route: routeUrl,
+        diagnostics: await page.evaluate(() => ({
+          ready: document.body.dataset.aura3dReady,
+          drawCalls: document.body.dataset.aura3dDrawCalls,
+          canvases: document.querySelectorAll("canvas").length,
+          route: window.__AURA3D_ROUTE_READY__?.diagnostics ?? null
+        }))
+      });
+    }
+  } finally {
+    await page.close();
+  }
 }
 
 async function capturePanel(page, panelId, fileName) {

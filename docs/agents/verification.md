@@ -19,19 +19,6 @@ These checks prove package health. They are not the release proof that Aura3D
 beats raw Three.js. The release proof is the neutral benchmark defined in
 `FinalizedPromptPlan.md` and `benchmark/protocol.md`.
 
-Current release-proof state after Round 9:
-
-- `benchmark/results/round-9.md`, `benchmark/results/round-9-engine.md`, and
-  `benchmark/results/round-9-decision.md` record a failed proof round.
-- Round 9 may be cited as failed historical evidence only. Do not cite it as
-  release evidence or as proof that Aura3D beats raw Three.js.
-- Do not rerun the same standard unchanged. The next proof round requires a
-  committed `PRD-AMENDMENT:` targeted repair standard, regenerated context
-  manifests if context files change, and a new Phase A sign-off before the full
-  matrix starts.
-- `benchmark/results/amendment-round-10-targeted-repair-standard.md` identifies
-  the required Round 10 amendment content; it is not a benchmark pass.
-
 Template-local gate:
 
 ```bash

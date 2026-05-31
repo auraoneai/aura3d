@@ -201,6 +201,7 @@ export const assets = defineAuraAssets({
     writeFileSync(resolve(appDir, "src/main.ts"), `${helloWorld[1]?.trim()}\n`);
     writeAgentSimulationScreenshotSpec(appDir);
     writeWorkspaceViteConfig(appDir);
+    writeWorkspacePlaywrightConfig(appDir);
     run("pnpm", ["exec", "vite", "build", "--config", resolve(appDir, "vite.config.ts")], appDir);
     run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line"], appDir);
     const screenshotPath = resolve(appDir, "tests/reports/screenshot.png");
@@ -272,6 +273,24 @@ test("agent docs hello-world scene renders the typed robot asset", async ({ page
   expect(profile.centerObjectPixels).toBeGreaterThan(600);
   expect(profile.uniqueBuckets).toBeGreaterThan(10);
   expect(screenshot.byteLength).toBeGreaterThan(1000);
+});
+`);
+}
+
+function writeWorkspacePlaywrightConfig(targetDir: string): void {
+  writeFileSync(resolve(targetDir, "playwright.config.ts"), `import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  use: {
+    baseURL: "http://127.0.0.1:48273"
+  },
+  webServer: {
+    command: "npm exec vite -- --host 127.0.0.1 --port 48273 --strictPort",
+    url: "http://127.0.0.1:48273",
+    reuseExistingServer: false,
+    timeout: 120_000
+  }
 });
 `);
 }

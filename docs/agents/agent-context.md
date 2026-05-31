@@ -31,7 +31,7 @@ Prompt-to-visual workflow:
   labels, or unrelated primitives.
 - For particle, city, material-lab, product-viewer, and physics-ramp prompts,
   start from `prefabs.particleFountain`, `prefabs.cityBlock`,
-  `prefabs.materialSwatches`, `prefabs.productStage`, or
+  `prefabs.materialSwatches`, `prefabs.productViewer`, or
   `prefabs.physicsRamp` before custom primitive placement.
 - For physics playground, solar-system, data visualization, neon tunnel, mini-golf, and
   humanoid prompts, start from `prefabs.physicsPlayground`,
@@ -44,7 +44,7 @@ Prompt-to-visual workflow:
   `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })` so
   screenshots show connected limbs, visible hinges, and stride evidence.
 - Data visualization scenes should keep the prefab's bars, caps, axes, labels,
-  selected-metric callout, trend ribbon, and bloom visible. Neon tunnel scenes
+  grounded legend, selected-metric callout, and bloom visible. Neon tunnel scenes
   should keep the prefab's octagonal rings, braces, rails, reflections, fog,
   bloom, sparks, particles, and dolly-camera depth visible.
 - Mini-golf scenes should pair `prefabs.miniGolfHole()` with
@@ -54,17 +54,18 @@ Prompt-to-visual workflow:
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles. For the
   particle-fountain prompt, pair `prefabs.particleFountain({ count: 2400 })`
-  with a visible emission-rate control and frame the ground collision/splash
-  evidence plus lifetime color variation.
-- For product viewers, place normalized products at
-  `position(0, 0.54, -0.65)` after `prefabs.productStage()` so the
-  fit-to-bounds model sits on the round plinth. Keep the stage's fit brackets,
-  contact shadow, reflection cards, softboxes, and orbit/turntable cues visible,
-  and add turntable evidence with `.animate({ clip: "turntable", speed: 0.42 })`.
+  with a real `ui.range`/`ui.onInput` emission-rate control and frame the
+  nozzle, ground collision/splash evidence, and lifetime color variation.
+- For product viewers, prefer `prefabs.productViewer(assets.product)` so the
+  typed asset, fit-to-bounds placement, plinth, contact shadow, softboxes, and
+  turntable evidence stay together. Use `prefabs.productStage({ style:
+  "inspection" })` only when the prompt asks for explicit fit guides.
 - Use `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })` and
   `timeline.loop(...)` for runtime motion. Build/test, then terminate normally; do not run
   `npm run dev`, Playwright, browser screenshots, or manual visual verification
   from inside the benchmark agent process.
 - Create one Aura app per route. Do not animate by repeatedly disposing and
   recreating `createAuraApp(...)`; use scene animations and separate DOM
-  overlays instead.
+  overlays instead. One-click remounts for discrete state changes, such as a
+  city day/night toggle, are acceptable when the click visibly changes the 3D
+  scene.

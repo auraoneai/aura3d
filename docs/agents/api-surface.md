@@ -32,7 +32,7 @@ scene()
   .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
   .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24 }))
   .addMany(prefabs.materialSwatches())
-  .addMany(prefabs.productStage())
+  .addMany(prefabs.productViewer(assets.product))
   .addMany(prefabs.physicsRamp())
   .addMany(prefabs.physicsPlayground({ cubes: 50 }))
   .addMany(prefabs.miniGolfHole())
@@ -41,9 +41,9 @@ scene()
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
 
-Particle-fountain benchmark scenes should also add a visible emission-rate
-control with `ui.html`/`ui.onClick`; the prefab supplies the emitter, ground
-collision plane, splash ring, lifetime color swatches, and dense arcs.
+Particle-fountain benchmark scenes should also add a real emission-rate control
+with `ui.html`, `ui.range`, and `ui.onInput`; the prefab supplies the nozzle,
+ground collision plane, splash ring, lifetime color swatches, and dense arcs.
 
 Follow camera:
 
@@ -67,6 +67,9 @@ ui.onClick(".toggle", (button) => {
   ui.setText(button, "switch to day");
   ui.setPressed(button, true);
 });
+
+ui.html("#app", `<input id="rate" type="range" min="60" max="180" value="120" />`);
+ui.onInput("#rate", (input) => ui.setText("#rate-value", input.value));
 ```
 
 `ui.html("#app", markup)` inserts inside the target by default. Use it for
