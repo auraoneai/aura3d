@@ -1459,7 +1459,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: false,
     alpha: false,
     preserveDrawingBuffer: true,
     powerPreference: "high-performance"
@@ -1469,7 +1469,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.18;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = false;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   const threeScene = new THREE.Scene();
@@ -1645,11 +1645,11 @@ function primitiveBatchKey(node: AuraPrimitiveNode): string {
 
 function createThreePrimitiveGeometry(THREE: typeof import("three"), primitiveName: AuraPrimitiveNode["primitive"]): any {
   return primitiveName === "sphere"
-    ? new THREE.SphereGeometry(0.5, 32, 18)
+    ? new THREE.SphereGeometry(0.5, 24, 12)
     : primitiveName === "box"
       ? new THREE.BoxGeometry(1, 1, 1)
       : primitiveName === "cylinder"
-        ? new THREE.CylinderGeometry(0.5, 0.5, 1, 32, 1)
+        ? new THREE.CylinderGeometry(0.5, 0.5, 1, 24, 1)
         : new THREE.PlaneGeometry(1, 1, 1, 1).rotateX(-Math.PI / 2);
 }
 

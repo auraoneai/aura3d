@@ -336,6 +336,35 @@ Diagnostic evidence:
 These are targeted repair screenshots only. Round 8 still requires a future
 clean full benchmark run from the amended standard before any release claim.
 
+## Round 8 Shadowless FPS Repair
+
+`benchmark/results/amendment-round-8-shadowless-fps.md` records the second
+post-Round-7 Round 8 amendment. The first Round 8 hard-prompt repair improved
+visual content, but focused smoke measurement still showed material and city at
+or below the absolute FPS floor. This amendment targets renderer defaults rather
+than prompt content.
+
+Repair:
+
+- The agent API Three renderer no longer enables shadow maps by default.
+- The agent API screenshot renderer disables WebGL antialiasing.
+- Sphere and cylinder primitive tessellation is reduced again for benchmark
+  screenshot scenes.
+
+Targeted diagnostic measurement after this change:
+
+- Material lab: `p50FrameMs=32.6`, `p50Fps=30.7`.
+- City block: `p50FrameMs=24.6`, `p50Fps=40.7`.
+- Product sneaker: `p50FrameMs=8.3`, `p50Fps=120.5`.
+
+Diagnostic screenshots:
+
+- `/tmp/aura3d-round8-material-fps-smoke.png`
+- `/tmp/aura3d-round8-city-fps-smoke.png`
+- `/tmp/aura3d-round8-product-fps-smoke.png`
+
+This is still not release evidence. A full clean Round 8 benchmark is required.
+
 ## Round 6 Prompt 08 Diagnostic Failure
 
 After the final Round 6 sign-off alignment at
