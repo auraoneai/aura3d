@@ -1,0 +1,32 @@
+.hud {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #f8fafc;
+  font: 600 14px system-ui, sans-serif;
+}
+
+.hud button {
+  cursor: pointer;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #38bdf8;
+  color: #04121f;
+  font: 700 13px system-ui, sans-serif;
+}
+
+.hud button:hover {
+  background: #7dd3fc;
+}
+
+.hud b {
+  color: #38bdf8;
+}

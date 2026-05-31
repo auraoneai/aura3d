@@ -1,0 +1,116 @@
+You are a neutral benchmark scorer. Score Codex-generated Aura3D output against Codex-generated raw Three.js output.
+Read only the files explicitly listed below. Do not read context bundles, prior result files, or unrelated files.
+Use benchmark/rubric.md scoring rules. Return strict JSON only. No markdown.
+Schema: {"scorer":"Claude Code","scorerNeutrality":"opposite-vendor model scoring Codex outputs","prompts":[{"prompt":string,"auraVisual":number,"threeVisual":number,"auraCoverage":number,"threeCoverage":number,"auraCode":number,"threeCode":number,"winner":"Aura3D"|"Three.js"|"tie","reason":string,"failedThresholds":string[]}],"summary":{"auraWins":number,"threeWins":number,"ties":number,"hardPromptWins":{"07":string,"08":string,"10":string},"releaseBarMet":boolean,"reason":string}}
+Important: failed compile or failed browser route means visual score 1 and cannot be treated as a usable screenshot. If a screenshot path is absent, use metrics to score the mechanical failure.
+Rubric file: benchmark/rubric.md
+
+Prompt 01 physics-playground:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-01/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-01/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-01/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-01/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-01/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-01/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-01/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-01/source/src/main.ts
+Three.js screenshot: NONE
+
+Prompt 02 particle-fountain:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-02/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-02/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-02/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-02/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-02/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-02/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-02/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-02/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-02/screenshot.png
+
+Prompt 03 procedural-solar-system:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-03/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-03/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-03/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-03/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-03/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-03/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-03/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-03/source/src/main.ts
+Three.js screenshot: NONE
+
+Prompt 04 neon-tunnel-flythrough:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-04/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-04/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-04/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-04/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-04/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-04/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-04/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-04/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-04/screenshot.png
+
+Prompt 05 3d-data-visualization:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-05/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-05/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-05/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-05/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-05/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-05/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-05/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-05/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-05/screenshot.png
+
+Prompt 06 mini-golf-hole:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-06/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-06/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-06/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-06/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-06/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-06/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-06/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-06/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-06/screenshot.png
+
+Prompt 07 material-lab:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-07/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-07/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-07/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-07/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-07/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-07/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-07/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-07/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-07/screenshot.png
+
+Prompt 08 procedural-city-block:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-08/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-08/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-08/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-08/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-08/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-08/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-08/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-08/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-08/screenshot.png
+
+Prompt 09 animated-primitive-humanoid:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-09/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-09/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-09/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-09/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-09/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-09/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-09/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-09/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-09/screenshot.png
+
+Prompt 10 product-viewer-sneaker:
+Prompt file: benchmark/runs/round-7/codex-aura3d/prompt-10/prompt.md
+Aura3D metrics: benchmark/runs/round-7/codex-aura3d/prompt-10/metrics.json
+Aura3D notes: benchmark/runs/round-7/codex-aura3d/prompt-10/notes.md
+Aura3D source: benchmark/runs/round-7/codex-aura3d/prompt-10/source/src/main.ts
+Aura3D screenshot: benchmark/runs/round-7/codex-aura3d/prompt-10/screenshot.png
+Three.js metrics: benchmark/runs/round-7/codex-threejs/prompt-10/metrics.json
+Three.js notes: benchmark/runs/round-7/codex-threejs/prompt-10/notes.md
+Three.js source: benchmark/runs/round-7/codex-threejs/prompt-10/source/src/main.ts
+Three.js screenshot: benchmark/runs/round-7/codex-threejs/prompt-10/screenshot.png

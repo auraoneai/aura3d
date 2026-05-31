@@ -1,0 +1,13 @@
+Implemented the procedural Mini Golf app in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-7/codex-aura3d/prompt-06/source/src/main.ts:1), using `prefabs.miniGolfHole()`, pointer interaction, a strokes HUD, studio lighting, and `camera.follow()` targeting the white physics golf ball.
+
+Build command: `npm run build`
+
+Run command: `npm run dev`
+
+Build result: failed at typecheck because `@aura3d/engine` is not installed/resolved in `source`:
+
+```text
+src/main.ts(1,81): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Assumption: the local file dependency in `package.json` is valid, but dependencies need to be installed before building, for example with `npm install`.

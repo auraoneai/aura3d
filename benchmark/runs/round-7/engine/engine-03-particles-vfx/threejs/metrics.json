@@ -1,0 +1,40 @@
+{
+  "scene": "engine-03-particles-vfx",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 139,
+  "p50Fps": 19.646365422396997,
+  "p95FrameTimeMs": 76.30000000000018,
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 452,
+  "triangleCount": 75698,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 121241,
+  "sourceLoc": 57,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 10.099999999999909,
+      "p50Fps": 120.48192771084403
+    },
+    "webglControl": {
+      "sampleCount": 232,
+      "p50FrameTimeMs": 10.100000000000364,
+      "p95FrameTimeMs": 24.799999999999272,
+      "p50Fps": 99.00990099009545
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

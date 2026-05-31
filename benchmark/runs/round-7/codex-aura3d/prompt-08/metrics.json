@@ -1,0 +1,15 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 79,
+  "filesCreated": 3,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 112956,
+  "bundleSizeGzipBytes": 210041,
+  "screenshot": "screenshot.png"
+}

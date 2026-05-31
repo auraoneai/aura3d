@@ -1,0 +1,9 @@
+Implemented the procedural Material Lab in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-7/codex-threejs/prompt-07/source/src/main.ts): five distinct spheres for metal, glass, rubber, emissive, and clearcoat; studio softbox panels, shadows, PMREM room environment reflections, and enabled orbit controls.
+
+Build command: `npm run build`
+
+Run command: `npm run dev`
+
+Build result: passed.
+
+Assumptions: `./context/llms.txt` and `./context/docs/agents/benchmark-recipes.md` were not present in the provided bundle, so I used only the available Three.js context files and the clean `source` scaffold.

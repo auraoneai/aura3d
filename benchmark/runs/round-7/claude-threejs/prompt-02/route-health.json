@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 91,
+  "bodyTextSample": "Particle Fountain\nEmission rate: 900 /s\nLive particles: 2349\nDrag to orbit · scroll to zoom"
+}

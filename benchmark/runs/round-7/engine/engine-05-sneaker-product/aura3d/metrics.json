@@ -1,0 +1,40 @@
+{
+  "scene": "engine-05-sneaker-product",
+  "library": "Aura3D",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 38,
+  "p50Fps": 30.395136778115837,
+  "p95FrameTimeMs": 57.400000000001455,
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 6,
+  "triangleCount": null,
+  "jsHeapPeakBytes": 10000000,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 210138,
+  "sourceLoc": 49,
+  "screenshot": "screenshot.png",
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "p50FrameTimeMs": 8.300000000000068,
+      "p95FrameTimeMs": 10,
+      "p50Fps": 120.48192771084238
+    },
+    "webglControl": {
+      "sampleCount": 330,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 16.300000000000182,
+      "p50Fps": 120.48192771084074
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34
+      }
+    }
+  }
+}

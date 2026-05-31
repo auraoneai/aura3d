@@ -1,0 +1,26 @@
+The build succeeded (typecheck + Vite production build, no errors). Work is complete.
+
+## Summary
+
+Built a procedural **particle fountain** in `source/src/main.ts` using three.js (v0.165.0) with Vite + TypeScript.
+
+**How it satisfies the required visual evidence:**
+- **Identifiable emitter** — a glowing nozzle assembly at the emission point (metallic base plinth, cone nozzle, and a pulsing emissive cyan ring with a point light).
+- **Upward-and-falling arc** — particles spawn with strong upward velocity plus a narrow cone of spread, then integrate real gravity (−9.8) each frame, producing parabolic arcs rather than static dots.
+- **Lifetime color variation** — each particle's color is computed from `age/life`, sweeping hue from bright cyan/white (young) through to warm orange/red (old), plus an end-of-life alpha fade. Rendered via a custom `ShaderMaterial` (additive blending, round soft points).
+- **Ground plane** — a 60×60 lit plane at y=0 with a grid helper; particles collide against it with bounce (restitution 0.45) and friction, settling/recycling when they come to rest.
+- **Emission-rate control** — a labeled HTML range slider (0–3000 /s) fixed top-left, live-updating the spawn rate via an accumulator, with a live particle counter.
+
+A free-slot stack pools up to 6000 particles for O(1) spawn/recycle.
+
+## Commands & assumptions
+
+- **Install:** `npm install`
+- **Build:** `npm run build` (runs `tsc --noEmit` typecheck + `vite build`) — ✅ passes
+- **Run:** `npm run dev -- --port <assigned-port>` (Vite dev server, host 127.0.0.1)
+
+**Assumptions:**
+- The context bundle provided is **three.js v0.165.0** (not Aura3D, despite the repo-level CLAUDE.md); I built directly against three.js public imports and the `three/addons` OrbitControls, since no `benchmark-recipes.md` or Aura3D API existed in the bundle.
+- No assets used — fully procedural, as the prompt requires.
+- All changes confined to the `source/` directory.
+- Particles that nearly stop on the floor are recycled to keep the live pool focused on the active arc; this keeps the fountain readable at high emission rates.

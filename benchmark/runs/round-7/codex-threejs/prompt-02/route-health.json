@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 48,
+  "bodyTextSample": "EMISSION RATE\n\n180 particles/s\n\nnew\nmidlife\nfade"
+}

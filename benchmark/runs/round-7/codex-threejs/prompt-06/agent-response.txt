@@ -1,0 +1,18 @@
+Implemented the mini-golf hole in `./source` with a procedural Three.js scene: green, rails, one visible obstacle, ball physics, click-drag aiming, stroke counter, cup/flag, and a camera that follows the ball.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- `./context/llms.txt` and `./context/docs/agents/benchmark-recipes.md` were not present, so I used the available context bundle only.
+- No Aura3D package/API files were included in `./source` or `./context`; the scaffold already depended on `three`, so the app is built procedurally with Three.js.
+- No external assets were used.

@@ -276,6 +276,36 @@ Diagnostic evidence:
 This is targeted repair evidence only. A future release claim still requires a
 clean full benchmark round from the amended standard.
 
+## Round 7 Full Benchmark Outcome
+
+`benchmark/results/round-7.md`, `benchmark/results/round-7-engine.md`, and
+`benchmark/results/round-7-decision.md` record a clean full Round 7 run from
+the Round 7 amended standard.
+
+Progress:
+
+- Codex/Aura generated, built, ran in browser, and captured screenshots for all
+  10 prompts with zero agent timeouts.
+- Claude/Aura generated, built, ran in browser, and captured screenshots for
+  all 10 prompts with zero agent timeouts.
+- The prior Round 6 prompt 08 nullable-target TypeScript failure did not recur.
+- Aura3D had no prompt visual score below 3 for either agent.
+- Engine visual parity reached 5 of 5 scenes.
+
+Remaining release blockers:
+
+- Codex/Aura reached 4 of 10 wins; the release bar requires 7 of 10.
+- Claude/Aura reached 5 of 10 wins; the release bar requires 7 of 10.
+- Neither agent produced the required 2 Aura3D wins across hard prompts 07, 08,
+  and 10.
+- Material lab, city block, and sneaker product remain the decisive prompt gaps.
+- Engine material-grid and city-block missed the absolute 30 FPS floor under
+  valid calibration.
+
+Round 7 is therefore a failed benchmark round with real progress, not shipping
+evidence. The next amendment should target the remaining hard-prompt and engine
+FPS failures before any future full rerun.
+
 ## Round 6 Prompt 08 Diagnostic Failure
 
 After the final Round 6 sign-off alignment at

@@ -1,0 +1,24 @@
+The build succeeded. Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built a procedurally generated city block in Three.js (r165) in `./source`, using only the provided context bundle's libraries (`three` + `three/addons/controls/OrbitControls.js`).
+
+**What it does:**
+- **20 box buildings** of varying heights (3–15 floors), procedurally placed on a 4×4 lot grid plus 4 offset lots, with a deterministic seeded PRNG for a stable-but-procedural layout.
+- **Windows** rendered via a per-building canvas texture (grid of lit/unlit cells) plus a matching emissive map so windows glow at night.
+- **Streets** — asphalt ground with lighter road strips between lots and dashed yellow centre lines.
+- **Street lights** — poles with arms, glowing bulbs, and `PointLight`s that switch on at night.
+- **Day/night toggle** (top-left button) that swaps: sky gradient (blue→dark), fog, sun/hemisphere/ambient intensities, building window glow, street-lamp lights, and a star field that appears only at night.
+- OrbitControls for drag/zoom inspection; shadows enabled.
+
+**Commands** (run from `./source`):
+- Build: `npm run build` (runs `tsc --noEmit` typecheck + `vite build`) — ✅ completed, output in `dist/`
+- Install: `npm install`
+- Run (dev): `npm run dev` — or `npm run preview` to serve the production build
+
+**Assumptions:**
+- Added `@types/three@0.165.0` as a devDependency so the scaffold's `tsc --noEmit` typecheck step (part of `build`) passes.
+- Kept the existing scaffold's package.json structure, Vite/TS config, and `index.html` entry; added the toggle button + styles to `index.html`.
+- "About 20 buildings" interpreted as exactly 20; heights are randomized within a fixed range each load (seeded, so consistent per build).
+- The `esbuild` postinstall script wasn't auto-approved by npm's allow-scripts policy, but the Vite build still completed successfully.

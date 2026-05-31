@@ -1,0 +1,15 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "linesOfUserCode": 43,
+  "filesCreated": 2,
+  "hallucinatedApis": null,
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 63151,
+  "bundleSizeGzipBytes": 210049,
+  "screenshot": "screenshot.png"
+}

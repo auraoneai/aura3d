@@ -1,0 +1,47 @@
+Based on my review of all five scenes' screenshots, metrics, and source, here is the scoring:
+
+```json
+{
+  "scorer": "Claude Code",
+  "scorerNeutrality": "opposite-vendor model scoring hand-authored engine parity outputs",
+  "scenes": [
+    {
+      "scene": "engine-01-material-grid",
+      "visualParity": 4,
+      "pass": false,
+      "reason": "Both render the five-material sphere set (metal, glass/transmission, black-rough, pink emissive, cream clearcoat) on a slab with matching dark background and key/fill lighting. Aura frames wider and adds a back panel, light strip, and an extra emissive swatch, so materials read equivalently with only framing/staging differences. Parity is strong, but Aura p50 is 15.0 FPS with valid calibration, below the 30 FPS floor (Three.js is also low at 17.1, so the gap is only ~12%).",
+      "failedThresholds": ["p50Fps>=30 (Aura p50 15.0 with valid calibration)"]
+    },
+    {
+      "scene": "engine-02-city-block",
+      "visualParity": 4,
+      "pass": false,
+      "reason": "Both produce a blue-sky city block of varied-height buildings with lit window quads, a muted ground plane, and dark road strips. Aura's screenshot is lower-resolution but the massing, palette, window grid, and roads all match closely. Visual parity is good; Aura p50 is 19.6 FPS (valid calibration), under the 30 FPS floor, though within 3% of Three.js (20.2).",
+      "failedThresholds": ["p50Fps>=30 (Aura p50 19.6 with valid calibration)"]
+    },
+    {
+      "scene": "engine-03-particles-vfx",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Both show a central particle fountain over a dark floor with fog. Aura uses a denser (~2400) bloomed white/pastel plume; Three.js uses a sparser rainbow point cloud with a visible cyan cone emitter. Particle density and color treatment differ, but both clearly read as the same VFX fountain. Aura p50 59.9 FPS exceeds the floor and beats Three.js (19.6); heap and bundle deltas within thresholds.",
+      "failedThresholds": []
+    },
+    {
+      "scene": "engine-04-physics-ramp",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Both stage the blue ramp with HSL-tinted falling cubes on a dark floor. Aura (driven by a real PhysicsWorld) shows a rich settled pile of cubes; Three.js (scripted fake fall) shows the ramp with only a thin row of cubes visible, and frames closer/lower. Same scene intent and palette; Aura arguably reads as the more complete physics result. Aura p50 39.1 FPS clears the floor and matches Three.js (39.8) within 2%.",
+      "failedThresholds": []
+    },
+    {
+      "scene": "engine-05-sneaker-product",
+      "visualParity": 4,
+      "pass": true,
+      "reason": "Both load the same blue sneaker GLB on a white cylindrical plinth against the dark background with matching lighting. Aura adds studio backdrop panels and frames the shoe larger; the model, materials, and podium match closely. Aura p50 30.4 FPS clears the floor with valid calibration, while the Three.js side's FPS is unusable (its own webgl-control calibration is invalid), so the FPS gap is not comparable; heap (Aura 10MB vs 27.6MB) and bundle deltas favor or stay within thresholds.",
+      "failedThresholds": []
+    }
+  ],
+  "overallPass": false,
+  "summary": "Visual parity is strong across all five scenes (every scene >=4, so the per-scene visual-pass criterion of >=4 for at least 4 of 5 with none below 4 is met), and Aura is at or above parity on particles, physics, and the product shot. Route health passes everywhere and Aura's FPS stays within the 20% parity gap of Three.js on every comparable scene, with heap and bundle deltas inside thresholds (Aura bundles run ~60-90KB gzip larger, well under 250KB). However, overallPass is false because Aura misses the absolute p50>=30 FPS floor on the two heaviest scenes (material-grid 15.0, city-block 19.6) under valid calibration; note Three.js is equally slow on those scenes (17.1, 20.2), indicating scene heaviness rather than an Aura-specific regression. Separately, the Three.js sneaker run has invalid FPS calibration, making its FPS uncomparable for that scene."
+}
+```

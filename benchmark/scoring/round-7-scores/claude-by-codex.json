@@ -1,0 +1,150 @@
+{
+  "scorer": "Codex",
+  "scorerNeutrality": "opposite-vendor model scoring Claude Code outputs",
+  "prompts": [
+    {
+      "prompt": "01-physics-playground",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Three.js",
+      "reason": "Both compile and render physics playgrounds with many cubes, ramp, reset/contact HUD. Three.js is visually stronger: more readable pile, scattered cubes, clearer ramp/physics state. Aura is much more concise, but visual quality and coverage favor Three.js.",
+      "failedThresholds": [
+        "Aura3D: physics state/readability weaker than Three.js"
+      ]
+    },
+    {
+      "prompt": "02-particle-fountain",
+      "auraVisual": 5,
+      "threeVisual": 3,
+      "auraCoverage": 5,
+      "threeCoverage": 3,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Aura3D",
+      "reason": "Aura renders a dense upward-and-falling particle fountain with a visible emitter and emission-rate UI. Three.js shows an emitter and HUD but the particles are sparse/faint in the capture, so the required fountain reads less clearly. Aura also uses far less code.",
+      "failedThresholds": [
+        "Three.js: particle fountain appears sparse/faint"
+      ]
+    },
+    {
+      "prompt": "03-procedural-solar-system",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Three.js",
+      "reason": "Aura shows the required sun, planets, orbits/labels, and full-system framing. Three.js has stronger planet readability, labels, orbit rings, and polish. Aura wins concision, but raw Three.js wins visual and coverage on this prompt.",
+      "failedThresholds": [
+        "Aura3D: planet/orbit detail less polished than Three.js"
+      ]
+    },
+    {
+      "prompt": "04-neon-tunnel-flythrough",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraCoverage": 4,
+      "threeCoverage": 4,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Aura3D",
+      "reason": "Both render a recognizable neon tunnel/flythrough. Three.js is brighter and more bloom-heavy but partially overexposed; Aura has a cleaner tunnel silhouette and similar prompt coverage with much less code. With visual quality close, Aura wins on modifiability/code metrics.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "05-3d-data-visualization",
+      "auraVisual": 4,
+      "threeVisual": 1,
+      "auraCoverage": 4,
+      "threeCoverage": 1,
+      "auraCode": 5,
+      "threeCode": 2,
+      "winner": "Aura3D",
+      "reason": "Aura compiles and renders a 6x6 height-colored bar grid. Claude/Three.js compiles but does not run in browser and has no screenshot, so it scores a mechanical visual 1. Aura wins the prompt.",
+      "failedThresholds": [
+        "Three.js: browser route failed; no screenshot"
+      ]
+    },
+    {
+      "prompt": "06-mini-golf-hole",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraCoverage": 4,
+      "threeCoverage": 4,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Aura3D",
+      "reason": "Both render a playable-looking mini-golf hole with ball, obstacle/target, HUD, and camera framing. Three.js has a slightly richer themed board; Aura is comparable visually and far more concise. With no material visual gap, Aura wins on code/modifiability metrics.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "07-material-lab",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 5,
+      "threeCode": 4,
+      "winner": "Three.js",
+      "reason": "Hard prompt. Aura now shows five material swatches on a studio shelf, a clear improvement over earlier dark/cropped outputs. Three.js still has clearer glass/metal/clearcoat distinctions and stronger reflections/lighting. Three.js wins visual and coverage.",
+      "failedThresholds": [
+        "Aura3D: material distinctions weaker than Three.js"
+      ]
+    },
+    {
+      "prompt": "08-procedural-city-block",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraCoverage": 4,
+      "threeCoverage": 5,
+      "auraCode": 5,
+      "threeCode": 3,
+      "winner": "Three.js",
+      "reason": "Hard prompt. Aura renders a usable city with buildings, lit windows, and a toggle. Three.js shows a richer denser city with stronger streets, windows, scale variation, and night-mode atmosphere. Three.js wins visual and prompt coverage.",
+      "failedThresholds": [
+        "Aura3D: city detail/scale variation weaker than Three.js"
+      ]
+    },
+    {
+      "prompt": "09-animated-primitive-humanoid",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraCoverage": 4,
+      "threeCoverage": 4,
+      "auraCode": 5,
+      "threeCode": 4,
+      "winner": "Aura3D",
+      "reason": "Both show a primitive humanoid in a walking pose/scene. Aura has visible path/pose cues and uses much less code; Three.js is readable but not materially more complete. With visual quality close, Aura wins on code/modifiability metrics.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "10-product-viewer-sneaker",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraCoverage": 4,
+      "threeCoverage": 4,
+      "auraCode": 5,
+      "threeCode": 4,
+      "winner": "tie",
+      "reason": "Hard prompt. Both load the provided sneaker on a plinth with studio lighting and product-viewer framing. Three.js is slightly cleaner/centered; Aura is concise and still on prompt. The visual difference is not decisive enough for a win.",
+      "failedThresholds": []
+    }
+  ],
+  "summary": {
+    "auraWins": 5,
+    "threeWins": 4,
+    "ties": 1,
+    "hardPromptWins": {
+      "10": "tie",
+      "07": "Three.js",
+      "08": "Three.js"
+    },
+    "releaseBarMet": false,
+    "reason": "Aura3D wins 5 of 10 Claude prompts, a large improvement over Round 1, but still below the required 7 wins. It also gets 0 Aura wins among hard prompts 07/08/10; prompt 10 ties while 07 and 08 go to Three.js. Therefore the release bar is not met even though Claude/Aura now has 10/10 build/browser/screenshot health."
+  }
+}

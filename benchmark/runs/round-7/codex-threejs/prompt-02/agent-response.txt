@@ -1,0 +1,23 @@
+Implemented the procedural particle fountain in `source` with:
+
+- Visible emitter/nozzle
+- Gravity-driven upward and falling particles
+- Ground collision and visible ground plane
+- Lifetime color variation
+- Visible emission-rate slider
+
+Build command:
+
+```bash
+npm run build
+```
+
+Run command:
+
+```bash
+npm run dev
+```
+
+Build result: passed.
+
+Assumptions: `context/llms.txt` and `context/docs/agents/benchmark-recipes.md` were not present, so I used the provided Vite/Three scaffold and bundled dependency shape. No external assets were used.

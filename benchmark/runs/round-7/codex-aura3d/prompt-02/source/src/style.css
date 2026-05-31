@@ -1,0 +1,69 @@
+#app {
+  min-height: 100vh;
+}
+
+.hud {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 20;
+  width: min(300px, calc(100vw - 36px));
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  background: rgba(3, 7, 18, 0.78);
+  color: #f8fafc;
+  font: 700 13px system-ui, sans-serif;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+}
+
+.readout,
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.label {
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  font-size: 11px;
+}
+
+#rateValue {
+  min-width: 34px;
+  text-align: right;
+  color: #f97316;
+  font-size: 18px;
+}
+
+#rateControl {
+  width: 100%;
+  accent-color: #38bdf8;
+}
+
+.legend span {
+  flex: 1;
+  padding-top: 6px;
+  border-top: 3px solid currentColor;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.legend .hot {
+  color: #f97316;
+}
+
+.legend .mid {
+  color: #38bdf8;
+}
+
+.legend .cool {
+  color: #a78bfa;
+}

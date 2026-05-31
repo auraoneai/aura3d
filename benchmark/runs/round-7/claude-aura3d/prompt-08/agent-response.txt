@@ -1,0 +1,31 @@
+The output channel was stalled but has recovered — and the build **succeeded** (`EXITCODE=0`, typecheck + vite build clean, dist emitted). Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built **Prompt 08: Procedural City Block** in `source/`, following benchmark recipe #08 (`prefabs.cityBlock`) and using only documented public `@aura3d/engine` API.
+
+The single prompt-required edit over the stock recipe: the day/night toggle now **actually changes lighting and sky** (the recipe alone only relabels the button). On click, the scene is rebuilt with a day vs. night configuration into a dedicated `#stage` container, while the toggle button overlay (via `ui.html`/`ui.onClick`) stays put:
+
+- **Day** — `#87ceeb` sky, `lights.studio` + warm `lights.directional` sun, light fog.
+- **Night** — `#060912` sky, low `lights.ambient` + cool `lights.point`, heavier fog, `effects.bloom` so lit windows/lamps glow.
+- Both modes: `prefabs.cityBlock({ blocks: 20, litWindows: true })` → ~20 varied-height buildings, windows, streets, and street lights; shared camera framing so the two states line up.
+
+Only `source/` was modified: `src/main.ts` rewritten; `index.html`, `package.json`, `tsconfig.json` left as the provided scaffold.
+
+### Build command
+```bash
+cd source && npm install && npm run build
+```
+(runs `tsc --noEmit` then `vite build`; completed with exit code 0)
+
+### Run command
+```bash
+cd source && npm run preview
+```
+(or `npm run dev` for the dev server)
+
+### Assumptions
+- `@aura3d/engine` resolves from the scaffold's `package.json` (`file:../_packages/aura3d-engine-1.0.0.tgz`); the engine package internals are intentionally redacted from inspection, so I relied on the documented public API in `docs/agents/api-surface.md` and recipe #08.
+- A genuine day/night change requires re-rendering the scene (background + lights are scene-construction inputs with no documented runtime mutator). This is a per-click rebuild, not a per-frame one, so it stays within the "don't dispose/recreate every frame" guidance. The 3D scene lives in its own `#stage` element so the rebuild never disturbs the toggle button.
+- `litWindows: true` is kept in both modes to guarantee windows are visible in the default (day) screenshot; day vs. night contrast comes from sky + lighting.
+- Could not do visual verification (disallowed by benchmark rules); correctness is established only via successful typecheck + build.

@@ -1,0 +1,26 @@
+The build succeeded (typecheck passed, Vite bundled the scene including the GLTFLoader). Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built the sneaker product viewer in `source/` by copying benchmark recipe **10 "Product Viewer Sneaker"** and making the one prompt-required edit (an explicit rotating turntable).
+
+**Files written (inside `source/` only):**
+- `src/aura-assets.ts` — typed asset module via `defineAuraAssets`, mapping `assets.sneaker` to the provided `/benchmark/assets/sneaker.glb` (already present under `public/`). No invented paths.
+- `src/main.ts` — the Aura3D scene.
+
+**How each requirement is met (public helpers/prefabs only):**
+- **Loaded & visible / centered & auto-scaled** — `model(assets.sneaker)` uses the engine's fit-to-bounds normalization; positioned on the plinth.
+- **Plinth / product base** — `prefabs.productStage()` (plinth, contact shadow, studio sweep).
+- **Studio lighting** — `lights.studio({ intensity: 1.35 })`.
+- **Orbit controls** — `interactions.orbit()` + `camera.orbit(...)`.
+- **Turntable rotation** — `.animate({ clip: "turntable", speed: 0.3 })` driven by `timeline.loop({ seconds: 12 })`.
+
+**Commands:**
+- Build: `npm install && npm run build` (run from `source/`)
+- Run: `npm run dev` (serves on `127.0.0.1`; the run harness uses `npm run dev -- --port <assigned-port>`)
+
+**Assumptions:**
+- `sneaker.glb` is served at the Vite static path `/benchmark/assets/sneaker.glb` (it was pre-placed at `source/public/benchmark/assets/sneaker.glb`).
+- The snapshot animation-clip field accepts an arbitrary clip name (`"turntable"`) without throwing — confirmed by the recipe's own use of a non-GLTF `"float"` clip on the same model and by a clean typecheck/build.
+- `model()` provides the centering/auto-scaling (fit-to-bounds) per the llms.txt product-viewer guidance; no manual scale was set.
+- The 500 kB chunk warning is the bundled `three.module` and is informational only; the build completed successfully.

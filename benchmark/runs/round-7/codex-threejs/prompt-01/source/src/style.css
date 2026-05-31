@@ -1,0 +1,107 @@
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17212b;
+}
+
+body {
+  background: #dce8f0;
+}
+
+.scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hud {
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  width: min(220px, calc(100vw - 36px));
+  box-sizing: border-box;
+  padding: 14px;
+  border: 1px solid rgb(255 255 255 / 62%);
+  border-radius: 8px;
+  background: rgb(245 249 252 / 86%);
+  box-shadow: 0 16px 38px rgb(28 44 58 / 20%);
+  backdrop-filter: blur(12px);
+}
+
+.hud-title {
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 28px;
+  font-size: 13px;
+}
+
+.hud-row span {
+  color: #435566;
+}
+
+.hud-row strong {
+  font-size: 18px;
+  line-height: 1;
+}
+
+button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 7px;
+  background: #1f5e79;
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #17485e;
+}
+
+button:focus-visible {
+  outline: 3px solid #f0c34d;
+  outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  .hud {
+    top: 10px;
+    left: 10px;
+    width: 174px;
+    padding: 11px;
+  }
+
+  .hud-title {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  .hud-row {
+    min-height: 24px;
+    font-size: 12px;
+  }
+
+  .hud-row strong {
+    font-size: 16px;
+  }
+
+  button {
+    min-height: 36px;
+  }
+}
