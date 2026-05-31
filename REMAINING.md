@@ -16,6 +16,9 @@ runs as completion evidence.
   failed before the full prompt matrix started: material-grid Aura3D had invalid
   FPS instrumentation and particles Aura3D measured below the 30 FPS floor.
   It is invalid for shipping and does not complete task 13.
+- Round 11 starts from the engine FPS repair amendment in
+  `benchmark/results/amendment-round-11-engine-fps-repair.md` and its Phase A
+  sign-off in `benchmark/results/round-11-phase-a-signoff.md`.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark and engine parity benchmark both pass, or the user explicitly signs
   a below-bar shipping decision.
@@ -123,9 +126,9 @@ runs as completion evidence.
   - No uncommitted benchmark standard changes.
   - Prompts and rubric have not drifted.
   Evidence checked:
-  - `benchmark/results/amendment-round-10-targeted-repair-standard.md` records
-    the active targeted repair standard.
-  - `benchmark/results/round-10-phase-a-signoff.md` records the active Phase A
+  - `benchmark/results/amendment-round-11-engine-fps-repair.md` records the
+    active engine FPS repair standard after the failed Round 10 engine attempt.
+  - `benchmark/results/round-11-phase-a-signoff.md` records the active Phase A
     sign-off.
   - `node benchmark/runner/verify-context-manifests.mjs` passed.
   - `git diff --check` passed.
