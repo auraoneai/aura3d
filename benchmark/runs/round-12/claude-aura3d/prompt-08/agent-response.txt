@@ -1,0 +1,28 @@
+The build succeeded (typecheck + Vite production build, no errors). Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built **Prompt 08: Procedural City Block** by copying benchmark recipe 08 (`prefabs.cityBlock`), with one prompt-required edit so the day/night toggle genuinely changes lighting and sky rather than only the button label.
+
+**What was built** (`source/src/main.ts` + `source/src/style.css`):
+- `prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay })` — supplies the ~20 varied-height box towers, window columns, streets, and street lights procedurally.
+- A visible `.toggle` button (top-left) that flips `isNight` and re-renders. On toggle the scene is rebuilt with a different sky background (`#061018` night ↔ `#9ec9f2` day), studio light intensity (1.08 ↔ 1.7), bloom, fog, and the prefab's `timeOfDay: "day" | "night"` — so lighting and sky visibly change. Rebuild is per-click (the previous app is `dispose()`d first), never per-frame.
+- Camera kept at the recipe's elevated street-facing framing so buildings, streets, lights, and the toggle stay in frame.
+
+All built with `@aura3d/engine` public imports only; no invented assets or custom city engine.
+
+**Build command:**
+```
+npm run build
+```
+(runs `tsc --noEmit` typecheck + `vite build`; already passing)
+
+**Run command (for the runner to execute later):**
+```
+npm run dev -- --port <assigned-port>
+```
+
+**Assumptions:**
+- The clean scaffold had no `style.css`, so I created `source/src/style.css` (inside the source directory) to style the toggle button, matching the recipe's `import "./style.css"`.
+- `timeOfDay` accepts `"day" | "night"` (verified against the engine's bundled type declarations), as does the existence of `AuraApp.dispose()`, `ui.setPressed`, etc.
+- Per benchmark rules, I did not run `npm run dev`/`preview`, Playwright, or any browser/screenshot verification; only `npm install` and `npm run build` were run.

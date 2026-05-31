@@ -1,0 +1,988 @@
+{
+  "scorer": "Codex",
+  "scorerNeutrality": "Codex scoring Claude-generated outputs",
+  "agent": "Claude Code",
+  "prompts": [
+    {
+      "prompt": "06-mini-golf-hole",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both rendered successfully in browser."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both routes passed health checks with nonblank canvas."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 4,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Three.js presents a cleaner mini-golf hole with green, obstacle, ball, cup, flag, aim guidance, and follow-style framing; Aura3D includes all evidence but looks more prefab-cluttered."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D achieves the scene in 32 nonblank source lines using high-level API calls; Three.js is much longer and hand-managed."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 44,
+          "threeValue": 390,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217515,
+          "threeValue": 121878,
+          "winner": "Three.js",
+          "reason": "Three.js bundle is substantially smaller."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 93776,
+          "threeValue": 253151,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render faster."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented asset paths; prompt was procedural."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 2,
+        "ties": 5
+      },
+      "winner": "Aura3D win",
+      "reason": "Three.js has the stronger visual, but Aura3D wins the aggregate on modifiability, code size, and render time while still meeting the visual requirements strongly.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "07-material-lab",
+      "auraVisual": 4,
+      "threeVisual": 4,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both rendered successfully in browser."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both routes passed health checks with nonblank canvas."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 4,
+          "threeValue": 4,
+          "winner": "tie",
+          "reason": "Both show five distinct material spheres with studio lighting and reflections; Three.js crops edge spheres while Aura3D uses a more staged lab backdrop."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D is a compact prefab-based implementation; Three.js is explicit but much larger and more manual."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 28,
+          "threeValue": 146,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far fewer lines."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 216974,
+          "threeValue": 121992,
+          "winner": "Three.js",
+          "reason": "Three.js bundle is much smaller."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 114561,
+          "threeValue": 138972,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render faster."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented asset paths; prompt was procedural."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 1,
+        "ties": 6
+      },
+      "winner": "Aura3D win",
+      "reason": "Visual quality is comparable, while Aura3D is substantially simpler and faster to usable render despite a larger bundle.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "08-procedural-city-block",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModifiability": 4,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both rendered successfully in browser."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both routes passed health checks with nonblank canvas and visible UI text."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 4,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Three.js shows a dense city with clearly varied building heights, repeated windows, streets, street lights, and a visible day/night toggle; Aura3D is recognizable but less detailed."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 4,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D is much shorter and the day/night behavior is centralized, though prefab reliance hides details; Three.js is more verbose."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 62,
+          "threeValue": 363,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far fewer lines."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217433,
+          "threeValue": 124004,
+          "winner": "Three.js",
+          "reason": "Three.js bundle is much smaller."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 152738,
+          "threeValue": 204817,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render faster."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented asset paths; prompt was procedural."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 2,
+        "ties": 5
+      },
+      "winner": "Aura3D win",
+      "reason": "Three.js is visually stronger, but Aura3D wins the aggregate through much lower complexity and faster usable render while still satisfying the scene requirements.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "09-animated-primitive-humanoid",
+      "auraVisual": 5,
+      "threeVisual": 3,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both rendered successfully in browser."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both routes passed health checks with nonblank canvas."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D clearly shows a primitive humanoid in a dynamic walking pose with motion cues and ground; Three.js is recognizable but the captured view reads more static and rear-facing."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses a compact humanoid prefab and timeline; Three.js hand-builds hierarchy and animation in much more code."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 28,
+          "threeValue": 166,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far fewer lines."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 216995,
+          "threeValue": 118422,
+          "winner": "Three.js",
+          "reason": "Three.js bundle is much smaller."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 138650,
+          "threeValue": 109545,
+          "winner": "Three.js",
+          "reason": "Three.js reached usable render faster."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented asset paths; prompt was procedural."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 2,
+        "ties": 5
+      },
+      "winner": "Aura3D win",
+      "reason": "Aura3D has the better captured visual and much simpler source; Three.js only wins size and render-time metrics.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "10-product-viewer-sneaker",
+      "auraVisual": 5,
+      "threeVisual": 5,
+      "auraModifiability": 4,
+      "threeModifiability": 4,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both rendered successfully in browser."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both routes passed health checks with nonblank canvas."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 5,
+          "threeValue": 5,
+          "winner": "tie",
+          "reason": "Both load the sneaker clearly, center it on a plinth, and provide readable studio lighting; Aura3D has a richer studio stage while Three.js is clean and product-focused."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 4,
+          "threeValue": 4,
+          "winner": "tie",
+          "reason": "Aura3D is shorter and typed, but both are penalized by the reported invented asset path; Three.js is longer but explicit about centering and scaling."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 44,
+          "threeValue": 148,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far fewer lines."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217384,
+          "threeValue": 148327,
+          "winner": "Three.js",
+          "reason": "Three.js bundle is smaller."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 156968,
+          "threeValue": 174376,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render faster."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 1,
+          "threeValue": 1,
+          "winner": "tie",
+          "reason": "Both sides were reported with one invented asset path, which fails the prompt's asset-path requirement."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 2,
+        "three": 1,
+        "ties": 7
+      },
+      "winner": "Aura3D win",
+      "reason": "Both visuals are excellent and both fail the asset-path metric; Aura3D edges ahead on source size and time to usable render.",
+      "failedThresholds": [
+        "inventedAssetPaths"
+      ]
+    },
+    {
+      "prompt": "benchmark/prompts/01-physics-playground.md",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both routes rendered a nonblank canvas without browser errors."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both route-health checks passed."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 4,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Both show cubes, ramp, contacts, and reset UI, but Three.js has clearer arena framing, grid floor, ramp orientation, and a more convincing settled physics state."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D is a short prefab-based scene plus small HUD logic; Three.js is a much larger custom physics implementation."
+        },
+        {
+          "metric": "behaviorCompleteness",
+          "auraValue": "prefab plus synthetic contact counter",
+          "threeValue": "custom gravity, ramp, walls, cube contacts, reset, FPS and live contacts",
+          "winner": "Three.js",
+          "reason": "Three.js implements the requested collision behavior explicitly, while Aura3D relies on a prefab and source-level contact counter simulation."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 71,
+          "threeValue": 365,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "filesCreated",
+          "auraValue": 3,
+          "threeValue": 2,
+          "winner": "Three.js",
+          "reason": "Three.js created fewer source files."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented assets reported; prompt is procedural."
+        },
+        {
+          "metric": "repairTurns",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "Neither side required repair turns."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 184671,
+          "threeValue": 265123,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render sooner."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217405,
+          "threeValue": 123144,
+          "winner": "Three.js",
+          "reason": "Three.js produced a smaller gzip bundle."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 5,
+        "ties": 5
+      },
+      "winner": "Three.js win",
+      "reason": "Three.js better satisfies the physics-playground behavior and visual evidence, despite Aura3D being much more compact.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "benchmark/prompts/02-particle-fountain.md",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both routes rendered a nonblank canvas without browser errors."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both route-health checks passed."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 3,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Aura3D shows many particles and a control, but the shape reads more like a broad burst; Three.js clearly shows emitter, ground grid, falling plume, lifetime color ramp, and slider."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D is very short and prefab-driven; Three.js has a substantial custom particle simulation."
+        },
+        {
+          "metric": "emissionRateControl",
+          "auraValue": "button toggles label only",
+          "threeValue": "range slider changes emissionRate used by spawn loop",
+          "winner": "Three.js",
+          "reason": "The Three.js control actually changes the simulation rate; Aura3D source only toggles displayed text."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 33,
+          "threeValue": 286,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "filesCreated",
+          "auraValue": 2,
+          "threeValue": 2,
+          "winner": "tie",
+          "reason": "Both created two files."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented assets reported; prompt is procedural."
+        },
+        {
+          "metric": "repairTurns",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "Neither side required repair turns."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 150116,
+          "threeValue": 198785,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render sooner."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217354,
+          "threeValue": 124538,
+          "winner": "Three.js",
+          "reason": "Three.js produced a smaller gzip bundle."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 4,
+        "ties": 6
+      },
+      "winner": "Three.js win",
+      "reason": "Three.js is a stronger prompt match because it implements controllable emission, gravity, lifetime coloring, and ground collision visibly and directly.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "benchmark/prompts/03-procedural-solar-system.md",
+      "auraVisual": 5,
+      "threeVisual": 4,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both routes rendered a nonblank canvas without browser errors."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both route-health checks passed."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 5,
+          "threeValue": 4,
+          "winner": "Aura3D",
+          "reason": "Aura3D cleanly shows the sun, six labeled planets, orbit bands, glow, and full-system framing. Three.js is recognizable but some planets are crowded or near the edge."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses a concise solar-system prefab; Three.js is a larger hand-built scene with postprocessing and CSS labels."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 30,
+          "threeValue": 246,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "filesCreated",
+          "auraValue": 2,
+          "threeValue": 2,
+          "winner": "tie",
+          "reason": "Both created two files."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented assets reported; prompt is procedural."
+        },
+        {
+          "metric": "repairTurns",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "Neither side required repair turns."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 94383,
+          "threeValue": 134457,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render sooner."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 217042,
+          "threeValue": 126735,
+          "winner": "Three.js",
+          "reason": "Three.js produced a smaller gzip bundle."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 4,
+        "three": 1,
+        "ties": 7
+      },
+      "winner": "Aura3D win",
+      "reason": "Aura3D delivers a cleaner screenshot match with excellent labels and composition while requiring much less source code.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "benchmark/prompts/04-neon-tunnel-flythrough.md",
+      "auraVisual": 4,
+      "threeVisual": 5,
+      "auraModifiability": 5,
+      "threeModifiability": 4,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both routes rendered a nonblank canvas without browser errors."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both route-health checks passed."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 4,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Aura3D shows a neon corridor with emissive strips, but Three.js reads more clearly as a tube flythrough with rings, wireframe depth, glow, and fog falloff."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 4,
+          "winner": "Aura3D",
+          "reason": "Aura3D is a tiny prefab scene; Three.js is still reasonably organized but much longer."
+        },
+        {
+          "metric": "flythroughEvidence",
+          "auraValue": "dolly camera plus runtime screenshot evidence",
+          "threeValue": "curve-following camera plus runtime screenshot evidence",
+          "winner": "tie",
+          "reason": "Both implement camera animation and have second-frame runtime evidence."
+        },
+        {
+          "metric": "effectsCompleteness",
+          "auraValue": "prefab-described bloom and fog",
+          "threeValue": "explicit UnrealBloomPass and FogExp2",
+          "winner": "Three.js",
+          "reason": "Three.js source explicitly implements bloom and exponential fog, and the screenshot strongly shows depth falloff."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 27,
+          "threeValue": 169,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "filesCreated",
+          "auraValue": 2,
+          "threeValue": 2,
+          "winner": "tie",
+          "reason": "Both created two files."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented assets reported; prompt is procedural."
+        },
+        {
+          "metric": "repairTurns",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "Neither side required repair turns."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 112493,
+          "threeValue": 197513,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render sooner."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 216956,
+          "threeValue": 124522,
+          "winner": "Three.js",
+          "reason": "Three.js produced a smaller gzip bundle."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 3,
+        "ties": 8
+      },
+      "winner": "Three.js win",
+      "reason": "Three.js produces the more convincing neon tube flythrough with explicit bloom and fog, while Aura3D wins on compactness.",
+      "failedThresholds": []
+    },
+    {
+      "prompt": "benchmark/prompts/05-3d-data-visualization.md",
+      "auraVisual": 3,
+      "threeVisual": 5,
+      "auraModifiability": 5,
+      "threeModifiability": 3,
+      "metrics": [
+        {
+          "metric": "compiles",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both builds passed."
+        },
+        {
+          "metric": "runsInBrowser",
+          "auraValue": true,
+          "threeValue": true,
+          "winner": "tie",
+          "reason": "Both routes rendered a nonblank canvas without browser errors."
+        },
+        {
+          "metric": "routeHealth",
+          "auraValue": "pass",
+          "threeValue": "pass",
+          "winner": "tie",
+          "reason": "Both route-health checks passed."
+        },
+        {
+          "metric": "visualQuality",
+          "auraValue": 3,
+          "threeValue": 5,
+          "winner": "Three.js",
+          "reason": "Aura3D shows a 3D bar chart, but labels and color-height mapping are less clear. Three.js clearly shows about 36 bars, varied heights, readable axis labels, and height-correlated colors."
+        },
+        {
+          "metric": "modifiability",
+          "auraValue": 5,
+          "threeValue": 3,
+          "winner": "Aura3D",
+          "reason": "Aura3D is concise and prefab-based; Three.js has a larger custom scene with raycasting and label rendering."
+        },
+        {
+          "metric": "hoverHighlightImplementation",
+          "auraValue": "comment claims hover metadata via prefab",
+          "threeValue": "raycaster hover highlight and HUD readout implemented",
+          "winner": "Three.js",
+          "reason": "Three.js implements visible hover behavior directly in source; Aura3D source does not show the interaction logic beyond prefab metadata."
+        },
+        {
+          "metric": "linesOfUserCode",
+          "auraValue": 28,
+          "threeValue": 315,
+          "winner": "Aura3D",
+          "reason": "Aura3D uses far less user code."
+        },
+        {
+          "metric": "filesCreated",
+          "auraValue": 2,
+          "threeValue": 2,
+          "winner": "tie",
+          "reason": "Both created two files."
+        },
+        {
+          "metric": "hallucinatedApis",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No hallucinated APIs reported for either side."
+        },
+        {
+          "metric": "inventedAssetPaths",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "No invented assets reported; prompt is procedural."
+        },
+        {
+          "metric": "repairTurns",
+          "auraValue": 0,
+          "threeValue": 0,
+          "winner": "tie",
+          "reason": "Neither side required repair turns."
+        },
+        {
+          "metric": "timeToFirstUsableRenderMs",
+          "auraValue": 105490,
+          "threeValue": 152054,
+          "winner": "Aura3D",
+          "reason": "Aura3D reached usable render sooner."
+        },
+        {
+          "metric": "bundleSizeGzipBytes",
+          "auraValue": 216960,
+          "threeValue": 123256,
+          "winner": "Three.js",
+          "reason": "Three.js produced a smaller gzip bundle."
+        }
+      ],
+      "metricWinnerCounts": {
+        "aura": 3,
+        "three": 3,
+        "ties": 7
+      },
+      "winner": "Three.js win",
+      "reason": "Three.js is a clearer and more complete data-visualization implementation, especially for axis labels and hover behavior. Aura3D is much simpler but less evidentially complete.",
+      "failedThresholds": [
+        "Aura3D: hover-highlight behavior is not documented in notes.md and is only described as prefab metadata in source comments.",
+        "Three.js: hover-highlight behavior is implemented and visible in source/HUD, but not documented in notes.md."
+      ]
+    }
+  ],
+  "summary": "Three.js wins 4 prompts and Aura3D wins 1. Aura3D consistently uses much less code and reaches render faster, but Three.js more often provides explicit, inspectable behavior and stronger visual evidence for interaction-heavy prompts. Aura3D wins all five prompt comparisons by aggregate metrics, mainly through lower source complexity and faster usable render times. Three.js often has smaller bundles and is visually strongest on the mini-golf and city prompts, but it does not overcome Aura3D's modifiability advantage in this scoring set."
+}

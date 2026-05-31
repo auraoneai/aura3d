@@ -1,0 +1,24 @@
+Build succeeded — typecheck passed and Vite produced the bundle.
+
+## Summary
+
+I built a procedural **particle fountain** in Three.js (`source/src/main.ts`), satisfying every required visual:
+
+- **Identifiable emitter** — a metallic open nozzle cone + glowing emissive cyan core with a point light, sitting at the fountain origin.
+- **Upward-and-falling arc** — particles spawn with a strong upward velocity plus randomized horizontal spread, then `vy += GRAVITY*dt` integrates them into a real ballistic arc each frame (not static dots).
+- **Lifetime color variation** — per-particle vertex colors driven by `age/life`, sweeping hue from blue→cyan→green→yellow→red and dimming as particles age.
+- **Ground plane collision** — a large floor mesh + grid at `y=0`; particles bounce off it with damping and friction.
+- **Emission-rate control** — a visible HTML slider (0–4000 /s) with a live readout label, wired to the spawn accumulator.
+
+Implementation notes: a packed free-list pool (swap-with-last on death) keeps live particles contiguous so I render via `setDrawRange` with `DynamicDrawUsage` buffers; particles use an additive-blended round canvas sprite. Only `three` + the bundled `three/addons/controls/OrbitControls.js` are used.
+
+### Commands
+
+- **Build command:** `npm run build`
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+### Assumptions
+
+- Raw Three.js benchmark (per `context/llms.txt`); no `benchmark-recipes.md` exists in this bundle, so I followed standard Three.js patterns with only public API.
+- CSS reset (full-viewport canvas, no scrollbars) is injected from JS to keep the scaffold's `index.html` untouched.
+- Emission rate defaults to 1400 /s; `MAX_PARTICLES = 6000` caps the pool. Camera uses OrbitControls (drag to orbit).

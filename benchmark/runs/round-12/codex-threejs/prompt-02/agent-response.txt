@@ -1,0 +1,18 @@
+Implemented the procedural Three.js particle fountain in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command for the benchmark runner:
+```bash
+npm run dev
+```
+
+Assumptions:
+- Runner will execute from `source/`.
+- No external assets are needed or used.
+- Visual verification is left to the runner, per benchmark rules.

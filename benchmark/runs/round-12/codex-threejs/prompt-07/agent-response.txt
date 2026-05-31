@@ -1,0 +1,15 @@
+Implemented the procedural Material Lab in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-12/codex-threejs/prompt-07/source/src/main.ts). It uses five visible spheres for metal, glass, rubber, emissive, and clearcoat materials, with studio softbox panels, shadows, environment reflections via `RoomEnvironment`, and `OrbitControls`.
+
+Build completed successfully.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command for the runner:
+```bash
+npm run dev
+```
+
+Assumptions: no recipe file was present at `context/docs/agents/benchmark-recipes.md`; this prompt uses no external assets and is fully procedural.

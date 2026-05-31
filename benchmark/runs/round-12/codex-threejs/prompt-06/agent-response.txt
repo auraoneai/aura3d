@@ -1,0 +1,13 @@
+Implemented the procedural mini-golf app in `source/src/main.ts`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build completed successfully. Assumptions: raw Three.js instructions from `context/llms.txt` take precedence; no external assets were used; no dev server or visual verification was run per benchmark rules.

@@ -1,0 +1,29 @@
+The build passed (typecheck + Vite production build). Per benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built the Neon Tunnel Flythrough by copying benchmark recipe 04 (the smallest matching recipe) into `source/src/main.ts`. The `prefabs.neonTunnel({ rings: 18 })` prefab supplies the procedural tube geometry, emissive rings, fog falloff, and bloom; the `camera.dolly(...)` path plus `timeline.loop(...)` animate the camera through the tunnel so the screenshot reads as a flythrough.
+
+**Required visual evidence — coverage:**
+- Tunnel/tube interior → procedural octagonal rings + floor rails from `prefabs.neonTunnel`
+- Emissive segments → emissive rings/braces in the prefab
+- Bloom/glow → prefab's built-in bloom
+- Fog/depth falloff → prefab's built-in fog
+- Camera flythrough → `camera.dolly` from `[0,0.45,2.7]` to `[0,0.45,-2.8]`, looped over 8s
+
+**Build command:**
+```
+npm install && npm run build
+```
+(both already run successfully — typecheck + Vite build passed)
+
+**Run command (for the runner to execute later):**
+```
+npm run dev -- --port <assigned-port>
+```
+
+**Assumptions:**
+- Only `@aura3d/engine` public imports were used (`camera`, `createAuraApp`, `prefabs`, `scene`, `timeline`); no custom geometry/postprocess/animation engine was written, since the `neonTunnel` prefab covers all four required visual elements.
+- No assets needed — built fully procedurally, as the prompt requires.
+- Kept the recipe's default `rings: 18` and 8-second dolly/loop timing; no prompt-specific edits beyond using the prefab + dolly camera were necessary.
+- The Vite chunk-size warning is informational only (Three.js bundle) and does not affect the build outcome.

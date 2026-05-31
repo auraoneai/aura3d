@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Data Visualization — 6×6 Bars</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #0e1320;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+      }
+
+      #app {
+        position: fixed;
+        inset: 0;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      /* Axis labels rendered as HTML overlays via CSS2DRenderer. */
+      .axis-label {
+        color: #eef3ff;
+        font-size: 13px;
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+        white-space: nowrap;
+      }
+
+      .axis-x {
+        color: #9ad0ff;
+      }
+
+      .axis-z {
+        color: #ffd28a;
+      }
+
+      .axis-y {
+        color: #cdf5d6;
+        font-size: 12px;
+      }
+
+      .axis-title {
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+      }
+
+      #hud {
+        position: fixed;
+        top: 14px;
+        left: 14px;
+        z-index: 10;
+        color: #eef3ff;
+        background: rgba(14, 19, 32, 0.72);
+        border: 1px solid rgba(120, 150, 200, 0.3);
+        border-radius: 8px;
+        padding: 10px 14px;
+        max-width: 320px;
+        line-height: 1.5;
+        font-size: 13px;
+        pointer-events: none;
+      }
+
+      #hud h1 {
+        margin: 0 0 6px;
+        font-size: 15px;
+        font-weight: 700;
+      }
+
+      #hud .muted {
+        color: #9fb0cc;
+      }
+
+      #readout {
+        margin-top: 6px;
+        font-weight: 700;
+        color: #ffd28a;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud">
+      <h1>3D Data Visualization</h1>
+      <div class="muted">
+        6×6 grid of 36 bars. Heights animate from random values and recolor by
+        height. Drag to orbit, scroll to zoom.
+      </div>
+      <div id="readout">Hover a bar to highlight it</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

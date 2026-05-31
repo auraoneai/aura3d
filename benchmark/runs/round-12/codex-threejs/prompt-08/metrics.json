@@ -1,0 +1,31 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6208/",
+  "runCommand": "npm run dev -- --port 6208",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 260,
+  "filesCreated": 2,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 109985,
+  "bundleSizeGzipBytes": 122248,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

@@ -23,8 +23,10 @@ runs as completion evidence.
   gap rule. Round 12 starts from
   `benchmark/results/amendment-round-12-engine-gap-repair.md` and
   `benchmark/results/round-12-phase-a-signoff.md`.
-- Round 12 engine proof passed the engine gate. The main prompt benchmark still
-  has not passed after Round 9.
+- Round 12 engine proof passed the engine gate.
+- Round 12 prompt benchmark completed generation, capture, and neutral scoring,
+  then failed task 12: Codex/Aura3D reached 2/10 wins and Claude/Aura3D
+  reached 6/10 wins. Required is 7/10 for both agents.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark passes and final result/decision/release tasks are complete, or the
   user explicitly signs a below-bar shipping decision.
@@ -244,6 +246,19 @@ runs as completion evidence.
   - Claude Code: at least 4 Aura3D visual-quality scores are >=4.
   - Claude Code: no Aura3D visual-quality score below 3.
   - Claude Code: at least 2 Aura3D wins come from prompts 7, 8, and 10.
+  Evidence checked:
+  - Round 12 generation completed 40/40 prompts with exit code 0.
+  - Round 12 runtime capture produced 39/40 passing captures; the failed capture
+    was the raw Three.js baseline for Codex prompt 01 and was retained in
+    scoring evidence.
+  - `benchmark/scoring/round-12-scores/codex-by-claude.json` records Codex
+    outputs scored by Claude Code: Aura3D reached 2/10 wins, 6 visual scores
+    >=4, 0 visual scores below 3, and 0/3 hard-prompt wins.
+  - `benchmark/scoring/round-12-scores/claude-by-codex.json` records Claude
+    Code outputs scored by Codex: Aura3D reached 6/10 wins, 8 visual scores
+    >=4, 0 visual scores below 3, and 3/3 hard-prompt wins.
+  - This task remains incomplete because both agents require at least 7/10
+    Aura3D wins.
 
 - [x] 13. Pass the engine benchmark.
   Evidence required:
@@ -265,7 +280,7 @@ runs as completion evidence.
   - Local screenshot sheet:
     `/tmp/aura3d-round12-sheets/engine-contact-sheet.png`.
 
-- [ ] 14. Write final result files.
+- [x] 14. Write final result files.
   Evidence required:
   - `benchmark/results/round-N.md`.
   - `benchmark/results/round-N-engine.md`.
@@ -273,13 +288,25 @@ runs as completion evidence.
   - Result files include scorer identity, scorer neutrality, prompt-by-prompt
     results, engine scene-by-scene results, pass/fail math, user signature, and
     final decision.
+  Evidence checked:
+  - `benchmark/results/round-12.md` records the failed prompt benchmark with
+    scorer identities, scorer neutrality, prompt-by-prompt results, pass/fail
+    math, user signature, local screenshot sheets, and required follow-up.
+  - `benchmark/results/round-12-engine.md` records the passed engine benchmark.
+  - `benchmark/results/round-12-decision.md` records the Round 12 no-ship
+    decision.
 
-- [ ] 15. Record the Phase C decision.
+- [x] 15. Record the Phase C decision.
   Evidence required:
   - Passing benchmark decision says ship / Aura3D is a Three.js competitor in
     measurable terms, or
   - Failing benchmark decision says fix specific gaps and rerun, or
   - Below-bar ship decision includes explicit user acknowledgment.
+  Evidence checked:
+  - `benchmark/results/round-12-decision.md` records a failing benchmark
+    decision: do not ship Aura3D as a proven Three.js competitor from Round 12.
+  - The decision identifies the specific gaps: Codex/Aura3D won only 2/10 and
+    0/3 hard prompts; Claude/Aura3D won only 6/10.
 
 - [x] 16. Verify no regression of shipped features.
   Evidence required:

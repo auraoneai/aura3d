@@ -1,0 +1,15 @@
+Implemented Prompt 04 in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-12/codex-aura3d/prompt-04/source/src/main.ts:1) using `prefabs.neonTunnel`, a looping dolly camera, and the prefab’s built-in emissive rings, bloom/glow, fog, sparks, and depth cues.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no assets are required for Prompt 04, so the app is fully procedural and uses only the provided Aura3D API/context bundle.

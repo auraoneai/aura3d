@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 227,
+  "bodyTextSample": "X1\nX2\nX3\nX4\nX5\nX6\nZ1\nZ2\nZ3\nZ4\nZ5\nZ6\n0\n1\n2\n3\n4\n5\nVALUE\nX AXIS\nZ AXIS\n3D Data Visualization\n6×6 grid of 36 bars. Heights animate from random values and recolor by height. Drag to orbit, scroll to zoom.\nHover a bar to highlight it",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 61,
+    "lumaRange": 238
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6405/",
+  "runCommand": "npm run dev -- --port 6405"
+}

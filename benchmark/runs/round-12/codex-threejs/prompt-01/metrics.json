@@ -1,0 +1,35 @@
+{
+  "prompt": "01-physics-playground",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": false,
+  "runsInBrowser": false,
+  "routeHealth": "fail",
+  "routeUrl": null,
+  "runCommand": "npm run dev -- --port <assigned-port>",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 380,
+  "filesCreated": 2,
+  "hallucinatedApis": 1,
+  "hallucinatedApiFindings": [
+    "HTMLStrongElement"
+  ],
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": null,
+  "bundleSizeGzipBytes": null,
+  "buildSummary": {
+    "status": "fail",
+    "exitCode": 1,
+    "keyLines": [
+      "src/main.ts(124,45): error TS2552: Cannot find name 'HTMLStrongElement'. Did you mean 'HTMLButtonElement'?"
+    ]
+  },
+  "screenshot": null,
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

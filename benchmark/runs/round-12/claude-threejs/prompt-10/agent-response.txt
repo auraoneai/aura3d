@@ -1,0 +1,27 @@
+The build succeeded (typecheck passed, Vite bundled cleanly). Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built a sneaker product viewer in `source/src/main.ts` using `three` 0.165.0 and bundled official addons (`GLTFLoader`, `OrbitControls`, `RoomEnvironment`).
+
+What it does, mapped to the required visual evidence:
+- **Model loaded & visible** — loads `sneaker.glb` via `GLTFLoader`.
+- **Centered & auto-scaled** — computes the bounding box, scales the largest dimension to a fixed target size, recenters horizontally, and rests the model's bottom on the plinth top.
+- **Plinth/base visible** — a light cylinder plinth (with a dark shadow-catching floor beneath).
+- **Studio lighting readable** — `RoomEnvironment` IBL via `PMREMGenerator` plus ambient + key/fill/rim directional lights, ACES tone mapping, sRGB output, and soft shadows.
+- **Orbit controls + turntable** — `OrbitControls` with damping aimed at the model center, and a parent pivot group that auto-rotates around Y each frame.
+
+The sneaker is referenced at `/benchmark/assets/sneaker.glb`, which is the scaffold-provided copy under `source/public/benchmark/assets/sneaker.glb` (Vite serves `public/` at the site root) — no invented path.
+
+## Commands
+
+- **Install:** `npm install`
+- **Build:** `npm run build`  (runs `tsc --noEmit` strict typecheck, then `vite build` — both pass)
+- **Run (for the runner to execute later):** `npm run dev -- --port <assigned-port>`
+
+## Assumptions
+
+- Added `@types/three@0.165.0` to `devDependencies` because the `three` package ships no type declarations and the scaffold's build runs strict `tsc --noEmit`; without it the typecheck step fails. This was the only dependency change, version-matched to the pinned `three`.
+- The allowed asset `benchmark/assets/sneaker.glb` was already present in the scaffold's `public/benchmark/assets/`, so it loads from `/benchmark/assets/sneaker.glb` at runtime.
+- Added minimal fullscreen CSS to `index.html` (zero-margin, full-viewport canvas) and updated the page title; no files outside `source/` were modified.
+- The >500 kB chunk warning is informational (three.js bundle size) and does not affect the build outcome.

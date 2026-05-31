@@ -1,0 +1,22 @@
+The build succeeded (typecheck + Vite production build, no errors). Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built Prompt 05 (3D Data Visualization) by copying the smallest matching benchmark recipe (recipe **05 3D Data Visualization**) into `source/src/main.ts`, using `@aura3d/engine` public imports only. No assets were used (built procedurally via the prefab).
+
+The single scene uses `prefabs.dataBars3D({ grid: 6 })`, which renders a 6×6 grid (36 bars) with animated random heights, color-by-height shading, axis rails + label chips, hover-highlight metadata, and a selected-metric callout — with `interactions.orbit()` and an orbit camera. One Aura app is created once (no per-frame dispose/recreate).
+
+### Commands
+
+- **Build command:** `npm run build` (runs `tsc --noEmit` typecheck + `vite build` — already verified passing)
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+Both run from the `source/` directory. `npm install` has already been completed.
+
+### Hover-highlight (run notes)
+Hover-highlight is provided by the `prefabs.dataBars3D` prefab: each bar carries hover metadata so the renderer highlights the bar under the pointer. Bar color corresponds to height (color-by-height), heights animate from random values, and axis labels/rails are rendered as part of the prefab.
+
+### Assumptions
+- The `dataBars3D` prefab's documented features (36 bars, animated random heights, color-by-height, axis labels, hover-highlight) satisfy all required visual evidence; per the benchmark rules I did not run a dev server, Playwright, or screenshot capture to visually confirm.
+- `{ grid: 6 }` yields exactly 36 bars (6×6), matching the prompt's required count.
+- Build output chunk-size warning (Three.js bundle >500 kB) is informational only and does not affect correctness.

@@ -1,0 +1,28 @@
+The build is complete and verified. The sneaker.glb is bundled into the output at its genuine provided path.
+
+## Summary
+
+Built the Prompt 10 product viewer by copying benchmark recipe **#10 Product Viewer Sneaker** verbatim, making only the prompt-required asset edit.
+
+**Files written (inside `source/` only):**
+- `src/aura-assets.ts` — generated-style typed asset module via `defineAuraAssets`, pointing `assets.sneaker` at the real provided file (`/benchmark/assets/sneaker.glb`, with sha256 hash + size). No invented path.
+- `src/main.ts` — the recipe scene: `scene().addMany(prefabs.productStage())` (plinth/base, contact shadow, studio softboxes, fit-to-bounds normalization) + `model(assets.sneaker)` centered/auto-scaled with `.animate({ clip: "turntable" })`, `lights.studio()`, `interactions.orbit()`, perspective camera, and `timeline.loop()`.
+
+**How each requirement is met:**
+- Sneaker loaded/visible — `model(assets.sneaker)` (GLTFLoader bundled in build).
+- Centered + auto-scaled — `prefabs.productStage()` fit-to-bounds normalization + positioning.
+- Plinth/base — `prefabs.productStage()`.
+- Studio lighting — `lights.studio({ intensity: 1.35 })` + softboxes/reflection cards from the stage.
+- Orbit controls + turntable — `interactions.orbit()` + `.animate({ clip: "turntable" })` with `timeline.loop()`.
+- Asset path — uses only the provided `benchmark/assets/sneaker.glb`, no string ids / `unsafeModelUrl` / invented paths.
+
+**Commands for the runner:**
+- Build command: `npm run build` (runs `tsc --noEmit` typecheck + `vite build`; both passed)
+- Run command: `npm run dev -- --port <assigned-port>`
+- (Install, already done: `npm install`)
+
+**Assumptions:**
+- The runner pre-placed `sneaker.glb` at `source/public/benchmark/assets/sneaker.glb`, so the typed asset URL `/benchmark/assets/sneaker.glb` resolves to that real file (confirmed emitted to `dist/`). No network CLI (`@aura3d/cli`) was reachable, so I authored `src/aura-assets.ts` by hand in the exact `defineAuraAssets` shape the CLI would generate, with the file's true sha256 and byte size.
+- The `"turntable"` clip is the engine's procedural turntable rotation (per the recipe), not an animation embedded in the GLB.
+
+Per benchmark rules, I stopped after a successful build and did not run a dev server or visual verification.

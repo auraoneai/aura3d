@@ -1,0 +1,245 @@
+// Prompt 09: Animated Primitive Humanoid
+// A humanoid figure built from primitive shapes (sphere head, cylinder torso,
+// box limbs) with a procedural walk-cycle animation moving across a ground plane.
+
+import * as THREE from 'three';
+
+const app = document.getElementById('app')!;
+
+// ---------------------------------------------------------------------------
+// Renderer
+// ---------------------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+Object.assign(renderer.domElement.style, { display: 'block' });
+app.appendChild(renderer.domElement);
+
+// ---------------------------------------------------------------------------
+// Scene & camera
+// ---------------------------------------------------------------------------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fc6e8);
+scene.fog = new THREE.Fog(0x9fc6e8, 18, 55);
+
+const camera = new THREE.PerspectiveCamera(
+  50,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  200,
+);
+camera.position.set(7, 4.2, 10);
+camera.lookAt(0, 2, 0);
+
+// ---------------------------------------------------------------------------
+// Lights
+// ---------------------------------------------------------------------------
+const hemi = new THREE.HemisphereLight(0xffffff, 0x4a6b3a, 0.9);
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(0xfff2d6, 2.0);
+sun.position.set(8, 14, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 60;
+sun.shadow.camera.left = -20;
+sun.shadow.camera.right = 20;
+sun.shadow.camera.top = 20;
+sun.shadow.camera.bottom = -20;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+
+// ---------------------------------------------------------------------------
+// Ground plane
+// ---------------------------------------------------------------------------
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(120, 120),
+  new THREE.MeshStandardMaterial({ color: 0x5f8a4a, roughness: 1 }),
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// A simple grid to make the forward motion across the plane obvious.
+const grid = new THREE.GridHelper(120, 60, 0x3c5a30, 0x4c6e3c);
+(grid.material as THREE.Material).transparent = true;
+(grid.material as THREE.Material).opacity = 0.5;
+grid.position.y = 0.01;
+scene.add(grid);
+
+// ---------------------------------------------------------------------------
+// Humanoid built from primitives
+// ---------------------------------------------------------------------------
+// Joint hierarchy so limbs rotate about shoulders / hips:
+//   character (translates + bobs)
+//     └ body (whole figure, leans slightly)
+//         ├ torso (cylinder) + head (sphere) + arms pivots + leg pivots
+//
+// Each limb is a pivot Group placed at the joint; the box limb mesh hangs
+// below the pivot so rotating the pivot swings the limb naturally.
+
+const skin = new THREE.MeshStandardMaterial({ color: 0xe8b98c, roughness: 0.6 });
+const shirt = new THREE.MeshStandardMaterial({ color: 0x2f6fdb, roughness: 0.7 });
+const pants = new THREE.MeshStandardMaterial({ color: 0x32384a, roughness: 0.8 });
+const shoe = new THREE.MeshStandardMaterial({ color: 0x202020, roughness: 0.9 });
+
+const character = new THREE.Group();
+scene.add(character);
+
+const body = new THREE.Group();
+character.add(body);
+
+// Torso — cylinder
+const torso = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.55, 0.45, 1.7, 20),
+  shirt,
+);
+torso.position.y = 2.6;
+torso.castShadow = true;
+body.add(torso);
+
+// Hips — small box connecting legs to torso
+const hips = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.5, 0.6), pants);
+hips.position.y = 1.65;
+hips.castShadow = true;
+body.add(hips);
+
+// Neck + head — sphere
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.5, 24, 24), skin);
+head.position.y = 3.85;
+head.castShadow = true;
+body.add(head);
+
+const neck = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.18, 0.22, 0.35, 14),
+  skin,
+);
+neck.position.y = 3.5;
+neck.castShadow = true;
+body.add(neck);
+
+// Helper to build a limb as a pivot group with a box hanging below it.
+function makeLimb(
+  width: number,
+  length: number,
+  depth: number,
+  mat: THREE.Material,
+  pivot: THREE.Vector3,
+  footMat?: THREE.Material,
+): THREE.Group {
+  const g = new THREE.Group();
+  g.position.copy(pivot);
+
+  const limb = new THREE.Mesh(new THREE.BoxGeometry(width, length, depth), mat);
+  limb.position.y = -length / 2; // hang below the pivot
+  limb.castShadow = true;
+  g.add(limb);
+
+  if (footMat) {
+    const foot = new THREE.Mesh(
+      new THREE.BoxGeometry(width * 1.05, 0.25, depth * 1.9),
+      footMat,
+    );
+    foot.position.set(0, -length + 0.05, depth * 0.45);
+    foot.castShadow = true;
+    g.add(foot);
+  }
+  return g;
+}
+
+// Arms — pivot at the shoulders
+const leftArm = makeLimb(0.32, 1.5, 0.32, shirt, new THREE.Vector3(0.78, 3.2, 0));
+const rightArm = makeLimb(0.32, 1.5, 0.32, shirt, new THREE.Vector3(-0.78, 3.2, 0));
+// hands (skin) at the end of each arm
+for (const arm of [leftArm, rightArm]) {
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 14), skin);
+  hand.position.y = -1.55;
+  hand.castShadow = true;
+  arm.add(hand);
+}
+body.add(leftArm, rightArm);
+
+// Legs — pivot at the hips
+const leftLeg = makeLimb(0.4, 1.55, 0.4, pants, new THREE.Vector3(0.32, 1.55, 0), shoe);
+const rightLeg = makeLimb(0.4, 1.55, 0.4, pants, new THREE.Vector3(-0.32, 1.55, 0), shoe);
+body.add(leftLeg, rightLeg);
+
+// ---------------------------------------------------------------------------
+// Procedural walk cycle
+// ---------------------------------------------------------------------------
+const WALK_SPEED = 1.8;       // units / second along +X
+const STRIDE = 6;             // swing frequency (rad/sec)
+const SWING = 0.7;            // max limb swing (radians)
+const LANE_HALF = 16;         // wrap-around distance on the ground plane
+const BASE_BODY_Y = 0;        // body anchored at ground; meshes already offset up
+
+// Start mid-stride so the very first frame already implies motion (not a
+// neutral T-pose) — satisfies the "pose implies animation" requirement.
+let phase = Math.PI * 0.35;
+
+const clock = new THREE.Clock();
+
+function updateWalk(dt: number) {
+  phase += dt * STRIDE;
+
+  // Move across the ground plane, wrapping around so motion is continuous.
+  character.position.x += dt * WALK_SPEED;
+  if (character.position.x > LANE_HALF) {
+    character.position.x = -LANE_HALF;
+  }
+  // Face the direction of travel (+X).
+  character.rotation.y = Math.PI / 2;
+
+  const swing = Math.sin(phase) * SWING;
+
+  // Legs swing in opposite phase.
+  leftLeg.rotation.x = swing;
+  rightLeg.rotation.x = -swing;
+
+  // Add a knee-like bend on the leg that is lifting (positive forward swing).
+  // Approximate by counter-rotating the lower portion via a small extra tilt.
+  leftLeg.rotation.x += Math.max(0, Math.sin(phase)) * 0.15;
+  rightLeg.rotation.x += Math.max(0, Math.sin(phase + Math.PI)) * 0.15;
+
+  // Arms swing opposite to the legs (left arm with right leg).
+  leftArm.rotation.x = -swing * 0.9;
+  rightArm.rotation.x = swing * 0.9;
+  // A little outward splay so arms don't clip the torso.
+  leftArm.rotation.z = 0.12;
+  rightArm.rotation.z = -0.12;
+
+  // Vertical bob — body rises twice per stride (each footfall).
+  body.position.y = BASE_BODY_Y + Math.abs(Math.sin(phase)) * 0.12;
+
+  // Slight forward lean + side-to-side sway for liveliness.
+  body.rotation.x = 0.06;
+  body.rotation.z = Math.sin(phase) * 0.04;
+}
+
+// ---------------------------------------------------------------------------
+// Resize
+// ---------------------------------------------------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ---------------------------------------------------------------------------
+// Render loop
+// ---------------------------------------------------------------------------
+function animate() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  updateWalk(dt);
+
+  // Keep the camera tracking the walking figure for clear runtime evidence.
+  camera.position.x = character.position.x + 7;
+  camera.lookAt(character.position.x, 2.2, 0);
+
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(animate);

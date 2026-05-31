@@ -1,0 +1,18 @@
+Implemented in `source`.
+
+Build completed successfully with `npm run build`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- Used only the provided `source/public/benchmark/assets/sneaker.glb`.
+- `npx @aura3d/cli@latest` was unavailable from npm, so I used the Aura CLI bundled inside the installed local `@aura3d/engine` package to generate the typed asset files.
+- No dev server, preview, Playwright, or visual screenshot verification was run.

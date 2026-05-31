@@ -1,0 +1,31 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6203/",
+  "runCommand": "npm run dev -- --port 6203",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 221,
+  "filesCreated": 2,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "inventedAssetPaths": 0,
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 124628,
+  "bundleSizeGzipBytes": 127259,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

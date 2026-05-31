@@ -1,0 +1,22 @@
+Implemented Prompt 08 in `source/src/main.ts` and `source/src/style.css` using the matching `prefabs.cityBlock` recipe.
+
+Build command run:
+
+```bash
+cd source && npm run build
+```
+
+Build result: failed because dependencies/types are not installed or resolvable:
+
+```text
+src/main.ts(1,76): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+src/main.ts(12,24): error TS7006: Parameter 'button' implicitly has an 'any' type.
+```
+
+Runner command to execute later:
+
+```bash
+cd source && npm run dev
+```
+
+Assumptions: the runner will install dependencies before building/running, using the local `@aura3d/engine` tarball declared in `source/package.json`. I stopped after the build failure per the benchmark rule.

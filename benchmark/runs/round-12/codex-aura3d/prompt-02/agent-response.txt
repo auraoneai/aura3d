@@ -1,0 +1,18 @@
+Implemented the particle fountain app in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-12/codex-aura3d/prompt-02/source/src/main.ts).
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build result: failed at typecheck because `@aura3d/engine` was not resolved in `source/node_modules`, and that also caused the `ui.onClick` callback parameter to be inferred as `any`.
+
+Assumptions:
+- The runner will install dependencies before building, or run `npm install` in `source`.
+- No assets are required; the scene is fully procedural and uses `prefabs.particleFountain({ count: 2400 })`.
+- I stopped after the build failure per the benchmark execution rule.

@@ -1,0 +1,24 @@
+The build succeeded (typecheck + Vite production build, no errors). Work is complete.
+
+## Summary
+
+Prompt 03 (Procedural Solar System) matched the exact recipe in `docs/agents/benchmark-recipes.md`. I copied the smallest matching recipe shape into `source/src/main.ts`, using only public `@aura3d/engine` imports and the `prefabs.solarSystem` helper — no custom primitives or hand-built systems.
+
+The scene uses `prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 })`, which supplies the sun (with bloom/glow), 6 planets at differing orbital distances/speeds, orbit paths, and attached readable labels. An orbit camera frames the whole system via a perspective camera plus `interactions.orbit()`, with a 10s timeline loop driving the orbital motion. I verified `prefabs.solarSystem` and its `AuraSolarSystemPrefabOptions` (`labels`, `orbitSegments`, `starCount`) against the engine's typed declarations before writing the scene.
+
+**Build command:**
+```bash
+npm run build
+```
+(runs `tsc --noEmit` typecheck + `vite build`)
+
+**Run command (for the runner):**
+```bash
+npm run dev -- --port <assigned-port>
+```
+
+**Assumptions:**
+- The `prefabs.solarSystem` prefab provides the sun bloom/glow, the six distinct orbit radii/speeds, and attached planet labels internally — matching the documented recipe, so no separate `effects.bloom` or manual label placement was added.
+- `npm install` was run in `source/`; dependencies resolve from the local `@aura3d/engine` tarball already referenced in `package.json`.
+- No assets needed (built fully procedurally, per prompt).
+- All changes confined to the `source/` directory (`src/main.ts` only); scaffold `index.html`, `package.json`, and `tsconfig.json` left untouched.

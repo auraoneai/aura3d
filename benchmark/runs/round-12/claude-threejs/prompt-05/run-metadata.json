@@ -1,0 +1,34 @@
+{
+  "round": 12,
+  "runId": "claude-threejs",
+  "agent": "Claude Code",
+  "library": "Three.js",
+  "contextBundle": "benchmark/context/threejs/files",
+  "promptFile": "benchmark/prompts/05-3d-data-visualization.md",
+  "sourceDirectory": "benchmark/runs/round-12/claude-threejs/prompt-05/source",
+  "preparedAt": "2026-05-31T07:35:48.131Z",
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "First read ./context/llms.txt before any other context file.\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command for the runner to execute later, and any assumptions. Do not\nedit files outside the source directory.\n\nBenchmark execution rules:\n- Read ./context/llms.txt first; if you have not read it yet, stop and read it\n  before implementing.\n- If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy\n  that recipe shape and make only prompt-required edits.\n- Use public helpers and prefabs before custom primitives. Do not build a\n  custom physics engine, game engine, chart engine, material renderer, city\n  generator, or animation system when the context bundle exposes a matching\n  Aura3D API.\n- Do not run `npm run dev`, `npm run preview`, Playwright, browser screenshot\n  capture, or any other long-running server/manual visual verification inside\n  the agent process.\n- You may run finite commands such as `npm install` and `npm run build`.\n- After `npm run build` completes or fails, stop work and return the build\n  command, run command for the runner, and assumptions. Do not continue\n  investigating.\n\n# Prompt 05: 3D Data Visualization\n\nBuild a 3D data visualization: a 6x6 grid of bars whose heights animate from random values, color by height, hover-highlight, orbit camera, axis labels.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- Exactly or clearly approximately 36 bars must be visible.\n- Bar heights must vary.\n- Color must correspond to height.\n- Axis labels must be visible and readable.\n- Hover-highlight behavior must be implemented and documented in the run notes.\n"
+  ],
+  "agentVersion": "2.1.158 (Claude Code)",
+  "agentStartedAt": "2026-05-31T07:49:00.446Z",
+  "agentFinishedAt": "2026-05-31T07:51:28.572Z",
+  "agentDurationMs": 148126,
+  "initialPromptDeliveredAt": "2026-05-31T07:49:00.446Z",
+  "agentTimeoutMs": 1200000,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "agentSignal": null,
+  "executionHygieneViolations": [
+    "agent ran npm run dev"
+  ]
+}

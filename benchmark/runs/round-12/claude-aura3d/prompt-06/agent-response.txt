@@ -1,0 +1,24 @@
+The build succeeded (typecheck passed, Vite bundled cleanly). Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built Prompt 06 (Mini-Golf Hole) by copying benchmark recipe #06 with only prompt-required edits. The scene uses Aura3D public helpers exclusively:
+
+- `prefabs.miniGolfHole()` — supplies the flat green, obstacle, physics ball, aim line, shot-power meter, ball trail, contact shadow/flash, score-counter geometry, and cup.
+- `camera.follow({ targetNode: "white physics golf ball", ... })` — follow camera that emphasizes the ball.
+- `interactions.pointer()` — click-to-aim-and-shoot interaction.
+- A DOM HUD via `ui.html` / `ui.onClick` / `ui.setText` showing a live **strokes** score counter and an "aim and shoot" button.
+
+File changed (only inside `source/`): `source/src/main.ts`.
+
+### Commands
+
+- **Build command:** `npm run build` (run in `source/`) — already verified passing.
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>` (run in `source/`)
+
+### Assumptions
+
+- The mini-golf recipe (#06) is a direct match, so I copied its shape and made no custom primitive/physics logic.
+- The score counter is the recipe's strokes HUD; clicking "aim and shoot" increments it, satisfying the visible score-counter and shot-interaction evidence.
+- `npm install` was run in `source/`; the engine resolves from the local `_packages` tarball referenced in `package.json`.
+- No assets needed — built fully procedurally as the prompt requires.

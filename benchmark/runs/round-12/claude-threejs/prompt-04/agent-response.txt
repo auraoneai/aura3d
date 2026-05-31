@@ -1,0 +1,22 @@
+Build passes (typecheck + Vite bundle). Stopping here per the benchmark rules.
+
+## Summary
+
+Built a **Neon Tunnel Flythrough** in `source/src/main.ts` using raw Three.js 0.165.0 and the bundled official addons. It satisfies every required visual evidence item:
+
+- **Tunnel interior** — procedural `TubeGeometry` built from a closed `CatmullRomCurve3` path (1200 tubular × 28 radial segments), rendered with `THREE.BackSide` so the camera sees the inside, plus a faint wireframe overlay tracing the surface.
+- **Emissive segments** — 160 neon torus rings spaced along the curve (oriented to the path tangent), plus 6 longitudinal neon line strips. All use `toneMapped: false` and hue-cycled HSL colors that pulse over time.
+- **Bloom** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (strength 1.4, radius 0.75, threshold 0) with ACES tone mapping.
+- **Fog falloff** — `FogExp2` (density 0.028) so the tunnel fades into depth ahead of the camera.
+- **Camera animation** — `setAnimationLoop` drives the camera continuously along the closed curve (`getPointAt`), looking ahead with a subtle banking roll and a travel point-light, reading as a flythrough in any single frame.
+
+## Commands
+
+- **Build command:** `npm run build` (runs `tsc --noEmit` then `vite build`)
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+## Assumptions
+
+- Added `@types/three@0.165.0` to `devDependencies` (inside the source dir) because Three.js 0.165 ships no type declarations and the scaffold's `build` script runs `tsc --noEmit` under `strict`. `npm install` picks it up automatically.
+- Built fully procedurally; no external assets loaded, per the prompt.
+- The closed-loop path makes the flythrough seamless and endless for runtime/screenshot capture.
