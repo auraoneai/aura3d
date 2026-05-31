@@ -109,10 +109,11 @@ scene()
   .add(lights.studio({ intensity: 1.15 }))
   .camera(camera.orbit({ distance: 4.2 }));
 
-// City prompts need streets, scale, windows, crosswalks, and readable framing.
+// City prompts need streets, scale, windows, crosswalks, street lights,
+// storefront detail, a day/night state marker, and readable framing.
 scene()
   .background("#061018")
-  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
+  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
   .add(effects.fog({ density: 0.045 }))
   .add(effects.bloom({ intensity: 0.18 }))
   .camera(camera.perspective({ position: [0.6, 5.2, 9.2], target: [0, 0.42, -0.4], fov: 58 }));
@@ -129,8 +130,8 @@ scene()
 scene()
   .background("#10151f")
   .addMany(prefabs.materialSwatches())
-  .add(lights.studio({ intensity: 1.45 }))
-  .camera(camera.perspective({ position: [0, 1.45, 7.9], target: [0, 0.78, -0.72], fov: 44 }));
+  .add(lights.studio({ intensity: 1.55 }))
+  .camera(camera.perspective({ position: [0, 1.55, 8.35], target: [0, 0.82, -0.72], fov: 42 }));
 
 // 3D data visualization prompts should use renderable bar geometry once, not
 // dispose/recreate the app in a requestAnimationFrame loop.
@@ -144,9 +145,10 @@ scene()
 // Product viewers should use fit-to-bounds model normalization plus a plinth.
 scene()
   .addMany(prefabs.productStage())
-  .add(model(assets.product).position(0, 0.54, -0.65).animate({ clip: "float", speed: 0.35 }))
+  .add(model(assets.product).position(0, 0.54, -0.65).rotate(0, -0.38, 0).animate({ clip: "turntable", speed: 0.42 }))
   .add(interactions.orbit())
-  .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.7, -0.65], fov: 38 }));
+  .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }))
+  .timeline(timeline.loop({ seconds: 8 }));
 
 // Physics demos must expose real state/cues, not cosmetic falling boxes only.
 scene()

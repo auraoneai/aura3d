@@ -24,8 +24,10 @@ Build order:
 Benchmark exception: for frozen benchmark prompts, use
 `docs/agents/benchmark-recipes.md` first. Copy the smallest matching recipe,
 run finite commands such as `npm install` and `npm run build`, and stop. Do not
-run `npm run dev`, Playwright, browser screenshots, or manual visual
-verification from inside the benchmark agent process.
+run `npm run dev`, `npm run preview`, Playwright, browser screenshots, or
+manual visual verification from inside the benchmark agent process. Return the
+build command, the runner-owned run command, and assumptions; do not perform
+runner-owned runtime capture.
 
 `createAuraApp("#app", ...)` supplies viewport-safe layout defaults for a
 direct empty app container. Do not add CSS merely to remove body margin or make
@@ -80,17 +82,20 @@ Round 1 failure repairs:
 - Material lab prompts: use `prefabs.materialSwatches()` plus
   `material.metal()`, `material.glass()`, `material.rubber()`,
   `material.emissive()`, and `material.clearcoat()` so material classes are
-  visible without reading labels. Keep the contrast wall and softbox strips in
-  frame; they are what make glass, chrome, and clearcoat read in screenshots.
+  visible without reading labels. Keep the contrast wall, environment panels,
+  refracted glass cards, softbox strips, and clearcoat highlights in frame;
+  they are what make glass, chrome, and layered glossy paint read in screenshots.
 - City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
   before custom buildings. A city scene needs streets, lit windows, scale
-  variation, crosswalks, fog or depth, and a camera angle that makes the block
-  readable.
+  variation, crosswalks, sidewalks, street lights, storefront/roof detail,
+  fog or depth, and an obvious day/night state or toggle marker.
 - Product prompts: use `prefabs.productStage()`, typed `model(assets.product)`,
   `interactions.orbit()`, and product camera framing. Place normalized products
-  near `position(0, 0.54, -0.65)` so they sit on the round plinth. Use a
-  three-quarter product camera instead of a distant flat orbit. Do not
-  implement the actual viewer in raw Three.js inside an Aura3D app.
+  at `position(0, 0.54, -0.65)` so the fit-to-bounds model sits on the round
+  plinth, then use `.animate({ clip: "turntable", speed: 0.42 })` or another
+  visible rotation cue. Use a three-quarter product camera instead of a distant
+  flat orbit. Do not implement the actual viewer in raw Three.js inside an
+  Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`, and
   `ui.onClick`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
@@ -111,7 +116,7 @@ Round 1 failure repairs:
 - Solar-system prompts: use `prefabs.solarSystem()` and add a small `ui.html`
   label overlay for the six planet names. Do not ship a sun plus only three
   unlabeled planets.
-- Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk", speed })`
+- Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })`
   and `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running. For primitive character prompts, start from
   `prefabs.primitiveHumanoid()` so the connected body, path, contact shadow,

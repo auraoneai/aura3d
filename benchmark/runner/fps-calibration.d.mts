@@ -1,14 +1,19 @@
 export interface FpsSummary {
   readonly sampleCount: number;
+  readonly totalFrameTimeMs: number;
+  readonly minFrameTimeMs: number | null;
+  readonly maxFrameTimeMs: number | null;
   readonly p50FrameTimeMs: number | null;
   readonly p95FrameTimeMs: number | null;
   readonly p50Fps: number | null;
+  readonly timedOut: boolean;
 }
 
 export interface FpsCalibrationThresholds {
   readonly emptyRafMinFps: number;
   readonly webglControlMinFps: number;
   readonly maxP95FrameTimeMs: number;
+  readonly minControlSamples: number;
 }
 
 export interface FpsCalibrationInput {
@@ -30,7 +35,12 @@ export interface FpsCalibrationResult {
 
 export const DEFAULT_FPS_CALIBRATION_THRESHOLDS: FpsCalibrationThresholds;
 
-export function summarizeFrameTimes(frameTimes: readonly number[]): FpsSummary;
+export function summarizeFrameTimes(
+  frameTimes: readonly number[],
+  options?: {
+    readonly timedOut?: boolean;
+  }
+): FpsSummary;
 
 export function classifyFpsCalibration(
   calibration: FpsCalibrationInput,
@@ -45,6 +55,7 @@ export function samplePageFps(
   options?: {
     readonly warmupMs?: number;
     readonly sampleMs?: number;
+    readonly timeoutSlackMs?: number;
   }
 ): Promise<FpsSummary>;
 

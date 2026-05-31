@@ -9,6 +9,9 @@ Version: 1.0.0
 - [Public API reference](../api/public-api.md)
 - [Getting started tutorial](tutorials-getting-started-real-scene.md)
 - [Changelog](../../CHANGELOG.md)
+- [Final proof and release readiness](final-proof-release-readiness.md)
+- [Release checklist](release-checklist.md)
+- [Release process](release-process.md)
 - `/apps/hello-world-typed-asset/`: typed asset example
 - `/apps/material-lighting/`: material and light example
 - `/apps/camera-path/`: camera path example

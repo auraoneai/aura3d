@@ -11,6 +11,7 @@ tested.
 Each bundle has:
 
 - `files/` with the files the agent may read.
+- `files/llms.txt`, which the agent must read before any other context file.
 - `manifest.sha256` with SHA-256 hashes for every file in `files/`.
 - `README.md` with allowed package versions and restrictions.
 
@@ -18,6 +19,8 @@ Each bundle has:
 
 - Do not add, remove, or edit context bundle files during a round.
 - Do not let agents browse repo source outside the selected bundle.
+- Do not start agent generation unless the selected bundle has `files/llms.txt`
+  and its manifest verifies.
 - Do not give Aura3D files to the raw Three.js run.
 - Do not give Three.js examples to the Aura3D run unless the Aura3D bundle
   already contains them.

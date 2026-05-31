@@ -1,9 +1,11 @@
 # Benchmark Recipes
 
 Use these recipes only when the benchmark prompt matches the recipe family.
-Copy the smallest matching shape, make only prompt-required edits, run
-`npm run build`, and stop. Do not build custom engines or keep dev servers
-running for visual review.
+Read `llms.txt` first, copy the smallest matching shape, make only
+prompt-required edits, run finite commands such as `npm install` and
+`npm run build`, return the build/run commands, and stop. Do not run
+`npm run dev`, `npm run preview`, Playwright, browser screenshot capture, or
+manual visual verification inside the benchmark agent process.
 
 Shared imports:
 
@@ -129,9 +131,9 @@ createAuraApp("#app", {
   scene: scene()
     .background("#10151f")
     .addMany(prefabs.materialSwatches())
-    .add(lights.studio({ intensity: 1.45 }))
+    .add(lights.studio({ intensity: 1.55 }))
     .add(interactions.orbit())
-    .camera(camera.perspective({ position: [0, 1.45, 7.9], target: [0, 0.78, -0.72], fov: 44 }))
+    .camera(camera.perspective({ position: [0, 1.55, 8.35], target: [0, 0.82, -0.72], fov: 42 }))
 });
 ```
 
@@ -142,19 +144,19 @@ import { camera, createAuraApp, effects, lights, prefabs, scene, ui } from "@aur
 import "./style.css";
 
 ui.html("#app", `
-  <button class="toggle" type="button">switch to night</button>
+  <button class="toggle" type="button" aria-pressed="true">night mode active</button>
 `);
-let isNight = false;
+let isNight = true;
 ui.onClick(".toggle", (button) => {
   isNight = !isNight;
-  ui.setText(button, isNight ? "switch to day" : "switch to night");
+  ui.setText(button, isNight ? "night mode active" : "day mode requested");
   ui.setPressed(button, isNight);
 });
 
 createAuraApp("#app", {
   scene: scene()
-    .background("#87ceeb")
-    .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
+    .background("#061018")
+    .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
     .add(effects.fog({ density: 0.035 }))
     .add(effects.bloom({ intensity: 0.14 }))
     .add(lights.studio({ intensity: 1.08 }))
@@ -178,19 +180,25 @@ createAuraApp("#app", {
 ## 10 Product Viewer Sneaker
 
 ```ts
-import { camera, createAuraApp, interactions, lights, model, prefabs, scene } from "@aura3d/engine";
+import { camera, createAuraApp, interactions, lights, model, prefabs, scene, timeline } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
   scene: scene()
     .background("#0b1020")
     .addMany(prefabs.productStage())
-    .add(model(assets.sneaker).position(0, 0.54, -0.65).animate({ clip: "float", speed: 0.35 }))
+    .add(model(assets.sneaker).position(0, 0.54, -0.65).rotate(0, -0.38, 0).animate({ clip: "turntable", speed: 0.42 }))
     .add(lights.studio({ intensity: 1.35 }))
     .add(interactions.orbit())
-    .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.7, -0.65], fov: 38 }))
+    .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }))
+    .timeline(timeline.loop({ seconds: 8 }))
 });
 ```
+
+Before writing the scene, add the user-approved asset with `npx
+@aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker`, then import
+`assets` from the generated `./aura-assets` module. Do not write
+`model("sneaker")` or invent asset URLs.
 
 Use CSS only for small overlays, toggles, labels, and page sizing. Do not use
 DOM or canvas as the main 3D rendering path in Aura3D runs.

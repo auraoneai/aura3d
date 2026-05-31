@@ -8,8 +8,10 @@ Version: 1.0.0
 2. Regenerate generated docs or reports that are affected by the change.
 3. Run focused tests for the affected packages/routes.
 4. Run broader gates before publishing public claims.
-5. Update `docs/project/threejs-superiority-status.md` with the actual generated report state.
-6. Keep release notes and public copy narrower than the evidence.
+5. Run the final proof pipeline in
+   `docs/project/final-proof-release-readiness.md`.
+6. Update release notes to cite the passing benchmark result files.
+7. Keep release notes and public copy narrower than the evidence.
 
 ## Useful Commands
 
@@ -20,9 +22,16 @@ pnpm test:integration
 pnpm test:browser
 pnpm build
 pnpm verify:api-docs -- --write
-pnpm threejs-parity
-pnpm superiority
+pnpm verify:package-install-smoke:fresh
+pnpm verify:package-provenance
+pnpm verify:release:quick
+pnpm verify:release
 ```
+
+The competitive proof commands are not package scripts. They are the frozen
+benchmark procedure in `FinalizedPromptPlan.md`, `benchmark/protocol.md`,
+`benchmark/runner/README.md`, `benchmark/scoring/README.md`, and
+`benchmark/engine/README.md`.
 
 ## Hosted Demo Deployment
 
@@ -46,4 +55,6 @@ Small checked-in summaries can be added later if the release process needs immut
 
 Use `docs/project/deployment-rollback.md` for hosted demos or package artifacts. A local build is not enough evidence for a public deployment claim.
 
-Release wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.
+Release wording and public-claim boundaries are governed by
+`docs/project/final-proof-release-readiness.md` and
+`docs/project/product-studio-claim-registry.md`.

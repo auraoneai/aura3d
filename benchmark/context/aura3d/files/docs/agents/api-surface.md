@@ -29,7 +29,7 @@ Round 1 repair helpers:
 scene()
   .addMany(prefabs.particleFountain({ count: 1400 }))
   .add(effects.particles({ emitter: "swirl", particleCount: 1200 }))
-  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true }))
+  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
   .addMany(prefabs.solarSystem())
   .addMany(prefabs.materialSwatches())
   .addMany(prefabs.productStage())

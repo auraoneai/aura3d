@@ -14,7 +14,12 @@ Run the same 10 prompts four times:
 Each run starts from a clean directory. Do not reuse generated code,
 screenshots, fixes, or notes from another run. Use `runner/README.md` for the
 exact machine, clean-directory setup, package installation, prompt-delivery,
-runtime-capture, and failure-sentinel rules.
+runtime-capture, and failure-sentinel rules. Agent generation is finite:
+agents read `./context/llms.txt` first, edit only the provided source
+directory, run only finite install/build commands, return the build/run
+commands plus assumptions, and stop. Dev servers, preview servers,
+Playwright, browser screenshot capture, and manual visual verification belong
+to runner capture after the agent has stopped.
 
 After the prompt runs, run the engine parity benchmark in `engine/README.md`.
 That benchmark does not use agents; it compares hand-authored Aura3D and
@@ -29,7 +34,9 @@ benchmark/context/aura3d/
 ```
 
 Before a round starts, verify `benchmark/context/aura3d/manifest.sha256`
-matches the files under `benchmark/context/aura3d/files/`.
+matches the files under `benchmark/context/aura3d/files/`. The bundle must
+contain `files/llms.txt`; the prompt-delivery contract requires the agent to
+read that file before any other context file.
 
 Aura3D context may not include:
 
@@ -47,7 +54,9 @@ benchmark/context/threejs/
 ```
 
 Before a round starts, verify `benchmark/context/threejs/manifest.sha256`
-matches the files under `benchmark/context/threejs/files/`.
+matches the files under `benchmark/context/threejs/files/`. The bundle must
+contain `files/llms.txt`; the prompt-delivery contract requires the agent to
+read that file before any other context file.
 
 Raw Three.js context may not include Aura3D source, Aura3D examples, or Aura3D agent rules.
 Raw Three.js context may not include online browsing during Round 1.
@@ -56,10 +65,14 @@ Raw Three.js context may not include online browsing during Round 1.
 
 - Give the agent exactly one prompt at a time using the message shape in
   `runner/README.md`.
+- The first benchmark instruction must be to read `./context/llms.txt`.
 - Do not provide extra hints after seeing failures.
 - Do not hand-edit generated code.
 - If the agent asks for a fix turn, record it as a repair turn.
 - If the run cannot proceed, record the failure instead of changing the prompt.
+- Invalid agent-side commands include `npm run dev`, `npm run preview`,
+  Playwright, browser screenshot capture, and manual visual verification.
+  Runtime capture is runner-only.
 
 ## Required Artifacts Per Prompt
 

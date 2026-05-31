@@ -75,6 +75,11 @@ export interface AuraMaterialSpec {
   readonly transmission?: number;
   readonly clearcoat?: number;
   readonly clearcoatRoughness?: number;
+  readonly thickness?: number;
+  readonly ior?: number;
+  readonly attenuationColor?: AuraColor;
+  readonly attenuationDistance?: number;
+  readonly envMapIntensity?: number;
   readonly texture?: AuraAssetRef<"texture">;
 }
 
@@ -286,10 +291,11 @@ export const material = {
   }),
   metal: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
     color: options.color ?? "#dce6ee",
-    roughness: options.roughness ?? 0.18,
+    roughness: options.roughness ?? 0.12,
     metallic: options.metallic ?? 1,
-    clearcoat: options.clearcoat ?? 0.18,
-    clearcoatRoughness: options.clearcoatRoughness ?? 0.2,
+    clearcoat: options.clearcoat ?? 0.12,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.16,
+    envMapIntensity: options.envMapIntensity ?? 1.45,
     ...options
   }),
   rubber: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
@@ -302,18 +308,24 @@ export const material = {
     color: options.color ?? "#d8f2ff",
     roughness: options.roughness ?? 0.04,
     metallic: options.metallic ?? 0,
-    opacity: options.opacity ?? 0.32,
-    transmission: options.transmission ?? 0.82,
+    opacity: options.opacity ?? 0.24,
+    transmission: options.transmission ?? 1,
     clearcoat: options.clearcoat ?? 1,
     clearcoatRoughness: options.clearcoatRoughness ?? 0.04,
+    thickness: options.thickness ?? 0.74,
+    ior: options.ior ?? 1.48,
+    attenuationColor: options.attenuationColor ?? options.color ?? "#d8f2ff",
+    attenuationDistance: options.attenuationDistance ?? 0.85,
+    envMapIntensity: options.envMapIntensity ?? 1.85,
     ...options
   }),
   clearcoat: (options: AuraMaterialSpec = {}): AuraMaterialSpec => ({
     color: options.color ?? "#e8edf5",
-    roughness: options.roughness ?? 0.22,
+    roughness: options.roughness ?? 0.16,
     metallic: options.metallic ?? 0,
     clearcoat: options.clearcoat ?? 1,
-    clearcoatRoughness: options.clearcoatRoughness ?? 0.08,
+    clearcoatRoughness: options.clearcoatRoughness ?? 0.04,
+    envMapIntensity: options.envMapIntensity ?? 1.35,
     ...options
   })
 } as const;
@@ -594,11 +606,32 @@ function dataBarColor(value: number): AuraColor {
   return "#ef476f";
 }
 
-function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex: number): AuraSceneNode[] {
+type CityBlockTimeOfDay = "day" | "night";
+
+function makeCityCrosswalk(namePrefix: string, x: number, z: number, orientation: "northSouth" | "eastWest"): AuraSceneNode[] {
+  const nodes: AuraSceneNode[] = [];
+  for (let index = 0; index < 5; index += 1) {
+    const offset = -0.56 + index * 0.28;
+    nodes.push(primitives.box({
+      name: `${namePrefix} stripe ${index + 1}`,
+      material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" })
+    })
+      .position(orientation === "northSouth" ? x + offset : x, 0.036, orientation === "northSouth" ? z : z + offset)
+      .scale(orientation === "northSouth" ? [0.075, 0.018, 0.82] : [0.82, 0.018, 0.075])
+      .toJSON());
+  }
+  return nodes;
+}
+
+function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex: number, timeOfDay: CityBlockTimeOfDay): AuraSceneNode[] {
   const bandHeight = Math.max(0.72, height * 0.58);
   const bandY = 0.36 + bandHeight / 2;
-  const warm = material.emissive({ color: "#ffd98a", emissive: "#ffd98a" });
-  const cool = material.emissive({ color: "#8bdcff", emissive: "#8bdcff" });
+  const warm = timeOfDay === "night"
+    ? material.emissive({ color: "#ffd98a", emissive: "#ffd98a" })
+    : material.emissive({ color: "#fff1b8", emissive: "#ffda73" });
+  const cool = timeOfDay === "night"
+    ? material.emissive({ color: "#8bdcff", emissive: "#8bdcff" })
+    : material.emissive({ color: "#caeaff", emissive: "#89cfff" });
   const sign = towerIndex % 4 === 0
     ? [primitives.box({
       name: `roofline neon sign ${towerIndex + 1}`,
@@ -627,6 +660,61 @@ function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex
   ];
 }
 
+function makeBuildingDetails(x: number, z: number, height: number, towerIndex: number, timeOfDay: CityBlockTimeOfDay): AuraSceneNode[] {
+  const storefrontMaterial = material.emissive({
+    color: timeOfDay === "night" ? "#fef3c7" : "#dff6ff",
+    emissive: timeOfDay === "night" ? "#fbbf24" : "#7dd3fc"
+  });
+  const roofColor = towerIndex % 2 === 0 ? "#1f2933" : "#26313a";
+  const nodes: AuraSceneNode[] = [
+    primitives.box({
+      name: `rooftop mechanical cap ${towerIndex + 1}`,
+      material: material.pbr({ color: roofColor, roughness: 0.74, metallic: 0.08 })
+    }).position(x - 0.28, height + 0.08, z - 0.2).scale([0.34, 0.16, 0.38]).toJSON(),
+    primitives.box({
+      name: `street-level lit storefront ${towerIndex + 1}`,
+      material: storefrontMaterial
+    }).position(x, 0.26, z + 0.67).scale([0.72, 0.22, 0.038]).toJSON(),
+    primitives.box({
+      name: `dark vertical facade reveal ${towerIndex + 1}`,
+      material: material.pbr({ color: "#111827", roughness: 0.8, metallic: 0.02 })
+    }).position(x - 0.01, Math.max(0.65, height * 0.5), z + 0.692).scale([0.035, Math.max(0.75, height * 0.62), 0.026]).toJSON()
+  ];
+
+  if (towerIndex % 5 === 2) {
+    nodes.push(primitives.cylinder({
+      name: `round rooftop water tank ${towerIndex + 1}`,
+      material: material.metal({ color: "#576574", roughness: 0.36 })
+    }).position(x + 0.32, height + 0.18, z + 0.24).scale([0.16, 0.25, 0.16]).toJSON());
+  }
+
+  if (towerIndex % 6 === 1) {
+    nodes.push(primitives.box({
+      name: `thin rooftop antenna ${towerIndex + 1}`,
+      material: material.metal({ color: "#d1d5db", roughness: 0.22 })
+    }).position(x + 0.36, height + 0.52, z - 0.36).scale([0.025, 0.72, 0.025]).toJSON());
+  }
+
+  return nodes;
+}
+
+function makeCityVehicle(name: string, x: number, z: number, color: AuraColor, rotation = 0): AuraSceneNode[] {
+  return [
+    primitives.box({
+      name: `${name} car body`,
+      material: material.clearcoat({ color, roughness: 0.2, clearcoat: 0.9, clearcoatRoughness: 0.08 })
+    }).position(x, 0.115, z).rotate(0, rotation, 0).scale([0.42, 0.15, 0.22]).toJSON(),
+    primitives.box({
+      name: `${name} windshield`,
+      material: material.glass({ color: "#bdefff", opacity: 0.56, transmission: 0.65 })
+    }).position(x, 0.22, z).rotate(0, rotation, 0).scale([0.2, 0.09, 0.17]).toJSON(),
+    primitives.box({
+      name: `${name} headlight pair`,
+      material: material.emissive({ color: "#fff7cc", emissive: "#fff7cc" })
+    }).position(x + Math.sin(rotation) * 0.24, 0.15, z + Math.cos(rotation) * 0.24).rotate(0, rotation, 0).scale([0.2, 0.035, 0.028]).toJSON()
+  ];
+}
+
 export const prefabs = {
   particleFountain: (options: { readonly color?: AuraColor; readonly count?: number } = {}): readonly AuraSceneNode[] => [
     primitives.cylinder({ name: "visible particle emitter base", material: material.metal({ color: "#263747", roughness: 0.2 }) }).position(0, 0.035, 0).scale([0.62, 0.09, 0.62]).toJSON(),
@@ -637,57 +725,101 @@ export const prefabs = {
     effects.bloom({ intensity: 0.55, color: options.color ?? "#7dfcff" }).toJSON()
   ],
 
-  cityBlock: (options: { readonly blocks?: number; readonly litWindows?: boolean } = {}): readonly AuraSceneNode[] => {
+  cityBlock: (options: { readonly blocks?: number; readonly litWindows?: boolean; readonly timeOfDay?: CityBlockTimeOfDay } = {}): readonly AuraSceneNode[] => {
     const blocks = Math.max(3, Math.min(30, options.blocks ?? 20));
+    const timeOfDay = options.timeOfDay ?? "night";
+    const road = material.pbr({ color: "#171b1d", roughness: 0.78 });
+    const sideRoad = material.pbr({ color: "#202528", roughness: 0.78 });
+    const sidewalk = material.pbr({ color: "#94a3b8", roughness: 0.84, metallic: 0.02 });
+    const curb = material.emissive({ color: "#d9e4ef", emissive: "#bcd2e5" });
     const nodes: AuraSceneNode[] = [
-      primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: "#a7b09d", roughness: 0.86, metallic: 0.02 }) }).position(0, -0.04, 0).scale([20, 1, 20]).toJSON(),
-      primitives.box({ name: "main north south road", material: material.pbr({ color: "#171b1d", roughness: 0.78 }) }).position(0, 0.012, 0).scale([0.22, 0.024, 16]).toJSON(),
-      primitives.box({ name: "main east west road", material: material.pbr({ color: "#171b1d", roughness: 0.78 }) }).position(0, 0.014, 0).scale([16, 0.024, 0.22]).toJSON(),
-      primitives.box({ name: "left city avenue", material: material.pbr({ color: "#202528", roughness: 0.78 }) }).position(-2.2, 0.013, 0).scale([0.12, 0.022, 15.4]).toJSON(),
-      primitives.box({ name: "right city avenue", material: material.pbr({ color: "#202528", roughness: 0.78 }) }).position(2.2, 0.013, 0).scale([0.12, 0.022, 15.4]).toJSON(),
-      primitives.box({ name: "front cross street", material: material.pbr({ color: "#202528", roughness: 0.78 }) }).position(0, 0.015, -2.2).scale([15.4, 0.022, 0.12]).toJSON(),
+      primitives.plane({ name: "asphalt street grid", material: material.pbr({ color: timeOfDay === "night" ? "#2f3a37" : "#9fb49b", roughness: 0.86, metallic: 0.02 }) }).position(0, -0.04, 0).scale([20, 1, 20]).toJSON(),
+      primitives.box({ name: "main north south road", material: road }).position(0, 0.012, 0).scale([0.44, 0.024, 10.8]).toJSON(),
+      primitives.box({ name: "main east west road", material: road }).position(0, 0.014, 0).scale([11.4, 0.024, 0.44]).toJSON(),
+      primitives.box({ name: "left city avenue", material: sideRoad }).position(-3.45, 0.013, 0).scale([0.3, 0.022, 10.8]).toJSON(),
+      primitives.box({ name: "right city avenue", material: sideRoad }).position(2.55, 0.013, 0).scale([0.3, 0.022, 10.8]).toJSON(),
+      primitives.box({ name: "front cross street", material: sideRoad }).position(0, 0.015, -2.7).scale([11.4, 0.022, 0.3]).toJSON(),
+      primitives.box({ name: "back cross street", material: sideRoad }).position(0, 0.015, 2.55).scale([11.4, 0.022, 0.3]).toJSON(),
+      primitives.box({ name: "northwest raised sidewalk slab", material: sidewalk }).position(-1.76, 0.006, 1.32).scale([2.42, 0.036, 1.76]).toJSON(),
+      primitives.box({ name: "northeast raised sidewalk slab", material: sidewalk }).position(1.66, 0.006, 1.32).scale([2.24, 0.036, 1.76]).toJSON(),
+      primitives.box({ name: "southwest raised sidewalk slab", material: sidewalk }).position(-1.76, 0.006, -1.42).scale([2.42, 0.036, 1.82]).toJSON(),
+      primitives.box({ name: "southeast raised sidewalk slab", material: sidewalk }).position(1.66, 0.006, -1.42).scale([2.24, 0.036, 1.82]).toJSON(),
+      primitives.box({ name: "central intersection curb north", material: curb }).position(0, 0.052, 0.62).scale([1.32, 0.028, 0.035]).toJSON(),
+      primitives.box({ name: "central intersection curb south", material: curb }).position(0, 0.052, -0.62).scale([1.32, 0.028, 0.035]).toJSON(),
+      primitives.box({ name: "central intersection curb west", material: curb }).position(-0.62, 0.052, 0).scale([0.035, 0.028, 1.32]).toJSON(),
+      primitives.box({ name: "central intersection curb east", material: curb }).position(0.62, 0.052, 0).scale([0.035, 0.028, 1.32]).toJSON(),
       primitives.box({ name: "left road stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(-0.18, 0.032, 0).scale([0.035, 0.02, 15.2]).toJSON(),
       primitives.box({ name: "right road stripe", material: material.emissive({ color: "#f7d66b", emissive: "#f7d66b" }) }).position(0.18, 0.032, 0).scale([0.035, 0.02, 15.2]).toJSON(),
       primitives.box({ name: "cross street white line", material: material.emissive({ color: "#e8eef5", emissive: "#e8eef5" }) }).position(0, 0.034, 0.24).scale([15.4, 0.02, 0.035]).toJSON(),
-      primitives.box({ name: "zebra crosswalk near stripe 1", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(-0.48, 0.036, -0.34).scale([0.08, 0.018, 0.72]).toJSON(),
-      primitives.box({ name: "zebra crosswalk near stripe 2", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(-0.16, 0.036, -0.34).scale([0.08, 0.018, 0.72]).toJSON(),
-      primitives.box({ name: "zebra crosswalk near stripe 3", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(0.16, 0.036, -0.34).scale([0.08, 0.018, 0.72]).toJSON(),
-      primitives.box({ name: "zebra crosswalk near stripe 4", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc" }) }).position(0.48, 0.036, -0.34).scale([0.08, 0.018, 0.72]).toJSON()
+      ...makeCityCrosswalk("zebra crosswalk near", 0, -0.34, "northSouth"),
+      ...makeCityCrosswalk("zebra crosswalk far", 0, 0.72, "northSouth"),
+      ...makeCityCrosswalk("zebra crosswalk west", -0.72, 0, "eastWest"),
+      ...makeCityCrosswalk("zebra crosswalk east", 0.72, 0, "eastWest")
     ];
+    const xSlots = [-4.25, -2.58, -0.95, 1.45, 3.3];
+    const zSlots = [-4, -1.45, 1.3, 3.65];
     for (let index = 0; index < blocks; index += 1) {
       const col = index % 5;
       const row = Math.floor(index / 5);
-      const x = (col - 2) * 2.2;
-      const z = (row - 1.5) * 2.2;
-      const height = 1.2 + ((index * 7) % 6) * 0.45;
+      const x = xSlots[col] ?? ((col - 2) * 1.85);
+      const z = zSlots[row] ?? (-4 + row * 2.25);
+      const height = 1.15 + ((index * 7) % 6) * 0.45 + (col === 0 || col === 4 ? 0.25 : 0);
       const color = index % 3 === 0 ? "#6c7a7e" : index % 3 === 1 ? "#8a7558" : "#415665";
       nodes.push(primitives.box({
         name: `city tower ${index + 1}`,
         material: material.pbr({ color, roughness: 0.68, metallic: 0.06 })
-      }).position(x, height / 2, z).scale([1.25, height, 1.25]).toJSON());
+      }).position(x, height / 2, z).scale([1.08, height, 1.08]).toJSON());
       if (options.litWindows !== false) {
-        nodes.push(...makeBuildingWindowRows(x, z, height, index));
+        nodes.push(...makeBuildingWindowRows(x, z, height, index, timeOfDay));
       }
+      nodes.push(...makeBuildingDetails(x, z, height, index, timeOfDay));
     }
-    for (let index = 0; index < 8; index += 1) {
-      const x = -3.15 + (index % 4) * 2.1;
-      const z = index < 4 ? 0.35 : -1.75;
+    const lampPositions: AuraVec3[] = [
+      [-1.15, 0, 0.85], [1.15, 0, 0.85], [-1.15, 0, -0.85], [1.15, 0, -0.85],
+      [-3.85, 0, -2.05], [-2.95, 0, 2.05], [2.05, 0, -2.05], [3.05, 0, 2.05],
+      [-5.15, 0, 0.15], [4.25, 0, -0.15], [-0.2, 0, -3.18], [0.2, 0, 3.05]
+    ];
+    for (let index = 0; index < lampPositions.length; index += 1) {
+      const [x, , z] = lampPositions[index];
       nodes.push(primitives.cylinder({ name: `street light pole ${index + 1}`, material: material.metal({ color: "#6f7d86", roughness: 0.32 }) }).position(x, 0.34, z).scale([0.035, 0.68, 0.035]).toJSON());
       nodes.push(primitives.sphere({ name: `warm street lamp ${index + 1}`, material: material.emissive({ color: "#ffd98a", emissive: "#ffd98a" }) }).position(x, 0.74, z).scale(0.09).toJSON());
     }
+    nodes.push(
+      ...makeCityVehicle("red northbound", -0.18, -1.7, "#ef4444", 0),
+      ...makeCityVehicle("blue southbound", 0.2, 1.78, "#2563eb", 3.1416),
+      ...makeCityVehicle("yellow crosstown taxi", -2.0, 0.22, "#facc15", 1.5708),
+      ...makeCityVehicle("white crosstown van", 2.0, -0.22, "#f8fafc", -1.5708),
+      primitives.box({ name: "day night toggle pedestal", material: material.pbr({ color: "#0f172a", roughness: 0.62, metallic: 0.08 }) }).position(-4.95, 0.09, 4.82).scale([0.88, 0.16, 0.34]).toJSON(),
+      primitives.sphere({ name: "gold sun icon on day night toggle", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-5.28, 0.32, 4.82).scale(0.16).toJSON(),
+      primitives.sphere({ name: "silver moon icon on day night toggle", material: material.emissive({ color: "#dbeafe", emissive: "#93c5fd" }) }).position(-4.62, 0.32, 4.82).scale(0.16).toJSON(),
+      primitives.box({
+        name: timeOfDay === "night" ? "active night state toggle knob" : "active day state toggle knob",
+        material: material.emissive({ color: timeOfDay === "night" ? "#93c5fd" : "#fde047", emissive: timeOfDay === "night" ? "#93c5fd" : "#fde047" })
+      }).position(timeOfDay === "night" ? -4.62 : -5.28, 0.2, 4.48).scale([0.26, 0.08, 0.12]).toJSON(),
+      primitives.box({ name: "red traffic signal over intersection", material: material.emissive({ color: "#ef4444", emissive: "#ef4444" }) }).position(-0.58, 0.9, -0.58).scale([0.11, 0.11, 0.035]).toJSON(),
+      primitives.box({ name: "green traffic signal over intersection", material: material.emissive({ color: "#22c55e", emissive: "#22c55e" }) }).position(0.58, 0.9, 0.58).scale([0.11, 0.11, 0.035]).toJSON()
+    );
     return nodes;
   },
 
   materialSwatches: (): readonly AuraSceneNode[] => [
-    primitives.box({ name: "matte studio floor for material comparison", material: material.pbr({ color: "#8a95a3", roughness: 0.54, metallic: 0.04 }) }).position(0, -0.03, -0.72).scale([8.1, 0.14, 2.35]).toJSON(),
-    primitives.box({ name: "split material reflection wall", material: material.pbr({ color: "#d8e2ee", roughness: 0.32, metallic: 0.04 }) }).position(0, 1.08, -1.82).scale([8.1, 2.18, 0.08]).toJSON(),
+    primitives.box({ name: "matte studio floor for material comparison", material: material.pbr({ color: "#8a95a3", roughness: 0.5, metallic: 0.04 }) }).position(0, -0.03, -0.72).scale([8.1, 0.14, 2.35]).toJSON(),
+    primitives.box({ name: "split material reflection wall", material: material.pbr({ color: "#d8e2ee", roughness: 0.28, metallic: 0.04 }) }).position(0, 1.08, -1.82).scale([8.1, 2.18, 0.08]).toJSON(),
     primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 2.18, -1.72).scale([6.6, 0.18, 0.08]).toJSON(),
-    primitives.box({ name: "black reflection contrast strip", material: material.pbr({ color: "#05070d", roughness: 0.2, metallic: 0.2 }) }).position(0, 1.78, -1.69).scale([6.1, 0.12, 0.08]).toJSON(),
-    primitives.sphere({ name: "mirror chrome metal swatch", material: material.metal({ color: "#f4fbff", roughness: 0.04, clearcoat: 0.36 }) }).position(-2.8, 0.9, -0.72).scale(1.1).toJSON(),
-    primitives.sphere({ name: "transparent cyan glass swatch", material: material.glass({ color: "#95eaff", opacity: 0.34, transmission: 0.98 }) }).position(-1.4, 0.9, -0.72).scale(1.1).toJSON(),
-    primitives.sphere({ name: "matte charcoal rubber swatch", material: material.rubber({ color: "#171a22", roughness: 0.96 }) }).position(0, 0.9, -0.72).scale(1.1).toJSON(),
-    primitives.sphere({ name: "emissive magenta swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.18 }) }).position(1.4, 0.9, -0.72).scale(1.1).toJSON(),
-    primitives.sphere({ name: "red automotive clearcoat swatch", material: material.clearcoat({ color: "#ef233c", roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03 }) }).position(2.8, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.box({ name: "black reflection contrast strip", material: material.pbr({ color: "#05070d", roughness: 0.18, metallic: 0.24 }) }).position(0, 1.78, -1.69).scale([6.1, 0.12, 0.08]).toJSON(),
+    primitives.box({ name: "cool blue environment reflection panel", material: material.emissive({ color: "#77e6ff", emissive: "#77e6ff" }) }).position(-3.55, 1.12, -1.24).rotate(0, 0.16, 0).scale([0.08, 1.18, 1.38]).toJSON(),
+    primitives.box({ name: "warm gold environment reflection panel", material: material.emissive({ color: "#ffd18a", emissive: "#ffd18a" }) }).position(3.55, 1.12, -1.24).rotate(0, -0.16, 0).scale([0.08, 1.18, 1.38]).toJSON(),
+    primitives.box({ name: "chrome bright reflection card", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff" }) }).position(-2.8, 1.55, -0.14).rotate(0, 0.06, -0.18).scale([0.76, 0.05, 0.06]).toJSON(),
+    primitives.box({ name: "chrome dark reflection card", material: material.pbr({ color: "#030712", roughness: 0.12, metallic: 0.25 }) }).position(-2.8, 1.32, -0.12).rotate(0, 0.06, -0.18).scale([0.62, 0.045, 0.06]).toJSON(),
+    primitives.sphere({ name: "mirror chrome metal swatch", material: material.metal({ color: "#f4fbff", roughness: 0.025, clearcoat: 0.18, envMapIntensity: 1.75 }) }).position(-2.8, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.sphere({ name: "transparent cyan glass swatch", material: material.glass({ color: "#95eaff", opacity: 0.22, transmission: 1, thickness: 0.9, attenuationDistance: 0.68 }) }).position(-1.4, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.sphere({ name: "matte charcoal rubber swatch", material: material.rubber({ color: "#171a22", roughness: 0.99 }) }).position(0, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.sphere({ name: "emissive magenta swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", roughness: 0.12 }) }).position(1.4, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.sphere({ name: "emissive magenta glow halo", material: material.emissive({ color: "#7a0f5c", emissive: "#ff42c8", opacity: 0.28 }) }).position(1.4, 0.9, -0.83).scale([1.32, 1.32, 0.035]).toJSON(),
+    primitives.sphere({ name: "red automotive clearcoat swatch", material: material.clearcoat({ color: "#ef233c", roughness: 0.045, clearcoat: 1, clearcoatRoughness: 0.018, envMapIntensity: 1.55 }) }).position(2.8, 0.9, -0.72).scale(1.1).toJSON(),
+    primitives.sphere({ name: "transparent clearcoat outer gloss layer", material: material.clearcoat({ color: "#ffffff", opacity: 0.16, roughness: 0.015, clearcoat: 1, clearcoatRoughness: 0.01, envMapIntensity: 2.0 }) }).position(2.8, 0.9, -0.72).scale(1.15).toJSON(),
+    primitives.box({ name: "clearcoat white topcoat highlight", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(2.72, 1.34, -0.13).rotate(0, -0.1, -0.22).scale([0.72, 0.055, 0.05]).toJSON(),
+    primitives.box({ name: "clearcoat amber base reflection", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(2.94, 1.12, -0.14).rotate(0, -0.1, -0.22).scale([0.48, 0.04, 0.045]).toJSON(),
     primitives.box({ name: "metal label plinth", material: material.emissive({ color: "#dff4ff", emissive: "#dff4ff" }) }).position(-2.8, 0.18, 0.38).scale([0.84, 0.08, 0.24]).toJSON(),
     primitives.box({ name: "glass label plinth", material: material.emissive({ color: "#7dd3fc", emissive: "#7dd3fc" }) }).position(-1.4, 0.18, 0.38).scale([0.84, 0.08, 0.24]).toJSON(),
     primitives.box({ name: "rubber label plinth", material: material.emissive({ color: "#475569", emissive: "#475569" }) }).position(0, 0.18, 0.38).scale([1.0, 0.08, 0.24]).toJSON(),
@@ -695,6 +827,10 @@ export const prefabs = {
     primitives.box({ name: "clearcoat label plinth", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(2.8, 0.18, 0.38).scale([0.84, 0.08, 0.24]).toJSON(),
     primitives.box({ name: "glass white contrast card", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(-1.55, 0.9, -1.5).scale([0.42, 0.58, 0.04]).toJSON(),
     primitives.box({ name: "glass dark contrast card", material: material.pbr({ color: "#020617", roughness: 0.26, metallic: 0.12 }) }).position(-1.18, 0.9, -1.5).scale([0.42, 0.58, 0.04]).toJSON(),
+    primitives.box({ name: "glass refracted white stripe", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(-1.42, 1.2, -1.47).scale([0.06, 0.88, 0.035]).toJSON(),
+    primitives.box({ name: "glass refracted dark stripe", material: material.pbr({ color: "#05070d", roughness: 0.22, metallic: 0.1 }) }).position(-1.31, 0.9, -1.46).scale([0.06, 0.7, 0.035]).toJSON(),
+    primitives.box({ name: "rubber roughness sample strip", material: material.pbr({ color: "#334155", roughness: 1, metallic: 0 }) }).position(-0.18, 1.38, -0.12).rotate(0, 0.02, 0.2).scale([0.42, 0.035, 0.04]).toJSON(),
+    primitives.box({ name: "rubber diffuse edge strip", material: material.pbr({ color: "#0b0f16", roughness: 1, metallic: 0 }) }).position(0.2, 1.18, -0.11).rotate(0, -0.02, -0.18).scale([0.34, 0.032, 0.04]).toJSON(),
     effects.bloom({ intensity: 0.24, color: "#ff42c8" }).toJSON()
   ],
 
@@ -702,6 +838,10 @@ export const prefabs = {
     primitives.plane({ name: "clean studio backdrop sweep", material: material.pbr({ color: "#f1f5f9", roughness: 0.48, metallic: 0.01 }) }).position(0, 1.02, -2.85).rotate(1.5708, 0, 0).scale([6.4, 1, 3.2]).toJSON(),
     primitives.cylinder({ name: "round white product inspection plinth", material: material.clearcoat({ color: "#f8fafc", roughness: 0.16 }) }).position(0, 0.26, -0.65).scale([3.7, 0.52, 3.7]).toJSON(),
     primitives.cylinder({ name: "soft elliptical contact shadow", material: material.pbr({ color: "#020617", roughness: 0.94, opacity: 0.36 }) }).position(0, 0.535, -0.65).scale([2.05, 0.014, 1.08]).toJSON(),
+    primitives.cylinder({ name: "thin brushed turntable rotation ring", material: material.pbr({ color: "#dbeafe", roughness: 0.22, metallic: 0.12, opacity: 0.22 }) }).position(0, 0.526, -0.65).scale([2.84, 0.008, 2.84]).toJSON(),
+    primitives.box({ name: "front turntable rotation tick", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(0, 0.562, 0.62).scale([0.42, 0.018, 0.045]).toJSON(),
+    primitives.box({ name: "left turntable rotation tick", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(-1.28, 0.562, -0.65).rotate(0, 1.5708, 0).scale([0.42, 0.018, 0.045]).toJSON(),
+    primitives.box({ name: "right turntable rotation tick", material: material.emissive({ color: "#ffd29a", emissive: "#ffd29a" }) }).position(1.28, 0.562, -0.65).rotate(0, 1.5708, 0).scale([0.42, 0.018, 0.045]).toJSON(),
     primitives.box({ name: "left vertical studio softbox", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff" }) }).position(-2.58, 1.32, -1.18).scale([0.07, 1.52, 1.56]).toJSON(),
     primitives.box({ name: "right warm rim softbox", material: material.emissive({ color: "#ffe2b8", emissive: "#ffe2b8" }) }).position(2.45, 1.08, -1.1).scale([0.07, 1.12, 1.38]).toJSON(),
     primitives.box({ name: "front low product highlight card", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 0.58, 0.62).scale([1.18, 0.045, 0.04]).toJSON()
@@ -981,27 +1121,17 @@ export const promptRecipes = {
   "product-viewer": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
     scene()
       .background("#070b10")
-      .add(primitives.plane({ name: "charcoal sweep backdrop", material: material.emissive({ color: "#111923", emissive: "#182433" }) }).position(0, 1.02, -2.2).rotate(1.5708, 0, 0).scale([5.4, 1, 2.75]))
-      .add(primitives.plane({ name: "matte graphite product table", material: material.pbr({ color: "#242c31", roughness: 0.48, metallic: 0.06 }) }).position(0, -0.06, -0.55).scale([4.8, 1, 3.25]))
-      .add(primitives.box({ name: "low product plinth", material: material.pbr({ color: "#161c22", roughness: 0.38, metallic: 0.2 }) }).position(-0.06, 0.0, -0.66).scale([1.72, 0.11, 1.22]))
-      .add(primitives.box({ name: "deep contact shadow", material: material.pbr({ color: "#06080a", roughness: 0.84, metallic: 0 }) }).position(-0.06, 0.065, -0.65).scale([1.28, 0.025, 0.82]))
-      .add(primitives.box({ name: "left vertical softbox", material: material.emissive({ color: "#eef6ff", emissive: "#eef6ff" }) }).position(-1.9, 0.86, -0.92).rotate(0, 0.22, 0).scale([0.08, 1.24, 1.58]))
-      .add(primitives.box({ name: "right cool flag", material: material.emissive({ color: "#35506c", emissive: "#4d708f" }) }).position(1.98, 0.75, -1.05).rotate(0, -0.18, 0).scale([0.08, 0.95, 1.38]))
-      .add(primitives.box({ name: "top inspection strip", material: material.emissive({ color: "#dbeaff", emissive: "#f1f7ff" }) }).position(-0.36, 1.72, -1.88).rotate(0.02, 0.04, 0.01).scale([1.04, 0.055, 0.08]))
-      .add(primitives.box({ name: "rear horizon seam", material: material.emissive({ color: "#4b6277", emissive: "#58758d" }) }).position(0, 0.38, -2.02).scale([4.55, 0.035, 0.08]))
-      .add(primitives.box({ name: "cool floor reflection card", material: material.emissive({ color: "#244b60", emissive: "#32738f" }) }).position(-0.78, -0.008, 0.02).rotate(0, 0.08, 0).scale([0.82, 0.028, 0.14]))
-      .add(primitives.box({ name: "warm table reflection", material: material.emissive({ color: "#7a5a39", emissive: "#9f7145" }) }).position(0.72, -0.01, 0.36).rotate(0, -0.12, 0).scale([1.1, 0.03, 0.18]))
-      .add(primitives.sphere({ name: "orbit handle left", material: material.emissive({ color: "#8fefff", emissive: "#8fefff" }) }).position(-1.02, 0.32, -0.16).scale(0.09))
-      .add(primitives.sphere({ name: "orbit handle right", material: material.emissive({ color: "#ffd29a", emissive: "#ffd29a" }) }).position(1.12, 0.34, -0.22).scale(0.09))
-      .add(model(asset, { name: plan.subject.label }).position(-0.08, 0.08, -0.68).rotate(-0.12, -0.42, 0.02).scale(1.02))
+      .addMany(prefabs.productStage())
+      .add(model(asset, { name: plan.subject.label }).position(0, 0.54, -0.65).rotate(0, -0.38, 0).animate({ clip: "turntable", speed: 0.42 }))
       .add(lights.ambient({ intensity: 0.28, color: "#e8f1ff" }))
-      .add(lights.point({ name: "large cool softbox", position: [-2.2, 2.45, 2.25], color: "#eef6ff", intensity: 2.75 }))
+      .add(lights.studio({ intensity: 1.35 }))
+      .add(lights.point({ name: "large cool product softbox", position: [-2.2, 2.45, 2.25], color: "#eef6ff", intensity: 2.75 }))
       .add(lights.point({ name: "front product fill", position: [0.35, 1.25, 2.2], color: "#f7fbff", intensity: 1.8 }))
       .add(lights.point({ name: "warm product rim", position: [2.1, 1.72, 0.15], color: "#ffd09a", intensity: 1.22 }))
       .add(effects.bloom({ intensity: 0.18, color: "#cfefff" }))
       .add(interactionNode(plan.interaction ?? "orbit"))
-      .camera(camera.dolly({ from: [0.14, 1.12, 4.05], to: [0.0, 1.0, 3.18], target: [-0.06, 0.62, -0.68], seconds: 7, fov: 40 }))
-      .timeline(timeline.loop({ seconds: 7 })),
+      .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }))
+      .timeline(timeline.loop({ seconds: 8 })),
 
   "cinematic-scene": (asset: AuraAssetRef<"model">, plan: AuraPromptPlan): AuraSceneBuilder =>
     scene()
@@ -1474,6 +1604,10 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
 
   const threeScene = new THREE.Scene();
   threeScene.background = new THREE.Color(snapshot.background);
+  const materialInspectionEnvironment = await createThreeMaterialInspectionEnvironment(THREE, renderer, snapshot);
+  if (materialInspectionEnvironment) {
+    threeScene.environment = materialInspectionEnvironment.texture;
+  }
   const fog = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "fog");
   if (fog) {
     threeScene.fog = new THREE.FogExp2(new THREE.Color(fog.color ?? "#9fb7d9"), Math.max(0.004, (fog.density ?? 0.1) * 0.045));
@@ -1481,7 +1615,9 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
 
   addThreeLights(THREE, threeScene, snapshot.nodes);
   const loader = new GLTFLoader();
-  const disposables: any[] = [];
+  const disposables: any[] = materialInspectionEnvironment
+    ? [materialInspectionEnvironment.texture, materialInspectionEnvironment.generator]
+    : [];
   const frameUpdaters: Array<(time: number) => void> = [];
   const primitiveBatchNodes: AuraPrimitiveNode[] = [];
 
@@ -1663,28 +1799,63 @@ function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitive
   return mesh;
 }
 
+async function createThreeMaterialInspectionEnvironment(
+  THREE: typeof import("three"),
+  renderer: any,
+  snapshot: AuraSceneSnapshot
+): Promise<{ readonly texture: any; readonly generator: any } | undefined> {
+  const needsInspectionEnvironment = snapshot.nodes.some((node) =>
+    node.kind === "primitive" && (
+      node.name === "mirror chrome metal swatch" ||
+      node.name === "transparent cyan glass swatch" ||
+      node.name === "red automotive clearcoat swatch"
+    )
+  );
+  if (!needsInspectionEnvironment) return undefined;
+
+  try {
+    const { RoomEnvironment } = await import("three/examples/jsm/environments/RoomEnvironment.js");
+    const generator = new THREE.PMREMGenerator(renderer);
+    const environment = new RoomEnvironment(renderer);
+    const texture = generator.fromScene(environment, 0.04).texture;
+    disposeThreeResource(environment);
+    return { texture, generator };
+  } catch {
+    return undefined;
+  }
+}
+
 function createThreeMaterial(THREE: typeof import("three"), spec: AuraMaterialSpec): any {
   const color = new THREE.Color(spec.color ?? "#d7dee8");
   const usePhysical = spec.transmission !== undefined || spec.clearcoat !== undefined;
+  const transparent = spec.opacity !== undefined && spec.opacity < 1;
   const materialValue = usePhysical
     ? new THREE.MeshPhysicalMaterial({
       color,
       roughness: spec.roughness ?? 0.54,
       metalness: spec.metallic ?? 0,
-      transparent: spec.opacity !== undefined && spec.opacity < 1,
+      transparent,
       opacity: spec.opacity ?? 1,
       transmission: spec.transmission ?? 0,
       clearcoat: spec.clearcoat ?? 0,
       clearcoatRoughness: spec.clearcoatRoughness ?? 0.18,
-      depthWrite: spec.opacity === undefined || spec.opacity >= 0.96
+      thickness: spec.thickness ?? 0,
+      ior: spec.ior ?? 1.5,
+      attenuationColor: new THREE.Color(spec.attenuationColor ?? spec.color ?? "#ffffff"),
+      attenuationDistance: spec.attenuationDistance ?? Infinity,
+      envMapIntensity: spec.envMapIntensity ?? 1,
+      depthWrite: !transparent,
+      side: transparent ? THREE.DoubleSide : THREE.FrontSide
     })
     : new THREE.MeshStandardMaterial({
       color,
       roughness: spec.roughness ?? 0.54,
       metalness: spec.metallic ?? 0,
-      transparent: spec.opacity !== undefined && spec.opacity < 1,
+      transparent,
       opacity: spec.opacity ?? 1,
-      depthWrite: spec.opacity === undefined || spec.opacity >= 0.96
+      envMapIntensity: spec.envMapIntensity ?? 1,
+      depthWrite: !transparent,
+      side: transparent ? THREE.DoubleSide : THREE.FrontSide
     });
   if (spec.emissive) {
     materialValue.emissive = new THREE.Color(spec.emissive);
@@ -1761,6 +1932,11 @@ function registerThreeNodeAnimation(object: any, node: AuraModelNode | AuraPrimi
     if (node.animation?.clip === "float") {
       object.position.y = (node.position?.[1] ?? 0) + Math.sin(seconds * speed) * 0.08;
       object.rotation.y = baseRotation[1] + seconds * speed * 0.28;
+      return;
+    }
+    if (node.animation?.clip === "turntable") {
+      object.position.y = basePosition[1];
+      object.rotation.y = baseRotation[1] + seconds * speed * 0.72;
       return;
     }
     if (node.animation?.clip === "pulse") {
@@ -2255,7 +2431,7 @@ async function createWebGLSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       gl.uniformMatrix4fv(program.uniforms.viewProjection, false, viewProjection);
       gl.uniform3fv(program.uniforms.lightDirection, new Float32Array(normalize3([0.45, 0.82, 0.36])));
       for (const modelEntry of models) {
-        const modelMatrix = modelEntry.modelMatrix ?? createModelMatrix(modelEntry.node, modelEntry.bounds, modelEntry.normalizeToUnit);
+        const modelMatrix = modelEntry.modelMatrix ?? createModelMatrix(modelEntry.node, modelEntry.bounds, modelEntry.normalizeToUnit, time);
         gl.uniformMatrix4fv(program.uniforms.model, false, modelMatrix);
         for (const primitiveEntry of modelEntry.primitives) {
           gl.uniform3fv(program.uniforms.color, new Float32Array(primitiveEntry.color ?? modelEntry.color));
@@ -3025,7 +3201,7 @@ function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time:
   return multiply4(projection, view);
 }
 
-function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean): Float32Array {
+function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean, time = 0): Float32Array {
   const extent = [
     Math.max(0.001, bounds.max[0] - bounds.min[0]),
     Math.max(0.001, bounds.max[1] - bounds.min[1]),
@@ -3036,17 +3212,40 @@ function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | undefined, 
   const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
   const baseSize = node?.kind === "primitive" ? primitiveSize(node) : [1, 1, 1] as const;
   const nodeScale = typeof node?.scale === "number" ? [node.scale, node.scale, node.scale] as const : node?.scale ?? [1, 1, 1] as const;
-  const position = node?.position ?? [0, 0, 0];
+  const position = animatedPosition(node, time);
+  const rotation = animatedRotation(node, time);
   return multiply4(
     translation(position[0], position[1], position[2]),
     multiply4(
-      rotationXYZ(node?.rotation ?? [0, 0, 0]),
+      rotationXYZ(rotation),
       multiply4(
         scaling(nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale),
         normalizeToUnit ? translation(-centerX, -bounds.min[1], -centerZ) : identity4()
       )
     )
   );
+}
+
+function animatedPosition(node: AuraModelNode | AuraPrimitiveNode | undefined, time: number): AuraVec3 {
+  const basePosition = node?.position ?? [0, 0, 0];
+  if (node?.animation?.clip !== "float") return basePosition;
+  const speed = Math.max(0.05, node.animation.speed ?? 1);
+  return [basePosition[0], basePosition[1] + Math.sin((time / 1000) * speed) * 0.08, basePosition[2]];
+}
+
+function animatedRotation(node: AuraModelNode | AuraPrimitiveNode | undefined, time: number): AuraVec3 {
+  const baseRotation = node?.rotation ?? [0, 0, 0];
+  if (!node?.animation) return baseRotation;
+  const speed = Math.max(0.05, node.animation.speed ?? 1);
+  const seconds = time / 1000;
+  if (node.animation.clip === "turntable") {
+    return [baseRotation[0], baseRotation[1] + seconds * speed * 0.72, baseRotation[2]];
+  }
+  if (node.animation.clip === "float") {
+    return [baseRotation[0], baseRotation[1] + seconds * speed * 0.28, baseRotation[2]];
+  }
+  if (node.animation.clip === "pulse" || node.animation.clip === "walk") return baseRotation;
+  return [baseRotation[0], baseRotation[1] + seconds * speed, baseRotation[2]];
 }
 
 function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {

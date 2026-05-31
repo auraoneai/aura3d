@@ -8,8 +8,8 @@ Prompt-family helpers are available from `prefabs` even when a full template is
 not a perfect fit:
 
 - `prefabs.particleFountain(...)` for high-density VFX and fountain prompts.
-- `prefabs.cityBlock(...)` for architecture, streets, crosswalks, lit window
-  columns, and city scale.
+- `prefabs.cityBlock(...)` for architecture, streets, sidewalks, crosswalks,
+  lit window columns, street lights, traffic, vehicles, and day/night state.
 - `prefabs.materialSwatches()` for metal, glass/transmission, rubber, emissive,
   and clearcoat comparison scenes with built-in reflection/contrast cards.
 - `prefabs.productStage()` for product plinths, softboxes, contact shadows, and

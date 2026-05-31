@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+  type AuraModelNode,
   type AuraPrimitiveNode,
   camera,
   compilePromptPlan,
@@ -187,18 +188,36 @@ describe("agent API", () => {
 
   test("keeps material swatches framed in a compact inspection row", () => {
     const nodes = prefabs.materialSwatches();
+    const primitiveByName = (name: string): AuraPrimitiveNode | undefined =>
+      nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === name);
     const positions = nodes.flatMap((node) =>
       node.kind === "primitive" && node.name?.includes("swatch") && node.primitive === "sphere"
         ? [node.position?.[0] ?? 0]
         : []
     );
+    const primitiveBounds = nodes.flatMap((node) => node.kind === "primitive" ? [node.position ?? [0, 0, 0] as const] : []);
+    const glass = primitiveByName("transparent cyan glass swatch");
+    const clearcoat = primitiveByName("red automotive clearcoat swatch");
+    const clearcoatLayer = primitiveByName("transparent clearcoat outer gloss layer");
 
     expect(positions).toHaveLength(5);
     expect(Math.min(...positions)).toBeGreaterThanOrEqual(-2.8);
     expect(Math.max(...positions)).toBeLessThanOrEqual(2.8);
+    expect(Math.min(...primitiveBounds.map((position) => position[0]))).toBeGreaterThanOrEqual(-3.55);
+    expect(Math.max(...primitiveBounds.map((position) => position[0]))).toBeLessThanOrEqual(3.55);
+    expect(Math.max(...primitiveBounds.map((position) => position[1]))).toBeLessThanOrEqual(2.18);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "black reflection contrast strip")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cool blue environment reflection panel")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "chrome bright reflection card")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "glass dark contrast card")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "glass refracted white stripe")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "rubber roughness sample strip")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "emissive magenta glow halo")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "red automotive clearcoat swatch")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "clearcoat white topcoat highlight")).toBe(true);
+    expect(glass?.material).toMatchObject({ opacity: 0.22, transmission: 1, thickness: 0.9, ior: 1.48 });
+    expect(clearcoat?.material).toMatchObject({ clearcoat: 1, roughness: 0.045, clearcoatRoughness: 0.018 });
+    expect(clearcoatLayer?.material).toMatchObject({ opacity: 0.16, clearcoat: 1, clearcoatRoughness: 0.01 });
   });
 
   test("uses city-scale cues without per-floor window node explosions", () => {
@@ -206,12 +225,27 @@ describe("agent API", () => {
     const towers = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("city tower"));
     const windowColumns = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("window column"));
     const oldWindowBands = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("lit window band"));
+    const crosswalkStripes = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("zebra crosswalk"));
+    const sidewalks = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("sidewalk slab"));
+    const storefronts = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("street-level lit storefront"));
+    const rooftopCaps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("rooftop mechanical cap"));
+    const streetLamps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("warm street lamp"));
+    const vehicles = nodes.filter((node) => node.kind === "primitive" && node.name?.includes(" car body"));
 
     expect(towers).toHaveLength(20);
     expect(windowColumns).toHaveLength(80);
     expect(oldWindowBands).toHaveLength(0);
+    expect(crosswalkStripes.length).toBeGreaterThanOrEqual(20);
+    expect(sidewalks).toHaveLength(4);
+    expect(storefronts).toHaveLength(20);
+    expect(rooftopCaps).toHaveLength(20);
+    expect(streetLamps).toHaveLength(12);
+    expect(vehicles).toHaveLength(4);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "zebra crosswalk near stripe 1")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "front cross street")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "back cross street")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "active night state toggle knob")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "red traffic signal over intersection")).toBe(true);
   });
 
   test("keeps product stage tight for three-quarter product framing", () => {
@@ -220,6 +254,46 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "front low product highlight card")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.7)).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow" && node.position?.[1] === 0.535)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring" && node.position?.[1] === 0.526 && node.material?.opacity === 0.22)).toBe(true);
+    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("turntable rotation tick")).length).toBe(3);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vertical studio softbox")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "right warm rim softbox")).toBe(true);
+  });
+
+  test("compiles product viewer plans to normalized plinth placement with turntable evidence", () => {
+    const plan = definePromptPlan({
+      sceneType: "product-viewer",
+      subject: { asset: assets.robot, label: "sneaker" },
+      style: "premium sneaker product viewer",
+      environment: "white turntable plinth and studio sweep",
+      camera: { preset: "product-orbit" },
+      lighting: { preset: "studio-softbox" },
+      effects: ["bloom"],
+      interaction: "orbit",
+      acceptanceCriteria: [
+        "sneaker sits on the plinth",
+        "studio softboxes and contact shadow are visible",
+        "turntable rotation evidence is visible"
+      ]
+    } as const);
+    const snapshot = promptPlanToScene(plan).toJSON();
+    const productModel = snapshot.nodes.find((node): node is AuraModelNode => node.kind === "model" && node.asset.id === "robot");
+
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring")).toBe(true);
+    expect(productModel).toMatchObject({
+      position: [0, 0.54, -0.65],
+      rotation: [0, -0.38, 0],
+      animation: { clip: "turntable", speed: 0.42 }
+    });
+    expect(productModel?.scale).toBeUndefined();
+    expect(snapshot.camera).toMatchObject({
+      mode: "perspective",
+      position: [1.65, 1.18, 4.0],
+      target: [0, 0.72, -0.65],
+      fov: 38
+    });
   });
 
   test("exposes typed UI helpers for benchmark HUDs", () => {

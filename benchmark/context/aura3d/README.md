@@ -17,14 +17,16 @@ release-candidate tarballs. The agent must not inspect `packages/*/src`.
 ## Files
 
 The bundle files live under `files/`. The SHA-256 list in `manifest.sha256`
-is authoritative. Before a round starts, run:
+is authoritative, and `files/llms.txt` is mandatory agent-first context.
+Before a round starts, run:
 
 ```sh
-cd benchmark/context/aura3d/files
-find . -type f | sort | xargs shasum -a 256
+node benchmark/runner/verify-context-manifests.mjs
 ```
 
-The output must match `benchmark/context/aura3d/manifest.sha256`.
+The verifier checks this bundle against
+`benchmark/context/aura3d/manifest.sha256` and fails if `files/llms.txt` is
+missing.
 
 ## Agent Restrictions
 

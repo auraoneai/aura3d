@@ -56,15 +56,18 @@ code.
 For every prompt, send this exact instruction shape to the agent:
 
 ```text
+First read ./context/llms.txt before any other context file.
+
 Use only the provided context bundle and this prompt file. Build a browser 3D
 app that satisfies the prompt. Put the app in the provided clean source
 directory. Do not search for assets. Prompt 10 may use only
 benchmark/assets/sneaker.glb. After implementation, provide the build command,
-run command, and any assumptions. Do not edit files outside the source
-directory.
+run command for the runner to execute later, and any assumptions. Do not edit
+files outside the source directory.
 
 Benchmark execution rules:
-- Read ./context/llms.txt first.
+- Read ./context/llms.txt first; if you have not read it yet, stop and read it
+  before implementing.
 - If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy
   that recipe shape and make only prompt-required edits.
 - Use public helpers and prefabs before custom primitives. Do not build a
@@ -76,7 +79,8 @@ Benchmark execution rules:
   the agent process.
 - You may run finite commands such as `npm install` and `npm run build`.
 - After `npm run build` completes or fails, stop work and return the build
-  command, run command, and assumptions. Do not continue investigating.
+  command, run command for the runner, and assumptions. Do not continue
+  investigating.
 
 <contents of benchmark/prompts/XX-name.md>
 ```
@@ -86,7 +90,14 @@ advice beyond that text. The generic benchmark execution rules above are part
 of the amended standard. If the agent asks a question, record it as a repair
 turn and answer only by pointing back to the prompt and context bundle.
 
+The agent-provided run command is an instruction to the benchmark runner, not
+permission for the agent to start a server. If the agent starts `npm run dev`,
+`npm run preview`, Playwright, browser screenshot capture, or manual visual
+verification, record an execution-hygiene violation in `notes.md`.
+
 ## Runtime Capture
+
+Runtime capture starts only after the agent process has stopped.
 
 For each prompt:
 
@@ -139,3 +150,21 @@ The calibration requirement prevents the Round 1 failure mode where both
 Aura3D and raw Three.js measured at 1-8 FPS on scenes that were visually
 rendering, making the FPS numbers browser/sampling evidence rather than
 credible renderer-performance evidence.
+
+## Standard Cleanliness Check
+
+Before starting a benchmark round, and before committing benchmark protocol
+changes, run:
+
+```sh
+node benchmark/runner/verify-context-manifests.mjs
+git diff --check -- benchmark/protocol.md benchmark/runner benchmark/context docs/agents
+git status --short -- packages/engine/src/agent-api/index.ts benchmark/results REMAINING.md
+```
+
+The first command verifies bundle manifests, requires `files/llms.txt` in each
+context bundle, and checks that the prompt-delivery contract still contains the
+finite-execution guardrails. The second command catches whitespace damage in
+the owned docs/scripts. The third command must show no benchmark-result or
+forbidden engine API edits for this workstream; an unrelated pre-existing
+`REMAINING.md` entry should be documented, not modified.

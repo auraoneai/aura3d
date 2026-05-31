@@ -11,4 +11,5 @@ d234e578618fa816955ebdc059c049c577e203e650e33cf22bde3f232c29e669  ./examples/jsm
 6c9b8a539ea16e898f65e4760f14937ef9ea94043bd9842c141e0301f41903e8  ./examples/jsm/postprocessing/RenderPass.js
 8f09315c0cec117a0ca2494d3e3586035b3c4323d6dcb037537cc51b04c3cdba  ./examples/jsm/postprocessing/UnrealBloomPass.js
 ebeb571fc6497a406e38d8d75699a3277bc972ad53d5f610d5bb3e5d2b5b2791  ./examples/jsm/renderers/CSS2DRenderer.js
+6a8f66c83b260fa40b3c6b62374113434b73bcaad99fa2c26255bdaee1b334e2  ./llms.txt
 8760f68678bce2ca57d93f10b21c2ece3fe9aed690194d290391dee18a732f7b  ./package.json

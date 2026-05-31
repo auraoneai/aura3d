@@ -42,10 +42,11 @@ Prompt-to-visual workflow:
   strokes HUD.
 - Use `effects.particles(...)` for live particle systems. Do not claim particle
   success from a cone, label, or HUD counter without visible particles.
-- For product viewers, place normalized products around
-  `position(0, 0.65, -0.65)` after `prefabs.productStage()` so they sit on the
-  round plinth.
-- Use `.animate({ clip: "float" | "pulse" | "walk", speed })` and
+- For product viewers, place normalized products at
+  `position(0, 0.54, -0.65)` after `prefabs.productStage()` so the
+  fit-to-bounds model sits on the round plinth, and add turntable evidence with
+  `.animate({ clip: "turntable", speed: 0.42 })`.
+- Use `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })` and
   `timeline.loop(...)` for runtime motion. Build/test, then terminate normally; do not run
   `npm run dev`, Playwright, browser screenshots, or manual visual verification
   from inside the benchmark agent process.

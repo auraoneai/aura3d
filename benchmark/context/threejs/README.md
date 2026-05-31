@@ -13,19 +13,23 @@ raw Three.js runs.
 The bundle includes the package README, package metadata, the ES module build,
 and the official helper modules needed for this benchmark class of scenes:
 orbit controls, GLTF loading, Draco loader, RGBE loader, CSS2D labels,
-postprocessing, bloom, room environment, and reflector.
+postprocessing, bloom, room environment, and reflector. It also includes a
+benchmark-specific `llms.txt` process guardrail file; agents must read that
+file before any Three.js source or prompt work.
 
 ## Files
 
 The bundle files live under `files/`. The SHA-256 list in `manifest.sha256`
-is authoritative. Before a round starts, run:
+is authoritative, and `files/llms.txt` is mandatory agent-first context.
+Before a round starts, run:
 
 ```sh
-cd benchmark/context/threejs/files
-find . -type f | sort | xargs shasum -a 256
+node benchmark/runner/verify-context-manifests.mjs
 ```
 
-The output must match `benchmark/context/threejs/manifest.sha256`.
+The verifier checks this bundle against
+`benchmark/context/threejs/manifest.sha256` and fails if `files/llms.txt` is
+missing.
 
 ## Agent Restrictions
 
