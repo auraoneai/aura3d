@@ -1,0 +1,15 @@
+Implemented the particle fountain in `source/src/main.ts`.
+
+Build completed successfully with:
+
+```bash
+npm run build
+```
+
+Runner command to execute later:
+
+```bash
+npm run dev
+```
+
+Assumptions: procedural-only scene, no external assets; the visible slider controls particles emitted per second; particles use gravity, ground collision/bounce, and lifetime-based color changes.

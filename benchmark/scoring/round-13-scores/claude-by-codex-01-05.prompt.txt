@@ -1,0 +1,87 @@
+You are a neutral benchmark scorer for Claude Code-generated Aura3D vs raw Three.js outputs.
+Return strict JSON only. Do not include markdown fences.
+Scorer should be "Codex".
+Scorer neutrality: Codex scoring Claude-generated outputs.
+Read only the files I name below. Do not read context bundles, prior results, old scoring, or any other files.
+For each prompt compare Aura3D and Three.js. If a side has no screenshot because metrics say compiles=false or runsInBrowser=false, treat visual quality as 1 and penalize compile/runtime metrics. Score visual quality 1-5 where 5 is excellent prompt match, 4 is strong, 3 is acceptable/recognizable, 2 weak, 1 broken/missing. Score modifiability 1-5 from source-listing/manifest and complexity. Winner must be exactly "Aura3D win", "Three.js win", or "tie".
+JSON schema: {"scorer":string,"scorerNeutrality":string,"agent":"Claude Code","prompts":[{"prompt":string,"auraVisual":number,"threeVisual":number,"auraModifiability":number,"threeModifiability":number,"metrics":[{"metric":string,"auraValue":any,"threeValue":any,"winner":"Aura3D"|"Three.js"|"tie","reason":string}],"metricWinnerCounts":{"aura":number,"three":number,"ties":number},"winner":"Aura3D win"|"Three.js win"|"tie","reason":string,"failedThresholds":[string]}],"summary":string}
+
+PROMPT 01: benchmark/prompts/01-physics-playground.md
+Aura3D files:
+- benchmark/runs/round-13/claude-aura3d/prompt-01/metrics.json
+- benchmark/runs/round-13/claude-aura3d/prompt-01/route-health.json
+- benchmark/runs/round-13/claude-aura3d/prompt-01/notes.md
+- benchmark/runs/round-13/claude-aura3d/prompt-01/source-manifest.json
+- benchmark/runs/round-13/claude-aura3d/prompt-01/source-listing.md
+- benchmark/runs/round-13/claude-aura3d/prompt-01/screenshot.png
+Three.js files:
+- benchmark/runs/round-13/claude-threejs/prompt-01/metrics.json
+- benchmark/runs/round-13/claude-threejs/prompt-01/route-health.json
+- benchmark/runs/round-13/claude-threejs/prompt-01/notes.md
+- benchmark/runs/round-13/claude-threejs/prompt-01/source-manifest.json
+- benchmark/runs/round-13/claude-threejs/prompt-01/source-listing.md
+- benchmark/runs/round-13/claude-threejs/prompt-01/screenshot.png
+
+PROMPT 02: benchmark/prompts/02-particle-fountain.md
+Aura3D files:
+- benchmark/runs/round-13/claude-aura3d/prompt-02/metrics.json
+- benchmark/runs/round-13/claude-aura3d/prompt-02/route-health.json
+- benchmark/runs/round-13/claude-aura3d/prompt-02/notes.md
+- benchmark/runs/round-13/claude-aura3d/prompt-02/source-manifest.json
+- benchmark/runs/round-13/claude-aura3d/prompt-02/source-listing.md
+- benchmark/runs/round-13/claude-aura3d/prompt-02/screenshot.png
+Three.js files:
+- benchmark/runs/round-13/claude-threejs/prompt-02/metrics.json
+- benchmark/runs/round-13/claude-threejs/prompt-02/route-health.json
+- benchmark/runs/round-13/claude-threejs/prompt-02/notes.md
+- benchmark/runs/round-13/claude-threejs/prompt-02/source-manifest.json
+- benchmark/runs/round-13/claude-threejs/prompt-02/source-listing.md
+- benchmark/runs/round-13/claude-threejs/prompt-02/screenshot.png
+
+PROMPT 03: benchmark/prompts/03-procedural-solar-system.md
+Aura3D files:
+- benchmark/runs/round-13/claude-aura3d/prompt-03/metrics.json
+- benchmark/runs/round-13/claude-aura3d/prompt-03/route-health.json
+- benchmark/runs/round-13/claude-aura3d/prompt-03/notes.md
+- benchmark/runs/round-13/claude-aura3d/prompt-03/source-manifest.json
+- benchmark/runs/round-13/claude-aura3d/prompt-03/source-listing.md
+- benchmark/runs/round-13/claude-aura3d/prompt-03/screenshot.png
+Three.js files:
+- benchmark/runs/round-13/claude-threejs/prompt-03/metrics.json
+- benchmark/runs/round-13/claude-threejs/prompt-03/route-health.json
+- benchmark/runs/round-13/claude-threejs/prompt-03/notes.md
+- benchmark/runs/round-13/claude-threejs/prompt-03/source-manifest.json
+- benchmark/runs/round-13/claude-threejs/prompt-03/source-listing.md
+- benchmark/runs/round-13/claude-threejs/prompt-03/screenshot.png
+
+PROMPT 04: benchmark/prompts/04-neon-tunnel-flythrough.md
+Aura3D files:
+- benchmark/runs/round-13/claude-aura3d/prompt-04/metrics.json
+- benchmark/runs/round-13/claude-aura3d/prompt-04/route-health.json
+- benchmark/runs/round-13/claude-aura3d/prompt-04/notes.md
+- benchmark/runs/round-13/claude-aura3d/prompt-04/source-manifest.json
+- benchmark/runs/round-13/claude-aura3d/prompt-04/source-listing.md
+- benchmark/runs/round-13/claude-aura3d/prompt-04/screenshot.png
+Three.js files:
+- benchmark/runs/round-13/claude-threejs/prompt-04/metrics.json
+- benchmark/runs/round-13/claude-threejs/prompt-04/route-health.json
+- benchmark/runs/round-13/claude-threejs/prompt-04/notes.md
+- benchmark/runs/round-13/claude-threejs/prompt-04/source-manifest.json
+- benchmark/runs/round-13/claude-threejs/prompt-04/source-listing.md
+- benchmark/runs/round-13/claude-threejs/prompt-04/screenshot.png
+
+PROMPT 05: benchmark/prompts/05-3d-data-visualization.md
+Aura3D files:
+- benchmark/runs/round-13/claude-aura3d/prompt-05/metrics.json
+- benchmark/runs/round-13/claude-aura3d/prompt-05/route-health.json
+- benchmark/runs/round-13/claude-aura3d/prompt-05/notes.md
+- benchmark/runs/round-13/claude-aura3d/prompt-05/source-manifest.json
+- benchmark/runs/round-13/claude-aura3d/prompt-05/source-listing.md
+- benchmark/runs/round-13/claude-aura3d/prompt-05/screenshot.png
+Three.js files:
+- benchmark/runs/round-13/claude-threejs/prompt-05/metrics.json
+- benchmark/runs/round-13/claude-threejs/prompt-05/route-health.json
+- benchmark/runs/round-13/claude-threejs/prompt-05/notes.md
+- benchmark/runs/round-13/claude-threejs/prompt-05/source-manifest.json
+- benchmark/runs/round-13/claude-threejs/prompt-05/source-listing.md
+- benchmark/runs/round-13/claude-threejs/prompt-05/screenshot.png

@@ -1,0 +1,21 @@
+The build succeeded. Per the benchmark rules, I'm stopping here and reporting.
+
+## Summary
+
+Built the Particle Fountain by copying the matching **Recipe 02 (Particle Fountain)** shape from `benchmark-recipes.md`, using only `@aura3d/engine` public imports and the `prefabs.particleFountain` prefab.
+
+**File changed:** `source/src/main.ts` (only file edited; inside the source directory).
+
+**What it satisfies:**
+- `prefabs.particleFountain({ count: 2400, emissionRate })` — provides the identifiable emitter/nozzle, the dense upward-and-falling gravity arc, lifetime-based color variation, and ground-plane collision evidence.
+- A real `<input type="range">` emission-rate control is rendered via `ui.html`. The one prompt-required edit beyond the recipe: the `ui.onInput` handler not only updates the readout but **rebuilds the scene** (`app.dispose()` + `createAuraApp`) with the new `emissionRate`, so the slider actually controls a live value used by the prefab (matching the dispose/recreate pattern from recipe 08), not a label-only control.
+- Camera framed with `camera.orbit({ distance: 4.2, target: [0, 1.0, 0] })` to keep the arc, color gradient, and ground plane in view.
+
+**Build command:** `npm run build`
+
+**Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+**Assumptions:**
+- Emission-rate range kept at the recipe's `60–180` (default `120`), as the prompt specifies no numeric range.
+- Slider changes rebuild the app rather than mutating a live emitter, since the prefab API exposes `emissionRate` only as a construction option.
+- No assets used (prompt is procedural-only); `npm install` already run.

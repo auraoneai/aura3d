@@ -1,0 +1,18 @@
+Implemented the Neon Tunnel Flythrough in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-13/codex-aura3d/prompt-04/source/src/main.ts:1).
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build result: failed at typecheck because `@aura3d/engine` was not resolved:
+```text
+src/main.ts(1,74): error TS2307: Cannot find module '@aura3d/engine' or its corresponding type declarations.
+```
+
+Assumptions: the runner should install dependencies first, or otherwise make the local `@aura3d/engine` package referenced in `package.json` available before building.

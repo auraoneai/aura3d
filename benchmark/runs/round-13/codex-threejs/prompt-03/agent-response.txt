@@ -1,0 +1,18 @@
+Implemented the procedural Three.js solar system in `source/src/main.ts`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build result: `npm run build` completed successfully.
+
+Assumptions:
+- Followed `context/llms.txt`, which specifies the raw Three.js benchmark rules.
+- No assets were used; the sun, planets, orbit rings, stars, labels, and bloom are procedural.
+- I did not run a dev server, preview, Playwright, or screenshots.

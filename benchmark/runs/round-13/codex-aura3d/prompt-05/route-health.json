@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 341,
+  "bodyTextSample": "6x6 Revenue Height Grid\nX axis: categories X1-X6 | Z axis: regions Z1-Z6 | Height axis: value 0-100\nHeight ticks: 25, 50, 75, 100 | color scale: blue low, yellow mid, red high\nHover highlight enabled; default selected bar: row 6 col 6, value 100.\nX1 X2 X3 X4 X5 X6\nZ1 Z2 Z3 Z4 Z5 Z6\nOrbit camera active; drag to inspect all 36 animated bars.",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6105/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6105/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6105/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6105/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6105/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 78,
+    "lumaRange": 251
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6105/",
+  "runCommand": "npm run dev -- --port 6105"
+}

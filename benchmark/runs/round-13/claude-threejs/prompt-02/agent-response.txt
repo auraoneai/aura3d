@@ -1,0 +1,25 @@
+Build succeeded — strict typecheck and Vite production build both pass.
+
+## Summary
+
+Built a procedural particle fountain in raw Three.js (`source/src/main.ts`), satisfying every required visual evidence item:
+
+- **Emitter** — a glowing emissive nozzle cone + cyan torus ring + point light at the source, clearly identifiable.
+- **Arc motion** — CPU simulation integrates per-particle velocity under gravity (`GRAVITY = -14`), emitting particles upward with a horizontal cone spread so they trace an upward-and-falling arc (not static dots).
+- **Lifetime color** — each particle is recolored every frame from a 5-stop gradient (white-hot → yellow → orange → red → cool blue) sampled by normalized age, with fade-in/fade-out alpha.
+- **Ground plane** — a 60×60 `MeshStandardMaterial` plane plus grid helper at `y=0`; particles collide and bounce against it (`RESTITUTION`, friction, rest-kill).
+- **Emission-rate control** — an overlaid HTML range slider (0–2000 /s) with a live readout drives the emitter in real time.
+
+Rendered as a single `THREE.Points` cloud with a custom `ShaderMaterial` (round soft sprites, additive blending, per-particle alpha so dead particles are discarded). OrbitControls for viewing.
+
+### Commands
+
+- **Build command:** `npm install && npm run build` (run in the `source/` directory)
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+### Assumptions
+
+- The bundle's `llms.txt` (raw Three.js rules) governs this run, overriding the Aura3D `CLAUDE.md`; built entirely with `three` + bundled `three/addons/controls/OrbitControls.js`.
+- Three 0.165.0 ships no bundled TypeScript types, and the scaffold's `build` runs strict `tsc`, so I added `@types/three@0.165.0` (matching version) to `devDependencies` in `source/package.json` — the only change made outside `src/`, and within the source directory.
+- No assets used (prompt requires fully procedural construction).
+- Simulation units/tuning (gravity, launch speed, lifetimes, bounce) are chosen for a visually legible fountain; emission defaults to 600 /s and is adjustable live via the slider.

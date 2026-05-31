@@ -1,0 +1,22 @@
+The build succeeded. Per the benchmark rules, I'm stopping here and reporting.
+
+## Summary
+
+Built the Mini-Golf Hole app by copying recipe **06 Mini Golf** from `benchmark-recipes.md`, with only the prompt-required scene logic. It uses the public `prefabs.miniGolfHole()` prefab (green, obstacle, cup, white physics ball, aim line, power meter, ball trail, contact shadow) plus:
+
+- **Score counter** — a strokes HUD overlay via `ui.html`/`ui.setText`.
+- **Aim/shoot interaction** — `interactions.pointer()` plus an "aim and shoot" button wired with `ui.onClick` that increments the stroke count.
+- **Follow camera** — `camera.follow({ targetNode: "white physics golf ball", ... })` framing the ball.
+
+The build (`npm run typecheck && vite build`) passed cleanly.
+
+### Commands for the runner
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run:** `npm run dev -- --port <assigned-port>`
+
+### Assumptions
+- The prompt matched the mini-golf recipe family, so I copied recipe 06 verbatim (it already encodes the green, single obstacle, physics ball, aim line/power meter, score HUD, and follow camera). No custom physics/game engine was written, per context rules.
+- `prefabs.miniGolfHole()` exposes the node named `"white physics golf ball"`, which the follow camera targets — confirmed against the engine's typed API surface (`AuraPrefabs.miniGolfHole`, `camera.follow`, `interactions.pointer`, `ui.*` all present in `@aura3d/engine`).
+- No assets were added or searched for; this prompt is fully procedural.
+- Only files inside `source/` were edited (`src/main.ts`).

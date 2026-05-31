@@ -1,0 +1,15 @@
+Implemented the mini-golf app in `source/src/main.ts` using the matching Aura3D recipe shape: procedural mini-golf prefab, pointer interaction, visible stroke/power HUD, and a follow camera targeting the physics golf ball.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no external assets are needed or used; the procedural `prefabs.miniGolfHole()` provides the green, obstacle, ball, cup, aim/shot cues, and physics evidence required by the prompt.

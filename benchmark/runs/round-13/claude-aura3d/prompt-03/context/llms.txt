@@ -1,0 +1,247 @@
+Aura3D quick patterns for AI coding agents.
+
+Scaffold:
+```bash
+npx create-aura3d@latest my-scene --template product-viewer
+cd my-scene
+npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
+npm run dev
+```
+
+Hello world:
+```ts
+import { createAuraApp, scene, model, lights } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(model(assets.robot)).add(lights.studio())
+});
+```
+
+Public imports:
+```ts
+import {
+  createAuraApp,
+  definePromptPlan,
+  promptPlanToScene,
+  scene,
+  model,
+  camera,
+  lights,
+  material,
+  effects,
+  prefabs,
+  primitives,
+  timeline,
+  interactions,
+  defineAuraAssets,
+  ui
+} from "@aura3d/engine";
+```
+
+Typed asset rule:
+- Use `model(assets.robot)` from generated `src/aura-assets.ts`.
+- Do not use `model("robot")`; the safe API rejects string asset ids.
+- Do not invent asset paths. Run `assets add`, then read the generated module.
+- Use `unsafeModelUrl(...)` only as an explicit temporary escape hatch.
+
+Common scenes:
+```ts
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: ["product centered", "studio lighting visible"]
+} as const);
+
+const compiled = compilePromptPlan(plan);
+createAuraApp("#app", { scene: promptPlanToScene(plan) });
+console.log(compiled.report.visualSystems, compiled.report.repairHints);
+```
+
+Lower-level scene helpers remain available:
+```ts
+scene()
+  .background("#08111f")
+  .add(model(assets.product).scale(1.1))
+  .add(lights.studio({ intensity: 1.2 }))
+  .add(interactions.orbit())
+  .camera(camera.orbit({ distance: 4 }));
+```
+
+`createAuraApp("#app", ...)` gives a direct empty app container viewport-safe
+layout by default. Agent-authored benchmark scenes do not need custom CSS just
+to remove browser body margin or make the canvas fill the screenshot.
+`createAuraApp` also accepts nullable `document.querySelector(...)` results and
+throws a clear runtime error if the target is missing, so nested mount helper
+functions can stay TypeScript-safe.
+
+```ts
+scene()
+  .background("#05070d")
+  .add(model(assets.hero).position(0, 0, -1))
+  .add(lights.point({ position: [-2, 2.4, 1], color: "#38d6ff", intensity: 2.4 }))
+  .add(effects.rain({ intensity: 0.45 }))
+  .add(effects.fog({ density: 0.18 }))
+  .add(effects.bloom({ intensity: 0.42 }))
+  .camera(camera.dolly({ from: [0, 1.4, 6], to: [0, 1.2, 2.2], seconds: 8 }))
+  .timeline(timeline.loop({ seconds: 8 }));
+```
+
+Round 1 repair patterns:
+```ts
+// Physics playgrounds need renderable scene evidence; do not build only a
+// custom 2D canvas around the physics package. The prefab includes falling
+// cubes, settled cubes, contact patches, normal vectors, and gravity cues.
+scene()
+  .background("#070b12")
+  .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+  .add(lights.studio({ intensity: 1.15 }))
+  .camera(camera.orbit({ distance: 5.2 }));
+
+// Real dense particle system, not a symbolic cone, single curve, or HUD counter.
+// Add a real emission-rate control for the benchmark prompt; label-only
+// buttons do not count.
+scene()
+  .background("#030711")
+  .addMany(prefabs.particleFountain({ count: 2400, emissionRate: 120 }))
+  .add(lights.studio({ intensity: 1.15 }))
+  .camera(camera.orbit({ distance: 4.2 }));
+
+// City prompts need streets, scale, windows, crosswalks, street lights,
+// storefront detail, foreground sun/moon day-night markers, and readable
+// framing. If there is a day/night button, it must rebuild or update the
+// scene's sky, lighting, windows, street lights, and state marker.
+scene()
+  .background("#061018")
+  .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: "night" }))
+  .add(effects.fog({ density: 0.045 }))
+  .add(effects.bloom({ intensity: 0.18 }))
+  .camera(camera.perspective({ position: [0.6, 5.2, 9.2], target: [0, 0.42, -0.4], fov: 58 }));
+
+// Solar-system prompts need six planets, orbit paths, labels, sun bloom, and
+// whole-system framing.
+scene()
+  .background("#020617")
+  .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 }))
+  .add(lights.studio({ intensity: 0.85 }))
+  .camera(camera.perspective({ position: [0, 4.15, 6.45], target: [0, 0.16, 0], fov: 45 }));
+
+// Neon tunnel prompts need an actual inside-the-tube flythrough: foreground
+// rings receding to a vanishing point, perspective rails, floor reflections,
+// fog, bloom, particles, and a dolly camera. Do not submit a flat gradient, one
+// portal, rectangular box, or CSS-only animation.
+scene()
+  .background("#020617")
+  .addMany(prefabs.neonTunnel({ rings: 24 }))
+  .camera(camera.dolly({ from: [0, 0.36, 1.6], to: [0, 0.36, -4.4], target: [0, 0.28, -5.8], fov: 54, seconds: 8 }))
+  .timeline(timeline.loop({ seconds: 8 }));
+
+// Material labs need distinct material classes and contrast/reflection cues.
+scene()
+  .background("#10151f")
+  .addMany(prefabs.materialSwatches())
+  .add(lights.studio({ intensity: 1.55 }))
+  .camera(camera.perspective({ position: [0, 1.55, 8.35], target: [0, 0.82, -0.72], fov: 42 }));
+
+// 3D data visualization prompts should use renderable bar geometry once: bars,
+// caps, base shadows, grid rails, wall ticks, labels, grounded legend, and
+// orbit controls. Add DOM title/axis/tick/readout text around the Aura canvas;
+// primitive label chips alone are not enough. Do not dispose/recreate the app
+// in a requestAnimationFrame loop or replace the scene with a flat DOM chart.
+scene()
+  .background("#071017")
+  .addMany(prefabs.dataBars3D({ grid: 6 }))
+  .add(lights.studio({ intensity: 1.1 }))
+  .add(interactions.orbit())
+  .camera(camera.orbit({ distance: 4.8, target: [0, 1.0, 0] }));
+
+// Product viewers should use the typed one-call product viewer helper plus a
+// plinth, contact shadow, softboxes, and orbit/turntable cues.
+scene()
+  .addMany(prefabs.productViewer(assets.product))
+  .add(interactions.orbit())
+  .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }))
+  .timeline(timeline.loop({ seconds: 8 }));
+
+// Physics demos must expose real state/cues, not cosmetic falling boxes only.
+scene()
+  .addMany(prefabs.physicsRamp())
+  .add(lights.studio())
+  .camera(camera.perspective({ position: [0.4, 1.8, 4.0], target: [0.25, 0.28, -0.62] }));
+```
+
+Templates:
+- `product-viewer`: product or asset inspection scenes.
+- `cinematic-scene`: camera path, lighting, rain/fog/bloom scenes.
+- `mini-game`: primitive interactive game slice.
+
+Visual acceptance:
+- Benchmark prompts: read `docs/agents/benchmark-recipes.md` and copy the
+  smallest matching recipe before writing custom scene logic.
+- For benchmark runs, do not run `npm run dev`, `npm run preview`, Playwright,
+  browser screenshot capture, or manual visual verification inside the agent
+  process. Run finite commands such as `npm install` and `npm run build`, then
+  stop and report the build/run commands.
+- Do not build custom physics, game, chart, material, city, or animation
+  engines when a matching `prefabs.*` helper exists.
+- Use prompt plans and recipe scenes before custom primitive placement.
+- A nonblank screenshot is not enough. The image must visibly match the prompt.
+- Reject one-asset-plus-symbolic-effect output as product-quality proof.
+- For particles, use `effects.particles(...)` or `prefabs.particleFountain(...)`;
+  do not draw an emitter cone and claim particles exist. For the fountain
+  prompt, add a real emission-rate input/control and frame upward/falling arcs,
+  lifetime color variation, nozzle, and ground collision/splash evidence.
+- For city, solar-system, material, product, and physics prompts, start from the matching
+  `prefabs.*` helper before custom primitive placement.
+- For mini-golf, use `prefabs.miniGolfHole()` with `camera.follow({ targetNode:
+  "white physics golf ball" })` and a visible score HUD. Keep the aim line,
+  shot-power meter, ball trail, contact shadow, obstacle contact flash, and cup
+  in frame.
+- For data-viz, mini-game, tunnel, and humanoid prompts, start from
+  `prefabs.dataBars3D`, `prefabs.miniGolfHole`, `prefabs.neonTunnel`, and
+  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })`; the
+  humanoid prefab includes connected body parts, joint hinges, path cues, face
+  details, non-detached stride ribbons, and a barely bobbing `walk` animation
+  clip that keeps primitive limbs connected for screenshots.
+- For small HUD text, counters, buttons, and sliders, use `ui.html`,
+  `ui.setText`, `ui.onClick`, `ui.range`, and `ui.onInput`. Do not use `HTMLStrongElement` or untyped
+  `event.currentTarget` in benchmark TypeScript.
+- Do not call `dispose()` and `createAuraApp()` every animation frame. Create
+  one app, use `.animate(...)`, `timeline.loop(...)`, or update ordinary DOM
+  overlays separately.
+- For benchmark work, write the smallest complete Aura scene first, run finite
+  commands like `npm run build`, and exit. Do not keep `npm run dev` attached to
+  the agent process.
+- For product-viewer asset prompts, first run
+  `npx @aura3d/cli@latest assets add ./assets/product.glb --name product`, read
+  `src/aura-assets.ts`, and use `model(assets.product)`. Do not use string ids,
+  invented URLs, or `unsafeModelUrl(...)` for benchmark product proof.
+- If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
+  before changing the scene or review label.
+
+Verification:
+```bash
+npm run build
+npm run test
+npx @aura3d/cli@latest assets validate
+npx @aura3d/cli@latest check-deploy
+```
+
+Agent docs:
+- `docs/agents/README.md`
+- `docs/agents/api-surface.md`
+- `docs/agents/asset-workflow.md`
+- `docs/agents/templates.md`
+- `docs/agents/deployment.md`
+- `docs/agents/troubleshooting.md`
+- `docs/agents/anti-hallucination-rules.md`
+
+Non-goals:
+- Aura3D is not the AI model.
+- Aura3D does not source, license, or host a universal asset catalog.
+- Aura3D does not eval arbitrary generated code in the browser.
+- Source code is the scene description; provider JSON is not the public authoring API.

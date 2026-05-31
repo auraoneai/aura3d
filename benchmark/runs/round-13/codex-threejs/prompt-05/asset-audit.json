@@ -1,0 +1,11 @@
+{
+  "prompt": "benchmark/prompts/05-3d-data-visualization.md",
+  "skipped": true,
+  "reason": "asset path auditing applies only to prompt 10",
+  "invented": [],
+  "inventedUnique": [],
+  "inventedAssetPaths": 0,
+  "allowed": [],
+  "typedAuraEvidence": null,
+  "failures": []
+}

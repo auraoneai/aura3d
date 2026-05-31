@@ -31,6 +31,11 @@ runs as completion evidence.
   `benchmark/results/amendment-round-13-task12-repair.md` and
   `benchmark/results/round-13-phase-a-signoff.md`. A valid prompt matrix may
   start only from that committed standard with a clean working tree.
+- Round 13 prompt benchmark was run once from committed `d1a533f`, captured,
+  neutrally scored, and failed task 12: Codex/Aura3D reached 2/10 wins,
+  0/3 hard-prompt wins, and one Aura3D visual score below 3 because prompt 01
+  did not compile. Claude/Aura3D reached 7/10 wins and 2/3 hard-prompt wins,
+  but both agents must pass.
 - Aura3D is not live/releasable under `FinalizedPromptPlan.md` until the prompt
   benchmark passes and final result/decision/release tasks are complete, or the
   user explicitly signs a below-bar shipping decision.
@@ -301,8 +306,24 @@ runs as completion evidence.
     `/tmp/aura3d-task12-repair-smoke/humanoid-frame-2.png`.
   - A fresh Round 13 prompt matrix is valid only from the approved
     `PRD-AMENDMENT:` state with a clean working tree.
-  - This task still remains incomplete until a fresh signed full prompt round
-    proves the required 7/10 wins for both agents and the hard-prompt floor.
+  - Round 13 was run once from committed `d1a533f` and failed:
+    `benchmark/results/round-13.md`,
+    `benchmark/results/round-13-engine.md`, and
+    `benchmark/results/round-13-decision.md`.
+  - Round 13 artifacts exist under `benchmark/runs/round-13/` and neutral
+    scoring exists under `benchmark/scoring/round-13-scores/`.
+  - Round 13 runtime evidence contains 40 `metrics.json` files, 40
+    `route-health.json` files, 40 `source-listing.md` files, and 38
+    `screenshot.png` files. Missing screenshots are the expected failed cases:
+    `codex-aura3d/prompt-01` and `claude-threejs/prompt-06`.
+  - `benchmark/scoring/round-13-scores/codex-by-claude.json` records Codex
+    outputs scored by Claude Code: Aura3D reached 2/10 wins, 8 visual scores
+    >=4, 1 visual score below 3, and 0/3 hard-prompt wins.
+  - `benchmark/scoring/round-13-scores/claude-by-codex.json` records Claude
+    Code outputs scored by Codex: Aura3D reached 7/10 wins, 8 visual scores
+    >=4, 0 visual scores below 3, and 2/3 hard-prompt wins.
+  - This task remains incomplete because Codex/Aura3D did not meet the 7/10
+    win bar, the hard-prompt floor, or the no-below-3 visual floor.
 
 - [x] 13. Pass the engine benchmark.
   Evidence required:
@@ -339,6 +360,15 @@ runs as completion evidence.
   - `benchmark/results/round-12-engine.md` records the passed engine benchmark.
   - `benchmark/results/round-12-decision.md` records the Round 12 no-ship
     decision.
+  - `benchmark/results/round-13.md` records the failed Round 13 prompt
+    benchmark with scorer identities, scorer neutrality, prompt-by-prompt
+    results, pass/fail math, pending user signature, local screenshot sheets,
+    and required follow-up.
+  - `benchmark/results/round-13-engine.md` records that no new Round 13 engine
+    benchmark was run and cites `benchmark/results/round-12-engine.md` as the
+    latest valid engine pass.
+  - `benchmark/results/round-13-decision.md` records the Round 13 no-ship
+    decision.
 
 - [x] 15. Record the Phase C decision.
   Evidence required:
@@ -351,6 +381,11 @@ runs as completion evidence.
     decision: do not ship Aura3D as a proven Three.js competitor from Round 12.
   - The decision identifies the specific gaps: Codex/Aura3D won only 2/10 and
     0/3 hard prompts; Claude/Aura3D won only 6/10.
+  - `benchmark/results/round-13-decision.md` records a failing benchmark
+    decision: do not ship Aura3D as a proven Three.js competitor from Round 13.
+  - The decision identifies the current blocker: Codex/Aura3D won only 2/10,
+    0/3 hard prompts, and failed the visual floor because prompt 01 did not
+    compile after importing unavailable physics symbols.
 
 - [x] 16. Verify no regression of shipped features.
   Evidence required:
@@ -423,6 +458,8 @@ runs as completion evidence.
     verification out of release proof.
   - This task remains incomplete until a future passing prompt benchmark exists
     and `CHANGELOG.md` cites that passing `benchmark/results/round-N.md`.
+  - Round 13 is not a passing benchmark result, so release notes were not
+    updated to cite it as a release proof.
 
 - [ ] 18. Publish / go live.
   Evidence required:
@@ -460,3 +497,4 @@ runs as completion evidence.
     as stale, but this task remains incomplete until the benchmark proof,
     release notes, final package verification, publish, tag, deployment, and
     pushed release commit exist.
+  - Round 13 failed, so publish/tag/release remains blocked.

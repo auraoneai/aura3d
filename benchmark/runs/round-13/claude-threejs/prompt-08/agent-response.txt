@@ -1,0 +1,23 @@
+Build succeeded (typecheck + Vite production build clean). Done.
+
+## Summary
+
+Built a procedurally generated city block in raw Three.js (r0.165) per the prompt.
+
+**What's in the scene** (`source/src/main.ts`):
+- **20 box buildings** in a 5×4 grid, each with seeded-random width/depth and strongly varying heights (8–42 units).
+- **Windows** via a procedurally drawn `CanvasTexture` (grid of lit/dark window cells) used as both the color `map` and `emissiveMap`, tiled per building so windows scale consistently and glow at night.
+- **Streets** — dark asphalt ground plane, lighter sidewalk pads under each lot, and yellow center-line stripes running down every street between rows and columns.
+- **Street lights** — pole + arm + glowing lamp head + `PointLight`, placed at street intersections and along the front street.
+- **Day/night toggle** — a fixed HTML button. Day: light-blue sky, bright sun/hemisphere, windows & lamps off. Night: near-black sky, dim moonlight, windows emissive and street lights (point lights + glowing bulbs) switched on. Sky/fog color, all light intensities, window emissive, and lamp state all change.
+- OrbitControls for viewing; shadows enabled.
+
+**Commands**
+- Install: `npm install`
+- Build: `npm run build`
+- Run (for the runner): `npm run dev -- --port <assigned-port>`
+
+**Assumptions**
+- This is the raw-Three.js track (`llms.txt`), so I used `three` + the bundled `three/addons/controls/OrbitControls.js` only — no Aura3D APIs despite the project CLAUDE.md.
+- Added `@types/three@0.165.0` to the scaffold's `devDependencies` (inside the source dir) because three 0.165 ships no type declarations and the build runs `tsc` in strict mode; the layout is deterministic (fixed seed). No other files outside the source directory were touched.
+- npm printed an allow-scripts notice for `esbuild`'s postinstall; the production build (which uses esbuild) ran fine, so the dev server should run without intervention.

@@ -1,0 +1,20 @@
+The build succeeded (typecheck passed, production bundle emitted). Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built **Prompt 08: Procedural City Block** by copying recipe 08 from `docs/agents/benchmark-recipes.md` with only prompt-required edits — no custom city generator.
+
+**Files written (all inside `source/`):**
+- `src/main.ts` — uses `prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay })` for the 20 varied buildings, windows, streets, and street lights; `lights.studio`, `effects.fog`, `effects.bloom`, and `scene().background(...)` swapped by a `.toggle` button that rebuilds the app between night/day, changing sky + lighting + windows + street lights + sun/moon marker.
+- `src/style.css` — positions/styles the day/night toggle and removes body margin.
+
+**Verification done:** `npm install` and `npm run build` (typecheck + `vite build`) both passed cleanly. Per benchmark rules, I did not run a dev server, Playwright, or screenshot capture.
+
+**Commands for the runner:**
+- Build command: `npm run build` (run in `source/`)
+- Run command: `npm run dev -- --port <assigned-port>` (run in `source/`)
+
+**Assumptions:**
+- `prefabs.cityBlock` supplies the required procedural evidence (≈20 towers of varying height, lit window columns, streets, street lights, and in-frame sun/moon day/night markers), as documented in the recipe — confirmed against the engine's `prefabs.cityBlock` type signature.
+- The day/night toggle disposes and recreates the app (per the recipe) so the sky, lighting, windows, and street lights actually change rather than only toggling button text.
+- The fixed scaffold (`index.html`, `package.json`, `tsconfig.json`) was left unchanged; only `src/main.ts` and the new `src/style.css` were added.

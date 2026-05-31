@@ -1,0 +1,368 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* -------------------------------------------------------------------------- */
+/*  Particle Fountain                                                         */
+/*                                                                            */
+/*  Gravity-affected particles emitted upward from an emitter, colored by     */
+/*  lifetime, colliding against a ground plane, with a live emission-rate     */
+/*  control. Rendered as a single THREE.Points cloud driven by a CPU         */
+/*  simulation (positions / colors / per-particle alpha updated each frame).  */
+/* -------------------------------------------------------------------------- */
+
+const app = document.querySelector<HTMLDivElement>('#app')!;
+
+// --- Renderer ---------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0a0d16, 1);
+app.appendChild(renderer.domElement);
+
+// --- Scene & Camera ---------------------------------------------------------
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0a0d16, 18, 55);
+
+const camera = new THREE.PerspectiveCamera(
+  55,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  200,
+);
+camera.position.set(9, 7, 14);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 3, 0);
+controls.enableDamping = true;
+controls.maxPolarAngle = Math.PI * 0.495; // stay above the ground
+controls.minDistance = 6;
+controls.maxDistance = 45;
+
+// --- Lights -----------------------------------------------------------------
+scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x10131c, 0.9));
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+keyLight.position.set(8, 16, 6);
+scene.add(keyLight);
+
+// --- Ground plane -----------------------------------------------------------
+const GROUND_Y = 0;
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(60, 60),
+  new THREE.MeshStandardMaterial({
+    color: 0x1c2233,
+    roughness: 0.95,
+    metalness: 0.0,
+  }),
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = GROUND_Y;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(60, 60, 0x3a4a6b, 0x232b3d);
+grid.position.y = GROUND_Y + 0.002;
+scene.add(grid);
+
+// --- Emitter marker (identifiable source) -----------------------------------
+const EMITTER = new THREE.Vector3(0, 0.6, 0);
+const emitterGroup = new THREE.Group();
+emitterGroup.position.copy(EMITTER);
+
+// Glowing nozzle cone pointing up.
+const nozzle = new THREE.Mesh(
+  new THREE.ConeGeometry(0.55, 1.1, 24, 1, true),
+  new THREE.MeshStandardMaterial({
+    color: 0x2b3550,
+    emissive: 0x3366ff,
+    emissiveIntensity: 0.6,
+    metalness: 0.4,
+    roughness: 0.4,
+    side: THREE.DoubleSide,
+  }),
+);
+nozzle.position.y = 0.1;
+emitterGroup.add(nozzle);
+
+// Bright emissive ring/disc at the mouth so the source reads clearly.
+const ring = new THREE.Mesh(
+  new THREE.TorusGeometry(0.42, 0.08, 16, 48),
+  new THREE.MeshBasicMaterial({ color: 0x66e0ff }),
+);
+ring.rotation.x = Math.PI / 2;
+ring.position.y = 0.66;
+emitterGroup.add(ring);
+
+const emitterLight = new THREE.PointLight(0x66ccff, 6, 14, 2);
+emitterLight.position.set(0, 1.0, 0);
+emitterGroup.add(emitterLight);
+scene.add(emitterGroup);
+
+// --- Lifetime color gradient ------------------------------------------------
+// Young particles are hot/white, then yellow -> orange -> red -> cool blue as
+// they age. Sampled per-particle every frame from normalized age (0..1).
+const GRADIENT: THREE.Color[] = [
+  new THREE.Color(0xffffff), // birth: white-hot
+  new THREE.Color(0xfff2a8), // pale yellow
+  new THREE.Color(0xffb02e), // orange
+  new THREE.Color(0xff4d3d), // red
+  new THREE.Color(0x5a6cff), // old: cool blue
+];
+
+const _c0 = new THREE.Color();
+const _c1 = new THREE.Color();
+function sampleGradient(t: number, out: THREE.Color): THREE.Color {
+  const clamped = t <= 0 ? 0 : t >= 1 ? 1 : t;
+  const scaled = clamped * (GRADIENT.length - 1);
+  const i = Math.min(GRADIENT.length - 2, Math.floor(scaled));
+  const f = scaled - i;
+  _c0.copy(GRADIENT[i]);
+  _c1.copy(GRADIENT[i + 1]);
+  return out.copy(_c0).lerp(_c1, f);
+}
+
+// --- Particle system --------------------------------------------------------
+const MAX_PARTICLES = 6000;
+
+const positions = new Float32Array(MAX_PARTICLES * 3);
+const colors = new Float32Array(MAX_PARTICLES * 3);
+const alphas = new Float32Array(MAX_PARTICLES); // per-particle opacity
+const velocities = new Float32Array(MAX_PARTICLES * 3); // CPU-only
+const ages = new Float32Array(MAX_PARTICLES);
+const lifetimes = new Float32Array(MAX_PARTICLES);
+const alive = new Uint8Array(MAX_PARTICLES);
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+geometry.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1));
+geometry.setDrawRange(0, 0);
+
+// Soft round sprite drawn procedurally in the fragment shader; dead particles
+// (alpha 0) are discarded so we never need to compact the buffer.
+const material = new THREE.ShaderMaterial({
+  uniforms: {
+    uSize: { value: 26.0 * Math.min(window.devicePixelRatio, 2) },
+  },
+  vertexShader: /* glsl */ `
+    attribute float aAlpha;
+    uniform float uSize;
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      vColor = color;
+      vAlpha = aAlpha;
+      vec4 mv = modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = uSize / max(-mv.z, 0.001);
+      gl_Position = projectionMatrix * mv;
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      if (vAlpha <= 0.001) discard;
+      vec2 uv = gl_PointCoord - vec2(0.5);
+      float d = length(uv);
+      if (d > 0.5) discard;
+      float mask = smoothstep(0.5, 0.12, d); // soft glowing core
+      gl_FragColor = vec4(vColor, vAlpha * mask);
+    }
+  `,
+  transparent: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+  vertexColors: true,
+});
+
+const points = new THREE.Points(geometry, material);
+points.frustumCulled = false;
+scene.add(points);
+
+// --- Simulation parameters --------------------------------------------------
+const GRAVITY = -14.0; // units / s^2
+const RESTITUTION = 0.45; // ground bounce energy retained
+const FRICTION = 0.7; // horizontal damping on bounce
+const LIFE_MIN = 2.4;
+const LIFE_MAX = 3.6;
+const SPEED_MIN = 7.5;
+const SPEED_MAX = 9.5;
+const SPREAD = 0.32; // horizontal velocity spread (radians-ish cone)
+
+let emissionRate = 600; // particles per second (controlled live)
+let highWater = 0; // highest index ever used → bounds the draw range
+let spawnAccumulator = 0;
+
+const _col = new THREE.Color();
+
+function findFreeIndex(): number {
+  for (let i = 0; i < MAX_PARTICLES; i++) {
+    if (!alive[i]) return i;
+  }
+  return -1;
+}
+
+function spawnParticle(): void {
+  const i = findFreeIndex();
+  if (i < 0) return; // pool exhausted
+
+  const i3 = i * 3;
+
+  // Start at the emitter mouth with a tiny radial jitter.
+  const r = Math.random() * 0.12;
+  const a = Math.random() * Math.PI * 2;
+  positions[i3] = EMITTER.x + Math.cos(a) * r;
+  positions[i3 + 1] = EMITTER.y + 0.2;
+  positions[i3 + 2] = EMITTER.z + Math.sin(a) * r;
+
+  // Mostly-up velocity with a horizontal cone spread → arcing fountain.
+  const speed = THREE.MathUtils.lerp(SPEED_MIN, SPEED_MAX, Math.random());
+  const dirA = Math.random() * Math.PI * 2;
+  const dirR = Math.random() * SPREAD;
+  velocities[i3] = Math.cos(dirA) * dirR * speed;
+  velocities[i3 + 1] = speed;
+  velocities[i3 + 2] = Math.sin(dirA) * dirR * speed;
+
+  ages[i] = 0;
+  lifetimes[i] = THREE.MathUtils.lerp(LIFE_MIN, LIFE_MAX, Math.random());
+  alive[i] = 1;
+
+  sampleGradient(0, _col);
+  colors[i3] = _col.r;
+  colors[i3 + 1] = _col.g;
+  colors[i3 + 2] = _col.b;
+  alphas[i] = 1;
+
+  if (i + 1 > highWater) highWater = i + 1;
+}
+
+function updateParticles(dt: number): void {
+  // Emit according to the live emission rate.
+  spawnAccumulator += emissionRate * dt;
+  let toSpawn = Math.floor(spawnAccumulator);
+  spawnAccumulator -= toSpawn;
+  // Cap per-frame spawns to avoid spikes after a long frame.
+  toSpawn = Math.min(toSpawn, 400);
+  for (let s = 0; s < toSpawn; s++) spawnParticle();
+
+  for (let i = 0; i < highWater; i++) {
+    if (!alive[i]) continue;
+    const i3 = i * 3;
+
+    ages[i] += dt;
+    const life = lifetimes[i];
+    if (ages[i] >= life) {
+      alive[i] = 0;
+      alphas[i] = 0;
+      continue;
+    }
+
+    // Integrate gravity + motion.
+    velocities[i3 + 1] += GRAVITY * dt;
+    positions[i3] += velocities[i3] * dt;
+    positions[i3 + 1] += velocities[i3 + 1] * dt;
+    positions[i3 + 2] += velocities[i3 + 2] * dt;
+
+    // Ground collision → bounce with energy loss + horizontal friction.
+    if (positions[i3 + 1] <= GROUND_Y + 0.04) {
+      positions[i3 + 1] = GROUND_Y + 0.04;
+      if (velocities[i3 + 1] < 0) {
+        velocities[i3 + 1] = -velocities[i3 + 1] * RESTITUTION;
+        velocities[i3] *= FRICTION;
+        velocities[i3 + 2] *= FRICTION;
+        // Kill nearly-stationary particles resting on the ground.
+        if (velocities[i3 + 1] < 0.6) {
+          alive[i] = 0;
+          alphas[i] = 0;
+          continue;
+        }
+      }
+    }
+
+    // Color + fade by normalized lifetime.
+    const t = ages[i] / life;
+    sampleGradient(t, _col);
+    colors[i3] = _col.r;
+    colors[i3 + 1] = _col.g;
+    colors[i3 + 2] = _col.b;
+    // Fade in quickly, fade out near death.
+    const fadeIn = Math.min(1, ages[i] / 0.12);
+    const fadeOut = Math.min(1, (life - ages[i]) / 0.5);
+    alphas[i] = Math.min(fadeIn, fadeOut);
+  }
+
+  geometry.setDrawRange(0, highWater);
+  (geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+  (geometry.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
+  (geometry.getAttribute('aAlpha') as THREE.BufferAttribute).needsUpdate = true;
+}
+
+// --- UI: emission-rate control ----------------------------------------------
+const ui = document.createElement('div');
+ui.style.cssText = [
+  'position:fixed',
+  'top:14px',
+  'left:14px',
+  'padding:14px 16px',
+  'background:rgba(12,16,26,0.78)',
+  'border:1px solid rgba(120,150,220,0.35)',
+  'border-radius:10px',
+  'font:13px/1.4 system-ui,Segoe UI,Roboto,sans-serif',
+  'color:#dfe7ff',
+  'backdrop-filter:blur(6px)',
+  'user-select:none',
+  'min-width:220px',
+  'z-index:10',
+].join(';');
+
+const title = document.createElement('div');
+title.textContent = 'Particle Fountain';
+title.style.cssText = 'font-weight:600;margin-bottom:8px;letter-spacing:.3px;';
+
+const label = document.createElement('label');
+label.style.cssText = 'display:block;margin-bottom:6px;';
+const labelText = document.createElement('span');
+const updateLabel = () => {
+  labelText.textContent = `Emission rate: ${emissionRate} /s`;
+};
+label.appendChild(labelText);
+
+const slider = document.createElement('input');
+slider.type = 'range';
+slider.min = '0';
+slider.max = '2000';
+slider.step = '25';
+slider.value = String(emissionRate);
+slider.style.cssText = 'width:100%;margin-top:6px;accent-color:#66ccff;';
+slider.addEventListener('input', () => {
+  emissionRate = Number(slider.value);
+  updateLabel();
+});
+label.appendChild(slider);
+
+const hint = document.createElement('div');
+hint.style.cssText = 'margin-top:8px;opacity:0.65;font-size:11px;';
+hint.textContent = 'Drag to orbit • slider sets particles emitted per second';
+
+updateLabel();
+ui.appendChild(title);
+ui.appendChild(label);
+ui.appendChild(hint);
+app.appendChild(ui);
+
+// --- Resize -----------------------------------------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- Animation loop ---------------------------------------------------------
+const clock = new THREE.Clock();
+function animate(): void {
+  const dt = Math.min(clock.getDelta(), 0.05); // clamp big frame gaps
+  updateParticles(dt);
+  ring.rotation.z += dt * 1.5;
+  emitterLight.intensity = 5 + Math.sin(clock.elapsedTime * 6) * 1.5;
+  controls.update();
+  renderer.render(scene, camera);
+}
+renderer.setAnimationLoop(animate);

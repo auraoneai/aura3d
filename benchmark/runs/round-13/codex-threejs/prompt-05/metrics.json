@@ -1,0 +1,32 @@
+{
+  "prompt": "05-3d-data-visualization",
+  "agent": "Codex",
+  "library": "Three.js",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6205/",
+  "runCommand": "npm run dev -- --port 6205",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 295,
+  "filesCreated": 2,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "inventedAssetPaths": 0,
+  "assetAuditEvidence": "asset-audit.json",
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 187236,
+  "bundleSizeGzipBytes": 125146,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

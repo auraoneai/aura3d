@@ -1,0 +1,18 @@
+Implemented the particle fountain app in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- Procedural-only scene, no assets used.
+- Aura3D `prefabs.particleFountain` provides the emitter, lifetime coloring, gravity arc, ground plane, and collision/splash evidence.
+- The emission-rate slider updates the displayed value and recreates the fountain with the selected emission rate.

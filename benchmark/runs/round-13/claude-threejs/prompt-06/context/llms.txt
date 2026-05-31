@@ -1,0 +1,21 @@
+Raw Three.js benchmark rules for AI coding agents.
+
+Read this file first before any other context file.
+
+Context:
+- Use only the provided raw Three.js context bundle, the selected prompt file,
+  the clean source directory, and `benchmark/assets/sneaker.glb` for prompt 10.
+- Do not read Aura3D docs, Aura3D source, prior benchmark outputs, or
+  unofficial tutorials.
+- Do not browse online or fetch substitute assets.
+- Use `three` and the bundled official `three/addons/*` modules documented in
+  this context bundle.
+
+Execution:
+- Build the app in the provided source directory only.
+- Run only finite commands such as `npm install` and `npm run build`.
+- Do not run `npm run dev`, `npm run preview`, Playwright, browser screenshot
+  capture, or manual visual verification inside the agent process.
+- After `npm run build` completes or fails, stop work and return the build
+  command, the run command for the benchmark runner to execute later, and any
+  assumptions.

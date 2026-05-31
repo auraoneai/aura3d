@@ -1,0 +1,7 @@
+---
+description: Aura3D agent-written browser 3D rules
+---
+
+Read `llms.txt` first. Use `createAuraApp`, `scene`, `model`, `camera`,
+`lights`, `material`, `effects`, `timeline`, `interactions`, and generated
+typed assets from `src/aura-assets.ts`. Do not invent asset ids.

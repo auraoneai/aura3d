@@ -1,0 +1,25 @@
+Build succeeded — typecheck passed and Vite produced the production bundle.
+
+## Summary
+
+Built a **Neon Tunnel Flythrough** in `source/src/main.ts` using raw Three.js (`three@0.165.0`) and the bundled official addons. It satisfies all required visual evidence:
+
+- **Tube interior** — `TubeGeometry` extruded along a closed, procedurally-generated `CatmullRomCurve3`, rendered with `BackSide` so the camera flies inside the corridor.
+- **Emissive segments** — 90 neon `TorusGeometry` rings spaced along the curve, oriented perpendicular to the path tangent, cycling through neon HSL hues (self-lit `MeshBasicMaterial`), plus a faint wireframe inner shell for lengthwise neon lines.
+- **Bloom** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (strength 1.6, radius 0.6, threshold 0) with ACES tone mapping.
+- **Fog falloff** — `FogExp2` matched to the background color so distant tunnel segments recede into the dark.
+- **Camera animation** — the camera rides the closed curve via `getPointAt(t)` each frame (looped) and looks slightly ahead, reading as a continuous flythrough; a point light tracks the camera as a headlight.
+
+## Commands
+
+- **Build command:** `npm run build`
+- **Run command (for the runner):** `npm run dev -- --port <assigned-port>`
+
+(Run from the `source/` directory; `npm install` already completed there.)
+
+## Assumptions
+
+- This is a raw Three.js bundle (no `benchmark-recipes.md` and no Aura3D APIs present in the context), so the scene uses standard Three.js primitives and the bundled `three/addons/postprocessing/*` modules — consistent with `context/llms.txt`.
+- The tunnel is fully procedural (no assets), as the prompt requires.
+- `npm install` emitted an `allow-scripts` warning about esbuild's postinstall, but it did not affect the build — `tsc --noEmit` and `vite build` both completed successfully.
+- Per benchmark rules I did not run `npm run dev`/`preview` or do any browser/visual verification; I stopped after the successful build.

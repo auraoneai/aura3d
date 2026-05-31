@@ -1,0 +1,15 @@
+Implemented the procedural Three.js material lab in `source/src/main.ts`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Build result: `npm run build` completed successfully.
+
+Assumptions: no external assets are required; the environment map uses bundled Three.js `RoomEnvironment`, and visual distinction comes from five procedural sphere materials: metal, glass, rubber, emissive, and clearcoat.

@@ -1,0 +1,23 @@
+The build succeeded (typecheck passed, Vite bundled cleanly). Work is complete.
+
+## Summary
+
+Built a procedural solar system in `source/src/main.ts` using only `three@0.165.0` and bundled `three/addons/*` modules.
+
+**What it does:**
+- **Sun + 6 planets** — emissive sun (`MeshBasicMaterial`) plus Mercury, Venus, Earth, Mars, Jupiter, Saturn (`MeshStandardMaterial` spheres), each on its own pivot.
+- **Distinct orbital distances & speeds** — distances 18→96, speeds 0.9→0.16 rad/s; faint orbit rings at each radius make the spacing obvious. Saturn gets a decorative ring.
+- **Labels** — each body (including the Sun) carries a readable `CSS2DObject` HTML label rendered by a `CSS2DRenderer` overlaid on the canvas.
+- **Bloom on the sun** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (threshold 0.85 so only the bright sun + additive glow halo bloom).
+- **Orbit camera** — `OrbitControls` with damping and slow auto-rotate, positioned at (0, 70, 130) to frame the whole system.
+- Starfield backdrop, ambient + point lighting, resize handling.
+
+**Build command:** `npm run build` (runs `tsc --noEmit` then `vite build`) — run from the `source/` directory. `npm install` was already run.
+
+**Run command for the runner:** `npm run dev -- --port <assigned-port>` (from `source/`).
+
+**Assumptions:**
+- Treated this as a raw Three.js benchmark per `context/llms.txt` (no Aura3D imports), since the scaffold depends only on `three`.
+- No `benchmark-recipes.md` existed in the bundle, so I built from the documented `three/addons` modules directly.
+- Planet sizes/colors/distances are illustrative (compressed, non-to-scale) so all six and their orbit spacing are visible in one frame.
+- The 506 kB bundle warning is benign (Three.js core); no functional impact.

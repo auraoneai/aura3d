@@ -1,0 +1,27 @@
+The build succeeded. Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built a Three.js product viewer for the provided `sneaker.glb` in the clean source directory (`source/`). The build passed (`tsc --noEmit` + `vite build`).
+
+**What it does** (all in `source/src/main.ts`):
+- **Loads the sneaker** via `GLTFLoader` from `/benchmark/assets/sneaker.glb` — the real served path of the scaffold-placed asset at `source/public/benchmark/assets/sneaker.glb`. No invented or substitute paths.
+- **Centered & auto-scaled**: computes a `Box3`, scales the longest dimension to a fixed target, then re-centers on X/Z and rests the base flush on the plinth top.
+- **Plinth/product base**: a cylinder plinth plus a floor disc that receives contact shadows.
+- **Studio lighting**: `RoomEnvironment` IBL via `PMREMGenerator` for readable PBR reflections, plus a three-point directional rig (key with shadows, fill, rim) and ambient fill, with ACES filmic tone mapping and sRGB output.
+- **Orbit controls**: `OrbitControls` with damping, distance/polar limits, targeted at the product.
+- **Turntable rotation**: model + plinth sit in a `Group` rotated continuously (delta-time based) in the `setAnimationLoop`, independent of user orbiting.
+
+**Note on the scaffold**: Three.js 0.165.0 ships no TypeScript declarations and the fixed scaffold includes no `@types/three`, so I added a self-contained ambient module shim (`source/src/three-shims.d.ts`) so the strict typecheck passes. No files outside `source/` were edited.
+
+## Commands for the runner
+
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run:** `npm run dev -- --port <assigned-port>`
+
+## Assumptions
+- Vite serves `public/` at the web root, so the asset's URL is `/benchmark/assets/sneaker.glb` (same as the on-disk `benchmark/assets/sneaker.glb` path).
+- "Turntable" = automatic continuous Y-rotation of the model on its base, with orbit controls layered on top for manual camera inspection.
+- A fixed auto-scale target (longest dimension ≈ 1.8 world units) gives a sensible default frame regardless of the model's native units.
+- Adding the `@types/three`-substitute ambient shim inside `source/` is acceptable since no types package was provided and runtime/visual behavior is unaffected.

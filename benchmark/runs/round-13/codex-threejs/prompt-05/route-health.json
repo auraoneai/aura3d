@@ -1,0 +1,28 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 80,
+  "bodyTextSample": "1\nA\n2\nB\n3\nC\n4\nD\n5\nE\n6\nF\nX Axis\nZ Axis\nHeight\n6 x 6 Animated Height Grid\nHigh\nLow",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6205/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6205/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 51,
+    "lumaRange": 224
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6205/",
+  "runCommand": "npm run dev -- --port 6205"
+}

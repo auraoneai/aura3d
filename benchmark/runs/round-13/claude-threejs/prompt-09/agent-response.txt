@@ -1,0 +1,26 @@
+Build succeeded — strict typecheck passed and Vite bundled cleanly. Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built an animated primitive humanoid in raw Three.js (0.165.0) at `source/src/main.ts`.
+
+**What it does**
+- **Humanoid from primitives only**: sphere head (+ small cylinder neck), tapered **cylinder torso**, **box** pelvis, arms, and legs, with small box hands/feet — proportioned to read clearly as a humanoid.
+- **Procedural walk-cycle**: each limb hangs from a pivot group at its joint and swings via `sin(t)` — legs and arms in opposite phase — plus a 2×-frequency vertical body bob and slight torso counter-rotation so any captured frame shows a dynamic mid-stride pose (not a static stick figure).
+- **Moves across the ground**: the figure traverses a large circular path (`setAnimationLoop`), facing its direction of travel, so it's always traversing the ground plane and stays in frame for runtime evidence.
+- **Visible ground plane**: 80×80 lit `MeshStandardMaterial` plane with a grid overlay; directional + hemisphere lights with soft shadows.
+
+**Changes made (all inside `source/`)**
+- `src/main.ts` — the app.
+- `index.html` — title + full-viewport CSS.
+- `package.json` — added `@types/three@0.165.0` (devDependency) so the strict `tsc --noEmit` passes.
+
+**Commands**
+- Install: `npm install`
+- Build: `npm run build`
+- Run (for the runner): `npm run dev -- --port <assigned-port>`
+
+**Assumptions**
+- Added `@types/three` (matching `three@0.165.0`) to satisfy the scaffold's strict typecheck step in `build`; no other dependencies introduced.
+- Used only core `three` (no addons needed).
+- A circular walk path was chosen over a straight line so the figure remains visible in a single fixed-camera screenshot while still clearly traversing the ground plane.

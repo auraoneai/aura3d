@@ -1,0 +1,5 @@
+{
+  "status": "fail",
+  "stage": "runtime-capture",
+  "reason": "page did not load: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:6406/\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:6406/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+}

@@ -1,0 +1,20 @@
+Implemented the app in `source/src/main.ts` with styling in `source/src/style.css`.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Build result: failed during TypeScript export resolution:
+```text
+src/main.ts(6,3): error TS2305: Module '"@aura3d/engine"' has no exported member 'PhysicsDebugAdapter'.
+src/main.ts(7,3): error TS2305: Module '"@aura3d/engine"' has no exported member 'PhysicsWorld'.
+src/main.ts(10,3): error TS2305: Module '"@aura3d/engine"' has no exported member 'Shape'.
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: the visual scene uses `prefabs.physicsPlayground({ cubes: 50 })`; the attempted live contact overlay was wired to Aura3D physics APIs that exist in package internals but are not exported from the public root in this bundle.

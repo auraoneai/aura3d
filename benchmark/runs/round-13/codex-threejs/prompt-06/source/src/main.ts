@@ -1,0 +1,383 @@
+import * as THREE from 'three';
+
+const app = document.querySelector<HTMLDivElement>('#app');
+
+if (!app) {
+  throw new Error('Missing #app root');
+}
+
+document.body.style.margin = '0';
+document.body.style.overflow = 'hidden';
+document.body.style.fontFamily =
+  'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+
+app.style.width = '100vw';
+app.style.height = '100vh';
+
+const hud = document.createElement('div');
+hud.style.position = 'fixed';
+hud.style.top = '18px';
+hud.style.left = '18px';
+hud.style.zIndex = '10';
+hud.style.display = 'grid';
+hud.style.gap = '8px';
+hud.style.color = '#f8fff3';
+hud.style.textShadow = '0 1px 3px rgba(0,0,0,0.55)';
+hud.style.pointerEvents = 'none';
+
+const score = document.createElement('div');
+score.style.fontSize = '22px';
+score.style.fontWeight = '800';
+score.textContent = 'Shots: 0';
+
+const status = document.createElement('div');
+status.style.maxWidth = '300px';
+status.style.fontSize = '14px';
+status.style.fontWeight = '650';
+status.textContent = 'Click and drag from the ball to aim. Release to shoot.';
+
+hud.append(score, status);
+document.body.appendChild(hud);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9dc5df);
+scene.fog = new THREE.Fog(0x9dc5df, 18, 45);
+
+const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+const hemiLight = new THREE.HemisphereLight(0xe8f7ff, 0x31582d, 2.5);
+scene.add(hemiLight);
+
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(-7, 12, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -18;
+sun.shadow.camera.right = 18;
+sun.shadow.camera.top = 18;
+sun.shadow.camera.bottom = -18;
+scene.add(sun);
+
+const greenMaterial = new THREE.MeshStandardMaterial({
+  color: 0x49a841,
+  roughness: 0.9,
+  metalness: 0,
+});
+const roughMaterial = new THREE.MeshStandardMaterial({
+  color: 0x2f7c37,
+  roughness: 1,
+});
+const railMaterial = new THREE.MeshStandardMaterial({
+  color: 0xf0eee2,
+  roughness: 0.65,
+});
+const ballMaterial = new THREE.MeshStandardMaterial({
+  color: 0xffffff,
+  roughness: 0.35,
+});
+const obstacleMaterial = new THREE.MeshStandardMaterial({
+  color: 0xd24d36,
+  roughness: 0.55,
+});
+
+const rough = new THREE.Mesh(new THREE.PlaneGeometry(32, 22), roughMaterial);
+rough.rotation.x = -Math.PI / 2;
+rough.position.y = -0.035;
+rough.receiveShadow = true;
+scene.add(rough);
+
+const green = new THREE.Mesh(new THREE.BoxGeometry(18, 0.16, 10), greenMaterial);
+green.position.y = -0.08;
+green.receiveShadow = true;
+scene.add(green);
+
+function addRail(x: number, z: number, width: number, depth: number): THREE.Mesh {
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(width, 0.55, depth), railMaterial);
+  rail.position.set(x, 0.2, z);
+  rail.castShadow = true;
+  rail.receiveShadow = true;
+  scene.add(rail);
+  return rail;
+}
+
+addRail(0, -5.25, 18.4, 0.45);
+addRail(0, 5.25, 18.4, 0.45);
+addRail(-9.25, 0, 0.45, 10);
+addRail(9.25, 0, 0.45, 10);
+
+const obstacle = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.85, 4.2), obstacleMaterial);
+obstacle.position.set(1.6, 0.42, 0.2);
+obstacle.rotation.y = -0.18;
+obstacle.castShadow = true;
+obstacle.receiveShadow = true;
+scene.add(obstacle);
+
+const obstacleLabel = document.createElement('div');
+obstacleLabel.textContent = 'OBSTACLE';
+obstacleLabel.style.position = 'fixed';
+obstacleLabel.style.right = '22px';
+obstacleLabel.style.bottom = '22px';
+obstacleLabel.style.padding = '8px 10px';
+obstacleLabel.style.border = '1px solid rgba(255,255,255,0.55)';
+obstacleLabel.style.background = 'rgba(0,0,0,0.38)';
+obstacleLabel.style.color = '#fff';
+obstacleLabel.style.fontSize = '12px';
+obstacleLabel.style.fontWeight = '800';
+obstacleLabel.style.letterSpacing = '0.08em';
+document.body.appendChild(obstacleLabel);
+
+const hole = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.42, 0.42, 0.025, 48),
+  new THREE.MeshBasicMaterial({ color: 0x111111 }),
+);
+hole.position.set(7.25, 0.012, 0);
+scene.add(hole);
+
+const flagPole = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.035, 0.035, 2.2, 12),
+  new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.4 }),
+);
+flagPole.position.set(7.25, 1.1, 0);
+flagPole.castShadow = true;
+scene.add(flagPole);
+
+const flag = new THREE.Mesh(
+  new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0, 0.95, 0),
+    new THREE.Vector3(1.0, 0.72, 0),
+    new THREE.Vector3(0, 0.48, 0),
+  ]),
+  new THREE.MeshBasicMaterial({ color: 0xffdf45, side: THREE.DoubleSide }),
+);
+flag.geometry.setIndex([0, 1, 2]);
+flag.position.set(7.25, 1.18, 0);
+scene.add(flag);
+
+const ballRadius = 0.24;
+const ball = new THREE.Mesh(new THREE.SphereGeometry(ballRadius, 48, 24), ballMaterial);
+ball.position.set(-7.2, ballRadius, 0);
+ball.castShadow = true;
+ball.receiveShadow = true;
+scene.add(ball);
+
+const aimMaterial = new THREE.LineBasicMaterial({ color: 0xfff06a, linewidth: 3 });
+const aimGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+const aimLine = new THREE.Line(aimGeometry, aimMaterial);
+aimLine.visible = false;
+scene.add(aimLine);
+
+const aimTarget = new THREE.Mesh(
+  new THREE.RingGeometry(0.32, 0.43, 32),
+  new THREE.MeshBasicMaterial({ color: 0xfff06a, side: THREE.DoubleSide }),
+);
+aimTarget.rotation.x = -Math.PI / 2;
+aimTarget.position.y = 0.028;
+aimTarget.visible = false;
+scene.add(aimTarget);
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const hitPoint = new THREE.Vector3();
+const velocity = new THREE.Vector3();
+const previousBall = new THREE.Vector3().copy(ball.position);
+const desiredCameraPosition = new THREE.Vector3();
+const cameraLookAt = new THREE.Vector3();
+
+let shots = 0;
+let aiming = false;
+let holed = false;
+
+const courseBounds = {
+  minX: -8.65,
+  maxX: 8.65,
+  minZ: -4.65,
+  maxZ: 4.65,
+};
+
+function setPointer(event: PointerEvent): void {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  raycaster.setFromCamera(pointer, camera);
+  raycaster.ray.intersectPlane(groundPlane, hitPoint);
+}
+
+function ballIsMoving(): boolean {
+  return velocity.lengthSq() > 0.0015;
+}
+
+function updateAim(): void {
+  const start = new THREE.Vector3(ball.position.x, 0.05, ball.position.z);
+  const pull = new THREE.Vector3().subVectors(start, new THREE.Vector3(hitPoint.x, 0.05, hitPoint.z));
+  const clampedLength = Math.min(pull.length(), 3.2);
+  pull.setLength(clampedLength || 0.001);
+  const end = start.clone().add(pull);
+
+  aimGeometry.setFromPoints([start, end]);
+  aimTarget.position.set(end.x, 0.03, end.z);
+  aimLine.visible = true;
+  aimTarget.visible = true;
+}
+
+function shoot(): void {
+  const pull = new THREE.Vector3(ball.position.x - hitPoint.x, 0, ball.position.z - hitPoint.z);
+  const strength = Math.min(pull.length(), 3.2);
+
+  if (strength < 0.16) {
+    return;
+  }
+
+  velocity.copy(pull.normalize().multiplyScalar(strength * 3.15));
+  shots += 1;
+  score.textContent = `Shots: ${shots}`;
+  status.textContent = 'Ball in motion. Wait for it to stop, then shoot again.';
+}
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  if (holed || ballIsMoving()) {
+    return;
+  }
+
+  setPointer(event);
+  aiming = true;
+  renderer.domElement.setPointerCapture(event.pointerId);
+  updateAim();
+  status.textContent = 'Aim line active. Release to shoot.';
+});
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+  if (!aiming) {
+    return;
+  }
+
+  setPointer(event);
+  updateAim();
+});
+
+renderer.domElement.addEventListener('pointerup', (event) => {
+  if (!aiming) {
+    return;
+  }
+
+  setPointer(event);
+  aiming = false;
+  aimLine.visible = false;
+  aimTarget.visible = false;
+  shoot();
+  renderer.domElement.releasePointerCapture(event.pointerId);
+});
+
+function resolveCourseBounds(): void {
+  if (ball.position.x < courseBounds.minX + ballRadius) {
+    ball.position.x = courseBounds.minX + ballRadius;
+    velocity.x = Math.abs(velocity.x) * 0.72;
+  } else if (ball.position.x > courseBounds.maxX - ballRadius) {
+    ball.position.x = courseBounds.maxX - ballRadius;
+    velocity.x = -Math.abs(velocity.x) * 0.72;
+  }
+
+  if (ball.position.z < courseBounds.minZ + ballRadius) {
+    ball.position.z = courseBounds.minZ + ballRadius;
+    velocity.z = Math.abs(velocity.z) * 0.72;
+  } else if (ball.position.z > courseBounds.maxZ - ballRadius) {
+    ball.position.z = courseBounds.maxZ - ballRadius;
+    velocity.z = -Math.abs(velocity.z) * 0.72;
+  }
+}
+
+function resolveObstacle(): void {
+  const local = ball.position.clone().sub(obstacle.position).applyAxisAngle(new THREE.Vector3(0, 1, 0), -obstacle.rotation.y);
+  const halfX = 0.55 + ballRadius;
+  const halfZ = 2.1 + ballRadius;
+
+  if (Math.abs(local.x) > halfX || Math.abs(local.z) > halfZ || ball.position.y > 0.9) {
+    return;
+  }
+
+  const overlapX = halfX - Math.abs(local.x);
+  const overlapZ = halfZ - Math.abs(local.z);
+  const normalLocal = new THREE.Vector3();
+
+  if (overlapX < overlapZ) {
+    normalLocal.set(Math.sign(local.x) || 1, 0, 0);
+    local.x += normalLocal.x * overlapX;
+  } else {
+    normalLocal.set(0, 0, Math.sign(local.z) || 1);
+    local.z += normalLocal.z * overlapZ;
+  }
+
+  ball.position.copy(local.applyAxisAngle(new THREE.Vector3(0, 1, 0), obstacle.rotation.y).add(obstacle.position));
+  ball.position.y = ballRadius;
+
+  const normal = normalLocal.applyAxisAngle(new THREE.Vector3(0, 1, 0), obstacle.rotation.y);
+  const reflected = velocity.clone().reflect(normal).multiplyScalar(0.68);
+  velocity.copy(reflected);
+}
+
+const clock = new THREE.Clock();
+
+function animate(): void {
+  requestAnimationFrame(animate);
+
+  const delta = Math.min(clock.getDelta(), 0.033);
+  previousBall.copy(ball.position);
+
+  if (!holed) {
+    ball.position.addScaledVector(velocity, delta);
+    ball.position.y = ballRadius;
+    resolveCourseBounds();
+    resolveObstacle();
+
+    const speed = velocity.length();
+    if (speed > 0) {
+      const friction = Math.max(0, speed - 1.15 * delta);
+      velocity.setLength(friction);
+
+      const travel = ball.position.clone().sub(previousBall);
+      const axis = new THREE.Vector3(travel.z, 0, -travel.x);
+      if (axis.lengthSq() > 0.000001) {
+        ball.rotateOnWorldAxis(axis.normalize(), travel.length() / ballRadius);
+      }
+    }
+
+    if (velocity.lengthSq() < 0.0015) {
+      velocity.set(0, 0, 0);
+      if (!aiming) {
+        status.textContent = 'Click and drag from the ball to aim. Release to shoot.';
+      }
+    }
+
+    const holeDistance = ball.position.distanceTo(new THREE.Vector3(hole.position.x, ballRadius, hole.position.z));
+    if (holeDistance < 0.38 && velocity.length() < 1.4) {
+      holed = true;
+      velocity.set(0, 0, 0);
+      ball.position.set(hole.position.x, 0.08, hole.position.z);
+      ball.scale.setScalar(0.72);
+      status.textContent = `Holed in ${shots} shot${shots === 1 ? '' : 's'}.`;
+    }
+  }
+
+  desiredCameraPosition.set(ball.position.x - 4.7, 5.3, ball.position.z + 6.2);
+  camera.position.lerp(desiredCameraPosition, 0.075);
+  cameraLookAt.lerp(new THREE.Vector3(ball.position.x + 1.25, 0.2, ball.position.z), 0.13);
+  camera.lookAt(cameraLookAt);
+
+  renderer.render(scene, camera);
+}
+
+camera.position.set(-10.8, 6.3, 7.2);
+cameraLookAt.set(ball.position.x, 0, ball.position.z);
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});

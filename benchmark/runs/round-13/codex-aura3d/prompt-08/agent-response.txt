@@ -1,0 +1,15 @@
+Implemented the procedural city block app in `source/src/main.ts` with the Aura3D `prefabs.cityBlock` recipe: 20 varied buildings, visible windows, streets, street lights, and a visible day/night toggle that rebuilds the scene with changed sky, lighting, fog, bloom, windows, and street light state.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no assets are required or used; implementation stayed inside `source/`.

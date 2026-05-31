@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 40,
+  "bodyTextSample": "strokes: 1 | power: medium\naim and shoot",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6306/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6306/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6306/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6306/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6306/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 24,
+    "lumaRange": 244
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6306/",
+  "runCommand": "npm run dev -- --port 6306"
+}

@@ -1,0 +1,35 @@
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #061018;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.toggle {
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  z-index: 20;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  font: 700 14px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.toggle[aria-pressed="false"] {
+  background: rgba(56, 99, 168, 0.85);
+}

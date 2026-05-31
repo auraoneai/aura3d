@@ -1,0 +1,23 @@
+Build is complete and the CLI-generated hashed asset (`/aura-assets/sneaker.e1d7cb19.glb`) is present in `dist`. Per the benchmark rules, I'm stopping after a successful build and reporting.
+
+## Summary
+
+Built a product viewer for the provided `sneaker.glb` by copying the smallest matching recipe (**Recipe 10: Product Viewer Sneaker**) with only prompt-required edits.
+
+**What was done:**
+1. Read `context/llms.txt`, `docs/agents/README.md`, and `docs/agents/benchmark-recipes.md` (exact recipe match found).
+2. `npm install` in the source directory.
+3. Copied the approved asset into `source/assets/sneaker.glb`, then ran the bundled Aura CLI: `assets add ./assets/sneaker.glb --name sneaker`. This generated `aura.assets.json`, the hashed asset `public/aura-assets/sneaker.e1d7cb19.glb`, a thumbnail, and the typed `src/aura-assets.ts`.
+4. Wrote `src/main.ts` using `prefabs.productViewer(assets.sneaker)` (centered + auto-scaled model, plinth/product base, contact shadow, softboxes, orbit/turntable cues) + `lights.studio`, `interactions.orbit()`, a perspective camera, and `timeline.loop({ seconds: 8 })` for turntable rotation.
+5. `npm run build` — passed (typecheck + vite build). The hashed GLB is emitted to `dist/aura-assets/`.
+
+**Required visual evidence covered:** typed `model(assets.sneaker)` loaded/visible · centered + auto-scaled (productViewer prefab) · plinth/product base · studio lighting · orbit controls + turntable rotation (loop timeline). No invented asset paths — only the CLI-generated hashed `/aura-assets/...` URL is used.
+
+**Commands for the runner:**
+- Build command: `npm run build`
+- Run command: `npm run dev -- --port <assigned-port>` (runs `vite --host 127.0.0.1`)
+
+**Assumptions:**
+- The bundled Aura CLI (`node_modules/@aura3d/engine/dist/aura3d-cli/cli.js`) was used in place of `npx @aura3d/cli@latest`, since no separate `@aura3d/cli` package is provided in the offline context bundle; it produced the standard manifest, hashed asset, and typed module.
+- The CLI emits its typed module with a monorepo-relative import (`../engine/index.js`). I corrected only that single import line to the documented public package import `@aura3d/engine`; the CLI-generated hashed asset URL was left untouched.
+- Asset placed in `source/assets/` and served from `source/public/aura-assets/`; all edits are confined to the source directory.

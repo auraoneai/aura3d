@@ -1,0 +1,30 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 193,
+  "bodyTextSample": "3D Bar Chart · 6×6 Grid\n\n36 bars animate from random values. Color encodes height (blue → red).\n\nDrag to orbit · scroll to zoom · hover a bar to highlight it.\n\nHover a bar to inspect its value.",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 52,
+    "lumaRange": 227
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6405/",
+  "runCommand": "npm run dev -- --port 6405"
+}

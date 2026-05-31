@@ -1,0 +1,33 @@
+Done. The build passes (strict typecheck + Vite production build).
+
+## Summary
+
+Built the **3D data visualization** with **Three.js** (the library this benchmark track uses) in the clean source directory `prompt-05/source/`. I kept the scaffold's `index.html`, scripts, and strict `tsconfig.json` intact, replaced the `src/main.ts` placeholder, and added the matching `@types/three@0.165.0` dev dependency so the `tsc --noEmit` strict typecheck (part of the build) passes.
+
+**Files changed (inside `source/` only):**
+- `src/main.ts` — the full app
+- `package.json` — added `@types/three` (required for the strict typecheck step; `three`/`vite`/`typescript`/scripts unchanged)
+
+**What it does (maps to required visual evidence):**
+- **36 bars** — a 6×6 grid of `BoxGeometry` bars, base-pivoted so they grow upward.
+- **Heights animate from random values** — each bar eases from ~0 to a random target on load, and fresh random targets are re-rolled every 3.5 s (frame-rate-independent lerp).
+- **Color by height** — height is normalized and mapped to an HSL hue (blue → cyan → green → yellow → red); colors update live as bars animate. A vertical Y axis with numeric ticks gives the scale reference.
+- **Axis labels (readable)** — high-DPI `CanvasTexture` sprites with outlined text: per-column `C1–C6`, per-row `R1–R6`, plus bold axis titles "Columns (X)", "Rows (Z)", "Value (Y)" and numeric Y ticks.
+- **Hover-highlight** — a `Raycaster` on `pointermove` detects the bar under the cursor; the hovered bar glows (emissive set to its own color, intensity 0.85) and grows its footprint (×1.18), the cursor becomes a pointer, and a HUD readout shows `Bar R·C — value N.NN`. The previous bar is restored when hover moves off.
+- **Orbit camera** — `OrbitControls` (from the bundled `three/examples/jsm`) with damping: drag to orbit, scroll to zoom; polar angle clamped above the ground.
+
+## Commands for the runner
+
+- **Install:** `npm install` (run in `source/`)
+- **Build:** `npm run build` *(runs `tsc --noEmit` then `vite build`; verified exit 0 → `dist/index.html` + `dist/assets/index-*.js`)*
+- **Run:** `npm run dev -- --port <assigned-port>` (Vite dev server on `127.0.0.1`); `npm run preview -- --port <assigned-port>` also serves the built `dist/`.
+
+## Assumptions
+
+- This is the **Three.js** track (confirmed by `context/llms.txt`, `run-metadata.json`, and the scaffold), so the app uses `three` + bundled `three/examples/jsm/controls/OrbitControls.js` only — no external assets (prompt requires procedural generation).
+- Added `@types/three@0.165.0` to devDependencies because the scaffold's `build` script includes a strict `tsc --noEmit` step that fails without three's type declarations; runtime deps (`three@0.165.0`) are unchanged.
+- Imported OrbitControls via the canonical `three/examples/jsm/...` path (declared by `@types/three`); it resolves to the same module as the `three/addons/*` alias.
+- HUD/overlay elements and CSS are created from `main.ts` so the scaffold `index.html` (which only provides `#app`) stays untouched.
+- Bars continuously re-randomize so the "animate from random values" behavior is visible at any capture time, not only on first load.
+
+Note: I have a leftover self-scheduled wake-up pending from working around a delayed tool-output relay; per the benchmark rules I've stopped work now that the build is complete, so it can be ignored.

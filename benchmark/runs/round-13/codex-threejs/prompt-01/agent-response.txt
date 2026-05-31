@@ -1,0 +1,18 @@
+Implemented the browser 3D physics playground in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command for the runner:
+```bash
+npm run dev
+```
+
+Assumptions:
+- Raw Three.js context applies because `context/llms.txt` identifies this as the raw Three.js benchmark.
+- No external assets are needed or used.
+- Physics is a scene-specific solver for falling cubes, ramp contacts, cube contacts, and reset behavior.

@@ -1,0 +1,5 @@
+{
+  "status": "fail",
+  "stage": "build",
+  "reason": "npm run build failed"
+}

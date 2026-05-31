@@ -1,0 +1,31 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 72,
+  "bodyTextSample": "Shots: 0\nClick and drag from the ball to aim. Release to shoot.\nOBSTACLE",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6206/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6206/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6206/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6206/ net::ERR_CONNECTION_REFUSED",
+    "GET http://127.0.0.1:6206/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 33,
+    "lumaRange": 238
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6206/",
+  "runCommand": "npm run dev -- --port 6206"
+}
