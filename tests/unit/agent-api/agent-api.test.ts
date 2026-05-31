@@ -87,7 +87,7 @@ describe("agent API", () => {
       .toJSON();
 
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.particleCount === 1400)).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "multicolor particle cloud halo" && node.particleCount === 770)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "older blue mist particles after ground collision" && node.particleCount === 504)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("city tower"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.primitive === "cylinder")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.transmission)).toBe(true);
@@ -99,7 +99,7 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Earth readable planet label")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn visible ring")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("neon tunnel top segment"))).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("receding neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "score counter plinth")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
@@ -116,18 +116,19 @@ describe("agent API", () => {
     const particleEffects = nodes.filter((node) => node.kind === "effect" && node.effect === "particles");
 
     expect(primitiveNames).toEqual(expect.arrayContaining([
-      "wide particle collision ground plane",
+      "large grid particle collision ground plane",
       "painted particle collision splash ring",
-      "visible particle emitter base",
-      "emission rate control slider track",
-      "emission rate control knob high",
+      "literal nozzle particle emitter cone",
+      "real emission rate slider track",
+      "real emission rate slider knob high",
       "hot young particle color swatch",
+      "warm falling particle color swatch",
       "cool old particle color swatch"
     ]));
     expect(particleEffects).toEqual(expect.arrayContaining([
-      expect.objectContaining({ name: "lifetime colored gravity fountain arcs", emitter: "fountain", particleCount: 2400 }),
-      expect.objectContaining({ name: "falling collision sparkle particles", emitter: "fountain", particleCount: 1008 }),
-      expect.objectContaining({ name: "multicolor particle cloud halo", emitter: "swirl", particleCount: 1320 })
+      expect.objectContaining({ name: "narrow upward lifetime colored gravity fountain plume", emitter: "fountain", particleCount: 2400, emissionRate: 120, gravity: 9.8, groundCollision: true }),
+      expect.objectContaining({ name: "falling collision splash particle band", emitter: "fountain", particleCount: 1152, groundCollision: true }),
+      expect.objectContaining({ name: "older blue mist particles after ground collision", emitter: "swirl", particleCount: 864, groundCollision: true })
     ]));
   });
 
@@ -153,7 +154,7 @@ describe("agent API", () => {
     expect(ball?.interaction?.onClick).toContain("aim and shoot");
   });
 
-  test("keeps primitive humanoid readable as a connected animated walk cycle", () => {
+  test("keeps primitive humanoid readable as a connected barely animated pose", () => {
     const nodes = prefabs.primitiveHumanoid();
     const names = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
     const animatedWalkNodes = nodes.filter((node) => node.kind === "primitive" && node.animation?.clip === "walk");
@@ -162,6 +163,11 @@ describe("agent API", () => {
     const head = primitiveByName("humanoid head");
     const neck = primitiveByName("short humanoid neck connector");
     const torso = primitiveByName("connected blue humanoid torso");
+    const scalarScale = (node: AuraPrimitiveNode | undefined): number => {
+      if (typeof node?.scale === "number") return node.scale;
+      if (Array.isArray(node?.scale)) return Math.max(...node.scale);
+      return 1;
+    };
 
     expect(names).toEqual(expect.arrayContaining([
       "painted walking path",
@@ -170,9 +176,14 @@ describe("agent API", () => {
       "left humanoid eye",
       "right humanoid eye",
       "humanoid mouth line",
+      "left bent forearm",
+      "right bent forearm",
       "left shoulder ball joint",
       "forward knee hinge",
-      "translucent previous stride torso ghost",
+      "forward lower walking shin",
+      "back lower walking shin",
+      "cyan body motion trail ribbon behind torso",
+      "blue shoulder motion streak",
       "cyan walk motion arrow shaft",
       "cyan walk motion arrow head",
       "forward foot planted on path",
@@ -180,12 +191,17 @@ describe("agent API", () => {
     ]));
     expect(animatedWalkNodes.length).toBeGreaterThanOrEqual(14);
     expect(head?.position?.[1]).toBeLessThan(1.6);
+    expect(scalarScale(head)).toBeLessThanOrEqual(0.22);
+    expect(scalarScale(primitiveByName("left humanoid hand"))).toBeLessThanOrEqual(0.08);
+    expect(scalarScale(primitiveByName("right humanoid hand"))).toBeLessThanOrEqual(0.08);
+    expect(scalarScale(primitiveByName("shoulder bar connecting arms"))).toBeLessThanOrEqual(0.62);
     expect(neck?.position?.[1]).toBeGreaterThan(torso?.position?.[1] ?? 0);
     expect(head?.position?.[1] ?? 0).toBeGreaterThan(neck?.position?.[1] ?? 999);
     expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("joint")).length).toBeGreaterThanOrEqual(4);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon behind torso")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name?.includes("ghost"))).toBe(false);
     expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "left shoulder ball joint")).toBe(false);
-    expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon")).toBe(false);
+    expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon behind torso")).toBe(false);
   });
 
   test("builds a six-planet solar-system prefab with orbit paths and attached readable labels", () => {
@@ -238,44 +254,60 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
   });
 
-  test("keeps data visualization rich with axes, labels, caps, and trend evidence", () => {
+  test("keeps data visualization rich with axes, labels, caps, and hover evidence", () => {
     const nodes = prefabs.dataBars3D({ grid: 6 });
     const bars = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("height-colored data bar") === true);
     const caps = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("bright data bar top cap") === true);
     const footprints = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("soft data bar footprint") === true);
-    const trendRibbon = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floating trend ribbon segment") === true);
-    const columnLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("column label chip") === true);
-    const rowLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("row label chip") === true);
+    const trendRibbon = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("trend ridge") === true);
+    const columnLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("readable X") === true);
+    const rowLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("readable Z") === true);
+    const names = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
+    const hoverNodes = prefabs.dataBars3D({ grid: 6, selected: { row: 4, col: 6 } });
+    const hoverNames = hoverNodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
+    const selectedBar = hoverNodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "height-colored data bar 4-6");
 
     expect(bars).toHaveLength(36);
     expect(caps).toHaveLength(36);
     expect(footprints).toHaveLength(36);
-    expect(trendRibbon).toHaveLength(5);
+    expect(trendRibbon).toHaveLength(0);
     expect(columnLabels).toHaveLength(6);
     expect(rowLabels).toHaveLength(6);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "dark rear chart wall")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "selected metric callout slab")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "readable 3D chart title backplate")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "selected metric hover readout panel")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "red high value legend swatch")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "height tick 4 back wall line")).toBe(true);
     expect(nodes.some((node) => node.kind === "effect" && node.effect === "bloom")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.primitive === "plane")).toBe(false);
+    expect(names.some((name) => name.includes("hotspot value marker"))).toBe(false);
+    expect(names.some((name) => name.includes("floating"))).toBe(false);
+    expect(hoverNames).toEqual(expect.arrayContaining([
+      "selected data bar outline 4-6",
+      "hovered data bar readout leader 4-6"
+    ]));
+    expect(selectedBar?.material?.color).toBe("#f97316");
   });
 
   test("keeps neon tunnel cinematic with octagonal rings, reflections, and motion cues", () => {
     const nodes = prefabs.neonTunnel({ rings: 10 });
-    const topSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("neon tunnel top segment") === true);
+    const topSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("receding neon tunnel top segment") === true);
     const diagonalBraces = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("diagonal brace") === true);
+    const wallChords = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("curved tube wall") === true);
     const floorReflections = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floor reflection streak") === true);
     const speedDashes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("wall speed dash") === true);
     const sparks = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floating tunnel spark") === true);
 
-    expect(topSegments).toHaveLength(10);
-    expect(diagonalBraces).toHaveLength(40);
-    expect(floorReflections).toHaveLength(10);
-    expect(speedDashes).toHaveLength(10);
+    expect(topSegments).toHaveLength(12);
+    expect(diagonalBraces).toHaveLength(48);
+    expect(wallChords).toHaveLength(24);
+    expect(floorReflections).toHaveLength(12);
+    expect(speedDashes).toHaveLength(12);
     expect(sparks).toHaveLength(14);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "glossy black neon tunnel floor")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vanishing light rail")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "distant portal glow panel")).toBe(true);
-    expect(nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "ambient tunnel dust particles" && node.particleCount === 900)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "tiny vanishing point glow beyond tunnel")).toBe(true);
+    expect(nodes.some((node) => node.kind === "effect" && node.effect === "particles" && node.name === "ambient tunnel dust particles" && node.particleCount === 1100)).toBe(true);
     expect(nodes.some((node) => node.kind === "effect" && node.effect === "bloom")).toBe(true);
   });
 
@@ -321,7 +353,8 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "glass dark contrast card")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "glass refracted white stripe")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "rubber roughness sample strip")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "emissive magenta glow halo")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "large emissive magenta glow halo")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "emissive glow spill on lab floor")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "red automotive clearcoat swatch")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "clearcoat white topcoat highlight")).toBe(true);
     expect(glass?.material).toMatchObject({ opacity: 0.22, transmission: 1, thickness: 0.9, ior: 1.48 });
@@ -379,9 +412,9 @@ describe("agent API", () => {
     const nodes = prefabs.productStage();
 
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "front low product highlight card")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.7)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.3)).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow" && node.position?.[1] === 0.535)).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring" && node.position?.[1] === 0.526 && node.material?.opacity === 0.22)).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring" && node.position?.[1] === 0.526 && node.material?.opacity === 0.14)).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan orbit control arc")).toBe(true);
     expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("turntable rotation tick")).length).toBe(3);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "fit to bounds centerline guide")).toBe(true);
@@ -417,28 +450,42 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring")).toBe(true);
-    expect(productModel).toMatchObject({
-      position: [0, 0.54, -0.65],
-      rotation: [0, -0.38, 0],
-      animation: { clip: "turntable", speed: 0.42 }
-    });
-    expect(productModel?.scale).toBeUndefined();
-    expect(snapshot.camera).toMatchObject({
-      mode: "perspective",
-      position: [1.65, 1.18, 4.0],
-      target: [0, 0.72, -0.65],
-      fov: 38
-    });
-  });
+	    expect(productModel).toMatchObject({
+	      position: [0, 0.54, -0.65],
+	      rotation: [0, -0.38, 0],
+	      animation: { clip: "turntable", speed: 0.42 }
+	    });
+	    expect(productModel?.scale).toBeUndefined();
+	    expect(snapshot.camera).toMatchObject({
+	      mode: "perspective",
+	      position: [1.65, 1.18, 4.0],
+	      target: [0, 0.72, -0.65],
+	      fov: 38
+	    });
+	  });
+
+	  test("provides a one-call typed product viewer helper", () => {
+	    const nodes = prefabs.productViewer(assets.robot);
+	    const productModel = nodes.find((node): node is AuraModelNode => node.kind === "model" && node.asset.id === "robot");
+
+	    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth")).toBe(true);
+	    expect(productModel).toMatchObject({
+	      position: [0, 0.54, -0.65],
+	      rotation: [0, -0.38, 0],
+	      animation: { clip: "turntable", speed: 0.42 }
+	    });
+	  });
 
   test("exposes typed UI helpers for benchmark HUDs", () => {
     expect(ui).toMatchObject({
-      html: expect.any(Function),
-      setText: expect.any(Function),
-      setPressed: expect.any(Function),
-      onClick: expect.any(Function)
-    });
-  });
+	      html: expect.any(Function),
+	      setText: expect.any(Function),
+	      setPressed: expect.any(Function),
+	      onClick: expect.any(Function),
+	      range: expect.any(Function),
+	      onInput: expect.any(Function)
+	    });
+	  });
 
   test("mounts UI markup inside the target by default", () => {
     const calls: Array<[InsertPosition, string]> = [];
