@@ -16,11 +16,10 @@ Three.js benchmark.
 - Round 12 prompt decision: do not ship as a proven Three.js competitor;
   Codex/Aura3D reached 2/10 prompt wins and Claude/Aura3D reached 6/10 prompt
   wins, below the required 7/10 for both agents.
-- Round 13 status: task-12 repair amendment and Phase A sign-off are approved
-  in `benchmark/results/amendment-round-13-task12-repair.md` and
-  `benchmark/results/round-13-phase-a-signoff.md` for a `PRD-AMENDMENT:`
-  commit. Round 13 is not a passing benchmark result; it is only the next
-  authorized prompt-benchmark standard once committed.
+- Round 13 status: task-12 repair work was committed in `d1a533f`, but
+  explicit human sign-off for that benchmark standard is not currently
+  recorded. Round 13 is not a passing benchmark result and is not an authorized
+  future prompt-benchmark standard.
 - Release state: not go-live ready until a later full round passes and is
   signed.
 

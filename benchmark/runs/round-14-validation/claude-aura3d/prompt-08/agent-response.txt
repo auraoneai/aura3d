@@ -1,0 +1,26 @@
+The build succeeded (typecheck + Vite production build both passed). Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built **Prompt 08: Procedural City Block** by copying the matching benchmark recipe (recipe 08) and making only prompt-required edits.
+
+**What was built** (`source/src/main.ts` + `source/src/style.css`):
+- Uses the public `city.createState({ blocks: 20, litWindows: true })` helper — the `prefabs.cityBlock` city generator that ships ~20 varied-height box towers with window columns, streets, crosswalks, street lights, vehicles, and in-frame sun/moon state markers. No custom city engine.
+- A visible **day/night toggle button** that calls `cityState.toggleTimeOfDay()` and rebuilds the scene, changing the **sky** (`#061018` night → `#8fc9ff` day), **lighting** intensity (1.08 → 1.45), fog/bloom, and the lit-windows / sun-moon marker state — not a text-only toggle.
+- Camera framed with `camera.city()` so the street, intersection, and day/night marker stay in view.
+
+**Build command:**
+```
+npm run build
+```
+
+**Run command (for the runner to execute later):**
+```
+npm run dev -- --port <assigned-port>
+```
+(equivalently `npm run dev -- --host 127.0.0.1 --port <assigned-port>`)
+
+**Assumptions:**
+- Scene starts in **night mode** so lit windows and street lights read immediately; one toggle click switches to day.
+- Used `@aura3d/engine` public exports only (`city`, `scene`, `effects`, `lights`, `camera`, `ui`, `createAuraApp`); verified all symbols exist in the installed engine's typed agent-api before writing. No assets added (prompt is fully procedural).
+- Per benchmark rules, I did not run `npm run dev`/preview/Playwright/screenshots; only `npm install` and `npm run build` were run, both finite and successful.

@@ -1,0 +1,9 @@
+The remaining background job has completed. Nothing further to do — the task is finished.
+
+**Summary:** The animated primitive humanoid app is built and `npm run build` passed (typecheck + vite build, dist generated).
+
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run:** `npm run dev -- --port <assigned-port>` (from `source/`)
+
+The figure reads as humanoid (sphere head, cylinder torso/neck, box arms/legs with feet), stands on a visible grid ground plane, and runs a procedural sin-driven walk cycle (opposing leg/arm swing, body bob, torso lean) while traversing across the ground — so any runtime frame shows a striding, animated pose.

@@ -1,0 +1,15 @@
+Implemented the procedural particle fountain in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/codex-aura3d/prompt-02/source/src/main.ts). It uses `prefabs.particleFountain`, visible ground/emitter/fountain evidence from the prefab, and a real emission-rate range control that rebuilds the scene with the selected rate.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions: no external assets are required; the fountain prefab supplies the required particle arcs, lifetime coloring, emitter, ground collision/splash evidence, and ground plane.

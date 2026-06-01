@@ -1,0 +1,380 @@
+// Prompt 05: 3D Data Visualization
+// A 6x6 grid of bars whose heights animate from random values, colored by
+// height, with hover-highlight, an orbit camera, and readable axis labels.
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import {
+  CSS2DRenderer,
+  CSS2DObject,
+} from 'three/addons/renderers/CSS2DRenderer.js';
+
+// --- Page chrome -----------------------------------------------------------
+
+const style = document.createElement('style');
+style.textContent = `
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0e1116; }
+  #app { position: fixed; inset: 0; }
+  canvas { display: block; }
+`;
+document.head.appendChild(style);
+
+// --- Constants -------------------------------------------------------------
+
+const GRID = 6; // 6x6 = 36 bars
+const SPACING = 2.0; // distance between bar centers
+const BAR_SIZE = 1.0; // footprint (x/z) of each bar
+const MIN_HEIGHT = 0.4;
+const MAX_HEIGHT = 8.0;
+const ANIM_DURATION = 1.4; // seconds for the grow animation
+
+// --- Renderer / scene / camera --------------------------------------------
+
+const app = document.getElementById('app') as HTMLDivElement;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+app.appendChild(renderer.domElement);
+
+// Label renderer overlays the WebGL canvas for crisp, readable axis labels.
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(window.innerWidth, window.innerHeight);
+labelRenderer.domElement.style.position = 'absolute';
+labelRenderer.domElement.style.top = '0';
+labelRenderer.domElement.style.left = '0';
+labelRenderer.domElement.style.pointerEvents = 'none';
+app.appendChild(labelRenderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0e1116);
+
+const camera = new THREE.PerspectiveCamera(
+  50,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000,
+);
+camera.position.set(16, 14, 18);
+
+const controls = new OrbitControls(camera, labelRenderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.target.set(0, 3, 0);
+controls.minDistance = 8;
+controls.maxDistance = 60;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+// --- Lighting --------------------------------------------------------------
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x202028, 0.6));
+
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+keyLight.position.set(14, 24, 12);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 1;
+keyLight.shadow.camera.far = 80;
+keyLight.shadow.camera.left = -20;
+keyLight.shadow.camera.right = 20;
+keyLight.shadow.camera.top = 20;
+keyLight.shadow.camera.bottom = -20;
+scene.add(keyLight);
+
+// --- Ground / grid floor ---------------------------------------------------
+
+const span = GRID * SPACING;
+
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(span + 4, span + 4),
+  new THREE.MeshStandardMaterial({ color: 0x171b22, roughness: 0.95 }),
+);
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = 0;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const gridHelper = new THREE.GridHelper(span + 4, GRID + 4, 0x2a3040, 0x222732);
+scene.add(gridHelper);
+
+// --- Color ramp: maps a normalized height [0..1] to a color ----------------
+// Blue (low) -> cyan -> green -> yellow -> red (high).
+
+function colorForHeight(t: number): THREE.Color {
+  const hue = (1 - THREE.MathUtils.clamp(t, 0, 1)) * 0.66; // 0.66=blue .. 0=red
+  return new THREE.Color().setHSL(hue, 0.85, 0.55);
+}
+
+// --- Bars ------------------------------------------------------------------
+
+interface Bar {
+  mesh: THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>;
+  targetHeight: number;
+  startHeight: number;
+  baseColor: THREE.Color;
+  row: number;
+  col: number;
+}
+
+const bars: Bar[] = [];
+const barGroup = new THREE.Group();
+scene.add(barGroup);
+
+// Unit-height box anchored at its base (y in [0..1]) so scaling Y grows it up.
+const barGeometry = new THREE.BoxGeometry(BAR_SIZE, 1, BAR_SIZE);
+barGeometry.translate(0, 0.5, 0);
+
+function randomHeight(): number {
+  return MIN_HEIGHT + Math.random() * (MAX_HEIGHT - MIN_HEIGHT);
+}
+
+const offset = ((GRID - 1) * SPACING) / 2;
+
+for (let row = 0; row < GRID; row++) {
+  for (let col = 0; col < GRID; col++) {
+    const targetHeight = randomHeight();
+    const baseColor = colorForHeight(
+      (targetHeight - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT),
+    );
+
+    const material = new THREE.MeshStandardMaterial({
+      color: baseColor.clone(),
+      roughness: 0.4,
+      metalness: 0.1,
+    });
+
+    const mesh = new THREE.Mesh(barGeometry, material);
+    mesh.position.set(col * SPACING - offset, 0, row * SPACING - offset);
+    mesh.scale.y = 0.001; // start flat; animates up
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    mesh.userData.barIndex = bars.length;
+    barGroup.add(mesh);
+
+    bars.push({
+      mesh,
+      targetHeight,
+      startHeight: 0,
+      baseColor: baseColor.clone(),
+      row,
+      col,
+    });
+  }
+}
+
+// --- Axis labels (CSS2D, always readable) ----------------------------------
+
+function makeLabel(text: string): CSS2DObject {
+  const el = document.createElement('div');
+  el.textContent = text;
+  el.style.color = '#e8edf6';
+  el.style.fontFamily =
+    'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+  el.style.fontSize = '13px';
+  el.style.fontWeight = '600';
+  el.style.padding = '1px 5px';
+  el.style.borderRadius = '4px';
+  el.style.background = 'rgba(14,17,22,0.6)';
+  el.style.whiteSpace = 'nowrap';
+  el.style.textShadow = '0 1px 2px rgba(0,0,0,0.9)';
+  return new CSS2DObject(el);
+}
+
+// X axis labels (columns: C1..C6) along the front edge.
+for (let col = 0; col < GRID; col++) {
+  const label = makeLabel(`C${col + 1}`);
+  label.position.set(col * SPACING - offset, 0.1, offset + SPACING);
+  scene.add(label);
+}
+
+// Z axis labels (rows: R1..R6) along the left edge.
+for (let row = 0; row < GRID; row++) {
+  const label = makeLabel(`R${row + 1}`);
+  label.position.set(-offset - SPACING, 0.1, row * SPACING - offset);
+  scene.add(label);
+}
+
+// Y axis ticks (value scale) along the vertical back-left corner.
+const yTicks = 4;
+for (let i = 0; i <= yTicks; i++) {
+  const value = (MAX_HEIGHT / yTicks) * i;
+  const label = makeLabel(value.toFixed(0));
+  label.position.set(-offset - SPACING, value, -offset - SPACING);
+  scene.add(label);
+}
+
+// Axis title labels.
+const titleX = makeLabel('X axis  (categories)');
+titleX.position.set(0, 0.1, offset + SPACING * 1.8);
+scene.add(titleX);
+
+const titleZ = makeLabel('Z axis  (series)');
+titleZ.position.set(-offset - SPACING * 1.9, 0.1, 0);
+scene.add(titleZ);
+
+const titleY = makeLabel('Value (bar height)');
+titleY.position.set(-offset - SPACING, MAX_HEIGHT + 1.2, -offset - SPACING);
+scene.add(titleY);
+
+// --- Heading / instructions overlay ----------------------------------------
+
+const overlay = document.createElement('div');
+overlay.style.position = 'fixed';
+overlay.style.top = '14px';
+overlay.style.left = '16px';
+overlay.style.color = '#e8edf6';
+overlay.style.fontFamily =
+  'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+overlay.style.fontSize = '14px';
+overlay.style.lineHeight = '1.5';
+overlay.style.textShadow = '0 1px 3px rgba(0,0,0,0.9)';
+overlay.style.pointerEvents = 'none';
+overlay.innerHTML =
+  '<div style="font-size:18px;font-weight:700;margin-bottom:4px;">' +
+  '3D Data Visualization &mdash; 6&times;6 Bar Grid</div>' +
+  '<div>Drag to orbit &middot; scroll to zoom &middot; hover a bar to highlight it</div>';
+app.appendChild(overlay);
+
+// Read-out for the currently hovered bar.
+const hoverInfo = document.createElement('div');
+hoverInfo.style.position = 'fixed';
+hoverInfo.style.bottom = '14px';
+hoverInfo.style.left = '16px';
+hoverInfo.style.color = '#e8edf6';
+hoverInfo.style.fontFamily =
+  'system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+hoverInfo.style.fontSize = '14px';
+hoverInfo.style.fontWeight = '600';
+hoverInfo.style.padding = '6px 10px';
+hoverInfo.style.borderRadius = '6px';
+hoverInfo.style.background = 'rgba(14,17,22,0.7)';
+hoverInfo.style.textShadow = '0 1px 2px rgba(0,0,0,0.9)';
+hoverInfo.style.pointerEvents = 'none';
+hoverInfo.textContent = 'Hover a bar to inspect its value';
+app.appendChild(hoverInfo);
+
+// --- Hover highlight (raycasting) ------------------------------------------
+
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let hasPointer = false;
+let hovered: Bar | null = null;
+const highlightColor = new THREE.Color(0xffffff);
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  hasPointer = true;
+});
+
+renderer.domElement.addEventListener('pointerleave', () => {
+  hasPointer = false;
+});
+
+function setHovered(bar: Bar | null): void {
+  if (hovered === bar) return;
+
+  // Restore the previously hovered bar.
+  if (hovered) {
+    hovered.mesh.material.color.copy(hovered.baseColor);
+    hovered.mesh.material.emissive.setHex(0x000000);
+    hovered.mesh.scale.x = 1;
+    hovered.mesh.scale.z = 1;
+  }
+
+  hovered = bar;
+
+  if (hovered) {
+    // Brighten + emissive glow + slight thicken so the bar pops.
+    hovered.mesh.material.color
+      .copy(hovered.baseColor)
+      .lerp(highlightColor, 0.5);
+    hovered.mesh.material.emissive.copy(hovered.baseColor).multiplyScalar(0.6);
+    hovered.mesh.scale.x = 1.18;
+    hovered.mesh.scale.z = 1.18;
+
+    hoverInfo.textContent =
+      `R${hovered.row + 1} / C${hovered.col + 1}  —  value ` +
+      `${hovered.targetHeight.toFixed(2)}`;
+  } else {
+    hoverInfo.textContent = 'Hover a bar to inspect its value';
+  }
+}
+
+function updateHover(): void {
+  if (!hasPointer) {
+    setHovered(null);
+    return;
+  }
+  raycaster.setFromCamera(pointer, camera);
+  const hits = raycaster.intersectObjects(barGroup.children, false);
+  if (hits.length > 0) {
+    const idx = hits[0].object.userData.barIndex as number;
+    setHovered(bars[idx]);
+  } else {
+    setHovered(null);
+  }
+}
+
+// --- Animation -------------------------------------------------------------
+
+const clock = new THREE.Clock();
+let elapsed = 0;
+let regrowTimer = 0;
+
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+// Periodically re-randomize the data so heights visibly animate over time.
+function reshuffle(): void {
+  for (const bar of bars) {
+    bar.startHeight = bar.targetHeight;
+    bar.targetHeight = randomHeight();
+    const t = (bar.targetHeight - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT);
+    bar.baseColor = colorForHeight(t);
+  }
+  elapsed = 0;
+}
+
+function animate(): void {
+  const dt = clock.getDelta();
+  elapsed += dt;
+  regrowTimer += dt;
+
+  const p = easeOutCubic(Math.min(elapsed / ANIM_DURATION, 1));
+
+  for (const bar of bars) {
+    const h = THREE.MathUtils.lerp(bar.startHeight, bar.targetHeight, p);
+    bar.mesh.scale.y = Math.max(h, 0.001);
+    // Update color only for non-hovered bars (hovered keeps its highlight).
+    if (bar !== hovered) {
+      bar.mesh.material.color.copy(bar.baseColor);
+    }
+  }
+
+  // Trigger a new animated reshuffle every few seconds.
+  if (regrowTimer > ANIM_DURATION + 2.5) {
+    regrowTimer = 0;
+    reshuffle();
+  }
+
+  updateHover();
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+
+renderer.setAnimationLoop(animate);
+
+// --- Resize ----------------------------------------------------------------
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  labelRenderer.setSize(window.innerWidth, window.innerHeight);
+});

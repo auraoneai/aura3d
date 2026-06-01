@@ -1,17 +1,39 @@
+import {
+  Body as CannonBody,
+  Box as CannonBox,
+  Cylinder as CannonCylinder,
+  Plane as CannonPlane,
+  Quaternion as CannonQuaternion,
+  Sphere as CannonSphere,
+  Vec3 as CannonVec3,
+  World as CannonWorld
+} from "cannon-es";
 import { Collider, type ColliderDescriptor } from "./Collider.js";
 import { CollisionEventQueue, type CollisionEvent, type Contact } from "./CollisionEvents.js";
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
-import { cloneVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type Vec3 } from "./Shape.js";
+import { cloneVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 
 export type PhysicsWorldDescriptor = {
+  readonly backend?: PhysicsBackendPreference;
   readonly gravity?: Vec3;
   readonly fixedDelta?: number;
   readonly solverIterations?: number;
   readonly enableSleeping?: boolean;
   readonly sleepVelocityThreshold?: number;
   readonly sleepDelay?: number;
+};
+
+export type PhysicsBackend = "cannon-es" | "aura-js";
+export type PhysicsBackendPreference = PhysicsBackend | "auto";
+
+export type PhysicsBackendSelection = {
+  readonly requested: PhysicsBackendPreference;
+  readonly active: PhysicsBackend;
+  readonly fallback?: string;
+  readonly deterministic: boolean;
+  readonly jsFallbackAvailable: boolean;
 };
 
 export type PhysicsStepStats = {
@@ -33,6 +55,7 @@ export type PhysicsStepStats = {
 };
 
 export type PhysicsSnapshot = {
+  readonly backend: PhysicsBackendSelection;
   readonly bodies: readonly RigidBodySnapshot[];
   readonly contacts: readonly Contact[];
   readonly stats: PhysicsStepStats;
@@ -50,6 +73,10 @@ export class PhysicsWorld {
   private readonly constraintsList: Constraint[] = [];
   private readonly bodyColliders = new Map<number, Set<number>>();
   private readonly eventQueue = new CollisionEventQueue();
+  private readonly requestedBackend: PhysicsBackendPreference;
+  private backendSelection: PhysicsBackendSelection;
+  private cannonWorld: CannonWorld | undefined;
+  private readonly cannonBodiesByAuraId = new Map<number, CannonBody>();
   private nextBodyId = 1;
   private nextColliderId = 1;
   private lastEvents: readonly CollisionEvent[] = [];
@@ -58,6 +85,7 @@ export class PhysicsWorld {
   private steps = 0;
 
   constructor(descriptor: PhysicsWorldDescriptor = {}) {
+    this.requestedBackend = descriptor.backend ?? "auto";
     this.gravity = cloneVec3(descriptor.gravity ?? [0, -9.81, 0]);
     this.fixedDelta = descriptor.fixedDelta ?? 1 / 60;
     this.solverIterations = descriptor.solverIterations ?? 1;
@@ -76,6 +104,21 @@ export class PhysicsWorld {
     if (!Number.isFinite(this.sleepDelay) || this.sleepDelay < 0) {
       throw new Error("sleepDelay must be finite and non-negative.");
     }
+    this.backendSelection = {
+      requested: this.requestedBackend,
+      active: this.requestedBackend === "aura-js" ? "aura-js" : "cannon-es",
+      deterministic: true,
+      jsFallbackAvailable: true
+    };
+    if (this.backendSelection.active === "cannon-es") {
+      this.cannonWorld = new CannonWorld({
+        gravity: toCannonVec3(this.gravity),
+        allowSleep: this.enableSleeping
+      });
+      (this.cannonWorld.solver as { iterations?: number }).iterations = this.solverIterations;
+      this.cannonWorld.defaultContactMaterial.friction = 0.5;
+      this.cannonWorld.defaultContactMaterial.restitution = 0;
+    }
   }
 
   createRigidBody(descriptor: RigidBodyDescriptor = {}): RigidBody {
@@ -83,6 +126,11 @@ export class PhysicsWorld {
     this.nextBodyId += 1;
     this.bodiesById.set(body.id, body);
     this.bodyColliders.set(body.id, new Set());
+    const cannonBody = this.createCannonBody(body);
+    if (cannonBody) {
+      this.cannonBodiesByAuraId.set(body.id, cannonBody);
+      this.cannonWorld?.addBody(cannonBody);
+    }
     return body;
   }
 
@@ -95,6 +143,7 @@ export class PhysicsWorld {
     this.nextColliderId += 1;
     this.collidersById.set(collider.id, collider);
     this.bodyColliders.get(bodyId)?.add(collider.id);
+    this.addCannonCollider(collider);
     return collider;
   }
 
@@ -142,6 +191,11 @@ export class PhysicsWorld {
     }
     this.bodyColliders.delete(id);
     this.bodiesById.delete(id);
+    const cannonBody = this.cannonBodiesByAuraId.get(id);
+    if (cannonBody) {
+      this.cannonWorld?.removeBody(cannonBody);
+      this.cannonBodiesByAuraId.delete(id);
+    }
     for (let index = this.constraintsList.length - 1; index >= 0; index -= 1) {
       const constraint = this.constraintsList[index]!;
       if (constraint.bodyA.id === id || constraint.bodyB.id === id) {
@@ -166,6 +220,9 @@ export class PhysicsWorld {
   step(dt = this.fixedDelta): readonly CollisionEvent[] {
     if (!Number.isFinite(dt) || dt <= 0) {
       throw new Error("PhysicsWorld.step dt must be finite and positive.");
+    }
+    if (this.cannonWorld) {
+      return this.stepCannon(dt);
     }
     for (const body of this.bodyValues()) {
       body.integrate(dt, this.gravity);
@@ -242,6 +299,7 @@ export class PhysicsWorld {
     const contacts = this.eventQueue.snapshotContacts();
     const bodies = this.bodies();
     return {
+      backend: this.backendSelection,
       bodies: bodies.map((body) => body.snapshot()),
       contacts,
       stats: {
@@ -437,6 +495,118 @@ export class PhysicsWorld {
       }
     }
   }
+
+  private createCannonBody(body: RigidBody): CannonBody | undefined {
+    if (!this.cannonWorld) return undefined;
+    const cannonBody = new CannonBody({
+      type: body.type === "static" ? CannonBody.STATIC : body.type === "kinematic" ? CannonBody.KINEMATIC : CannonBody.DYNAMIC,
+      mass: body.type === "dynamic" ? body.mass : 0,
+      position: toCannonVec3(body.position),
+      velocity: toCannonVec3(body.velocity),
+      quaternion: new CannonQuaternion(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]),
+      angularVelocity: toCannonVec3(body.angularVelocity),
+      linearDamping: body.linearDamping,
+      angularDamping: body.angularDamping,
+      allowSleep: this.enableSleeping,
+      sleepSpeedLimit: this.sleepVelocityThreshold,
+      sleepTimeLimit: this.sleepDelay
+    });
+    if (body.sleeping) cannonBody.sleep();
+    return cannonBody;
+  }
+
+  private addCannonCollider(collider: Collider): void {
+    if (!this.cannonWorld) return;
+    const body = this.bodiesById.get(collider.bodyId);
+    const cannonBody = this.cannonBodiesByAuraId.get(collider.bodyId);
+    if (!body || !cannonBody) return;
+    const resolved = toCannonShape(collider.shape);
+    if (!resolved) {
+      this.disableCannonBackend(`unsupported shape '${collider.shape.kind}'`);
+      return;
+    }
+    cannonBody.collisionFilterGroup = collider.filter.layer;
+    cannonBody.collisionFilterMask = collider.filter.mask;
+    cannonBody.isTrigger = cannonBody.isTrigger || collider.sensor;
+    cannonBody.addShape(resolved.shape, resolved.offset, resolved.orientation);
+    cannonBody.updateMassProperties();
+    syncCannonFromAura(body, cannonBody);
+  }
+
+  private disableCannonBackend(reason: string): void {
+    if (!this.cannonWorld) return;
+    this.cannonWorld = undefined;
+    this.cannonBodiesByAuraId.clear();
+    this.backendSelection = {
+      requested: this.requestedBackend,
+      active: "aura-js",
+      fallback: reason,
+      deterministic: true,
+      jsFallbackAvailable: true
+    };
+  }
+
+  private stepCannon(dt: number): readonly CollisionEvent[] {
+    if (!this.cannonWorld) return [];
+    this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
+    for (const body of this.bodyValues()) {
+      const cannonBody = this.cannonBodiesByAuraId.get(body.id);
+      if (cannonBody) syncCannonFromAura(body, cannonBody);
+    }
+    this.cannonWorld.step(dt);
+    for (const body of this.bodyValues()) {
+      const cannonBody = this.cannonBodiesByAuraId.get(body.id);
+      if (cannonBody) syncAuraFromCannon(cannonBody, body);
+    }
+    const contacts = this.detectContacts();
+    this.lastEvents = this.eventQueue.update(contacts);
+    this.updateSleeping(dt, contacts);
+    this.steps += 1;
+    return this.lastEvents;
+  }
+}
+
+function toCannonVec3(value: Vec3): CannonVec3 {
+  return new CannonVec3(value[0], value[1], value[2]);
+}
+
+function fromCannonVec3(value: CannonVec3): [number, number, number] {
+  return [value.x, value.y, value.z];
+}
+
+function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
+  cannonBody.position.set(body.position[0], body.position[1], body.position[2]);
+  cannonBody.velocity.set(body.velocity[0], body.velocity[1], body.velocity[2]);
+  cannonBody.quaternion.set(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]);
+  cannonBody.angularVelocity.set(body.angularVelocity[0], body.angularVelocity[1], body.angularVelocity[2]);
+  if (body.sleeping) cannonBody.sleep();
+  else cannonBody.wakeUp();
+}
+
+function syncAuraFromCannon(cannonBody: CannonBody, body: RigidBody): void {
+  body.previousPosition = cloneVec3(body.position);
+  body.previousRotation = [body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]];
+  body.position = fromCannonVec3(cannonBody.position);
+  body.velocity = fromCannonVec3(cannonBody.velocity);
+  body.angularVelocity = fromCannonVec3(cannonBody.angularVelocity);
+  body.rotation = [cannonBody.quaternion.x, cannonBody.quaternion.y, cannonBody.quaternion.z, cannonBody.quaternion.w];
+  body.sleeping = cannonBody.sleepState === CannonBody.SLEEPING;
+}
+
+function toCannonShape(shape: PhysicsShape): { readonly shape: CannonBox | CannonSphere | CannonPlane | CannonCylinder; readonly offset?: CannonVec3; readonly orientation?: CannonQuaternion } | undefined {
+  if (shape.kind === "box") return { shape: new CannonBox(toCannonVec3(shape.halfExtents)) };
+  if (shape.kind === "sphere") return { shape: new CannonSphere(shape.radius) };
+  if (shape.kind === "capsule") return { shape: new CannonCylinder(shape.radius, shape.radius, shape.halfHeight * 2 + shape.radius * 2, 12) };
+  if (shape.kind === "plane") {
+    const orientation = new CannonQuaternion();
+    orientation.setFromVectors(new CannonVec3(0, 0, 1), toCannonVec3(shape.normal));
+    return {
+      shape: new CannonPlane(),
+      offset: toCannonVec3(scaleVec3(shape.normal, shape.constant)),
+      orientation
+    };
+  }
+  return undefined;
 }
 
 function totalKineticEnergy(bodies: readonly RigidBody[]): number {

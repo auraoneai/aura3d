@@ -25,6 +25,7 @@ const rootTypeLines: string[] = [];
 
 for (const packageName of packageNames) {
   const source = join(rootDist, "packages", packageName, "src");
+  const packageSource = join(packageRoot, packageName, "src");
   if (!existsSync(source)) {
     throw new Error(`Missing emitted source directory for ${packageName}: ${source}`);
   }
@@ -35,6 +36,8 @@ for (const packageName of packageNames) {
   rmSync(localPackageDist, { recursive: true, force: true });
   cpSync(source, rootPackageDist, { recursive: true });
   cpSync(source, localPackageDist, { recursive: true });
+  copyStaticRuntimeAssets(packageSource, rootPackageDist);
+  copyStaticRuntimeAssets(packageSource, localPackageDist);
   rewriteJavaScriptSpecifiers(rootPackageDist, rootDist, true);
   rewriteJavaScriptSpecifiers(localPackageDist, localPackageDist, false);
 
@@ -57,6 +60,25 @@ function walkFiles(dir: string, out: string[] = []): string[] {
     const stats = statSync(path);
     if (stats.isDirectory()) walkFiles(path, out);
     else if (path.endsWith(".js")) out.push(path);
+  }
+  return out;
+}
+
+function copyStaticRuntimeAssets(sourceDir: string, targetDir: string): void {
+  if (!existsSync(sourceDir)) return;
+  for (const file of walkStaticRuntimeAssets(sourceDir)) {
+    const target = join(targetDir, relative(sourceDir, file));
+    mkdirSync(dirname(target), { recursive: true });
+    cpSync(file, target);
+  }
+}
+
+function walkStaticRuntimeAssets(dir: string, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    const stats = statSync(path);
+    if (stats.isDirectory()) walkStaticRuntimeAssets(path, out);
+    else if (/\.(bin|glb|gltf|hdr|jpg|jpeg|ktx2|png|svg|webp)$/i.test(path)) out.push(path);
   }
   return out;
 }
@@ -93,6 +115,19 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
     return specifier;
   }
 
+  const subpathMatch = /^@aura3d\/([^/]+)\/(.+)$/.exec(specifier);
+  if (rewriteWorkspacePackages && subpathMatch && packageNameSet.has(subpathMatch[1]!)) {
+    const packageName = subpathMatch[1]!;
+    const subpath = subpathMatch[2]!;
+    const target = subpath === "browser"
+      ? join(distRoot, packageName, "browser-index.js")
+      : resolveWorkspaceSubpathTarget(distRoot, packageName, subpath);
+    if (!target) return specifier;
+    let next = relative(dirname(file), target).replaceAll("\\", "/");
+    if (!next.startsWith(".")) next = `./${next}`;
+    return next;
+  }
+
   const match = /^@aura3d\/([^/]+)$/.exec(specifier);
   if (!rewriteWorkspacePackages || !match || !packageNameSet.has(match[1]!)) return specifier;
   const target = match[1] === "animation" && file.includes(`${distRoot}/assets/`)
@@ -101,4 +136,12 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
   let next = relative(dirname(file), target).replaceAll("\\", "/");
   if (!next.startsWith(".")) next = `./${next}`;
   return next;
+}
+
+function resolveWorkspaceSubpathTarget(distRoot: string, packageName: string, subpath: string): string | null {
+  const direct = join(distRoot, packageName, `${subpath}.js`);
+  if (existsSync(direct)) return direct;
+  const index = join(distRoot, packageName, subpath, "index.js");
+  if (existsSync(index)) return index;
+  return null;
 }

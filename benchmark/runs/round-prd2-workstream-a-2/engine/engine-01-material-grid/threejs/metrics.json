@@ -1,0 +1,68 @@
+{
+  "scene": "engine-01-material-grid",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "routeHealthMethod": "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "routeHealthEvidence": "route-health.json",
+  "routeUrl": "http://127.0.0.1:7012/",
+  "captureStartedAt": "2026-06-01T01:28:15.628Z",
+  "firstUsableRenderMs": 561,
+  "p50Fps": 120.48192771082753,
+  "p95FrameTimeMs": 9.299999999999272,
+  "fpsSample": {
+    "sampleCount": 1738,
+    "totalFrameTimeMs": 15000.600000000019,
+    "minFrameTimeMs": 7.299999999999272,
+    "maxFrameTimeMs": 33.29999999999927,
+    "p50FrameTimeMs": 8.300000000001091,
+    "p95FrameTimeMs": 9.299999999999272,
+    "p50Fps": 120.48192771082753,
+    "timedOut": false
+  },
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 6,
+  "triangleCount": 2652,
+  "jsHeapPeakBytes": 10000000,
+  "heapSampleCount": 20,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 120428,
+  "sourceLoc": 65,
+  "screenshot": "screenshot.png",
+  "screenshotMtime": "2026-06-01T01:28:53.287Z",
+  "screenshotMtimeMs": 1780277333287.4033,
+  "screenshotFresh": true,
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "totalFrameTimeMs": 3006.7000000000003,
+      "minFrameTimeMs": 6.400000000000091,
+      "maxFrameTimeMs": 17,
+      "p50FrameTimeMs": 8.299999999999955,
+      "p95FrameTimeMs": 10,
+      "p50Fps": 120.48192771084403,
+      "timedOut": false
+    },
+    "webglControl": {
+      "sampleCount": 360,
+      "totalFrameTimeMs": 3000.2,
+      "minFrameTimeMs": 7.299999999999272,
+      "maxFrameTimeMs": 9.400000000000546,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 9.199999999999818,
+      "p50Fps": 120.48192771084074,
+      "timedOut": false
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34,
+        "minControlSamples": 90,
+        "minSceneSamples": 2
+      }
+    }
+  }
+}

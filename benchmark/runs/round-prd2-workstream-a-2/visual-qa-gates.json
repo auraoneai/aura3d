@@ -1,0 +1,221 @@
+{
+  "schema": "aura3d-visual-qa-gates/1.0",
+  "generatedAt": "2026-06-01T02:28:42.188Z",
+  "roundRoot": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2",
+  "contactSheets": [
+    "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/contact-sheet.html",
+    "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/contact-sheet.md"
+  ],
+  "screenshotChecks": [
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-01-material-grid/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:28:13.433Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 29.7,
+      "uniqueColorBuckets": 124,
+      "overexposedRatio": 0.0137,
+      "underexposedRatio": 0.0142,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-01-material-grid/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:28:53.287Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 19.74,
+      "uniqueColorBuckets": 160,
+      "overexposedRatio": 0.0004,
+      "underexposedRatio": 0.0179,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-02-city-block/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:29:36.268Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 150.1,
+      "uniqueColorBuckets": 92,
+      "overexposedRatio": 0.0003,
+      "underexposedRatio": 0.0088,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-02-city-block/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:30:18.296Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 147.32,
+      "uniqueColorBuckets": 59,
+      "overexposedRatio": 0.0003,
+      "underexposedRatio": 0.0181,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-03-particles-vfx/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:31:00.307Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 17.69,
+      "uniqueColorBuckets": 137,
+      "overexposedRatio": 0.0041,
+      "underexposedRatio": 0.1303,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-03-particles-vfx/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:31:40.639Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 16.45,
+      "uniqueColorBuckets": 126,
+      "overexposedRatio": 0.0003,
+      "underexposedRatio": 0,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-04-physics-ramp/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:32:35.001Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 24.15,
+      "uniqueColorBuckets": 82,
+      "overexposedRatio": 0.0005,
+      "underexposedRatio": 0.0012,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-04-physics-ramp/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:33:19.506Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 22.31,
+      "uniqueColorBuckets": 51,
+      "overexposedRatio": 0.0003,
+      "underexposedRatio": 0.0012,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-05-sneaker-product/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:34:06.775Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 210.44,
+      "uniqueColorBuckets": 138,
+      "overexposedRatio": 0.3157,
+      "underexposedRatio": 0.002,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-05-sneaker-product/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:34:53.703Z",
+      "width": 1440,
+      "height": 960,
+      "averageLuma": 29.58,
+      "uniqueColorBuckets": 89,
+      "overexposedRatio": 0.0004,
+      "underexposedRatio": 0.0041,
+      "pass": true,
+      "failures": []
+    }
+  ],
+  "sceneKitChecks": [
+    {
+      "id": "scene-kit-object-count:physicsPlayground",
+      "pass": true,
+      "detail": "80 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:particleFountain",
+      "pass": true,
+      "detail": "24 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:solarSystem",
+      "pass": true,
+      "detail": "250 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:neonTunnel",
+      "pass": true,
+      "detail": "337 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:dataViz",
+      "pass": true,
+      "detail": "225 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:miniGolf",
+      "pass": true,
+      "detail": "46 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:materialLab",
+      "pass": true,
+      "detail": "38 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:cityBlock",
+      "pass": true,
+      "detail": "449 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:humanoidWalk",
+      "pass": true,
+      "detail": "21 nodes"
+    },
+    {
+      "id": "scene-kit-object-count:productViewer",
+      "pass": true,
+      "detail": "26 nodes"
+    },
+    {
+      "id": "chart-label-axis-legend",
+      "pass": true,
+      "detail": "{\"passes\":true,\"score\":5,\"bars\":36,\"labels\":24,\"legends\":3,\"selectedOutlines\":1,\"problems\":[]}"
+    },
+    {
+      "id": "solar-label-leader-orbit",
+      "pass": true,
+      "detail": "{\"passes\":true,\"score\":5,\"planets\":6,\"materialPresets\":[\"rocky\",\"gas-giant\",\"ice\",\"moon\",\"ringed\",\"lava-venus\"],\"orbitSegments\":144,\"labels\":12,\"leaderLines\":6,\"stars\":42,\"dust\":18,\"hasSunCorona\":true,\"hasBloom\":true,\"deterministicCapturePhase\":true,\"problems\":[]}"
+    },
+    {
+      "id": "humanoid-connected-structure",
+      "pass": true,
+      "detail": "{\"connected\":true,\"impossibleProportions\":false,\"score\":5,\"gaps\":[],\"problems\":[]}"
+    },
+    {
+      "id": "mini-golf-gameplay-state",
+      "pass": true,
+      "detail": "ball/cup/score/aim/obstacle"
+    },
+    {
+      "id": "product-bounds-contact",
+      "pass": true,
+      "detail": "{\"passes\":true,\"score\":5,\"modelCount\":1,\"softboxes\":8,\"reflectionCards\":4,\"contactShadows\":1,\"materialReadabilityCues\":6,\"inspectionGuides\":0,\"cleanHeroMode\":true,\"centeredAndSeated\":true,\"typedAssetProvenance\":true,\"problems\":[]}"
+    },
+    {
+      "id": "material-class-distinguishability",
+      "pass": true,
+      "detail": "metal/glass/rubber/emissive/clearcoat"
+    }
+  ],
+  "humanReview": {
+    "pass": true,
+    "required": false,
+    "reviewPath": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/human-review.json",
+    "templatePath": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/human-review-template.json",
+    "status": "template-written"
+  },
+  "pass": true
+}

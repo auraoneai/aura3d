@@ -21,7 +21,7 @@ not a perfect fit:
 - `prefabs.physicsRamp()` for visible rigid-body ramp/cube demo cues.
 - `prefabs.solarSystem({ labels: "attached" })` for six-planet systems with
   orbit paths, sun bloom, starfield depth, and attached readable labels.
-- `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })` for
+- `character.lowPolyHumanoid({ showJoints: true, motionTrail: true })` for
   connected primitive walk-cycle placeholders with joint and stride cues. The
   walk clip keeps primitive limbs connected by using whole-body motion.
 - `prefabs.dataBars3D({ grid: 6 })` for bar geometry, top caps, axes, labels,

@@ -1,0 +1,15 @@
+{
+  "schema": "a3d-prompt-source-audit",
+  "generatedAt": "2026-06-01T00:52:36.956Z",
+  "prompt": "benchmark/prompts/07-material-lab.md",
+  "sourceDir": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/claude-threejs/prompt-07/source",
+  "pass": true,
+  "files": [
+    "index.html",
+    "src/main.ts"
+  ],
+  "unavailablePublicImports": [],
+  "nonPublicSubpathImports": [],
+  "unsafeAssetReferences": [],
+  "failures": []
+}

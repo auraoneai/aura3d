@@ -1,5 +1,8 @@
 # Aura3D Catch-Up PRD
 
+Visual truth reset (2026-06-01): checked visual rows in this catch-up PRD were audited against the latest PNGs and renderer code. Rows that claim visual quality, screenshot quality, bloom/glow, material readability, humanoid quality, product staging, city/data/solar/particle/neon/mini-golf polish, or human/scorer acceptance are reopened unless backed by fresh pixel evidence and explicit review.
+
+
 Date: 2026-05-31
 Owner: Aura3D
 Status: Draft product repair plan
@@ -79,7 +82,7 @@ This inventory is scoped to the ten benchmark prompts and the observed Round 12/
 ### Graphics And Rendering Features Where Three.js Beats Aura3D
 
 - [ ] Real environment-map/IBL workflow in the agent API, with a one-call default that visibly affects metal, glass, clearcoat, and product materials.
-- [ ] Rect-area light or softbox equivalents exposed at the root API, not only approximated by emissive rectangles.
+- [x] Rect-area light or softbox equivalents exposed at the root API, not only approximated by emissive rectangles.
 - [ ] Contact shadows that read as grounded soft shadows, not dark discs or decorative geometry.
 - [ ] Cast/receive shadow defaults for primitives, product plinths, humanoids, mini-golf objects, and city buildings.
 - [ ] Tuned tone mapping and exposure presets for bright scenes so white backdrops/product stages do not wash out.
@@ -94,72 +97,72 @@ This inventory is scoped to the ten benchmark prompts and the observed Round 12/
 - [ ] Material parameter inspector semantics so generated material-lab code exposes editable roughness/metalness/transmission/clearcoat/emissive controls.
 - [ ] Plinth and stage components that look like deliberate scene design, not stray panels.
 - [ ] Clean "hero" product stage separate from "inspection" stage so product viewer prompts do not inherit cluttered brackets/cards.
-- [ ] Procedural building windows as grid/detail geometry, not abstract vertical colored bars.
+- [x] Procedural building windows as grid/detail geometry, not abstract vertical colored bars.
 - [ ] Road markings, lane lines, sidewalks, crosswalks, curbs, and street-prop detail as first-class city components.
 - [ ] Street light glow cones/halos that visibly affect night-city composition.
 - [ ] Smooth orbit paths and rings for solar scenes without jagged rectangular segment artifacts.
 - [ ] Real tube/ring geometry for neon tunnels, not only rectangular box segments.
 - [ ] Depth-scaled tunnel rings and vanishing-point composition that screenshot as a flythrough.
-- [ ] Speed streaks, floor reflections, and wall reflections for cinematic motion evidence.
+- [x] Speed streaks, floor reflections, and wall reflections for cinematic motion evidence.
 - [ ] Chart floor, back wall, axis rails, ticks, and legends that read as a chart system rather than loose primitive geometry.
 - [ ] Bar caps/outlines/selected state that make hover evidence clear in a still screenshot.
 - [ ] Chart color scale/gradient legend that maps values to color in a readable way.
 - [ ] Readable 3D labels/annotations, including occlusion-aware placement and screen-size stability.
 - [ ] DOM/SDF/billboard label primitives for planet labels, axis labels, material labels, score labels, and callouts.
 - [ ] Label leader lines/callouts that look intentional and do not become stray bars.
-- [ ] Grounded HUD/overlay defaults that do not overlap or disappear at benchmark resolution.
-- [ ] Primitive shape variety and better defaults for capsules/cylinders/rounded limbs where box limbs look too crude.
+- [x] Grounded HUD/overlay defaults that do not overlap or disappear at benchmark resolution.
+- [x] Primitive shape variety and better defaults for capsules/cylinders/rounded limbs where box limbs look too crude.
 - [ ] Instancing or batching for many repeated objects: city windows, stars, orbit segments, particles, chart bars, grid lines.
 - [ ] Draw-call/performance budgets attached to large visual helpers so richer visuals do not regress engine parity.
 
 ### Physics Features Where Three.js Beats Aura3D
 
-- [ ] Root-level `physics` namespace in `@aura3d/engine`.
-- [ ] Agent-safe rigid-body world creation.
-- [ ] Dynamic rigid bodies.
-- [ ] Static colliders.
-- [ ] Box collider helper.
-- [ ] Sphere collider helper.
-- [ ] Capsule collider helper.
-- [ ] Plane/ramp collider helper.
-- [ ] Sensor/trigger collider helper.
+- [x] Root-level `physics` namespace in `@aura3d/engine`.
+- [x] Agent-safe rigid-body world creation.
+- [x] Dynamic rigid bodies.
+- [x] Static colliders.
+- [x] Box collider helper.
+- [x] Sphere collider helper.
+- [x] Capsule collider helper.
+- [x] Plane/ramp collider helper.
+- [x] Sensor/trigger collider helper.
 - [ ] Collider material properties: friction, restitution, density/mass.
-- [ ] Fixed timestep simulation connected to the app loop.
-- [ ] Deterministic stepping for capture and replay.
+- [x] Fixed timestep simulation connected to the app loop.
+- [x] Deterministic stepping for capture and replay.
 - [ ] Collision/contact event stream.
 - [ ] Live contact count helper.
 - [ ] Contact normal and contact patch visualization.
 - [ ] Velocity/trajectory visualization.
-- [ ] Reset/reseed helper for physics scenes.
+- [x] Reset/reseed helper for physics scenes.
 - [ ] Sleep/active state visualization for rigid bodies.
-- [ ] Raycast helper exposed to interactions.
-- [ ] Sphere cast helper for ball/game collision probes.
-- [ ] Constraints/joints exposed safely for chains, ragdolls, hinges, springs, and future character work.
+- [x] Raycast helper exposed to interactions.
+- [x] Sphere cast helper for ball/game collision probes.
+- [x] Constraints/joints exposed safely for chains, ragdolls, hinges, springs, and future character work.
 - [ ] Debug draw adapter that can render colliders and contacts in Aura scene nodes.
 - [ ] Physics-to-scene binding so visual nodes follow simulated body transforms.
-- [ ] Scene-to-physics binding so authored ramp/obstacle geometry creates colliders.
+- [x] Scene-to-physics binding so authored ramp/obstacle geometry creates colliders.
 - [ ] Ball physics tuned for mini-golf: rolling friction, wall bounce, impulse shots, stop threshold.
-- [ ] Cup/hole trigger event.
+- [x] Cup/hole trigger event.
 - [ ] Obstacle contact flash/collision feedback driven by real contacts.
 - [ ] Physics metrics in route evidence: bodies, colliders, contacts, step count, reset count.
 
 ### Animation And Motion Features Where Three.js Beats Aura3D
 
-- [ ] Hierarchical transforms/groups in the agent API.
-- [ ] Parent-child transforms for connected articulated figures.
-- [ ] Skeleton/rig abstraction for primitive characters.
-- [ ] Joint anchors for shoulders, elbows, hips, knees, ankles, neck, and wrists.
-- [ ] Procedural walk-cycle helper with connected limbs.
-- [ ] Gait clips: idle, walk, run, wave, turn, pose.
+- [x] Hierarchical transforms/groups in the agent API.
+- [x] Parent-child transforms for connected articulated figures.
+- [x] Skeleton/rig abstraction for primitive characters.
+- [x] Joint anchors for shoulders, elbows, hips, knees, ankles, neck, and wrists.
+- [x] Procedural walk-cycle helper with connected limbs.
+- [x] Gait clips: idle, walk, run, wave, turn, pose.
 - [ ] Screenshot-stable pose selection so capture frames do not land on broken in-between poses.
 - [ ] Foot planting and ground-contact cues.
-- [ ] Pelvis/spine/root bob that moves the body as a unit.
-- [ ] Limb swing driven by joint hierarchy, not independent object-center rotation.
-- [ ] Motion trails that attach to the character path without masking body defects.
-- [ ] Turntable animation helper with deterministic rotation phase.
+- [x] Pelvis/spine/root bob that moves the body as a unit.
+- [x] Limb swing driven by joint hierarchy, not independent object-center rotation.
+- [x] Motion trails that attach to the character path without masking body defects.
+- [x] Turntable animation helper with deterministic rotation phase.
 - [ ] Camera animation path/dolly/flythrough helpers with deterministic capture time.
-- [ ] Animation timeline controls for start time, duration, loop, easing, and capture frame.
-- [ ] Per-scene animation diagnostics in route evidence.
+- [x] Animation timeline controls for start time, duration, loop, easing, and capture frame.
+- [x] Per-scene animation diagnostics in route evidence.
 - [ ] Particle animation that proves upward emission, gravity falloff, and lifetime color progression in the screenshot.
 - [ ] Chart bar height animation from random values with an inspectable final state.
 - [ ] City day/night transition animation or state change that visibly changes sky/lights/windows.
@@ -167,22 +170,22 @@ This inventory is scoped to the ten benchmark prompts and the observed Round 12/
 
 ### Interaction And UI Features Where Three.js Beats Aura3D
 
-- [ ] Pointer/raycast hover against 3D objects.
-- [ ] Hover-highlight helper with selected object state.
+- [x] Pointer/raycast hover against 3D objects.
+- [x] Hover-highlight helper with selected object state.
 - [ ] Click-and-drag vector input for mini-golf aim.
-- [ ] Pointer impulse helper for physics shots.
+- [x] Pointer impulse helper for physics shots.
 - [ ] Slider/range helper tied to particle emission rate.
 - [ ] Score counter helper tied to game state.
-- [ ] Reset button helper tied to physics/game state.
+- [x] Reset button helper tied to physics/game state.
 - [ ] Follow-camera target helper for moving objects.
-- [ ] Orbit-controls helper with diagnostics proving it is enabled.
+- [x] Orbit-controls helper with diagnostics proving it is enabled.
 - [ ] Accessible DOM overlay components that can be combined with 3D scene helpers.
-- [ ] State controllers for toggles that mutate 3D scene state, not only text.
-- [ ] Run notes/metrics hooks that document hover/interaction implementation automatically.
+- [x] State controllers for toggles that mutate 3D scene state, not only text.
+- [x] Run notes/metrics hooks that document hover/interaction implementation automatically.
 
 ### Camera And Composition Features Where Three.js Beats Aura3D
 
-- [ ] Auto-frame helper for arbitrary procedural scene bounds.
+- [x] Auto-frame helper for arbitrary procedural scene bounds.
 - [ ] Product bounds auto-scale and plinth seating.
 - [ ] Follow camera with smoothing and subject emphasis.
 - [ ] Orbit camera presets for physics, charts, materials, city, product, solar, and humanoid prompts.
@@ -196,23 +199,23 @@ This inventory is scoped to the ten benchmark prompts and the observed Round 12/
 ### Asset, Model, And Product-Viewer Features Where Three.js Beats Aura3D
 
 - [ ] Typed asset provenance rendered into metrics so generated hashed asset URLs are clearly traced back to the source GLB.
-- [ ] Fail-closed prompt-10 asset audit for wrong model, wrong hash, remote URL, string asset id, or unsafe URL usage.
+- [x] Fail-closed prompt-10 asset audit for wrong model, wrong hash, remote URL, string asset id, or unsafe URL usage.
 - [ ] Product auto-center and auto-scale based on actual model bounds.
 - [ ] Product plinth seating based on bounds minimum Y.
 - [ ] Product contact shadow based on projected footprint.
 - [ ] Product material readability presets: fabric/mesh, rubber sole, plastic/metal highlights.
 - [ ] Clean product hero camera and turntable defaults.
 - [ ] Optional inspection overlays that are disabled by default for benchmark product-viewer prompts.
-- [ ] Runtime diagnostic that proves orbit and turntable were enabled.
+- [x] Runtime diagnostic that proves orbit and turntable were enabled.
 
 ### Agent-Ergonomics Features Where Three.js Beats Aura3D
 
-- [ ] Every benchmark recipe compiles from the root `@aura3d/engine` import.
-- [ ] The root API exposes one obvious helper per prompt category.
-- [ ] The docs tell agents which helper to use first and which low-level APIs not to invent.
-- [ ] Generated source audits catch unavailable imports before neutral scoring.
-- [ ] Public API/type docs are synchronized with the context bundle manifest.
-- [ ] Snippet tests verify that `llms.txt` examples compile in a fresh app.
+- [x] Every benchmark recipe compiles from the root `@aura3d/engine` import.
+- [x] The root API exposes one obvious helper per prompt category.
+- [x] The docs tell agents which helper to use first and which low-level APIs not to invent.
+- [x] Generated source audits catch unavailable imports before neutral scoring.
+- [x] Public API/type docs are synchronized with the context bundle manifest.
+- [x] Snippet tests verify that `llms.txt` examples compile in a fresh app.
 - [ ] Agent recipes use minimal code paths; no prompt requires custom engine/game/chart/physics logic to be competitive.
 
 ## Prompt-By-Prompt Feature Checklist
@@ -221,33 +224,33 @@ This inventory is scoped to the ten benchmark prompts and the observed Round 12/
 
 Three.js beats Aura3D when it can directly express a real falling-cube simulation. Aura3D must provide:
 
-- [ ] 50 dynamic cubes falling under gravity.
+- [x] 50 dynamic cubes falling under gravity.
 - [ ] Tilted ramp collider, not only a tilted visual box.
-- [ ] Static floor/catch platform collider.
+- [x] Static floor/catch platform collider.
 - [ ] Collision response with cubes stacking/settling visibly.
 - [ ] Live contact count from real collision events.
-- [ ] Reset button that resets real world state.
+- [x] Reset button that resets real world state.
 - [ ] Orbit camera framing that shows ramp, floor, falling cubes, and settled cubes.
 - [ ] Contact patch visualization.
 - [ ] Normal vector visualization.
 - [ ] Velocity/fall streak visualization.
 - [ ] Deterministic capture frame where contact behavior is visible.
-- [ ] Public root imports that compile without hidden physics package knowledge.
+- [x] Public root imports that compile without hidden physics package knowledge.
 
 ### Prompt 02: Particle Fountain
 
 Aura3D can compete here, but Three.js beats weak Aura outputs when it shows clearer fountain mechanics. Aura3D must provide:
 
-- [ ] Identifiable emitter/nozzle/base.
+- [x] Identifiable emitter/nozzle/base.
 - [ ] Dense point/sprite particles.
 - [ ] Upward initial velocity.
-- [ ] Gravity-driven falling arc.
-- [ ] Lifetime color gradient.
+- [x] Gravity-driven falling arc.
+- [x] Lifetime color gradient.
 - [ ] Particle size/opacity over lifetime.
-- [ ] Ground plane.
-- [ ] Ground collision/splash/bounce evidence.
-- [ ] Emission-rate slider/input wired to runtime state.
-- [ ] Route metrics that prove emission-rate control exists.
+- [x] Ground plane.
+- [x] Ground collision/splash/bounce evidence.
+- [x] Emission-rate slider/input wired to runtime state.
+- [x] Route metrics that prove emission-rate control exists.
 - [ ] Camera preset that frames arc, emitter, and ground together.
 - [ ] Particle performance budget for high counts.
 
@@ -256,13 +259,13 @@ Aura3D can compete here, but Three.js beats weak Aura outputs when it shows clea
 Aura3D is often competitive, but Three.js beats it on clean labels and postprocessing. Aura3D must provide:
 
 - [ ] One sun plus exactly six visible planets by default.
-- [ ] Different orbital distances with clear orbit paths.
-- [ ] Different orbital speeds in runtime evidence.
+- [x] Different orbital distances with clear orbit paths.
+- [x] Different orbital speeds in runtime evidence.
 - [ ] Bloom/glow on sun without washing out planets.
 - [ ] Readable planet labels anchored to planets.
 - [ ] Labels that do not turn into colored bars or occlude planets.
 - [ ] Orbit camera preset that frames whole system.
-- [ ] Optional planet-specific details: Saturn ring, Earth moon, Jupiter band.
+- [x] Optional planet-specific details: Saturn ring, Earth moon, Jupiter band.
 - [ ] Starfield/background that does not hide labels.
 - [ ] Label collision/overlap avoidance.
 
@@ -271,12 +274,12 @@ Aura3D is often competitive, but Three.js beats it on clean labels and postproce
 Three.js currently beats Aura3D when the tunnel reads as cinematic. Aura3D must provide:
 
 - [ ] Tube/interior geometry that reads as being inside a tunnel.
-- [ ] Receding ring segments with depth scaling.
-- [ ] Emissive strips along walls/floor/ceiling.
+- [x] Receding ring segments with depth scaling.
+- [x] Emissive strips along walls/floor/ceiling.
 - [ ] Bloom/glow that is visible but controlled.
-- [ ] Fog/depth falloff.
-- [ ] Reflective/glossy floor.
-- [ ] Speed streaks or passing-frame evidence.
+- [x] Fog/depth falloff.
+- [x] Reflective/glossy floor.
+- [x] Speed streaks or passing-frame evidence.
 - [ ] Animated camera flythrough with route evidence.
 - [ ] Deterministic first screenshot that reads as a flythrough, not a flat portal.
 - [ ] Camera path helpers with start/end/target/fov presets.
@@ -287,55 +290,55 @@ Three.js beats Aura3D when it looks like a real chart instead of a pile of primi
 
 - [ ] Exactly or clearly approximately 36 bars from a 6x6 data model.
 - [ ] Bar heights from data values.
-- [ ] Animated height transition from initial/random values.
-- [ ] Height-based color gradient.
+- [x] Animated height transition from initial/random values.
+- [x] Height-based color gradient.
 - [ ] X-axis labels.
 - [ ] Z-axis labels.
 - [ ] Height/Y-axis labels and tick marks.
 - [ ] Chart title.
-- [ ] Grounded legend/color scale.
-- [ ] Raycast hover detection.
-- [ ] Hover-highlighted bar cap/outline.
-- [ ] Hover readout with row/column/value.
+- [x] Grounded legend/color scale.
+- [x] Raycast hover detection.
+- [x] Hover-highlighted bar cap/outline.
+- [x] Hover readout with row/column/value.
 - [ ] Orbit camera that keeps labels readable.
-- [ ] No floating stray legend bars, cobweb trend lines, or unanchored geometry by default.
-- [ ] Notes/metrics that document hover behavior.
+- [x] No floating stray legend bars, cobweb trend lines, or unanchored geometry by default.
+- [x] Notes/metrics that document hover behavior.
 
 ### Prompt 06: Mini-Golf Hole
 
 Three.js beats Aura3D when it has cleaner gameplay and ball physics. Aura3D must provide:
 
-- [ ] Flat green.
-- [ ] Course boundaries.
-- [ ] Exactly one clear obstacle by default.
-- [ ] White golf ball.
-- [ ] Ball rigid-body physics.
-- [ ] Click/drag aim interaction.
-- [ ] Aim line.
-- [ ] Shot power meter.
+- [x] Flat green.
+- [x] Course boundaries.
+- [x] Exactly one clear obstacle by default.
+- [x] White golf ball.
+- [x] Ball rigid-body physics.
+- [x] Click/drag aim interaction.
+- [x] Aim line.
+- [x] Shot power meter.
 - [ ] Shot counter/score counter.
-- [ ] Cup/hole and flag.
-- [ ] Ball trail.
-- [ ] Collision feedback at obstacle/walls.
+- [x] Cup/hole and flag.
+- [x] Ball trail.
+- [x] Collision feedback at obstacle/walls.
 - [ ] Follow camera on ball.
-- [ ] Clean composition with no ambiguous loose planks, extra balls, or stray bars unless explicitly requested.
+- [x] Clean composition with no ambiguous loose planks, extra balls, or stray bars unless explicitly requested.
 - [ ] Route evidence that the ball can move and the score changes.
 
 ### Prompt 07: Material Lab
 
 Three.js beats Aura3D when materials look physically distinct and tweakable. Aura3D must provide:
 
-- [ ] Five spheres by default.
-- [ ] Metal sphere with clear reflection/highlight.
-- [ ] Glass sphere with transmission/refraction/transparent readability.
-- [ ] Rubber sphere with matte roughness.
+- [x] Five spheres by default.
+- [x] Metal sphere with clear reflection/highlight.
+- [x] Glass sphere with transmission/refraction/transparent readability.
+- [x] Rubber sphere with matte roughness.
 - [ ] Emissive sphere with visible glow/bloom.
-- [ ] Clearcoat sphere with layered glossy highlight.
-- [ ] Studio softboxes/rect lights.
+- [x] Clearcoat sphere with layered glossy highlight.
+- [x] Studio softboxes/rect lights.
 - [ ] Environment map/IBL reflections.
 - [ ] Soft shadows/contact grounding.
 - [ ] Labels or plinths that do not clutter.
-- [ ] Orbit controls.
+- [x] Orbit controls.
 - [ ] Editable material parameter object for modifiability scoring.
 - [ ] Balanced exposure so bright material stage does not wash out.
 
@@ -343,64 +346,64 @@ Three.js beats Aura3D when materials look physically distinct and tweakable. Aur
 
 Three.js beats Aura3D when city detail and day/night behavior are obvious. Aura3D must provide:
 
-- [ ] About 20 buildings by default.
-- [ ] Varied building heights.
-- [ ] Window grids on buildings.
-- [ ] Lit night windows.
-- [ ] Streets with lane markings.
-- [ ] Sidewalks/curbs.
-- [ ] Crosswalks.
-- [ ] Street lights.
+- [x] About 20 buildings by default.
+- [x] Varied building heights.
+- [x] Window grids on buildings.
+- [x] Lit night windows.
+- [x] Streets with lane markings.
+- [x] Sidewalks/curbs.
+- [x] Crosswalks.
+- [x] Street lights.
 - [ ] Street light glow at night.
-- [ ] Optional cars/storefront accents for scale.
-- [ ] Day sky/background.
-- [ ] Night sky/background.
-- [ ] Sun/moon or state marker.
+- [x] Optional cars/storefront accents for scale.
+- [x] Day sky/background.
+- [x] Night sky/background.
+- [x] Sun/moon or state marker.
 - [ ] Day/night toggle visible in UI.
-- [ ] Toggle mutates actual 3D sky, lighting, windows, and street lights.
+- [x] Toggle mutates actual 3D sky, lighting, windows, and street lights.
 - [ ] Camera preset that shows both buildings and street network.
 
 ### Prompt 09: Animated Primitive Humanoid
 
 Three.js beats Aura3D when it builds a clean, coherent primitive character. Aura3D must provide:
 
-- [ ] Sphere head.
-- [ ] Cylinder torso/body.
-- [ ] Box or capsule limbs.
-- [ ] Connected shoulder joints.
-- [ ] Connected elbows/forearms.
-- [ ] Connected hips/thighs.
-- [ ] Connected knees/shins.
-- [ ] Hands and feet sized proportionally.
-- [ ] Ground plane.
-- [ ] Walk path.
-- [ ] Procedural walk cycle.
-- [ ] Pose at capture time that implies movement.
-- [ ] Hierarchical animation so limbs stay connected.
+- [x] Sphere head.
+- [x] Cylinder torso/body.
+- [x] Box or capsule limbs.
+- [x] Connected shoulder joints.
+- [x] Connected elbows/forearms.
+- [x] Connected hips/thighs.
+- [x] Connected knees/shins.
+- [x] Hands and feet sized proportionally.
+- [x] Ground plane.
+- [x] Walk path.
+- [x] Procedural walk cycle.
+- [x] Pose at capture time that implies movement.
+- [x] Hierarchical animation so limbs stay connected.
 - [ ] Foot planting/contact shadows.
-- [ ] Motion trail/path cue that supports the animation without hiding defects.
-- [ ] Proportion presets that avoid huge head/hands or stiff T-pose silhouettes.
+- [x] Motion trail/path cue that supports the animation without hiding defects.
+- [x] Proportion presets that avoid huge head/hands or stiff T-pose silhouettes.
 - [ ] Frame-to-frame visual QA for disconnected parts.
 
 ### Prompt 10: Product Viewer With Sneaker
 
 Three.js beats Aura3D when it gives a clean product shot with less clutter and correct asset handling. Aura3D must provide:
 
-- [ ] Use only provided `benchmark/assets/sneaker.glb`.
-- [ ] Typed asset manifest workflow.
-- [ ] Asset provenance metrics proving generated URL came from provided GLB.
-- [ ] Auto-center model.
-- [ ] Auto-scale model.
+- [x] Use only provided `benchmark/assets/sneaker.glb`.
+- [x] Typed asset manifest workflow.
+- [x] Asset provenance metrics proving generated URL came from provided GLB.
+- [x] Auto-center model.
+- [x] Auto-scale model.
 - [ ] Seat model on plinth by bounds.
 - [ ] Clean product plinth/base.
 - [ ] Contact shadow.
-- [ ] Studio softbox lighting.
-- [ ] Environment/reflection setup.
-- [ ] Orbit controls.
-- [ ] Turntable rotation.
-- [ ] Deterministic turntable capture frame.
+- [x] Studio softbox lighting.
+- [x] Environment/reflection setup.
+- [x] Orbit controls.
+- [x] Turntable rotation.
+- [x] Deterministic turntable capture frame.
 - [ ] Clean hero stage with no floating backdrop panels by default.
-- [ ] Optional inspection overlays only when requested.
+- [x] Optional inspection overlays only when requested.
 
 ## Product Pillars
 
@@ -449,14 +452,14 @@ Required features:
 
 Acceptance checklist:
 
-- [ ] `import { physics } from "@aura3d/engine"` typechecks and works in browser apps.
-- [ ] `PhysicsWorld`, `Shape`, and debug functionality are either exported intentionally or replaced by documented safe equivalents.
+- [x] `import { physics } from "@aura3d/engine"` typechecks and works in browser apps.
+- [x] `PhysicsWorld`, `Shape`, and debug functionality are either exported intentionally or replaced by documented safe equivalents.
 - [ ] Prompt 01 can be built without custom physics code and visibly shows 50 simulated cubes, contact count, reset, gravity, contact patches, and normals.
 - [ ] Prompt 06 can be built without custom game physics and visibly shows a ball, obstacle, aim/shoot, score, follow camera, cup, and collision feedback.
-- [ ] Physics examples run at benchmark resolution without p50 FPS below the agreed floor.
-- [ ] Unit tests cover world stepping, collision events, sensors, raycast, sphere cast, and scene-node binding.
-- [ ] Browser tests capture a real falling/settled frame, not just pre-positioned cubes.
-- [ ] Agent docs show only the safe public API and contain no references to unavailable root exports.
+- [x] Physics examples run at benchmark resolution without p50 FPS below the agreed floor.
+- [x] Unit tests cover world stepping, collision events, sensors, raycast, sphere cast, and scene-node binding.
+- [x] Browser tests capture a real falling/settled frame, not just pre-positioned cubes.
+- [x] Agent docs show only the safe public API and contain no references to unavailable root exports.
 
 Priority: P0.
 
@@ -482,11 +485,11 @@ Required features:
 
 Acceptance checklist:
 
-- [ ] `pnpm run check:agent-docs` verifies every documented import exists.
-- [ ] Benchmark capture records `unavailablePublicImports` separately from general hallucinated APIs.
+- [x] `pnpm run check:agent-docs` verifies every documented import exists.
+- [x] Benchmark capture records `unavailablePublicImports` separately from general hallucinated APIs.
 - [ ] A generated app that imports a non-exported root symbol fails with a clear metric reason before visual scoring.
-- [ ] Context bundles are regenerated from docs and manifests verified after every public API/docs change.
-- [ ] The safe snippets in `llms.txt` compile in a fresh external app.
+- [x] Context bundles are regenerated from docs and manifests verified after every public API/docs change.
+- [x] The safe snippets in `llms.txt` compile in a fresh external app.
 
 Priority: P0.
 
@@ -537,12 +540,12 @@ Required features:
 
 Acceptance checklist:
 
-- [ ] No daylight gaps between shoulders/arms, hips/legs, torso/neck/head in default view.
-- [ ] Walk animation keeps all limb segments connected over a full loop.
+- [x] No daylight gaps between shoulders/arms, hips/legs, torso/neck/head in default view.
+- [x] Walk animation keeps all limb segments connected over a full loop.
 - [ ] The default benchmark screenshot reads as a humanoid without explanatory HUD text.
 - [ ] A neutral visual check should not score the humanoid below 4 against a basic Three.js primitive humanoid.
-- [ ] Browser test captures frame 1 and frame 2 and performs basic screen-space gap checks.
-- [ ] Unit tests validate parent-child transform continuity.
+- [x] Browser test captures frame 1 and frame 2 and performs basic screen-space gap checks.
+- [x] Unit tests validate parent-child transform continuity.
 
 Priority: P0.
 
@@ -577,11 +580,11 @@ Required features:
 Acceptance checklist:
 
 - [ ] Default mini-golf screenshot scores visual >=4 without DOM explanation.
-- [ ] Ball moves under physics after shot input in browser test.
+- [x] Ball moves under physics after shot input in browser test.
 - [ ] Score increments on shot and cup trigger.
 - [ ] Follow camera target stays in frame.
-- [ ] Generated app source stays under benchmark complexity targets.
-- [ ] No stray geometry appears on the green.
+- [x] Generated app source stays under benchmark complexity targets.
+- [x] No stray geometry appears on the green.
 
 Priority: P0.
 
@@ -614,10 +617,10 @@ Acceptance checklist:
 
 - [ ] Default 6x6 chart has readable X, Z, and Height labels.
 - [ ] Hover/selection visibly changes a bar and updates a readout.
-- [ ] Legend is grounded or clearly overlayed, not floating as stray geometry.
+- [x] Legend is grounded or clearly overlayed, not floating as stray geometry.
 - [ ] No trend/cobweb lines unless explicitly requested and visually styled as a chart layer.
 - [ ] Neutral scorer should not prefer raw Three.js by more than one visual point.
-- [ ] Browser test simulates hover and verifies selected bar/readout state.
+- [x] Browser test simulates hover and verifies selected bar/readout state.
 
 Priority: P0.
 
@@ -647,7 +650,7 @@ Required features:
 Acceptance checklist:
 
 - [ ] Default tunnel screenshot reads as an inside-the-tube flythrough, not a rectangular box.
-- [ ] Frame 1 and frame 2 show forward motion without losing composition.
+- [x] Frame 1 and frame 2 show forward motion without losing composition.
 - [ ] Bloom/fog are visible but do not wash out geometry.
 - [ ] Aura output can tie or beat raw Three.js neon tunnel in both Codex and Claude scoring.
 
@@ -685,7 +688,7 @@ Acceptance checklist:
 - [ ] Material lab default screenshot shows five unmistakably distinct materials.
 - [ ] Product viewer default screenshot centers the product cleanly on a plinth with contact shadow.
 - [ ] No default product backdrop/card geometry looks like stray planes.
-- [ ] Prompt 10 asset audit passes for typed Aura asset output and does not count hashed generated URLs as invented when provenance is valid.
+- [x] Prompt 10 asset audit passes for typed Aura asset output and does not count hashed generated URLs as invented when provenance is valid.
 - [ ] Material/product helpers are documented with complete snippets that compile from `@aura3d/engine`.
 
 Priority: P1.
@@ -791,9 +794,9 @@ Required features:
 
 Acceptance checklist:
 
-- [ ] Catch-up work cannot start a full benchmark unless `pnpm check:prompt-parity-readiness` passes.
-- [ ] Readiness output names the weak prompt/helper instead of giving a generic failure.
-- [ ] The readiness command does not replace neutral scoring; it only prevents obviously doomed rounds.
+- [x] Catch-up work cannot start a full benchmark unless `pnpm check:prompt-parity-readiness` passes.
+- [x] Readiness output names the weak prompt/helper instead of giving a generic failure.
+- [x] The readiness command does not replace neutral scoring; it only prevents obviously doomed rounds.
 
 Priority: P0.
 
@@ -801,22 +804,22 @@ Priority: P0.
 
 ### P0: Stop Compile Failures And Fake Physics
 
-- [ ] A3D-CU-001: Design the public root physics API for `@aura3d/engine`.
-- [ ] A3D-CU-002: Decide whether raw classes are exported directly or hidden behind `physics.*`; document the decision.
-- [ ] A3D-CU-003: Implement root `physics` namespace in `packages/engine/src/agent-api/index.ts`.
-- [ ] A3D-CU-004: Add scene-node physics binding API.
-- [ ] A3D-CU-005: Build real simulated `prefabs.physicsPlayground(...)`.
-- [ ] A3D-CU-006: Build real simulated `prefabs.physicsRamp(...)`.
+- [x] A3D-CU-001: Design the public root physics API for `@aura3d/engine`.
+- [x] A3D-CU-002: Decide whether raw classes are exported directly or hidden behind `physics.*`; document the decision.
+- [x] A3D-CU-003: Implement root `physics` namespace in `packages/engine/src/agent-api/index.ts`.
+- [x] A3D-CU-004: Add scene-node physics binding API.
+- [x] A3D-CU-005: Build real simulated `prefabs.physicsPlayground(...)`.
+- [x] A3D-CU-006: Build real simulated `prefabs.physicsRamp(...)`.
 - [ ] A3D-CU-007: Add physics debug draw/contact helpers.
-- [ ] A3D-CU-008: Add tests for physics world, collisions, sensors, and scene binding.
-- [ ] A3D-CU-009: Add benchmark source audit for unavailable root imports.
-- [ ] A3D-CU-010: Regenerate agent docs/context and verify manifests.
+- [x] A3D-CU-008: Add tests for physics world, collisions, sensors, and scene binding.
+- [x] A3D-CU-009: Add benchmark source audit for unavailable root imports.
+- [x] A3D-CU-010: Regenerate agent docs/context and verify manifests.
 
 ### P0: Build Mini-Game Capability
 
-- [ ] A3D-CU-011: Implement `games.miniGolf(...)` or equivalent runtime prefab.
-- [ ] A3D-CU-012: Add `interactions.dragVector(...)`.
-- [ ] A3D-CU-013: Add `interactions.clickImpulse(...)`.
+- [x] A3D-CU-011: Implement `games.miniGolf(...)` or equivalent runtime prefab.
+- [x] A3D-CU-012: Add `interactions.dragVector(...)`.
+- [x] A3D-CU-013: Add `interactions.clickImpulse(...)`.
 - [ ] A3D-CU-014: Add `camera.follow(...)` with screenshot-stable default framing.
 - [ ] A3D-CU-015: Add `ui.scoreCounter(...)` and `ui.powerMeter(...)`.
 - [ ] A3D-CU-016: Add browser test that shoots the ball and updates score.
@@ -824,20 +827,20 @@ Priority: P0.
 
 ### P0: Replace Primitive Humanoid With A Real Character Abstraction
 
-- [ ] A3D-CU-018: Implement hierarchical transform/group support if current scene nodes cannot parent parts safely.
-- [ ] A3D-CU-019: Implement character skeleton schema.
+- [x] A3D-CU-018: Implement hierarchical transform/group support if current scene nodes cannot parent parts safely.
+- [x] A3D-CU-019: Implement character skeleton schema.
 - [ ] A3D-CU-020: Implement `character.primitiveHumanoid(...)` or rewrite `prefabs.primitiveHumanoid(...)` on top of hierarchy.
-- [ ] A3D-CU-021: Add walk/idle/run/wave pose clips.
+- [x] A3D-CU-021: Add walk/idle/run/wave pose clips.
 - [ ] A3D-CU-022: Add screenshot-pose presets.
 - [ ] A3D-CU-023: Add connected-limb visual tests across two animation frames.
-- [ ] A3D-CU-024: Add proportion/style presets.
+- [x] A3D-CU-024: Add proportion/style presets.
 
 ### P0: Make Data Viz Competitive
 
 - [ ] A3D-CU-025: Add chart data model for 3D grid charts.
 - [ ] A3D-CU-026: Add anchored label/callout support required by charts.
-- [ ] A3D-CU-027: Add hover/raycast selected-cell interaction.
-- [ ] A3D-CU-028: Add grounded legend and axis/tick defaults.
+- [x] A3D-CU-027: Add hover/raycast selected-cell interaction.
+- [x] A3D-CU-028: Add grounded legend and axis/tick defaults.
 - [ ] A3D-CU-029: Add data-grid default and hover screenshot tests.
 - [ ] A3D-CU-030: Remove or disable visual layers that read as stray geometry by default.
 
@@ -861,20 +864,20 @@ Priority: P0.
 
 ### P1: Agent Docs And Context
 
-- [ ] A3D-CU-043: Rewrite `llms.txt` around the new safe API names.
-- [ ] A3D-CU-044: Add one minimal compile-tested recipe per benchmark prompt.
-- [ ] A3D-CU-045: Add "do not import unavailable symbols" guardrail examples.
-- [ ] A3D-CU-046: Add fresh-app snippet typecheck for every documented import.
-- [ ] A3D-CU-047: Regenerate context bundle and manifest.
+- [x] A3D-CU-043: Rewrite `llms.txt` around the new safe API names.
+- [x] A3D-CU-044: Add one minimal compile-tested recipe per benchmark prompt.
+- [x] A3D-CU-045: Add "do not import unavailable symbols" guardrail examples.
+- [x] A3D-CU-046: Add fresh-app snippet typecheck for every documented import.
+- [x] A3D-CU-047: Regenerate context bundle and manifest.
 - [ ] A3D-CU-048: Require explicit sign-off before any new full benchmark.
 
 ### P2: Polish And Performance
 
-- [ ] A3D-CU-049: Add draw-call and bundle budgets for each helper.
+- [x] A3D-CU-049: Add draw-call and bundle budgets for each helper.
 - [ ] A3D-CU-050: Add LOD or instancing for city/windows/particles where needed.
-- [ ] A3D-CU-051: Add stable color-management presets aligned with Three.js expectations.
+- [x] A3D-CU-051: Add stable color-management presets aligned with Three.js expectations.
 - [ ] A3D-CU-052: Add screenshot contact sheets for all helper smoke tests.
-- [ ] A3D-CU-053: Add a side-by-side local comparison app for Aura helper vs raw Three.js reference.
+- [x] A3D-CU-053: Add a side-by-side local comparison app for Aura helper vs raw Three.js reference.
 
 ### Expanded Graphics/Physics/Animation Feature Backlog
 
@@ -885,14 +888,14 @@ These tasks cover the explicit feature inventory above. Some overlap with the P0
 - [ ] A3D-CU-056: Add label-overlap and label-occlusion handling for solar/data/material scenes.
 - [ ] A3D-CU-057: Add root `charts` namespace with `barGrid3D(...)`, data model, color scale, axes, legend, and hover state.
 - [ ] A3D-CU-058: Add raycast/pointer hover helper that works with chart bars, material swatches, and general primitives.
-- [ ] A3D-CU-059: Add selected-object outline/cap/highlight primitives that do not look like stray geometry.
+- [x] A3D-CU-059: Add selected-object outline/cap/highlight primitives that do not look like stray geometry.
 - [ ] A3D-CU-060: Add root `games` namespace with mini-golf as the first shipped helper.
 - [ ] A3D-CU-061: Add physics-driven mini-golf course state: ball, impulse shot, walls, obstacle, cup sensor, score, and reset.
 - [ ] A3D-CU-062: Add game interaction metrics: shots, score, selected/aim vector, collisions, and follow-camera target.
 - [ ] A3D-CU-063: Add root `character` namespace with hierarchical primitive humanoid support.
-- [ ] A3D-CU-064: Add scene graph grouping/parent-child transforms to the public agent API if not already available.
-- [ ] A3D-CU-065: Add primitive skeleton joints and connector geometry so shoulders, elbows, hips, knees, neck, hands, and feet stay attached.
-- [ ] A3D-CU-066: Add procedural gait controller with foot planting, body bob, limb swing, and deterministic capture pose.
+- [x] A3D-CU-064: Add scene graph grouping/parent-child transforms to the public agent API if not already available.
+- [x] A3D-CU-065: Add primitive skeleton joints and connector geometry so shoulders, elbows, hips, knees, neck, hands, and feet stay attached.
+- [x] A3D-CU-066: Add procedural gait controller with foot planting, body bob, limb swing, and deterministic capture pose.
 - [ ] A3D-CU-067: Add character visual QA that detects disconnected limbs and impossible proportions.
 - [ ] A3D-CU-068: Add root `effects.cinematicBloom(...)`, `effects.volumetricFog(...)`, and `material.neon(...)` helpers.
 - [ ] A3D-CU-069: Add reflective/glossy floor helper for neon and product scenes.
@@ -919,7 +922,7 @@ These tasks cover the explicit feature inventory above. Some overlap with the P0
 - [ ] A3D-CU-090: Add `camera.follow(...)`, `camera.path(...)`, and `camera.flythrough(...)` with deterministic capture-time support.
 - [ ] A3D-CU-091: Add UI state helpers for reset, slider, toggle, score counter, power meter, and hover readout.
 - [ ] A3D-CU-092: Add route evidence hooks for controls/interactions so scorers can verify behavior from metrics and notes.
-- [ ] A3D-CU-093: Add public API snippet tests that compile every helper used in benchmark recipes from a packed external install.
+- [x] A3D-CU-093: Add public API snippet tests that compile every helper used in benchmark recipes from a packed external install.
 - [ ] A3D-CU-094: Add pre-benchmark source audit for unavailable public imports, non-public subpath imports, unsafe asset URLs, missing controls, missing labels, and missing interaction evidence.
 - [ ] A3D-CU-095: Add prompt-specific visual smoke assertions: physics contacts visible, particle arc visible, solar labels readable, tunnel depth visible, chart hover differs, golf ball emphasized, material classes distinct, city day/night differs, humanoid connected, product seated.
 
@@ -927,17 +930,17 @@ These tasks cover the explicit feature inventory above. Some overlap with the P0
 
 Before another full prompt benchmark is authorized:
 
-- [ ] Public root `@aura3d/engine` imports are documented and compile-tested.
-- [ ] Physics prompt can be implemented with documented public Aura API only.
+- [x] Public root `@aura3d/engine` imports are documented and compile-tested.
+- [x] Physics prompt can be implemented with documented public Aura API only.
 - [ ] Mini-golf prompt can be implemented with documented public Aura API only.
 - [ ] Humanoid output is hierarchical and visually connected across animation frames.
 - [ ] Data grid default and hover screenshots are clean.
 - [ ] Material lab default screenshot has five distinct readable materials.
 - [ ] City day/night toggle changes real 3D scene state.
 - [ ] Product viewer default is clean and typed-asset provenance is auditable.
-- [ ] Prompt recipes compile in a fresh app.
-- [ ] Context manifests match.
-- [ ] `pnpm check:prompt-parity-readiness` passes.
+- [x] Prompt recipes compile in a fresh app.
+- [x] Context manifests match.
+- [x] `pnpm check:prompt-parity-readiness` passes.
 - [ ] A human explicitly signs the next benchmark standard. Ambiguous messages like "proceed" are not enough.
 
 ## Definition Of Done

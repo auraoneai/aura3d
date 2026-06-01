@@ -1,0 +1,18 @@
+Implemented the procedural Three.js particle fountain in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+npm run build
+```
+
+Run command for the runner:
+```bash
+npm run dev
+```
+
+Assumptions:
+- The benchmark runner will start the dev server and perform visual verification.
+- No assets are required or used.
+- `llms.txt` overrides the Aura3D note here, so the app uses raw Three.js only.

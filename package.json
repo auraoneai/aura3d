@@ -94,6 +94,11 @@
     "test:browser": "playwright test tests/browser/advanced-examples-gallery.spec.ts tests/browser/current-routes-route-health.spec.ts tests/browser/wow-showcase-screenshots.spec.ts",
     "test:visual": "node --experimental-strip-types tools/visual-baseline/index.ts",
     "test:performance": "pnpm threejs-parity:performance && pnpm superiority:performance",
+    "check:prompt-parity-readiness": "pnpm exec tsx --tsconfig tsconfig.base.json tools/prompt-parity-readiness/index.ts",
+    "benchmark:guard-full": "node benchmark/runner/full-benchmark-guard.mjs",
+    "benchmark:tarball-audit": "node benchmark/runner/tarball-audit.mjs",
+    "benchmark:validate-engine": "node benchmark/runner/validate-engine-round.mjs",
+    "benchmark:render-material-quality": "node benchmark/runner/render-material-quality-smoke.mjs",
     "wow:screenshots": "A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/wow-showcase-screenshots.spec.ts --reporter=line",
     "advanced-gallery": "A3D_ADVANCED_GALLERY_EVIDENCE_MODE=full-gallery A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts --reporter=line",
     "advanced-gallery:review": "pnpm exec tsx --tsconfig tsconfig.base.json tools/advanced-gallery-visual-review/index.ts",
@@ -370,7 +375,11 @@
     "audit:external-deployment-smoke": "pnpm exec tsx --tsconfig tsconfig.base.json tools/external-deployment-smoke/index.ts",
     "dogfood:templates": "pnpm run check:templates",
     "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts",
-    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx"
+    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:effects-vfx",
+    "benchmark:scene-kits": "node benchmark/runner/scene-kit-snippet-smoke.mjs",
+    "benchmark:contact-sheet": "node benchmark/runner/visual-qa-gates.mjs --mode=smoke --requireHumanReview=false",
+    "benchmark:visual-qa": "node benchmark/runner/visual-qa-gates.mjs --mode=acceptance",
+    "benchmark:performance-budgets": "node benchmark/runner/scene-kit-performance-budget.mjs"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",
@@ -401,7 +410,6 @@
     "@types/react": "^19.0.0",
     "@types/three": "^0.165.0",
     "babylonjs-gltf2interface": "7.16.1",
-    "cannon-es": "0.20.0",
     "create-aura3d": "workspace:*",
     "draco3d": "^1.5.7",
     "esbuild": "^0.28.0",
@@ -417,6 +425,7 @@
   "dependencies": {
     "@loaders.gl/core": "4.4.1",
     "@loaders.gl/textures": "4.4.1",
+    "cannon-es": "0.20.0",
     "three": "^0.165.0"
   }
 }

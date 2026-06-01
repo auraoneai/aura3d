@@ -32,7 +32,7 @@ export class FXAAPass implements ProductionPostProcessPass {
     this.lastResult = result;
     return createProductionPostProcessOutput(input, this.name, result.pixels, {
       edgePixels: countNonZero(result.edgeMask)
-    }, ["FXAAPass applies the renderer FXAA pixel kernel; it is not an option-only placeholder."]);
+    }, ["FXAAPass applies the renderer FXAA pixel kernel and mutates image pixels, not only options metadata."]);
   }
 
   getLastResult(): FXAAResult | null {

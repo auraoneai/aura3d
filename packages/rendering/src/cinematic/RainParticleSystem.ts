@@ -29,6 +29,16 @@ export function createRainParticleSystem(options: {
   const streaks = createRainStreaks(particleCount, bounds, options.seed ?? 7);
   const rainRenderItem: RenderItem = {
     label: id,
+    geometry: Geometry.points(streaks.map((streak) => streak.start)),
+    material: new UnlitMaterial({
+      name: "cinematic/rain-points",
+      color: [0.58, 0.74, 1, 0.62],
+      renderState: { blend: true, depthWrite: false }
+    }),
+    includeInAutoFrame: false
+  };
+  const streakRenderItem: RenderItem = {
+    label: `${id}/streaks`,
     geometry: Geometry.wideLineSegments(streaks),
     material: new UnlitMaterial({
       name: "cinematic/rain-streaks",
@@ -63,7 +73,7 @@ export function createRainParticleSystem(options: {
     bounds,
     velocity: [-0.35, -5.8, -0.18],
     renderItem: rainRenderItem,
-    renderItems: [rainRenderItem, splashRenderItem, mistRenderItem],
+    renderItems: [rainRenderItem, streakRenderItem, splashRenderItem, mistRenderItem],
     rendererOwnedEvidence: createRendererOwnedEvidenceFlag({
       id: `vfx:${id}`,
       feature: "vfx",

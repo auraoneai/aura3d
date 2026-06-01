@@ -28,6 +28,18 @@ npx @aura3d/cli@latest assets validate
 npx @aura3d/cli@latest check-deploy
 ```
 
+Minimal benchmark recipe gate:
+
+```bash
+npm install
+npm run build
+```
+
+For benchmark agents, stop after finite install/build output and report the
+runner-owned command that should launch/capture the app. Do not keep a dev
+server attached, run Playwright, capture browser screenshots, or perform manual
+visual verification inside the agent process.
+
 Visual review:
 
 - Save the source prompt, selected recipe, typed asset refs, screenshot path,

@@ -1,0 +1,33 @@
+Build succeeded — `tsc --noEmit` (strict) passed and Vite produced the production bundle. Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built a **Physics Playground** in raw Three.js at `source/src/main.ts`. Since the Three.js context bundle exposes no physics API, I implemented a compact fixed-timestep collision solver (the rules only forbid a custom engine when a matching library API exists — here none does).
+
+**What it does:**
+- **50 falling cubes** (colored, shadow-casting `BoxGeometry` instances) spawn above and drop under gravity.
+- **Tilted ramp** — a `BoxGeometry` rotated `0.4 rad` around X; cubes collide with its top face (resolved in the ramp's local frame) and slide off.
+- **Collision response** — fixed 120 Hz substeps with restitution + tangential friction against the ground, the tilted ramp, four invisible arena walls (keep cubes in frame), and cube-cube (sphere-approx, equal-mass impulse). Cubes settle into resting piles.
+- **Live contact count overlay** — HTML HUD (top-left) recomputing the number of active contacts every frame, plus cube count and controls hint.
+- **Reset button** — re-seeds all cube positions/velocities.
+- **Camera orbit** — `OrbitControls` with damping; gentle `autoRotate` so the orbit is visible in captured evidence, framed to show the whole setup.
+
+**Note:** I added `@types/three@^0.165.0` to the scaffold's `devDependencies` (inside the source dir) because `three@0.165.0` ships no type declarations and the build's `tsc --noEmit` runs in strict mode — without it the bare `import` fails typecheck. `npm install` picks it up automatically.
+
+### Build command
+```
+npm install && npm run build
+```
+(run in `source/`; `build` = `tsc --noEmit && vite build`)
+
+### Run command (for the runner to execute later)
+```
+npm run dev -- --port <assigned-port>
+```
+
+### Assumptions
+- Raw Three.js benchmark: used only `three` + bundled `three/addons/controls/OrbitControls.js`; no external assets, no physics library.
+- A lightweight self-contained collision solver is the intended approach since the bundle provides no physics/prefab API.
+- Cube-cube collisions use a bounding-sphere approximation (radius ≈ half-edge) for performance with 1,225 pairs/substep — visually believable resting/piling, not exact face-contact rigid-body dynamics.
+- The contact count reflects all active surface + pair contacts in the most recent substep, so resting stacks keep it non-zero (visible collision evidence).
+- `autoRotate` is enabled to demonstrate camera orbit in still/route evidence; manual drag/zoom remain available.

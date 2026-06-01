@@ -132,7 +132,7 @@ Round 1 failure repairs:
 - Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })`
   and `timeline.loop(...)`; agents must stop after build/test commands and not
   leave dev servers running. For primitive character prompts, start from
-  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })` so the
+  `character.lowPolyHumanoid({ showJoints: true, motionTrail: true })` so the
   connected body, joint hinges, path, contact shadow, face cues, ghost stride,
   and walk-cycle animation are visible.
 - Benchmark prompts: write the smallest complete scene first, run finite
@@ -141,7 +141,7 @@ Round 1 failure repairs:
   inside the agent process.
 - Neon tunnel, mini-golf, and humanoid prompts: start from
   `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
-  `prefabs.primitiveHumanoid` before custom primitive placement.
+  `character.lowPolyHumanoid` before custom primitive placement.
 - Neon tunnel scenes should keep the prefab's octagonal rings, diagonal braces,
   perspective rails, floor reflections, fog, bloom, sparks, ambient particles,
   and dolly camera in frame. Do not replace it with a single portal, flat

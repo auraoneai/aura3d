@@ -1,0 +1,25 @@
+Build succeeded. Per the benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built a 3D data visualization in `source/src/main.ts` using **raw Three.js 0.165.0** (only the bundled `three` core + `OrbitControls` and `CSS2DRenderer` addons available in the context bundle). The build passed both `tsc --noEmit` (strict) and `vite build`.
+
+### Commands
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run (for the runner):** `npm run dev -- --port <assigned-port>`
+
+### How each requirement is satisfied
+- **~36 bars visible:** A `6×6` grid (`GRID = 6`) generates exactly 36 box-mesh bars laid out on a centered grid with 2-unit spacing.
+- **Heights vary / animate from random values:** Each bar gets a random target height in `[0.4, 8.0]`. Bars start flat (`scale.y ≈ 0`) and grow up with an ease-out-cubic animation by scaling a base-anchored unit box. Every few seconds the data **reshuffles** to new random heights and re-animates, so the height variation is continuously visible.
+- **Color corresponds to height:** `colorForHeight()` maps normalized height → HSL hue (blue=low → cyan → green → yellow → red=high). Color is recomputed on every reshuffle so it always tracks the current target height.
+- **Axis labels readable:** Rendered with `CSS2DRenderer` (crisp HTML overlay, never blurry). Includes X-axis column labels `C1–C6`, Z-axis row labels `R1–R6`, a vertical Y value scale (`0,2,4,6,8`), and three axis-title labels (categories / series / value).
+- **Orbit camera:** `OrbitControls` with damping, zoom limits, and a clamped polar angle.
+
+### Hover-highlight behavior (run notes)
+A `Raycaster` driven by `pointermove` over the canvas finds the bar under the cursor. On hover the bar is highlighted three ways: its color is lerped 50% toward white, an **emissive glow** is added, and its X/Z footprint scales up ~18% so it visibly pops above neighbors. A bottom-left read-out shows the hovered bar's `R#/C#` and its numeric value. On pointer-leave the previous bar is fully restored to its base color/size. The hovered bar is excluded from the per-frame color refresh so its highlight isn't overwritten during animation.
+
+### Assumptions
+- The runner-provided Vite + TypeScript scaffold (strict mode, `three@0.165.0`) is the intended target; I only replaced `src/main.ts` and injected page styles from JS (no edits outside the source directory).
+- "Animate from random values" is interpreted as bars growing from flat to random target heights on load, plus periodic re-randomized re-animation to keep height variation visually evident.
+- Labels use CSS2D HTML rather than 3D `TextGeometry` because no font asset/`FontLoader` is in the context bundle, and CSS2D guarantees readability.

@@ -24,10 +24,9 @@ All notable changes for Aura3D are tracked here. This project follows source-con
   prompt round and cannot be used as shipping evidence.
 - `benchmark/results/round-12-engine.md` records a passing engine benchmark,
   but it is not enough to ship without a passing prompt benchmark.
-- Round 13 repair work is approved in
-  `benchmark/results/amendment-round-13-task12-repair.md` and
-  `benchmark/results/round-13-phase-a-signoff.md` for a `PRD-AMENDMENT:`
-  commit; it is not a passing result and cannot be cited as shipping evidence.
+- Round 13 repair work was committed in `d1a533f`, but explicit human sign-off
+  for that benchmark standard is not currently recorded. Round 13 is not a
+  passing result and cannot be cited as shipping evidence.
 
 ## 0.1.0-alpha.0
 

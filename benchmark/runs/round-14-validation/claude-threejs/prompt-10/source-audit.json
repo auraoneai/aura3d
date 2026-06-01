@@ -1,0 +1,33 @@
+{
+  "schema": "a3d-prompt-source-audit",
+  "generatedAt": "2026-06-01T00:53:33.283Z",
+  "prompt": "benchmark/prompts/10-product-viewer-sneaker.md",
+  "sourceDir": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/claude-threejs/prompt-10/source",
+  "pass": false,
+  "files": [
+    "index.html",
+    "src/main.ts"
+  ],
+  "unavailablePublicImports": [],
+  "nonPublicSubpathImports": [],
+  "unsafeAssetReferences": [
+    {
+      "kind": "hardCodedModelUrl",
+      "value": "sneaker.glb",
+      "file": "src/main.ts",
+      "line": 149,
+      "reason": "prompt 10 app code must not hard-code model URLs; use generated typed assets"
+    },
+    {
+      "kind": "hardCodedModelUrl",
+      "value": "/benchmark/assets/sneaker.glb",
+      "file": "src/main.ts",
+      "line": 6,
+      "reason": "prompt 10 app code must not hard-code model URLs; use generated typed assets"
+    }
+  ],
+  "failures": [
+    "hardCodedModelUrl in src/main.ts:6",
+    "hardCodedModelUrl in src/main.ts:149"
+  ]
+}

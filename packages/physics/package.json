@@ -5,6 +5,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
+  "dependencies": {
+    "cannon-es": "0.20.0"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

@@ -8,6 +8,9 @@ const docs = [
   "llms.txt",
   "docs/agents/README.md",
   "docs/agents/agent-quickstart.md",
+  "docs/agents/benchmark-recipes.md",
+  "docs/agents/build-playbook.md",
+  "docs/agents/verification.md",
   "docs/agents/api-surface.md",
   "docs/agents/asset-workflow.md",
   "docs/agents/templates.md",
@@ -124,8 +127,11 @@ function compileTypeScriptSnippets(): { readonly pass: boolean; readonly detail:
 export const assets = defineAuraAssets({
   robot: { type: "model", format: "glb", url: "/aura-assets/robot.glb" },
   product: { type: "model", format: "glb", url: "/aura-assets/product.glb" },
-  hero: { type: "model", format: "glb", url: "/aura-assets/hero.glb" }
+  hero: { type: "model", format: "glb", url: "/aura-assets/hero.glb" },
+  sneaker: { type: "model", format: "glb", url: "/aura-assets/sneaker.glb" }
 } as const);
+`);
+  writeFileSync(resolve(outDir, "global.d.ts"), `declare module "*.css";
 `);
   const files = snippets.map((snippet) => {
     const file = `${basename(snippet.path).replace(/[^a-z0-9]/gi, "-")}-${snippet.index}.ts`;
@@ -160,7 +166,7 @@ function normalizeSnippet(code: string): string {
   const prelude = [
     'import * as AuraDocPrelude from "@aura3d/engine";',
     'import { assets as auraDocAssets } from "./aura-assets";',
-    importsEngine ? "" : "const { createAuraApp, scene, model, primitives, prefabs, camera, lights, material, effects, timeline, interactions, defineAuraAssets, definePromptPlan, promptPlanToScene, compilePromptPlan, unsafeModelUrl } = AuraDocPrelude;",
+    importsEngine ? "" : "const { createAuraApp, collectAuraSceneEvidence, scene, model, primitives, group, groups, shadows, prefabs, camera, lights, material, effects, timeline, interactions, physics, labels, environments, games, charts, character, city, ui, defineAuraAssets, definePromptPlan, promptPlanToScene, compilePromptPlan, unsafeModelUrl } = AuraDocPrelude;",
     importsAssets ? "" : "const assets = auraDocAssets;",
     "void [AuraDocPrelude, auraDocAssets];"
   ].filter(Boolean).join("\n");

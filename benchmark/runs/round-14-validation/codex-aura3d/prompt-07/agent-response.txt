@@ -1,0 +1,17 @@
+Implemented the Material Lab in [source/src/main.ts](/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/codex-aura3d/prompt-07/source/src/main.ts) using the matching Aura3D benchmark recipe.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- No external assets are required for Prompt 07.
+- Visual evidence comes from `prefabs.materialSwatches()`, `lights.studio()`, contact shadows, Aura3D environment/reflection support, and enabled orbit controls.

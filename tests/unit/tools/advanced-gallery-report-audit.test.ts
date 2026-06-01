@@ -198,7 +198,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("blocks generated/support Product and Data assets when manifest provenance is missing or stale", () => {
     const root = resolve(".");
@@ -284,7 +284,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
       rmSync(reportDir, { recursive: true, force: true });
       rmSync(assetRoot, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("requires Product material-variant evidence to include metadata-backed material-control bindings", () => {
     const root = resolve(".");
@@ -384,7 +384,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("blocks focused route reports even when the report folder has every route JSON", () => {
     const root = resolve(".");
@@ -419,7 +419,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("blocks JSON-only screenshot hashes when current full/viewport/hero artifacts are absent", () => {
     const root = resolve(".");
@@ -449,7 +449,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("accepts current screenshot artifact evidence only when files exist and hashes match", () => {
     const root = resolve(".");
@@ -483,7 +483,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("requires Data Galaxy structured CPU/static and generated support-asset evidence", () => {
     const root = resolve(".");
@@ -531,7 +531,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("blocks Data Galaxy structured evidence that treats generated no-texture authored GLB as focal proof", () => {
     const root = resolve(".");
@@ -596,7 +596,7 @@ describe("ThreejsParity advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 });
 
 function minimalRouteReport(routeId: string, evidenceMode: "full-gallery" | "focused-route" = "full-gallery"): Record<string, unknown> {

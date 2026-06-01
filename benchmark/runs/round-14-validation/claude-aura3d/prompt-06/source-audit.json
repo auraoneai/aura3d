@@ -1,0 +1,15 @@
+{
+  "schema": "a3d-prompt-source-audit",
+  "generatedAt": "2026-06-01T00:46:49.079Z",
+  "prompt": "benchmark/prompts/06-mini-golf-hole.md",
+  "sourceDir": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/claude-aura3d/prompt-06/source",
+  "pass": true,
+  "files": [
+    "index.html",
+    "src/main.ts"
+  ],
+  "unavailablePublicImports": [],
+  "nonPublicSubpathImports": [],
+  "unsafeAssetReferences": [],
+  "failures": []
+}

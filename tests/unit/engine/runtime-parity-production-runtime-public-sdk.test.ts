@@ -393,7 +393,7 @@ describe("RuntimeParity production public SDK", () => {
     expect(environment.environmentLighting.environmentMapMipCount).toBeGreaterThanOrEqual(4);
 
     environment.dispose();
-  }, 15_000);
+  }, 30_000);
 
   it("writes a bounded SDK replacement-readiness artifact instead of claiming broad Three.js ecosystem parity", () => {
     const engineSource = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");

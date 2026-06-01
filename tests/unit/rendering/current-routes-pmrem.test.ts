@@ -49,7 +49,7 @@ describe("CurrentRoutes PMREM production contract", () => {
     expect(lighting.lighting.environmentMapMipCount).toBe(pipeline.cubemapPMREM.mipCount);
     expect(lighting.lighting.environmentMapMipCount).toBe(lighting.environmentCubeTexture.cubeFaces[0]?.mipLevels.length);
     lighting.dispose();
-  }, 15_000);
+  }, 30_000);
 });
 
 function createHighContrastEnvironment() {

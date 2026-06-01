@@ -72,7 +72,12 @@ export function collectPublicPackageApis(root = process.cwd()): readonly PublicP
         exportStatements: collectExportStatements(readFileSync(entrypointPath, "utf8"))
       };
     })
-  ].sort((a, b) => a.packageName.localeCompare(b.packageName));
+  ].sort((a, b) => apiDocsPackageSortKey(a.packageName).localeCompare(apiDocsPackageSortKey(b.packageName)));
+}
+
+function apiDocsPackageSortKey(packageName: string): string {
+  if (packageName === "create-aura3d") return "@aura3d/core/create-aura3d";
+  return packageName;
 }
 
 export function renderApiDocs(packages: readonly PublicPackageApi[]): string {

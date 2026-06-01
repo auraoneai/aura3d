@@ -1,0 +1,69 @@
+{
+  "schema": "aura3d-human-review/1.0",
+  "reviewedAt": "2026-06-01T02:28:42.187Z",
+  "reviewer": "",
+  "verdict": "needs-review",
+  "notes": "",
+  "screenshots": [
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-01-material-grid/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:28:13.433Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-01-material-grid/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:28:53.287Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-02-city-block/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:29:36.268Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-02-city-block/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:30:18.296Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-03-particles-vfx/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:31:00.307Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-03-particles-vfx/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:31:40.639Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-04-physics-ramp/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:32:35.001Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-04-physics-ramp/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:33:19.506Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-05-sneaker-product/aura3d/screenshot.png",
+      "modifiedAt": "2026-06-01T01:34:06.775Z",
+      "verdict": "needs-review",
+      "notes": ""
+    },
+    {
+      "file": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-prd2-workstream-a-2/engine/engine-05-sneaker-product/threejs/screenshot.png",
+      "modifiedAt": "2026-06-01T01:34:53.703Z",
+      "verdict": "needs-review",
+      "notes": ""
+    }
+  ]
+}

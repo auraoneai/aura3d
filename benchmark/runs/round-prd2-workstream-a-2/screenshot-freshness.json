@@ -1,0 +1,66 @@
+{
+  "validationStartedAt": "2026-06-01T01:27:04.262Z",
+  "records": [
+    {
+      "path": "engine/engine-01-material-grid/aura3d/screenshot.png",
+      "mtime": "2026-06-01T01:28:13.433Z",
+      "mtimeMs": 1780277293433.4338,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-01-material-grid/threejs/screenshot.png",
+      "mtime": "2026-06-01T01:28:53.287Z",
+      "mtimeMs": 1780277333287.4033,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-02-city-block/aura3d/screenshot.png",
+      "mtime": "2026-06-01T01:29:36.268Z",
+      "mtimeMs": 1780277376268.2417,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-02-city-block/threejs/screenshot.png",
+      "mtime": "2026-06-01T01:30:18.296Z",
+      "mtimeMs": 1780277418296.0378,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-03-particles-vfx/aura3d/screenshot.png",
+      "mtime": "2026-06-01T01:31:00.307Z",
+      "mtimeMs": 1780277460307.349,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-03-particles-vfx/threejs/screenshot.png",
+      "mtime": "2026-06-01T01:31:40.639Z",
+      "mtimeMs": 1780277500638.93,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-04-physics-ramp/aura3d/screenshot.png",
+      "mtime": "2026-06-01T01:32:35.001Z",
+      "mtimeMs": 1780277555001.0564,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-04-physics-ramp/threejs/screenshot.png",
+      "mtime": "2026-06-01T01:33:19.506Z",
+      "mtimeMs": 1780277599505.587,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-05-sneaker-product/aura3d/screenshot.png",
+      "mtime": "2026-06-01T01:34:06.775Z",
+      "mtimeMs": 1780277646775.416,
+      "fresh": true
+    },
+    {
+      "path": "engine/engine-05-sneaker-product/threejs/screenshot.png",
+      "mtime": "2026-06-01T01:34:53.703Z",
+      "mtimeMs": 1780277693703.3174,
+      "fresh": true
+    }
+  ],
+  "failures": []
+}

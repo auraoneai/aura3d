@@ -27,10 +27,10 @@ runs as completion evidence.
 - Round 12 prompt benchmark completed generation, capture, and neutral scoring,
   then failed task 12: Codex/Aura3D reached 2/10 wins and Claude/Aura3D
   reached 6/10 wins. Required is 7/10 for both agents.
-- Round 13 task-12 repair work is approved for the `PRD-AMENDMENT:` state in
-  `benchmark/results/amendment-round-13-task12-repair.md` and
-  `benchmark/results/round-13-phase-a-signoff.md`. A valid prompt matrix may
-  start only from that committed standard with a clean working tree.
+- Round 13 task-12 repair work was committed in `d1a533f`, but explicit user
+  sign-off for that benchmark standard is not currently recorded. Do not treat
+  the old "proceeed"-derived approval language as a valid signature. A future
+  prompt matrix may start only after a new explicit human sign-off.
 - Round 13 prompt benchmark was run once from committed `d1a533f`, captured,
   neutrally scored, and failed task 12: Codex/Aura3D reached 2/10 wins,
   0/3 hard-prompt wins, and one Aura3D visual score below 3 because prompt 01
@@ -133,8 +133,9 @@ runs as completion evidence.
     `runner contract: finite execution guardrails verified`.
   - `packages/engine/dist/agent-api/index.d.ts` matches
     `benchmark/context/aura3d/files/packages/engine/dist/agent-api/index.d.ts`.
-  - This task is completed by the approved `PRD-AMENDMENT:` commit that records
-    the matching manifest and sign-off files.
+  - The manifests were repaired for the committed Round 13 state, but this does
+    not supply the explicit human sign-off required before any future full
+    benchmark round.
 
 - [x] 7. Confirm the benchmark standard is clean before the next round.
   Evidence required:
@@ -148,8 +149,8 @@ runs as completion evidence.
   Evidence checked:
   - Round 12 had a clean signed standard and is recorded as a failed historical
     result.
-  - Round 13 task-12 repair amendment and Phase A sign-off are approved by
-    `gchahal1982` for the `PRD-AMENDMENT:` commit.
+  - Round 13 task-12 repair work exists in `d1a533f`, but the prior approval
+    attribution is not accepted as explicit user sign-off.
   - Prompts and rubric have not been edited by the current repair pass.
   - No Round 13 prompt matrix may start from uncommitted standard changes; it
     must start from the approved `PRD-AMENDMENT:` state with a clean working
@@ -304,8 +305,8 @@ runs as completion evidence.
     `/tmp/aura3d-task12-repair-smoke/product-landscape.png`,
     `/tmp/aura3d-task12-repair-smoke/humanoid-frame-1.png`, and
     `/tmp/aura3d-task12-repair-smoke/humanoid-frame-2.png`.
-  - A fresh Round 13 prompt matrix is valid only from the approved
-    `PRD-AMENDMENT:` state with a clean working tree.
+  - A fresh prompt matrix is not currently authorized. It requires explicit
+    human sign-off for a new benchmark standard.
   - Round 13 was run once from committed `d1a533f` and failed:
     `benchmark/results/round-13.md`,
     `benchmark/results/round-13-engine.md`, and

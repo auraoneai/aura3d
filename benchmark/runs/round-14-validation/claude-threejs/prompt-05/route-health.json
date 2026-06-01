@@ -1,0 +1,27 @@
+{
+  "status": "pass",
+  "canvasCount": 1,
+  "canvas": [
+    {
+      "width": 1440,
+      "height": 960
+    }
+  ],
+  "bodyTextLength": 231,
+  "bodyTextSample": "C1\nC2\nC3\nC4\nC5\nC6\nR1\nR2\nR3\nR4\nR5\nR6\n0\n2\n4\n6\n8\nX axis (categories)\nZ axis (series)\nValue (bar height)\n3D Data Visualization — 6×6 Bar Grid\nDrag to orbit · scroll to zoom · hover a bar to highlight it\nHover a bar to inspect its value",
+  "consoleErrors": [],
+  "pageErrors": [],
+  "requestFailures": [
+    "GET http://127.0.0.1:6405/ net::ERR_CONNECTION_REFUSED"
+  ],
+  "screenshotAnalysis": {
+    "nonblank": true,
+    "width": 1440,
+    "height": 960,
+    "sampledColorBuckets": 62,
+    "lumaRange": 230
+  },
+  "routeHealthMethod": "HTTP 200 + visible canvas/DOM poll + screenshot PNG nonblank analysis",
+  "url": "http://127.0.0.1:6405/",
+  "runCommand": "npm run dev -- --port 6405"
+}

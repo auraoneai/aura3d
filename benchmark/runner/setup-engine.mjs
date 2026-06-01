@@ -29,9 +29,20 @@ function writeJson(file, value) {
   writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function verifyContextManifests() {
+  execFileSync("node", ["benchmark/runner/verify-context-manifests.mjs"], {
+    cwd: repoRoot,
+    stdio: "inherit"
+  });
+}
+
 function packAura3d() {
   rmSync(auraTarball, { force: true });
   mkdirSync(dirname(auraTarball), { recursive: true });
+  if (process.env.AURA3D_SKIP_PACKAGE_BUILD === "1" && process.env.AURA3D_NON_RELEASE_VALIDATION !== "1") {
+    console.error("AURA3D_SKIP_PACKAGE_BUILD is allowed only for explicitly marked non-release validation.");
+    process.exit(1);
+  }
   if (process.env.AURA3D_SKIP_PACKAGE_BUILD !== "1") {
     execFileSync("pnpm", ["build"], {
       cwd: repoRoot,
@@ -39,6 +50,14 @@ function packAura3d() {
     });
   }
   execFileSync("npm", ["pack", "--pack-destination", dirname(auraTarball)], {
+    cwd: repoRoot,
+    stdio: "inherit"
+  });
+  execFileSync("node", [
+    "benchmark/runner/tarball-audit.mjs",
+    `--tarball=${auraTarball}`,
+    `--round-root=${roundRoot}`
+  ], {
     cwd: repoRoot,
     stdio: "inherit"
   });
@@ -491,6 +510,7 @@ if (existsSync(engineRoot)) {
   console.error(`${engineRoot} already exists. Remove it explicitly before preparing a new engine round.`);
   process.exit(1);
 }
+verifyContextManifests();
 packAura3d();
 for (const sceneName of scenes) writeScene(sceneName);
 console.log(`Prepared ${scenes.length * 2} engine scene implementations under ${engineRoot}`);

@@ -1,0 +1,22 @@
+The build succeeded (typecheck passed, vite bundled cleanly). Per benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built the **Neon Tunnel Flythrough** (Prompt 04) by copying benchmark recipe 04 and making only the prompt-required edits. The scene uses the `prefabs.neonTunnel({ rings: 24 })` prefab (procedural tube with emissive ring segments), `camera.neon()` driven by `timeline.loop({ seconds: 8 })` for the flythrough animation, plus explicit `effects.fog(...)` and `effects.bloom(...)` since the prompt names fog falloff and bloom postprocess as required visual evidence.
+
+**File changed:** `source/src/main.ts` (only file in the source dir touched).
+
+### Commands
+
+- **Build command:** `npm run build`
+  *(runs `tsc --noEmit` typecheck + `vite build`; already verified passing)*
+- **Run command (for the runner):** `npm run dev`
+  *(serves on `127.0.0.1` via Vite; the runner owns visual/screenshot capture)*
+
+Both run from the `source/` directory.
+
+### Assumptions
+
+- No assets are needed — the tunnel is fully procedural via the `neonTunnel` prefab, as the prompt requires.
+- The `neonTunnel` prefab already supplies receding rings, walls/floor depth, and emissive segments; I added explicit `effects.fog` (density 0.16) and `effects.bloom` (intensity 0.55) on top to make the fog-falloff and bloom evidence unambiguous rather than relying solely on prefab defaults.
+- Camera animation is provided by `camera.neon()` + `timeline.loop(...)`; the looping dolly is what produces the flythrough read in runtime evidence, which the runner captures (the agent does not run dev servers or screenshots per the benchmark rules).

@@ -1,0 +1,18 @@
+Implemented the procedural Three.js mini-golf hole in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- No assets are used; the green, obstacle, cup, ball, flag, aiming indicator, and HUD are all procedural.
+- Interaction is click/drag/release on the canvas to aim and shoot.
+- Camera follows the ball during play.

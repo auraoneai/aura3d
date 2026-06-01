@@ -1,0 +1,68 @@
+{
+  "scene": "engine-03-particles-vfx",
+  "library": "Three.js",
+  "routeHealth": "pass",
+  "routeHealthMethod": "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check",
+  "routeHealthEvidence": "route-health.json",
+  "routeUrl": "http://127.0.0.1:7032/",
+  "captureStartedAt": "2026-06-01T01:31:02.501Z",
+  "firstUsableRenderMs": 198,
+  "p50Fps": 114.94252873562257,
+  "p95FrameTimeMs": 32.69999999999709,
+  "fpsSample": {
+    "sampleCount": 1123,
+    "totalFrameTimeMs": 15149.799999999988,
+    "minFrameTimeMs": 7.299999999999272,
+    "maxFrameTimeMs": 216.90000000000146,
+    "p50FrameTimeMs": 8.700000000000728,
+    "p95FrameTimeMs": 32.69999999999709,
+    "p50Fps": 114.94252873562257,
+    "timedOut": false
+  },
+  "fpsInstrumentationStatus": "pass",
+  "fpsInstrumentationFailures": [],
+  "drawCalls": 261,
+  "triangleCount": 20872,
+  "jsHeapPeakBytes": 10000000,
+  "heapSampleCount": 18,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 120779,
+  "sourceLoc": 62,
+  "screenshot": "screenshot.png",
+  "screenshotMtime": "2026-06-01T01:31:40.639Z",
+  "screenshotMtimeMs": 1780277500638.93,
+  "screenshotFresh": true,
+  "fpsCalibration": {
+    "emptyRaf": {
+      "sampleCount": 360,
+      "totalFrameTimeMs": 3008.300000000001,
+      "minFrameTimeMs": 7.399999999999864,
+      "maxFrameTimeMs": 16.700000000000045,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 9.099999999999909,
+      "p50Fps": 120.48192771084074,
+      "timedOut": false
+    },
+    "webglControl": {
+      "sampleCount": 353,
+      "totalFrameTimeMs": 3000,
+      "minFrameTimeMs": 7.299999999999272,
+      "maxFrameTimeMs": 17.199999999999818,
+      "p50FrameTimeMs": 8.300000000000182,
+      "p95FrameTimeMs": 9.200000000000728,
+      "p50Fps": 120.48192771084074,
+      "timedOut": false
+    },
+    "verdict": {
+      "status": "pass",
+      "failures": [],
+      "thresholds": {
+        "emptyRafMinFps": 55,
+        "webglControlMinFps": 45,
+        "maxP95FrameTimeMs": 34,
+        "minControlSamples": 90,
+        "minSceneSamples": 2
+      }
+    }
+  }
+}

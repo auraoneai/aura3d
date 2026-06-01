@@ -5,25 +5,99 @@ Public package:
 ```ts
 import {
   createAuraApp,
+  collectAuraSceneEvidence,
+  definePromptPlan,
+  compilePromptPlan,
+  promptPlanToScene,
   defineAuraAssets,
   scene,
   model,
   unsafeModelUrl,
   primitives,
+  group,
+  groups,
+  shadows,
   prefabs,
+  sceneKits,
   camera,
   lights,
   material,
   effects,
   timeline,
   interactions,
+  physics,
+  labels,
+  environments,
+  games,
+  charts,
+  character,
+  city,
+  product,
+  solar,
+  particles,
   ui,
   createAuraRouteHealthSnapshot,
   captureAuraAppScreenshot
 } from "@aura3d/engine";
 ```
 
-Round 1 repair helpers:
+Scene kits are the preferred benchmark-facing API. Each kit returns scene nodes,
+camera, lights, effects, interactions, UI, diagnostics, acceptance evidence,
+`customize(...)`, and `toAppOptions()`.
+
+```ts
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const dataset = [
+  [0.42, 0.68, 0.91],
+  [0.55, 0.77, 0.83],
+  [0.31, 0.59, 0.72]
+] as const;
+
+createAuraApp("#app", sceneKits.physicsPlayground().toAppOptions());
+createAuraApp("#app", sceneKits.particleFountain({ particleCount: 2400, emissionRate: 120 }).toAppOptions());
+createAuraApp("#app", sceneKits.solarSystem().toAppOptions());
+createAuraApp("#app", sceneKits.neonTunnel().toAppOptions());
+createAuraApp("#app", sceneKits.dataViz({ dataset }).toAppOptions());
+createAuraApp("#app", sceneKits.miniGolf().toAppOptions());
+createAuraApp("#app", sceneKits.materialLab().toAppOptions());
+createAuraApp("#app", sceneKits.cityBlock({ timeOfDay: "night" }).toAppOptions());
+createAuraApp("#app", sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).toAppOptions());
+createAuraApp("#app", sceneKits.productViewer(assets.product).toAppOptions());
+```
+
+Prompt-plan apps should import `compilePromptPlan` wherever they use
+`definePromptPlan` or `promptPlanToScene`, then inspect
+`compilePromptPlan(plan).report.repairHints` before accepting weak visual
+output.
+
+Physics boundary:
+
+- Use `sceneKits.physicsPlayground()`, `sceneKits.miniGolf()`,
+  `prefabs.physicsPlayground(...)`, `prefabs.physicsRamp()`, and
+  `prefabs.miniGolfHole()` first for agent-authored benchmark scenes.
+- Use the safe root `physics` namespace through members such as
+  `physics.world(...)`, `physics.body(...)`, `physics.box(...)`,
+  `physics.sphere(...)`, `physics.step(...)`, `physics.debug(...)`, and
+  `physics.debugNodes(...)`.
+- Use `physics.worldFromScene(scene)` after authoring `.physics(...)` on nodes
+  when a prompt needs bodies and colliders derived from scene geometry.
+- Do not import `PhysicsWorld`, `Shape`, or `PhysicsDebugAdapter` from
+  `@aura3d/engine`.
+
+Visual QA helpers:
+
+```ts
+console.log(charts.visualQA(sceneKits.dataViz({ dataset }).nodes));
+console.log(character.visualQA(sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).nodes));
+console.log(city.visualQA(sceneKits.cityBlock({ timeOfDay: "night" }).nodes));
+console.log(product.visualQA(sceneKits.productViewer(assets.product).nodes));
+console.log(solar.visualQA(sceneKits.solarSystem().nodes));
+```
+
+Lower-level repair helpers remain available when a prompt requires custom
+composition:
 
 ```ts
 scene()
@@ -36,31 +110,31 @@ scene()
   .addMany(prefabs.physicsRamp())
   .addMany(prefabs.physicsPlayground({ cubes: 50 }))
   .addMany(prefabs.miniGolfHole())
-  .addMany(prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true }))
+  .addMany(character.lowPolyHumanoid({ showJoints: true, motionTrail: true, clip: "benchmark-pose" }))
+  .add(shadows.contact({ footprint: [1.2, 0.7] }))
+  .add(primitives.torus({ name: "smooth orbit ring", material: material.neon() }))
+  .add(primitives.capsule({ name: "rounded limb", material: material.clearcoat() }))
   .add(primitives.cylinder({ material: material.clearcoat() }))
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
 
-Particle-fountain benchmark scenes should also add a real emission-rate control
-with `ui.html`, `ui.range`, and `ui.onInput`; the prefab supplies the nozzle,
-ground collision plane, splash ring, lifetime color swatches, and dense arcs.
-
-Follow camera:
+Camera presets and route evidence:
 
 ```ts
-scene()
-  .addMany(prefabs.miniGolfHole())
-  .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }));
+const appScene = sceneKits.productViewer(assets.product).scene();
+const evidence = collectAuraSceneEvidence(appScene);
+console.log(evidence.camera.orbitEnabled, evidence.animation.turntableEnabled, evidence.assets);
 ```
 
-The mini-golf prefab includes green, obstacle, ball, aim line, shot-power meter,
-ball trail ghosts, contact flash, score counter geometry, cup, and a follow
-target beacon. Pair it with a visible strokes HUD for benchmark prompt 06.
+Use `camera.physics()`, `camera.charts()`, `camera.materials()`,
+`camera.city()`, `camera.product()`, `camera.solar()`, `camera.humanoid()`,
+`camera.miniGolf()`, and `camera.neon()` before hand-tuning prompt cameras. Use
+`camera.autoFrame({ bounds })` for procedural scenes with known bounds.
 
 Small HUDs and toggles:
 
 ```ts
-import { ui } from "@aura3d/engine";
+import { physics, ui } from "@aura3d/engine";
 
 ui.html("#app", `<button class="toggle" type="button">switch to night</button>`);
 ui.onClick(".toggle", (button) => {
@@ -69,30 +143,15 @@ ui.onClick(".toggle", (button) => {
 });
 
 ui.html("#app", `<input id="rate" type="range" min="60" max="180" value="120" />`);
+ui.slider("#rate", { min: 60, max: 180, value: 120, metric: "particle-emission-rate" });
 ui.onInput("#rate", (input) => ui.setText("#rate-value", input.value));
+const world = physics.world();
+ui.resetButton("#reset", () => {
+  world.reset();
+  ui.setText("#status", `reset ${world.snapshot().resets}`);
+});
 ```
 
 `ui.html("#app", markup)` inserts inside the target by default. Use it for
 mounting HUDs and nested scene containers; pass an explicit `InsertPosition`
 only when you intentionally need sibling markup.
-
-Mount targets:
-
-```ts
-createAuraApp("#app", { scene: scene().add(lights.studio()) });
-
-const canvas = document.querySelector<HTMLCanvasElement>("#scene");
-createAuraApp(canvas, { scene: scene().add(lights.studio()) });
-```
-
-`createAuraApp` accepts selector strings, elements, canvases, and nullable DOM
-query results. Nullable targets throw a clear runtime error if the element is
-missing, which keeps agent-authored `querySelector` code type-safe.
-
-React adapter:
-
-```ts
-import { AuraCanvas, Scene, Model, Camera, Lights, Effect } from "@aura3d/react";
-```
-
-Use `model(assets.robot)`. The safe API does not accept `model("robot")`.

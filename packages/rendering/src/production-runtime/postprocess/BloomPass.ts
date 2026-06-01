@@ -34,7 +34,7 @@ export class BloomPass implements ProductionPostProcessPass {
       brightPixelCount: result.brightPixelCount,
       changedPixels: result.changedPixels,
       maxNeighborBoost: result.maxNeighborBoost
-    }, ["BloomPass applies the renderer bloom pixel kernel; it is not an option-only placeholder."]);
+    }, ["BloomPass applies the renderer bloom pixel kernel and mutates image pixels, not only options metadata."]);
   }
 
   getLastResult(): BloomResult | null {

@@ -1,0 +1,17 @@
+[
+  {
+    "path": "index.html",
+    "bytes": 321,
+    "nonBlankLines": 12
+  },
+  {
+    "path": "src/aura-assets.ts",
+    "bytes": 625,
+    "nonBlankLines": 5
+  },
+  {
+    "path": "src/main.ts",
+    "bytes": 420,
+    "nonBlankLines": 11
+  }
+]

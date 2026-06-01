@@ -1,0 +1,36 @@
+{
+  "round": 14,
+  "runId": "claude-aura3d",
+  "agent": "Claude Code",
+  "library": "Aura3D",
+  "contextBundle": "benchmark/context/aura3d/files",
+  "promptFile": "benchmark/prompts/06-mini-golf-hole.md",
+  "sourceDirectory": "benchmark/runs/round-14-validation/claude-aura3d/prompt-06/source",
+  "preparedAt": "2026-05-31T23:54:55.578Z",
+  "agentCommand": "claude",
+  "agentCommandArgs": [
+    "--no-session-persistence",
+    "--permission-mode",
+    "bypassPermissions",
+    "--tools",
+    "default",
+    "--output-format",
+    "text",
+    "--print",
+    "First read ./context/llms.txt before any other context file.\n\nUse only the provided context bundle and this prompt file. Build a browser 3D\napp that satisfies the prompt. Put the app in the provided clean source\ndirectory. Do not search for assets. Prompt 10 may use only\nbenchmark/assets/sneaker.glb. After implementation, provide the build command,\nrun command for the runner to execute later, and any assumptions. Do not\nedit files outside the source directory.\n\nBenchmark execution rules:\n- Read ./context/llms.txt first; if you have not read it yet, stop and read it\n  before implementing.\n- If ./context/docs/agents/benchmark-recipes.md has a matching recipe, copy\n  that recipe shape and make only prompt-required edits.\n- Use public helpers and prefabs before custom primitives. Do not build a\n  custom physics engine, game engine, chart engine, material renderer, city\n  generator, or animation system when the context bundle exposes a matching\n  Aura3D API.\n- Do not run `npm run dev`, `npm run preview`, Playwright, browser screenshot\n  capture, or any other long-running server/manual visual verification inside\n  the agent process.\n- You may run finite commands such as `npm install` and `npm run build`.\n- After `npm run build` completes or fails, stop work and return the build\n  command, run command for the runner, and assumptions. Do not continue\n  investigating.\n\n# Prompt 06: Mini-Golf Hole\n\nBuild a mini-golf hole: a flat green with one obstacle, a ball with physics, click-to-aim-and-shoot, score counter, follow camera on the ball.\n\n## Assets\n\nNone. This prompt must be built procedurally.\n\n## Required Visual Evidence\n\n- A mini-golf green must be visible.\n- One obstacle must be visible.\n- A ball must be visible.\n- Aim or shot interaction must be present.\n- Score counter must be visible.\n- Camera framing must follow or emphasize the ball.\n"
+  ],
+  "agentVersion": "2.1.159 (Claude Code)",
+  "agentStartedAt": "2026-06-01T00:17:05.047Z",
+  "agentFinishedAt": "2026-06-01T00:23:58.497Z",
+  "agentDurationMs": 413450,
+  "initialPromptDeliveredAt": "2026-06-01T00:17:05.047Z",
+  "agentTimeoutMs": 1200000,
+  "agentTimedOut": false,
+  "agentExitCode": 0,
+  "agentSignal": null,
+  "executionHygieneViolations": [
+    "agent attempted screenshot/manual visual capture",
+    "agent ran npm run dev",
+    "agent ran or invoked Playwright"
+  ]
+}

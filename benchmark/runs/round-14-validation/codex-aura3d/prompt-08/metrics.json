@@ -1,0 +1,39 @@
+{
+  "prompt": "08-procedural-city-block",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6108/",
+  "runCommand": "npm run dev -- --port 6108",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 84,
+  "filesCreated": 3,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "sourceAuditPass": true,
+  "sourceAuditFailures": [],
+  "unavailablePublicImports": 0,
+  "nonPublicSubpathImports": 0,
+  "unsafeAssetReferences": 0,
+  "sourceAuditEvidence": "source-audit.json",
+  "inventedAssetPaths": 0,
+  "assetAuditFailures": [],
+  "assetAuditEvidence": "asset-audit.json",
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 110758,
+  "bundleSizeGzipBytes": 234581,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 3,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

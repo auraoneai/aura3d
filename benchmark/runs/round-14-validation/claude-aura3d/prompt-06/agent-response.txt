@@ -1,0 +1,23 @@
+Build succeeded — typecheck (`tsc --noEmit` strict) passed and Vite produced `dist/` (`✓ built in 3.27s`, exit 0). Per the benchmark rules, I'm stopping here.
+
+## Summary
+
+Built the mini-golf hole in `source/src/main.ts` by copying the **"06 Mini Golf"** recipe shape and adapting it to the APIs actually present in the shipped `@aura3d/engine` type surface.
+
+**What's in the scene** (`prefabs.miniGolfHole()` supplies the renderable evidence):
+- **Flat green** + **one obstacle** + **white physics golf ball** + aim line, shot-power meter, ball trail, contact flash, and cup (all part of the prefab).
+- **Click-to-aim-and-shoot**: `interactions.pointer()` plus a HUD "click to aim & shoot" button.
+- **Score counter**: visible `strokes` HUD that increments per shot, with a live power readout.
+- **Follow camera on the ball**: `camera.follow({ targetNode: "white physics golf ball", distance: 4.2 })`.
+
+**Deviation from the literal recipe (intentional, required for the strict build):** the recipe text references `games.createMiniGolfState()`, `camera.miniGolf()`, `ui.scoreCounter()`, and `ui.powerMeter()`, but the engine `.tgz` shipped in this run does **not** export those symbols (verified against `packages/engine/dist/agent-api/index.d.ts`). I used the confirmed public equivalents (`prefabs.miniGolfHole`, `camera.follow`, `interactions.pointer`, `ui.html/onClick/onInput/setText`) so `tsc` strict passes. One `createAuraApp` instance, no per-frame dispose.
+
+### Commands for the runner
+- **Install:** `npm install`
+- **Build:** `npm run build`  *(already run — passed, exit 0)*
+- **Run:** `npm run dev -- --port <assigned-port>`  *(from the `source/` directory)*
+
+### Assumptions
+- The mini-golf follow target node is named `"white physics golf ball"`, per `context/docs/agents/api-surface.md`.
+- The recipe's `games`/`camera.miniGolf`/`ui.scoreCounter`/`ui.powerMeter` helpers are not in this engine build, so the strokes counter and power meter are driven via the public `ui` HUD helpers instead.
+- Build/run only — no `npm run dev`/`preview`, Playwright, or screenshot capture was run inside the agent process, per the benchmark rules.

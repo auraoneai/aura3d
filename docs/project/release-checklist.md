@@ -3,6 +3,8 @@
 Version: 1.0.0
 
 Use this checklist before publishing package, docs, or demo claims.
+Public claims and release wording must stay bound to
+`docs/project/product-studio-claim-registry.md`.
 
 ## Final Proof Gate
 

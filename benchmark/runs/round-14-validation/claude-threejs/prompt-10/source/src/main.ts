@@ -1,0 +1,170 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+// Provided asset (served from public/). This is the only asset used.
+const SNEAKER_URL = '/benchmark/assets/sneaker.glb';
+
+// Target world-space height the auto-scaled product should occupy.
+const TARGET_SIZE = 2;
+
+const app = document.getElementById('app') as HTMLDivElement;
+
+// --- Renderer ---------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+// Fill the viewport.
+document.documentElement.style.margin = '0';
+document.body.style.margin = '0';
+app.style.position = 'fixed';
+app.style.inset = '0';
+app.appendChild(renderer.domElement);
+
+// --- Scene & camera ---------------------------------------------------------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#1b1d22');
+
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  100,
+);
+camera.position.set(3.2, 2.4, 4.4);
+
+// --- Studio lighting --------------------------------------------------------
+// Soft ambient + hemisphere base so the material is never fully black.
+scene.add(new THREE.HemisphereLight(0xffffff, 0x444450, 0.7));
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+// Key light (front-top-right) — primary, casts shadow.
+const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
+keyLight.position.set(4, 6, 4);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 0.5;
+keyLight.shadow.camera.far = 25;
+keyLight.shadow.camera.left = -5;
+keyLight.shadow.camera.right = 5;
+keyLight.shadow.camera.top = 5;
+keyLight.shadow.camera.bottom = -5;
+keyLight.shadow.bias = -0.0001;
+scene.add(keyLight);
+
+// Fill light (front-left) — softens shadows, lower intensity.
+const fillLight = new THREE.DirectionalLight(0xc9d7ff, 1.0);
+fillLight.position.set(-5, 3, 3);
+scene.add(fillLight);
+
+// Rim/back light — separates the product from the background.
+const rimLight = new THREE.DirectionalLight(0xffffff, 1.4);
+rimLight.position.set(-2, 4, -5);
+scene.add(rimLight);
+
+// --- Plinth / product base --------------------------------------------------
+const PLINTH_HEIGHT = 0.4;
+const plinth = new THREE.Mesh(
+  new THREE.CylinderGeometry(1.6, 1.7, PLINTH_HEIGHT, 64),
+  new THREE.MeshStandardMaterial({
+    color: 0xf2f2f4,
+    roughness: 0.55,
+    metalness: 0.0,
+  }),
+);
+// Plinth top sits at y = 0; the body extends downward.
+plinth.position.y = -PLINTH_HEIGHT / 2;
+plinth.receiveShadow = true;
+plinth.castShadow = true;
+scene.add(plinth);
+
+// Large ground plane to catch the plinth's contact shadow.
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(20, 64),
+  new THREE.MeshStandardMaterial({ color: 0x16171b, roughness: 1 }),
+);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -PLINTH_HEIGHT;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// --- Turntable pivot --------------------------------------------------------
+// The model is parented to this group, which spins about Y each frame.
+const turntable = new THREE.Group();
+scene.add(turntable);
+
+// --- Orbit controls ---------------------------------------------------------
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 2.5;
+controls.maxDistance = 12;
+controls.maxPolarAngle = Math.PI * 0.495; // don't orbit below the floor
+controls.target.set(0, TARGET_SIZE * 0.45, 0);
+controls.update();
+
+// --- Load the sneaker -------------------------------------------------------
+const loader = new GLTFLoader();
+loader.load(
+  SNEAKER_URL,
+  (gltf) => {
+    const model = gltf.scene;
+
+    // Enable shadows on every mesh of the loaded model.
+    model.traverse((obj) => {
+      if ((obj as THREE.Mesh).isMesh) {
+        obj.castShadow = true;
+        obj.receiveShadow = true;
+      }
+    });
+
+    // Center the model and auto-scale so its largest dimension == TARGET_SIZE.
+    const box = new THREE.Box3().setFromObject(model);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
+
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const scale = TARGET_SIZE / maxDim;
+
+    // Recenter at the origin, then apply the uniform scale.
+    model.position.sub(center);
+    model.scale.setScalar(scale);
+
+    // After scaling, lift the model so its base rests on the plinth top (y = 0).
+    const scaledBox = new THREE.Box3().setFromObject(model);
+    model.position.y -= scaledBox.min.y;
+
+    turntable.add(model);
+  },
+  undefined,
+  (error) => {
+    console.error('Failed to load sneaker.glb', error);
+  },
+);
+
+// --- Resize handling --------------------------------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- Render loop ------------------------------------------------------------
+const TURNTABLE_RPM = 6;
+const radPerSecond = (TURNTABLE_RPM / 60) * Math.PI * 2;
+const clock = new THREE.Clock();
+
+renderer.setAnimationLoop(() => {
+  const dt = clock.getDelta();
+  turntable.rotation.y += radPerSecond * dt;
+  controls.update();
+  renderer.render(scene, camera);
+});

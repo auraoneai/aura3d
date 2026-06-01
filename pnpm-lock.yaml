@@ -16,6 +16,9 @@ importers:
       '@loaders.gl/textures':
         specifier: 4.4.1
         version: 4.4.1(@loaders.gl/core@4.4.1)
+      cannon-es:
+        specifier: 0.20.0
+        version: 0.20.0
       three:
         specifier: ^0.165.0
         version: 0.165.0
@@ -104,9 +107,6 @@ importers:
       babylonjs-gltf2interface:
         specifier: 7.16.1
         version: 7.16.1
-      cannon-es:
-        specifier: 0.20.0
-        version: 0.20.0
       create-aura3d:
         specifier: workspace:*
         version: link:packages/create-aura3d
@@ -285,7 +285,11 @@ importers:
 
   packages/math: {}
 
-  packages/physics: {}
+  packages/physics:
+    dependencies:
+      cannon-es:
+        specifier: 0.20.0
+        version: 0.20.0
 
   packages/product-studio:
     dependencies:

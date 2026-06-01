@@ -1,0 +1,22 @@
+Build succeeded with typecheck passing. Per benchmark rules, I'll stop here and report.
+
+## Summary
+
+Built a **particle fountain** in `source/src/main.ts` using Aura3D public helpers, copied from the matching `benchmark-recipes.md` recipe (02 Particle Fountain) with only prompt-required edits.
+
+**How each required visual evidence is satisfied:**
+- **Emitter / nozzle, upward-and-falling arc, lifetime color variation, ground collision/splash** — all supplied by `prefabs.particleFountain({ count: 2400, emissionRate })`, the dedicated public prefab (no hand-built particle system, per the anti-hallucination rules).
+- **Controllable emission rate** — a real `<input type="range">` slider wired with `ui.slider` + `ui.onInput`. The slider drives the actual `emissionRate` value passed into the prefab (rebuilds the scene on input via a single tracked app + `dispose()`), so it changes a real value rather than a label only.
+- **Framing** — `camera.autoFrame` with explicit bounds keeps the upward/falling arc, nozzle, and ground plane in view.
+
+Verification run: `npm install` and `npm run build` (typecheck + `vite build`) both passed cleanly. No files outside `source/` were edited.
+
+### Commands for the runner
+
+- **Build command:** `npm run build`
+- **Run command:** `npm run dev -- --port <assigned-port>` (run from the `source/` directory)
+
+### Assumptions
+- Used the `prefabs.particleFountain` defaults for nozzle, ground plane, splash, and lifetime-color swatches (the bundle docs state the prefab supplies these); only `count` (2400) and `emissionRate` (slider-controlled, range 60–180, default 120) were set.
+- The slider rebuilds the single app on input (matching the city/mini-golf recipe pattern); this is a user-input event, not a per-frame rebuild, so it complies with the "don't dispose/recreate every animation frame" rule.
+- No assets were added — the prompt is fully procedural.

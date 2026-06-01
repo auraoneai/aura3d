@@ -1,271 +1,257 @@
 # Benchmark Recipes
 
 Use these recipes only when the benchmark prompt matches the recipe family.
-Read `llms.txt` first, copy the smallest matching shape, make only
+Read `llms.txt` first, copy the smallest matching scene-kit recipe, make only
 prompt-required edits, run finite commands such as `npm install` and
 `npm run build`, return the build/run commands, and stop. Do not run
 `npm run dev`, `npm run preview`, Playwright, browser screenshot capture, or
-manual visual verification inside the benchmark agent process.
+manual visual verification inside the benchmark agent process. Runtime capture
+starts only after the agent process has stopped.
+
+The benchmark is scored visually. A scene that compiles but looks like a toy,
+placeholder, symbolic sketch, or one imported asset on a floor is a failed
+answer. Prefer scene kits first, prefabs second, primitives last.
 
 Shared imports:
 
 ```ts
 import {
-  camera,
   createAuraApp,
-  effects,
-  interactions,
-  lights,
-  material,
-  model,
-  prefabs,
-  primitives,
-  scene,
-  timeline,
+  sceneKits,
+  collectAuraSceneEvidence,
+  physics,
+  games,
+  charts,
+  character,
+  city,
+  product,
+  solar,
   ui
 } from "@aura3d/engine";
 ```
 
-## 01 Physics Playground
-
-Do not fake collision counters with timers. The HUD can summarize the scene, but
-the screenshot must carry the physics evidence: falling cubes, settled cubes,
-ramp/catch geometry, contact patches, gravity direction, and a reset affordance.
+Root scene-kit import examples:
 
 ```ts
-import { camera, createAuraApp, interactions, lights, prefabs, scene, ui } from "@aura3d/engine";
-import "./style.css";
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+import { assets } from "./aura-assets";
 
-ui.html("#app", `
-  <div class="hud"><button id="reset" type="button">reset</button><span>contact evidence visible: ramp + settled pile + patches</span></div>
-`);
-ui.onClick("#reset", (button) => ui.setText(button, "reset requested; visual state restored by benchmark reload"));
+const dataset = [
+  [0.42, 0.68, 0.91],
+  [0.55, 0.77, 0.83],
+  [0.31, 0.59, 0.72]
+] as const;
 
-createAuraApp("#app", {
-  scene: scene()
-    .background("#070b12")
-    .addMany(prefabs.physicsPlayground({ cubes: 50 }))
-    .add(lights.studio({ intensity: 1.15 }))
-    .add(interactions.orbit())
-    .camera(camera.orbit({ distance: 5.2, target: [0, 0.45, -0.75] }))
-});
+createAuraApp("#app", sceneKits.physicsPlayground().toAppOptions());
+createAuraApp("#app", sceneKits.particleFountain({ particleCount: 2400, emissionRate: 120 }).toAppOptions());
+createAuraApp("#app", sceneKits.solarSystem().toAppOptions());
+createAuraApp("#app", sceneKits.neonTunnel().toAppOptions());
+createAuraApp("#app", sceneKits.dataViz({ dataset }).toAppOptions());
+createAuraApp("#app", sceneKits.miniGolf().toAppOptions());
+createAuraApp("#app", sceneKits.materialLab().toAppOptions());
+createAuraApp("#app", sceneKits.cityBlock({ timeOfDay: "night" }).toAppOptions());
+createAuraApp("#app", sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).toAppOptions());
+createAuraApp("#app", sceneKits.productViewer(assets.product).toAppOptions());
 ```
+
+## Do Not Submit
+
+- Primitive humanoid puppet: disconnected boxes, spheres, or capsules without a connected torso/limb hierarchy, planted feet, joints, face cues, and gait evidence.
+- Toy mini-golf: a flat green with a ball and hole but no score, aim/power state, obstacle, cup rim, boundaries, ball trail, contact shadow, or physics state.
+- Stray chart geometry: floating labels, detached ticks, cobweb guide lines, orphaned planes, or bars without axes/title/legend/value readout.
+- Blown-out neon: a white rectangle, flat portal, CSS-only gradient, or overexposed bloom with no readable tunnel depth.
+- Washed material lab: five spheres that all look pastel or matte, with no clear metal, glass, rubber, emissive, and clearcoat distinction.
+- Product placeholder: a bare GLB path, invented string id, uncentered model, missing plinth/contact shadow, or inspection clutter enabled by default.
+
+## 01 Physics Playground
+
+Scene kit:
+
+```ts
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+
+const kit = sceneKits.physicsPlayground();
+createAuraApp("#app", kit.toAppOptions());
+console.log(kit.diagnostics, kit.evidence);
+```
+
+Expected screenshot contains: falling cubes, settled pile, ramp/catch geometry,
+contact patches, gravity or velocity cue, reset affordance, studio lighting, and
+grounded shadows. Do not fake collision counters with timers. Use the safe root
+`physics` namespace only if the prompt requires custom simulation state.
 
 ## 02 Particle Fountain
 
-The emission-rate control must change a real value used by the particle prefab.
-A label-only button fails this prompt.
+Scene kit:
 
 ```ts
-ui.html("#app", `
-  <label style="position:absolute;left:18px;top:18px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(15,23,42,.78);color:white;font:700 14px system-ui">
-    emission rate <input id="rate" type="range" min="60" max="180" value="120" />
-    <span id="rate-value">120</span>
-  </label>
-`);
-ui.onInput("#rate", (input) => ui.setText("#rate-value", input.value));
+import { createAuraApp, sceneKits, ui } from "@aura3d/engine";
 
-createAuraApp("#app", {
-  scene: scene()
-    .background("#030711")
-    .addMany(prefabs.particleFountain({ count: 2400, emissionRate: Number(ui.range("#rate").value) }))
-    .add(lights.studio({ intensity: 1.15 }))
-    .camera(camera.orbit({ distance: 4.2, target: [0, 1.0, 0] }))
-});
+ui.html("#app", `<label>emission rate <input id="rate" type="range" min="60" max="180" value="120" /></label>`);
+ui.slider("#rate", { min: 60, max: 180, value: 120, metric: "particle-emission-rate" });
+const kit = sceneKits.particleFountain({ particleCount: 2400, emissionRate: Number(ui.range("#rate").value) });
+createAuraApp("#app", kit.toAppOptions());
 ```
+
+Expected screenshot contains: dense upward flow, color/lifetime variation,
+emitter base/nozzle, falling arcs, splash or ground collision context, and a
+real emission-rate control. A label-only control fails this prompt.
 
 ## 03 Procedural Solar System
 
+Scene kit:
+
 ```ts
-createAuraApp("#app", {
-  scene: scene()
-    .background("#020617")
-    .addMany(prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 }))
-    .add(lights.studio({ intensity: 0.85 }))
-    .add(interactions.orbit())
-    .camera(camera.perspective({ position: [0, 4.15, 6.45], target: [0, 0.16, 0], fov: 45 }))
-    .timeline(timeline.loop({ seconds: 10 }))
-});
+import { createAuraApp, sceneKits, solar } from "@aura3d/engine";
+
+const kit = sceneKits.solarSystem();
+createAuraApp("#app", kit.toAppOptions());
+console.log(solar.visualQA(kit.nodes));
 ```
+
+Expected screenshot contains: sun glow/corona, six labeled planets with distinct
+materials, orbit paths, depth-faded rings, stars/dust, and whole-system framing.
+Do not replace this with a flat 2D diagram or unlabeled dots.
 
 ## 04 Neon Tunnel
 
-The first frame must read from inside a tube: foreground rings receding to a
-vanishing point, visible wall/floor depth, fog falloff, and bloom. If the
-screenshot reads as a portal, rectangular box, or flat CSS background, the
-prompt is not satisfied.
+Scene kit:
 
 ```ts
-createAuraApp("#app", {
-  scene: scene()
-    .background("#020617")
-    .addMany(prefabs.neonTunnel({ rings: 24 }))
-    .camera(camera.dolly({ from: [0, 0.36, 1.6], to: [0, 0.36, -4.4], target: [0, 0.28, -5.8], fov: 54, seconds: 8 }))
-    .timeline(timeline.loop({ seconds: 8 }))
-});
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+
+const kit = sceneKits.neonTunnel();
+createAuraApp("#app", kit.toAppOptions());
 ```
+
+Expected screenshot contains: inside-the-tube camera, foreground rings receding
+to a vanishing point, rails, reflective floor/walls, fog falloff, sparks or
+motes, and controlled bloom. If the capture reads as a portal, box, flat CSS
+background, or whiteout, do not submit it.
 
 ## 05 3D Data Visualization
 
-Readable labels are mandatory. The prefab supplies chart geometry and hover
-metadata, but the benchmark also needs DOM evidence: title, X/Z/height axis
-labels, numeric ticks, and a hover/readout note in the captured body text.
+Scene kit:
 
 ```ts
-ui.html("#app", `
-  <div style="position:absolute;left:18px;top:18px;z-index:20;color:white;background:rgba(3,7,18,.72);padding:10px 12px;border-radius:8px;font:700 13px system-ui">
-    Revenue grid - X1..X6 / Z1..Z6 / Height 0-100<br />
-    <span id="bar-readout">hover highlight enabled; selected bar: row 6 col 6 value 100</span>
-  </div>
-`);
+import { charts, createAuraApp, sceneKits } from "@aura3d/engine";
 
-createAuraApp("#app", {
-  scene: scene()
-    .background("#071017")
-    .addMany(prefabs.dataBars3D({ grid: 6 }))
-    .add(lights.studio({ intensity: 1.1 }))
-    .add(interactions.orbit())
-    .camera(camera.orbit({ distance: 4.8, target: [0, 1.0, 0] }))
-});
+const dataset = [
+  [0.42, 0.68, 0.91],
+  [0.55, 0.77, 0.83],
+  [0.31, 0.59, 0.72]
+] as const;
+const kit = sceneKits.dataViz({ dataset });
+createAuraApp("#app", kit.toAppOptions());
+console.log(charts.visualQA(kit.nodes));
 ```
+
+Expected screenshot contains: bars, base/grid, readable title, X/Z/height axes,
+numeric ticks, legend, selected value or hover readout, and no orphaned labels
+or detached guide lines.
 
 ## 06 Mini Golf
 
-```ts
-ui.html("#app", `
-  <div style="position:absolute;left:18px;top:18px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(15,23,42,.76);color:white;font:700 14px system-ui">
-    strokes: <span id="strokes">1</span> | power: medium
-  </div>
-  <button id="shoot" type="button" style="position:absolute;left:18px;top:58px;z-index:20;padding:8px 10px;border-radius:8px;background:rgba(8,47,73,.82);color:white;font:700 14px system-ui">
-    aim and shoot
-  </button>
-`);
-let strokes = 1;
-ui.onClick("#shoot", () => {
-  strokes += 1;
-  ui.setText("#strokes", strokes);
-});
+Scene kit:
 
-createAuraApp("#app", {
-  scene: scene()
-    .background("#7dd3fc")
-    .addMany(prefabs.miniGolfHole())
-    .add(lights.studio({ intensity: 1.15 }))
-    .add(interactions.pointer())
-    .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2, target: [-0.9, 0.08, 0.1], fov: 48 }))
-    .timeline(timeline.loop({ seconds: 5 }))
-});
+```ts
+import { createAuraApp, games, sceneKits } from "@aura3d/engine";
+
+const golf = games.createMiniGolfState();
+const kit = sceneKits.miniGolf();
+createAuraApp("#app", kit.toAppOptions());
+console.log(golf.snapshot(), kit.evidence);
 ```
+
+Expected screenshot contains: white physics golf ball, cup and rim, aim line,
+power/shot state, score, obstacle, course boundaries, ball trail or contact cue,
+and follow-camera target evidence. Do not hand-roll mini-golf physics when
+`games.createMiniGolfState()` already covers shots, score, collisions, cup
+trigger, reset, and follow-camera metrics.
 
 ## 07 Material Lab
 
-Prompt 07 is a hard-prompt gate. It must read as five distinct materials:
-mirror metal, transparent glass, matte rubber, visibly glowing emissive, and
-layered glossy clearcoat.
+Scene kit:
 
 ```ts
-createAuraApp("#app", {
-  scene: scene()
-    .background("#10151f")
-    .addMany(prefabs.materialSwatches())
-    .add(lights.studio({ intensity: 1.55 }))
-    .add(interactions.orbit())
-    .camera(camera.perspective({ position: [0, 1.55, 8.35], target: [0, 0.82, -0.72], fov: 42 }))
-});
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+
+const kit = sceneKits.materialLab();
+createAuraApp("#app", kit.toAppOptions());
+console.log(kit.diagnostics);
 ```
+
+Expected screenshot contains: mirror metal, transparent glass, matte rubber,
+visible emissive glow, glossy clearcoat, labels or class cues, contact shadows,
+and lighting/reflection contrast. If the five materials are visually
+indistinguishable, do not submit.
 
 ## 08 Procedural City Block
 
+Scene kit:
+
 ```ts
-import { camera, createAuraApp, effects, lights, prefabs, scene, ui } from "@aura3d/engine";
-import "./style.css";
+import { city, createAuraApp, sceneKits } from "@aura3d/engine";
 
-ui.html("#app", `
-  <button class="toggle" type="button" aria-pressed="true">night mode active; sun/moon markers visible</button>
-`);
-let isNight = true;
-let app = createCityApp(isNight);
-
-function buildCity(night: boolean) {
-  return scene()
-    .background(night ? "#061018" : "#8fc9ff")
-    .addMany(prefabs.cityBlock({ blocks: 20, litWindows: true, timeOfDay: night ? "night" : "day" }))
-    .add(effects.fog({ density: night ? 0.035 : 0.012, color: night ? "#4b5f78" : "#c7e7ff" }))
-    .add(effects.bloom({ intensity: night ? 0.14 : 0.05 }))
-    .add(lights.studio({ intensity: night ? 1.08 : 1.45 }))
-    .camera(camera.perspective({ position: [0.6, 5.2, 9.2], target: [0, 0.42, -0.4], fov: 58 }));
-}
-
-function createCityApp(night: boolean) {
-  return createAuraApp("#app", { scene: buildCity(night) });
-}
-
-ui.onClick(".toggle", (button) => {
-  isNight = !isNight;
-  app.dispose();
-  app = createCityApp(isNight);
-  ui.setText(button, isNight ? "night mode active; sky/lights/windows changed" : "day mode active; sky/lights/windows changed");
-  ui.setPressed(button, isNight);
-});
+const kit = sceneKits.cityBlock({ timeOfDay: "night" });
+createAuraApp("#app", kit.toAppOptions());
+console.log(city.visualQA(kit.nodes));
 ```
 
-`prefabs.cityBlock(...)` already includes 20 varied towers, window columns,
-storefronts, awnings, roof detail, crosswalks, vehicles, traffic lights, street
-lights, and in-frame sun/moon state markers. Keep the camera above or slightly
-behind the foreground street so the day/night board and intersection evidence
-stay visible. A day/night button that only changes text or `aria-pressed` fails
-this prompt.
+Expected screenshot contains: many buildings, window grids, storefront/roof
+variation, streets, sidewalks, crosswalks, lane markings, cars/props, traffic
+lights or streetlights, and a visible day/night state. A day/night button that
+only changes text or `aria-pressed` fails this prompt.
 
 ## 09 Animated Primitive Humanoid
 
+Scene kit:
+
 ```ts
-createAuraApp("#app", {
-  scene: scene()
-    .background("#08111f")
-    .addMany(prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true }))
-    .add(lights.studio({ intensity: 1.15 }))
-    .camera(camera.perspective({ position: [1.25, 1.48, 3.25], target: [0, 0.86, -0.55], fov: 40 }))
-    .timeline(timeline.loop({ seconds: 4 }))
-});
+import { character, createAuraApp, sceneKits } from "@aura3d/engine";
+
+const kit = sceneKits.humanoidWalk({ animationState: "benchmark-pose" });
+createAuraApp("#app", kit.toAppOptions());
+console.log(character.visualQA(kit.nodes));
 ```
 
-The captured frame must read as one connected humanoid. Keep planted feet,
-face cues, shoulder/hip joints, and path markers visible. Motion trails should
-sit behind the body; if a trail reads as a stray head or torso, disable it.
+Expected screenshot contains: one connected humanoid at thumbnail size, planted
+feet, shoulder/hip sockets, connected wrists/ankles/hands/feet, face cues,
+motion or path evidence, and no detached primitive limbs. Human acceptance is
+required for this prompt even if structural QA passes.
 
 ## 10 Product Viewer Sneaker
 
-```ts
-import { camera, createAuraApp, interactions, lights, model, prefabs, scene, timeline } from "@aura3d/engine";
-import { assets } from "./aura-assets";
-
-createAuraApp("#app", {
-  scene: scene()
-    .background("#0b1020")
-    .addMany(prefabs.productViewer(assets.sneaker))
-    .add(lights.studio({ intensity: 1.35 }))
-    .add(interactions.orbit())
-    .camera(camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }))
-    .timeline(timeline.loop({ seconds: 8 }))
-});
-```
-
-Before writing the scene, add the user-approved asset and read the generated
-typed module:
+Asset preflight:
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/sneaker.glb --name sneaker
 sed -n '1,120p' src/aura-assets.ts
 ```
 
-Then import `assets` from the generated `./aura-assets` module and use
-`model(assets.sneaker)`. Do not write `model("sneaker")`, do not use
-`unsafeModelUrl(...)`, and do not invent asset URLs. Hashed `/aura-assets/...`
-URLs generated by the typed Aura CLI from the provided benchmark asset are
-allowed; hand-written GLB URLs are not. `prefabs.productViewer(assets.sneaker)`
-combines the typed model, clean product stage, plinth, contact shadow, turntable
-cue, softboxes, and orbit evidence so the model reads as a deliberate product
-viewer instead of a lone GLB.
+Scene kit:
 
-Use CSS only for small overlays, toggles, labels, and page sizing. Do not use
-DOM or canvas as the main 3D rendering path in Aura3D runs.
+```ts
+import { createAuraApp, product, sceneKits } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const kit = sceneKits.productViewer(assets.sneaker);
+createAuraApp("#app", kit.toAppOptions());
+console.log(product.visualQA(kit.nodes));
+```
+
+Expected screenshot contains: typed GLB model centered, scaled to fit, seated on
+a plinth or stage, contact shadow, studio softboxes, material readability cues,
+orbit/turntable evidence, and no inspection clutter unless requested. Do not
+write `model("sneaker")`, do not use `unsafeModelUrl(...)`, and do not invent
+asset URLs.
+
+## Physics And Asset Anti-Hallucination
+
+- Do not invent Aura3D APIs. Use only public root exports from `@aura3d/engine`.
+- Do not import `PhysicsWorld`, `Shape`, or `PhysicsDebugAdapter`; use the root
+  `physics` namespace and scene kits/prefabs for visible evidence.
+- Do not invent asset paths or ids. Run `assets add`, read `src/aura-assets.ts`,
+  and use the generated `assets.<name>` key.
+- Do not use raw string asset ids in the safe API.
+- Do not claim an example works until `npm run build` passes.

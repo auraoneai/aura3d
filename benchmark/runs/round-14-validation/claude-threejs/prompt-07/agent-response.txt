@@ -1,0 +1,35 @@
+Build succeeded — TypeScript typecheck passed and Vite produced the production bundle. Root directory is clean; everything lives in `source/`.
+
+## Summary
+
+Built **Material Lab** as a Three.js (vanilla TS + Vite) app in the scaffold's `source/` directory, matching the round's fixed scaffold conventions (pinned `three@0.165.0`, strict `tsc --noEmit` + `vite build`).
+
+**What it renders** (`source/src/main.ts`):
+- **Five spheres** in a row, each with a visually distinct material:
+  1. **Metal** — `MeshStandardMaterial`, metalness 1.0, roughness 0.12 (mirror-like reflections)
+  2. **Glass** — `MeshPhysicalMaterial`, transmission 1.0, IOR 1.5, thickness (refractive/transparent)
+  3. **Rubber** — `MeshStandardMaterial`, roughness 1.0, metalness 0 (matte, dark)
+  4. **Emissive** — `MeshStandardMaterial` with emissive color + intensity 2.4 (self-glowing)
+  5. **Clearcoat** — `MeshPhysicalMaterial`, clearcoat 1.0 over a colored diffuse base (glossy lacquer)
+- **Studio lighting**: hemisphere fill + key/fill/rim directional lights + overhead point "softbox", with `PCFSoftShadowMap` soft shadows on a ground plane.
+- **Environment map**: `RoomEnvironment` baked through `PMREMGenerator` → `scene.environment` for IBL + reflections (procedural, no external assets).
+- **Orbit controls**: `OrbitControls` with damping, distance/polar limits.
+- ACES Filmic tone mapping + sRGB output for correct PBR appearance.
+
+## Build command
+```
+cd source && npm install && npm run build
+```
+(already run successfully — `npm install` exit 0, `npm run build` exit 0)
+
+## Run command (for the runner)
+```
+cd source && npm run dev -- --port <assigned-port>
+```
+
+## Assumptions
+- This is the `claude-threejs` track, so the app uses vanilla **Three.js** (the `context/` bundle's docs/examples were placeholder/empty; I relied on the scaffold's pinned `three@0.165.0` from npm, consistent with the other prompts in this round).
+- Added `@types/three@^0.165.0` as a devDependency so the scaffold's strict `tsc --noEmit` typecheck passes (Three.js ships no bundled types); all other scaffold scripts/config left intact.
+- No vite config added — the scaffold's default Vite resolution (root `index.html` → `/src/main.ts`) is used.
+- Environment lighting is generated procedurally via `RoomEnvironment` + `PMREMGenerator`, since the prompt forbids external assets.
+- Per benchmark rules I did not run `npm run dev`/`preview` or any browser/visual verification; I stopped after `npm run build` completed.

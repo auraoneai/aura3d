@@ -78,8 +78,12 @@ Round 1 failure repairs:
   satisfy the control requirement.
 - Physics playground prompts: start with
   `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
-  evidence, then add real `@aura3d/engine/physics` state if needed. Do not
-  build only a custom 2D canvas around the physics package.
+  evidence. Add simulation state through the safe root `physics` namespace
+  (`physics.world(...)`, `physics.box(...)`, `physics.step(...)`,
+  `physics.debug(...)`, `physics.debugNodes(...)`). If nodes already have `.physics(...)`, use
+  `physics.worldFromScene(scene)` so authored geometry creates colliders. Do not
+  build only a custom 2D canvas around the physics package, and do not invent
+  root class imports.
 - 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`.
   It already includes bars, top caps, base shadows, floor guides, axis rails,
   wall ticks, label chips, a grounded legend, a selected-metric callout, bloom,
@@ -93,20 +97,24 @@ Round 1 failure repairs:
   visible without reading labels. Keep the contrast wall, environment panels,
   refracted glass cards, softbox strips, and clearcoat highlights in frame;
   they are what make glass, chrome, and layered glossy paint read in screenshots.
+  Use `material.labParameters()` when the prompt asks for editable roughness,
+  metalness, transmission, clearcoat, or emissive controls.
 - City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
   before custom buildings. A city scene needs streets, lit windows, scale
   variation, crosswalks, sidewalks, street lights, storefront/roof detail,
   fog or depth, and an obvious day/night state or toggle marker. A day/night
   toggle must change the 3D scene's sky/background, lighting, windows, street
-  lights, and state marker; text-only toggles fail the prompt.
+  lights, and state marker; text-only toggles fail the prompt. Use
+  `city.createState(...)` for a small mutable day/night controller.
 - Product prompts: use `prefabs.productViewer(assets.product)`,
-  `interactions.orbit()`, and product camera framing. The helper keeps the
+  `interactions.orbit()`, and `camera.product()`. The helper keeps the
   typed asset, plinth, contact shadow, softboxes, clean turntable cue, and
   normalized placement together. Use `prefabs.productStage({ style:
   "inspection" })` only when the prompt asks for explicit fit brackets. Do not
   implement the actual viewer in raw Three.js inside an Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`,
-  `ui.onClick`, `ui.range`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
+  `ui.onClick`, `ui.range`, `ui.slider`, `ui.powerMeter`, `ui.scoreCounter`,
+  `ui.resetButton`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
   default, `ui.html("#app", markup)` inserts markup inside `#app`, so nested
   scene containers remain visible within the viewport. If you query a canvas or
@@ -114,34 +122,38 @@ Round 1 failure repairs:
   `createAuraApp`; missing targets throw a clear Aura runtime error instead of
   creating TypeScript friction around nested helper functions.
 - Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
-  import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
-  simulating state. For prompt-01-style playgrounds, use
+  use the safe root `physics` namespace from `@aura3d/engine` for simulation
+  state. Do not import `PhysicsWorld`, `Shape`, or
+  `PhysicsDebugAdapter` from `@aura3d/engine`; those are not agent-facing root
+  exports. For prompt-01-style playgrounds, use
   `prefabs.physicsPlayground({ cubes: 50 })` so falling cubes, settled cubes,
   contact patches, normal vectors, and gravity cues are visible. Do not claim
   physics from cosmetic floating boxes only.
 - Mini-golf prompts: use `prefabs.miniGolfHole()`, `interactions.pointer()`,
-  `camera.follow({ targetNode: "white physics golf ball" })`, and a visible
-  score HUD. Keep the aim line, shot-power meter, ball ghosts, contact shadow,
-  obstacle contact flash, cup, and follow-camera ball framing visible. Do not
-  build gameplay only in a detached 2D overlay.
+  `camera.miniGolf()`, `games.createMiniGolfState()`, and a visible score HUD.
+  Keep the aim line, shot-power meter, ball ghosts, contact shadow, obstacle
+  contact flash, cup, and follow-camera ball framing visible. Use the state
+  controller for shot/score/contact metrics instead of hand-written game
+  physics. Do not build gameplay only in a detached 2D overlay.
 - Solar-system prompts: use
   `prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 })`
   so the six readable planet labels are attached to their planets in the 3D
   scene. Do not ship a detached legend, a sun plus only three unlabeled
   planets, or a tilted floor-like plate in place of space.
-- Animation prompts: prefer `.animate({ clip: "float" | "pulse" | "walk" | "turntable", speed })`
-  and `timeline.loop(...)`; agents must stop after build/test commands and not
+- Animation prompts: prefer `character.lowPolyHumanoid({ clip: "walk" })`
+  for primitive humanoids and `.animate({ clip: "float" | "pulse" | "walk" | "turntable" | "bar-height-grow", speed, duration, captureTime })`
+  and `timeline.loop({ duration, captureTime })`; agents must stop after build/test commands and not
   leave dev servers running. For primitive character prompts, start from
-  `prefabs.primitiveHumanoid({ showJoints: true, motionTrail: true })` so the
-  connected body, joint hinges, path, contact shadow, face cues, ghost stride,
-  and walk-cycle animation are visible.
+  `character.lowPolyHumanoid({ showJoints: true, motionTrail: true, clip: "benchmark-pose" })`
+  so the hierarchical rig, skeleton joints, connected body, path, contact
+  shadow, face cues, stride, and walk-cycle animation are visible.
 - Benchmark prompts: write the smallest complete scene first, run finite
   commands such as `npm run build`, and exit. Do not run dev servers,
   Playwright, browser screenshot capture, or manual visual verification from
   inside the agent process.
 - Neon tunnel, mini-golf, and humanoid prompts: start from
   `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
-  `prefabs.primitiveHumanoid` before custom primitive placement.
+  `character.lowPolyHumanoid` before custom primitive placement.
 - Neon tunnel scenes should keep the prefab's octagonal rings, diagonal braces,
   perspective rails, floor reflections, fog, bloom, sparks, ambient particles,
   and dolly camera in frame. Do not replace it with a single portal, flat

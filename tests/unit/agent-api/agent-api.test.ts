@@ -1,19 +1,40 @@
 import { describe, expect, test } from "vitest";
 import {
   type AuraModelNode,
+  type AuraGroupNode,
+  type AuraInteractionNode,
+  type AuraLabelNode,
   type AuraPrimitiveNode,
+  type AuraApp,
+  type AuraSceneBuilder,
+  type AuraSceneSnapshot,
   camera,
+  character,
+  charts,
+  city,
+  collectAuraSceneEvidence,
   compilePromptPlan,
   defineAuraAssets,
   definePromptPlan,
   effects,
+  environments,
+  group,
+  groups,
+  games,
+  interactions,
+  labels,
   lights,
   material,
   model,
+  performance,
+  physics,
   prefabs,
   primitives,
   promptPlanToScene,
+  renderer,
   scene,
+  sceneKits,
+  shadows,
   timeline,
   ui,
   createAuraApp
@@ -67,6 +88,185 @@ describe("agent API", () => {
     expect(snapshot.camera.mode).toBe("follow");
   });
 
+  test("supports hierarchical groups with inherited transforms", () => {
+    const rig = group("test rig", [
+      primitives.sphere({ name: "local head" }).position(0, 1, 0).scale(0.5),
+      group("nested limb", [
+        primitives.box({ name: "local forearm" }).position(0.2, -0.1, 0).scale([0.1, 0.4, 0.1])
+      ], { position: [0.5, 0.5, 0] })
+    ], { position: [1, 2, 3], scale: 2 }).toJSON();
+    const snapshot = scene().add(rig).toJSON();
+    const flattened = groups.flatten(snapshot.nodes);
+    const head = flattened.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "local head");
+    const forearm = flattened.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "local forearm");
+
+    expect(snapshot.nodes[0]).toMatchObject({ kind: "group", name: "test rig" });
+    expect(head).toMatchObject({ position: [1, 3, 3], scale: [1, 1, 1] });
+    expect(forearm).toMatchObject({ position: [1.7, 2.4, 3], scale: [0.2, 0.8, 0.2] });
+  });
+
+  test("exposes a hierarchical character rig with skeleton joints and gait clips", () => {
+    const nodes = character.primitiveHumanoid({ clip: "wave", pose: "planted-foot", style: "robot" });
+    const rig = nodes.find((node): node is AuraGroupNode => node.kind === "group" && node.name === "hierarchical primitive humanoid rig");
+    const flattened = groups.flatten(nodes);
+    const joints = rig?.character?.skeleton.joints.map((joint) => joint.name) ?? [];
+    const clips = rig?.character?.skeleton.clips.map((clip) => clip.name) ?? [];
+
+    expect(rig?.character).toMatchObject({ clip: "wave", pose: "planted-foot" });
+    expect(rig?.character?.skeleton.style).toBe("robot");
+    expect(rig?.character).toMatchObject({ rootBob: true, limbSwing: "joint-hierarchy" });
+    expect(rig?.animation).toMatchObject({ rootBob: true, jointHierarchy: true, joint: "root" });
+    expect(clips).toEqual(["idle", "walk", "run", "wave", "turn", "pose", "benchmark-pose"]);
+    expect(joints).toEqual(expect.arrayContaining([
+      "root",
+      "pelvis",
+      "spine",
+      "neck",
+      "head",
+      "left-shoulder",
+      "left-elbow",
+      "left-wrist",
+      "right-hip",
+      "right-knee",
+      "right-ankle"
+    ]));
+    expect(rig?.children.some((node) => node.kind === "group" && node.name === "left shoulder elbow wrist chain")).toBe(true);
+    expect(rig?.children.some((node) => node.kind === "group" && node.name === "right hip knee ankle chain")).toBe(true);
+    expect(rig?.children.every((node) => node.kind !== "group" || node.animation?.jointHierarchy === true)).toBe(true);
+    expect(flattened.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
+    expect(flattened.some((node) => node.kind === "primitive" && node.name === "forward foot planted on path")).toBe(true);
+  });
+
+  test("uses a bundled skinned GLB for the benchmark-facing humanoid default", () => {
+    const nodes = character.lowPolyHumanoid({ clip: "benchmark-pose", pose: "three-quarter" });
+    const modelNode = nodes.find((node): node is AuraModelNode => node.kind === "model" && node.name === "authored skinned humanoid character model");
+
+    expect(modelNode?.asset.id).toBe("humanoid");
+    expect(modelNode?.asset.format).toBe("glb");
+    expect(modelNode?.asset.metadata?.animations).toContain("Walking");
+    expect(modelNode?.asset.metadata?.animations).toContain("Wave");
+    expect(modelNode?.animation?.clip).toBe("Walking");
+    expect(modelNode?.animation?.captureTime).toBe(0.72);
+    expect(modelNode?.castShadow).toBe(true);
+    expect(modelNode?.receiveShadow).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(false);
+    expect(nodes.some((node) => node.kind === "effect" && node.effect === "contact-occlusion")).toBe(true);
+    const rig = nodes.find((node): node is AuraGroupNode => node.kind === "group" && node.name === "authored skinned humanoid rig metadata");
+    expect(rig?.character?.footPlanting).toMatchObject({
+      enabled: true,
+      groundY: 0,
+      plantedFeet: ["left"],
+      captureTime: 0.72
+    });
+    expect(rig?.character?.rootMotion).toMatchObject({
+      enabled: true,
+      bodyBob: true,
+      torsoMovesAsSingleBody: true
+    });
+    expect(rig?.character?.constraints).toMatchObject({
+      enabled: true,
+      correctedChains: ["spine", "left-arm", "right-arm", "left-leg", "right-leg"]
+    });
+    expect(character.visualQA(nodes)).toMatchObject({ connected: true, impossibleProportions: false, score: 5 });
+  });
+
+  test("exposes a built-in procedural human mesh descriptor without making it the benchmark default", () => {
+    const mesh = character.proceduralHumanMesh({ style: "athletic" });
+    const partNames = mesh.parts.map((part) => part.name);
+
+    expect(mesh.kind).toBe("aura-procedural-human-mesh");
+    expect(partNames).toEqual(expect.arrayContaining([
+      "torso",
+      "pelvis",
+      "neck",
+      "head",
+      "left-shoulder",
+      "right-shoulder",
+      "left-upper-arm",
+      "left-lower-arm",
+      "right-upper-arm",
+      "right-lower-arm",
+      "left-hand",
+      "right-hand",
+      "left-hip",
+      "right-hip",
+      "left-upper-leg",
+      "left-lower-leg",
+      "right-upper-leg",
+      "right-lower-leg",
+      "left-foot",
+      "right-foot"
+    ]));
+    expect(mesh.parts.every((part) => part.vertices.length >= 8 && part.indices.length >= 36)).toBe(true);
+    expect(character.lowPolyHumanoid().some((node) => node.kind === "model" && node.name === "authored skinned humanoid character model")).toBe(true);
+  });
+
+  test("keeps renderer diagnostics honest until runtime passes initialize", () => {
+    const diagnostics = renderer.diagnostics(
+      scene()
+        .add(primitives.box({ name: "emissive diagnostic cube", material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff" }) }))
+        .add(effects.bloom({ intensity: 0.28, threshold: 0.82, radius: 0.22 }))
+        .add(effects.ambientOcclusion())
+    );
+
+    expect(diagnostics.postprocess).toMatchObject({
+      requested: true,
+      enabled: false,
+      pixelBacked: false,
+      runtimeStatus: "not-mounted",
+      requestedPasses: ["render", "ssao", "bloom", "output"],
+      actualPasses: [],
+      fallbackPasses: []
+    });
+    expect(diagnostics.bloom).toMatchObject({ enabled: true, rendered: false });
+    expect(diagnostics.runtime).toMatchObject({ mounted: false, backend: "scene-plan", postprocessVerified: false });
+    expect(diagnostics.warnings.join(" ")).toContain("scene plan only");
+  });
+
+  test("requests mounted hover runtime for the data-viz scene kit without visual-score acceptance", () => {
+    const kit = sceneKits.dataViz();
+    const hoverNode = kit.nodes.find((node): node is AuraInteractionNode => node.kind === "interaction" && node.mode === "hover");
+    const evidence = collectAuraSceneEvidence(kit.scene().toJSON());
+
+    expect(hoverNode).toMatchObject({ target: "height-colored data bar 4-6", selected: "height-colored data bar 4-6" });
+    expect(evidence.interactions.hoverTargets).toContain("height-colored data bar 4-6");
+    expect(kit.diagnostics.structuralScore).toBeGreaterThanOrEqual(4);
+    expect("visualScore" in kit.diagnostics).toBe(false);
+  });
+
+  test("binds city day-night toggles to AuraApp scene replacement", () => {
+    const state = city.createState({ blocks: 3, litWindows: true, timeOfDay: "night" });
+    const scenes: AuraSceneSnapshot[] = [];
+    const buttonDataset: Record<string, string> = {};
+    const button = {
+      dataset: buttonDataset,
+      textContent: "",
+      ownerDocument: { defaultView: {} },
+      setAttribute(name: string, value: string) {
+        buttonDataset[name] = value;
+      },
+      onclick: undefined as ((event: MouseEvent) => void) | undefined
+    } as unknown as HTMLButtonElement;
+    const app = {
+      setScene(nextScene: AuraSceneBuilder | AuraSceneSnapshot) {
+        const value = nextScene as AuraSceneSnapshot | { toJSON(): AuraSceneSnapshot };
+        scenes.push(typeof (value as { toJSON?: unknown }).toJSON === "function" ? (value as { toJSON(): AuraSceneSnapshot }).toJSON() : value as AuraSceneSnapshot);
+      }
+    } as AuraApp;
+
+    city.bindDayNightToggle(button, app, state);
+    expect(button.textContent).toBe("Switch to day");
+    expect(button.dataset.auraCityTimeOfDay).toBe("night");
+
+    (button.onclick as ((event: Event) => void) | null)?.({} as Event);
+
+    expect(state.timeOfDay).toBe("day");
+    expect(button.textContent).toBe("Switch to night");
+    expect(button.dataset.auraCityTimeOfDay).toBe("day");
+    expect(scenes).toHaveLength(1);
+    expect(scenes[0]?.background).toBe("#bfe7ff");
+  });
+
   test("exposes repair helpers for particles, city, materials, products, physics, charts, games, and characters", () => {
     const snapshot = scene()
       .addMany(prefabs.particleFountain({ count: 1400 }))
@@ -94,14 +294,14 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.material?.clearcoat)).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "rigid physics ramp")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("visible rigid body cube 50"))).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "subtle collision contact patch cluster center")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "glowing labeled sun")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Earth readable planet label")).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn visible ring")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "Saturn ringed planet visible ring")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("height-colored data bar 6-6"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name?.includes("receding neon tunnel top segment"))).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "score counter plinth")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "label" && node.name === "mini golf score and shot HUD")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "humanoid head")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "short humanoid neck connector")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "left humanoid eye")).toBe(true);
@@ -138,16 +338,17 @@ describe("agent API", () => {
     const ball = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "white physics golf ball");
 
     expect(names).toEqual(expect.arrayContaining([
-      "flat putting green",
-      "single red obstacle",
+      "designed mini golf felt base course boundaries",
+      "windmill obstacle base",
       "white physics golf ball",
-      "ball contact shadow on green",
-      "transparent moving ball ghost 1",
+      "ball contact shadow on felt",
+      "ball aim selection ring",
+      "cyan aim direction line",
       "shot power meter track",
-      "click drag control marker",
-      "orange obstacle contact flash",
-      "rebound path preview after obstacle",
-      "score counter stroke digit bar",
+      "shot power meter fill",
+      "cup capture ring",
+      "raised beveled cup rim outer lip",
+      "flag pole",
       "follow camera target beacon above ball"
     ]));
     expect(ball?.animation?.clip).toBe("roll");
@@ -178,8 +379,6 @@ describe("agent API", () => {
       "humanoid mouth line",
       "left bent forearm",
       "right bent forearm",
-      "left shoulder ball joint",
-      "forward knee hinge",
       "forward lower walking shin",
       "back lower walking shin",
       "cyan body motion trail ribbon behind torso",
@@ -197,11 +396,29 @@ describe("agent API", () => {
     expect(scalarScale(primitiveByName("shoulder bar connecting arms"))).toBeLessThanOrEqual(0.62);
     expect(neck?.position?.[1]).toBeGreaterThan(torso?.position?.[1] ?? 0);
     expect(head?.position?.[1] ?? 0).toBeGreaterThan(neck?.position?.[1] ?? 999);
-    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("joint")).length).toBeGreaterThanOrEqual(4);
+    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("joint")).length).toBe(0);
+    expect(prefabs.primitiveHumanoid({ showJoints: true }).filter((node) => node.kind === "primitive" && node.name?.includes("joint")).length).toBeGreaterThanOrEqual(4);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon behind torso")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name?.includes("ghost"))).toBe(false);
     expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "left shoulder ball joint")).toBe(false);
     expect(prefabs.primitiveHumanoid({ showJoints: false, motionTrail: false }).some((node) => node.kind === "primitive" && node.name === "cyan body motion trail ribbon behind torso")).toBe(false);
+    expect(character.visualQA(character.primitiveHumanoid())).toMatchObject({ connected: true, impossibleProportions: false, score: 5 });
+
+    const brokenArm = nodes.map((node) =>
+      node.kind === "primitive" && node.name === "left attached swinging arm"
+        ? { ...node, position: [-1.4, 1.8, 0.65] as [number, number, number] }
+        : node
+    );
+    expect(character.visualQA(brokenArm)).toMatchObject({ connected: false });
+    expect(character.visualQA(brokenArm).gaps.map((gap) => gap.id)).toContain("left-shoulder-arm");
+
+    const impossibleHead = nodes.map((node) =>
+      node.kind === "primitive" && node.name === "humanoid head"
+        ? { ...node, scale: 0.72 }
+        : node
+    );
+    expect(character.visualQA(impossibleHead)).toMatchObject({ impossibleProportions: true });
+    expect(character.visualQA(impossibleHead).score).toBeLessThan(5);
   });
 
   test("builds a six-planet solar-system prefab with orbit paths and attached readable labels", () => {
@@ -211,18 +428,20 @@ describe("agent API", () => {
     const labelPlinths = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("visible label plinth") === true);
     const readableLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.endsWith("readable planet label") === true);
     const leaderLines = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("attached label leader line") === true);
+    const collisionLabels = nodes.filter((node): node is AuraLabelNode => node.kind === "label" && node.collisionAvoidance === true && node.occlusionAware === true);
     const bloom = nodes.find((node) => node.kind === "effect" && node.effect === "bloom");
     const pointLight = nodes.find((node) => node.kind === "light" && node.name === "warm solar key light");
 
     expect(planetNodes.map((node) => node.name)).toEqual([
-      "Mercury labeled orbiting planet",
-      "Venus labeled orbiting planet",
-      "Earth labeled orbiting planet",
-      "Mars labeled orbiting planet",
-      "Jupiter labeled orbiting planet",
-      "Saturn labeled orbiting planet"
+      "Mercury rocky material labeled orbiting planet",
+      "Venus lava-venus material labeled orbiting planet",
+      "Earth ice material labeled orbiting planet",
+      "Mars rocky material labeled orbiting planet",
+      "Jupiter gas-giant material labeled orbiting planet",
+      "Saturn ringed material labeled orbiting planet"
     ]);
-    expect(orbitSegments).toHaveLength(144);
+    expect(orbitSegments).toHaveLength(96);
+    expect(nodes.filter((node) => node.kind === "primitive" && node.primitive === "torus" && node.name?.endsWith("smooth depth-faded orbit ring"))).toHaveLength(6);
     expect(labelPlinths).toHaveLength(6);
     expect(readableLabels.map((node) => node.name)).toEqual([
       "Mercury readable planet label",
@@ -233,25 +452,118 @@ describe("agent API", () => {
       "Saturn readable planet label"
     ]);
     expect(leaderLines).toHaveLength(6);
-    expect(bloom).toMatchObject({ kind: "effect", effect: "bloom", intensity: 0.72 });
+    expect(collisionLabels).toHaveLength(6);
+    expect(planetNodes.every((node) => node.animation?.clip === "orbit" && (node.animation.orbitRadius ?? 0) > 0)).toBe(true);
+    expect(new Set(planetNodes.map((node) => node.animation?.speed)).size).toBe(6);
+    expect([...labelPlinths, ...readableLabels, ...leaderLines].every((node) => node.animation?.clip === "orbit")).toBe(true);
+    expect(collisionLabels.every((node) => node.animation?.clip === "orbit" && node.animation.orbitRadius !== undefined)).toBe(true);
+    expect(bloom).toMatchObject({ kind: "effect", effect: "bloom", intensity: 0.32 });
     expect(pointLight).toMatchObject({ kind: "light", light: "point" });
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "transparent golden sun corona")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "Jupiter visible equator band")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "Earth small moon")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "Earth small moon material companion")).toBe(true);
     expect(prefabs.solarSystem({ labels: "none", orbitSegments: 16, starCount: 18 }).filter((node) => node.kind === "primitive" && node.name?.endsWith("readable planet label")).length).toBe(0);
   });
 
   test("shows physics playground contact and falling-state evidence", () => {
     const nodes = prefabs.physicsPlayground({ cubes: 50 });
     const fallingCubes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("falling visible rigid body cube") === true);
-    const settledCubes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("settled visible rigid body cube") === true);
-    const contactVectors = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("red contact normal vector") === true);
+    const settledCubes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("settled pile visible rigid body cube") === true);
+    const contactVectors = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("small red contact normal vector") === true);
+    const floor = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "polished physics lab contact floor");
 
-    expect(fallingCubes).toHaveLength(8);
-    expect(settledCubes).toHaveLength(42);
-    expect(contactVectors).toHaveLength(8);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "gravity direction arrow shaft")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "bright collision contact patch")).toBe(true);
+    expect(fallingCubes).toHaveLength(6);
+    expect(settledCubes).toHaveLength(44);
+    expect(contactVectors).toHaveLength(3);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "gravity direction cue shaft")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "subtle collision contact patch cluster center")).toBe(true);
+    expect(floor?.physics).toMatchObject({ type: "static", shape: "plane" });
+    expect(fallingCubes[0]?.physics).toMatchObject({ type: "dynamic", shape: "box" });
+  });
+
+  test("exposes a public scene-bound physics world with contacts, casts, debug lines, and snapshots", () => {
+    const world = physics.world({ gravity: [0, -9.81, 0], enableSleeping: false });
+    const floor = world.createBody({ type: "static", shape: physics.plane() });
+    const ball = physics.body({ position: [0, 0.18, 0], mass: 1, shape: physics.sphere(0.25), material: { restitution: 0.2, friction: 0.4 } });
+    const ballBody = world.createBody(ball);
+    const node = {
+      position: [0, 0.18, 0] as [number, number, number],
+      rotation: [0, 0, 0, 1] as [number, number, number, number]
+    };
+
+    physics.bindNode(world, ballBody, physics.sceneBinding(node));
+    ballBody.setRotation([0, Math.SQRT1_2, 0, Math.SQRT1_2]);
+    const events = physics.step(world, { steps: 2 });
+    const snapshot = scene()
+      .physics(world)
+      .add(primitives.sphere({ name: "bound ball" }).physics(physics.nodeSpec({ type: "dynamic", shape: "sphere", radius: 0.25 })))
+      .toJSON();
+
+    expect(events.some((event) => event.type === "begin" || event.type === "stay")).toBe(true);
+    expect(physics.liveContactCount(world)).toBeGreaterThan(0);
+    expect(physics.raycast(world, [1, 2, 0], [0, -1, 0])?.bodyId).toBe(floor.id);
+    expect(physics.sphereCast(world, [1, 2, 0], 0.1, [0, -1, 0])?.bodyId).toBe(floor.id);
+    expect(physics.debug(world).lines.length).toBeGreaterThan(0);
+    expect(physics.debug(world).nodes.some((debugNode) => debugNode.kind === "primitive" && debugNode.name?.startsWith("active physics body state indicator"))).toBe(true);
+    expect(node.position[1]).toBeLessThanOrEqual(0.25);
+    expect(node.rotation[1]).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(node.rotation[3]).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(snapshot.physics).toMatchObject({ kind: "aura-physics-world", bodies: 2, colliders: 2 });
+    expect(snapshot.nodes[0]).toMatchObject({ kind: "primitive", physics: { type: "dynamic", shape: "sphere" } });
+    world.reset();
+    expect(world.snapshot()).toMatchObject({ bodies: 2, colliders: 2, resets: 1 });
+    expect(node.position[1]).toBeCloseTo(0.18, 3);
+    expect(physics.debugNodes(world).some((debugNode) => debugNode.kind === "primitive" && debugNode.name?.startsWith("physics collider debug line"))).toBe(true);
+  });
+
+  test("creates a physics world from authored scene-node physics specs", () => {
+    const sourceScene = scene()
+      .add(primitives.plane({ name: "floor" }).physics({ type: "static", shape: "plane" }))
+      .add(primitives.sphere({ name: "ball" }).position(0, 0.18, 0).rotate(0, 0.2, 0).physics({ type: "dynamic", shape: "sphere", radius: 0.2, mass: 1 }))
+      .add(primitives.sphere({ name: "cup sensor" }).position(0.4, 0.18, 0).physics({ type: "static", shape: "sphere", radius: 0.25, sensor: true }))
+      .toJSON();
+    const world = physics.worldFromScene(sourceScene, { gravity: [0, -9.81, 0], enableSleeping: false });
+    physics.step(world, { steps: 2 });
+    const evidence = collectAuraSceneEvidence(scene().physics(world).addMany(sourceScene.nodes).toJSON());
+    const simulatedBallNode = sourceScene.nodes[1] as AuraPrimitiveNode & { physicsRotation?: readonly [number, number, number, number] };
+
+    expect(world.snapshot()).toMatchObject({ bodies: 3, colliders: 3 });
+    expect(physics.liveContactCount(world)).toBeGreaterThan(0);
+    expect(evidence.physics).toMatchObject({ bodies: 3, colliders: 3, nodesWithPhysics: 3, sensors: 1 });
+    expect(simulatedBallNode.position?.[1]).toBeLessThan(0.18);
+    expect(simulatedBallNode.physicsRotation).toBeDefined();
+  });
+
+  test("collects route evidence for physics, interactions, animation, labels, and typed asset provenance", () => {
+    const world = physics.world({ gravity: [0, -9.81, 0] });
+    world.createBody({ type: "static", shape: physics.plane() });
+    world.createBody({ position: [0, 0.24, 0], shape: physics.sphere(0.18) });
+    physics.step(world, { steps: 3 });
+    const snapshot = scene()
+      .physics(world)
+      .add(model(assets.robot).animate({ clip: "turntable", speed: 0.4 }))
+      .add(labels.billboard("Robot", { occlusionAware: true, collisionAvoidance: true }))
+      .add(primitives.sphere({ name: "physics ball" }).physics({ type: "dynamic", shape: "sphere", sensor: true }))
+      .add(interactions.orbit())
+      .add(interactions.dragVector({ target: "physics ball" }))
+      .add(interactions.clickImpulse({ target: "physics ball" }))
+      .camera(camera.follow({ targetNode: "physics ball", captureTime: 0.35 }))
+      .toJSON();
+    const evidence = collectAuraSceneEvidence(snapshot);
+
+    expect(evidence.physics).toMatchObject({ worldAttached: true, bodies: 2, colliders: 2, steps: 3, nodesWithPhysics: 1, sensors: 1 });
+    expect(evidence.interactions.modes).toEqual(["click-impulse", "drag-vector", "orbit"]);
+    expect(evidence.interactions.dragTargets).toEqual(["physics ball"]);
+    expect(evidence.interactions.impulseTargets).toEqual(["physics ball"]);
+    expect(evidence.camera).toMatchObject({ mode: "follow", orbitEnabled: true, followTarget: "physics ball", captureTime: 0.35 });
+    expect(evidence.animation).toMatchObject({ animatedNodes: 1, turntableEnabled: true });
+    expect(evidence.labels).toMatchObject({ count: 1, kinds: ["billboard"], occlusionAware: 1, collisionAvoidance: 1 });
+    expect(evidence.assets[0]).toMatchObject({
+      source: "typed-aura-assets-manifest",
+      id: "robot",
+      hash: "sha256-test",
+      bounds: [1, 2, 1]
+    });
   });
 
   test("keeps data visualization rich with axes, labels, caps, and hover evidence", () => {
@@ -262,6 +574,7 @@ describe("agent API", () => {
     const trendRibbon = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("trend ridge") === true);
     const columnLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("readable X") === true);
     const rowLabels = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("readable Z") === true);
+    const collisionLabels = nodes.filter((node): node is AuraLabelNode => node.kind === "label" && node.collisionAvoidance === true && node.occlusionAware === true);
     const names = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
     const hoverNodes = prefabs.dataBars3D({ grid: 6, selected: { row: 4, col: 6 } });
     const hoverNames = hoverNodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
@@ -273,6 +586,11 @@ describe("agent API", () => {
     expect(trendRibbon).toHaveLength(0);
     expect(columnLabels).toHaveLength(6);
     expect(rowLabels).toHaveLength(6);
+    expect(collisionLabels.map((node) => node.name)).toEqual(expect.arrayContaining([
+      "collision-avoiding x axis label",
+      "collision-avoiding z axis label",
+      "collision-avoiding height axis label"
+    ]));
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "dark rear chart wall")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "readable 3D chart title backplate")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "selected metric hover readout panel")).toBe(true);
@@ -292,17 +610,19 @@ describe("agent API", () => {
   test("keeps neon tunnel cinematic with octagonal rings, reflections, and motion cues", () => {
     const nodes = prefabs.neonTunnel({ rings: 10 });
     const topSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("receding neon tunnel top segment") === true);
+    const tubeRings = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.primitive === "torus" && node.name?.startsWith("true circular neon tunnel tube ring") === true);
     const diagonalBraces = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("diagonal brace") === true);
     const wallChords = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("curved tube wall") === true);
     const floorReflections = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floor reflection streak") === true);
     const speedDashes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("wall speed dash") === true);
     const sparks = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("floating tunnel spark") === true);
 
-    expect(topSegments).toHaveLength(12);
-    expect(diagonalBraces).toHaveLength(48);
-    expect(wallChords).toHaveLength(24);
-    expect(floorReflections).toHaveLength(12);
-    expect(speedDashes).toHaveLength(12);
+    expect(topSegments).toHaveLength(10);
+    expect(tubeRings).toHaveLength(10);
+    expect(diagonalBraces).toHaveLength(40);
+    expect(wallChords).toHaveLength(20);
+    expect(floorReflections).toHaveLength(10);
+    expect(speedDashes).toHaveLength(10);
     expect(sparks).toHaveLength(14);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "glossy black neon tunnel floor")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vanishing light rail")).toBe(true);
@@ -314,6 +634,7 @@ describe("agent API", () => {
   test("shows mini-golf scoring, aiming, cup, and follow-camera target cues", () => {
     const nodes = prefabs.miniGolfHole();
     const ball = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "white physics golf ball");
+    const cup = nodes.find((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name === "cup capture ring");
     const snapshot = scene()
       .addMany(nodes)
       .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }))
@@ -321,10 +642,40 @@ describe("agent API", () => {
 
     expect(ball?.animation?.clip).toBe("roll");
     expect(ball?.interaction).toMatchObject({ cursor: "crosshair", onClick: "aim and shoot ball" });
+    expect(ball?.physics).toMatchObject({ type: "dynamic", shape: "sphere", radius: 0.16 });
+    expect(cup?.physics).toMatchObject({ type: "static", shape: "sphere", sensor: true });
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "ball aim selection ring")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "cup capture ring")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "score counter plinth")).toBe(true);
+    expect(nodes.some((node) => node.kind === "label" && node.name === "mini golf score and shot HUD")).toBe(true);
+    expect(nodes.some((node) => node.kind === "interaction" && node.mode === "drag-vector" && node.target === "white physics golf ball")).toBe(true);
+    expect(nodes.some((node) => node.kind === "interaction" && node.mode === "click-impulse" && node.target === "white physics golf ball")).toBe(true);
     expect(snapshot.camera).toMatchObject({ mode: "follow", targetNode: "white physics golf ball" });
+  });
+
+  test("simulates mini-golf shot, score, collision metrics, and reset state", () => {
+    const state = games.createMiniGolfState();
+    const initial = state.snapshot();
+    const shot = state.shoot({ vector: [3, 0, -1.2], power: 1.45 });
+    const afterMotion = state.step(600);
+    const collisionState = games.createMiniGolfState();
+    collisionState.shoot({ vector: [2.6, 0, -2.2], power: 1.45 });
+    const afterCollision = collisionState.step(180);
+
+    expect(initial.ballPosition).toEqual([-1.42, 0.16, 0.58]);
+    expect(shot.shots).toBe(1);
+    expect(afterMotion.ballPosition[0]).toBeGreaterThan(initial.ballPosition[0]);
+    expect(afterMotion.shots).toBe(1);
+    expect(afterMotion.followCameraTarget).toBe("white physics golf ball");
+    expect(afterMotion.selected).toBe("white physics golf ball");
+    expect(afterMotion.score).toBeGreaterThanOrEqual(0);
+    expect(typeof afterMotion.cupTriggered).toBe("boolean");
+    expect(afterCollision.collisions).toBeGreaterThan(0);
+    expect(state.nodes().some((node) => node.kind === "primitive" && node.name === "white physics golf ball" && node.position?.[0] === afterMotion.ballPosition[0])).toBe(true);
+    const dragShot = games.miniGolfPointerShot({ x: 240, y: 320 }, { x: 120, y: 372 });
+    expect(dragShot.power).toBeGreaterThan(1);
+    expect(Math.hypot(...dragShot.vector)).toBeCloseTo(1, 5);
+    const reset = state.reset();
+    expect(reset).toMatchObject({ shots: 0, score: 0, collisions: 0, resets: 1, ballPosition: [-1.42, 0.16, 0.58] });
   });
 
   test("keeps material swatches framed in a compact inspection row", () => {
@@ -357,7 +708,8 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "emissive glow spill on lab floor")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "red automotive clearcoat swatch")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "clearcoat white topcoat highlight")).toBe(true);
-    expect(glass?.material).toMatchObject({ opacity: 0.22, transmission: 1, thickness: 0.9, ior: 1.48 });
+    expect(nodes.filter((node) => node.kind === "label" && node.collisionAvoidance === true && node.occlusionAware === true)).toHaveLength(5);
+    expect(glass?.material).toMatchObject({ opacity: 0.22, transmission: 1, thickness: 0.9, ior: 1.5 });
     expect(clearcoat?.material).toMatchObject({ clearcoat: 1, roughness: 0.045, clearcoatRoughness: 0.018 });
     expect(clearcoatLayer?.material).toMatchObject({ opacity: 0.16, clearcoat: 1, clearcoatRoughness: 0.01 });
   });
@@ -373,7 +725,8 @@ describe("agent API", () => {
     const awnings = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("striped storefront awning"));
     const addressPlaques = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("street address plaque"));
     const rooftopCaps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("rooftop mechanical cap"));
-    const streetLamps = nodes.filter((node) => node.kind === "primitive" && node.name?.startsWith("warm street lamp"));
+    const streetLamps = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("street lamp"));
+    const lampGlowPools = nodes.filter((node) => node.kind === "primitive" && node.name?.includes("night lamp glow pool"));
     const vehicles = nodes.filter((node) => node.kind === "primitive" && node.name?.includes(" car body"));
 
     expect(towers).toHaveLength(20);
@@ -386,6 +739,7 @@ describe("agent API", () => {
     expect(addressPlaques).toHaveLength(20);
     expect(rooftopCaps).toHaveLength(20);
     expect(streetLamps).toHaveLength(12);
+    expect(lampGlowPools).toHaveLength(12);
     expect(vehicles).toHaveLength(4);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "zebra crosswalk near stripe 1")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "front cross street")).toBe(true);
@@ -410,22 +764,24 @@ describe("agent API", () => {
 
   test("keeps product stage tight for three-quarter product framing", () => {
     const nodes = prefabs.productStage();
+    const inspectionNodes = prefabs.productStage({ style: "inspection" });
 
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "front low product highlight card")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth" && Array.isArray(node.scale) && node.scale[0] === 3.3)).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow" && node.position?.[1] === 0.535)).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring" && node.position?.[1] === 0.526 && node.material?.opacity === 0.14)).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "cyan orbit control arc")).toBe(true);
-    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("turntable rotation tick")).length).toBe(3);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "fit to bounds centerline guide")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left normalized asset height bracket")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "right normalized asset height bracket")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "top normalized asset fit bracket")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left vertical studio softbox")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "right warm rim softbox")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "overhead rectangular softbox reflection")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "rear cool reflection card")).toBe(true);
-    expect(nodes.some((node) => node.kind === "primitive" && node.name === "rear warm reflection card")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "seamless matte product hero floor")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "low matte hero product plinth")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "soft product contact shadow from footprint")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "subtle turntable orbit cue on product plinth")).toBe(true);
+    expect(nodes.some((node) => node.kind === "light" && node.name === "off camera product key softbox sneaker mesh grazing light")).toBe(true);
+    expect(nodes.filter((node) => node.kind === "primitive" && node.name?.includes("turntable rotation tick")).length).toBe(0);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "fit to bounds centerline guide")).toBe(false);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "left normalized asset height bracket")).toBe(false);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "right normalized asset height bracket")).toBe(false);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "top normalized asset fit bracket")).toBe(false);
+    expect(inspectionNodes.some((node) => node.kind === "primitive" && node.name === "inspection only left softbox card")).toBe(true);
+    expect(inspectionNodes.some((node) => node.kind === "primitive" && node.name === "inspection only right softbox card")).toBe(true);
+    expect(inspectionNodes.some((node) => node.kind === "primitive" && node.name === "inspection only product bounds tick")).toBe(true);
+    expect(nodes.some((node) => node.kind === "primitive" && node.name === "inspection only left softbox card")).toBe(false);
+    expect(nodes.some((node) => node.kind === "light" && node.name === "off camera cool reflection card fill softbox lace detail pin highlight")).toBe(true);
+    expect(nodes.some((node) => node.kind === "light" && node.name === "rear warm reflection card rim softbox rubber sole edge kicker")).toBe(true);
   });
 
   test("compiles product viewer plans to normalized plinth placement with turntable evidence", () => {
@@ -447,15 +803,15 @@ describe("agent API", () => {
     const snapshot = promptPlanToScene(plan).toJSON();
     const productModel = snapshot.nodes.find((node): node is AuraModelNode => node.kind === "model" && node.asset.id === "robot");
 
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth")).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft elliptical contact shadow")).toBe(true);
-    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "thin brushed turntable rotation ring")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "low matte hero product plinth")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft product contact shadow from footprint")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "subtle turntable orbit cue on product plinth")).toBe(true);
 	    expect(productModel).toMatchObject({
 	      position: [0, 0.54, -0.65],
 	      rotation: [0, -0.38, 0],
 	      animation: { clip: "turntable", speed: 0.42 }
 	    });
-	    expect(productModel?.scale).toBeUndefined();
+		    expect(productModel?.scale).toBe(0.72);
 	    expect(snapshot.camera).toMatchObject({
 	      mode: "perspective",
 	      position: [1.65, 1.18, 4.0],
@@ -468,13 +824,87 @@ describe("agent API", () => {
 	    const nodes = prefabs.productViewer(assets.robot);
 	    const productModel = nodes.find((node): node is AuraModelNode => node.kind === "model" && node.asset.id === "robot");
 
-	    expect(nodes.some((node) => node.kind === "primitive" && node.name === "round white product inspection plinth")).toBe(true);
+		    expect(nodes.some((node) => node.kind === "primitive" && node.name === "low matte hero product plinth")).toBe(true);
 	    expect(productModel).toMatchObject({
 	      position: [0, 0.54, -0.65],
 	      rotation: [0, -0.38, 0],
 	      animation: { clip: "turntable", speed: 0.42 }
 	    });
 	  });
+
+  test("exposes labels, environments, lighting, camera, interaction, and effect helpers as first-class scene nodes", () => {
+    const snapshot = scene()
+      .add(environments.studio({ intensity: 1.4 }))
+      .add(labels.billboard("Revenue", { name: "revenue label" }).position(0, 1.35, -0.2))
+      .add(labels.hud("Strokes: 1", { screenAnchor: "top-right" }))
+      .add(lights.rect({ width: 2.8, height: 1.4 }))
+      .add(lights.softbox())
+      .add(effects.cinematicBloom())
+      .add(effects.volumetricFog())
+      .add(shadows.contact({ footprint: [1.6, 0.8], position: [0, 0.02, 0] }))
+      .add(interactions.raycastHover({ target: "height-colored data bar 4-6", selected: "height-colored data bar 4-6" }))
+      .camera(camera.flythrough({ captureTime: 1.2 }))
+      .toJSON();
+    const materialKnobs = material.labParameters();
+
+    expect(snapshot.nodes.some((node) => node.kind === "environment" && node.environment === "studio" && node.intensity === 1.4)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "label" && node.name === "revenue label" && node.text === "Revenue")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "label" && node.label === "hud" && node.screenAnchor === "top-right")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "rect" && node.width === 2.8)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "light" && node.light === "softbox")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "bloom" && node.threshold === 0.72)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "fog" && node.intensity === 0.7)).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "interaction" && node.mode === "hover" && node.selected === "height-colored data bar 4-6")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "primitive" && node.name === "soft footprint contact shadow" && Array.isArray(node.scale) && node.scale[0] === 1.6)).toBe(true);
+    expect(snapshot.camera).toMatchObject({ mode: "flythrough", captureTime: 1.2 });
+    expect(camera.path({ from: [0, 1, 4], to: [0, 1, 1], easing: "linear" })).toMatchObject({ mode: "path", easing: "linear" });
+    expect(camera.follow({ targetNode: "hero", smoothing: 0.12, subjectEmphasis: 0.74 })).toMatchObject({ mode: "follow", smoothing: 0.12, subjectEmphasis: 0.74 });
+    expect(camera.autoFrame({ bounds: { min: [-2, 0, -1], max: [2, 2, 1] } })).toMatchObject({ mode: "orbit", target: [0, 1, 0] });
+    expect(camera.physics()).toMatchObject({ mode: "orbit" });
+    expect(camera.charts()).toMatchObject({ mode: "orbit" });
+    expect(camera.neon()).toMatchObject({ mode: "flythrough", captureTime: 0.16 });
+    expect(materialKnobs.map((entry) => entry.name)).toEqual(["chrome", "glass", "rubber", "emissive", "clearcoat"]);
+    expect(material.fromParameters(materialKnobs[1]!)).toMatchObject({ transmission: 1 });
+    expect(primitives.capsule({ name: "rounded limb" }).toJSON()).toMatchObject({ primitive: "capsule", castShadow: true, receiveShadow: true });
+    expect(primitives.torus({ name: "smooth ring" }).toJSON()).toMatchObject({ primitive: "torus", castShadow: true, receiveShadow: true });
+    expect(timeline.loop({ duration: 2.4, startTime: 0.2, captureTime: 1.1, easing: "linear" })).toMatchObject({ mode: "loop", duration: 2.4, startTime: 0.2, loop: true, captureTime: 1.1, easing: "linear" });
+  });
+
+  test("attaches performance budgets to large visual helper evidence", () => {
+    const helperScene = scene()
+      .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+      .addMany(prefabs.neonTunnel({ rings: 24 }))
+      .addMany(prefabs.dataBars3D({ grid: 6 }))
+      .addMany(prefabs.cityBlock({ blocks: 20 }))
+      .addMany(character.primitiveHumanoid())
+      .addMany(prefabs.productStage());
+    const evidence = collectAuraSceneEvidence(helperScene.toJSON());
+    const helperIds = evidence.performance.budgets.map((budget) => budget.helper);
+
+    expect(performance.budgetFor("neonTunnel")).toMatchObject({ maxDrawCalls: 380, targetFpsP50: 50 });
+    expect(helperIds).toEqual(expect.arrayContaining([
+      "physicsPlayground",
+      "neonTunnel",
+      "dataBars3D",
+      "cityBlock",
+      "primitiveHumanoid",
+      "productStage"
+    ]));
+    expect(evidence.performance.budgets.every((budget) => budget.maxDrawCalls > 0 && budget.maxNodes > 0 && budget.targetFpsP50 >= 50)).toBe(true);
+  });
+
+  test("exposes domain helper namespaces for games, charts, city scenes, and characters", () => {
+    expect(games.miniGolf().some((node) => node.kind === "primitive" && node.name === "white physics golf ball")).toBe(true);
+    expect(games.miniGolfScene().toJSON().camera).toMatchObject({ mode: "follow", targetNode: "white physics golf ball" });
+    expect(charts.barGrid3D({ grid: 3 }).filter((node) => node.kind === "primitive" && node.name?.startsWith("height-colored data bar"))).toHaveLength(9);
+    expect(character.primitiveHumanoid({ showJoints: false }).some((node) => node.kind === "primitive" && node.name === "left shoulder ball joint")).toBe(false);
+    const cityState = city.createState({ timeOfDay: "night", blocks: 20 });
+    expect(cityState.timeOfDay).toBe("night");
+    expect(cityState.nodes().some((node) => node.kind === "primitive" && node.name === "active night state toggle knob")).toBe(true);
+    const dayNodes = cityState.toggleTimeOfDay();
+    expect(cityState.timeOfDay).toBe("day");
+    expect(dayNodes.some((node) => node.kind === "primitive" && node.name === "active day state toggle knob")).toBe(true);
+  });
 
   test("exposes typed UI helpers for benchmark HUDs", () => {
     expect(ui).toMatchObject({
@@ -483,7 +913,13 @@ describe("agent API", () => {
 	      setPressed: expect.any(Function),
 	      onClick: expect.any(Function),
 	      range: expect.any(Function),
-	      onInput: expect.any(Function)
+	      onInput: expect.any(Function),
+      slider: expect.any(Function),
+      resetButton: expect.any(Function),
+      scoreCounter: expect.any(Function),
+      powerMeter: expect.any(Function),
+      hoverReadout: expect.any(Function),
+      toggle: expect.any(Function)
 	    });
 	  });
 

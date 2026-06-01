@@ -5,9 +5,10 @@ Version: 1.0.0
 ## Process
 
 Current release state: `benchmark/results/round-12-decision.md` is a no-ship
-decision. The Round 13 amendment/sign-off files are approved for a
-`PRD-AMENDMENT:` repair commit, but Round 13 still has no passing prompt
-benchmark result. Do not publish or tag a public release from this state.
+decision. Round 13 repair work was committed in `d1a533f`, but explicit human
+sign-off for that benchmark standard is not currently recorded, and Round 13
+has no passing prompt benchmark result. Do not publish or tag a public release
+from this state.
 
 1. Make code and docs changes.
 2. Regenerate generated docs or reports that are affected by the change.

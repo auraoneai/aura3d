@@ -40,7 +40,7 @@ export class ColorGradingPass implements ProductionPostProcessPass {
       changedPixels: result.changedPixels,
       vignetteDarkenedPixels: result.vignetteDarkenedPixels,
       sharpenedPixels: result.sharpenedPixels
-    }, ["ColorGradingPass applies the renderer color-grade pixel kernel; it is not an option-only placeholder."]);
+    }, ["ColorGradingPass applies the renderer color-grade pixel kernel and mutates image pixels, not only options metadata."]);
   }
 
   getLastResult(): ColorGradeResult | null {

@@ -1,0 +1,16 @@
+{
+  "schema": "a3d-prompt-source-audit",
+  "generatedAt": "2026-06-01T00:50:04.476Z",
+  "prompt": "benchmark/prompts/10-product-viewer-sneaker.md",
+  "sourceDir": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/codex-aura3d/prompt-10/source",
+  "pass": true,
+  "files": [
+    "index.html",
+    "src/aura-assets.ts",
+    "src/main.ts"
+  ],
+  "unavailablePublicImports": [],
+  "nonPublicSubpathImports": [],
+  "unsafeAssetReferences": [],
+  "failures": []
+}

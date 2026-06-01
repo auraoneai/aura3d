@@ -14,6 +14,8 @@ if (!sceneDirArg || !["aura3d", "threejs"].includes(libraryArg)) {
 const sceneDir = resolve(sceneDirArg);
 const sourceDir = join(sceneDir, libraryArg, "source");
 const outputDir = join(sceneDir, libraryArg);
+const captureStartedAtMs = Date.now();
+const captureStartedAt = new Date(captureStartedAtMs).toISOString();
 
 function walk(root, pred, acc = []) {
   if (!existsSync(root)) return acc;
@@ -151,6 +153,9 @@ let triangleCount = null;
 let jsHeapPeakBytes = null;
 let heapSampleCount = 0;
 let screenshot = null;
+let screenshotMtime = null;
+let screenshotMtimeMs = null;
+let screenshotFresh = false;
 let routeHealthEvidence = null;
 let routeHealthMethod = null;
 let routeUrl = null;
@@ -260,8 +265,13 @@ if (install.status === 0) {
           const heapSample = await sampleHeapPeak(page, 5000);
           jsHeapPeakBytes = heapSample.jsHeapPeakBytes;
           heapSampleCount = heapSample.heapSampleCount;
-          await page.screenshot({ path: join(outputDir, "screenshot.png"), fullPage: false, timeout: 60000 });
+          const screenshotPath = join(outputDir, "screenshot.png");
+          await page.screenshot({ path: screenshotPath, fullPage: false, timeout: 60000 });
+          const screenshotStat = statSync(screenshotPath);
           screenshot = "screenshot.png";
+          screenshotMtime = screenshotStat.mtime.toISOString();
+          screenshotMtimeMs = screenshotStat.mtimeMs;
+          screenshotFresh = screenshotStat.mtimeMs >= captureStartedAtMs;
         } else {
           failureStage = "runtime";
           failureReason = ready ? "route health failed" : "engine readiness did not pass before timeout";
@@ -303,6 +313,7 @@ const metrics = applyFpsCalibrationToMetrics({
   routeHealthMethod,
   routeHealthEvidence: existsSync(join(outputDir, "route-health.json")) ? "route-health.json" : null,
   routeUrl,
+  captureStartedAt,
   firstUsableRenderMs,
   p50Fps,
   p95FrameTimeMs,
@@ -316,7 +327,10 @@ const metrics = applyFpsCalibrationToMetrics({
   gpuMemoryBytes: null,
   bundleSizeGzipBytes: buildStatus === 0 ? await bundleSize() : null,
   sourceLoc: sourceLoc(),
-  screenshot
+  screenshot,
+  screenshotMtime,
+  screenshotMtimeMs,
+  screenshotFresh
 }, fpsCalibration ?? {
   verdict: {
     status: "invalid",
@@ -333,7 +347,9 @@ appendNotes([
   `install status: ${install.status}`,
   `build status: ${buildStatus === 0 ? "pass" : "fail"}`,
   `route/browser status: ${routeHealth}`,
-  `screenshot timestamp: ${screenshot ? new Date().toISOString() : "none"}`,
+  `capture started: ${captureStartedAt}`,
+  `screenshot timestamp: ${screenshotMtime ?? "none"}`,
+  `screenshot freshness: ${screenshotFresh ? "fresh" : "missing-or-stale"}`,
   `FPS calibration status: ${metrics.fpsInstrumentationStatus}`,
   `failure stage: ${buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureStage === "none" ? "runtime" : failureStage : "none"}`,
   `failure reason: ${buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureReason : "none"}`,

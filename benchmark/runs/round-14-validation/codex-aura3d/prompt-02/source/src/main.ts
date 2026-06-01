@@ -1,0 +1,33 @@
+import { camera, createAuraApp, lights, prefabs, scene, ui } from "@aura3d/engine";
+
+ui.html(
+  "#app",
+  `
+    <label style="position:absolute;left:18px;top:18px;z-index:20;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:rgba(15,23,42,.78);color:white;font:700 14px system-ui">
+      emission rate
+      <input id="rate" type="range" min="60" max="180" value="120" />
+      <span id="rate-value">120</span>
+    </label>
+  `,
+);
+
+function buildFountainScene(emissionRate: number) {
+  return scene()
+    .background("#030711")
+    .addMany(prefabs.particleFountain({ count: 2400, emissionRate }))
+    .add(lights.studio({ intensity: 1.15 }))
+    .camera(camera.autoFrame({ bounds: { min: [-2.5, 0, -2.5], max: [2.5, 3.6, 2.5] } }));
+}
+
+let app = createAuraApp("#app", {
+  scene: buildFountainScene(Number(ui.range("#rate").value)),
+});
+
+ui.onInput("#rate", (input) => {
+  const emissionRate = Number(input.value);
+  ui.setText("#rate-value", emissionRate);
+  app.dispose();
+  app = createAuraApp("#app", {
+    scene: buildFountainScene(emissionRate),
+  });
+});

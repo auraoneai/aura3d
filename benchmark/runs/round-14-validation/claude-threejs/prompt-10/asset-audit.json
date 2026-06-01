@@ -1,0 +1,65 @@
+{
+  "prompt": "benchmark/prompts/10-product-viewer-sneaker.md",
+  "skipped": false,
+  "invented": [
+    {
+      "kind": "source-reference",
+      "path": "sneaker.glb",
+      "normalized": "sneaker.glb",
+      "file": "src/main.ts"
+    }
+  ],
+  "inventedUnique": [
+    "sneaker.glb"
+  ],
+  "inventedAssetPaths": 1,
+  "allowed": [
+    {
+      "kind": "public-file",
+      "path": "public/benchmark/assets/sneaker.glb",
+      "normalized": "benchmark/assets/sneaker.glb",
+      "file": "public/benchmark/assets/sneaker.glb",
+      "sha256": "sha256-e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7",
+      "reason": "runner-copied prompt asset fixture"
+    },
+    {
+      "kind": "source-reference",
+      "path": "/benchmark/assets/sneaker.glb",
+      "normalized": "benchmark/assets/sneaker.glb",
+      "file": "src/main.ts",
+      "reason": "provided prompt asset"
+    }
+  ],
+  "typedAuraEvidence": {
+    "library": "Three.js",
+    "canonicalPromptAssetHash": "sha256-e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7",
+    "hasAuraAssetsModule": false,
+    "auraAssetsUsesDefineAuraAssets": false,
+    "auraAssetsContainsManifestHash": false,
+    "auraAssetsContainsManifestUrl": false,
+    "hasAuraAssetManifest": false,
+    "manifestSchema": null,
+    "manifestTypegen": null,
+    "manifestAssetBasePath": null,
+    "manifestOutputDir": null,
+    "manifestHasSneakerEntry": false,
+    "manifestSneakerUrl": null,
+    "manifestSneakerHash": null,
+    "manifestSneakerOutputPath": null,
+    "manifestSneakerSource": null,
+    "manifestSourceHash": null,
+    "manifestOutputHash": null,
+    "manifestMatchesCanonicalAsset": false,
+    "hasSneakerEntry": false,
+    "sneakerUrl": null,
+    "normalizedSneakerUrl": null,
+    "sneakerUrlIsAllowedPromptAsset": false,
+    "importsGeneratedAssets": false,
+    "usesTypedSneakerAsset": false,
+    "usesStringAssetId": false,
+    "usesUnsafeModelUrl": false
+  },
+  "failures": [
+    "invented or unevidenced GLB paths found"
+  ]
+}

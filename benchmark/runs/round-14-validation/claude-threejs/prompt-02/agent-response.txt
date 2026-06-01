@@ -1,0 +1,26 @@
+The build succeeded — TypeScript strict typecheck passed and Vite produced the production bundle.
+
+## Summary
+
+I built a **particle fountain** in the clean source directory (`source/src/main.ts`) using only raw Three.js (`three@0.165.0`) and the bundled `OrbitControls` addon. No `benchmark-recipes.md` exists in this raw-Three.js bundle, so I implemented procedurally per the prompt.
+
+How each required visual evidence is satisfied:
+- **Identifiable emitter** — a metallic upward-pointing cone nozzle plus a pulsing glowing cyan core (with a point light) sits at the emission point.
+- **Upward-and-falling arc** — each particle is given an upward velocity cone and integrated under gravity (−9.81), producing real ballistic arcs, not static dots.
+- **Lifetime color variation** — particles ramp cyan-white (young) → blue (mid) → orange-red (old) based on `age/lifetime`, fed as per-vertex colors.
+- **Ground plane** — a 60×60 `MeshStandardMaterial` plane with a grid helper at y=0; particles collide against it with restitution (0.45) and friction, bouncing realistically.
+- **Emission-rate control** — a visible top-left HTML panel with a range slider (0–4000 particles/sec) plus a live readout of particle count.
+
+Implementation notes: pooled simulation with swap-remove compaction (up to 6000 particles), dynamic `BufferAttribute` updates with `setDrawRange`, additive-blended round sprite points, and OrbitControls for inspection.
+
+### Commands for the runner
+
+- **Install:** `npm install`
+- **Build:** `npm run build`
+- **Run:** `npm run dev -- --port <assigned-port>` (run from the `source/` directory)
+
+### Assumptions
+- The runner serves the app from `source/` (where `package.json`/`index.html`/`vite.config` defaults live); the dev server binds to `127.0.0.1` per the scaffold's `dev` script.
+- "Controllable emission rate" is exposed as an on-screen slider (0–4000 particles/sec, default 1400); setting it to 0 halts emission.
+- Particle–ground interaction is modeled as a damped bounce (collision) rather than absorption, so the collision is visually evident.
+- Per benchmark rules I ran only `npm install` and `npm run build`; I did not start the dev server or do any visual verification.

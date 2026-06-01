@@ -1,0 +1,18 @@
+Implemented the procedural Three.js solar system in `source/src/main.ts`.
+
+Build result: `npm run build` succeeded. Vite emitted only a chunk-size warning.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- No external assets are used.
+- Labels use `CSS2DRenderer`; sun glow uses `UnrealBloomPass` plus a procedural halo.
+- I did not run dev/preview or visual verification per benchmark rules.

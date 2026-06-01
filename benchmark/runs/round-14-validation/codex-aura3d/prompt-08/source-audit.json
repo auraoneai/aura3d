@@ -1,0 +1,16 @@
+{
+  "schema": "a3d-prompt-source-audit",
+  "generatedAt": "2026-06-01T00:49:03.347Z",
+  "prompt": "benchmark/prompts/08-procedural-city-block.md",
+  "sourceDir": "/Users/gurbakshchahal/aura3d/benchmark/runs/round-14-validation/codex-aura3d/prompt-08/source",
+  "pass": true,
+  "files": [
+    "index.html",
+    "src/main.ts",
+    "src/style.css"
+  ],
+  "unavailablePublicImports": [],
+  "nonPublicSubpathImports": [],
+  "unsafeAssetReferences": [],
+  "failures": []
+}

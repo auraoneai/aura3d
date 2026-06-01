@@ -1,0 +1,39 @@
+{
+  "prompt": "03-procedural-solar-system",
+  "agent": "Codex",
+  "library": "Aura3D",
+  "compiles": true,
+  "runsInBrowser": true,
+  "routeHealth": "pass",
+  "routeUrl": "http://127.0.0.1:6103/",
+  "runCommand": "npm run dev -- --port 6103",
+  "routeHealthEvidence": "route-health.json",
+  "linesOfUserCode": 30,
+  "filesCreated": 2,
+  "hallucinatedApis": 0,
+  "hallucinatedApiFindings": [],
+  "sourceAuditPass": true,
+  "sourceAuditFailures": [],
+  "unavailablePublicImports": 0,
+  "nonPublicSubpathImports": 0,
+  "unsafeAssetReferences": 0,
+  "sourceAuditEvidence": "source-audit.json",
+  "inventedAssetPaths": 0,
+  "assetAuditFailures": [],
+  "assetAuditEvidence": "asset-audit.json",
+  "repairTurns": 0,
+  "timeToFirstUsableRenderMs": 43818,
+  "bundleSizeGzipBytes": 233531,
+  "buildSummary": {
+    "status": "pass",
+    "exitCode": 0,
+    "keyLines": []
+  },
+  "screenshot": "screenshot.png",
+  "runtimeEvidence": [],
+  "sourceEvidence": {
+    "fileCount": 2,
+    "manifest": "source-manifest.json",
+    "listing": "source-listing.md"
+  }
+}

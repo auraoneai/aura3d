@@ -1,0 +1,14 @@
+Implemented the Procedural City Block app in `source/src`.
+
+Build command:
+`npm run build`
+
+Run command for runner:
+`npm run dev`
+
+Build result: succeeded.
+
+Assumptions:
+- Runner will execute from `source/`.
+- No assets are required or used; the city is generated procedurally with Aura3D `city.createState`.
+- Visual verification is left to the benchmark runner per the rules.

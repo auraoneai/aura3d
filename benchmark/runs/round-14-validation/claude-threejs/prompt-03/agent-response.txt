@@ -1,0 +1,25 @@
+The build succeeded — strict typecheck passed and Vite produced the production bundle.
+
+## Summary
+
+Built a procedural solar system in raw Three.js (Vite + strict TypeScript) at `source/src/main.ts`. All work stayed within the source directory.
+
+**What it renders, mapped to the required visual evidence:**
+- **One sun + 6 planets** — emissive `MeshBasicMaterial` sun at the origin plus Mercury, Venus, Earth, Mars, Jupiter, Saturn as lit `MeshStandardMaterial` spheres.
+- **Visibly different orbit distances** — orbital radii 12 / 17 / 23 / 30 / 40 / 52, each drawn with a faint ring on the ecliptic so the spacing reads clearly; per-planet `pivot.rotation.y` speeds differ.
+- **Readable labels** — `CSS2DRenderer` / `CSS2DObject` HTML labels parented to each planet (and the sun), with dark pill backgrounds and text shadow; overlay has `pointerEvents:none` so orbit controls keep working.
+- **Sun bloom** — `EffectComposer` → `RenderPass` → `UnrealBloomPass` (strength 1.4, radius 0.7, threshold 0.85) so only the bright sun blooms, with ACES tone mapping.
+- **Orbit camera framing the system** — `OrbitControls` with damping, camera at (0, 55, 95) looking at the origin, min/max distance clamps; starfield backdrop included.
+
+Only bundled official modules were used (`OrbitControls`, `EffectComposer`, `RenderPass`, `UnrealBloomPass`, `CSS2DRenderer`).
+
+**Assumptions**
+- Added `@types/three@0.165.0` to `devDependencies` (the `three` npm package ships no `.d.ts`, and the scaffold's `build` runs `tsc --noEmit` under `strict`). This is a type-only dev dependency, not a runtime Three.js module.
+- Procedural-only: planet colors/sizes/distances are stylized for visual clarity, not to physical scale.
+
+**Commands for the runner**
+- Install: `npm install`
+- Build: `npm run build`
+- Run: `npm run dev -- --port <assigned-port>`
+
+(Per benchmark rules I stopped after a successful build and did not run any dev server or visual verification.)

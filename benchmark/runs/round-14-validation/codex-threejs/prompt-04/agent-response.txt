@@ -1,0 +1,18 @@
+Implemented the procedural Three.js neon tunnel flythrough in `source/src/main.ts`.
+
+Build completed successfully.
+
+Build command:
+```bash
+cd source && npm run build
+```
+
+Run command for the benchmark runner:
+```bash
+cd source && npm run dev
+```
+
+Assumptions:
+- This prompt uses the raw Three.js rules from `context/llms.txt`, not Aura3D APIs.
+- No external assets are used; the scene is fully procedural.
+- Runtime visual verification is left to the benchmark runner per instructions.

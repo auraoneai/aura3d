@@ -173,6 +173,41 @@ round, and keeps scene setup intentionally lean enough for the FPS floor while
 preserving the benchmark visual targets. It does not reuse prior captured
 artifacts.
 
+PRD-2 validation must use the one-pass workflow unless a human explicitly asks
+for a lower-level command:
+
+```sh
+node benchmark/runner/validate-engine-round.mjs --round=round-N
+```
+
+The validation workflow verifies context manifests, runs `pnpm build` before
+`npm pack`, extracts the packed tarball, audits the exact consumer dist paths,
+captures each engine scene once, writes screenshot freshness evidence, generates
+contact sheets, prints the contact sheet paths, writes `validation-summary.json`,
+and exits. If a validation pass fails, do not rerun it immediately; inspect the
+recorded failures and return to implementation.
+
+Package integrity is release-blocking:
+
+```sh
+node benchmark/runner/tarball-audit.mjs --tarball=benchmark/runs/round-N/_packages/aura3d-engine-1.0.0.tgz --round-root=benchmark/runs/round-N
+```
+
+The tarball audit fails when `dist/engine/agent-api/index.js` is missing required
+helper markers or is older than `packages/engine/src/agent-api/index.ts`. It
+also records git SHA, dirty-state evidence, build timestamp, package tarball
+hash, dist helper hash, and context manifest hash in `round-metadata.json`.
+
+Full prompt benchmark reruns are guarded:
+
+```sh
+node benchmark/runner/full-benchmark-guard.mjs --non-release
+```
+
+Official release benchmark runs must not start from a dirty or stale package.
+Non-release validation still requires a code diff touching a failed PRD-2
+workstream area unless `AURA3D_ALLOW_FULL_BENCHMARK_RERUN=1` is set.
+
 ## Standard Cleanliness Check
 
 Before starting a benchmark round, and before committing benchmark protocol
