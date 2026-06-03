@@ -8,9 +8,17 @@ import {
 } from "/packages/engine/src/threejs-example-parity/FlagshipFoundation.ts";
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
+
 interface BoundsLike {
   readonly min: readonly [number, number, number];
   readonly max: readonly [number, number, number];
+}
+
+function publicAssetUrl(path: string): string {
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
+  return new URL(path, origin).href;
 }
 
 function boundsExtent(bounds: BoundsLike): number {
@@ -35,7 +43,7 @@ void startWebGPUShowcase({
     const viewport = { width: renderSize.width, height: renderSize.height };
     const [scene, environment] = await Promise.all([
       loadGltfScene({
-        url: `${location.origin}/fixtures/asset-corpus/clear-coat-test.glb`,
+        url: publicAssetUrl("/fixtures/asset-corpus/clear-coat-test.glb"),
         assetId: "clear-coat-test",
         assetName: "Clear Coat Test",
         viewport
@@ -43,7 +51,7 @@ void startWebGPUShowcase({
       loadHdrEnvironment({
         id: "studio-small-08-webgpu-pbr",
         label: "Studio Small 08 WebGPU PBR",
-        url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
+        url: publicAssetUrl("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"),
         quality: "interactive",
         intensity: 1.08,
         backgroundIntensity: 0.74,

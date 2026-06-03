@@ -12,6 +12,13 @@ import {
 import { startWebGPUShowcase } from "/apps/wow-common/src/webgpu-showcase.ts";
 
 const requestedBackend = new URLSearchParams(location.search).get("backend") === "auto" ? "auto" : "webgpu";
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
+
+function publicAssetUrl(path: string): string {
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
+  return new URL(path, origin).href;
+}
 
 void startWebGPUShowcase({
   appId: "wow-webgpu-product-viewer",
@@ -26,7 +33,7 @@ void startWebGPUShowcase({
     const viewport = { width: renderSize.width, height: renderSize.height };
     const [scene, environment] = await Promise.all([
       loadGltfScene({
-        url: `${location.origin}/fixtures/asset-corpus/duck.glb`,
+        url: publicAssetUrl("/fixtures/asset-corpus/duck.glb"),
         assetId: "duck",
         assetName: "Duck",
         viewport
@@ -34,7 +41,7 @@ void startWebGPUShowcase({
       loadHdrEnvironment({
         id: "studio-small-08-webgpu-product",
         label: "Studio Small 08 WebGPU Product",
-        url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
+        url: publicAssetUrl("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"),
         quality: "interactive",
         intensity: 1.15,
         backgroundIntensity: 0.85,

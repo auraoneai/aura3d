@@ -185,3 +185,39 @@ document.querySelectorAll<HTMLElement>("[data-link]").forEach((tile) => {
     window.location.href = href;
   });
 });
+
+// Aura3D clickable template cards
+const templateCardTargets = new Map<string, string>([
+  ["product-viewer", "/docs/templates.html#product-viewer"],
+  ["cinematic-scene", "/docs/templates.html#cinematic-scene"],
+  ["mini-game", "/docs/templates.html#mini-game"],
+  ["agent setup", "/docs/agent-rules.html"]
+]);
+
+document.querySelectorAll<HTMLElement>(".pkg-name").forEach((label) => {
+  const name = label.textContent?.trim() ?? "";
+  const target = templateCardTargets.get(name);
+  const card = label.parentElement;
+  if (!target || !(card instanceof HTMLElement)) return;
+  card.classList.add("click-card");
+  card.setAttribute("role", "link");
+  card.setAttribute("tabindex", "0");
+  card.setAttribute("aria-label", `Open ${name} documentation`);
+  if (!card.querySelector(".pkg-card-cta")) {
+    const cta = document.createElement("a");
+    cta.className = "pkg-card-cta";
+    cta.href = target;
+    cta.textContent = name === "agent setup" ? "Open agent rules" : "Open template docs";
+    card.appendChild(cta);
+  }
+  const open = (event: Event): void => {
+    if (event.target instanceof Element && event.target.closest("a,button")) return;
+    window.location.href = target;
+  };
+  card.addEventListener("click", open);
+  card.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    window.location.href = target;
+  });
+});

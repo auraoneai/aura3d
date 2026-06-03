@@ -296,7 +296,7 @@ export const AUTHORED_ASSET_CANDIDATES = [
   {
     id: "damaged-helmet",
     title: "Damaged Helmet",
-    localUrl: "/fixtures/threejs-parity/assets/product/damaged-helmet.glb",
+    localUrl: "/fixtures/asset-corpus/damaged-helmet.glb",
     routeUse: "reactor-post",
     threeReferenceCategory: "glTF prop / environment detail",
     visualRole: "environment prop",
