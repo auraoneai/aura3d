@@ -218,6 +218,7 @@ interface ImportedItemCollection {
 }
 
 const ZERO_OFFSET: readonly [number, number, number] = [0, 0, 0];
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
 
 
 export function expectedAuthoredAssetCountForDemo(demoId: DemoId): number {
@@ -453,7 +454,7 @@ async function loadAuthoredAsset(
 ): Promise<LoadedAuthoredAsset> {
   void size;
   const dracoDecoder = needsBrowserDracoDecoder(candidate) ? await createBrowserDracoDecoder() : undefined;
-  const assetUrl = new URL(candidate.localUrl, window.location.origin).href;
+  const assetUrl = resolvePublicAssetUrl(candidate.localUrl);
   const asset = await new GLTFLoader({
     ...(dracoDecoder ? { dracoDecoder } : {})
   }).load({ url: assetUrl }, new LoadContext());
@@ -471,6 +472,13 @@ async function loadAuthoredAsset(
     loadedAt: performance.now(),
     loadMs: Math.round(performance.now() - startedAt)
   };
+}
+
+function resolvePublicAssetUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) return url;
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
+  return new URL(url, origin).href;
 }
 
 async function createPipeline(

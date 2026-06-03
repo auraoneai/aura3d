@@ -48,6 +48,7 @@ const FALLBACK_WIDTH = 1440;
 const FALLBACK_HEIGHT = 960;
 const MAX_PIXEL_RATIO = 2;
 const MAX_RENDER_EDGE = 2160;
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
 
 export async function startWowShowcase(config: WowShowcaseConfig): Promise<void> {
   const root = document.getElementById("app");
@@ -104,7 +105,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       canvas,
       width: renderSize.width,
       height: renderSize.height,
-      origin: location.origin,
+      origin: publicAssetOrigin(),
       assetId: config.assetId,
       environmentId: config.environmentId
     });
@@ -158,6 +159,11 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   } catch (error) {
     publish("error", formatError(error), true);
   }
+}
+
+function publicAssetOrigin(): string {
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  return configured ?? PUBLIC_ASSET_ORIGIN;
 }
 
 function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: number; readonly height: number } {

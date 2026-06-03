@@ -43,8 +43,46 @@ function copyMarketingPublicFiles() {
         const source = resolve(repoRoot, file);
         if (existsSync(source)) copyFileSync(source, resolve(outDir, file));
       }
+
+      const dracoDir = resolveDracoDir();
+      if (dracoDir) {
+        const targetDir = resolve(outDir, "node_modules/draco3d");
+        mkdirSync(targetDir, { recursive: true });
+        for (const file of ["draco_decoder_nodejs.js", "draco_decoder.wasm"]) {
+          copyFileSync(resolve(dracoDir, file), resolve(targetDir, file));
+        }
+      }
     }
   };
+}
+
+function resolveDracoDir(): string | undefined {
+  const directCandidates = [
+    resolve(repoRoot, "node_modules/draco3d"),
+    resolve(marketingDir, "node_modules/draco3d")
+  ];
+  for (const candidate of directCandidates) {
+    if (
+      existsSync(resolve(candidate, "draco_decoder_nodejs.js")) &&
+      existsSync(resolve(candidate, "draco_decoder.wasm"))
+    ) {
+      return candidate;
+    }
+  }
+
+  const pnpmDir = resolve(repoRoot, "node_modules/.pnpm");
+  if (!existsSync(pnpmDir)) return undefined;
+  for (const entry of readdirSync(pnpmDir)) {
+    if (!entry.startsWith("draco3d@")) continue;
+    const candidate = resolve(pnpmDir, entry, "node_modules/draco3d");
+    if (
+      existsSync(resolve(candidate, "draco_decoder_nodejs.js")) &&
+      existsSync(resolve(candidate, "draco_decoder.wasm"))
+    ) {
+      return candidate;
+    }
+  }
+  return undefined;
 }
 
 export default defineConfig({
