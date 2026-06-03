@@ -26,6 +26,9 @@
       "@aura3d/core": [
         "packages/core/src/index.ts"
       ],
+      "@aura3d/asset-index": [
+        "packages/asset-index/src/index.ts"
+      ],
       "@aura3d/scene": [
         "packages/scene/src/index.ts"
       ],

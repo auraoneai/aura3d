@@ -5744,9 +5744,55 @@ export type AuraPromptCameraPreset = "product-orbit" | "cinematic-dolly" | "game
 export type AuraPromptLightingPreset = "studio-softbox" | "neon-practicals" | "game-readable" | "material-studio";
 export type AuraPromptInteractionMode = "orbit" | "keyboard" | "pointer";
 
-export interface AuraPromptPlanSubject {
+export interface AuraPromptResolvedSubject {
   readonly asset: AuraAssetRef<"model">;
   readonly label?: string;
+}
+
+export interface AuraPromptIntentSubject {
+  readonly intent: string;
+  readonly constraints?: {
+    readonly maxTriangles?: number;
+    readonly license?: readonly ("CC0" | "CC-BY")[];
+    readonly animated?: boolean;
+  };
+  readonly label?: string;
+}
+
+export type AuraPromptPlanSubject = AuraPromptResolvedSubject | AuraPromptIntentSubject;
+
+export function promptSubjectIsResolved(s: AuraPromptPlanSubject): s is AuraPromptResolvedSubject {
+  return "asset" in s;
+}
+
+export interface AuraPromptSubjectResolver {
+  resolve(query: {
+    text: string;
+    constraints?: AuraPromptIntentSubject["constraints"];
+  }): Promise<{ asset: AuraAssetRef<"model"> } | null>;
+}
+
+export async function resolvePromptPlanSubject(
+  plan: AuraPromptPlan,
+  resolver: AuraPromptSubjectResolver
+): Promise<AuraPromptPlan> {
+  if (promptSubjectIsResolved(plan.subject)) {
+    return plan;
+  }
+  const intent = plan.subject;
+  const result = await resolver.resolve({ text: intent.intent, constraints: intent.constraints });
+  if (!result) {
+    throw new Error(
+      `No auto-pullable asset matched the prompt-plan intent "${intent.intent}". ` +
+        "Refine the intent or constraints (maxTriangles/license/animated), or provide a concrete typed asset " +
+        "(e.g. a file via `assets add` / a typed asset ref) before compiling."
+    );
+  }
+  const resolvedSubject: AuraPromptResolvedSubject = {
+    asset: result.asset,
+    ...(intent.label !== undefined ? { label: intent.label } : {})
+  };
+  return { ...plan, subject: resolvedSubject };
 }
 
 export interface AuraPromptPlan {
@@ -5792,14 +5838,26 @@ export function definePromptPlan<const TPlan extends AuraPromptPlan>(plan: TPlan
   return plan;
 }
 
+function requireResolvedPromptSubject(plan: AuraPromptPlan): AuraPromptResolvedSubject {
+  if (!promptSubjectIsResolved(plan.subject)) {
+    throw new Error(
+      `Cannot compile a prompt plan whose subject is still an unresolved intent ("${plan.subject.intent}"). ` +
+        "Resolve the prompt-plan subject first via resolvePromptPlanSubject(...) or the CLI `assets search`; " +
+        "compile needs a concrete typed asset."
+    );
+  }
+  return plan.subject;
+}
+
 export function compilePromptPlan(plan: AuraPromptPlan): AuraCompiledPromptPlan {
-  const sceneBuilder = promptRecipes[plan.sceneType](plan.subject.asset, plan);
+  const subject = requireResolvedPromptSubject(plan);
+  const sceneBuilder = promptRecipes[plan.sceneType](subject.asset, plan);
   return {
     scene: sceneBuilder,
     report: {
       schema: "aura3d-prompt-plan-report/1.0",
       sceneType: plan.sceneType,
-      subjectAssetId: plan.subject.asset.id,
+      subjectAssetId: subject.asset.id,
       recipe: plan.sceneType,
       cameraPreset: plan.camera?.preset ?? defaultCameraPreset(plan.sceneType),
       lightingPreset: plan.lighting?.preset ?? defaultLightingPreset(plan.sceneType),
@@ -6001,6 +6059,12 @@ function repairHintsForPromptPlan(plan: AuraPromptPlan): readonly string[] {
 function promptPlanWarnings(plan: AuraPromptPlan): readonly string[] {
   const warnings: string[] = [];
   const acceptanceCriteria = plan.acceptanceCriteria.map((item) => item.trim()).filter(Boolean);
+  if (!promptSubjectIsResolved(plan.subject)) {
+    warnings.push(
+      `PromptPlan subject is still an unresolved intent ("${plan.subject.intent}"); resolve it via resolvePromptPlanSubject(...) ` +
+        "or the CLI `assets search` to a concrete typed asset before compiling."
+    );
+  }
   if (!plan.subject.label?.trim()) {
     warnings.push("PromptPlan subject is missing a human-readable label; add one so reports and diagnostics describe the visible subject.");
   }

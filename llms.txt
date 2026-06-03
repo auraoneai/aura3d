@@ -1,5 +1,26 @@
 Aura3D quick patterns for AI coding agents.
 
+You are NOT writing three.js:
+- Do not `import * as THREE` or import from `three` / `three/examples/...`. Write `@aura3d/engine` public APIs.
+- Do not `new GLTFLoader()`, `new GLTFLoader().load(...)`, or hand-wire a renderer/scene/camera loop. `createAuraApp(...)` owns the runtime.
+- Do not paste memorized or guessed GLB URLs (for example `raw.githubusercontent.com/.../KhronosGroup/glTF-Sample-Assets/.../DamagedHelmet.glb`). Those are hallucinated provenance. Resolve real objects from the asset catalog instead (see below).
+- three.js -> Aura3D mapping:
+
+| three.js | Aura3D |
+| --- | --- |
+| `new THREE.Mesh(...)` + `new GLTFLoader()` | `model(assets.x)` (typed asset) |
+| `new THREE.Scene()` | `scene()` |
+| `new THREE.PerspectiveCamera(...)` | `camera.perspective(...)` |
+| `new THREE.DirectionalLight(...)` / `AmbientLight` / `PointLight` | `lights.*` (for example `lights.studio()`) |
+| `new OrbitControls(camera, renderer.domElement)` | `interactions.orbit(...)` |
+| `THREE.MeshStandardMaterial` | `material.*` |
+| `new THREE.BoxGeometry(...)` (set-dressing only) | `primitives.*` |
+
+Resolve real objects from the asset catalog FIRST:
+- If a prompt names a real-world object (a helmet, a sneaker, a camera, a car), do not model it from primitives and do not invent a URL. Resolve it through the Aura3D asset resolver / catalog: `npx @aura3d/cli@latest assets search "<object>"`.
+- The catalog returns license-checked candidates. Auto-pullable candidates (CC0 / CC-BY, verified, direct-download) are pulled to disk and typed for you; everything else is a deep-link you open and license yourself. Pick an auto-pullable candidate, then use the generated typed `assets.x` with `model(assets.x)`.
+- Primitives are only for set-dressing around a resolved real asset, or when no clean catalog asset matches the prompt. They are never a substitute for a named real object.
+
 Scaffold:
 ```bash
 npx create-aura3d@latest my-scene --template product-viewer
