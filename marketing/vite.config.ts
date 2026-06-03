@@ -39,6 +39,7 @@ function copyMarketingPublicFiles() {
     closeBundle() {
       const outDir = resolve(marketingDir, "dist");
       mkdirSync(outDir, { recursive: true });
+      mirrorMarketingHtmlOutput(outDir);
       for (const file of ["favicon.svg", "robots.txt", "sitemap.xml", "llms.txt"]) {
         const source = resolve(repoRoot, file);
         if (existsSync(source)) copyFileSync(source, resolve(outDir, file));
@@ -54,6 +55,23 @@ function copyMarketingPublicFiles() {
       }
     }
   };
+}
+
+function mirrorMarketingHtmlOutput(outDir: string): void {
+  const generatedMarketingDir = resolve(outDir, "marketing");
+  const generatedIndex = resolve(generatedMarketingDir, "index.html");
+  if (existsSync(generatedIndex)) {
+    copyFileSync(generatedIndex, resolve(outDir, "index.html"));
+  }
+
+  const generatedDocsDir = resolve(generatedMarketingDir, "docs");
+  const publicDocsDir = resolve(outDir, "docs");
+  if (!existsSync(generatedDocsDir)) return;
+  mkdirSync(publicDocsDir, { recursive: true });
+  for (const file of readdirSync(generatedDocsDir)) {
+    if (!file.endsWith(".html")) continue;
+    copyFileSync(resolve(generatedDocsDir, file), resolve(publicDocsDir, file));
+  }
 }
 
 function resolveDracoDir(): string | undefined {
