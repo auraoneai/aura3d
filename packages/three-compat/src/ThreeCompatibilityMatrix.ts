@@ -71,7 +71,7 @@ function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompa
   ) {
     return {
       status: "partial",
-      a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
+      a3dEquivalent: `@aura3d/three-compat:${entry.name}`,
       notes: "ThreeCompat target entry. Partial until direct API tests and browser migrated examples prove behavior."
     };
   }
@@ -84,7 +84,7 @@ function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompa
   }
   return {
     status: "planned",
-    a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
+    a3dEquivalent: `@aura3d/three-compat:${entry.name}`,
     notes: "Tracked for ThreeCompat migration and parity work."
   };
 }

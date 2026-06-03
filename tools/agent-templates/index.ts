@@ -175,6 +175,10 @@ function writeWorkspaceViteConfig(targetDir: string): void {
     .map(([specifier, path]) => {
       const replacement = specifier === "@aura3d/engine"
         ? resolve("packages/engine/src/agent-api/index.ts")
+        : specifier === "@aura3d/animation"
+          ? resolve("packages/animation/src/browser-index.ts")
+          : specifier === "@aura3d/assets"
+            ? resolve("packages/assets/src/browser-index.ts")
         : resolve(path);
       return `      { find: ${JSON.stringify(specifier)}, replacement: ${JSON.stringify(replacement)} }`;
     })

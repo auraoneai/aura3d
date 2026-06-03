@@ -62,11 +62,18 @@ const checks: ReleaseCheck[] = [];
 
 for (const target of targets) {
   const pack = runPack(target.dir);
-  const packageJson = JSON.parse(readFileSync(resolve(target.dir, "package.json"), "utf8")) as { name?: string; bin?: Record<string, string> };
+  const packageJson = JSON.parse(readFileSync(resolve(target.dir, "package.json"), "utf8")) as {
+    name?: string;
+    bin?: Record<string, string>;
+    dependencies?: Record<string, string>;
+    exports?: Record<string, unknown>;
+    files?: readonly string[];
+  };
   const paths = pack.files.map((file) => file.path);
   const missing = target.requiredFiles.filter((file) => !paths.includes(file));
   const disallowedPaths = paths.filter((path) => disallowedPathPatterns.some((pattern) => pattern.test(path)));
   const textHits = findTextHits(target.dir, pack.files);
+  const rootNoThreeHits = target.id === "engine-root" ? findRootNoThreeHits(target.dir, pack.files) : [];
   const missingBins = (target.requiredBins ?? []).filter((bin) => !packageJson.bin?.[bin]);
 
   checks.push(
@@ -94,6 +101,25 @@ for (const target of targets) {
       id: `${target.id}-no-archived-runtime-text`,
       pass: textHits.length === 0,
       detail: textHits.length === 0 ? "no archived runtime or release-cycle text in tarball text files" : textHits.slice(0, 20).join("; ")
+    },
+    {
+      id: `${target.id}-root-no-three-runtime`,
+      pass: target.id !== "engine-root" || (
+        packageJson.dependencies?.three === undefined &&
+        packageJson.exports?.["./three-compat"] === undefined &&
+        !packageJson.files?.includes("dist/three-compat") &&
+        !paths.some((path) => path.startsWith("dist/three-compat/")) &&
+        rootNoThreeHits.length === 0
+      ),
+      detail: target.id !== "engine-root"
+        ? "not the root engine package"
+        : [
+            packageJson.dependencies?.three ? `dependencies.three=${packageJson.dependencies.three}` : undefined,
+            packageJson.exports?.["./three-compat"] ? "exports ./three-compat" : undefined,
+            packageJson.files?.includes("dist/three-compat") ? "files includes dist/three-compat" : undefined,
+            paths.some((path) => path.startsWith("dist/three-compat/")) ? "tarball includes dist/three-compat" : undefined,
+            ...rootNoThreeHits.slice(0, 12)
+          ].filter(Boolean).join("; ") || "root package tarball has no Three.js runtime dependency, export, files entry, or runtime imports"
     }
   );
 
@@ -129,6 +155,28 @@ function findTextHits(dir: string, files: readonly PackFile[]): string[] {
     const text = readFileSync(fullPath, "utf8");
     for (const pattern of disallowedTextPatterns) {
       if (pattern.test(text)) hits.push(`${dir}:${file.path}:${pattern.source}`);
+    }
+  }
+  return hits;
+}
+
+function findRootNoThreeHits(dir: string, files: readonly PackFile[]): string[] {
+  const hits: string[] = [];
+  const patterns = [
+    /\b(?:import\s+(?:type\s+)?(?:[^'"]+\s+from\s+)?|export\s+[^'"]+\s+from\s+|import\s*\(|require\s*\()\s*["'](?:three|three\/[^"']*|@aura3d\/three-compat(?:\/[^"']*)?)["']/,
+    /\bbackend:\s*["'](?:three|three-webgl|three-lean-[^"']*)["']|\bthree-lean-[\w-]+/,
+    /typeof\s+import\s*\(\s*["']three(?:\/[^"']*)?["']\s*\)/
+  ];
+  for (const file of files) {
+    if (!/^dist\/(?:animation|assets|audio|controls|core|ecs|editor|editor-runtime|engine|environments|input|materials|math|physics|product-studio|react|rendering|scene|scripting|workflows)\//.test(file.path)) continue;
+    if (!/\.(js|mjs|cjs|d\.ts)$/i.test(file.path)) continue;
+    const fullPath = resolve(dir, file.path);
+    if (!existsSync(fullPath)) continue;
+    const text = readFileSync(fullPath, "utf8");
+    for (const [index, line] of text.split(/\r?\n/).entries()) {
+      for (const pattern of patterns) {
+        if (pattern.test(line)) hits.push(`${dir}:${file.path}:${index + 1}:${line.trim()}`);
+      }
     }
   }
   return hits;

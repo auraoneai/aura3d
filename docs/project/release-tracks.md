@@ -1,9 +1,9 @@
 # Release Tracks
 
-Version: 1.0.2
+Version: 1.0.3
 Date: 2026-06-03
 
-Aura3D v1.0.2 is the launch track for the public SDK, docs, npm package, GitHub repository, and marketing site.
+Aura3D v1.0.3 is the root-runtime cleanup track for the public SDK, docs, npm package, GitHub repository, and marketing site.
 
 ## Launch Positioning
 
@@ -13,11 +13,19 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 ## Current Release
 
-- npm package: `@aura3d/engine@1.0.2`
+- npm package: `@aura3d/engine@1.0.3`
 - Public developer API: `@aura3d/engine`
 - Website: `https://aura3d.auraone.ai`
 - Repository: `https://github.com/auraoneai/aura3d`
 - Primary install path: `npm install @aura3d/engine`
+
+## 1.0.3 Release Note
+
+`@aura3d/engine@1.0.3` removes Three.js from the root engine runtime and npm
+dependency graph. Three.js parity, migration, and compatibility tooling remain
+available outside the default engine install path. Public Aura3D agent APIs,
+typed assets, templates, diagnostics, and screenshots continue to use
+Aura3D-owned runtime code.
 
 ## Launch Copy
 

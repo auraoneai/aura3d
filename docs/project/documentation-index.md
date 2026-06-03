@@ -22,6 +22,7 @@ Version: 1.0.0
 - Product boundaries: `docs/project/product-boundaries.md`
 - Release tracks: `docs/project/release-tracks.md`
 - Final proof release readiness: `docs/project/final-proof-release-readiness.md`
+- Three.js runtime removal PRD: `docs/project/three-runtime-removal-prd.md`
 - Release process: `docs/project/release-process.md`
 - Release checklist: `docs/project/release-checklist.md`
 - Claim guidelines: `docs/project/launch-positioning.md`

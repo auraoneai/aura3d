@@ -19,6 +19,7 @@ The Aura3D SDK release may claim:
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
 - Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
 - Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
+- `@aura3d/engine@1.0.3` does not install Three.js as a root engine runtime dependency.
 - A local/developer-ready Round 50 Aura3D SDK artifact exists.
 
 The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
@@ -39,6 +40,11 @@ been satisfied for a committed round:
 - Aura3D generates production-ready 3D assets from scratch.
 - Aura3D produces final film quality or Pixar-quality frames.
 - Aura3D replaces Maya, Houdini, Blender, Unreal, Unity, RenderMan, low-level renderer code, or framework-specific renderer layers.
+- Aura3D bundles Three.js in the default `@aura3d/engine` runtime.
+
+Three.js migration, parity, and compatibility claims must explicitly name the
+separate `@aura3d/three-compat` package or comparison tooling. Do not describe
+optional compatibility tooling as part of the default root engine install.
 
 Allowed cinematic wording must stay within `docs/agents/cinematic-scene-quality.md`: agent-written TypeScript, realtime previs-style scenes, camera motion, lighting, materials, atmosphere, typed assets, and browser deployment.
 
