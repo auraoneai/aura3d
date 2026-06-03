@@ -3,6 +3,11 @@ import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT_IMPORT = "@aura3d/engine";
 const NON_PUBLIC_SUBPATH_PREFIX = `${ROOT_IMPORT}/`;
+const PUBLIC_AURA_SUBPATH_IMPORTS = new Map([
+  [`${ROOT_IMPORT}/scene-kits/particle-fountain`, new Set(["createAuraApp", "particleFountain", "sceneKits", "ui"])],
+  [`${ROOT_IMPORT}/scene-kits/humanoid-walk`, new Set(["character", "createAuraApp", "humanoidWalk", "sceneKits"])],
+  [`${ROOT_IMPORT}/scene-kits/product-viewer`, new Set(["createAuraApp", "defineAuraAssets", "product", "productViewer", "sceneKits"])]
+]);
 const PROMPT_10_ASSET_PATTERN = /(?:https?:\/\/|(?:\.\.?\/|\/)?)[A-Za-z0-9_.~:/-]+\.(?:glb|gltf|obj|fbx|usdz|usd|dae)(?:[?#][^\s"'`)]+)?/gi;
 
 export function auditPromptSource(options) {
@@ -12,6 +17,7 @@ export function auditPromptSource(options) {
   if (!sourceDir) throw new Error("auditPromptSource requires sourceDir or promptDir");
 
   const promptFile = options.promptFile ?? "";
+  const library = options.library ?? options.metadata?.library ?? null;
   const publicRootExports = new Set(options.publicRootExports ?? readPublicRootExports(repoRoot));
   const files = generatedSourceFiles(sourceDir);
   const fileTexts = files.map((file) => ({
@@ -50,17 +56,43 @@ export function auditPromptSource(options) {
           });
         }
       } else if (importRecord.specifier.startsWith(NON_PUBLIC_SUBPATH_PREFIX)) {
-        nonPublicSubpathImports.push({
-          specifier: importRecord.specifier,
-          file: entry.rel,
-          line: lineForOffset(entry.text, importRecord.offset),
-          reason: "agent-authored Aura benchmark sources must import the public root @aura3d/engine API"
-        });
+        const publicSubpathExports = PUBLIC_AURA_SUBPATH_IMPORTS.get(importRecord.specifier);
+        if (publicSubpathExports) {
+          for (const symbol of collectNamedImportSymbols(importRecord.clause)) {
+            if (!publicSubpathExports.has(symbol.name)) {
+              unavailablePublicImports.push({
+                symbol: symbol.name,
+                importedAs: symbol.importedAs,
+                file: entry.rel,
+                line: lineForOffset(entry.text, importRecord.offset),
+                specifier: importRecord.specifier,
+                reason: `not exported by public ${importRecord.specifier} API`
+              });
+            }
+          }
+          if (hasDefaultImport(importRecord.clause)) {
+            unavailablePublicImports.push({
+              symbol: "default",
+              importedAs: "default",
+              file: entry.rel,
+              line: lineForOffset(entry.text, importRecord.offset),
+              specifier: importRecord.specifier,
+              reason: `${importRecord.specifier} has no public default export for agent-authored sources`
+            });
+          }
+        } else {
+          nonPublicSubpathImports.push({
+            specifier: importRecord.specifier,
+            file: entry.rel,
+            line: lineForOffset(entry.text, importRecord.offset),
+            reason: "agent-authored Aura benchmark sources must import the public root @aura3d/engine API or an explicitly public lean Aura subpath"
+          });
+        }
       }
     }
 
     if (isPrompt10(promptFile, sourceDir)) {
-      unsafeAssetReferences.push(...collectPrompt10UnsafeAssetReferences(entry));
+      unsafeAssetReferences.push(...collectPrompt10UnsafeAssetReferences(entry, { library }));
     }
   }
 
@@ -131,9 +163,10 @@ function walkFiles(root, predicate, acc = []) {
   if (!existsSync(root)) return acc;
   for (const entry of readdirSync(root)) {
     const file = join(root, entry);
+    if (["node_modules", "dist", ".git", "context", "benchmark", "_packages", ".npm-cache"].includes(entry)) continue;
     const stat = statSync(file);
     if (stat.isDirectory()) {
-      if (!["node_modules", "dist", ".git"].includes(entry)) walkFiles(file, predicate, acc);
+      walkFiles(file, predicate, acc);
     } else if (predicate(file)) {
       acc.push(file);
     }
@@ -178,8 +211,9 @@ function hasDefaultImport(clause) {
   return Boolean(beforeNamed && !beforeNamed.startsWith("*") && /^[A-Za-z_$][\w$]*(?:\s*,)?$/.test(beforeNamed));
 }
 
-function collectPrompt10UnsafeAssetReferences(entry) {
+function collectPrompt10UnsafeAssetReferences(entry, options = {}) {
   const records = [];
+  const library = options.library ?? null;
   const appSource = entry.rel !== "src/aura-assets.ts";
   for (const match of entry.text.matchAll(/\bunsafeModelUrl\s*\(/g)) {
     records.push({
@@ -198,8 +232,9 @@ function collectPrompt10UnsafeAssetReferences(entry) {
       reason: "prompt 10 must use model(assets.sneaker), not model(\"...\")"
     });
   }
-  if (appSource) {
+  if (appSource && library === "Aura3D") {
     for (const match of entry.text.matchAll(PROMPT_10_ASSET_PATTERN)) {
+      if (!isPrompt10ModelUrlReference(entry.text, match.index ?? 0, match[0])) continue;
       records.push({
         kind: /^https?:\/\//i.test(match[0]) ? "remoteModelUrl" : "hardCodedModelUrl",
         value: match[0],
@@ -210,6 +245,18 @@ function collectPrompt10UnsafeAssetReferences(entry) {
     }
   }
   return records;
+}
+
+function isPrompt10ModelUrlReference(text, offset, value) {
+  if (/^https?:\/\//i.test(value)) return true;
+  if (/^(?:\.\.?\/|\/)/.test(value)) return true;
+  if (value.includes("/")) return true;
+
+  const lineStart = text.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
+  const lineEndIndex = text.indexOf("\n", offset);
+  const lineEnd = lineEndIndex === -1 ? text.length : lineEndIndex;
+  const line = text.slice(lineStart, lineEnd);
+  return /\b(?:url|path|src|href|asset|loader|load|fetch|import)\b/i.test(line);
 }
 
 function isPrompt10(promptFile, sourceDir) {

@@ -3,8 +3,18 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Aura3D — Agent-written browser 3D, with assets that deploy.</title>
-<meta name="description" content="Aura3D gives AI coding agents a stable TypeScript 3D API, asset CLI, templates, diagnostics, and deployment checks for browser 3D apps." />
+<title>Aura3D: The AI-Native 3D SDK for the Web</title>
+<meta name="description" content="Aura3D is the AI-native TypeScript 3D SDK for building beautiful browser scenes from prompts, scene kits, primitives, typed GLB/glTF assets, Vite templates, and static deploy checks." />
+<link rel="canonical" href="https://aura3d.auraone.ai/" />
+<meta property="og:site_name" content="Aura3D" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Aura3D: The AI-Native 3D SDK for the Web" />
+<meta property="og:description" content="Build beautiful browser 3D from prompts, scene kits, primitives, typed assets, Vite templates, and editable TypeScript." />
+<meta property="og:image" content="/og/aura3d-og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.svg" />
+<meta name="theme-color" content="#07080a" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
@@ -24,17 +34,17 @@
       <span>Aura3D</span>
     </a>
     <div class="nav-links">
-      <a class="nav-link" href="#workflows">Agent API</a>
-      <a class="nav-link" href="#gallery">Live proof</a>
+      <a class="nav-link" href="#workflows">SDK</a>
+      <a class="nav-link" href="#prompts">Prompts</a>
+      <a class="nav-link" href="#gallery">Examples</a>
       <a class="nav-link" href="#templates">Templates</a>
-      <a class="nav-link" href="#packages">Surface</a>
-      <a class="nav-link" href="#evidence">Evidence</a>
-      <a class="nav-link" href="#deployment">Deploy</a>
-      <a class="nav-link" href="/llms.txt">llms.txt</a>
+      <a class="nav-link" href="#packages">Platform</a>
+            <a class="nav-link" href="#deployment">Deploy</a>
+      <a class="nav-link" href="/llms.txt">Agent context</a>
     </div>
     <div class="nav-actions">
       <span class="nav-version">MIT</span>
-      <a class="btn btn-ghost" href="/docs/agents/README.md">Docs</a>
+      <a class="btn btn-ghost" href="/marketing/docs/index.html">Docs</a>
       <a class="btn btn-primary" href="#templates">Get started <span class="arr"></span></a>
     </div>
   </div>
@@ -46,19 +56,17 @@
     <div class="hero-left">
       <span class="hero-tag">
         <span class="pill">SDK</span>
-        <b>Agent-ready.</b>
-        <span class="mute">Agent-written code. User-owned assets.</span>
+        <b>AI-native 3D.</b>
+        <span class="mute">Prompt it. Shape it. Ship it.</span>
       </span>
 
       <h1>
-        Agent-written 3D,<br />
-        <em>with assets that deploy.</em>
+        The 3D SDK<br />
+        <em>for the next era of software.</em>
       </h1>
 
       <p class="hero-lede">
-        Aura3D is the editable scene layer between AI coding agents and browser 3D:
-        a stable TypeScript API, typed asset pipeline, starter templates, diagnostics,
-        screenshots, and deploy checks. The agent writes code. You bring the assets.
+        Aura3D turns a sentence into a polished browser 3D scene your team can actually own. Primitives, particles, physics, data worlds, cities, characters, materials, and real GLB assets all flow into clean TypeScript. It feels like magic. It ships like software.
       </p>
 
       <div class="hero-cta">
@@ -72,40 +80,40 @@
             <span id="copyLabel">Copy</span>
           </button>
         </div>
-        <a class="btn btn-primary" href="#templates">Use a template <span class="arr"></span></a>
-        <a class="btn btn-ghost" href="/llms.txt">Give docs to an agent</a>
+        <a class="btn btn-primary" href="#prompts">Watch prompt-to-3D <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="/llms.txt">Give agents context</a>
       </div>
 
       <div class="hero-meta">
         <div class="hero-meta-item">
-          <span class="v"><b>3</b></span>
-          <span class="k">Starter templates</span>
+          <span class="v"><b>Prompt</b></span>
+          <span class="k">to editable code</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>CLI</b></span>
-          <span class="k">Hashed typed assets</span>
+          <span class="v"><b>Scene kits</b></span>
+          <span class="k">primitives + systems</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>TS</b></span>
-          <span class="k">Safe asset refs</span>
+          <span class="v"><b>Ship</b></span>
+          <span class="k">build-ready scenes</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>Tests</b></span>
-          <span class="k">Route health + screenshots</span>
+          <span class="v"><b>Deploy</b></span>
+          <span class="k">static-ready output</span>
         </div>
       </div>
     </div>
 
     <div class="hero-right">
-      <iframe class="hero-canvas" data-route="/apps/wow-concept-car-cinema/" title="Aura3D · engine evidence concept car route"></iframe>
+      <iframe class="hero-canvas" data-route="/apps/wow-webgpu-compute-particles/" title="Aura3D · prompt-generated particle system"></iframe>
       <div class="hero-overlay">
         <div class="hero-overlay-top">
-          <span class="scene-chip"><span class="dot"></span>Live engine evidence · WebGL2</span>
-          <span class="scene-stat">agent-ready <b>SDK</b></span>
+          <span class="scene-chip"><span class="dot"></span>Prompt-generated particles</span>
+          <span class="scene-stat">scene kits</span>
         </div>
         <div class="hero-overlay-bot">
-          <span class="scene-chip">asset pipeline · diagnostics · route health</span>
-          <span class="scene-stat">not prompt runtime</span>
+          <span class="scene-chip">particles · controls · TypeScript</span>
+          <span class="scene-stat">owned TypeScript</span>
         </div>
       </div>
     </div>
@@ -117,14 +125,16 @@
   <div class="wrap tape-inner">
     <span class="tape-label">Built on</span>
     <div class="tape-items">
+      <span class="tape-item">AI prompt plans</span>
+      <span class="tape-item">Scene kits</span>
       <span class="tape-item">TypeScript API</span>
       <span class="tape-item">Asset CLI</span>
       <span class="tape-item">Typed asset refs</span>
       <span class="tape-item">React adapter</span>
       <span class="tape-item">Vite templates</span>
-      <span class="tape-item">Route health</span>
-      <span class="tape-item">Screenshot tests</span>
-      <span class="tape-item">Static deploy checks</span>
+      <span class="tape-item">Live examples</span>
+      <span class="tape-item">Polished scenes</span>
+      <span class="tape-item">Static deploys</span>
     </div>
   </div>
 </section>
@@ -134,9 +144,9 @@
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">01 — Agent API</span>
-        <h2 class="h2">Small imports, <em style="font-family:var(--serif);font-style:italic">real code.</em></h2>
-        <p class="lede">The public surface is not a hidden runtime generator. Coding agents write TypeScript against a compact scene API, then Aura3D handles the canvas lifecycle, asset refs, diagnostics, screenshots, and deploy checks.</p>
+        <span class="eyebrow">01 — SDK</span>
+        <h2 class="h2">A complete 3D vocabulary, <em style="font-family:var(--serif);font-style:italic">designed for generation.</em></h2>
+        <p class="lede">Aura3D gives AI coding assistants the nouns and verbs of browser 3D: scenes, models, lights, cameras, materials, effects, interactions, UI, and deployment-ready assets behind a compact TypeScript API. The result is fast to generate and simple to refine.</p>
       </div>
     </div>
 
@@ -146,11 +156,11 @@
           <div class="split-code-tabs">
             <span class="split-code-tab active">agent-scene.ts</span>
             <span class="split-code-tab">typed-assets.ts</span>
-            <span class="split-code-tab">route-health.ts</span>
+            <span class="split-code-tab">deploy-check.ts</span>
           </div>
           <span class="mono mute-2" style="font-size:11px">TypeScript</span>
         </div>
-<pre class="code"><span class="c">// The agent writes source code. Aura3D keeps the surface small.</span>
+<pre class="code"><span class="c">// Typed GLB path: register once, then compose the scene.</span>
 <span class="k">import</span> {
   <span class="f">createAuraApp</span>, <span class="f">scene</span>, <span class="f">model</span>, <span class="f">camera</span>,
   <span class="f">lights</span>, <span class="f">effects</span>
@@ -160,24 +170,24 @@
 <span class="f">createAuraApp</span>(<span class="s">"#app"</span>, {
   diagnostics: { overlay: <span class="n">true</span> },
   scene: <span class="f">scene</span>({ background: <span class="s">"#05070a"</span> })
-    .add(<span class="f">model</span>(assets.robot, { scale: <span class="n">1.2</span> }))
+    .add(<span class="f">model</span>(assets.boombox, { scale: <span class="n">1.2</span> }))
     .add(<span class="f">lights</span>.studio({ intensity: <span class="n">1.2</span> }))
     .camera(<span class="f">camera</span>.orbit({ distance: <span class="n">4</span> }))
     .add(<span class="f">effects</span>.bloom({ intensity: <span class="n">0.35</span> }))
 });
-<span class="c">// model("robot") is rejected by the safe API.</span></pre>
+<span class="c">// Typed assets keep the model path stable across builds.</span></pre>
       </div>
 
       <div class="split-view">
-        <iframe class="split-canvas" data-route="/apps/wow-boombox-texture-lab/" title="Aura3D · GLB asset pipeline evidence"></iframe>
+        <iframe class="split-canvas" data-route="/apps/wow-boombox-texture-lab/" title="Aura3D · GLB asset pipeline"></iframe>
         <div class="hero-overlay">
           <div class="hero-overlay-top">
-            <span class="scene-chip"><span class="dot"></span>GLB route evidence</span>
+            <span class="scene-chip"><span class="dot"></span>Typed GLB workflow</span>
             <span class="scene-stat">typed assets</span>
           </div>
           <div class="hero-overlay-bot">
-            <span class="scene-chip">hash · metadata · deploy path</span>
-            <span class="scene-stat">diagnostics on</span>
+            <span class="scene-chip">asset manifest · studio lighting</span>
+            <span class="scene-stat">studio ready</span>
           </div>
         </div>
       </div>
@@ -185,92 +195,236 @@
   </div>
 </section>
 
-<!-- ─── §02 — LIVE ROUTES ───────────────────────────────────── -->
-<section class="section" id="gallery">
+<!-- ─── §02 — AI PROMPT WORKFLOW ────────────────────────────── -->
+<section class="section" id="prompts" data-search-index="ai prompts prompt plans scene kits examples product viewer particle fountain mini golf city data visualization">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">02 — Live proof</span>
-        <h2 class="h2">See the renderer, <em style="font-family:var(--serif);font-style:italic">asset pipeline, and motion system.</em></h2>
-        <p class="lede">These live embeds show rendering, imported assets, animation, materials, physics, and conditional WebGPU in the browser. The same source-code workflow powers the starter apps and the evidence routes.</p>
+        <span class="eyebrow">02 — Prompt-to-3D</span>
+        <h2 class="h2">Describe the world.<br /><em style="font-family:var(--serif);font-style:italic">Receive the scene.</em></h2>
+        <p class="lede">Aura3D gives prompts structure: cinematic particles, physical playgrounds, data galaxies, material labs, city blocks, mini-games, humanoids, and product viewers. The assistant starts with a maintained scene system, then edits the TypeScript you own.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">engine evidence · source-code workflow</span>
-        <a href="/" class="mono" style="font-size:12px;color:var(--accent)">Browse route registry →</a>
+        <span class="eyebrow-num">prompt · code · asset · deploy</span>
+        <a href="/marketing/docs/agent-quickstart.html" class="mono" style="font-size:12px;color:var(--accent)">Start building →</a>
       </div>
     </div>
 
-    <div class="gallery gallery--trim">
-      <div class="tile t-feature">
-        <iframe class="tile-canvas" data-route="/apps/wow-tokyo-keyframes/" title="Littlest Tokyo · authored glTF animation"></iframe>
-        <div class="tile-meta"><span class="chip">glTF</span><span class="chip">Animation</span></div>
-        <span class="tile-label"><span class="live"></span>Littlest Tokyo</span>
+    <div class="split">
+      <div class="split-code">
+        <div class="split-code-head">
+          <div class="split-code-tabs">
+            <span class="split-code-tab active">prompt-plan.ts</span>
+            <span class="split-code-tab">scene-kit.ts</span>
+            <span class="split-code-tab">scene-kit.ts</span>
+          </div>
+          <span class="mono mute-2" style="font-size:11px">TypeScript</span>
+        </div>
+<pre class="code"><span class="c">// Prompt + asset path: bring the GLB, then stage it.</span>
+<span class="k">import</span> {
+  <span class="f">createAuraApp</span>, <span class="f">sceneKits</span>
+} <span class="k">from</span> <span class="s">"@aura3d/engine"</span>;
+<span class="k">import</span> { assets } <span class="k">from</span> <span class="s">"./aura-assets"</span>;
+
+<span class="k">const</span> kit = <span class="f">sceneKits</span>.<span class="f">productViewer</span>({
+  asset: assets.conceptCar,
+  lighting: <span class="s">"cinematic"</span>,
+  controls: <span class="s">"orbit"</span>,
+});
+
+<span class="f">createAuraApp</span>(<span class="s">"#app"</span>, kit.<span class="f">toAppOptions</span>());</pre>
       </div>
-      <div class="tile t-third">
-        <iframe class="tile-canvas" data-route="/apps/wow-damaged-helmet-pbr-detail/" title="Damaged helmet · PBR detail"></iframe>
-        <div class="tile-meta"><span class="chip">PBR · IBL</span></div>
-        <span class="tile-label"><span class="live"></span>Damaged Helmet</span>
+
+      <div class="split-view">
+        <iframe class="split-canvas" data-route="/apps/wow-concept-car-cinema/" title="Aura3D · cinematic concept car product scene"></iframe>
+        <div class="hero-overlay">
+          <div class="hero-overlay-top">
+            <span class="scene-chip"><span class="dot"></span>prompt-staged GLB scene</span>
+            <span class="scene-stat">product cinema</span>
+          </div>
+          <div class="hero-overlay-bot">
+            <span class="scene-chip">typed asset · lighting · controls</span>
+            <span class="scene-stat">owned TypeScript</span>
+          </div>
+        </div>
       </div>
-      <div class="tile t-third">
-        <iframe class="tile-canvas" data-route="/apps/advanced-examples-gallery/" data-hash="physics-playground" title="Physics playground"></iframe>
-        <div class="tile-meta"><span class="chip">Rapier</span></div>
-        <span class="tile-label"><span class="live"></span>Physics playground</span>
+    </div>
+
+    <div class="pkg-grid" style="margin-top:18px">
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Physics playground</div>
+        <div class="pkg-desc">"Create falling cubes, ramps, bins, gravity cues, contact patches, reset controls, and a cinematic camera."</div>
+        <div class="pkg-tags"><span class="pkg-tag">primitives</span><span class="pkg-tag">physics</span></div>
       </div>
-      <div class="tile t-third">
-        <iframe class="tile-canvas" data-route="/apps/wow-webgpu-compute-particles/" title="WebGPU compute particles"></iframe>
-        <div class="tile-meta"><span class="chip">Compute</span></div>
-        <span class="tile-label"><span class="live"></span>WebGPU particles</span>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Particle fountain</div>
+        <div class="pkg-desc">"Build an interactive particle fountain with an emission slider, colored droplet lifetimes, collision splash, pedestal, basin, and dark stage."</div>
+        <div class="pkg-tags"><span class="pkg-tag">particles</span><span class="pkg-tag">controls</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Data galaxy</div>
+        <div class="pkg-desc">"Generate a 3D analytics scene with bars, particles, labels, selected values, camera motion, and presentation-ready composition."</div>
+        <div class="pkg-tags"><span class="pkg-tag">data viz</span><span class="pkg-tag">generated</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · City block</div>
+        <div class="pkg-desc">"Generate buildings, roads, windows, crosswalks, traffic lights, street props, night lighting, and a visible day/night state."</div>
+        <div class="pkg-tags"><span class="pkg-tag">city</span><span class="pkg-tag">procedural</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">Prompt · Material lab</div>
+        <div class="pkg-desc">"Show chrome, glass, rubber, emissive, and clearcoat as distinct primitives with lighting, reflections, labels, and contact shadows."</div>
+        <div class="pkg-tags"><span class="pkg-tag">materials</span><span class="pkg-tag">primitives</span></div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-name">GLB · Concept car cinema</div>
+        <div class="pkg-desc">"When the concept car GLB is supplied, stage it with cinematic lighting, orbit controls, material polish, and a showroom camera."</div>
+        <div class="pkg-tags"><span class="pkg-tag">typed asset</span><span class="pkg-tag">product cinema</span></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─── §03 — TEMPLATES / COMMANDS ──────────────────────────── -->
-<section class="section-tight" id="templates" data-search-index="install scaffold assets templates deployment troubleshooting llms agent docs">
+<!-- ─── §03 — LIVE ROUTES ───────────────────────────────────── -->
+<section class="section" id="gallery">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">03 — Start here</span>
-        <h2 class="h2">Three starter templates.<br /><em style="font-family:var(--serif);font-style:italic">One asset workflow.</em></h2>
-        <p class="lede">A coding agent should start from a scaffold, add real user assets, and keep deployment checks visible. These commands are the supported Aura3D workflow.</p>
+        <span class="eyebrow">03 — Live examples</span>
+        <h2 class="h2">From primitives to products.<br /><em style="font-family:var(--serif);font-style:italic">Every example runs.</em></h2>
+        <p class="lede">Aura3D examples show the whole range: generated primitive systems, particles, materials, data scenes, interactions, and real GLB/glTF product assets. Click any card and open the actual app route.</p>
       </div>
       <div class="sec-head-right">
-        <a href="/llms.txt" class="mono" style="font-size:12px;color:var(--accent)">Open llms.txt →</a>
-        <a href="/docs/agents/README.md" class="mono" style="font-size:12px;color:var(--accent)">Agent manual →</a>
+        <span class="eyebrow-num">primitives · scene kits · typed assets</span>
+        <a href="/marketing/docs/prompt-recipes.html" class="mono" style="font-size:12px;color:var(--accent)">Read prompt recipes →</a>
+      </div>
+    </div>
+
+    <div class="gallery gallery--trim">
+      <div class="tile t-feature" data-link="/apps/advanced-examples-gallery/#data-galaxy" role="link" tabindex="0" aria-label="Open Data Galaxy example">
+        <iframe class="tile-canvas" data-route="/apps/advanced-examples-gallery/" data-hash="data-galaxy" title="Data galaxy · prompt-generated primitive scene"></iframe>
+        <div class="tile-meta"><span class="chip">Prompt</span><span class="chip">Data</span><span class="chip">Particles</span></div>
+        <span class="tile-label"><span class="live"></span>Data Galaxy</span>
+      </div>
+      <div class="tile t-third" data-link="/apps/wow-standard-material-spheres/" role="link" tabindex="0" aria-label="Open Material Primitives example">
+        <iframe class="tile-canvas" data-route="/apps/wow-standard-material-spheres/" title="Material primitives · prompt-ready material lab"></iframe>
+        <div class="tile-meta"><span class="chip">Primitive</span><span class="chip">Materials</span></div>
+        <span class="tile-label"><span class="live"></span>Material Primitives</span>
+      </div>
+      <div class="tile t-third" data-link="/apps/wow-simple-transforms/" role="link" tabindex="0" aria-label="Open Transform System example">
+        <iframe class="tile-canvas" data-route="/apps/wow-simple-transforms/" title="Primitive transforms · generated geometry basics"></iframe>
+        <div class="tile-meta"><span class="chip">Primitive</span><span class="chip">Transforms</span></div>
+        <span class="tile-label"><span class="live"></span>Transform System</span>
+      </div>
+      <div class="tile t-third" data-link="/apps/wow-damaged-helmet-pbr-detail/" role="link" tabindex="0" aria-label="Open Typed GLB Product example">
+        <iframe class="tile-canvas" data-route="/apps/wow-damaged-helmet-pbr-detail/" title="Damaged helmet · typed GLB example"></iframe>
+        <div class="tile-meta"><span class="chip">GLB</span><span class="chip">Typed asset</span></div>
+        <span class="tile-label"><span class="live"></span>Typed GLB Product</span>
+      </div>
+    </div>
+
+    <div class="example-mix">
+      <div class="example-column">
+        <div class="example-column-head">
+          <span class="eyebrow-num">AI prompt-generated</span>
+          <h3>Prompts become worlds.</h3>
+          <p>The assistant starts with a scene kit, then shapes primitives, controls, labels, physics, and motion into something that feels finished.</p>
+        </div>
+        <div class="example-list">
+          <a class="example-card" href="/apps/advanced-examples-gallery/#physics-playground">
+            <span>Physics Playground</span>
+            <small>falling cubes · ramps · collision cues</small>
+          </a>
+          <a class="example-card" href="/apps/advanced-examples-gallery/#particle-fountain">
+            <span>Particle Fountain</span>
+            <small>droplets · emission slider · splash context</small>
+          </a>
+          <a class="example-card" href="/apps/advanced-examples-gallery/#data-galaxy">
+            <span>Data Galaxy</span>
+            <small>generated data scene · labels · camera</small>
+          </a>
+          <a class="example-card" href="/apps/advanced-examples-gallery/#mini-golf">
+            <span>Mini Golf</span>
+            <small>ball · cup · aim · score · physics</small>
+          </a>
+        </div>
+      </div>
+
+      <div class="example-column generated">
+        <div class="example-column-head">
+          <span class="eyebrow-num">Typed GLB when supplied</span>
+          <h3>Real assets become showcases.</h3>
+          <p>When a real product or character arrives as GLB/glTF, Aura3D makes it typed, centered, lit, interactive, and ready for a product page.</p>
+        </div>
+        <div class="example-list">
+          <a class="example-card" href="/apps/wow-concept-car-cinema/">
+            <span>Concept car configurator</span>
+            <small>typed asset · variants · turntable</small>
+          </a>
+          <a class="example-card" href="/apps/wow-damaged-helmet-pbr-detail/">
+            <span>Damaged Helmet PBR</span>
+            <small>GLB texture detail · material fidelity</small>
+          </a>
+          <a class="example-card" href="/apps/wow-tokyo-keyframes/">
+            <span>Littlest Tokyo</span>
+            <small>authored animation · camera path</small>
+          </a>
+          <a class="example-card" href="/apps/advanced-examples-gallery/#material-lab">
+            <span>Material Lab</span>
+            <small>primitive swatches · labels · reflections</small>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── §04 — TEMPLATES / COMMANDS ──────────────────────────── -->
+<section class="section-tight" id="templates" data-search-index="install scaffold assets templates deployment examples llms agent docs">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-head-left">
+        <span class="eyebrow">04 — Start here</span>
+        <h2 class="h2">One command.<br /><em style="font-family:var(--serif);font-style:italic">A real app begins.</em></h2>
+        <p class="lede">Start with a template, add a real asset, and let the assistant shape the scene. Aura3D handles the browser 3D foundation so your team can focus on the moment users see.</p>
+      </div>
+      <div class="sec-head-right">
+        <a href="/llms.txt" class="mono" style="font-size:12px;color:var(--accent)">Open agent context →</a>
+        <a href="/marketing/docs/index.html" class="mono" style="font-size:12px;color:var(--accent)">Documentation →</a>
       </div>
     </div>
 
     <div class="docs-search" data-docs-search>
       <input class="docs-search-input" type="search" aria-label="Search Aura3D docs" data-docs-search-input />
       <div class="docs-search-results" data-docs-search-results>
-        <a href="/docs/agents/README.md" data-search-terms="install scaffold create-aura3d product-viewer">Install / scaffold</a>
-        <a href="/docs/agents/asset-workflow.md" data-search-terms="asset add assets add typed assets glb">Asset add</a>
-        <a href="/docs/agents/templates.md" data-search-terms="templates product-viewer cinematic-scene mini-game">Templates</a>
-        <a href="/docs/agents/deployment.md" data-search-terms="deployment deploy check-deploy dist">Deployment</a>
-        <a href="/docs/agents/troubleshooting.md" data-search-terms="troubleshooting missing canvas missing asset deploy">Troubleshooting</a>
+        <a href="/marketing/docs/index.html" data-search-terms="install scaffold create-aura3d product-viewer">Install / scaffold</a>
+        <a href="/marketing/docs/assets.html" data-search-terms="asset add assets add typed assets glb">Asset add</a>
+        <a href="/marketing/docs/templates.html" data-search-terms="templates product-viewer cinematic-scene mini-game">Templates</a>
+        <a href="/marketing/docs/deployment.html" data-search-terms="deployment deploy check-deploy dist">Deployment</a>
+        <a href="/marketing/docs/deployment.html" data-search-terms="deployment static hosting assets deploy">Static hosting</a>
       </div>
     </div>
 
     <div class="pkg-grid">
       <div class="pkg">
         <div class="pkg-name">product-viewer</div>
-        <div class="pkg-desc">A starter for inspecting a user-provided GLB with camera, lighting, diagnostics, route-health, and screenshot tests.</div>
+        <div class="pkg-desc">A starter for a user-provided GLB with camera, lighting, orbit controls, typed assets, and production build output.</div>
         <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">cinematic-scene</div>
-        <div class="pkg-desc">A starter for camera motion, lights, bloom/fog-style atmosphere, and screenshot verification around imported assets.</div>
+        <div class="pkg-desc">A starter for camera motion, lights, bloom and fog atmosphere, and polished landing-page scenes.</div>
         <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">mini-game</div>
-        <div class="pkg-desc">A starter for simple interaction, primitives, follow camera behavior, route-health checks, and deployable browser output.</div>
+        <div class="pkg-desc">A starter for simple interaction, primitives, follow-camera behavior, scoring, controls, and deployable browser output.</div>
         <div class="pkg-tags"><span class="pkg-tag">starter</span><span class="pkg-tag">template</span></div>
       </div>
       <div class="pkg">
-        <div class="pkg-name">agent files</div>
-        <div class="pkg-desc">Generate local instructions for Claude, Cursor, Copilot, and generic agents so they read the right Aura3D docs first.</div>
-        <div class="pkg-tags"><span class="pkg-tag">AGENTS.md</span><span class="pkg-tag">rules</span></div>
+        <div class="pkg-name">agent setup</div>
+        <div class="pkg-desc">Give AI coding assistants the Aura3D API rules, asset workflow, and scene-kit patterns before they edit the app.</div>
+        <div class="pkg-tags"><span class="pkg-tag">Agent rules</span><span class="pkg-tag">rules</span></div>
       </div>
     </div>
 
@@ -281,37 +435,37 @@
           <span class="pass">● supported path</span>
         </div>
         <div class="diag-body">
-          <button class="install-copy command-copy" data-copy="scaffold" data-copy-text="npx create-aura3d@latest my-scene --template product-viewer" type="button">Scaffold product-viewer</button>
+          <button class="install-copy command-copy" data-copy="scaffold" data-copy-text="npx create-aura3d@latest my-scene --template product-viewer" type="button">Scaffold mini-game</button>
           <button class="install-copy command-copy" data-copy="asset-add" data-copy-text="npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot" type="button">Add typed asset</button>
           <button class="install-copy command-copy" data-copy="check-deploy" data-copy-text="npx @aura3d/cli@latest check-deploy --dist dist" type="button">Check deploy</button>
-          <button class="install-copy command-copy" data-copy="agent-init" data-copy-text="npx @aura3d/cli@latest init --agent all" type="button">Write agent files</button>
+          <button class="install-copy command-copy" data-copy="agent-init" data-copy-text="npx @aura3d/cli@latest init --agent all" type="button">Write agent setup</button>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">what Aura3D does not do</span>
-          <span class="pass">● explicit boundary</span>
+          <span class="title">what Aura3D preserves</span>
+          <span class="pass">● clear model</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">LLM</span> <span class="v">not included</span></div>
+          <div class="diag-row"><span class="k">AI assistant</span> <span class="v">your choice</span></div>
           <div class="diag-row"><span class="k">asset ownership</span> <span class="v">user-owned</span></div>
           <div class="diag-row"><span class="k">scene authoring</span> <span class="v">source code</span></div>
-          <div class="diag-row"><span class="k">runtime generation</span> <span class="v">not hidden</span></div>
+          <div class="diag-row"><span class="k">runtime</span> <span class="v">browser-native</span></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─── §04 — PACKAGES ──────────────────────────────────────── -->
+<!-- ─── §05 — PACKAGES ──────────────────────────────────────── -->
 <section class="section" id="packages">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">04 — Surface</span>
-        <h2 class="h2">A library surface,<br /><em style="font-family:var(--serif);font-style:italic">not a black box.</em></h2>
-        <p class="lede">Aura3D focuses the public story on the small agent API, asset CLI, React adapter, templates, diagnostics, and deployment checks. Lower-level packages remain available when a team needs direct engine control.</p>
+        <span class="eyebrow">05 — Surface</span>
+        <h2 class="h2">A serious 3D platform.<br /><em style="font-family:var(--serif);font-style:italic">Packaged for AI speed.</em></h2>
+        <p class="lede">Aura3D brings the production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
         <span class="eyebrow-num">@aura3d/engine</span>
@@ -379,7 +533,7 @@
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">product-studio</span></div>
-        <div class="pkg-desc">Product-viewer-facing helpers, screenshot evidence, variants, asset loading, and diagnostics.</div>
+        <div class="pkg-desc">Product-viewer helpers, variants, asset loading, studio lighting, and diagnostics.</div>
         <div class="pkg-tags"><span class="pkg-tag">viewer</span></div>
       </div>
 
@@ -395,47 +549,47 @@
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">debug</span></div>
-        <div class="pkg-desc">Draw-call tracker, GPU profiler, render-state inspector, helpers, report exporter.</div>
+        <div class="pkg-desc">Draw-call tracker, GPU profiler, render-state inspector, and development overlays.</div>
         <div class="pkg-tags"><span class="pkg-tag">inspect</span></div>
       </div>
       <div class="pkg">
         <div class="pkg-name">@aura3d/<span class="sub">three-compat</span></div>
-        <div class="pkg-desc">Three.js-shaped imports, Aura3D-backed runtime. Move at the pace your team can absorb.</div>
+        <div class="pkg-desc">manual renderer code-shaped imports, Aura3D-backed runtime. Move at the pace your team can absorb.</div>
         <div class="pkg-tags"><span class="pkg-tag">migration</span></div>
       </div>
     </div>
 
     <div style="margin-top:18px; display:flex; justify-content:space-between; align-items:center; font-size:13px;">
-      <span class="mono mute-2">Plus agent-focused additions: @aura3d/cli, @aura3d/react, agent API, devtools, and testing helpers.</span>
-      <a href="/docs/api/public-api.md" class="mono" style="color:var(--accent)">View public API snapshot →</a>
+      <span class="mono mute-2">Plus agent-focused additions: @aura3d/cli, @aura3d/react, scene kits, typed assets, and Vite starters.</span>
+      <a href="/marketing/docs/api.html" class="mono" style="color:var(--accent)">Explore the API →</a>
     </div>
   </div>
 </section>
 
-<!-- ─── §04 — EVIDENCE / DIAGNOSTICS ────────────────────────── -->
-<section class="section" id="evidence">
+<!-- ─── §06 — QUALITY CHECKS ───────────────────────────────── -->
+<section class="section" id="quality">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">05 — Evidence</span>
-        <h2 class="h2">Ship with checks,<br /><em style="font-family:var(--serif);font-style:italic">not guesswork.</em></h2>
-        <p class="lede">Aura3D keeps the production workflow visible: scaffold an app, add assets through the CLI, render a route, capture screenshots, and verify static output before upload. Public claims map back to commands, reports, and browser evidence.</p>
+        <span class="eyebrow">06 — Production polish</span>
+        <h2 class="h2">Make it beautiful.<br /><em style="font-family:var(--serif);font-style:italic">Then make it shippable.</em></h2>
+        <p class="lede">A 3D landing page has to feel effortless: fast first load, correct assets, clear controls, and no broken routes. Aura3D keeps those production details close to the code.</p>
       </div>
     </div>
 
     <div class="diag">
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">workflow evidence</span>
-          <span class="pass">● verified</span>
+          <span class="title">ship-ready workflow</span>
+          <span class="pass">● ready path</span>
         </div>
         <div class="diag-body">
           <div class="diag-row"><span class="k">API surface</span> <span class="v ok">typed imports</span></div>
           <div class="diag-row"><span class="k">asset CLI</span> <span class="v ok">hash + manifest + refs</span></div>
-          <div class="diag-row"><span class="k">templates</span> <span class="v ok">build + route health</span></div>
-          <div class="diag-row"><span class="k">examples</span> <span class="v ok">classified route registry</span></div>
+          <div class="diag-row"><span class="k">templates</span> <span class="v ok">build output</span></div>
+          <div class="diag-row"><span class="k">examples</span> <span class="v ok">live app routes</span></div>
           <div class="diag-row"><span class="k">deployment</span> <span class="v ok">static asset check</span></div>
-          <div class="diag-row"><span class="k">marketing</span> <span class="v ok">copy tied to shipped surface</span></div>
+          <div class="diag-row"><span class="k">site</span> <span class="v ok">production copy</span></div>
 
           <div class="diag-bar">
             <div class="diag-bar-row">
@@ -459,39 +613,41 @@
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">claim boundaries</span>
-          <span class="pass">● explicit</span>
+          <span class="title">browser support</span>
+          <span class="pass">● clear</span>
         </div>
 <div class="json-viewer">{
-  <span class="k2">"positioning"</span>: <span class="s2">"agent-written browser 3D"</span>,
-  <span class="k2">"assets"</span>: <span class="s2">"bring your own GLB"</span>,
+  <span class="k2">"positioning"</span>: <span class="s2">"AI-native browser 3D"</span>,
+  <span class="k2">"sceneKits"</span>: <span class="s2">"particles, physics, data, materials, games"</span>,
+  <span class="k2">"assets"</span>: <span class="s2">"typed GLB when supplied"</span>,
   <span class="k2">"templates"</span>: [
+    <span class="s2">"mini-game"</span>,
     <span class="s2">"product-viewer"</span>,
     <span class="s2">"cinematic-scene"</span>,
     <span class="s2">"mini-game"</span>
   ],
   <span class="k2">"commands"</span>: [
     <span class="s2">"create-aura3d"</span>,
+    <span class="s2">"sceneKits.physicsPlayground"</span>,
     <span class="s2">"assets add"</span>,
     <span class="s2">"check-deploy"</span>,
     <span class="s2">"init --agent all"</span>
   ],
-  <span class="k2">"bannedClaims"</span>: <span class="s2">"not present"</span>,
-  <span class="k2">"evidence"</span>: <span class="s2">"routes, screenshots, reports"</span>
+  <span class="k2">"launch"</span>: <span class="s2">"examples, assets, build output"</span>
 }</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─── §06 — RUNTIME / DEPLOYMENT ──────────────────────────── -->
+<!-- ─── §07 — RUNTIME / DEPLOYMENT ──────────────────────────── -->
 <section class="section">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">06 — Runtime</span>
-        <h2 class="h2">Honest about <em style="font-family:var(--serif);font-style:italic">what runs.</em></h2>
-        <p class="lede">Aura3D should fail visibly when a canvas, backend, or asset is missing. WebGL2 remains the broad browser path, while WebGPU is conditional evidence, not a universal claim.</p>
+        <span class="eyebrow">07 — Runtime</span>
+        <h2 class="h2">Built for <em style="font-family:var(--serif);font-style:italic">the browser.</em></h2>
+        <p class="lede">Aura3D starts with the dependable browser path and lets advanced examples opt into WebGPU when the browser supports it. The page remains clear, fast, and understandable.</p>
       </div>
     </div>
 
@@ -499,36 +655,36 @@
       <div class="backend-card">
         <span class="label">● Default browser path</span>
         <h3>WebGL2</h3>
-        <p class="desc">The practical default for agent-written browser 3D: canvas setup, resize, render loop, camera, lights, diagnostics, screenshots, and cleanup handled by the app API.</p>
+        <p class="desc">The practical default for agent-written browser 3D: canvas setup, resize, render loop, camera, lights, interactions, and cleanup handled by the app API.</p>
         <div class="stats">
-          <div class="stat"><div class="v"><b>route</b></div><div class="k">health marker</div></div>
-          <div class="stat"><div class="v"><b>shot</b></div><div class="k">screenshot helper</div></div>
-          <div class="stat"><div class="v"><b>diag</b></div><div class="k">visible failures</div></div>
+          <div class="stat"><div class="v"><b>route</b></div><div class="k">loads cleanly</div></div>
+          <div class="stat"><div class="v"><b>asset</b></div><div class="k">paths resolve</div></div>
+          <div class="stat"><div class="v"><b>diag</b></div><div class="k">clear errors</div></div>
         </div>
       </div>
 
       <div class="backend-card" style="background:linear-gradient(180deg, rgba(74,222,157,0.04), var(--bg-1));">
-        <span class="label" style="color:var(--accent)">● Conditional evidence</span>
+        <span class="label" style="color:var(--accent)">● Browser capability</span>
         <h3>WebGPU</h3>
-        <p class="desc">WebGPU work remains evidence-bound. If the browser exposes <span class="mono" style="color:var(--accent)">navigator.gpu</span>, routes can prove support. If not, diagnostics must name the unsupported state.</p>
+        <p class="desc">WebGPU examples depend on browser support. If the browser exposes <span class="mono" style="color:var(--accent)">navigator.gpu</span>, routes can use it. If not, Aura3D keeps the route on the supported browser path.</p>
         <div class="stats">
           <div class="stat"><div class="v"><b>opt-in</b></div><div class="k">backend</div></div>
           <div class="stat"><div class="v"><b>named</b></div><div class="k">fallback reason</div></div>
-          <div class="stat"><div class="v"><b>report</b></div><div class="k">not a badge</div></div>
+          <div class="stat"><div class="v"><b>path</b></div><div class="k">documented</div></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ─── §07 — DEPLOYMENT ────────────────────────────────────── -->
+<!-- ─── §08 — DEPLOYMENT ────────────────────────────────────── -->
 <section class="section" id="deployment">
   <div class="wrap">
     <div class="sec-head">
       <div class="sec-head-left">
-        <span class="eyebrow">07 — Deployment</span>
-        <h2 class="h2">Bring your assets.<br /><em style="font-family:var(--serif);font-style:italic">Do not invent paths.</em></h2>
-        <p class="lede">The CLI fingerprints user files, writes the manifest, generates typed asset refs, and checks static output before upload. Agents should read those generated refs instead of guessing URLs.</p>
+        <span class="eyebrow">08 — Deployment</span>
+        <h2 class="h2">Bring the model.<br /><em style="font-family:var(--serif);font-style:italic">Aura3D builds the stage.</em></h2>
+        <p class="lede">The CLI fingerprints the file, writes the manifest, and generates typed asset references. From there, the assistant can compose a polished product scene without brittle paths.</p>
       </div>
     </div>
 
@@ -554,8 +710,7 @@ scene()
   .add(model(assets.robot))
   .add(lights.studio());
 
-<span class="c">// Safe path:</span> model(assets.robot)
-<span class="c">// Rejected path:</span> model(<span class="s">"robot"</span>)</pre>
+<span class="c">// Stable path:</span> model(assets.robot)</pre>
       </div>
     </div>
 
@@ -573,12 +728,12 @@ scene()
       <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
         <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 3</div>
         <div style="font-size:15px;margin-top:6px">Verify route</div>
-        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Route health and screenshots catch blanks.</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Open the exact page users will visit.</div>
       </div>
       <div style="border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--bg-1)">
         <div class="mono mute-2" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase">Step 4</div>
         <div style="font-size:15px;margin-top:6px">Check deploy</div>
-        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Missing hashed assets fail before upload.</div>
+        <div class="mute" style="font-size:13px;margin-top:6px;line-height:1.5">Confirm assets ship with the static site.</div>
       </div>
     </div>
   </div>
@@ -589,12 +744,12 @@ scene()
   <div class="cta-bg"></div>
   <div class="wrap cta-inner">
     <span class="eyebrow">Ready when you are</span>
-    <h2>Give your agent<br />a smaller 3D surface.</h2>
-    <p class="lede" style="text-align:center">Start from a template, add a real GLB, keep typed asset refs in code, and run deployment checks before upload. MIT licensed, source-code first, and explicit about what it does not do.</p>
+    <h2>Give your product<br />a 3D interface.</h2>
+    <p class="lede" style="text-align:center">Describe the scene. Generate primitives, particles, physics, data, controls, and product viewers. Bring real GLB assets when you have them. Aura3D turns browser 3D into a product surface your team can design, edit, and ship.</p>
     <div class="hero-cta" style="justify-content:center;margin:0">
-      <a class="btn btn-primary" href="/docs/agents/agent-quickstart.md">Read the agent quickstart <span class="arr"></span></a>
-      <a class="btn btn-ghost" href="/docs/templates/create-aura3d-templates.md">Template docs</a>
-      <a class="btn btn-ghost" href="#gallery">Run the examples</a>
+      <a class="btn btn-primary" href="/marketing/docs/agent-quickstart.html">Start building <span class="arr"></span></a>
+      <a class="btn btn-ghost" href="/marketing/docs/templates.html">Template docs</a>
+      <a class="btn btn-ghost" href="#gallery">Open live examples</a>
     </div>
   </div>
 </section>
@@ -612,40 +767,40 @@ scene()
           </svg>
           <span>Aura3D</span>
         </a>
-        <p class="foot-blurb">An agent-written browser 3D library, asset deployment pipeline, template system, diagnostics surface, and deployment checker. Not an LLM or hidden scene generator.</p>
+        <p class="foot-blurb">Aura3D is the AI-native TypeScript 3D SDK for the web: prompt workflows, scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
       </div>
       <div class="foot-col">
         <h4>Library</h4>
         <a href="#workflows">Agent API</a>
+        <a href="#prompts">AI prompts</a>
         <a href="#packages">Packages</a>
-        <a href="/docs/api/public-api.md">API reference</a>
-        <a href="/docs/project/claim-guidelines.md">Claim guidelines</a>
-      </div>
+        <a href="/marketing/docs/api.html">API reference</a>
+              </div>
       <div class="foot-col">
         <h4>Build</h4>
-        <a href="/docs/agents/agent-quickstart.md">Getting started</a>
+        <a href="/marketing/docs/agent-quickstart.html">Getting started</a>
         <a href="#templates">Templates</a>
         <a href="#deployment">Deployment</a>
         <a href="#gallery">Examples</a>
       </div>
       <div class="foot-col">
-        <h4>Evidence</h4>
-        <a href="#evidence">Reports</a>
-        <a href="/tests/reports/marketing-truth.json">Marketing truth</a>
-        <a href="/tests/reports/agent-api-surface.json">Agent API</a>
-        <a href="/tests/reports/current-routes-route-health.json">Route health</a>
+        <h4>Quality</h4>
+        <a href="#quality">Release workflow</a>
+        <a href="/marketing/docs/deployment.html">Deployment checks</a>
+        <a href="/marketing/docs/assets.html">Asset workflow</a>
+        <a href="/marketing/docs/api.html">API overview</a>
       </div>
       <div class="foot-col">
         <h4>Project</h4>
         <a href="/llms.txt">llms.txt</a>
-        <a href="/AGENTS.md">AGENTS.md</a>
-        <a href="/.claude/CLAUDE.md">Claude</a>
-        <a href="/.cursor/rules/aura3d.mdc">Cursor</a>
+        <a href="/marketing/docs/agent-rules.html">Agent setup</a>
+        <a href="/marketing/docs/claude.html">Claude guide</a>
+        <a href="/marketing/docs/cursor.html">Cursor guide</a>
       </div>
     </div>
     <div class="foot-bottom">
       <span>© 2026 Aura3D · MIT licensed</span>
-      <span>Agent-written code · user-owned assets · evidence-bound claims</span>
+      <span>Prompt-to-3D · typed assets · production browser scenes</span>
     </div>
   </div>
 </footer>

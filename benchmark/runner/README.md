@@ -32,12 +32,10 @@ benchmark/runs/round-N/<run-id>/prompt-XX/source/
 Run IDs are fixed:
 
 - `codex-aura3d`
-- `codex-threejs`
 - `claude-aura3d`
-- `claude-threejs`
 
 The runner may create a Vite TypeScript app, but the same scaffold policy must
-be used for Aura3D and Three.js. Record the exact scaffold command in
+be used for Aura3D and manual renderer code. Record the exact scaffold command in
 `notes.md`.
 
 ## Package Installation
@@ -46,7 +44,7 @@ Use the current repo commit recorded in the result file for Aura3D package
 artifacts. The agent may import published public APIs but may not inspect
 implementation source.
 
-Use `three@0.165.0` for raw Three.js runs.
+Use `three@0.165.0` for manual renderer code runs.
 
 Lockfiles are allowed for reproducibility but are not counted as user-written
 code.
@@ -117,6 +115,40 @@ Runtime behaviors that cannot be proven by one screenshot must be recorded in
 `notes.md` with either an additional screenshot path or a short Playwright trace
 description. Do not let runtime notes replace the required screenshot.
 
+## Renderer Proof Artifacts
+
+Renderer proof capture is additive to the existing CLI contract. Existing
+commands, required screenshots, `route-health.json`, `metrics.json`, logs, and
+exit-code behavior remain unchanged. Capture tools may also write a proof JSON
+next to the existing artifacts:
+
+- Engine browser captures write `renderer-proof.json`.
+- Visual QA gate runs write `visual-renderer-proof.json`.
+
+Both files use schema `aura3d-renderer-proof/1.0`, implemented by
+`benchmark/runner/renderer-proof-artifact.mjs`. The schema is intentionally
+small so future prompt runners or visual capture scripts can reuse it without
+claiming they ran a full benchmark. It records:
+
+- `runtimeDiagnostics.backend`
+- `runtimeDiagnostics.runtimeStatus`
+- `runtimeDiagnostics.actualPasses`
+- `runtimeDiagnostics.fallbackPasses`
+- `runtimeDiagnostics.passNames`
+- `webglContextEvidence` when a browser canvas exposes a WebGL context
+- `metadataHooks.png` with PNG container metadata such as dimensions, chunk
+  types, size, and freshness
+- `metadataHooks.contactShadow` reserved for renderer-provided contact shadow
+  diagnostics
+- `metadataHooks.tone` reserved for renderer-provided tone mapping, exposure,
+  color-space, or grading diagnostics
+
+The helper must not infer renderer behavior from a nonblank screenshot. If a
+runtime does not expose backend/pass/contact-shadow/tone data, the proof file
+must store `null` or `not-collected`. The current runner directory does not
+contain a full prompt runner; this helper is the artifact contract such a runner
+can call after it has real browser/runtime evidence.
+
 ## Failure Sentinels
 
 If a step fails, still create the artifact directory and write:
@@ -156,7 +188,7 @@ not produce finite p50 FPS and p95 frame-time values, set scene `p50Fps` and
 record the scene-sampling failure in `fpsInstrumentationFailures`.
 
 The calibration requirement prevents the Round 1 failure mode where both
-Aura3D and raw Three.js measured at 1-8 FPS on scenes that were visually
+Aura3D and manual renderer code measured at 1-8 FPS on scenes that were visually
 rendering, making the FPS numbers browser/sampling evidence rather than
 credible renderer-performance evidence.
 
@@ -208,6 +240,28 @@ Official release benchmark runs must not start from a dirty or stale package.
 Non-release validation still requires a code diff touching a failed PRD-2
 workstream area unless `AURA3D_ALLOW_FULL_BENCHMARK_RERUN=1` is set.
 
+Full prompt matrix generation and capture use a separate finite runner path:
+
+```sh
+node benchmark/runner/full-prompt-matrix.mjs --round=round-N
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=codex-aura3d --concurrency=1
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=codex-manual renderer code --concurrency=1
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=claude-aura3d --concurrency=1
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=claude-manual renderer code --concurrency=1
+node benchmark/runner/capture-prompt-batch.mjs --round=round-N --portStart=7200
+node benchmark/runner/prompt-contact-sheets.mjs --round=round-N
+```
+
+`run-prompt-agent.mjs` is the only runner-owned bridge from prompt-delivery
+packets to agent-authored source. It links the selected frozen context bundle as
+`./context`, exposes the prompt-10 asset as `./benchmark/assets/sneaker.glb`,
+invokes the matching non-interactive agent CLI, records `agent-status.json`,
+`agent.stdout.log`, `agent.stderr.log`, `agent-response.txt` where available,
+`source-audit.json`, and `asset-audit.json`, and enforces a finite per-prompt
+timeout. The agent process may run finite install/build commands but must not
+run dev/preview/browser capture. Browser screenshot capture remains runner-owned
+and starts only in `capture-prompt.mjs` after the agent process has stopped.
+
 ## Standard Cleanliness Check
 
 Before starting a benchmark round, and before committing benchmark protocol
@@ -216,7 +270,7 @@ changes, run:
 ```sh
 node benchmark/runner/verify-context-manifests.mjs
 git diff --check -- benchmark/protocol.md benchmark/runner benchmark/context docs/agents
-git status --short -- packages/engine/src/agent-api/index.ts benchmark/results REMAINING.md
+git status --short -- packages/engine/src/agent-api/index.ts benchmark/results UnifiedPRD.md
 ```
 
 The first command verifies bundle manifests, requires `files/llms.txt` in each
@@ -224,4 +278,55 @@ context bundle, and checks that the prompt-delivery contract still contains the
 finite-execution guardrails. The second command catches whitespace damage in
 the owned docs/scripts. The third command must show no benchmark-result or
 forbidden engine API edits for this workstream; an unrelated pre-existing
-`REMAINING.md` entry should be documented, not modified.
+`UnifiedPRD.md` entry should be documented, not modified.
+
+## Full Prompt Matrix Setup
+
+The official prompt matrix setup helper creates the clean artifact tree and
+the exact prompt-delivery packets for all four required sides:
+
+```sh
+node benchmark/runner/full-prompt-matrix.mjs --round=round-N
+```
+
+The helper verifies frozen context manifests, creates
+writes each `prompt-delivery.md`, and writes
+`benchmark/runs/round-N/prompt-matrix-manifest.json`.
+
+It does not run Codex, Claude Code, browser capture, neutral scoring, or user
+approval. Those remain separate required steps under this runner contract.
+
+After an agent has stopped and the generated app source exists, capture each
+prompt with:
+
+```sh
+node benchmark/runner/capture-prompt.mjs --promptDir=benchmark/runs/round-N/<run-id>/prompt-XX --port=<unique-port>
+```
+
+The prompt capture helper runs finite install/build/production-preview steps,
+then writes `screenshot.png`, `route-health.json`, `metrics.json`, `run.log`,
+and `renderer-proof.json`. The renderer proof captures runtime diagnostics,
+WebGL context evidence, pass names when exposed by the app runtime, PNG
+metadata, and fallback status. It still does not score visual quality; neutral
+scoring remains required under `benchmark/scoring/README.md`.
+
+To capture all prompt directories that already contain generated source, use:
+
+```sh
+node benchmark/runner/capture-prompt-batch.mjs --round=round-N --portStart=7200
+```
+
+This batch helper writes `prompt-capture-batch-summary.json` at the round root.
+It does not generate source and will fail any prompt whose app cannot install,
+build, preview, render, or write required artifacts.
+
+After screenshots exist for both Aura3D and manual renderer code sides, generate the
+prompt comparison contact sheets with:
+
+```sh
+node benchmark/runner/prompt-contact-sheets.mjs --round=round-N
+```
+
+This writes side-by-side Codex and Claude Code contact sheets under
+`benchmark/runs/round-N/contact-sheets/`. Missing screenshots are shown as
+missing; the helper does not invent or score evidence.

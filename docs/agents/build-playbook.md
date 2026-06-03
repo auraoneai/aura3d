@@ -111,7 +111,7 @@ Round 1 failure repairs:
   typed asset, plinth, contact shadow, softboxes, clean turntable cue, and
   normalized placement together. Use `prefabs.productStage({ style:
   "inspection" })` only when the prompt asks for explicit fit brackets. Do not
-  implement the actual viewer in raw Three.js inside an Aura3D app.
+  implement the actual viewer in manual renderer code inside an Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`,
   `ui.onClick`, `ui.range`, `ui.slider`, `ui.powerMeter`, `ui.scoreCounter`,
   `ui.resetButton`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
@@ -143,10 +143,10 @@ Round 1 failure repairs:
 - Animation prompts: prefer `character.lowPolyHumanoid({ clip: "walk" })`
   for primitive humanoids and `.animate({ clip: "float" | "pulse" | "walk" | "turntable" | "bar-height-grow", speed, duration, captureTime })`
   and `timeline.loop({ duration, captureTime })`; agents must stop after build/test commands and not
-  leave dev servers running. For primitive character prompts, start from
-  `character.lowPolyHumanoid({ showJoints: true, motionTrail: true, clip: "benchmark-pose" })`
-  so the hierarchical rig, skeleton joints, connected body, path, contact
-  shadow, face cues, stride, and walk-cycle animation are visible.
+  leave dev servers running. For benchmark character prompts, start from
+  `character.lowPolyHumanoid({ clip: "benchmark-pose", showJoints: false, motionTrail: false })`
+  so the authored skinned neutral human, planted-foot phase, clean silhouette,
+  path, contact shadow, face cues, stride, and walk-cycle animation are visible.
 - Benchmark prompts: write the smallest complete scene first, run finite
   commands such as `npm run build`, and exit. Do not run dev servers,
   Playwright, browser screenshot capture, or manual visual verification from

@@ -3,9 +3,9 @@
 ## Status
 
 Optional external follow-up. This requires beta publication and outside users,
-so it is tracked here without blocking the current local release proof. It must
-not be claimed as completed outside-user proof until real tester results are
-recorded.
+so it is tracked here without blocking the current local deployment-smoke
+evidence. It must not be claimed as completed outside-user proof until real
+tester results are recorded.
 
 ## Intake
 
@@ -18,7 +18,7 @@ commands, prompts, outcome, evidence, and recovery notes.
 
 ## Required Participants
 
-The `TestV4PlanPRD.md` pass criteria require:
+The outside-beta product feedback criteria require:
 
 - At least five external users attempt install or scaffold.
 - At least three external users render a starter app.
@@ -39,9 +39,9 @@ The `TestV4PlanPRD.md` pass criteria require:
 ## Optional Follow-Up Blockers
 
 - No beta npm version has been published in this work session.
-- Public Vercel and Cloudflare Pages smoke deployments exist for release proof;
-  a tester-facing beta deployment/package path still needs to be chosen before
-  outside dogfood.
+- Public Vercel and Cloudflare Pages smoke deployments exist as deployment
+  smoke evidence only; a tester-facing beta deployment/package path still
+  needs to be chosen before outside dogfood.
 - No external tester issues have been filed yet.
 
 ## Next Action

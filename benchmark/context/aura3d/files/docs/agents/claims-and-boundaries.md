@@ -11,5 +11,5 @@ Allowed claims:
   and errors.
 
 Do not claim Aura3D is an AI model, an asset marketplace, or a substitute for
-full engine-level control when raw Three.js or a framework-specific layer is a
+full engine-level control when manual renderer code or a framework-specific layer is a
 better fit.

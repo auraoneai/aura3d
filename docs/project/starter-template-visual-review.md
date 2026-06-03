@@ -33,7 +33,6 @@ asset and create a visually desirable scene.
 The current boundary is narrow: product-quality is shown for the three starter
 prompt recipes through clean-install route health, screenshot profiles, and
 manual review. These screenshots are supporting evidence only. They are not the
-release proof that Aura3D beats raw Three.js.
+release proof that Aura3D beats manual renderer code.
 
-The current release acceptance bar is defined in `FinalizedPromptPlan.md` and
-`benchmark/protocol.md`.
+The current benchmark-superiority acceptance bar is defined in `docs/project/frozen-benchmark-release-gates.md` and `benchmark/protocol.md`. Scoped SDK/product-context release evidence is tracked in `docs/project/release-tracks.md`.

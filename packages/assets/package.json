@@ -18,5 +18,6 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

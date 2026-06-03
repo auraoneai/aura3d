@@ -7,4 +7,4 @@ pnpm install
 pnpm build
 ```
 
-Claim boundary: this template proves installable scaffolding and external Vite build behavior. Same-scene Three.js visual parity remains a later ExternalParity milestone.
+Claim boundary: this template proves installable scaffolding and external Vite build behavior. Same-scene manual renderer code visual parity remains a later ExternalParity milestone.

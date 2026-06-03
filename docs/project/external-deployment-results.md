@@ -2,8 +2,7 @@
 
 Generated: 2026-05-29T07:49:20.504Z
 
-This document records real external deployment smoke evidence for Round 13
-of `TestV4PlanPRD.md`. Local static preview remains covered by
+This document records real external deployment smoke evidence for the scoped product-context deployment work. Local static preview remains covered by
 `tests/reports/package-clean-install.json`; this file records public-host
 evidence only.
 
@@ -45,9 +44,10 @@ evidence only.
 
 ## Current Verdict
 
-External deployment smoke passes for the required local release proof. Passing
-public hosts: vercel, cloudflare-pages. Netlify remains an optional follow-up
-because no Netlify token or project target is available.
+External deployment smoke passes for the scoped deployment check. This is
+deployment evidence only, not official benchmark release proof. Passing public
+hosts: vercel, cloudflare-pages. Netlify remains an optional follow-up because
+no Netlify token or project target is available.
 
 ## Next Action
 

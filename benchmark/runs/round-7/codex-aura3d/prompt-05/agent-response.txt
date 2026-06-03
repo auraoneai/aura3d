@@ -1,8 +1,0 @@
-Implemented in `source/src/main.ts`.
-
-Build command: `npm run build`
-Run command: `npm run dev` from `./source`
-
-Build completed successfully. The app uses `prefabs.dataBars3D({ grid: 6 })`, which provides the 6x6 animated height-colored bar grid with pointer hover metadata. Orbit camera is enabled, and the visible overlay documents axis labels plus hover-highlight behavior.
-
-Assumptions: no external assets are needed; hover highlight is handled by Aura3D’s prefab pointer interaction (`onHover: "highlight bar and show value"`).

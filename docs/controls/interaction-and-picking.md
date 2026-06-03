@@ -42,8 +42,6 @@ This split matters for product and advanced-gallery routes: annotation hotspots 
 Focused coverage lives in:
 
 - `tests/unit/controls/three-compat-controls.test.ts`
-- `tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts`
-- `tests/unit/apps/threejs-parity-product-configurator-policy.test.ts`
 - `tests/browser/three-compat-controls.spec.ts`
 - `tests/browser/advanced-examples-gallery.spec.ts`
 - `tools/three-compat-controls-readiness/index.ts`
@@ -51,7 +49,6 @@ Focused coverage lives in:
 Useful commands:
 
 ```sh
-pnpm exec vitest run tests/unit/controls tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts --reporter=dot
 pnpm three-compat:controls
 pnpm advanced-gallery:pipeline
 ```
@@ -60,5 +57,5 @@ pnpm advanced-gallery:pipeline
 
 - Imported GLB part selection is evidence-bound. Do not imply triangle-level authored-asset picking unless the route/test proves that exact path.
 - XR controller sampling and AR hit-test behavior are route/app evidence surfaces, not a blanket package claim.
-- Controls compatibility with Three.js is scoped to supported adapters and tested workflows.
+- Controls compatibility with manual renderer code is scoped to supported adapters and tested workflows.
 - UI presence does not prove interaction quality; route evidence must show that controls change scene state or camera state.

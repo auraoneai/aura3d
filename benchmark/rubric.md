@@ -2,7 +2,7 @@
 
 This rubric is frozen for a benchmark round. Editing it during a run voids the run.
 
-Each prompt is scored separately for Aura3D and raw Three.js.
+Each prompt is scored separately for Aura3D and manual renderer code.
 
 ## Metrics
 
@@ -31,12 +31,12 @@ and winner calculations.
 
 ## Prompt Result
 
-Aura3D wins a prompt when it scores strictly better than raw Three.js on a
+Aura3D wins a prompt when it scores strictly better than manual renderer code on a
 majority of non-tied metrics and its visual match score is at least as high.
 
 Aura3D ties a prompt when the metrics split evenly or the visual quality difference is not material.
 
-Aura3D loses a prompt when raw Three.js scores strictly better on a majority of metrics including visual quality.
+Aura3D loses a prompt when manual renderer code scores strictly better on a majority of metrics including visual quality.
 
 ## Overall Pass
 

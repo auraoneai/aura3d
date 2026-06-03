@@ -28,6 +28,7 @@ const requiredFiles = [
   "package/dist/engine/index.d.ts",
   "package/dist/engine/agent-api/index.js",
   "package/dist/engine/agent-api/index.d.ts",
+  "package/dist/engine/agent-api/assets/humanoid-fixture.glb",
   "package/dist/engine/agent-api/assets/player-fixture.glb"
 ];
 

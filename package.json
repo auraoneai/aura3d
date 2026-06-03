@@ -37,13 +37,33 @@
     "templates/product-viewer",
     "templates/cinematic-scene",
     "templates/mini-game",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "exports": {
     ".": {
-      "types": "./dist/engine/index.d.ts",
+      "types": "./dist/engine/agent-api/index.d.ts",
       "browser": "./dist/engine/agent-api/index.js",
-      "import": "./dist/engine/index.js"
+      "import": "./dist/engine/agent-api/index.js",
+      "default": "./dist/engine/agent-api/index.js"
+    },
+    "./scene-kits/particle-fountain": {
+      "types": "./dist/engine/agent-api/particle-fountain-runtime.d.ts",
+      "browser": "./dist/engine/agent-api/particle-fountain-runtime.js",
+      "import": "./dist/engine/agent-api/particle-fountain-runtime.js",
+      "default": "./dist/engine/agent-api/particle-fountain-runtime.js"
+    },
+    "./scene-kits/humanoid-walk": {
+      "types": "./dist/engine/agent-api/humanoid-walk-runtime.d.ts",
+      "browser": "./dist/engine/agent-api/humanoid-walk-runtime.js",
+      "import": "./dist/engine/agent-api/humanoid-walk-runtime.js",
+      "default": "./dist/engine/agent-api/humanoid-walk-runtime.js"
+    },
+    "./scene-kits/product-viewer": {
+      "types": "./dist/engine/agent-api/product-viewer-runtime.d.ts",
+      "browser": "./dist/engine/agent-api/product-viewer-runtime.js",
+      "import": "./dist/engine/agent-api/product-viewer-runtime.js",
+      "default": "./dist/engine/agent-api/product-viewer-runtime.js"
     },
     "./core": "./dist/core/index.js",
     "./math": "./dist/math/index.js",
@@ -427,5 +447,44 @@
     "@loaders.gl/textures": "4.4.1",
     "cannon-es": "0.20.0",
     "three": "^0.165.0"
+  },
+  "sideEffects": false,
+  "description": "Agent-friendly TypeScript browser 3D SDK for prompt-to-code scenes, typed GLB/glTF assets, scene kits, diagnostics, screenshots, Vite templates, and deploy checks.",
+  "keywords": [
+    "3d",
+    "webgl",
+    "webgl2",
+    "webgpu",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "javascript",
+    "ai-agents",
+    "coding-agents",
+    "llm",
+    "prompt-to-3d",
+    "gltf",
+    "glb",
+    "typed-assets",
+    "product-viewer",
+    "3d-viewer",
+    "vite",
+    "react",
+    "scene-graph",
+    "diagnostics",
+    "screenshot-testing",
+    "static-deploy"
+  ],
+  "homepage": "https://github.com/gchahal1982/aura3d#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gchahal1982/aura3d.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gchahal1982/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
   }
 }

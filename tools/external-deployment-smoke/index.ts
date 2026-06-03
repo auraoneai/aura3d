@@ -408,7 +408,7 @@ function writeMarkdown(currentReport: typeof report): void {
     `Generated: ${currentReport.generatedAt}`,
     "",
     "This document records real external deployment smoke evidence for Round 13",
-    "of `TestV4PlanPRD.md`. Local static preview remains covered by",
+    "of `UnifiedPRD.md`. Local static preview remains covered by",
     "`tests/reports/package-clean-install.json`; this file records public-host",
     "evidence only.",
     "",

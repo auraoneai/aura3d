@@ -421,7 +421,7 @@ function writeSketchfabMarkdown(download: SketchfabDownloadInfo | undefined, cur
     `Generated: ${new Date().toISOString()}`,
     "",
     "This document records authenticated Sketchfab CC0 asset evidence for the",
-    "`ProductContextPRD.md` bring-your-own-assets claim. Downloaded model files",
+    "`UnifiedPRD.md` bring-your-own-assets claim. Downloaded model files",
     "live only under ignored `tests/reports/` workspace paths and are not",
     "committed.",
     "",

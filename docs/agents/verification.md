@@ -15,9 +15,7 @@ pnpm run check:bundle-size
 pnpm run check:marketing-truth
 ```
 
-These checks prove package health. They are not the release proof that Aura3D
-beats raw Three.js. The release proof is the neutral benchmark defined in
-`FinalizedPromptPlan.md` and `benchmark/protocol.md`.
+These checks prove package health. They are not the release proof that Aura3D beats manual renderer code. Benchmark-superiority release proof is the neutral benchmark defined in `docs/project/frozen-benchmark-release-gates.md` and `benchmark/protocol.md`. Scoped SDK/product-context release evidence is tracked in `docs/project/release-tracks.md`.
 
 Template-local gate:
 

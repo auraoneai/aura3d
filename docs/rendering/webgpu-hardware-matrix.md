@@ -59,5 +59,5 @@ pnpm webgpu:hardware-matrix
 - Full WebGPU browser/device matrix coverage.
 - Mobile GPU support.
 - Driver-level performance claims.
-- A claim that WebGPU behavior matches WebGL2 or Three.js in every route.
+- A claim that WebGPU behavior matches WebGL2 or manual renderer code in every route.
 - Public claims must not say "full WebGPU support" without a complete hardware matrix.

@@ -2,23 +2,27 @@
 
 Version: 1.0.0
 
-Use this checklist before publishing package, docs, or demo claims.
-Public claims and release wording must stay bound to
+Use this checklist before publishing package, docs, demo, scoped product, or
+benchmark-superiority claims. Public claims and release wording must stay bound
+to `docs/project/claim-guidelines.md`, `docs/project/release-tracks.md`, and
 `docs/project/product-studio-claim-registry.md`.
 
-## Final Proof Gate
+## Release Track Selection
 
-- [ ] A full benchmark round after the latest amendment has passed the
-      `FinalizedPromptPlan.md` prompt criteria.
-- [ ] `benchmark/results/round-N.md` is committed, dated, and signed by the
-      neutral prompt scorers and `gchahal1982`.
-- [ ] `benchmark/results/round-N-engine.md` is committed, dated, and records a
-      passing engine parity result.
-- [ ] `benchmark/results/round-N-decision.md` is committed and says `ship`.
-- [ ] Neutral scorer outputs are committed under
-      `benchmark/scoring/round-N-scores/`.
+- [ ] The intended release track is selected in `docs/project/release-tracks.md`.
+- [ ] Public copy uses only the selected track's allowed claim language.
+- [ ] Scoped SDK/product-context claims cite the scoped Round 50 artifact evidence.
+- [ ] Benchmark-superiority claims are absent unless the frozen benchmark gates pass.
+
+## Final Proof Gate For Benchmark-Superiority Claims
+
+- [ ] A full benchmark round after the latest amendment has passed `docs/project/frozen-benchmark-release-gates.md`.
+- [ ] `benchmark/results/round-N.md` is committed, dated, and signed by neutral prompt scorers and `gchahal1982`.
+- [ ] `benchmark/results/round-N-engine.md` is committed, dated, and records a passing engine parity result.
+- [ ] `benchmark/results/round-N-decision.md` is committed and contains `Decision: ship`.
+- [ ] Neutral scorer outputs are committed under `benchmark/scoring/round-N-scores/`.
 - [ ] The release notes cite the passing round result files by path.
-- [ ] No failed or partial round is described as shipping evidence.
+- [ ] No failed, partial, scoped, or owner-bypassed round is described as benchmark-superiority evidence.
 
 ## Required Checks
 
@@ -38,24 +42,21 @@ Public claims and release wording must stay bound to
 
 ## Docs Checks
 
-- [ ] No docs reference deleted milestone files.
-- [ ] Report paths use `tests/reports/threejs-parity/` for current Three.js parity reports.
+- [ ] No docs reference deleted milestone or planning files as current standards.
 - [ ] Versioned governance docs reference `Version: 1.0.0`.
 - [ ] Links in `docs/project/site-map.md` resolve.
 
 ## Go-Live Checks
 
-- [ ] `docs/project/final-proof-release-readiness.md` has been followed.
-- [ ] `docs/project/release-artifacts.json` references the final package
-      artifact path or URL, SHA-256, and creation time.
-- [ ] Hosted demo claims are backed by the deployment checks in
-      `docs/project/release-process.md`.
-- [ ] Public copy links to the passing benchmark result and does not cite
-      internal verification as competitive proof.
+- [ ] `docs/project/final-proof-release-readiness.md` has been followed for the selected track.
+- [ ] `docs/project/release-artifacts.json` references the final package artifact path or URL, SHA-256, and creation time when applicable.
+- [ ] Hosted demo claims are backed by the deployment checks in `docs/project/release-process.md`.
+- [ ] Public copy links to the correct release evidence and does not cite internal verification as competitive proof.
 
 ## Release Boundary
 
-Do not ship public wording that says Aura3D is proven to beat raw Three.js
-unless the committed neutral benchmark round passes `FinalizedPromptPlan.md`.
-Internal verification commands, local smoke screenshots, generated reports, and
-failed benchmark rounds are not release proof.
+Do not ship public wording that says Aura3D is proven to beat manual renderer code
+unless the committed neutral benchmark round passes
+`docs/project/frozen-benchmark-release-gates.md`. Internal verification
+commands, local smoke screenshots, generated reports, scoped Round 50 artifacts,
+and failed benchmark rounds are not benchmark-superiority proof.

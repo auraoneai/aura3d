@@ -2,9 +2,7 @@
 
 Generated: 2026-05-29T07:40:00Z
 
-This document records the current machine state for the `TestV4PlanPRD.md`
-items that require external services, subscriptions, credentials, or real
-participants. It is not a pass substitute. It exists so the remaining gaps are
+This document records the current machine state for external services, subscriptions, credentials, or real participants required by scoped release evidence and benchmark-superiority gates. It is not a pass substitute. It exists so the remaining gaps are
 specific and reproducible instead of vague.
 
 ## Summary
@@ -124,6 +122,6 @@ until real testers run the install/scaffold flow and file evidence.
 - Netlify credentials and project target.
 - npm auth or an approved GitHub-release beta artifact path.
 - Three real marketing-comprehension participants, if validating marketing
-  copy. This is not library release proof under `FinalizedPromptPlan.md`.
+  copy. This is not library release proof under `docs/project/frozen-benchmark-release-gates.md`.
 - Five outside beta testers, with at least three starter renders recorded, for
   post-1.0 product feedback rather than the library release gate.

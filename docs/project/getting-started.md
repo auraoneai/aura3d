@@ -80,7 +80,5 @@ pnpm test:browser
 Run parity/report generators when evaluating claims:
 
 ```sh
-pnpm threejs-parity
-pnpm superiority
 pnpm webgpu
 ```

@@ -40,10 +40,21 @@ if (!/User signature:\s*`?gchahal1982`?/i.test(engine)) {
   fail(`${engineResult} must include the signed user approval for the passing result.`);
 }
 
-const remaining = read("REMAINING.md");
-for (const task of ["12", "17"]) {
-  if (!new RegExp(`^- \\[x\\] ${task}\\.`, "m").test(remaining)) {
-    fail(`REMAINING.md task ${task} must be checked before release publish.`);
+const unifiedPrd = read("UnifiedPRD.md");
+const requiredUnifiedRows = [
+  "Obtain explicit user approval of the clean validation benchmark.",
+  "Record the approval artifact or note next to the benchmark run.",
+  "Engine parity benchmark passes the frozen thresholds.",
+  "Official benchmark report records a pass.",
+  "No pass relies on PRD edits made during the benchmark.",
+  "No pass relies on self-authored structural QA as final scoring.",
+  "Write release notes after the benchmark passes.",
+  "Ensure release notes claim only what the evidence supports.",
+  "Run required package/release checks."
+];
+for (const row of requiredUnifiedRows) {
+  if (!isUnifiedRowChecked(unifiedPrd, row)) {
+    fail(`UnifiedPRD.md release-proof row must be checked before release publish: ${row}`);
   }
 }
 
@@ -112,6 +123,11 @@ function nextHeading(lines, index) {
 
 function read(file) {
   return readFileSync(join(repoRoot, file), "utf8");
+}
+
+function isUnifiedRowChecked(contents, row) {
+  const escaped = row.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^- \\[x\\] ${escaped}$`, "m").test(contents);
 }
 
 function fail(message) {

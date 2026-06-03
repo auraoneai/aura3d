@@ -1,7 +1,7 @@
-# Raw Three.js Context Bundle
+# manual renderer code Context Bundle
 
-This is the only Three.js-specific context bundle agents may read during the
-raw Three.js runs.
+This is the only manual renderer code-specific context bundle agents may read during the
+manual renderer code runs.
 
 ## Package Target
 
@@ -15,7 +15,7 @@ and the official helper modules needed for this benchmark class of scenes:
 orbit controls, GLTF loading, Draco loader, RGBE loader, CSS2D labels,
 postprocessing, bloom, room environment, and reflector. It also includes a
 benchmark-specific `llms.txt` process guardrail file; agents must read that
-file before any Three.js source or prompt work.
+file before any manual renderer code source or prompt work.
 
 ## Files
 
@@ -28,7 +28,6 @@ node benchmark/runner/verify-context-manifests.mjs
 ```
 
 The verifier checks this bundle against
-`benchmark/context/threejs/manifest.sha256` and fails if `files/llms.txt` is
 missing.
 
 ## Agent Restrictions
@@ -36,7 +35,7 @@ missing.
 The agent may use only these files, the selected prompt file, the artifact
 contract, and the provided `benchmark/assets/sneaker.glb` for prompt 10.
 It may not read Aura3D docs, Aura3D source, Aura3D examples, prior benchmark
-outputs, or unofficial Three.js tutorials.
+outputs, or unofficial manual renderer code tutorials.
 
 No online browsing is allowed during Round 1 unless the user signs a
 `PRD-AMENDMENT:` commit that changes the context rule and restarts the round.

@@ -6,7 +6,6 @@ tested.
 ## Bundles
 
 - `aura3d/` is the frozen Aura3D context bundle.
-- `threejs/` is the frozen raw Three.js context bundle.
 
 Each bundle has:
 
@@ -21,8 +20,8 @@ Each bundle has:
 - Do not let agents browse repo source outside the selected bundle.
 - Do not start agent generation unless the selected bundle has `files/llms.txt`
   and its manifest verifies.
-- Do not give Aura3D files to the raw Three.js run.
-- Do not give Three.js examples to the Aura3D run unless the Aura3D bundle
+- Do not give Aura3D files to the manual renderer code run.
+- Do not give manual renderer code examples to the Aura3D run unless the Aura3D bundle
   already contains them.
 - If a context file must change, create a `PRD-AMENDMENT:` commit and restart
   the benchmark from Phase A.

@@ -7,9 +7,9 @@ This protocol is frozen for a benchmark round. Editing it during a run voids the
 Run the same 10 prompts four times:
 
 1. Codex with Aura3D context.
-2. Codex with raw Three.js context.
+2. Codex with manual renderer code context.
 3. Claude Code with Aura3D context.
-4. Claude Code with raw Three.js context.
+4. Claude Code with manual renderer code context.
 
 Each run starts from a clean directory. Do not reuse generated code,
 screenshots, fixes, or notes from another run. Use `runner/README.md` for the
@@ -23,7 +23,7 @@ to runner capture after the agent has stopped.
 
 After the prompt runs, run the engine parity benchmark in `engine/README.md`.
 That benchmark does not use agents; it compares hand-authored Aura3D and
-Three.js reference scenes.
+manual renderer code reference scenes.
 
 ## Context Bundles
 
@@ -47,19 +47,17 @@ Aura3D context may not include:
 - any file outside `benchmark/context/aura3d/files/` unless a `PRD-AMENDMENT:`
   commit changes the bundle and restarts the round
 
-Raw Three.js context is frozen under:
+manual renderer code context is frozen under:
 
 ```text
-benchmark/context/threejs/
+benchmark/context/manual renderer code/
 ```
 
-Before a round starts, verify `benchmark/context/threejs/manifest.sha256`
-matches the files under `benchmark/context/threejs/files/`. The bundle must
 contain `files/llms.txt`; the prompt-delivery contract requires the agent to
 read that file before any other context file.
 
-Raw Three.js context may not include Aura3D source, Aura3D examples, or Aura3D agent rules.
-Raw Three.js context may not include online browsing during Round 1.
+manual renderer code context may not include Aura3D source, Aura3D examples, or Aura3D agent rules.
+manual renderer code context may not include online browsing during Round 1.
 
 ## Agent Rules
 
@@ -110,7 +108,7 @@ The scorer receives only:
 The scorer must not receive:
 
 - the agent context bundle
-- claims from `FinalizedPromptPlan.md`
+- claims from `UnifiedPRD.md`
 - prior in-repo evidence reports
 - hidden notes about which output is expected to win
 

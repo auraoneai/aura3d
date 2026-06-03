@@ -1,16 +1,41 @@
 # Aura3D Agent Manual
 
-Aura3D is the editable scene layer between AI coding agents and browser 3D.
-Agents write TypeScript/JavaScript using `@aura3d/engine`; users bring assets;
-the Aura3D CLI validates, hashes, type-generates, screenshots, and deployment
-checks the project.
+Aura3D Agent Manual: browser 3D SDK for AI coding agents. Use this guide for prompt-to-3D TypeScript apps, typed GLB/glTF assets, scene kits, diagnostics, screenshots, and deploy checks.
+
+
+Aura3D is the 3D SDK for AI coding agents.
+
+Describe the scene. Bring the GLB. Own the TypeScript.
+
+Aura3D gives agents a product-ready browser 3D surface instead of asking them
+to improvise raw renderer glue. Agents write TypeScript/JavaScript using
+`@aura3d/engine`; users bring authored GLB/glTF assets; the Aura3D CLI validates,
+hashes, type-generates, screenshots, and deployment-checks the project.
+
+The goal is simple: turn a prompt into a real app that a human team can inspect,
+edit, build, screenshot, and ship.
+
+## What Aura3D gives an agent
+
+- A small public API for scenes, models, cameras, lights, materials, effects,
+  timelines, interactions, physics, particles, charts, cities, characters, and
+  product viewers.
+- Prompt-plan helpers and scene kits so generated scenes begin with product
+  intent instead of disconnected primitives.
+- Typed GLB/glTF asset references so agents cannot invent asset URLs.
+- Diagnostics, route-health checks, screenshots, and deployment checks so a
+  generated scene has to prove it runs.
+- Claim boundaries: Aura3D is not an LLM, not an asset store, and not a hidden
+  scene generator. It is source code plus typed assets.
 
 Read these first:
 
 - `llms.txt`
+- `docs/agents/prompt-to-3d-workflow.md`
 - `docs/agents/benchmark-recipes.md`
 - `docs/agents/api-surface.md`
 - `docs/agents/asset-workflow.md`
+- `docs/agents/cinematic-scene-quality.md`
 - `docs/agents/templates.md`
 - `docs/agents/deployment.md`
 - `docs/agents/troubleshooting.md`

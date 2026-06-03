@@ -21,7 +21,7 @@ The gallery source metadata currently defines ten accepted advanced routes. That
 | `water-lab` | Interactive procedural water scene with ripple controls, marina props, and route instrumentation. | `waterSystems.ts`, `proceduralRouteScenes.ts`, marina/water asset generators. |
 | `ocean-observatory` | Large animated ocean/deck showcase with drones, horizon atmosphere, and wave controls. | `waterSystems.ts`, `proceduralRouteScenes.ts`, ocean observatory asset generators. |
 
-Each route has metadata in `apps/advanced-examples-gallery/src/metadata.ts` that names the Three.js-style reference category, controls, systems used, acceptance criteria, known gaps, screenshot path, and review hash.
+Each route has metadata in `apps/advanced-examples-gallery/src/metadata.ts` that names the manual renderer code-style reference category, controls, systems used, acceptance criteria, known gaps, screenshot path, and review hash.
 
 ## Evidence Commands
 
@@ -39,7 +39,6 @@ The combined gate is:
 pnpm advanced-gallery:pipeline
 ```
 
-The `threejs-parity:advanced-gallery:*` scripts are aliases for the same lane.
 
 ## Evidence Artifacts
 

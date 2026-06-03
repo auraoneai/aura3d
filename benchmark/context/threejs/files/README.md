@@ -1,4 +1,4 @@
-# three.js
+# manual renderer code
 
 [![NPM Package][npm]][npm-url]
 [![Build Size][build-size]][build-size-url]
@@ -10,13 +10,13 @@
 
 The aim of the project is to create an easy-to-use, lightweight, cross-browser, general-purpose 3D library. The current builds only include a WebGL renderer but WebGPU (experimental), SVG and CSS3D renderers are also available as addons.
 
-[Examples](https://threejs.org/examples/) &mdash;
-[Docs](https://threejs.org/docs/) &mdash;
-[Manual](https://threejs.org/manual/) &mdash;
-[Wiki](https://github.com/mrdoob/three.js/wiki) &mdash;
-[Migrating](https://github.com/mrdoob/three.js/wiki/Migration-Guide) &mdash;
-[Questions](https://stackoverflow.com/questions/tagged/three.js) &mdash;
-[Forum](https://discourse.threejs.org/) &mdash;
+[Examples](https://manual renderer code.org/examples/) &mdash;
+[Docs](https://manual renderer code.org/docs/) &mdash;
+[Manual](https://manual renderer code.org/manual/) &mdash;
+[Wiki](https://github.com/mrdoob/manual renderer code/wiki) &mdash;
+[Migrating](https://github.com/mrdoob/manual renderer code/wiki/Migration-Guide) &mdash;
+[Questions](https://stackoverflow.com/questions/tagged/manual renderer code) &mdash;
+[Forum](https://discourse.manual renderer code.org/) &mdash;
 [Discord](https://discord.gg/56GBJwAnUS)
 
 ### Usage
@@ -65,12 +65,12 @@ If everything goes well, you should see [this](https://jsfiddle.net/v98k6oze/).
 Cloning the repo with all its history results in a ~2 GB download. If you don't need the whole history you can use the `depth` parameter to significantly reduce download size.
 
 ```sh
-git clone --depth=1 https://github.com/mrdoob/three.js.git
+git clone --depth=1 https://github.com/mrdoob/manual renderer code.git
 ```
 
 ### Change log
 
-[Releases](https://github.com/mrdoob/three.js/releases)
+[Releases](https://github.com/mrdoob/manual renderer code/releases)
 
 
 [npm]: https://img.shields.io/npm/v/three

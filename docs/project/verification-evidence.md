@@ -1,6 +1,13 @@
 # Aura3D Verification Evidence
 
+Version: 1.0.0
+
+This document summarizes current verification evidence and release boundaries.
+It does not replace `docs/project/release-tracks.md` or
+`docs/project/frozen-benchmark-release-gates.md`.
+
 ## Requirements Trace Gate
+
 - Total requirements: 48
 - Implemented and verified: 48
 - Implemented but unverified: 0
@@ -11,23 +18,42 @@
 - Weak evidence rows: 0
 - Complete: yes
 
+## Scoped SDK/Product-Context Evidence
+
+Round 50 scoped SDK/product-context evidence is complete for local/private-beta
+artifact handoff.
+
+- Decision: `benchmark/results/round-50-scoped-sdk-release-decision.md`
+- Evidence: `benchmark/releases/round-50-scoped-sdk-product-context/release-artifact-evidence.md`
+- SDK artifact: `/Users/gurbakshchahal/aura3d/benchmark/releases/round-50-scoped-sdk-product-context/aura3d-engine-1.0.0.tgz`
+- SDK SHA-256: `1d8bcacc692424fe4e52ed1d125fafb7de09994c7a7bce7ed6622fb116c4a4bf`
+- Marketing artifact: `/Users/gurbakshchahal/aura3d/benchmark/releases/round-50-scoped-sdk-product-context/aura3d-marketing-round-50-scoped.tar.gz`
+- Marketing SHA-256: `b5407a9da427da1bd61daa00e5d8792c57d643ac6efa776d3d0b6033551a6b3a`
+
+## Frozen Benchmark Evidence
+
+Round 50 frozen benchmark-superiority evidence is not complete.
+
+Open blockers:
+
+- Missing valid `benchmark/runs/round-50/human-review.json`.
+- Missing external `benchmark/scoring/round-50-scores/*.json` files.
+- `benchmark/results/round-50.md` does not prove the frozen bar passed.
+- `benchmark/results/round-50-decision.md` does not contain a valid standalone `Decision: ship` line.
+- `node tools/release-proof-guard.mjs 50` does not currently output release-proof success.
+
+Current blocker handoff:
+
+- `benchmark/runs/round-50/frozen-benchmark-blockers.md`
+- `benchmark/runs/round-50/release-blockers.json`
+
 ## Gate Result
-PASS
 
-## Incomplete Rows By Owner
-- None
+Scoped SDK/product-context local/private-beta artifact: PASS.
 
-## Incomplete Rows By Prefix
-- None
+Frozen benchmark-superiority release: BLOCKED.
 
-## Incomplete Row Samples
-- None
+## Evidence Boundary
 
-## Implemented Rows Missing Evidence
-- None
-
-## Invalid Status Rows
-- None
-
-## Weak Evidence Rows
-- None
+The scoped artifact proves only the scoped product-context release claim. It does
+not prove that Aura3D beats manual renderer code in the frozen benchmark.

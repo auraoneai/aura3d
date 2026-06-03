@@ -1,8 +1,0 @@
-{
-  "ok": true,
-  "readout": {
-    "routeHealth": "pass",
-    "drawCalls": 2,
-    "triangleCount": 23084
-  }
-}

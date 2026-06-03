@@ -3,7 +3,7 @@
 Generated: 2026-05-29T08:15:54.523Z
 
 This document records authenticated Sketchfab CC0 asset evidence for the
-`ProductContextPRD.md` bring-your-own-assets claim. Downloaded model files
+the scoped bring-your-own-assets claim. Downloaded model files
 live only under ignored `tests/reports/` workspace paths and are not
 committed.
 

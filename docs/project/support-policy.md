@@ -17,13 +17,12 @@ Support applies to current package exports, app routes, templates, tests, and do
 ## Unsupported Or Evidence-Limited Areas
 
 - Full Unity/Unreal replacement claims.
-- Full Three.js API drop-in compatibility.
+- Full manual renderer code API drop-in compatibility.
 - Full glTF ecosystem coverage.
 - Full WebGPU device/browser matrix coverage.
 - Public demo hosting unless deployment evidence exists.
 
 ## Issue Triage
 
-Support responses should reference exact package exports, route paths, commands, tests, and report files. Avoid claim language broader than `docs/project/threejs-superiority-status.md`.
 
 Support wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.

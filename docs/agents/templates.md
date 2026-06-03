@@ -21,9 +21,9 @@ not a perfect fit:
 - `prefabs.physicsRamp()` for visible rigid-body ramp/cube demo cues.
 - `prefabs.solarSystem({ labels: "attached" })` for six-planet systems with
   orbit paths, sun bloom, starfield depth, and attached readable labels.
-- `character.lowPolyHumanoid({ showJoints: true, motionTrail: true })` for
-  connected primitive walk-cycle placeholders with joint and stride cues. The
-  walk clip keeps primitive limbs connected by using whole-body motion.
+- `character.lowPolyHumanoid({ clip: "benchmark-pose", showJoints: false, motionTrail: false })`
+  for the bundled authored neutral-human walk-cycle benchmark default. Enable
+  `showJoints: true` only for explicit rig-debug shots, not final screenshots.
 - `prefabs.dataBars3D({ grid: 6 })` for bar geometry, top caps, axes, labels,
   grounded legend, bloom, and hover-ready analytics scenes. Add DOM title, axis,
   tick, and readout text for benchmark data-viz prompts.

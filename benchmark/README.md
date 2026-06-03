@@ -1,12 +1,12 @@
-# Aura3D vs Three.js Benchmark
+# Aura3D vs manual renderer code Benchmark
 
 This directory is the release proof package for Aura3D.
 
 The benchmark answers one question:
 
-> Can AI coding agents produce better browser 3D apps with Aura3D than with raw Three.js on the same prompts?
+> Can AI coding agents produce better browser 3D apps with Aura3D than with manual renderer code on the same prompts?
 
-`FinalizedPromptPlan.md` is the source of truth. This directory makes that plan executable by filename.
+`UnifiedPRD.md` is the source of truth. This directory makes that plan executable by filename.
 
 ## Files
 
@@ -14,7 +14,7 @@ The benchmark answers one question:
 - `prompts/manifest.md` freezes prompt order and filenames.
 - `rubric.md` defines the frozen scoring rubric.
 - `protocol.md` defines the run protocol and anti-drift rules.
-- `context/` contains frozen Aura3D and Three.js context bundles.
+- `context/` contains frozen Aura3D and manual renderer code context bundles.
 - `runner/README.md` defines the machine, setup, prompt-delivery, runtime, and failure rules.
 - `metrics/README.md` defines every metric and winner calculation.
 - `engine/README.md` defines the non-agent engine parity benchmark.
@@ -32,7 +32,7 @@ The benchmark answers one question:
 
 Internal repo tools can support debugging, but they cannot score this benchmark and cannot decide release readiness. Scoring must be done by a neutral human reviewer or an opposite-vendor model using only the prompt, screenshot, code listing, and captured metrics.
 
-The prompt benchmark measures agent productivity and visual outcomes. The engine benchmark measures whether Aura3D remains competitive with hand-authored Three.js scenes when the agent layer is removed from the comparison.
+The prompt benchmark measures agent productivity and visual outcomes. The engine benchmark measures whether Aura3D remains competitive with hand-authored manual renderer code scenes when the agent layer is removed from the comparison.
 
 ## Status
 

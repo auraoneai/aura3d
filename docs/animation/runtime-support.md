@@ -25,7 +25,6 @@ Primary entrypoints:
 
 ## Browser Evidence
 
-Current app-route evidence is limited to the consolidated local registry: `apps/advanced-examples-gallery/` plus the allowed `apps/wow-*` showcase routes. Focused browser tests include `tests/browser/current-routes-route-health.spec.ts`, `tests/browser/advanced-examples-gallery.spec.ts`, and the retained `tests/browser/threejs-parity-*-parity.spec.ts` animation/skinning specs.
 
 ## Limits
 

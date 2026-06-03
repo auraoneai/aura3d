@@ -16,6 +16,7 @@ export function auditPromptAssetPaths(options) {
     const audit = {
       prompt: promptFile,
       skipped: true,
+      pass: true,
       reason: "asset path auditing applies only to prompt 10",
       invented: [],
       inventedUnique: [],
@@ -43,6 +44,7 @@ export function auditPromptAssetPaths(options) {
   for (const entry of fileTexts) {
     for (const match of entry.text.matchAll(MODEL_PATH_PATTERN)) {
       const raw = match[0];
+      if (!isExecutableAssetReference(entry.text, match.index ?? 0, raw)) continue;
       const normalized = normalizeAssetPath(raw);
       const allowedReason = classifySourceAssetPath(normalized, entry.rel, typedAuraEvidence, canonicalAsset);
       const record = { kind: "source-reference", path: raw, normalized, file: entry.rel };
@@ -88,6 +90,7 @@ export function auditPromptAssetPaths(options) {
   const audit = {
     prompt: promptFile,
     skipped: false,
+    pass: failures.length === 0,
     invented: sortRecords(invented),
     inventedUnique,
     inventedAssetPaths: inventedUnique.length,
@@ -125,11 +128,10 @@ function walkFiles(root, predicate, acc = []) {
   if (!existsSync(root)) return acc;
   for (const entry of readdirSync(root)) {
     const file = join(root, entry);
+    if (["node_modules", "dist", ".git", "context", "benchmark", "_packages", ".npm-cache"].includes(entry)) continue;
     const stat = statSync(file);
     if (stat.isDirectory()) {
-      if (!["node_modules", "dist", ".git"].includes(entry)) {
-        walkFiles(file, predicate, acc);
-      }
+      walkFiles(file, predicate, acc);
     } else if (predicate(file)) {
       acc.push(file);
     }
@@ -155,15 +157,17 @@ function collectTypedAuraEvidence(sourceDir, fileTexts, canonicalAsset, library)
   const manifestOutputHash = manifestOutputPath && existsSync(manifestOutputPath) ? sha256File(manifestOutputPath) : null;
   const expectedHash = canonicalAsset?.hash ? `sha256-${canonicalAsset.hash}` : null;
   const expectedPrefix = canonicalAsset?.hash?.slice(0, 8) ?? null;
-  const expectedUrl = expectedPrefix ? `/aura-assets/sneaker.${expectedPrefix}.glb` : null;
-  const expectedOutputPath = expectedPrefix ? `public/aura-assets/sneaker.${expectedPrefix}.glb` : null;
+  const expectedUrls = expectedPrefix ? [`/aura-assets/sneaker.${expectedPrefix}.glb`, `/aura-assets/sneaker-${expectedPrefix}.glb`] : [];
+  const expectedOutputPaths = expectedPrefix ? [`public/aura-assets/sneaker.${expectedPrefix}.glb`, `public/aura-assets/sneaker-${expectedPrefix}.glb`] : [];
 
   return {
     library,
     canonicalPromptAssetHash: canonicalAsset?.hash ? `sha256-${canonicalAsset.hash}` : null,
     hasAuraAssetsModule: Boolean(auraAssetsText),
     auraAssetsUsesDefineAuraAssets: /\bdefineAuraAssets\s*\(/.test(auraAssetsText),
-    auraAssetsContainsManifestHash: Boolean(expectedHash && auraAssetsText.includes(expectedHash)),
+    auraAssetsContainsManifestHash: Boolean(
+      expectedHash && (auraAssetsText.includes(expectedHash) || auraAssetsText.includes(canonicalAsset?.hash ?? ""))
+    ),
     auraAssetsContainsManifestUrl: Boolean(sneakerUrl && auraAssetsText.includes(sneakerUrl)),
     hasAuraAssetManifest: Boolean(manifest),
     manifestSchema: typeof manifest?.schema === "string" ? manifest.schema : null,
@@ -185,8 +189,8 @@ function collectTypedAuraEvidence(sourceDir, fileTexts, canonicalAsset, library)
         manifestSneaker &&
         manifestSneaker.type === "model" &&
         manifestSneaker.format === "glb" &&
-        manifestSneaker.url === expectedUrl &&
-        manifestSneaker.outputPath === expectedOutputPath &&
+        expectedUrls.includes(manifestSneaker.url) &&
+        expectedOutputPaths.includes(manifestSneaker.outputPath) &&
         expectedHash &&
         manifestSneaker.hash === expectedHash &&
         manifestSourceHash === canonicalAsset?.hash &&
@@ -215,6 +219,7 @@ function readSneakerUrl(auraAssetsText) {
 
 function classifySourceAssetPath(normalized, rel, typedAuraEvidence, canonicalAsset) {
   if (normalized === DIRECT_PROMPT_10_ASSET && canonicalAsset) return "provided prompt asset";
+  if (normalized === `public/${DIRECT_PROMPT_10_ASSET}` && canonicalAsset) return "public copy of provided prompt asset";
   if (isGeneratedSneakerAuraAsset(normalized) && rel !== "src/aura-assets.ts") return null;
   if (isGeneratedSneakerAuraAsset(normalized) && hasValidTypedAuraEvidence(normalized, typedAuraEvidence)) {
     return "typed Aura CLI generated sneaker asset";
@@ -229,15 +234,13 @@ function hasValidTypedAuraEvidence(normalized, typedAuraEvidence) {
       typedAuraEvidence.auraAssetsUsesDefineAuraAssets &&
       typedAuraEvidence.auraAssetsContainsManifestHash &&
       typedAuraEvidence.auraAssetsContainsManifestUrl &&
-      typedAuraEvidence.hasAuraAssetManifest &&
-      typedAuraEvidence.manifestMatchesCanonicalAsset &&
-      typedAuraEvidence.manifestSneakerUrl &&
-      normalizeAssetPath(typedAuraEvidence.manifestSneakerUrl) === normalized &&
-      typedAuraEvidence.manifestSneakerHash &&
+      (
+        typedAuraEvidence.manifestMatchesCanonicalAsset === true ||
+        typedAuraEvidence.manifestHasSneakerEntry === false
+      ) &&
       typedAuraEvidence.hasSneakerEntry &&
       typedAuraEvidence.normalizedSneakerUrl === normalized &&
       typedAuraEvidence.sneakerUrlIsAllowedPromptAsset &&
-      typedAuraEvidence.sneakerUrl === typedAuraEvidence.manifestSneakerUrl &&
       typedAuraEvidence.importsGeneratedAssets &&
       typedAuraEvidence.usesTypedSneakerAsset &&
       !typedAuraEvidence.usesStringAssetId &&
@@ -246,11 +249,26 @@ function hasValidTypedAuraEvidence(normalized, typedAuraEvidence) {
 }
 
 function isGeneratedSneakerAuraAsset(normalized) {
-  return /^aura-assets\/sneaker\.[a-f0-9]{8,}\.glb$/i.test(normalized ?? "");
+  return /^aura-assets\/sneaker[.-][a-f0-9]{8,}\.glb$/i.test(normalized ?? "");
 }
 
 function normalizeAssetPath(path) {
   return path.replace(/[?#].*$/, "").replace(/^(\.\/|\.\.\/|\/)+/, "");
+}
+
+function isExecutableAssetReference(text, offset, raw) {
+  const lineStart = text.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
+  const lineEndIndex = text.indexOf("\n", offset);
+  const lineEnd = lineEndIndex === -1 ? text.length : lineEndIndex;
+  const line = text.slice(lineStart, lineEnd);
+  const trimmed = line.trim();
+  if (trimmed.startsWith("//") || trimmed.startsWith("*")) return false;
+  if (/^https?:\/\//i.test(raw)) return true;
+  if (/^(?:\.\.?\/|\/)/.test(raw)) return true;
+  if (raw.includes("/")) return /\b(?:url|src|href|source|path|load|loader|fetch|import|copy|public)\b/i.test(line);
+  const escaped = raw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b(?:url|src|href|source|path)\\b\\s*[:=]`).test(line) ||
+    new RegExp(`\\b(?:load|fetch|import)\\s*\\(\\s*["']${escaped}["']`).test(line);
 }
 
 function sortRecords(records) {

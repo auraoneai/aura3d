@@ -16,8 +16,8 @@ pnpm run check:marketing-truth
 ```
 
 These checks prove package health. They are not the release proof that Aura3D
-beats raw Three.js. The release proof is the neutral benchmark defined in
-`FinalizedPromptPlan.md` and `benchmark/protocol.md`.
+beats manual renderer code. The release proof is the neutral benchmark defined in
+`UnifiedPRD.md` and `benchmark/protocol.md`.
 
 Template-local gate:
 

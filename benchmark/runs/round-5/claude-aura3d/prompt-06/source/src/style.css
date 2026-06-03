@@ -1,4 +1,0 @@
-html,body,#app{margin:0;width:100%;height:100%;overflow:hidden;background:#070b12;color:#e5eefc;font-family:system-ui,sans-serif}canvas{display:block}
-.hud{position:fixed;top:16px;left:16px;display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-radius:10px;background:rgba(8,17,31,.72);color:#e5eefc;font:600 16px/1.3 system-ui,sans-serif;pointer-events:none}
-.hud b{color:#7dd3fc;font-size:20px}
-.hud .hint{font-weight:400;font-size:12px;opacity:.75}

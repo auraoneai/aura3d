@@ -31,8 +31,6 @@ Useful focused commands:
 
 ```sh
 pnpm exec vitest run --config tests/assets/vitest.config.ts
-pnpm threejs-parity:inventory
-pnpm superiority:feature-parity
 ```
 
 Generated report files under `tests/reports/` are ignored by git and may be absent until the relevant command runs.

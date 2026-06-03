@@ -2,7 +2,7 @@
 
 Version: `1.0.0`
 
-Babylon.js comparison evidence is narrower than the Three.js parity work. It is useful as a benchmark/reference slice, not as a complete engine-positioning proof.
+Babylon.js comparison evidence is narrower than the manual renderer code parity work. It is useful as a benchmark/reference slice, not as a complete engine-positioning proof.
 
 ## Current Sources
 

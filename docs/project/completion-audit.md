@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 
-The documentation audit found that older docs overstated the current report state. The current local Three.js superiority report snapshot is passing after regenerating the retained contextual report set.
+The documentation audit found that older docs overstated the current report state. Local regenerated manual renderer code superiority reports are category evidence only and must not be treated as frozen AI-agent benchmark proof or go-live release proof.
 
 ## Current Result
 
@@ -12,25 +12,9 @@ The codebase has broad first-party implementation coverage and passing local rep
 
 | Source | Current local status |
 |---|---|
-| `tests/reports/threejs-parity/threejs-inventory.json` | Pass |
-| `tests/reports/threejs-parity/same-scene-render.json` | Pass |
-| `tests/reports/threejs-parity/visual-review.json` | Pass |
-| `tests/reports/threejs-parity/performance.json` | Pass |
-| `tests/reports/superiority/feature-parity.json` | Pass |
-| `tests/reports/superiority/visual-quality.json` | Pass |
-| `tests/reports/superiority/performance.json` | Pass |
-| `tests/reports/superiority/animation-fidelity.json` | Pass |
-| `tests/reports/superiority/physics-comparison-baseline.json` | Pass |
-| `tests/reports/superiority/physics-fidelity.json` | Pass |
-| `tests/reports/superiority/resource-lifecycle-100-reloads.json` | Pass |
-| `tests/reports/superiority/memory-lifecycle.json` | Pass |
-| `tests/reports/superiority/developer-workflow.json` | Pass |
-| `tests/reports/superiority/claim-defense.json` | Pass |
-| `tests/reports/superiority/superiority-audit.json` | Pass |
 
 ## Claim Discipline
 
-Public claims must be as narrow as the generated evidence. The full `pnpm superiority` command has been run locally and the generated superiority audit report passes in this workspace; publish claims only with fresh regenerated evidence from the target release or CI run.
 
 ## Documentation Audit Outcome
 

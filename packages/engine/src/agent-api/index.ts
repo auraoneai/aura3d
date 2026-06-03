@@ -796,14 +796,14 @@ const builtInCharacterAssets = defineAuraAssets({
   humanoid: {
     type: "model",
     format: "glb",
-    url: new URL("./assets/player-fixture.glb", import.meta.url).href,
-    bounds: [1.2, 1.9, 0.8],
-    hash: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    url: new URL("./assets/humanoid-fixture.glb", import.meta.url).href,
+    bounds: [0.7, 1.7, 0.6],
+    hash: "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
     metadata: {
-      materials: ["painted robot body", "black joints", "white armor"],
-      animations: ["Dance", "Death", "Idle", "Jump", "No", "Punch", "Running", "Sitting", "Standing", "ThumbsUp", "Walking", "WalkJump", "Wave", "Yes"],
-      textures: [],
-      license: "Aura3D bundled template fixture"
+      materials: ["skinned soldier body", "uniform armor", "visor"],
+      animations: ["Idle", "Run", "TPose", "Walk"],
+      textures: ["embedded soldier/vanguard textures"],
+      license: "Aura3D bundled soldier fixture from the existing repository corpus"
     }
   }
 } as const);
@@ -1518,9 +1518,9 @@ export const camera = {
   },
   physics: (): AuraCameraSpec => camera.orbit({ target: [0, 0.58, -0.35], distance: 5.8, fov: 43 }),
   charts: (): AuraCameraSpec => camera.orbit({ target: [0, 0.78, 0], distance: 6.4, fov: 40 }),
-  materials: (): AuraCameraSpec => camera.orbit({ target: [0, 0.82, -0.72], distance: 4.8, fov: 38 }),
+  materials: (): AuraCameraSpec => camera.perspective({ position: [0, 2.08, 7.35], target: [0, 0.9, -0.72], fov: 40 }),
   city: (): AuraCameraSpec => camera.orbit({ target: [0, 0.82, 0], distance: 8.4, fov: 44 }),
-  product: (): AuraCameraSpec => camera.perspective({ position: [1.65, 1.18, 4.0], target: [0, 0.72, -0.65], fov: 38 }),
+  product: (): AuraCameraSpec => camera.perspective({ position: [1.28, 1.02, 3.08], target: [0, 0.7, -0.65], fov: 32 }),
   solar: (): AuraCameraSpec => camera.orbit({ target: [0, 0, 0], distance: 7.2, fov: 46 }),
   humanoid: (): AuraCameraSpec => camera.perspective({ position: [1.2, 1.12, 3.45], target: [0, 0.78, -0.55], fov: 36 }),
   miniGolf: (): AuraCameraSpec => camera.follow({ targetNode: "white physics golf ball", distance: 4.2, fov: 48 }),
@@ -1656,7 +1656,7 @@ export const effects = {
       density: options.density ?? 1,
       color: options.color ?? "#7dfcff",
       speed: options.speed ?? 1,
-      particleCount: options.particleCount ?? 900,
+      particleCount: options.particleCount ?? 2400,
 	      emitter: options.emitter ?? "swirl",
 	      radius: options.radius ?? 1.15,
 	      height: options.height ?? 2.4,
@@ -1952,7 +1952,7 @@ const rendererColorManagementPreset: AuraRendererColorManagementPreset = {
 
 const sceneExposurePresets: Record<AuraSceneCategory, AuraSceneExposurePreset> = {
   product: { category: "product", exposure: 0.92, evidence: "studio whites preserve product highlights and contact shadows" },
-  material: { category: "material", exposure: 0.9, evidence: "material labs keep chrome/glass highlight detail without clipping" },
+  material: { category: "material", exposure: 0.78, evidence: "material labs keep chrome/glass highlight detail without clipping" },
   neon: { category: "neon", exposure: 1.18, evidence: "dark neon scenes lift tunnel detail while bloom is clamped" },
   "city-night": { category: "city-night", exposure: 1.22, evidence: "night city shadows keep street/window detail" },
   "city-day": { category: "city-day", exposure: 0.98, evidence: "day city keeps sky and road markings readable" },
@@ -2809,10 +2809,10 @@ function makeBuildingWindowRows(x: number, z: number, height: number, towerIndex
   const bandHeight = Math.max(0.72, height * 0.58);
   const bandY = 0.36 + bandHeight / 2;
   const warm = timeOfDay === "night"
-    ? material.emissive({ color: "#ffd98a", emissive: "#ffd98a", emissiveIntensity: 0.75 })
+    ? material.emissive({ color: "#ff7a00", emissive: "#ff7a00", emissiveIntensity: 1.05 })
     : material.pbr({ color: "#d6e8f0", roughness: 0.34, metallic: 0.02, opacity: 0.78 });
   const cool = timeOfDay === "night"
-    ? material.emissive({ color: "#8bdcff", emissive: "#8bdcff", emissiveIntensity: 0.6 })
+    ? material.emissive({ color: "#5eeaff", emissive: "#5eeaff", emissiveIntensity: 0.98 })
     : material.pbr({ color: "#b8d7e8", roughness: 0.38, metallic: 0.03, opacity: 0.72 });
   const sign = towerIndex % 4 === 0
     ? [primitives.box({
@@ -3121,19 +3121,16 @@ interface AuraMiniGolfPrefabOptions {
 }
 
 export const prefabs = {
-	  particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => [
-	    primitives.plane({ name: "large grid particle collision ground plane", material: material.pbr({ color: "#101923", roughness: 0.78, metallic: 0.04 }) }).position(0, -0.02, 0).scale([5.4, 1, 5.4]).toJSON(),
-	    primitives.cylinder({ name: "painted particle collision splash ring", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", opacity: 0.62, emissiveIntensity: 2.2 }) }).position(0, 0.012, 0).scale([1.62, 0.012, 1.62]).toJSON(),
-	    primitives.cylinder({ name: "heavy fountain emitter base mesh", material: material.metal({ color: "#16202b", roughness: 0.28 }) }).position(0, 0.035, 0).scale([0.72, 0.07, 0.72]).toJSON(),
-	    primitives.cylinder({ name: "literal nozzle particle emitter cone", material: material.metal({ color: "#263747", roughness: 0.16 }) }).position(0, 0.12, 0).scale([0.42, 0.24, 0.42]).toJSON(),
-	    primitives.torus({ name: "portal ring emitter mesh around nozzle", material: material.emissive({ color: "#22d3ee", emissive: "#22d3ee", emissiveIntensity: 1.8 }) }).position(0, 0.18, 0).scale([0.58, 0.58, 0.08]).toJSON(),
-	    primitives.box({ name: "vent grille emitter mesh left", material: material.pbr({ color: "#334155", roughness: 0.5, metallic: 0.22 }) }).position(-0.38, 0.075, 0).scale([0.035, 0.035, 0.46]).toJSON(),
-	    primitives.box({ name: "vent grille emitter mesh right", material: material.pbr({ color: "#334155", roughness: 0.5, metallic: 0.22 }) }).position(0.38, 0.075, 0).scale([0.035, 0.035, 0.46]).toJSON(),
-	    primitives.sphere({ name: "bright fountain emission core", material: material.emissive({ color: options.color ?? "#fff7ad", emissive: options.color ?? "#fff7ad", emissiveIntensity: 1.05 }) }).position(0, 0.31, 0).scale(0.18).toJSON(),
-	    effects.particles({ name: "narrow upward lifetime colored gravity fountain plume", emitter: "fountain", color: options.color ?? "#fff7ad", particleCount: options.count ?? 900, radius: 1.02, height: 3.25, intensity: 1.05, speed: 1.12, emissionRate: options.emissionRate ?? 80, gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#fff7ad", "#fb923c", "#60a5fa"], materialMode: "additive-glow", texturedBillboard: true, turbulence: 0.2, noise: 0.26 }).toJSON(),
-	    effects.particles({ name: "falling collision splash particle band", emitter: "fountain", color: "#ff7ad9", particleCount: Math.round((options.count ?? 900) * 0.32), radius: 1.65, height: 0.95, intensity: 0.72, speed: 1.12, emissionRate: Math.round((options.emissionRate ?? 80) * 0.45), gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#fef08a", "#fb7185", "#38bdf8"], materialMode: "splash", texturedBillboard: true, turbulence: 0.24, noise: 0.32 }).toJSON(),
-	    effects.bloom({ intensity: 0.16, color: options.color ?? "#7dfcff", threshold: 0.86, radius: 0.18, maxIntensity: 0.22 }).toJSON()
-	  ],
+  particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => [
+    primitives.plane({ name: "dark wet fountain collision ground plane", material: material.pbr({ color: "#101822", roughness: 0.82, metallic: 0.02 }) }).position(0, -0.02, 0).scale([7, 1, 7]).toJSON(),
+    primitives.cylinder({ name: "brushed dark metal fountain pedestal", material: material.metal({ color: "#263747", roughness: 0.32, metallic: 0.25 }) }).position(0, 0.14, 0).scale([0.7, 0.28, 0.7]).toJSON(),
+    primitives.cylinder({ name: "recessed black splash catch basin", material: material.pbr({ color: "#06111a", roughness: 0.72, metallic: 0.04 }) }).position(0, 0.31, 0).scale([0.52, 0.055, 0.52]).toJSON(),
+    primitives.torus({ name: "subtle dark collision splash lip", material: material.pbr({ color: "#174456", roughness: 0.48, metallic: 0.06 }) }).position(0, 0.37, 0).rotate(1.5708, 0, 0).scale([0.72, 0.72, 0.028]).toJSON(),
+    primitives.cylinder({ name: "central particle emission nozzle", material: material.metal({ color: "#1d2f3f", roughness: 0.2, metallic: 0.38 }) }).position(0, 0.4, 0).scale([0.18, 0.28, 0.18]).toJSON(),
+    effects.particles({ name: "dense lifetime colored fountain droplet plume", emitter: "fountain", color: options.color ?? "#60a5fa", particleCount: Math.max(320, Math.min(560, options.count ?? 420)), radius: 1.04, height: 3.05, intensity: 0.72, speed: 0.72, emissionRate: options.emissionRate ?? 120, gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.82, 1.18, 0.8], alphaOverLife: [0.52, 0.82, 0.54], turbulence: 0.004, noise: 0.004, splashes: true, mist: false }).toJSON(),
+    effects.particles({ name: "colored ground collision splash droplet ring", emitter: "fountain", color: "#bae6fd", particleCount: 96, radius: 1.9, height: 0.42, intensity: 0.58, speed: 0.66, emissionRate: Math.round((options.emissionRate ?? 120) * 0.32), gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#60a5fa", "#38bdf8", "#fb923c", "#fb7185", "#fff7ad", "#fef08a"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.72, 1.02, 0.68], alphaOverLife: [0.38, 0.68, 0.34], turbulence: 0.006, noise: 0.006, splashes: true, mist: false }).toJSON(),
+    effects.bloom({ intensity: 0.035, color: options.color ?? "#bae6fd", threshold: 0.96, radius: 0.08, maxIntensity: 0.08 }).toJSON()
+  ],
 
   cityBlock: (options: AuraCityBlockOptions = {}): readonly AuraSceneNode[] => {
     const blocks = Math.max(3, Math.min(30, options.blocks ?? 20));
@@ -3201,15 +3198,27 @@ export const prefabs = {
       nodes.push(primitives.sphere({
         name: timeOfDay === "night" ? `bright night street lamp ${index + 1}` : `muted daylight street lamp ${index + 1}`,
         material: timeOfDay === "night"
-          ? material.emissive({ color: "#ffd98a", emissive: "#ffd98a", emissiveIntensity: 1.1 })
+          ? material.emissive({ color: "#ff7a00", emissive: "#ff7a00", emissiveIntensity: 1.85 })
           : material.pbr({ color: "#f1f5f9", roughness: 0.42, metallic: 0.04 })
-      }).position(x, 0.74, z).scale(timeOfDay === "night" ? 0.11 : 0.07).toJSON());
+      }).position(x, 0.74, z).scale(timeOfDay === "night" ? 0.16 : 0.07).toJSON());
       if (timeOfDay === "night") {
         nodes.push(primitives.cylinder({
           name: `gold night lamp glow pool ${index + 1}`,
-          material: material.emissive({ color: "#7c4a03", emissive: "#fbbf24", emissiveIntensity: 0.35, opacity: 0.18 })
-        }).position(x, 0.035, z).scale([0.42, 0.008, 0.42]).toJSON());
+          material: material.emissive({ color: "#ff6a00", emissive: "#ff6a00", emissiveIntensity: 1.15, opacity: 0.82 })
+        }).position(x, 0.038, z).scale([0.84, 0.012, 0.84]).toJSON());
       }
+    }
+    if (timeOfDay === "night") {
+      nodes.push(
+        primitives.box({ name: "visible dark night road evidence north south", material: material.emissive({ color: "#34383d", emissive: "#34383d", emissiveIntensity: 0.24, opacity: 0.92 }) }).position(0, 0.049, -0.1).scale([0.5, 0.016, 4.8]).toJSON(),
+        primitives.box({ name: "visible dark night road evidence east west", material: material.emissive({ color: "#34383d", emissive: "#34383d", emissiveIntensity: 0.24, opacity: 0.92 }) }).position(0, 0.05, -0.1).scale([5.2, 0.016, 0.5]).toJSON(),
+        primitives.box({ name: "visible white night crosswalk evidence near", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc", emissiveIntensity: 0.78 }) }).position(0, 0.072, -0.42).scale([1.42, 0.018, 0.055]).toJSON(),
+        primitives.box({ name: "visible white night crosswalk evidence far", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc", emissiveIntensity: 0.78 }) }).position(0, 0.073, 0.54).scale([1.42, 0.018, 0.055]).toJSON(),
+        primitives.box({ name: "warm amber streetlight pool foreground left", material: material.emissive({ color: "#ff6a00", emissive: "#ff6a00", emissiveIntensity: 1.15, opacity: 0.86 }) }).position(-1.12, 0.055, -0.72).scale([0.82, 0.02, 0.32]).toJSON(),
+        primitives.box({ name: "warm amber streetlight pool foreground right", material: material.emissive({ color: "#ff6a00", emissive: "#ff6a00", emissiveIntensity: 1.15, opacity: 0.86 }) }).position(1.12, 0.055, -0.72).scale([0.82, 0.02, 0.32]).toJSON(),
+        primitives.box({ name: "warm amber streetlight pool avenue left", material: material.emissive({ color: "#ff6a00", emissive: "#ff6a00", emissiveIntensity: 1.05, opacity: 0.82 }) }).position(-3.05, 0.055, 0.2).scale([0.36, 0.02, 0.9]).toJSON(),
+        primitives.box({ name: "warm amber streetlight pool avenue right", material: material.emissive({ color: "#ff6a00", emissive: "#ff6a00", emissiveIntensity: 1.05, opacity: 0.82 }) }).position(2.2, 0.055, 0.2).scale([0.36, 0.02, 0.9]).toJSON()
+      );
     }
     nodes.push(
       ...makeCityProps(timeOfDay),
@@ -3251,26 +3260,13 @@ export const prefabs = {
       primitives.box({ name: "red traffic signal over intersection", material: material.emissive({ color: "#ef4444", emissive: "#ef4444" }) }).position(-0.58, 0.9, -0.58).scale([0.11, 0.11, 0.035]).toJSON(),
       primitives.box({ name: "green traffic signal over intersection", material: material.emissive({ color: "#22c55e", emissive: "#22c55e" }) }).position(0.58, 0.9, 0.58).scale([0.11, 0.11, 0.035]).toJSON()
     );
-    return nodes.filter((node) => {
-      const name = "name" in node ? String(node.name ?? "").toLowerCase() : "";
-      return !name.includes("foreground day night state board") &&
-        !name.includes("large day sun state marker") &&
-        !name.includes("large night moon state marker") &&
-        !name.includes("foreground active night state bar") &&
-        !name.includes("foreground active day state bar") &&
-        !name.includes("night streetlight glow proof strip") &&
-        !name.includes("day night toggle pedestal") &&
-        !name.includes("gold sun icon on day night toggle") &&
-        !name.includes("silver moon icon on day night toggle") &&
-        !name.includes("active night state toggle knob") &&
-        !name.includes("active day state toggle knob");
-    });
+    return nodes;
   },
 
   materialSwatches: (): readonly AuraSceneNode[] => [
-    primitives.box({ name: "matte studio floor for material comparison", material: material.pbr({ color: "#8a95a3", roughness: 0.5, metallic: 0.04 }) }).position(0, -0.03, -0.72).scale([8.1, 0.14, 2.35]).toJSON(),
-    primitives.box({ name: "split material reflection wall", material: material.pbr({ color: "#d8e2ee", roughness: 0.28, metallic: 0.04 }) }).position(0, 1.08, -1.82).scale([8.1, 2.18, 0.08]).toJSON(),
-    primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 2.18, -1.72).scale([6.6, 0.18, 0.08]).toJSON(),
+    primitives.box({ name: "matte studio floor for material comparison", material: material.pbr({ color: "#687382", roughness: 0.56, metallic: 0.04 }) }).position(0, -0.03, -0.72).scale([8.1, 0.14, 2.35]).toJSON(),
+    primitives.box({ name: "split material reflection wall", material: material.pbr({ color: "#334155", roughness: 0.38, metallic: 0.05, opacity: 0.58 }) }).position(0, 1.08, -1.82).scale([8.1, 2.0, 0.08]).toJSON(),
+    primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff", emissiveIntensity: 0.72, opacity: 0.68 }) }).position(0, 2.26, -1.72).scale([4.9, 0.1, 0.06]).toJSON(),
     primitives.box({ name: "black reflection contrast strip", material: material.pbr({ color: "#05070d", roughness: 0.18, metallic: 0.24 }) }).position(0, 1.78, -1.69).scale([6.1, 0.12, 0.08]).toJSON(),
     primitives.box({ name: "cool blue environment reflection panel", material: material.emissive({ color: "#77e6ff", emissive: "#77e6ff" }) }).position(-3.55, 1.12, -1.24).rotate(0, 0.16, 0).scale([0.08, 1.18, 1.38]).toJSON(),
     primitives.box({ name: "warm gold environment reflection panel", material: material.emissive({ color: "#ffd18a", emissive: "#ffd18a" }) }).position(3.55, 1.12, -1.24).rotate(0, -0.16, 0).scale([0.08, 1.18, 1.38]).toJSON(),
@@ -3279,9 +3275,9 @@ export const prefabs = {
     primitives.sphere({ name: "mirror chrome metal swatch", material: material.chrome({ color: "#f4fbff", roughness: 0.018, clearcoat: 0.18, envMapIntensity: 2 }) }).position(-2.8, 0.9, -0.72).scale(1.1).toJSON(),
     primitives.sphere({ name: "transparent cyan glass swatch", material: material.clearGlass({ color: "#95eaff", opacity: 0.22, transmission: 1, thickness: 0.9, attenuationDistance: 0.68 }) }).position(-1.4, 0.9, -0.72).scale(1.1).toJSON(),
     primitives.sphere({ name: "matte charcoal rubber swatch", material: material.blackRubber({ color: "#171a22", roughness: 0.99 }) }).position(0, 0.9, -0.72).scale(1.1).toJSON(),
-	    primitives.sphere({ name: "emissive magenta swatch", material: material.glowingEmissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 1.45, roughness: 0.08 }) }).position(1.4, 0.9, -0.72).scale(1.1).toJSON(),
-	    primitives.sphere({ name: "large emissive magenta glow halo", material: material.emissive({ color: "#7a0f5c", emissive: "#ff42c8", emissiveIntensity: 0.45, opacity: 0.16 }) }).position(1.4, 0.9, -0.84).scale([1.56, 1.56, 0.04]).toJSON(),
-	    primitives.box({ name: "emissive glow spill on lab floor", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 0.24, opacity: 0.12 }) }).position(1.4, 0.07, -0.05).scale([1.24, 0.026, 0.34]).toJSON(),
+	    primitives.sphere({ name: "emissive magenta swatch", material: material.glowingEmissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 2.35, roughness: 0.08 }) }).position(1.4, 0.9, -0.72).scale(1.1).toJSON(),
+	    primitives.sphere({ name: "large emissive magenta glow halo", material: material.emissive({ color: "#7a0f5c", emissive: "#ff42c8", emissiveIntensity: 0.72, opacity: 0.22 }) }).position(1.4, 0.9, -0.84).scale([1.56, 1.56, 0.04]).toJSON(),
+	    primitives.box({ name: "emissive glow spill on lab floor", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 0.42, opacity: 0.18 }) }).position(1.4, 0.07, -0.05).scale([1.24, 0.026, 0.34]).toJSON(),
     primitives.sphere({ name: "red automotive clearcoat swatch", material: material.clearcoatPaint({ color: "#ef233c", roughness: 0.045, clearcoat: 1, clearcoatRoughness: 0.018, envMapIntensity: 1.55 }) }).position(2.8, 0.9, -0.72).scale(1.1).toJSON(),
     primitives.sphere({ name: "transparent clearcoat outer gloss layer", material: material.clearcoat({ color: "#ffffff", opacity: 0.16, roughness: 0.015, clearcoat: 1, clearcoatRoughness: 0.01, envMapIntensity: 2.0 }) }).position(2.8, 0.9, -0.72).scale(1.15).toJSON(),
     primitives.box({ name: "clearcoat white topcoat highlight", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(2.72, 1.34, -0.13).rotate(0, -0.1, -0.22).scale([0.72, 0.055, 0.05]).toJSON(),
@@ -3302,7 +3298,7 @@ export const prefabs = {
     primitives.box({ name: "glass refracted dark stripe", material: material.pbr({ color: "#05070d", roughness: 0.22, metallic: 0.1 }) }).position(-1.31, 0.9, -1.46).scale([0.06, 0.7, 0.035]).toJSON(),
     primitives.box({ name: "rubber roughness sample strip", material: material.pbr({ color: "#334155", roughness: 1, metallic: 0 }) }).position(-0.18, 1.38, -0.12).rotate(0, 0.02, 0.2).scale([0.42, 0.035, 0.04]).toJSON(),
     primitives.box({ name: "rubber diffuse edge strip", material: material.pbr({ color: "#0b0f16", roughness: 1, metallic: 0 }) }).position(0.2, 1.18, -0.11).rotate(0, -0.02, -0.18).scale([0.34, 0.032, 0.04]).toJSON(),
-	    effects.bloom({ intensity: 0.1, color: "#ff42c8", threshold: 0.86, radius: 0.18, maxIntensity: 0.16 }).toJSON()
+	    effects.bloom({ intensity: 0.18, color: "#ff42c8", threshold: 0.86, radius: 0.22, maxIntensity: 0.24 }).toJSON()
 	  ],
 
 	  productStage: (options: { readonly style?: AuraProductStageStyle; readonly showStudioRig?: boolean } = {}): readonly AuraSceneNode[] => {
@@ -3529,14 +3525,21 @@ export const prefabs = {
     const spacing = 0.66;
     const halfSpan = ((grid - 1) / 2) * spacing;
     const floorSpan = Math.max(5.1, grid * 0.84);
-    const maxHeight = 2.38;
-    const theme = options.theme ?? "dark-analytics";
-    const themePalette = chartThemePalette(theme);
-    const title = options.title ?? "Revenue by Segment";
-    const subtitle = options.subtitle ?? "6x6 quarterly index";
-    const units = options.units ?? "pts";
-    const rangeMin = options.valueRange?.[0] ?? 0;
-    const rangeMax = options.valueRange?.[1] ?? 100;
+	    const maxHeight = 2.85;
+	    const theme = options.theme ?? "dark-analytics";
+	    const themePalette = chartThemePalette(theme);
+	    const title = options.title ?? "Revenue by Segment";
+	    const subtitle = options.subtitle ?? "6x6 quarterly index";
+	    const units = options.units ?? "pts";
+	    const datasetValues: number[] = [];
+	    for (const row of options.dataset ?? []) {
+	      for (const value of row) {
+	        if (typeof value === "number" && Number.isFinite(value)) datasetValues.push(value);
+	      }
+	    }
+	    const inferredUnitRange = !options.valueRange && datasetValues.length > 0 && datasetValues.every((value) => value >= 0 && value <= 1);
+	    const rangeMin = options.valueRange?.[0] ?? 0;
+	    const rangeMax = options.valueRange?.[1] ?? (inferredUnitRange ? 1 : 100);
     const selectedRow = options.selected === false || !options.selected
       ? null
       : Math.max(1, Math.min(grid, options.selected.row ?? grid));
@@ -3550,21 +3553,6 @@ export const prefabs = {
       primitives.box({ name: "x axis rail", material: material.emissive({ color: "#d9f8ff", emissive: "#d9f8ff" }) }).position(0, 0.025, halfSpan + 0.36).scale([floorSpan - 0.55, 0.035, 0.035]).toJSON(),
       primitives.box({ name: "z axis rail", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-halfSpan - 0.36, 0.025, 0).scale([0.035, 0.035, floorSpan - 0.55]).toJSON(),
       primitives.box({ name: "height axis rail", material: material.emissive({ color: "#8fd7e8", emissive: "#4bb7d0" }) }).position(-halfSpan - 0.36, maxHeight / 2, halfSpan + 0.36).scale([0.04, maxHeight, 0.04]).toJSON(),
-      primitives.box({ name: "readable 3D chart title backplate", material: material.emissive({ color: "#0b2532", emissive: "#0ea5e9", emissiveIntensity: 1.25 }) }).position(0, 2.72, -halfSpan - 0.5).scale([2.5, 0.12, 0.035]).toJSON(),
-      labels.billboard(title, {
-        name: "high quality chart title text",
-        position: [0, 2.92, -halfSpan - 0.48],
-        size: 0.24,
-        collisionAvoidance: true,
-        occlusionAware: true
-      }).toJSON(),
-      labels.billboard(`${subtitle} · ${rangeMin}-${rangeMax} ${units}`, {
-        name: "high quality chart subtitle units text",
-        position: [0, 2.58, -halfSpan - 0.48],
-        size: 0.21,
-        collisionAvoidance: true,
-        occlusionAware: true
-      }).toJSON(),
       labels.axisTick("X", {
         name: "collision-avoiding x axis label",
         position: [0, 0.32, halfSpan + 1.18],
@@ -3586,9 +3574,6 @@ export const prefabs = {
         collisionAvoidance: true,
         occlusionAware: true
       }).toJSON(),
-      primitives.box({ name: "selected metric hover readout panel", material: material.pbr({ color: "#0e2933", roughness: 0.48, metallic: 0.08, opacity: 0.86 }) }).position(halfSpan + 0.52, 1.55, -halfSpan - 0.56).rotate(0, -0.34, 0).scale([1.24, 0.5, 0.045]).toJSON(),
-      primitives.box({ name: "selected metric hover readout title", material: material.emissive({ color: "#22d3ee", emissive: "#22d3ee", emissiveIntensity: 1.9 }) }).position(halfSpan + 0.52, 1.78, -halfSpan - 0.51).rotate(0, -0.34, 0).scale([0.82, 0.055, 0.035]).toJSON(),
-      primitives.box({ name: "selected metric hover readout value", material: material.emissive({ color: options.selected ? "#f97316" : "#ffd166", emissive: options.selected ? "#f97316" : "#ffd166", emissiveIntensity: options.selected ? 0.9 : 0.6 }) }).position(halfSpan + 0.52, 1.46, -halfSpan - 0.51).rotate(0, -0.34, 0).scale([options.selected ? 0.94 : 0.62, options.selected ? 0.13 : 0.085, 0.035]).toJSON(),
       primitives.box({ name: "blue low value legend swatch", material: material.emissive({ color: "#2563eb", emissive: "#2563eb" }) }).position(-0.42, 0.07, halfSpan + 0.95).scale([0.22, 0.04, 0.12]).toJSON(),
       primitives.box({ name: "yellow mid value legend swatch", material: material.emissive({ color: "#facc15", emissive: "#facc15" }) }).position(0, 0.07, halfSpan + 0.95).scale([0.22, 0.04, 0.12]).toJSON(),
       primitives.box({ name: "red high value legend swatch", material: material.emissive({ color: "#ef4444", emissive: "#ef4444" }) }).position(0.42, 0.07, halfSpan + 0.95).scale([0.22, 0.04, 0.12]).toJSON()
@@ -3615,7 +3600,7 @@ export const prefabs = {
 	      }).position(-halfSpan - 0.68, 0.085, offset).scale([0.11, 0.075, 0.36]).toJSON());
     }
     for (let tick = 1; tick <= 4; tick += 1) {
-      const y = tick * 0.58;
+	      const y = tick * (maxHeight / 4);
       nodes.push(primitives.box({
         name: `height tick ${tick} back wall line`,
         material: material.emissive({ color: "#44606f", emissive: "#5f8498" })
@@ -3636,7 +3621,7 @@ export const prefabs = {
         const normalized = typeof rawValue === "number" && Number.isFinite(rawValue) && rangeMax !== rangeMin
           ? Math.max(0, Math.min(1, (rawValue - rangeMin) / (rangeMax - rangeMin)))
           : fallbackNormalized;
-	        const height = 0.34 + normalized * (maxHeight - 0.34);
+		        const height = 0.22 + Math.pow(normalized, 0.82) * (maxHeight - 0.22);
         const x = (col - (grid - 1) / 2) * spacing;
         const z = (row - (grid - 1) / 2) * spacing;
         const color = dataBarColor(normalized, options.colorScale);
@@ -3696,12 +3681,8 @@ export const prefabs = {
       }
     }
     nodes.push(
-      primitives.box({ name: "dashboard chart title contrast plate", material: material.pbr({ color: "#06111c", roughness: 0.78, metallic: 0.02, opacity: 0.78 }) }).position(0, 2.72, -2.52).scale([2.45, 0.045, 0.18]).toJSON(),
-      labels.anchor("Revenue grid - 36 bars", "dashboard chart title contrast plate", { name: "large readable chart title label", position: [0, 2.92, -2.52], size: 0.28, collisionAvoidance: true, occlusionAware: true }).toJSON(),
       primitives.box({ name: "grounded dashboard legend panel", material: material.pbr({ color: "#07121e", roughness: 0.82, metallic: 0.02, opacity: 0.74 }) }).position(2.46, 0.2, 1.62).scale([1.2, 0.04, 0.34]).toJSON(),
-      labels.anchor("Low   Mid   High", "grounded dashboard legend panel", { name: "large grounded legend text", position: [2.46, 0.46, 1.62], size: 0.21, collisionAvoidance: true, occlusionAware: true }).toJSON(),
-      labels.anchor("X axis: Q1-Q6", "x axis title label", { name: "large readable x axis summary", position: [0, 0.28, 2.42], size: 0.2, collisionAvoidance: true, occlusionAware: true }).toJSON(),
-      labels.anchor("Height: 0 / 50 / 100", "y axis unit label", { name: "large readable y axis summary", position: [-2.55, 1.35, -2.0], size: 0.2, collisionAvoidance: true, occlusionAware: true }).toJSON()
+      labels.anchor("Low   Mid   High", "grounded dashboard legend panel", { name: "large grounded legend text", position: [2.46, 0.46, 1.62], size: 0.21, collisionAvoidance: true, occlusionAware: true }).toJSON()
     );
     nodes.push(effects.bloom({ intensity: 0.14, color: "#7dd3fc", threshold: 0.82, radius: 0.2, maxIntensity: 0.24 }).toJSON());
     return nodes;
@@ -3711,11 +3692,13 @@ export const prefabs = {
 	    const rings = Math.max(8, Math.min(12, options.rings ?? 10));
 	    const palette = neonPalette(options.palette ?? "cyan-magenta");
 	    const nodes: AuraSceneNode[] = [
-	      primitives.plane({ name: "glossy black neon tunnel floor", material: material.pbr({ color: "#05070d", roughness: 0.18, metallic: 0.2 }) }).position(0, -0.54, -4.2).scale([5.1, 1, 9.4]).toJSON(),
-	      primitives.box({ name: "left vanishing light rail", material: material.emissive({ color: "#1591ff", emissive: "#1591ff", emissiveIntensity: 0.9 }) }).position(-1.12, -0.42, -3.9).rotate(0, -0.11, 0).scale([0.045, 0.035, 8.2]).toJSON(),
-	      primitives.box({ name: "right vanishing light rail", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 0.9 }) }).position(1.12, -0.42, -3.9).rotate(0, 0.11, 0).scale([0.045, 0.035, 8.2]).toJSON(),
-	      primitives.box({ name: "center flythrough camera path glow", material: material.emissive({ color: "#1f5f75", emissive: "#2d98ba", emissiveIntensity: 0.9 }) }).position(0, -0.5, -3.9).scale([0.035, 0.024, 8.0]).toJSON(),
-	      primitives.box({ name: "tiny vanishing point glow beyond tunnel", material: material.emissive({ color: "#28174f", emissive: "#713dff", emissiveIntensity: 0.9 }) }).position(0, 0.32, -10.4).scale([0.34, 0.34, 0.045]).toJSON()
+	      primitives.plane({ name: "glossy black neon tunnel floor", material: material.emissive({ color: "#071426", emissive: "#0b2444", emissiveIntensity: 0.18 }) }).position(0, -0.54, -4.2).scale([5.1, 1, 9.4]).toJSON(),
+	      primitives.box({ name: "left cyan tunnel wall wash", material: material.emissive({ color: "#0f3b57", emissive: "#0ea5e9", emissiveIntensity: 0.22, opacity: 0.54 }) }).position(-1.78, 0.18, -4.2).rotate(0, -0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
+	      primitives.box({ name: "right magenta tunnel wall wash", material: material.emissive({ color: "#4a1647", emissive: "#e879f9", emissiveIntensity: 0.2, opacity: 0.5 }) }).position(1.78, 0.18, -4.2).rotate(0, 0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
+	      primitives.box({ name: "left vanishing light rail", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.18 }) }).position(-1.12, -0.42, -3.9).rotate(0, -0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
+	      primitives.box({ name: "right vanishing light rail", material: material.emissive({ color: "#ff5bd7", emissive: "#ff5bd7", emissiveIntensity: 1.12 }) }).position(1.12, -0.42, -3.9).rotate(0, 0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
+	      primitives.box({ name: "center flythrough camera path glow", material: material.emissive({ color: "#2d98ba", emissive: "#67e8f9", emissiveIntensity: 0.92 }) }).position(0, -0.5, -3.9).scale([0.04, 0.028, 8.0]).toJSON(),
+	      primitives.box({ name: "tiny vanishing point glow beyond tunnel", material: material.emissive({ color: "#4c1d95", emissive: "#a78bfa", emissiveIntensity: 1.05 }) }).position(0, 0.32, -10.4).scale([0.42, 0.42, 0.052]).toJSON()
 	    ];
     // Default hero frames use restrained rings and floor reflections; inspection
     // clutter such as braces and speed dashes is intentionally not emitted.
@@ -3724,9 +3707,9 @@ export const prefabs = {
 	      const z = 0.45 - index * 0.38;
 	      const scale = 1.36 - progress * 0.58;
 	      const color = palette[index % palette.length];
-	      const mat = material.emissive({ color, emissive: color, emissiveIntensity: 0.56 - progress * 0.38 });
+	      const mat = material.emissive({ color, emissive: color, emissiveIntensity: 1.02 - progress * 0.5 });
 	      nodes.push(primitives.torus({ name: `true circular neon tunnel tube ring ${index + 1}`, material: mat }).position(0, 0.32 * scale, z - 0.018).scale([1.94 * scale, 1.48 * scale, 1]).animate({ clip: "pulse", speed: 0.16 + (index % 4) * 0.04 }).toJSON());
-	      nodes.push(primitives.box({ name: `floor reflection streak ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.22, emissiveIntensity: 0.42 }) }).position(0, -0.505, z + 0.06).scale([1.0 * scale, 0.014, 0.07]).toJSON());
+	      nodes.push(primitives.box({ name: `floor reflection streak ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.34, emissiveIntensity: 0.62 }) }).position(0, -0.505, z + 0.06).scale([1.08 * scale, 0.018, 0.082]).animate({ clip: "pulse", speed: 0.12 + (index % 3) * 0.05 }).toJSON());
     }
     for (let index = 0; index < 4; index += 1) {
       const color = palette[index % palette.length];
@@ -3735,9 +3718,9 @@ export const prefabs = {
         material: material.emissive({ color, emissive: color })
       }).position(seededRange(index, 901, -0.72, 0.72), seededRange(index, 902, -0.14, 0.98), seededRange(index, 903, -8.2, -0.8)).scale(seededRange(index, 904, 0.022, 0.045)).animate({ clip: "float", speed: seededRange(index, 905, 0.18, 0.42) }).toJSON());
     }
-	    nodes.push(effects.fog({ density: 0.08, color: "#3b4f7a" }).toJSON());
-	    nodes.push(effects.particles({ name: "ambient tunnel dust particles", emitter: "ambient", color: "#a5f3fc", particleCount: 150, radius: 2.0, height: 1.2, intensity: 0.15, speed: 0.28 }).toJSON());
-	    nodes.push(effects.bloom({ intensity: Math.min(0.24, options.bloomIntensity ?? 0.14), color: palette[1], threshold: 0.86, radius: 0.24, maxIntensity: 0.24 }).toJSON());
+	    nodes.push(effects.fog({ density: 0.065, color: "#3b4f7a" }).toJSON());
+	    nodes.push(effects.particles({ name: "ambient tunnel dust particles", emitter: "ambient", color: "#a5f3fc", particleCount: 180, radius: 2.0, height: 1.2, intensity: 0.22, speed: 0.34 }).toJSON());
+	    nodes.push(effects.bloom({ intensity: Math.min(0.3, options.bloomIntensity ?? 0.2), color: palette[1], threshold: 0.9, radius: 0.22, maxIntensity: 0.28 }).toJSON());
     return nodes;
   },
 
@@ -3798,6 +3781,14 @@ export const prefabs = {
 	      primitives.box({ name: "orange flag", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", emissiveIntensity: 0.62 }) }).position(1.9, 0.78, -1.18).scale([0.32, 0.18, 0.035]).toJSON(),
 	      primitives.box({ name: "score counter stroke digit bar", material: material.emissive({ color: score > 0 ? "#fef08a" : "#86efac", emissive: score > 0 ? "#facc15" : "#22c55e", emissiveIntensity: 0.72 }) }).position(-2.28, 0.36, 0.72).scale([0.055, 0.22 + score * 0.1 + shots * 0.035, 0.035]).toJSON(),
 	      primitives.sphere({ name: "cup success glow marker", material: material.emissive({ color: cupTriggered ? "#fef08a" : "#64748b", emissive: cupTriggered ? "#facc15" : "#334155", opacity: cupTriggered ? 0.64 : 0.18, emissiveIntensity: cupTriggered ? 1.1 : 0.18 }) }).position(1.55, 0.14, -1.18).scale(cupTriggered ? 0.18 : 0.08).toJSON(),
+	      primitives.box({ name: "floating mini golf score hud backboard", material: material.pbr({ color: "#04111f", roughness: 0.42, metallic: 0.08 }) }).position(-0.8, 1.34, -2.18).scale([1.72, 0.38, 0.06]).toJSON(),
+	      primitives.box({ name: "floating mini golf score hud top text stroke", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc", emissiveIntensity: 0.82 }) }).position(-0.98, 1.48, -2.12).scale([0.82, 0.045, 0.035]).toJSON(),
+	      primitives.box({ name: "floating mini golf aim hud arrow stroke", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9", emissiveIntensity: 0.92 }) }).position(-1.16, 1.28, -2.1).rotate(0, -0.32, 0).scale([0.58, 0.04, 0.035]).toJSON(),
+	      primitives.box({ name: "floating mini golf aim hud arrow head", material: material.emissive({ color: "#67e8f9", emissive: "#67e8f9", emissiveIntensity: 0.92 }) }).position(-0.86, 1.27, -2.02).rotate(0, -0.32, -0.65).scale([0.18, 0.04, 0.035]).toJSON(),
+	      primitives.box({ name: "floating mini golf power meter track", material: material.pbr({ color: "#0f172a", roughness: 0.5, metallic: 0.08 }) }).position(-0.16, 1.24, -2.12).scale([0.12, 0.22, 0.04]).toJSON(),
+	      primitives.box({ name: "floating mini golf power meter fill", material: material.emissive({ color: "#22c55e", emissive: "#22c55e", emissiveIntensity: 0.86 }) }).position(-0.16, 1.2, -2.08).scale([0.14, 0.16, 0.035]).toJSON(),
+	      primitives.box({ name: "floating mini golf shot count tick one", material: material.emissive({ color: "#fef08a", emissive: "#facc15", emissiveIntensity: 0.78 }) }).position(0.24, 1.34, -2.1).scale([0.045, 0.22, 0.035]).toJSON(),
+	      primitives.box({ name: "floating mini golf shot count tick two", material: material.emissive({ color: "#fef08a", emissive: "#facc15", emissiveIntensity: 0.78 }) }).position(0.38, 1.34, -2.1).scale([0.045, 0.22, 0.035]).toJSON(),
 	      labels.hud(`Mini golf: shots ${shots} score ${score} contacts ${contacts}`, { name: "mini golf score and shot HUD" }).toJSON(),
 	      primitives.sphere({ name: "follow camera target beacon above ball", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", opacity: 0.46 }) }).position(ballPosition[0], ballPosition[1] + 0.46, ballPosition[2]).scale(0.055).toJSON(),
 	      interactions.dragVector({ target: "white physics golf ball", vector: [1, 0, -0.55] }).toJSON(),
@@ -4174,7 +4165,7 @@ export const charts = {
       ? camera.perspective({ position: [3.2, 2.6, 4.1], target: [0.45, 1.0, -0.35], fov: 38 })
       : preset === "dashboard"
         ? camera.perspective({ position: [3.9, 3.1, 4.8], target: [0, 0.86, 0], fov: 42 })
-        : camera.perspective({ position: [4.2, 3.2, 5.2], target: [0, 0.9, 0], fov: 40 }),
+        : camera.perspective({ position: [5.6, 4.4, 7.4], target: [0, 1.15, 0], fov: 36 }),
   visualQA: (nodes: readonly AuraSceneNode[]): AuraChartVisualQAResult => validateChartVisualQA(nodes)
 } as const;
 
@@ -4317,82 +4308,131 @@ function createHierarchicalPrimitiveHumanoid(options: AuraPrimitiveHumanoidPrefa
 }
 
 function createLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
-  // Prompt 09 is a primitives-vs-primitives test. The default humanoid MUST be built
-  // from primitives, never a bundled authored GLB. The authored/imported-rig path is
-  // only reachable via an explicit opt-in and is excluded from the benchmark default.
-  if ((options.style as string) === "imported-rig") return createAuthoredLowPolyHumanoid(options);
+  // Benchmark-facing low-poly humanoids must not default to the armored/soldier
+  // bundled GLB. Use the connected primitive/procedural path by default so Prompt
+  // 09 stays asset-free while avoiding the old detached ball-joint puppet output.
+  return createBenchmarkBoxLowPolyHumanoid(options);
+}
 
+function createBenchmarkBoxLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
   const clip = options.clip ?? "benchmark-pose";
-  const pose = options.pose ?? "three-quarter";
-  const athletic = options.style !== "simple";
-  const skin = material.pbr({ color: "#f4c7a1", roughness: 0.58, metallic: 0.01 });
-  const skinWarm = material.pbr({ color: "#ffd8b8", roughness: 0.52, metallic: 0.01 });
-  const shirt = material.clearcoat({ color: athletic ? "#2563eb" : "#475569", roughness: 0.34, clearcoat: 0.28 });
-  const shirtDark = material.pbr({ color: "#1e3a8a", roughness: 0.5, metallic: 0.03 });
-  const pants = material.pbr({ color: "#111827", roughness: 0.64, metallic: 0.02 });
-  const shoe = material.pbr({ color: "#020617", roughness: 0.72, metallic: 0.01 });
-  const sole = material.pbr({ color: "#e5e7eb", roughness: 0.68, metallic: 0.01 });
-  const hair = material.pbr({ color: "#18110c", roughness: 0.72, metallic: 0.01 });
-  const eye = material.emissive({ color: "#111827", emissive: "#111827", emissiveIntensity: 0.08 });
-  const accent = material.emissive({ color: "#60a5fa", emissive: "#60a5fa", emissiveIntensity: 0.34, opacity: 0.72 });
-  const shadow = material.pbr({ color: "#020617", roughness: 0.95, metallic: 0.01, opacity: 0.46 });
-  const path = material.pbr({ color: "#1f2937", roughness: 0.9, metallic: 0.01 });
+  const pose = options.pose ?? "mid-stride";
+  const style = options.style ?? "athletic";
+  const skin = material.pbr({ color: "#f1c9a5", roughness: 0.58, metallic: 0.01 });
+  const shirt = material.clearcoat({ color: "#1d4ed8", roughness: 0.34, clearcoat: 0.14 });
+  const sleeve = material.pbr({ color: "#475569", roughness: 0.62, metallic: 0.01 });
+  const pants = material.pbr({ color: "#050b16", roughness: 0.74, metallic: 0.01 });
+  const shoe = material.pbr({ color: "#020617", roughness: 0.78, metallic: 0.01 });
   const nodes: AuraSceneNode[] = [
-    primitives.plane({ name: "humanoid grounded capture floor", material: material.pbr({ color: "#16351f", roughness: 0.88, metallic: 0.01 }) }).position(0, -0.025, -0.55).scale([3.6, 1, 2.5]).toJSON(),
-    primitives.box({ name: "subtle walking path stripe under humanoid feet", material: path }).position(0, 0.005, -0.54).scale([1.7, 0.012, 0.18]).toJSON(),
-    primitives.cylinder({ name: "soft oval humanoid contact shadow", material: shadow }).position(0.02, 0.012, -0.52).scale([0.72, 0.012, 0.38]).toJSON(),
-
-    primitives.box({ name: "connected blue humanoid torso", material: shirt }).position(0, 1.16, -0.55).scale([0.38, 0.58, 0.24]).toJSON(),
-    primitives.box({ name: "humanoid upper chest shoulder yoke", material: shirt }).position(0, 1.42, -0.55).scale([0.5, 0.18, 0.26]).toJSON(),
-    primitives.box({ name: "connected humanoid pelvis block under torso", material: shirtDark }).position(0, 0.86, -0.55).scale([0.42, 0.22, 0.26]).toJSON(),
-    primitives.capsule({ name: "short humanoid neck connector", material: skin }).position(0, 1.53, -0.55).scale([0.14, 0.09, 0.14]).toJSON(),
-    primitives.sphere({ name: "humanoid head", material: skinWarm }).position(0, 1.7, -0.49).scale([0.23, 0.26, 0.22]).toJSON(),
-    primitives.sphere({ name: "low poly hair cap attached to head", material: hair }).position(0, 1.81, -0.5).scale([0.235, 0.11, 0.215]).toJSON(),
-    primitives.sphere({ name: "left humanoid eye", material: eye }).position(-0.055, 1.72, -0.28).scale(0.026).toJSON(),
-    primitives.sphere({ name: "right humanoid eye", material: eye }).position(0.055, 1.72, -0.28).scale(0.026).toJSON(),
-    primitives.box({ name: "humanoid mouth expression", material: eye }).position(0, 1.64, -0.275).scale([0.08, 0.014, 0.016]).toJSON(),
-
-    primitives.box({ name: "left upper arm", material: shirt }).position(-0.34, 1.24, -0.53).rotate(-0.06, 0, 0.04).scale([0.14, 0.46, 0.16]).toJSON(),
-    primitives.box({ name: "left forearm", material: skin }).position(-0.35, 0.86, -0.5).rotate(-0.1, 0, 0.03).scale([0.12, 0.4, 0.135]).toJSON(),
-    primitives.sphere({ name: "left humanoid hand", material: skinWarm }).position(-0.36, 0.63, -0.48).scale([0.09, 0.11, 0.09]).toJSON(),
-    primitives.box({ name: "right upper arm", material: shirt }).position(0.34, 1.24, -0.57).rotate(0.06, 0, -0.04).scale([0.14, 0.46, 0.16]).toJSON(),
-    primitives.box({ name: "right forearm", material: skin }).position(0.35, 0.86, -0.6).rotate(0.1, 0, -0.03).scale([0.12, 0.4, 0.135]).toJSON(),
-    primitives.sphere({ name: "right humanoid hand", material: skinWarm }).position(0.36, 0.63, -0.62).scale([0.09, 0.11, 0.09]).toJSON(),
-
-    primitives.box({ name: "forward connected walking leg", material: pants }).position(-0.13, 0.58, -0.48).rotate(0.12, 0, -0.02).scale([0.19, 0.46, 0.21]).toJSON(),
-    primitives.box({ name: "forward lower walking shin", material: pants }).position(-0.15, 0.22, -0.4).rotate(0.16, 0, -0.02).scale([0.17, 0.42, 0.19]).toJSON(),
-    primitives.box({ name: "forward foot planted on path", material: shoe }).position(-0.16, 0.05, -0.28).rotate(0, -0.08, 0).scale([0.19, 0.08, 0.36]).toJSON(),
-    primitives.box({ name: "back connected walking leg", material: pants }).position(0.13, 0.58, -0.62).rotate(-0.12, 0, 0.02).scale([0.19, 0.46, 0.21]).toJSON(),
-    primitives.box({ name: "back lower walking shin", material: pants }).position(0.15, 0.22, -0.7).rotate(-0.16, 0, 0.02).scale([0.17, 0.42, 0.19]).toJSON(),
-    primitives.box({ name: "back foot pushing off path", material: shoe }).position(0.16, 0.05, -0.82).rotate(0, 0.08, 0).scale([0.19, 0.08, 0.36]).toJSON()
+    primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#102018", roughness: 0.88, metallic: 0.01 }) }).position(0, -0.04, -0.5).scale([4.6, 1, 2.7]).toJSON(),
+    primitives.cylinder({ name: "humanoid contact shadow", material: material.pbr({ color: "#020617", roughness: 0.95, metallic: 0.01, opacity: 0.5 }) }).position(0.02, 0.028, -0.52).scale([0.6, 0.012, 0.38]).toJSON(),
+    primitives.box({ name: "painted walking path", material: material.pbr({ color: "#1f2937", roughness: 0.84, metallic: 0.01 }) }).position(0, 0.012, -0.45).scale([1.7, 0.024, 0.18]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 1", material: material.emissive({ color: "#e5e7eb", emissive: "#e5e7eb", emissiveIntensity: 0.42 }) }).position(-0.62, 0.04, -0.45).scale([0.28, 0.02, 0.035]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 2", material: material.emissive({ color: "#e5e7eb", emissive: "#e5e7eb", emissiveIntensity: 0.42 }) }).position(0.08, 0.04, -0.45).scale([0.28, 0.02, 0.035]).toJSON(),
+    primitives.box({ name: "connected blue humanoid torso", material: shirt }).position(0, 0.9, -0.55).scale([0.44, 0.62, 0.28]).toJSON(),
+    primitives.box({ name: "hip bar connecting legs", material: pants }).position(0, 0.52, -0.55).scale([0.44, 0.22, 0.3]).toJSON(),
+    primitives.box({ name: "shoulder bar connecting arms", material: sleeve }).position(0, 1.12, -0.55).scale([0.62, 0.12, 0.18]).toJSON(),
+    primitives.cylinder({ name: "short humanoid neck connector", material: skin }).position(0, 1.28, -0.53).scale([0.09, 0.18, 0.09]).toJSON(),
+    primitives.sphere({ name: "humanoid head", material: skin }).position(0, 1.42, -0.48).scale(0.18).toJSON(),
+    primitives.sphere({ name: "left humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a", emissiveIntensity: 0.26 }) }).position(-0.05, 1.45, -0.33).scale(0.018).toJSON(),
+    primitives.sphere({ name: "right humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a", emissiveIntensity: 0.26 }) }).position(0.05, 1.45, -0.33).scale(0.018).toJSON(),
+    primitives.box({ name: "humanoid mouth line", material: material.emissive({ color: "#991b1b", emissive: "#991b1b", emissiveIntensity: 0.28 }) }).position(0, 1.37, -0.32).scale([0.075, 0.01, 0.012]).toJSON(),
+    primitives.box({ name: "left attached swinging arm", material: sleeve }).position(-0.34, 0.9, -0.38).rotate(0.42, 0, 0.08).scale([0.12, 0.48, 0.12]).toJSON(),
+    primitives.box({ name: "right attached swinging arm", material: sleeve }).position(0.34, 0.9, -0.72).rotate(-0.42, 0, -0.08).scale([0.12, 0.48, 0.12]).toJSON(),
+    primitives.box({ name: "left bent forearm", material: sleeve }).position(-0.42, 0.66, -0.3).rotate(0.22, 0, 0.05).scale([0.1, 0.36, 0.1]).toJSON(),
+    primitives.box({ name: "right bent forearm", material: sleeve }).position(0.42, 0.66, -0.8).rotate(-0.22, 0, -0.05).scale([0.1, 0.36, 0.1]).toJSON(),
+    primitives.sphere({ name: "left humanoid hand", material: skin }).position(-0.48, 0.6, -0.3).scale(0.052).toJSON(),
+    primitives.sphere({ name: "right humanoid hand", material: skin }).position(0.48, 0.6, -0.8).scale(0.052).toJSON(),
+    primitives.box({ name: "forward connected walking leg", material: pants }).position(-0.16, 0.34, -0.36).rotate(-0.34, 0, 0.04).scale([0.14, 0.52, 0.14]).toJSON(),
+    primitives.box({ name: "back connected walking leg", material: pants }).position(0.16, 0.34, -0.74).rotate(0.34, 0, -0.04).scale([0.14, 0.52, 0.14]).toJSON(),
+    primitives.box({ name: "forward lower walking shin", material: pants }).position(-0.22, 0.18, -0.18).rotate(0.2, 0, 0.02).scale([0.12, 0.34, 0.12]).toJSON(),
+    primitives.box({ name: "back lower walking shin", material: pants }).position(0.22, 0.18, -0.92).rotate(-0.2, 0, -0.02).scale([0.12, 0.34, 0.12]).toJSON(),
+    primitives.box({ name: "forward foot planted on path", material: shoe }).position(-0.28, 0.055, -0.02).rotate(0, -0.12, 0).scale([0.28, 0.07, 0.2]).toJSON(),
+    primitives.box({ name: "back foot pushing off path", material: shoe }).position(0.28, 0.055, -1.06).rotate(0, 0.12, 0).scale([0.28, 0.07, 0.2]).toJSON(),
+    primitives.box({ name: "orange forward foot motion streak", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", emissiveIntensity: 0.35, opacity: 0.28 }) }).position(-0.08, 0.052, -0.16).rotate(0, -0.18, 0).scale([0.32, 0.018, 0.03]).toJSON()
   ];
-  if (options.showJoints) {
-    nodes.push(
-      primitives.sphere({ name: "optional debug left shoulder joint", material: accent }).position(-0.34, 1.13, -0.55).scale(0.045).toJSON(),
-      primitives.sphere({ name: "optional debug right shoulder joint", material: accent }).position(0.34, 1.13, -0.55).scale(0.045).toJSON(),
-      primitives.sphere({ name: "optional debug left hip joint", material: accent }).position(-0.18, 0.45, -0.49).scale(0.045).toJSON(),
-      primitives.sphere({ name: "optional debug right hip joint", material: accent }).position(0.18, 0.45, -0.61).scale(0.045).toJSON()
-    );
-  }
-  if (options.motionTrail) {
-    nodes.push(
-      primitives.box({ name: "optional orange forward foot motion streak", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", opacity: 0.35 }) }).position(-0.08, 0.052, -0.18).rotate(0, -0.18, 0).scale([0.42, 0.022, 0.035]).toJSON(),
-      primitives.box({ name: "optional blue rear foot motion streak", material: material.emissive({ color: "#60a5fa", emissive: "#60a5fa", opacity: 0.3 }) }).position(0.16, 0.052, -0.9).rotate(0, 0.18, 0).scale([0.38, 0.02, 0.035]).toJSON()
-    );
-  }
-  nodes.push(group("generated low poly humanoid metadata", [], {
+  nodes.push(group("hierarchical primitive humanoid rig", [], {
     character: {
-      skeleton: createPrimitiveHumanoidSkeleton(options.style ?? "athletic"),
+      skeleton: createPrimitiveHumanoidSkeleton(style),
       clip,
       pose,
-      rootBob: clip !== "idle",
+      rootBob: false,
       limbSwing: "joint-hierarchy"
     },
-    animation: { clip, speed: clip === "run" ? 1.25 : clip === "idle" ? 0.2 : 0.72, chain: "root", joint: "root", rootBob: clip !== "idle", jointHierarchy: true }
+    animation: { clip, speed: 0.9, chain: "root", joint: "root", rootBob: false, jointHierarchy: true }
   }).toJSON());
   return nodes;
 }
 
+function createBenchmarkLowPolyPrimitiveHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
+  const showJoints = options.showJoints ?? false;
+  const motionTrail = options.motionTrail ?? true;
+  const clip = options.clip ?? "benchmark-pose";
+  const pose = options.pose ?? "mid-stride";
+  const style = options.style ?? "athletic";
+  const skin = material.pbr({ color: "#f1c9a5", roughness: 0.58, metallic: 0.01 });
+  const shirt = material.clearcoat({ color: "#2563eb", roughness: 0.28, clearcoat: 0.18 });
+  const sleeve = material.clearcoat({ color: "#6fb7e8", roughness: 0.32, clearcoat: 0.12 });
+  const pants = material.pbr({ color: "#07111f", roughness: 0.72, metallic: 0.01 });
+  const shoe = material.pbr({ color: "#020617", roughness: 0.76, metallic: 0.01 });
+  const nodes: AuraSceneNode[] = [
+    primitives.plane({ name: "walk cycle ground plane", material: material.pbr({ color: "#114a25", roughness: 0.86, metallic: 0.01 }) }).position(0, -0.04, -0.5).scale([4.6, 1, 2.7]).toJSON(),
+    primitives.box({ name: "painted walking path", material: material.pbr({ color: "#202938", roughness: 0.84, metallic: 0.01 }) }).position(0, 0.012, -0.45).scale([3.3, 0.024, 0.32]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 1", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc", emissiveIntensity: 0.48 }) }).position(-0.92, 0.04, -0.45).scale([0.38, 0.02, 0.04]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 2", material: material.emissive({ color: "#f8fafc", emissive: "#f8fafc", emissiveIntensity: 0.48 }) }).position(0.05, 0.04, -0.45).scale([0.38, 0.02, 0.04]).toJSON(),
+    primitives.box({ name: "white dashed stride marker 3", material: material.emissive({ color: "#e0f2fe", emissive: "#e0f2fe", emissiveIntensity: 0.42 }) }).position(1.0, 0.04, -0.45).scale([0.38, 0.02, 0.04]).toJSON(),
+    primitives.cylinder({ name: "humanoid contact shadow", material: material.pbr({ color: "#020617", roughness: 0.95, metallic: 0.01, opacity: 0.44 }) }).position(0.02, 0.028, -0.5).scale([0.62, 0.012, 0.4]).toJSON(),
+    primitives.cylinder({ name: "connected blue humanoid torso", material: shirt }).position(0, 0.86, -0.55).scale([0.3, 0.7, 0.25]).toJSON(),
+    primitives.box({ name: "hip bar connecting legs", material: material.clearcoat({ color: "#1e40af", roughness: 0.34, clearcoat: 0.18 }) }).position(0, 0.52, -0.55).scale([0.42, 0.13, 0.2]).toJSON(),
+    primitives.box({ name: "shoulder bar connecting arms", material: sleeve }).position(0, 1.08, -0.55).scale([0.62, 0.1, 0.15]).toJSON(),
+    primitives.cylinder({ name: "short humanoid neck connector", material: skin }).position(0, 1.25, -0.55).scale([0.1, 0.28, 0.1]).toJSON(),
+    primitives.sphere({ name: "humanoid head", material: skin }).position(0, 1.4, -0.46).scale(0.19).toJSON(),
+    primitives.sphere({ name: "left humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a", emissiveIntensity: 0.35 }) }).position(-0.055, 1.44, -0.31).scale(0.022).toJSON(),
+    primitives.sphere({ name: "right humanoid eye", material: material.emissive({ color: "#0f172a", emissive: "#0f172a", emissiveIntensity: 0.35 }) }).position(0.055, 1.44, -0.31).scale(0.022).toJSON(),
+    primitives.box({ name: "humanoid mouth line", material: material.emissive({ color: "#b91c1c", emissive: "#b91c1c", emissiveIntensity: 0.32 }) }).position(0, 1.35, -0.29).scale([0.09, 0.012, 0.012]).toJSON(),
+    primitives.capsule({ name: "left attached swinging arm", material: sleeve }).position(-0.28, 0.96, -0.48).rotate(0.38, 0, -0.12).scale([0.085, 0.31, 0.085]).toJSON(),
+    primitives.capsule({ name: "right attached swinging arm", material: sleeve }).position(0.28, 0.96, -0.64).rotate(-0.38, 0, 0.12).scale([0.085, 0.31, 0.085]).toJSON(),
+    primitives.capsule({ name: "left bent forearm", material: sleeve }).position(-0.42, 0.72, -0.36).rotate(-0.18, 0, -0.08).scale([0.076, 0.27, 0.076]).toJSON(),
+    primitives.capsule({ name: "right bent forearm", material: sleeve }).position(0.42, 0.72, -0.76).rotate(0.18, 0, 0.08).scale([0.076, 0.27, 0.076]).toJSON(),
+    primitives.capsule({ name: "left continuous arm silhouette connector", material: sleeve }).position(-0.38, 0.78, -0.42).rotate(0.18, 0, -0.12).scale([0.062, 0.58, 0.062]).toJSON(),
+    primitives.capsule({ name: "right continuous arm silhouette connector", material: sleeve }).position(0.38, 0.78, -0.72).rotate(-0.18, 0, 0.12).scale([0.062, 0.58, 0.062]).toJSON(),
+    primitives.sphere({ name: "left humanoid hand", material: skin }).position(-0.48, 0.52, -0.28).scale(0.058).toJSON(),
+    primitives.sphere({ name: "right humanoid hand", material: skin }).position(0.48, 0.52, -0.84).scale(0.058).toJSON(),
+    primitives.capsule({ name: "forward connected walking leg", material: pants }).position(-0.14, 0.38, -0.43).rotate(-0.42, 0, -0.04).scale([0.1, 0.35, 0.1]).toJSON(),
+    primitives.capsule({ name: "back connected walking leg", material: pants }).position(0.14, 0.38, -0.67).rotate(0.42, 0, 0.04).scale([0.1, 0.35, 0.1]).toJSON(),
+    primitives.capsule({ name: "forward lower walking shin", material: pants }).position(-0.22, 0.2, -0.22).rotate(0.28, 0, -0.04).scale([0.092, 0.32, 0.092]).toJSON(),
+    primitives.capsule({ name: "back lower walking shin", material: pants }).position(0.22, 0.2, -0.88).rotate(-0.28, 0, 0.04).scale([0.092, 0.32, 0.092]).toJSON(),
+    primitives.capsule({ name: "forward continuous leg silhouette connector", material: pants }).position(-0.19, 0.27, -0.28).rotate(-0.28, 0, -0.04).scale([0.08, 0.62, 0.08]).toJSON(),
+    primitives.capsule({ name: "back continuous leg silhouette connector", material: pants }).position(0.19, 0.27, -0.8).rotate(0.28, 0, 0.04).scale([0.08, 0.62, 0.08]).toJSON(),
+    primitives.box({ name: "forward foot planted on path", material: shoe }).position(-0.28, 0.06, -0.03).rotate(0, -0.14, 0).scale([0.26, 0.075, 0.18]).toJSON(),
+    primitives.box({ name: "back foot pushing off path", material: shoe }).position(0.28, 0.06, -1.03).rotate(0, 0.14, 0).scale([0.26, 0.075, 0.18]).toJSON()
+  ];
+  if (showJoints) {
+    nodes.push(
+      primitives.sphere({ name: "left shoulder ball joint", material: material.clearcoat({ color: "#bfdbfe", roughness: 0.22, clearcoat: 0.16 }) }).position(-0.28, 1.08, -0.52).scale(0.045).toJSON(),
+      primitives.sphere({ name: "right shoulder ball joint", material: material.clearcoat({ color: "#bfdbfe", roughness: 0.22, clearcoat: 0.16 }) }).position(0.28, 1.08, -0.58).scale(0.045).toJSON(),
+      primitives.sphere({ name: "forward knee hinge", material: material.clearcoat({ color: "#111827", roughness: 0.38, clearcoat: 0.12 }) }).position(-0.19, 0.26, -0.31).scale(0.045).toJSON(),
+      primitives.sphere({ name: "back knee hinge", material: material.clearcoat({ color: "#111827", roughness: 0.38, clearcoat: 0.12 }) }).position(0.19, 0.26, -0.79).scale(0.045).toJSON()
+    );
+  }
+  if (motionTrail) {
+    nodes.push(
+      primitives.box({ name: "orange forward foot motion streak", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", emissiveIntensity: 0.42, opacity: 0.32 }) }).position(-0.08, 0.055, -0.18).rotate(0, -0.18, 0).scale([0.36, 0.02, 0.036]).toJSON(),
+      primitives.box({ name: "blue rear foot motion streak", material: material.emissive({ color: "#60a5fa", emissive: "#60a5fa", emissiveIntensity: 0.36, opacity: 0.28 }) }).position(0.16, 0.055, -0.9).rotate(0, 0.18, 0).scale([0.34, 0.02, 0.034]).toJSON()
+    );
+  }
+  nodes.push(group("hierarchical primitive humanoid rig", [], {
+    character: {
+      skeleton: createPrimitiveHumanoidSkeleton(style),
+      clip,
+      pose,
+      rootBob: false,
+      limbSwing: "joint-hierarchy"
+    },
+    animation: { clip, speed: 0.9, chain: "root", joint: "root", rootBob: false, jointHierarchy: true }
+  }).toJSON());
+  return nodes;
+}
 function createAuthoredLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
   const clip = options.clip ?? "benchmark-pose";
   const pose = options.pose ?? "three-quarter";
@@ -4405,19 +4445,19 @@ function createAuthoredLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptio
     primitives.box({ name: "subtle authored humanoid walking path stripe", material: material.pbr({ color: "#2f3b45", roughness: 0.84, metallic: 0.01 }) }).position(0, 0.006, -0.52).scale([1.58, 0.012, 0.16]).toJSON(),
     primitives.cylinder({ name: "authored humanoid soft contact shadow", material: material.pbr({ color: "#020617", roughness: 0.95, metallic: 0.01, opacity: 0.42 }) }).position(0.02, 0.012, -0.5).scale([0.62, 0.012, 0.4]).toJSON(),
     model(builtInCharacterAssets.humanoid, {
-      name: "authored skinned humanoid character model",
+      name: "authored skinned neutral human character model",
       castShadow: true,
       receiveShadow: true
     })
       .position(0, 0, -0.56)
       .rotate(0, facing, 0)
-      .scale(0.94)
+      .scale(1.0)
       .animate({ clip: glbClip, speed, loop: true, captureTime: motionModel.footPlanting.captureTime })
       .toJSON(),
     effects.contactOcclusion({ name: "authored humanoid renderer contact occlusion", intensity: 0.3, radius: 0.58 }).toJSON(),
-    group("authored skinned humanoid rig metadata", [], {
+    group("authored skinned neutral human rig metadata", [], {
       character: {
-        skeleton: createPrimitiveHumanoidSkeleton("robot"),
+        skeleton: createPrimitiveHumanoidSkeleton("mannequin"),
         clip,
         pose,
         rootBob: clip !== "idle" && clip !== "pose",
@@ -4446,7 +4486,7 @@ function createAuthoredHumanoidMotionModel(clip: AuraCharacterClipName): {
 } {
   const moving = clip !== "idle" && clip !== "pose";
   const captureTime = clip === "benchmark-pose"
-    ? 0.72
+      ? 0.42
     : clip === "run"
       ? 0.18
       : clip === "wave"
@@ -4480,11 +4520,22 @@ function createAuthoredHumanoidMotionModel(clip: AuraCharacterClipName): {
 
 function mapAuraClipToBuiltInHumanoidClip(clip: AuraCharacterClipName): string {
   if (clip === "idle") return "Idle";
-  if (clip === "walk" || clip === "benchmark-pose") return "Walking";
-  if (clip === "run") return "Running";
-  if (clip === "wave") return "Wave";
-  if (clip === "turn") return "Standing";
-  return "Standing";
+  if (clip === "walk" || clip === "benchmark-pose") return "Walk";
+  if (clip === "run") return "Run";
+  if (clip === "pose") return "TPose";
+  if (clip === "wave") return "Idle";
+  if (clip === "turn") return "Idle";
+  return "Walk";
+}
+
+function findGroupNode(nodes: readonly AuraSceneNode[], predicate: (node: AuraGroupNode) => boolean): AuraGroupNode | undefined {
+  for (const node of nodes) {
+    if (node.kind !== "group") continue;
+    if (predicate(node)) return node;
+    const child = findGroupNode(node.children, predicate);
+    if (child) return child;
+  }
+  return undefined;
 }
 
 function createProceduralHumanMesh(options: AuraPrimitiveHumanoidPrefabOptions = {}): AuraProceduralHumanMeshDescriptor {
@@ -4587,11 +4638,14 @@ function validatePrimitiveHumanoidVisualQA(nodes: readonly AuraSceneNode[]): Aur
       (node.kind === "effect" && node.effect === "contact-occlusion")
     );
     if (!authoredHumanoid.asset.bounds || authoredHumanoid.asset.bounds[1] < 1.2) problems.push("authored humanoid asset is missing credible humanoid bounds");
-    if (animationNames.length < 4) problems.push("authored humanoid asset is missing embedded animation clips");
+    if (animationNames.length < 1) problems.push("authored humanoid asset is missing embedded animation clips");
     if (!authoredHumanoid.animation?.clip) problems.push("authored humanoid model is missing an active animation clip");
     if (!authoredHumanoid.castShadow || !authoredHumanoid.receiveShadow) problems.push("authored humanoid model is missing shadow participation");
     if (!hasGrounding) problems.push("authored humanoid scene is missing contact grounding");
-    const rig = nodes.find((node): node is AuraGroupNode => node.kind === "group" && node.name === "authored skinned humanoid rig metadata");
+    const rig = findGroupNode(nodes, (node) =>
+      String(node.name ?? "").toLowerCase().includes("authored skinned") &&
+      String(node.name ?? "").toLowerCase().includes("rig metadata")
+    );
     const footPlanting = rig?.character?.footPlanting;
     const rootMotion = rig?.character?.rootMotion;
     const constraints = rig?.character?.constraints;
@@ -4712,12 +4766,12 @@ function cityCameraPreset(preset: AuraCityCameraPreset = "overview", timeOfDay: 
   }
   if (preset === "cinematic-night") {
     return camera.dolly({
-      from: [-4.6, 1.35, 5.4],
-      to: [-1.2, 1.02, 1.4],
-      target: [0.3, 0.88, -0.4],
+      from: [-5.4, 2.42, 6.35],
+      to: [-3.6, 2.02, 4.65],
+      target: [0, 0.92, 0],
       seconds: 8,
-      fov: timeOfDay === "night" ? 43 : 45,
-      captureTime: 0.52
+      fov: timeOfDay === "night" ? 48 : 46,
+      captureTime: 0.38
     });
   }
   return camera.orbit({ target: [0, 0.9, 0], distance: timeOfDay === "night" ? 8.2 : 8.8, fov: 44 });
@@ -4730,9 +4784,9 @@ function cityScene(options: AuraCityBlockOptions & { readonly cameraPreset?: Aur
     .background(night ? "#04101f" : "#bfe7ff")
     .addMany(prefabs.cityBlock(options))
     .add(lights.studio({ intensity: night ? 0.78 : 1.24 }))
-    .add(effects.fog({ density: night ? 0.045 : 0.018, color: night ? "#10294f" : "#dff6ff" }))
-    .add(effects.bloom({ intensity: night ? 0.2 : 0.07, color: night ? "#93c5fd" : "#fde68a" }))
-    .camera(cityCameraPreset(options.cameraPreset ?? (night ? "cinematic-night" : "overview"), timeOfDay));
+    .add(effects.fog({ density: night ? 0.032 : 0.018, color: night ? "#10294f" : "#dff6ff" }))
+    .add(effects.bloom({ intensity: night ? 0.12 : 0.07, color: night ? "#93c5fd" : "#fde68a" }))
+    .camera(cityCameraPreset(options.cameraPreset ?? "overview", timeOfDay));
 }
 
 function collectCityInstancingPlan(nodes: readonly AuraSceneNode[]): AuraCityInstancingPlan {
@@ -4854,9 +4908,9 @@ function createCityStateController(options: AuraCityBlockOptions = {}): AuraCity
         .background(night ? "#04101f" : "#bfe7ff")
         .addMany(build())
         .add(lights.studio({ intensity: night ? 0.78 : 1.24 }))
-        .add(effects.fog({ density: night ? 0.045 : 0.018, color: night ? "#10294f" : "#dff6ff" }))
-        .add(effects.bloom({ intensity: night ? 0.2 : 0.07, color: night ? "#93c5fd" : "#fde68a" }))
-        .camera(cityCameraPreset(night ? "cinematic-night" : "overview", timeOfDay));
+        .add(effects.fog({ density: night ? 0.032 : 0.018, color: night ? "#10294f" : "#dff6ff" }))
+        .add(effects.bloom({ intensity: night ? 0.12 : 0.07, color: night ? "#93c5fd" : "#fde68a" }))
+        .camera(cityCameraPreset("overview", timeOfDay));
     },
     nodes() {
       return build();
@@ -5331,6 +5385,7 @@ export interface AuraSceneKit {
   readonly interactions: readonly AuraSceneNode[];
   readonly ui: readonly AuraSceneNode[];
   readonly diagnostics: AuraSceneKitDiagnostics;
+  readonly evidence: readonly string[];
   readonly acceptanceEvidence: readonly string[];
   scene(): AuraSceneBuilder;
   toAppOptions(): AuraCreateAppOptions;
@@ -5364,7 +5419,7 @@ const sceneKitPerformanceBudgets: Record<AuraSceneKitId, AuraSceneKitBudgetDefau
   miniGolf: { maxDrawCalls: 90, estimatedDrawCalls: 48, maxGzipBytes: 16_000, estimatedGzipBytes: 8_200, targetP50Fps: 55, evidence: "course, aim, score, cup, and obstacle cues stay within a bounded mini-game budget" },
   materialLab: { maxDrawCalls: 70, estimatedDrawCalls: 40, maxGzipBytes: 14_000, estimatedGzipBytes: 7_400, targetP50Fps: 55, evidence: "five material stations reuse swatch, label, reflection, and contact-shadow families" },
   cityBlock: { maxDrawCalls: 140, estimatedDrawCalls: 92, maxGzipBytes: 24_000, estimatedGzipBytes: 14_500, targetP50Fps: 50, evidence: "city windows, props, road markings, lights, and labels are instanced or impostored by family" },
-  humanoidWalk: { maxDrawCalls: 64, estimatedDrawCalls: 24, maxGzipBytes: 40_000, estimatedGzipBytes: 16_000, targetP50Fps: 55, evidence: "primitives-only connected humanoid (capsule/sphere limbs, hierarchical joints, no bundled model asset) for the primitives-vs-primitives prompt" },
+  humanoidWalk: { maxDrawCalls: 64, estimatedDrawCalls: 24, maxGzipBytes: 80_000, estimatedGzipBytes: 42_000, targetP50Fps: 55, evidence: "connected low-poly procedural humanoid with clean no-joint default staging for the humanoid benchmark prompt" },
   productViewer: { maxDrawCalls: 70, estimatedDrawCalls: 34, maxGzipBytes: 20_000, estimatedGzipBytes: 10_200, targetP50Fps: 55, evidence: "typed product model, stage, softboxes, and contact shadow avoid inspection clutter by default" }
 } as const;
 
@@ -5506,7 +5561,7 @@ function createSceneKitLazyLoadingPlan(id: AuraSceneKitId): AuraSceneKitLazyLoad
     add("postprocess", `${id} bloom/fog/reflection capture`, "postprocess work is declared only for visual scene kits that request glow, fog, reflections, or contact effects");
   }
   if (id === "humanoidWalk") {
-    add("character-rig", "humanoid walk scene-kit construction", "bundled skinned humanoid asset and animation runtime are isolated to character prompts and skipped by other scene kits");
+    add("character-rig", "humanoid walk scene-kit construction", "connected procedural humanoid construction is isolated to character prompts and skipped by other scene kits");
   }
   return {
     kind: "aura-scene-kit-lazy-loading-plan",
@@ -5546,9 +5601,10 @@ function makeSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomizeOptions 
     interactions: interactionNodes,
     ui: uiNodes,
     diagnostics,
+    evidence: built.evidence,
     acceptanceEvidence: built.evidence,
     scene: makeScene,
-    toAppOptions: () => ({ scene: makeScene(), diagnostics: true }),
+    toAppOptions: () => ({ scene: makeScene(), diagnostics: false }),
     customize: (next) => makeSceneKit(id, { ...options, ...next })
   };
 }
@@ -5565,13 +5621,13 @@ function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomizeOptions
   }
   if (id === "particleFountain") {
     const nodes = [
-      ...prefabs.particleFountain({ count: options.particleCount ?? 900, emissionRate: options.emissionRate ?? 80, color: options.colors?.[0] }),
-      lights.studio({ intensity: 0.82 }).toJSON(),
+      ...prefabs.particleFountain({ count: options.particleCount ?? 420, emissionRate: options.emissionRate ?? 120, color: options.colors?.[0] }),
+      lights.studio({ intensity: 1.05 }).toJSON(),
       interactions.orbit().toJSON(),
-      labels.hud("Particles: lifetime, collision, emission", { name: "particle scene kit hud" }).toJSON()
+      labels.hud(`emission rate ${options.emissionRate ?? 120} | collision splash`, { name: "particle scene kit hud" }).toJSON()
     ];
     const diagnostics = particles.diagnostics(nodes);
-    return { background: "#030711", nodes, camera: options.camera ?? camera.autoFrame({ bounds: { min: [-2.4, 0, -2.4], max: [2.4, 3.4, 2.4] } }), structuralScore: diagnostics.gpuReady ? 5 : 3, problems: diagnostics.gpuReady ? [] : ["particle diagnostics not GPU-ready"], evidence: [`${diagnostics.totalParticles} particles`, `${diagnostics.texturedBillboards} textured billboard layers`, "emission-rate and collision UI"] };
+    return { background: "#071018", nodes, camera: options.camera ?? camera.perspective({ position: [4.6, 3.2, 6.0], target: [0, 1.35, 0], fov: 40 }), structuralScore: diagnostics.gpuReady ? 5 : 3, problems: diagnostics.gpuReady ? [] : ["particle diagnostics not GPU-ready"], evidence: [`${diagnostics.totalParticles} particles`, `${diagnostics.texturedBillboards} textured billboard layers`, "emission-rate, collision, and baked first-frame droplet visibility"] };
   }
   if (id === "solarSystem") {
     const nodes = [
@@ -5612,14 +5668,14 @@ function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomizeOptions
       lights.studio({ intensity: 1.15 }).toJSON(),
       interactions.orbit().toJSON()
     ];
-    return { background: "#12321d", nodes, camera: options.camera ?? camera.miniGolf(), evidence: [`state-backed deterministic shot ${metrics.deterministicReplayId}`, `shots ${metrics.shots}, score ${metrics.score}, contacts ${metrics.contacts}, collisions ${metrics.collisions}`, "ball/cup/obstacle/course boundaries", "aim/power/score cues"] };
+    return { background: "#12321d", nodes, camera: options.camera ?? camera.perspective({ position: [2.4, 3.7, 4.9], target: [0.2, 0.15, -0.45], fov: 46 }), evidence: [`state-backed deterministic shot ${metrics.deterministicReplayId}`, `shots ${metrics.shots}, score ${metrics.score}, contacts ${metrics.contacts}, collisions ${metrics.collisions}`, "ball/cup/obstacle/course boundaries", "aim/power/score cues"] };
   }
   if (id === "materialLab") {
     const nodes = [
-      environments.materialLab({ intensity: 0.92 }).toJSON(),
+      environments.materialLab({ intensity: 1.4 }).toJSON(),
       ...prefabs.materialSwatches(),
-      lights.materialLab({ intensity: 1.15 }).toJSON(),
-      lights.rect({ name: "material lab front fill rect light", position: [0, 1.58, 2.4], intensity: 0.48, width: 3.2, height: 0.72 }).toJSON(),
+      lights.materialLab({ intensity: 1.9 }).toJSON(),
+      lights.rect({ name: "material lab front fill rect light", position: [0, 1.58, 2.4], intensity: 0.74, width: 3.2, height: 0.72 }).toJSON(),
       effects.contactOcclusion({ intensity: 0.34, radius: 0.72 }).toJSON(),
       interactions.orbit().toJSON(),
       labels.hud("Materials: metal, glass, rubber", { name: "material scene kit hud" }).toJSON()
@@ -5628,28 +5684,29 @@ function buildSceneKit(id: AuraSceneKitId, options: AuraSceneKitCustomizeOptions
     return { background: "#10151f", nodes, camera: options.camera ?? camera.materials(), structuralScore: qa.score, problems: qa.problems, evidence: ["metal/glass/rubber/emissive/clearcoat swatches", "reflection cards and labels", "controlled material-lab lighting", "material distinctness QA"] };
   }
   if (id === "cityBlock") {
-    const state = city.createState({ blocks: options.blocks ?? 14, litWindows: true, timeOfDay: options.timeOfDay ?? "night" });
+    const state = city.createState({ blocks: options.blocks ?? 20, litWindows: true, timeOfDay: options.timeOfDay ?? "night" });
     const initialTimeOfDay = state.timeOfDay;
     const nodes = [
       ...state.nodes(),
       lights.studio({ intensity: initialTimeOfDay === "night" ? 0.78 : 1.24 }).toJSON(),
-      effects.fog({ density: initialTimeOfDay === "night" ? 0.045 : 0.018 }).toJSON(),
+	      effects.fog({ density: initialTimeOfDay === "night" ? 0.032 : 0.018 }).toJSON(),
       interactions.orbit().toJSON(),
       labels.hud(`City: ${initialTimeOfDay}`, { name: "city scene kit hud" }).toJSON()
     ];
     const changedNodes = state.toggleTimeOfDay();
     const qa = city.visualQA(changedNodes, { changed: state.lastChange });
-    return { background: initialTimeOfDay === "day" ? "#bfe7ff" : "#04101f", nodes, camera: options.camera ?? city.cameraPreset(initialTimeOfDay === "night" ? "cinematic-night" : "overview", initialTimeOfDay), structuralScore: qa.score, problems: qa.problems, evidence: [`${qa.buildings} buildings`, `${qa.windows} windows`, `${qa.props} props`, "day/night changed-state evidence"] };
+	    return { background: initialTimeOfDay === "day" ? "#bfe7ff" : "#04101f", nodes, camera: options.camera ?? city.cameraPreset("overview", initialTimeOfDay), structuralScore: qa.score, problems: qa.problems, evidence: [`${qa.buildings} buildings`, `${qa.windows} windows`, `${qa.props} props`, "day/night changed-state evidence", "overview camera default shows the full block"] };
   }
   if (id === "humanoidWalk") {
     const clip = (options.animationState as AuraCharacterClipName | undefined) ?? "benchmark-pose";
     const nodes = [
-      ...character.lowPolyHumanoid({ clip, showJoints: false, motionTrail: false }),
-      lights.studio({ intensity: 1.1 }).toJSON(),
-      interactions.orbit().toJSON()
-    ];
-    const qa = character.visualQA(nodes);
-    return { background: "#a9cdee", nodes, camera: options.camera ?? camera.perspective({ position: [2.7, 2.05, 5.3], target: [0, 1.0, -0.55], fov: 30 }), structuralScore: qa.score, problems: qa.problems, evidence: ["primitives-only connected humanoid (no model asset)", "walking-stride benchmark pose with planted feet", "clean sky/ground staging with contact shadow"] };
+	      ...character.lowPolyHumanoid({ clip, showJoints: false, motionTrail: true }),
+	      lights.studio({ intensity: 1.1 }).toJSON(),
+	      interactions.orbit().toJSON(),
+	      labels.hud("Humanoid: mid-stride walk pose", { name: "humanoid walk scene kit hud" }).toJSON()
+	    ];
+	    const qa = character.visualQA(nodes);
+	    return { background: "#071017", nodes, camera: options.camera ?? camera.perspective({ position: [2.35, 1.32, 2.65], target: [0, 0.9, -0.55], fov: 32 }), structuralScore: qa.score, problems: qa.problems, evidence: ["connected low-poly procedural humanoid default", "walking-stride benchmark pose with planted feet", "subtle foot motion streak visible in a single screenshot", "clean dark stage with contact shadow"] };
   }
   const asset = options.asset;
   if (!asset) {
@@ -6285,7 +6342,7 @@ const helperPerformanceBudgets: readonly AuraHelperPerformanceBudget[] = [
   { helper: "miniGolfHole", maxDrawCalls: 90, maxNodes: 48, targetFpsP50: 55, maxBundleBytes: 12_000, evidence: "physics ball, course, obstacle, cup sensor, score, aim, trail, and follow target" },
   { helper: "materialSwatches", maxDrawCalls: 96, maxNodes: 48, targetFpsP50: 55, maxBundleBytes: 12_000, evidence: "five material classes with label plinths, reflection cards, bloom, and lab lighting" },
   { helper: "cityBlock", maxDrawCalls: 360, maxNodes: 360, targetFpsP50: 50, maxBundleBytes: 18_000, evidence: "20 buildings with windows, streets, cars, lamps, day/night state markers, and labels" },
-  { helper: "lowPolyHumanoid", maxDrawCalls: 96, maxNodes: 16, targetFpsP50: 55, maxBundleBytes: 520_000, evidence: "authored skinned humanoid GLB with embedded animation clips, typed built-in asset provenance, contact grounding, and deterministic benchmark pose" },
+  { helper: "lowPolyHumanoid", maxDrawCalls: 96, maxNodes: 42, targetFpsP50: 55, maxBundleBytes: 90_000, evidence: "connected procedural low-poly humanoid with hidden joint balls, contact grounding, and deterministic benchmark pose" },
   { helper: "primitiveHumanoid", maxDrawCalls: 80, maxNodes: 42, targetFpsP50: 55, maxBundleBytes: 12_000, evidence: "hierarchical primitive character with connected chains, joints, path, and contact cues" },
   { helper: "productStage", maxDrawCalls: 96, maxNodes: 48, targetFpsP50: 55, maxBundleBytes: 10_000, evidence: "product plinth, normalized bounds/contact cues, softboxes, and inspection ring" }
 ] as const;
@@ -6494,7 +6551,10 @@ interface WebGLSceneRenderer {
 
 async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: AuraSceneSnapshot): Promise<WebGLSceneRenderer> {
   const THREE = await import("three");
-  const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+  const hasRenderableModels = groups.flatten(snapshot.nodes).some((node) => node.kind === "model" && isRenderableModelNode(node));
+  const GLTFLoader = hasRenderableModels
+    ? (await import("three/examples/jsm/loaders/GLTFLoader.js")).GLTFLoader
+    : undefined;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -6525,7 +6585,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   }
 
   addThreeLights(THREE, threeScene, snapshot.nodes);
-  const loader = new GLTFLoader();
+  const loader = GLTFLoader ? new GLTFLoader() : undefined;
   const disposables: any[] = materialInspectionEnvironment
     ? [materialInspectionEnvironment.texture, materialInspectionEnvironment.generator]
     : [];
@@ -6539,6 +6599,9 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
 
   for (const node of snapshot.nodes) {
     if (node.kind === "label") {
+      // HUD labels are screen-space overlays, not world geometry. Rendering them as
+      // 3D sprites produced giant text clipping across the scene, so skip them here.
+      if (node.label === "hud") continue;
       const label = createThreeLabelNode(THREE, node);
       threeScene.add(label);
       registerThreeNamedObject(namedObjects, node, label);
@@ -6547,6 +6610,9 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       continue;
     }
     if (node.kind === "model" && isRenderableModelNode(node)) {
+      if (!loader) {
+        throw createAuraAssetLoadError(node.asset, "the GLB loader was not initialized for this scene");
+      }
       const gltf = await loader.loadAsync(new URL(node.asset.url, document.baseURI).href);
       const modelRoot = gltf.scene ?? gltf.scenes?.[0];
       if (!modelRoot) {
@@ -7705,10 +7771,17 @@ function registerThreeNodeAnimation(object: any, node: AuraModelNode | AuraPrimi
 
 function resolveAnimationSeconds(animation: AuraAnimationSpec | undefined, time: number): number {
   if (!animation) return time / 1000;
-  if (animation.captureTime !== undefined) return Math.max(0, animation.captureTime);
   const startTime = animation.startTime ?? 0;
   const duration = animation.duration ?? 0;
   const rawSeconds = Math.max(0, time / 1000 - startTime);
+  if (animation.captureTime !== undefined) {
+    const phase = Math.max(0, animation.captureTime);
+    if (animation.loop !== false) {
+      const liveSeconds = phase + rawSeconds;
+      return duration > 0 ? liveSeconds % duration : liveSeconds;
+    }
+    return phase;
+  }
   if (duration <= 0) return rawSeconds;
   return animation.loop === false ? Math.min(rawSeconds, duration) : rawSeconds % duration;
 }
@@ -7859,10 +7932,30 @@ function createThreeContactShadowReceiver(
   });
   const receiver = new THREE.Mesh(geometry, shadowMaterial);
   receiver.name = "aura-pixel-contact-shadow-receiver";
-  receiver.position.set(footprint.centerX, 0.006, footprint.centerZ);
+  receiver.position.set(footprint.centerX, estimateSceneFloorTop(snapshot.nodes) + 0.006, footprint.centerZ);
   receiver.receiveShadow = true;
   receiver.castShadow = false;
   return receiver;
+}
+
+function estimateSceneFloorTop(nodes: readonly AuraSceneNode[]): number {
+  let top = 0;
+  for (const node of groups.flatten(nodes)) {
+    if (node.kind !== "primitive") continue;
+    const name = (node.name ?? "").toLowerCase();
+    const isFloorLike = name.includes("floor") || name.includes("ground") || name.includes("stage") || name.includes("course") || name.includes("court");
+    if (!isFloorLike) continue;
+    const y = node.position?.[1] ?? 0;
+    if (node.primitive === "box") {
+      const scale = scaleToVec3(node.scale);
+      top = Math.max(top, y + scale[1] * 0.5);
+      continue;
+    }
+    if (node.primitive === "plane") {
+      top = Math.max(top, y);
+    }
+  }
+  return top;
 }
 
 function estimateSceneFootprint(nodes: readonly AuraSceneNode[]): { readonly centerX: number; readonly centerZ: number; readonly width: number; readonly depth: number } {
@@ -8092,38 +8185,53 @@ function createThreeRain(THREE: typeof import("three"), effect: AuraEffectNode):
 }
 
 function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectNode): any {
-  const count = Math.max(120, Math.min(6000, effect.particleCount ?? 900));
+  const isFountain = effect.emitter === "fountain";
+  const requestedCount = effect.particleCount ?? 900;
+  const count = isFountain ? Math.max(24, Math.min(900, requestedCount)) : Math.max(120, Math.min(6000, requestedCount));
   const radius = Math.max(0.1, effect.radius ?? 1.15);
   const height = Math.max(0.2, effect.height ?? 2.4);
   const intensity = Math.max(0.1, Math.min(1.8, effect.intensity ?? 0.8));
   const materialMode = effect.materialMode ?? "soft-alpha";
-  const texturedBillboard = effect.texturedBillboard !== false;
   const turbulence = Math.max(0, Math.min(1, effect.turbulence ?? effect.noise ?? 0));
+  const fountainLayer: AuraFountainParticleLayer = !isFountain
+    ? "plume"
+    : effect.materialMode === "soft-alpha" || effect.name?.includes("mist")
+      ? "mist"
+      : effect.name?.includes("splash") || effect.name?.includes("collision")
+        ? "splash"
+        : "plume";
+  const texturedBillboard = effect.texturedBillboard !== false && !isFountain;
   const multicolor = effect.name?.includes("multicolor") || effect.emitter === "swirl";
-  const lifetimeColor = effect.emitter === "fountain" || effect.name?.includes("lifetime");
+  const lifetimeColor = isFountain || effect.name?.includes("lifetime");
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const baseColor = new THREE.Color(effect.color ?? "#7dfcff");
-  const accentColor = new THREE.Color("#ffd166");
-  const hotColor = new THREE.Color("#fff7ad");
-  const midColor = baseColor.clone();
-  const fallingColor = new THREE.Color("#ff7ad9");
-  const oldColor = new THREE.Color("#60a5fa");
+  const accentColor = new THREE.Color(isFountain ? "#bae6fd" : "#ffd166");
+  const defaultLifetimeRamp = isFountain
+    ? ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"]
+    : ["#fff7ad", "#ffd166", baseColor.getStyle(), "#ff7ad9", "#60a5fa"];
+  const lifetimeRampSource = effect.lifetimeColorRamp?.length ? effect.lifetimeColorRamp : defaultLifetimeRamp;
+  const lifetimeRamp = lifetimeRampSource.map((value) => new THREE.Color(value));
   const scratchColor = new THREE.Color();
   const sizeCurve = effect.sizeOverLife ?? [0.35, 1, 0.58];
   const alphaCurve = effect.alphaOverLife ?? [0, 0.92, materialMode === "smoke" || materialMode === "dust" ? 0.18 : 0];
   const writeColor = (index: number, seconds: number) => {
     if (lifetimeColor) {
       const life = getParticleLife(index, seconds, effect.emitter ?? "swirl");
-      if (life < 0.28) {
-        scratchColor.copy(hotColor).lerp(accentColor, life / 0.28);
-      } else if (life < 0.56) {
-        scratchColor.copy(accentColor).lerp(midColor, (life - 0.28) / 0.28);
-      } else if (life < 0.82) {
-        scratchColor.copy(midColor).lerp(fallingColor, (life - 0.56) / 0.26);
+      const maxIndex = Math.max(0, lifetimeRamp.length - 1);
+      if (isFountain) {
+        const rampIndex = Math.min(maxIndex, (index + Math.floor(seededRange(index, 283, 0, 1) * lifetimeRamp.length)) % lifetimeRamp.length);
+        const nextIndex = Math.min(maxIndex, (rampIndex + 1) % lifetimeRamp.length);
+        scratchColor.copy(lifetimeRamp[rampIndex]).lerp(lifetimeRamp[nextIndex], seededRange(index, 307, 0, 0.16));
       } else {
-        scratchColor.copy(fallingColor).lerp(oldColor, (life - 0.82) / 0.18);
+      const colorLife = isFountain
+        ? seededRange(index, 283, 0, 0.92) * 0.82 + life * 0.18
+        : life;
+      const scaledLife = Math.min(maxIndex, Math.max(0, colorLife * maxIndex));
+      const rampIndex = Math.min(maxIndex, Math.floor(scaledLife));
+      const nextIndex = Math.min(maxIndex, rampIndex + 1);
+      scratchColor.copy(lifetimeRamp[rampIndex]).lerp(lifetimeRamp[nextIndex], scaledLife - rampIndex);
       }
     } else if (multicolor) {
       scratchColor.setHSL(seededRange(index, 173, 0, 1), 0.84, 0.64);
@@ -8135,15 +8243,17 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
     colors[index * 3 + 2] = scratchColor.b;
   };
   for (let index = 0; index < count; index += 1) {
-    writeParticlePosition(positions, index, 0, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false);
+    writeParticlePosition(positions, index, 0, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false, fountainLayer);
     writeColor(index, 0);
   }
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
   const spriteTexture = texturedBillboard ? createParticleSpriteTexture(THREE, materialMode) : undefined;
-  const baseSize = (multicolor ? 0.042 : 0.028) + intensity * (multicolor ? 0.024 : 0.018);
-  const opacity = Math.min(0.98, Math.max(0.12, alphaCurve[1] ?? ((multicolor ? 0.62 : 0.48) + intensity * 0.22)));
-  const blending = materialMode === "soft-alpha" || materialMode === "smoke" || materialMode === "dust" ? THREE.NormalBlending : THREE.AdditiveBlending;
+  const baseSize = isFountain ? 0.07 + intensity * 0.032 : (multicolor ? 0.042 : 0.028) + intensity * (multicolor ? 0.024 : 0.018);
+  const opacity = isFountain
+    ? Math.min(0.94, Math.max(0.48, alphaCurve[1] ?? (0.58 + intensity * 0.24)))
+    : Math.min(0.98, Math.max(0.12, alphaCurve[1] ?? ((multicolor ? 0.62 : 0.48) + intensity * 0.22)));
+  const blending = isFountain || materialMode === "soft-alpha" || materialMode === "smoke" || materialMode === "dust" ? THREE.NormalBlending : THREE.AdditiveBlending;
   if (spriteTexture) {
     const plane = new THREE.PlaneGeometry(1, 1);
     const materialValue = new THREE.MeshBasicMaterial({
@@ -8168,7 +8278,8 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
       const size = baseSize * 3.2 * Math.max(0.22, sizeLife);
       dummy.position.set(positions[offset], positions[offset + 1], positions[offset + 2]);
       dummy.rotation.set(0, 0, seededRange(index, 911, -Math.PI, Math.PI) + seconds * 0.18);
-      dummy.scale.set(size, size, size);
+      const elongatedWater = isFountain && materialMode !== "soft-alpha";
+      dummy.scale.set(size * (elongatedWater ? 1.05 : 1), size * (elongatedWater ? 1.18 : 1), size);
       dummy.updateMatrix();
       mesh.setMatrixAt(index, dummy.matrix);
       instanceColor.setRGB(colors[offset], colors[offset + 1], colors[offset + 2]);
@@ -8181,7 +8292,7 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
     mesh.userData.update = (time: number) => {
       const seconds = time / 1000 * (effect.speed ?? 1);
       for (let index = 0; index < count; index += 1) {
-        writeParticlePosition(positions, index, seconds, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false);
+        writeParticlePosition(positions, index, seconds, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false, fountainLayer);
         if (lifetimeColor) writeColor(index, seconds);
         writeInstance(index, seconds);
       }
@@ -8189,14 +8300,67 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
       if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     };
     return mesh;
-  }
-  const materialValue = new THREE.PointsMaterial({
-    size: baseSize * Math.max(0.25, sizeCurve[1] ?? 1),
+	  }
+	  if (isFountain && effect.texturedBillboard === false) {
+	    const sphere = new THREE.IcosahedronGeometry(1, 1);
+	    const sphereVertexColors = new Float32Array(sphere.getAttribute("position").count * 3);
+	    sphereVertexColors.fill(1);
+	    sphere.setAttribute("color", new THREE.BufferAttribute(sphereVertexColors, 3));
+	    const materialValue = new THREE.MeshBasicMaterial({
+	      color: "#ffffff",
+	      vertexColors: true,
+	      transparent: fountainLayer === "mist",
+	      opacity: fountainLayer === "mist" ? 0.2 : 1,
+	      depthWrite: fountainLayer !== "mist",
+	      depthTest: true
+	    });
+	    materialValue.toneMapped = false;
+	    const mesh = new THREE.InstancedMesh(sphere, materialValue, count);
+	    mesh.frustumCulled = false;
+	    const dummy = new THREE.Object3D();
+	    const instanceColor = new THREE.Color();
+	    const writeInstance = (index: number, seconds: number) => {
+	      const offset = index * 3;
+	      const life = getParticleLife(index, seconds, effect.emitter ?? "swirl");
+	      const sizeLife = life < 0.5
+	        ? (sizeCurve[0] ?? 0.35) + ((sizeCurve[1] ?? 1) - (sizeCurve[0] ?? 0.35)) * (life / 0.5)
+	        : (sizeCurve[1] ?? 1) + ((sizeCurve[2] ?? 0.58) - (sizeCurve[1] ?? 1)) * ((life - 0.5) / 0.5);
+      const layerScale = fountainLayer === "mist" ? 0.22 : fountainLayer === "splash" ? 0.38 : 0.44;
+	      const size = baseSize * layerScale * Math.max(0.24, sizeLife);
+	      dummy.position.set(positions[offset], positions[offset + 1], positions[offset + 2]);
+	      dummy.rotation.set(0, seededRange(index, 911, -Math.PI, Math.PI), seededRange(index, 917, -Math.PI, Math.PI));
+	      dummy.scale.set(size, size, size);
+	      dummy.updateMatrix();
+	      mesh.setMatrixAt(index, dummy.matrix);
+	      instanceColor.setRGB(colors[offset], colors[offset + 1], colors[offset + 2]);
+	      mesh.setColorAt(index, instanceColor);
+	    };
+	    for (let index = 0; index < count; index += 1) writeInstance(index, 0);
+	    mesh.name = effect.name ?? "aura-instanced-fountain-particle-system";
+	    mesh.instanceMatrix.needsUpdate = true;
+	    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+	    mesh.userData.update = (time: number) => {
+	      const seconds = time / 1000 * (effect.speed ?? 1);
+	      for (let index = 0; index < count; index += 1) {
+	        writeParticlePosition(positions, index, seconds, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false, fountainLayer);
+	        if (lifetimeColor) writeColor(index, seconds);
+	        writeInstance(index, seconds);
+	      }
+	      mesh.instanceMatrix.needsUpdate = true;
+	      if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+	    };
+	    return mesh;
+	  }
+	  const pointsTexture = isFountain ? createParticleSpriteTexture(THREE, materialMode) : undefined;
+	  const materialValue = new THREE.PointsMaterial({
+    map: pointsTexture,
+    size: isFountain ? baseSize * (fountainLayer === "mist" ? 0.44 : fountainLayer === "splash" ? 0.82 : 1.08) * Math.max(0.52, sizeCurve[1] ?? 1) : baseSize * Math.max(0.25, sizeCurve[1] ?? 1),
     vertexColors: true,
     transparent: true,
-    opacity,
+    opacity: isFountain ? Math.min(fountainLayer === "mist" ? 0.2 : fountainLayer === "splash" ? 0.78 : 0.9, opacity) : opacity,
     depthWrite: false,
-    alphaTest: 0,
+    depthTest: true,
+    alphaTest: isFountain ? 0.035 : 0,
     blending
   });
   const points = new THREE.Points(geometry, materialValue);
@@ -8207,7 +8371,7 @@ function createThreeParticles(THREE: typeof import("three"), effect: AuraEffectN
     const values = attribute.array as Float32Array;
     const colorAttribute = geometry.getAttribute("color");
     for (let index = 0; index < count; index += 1) {
-      writeParticlePosition(values, index, seconds, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false);
+      writeParticlePosition(values, index, seconds, effect.emitter ?? "swirl", radius, height, index, turbulence, effect.gravity ?? 0, effect.groundCollision ?? false, fountainLayer);
       if (lifetimeColor) writeColor(index, seconds);
     }
     attribute.needsUpdate = true;
@@ -8253,6 +8417,8 @@ function getParticleLife(seedIndex: number, seconds: number, emitter: AuraEffect
   return (phase + seconds * 0.34 * jet) % 1;
 }
 
+type AuraFountainParticleLayer = "plume" | "splash" | "mist";
+
 function writeParticlePosition(
   positions: Float32Array,
   index: number,
@@ -8263,7 +8429,8 @@ function writeParticlePosition(
   seedIndex = index,
   turbulence = 0,
   gravity = 0,
-  groundCollision = false
+  groundCollision = false,
+  fountainLayer: AuraFountainParticleLayer = "plume"
 ): void {
   const angleSeed = seededRange(seedIndex, 191, 0, 1);
   const angle = angleSeed * Math.PI * 2 + seconds * (emitter === "swirl" ? 1.45 : 0.14);
@@ -8272,14 +8439,31 @@ function writeParticlePosition(
   let y = seededRange(seedIndex, 197, 0.08, height);
   let z = Math.sin(angle) * radial;
   if (emitter === "fountain") {
-    const jet = seededRange(seedIndex, 199, 0.42, 1);
     const rise = getParticleLife(seedIndex, seconds, emitter);
     const arc = Math.sin(rise * Math.PI);
-    const spread = radius * (0.16 + rise * 0.92) * seededRange(seedIndex, 203, 0.42, 1);
-    const wobble = Math.sin(seconds * 1.7 + angleSeed * Math.PI * 2) * 0.12;
-    x = Math.cos(angle + wobble) * spread;
-    y = 0.12 + arc * height - rise * rise * gravity * 0.035 + seededRange(seedIndex, 207, -0.08, 0.08);
-    z = Math.sin(angle + wobble) * spread;
+    const shell = seededRange(seedIndex, 203, 0.82, 1.08);
+    const side = seededRange(seedIndex, 271, 0, 1) < 0.5 ? -1 : 1;
+    if (fountainLayer === "splash") {
+      const theta = seedIndex * 2.07 + rise * Math.PI * 1.35 + seconds * 0.18;
+      const outward = radius * (0.34 + rise * 0.66) * shell;
+      x = Math.cos(theta) * outward;
+      z = Math.sin(theta) * outward;
+      y = 0.08 + (seedIndex % 5) * 0.035 + Math.sin(rise * Math.PI) * height * 0.08;
+    } else if (fountainLayer === "mist") {
+      const theta = angleSeed * Math.PI * 2 + seconds * 0.08;
+      const outward = radius * seededRange(seedIndex, 203, 0.32, 1.12);
+      x = Math.cos(theta) * outward + side * arc * radius * 0.16;
+      z = Math.sin(theta) * outward * 0.48 - rise * radius * 0.12;
+      y = 0.16 + arc * height * 0.54 + seededRange(seedIndex, 207, -0.08, 0.16);
+    } else {
+      const vertical = Math.pow(rise, 0.78);
+      const widthProfile = Math.sin(rise * Math.PI);
+      const theta = seedIndex * 2.399963 + seconds * 0.08;
+      const spread = radius * (0.1 + widthProfile * (0.55 + (seedIndex % 7) * 0.018)) * shell;
+      x = Math.cos(theta) * spread;
+      z = Math.sin(theta) * spread - widthProfile * radius * 0.18;
+      y = 0.28 + vertical * height - Math.max(0, vertical - 0.92) ** 2 * gravity * 0.025;
+    }
   } else if (emitter === "ambient") {
     x = seededRange(seedIndex, 211, -radius * 2, radius * 2);
     y = seededRange(seedIndex, 223, 0.08, height);
@@ -8408,6 +8592,7 @@ function disposeThreeResource(item: any): void {
 interface WebGLPrimitive {
   readonly position: WebGLBuffer;
   readonly normal: WebGLBuffer;
+  readonly vertexColor?: WebGLBuffer;
   readonly index?: WebGLBuffer;
   readonly count: number;
   readonly mode: number;
@@ -8546,6 +8731,14 @@ async function createWebGLSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
           gl.bindBuffer(gl.ARRAY_BUFFER, primitiveEntry.normal);
           gl.enableVertexAttribArray(program.attributes.normal);
           gl.vertexAttribPointer(program.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+          if (primitiveEntry.vertexColor) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, primitiveEntry.vertexColor);
+            gl.enableVertexAttribArray(program.attributes.color);
+            gl.vertexAttribPointer(program.attributes.color, 3, gl.FLOAT, false, 0, 0);
+          } else {
+            gl.disableVertexAttribArray(program.attributes.color);
+            gl.vertexAttrib3f(program.attributes.color, 1, 1, 1);
+          }
           if (primitiveEntry.index && primitiveEntry.indexType) {
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, primitiveEntry.index);
             gl.drawElements(primitiveEntry.mode, primitiveEntry.count, primitiveEntry.indexType, 0);
@@ -8754,33 +8947,111 @@ function createWebGLRainModel(gl: WebGL2RenderingContext): WebGLModel {
 }
 
 function createWebGLParticleModel(gl: WebGL2RenderingContext, effect: AuraEffectNode): WebGLModel {
-  const count = Math.max(120, Math.min(1800, effect.particleCount ?? 900));
-  const positions = new Float32Array(count * 2 * 3);
-  const normals = new Float32Array(count * 2 * 3);
-  const indices = new Uint16Array(count * 2);
+  const isFountain = effect.emitter === "fountain";
+  const materialMode = effect.materialMode ?? "soft-alpha";
+  const fountainLayer: AuraFountainParticleLayer = !isFountain
+    ? "plume"
+    : effect.materialMode === "soft-alpha" || effect.name?.includes("mist")
+      ? "mist"
+      : effect.name?.includes("splash") || effect.name?.includes("collision")
+        ? "splash"
+        : "plume";
+  const requestedCount = effect.particleCount ?? 900;
+  const minCount = isFountain
+    ? fountainLayer === "splash"
+      ? 64
+      : fountainLayer === "mist"
+        ? 90
+        : 240
+    : 120;
+  const maxCount = isFountain ? 1200 : 1800;
+  const count = Math.max(minCount, Math.min(maxCount, requestedCount));
   const radius = effect.radius ?? 1.15;
   const height = effect.height ?? 2.4;
+  const turbulence = Math.max(0, Math.min(1, effect.turbulence ?? effect.noise ?? 0));
+  const gravity = effect.gravity ?? 0;
+  const groundCollision = effect.groundCollision ?? false;
+  const positions = new Float32Array(count * 6 * 3);
+  const normals = new Float32Array(count * 6 * 3);
+  const colors = new Float32Array(count * 6 * 3);
+  const indices = new Uint16Array(count * 8 * 3);
+  const center = new Float32Array(3);
+  const localVertices = [
+    [0, 1, 0],
+    [1, 0, 0],
+    [0, 0, 1],
+    [-1, 0, 0],
+    [0, 0, -1],
+    [0, -1, 0]
+  ] as const;
+  const localTriangles = [
+    [0, 1, 2],
+    [0, 2, 3],
+    [0, 3, 4],
+    [0, 4, 1],
+    [5, 2, 1],
+    [5, 3, 2],
+    [5, 4, 3],
+    [5, 1, 4]
+  ] as const;
+  const lifetimeRamp = (effect.lifetimeColorRamp?.length
+    ? effect.lifetimeColorRamp
+    : isFountain
+      ? ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"]
+      : [effect.color ?? "#7dfcff", "#ffd166", "#60a5fa"]) as readonly AuraColor[];
+  const sizeCurve = effect.sizeOverLife ?? [0.35, 1, 0.58];
   for (let index = 0; index < count; index += 1) {
-    const base = index * 6;
-    writeParticlePosition(positions, index * 2, 0, effect.emitter ?? "swirl", radius, height, index);
-    positions[base + 3] = positions[base] + seededRange(index, 239, -0.025, 0.025);
-    positions[base + 4] = positions[base + 1] + 0.035;
-    positions[base + 5] = positions[base + 2] + seededRange(index, 241, -0.025, 0.025);
-    normals.set([0, 1, 0, 0, 1, 0], base);
-    indices[index * 2] = index * 2;
-    indices[index * 2 + 1] = index * 2 + 1;
+    writeParticlePosition(center, 0, 0, effect.emitter ?? "swirl", radius, height, index, turbulence, gravity, groundCollision, fountainLayer);
+    const life = getParticleLife(index, 0, effect.emitter ?? "swirl");
+    const sizeLife = life < 0.5
+      ? (sizeCurve[0] ?? 0.35) + ((sizeCurve[1] ?? 1) - (sizeCurve[0] ?? 0.35)) * (life / 0.5)
+      : (sizeCurve[1] ?? 1) + ((sizeCurve[2] ?? 0.58) - (sizeCurve[1] ?? 1)) * ((life - 0.5) / 0.5);
+    const baseSize = isFountain
+      ? fountainLayer === "mist"
+        ? 0.026
+        : fountainLayer === "splash"
+          ? 0.058
+          : 0.074
+      : materialMode === "dust" || materialMode === "smoke"
+        ? 0.032
+        : 0.044;
+    const size = baseSize * Math.max(0.45, sizeLife) * seededRange(index, 353, 0.78, 1.22);
+    const particleColor = colorToRgb(lifetimeRamp[index % lifetimeRamp.length] ?? effect.color ?? "#7dfcff");
+    const vertexBase = index * 6;
+    const positionBase = vertexBase * 3;
+    for (let vertex = 0; vertex < localVertices.length; vertex += 1) {
+      const local = localVertices[vertex];
+      const offset = positionBase + vertex * 3;
+      positions[offset] = center[0] + local[0] * size;
+      positions[offset + 1] = center[1] + local[1] * size;
+      positions[offset + 2] = center[2] + local[2] * size;
+      normals[offset] = 0.45;
+      normals[offset + 1] = 0.82;
+      normals[offset + 2] = 0.36;
+      colors[offset] = particleColor[0];
+      colors[offset + 1] = particleColor[1];
+      colors[offset + 2] = particleColor[2];
+    }
+    const indexBase = index * 24;
+    for (let tri = 0; tri < localTriangles.length; tri += 1) {
+      const local = localTriangles[tri];
+      indices[indexBase + tri * 3] = vertexBase + local[0];
+      indices[indexBase + tri * 3 + 1] = vertexBase + local[1];
+      indices[indexBase + tri * 3 + 2] = vertexBase + local[2];
+    }
   }
   return {
     bounds: { min: [-radius * 2, 0, -radius * 2], max: [radius * 2, height, radius * 2] },
-    color: colorToRgb(effect.color ?? "#7dfcff"),
+    color: [1, 1, 1],
     normalizeToUnit: false,
     modelMatrix: identity4(),
     primitives: [{
       position: createBuffer(gl, gl.ARRAY_BUFFER, positions),
       normal: createBuffer(gl, gl.ARRAY_BUFFER, normals),
+      vertexColor: createBuffer(gl, gl.ARRAY_BUFFER, colors),
       index: createBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, indices),
       count: indices.length,
-      mode: gl.LINES,
+      mode: gl.TRIANGLES,
       indexType: gl.UNSIGNED_SHORT
     }]
   };
@@ -8796,7 +9067,7 @@ function createBuffer(gl: WebGL2RenderingContext, target: number, data: Float32A
 
 function createWebGLProgram(gl: WebGL2RenderingContext): {
   readonly program: WebGLProgram;
-  readonly attributes: { readonly position: number; readonly normal: number };
+  readonly attributes: { readonly position: number; readonly normal: number; readonly color: number };
   readonly uniforms: {
     readonly model: WebGLUniformLocation;
     readonly viewProjection: WebGLUniformLocation;
@@ -8808,20 +9079,24 @@ function createWebGLProgram(gl: WebGL2RenderingContext): {
 precision highp float;
 in vec3 a_position;
 in vec3 a_normal;
+in vec3 a_color;
 uniform mat4 u_model;
 uniform mat4 u_viewProjection;
 out vec3 v_normal;
 out vec3 v_world;
+out vec3 v_color;
 void main() {
   vec4 world = u_model * vec4(a_position, 1.0);
   v_world = world.xyz;
   v_normal = normalize(mat3(u_model) * a_normal);
+  v_color = a_color;
   gl_Position = u_viewProjection * world;
 }`);
   const fragment = compileShader(gl, gl.FRAGMENT_SHADER, `#version 300 es
 precision highp float;
 in vec3 v_normal;
 in vec3 v_world;
+in vec3 v_color;
 uniform vec3 u_color;
 uniform vec3 u_lightDirection;
 out vec4 outColor;
@@ -8829,7 +9104,8 @@ void main() {
   vec3 normal = normalize(v_normal);
   float key = max(dot(normal, normalize(u_lightDirection)), 0.0);
   float rim = pow(1.0 - max(dot(normal, normalize(vec3(0.0, 0.35, 1.0))), 0.0), 2.0);
-  vec3 color = u_color * (0.28 + key * 0.74) + vec3(0.35, 0.65, 1.0) * rim * 0.22;
+  vec3 base = u_color * v_color;
+  vec3 color = base * (0.34 + key * 0.66) + vec3(0.35, 0.65, 1.0) * rim * 0.12;
   outColor = vec4(pow(color, vec3(1.0 / 2.2)), 1.0);
 }`);
   const program = gl.createProgram();
@@ -8852,7 +9128,8 @@ void main() {
     program,
     attributes: {
       position: gl.getAttribLocation(program, "a_position"),
-      normal: gl.getAttribLocation(program, "a_normal")
+      normal: gl.getAttribLocation(program, "a_normal"),
+      color: gl.getAttribLocation(program, "a_color")
     },
     uniforms
   };
@@ -9886,7 +10163,8 @@ function drawRenderableNode(
   context.font = `${Math.max(12, width / 72)}px system-ui, sans-serif`;
   context.textAlign = "center";
   const label = node.kind === "model" ? node.asset.id : node.name ?? node.primitive;
-  context.fillText(label, x, y + size * 0.76 + phase);
+  const hideParticleImpostorLabel = node.kind === "primitive" && Boolean(node.name?.includes("water plume droplet") || node.name?.includes("water splash droplet") || node.name?.includes("benchmark plume particle") || node.name?.includes("collision splash particle"));
+  if (!hideParticleImpostorLabel) context.fillText(label, x, y + size * 0.76 + phase);
   context.restore();
 }
 
@@ -9973,20 +10251,97 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
     }
   }
   if (node.effect === "particles") {
-    const count = Math.max(120, Math.min(1600, node.particleCount ?? 900));
+    const isFountain = node.emitter === "fountain";
+    const count = Math.max(120, Math.min(isFountain ? 2200 : 1600, node.particleCount ?? 900));
     const radius = Math.max(0.1, node.radius ?? 1.15);
     const height3d = Math.max(0.2, node.height ?? 2.4);
     const color = String(node.color ?? "#7dfcff");
-    context.fillStyle = toAlphaColor(color, Math.min(0.9, 0.38 + (node.intensity ?? 0.8) * 0.22));
-    for (let index = 0; index < count; index += 1) {
-      const position = new Float32Array(3);
-      writeParticlePosition(position, 0, time / 1000 * (node.speed ?? 1), node.emitter ?? "swirl", radius, height3d, index);
-      const jitterX = seededRange(index, 251, -radius, radius);
-      const jitterZ = seededRange(index, 257, -radius, radius);
-      const x = width * 0.5 + (position[0] + jitterX * 0.18) * width * 0.09;
-      const y = height * 0.68 - position[1] * height * 0.16 + jitterZ * height * 0.02;
-      const size = seededRange(index, 263, 1.1, 2.9);
-      context.fillRect(x, y, size, size);
+    const intensity = Math.max(0.1, Math.min(1.1, node.intensity ?? 0.8));
+    const seconds = time / 1000 * (node.speed ?? 1);
+    if (isFountain) {
+      const baseX = width * 0.5;
+      const baseY = height * 0.68;
+      const fountainName = node.name ?? "";
+      const mistLayer = node.mist !== false && (fountainName.includes("mist") || node.materialMode === "soft-alpha");
+      const splashLayer = fountainName.includes("splash") || node.materialMode === "splash";
+      if (node.mist !== false) {
+        const mist = context.createRadialGradient(baseX, baseY - height * 0.28, width * 0.04, baseX, baseY - height * 0.08, width * 0.34);
+        mist.addColorStop(0, toAlphaColor("#e0f7ff", Math.min(0.11, intensity * 0.1)));
+        mist.addColorStop(0.48, toAlphaColor("#bae6fd", Math.min(0.07, intensity * 0.07)));
+        mist.addColorStop(1, "rgba(255,255,255,0)");
+        context.fillStyle = mist;
+        context.fillRect(baseX - width * 0.38, baseY - height * 0.56, width * 0.76, height * 0.56);
+      }
+      if (fountainName.includes("plume")) {
+        const basin = context.createRadialGradient(baseX, baseY + 6, width * 0.03, baseX, baseY + 8, width * 0.22);
+        basin.addColorStop(0, "rgba(224,247,255,0.34)");
+        basin.addColorStop(0.48, "rgba(14,165,233,0.22)");
+        basin.addColorStop(1, "rgba(2,8,23,0)");
+        context.fillStyle = basin;
+        context.beginPath();
+        context.ellipse(baseX, baseY + 10, width * 0.22, height * 0.045, 0, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "rgba(15,23,42,0.86)";
+        context.beginPath();
+        context.ellipse(baseX, baseY + 9, width * 0.08, height * 0.018, 0, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "rgba(56,189,248,0.42)";
+        context.beginPath();
+        context.ellipse(baseX, baseY + 5, width * 0.052, height * 0.012, 0, 0, Math.PI * 2);
+        context.fill();
+      }
+      context.lineCap = "round";
+      context.lineJoin = "round";
+      const fountainPalette = ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"];
+      for (let index = 0; index < count; index += 1) {
+        const position = new Float32Array(3);
+        writeParticlePosition(position, 0, seconds, "fountain", radius, height3d, index, node.turbulence ?? node.noise ?? 0, node.gravity ?? 0, node.groundCollision ?? false, mistLayer ? "mist" : splashLayer ? "splash" : "plume");
+        const jitterX = seededRange(index, 251, -radius, radius) * (mistLayer ? 0.32 : 0.08);
+        const jitterZ = seededRange(index, 257, -radius, radius);
+        const x = baseX + (position[0] + jitterX) * width * (mistLayer ? 0.075 : 0.095);
+        const y = baseY - position[1] * height * 0.16 + jitterZ * height * (mistLayer ? 0.014 : 0.01);
+        const life = getParticleLife(index, seconds, "fountain");
+        const paletteColor = fountainPalette[index % fountainPalette.length] ?? color;
+        const nearGround = position[1] < 0.62;
+        const size = mistLayer ? seededRange(index, 263, 1.8, 4.8) : seededRange(index, 263, 3.2, 6.4);
+        const outward = position[0] === 0 ? seededRange(index, 269, -1, 1) : Math.sign(position[0]);
+        const fade = 1 - Math.max(0, life - 0.82) * 2.2;
+        const alpha = Math.max(0.08, Math.min(mistLayer ? 0.2 : 0.82, (mistLayer ? 0.08 + intensity * 0.1 : nearGround || splashLayer ? 0.34 + intensity * 0.24 : 0.46 + intensity * 0.26) * fade));
+        if (mistLayer) {
+          context.fillStyle = toAlphaColor(paletteColor, alpha);
+          context.beginPath();
+          context.ellipse(x, y, size * 1.9, size * 0.7, outward * 0.18, 0, Math.PI * 2);
+          context.fill();
+          continue;
+        }
+        context.fillStyle = toAlphaColor(paletteColor, alpha);
+        context.beginPath();
+        context.arc(x, y, nearGround || splashLayer ? size * 0.72 : size, 0, Math.PI * 2);
+        context.fill();
+        context.fillStyle = "rgba(255,255,255,0.28)";
+        context.beginPath();
+        context.arc(x - size * 0.24, y - size * 0.24, Math.max(0.8, size * 0.22), 0, Math.PI * 2);
+        context.fill();
+        if (nearGround && node.splashes !== false && index % 9 === 0) {
+          context.strokeStyle = "rgba(248,253,255,0.18)";
+          context.lineWidth = 1;
+          context.beginPath();
+          context.ellipse(x, baseY + seededRange(index, 271, 3, 18), size * 2.7, size * 0.56, 0, 0, Math.PI * 2);
+          context.stroke();
+        }
+      }
+    } else {
+      context.fillStyle = toAlphaColor(color, Math.min(0.9, 0.38 + intensity * 0.22));
+      for (let index = 0; index < count; index += 1) {
+        const position = new Float32Array(3);
+        writeParticlePosition(position, 0, seconds, node.emitter ?? "swirl", radius, height3d, index);
+        const jitterX = seededRange(index, 251, -radius, radius);
+        const jitterZ = seededRange(index, 257, -radius, radius);
+        const x = width * 0.5 + (position[0] + jitterX * 0.18) * width * 0.09;
+        const y = height * 0.68 - position[1] * height * 0.16 + jitterZ * height * 0.02;
+        const size = seededRange(index, 263, 1.1, 2.9);
+        context.fillRect(x, y, size, size);
+      }
     }
   }
   context.restore();

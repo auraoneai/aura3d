@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aura3D Agent Setup for AI Coding Assistants</title>
+<meta name="description" content="Set up AI coding assistants to generate Aura3D TypeScript scenes with public SDK imports, scene kits, primitives, typed assets, and Vite templates." />
+<link rel="canonical" href="https://aura3d.auraone.ai/marketing/docs/agent-rules.html" />
+<meta property="og:site_name" content="Aura3D" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Aura3D Agent Setup for AI Coding Assistants" />
+<meta property="og:description" content="Set up AI coding assistants to generate Aura3D TypeScript scenes with public SDK imports, scene kits, primitives, typed assets, and Vite templates." />
+<meta property="og:url" content="https://aura3d.auraone.ai/marketing/docs/agent-rules.html" />
+<meta property="og:image" content="/og/aura3d-og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Aura3D Agent Setup for AI Coding Assistants" />
+<meta name="twitter:description" content="Set up AI coding assistants to generate Aura3D TypeScript scenes with public SDK imports, scene kits, primitives, typed assets, and Vite templates." />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.svg" />
+<meta name="theme-color" content="#07080a" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D Agent Setup for AI Coding Assistants","description":"Set up AI coding assistants to generate Aura3D TypeScript scenes with public SDK imports, scene kits, primitives, typed assets, and Vite templates.","url":"https://aura3d.auraone.ai/marketing/docs/agent-rules.html","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/marketing/src/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="/marketing/index.html" class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+      </svg>
+      <span>Aura3D</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/marketing/index.html#workflows">Agent API</a>
+      <a class="nav-link" href="/marketing/index.html#prompts">AI prompts</a>
+      <a class="nav-link" href="/marketing/index.html#gallery">Examples</a>
+      <a class="nav-link" href="/marketing/index.html#templates">Templates</a>
+      <a class="nav-link" href="/marketing/index.html#packages">Packages</a>
+      <a class="nav-link" href="/marketing/index.html#deployment">Deploy</a>
+      <a class="nav-link" href="/llms.txt">llms.txt</a>
+    </div>
+    <div class="nav-actions">
+      <span class="nav-version">MIT</span>
+      <a class="btn btn-ghost" href="/marketing/docs/index.html">Docs</a>
+      <a class="btn btn-primary" href="/marketing/docs/agent-quickstart.html">Get started <span class="arr"></span></a>
+    </div>
+  </div>
+</nav>
+<header class="doc-hero">
+  <div class="wrap doc-hero-grid">
+    <div>
+      <span class="hero-tag"><span class="pill">DOCS</span><b>Agent setup</b><span class="mute">Aura3D</span></span>
+      <h1>Give coding assistants the public Aura3D workflow before they generate scenes.</h1>
+      <p class="hero-lede">Use these rules when working with an AI coding assistant so it starts from templates, scene kits, typed assets, and public SDK imports.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="/marketing/docs/agent-quickstart.html">Start building <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="/marketing/index.html#gallery">See examples</a>
+      </div>
+    </div>
+    <aside class="doc-hero-panel">
+      <div class="hero-overlay-top">
+        <span class="scene-chip"><span class="dot"></span>agent setup</span>
+        <span class="scene-stat">Aura3D</span>
+      </div>
+      <div class="split-code-head">
+        <div class="split-code-tabs">
+          <span class="split-code-tab active">assistant instruction</span>
+          <span class="split-code-tab">TypeScript</span>
+        </div>
+        <span class="mono mute-2" style="font-size:11px">copy</span>
+      </div>
+      <pre class="code doc-code"><code>Use @aura3d/engine public imports. Start with sceneKits when they match the prompt. Register GLB/glTF files with the Aura3D CLI before using them. Keep the output as editable TypeScript.</code></pre>
+    </aside>
+  </div>
+</header>
+<section class="tape doc-tape">
+  <div class="wrap tape-inner">
+    <span class="tape-label">Docs</span>
+    <div class="doc-pill-row">
+          <a class="doc-pill" href="/marketing/docs/index.html">Docs</a>
+          <a class="doc-pill" href="/marketing/docs/agent-quickstart.html">Quickstart</a>
+          <a class="doc-pill" href="/marketing/docs/prompt-recipes.html">Prompts</a>
+          <a class="doc-pill" href="/marketing/docs/assets.html">Assets</a>
+          <a class="doc-pill" href="/marketing/docs/templates.html">Templates</a>
+          <a class="doc-pill" href="/marketing/docs/deployment.html">Deploy</a>
+          <a class="doc-pill" href="/marketing/docs/api.html">API</a>
+          <a class="doc-pill active" href="/marketing/docs/agent-rules.html">Agent setup</a>
+          <a class="doc-pill" href="/marketing/docs/claude.html">Claude</a>
+          <a class="doc-pill" href="/marketing/docs/cursor.html">Cursor</a>
+    </div>
+  </div>
+</section>
+<section class="section-tight">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">Agent setup</span>
+        <h2 class="h2">The right instructions prevent clean generated 3D code.</h2>
+        <p class="lede">Aura3D is designed for AI-assisted development, but assistants move faster with a clear workflow: public imports, typed assets, scene kits first, and normal TypeScript output.</p>
+      </div>
+    </div>
+    <div class="doc-card-grid">
+
+          <a class="doc-card" href="/marketing/docs/api.html">
+            <span class="doc-card-kicker mono">Agent setup</span>
+            <h3>Use public APIs</h3>
+            <p>Import from @aura3d/engine and stay on documented Aura3D APIs.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/marketing/docs/assets.html">
+            <span class="doc-card-kicker mono">Agent setup</span>
+            <h3>Register assets</h3>
+            <p>Use the CLI for supplied GLB/glTF files before model code is written.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/marketing/docs/prompt-recipes.html">
+            <span class="doc-card-kicker mono">Agent setup</span>
+            <h3>Start from kits</h3>
+            <p>Choose maintained scene systems for common prompt families.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/marketing/docs/deployment.html">
+            <span class="doc-card-kicker mono">Agent setup</span>
+            <h3>Ship static output</h3>
+            <p>Build and check the final app with deployment-safe paths.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="/marketing/index.html" class="brand">
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+      </svg>
+          <span>Aura3D</span>
+        </a>
+        <p class="foot-blurb">Aura3D is a TypeScript browser 3D SDK for AI-assisted development: scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Product</h4>
+        <a href="/marketing/index.html#workflows">Agent API</a>
+        <a href="/marketing/index.html#prompts">AI prompts</a>
+        <a href="/marketing/index.html#gallery">Examples</a>
+        <a href="/marketing/docs/api.html">API overview</a>
+      </div>
+      <div class="foot-col">
+        <h4>Build</h4>
+        <a href="/marketing/docs/agent-quickstart.html">Quickstart</a>
+        <a href="/marketing/docs/templates.html">Templates</a>
+        <a href="/marketing/docs/assets.html">Typed assets</a>
+        <a href="/marketing/docs/deployment.html">Deployment</a>
+      </div>
+      <div class="foot-col">
+        <h4>Guides</h4>
+        <a href="/marketing/docs/prompt-recipes.html">Prompt recipes</a>
+        <a href="/marketing/docs/agent-rules.html">Agent setup</a>
+        <a href="/marketing/docs/claude.html">Claude guide</a>
+        <a href="/marketing/docs/cursor.html">Cursor guide</a>
+      </div>
+      <div class="foot-col">
+        <h4>Reference</h4>
+        <a href="/llms.txt">llms.txt</a>
+        <a href="/marketing/docs/index.html">Documentation</a>
+        <a href="/marketing/index.html#deployment">Deploy checks</a>
+        <a href="/marketing/index.html#templates">Create app</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Aura3D · MIT licensed</span>
+      <span>Prompt-to-3D workflows · typed assets · editable TypeScript</span>
+    </div>
+  </div>
+</footer>
+<script type="module" src="/marketing/src/main.ts"></script>
+</body>
+</html>

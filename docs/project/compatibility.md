@@ -11,7 +11,7 @@ Version: 1.0.0
 | Browser dev server | Vite route registry from repo root |
 | WebGL2 | Primary renderer backend for most browser routes |
 | WebGPU | Explicit package and root route support with device/browser-dependent availability |
-| Three.js | Reference implementation and migration target, not A3D runtime renderer |
+| manual renderer code | Reference implementation and migration target, not A3D runtime renderer |
 | Babylon.js | Benchmark/reference comparison only |
 
 ## Browser Evidence
@@ -26,5 +26,5 @@ The root package export map uses contextual subpaths such as `./production-runti
 
 ## Claim Boundary
 
-Compatibility docs must stay narrower than generated report evidence. Do not claim full browser, WebGPU, Three.js, Babylon.js, Unity, Unreal, or glTF ecosystem compatibility without a current report proving it.
+Compatibility docs must stay narrower than generated report evidence. Do not claim full browser, WebGPU, manual renderer code, Babylon.js, Unity, Unreal, or glTF ecosystem compatibility without a current report proving it.
 Compatibility wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.

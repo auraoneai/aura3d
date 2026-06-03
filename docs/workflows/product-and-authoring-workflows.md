@@ -76,7 +76,6 @@ Focused unit coverage includes:
 - Product workflow claims must name the package, app route, template, or report that proves them.
 - Product configurator claims must distinguish imported product-asset behavior from route-side staging or material overrides.
 - Generated support assets are not product-quality proof unless a route/report explicitly accepts them as visible evidence.
-- Public "faster workflow" language belongs behind `tests/reports/superiority/developer-workflow.json` and `tests/reports/superiority/claim-defense.json`.
 
 ## Current Limits
 

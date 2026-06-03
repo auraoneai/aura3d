@@ -1,5 +1,0 @@
-# Local visual evidence remains on disk but is not committed.
-**/*.png
-**/*.jpg
-**/*.jpeg
-**/*.csv

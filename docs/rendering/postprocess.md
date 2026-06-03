@@ -27,9 +27,8 @@ Useful focused checks:
 
 ```sh
 pnpm exec vitest run tests/unit/rendering/postprocess-composer.test.ts tests/unit/rendering/renderer-postprocess-plan.test.ts
-pnpm exec playwright test tests/browser/threejs-parity-unreal-bloom-parity.spec.ts
 ```
 
 ## Boundaries
 
-The current docs should not claim complete Three.js examples/postprocessing parity or Unity/Unreal-style render-stack parity. Each postprocess claim needs a named pass, route, test, and generated report.
+The current docs should not claim complete manual renderer code examples/postprocessing parity or Unity/Unreal-style render-stack parity. Each postprocess claim needs a named pass, route, test, and generated report.

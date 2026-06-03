@@ -1,9 +1,0 @@
-# Local visual/runtime evidence is pruned before commit.
-**/*.png
-**/*.jpg
-**/*.jpeg
-**/*.csv
-**/node_modules/
-**/dist/
-**/*.log
-**/package-lock.json

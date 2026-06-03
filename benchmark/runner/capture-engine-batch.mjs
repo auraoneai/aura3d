@@ -103,6 +103,33 @@ const screenshotFreshness = scenes.flatMap((scene) =>
   })
 );
 
+const paritySummary = {
+  schema: "a3d-engine-parity-summary/1.0",
+  roundId,
+  startedAt: batchStartedAt,
+  finishedAt: new Date().toISOString(),
+  allowResume,
+  scenes: scenes.map((scene) => {
+    const aura3d = readCaptureSummary(scene, "aura3d");
+    const threejs = readCaptureSummary(scene, "threejs");
+    const pass = aura3d.pass && threejs.pass;
+    return {
+      scene,
+      pass,
+      aura3d,
+      threejs,
+      deltas: {
+        p50Fps: numericDelta(aura3d.metrics?.p50Fps, threejs.metrics?.p50Fps),
+        p95FrameTimeMs: numericDelta(aura3d.metrics?.p95FrameTimeMs, threejs.metrics?.p95FrameTimeMs),
+        firstUsableRenderMs: numericDelta(aura3d.metrics?.firstUsableRenderMs, threejs.metrics?.firstUsableRenderMs),
+        bundleSizeGzipBytes: numericDelta(aura3d.metrics?.bundleSizeGzipBytes, threejs.metrics?.bundleSizeGzipBytes),
+        sourceLoc: numericDelta(aura3d.metrics?.sourceLoc, threejs.metrics?.sourceLoc)
+      }
+    };
+  })
+};
+paritySummary.pass = failures.length === 0 && paritySummary.scenes.every((scene) => scene.pass);
+
 writeFileSync(join(engineRoot, "batch-summary.json"), `${JSON.stringify({
   schema: "a3d-engine-capture-batch-summary/1.0",
   roundId,
@@ -113,6 +140,7 @@ writeFileSync(join(engineRoot, "batch-summary.json"), `${JSON.stringify({
   screenshotFreshness,
   failures: failures.map((failure) => ({ scene: failure.scene, library: failure.library, status: failure.status, signal: failure.signal }))
 }, null, 2)}\n`);
+writeFileSync(join(engineRoot, "engine-parity-summary.json"), `${JSON.stringify(paritySummary, null, 2)}\n`);
 
 for (const entry of screenshotFreshness) {
   if (entry.exists && entry.fresh) {
@@ -123,4 +151,40 @@ for (const entry of screenshotFreshness) {
 if (failures.length > 0) {
   console.error(`Engine capture failures: ${failures.map((f) => `${f.scene}/${f.library}`).join(", ")}`);
   process.exit(1);
+}
+
+function readCaptureSummary(scene, library) {
+  const metricsFile = join(engineRoot, scene, library, "metrics.json");
+  const routeFile = join(engineRoot, scene, library, "route-health.json");
+  const screenshotFile = join(engineRoot, scene, library, "screenshot.png");
+  const metrics = existsSync(metricsFile) ? safeJson(metricsFile) : null;
+  const route = existsSync(routeFile) ? safeJson(routeFile) : null;
+  const screenshot = screenshotFreshness.find((entry) => entry.scene === scene && entry.library === library) ?? {
+    scene,
+    library,
+    screenshot: "screenshot.png",
+    exists: existsSync(screenshotFile),
+    fresh: false
+  };
+  return {
+    library,
+    pass: hasCompleteCapture(scene, library),
+    metricsFile: "metrics.json",
+    routeHealthFile: "route-health.json",
+    screenshot,
+    metrics,
+    routeStatus: route?.status ?? null
+  };
+}
+
+function safeJson(file) {
+  try {
+    return JSON.parse(readFileSync(file, "utf8"));
+  } catch (error) {
+    return { parseError: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+function numericDelta(a, b) {
+  return Number.isFinite(a) && Number.isFinite(b) ? Number((a - b).toFixed(3)) : null;
 }

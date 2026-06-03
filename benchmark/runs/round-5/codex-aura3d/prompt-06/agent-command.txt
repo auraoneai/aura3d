@@ -1,1 +1,0 @@
-codex exec --skip-git-repo-check --ignore-rules --ignore-user-config --ephemeral -s danger-full-access -C /Users/gurbakshchahal/aura3d/benchmark/runs/round-5/codex-aura3d/prompt-06 --output-last-message agent-response.txt <instruction>

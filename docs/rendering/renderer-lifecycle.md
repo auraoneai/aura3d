@@ -26,7 +26,6 @@ Useful focused checks:
 
 ```sh
 pnpm exec vitest run tests/unit/rendering/resource-lifetime.test.ts tests/unit/rendering/render-state-leaks.test.ts
-pnpm superiority:resource-lifecycle
 ```
 
 ## Boundaries

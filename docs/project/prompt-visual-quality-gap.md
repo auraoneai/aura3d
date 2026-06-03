@@ -3,9 +3,7 @@
 Status: historical supporting note.
 
 This document records the old starter-template visual-quality cleanup. It is
-not the current release standard. The current standard is the neutral Aura3D
-versus raw Three.js benchmark defined in `FinalizedPromptPlan.md` and
-`benchmark/protocol.md`.
+not the current release standard. The current benchmark-superiority standard is the neutral Aura3D versus manual renderer code benchmark defined in `docs/project/frozen-benchmark-release-gates.md` and `benchmark/protocol.md`. Scoped SDK/product-context release evidence is tracked in `docs/project/release-tracks.md`.
 
 Generated: 2026-05-29
 
@@ -95,7 +93,7 @@ all of these checks:
 
 - [x] Previously added a local prompt-fidelity report. That report has now
       been removed from the release gate because the current standard requires
-      neutral Aura3D versus Three.js benchmark scoring.
+      neutral Aura3D versus manual renderer code benchmark scoring.
 - [x] Add a contact-sheet artifact for all release-facing screenshots.
 - [x] Add human review fields: `product-quality-pass`,
   `technical-render-pass`, `partial`, `fail`.
@@ -103,7 +101,7 @@ all of these checks:
   the new gate to fail them.
 - [x] Add positive fixtures that prove three release-facing prompt outputs pass
   `product-quality-pass`.
-- [ ] Compare Aura3D prompt output against raw Three.js agent output on the same
+- [ ] Compare Aura3D prompt output against manual renderer code agent output on the same
   prompts and assets.
 - [x] Re-run Codex context-only eval after the visual recipe layer is built.
 - [ ] Re-run Claude Code, Cursor, and Copilot context-only evals when available.

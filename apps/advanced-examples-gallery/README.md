@@ -38,7 +38,7 @@ pnpm advanced-gallery:audit
 
 `pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The source metadata currently marks the ten routes as accepted, but that status can be cited only when the generated full-gallery screenshots, route JSON, visual review report, and audit report are current in `tests/reports/advanced-examples-gallery/`.
 
-`accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove Three.js showcase quality.
+`accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove manual renderer code showcase quality.
 
 `pnpm advanced-gallery:review` writes a machine-readable release evidence report that joins the metadata status, screenshot artifacts, screenshot hashes, runtime JSON, authored GLB telemetry, motion samples, and PNG detail metrics. `pnpm advanced-gallery:audit` then checks the route reports, reusable-system disclosures, unsupported disclosures, measured performance evidence, screenshot hashes, and image-quality evidence.
 
@@ -106,7 +106,7 @@ Each demo page includes a "What this proves" section, known gaps, acceptance cri
 
 These are the visual targets and failure boundaries used by the route metadata, screenshot review, and audit tooling. If a route regresses into one of the failure modes, it must not be treated as accepted until the source, screenshot, metadata, review, and audit agree again.
 
-| Demo | Three.js-style reference | Hero screenshot intent | Must not ship as |
+| Demo | manual renderer code-style reference | Hero screenshot intent | Must not ship as |
 | --- | --- | --- | --- |
 | Water Lab | GPGPU/WebGL water demos | Sunset marina or mountain lake with readable water interaction, shoreline depth, dock/boat/lights/props, and visible ripple response. | Blue plane, flat terrain, unlit prop scatter, or invisible pointer disturbance. |
 | Ocean Observatory | WebGPU/WebGL ocean demos | Futuristic observatory/yacht deck overlooking layered animated ocean, horizon atmosphere, drones/markers, glass rails, and moving reflection cues. | Same composition as Water Lab, one sine-wave plane, or low-detail deck. |

@@ -43,7 +43,7 @@ const dataset = [
 ] as const;
 
 createAuraApp("#app", sceneKits.physicsPlayground().toAppOptions());
-createAuraApp("#app", sceneKits.particleFountain({ particleCount: 2400, emissionRate: 120 }).toAppOptions());
+createAuraApp("#app", sceneKits.particleFountain({ emissionRate: 120 }).toAppOptions());
 createAuraApp("#app", sceneKits.solarSystem().toAppOptions());
 createAuraApp("#app", sceneKits.neonTunnel().toAppOptions());
 createAuraApp("#app", sceneKits.dataViz({ dataset }).toAppOptions());
@@ -85,11 +85,11 @@ grounded shadows. Do not fake collision counters with timers. Use the safe root
 Scene kit:
 
 ```ts
-import { createAuraApp, sceneKits, ui } from "@aura3d/engine";
+import { createAuraApp, particleFountain, ui } from "@aura3d/engine/scene-kits/particle-fountain";
 
 ui.html("#app", `<label>emission rate <input id="rate" type="range" min="60" max="180" value="120" /></label>`);
 ui.slider("#rate", { min: 60, max: 180, value: 120, metric: "particle-emission-rate" });
-const kit = sceneKits.particleFountain({ particleCount: 2400, emissionRate: Number(ui.range("#rate").value) });
+const kit = particleFountain({ emissionRate: Number(ui.range("#rate").value) });
 createAuraApp("#app", kit.toAppOptions());
 ```
 
@@ -255,3 +255,15 @@ asset URLs.
   and use the generated `assets.<name>` key.
 - Do not use raw string asset ids in the safe API.
 - Do not claim an example works until `npm run build` passes.
+
+## Prompt 09 lean humanoid recipe
+
+Use the public lean humanoid-walk scene-kit subpath for the humanoid benchmark prompt. This keeps Prompt 09 asset-free and prevents the broad root engine bundle from carrying the old armored humanoid GLB path into production output.
+
+```ts
+import { character, createAuraApp, sceneKits } from "@aura3d/engine/scene-kits/humanoid-walk";
+
+const kit = sceneKits.humanoidWalk({ animationState: "benchmark-pose" });
+createAuraApp("#app", kit.toAppOptions());
+console.log(character.visualQA(kit.nodes));
+```

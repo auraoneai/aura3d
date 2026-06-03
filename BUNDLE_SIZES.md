@@ -7,7 +7,6 @@ against the gzip artifact.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 57,788 | 19,112 | 80,000 | pass |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 948 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 47,215 | 13,064 | 45,000 | pass |

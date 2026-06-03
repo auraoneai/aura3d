@@ -36,7 +36,6 @@ pnpm verify:api-docs
 | `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
 | `@aura3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
 | `@aura3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
-| `@aura3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
 | `@aura3d/workflows` | `1.0.0` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
@@ -70,7 +69,7 @@ export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./Retargeting.js";
-export * from "./threejs-compatibility";
+export * from "./manual renderer code-compatibility";
 ```
 
 ## @aura3d/apps
@@ -129,10 +128,10 @@ export { createAssetCompatibilityReport } from "./AssetCompatibility";
 export type { AssetCompatibilityLoaderName, AssetCompatibilityReport, AssetCompatibilityReportAsset, AssetCompatibilityReportOptions, AssetCompatibilityStatus, AssetLoaderCompatibilityResult, BlenderExportCompatibilityResult, ExternalAssetLoaderCompatibilityResult } from "./AssetCompatibility";
 export { summarizeExternalParityGLTFCorpus, summarizeExternalParityCorpus, validateExternalParityGLTFCorpusManifest, validateExternalParityCorpusManifest } from "./ExternalParityGLTFCorpus";
 export type { ExternalParityGLTFCorpusAsset, ExternalParityGLTFCorpusManifest, ExternalParityGLTFCorpusSummary, ExternalParityCorpusAsset, ExternalParityCorpusManifest, ExternalParityCorpusSummary } from "./ExternalParityGLTFCorpus";
-export { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "./threejs-compatibility/ThreeCompatAssetRegistry";
-export { createThreeCompatAssetProvenance } from "./threejs-compatibility/ThreeCompatAssetProvenance";
-export type { ThreeCompatAssetManifest, ThreeCompatAssetRegistrySummary } from "./threejs-compatibility/ThreeCompatAssetRegistry";
-export type { ThreeCompatAssetProvenance, ThreeCompatSourceAsset, ThreeCompatTrackedAssetInput } from "./threejs-compatibility/ThreeCompatAssetProvenance";
+export { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "./manual renderer code-compatibility/ThreeCompatAssetRegistry";
+export { createThreeCompatAssetProvenance } from "./manual renderer code-compatibility/ThreeCompatAssetProvenance";
+export type { ThreeCompatAssetManifest, ThreeCompatAssetRegistrySummary } from "./manual renderer code-compatibility/ThreeCompatAssetRegistry";
+export type { ThreeCompatAssetProvenance, ThreeCompatSourceAsset, ThreeCompatTrackedAssetInput } from "./manual renderer code-compatibility/ThreeCompatAssetProvenance";
 export { createProductionGLTFRenderMetadata, createProductionAssetCorpusSummary, inspectProductionGlb, loadProductionGLTFRenderPipeline, loadProductionAssetManifest } from "./asset-corpus";
 export type { ProductionAssetClass, ProductionAssetCorpusRequirements, ProductionAssetCorpusSummary, ProductionAssetManifest, ProductionAssetManifestEntry, ProductionAssetReadinessEntry, ProductionGLTFRenderMetadata, ProductionGLTFRenderWarning, ProductionGLTFRenderPipeline, ProductionGLTFRenderPipelineOptions, ProductionGlbInspection } from "./asset-corpus";
 export { createAdvancedAssetCorpusSummary, inspectCurrentRoutesGlb, loadCurrentRoutesAssetManifest, writeAdvancedAssetCorpusReport } from "./AdvancedAssetCorpus";
@@ -824,12 +823,12 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { ThreeCompatRenderer, createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "./threejs-compatibility";
-export type { ThreeCompatInstancingSystemStatus, ThreeCompatLightDescriptor, ThreeCompatLightKind, ThreeCompatMaterialMode, ThreeCompatRenderTargetDescriptor, ThreeCompatRendererBackend, ThreeCompatRendererDiagnostics, ThreeCompatRendererFeatureStatus, ThreeCompatRendererOptions, ThreeCompatRendererSupportState, ThreeCompatSceneRenderPlan, ThreeCompatShadowSystemStatus, ThreeCompatTextureCapability, ThreeCompatTransparencySystemStatus } from "./threejs-compatibility";
-export * from "./threejs-compatibility/postprocess";
-export * from "./threejs-compatibility/shaders";
-export * from "./threejs-compatibility/vfx";
-export * from "./threejs-compatibility/performance";
+export { ThreeCompatRenderer, createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "./manual renderer code-compatibility";
+export type { ThreeCompatInstancingSystemStatus, ThreeCompatLightDescriptor, ThreeCompatLightKind, ThreeCompatMaterialMode, ThreeCompatRenderTargetDescriptor, ThreeCompatRendererBackend, ThreeCompatRendererDiagnostics, ThreeCompatRendererFeatureStatus, ThreeCompatRendererOptions, ThreeCompatRendererSupportState, ThreeCompatSceneRenderPlan, ThreeCompatShadowSystemStatus, ThreeCompatTextureCapability, ThreeCompatTransparencySystemStatus } from "./manual renderer code-compatibility";
+export * from "./manual renderer code-compatibility/postprocess";
+export * from "./manual renderer code-compatibility/shaders";
+export * from "./manual renderer code-compatibility/vfx";
+export * from "./manual renderer code-compatibility/performance";
 export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironment, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
 export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
@@ -1087,8 +1086,6 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 ## @aura3d/three-compat
 
 - Version: `1.0.0`
-- Package manifest: `packages/three-compat/package.json`
-- Public entrypoint: `packages/three-compat/src/index.ts`
 
 ### Export Declarations
 

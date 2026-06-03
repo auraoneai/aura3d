@@ -1,9 +1,0 @@
-{
-  "ok": true,
-  "errors": [],
-  "health": {
-    "canvas": null,
-    "textLength": 25,
-    "text": "Benchmark scaffold ready."
-  }
-}

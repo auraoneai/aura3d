@@ -16,6 +16,8 @@ Do not use archived `archive/legacy-ai-runtime/` files from active code.
 
 Prompt-to-visual workflow:
 
+- For ordinary product apps, follow `docs/agents/prompt-to-3d-workflow.md` before dropping into low-level primitives.
+
 - For frozen benchmark prompts, first open
   `docs/agents/benchmark-recipes.md`. Copy the smallest matching scene-kit
   recipe and make only prompt-required edits.

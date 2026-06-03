@@ -4,6 +4,7 @@ import { createGzip } from "node:zlib";
 import { basename, join, resolve } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { applyFpsCalibrationToMetrics, runFpsCalibration, samplePageFps } from "./fps-calibration.mjs";
+import { collectBrowserRendererProof, inspectPngFile, writeRendererProofArtifact } from "./renderer-proof-artifact.mjs";
 
 const [, , sceneDirArg, libraryArg] = process.argv;
 if (!sceneDirArg || !["aura3d", "threejs"].includes(libraryArg)) {
@@ -162,6 +163,10 @@ let routeUrl = null;
 let fpsSample = null;
 let failureStage = "none";
 let failureReason = "none";
+let browserRendererProof = null;
+let rendererProofEvidence = null;
+let rendererProofSchema = null;
+let rendererProofWriteFailure = null;
 
 if (install.status === 0) {
   const build = run("npm", ["run", "build"], "build.log");
@@ -243,6 +248,9 @@ if (install.status === 0) {
         const hasRenderedFrame = Number.isFinite(readout.drawCalls) && readout.drawCalls > 0;
         routeHealth = ready && hasRenderedFrame && pageErrors.length === 0 && (readout.routeHealth ?? "pass") === "pass" ? "pass" : "fail";
         routeHealthMethod = "production preview + __ENGINE_READY__ + __ENGINE_READOUT__ + canvas check";
+        browserRendererProof = await collectBrowserRendererProof(page, { readout }).catch((error) => ({
+          error: error instanceof Error ? error.message : String(error)
+        }));
         routeHealthEvidence = {
           status: routeHealth,
           method: routeHealthMethod,
@@ -339,6 +347,60 @@ const metrics = applyFpsCalibrationToMetrics({
   }
 });
 
+try {
+  const proof = writeRendererProofArtifact(outputDir, {
+    producer: "benchmark/runner/capture-engine.mjs",
+    capture: {
+      kind: "engine-capture",
+      scene: basename(sceneDir),
+      library: metrics.library,
+      routeUrl,
+      captureStartedAt
+    },
+    status: {
+      routeHealth,
+      fpsInstrumentationStatus: metrics.fpsInstrumentationStatus,
+      screenshotFresh,
+      failureStage: buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureStage === "none" ? "runtime" : failureStage : "none",
+      failureReason: buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureReason : "none"
+    },
+    artifacts: {
+      metrics: "metrics.json",
+      routeHealth: existsSync(join(outputDir, "route-health.json")) ? "route-health.json" : null,
+      screenshot,
+      installLog: "install.log",
+      buildLog: "build.log",
+      runLog: "run.log"
+    },
+    browserEvidence: browserRendererProof,
+    runtimeSources: [
+      browserRendererProof?.runtimeDiagnostics,
+      browserRendererProof?.readout,
+      browserRendererProof?.diagnostics,
+      routeHealthEvidence?.readout
+    ],
+    webglEvidence: browserRendererProof?.webglContextEvidence,
+    pngMetadata: screenshot ? inspectPngFile(join(outputDir, screenshot), {
+      role: "primary-screenshot",
+      fileName: screenshot,
+      fresh: screenshotFresh
+    }) : null,
+    notes: browserRendererProof?.error ? [`Browser renderer proof collection failed: ${browserRendererProof.error}`] : []
+  });
+  rendererProofEvidence = proof.fileName;
+  rendererProofSchema = proof.artifact.schema;
+} catch (error) {
+  rendererProofWriteFailure = error instanceof Error ? error.message : String(error);
+}
+
+if (rendererProofEvidence) {
+  metrics.rendererProofEvidence = rendererProofEvidence;
+  metrics.rendererProofSchema = rendererProofSchema;
+}
+if (rendererProofWriteFailure) {
+  metrics.rendererProofError = rendererProofWriteFailure;
+}
+
 writeFileSync(join(outputDir, "metrics.json"), `${JSON.stringify(metrics, null, 2)}\n`);
 appendNotes([
   "",
@@ -351,6 +413,8 @@ appendNotes([
   `screenshot timestamp: ${screenshotMtime ?? "none"}`,
   `screenshot freshness: ${screenshotFresh ? "fresh" : "missing-or-stale"}`,
   `FPS calibration status: ${metrics.fpsInstrumentationStatus}`,
+  `renderer proof: ${rendererProofEvidence ?? "unavailable"}`,
+  `renderer proof error: ${rendererProofWriteFailure ?? "none"}`,
   `failure stage: ${buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureStage === "none" ? "runtime" : failureStage : "none"}`,
   `failure reason: ${buildStatus !== 0 || routeHealth !== "pass" || !screenshot ? failureReason : "none"}`,
   `heap peak: ${Number.isFinite(jsHeapPeakBytes) ? jsHeapPeakBytes : "unavailable"}`

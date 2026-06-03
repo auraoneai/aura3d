@@ -12,7 +12,7 @@ This manifest freezes prompt order and filenames for a benchmark round. Editing 
 | 6 | `06-mini-golf-hole.md` | none |
 | 7 | `07-material-lab.md` | none |
 | 8 | `08-procedural-city-block.md` | none |
-| 9 | `09-animated-primitive-humanoid.md` | none |
+| 9 | `09-animated-primitive-humanoid.md` | none external; library built-ins allowed |
 | 10 | `10-product-viewer-sneaker.md` | `benchmark/assets/sneaker.glb` only |
 
-Prompts 1 through 9 are intentionally asset-free. Aura3D must show value through geometry, animation, physics, materials, lights, effects, controls, and developer ergonomics, not through asset discovery.
+Prompts 1 through 9 intentionally provide no prompt-specific external assets. Aura3D may use public scene kits, helpers, and bundled built-in assets exposed by the library context. manual renderer code must not fetch, invent, or copy external assets unless the prompt explicitly provides them. Aura3D must show value through public API leverage, geometry, animation, physics, materials, lights, effects, controls, bundled library capabilities, and developer ergonomics, not through asset discovery.

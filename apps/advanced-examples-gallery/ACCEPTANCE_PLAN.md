@@ -1,8 +1,8 @@
 # Advanced Examples Gallery 10/10 Acceptance Plan
 
-This is the operating contract for keeping the Three.js parity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
+This is the operating contract for keeping the manual renderer code parity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
 
-A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced Three.js-style category.
+A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced manual renderer code-style category.
 
 ## Acceptance Claim Requirements
 
@@ -38,7 +38,7 @@ Every demo must pass every gate before its `visualReview.status` can become `acc
 | Animation | Motion is visible and stable after asset load. | Static route, slideshow cadence, or animation hidden outside accepted camera. |
 | Performance | Runtime JSON reports stable post-load stats, draw calls, object counts, render size, load timing, and motion samples. | Stats missing, polluted by asset rebuild/load work, or too slow for demonstration. |
 | Feature honesty | Native features, helper approximations, and unsupported gaps are documented per route. | Claiming native GPGPU water, volumetric fog, GPU particles, SSR/refraction, IK, or articulated physics when not implemented. |
-| Three.js comparison | Metadata/README name comparable Three.js-style category and explain current delta. | Generic "wow" or parity claim without reference basis. |
+| manual renderer code comparison | Metadata/README name comparable manual renderer code-style category and explain current delta. | Generic "wow" or parity claim without reference basis. |
 
 ## Capability Boundary
 
@@ -119,7 +119,7 @@ Every demo must have a final audit row with current evidence for each item:
 - Viewport screenshot path and SHA-256.
 - Runtime JSON path.
 - Current `tests/reports/advanced-examples-gallery/visual-review-report.json` route record.
-- Named Three.js-style reference category.
+- Named manual renderer code-style reference category.
 - At least five visible systems, listed by actual rendered system names.
 - At least three interactions with screenshot/runtime evidence or explicit test coverage.
 - Animation/motion evidence from runtime samples.

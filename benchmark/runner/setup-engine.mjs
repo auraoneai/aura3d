@@ -167,31 +167,40 @@ function auraSource(sceneName) {
 
 function auraMaterialSource() {
   return `
-import { camera, createAuraApp, interactions, lights, material, primitives, scene } from "@aura3d/engine";
-${auraShell}
-mountShell("01 material grid");
+	import { camera, createAuraApp, effects, environments, interactions, lights, material, primitives, scene } from "@aura3d/engine";
+	${auraShell}
+	mountShell("01 material grid");
 
 const nodes = [
   primitives.box({ name: "matte studio plinth", material: material.pbr({ color: "#5f6875", roughness: 0.46, metallic: 0.03 }) }).position(0, 0.04, -0.52).scale([8.2, 0.12, 1.92]).toJSON(),
-  primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#ffffff", emissive: "#ffffff" }) }).position(0, 2.0, -1.34).scale([5.9, 0.14, 0.08]).toJSON(),
-  primitives.sphere({ name: "metal swatch", material: material.pbr({ color: "#eef7ff", roughness: 0.08, metallic: 1 }) }).position(-2.8, 0.82, -0.52).scale(0.86).toJSON(),
-  primitives.sphere({ name: "glass swatch", material: material.pbr({ color: "#a8ecff", opacity: 0.36, roughness: 0.08, metallic: 0 }) }).position(-1.4, 0.82, -0.52).scale(0.86).toJSON(),
-  primitives.sphere({ name: "rubber swatch", material: material.rubber({ color: "#151820", roughness: 1 }) }).position(0, 0.82, -0.52).scale(0.86).toJSON(),
-  primitives.sphere({ name: "emissive swatch", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8" }) }).position(1.4, 0.82, -0.52).scale(0.86).toJSON(),
-  primitives.sphere({ name: "clearcoat swatch", material: material.pbr({ color: "#ef233c", roughness: 0.12, metallic: 0.05 }) }).position(2.8, 0.82, -0.52).scale(0.86).toJSON()
+  primitives.box({ name: "white softbox reflection strip", material: material.emissive({ color: "#f8fbff", emissive: "#f8fbff", emissiveIntensity: 0.72, opacity: 0.68 }) }).position(0, 2.16, -1.34).scale([4.8, 0.1, 0.06]).toJSON(),
+  primitives.box({ name: "cool reflection card", material: material.emissive({ color: "#77e6ff", emissive: "#77e6ff", emissiveIntensity: 0.7 }) }).position(-3.55, 1.05, -0.22).scale([0.08, 1.18, 1.2]).toJSON(),
+  primitives.box({ name: "warm reflection card", material: material.emissive({ color: "#ffd18a", emissive: "#ffd18a", emissiveIntensity: 0.7 }) }).position(3.55, 1.05, -0.22).scale([0.08, 1.18, 1.2]).toJSON(),
+  primitives.sphere({ name: "mirror chrome metal swatch", material: material.chrome({ color: "#eef7ff", roughness: 0.018, clearcoat: 0.18, envMapIntensity: 2 }) }).position(-2.8, 0.82, -0.52).scale(0.86).toJSON(),
+  primitives.sphere({ name: "transparent cyan glass swatch", material: material.clearGlass({ color: "#a8ecff", opacity: 0.24, transmission: 1, thickness: 0.9, attenuationDistance: 0.68 }) }).position(-1.4, 0.82, -0.52).scale(0.86).toJSON(),
+  primitives.sphere({ name: "matte charcoal rubber swatch", material: material.blackRubber({ color: "#151820", roughness: 1 }) }).position(0, 0.82, -0.52).scale(0.86).toJSON(),
+  primitives.sphere({ name: "controlled emissive magenta swatch", material: material.glowingEmissive({ color: "#ff42c8", emissive: "#ff42c8", emissiveIntensity: 1.35, roughness: 0.08 }) }).position(1.4, 0.82, -0.52).scale(0.86).toJSON(),
+  primitives.sphere({ name: "red clearcoat swatch", material: material.clearcoat({ color: "#ef233c", roughness: 0.12, clearcoat: 1, envMapIntensity: 1.4 }) }).position(2.8, 0.82, -0.52).scale(0.86).toJSON(),
+  primitives.box({ name: "metal label chip", material: material.emissive({ color: "#dff8ff", emissive: "#dff8ff" }) }).position(-2.8, 0.18, 0.52).scale([0.56, 0.06, 0.08]).toJSON(),
+  primitives.box({ name: "glass label chip", material: material.emissive({ color: "#99e8ff", emissive: "#99e8ff" }) }).position(-1.4, 0.18, 0.52).scale([0.56, 0.06, 0.08]).toJSON(),
+  primitives.box({ name: "rubber label chip", material: material.emissive({ color: "#9ca3af", emissive: "#9ca3af" }) }).position(0, 0.18, 0.52).scale([0.56, 0.06, 0.08]).toJSON(),
+  primitives.box({ name: "emissive label chip", material: material.emissive({ color: "#ff42c8", emissive: "#ff42c8" }) }).position(1.4, 0.18, 0.52).scale([0.56, 0.06, 0.08]).toJSON(),
+  primitives.box({ name: "clearcoat label chip", material: material.emissive({ color: "#ef233c", emissive: "#ef233c" }) }).position(2.8, 0.18, 0.52).scale([0.56, 0.06, 0.08]).toJSON()
 ];
 
 const app = createAuraApp("#stage", {
   diagnostics: { overlay: false, performancePanel: false },
   pixelRatio: 1,
   scene: scene()
-    .background("#071017")
-    .camera(camera.perspective({ position: [0, 2.0, 7.2], target: [0, 0.82, -0.52], fov: 42 }))
-    .add(interactions.orbit())
-    .add(lights.ambient({ intensity: 0.62, color: "#dcecff" }))
-    .add(lights.directional({ position: [-3.4, 5.5, 4.4], intensity: 1.35, color: "#ffffff" }))
-    .addMany(nodes)
-});
+	    .background("#071017")
+	    .camera(camera.perspective({ position: [0, 2.05, 7.8], target: [0, 0.84, -0.52], fov: 40 }))
+	    .add(environments.materialLab({ intensity: 1.2 }))
+	    .add(interactions.orbit())
+	    .add(lights.ambient({ intensity: 0.62, color: "#dcecff" }))
+	    .add(lights.directional({ position: [-3.4, 5.5, 4.4], intensity: 1.35, color: "#ffffff" }))
+	    .add(effects.contactOcclusion({ intensity: 0.32, radius: 0.72 }))
+	    .addMany(nodes)
+	});
 window.__ENGINE_READOUT__ = () => engineReadout(app);
 window.__ENGINE_READY__ = () => engineReady(window.__ENGINE_READOUT__?.());
 `;
@@ -254,9 +263,9 @@ const app = createAuraApp("#stage", {
     .camera(camera.perspective({ position: [4.4, 3.0, 5.8], target: [0, 1.2, 0], fov: 48 }))
     .add(interactions.orbit())
     .add(lights.ambient({ intensity: 0.54, color: "#dcecff" }))
-    .addMany(prefabs.particleFountain({ count: 450 }))
-    .add(effects.bloom({ intensity: 0.25 }))
-    .add(effects.fog({ density: 0.12, color: "#08111a" }))
+	    .addMany(prefabs.particleFountain({ count: 2400, emissionRate: 120 }))
+	    .add(effects.bloom({ intensity: 0.16, threshold: 0.86, radius: 0.18 }))
+	    .add(effects.fog({ density: 0.035, color: "#08111a" }))
     .add(primitives.plane({ name: "dark floor", material: material.pbr({ color: "#101822", roughness: 0.82 }) }).rotate(-Math.PI / 2, 0, 0).scale([8, 1, 8]))
 });
 window.__ENGINE_READOUT__ = () => engineReadout(app);
@@ -289,34 +298,18 @@ window.__ENGINE_READY__ = () => engineReady(window.__ENGINE_READOUT__?.());
 
 function auraPhysicsSource() {
   return `
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { PhysicsWorld, Shape, type RigidBody } from "@aura3d/engine/physics";
-${threePrelude("04 Aura3D physics ramp", { shadows: false })}
-const world = new PhysicsWorld({ gravity: [0, -10, 0], fixedDelta: 1 / 60, solverIterations: 1 });
-const bodyGround = world.createRigidBody({ type: "static", position: [0, 0, 0], friction: 0.7 });
-world.createCollider(bodyGround, { shape: Shape.plane([0, 1, 0], 0), material: { friction: 0.7, restitution: 0.05 } });
-const rampBody = world.createRigidBody({ type: "static", position: [0, 0, 0], friction: 0.55 });
-world.createCollider(rampBody, { shape: Shape.plane([0.34, 0.94, 0], -1.3), material: { friction: 0.55, restitution: 0.08 } });
-const ramp = new THREE.Mesh(new THREE.BoxGeometry(8, 0.32, 3.4), new THREE.MeshStandardMaterial({ color: "#486a91", roughness: 0.55 }));
-ramp.rotation.z = -0.35; ramp.position.set(-0.06, 1.1, 0); scene.add(ramp);
-const cubeGeo = new THREE.BoxGeometry(0.55, 0.55, 0.55);
-const cubes: { body: RigidBody; mesh: THREE.Mesh }[] = [];
-for (let i = 0; i < 12; i += 1) {
-  const body = world.createRigidBody({ type: "dynamic", position: [-1.65 + (i % 4) * 0.65, 2.55 + Math.floor(i / 4) * 0.58, -1.0 + (i % 4) * 0.55], mass: 1, friction: 0.45, restitution: 0.08 });
-  world.createCollider(body, { shape: Shape.box(0.275, 0.275, 0.275), material: { friction: 0.45, restitution: 0.08 } });
-  const mesh = new THREE.Mesh(cubeGeo, new THREE.MeshStandardMaterial({ color: new THREE.Color().setHSL(i / 12, 0.58, 0.58), roughness: 0.48 }));
-  scene.add(mesh); cubes.push({ body, mesh });
-}
-function sync() {
-  world.step(1 / 60);
-  for (const cube of cubes) {
-    const p = cube.body.position;
-    cube.mesh.position.set(p[0], p[1], p[2]);
-  }
-}
-animate(sync);
-`;
+	import { createAuraApp, sceneKits } from "@aura3d/engine";
+	${auraShell}
+	mountShell("04 physics playground");
+	const kit = sceneKits.physicsPlayground({ cubes: 50 });
+	const app = createAuraApp("#stage", {
+	  ...kit.toAppOptions(),
+	  diagnostics: { overlay: false, performancePanel: false },
+	  pixelRatio: 1
+	});
+	window.__ENGINE_READOUT__ = () => engineReadout(app);
+	window.__ENGINE_READY__ = () => engineReady(window.__ENGINE_READOUT__?.());
+	`;
 }
 
 function threePrelude(title, options = {}) {

@@ -32,7 +32,6 @@ Shared route helpers and templates:
 Asset and material inputs used by WebGPU evidence:
 
 - `packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.ts`
-- `packages/assets/src/threejs-example-parity/index.ts`
 - `fixtures/environment-corpus/manifest.json`
 
 ## Root Routes

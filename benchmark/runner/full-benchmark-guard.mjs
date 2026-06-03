@@ -90,7 +90,7 @@ const approvedPrefixes = [
   "benchmark/prompts/",
   "docs/agents/",
   "llms.txt",
-  "Aura3DCatchUpPRD-2.md"
+  "UnifiedPRD.md"
 ];
 
 if (override) {
@@ -115,30 +115,29 @@ const touchedFailedWorkstream = changedFiles.some((file) =>
   approvedPrefixes.some((prefix) => file === prefix || file.startsWith(prefix))
 );
 
-if (!nonRelease && changedFiles.length > 0) {
-  console.error("Official full benchmark cannot start from a dirty worktree unless --non-release or an explicit override is used.");
-  console.error(changedFiles.join("\n"));
-  process.exit(1);
-}
-
 if (!nonRelease) {
+  if (changedFiles.length > 0) {
+    console.error("Official full benchmark cannot start from a dirty worktree unless --non-release or an explicit override is used.");
+    console.error(changedFiles.join("\n"));
+    process.exit(1);
+  }
   const review = validateHumanReview(humanReviewPath);
   if (!review.pass) {
     console.error("Official full benchmark requires passing human visual review notes before rerun.");
     console.error(review.failures.join("\n"));
     process.exit(1);
   }
-}
+} else {
+  if (changedFiles.length === 0) {
+    console.error("No code diff detected. Do not rerun the full benchmark without implementation changes or explicit override.");
+    process.exit(1);
+  }
 
-if (changedFiles.length === 0) {
-  console.error("No code diff detected. Do not rerun the full benchmark without implementation changes or explicit override.");
-  process.exit(1);
-}
-
-if (!touchedFailedWorkstream) {
-  console.error("No changed file touches a PRD-2 failed workstream area. Refusing full benchmark rerun.");
-  console.error(changedFiles.join("\n"));
-  process.exit(1);
+  if (!touchedFailedWorkstream) {
+    console.error("No changed file touches a UnifiedPRD failed workstream area. Refusing full benchmark rerun.");
+    console.error(changedFiles.join("\n"));
+    process.exit(1);
+  }
 }
 
 const sourcePath = join(repoRoot, "packages/engine/src/agent-api/index.ts");

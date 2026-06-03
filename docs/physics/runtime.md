@@ -52,13 +52,11 @@ Focused coverage lives in:
 - `tests/unit/physics/stress-scenes.test.ts`
 - `tests/browser/physics-browser.spec.ts`
 - `tests/browser/advanced-examples-gallery.spec.ts`
-- `tools/superiority-physics-fidelity/index.ts`
 
 Useful commands:
 
 ```sh
 pnpm exec vitest run tests/unit/physics tests/unit/workstream4.physics-animation.test.ts --reporter=dot
-pnpm superiority:physics-fidelity
 pnpm advanced-gallery:pipeline
 ```
 
@@ -68,4 +66,3 @@ pnpm advanced-gallery:pipeline
 - Continuous collision detection is bounded; fast bodies use fixed-step discrete checks where the current tests cover them.
 - The advanced gallery does not claim mesh-derived colliders or full articulated robot dynamics.
 - Vehicle, cloth, soft-body, fluid, fracture, fire/smoke, and crowd modules are fixture/evidence surfaces unless a specific test or route proves production behavior.
-- Physics superiority language must point to `tests/reports/superiority/physics-fidelity.json` and the route/test evidence that generated it.
