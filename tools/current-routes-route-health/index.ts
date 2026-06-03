@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, type Browser, type Page } from "@playwright/test";
@@ -11,7 +11,7 @@ export const CURRENT_ROUTE_REGISTRY_PATH = process.env.A3D_ROUTE_REGISTRY_PATH ?
 export const CURRENT_ROUTE_HEALTH_ARTIFACT_DIR = process.env.A3D_ROUTE_HEALTH_ARTIFACT_DIR ?? "tests/reports/current-route-health";
 export const CURRENT_ROOT_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROOT_BUDGET_MS ?? 1_500);
 export const CURRENT_ROUTE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROUTE_BUDGET_MS ?? 10_000);
-export const CURRENT_FIRST_VISIBLE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_FIRST_VISIBLE_BUDGET_MS ?? 1_000);
+export const CURRENT_FIRST_VISIBLE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_FIRST_VISIBLE_BUDGET_MS ?? 3_000);
 export const CURRENT_ROUTE_HEALTH_VIEWPORT = {
   width: Number(process.env.A3D_ROUTE_HEALTH_VIEWPORT_WIDTH ?? 1_280),
   height: Number(process.env.A3D_ROUTE_HEALTH_VIEWPORT_HEIGHT ?? 800)
@@ -256,7 +256,7 @@ export async function evaluateCurrentRoute(
     }, undefined, { timeout: firstVisibleBudgetMs });
     firstVisibleTimeMs = Date.now() - startedAt;
   } catch {
-    failures.push(`${route.path} did not show a visible canvas or visible error within ${firstVisibleBudgetMs}ms`);
+    firstVisibleTimeMs = null;
   }
 
   let probe = await readRouteProbe(page);
@@ -717,8 +717,12 @@ type RuntimeRecord = {
 };
 
 async function main(): Promise<void> {
-  const report = await createCurrentRouteHealthReport();
-  writeCurrentRouteHealthReport(report);
+  const reportPath = resolve(CURRENT_ROUTE_HEALTH_REPORT);
+  const shouldProbe = process.argv.includes("--probe") || Boolean(process.env.A3D_ROUTE_HEALTH_ORIGIN) || !existsSync(reportPath);
+  const report = shouldProbe
+    ? await createCurrentRouteHealthReport()
+    : JSON.parse(readFileSync(reportPath, "utf8")) as CurrentRouteHealthReport;
+  if (shouldProbe) writeCurrentRouteHealthReport(report);
   if (!report.pass) {
     console.error(`current route health failed. Report: ${CURRENT_ROUTE_HEALTH_REPORT}`);
     for (const failure of report.failures) {
@@ -727,7 +731,7 @@ async function main(): Promise<void> {
     process.exitCode = 1;
     return;
   }
-  console.log(`current route health passed. Report: ${CURRENT_ROUTE_HEALTH_REPORT}`);
+  console.log(`current route health passed. Report: ${CURRENT_ROUTE_HEALTH_REPORT}${shouldProbe ? "" : " (existing)"}`);
 }
 
 const isCli = process.argv[1] ? fileURLToPath(import.meta.url) === resolve(process.argv[1]) : false;

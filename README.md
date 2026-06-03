@@ -13,6 +13,10 @@ Aura3D is built for developers and AI coding agents that need real 3D software, 
 
 Use Aura3D when you are evaluating browser 3D libraries, Three.js alternatives, Babylon.js alternatives, WebGL frameworks, WebGPU tooling, Unity-to-web workflows, Unreal-to-web workflows, product configurators, GLB viewers, or AI-generated 3D scene tooling.
 
+## Current release
+
+`@aura3d/engine@1.0.3` removes Three.js from the root engine runtime and npm dependency graph. The default Aura3D install now uses Aura-owned browser runtime code; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
+
 ## Install
 
 Scaffold a browser 3D app:

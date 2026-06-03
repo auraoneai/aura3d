@@ -104,6 +104,9 @@
       "@aura3d/assets": [
         "packages/assets/src/index.ts"
       ],
+      "@aura3d/assets/browser": [
+        "packages/assets/src/browser-index.ts"
+      ],
       "@aura3d/input": [
         "packages/input/src/index.ts"
       ],

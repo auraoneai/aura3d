@@ -8,38 +8,27 @@ interface PackageJson {
   readonly exports?: Record<string, string>;
 }
 
-const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as PackageJson;
+const packageJson = JSON.parse(readFileSync(resolve("packages/three-compat/package.json"), "utf8")) as PackageJson;
 const requiredExports = [
   ".",
-  "./rendering",
-  "./assets",
-  "./materials",
-  "./environments",
   "./controls",
-  "./animation",
-  "./three-compat",
-  "./create-aura3d"
+  "./loaders",
+  "./postprocessing"
 ];
-const requiredTemplateFiles = [
-  "templates/three-compat-premium-product-viewer",
-  "templates/three-compat-architecture-interior",
-  "templates/three-compat-material-authoring",
-  "templates/three-compat-asset-inspector",
-  "templates/three-compat-character-viewer",
-  "templates/three-compat-postprocess-scene",
-  "templates/three-compat-custom-threejs-migration",
-  "templates/three-compat-large-scene"
-];
+const sourceTargets: Record<string, string> = {
+  ".": "packages/three-compat/src/index.ts",
+  "./controls": "packages/three-compat/src/controls/index.ts",
+  "./loaders": "packages/three-compat/src/loaders/index.ts",
+  "./postprocessing": "packages/three-compat/src/postprocessing/index.ts"
+};
 const files = packageJson.files ?? [];
 const exportsMap = packageJson.exports ?? {};
 const missingExports = requiredExports.filter((entry) => !(entry in exportsMap));
-const missingExportTargets = requiredExports.filter((entry) => !existsSync(resolve(String(exportsMap[entry] ?? "").replace(/^\.\//, ""))));
-const missingTemplateFiles = requiredTemplateFiles.filter((entry) => !files.includes(entry) || !existsSync(resolve(entry)));
-const workspaceTemplateDeps = requiredTemplateFiles.filter((entry) => readFileSync(resolve(`${entry}/package.json`), "utf8").includes("workspace:"));
+const missingExportTargets = requiredExports.filter((entry) => !existsSync(resolve(sourceTargets[entry])));
 const checks = [
   {
     id: "package-identity",
-    pass: packageJson.name === "@aura3d/engine" && /^0\.1\.0-alpha\.0/.test(packageJson.version),
+    pass: packageJson.name === "@aura3d/three-compat",
     detail: `${packageJson.name}@${packageJson.version}`
   },
   {
@@ -50,17 +39,12 @@ const checks = [
   {
     id: "built-export-targets",
     pass: missingExportTargets.length === 0,
-    detail: missingExportTargets.join(", ") || "required export targets exist in dist"
+    detail: missingExportTargets.join(", ") || "required source export targets exist"
   },
   {
-    id: "three-compat-templates-packaged",
-    pass: missingTemplateFiles.length === 0,
-    detail: missingTemplateFiles.join(", ") || "required Three.js compatibility templates are included in package files"
-  },
-  {
-    id: "templates-are-external-consumer-safe",
-    pass: workspaceTemplateDeps.length === 0,
-    detail: workspaceTemplateDeps.join(", ") || "Three.js compatibility template package.json files do not use workspace:*"
+    id: "root-engine-does-not-own-three-compat-surface",
+    pass: !files.includes("dist/three-compat"),
+    detail: files.includes("dist/three-compat") ? "compat package manifest unexpectedly includes root dist/three-compat" : "compat package is separate from root engine package files"
   }
 ];
 const report = {
@@ -68,7 +52,6 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredExports,
-  requiredTemplateFiles,
   checks
 };
 const reportPath = resolve("tests/reports/three-compat-package-surface-readiness.json");
@@ -78,4 +61,4 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`Three.js compatibility package surface readiness passed: ${requiredExports.length} exports, ${requiredTemplateFiles.length} Three.js compatibility templates.`);
+console.log(`Three.js compatibility package surface readiness passed: ${requiredExports.length} separate package exports.`);
