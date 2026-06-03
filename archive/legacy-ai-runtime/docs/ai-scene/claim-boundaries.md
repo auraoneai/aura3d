@@ -1,8 +1,6 @@
-# Claim Boundaries
+# launch positioning
 
 Version: 0.1.0
-
-AI scene claims must stay narrower than current code, route, test, and report evidence.
 
 ## Allowed Baseline Wording
 
@@ -14,12 +12,10 @@ Also acceptable:
 
 - Aura3D is not the LLM; it is the runtime and scene execution layer.
 - Aura3D can use deterministic mock providers for no-network local demos and CI.
-- Aura3D should report resolved assets, placeholders, approximations, backend choice, and prompt provenance.
+- Aura3D should report resolved assets, draft artifacts, approximations, backend choice, and prompt provenance.
 - Named AI scene workflows are supported only when their routes, tests, and reports pass.
 
 ## Blocked Wording
-
-Do not claim:
 
 - Aura3D is an LLM.
 - Aura3D replaces OpenAI, Anthropic, Gemini, or local models.
@@ -28,7 +24,7 @@ Do not claim:
 - Aura3D supports every provider, model, browser, GPU, asset format, or WebGPU device.
 - Aura3D can use copyrighted studio or artist styles by name in public marketing.
 - A single prompt route proves broad production readiness.
-- A placeholder scene is a finished asset-backed production scene.
+- A draft artifact scene is a finished asset-backed production scene.
 
 ## Preferred Replacements
 
@@ -36,7 +32,7 @@ Do not claim:
 |---|---|
 | AI creates final film scenes instantly | AI scene prompts produce realtime previs scenes with diagnostics |
 | Aura3D understands natural language | Aura3D integrates with language models and validates structured scene intent |
-| All assets are generated | Missing assets become explicit placeholders or unresolved items |
+| All assets are generated | Missing assets become explicit draft artifacts or unresolved items |
 | WebGPU AI scenes work everywhere | WebGPU AI scenes depend on browser/device reports and unsupported-state handling |
 | Live AI is required | Mock and precomputed IR paths support local demos and CI |
 

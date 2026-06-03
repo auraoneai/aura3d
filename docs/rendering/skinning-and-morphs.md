@@ -24,4 +24,3 @@ Skinning and morph support spans animation, assets, and rendering packages.
 
 ## Boundaries
 
-Do not claim complete character-pipeline parity. Extra influence sets, large skeleton palette strategies, retargeting breadth, authoring UX, and arbitrary marketplace rigs require focused evidence before they are documented as supported.

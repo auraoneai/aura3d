@@ -4,7 +4,7 @@ Version: 1.0.0
 
 Use this first when asked to build AI-native Aura3D features.
 
-## Product Boundary
+## Aura3D advantage
 
 Aura3D is the runtime, compiler, renderer, diagnostics, and export layer for AI-generated scene intent. It is not the LLM. Use OpenAI, Anthropic, Gemini, local models, or `MockProvider` as the language/intent source.
 

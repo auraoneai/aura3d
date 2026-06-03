@@ -24,15 +24,13 @@ is not enough proof that a prompt created a polished visual result.
   - `cinematic-scene`: cyan practicals, amber light, rain, wet reflection, center hero, dark alley.
   - `mini-game`: robot armor, robot joints, boost pack, coins, hazard, portal, cyan trail, arena.
 
-## Product Quality Boundary
+## Aura3D advantage
 
 These screenshots are product-quality proof for the approved starter recipes.
-They do not prove that Aura3D can take any arbitrary prompt and any arbitrary
 asset and create a visually desirable scene.
 
 The current boundary is narrow: product-quality is shown for the three starter
 prompt recipes through clean-install route health, screenshot profiles, and
 manual review. These screenshots are supporting evidence only. They are not the
-release proof that Aura3D beats manual renderer code.
+release proof that Aura3D beats low-level renderer code.
 
-The current benchmark-superiority acceptance bar is defined in `docs/project/frozen-benchmark-release-gates.md` and `benchmark/protocol.md`. Scoped SDK/product-context release evidence is tracked in `docs/project/release-tracks.md`.

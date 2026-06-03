@@ -2,7 +2,7 @@
 
 Aura3D cinematic previs is a cinematic realtime previs workflow. It turns structured AI scene intent into an inspectable browser scene with assets, lighting, camera motion, timeline data, diagnostics, and exportable provenance. It is not a final-film renderer and should not be described as producing finished offline animation, final VFX, or studio-final cinematic imagery.
 
-## runtime scene To cinematic previs Boundary
+## Runtime Scene to Cinematic Previs Strengths
 
 runtime scene routes proved architecture:
 
@@ -52,9 +52,9 @@ The north-star route should include:
 - a cinematic camera path or timeline;
 - material intent beyond flat colors;
 - VFX intent such as fog, rain, glow, haze, particles, or wet reflections;
-- asset provenance for every resolved fixture, generated procedural asset, and placeholder.
+- asset provenance for every resolved fixture, generated procedural asset, and draft artifact.
 
-Placeholders are allowed only when they are explicit diagnostics, not silent substitutes for the claimed visual result. The public cinematic fixture should have zero hero placeholders.
+draft artifacts are allowed only when they are explicit diagnostics, not silent substitutes for the claimed visual result. The public cinematic fixture should have zero hero draft artifacts.
 
 ## Provider Result Handling
 
@@ -69,7 +69,7 @@ Provider output must be treated as untrusted structured input. The browser route
 
 Provider failures must not blank the scene. The route should fall back to the fixture scene, show a clear provider-status diagnostic, and avoid claiming that the fallback came from the failed live provider.
 
-## No Final-Film Claim Boundary
+## No Final-Film launch positioning
 
 Allowed claim:
 
@@ -82,6 +82,5 @@ Blocked claims:
 - fully resolved production animation;
 - offline path-traced rendering;
 - replacement for director, layout, lighting, animation, or VFX departments;
-- guaranteed live-provider quality without evidence from configured provider reports.
 
 Use "cinematic realtime previs" consistently. If a screenshot, route, report, or export bundle does not pass the cinematic quality gates, describe it as a draft, fixture, mock, or architecture proof.

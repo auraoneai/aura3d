@@ -38,7 +38,7 @@ pnpm advanced-gallery:audit
 
 `pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The source metadata currently marks the ten routes as accepted, but that status can be cited only when the generated full-gallery screenshots, route JSON, visual review report, and audit report are current in `tests/reports/advanced-examples-gallery/`.
 
-`accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove manual renderer code showcase quality.
+`accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove low-level renderer code showcase quality.
 
 `pnpm advanced-gallery:review` writes a machine-readable release evidence report that joins the metadata status, screenshot artifacts, screenshot hashes, runtime JSON, authored GLB telemetry, motion samples, and PNG detail metrics. `pnpm advanced-gallery:audit` then checks the route reports, reusable-system disclosures, unsupported disclosures, measured performance evidence, screenshot hashes, and image-quality evidence.
 
@@ -63,11 +63,9 @@ The source metadata currently describes ten accepted routes. Because `tests/repo
 | --- | --- | --- | --- |
 | Water Lab | Accepted | CPU/procedural water, ripple interaction, marina props, and route instrumentation | No native GPGPU water solver is claimed. |
 | Ocean Observatory | Accepted | WebGL2 procedural ocean, observatory staging, drone overlays, and route instrumentation | WebGPU/FFT water, screen-space refraction, and caustics remain bounded approximations. |
-| Reactor Post | Accepted | WebGL2 postprocess path with tone, color grade, vignette, sharpen, FXAA, and reactor staging | Bloom/DOF/motion blur are bounded route features, not full effects-composer parity claims. |
 | Smart City | Accepted | Authored animated city GLB, A3D traffic/data overlays, batching, and route instrumentation | It is an accepted route, not the entire large-scale instancing benchmark. |
 | Data Galaxy | Accepted | Route-owned CPU/static data visualization geometry: nuclei, clusters, arcs, streams, and point batches | The generated Data Galaxy GLB is cataloged but inactive as focal hero proof. |
 | Product Configurator | Accepted | Original texture-backed concept-car GLB with bounded material/render-state stability and showroom staging | Hotspot-style triangle picking and authored exploded animation timelines remain bounded gaps. |
-| Robotics Lab | Accepted | Imported animated characters, procedural lab context, route controls, and animation evidence | IK solving, retargeting constraints, and full robot-controller parity are not claimed. |
 | Physics Testbed | Accepted | A3D PhysicsWorld rigid bodies, primitive/proxy colliders, and route-level interactions | Mesh-derived colliders and articulated robot dynamics remain bounded gaps. |
 | Fog Cathedral | Accepted | Sponza-based atmospheric route with renderer fog plus transparent haze/shaft helpers | True volumetric raymarching and shadowed participating media are not claimed. |
 | Digital Twin | Accepted | Deterministic factory simulation overlays and digital-twin route instrumentation | CAD import, real robot telemetry, and physics-grade collision remain bounded gaps. |
@@ -84,13 +82,11 @@ The current authored-asset layer loads GLB content for water-lab, ocean-observat
 | WebGPU / compute | First-class root WebGPU routes now exist for triangle, render target, PBR asset, product viewer, instancing, and compute particles. | The advanced gallery currently uses WebGL2-oriented showcase routes. | WebGPU water/ocean inside the advanced gallery, or GPU compute particles inside the gallery data-galaxy route. | Water, ocean, data galaxy. |
 | Materials | PBR-style material properties, emissive, metallic/roughness, clearcoat/transmission where loader/material path supports them. | Route-side material correction for assets that render poorly in the current path. | Perfect glass/transmission sorting or premium configurator material response. | Product, reactor, fog, ocean. |
 | glTF / GLB assets | Browser GLB loading, authored fixture layering, material variants where supported by the imported asset path. | Asset exclusions, route-side material overrides, camera framing, local Blender fixtures. | Any imported asset as accepted evidence until screenshot-reviewed. | Product, robotics, smart city, fog. |
-| Animation | Animation mixer/clip playback is used by animated GLB candidates and route motion systems. | Deterministic prop, camera, overlay, timeline, and simulation motion. | Full IK parity, root-motion production state machines, or character controller parity in this gallery. | Robotics, smart city. |
 | Instancing / scale | Instancing and batching exist in the codebase and are represented by route stress concepts. | District/traffic overlays and procedural scene systems. | Accepted high-scale city parity without a separate stress proof and screenshot review. | Smart city, digital twin. |
 | Particles | A3D point geometry and CPU-updated particle fields. | Formations, attractors, trails, connections, and count controls. | Public native GPU-compute particle simulation. | Data galaxy. |
 | Postprocess | Bloom/postprocess-style controls, FXAA/color/vignette-style passes where supported. | CSS/canvas overlays and tuned route effect stacks. | Effects-composer-class bloom, DOF, SMAA, or motion blur parity until visual/perf review passes. | Reactor. |
 | Fog / light shafts | Transparent haze cards, dust particles, lighting choreography. | Geometric god-ray and atmospheric-depth approximations. | True volumetric raymarch fog/light scattering. | Fog cathedral. |
 | Water | Procedural mesh waves, CPU ripple fields, pointer disturbance. | Foam/color/normal-style visual approximations and authored environment staging. | Native GPGPU water, SSR/refraction ocean stack. | Water lab, ocean observatory. |
-| Physics | `@aura3d/physics` exists in the repo and the physics playground now uses its route-level rigid-body/contact path. | Primitive/proxy colliders and a kinematic pusher keep the gallery route deterministic. | Mesh-derived colliders, full articulated robot dynamics, and accepted Rapier/Ammo parity. | Physics playground, digital twin. |
 | UI / interaction | Route controls, reset, capture, camera presets, status HUD, runtime stats. | Route-specific panels, labels, overlays, and event logs. | Visual acceptance from UI presence alone. | All routes. |
 | Review evidence | Playwright screenshots, runtime JSON, contact sheet, visual review report. | Human review metadata and screenshot-hash promotion rules. | Smoke/runtime pass as showcase acceptance. | All routes. |
 
@@ -106,7 +102,7 @@ Each demo page includes a "What this proves" section, known gaps, acceptance cri
 
 These are the visual targets and failure boundaries used by the route metadata, screenshot review, and audit tooling. If a route regresses into one of the failure modes, it must not be treated as accepted until the source, screenshot, metadata, review, and audit agree again.
 
-| Demo | manual renderer code-style reference | Hero screenshot intent | Must not ship as |
+| Demo | low-level renderer code-style reference | Hero screenshot intent | Must not ship as |
 | --- | --- | --- | --- |
 | Water Lab | GPGPU/WebGL water demos | Sunset marina or mountain lake with readable water interaction, shoreline depth, dock/boat/lights/props, and visible ripple response. | Blue plane, flat terrain, unlit prop scatter, or invisible pointer disturbance. |
 | Ocean Observatory | WebGPU/WebGL ocean demos | Futuristic observatory/yacht deck overlooking layered animated ocean, horizon atmosphere, drones/markers, glass rails, and moving reflection cues. | Same composition as Water Lab, one sine-wave plane, or low-detail deck. |

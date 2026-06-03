@@ -23,7 +23,7 @@ and winner calculations.
 
 ## Visual Match Scale
 
-- **1**: Fails the prompt. Blank, broken, unrelated, or only a symbolic placeholder.
+- **1**: Fails the prompt. Blank, broken, unrelated, or only a symbolic prototype proxy.
 - **2**: Some requested concepts exist, but the scene is not recognizable without reading code.
 - **3**: Recognizable prompt match with clear flaws. Minimum score for a counted pass.
 - **4**: Strong prompt match. Good framing, lighting, and visible behavior.

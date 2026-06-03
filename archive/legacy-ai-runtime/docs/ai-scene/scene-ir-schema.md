@@ -14,8 +14,8 @@ An `AuraSceneIR` document should include:
 - `intent`: source prompt summary and creative goal.
 - `qualityTarget`: `L0`, `L1`, `L2`, `L3`, `L4`, or `L5`.
 - `environment`: world setting, mood, time of day, atmosphere, ground, and background.
-- `objects`: props, products, set pieces, placeholders, and semantic tags.
-- `characters`: character or creature requests, including placeholder status.
+- `objects`: props, products, set pieces, draft artifacts, and semantic tags.
+- `characters`: character or creature requests, including draft artifact status.
 - `materials`: material intents, textures, approximations, and unsupported properties.
 - `lights`: light rigs, environment lighting, color, intensity, and cinematic role.
 - `cameras`: camera definitions, lenses, framing, movement, and controls.

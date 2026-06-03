@@ -77,8 +77,6 @@ Allowed:
 - browser-run inspectable scene;
 - exported diagnostics and asset provenance.
 
-Blocked unless clearly framed as a non-goal:
-
 - final film;
 - Pixar-quality;
 - studio-final;

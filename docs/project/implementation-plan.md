@@ -4,8 +4,6 @@ Version: 1.0.0
 
 ## Status
 
-A3D has broad first-party package coverage and report-generator coverage for tracked feature, visual, performance, animation, physics, lifecycle, developer-workflow, and claim-defense slices. Local regenerated manual renderer code parity/superiority reports are category evidence only; they are not frozen AI-agent benchmark proof or go-live release proof.
-
 ## Product Direction
 
 Keep A3D focused on browser 3D workflows where package-owned defaults and diagnostics are stronger than hand-assembled route code:
@@ -15,7 +13,7 @@ Keep A3D focused on browser 3D workflows where package-owned defaults and diagno
 - PBR/HDR/IBL material preview;
 - character animation, skinning, morph, and IK diagnostics;
 - interactive scenes with picking, controls, decals, shadows, and postprocess;
-- migration scaffolding for selected manual renderer code workflows.
+- migration scaffolding for selected low-level renderer code workflows.
 
 ## Implementation Tracks
 
@@ -32,7 +30,7 @@ Keep A3D focused on browser 3D workflows where package-owned defaults and diagno
 1. Keep new features package-level, not route-local.
 2. Regenerate reports before making public claims.
 3. Keep benchmark claims tied to same-scene workloads and environment details.
-4. Keep docs centered on current state, how-to-use, evidence, and claim boundaries.
+4. Keep docs centered on current state, how-to-use, evidence, and release notes.
 
 ## Verification Commands
 

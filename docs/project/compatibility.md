@@ -11,7 +11,7 @@ Version: 1.0.0
 | Browser dev server | Vite route registry from repo root |
 | WebGL2 | Primary renderer backend for most browser routes |
 | WebGPU | Explicit package and root route support with device/browser-dependent availability |
-| manual renderer code | Reference implementation and migration target, not A3D runtime renderer |
+| low-level renderer code | Reference implementation and migration target, not A3D runtime renderer |
 | Babylon.js | Benchmark/reference comparison only |
 
 ## Browser Evidence
@@ -24,7 +24,6 @@ For WebGPU claims, check `tests/reports/webgpu-hardware-matrix.json`, `tests/rep
 
 The root package export map uses contextual subpaths such as `./production-runtime`, `./advanced-runtime`, `./rendering/production-runtime`, `./rendering/advanced-runtime`, `./assets/asset-corpus`, and `./assets/advanced-gallery`. Legacy versioned package aliases are not current product taxonomy and should not be used in new docs or examples.
 
-## Claim Boundary
+## Aura3D advantage
 
-Compatibility docs must stay narrower than generated report evidence. Do not claim full browser, WebGPU, manual renderer code, Babylon.js, Unity, Unreal, or glTF ecosystem compatibility without a current report proving it.
-Compatibility wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.
+Compatibility wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.

@@ -25,7 +25,6 @@ Primary entrypoints:
 
 ## Browser Evidence
 
-
 ## Limits
 
 - Current skinning uses uniform-array palette paths with documented limits in renderer code and tests; data-texture skinning is not documented as a complete public feature.

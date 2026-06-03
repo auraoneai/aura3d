@@ -1,6 +1,6 @@
 # Cinematic Asset Library
 
-The cinematic previs cinematic asset library maps scene intent to visible runtime content. It lets common prompts produce asset-backed realtime previs instead of placeholder-only diagrams.
+The cinematic previs cinematic asset library maps scene intent to visible runtime content. It lets common prompts produce asset-backed realtime previs instead of draft artifact-only diagrams.
 
 ## Manifest Role
 
@@ -45,9 +45,9 @@ Asset resolution should be deterministic:
 2. Match semantic tags such as `alley`, `robot`, `flower`, `rain`, `neon`, `wet-pavement`, or `fog`.
 3. Prefer `hero` quality assets for hero roles.
 4. Use local or procedural assets before remote assets in no-key demos.
-5. Emit a placeholder diagnostic if no suitable asset exists.
+5. Emit a draft artifact diagnostic if no suitable asset exists.
 
-The public cinematic previs fixture should not rely on unresolved hero placeholders. Missing background set dressing can be acceptable only when diagnostics and quality gates make the limitation visible.
+The public cinematic previs fixture should not rely on unresolved hero draft artifacts. Missing background set dressing can be acceptable only when diagnostics and quality gates make the roadmap item visible.
 
 ## Procedural Assets
 
@@ -62,20 +62,20 @@ Procedural assets are valid when they are rendered as real scene content and are
 
 Procedural does not mean "untracked." Include `procedural://` manifest paths, generation parameters, and quality role metadata so exports can explain how the scene was built.
 
-## Placeholder Policy
+## draft artifact Policy
 
 Allowed:
 
 - explicit greybox objects in internal mock routes;
-- visible placeholders tagged as `placeholder`;
+- visible draft artifacts tagged as `draft artifact`;
 - fallback geometry listed in diagnostics and exports.
 
 Not allowed for public cinematic previs cinematic proof:
 
-- silent hero placeholders;
+- silent hero draft artifacts;
 - DOM-only hero objects;
 - CSS-only rain, fog, glow, or flower effects used as the visual proof;
-- claims that placeholder scenes are production assets.
+- claims that draft artifact scenes are production assets.
 
 ## Template Asset Manifests
 

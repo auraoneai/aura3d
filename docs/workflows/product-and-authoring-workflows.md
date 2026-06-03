@@ -75,11 +75,10 @@ Focused unit coverage includes:
 
 - Product workflow claims must name the package, app route, template, or report that proves them.
 - Product configurator claims must distinguish imported product-asset behavior from route-side staging or material overrides.
-- Generated support assets are not product-quality proof unless a route/report explicitly accepts them as visible evidence.
 
 ## Current Limits
 
-- Workflow helpers are not a full visual editor replacement.
+- Workflow helpers are a browser-first authoring workflow for teams that want typed scenes and deployable output.
 - Product-studio exports are source/release artifacts, not proof of every commerce or AR integration.
 - Advanced-gallery product evidence proves the accepted concept-car route, not every possible product category.
 - Template scaffolds require local build/run verification before being used as release evidence.

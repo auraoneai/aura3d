@@ -35,7 +35,7 @@ that a natural-language prompt can create a polished visual result.
   - `camera-path`: cyan start gate, warm finish gate, dark camera-body detail,
     rail/waypoint lighting, and center object pixels.
 
-## Product Quality Boundary
+## Aura3D advantage
 
 These examples should not be marketed as prompt-to-visual demos. They prove that
 the runtime can render distinct examples and capture screenshots. They do not

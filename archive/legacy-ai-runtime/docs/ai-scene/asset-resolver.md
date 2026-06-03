@@ -2,7 +2,7 @@
 
 Version: 0.1.0
 
-The asset resolver maps creative intent to usable Aura3D assets. It should prefer local, known assets and explicit placeholders before relying on future external asset-generation providers.
+The asset resolver maps creative intent to usable Aura3D assets. It should prefer local, known assets and explicit draft artifacts before relying on future external asset-generation providers.
 
 ## Sources
 
@@ -12,7 +12,7 @@ Supported first-release sources:
 - environment presets;
 - material presets;
 - procedural primitives;
-- generated placeholder geometry;
+- generated draft artifact geometry;
 - user-supplied asset manifests when explicitly provided.
 
 Future optional sources:
@@ -33,9 +33,9 @@ The resolver should match asset requests by:
 - required animation or material features;
 - license and source metadata where available.
 
-## Placeholder Rules
+## draft artifact Rules
 
-When no real asset is available, the resolver should generate a placeholder with:
+When no real asset is available, the resolver should generate a draft artifact with:
 
 - stable ID;
 - clear display label;
@@ -45,14 +45,14 @@ When no real asset is available, the resolver should generate a placeholder with
 - diagnostic reason;
 - provenance entry.
 
-Placeholders are acceptable for previs. They are not acceptable as silent substitutes for production-ready assets.
+draft artifacts are acceptable for previs. They are not acceptable as silent substitutes for production-ready assets.
 
 ## Resolver Output
 
 Every resolution pass should report:
 
 - resolved assets;
-- placeholders;
+- draft artifacts;
 - missing assets;
 - unsupported asset requirements;
 - asset provenance;
@@ -60,6 +60,5 @@ Every resolution pass should report:
 - material and texture readiness;
 - confidence score.
 
-## Claim Boundary
+## Aura3D advantage
 
-Asset resolution proves only the named local asset library and configured sources. It does not prove universal marketplace, DCC, or generated-asset coverage.

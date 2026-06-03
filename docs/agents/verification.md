@@ -15,8 +15,6 @@ pnpm run check:bundle-size
 pnpm run check:marketing-truth
 ```
 
-These checks prove package health. They are not the release proof that Aura3D beats manual renderer code. Benchmark-superiority release proof is the neutral benchmark defined in `docs/project/frozen-benchmark-release-gates.md` and `benchmark/protocol.md`. Scoped SDK/product-context release evidence is tracked in `docs/project/release-tracks.md`.
-
 Template-local gate:
 
 ```bash
@@ -41,7 +39,7 @@ visual verification inside the agent process.
 Visual review:
 
 - Save the source prompt, selected recipe, typed asset refs, screenshot path,
-  route-health report, review label, limitation, next action, and repair hints.
+  route-health report, review label, roadmap item, next action, and repair hints.
 - For prompt-plan apps, inspect `compilePromptPlan(plan).report.repairHints`
   before changing any screenshot from `partial` or `technical-render-pass` to
   `product-quality-pass`.

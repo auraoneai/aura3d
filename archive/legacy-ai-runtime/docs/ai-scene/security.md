@@ -35,7 +35,7 @@ AI scene pipelines should treat model output as untrusted input:
 - do not execute generated code;
 - sanitize exported metadata;
 - restrict asset loading to approved manifests or user-approved URLs;
-- record provenance for prompt, provider, assets, placeholders, and patches.
+- record provenance for prompt, provider, assets, draft artifacts, and patches.
 
 ## CI And Local Development
 

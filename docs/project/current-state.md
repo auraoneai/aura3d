@@ -20,10 +20,8 @@ Active product pillars:
 
 Current release tracks:
 
-- Scoped SDK/product-context local/private-beta artifact: complete. See `docs/project/release-tracks.md`.
-- Frozen benchmark-superiority claim: blocked external evidence missing. See `docs/project/frozen-benchmark-release-gates.md`.
+- Aura3D SDK local/developer-ready artifact: complete. See `docs/project/release-tracks.md`.
 
 Legacy pre-cutover work is preserved under `archive/legacy-ai-runtime/` and is
 not an active product surface.
 
-Current product boundaries are defined in `docs/project/product-boundaries.md`. In short: AI coding agents write source code, users bring approved assets, and Aura3D supplies the public API, typed asset pipeline, templates, diagnostics, and deployment checks. Historical provider-runtime or prompt-to-IR plans are not active product surfaces unless they are explicitly ported back under current product names and verification.

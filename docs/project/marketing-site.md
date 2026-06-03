@@ -78,7 +78,6 @@ For future production hosting, prioritize:
 - route-level first-ready and first-frame telemetry in generated reports;
 - asset prefetch on hover or when the next section is near the viewport.
 
-
 ## Production SEO Checklist
 
 Before publishing the marketing site, confirm:
@@ -86,10 +85,9 @@ Before publishing the marketing site, confirm:
 - Every public page has a unique `<title>`, meta description, canonical URL, Open Graph title/description/image, and Twitter card metadata.
 - Website docs pages are crawlable HTML pages, not raw Markdown links.
 - The homepage H1 and meta description include `TypeScript browser 3D SDK`, `AI agents`, `scene kits`, `typed GLB/glTF assets`, `diagnostics`, `screenshots`, and `deploy checks`.
-- Public docs include pages for agent quickstart, prompt recipes, typed assets, Vite templates, deployment, public API, claim boundaries, and evidence.
+- Public docs include pages for agent quickstart, prompt recipes, typed assets, Vite templates, deployment, public API, release notes, and evidence.
 - A sitemap and robots policy are generated before public hosting.
 - Open Graph image assets exist and match the current positioning.
 - Image and iframe previews have accessible titles or alt-equivalent labels.
 - Heavy GLB/HDR examples are lazy-loaded and not required for first contentful paint.
 - Lighthouse/performance budgets are recorded for the public marketing build.
-- Public copy avoids benchmark-superiority, blanket manual renderer code replacement, full WebGPU support, and production-ready-for-every-use-case claims unless the required evidence exists.

@@ -9,7 +9,7 @@ loop, camera, lights, diagnostics, screenshots, and disposal.
 Advanced renderer packages remain available for lower-level engine work, but
 templates and agent docs should start with the small public agent API.
 
-## Boundary
+## Aura3D advantage
 
 The authoring boundary is `@aura3d/engine` for normal app code and
 `@aura3d/rendering` for lower-level renderer work. Agent templates should use

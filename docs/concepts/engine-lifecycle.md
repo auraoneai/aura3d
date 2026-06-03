@@ -13,7 +13,7 @@ app.dispose();
 screenshot capture, and cleanup. Use `dispose()` when replacing routes or
 unmounting UI.
 
-## Boundary
+## Aura3D advantage
 
 The engine lifecycle package boundary is `@aura3d/engine`: it coordinates the
 canvas, scene builder output, asset loading, renderer setup, route-health state,

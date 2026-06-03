@@ -14,7 +14,7 @@ Version: 1.0.0
 | `/marketing/docs/templates.html` | Template docs | Aura3D Templates: Vite 3D Product Viewer and Mini Game | Vite 3D templates, product viewer, cinematic scene, mini-game |
 | `/marketing/docs/deployment.html` | Deploy docs | Aura3D Deployment: Static Checks for Browser 3D Apps | route health, screenshots, Vercel, Netlify, Cloudflare Pages, S3, R2 |
 | `/marketing/docs/api.html` | API overview | Aura3D Public API: TypeScript Browser 3D Imports | public imports, scenes, models, cameras, lights, effects, physics, UI |
-| `/marketing/docs/claims.html` | Claim boundaries | Aura3D Claim Boundaries: Evidence-Scoped 3D SDK Claims | truthful claims, scoped release, benchmark boundaries |
+| `/marketing/docs/claims.html` | Release notes | Aura3D Aura3D Evidence and Release Notes | truthful claims, scoped release, benchmark boundaries |
 | `/marketing/docs/evidence.html` | Evidence summary | Aura3D Evidence: Diagnostics, Screenshots, Release Checks | diagnostics, route health, screenshots, release checks |
 
 ## Repo Documentation

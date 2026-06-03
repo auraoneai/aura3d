@@ -21,11 +21,10 @@ Version: 1.0.0
 - Current state: `docs/project/current-state.md`
 - Product boundaries: `docs/project/product-boundaries.md`
 - Release tracks: `docs/project/release-tracks.md`
-- Frozen benchmark release gates: `docs/project/frozen-benchmark-release-gates.md`
 - Final proof release readiness: `docs/project/final-proof-release-readiness.md`
 - Release process: `docs/project/release-process.md`
 - Release checklist: `docs/project/release-checklist.md`
-- Claim guidelines: `docs/project/claim-guidelines.md`
+- Claim guidelines: `docs/project/launch-positioning.md`
 - Verification evidence: `docs/project/verification-evidence.md`
 - Product studio claim registry: `docs/project/product-studio-claim-registry.md`
 

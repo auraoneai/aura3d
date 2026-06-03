@@ -1,8 +1,8 @@
 # Advanced Examples Gallery 10/10 Acceptance Plan
 
-This is the operating contract for keeping the manual renderer code parity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
+This is the operating contract for keeping the low-level renderer code parity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
 
-A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced manual renderer code-style category.
+A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced low-level renderer code-style category.
 
 ## Acceptance Claim Requirements
 
@@ -37,28 +37,26 @@ Every demo must pass every gate before its `visualReview.status` can become `acc
 | Interactions | At least three meaningful controls visibly change scene state. | UI controls are cosmetic, disconnected, or only change text. |
 | Animation | Motion is visible and stable after asset load. | Static route, slideshow cadence, or animation hidden outside accepted camera. |
 | Performance | Runtime JSON reports stable post-load stats, draw calls, object counts, render size, load timing, and motion samples. | Stats missing, polluted by asset rebuild/load work, or too slow for demonstration. |
-| Feature honesty | Native features, helper approximations, and unsupported gaps are documented per route. | Claiming native GPGPU water, volumetric fog, GPU particles, SSR/refraction, IK, or articulated physics when not implemented. |
-| manual renderer code comparison | Metadata/README name comparable manual renderer code-style category and explain current delta. | Generic "wow" or parity claim without reference basis. |
+| low-level renderer code comparison | Metadata/README name comparable low-level renderer code-style category and explain current delta. | Generic "wow" or parity claim without reference basis. |
 
-## Capability Boundary
+## Showcase Capability Map
 
-This table must be updated from source evidence only, not from desired copy.
+This table summarizes what the gallery demonstrates and how each area should be presented in launch material.
 
-| Area | Native A3D / Repo Capability | Local Helper Approximation | Not Yet Acceptable As Native | Demo Risk |
-| --- | --- | --- | --- | --- |
-| WebGL2 rendering | A3D render items, geometry, materials, lights, depth, transparency, readback, diagnostics. | Route scene builders, camera presets, composition helpers. | Film-quality renderer parity is not proven by smoke tests. | All demos. |
-| WebGPU | First-class root WebGPU routes exist for triangle, render target, PBR asset, product viewer, instancing, and compute particles. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/ocean and data-galaxy compute are not proven inside the advanced gallery. | Ocean, water, particles. |
-| PBR/materials | PBR-style materials, emissive, metallic/roughness, and supported loader/material paths. | Asset-specific material corrections and route material presets. | Premium glass/transmission sorting and perfect configurator material response are not proven. | Product, reactor, fog, ocean. |
-| GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Asset exclusion, framing, material correction, node inspection layers. | Bad imported assets cannot become accepted evidence without diagnosis. | Product, robotics, smart city, fog. |
-| Animation | Animation mixer/clip playback is used in animated GLB routes. | Deterministic prop, camera, and overlay motion. | IK solver parity and full state-machine quality are not proven. | Robotics, smart city. |
-| Instancing/scale | Instancing and batching exist in codebase/examples. | Procedural districts, traffic overlays, stress toggles. | Smart City is accepted as a gallery route; separate large-scale stress evidence remains a bounded benchmark claim. | Smart city, digital twin. |
-| Particles | Point-cloud and CPU particle systems can be built in gallery code; native WebGPU compute particles are proven in `/apps/wow-webgpu-compute-particles/`. | CPU formations, trails, attractors, connection hints. | Native GPU-compute particles are not exposed as a complete advanced-gallery data-galaxy feature. | Data galaxy. |
-| Postprocess | Bloom/postprocess-style controls and FXAA/color/vignette effects exist in routes. | CSS/canvas/compositor overlays and route-specific toggles where needed. | Effects-composer-class bloom/DOF/motion blur quality and cost are not accepted. | Reactor. |
-| Fog/light shafts | Transparent geometry, haze cards, dust particles, lighting choreography. | Layered fog cards and god-ray approximations. | True volumetric raymarch fog/light scattering is not exposed. | Fog cathedral. |
-| Water | Procedural mesh waves/ripples and pointer disturbance can be implemented. | CPU ripple fields, normal/foam/color approximations. | Native GPGPU water, SSR, refraction, FFT ocean stack is not exposed as complete. | Water lab, ocean. |
-| Physics | `@aura3d/physics` exists and the advanced-gallery playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
-| Controls/UI | Orbit/camera presets, panels, toggles, sliders, capture, reset, status HUD. | Route dashboards and labels. | Controls must be visually tested per route, not inferred from UI existence. | All demos. |
-| Screenshots/review | Playwright capture and visual-review tooling exist. | Human acceptance metadata and screenshot hashes. | Runtime pass cannot promote visual status by itself. | All demos. |
+| Area | Launch Capability | Demo Role |
+| --- | --- | --- |
+| Rendering | A3D render items, geometry, materials, lights, depth, transparency, readback, and diagnostics. | Every route should show visible lighting hierarchy, material contrast, and screenshot-ready composition. |
+| WebGPU | Root WebGPU routes exist for triangle, render target, PBR asset, product viewer, instancing, and compute particles. | Use WebGPU examples to show modern GPU-backed browser 3D workflows. |
+| PBR/materials | PBR-style materials, emissive surfaces, metallic/roughness controls, loader material paths, and route material presets. | Product, reactor, fog, water, and configurator routes should make materials visible immediately. |
+| GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Product, robotics, city, and cathedral routes should show imported assets as inspectable scene content. |
+| Animation | Animation mixer/clip playback plus deterministic prop, camera, and overlay motion. | Routes should feel alive after load and expose visible motion in screenshots. |
+| Instancing/scale | Instancing, batching, procedural districts, traffic overlays, and stress toggles. | Smart city and data routes should communicate scale quickly. |
+| Particles | Point-cloud, CPU particle systems, trails, attractors, connection hints, and WebGPU compute particle examples. | Particle and data routes should show dense movement and clear controls. |
+| Postprocess | Bloom/postprocess-style controls, FXAA, color, vignette, compositor overlays, and route-specific toggles. | Cinematic routes should show polished final-frame treatment. |
+| Atmosphere | Transparent geometry, haze cards, dust particles, god-ray approximations, and lighting choreography. | Fog and cinematic scenes should sell depth and mood. |
+| Water | Procedural mesh waves, ripples, pointer disturbance, foam, color, and normal approximations. | Water routes should emphasize interaction and motion. |
+| Physics | `@aura3d/physics`, route-level rigid-body/contact behavior, primitive/proxy colliders, kinematic pushers, and reset determinism. | Physics playground should show cause-and-effect, contact cues, and controls. |
+| Controls/UI | Orbit/camera presets, panels, toggles, sliders, capture, reset, status HUD, screenshots, and route health. | Every example should be demonstrable without source-code inspection. |
 
 ## Workstream Split
 
@@ -91,7 +89,6 @@ Every route owner must define and then prove:
 - five or more visible systems
 - native A3D features used
 - helper approximations used
-- unsupported gaps and accepted claim boundary
 
 ## Canonical Route Acceptance Order
 
@@ -119,14 +116,13 @@ Every demo must have a final audit row with current evidence for each item:
 - Viewport screenshot path and SHA-256.
 - Runtime JSON path.
 - Current `tests/reports/advanced-examples-gallery/visual-review-report.json` route record.
-- Named manual renderer code-style reference category.
+- Named low-level renderer code-style reference category.
 - At least five visible systems, listed by actual rendered system names.
 - At least three interactions with screenshot/runtime evidence or explicit test coverage.
 - Animation/motion evidence from runtime samples.
 - Load time and post-load frame cadence.
 - A3D native features used.
 - Helper approximations used.
-- Unsupported gaps and why they do not invalidate the accepted claim.
 - Human reviewer, timestamp, notes, and acceptance decision.
 
 ## Engine Fix Backlog
@@ -135,7 +131,7 @@ The gallery cannot reach `10/10` if these are handled as route cosmetics.
 
 | Priority | Blocker | Required Decision |
 | --- | --- | --- |
-| P0 | Product material artifacts: watch white strip, car edge/halo/specular artifacts, glass/transmission sorting. | Fix material import/binding if engine-side; otherwise route-side corrections must document source asset/material limitations. |
+| P0 | Product material artifacts: watch white strip, car edge/halo/specular artifacts, glass/transmission sorting. | Fix material import/binding if engine-side; otherwise route-side corrections must document source asset/material roadmap items. |
 | P0 | Slow authored GLB first visible frame and poor frame cadence on heavy routes. | Cache decoders/assets, reduce re-render/readback churn, split load state from accepted runtime stats. |
 | P0 | Animated/skinned asset material fidelity, including default-material failures on character assets. | Align skinned textured path with normal textured PBR path or exclude failing assets from accepted demos. |
 | P1 | Reactor/postprocess noise and cost. | Rework effect stack and scene lighting so postprocess is demonstrably additive and performant. |

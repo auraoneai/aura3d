@@ -54,14 +54,14 @@ A run is acceptable for local confidence when:
 
 ## Baseline Comparison
 
-Run the same tasks with manual renderer code and the same agent. Aura3D is only proving
+Run the same tasks with low-level renderer code and the same agent. Aura3D is only proving
 product value if it reduces API hallucinations, asset-path mistakes, or repair
 turns compared with the raw baseline.
 
 ## Current Status
 
 Codex self-test, Codex five-task, Codex repair, fresh Codex context-only,
-Claude Code five-task, and manual renderer code baseline evidence are recorded in
+Claude Code five-task, and low-level renderer code baseline evidence are recorded in
 `docs/project/agent-dogfood-results.md`,
 `docs/project/fresh-codex-agent-context-results.md`,
 `docs/project/claude-code-agent-context-results.md`,

@@ -14,7 +14,7 @@ generates a thumbnail, writes `aura.assets.json`, and writes typed imports in
 
 Agents reference real generated ids such as `assets.robot`.
 
-## Boundary
+## Aura3D advantage
 
 Asset ownership stays with the app. The `@aura3d/cli` package validates and
 copies local files, writes the manifest, and generates typed asset references.

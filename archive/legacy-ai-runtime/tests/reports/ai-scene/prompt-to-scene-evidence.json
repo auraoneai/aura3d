@@ -388,13 +388,13 @@
     "sceneId": "mock-tiny-robot-greenhouse",
     "renderItems": 3,
     "resolvedAssets": 2,
-    "placeholders": 1,
+    "proxies": 1,
     "warnings": [
       "Resolved 'asset-robot' to 'fixtures/threejs-parity/assets/character/robot-expressive.glb'.",
-      "Generated placeholder 'placeholder-asset-glowing-flower-production' for 'asset-glowing-flower-production'.",
+      "Generated prototype proxy 'prototype proxy-asset-glowing-flower-production' for 'asset-glowing-flower-production'.",
       "No local asset matched required tags: flower, botanical, emissive.",
       "Resolved 'asset-robot' to 'fixtures/threejs-parity/assets/character/robot-expressive.glb'.",
-      "Generated placeholder 'placeholder-asset-glowing-flower-production' for 'asset-glowing-flower-production'.",
+      "Generated prototype proxy 'prototype proxy-asset-glowing-flower-production' for 'asset-glowing-flower-production'.",
       "No local asset matched required tags: flower, botanical, emissive."
     ]
   },
@@ -714,7 +714,7 @@
         "path": "assetRequirements[asset-glowing-flower-production]",
         "code": "AURA_ASSET_PLACEHOLDER_USED",
         "severity": "warning",
-        "message": "Used placeholder for asset-glowing-flower-production.",
+        "message": "Used prototype proxy for asset-glowing-flower-production.",
         "fixSuggestion": "Add a matching local GLB asset."
       }
     ]

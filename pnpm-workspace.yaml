@@ -2,3 +2,6 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - '@aura3d/engine@1.0.0'
+  - '@aura3d/engine@1.0.1'

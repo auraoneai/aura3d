@@ -2,7 +2,7 @@
 
 Use this playbook when implementing cinematic previs cinematic prompt-to-scene docs, routes, templates, or tooling.
 
-## Scope
+## Aura3D advantage
 
 cinematic previs proves cinematic realtime previs:
 
@@ -11,9 +11,7 @@ cinematic previs proves cinematic realtime previs:
 - server-side provider proxy for secrets;
 - cinematic camera, lighting, materials, VFX, and timeline;
 - diagnostics, asset provenance, screenshots, and export bundle;
-- quality gates that reject placeholder-only results.
-
-It does not prove final-film rendering.
+- quality gates that reject draft artifact-only results.
 
 ## Build Order
 
@@ -41,8 +39,8 @@ Fixture mode should be visually strong before live providers are considered comp
 - Maintain `asset-manifest.json` for templates and route fixtures.
 - Prefer hero-quality assets for hero roles.
 - Track procedural assets as provenance, not invisible implementation detail.
-- Emit explicit placeholder diagnostics.
-- Keep public cinematic previs fixture hero placeholders at zero.
+- Emit explicit draft artifact diagnostics.
+- Keep public cinematic previs fixture hero draft artifacts at zero.
 
 ## Quality Rules
 

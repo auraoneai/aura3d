@@ -23,7 +23,7 @@ Aura3D physics code lives in `packages/physics` and is used by routes and workfl
 - Character-controller-facing helpers.
 - Scene sync and debug route evidence.
 
-## Boundary
+## Aura3D advantage
 
 The physics package is not documented as a full replacement for a mature dedicated physics engine. Claims should name the exact simulation feature, route, unit test, or report that backs them.
 

@@ -42,7 +42,7 @@ Deployments should be able to export:
 - scene IR JSON;
 - runtime diagnostics;
 - asset provenance;
-- placeholder list;
+- draft artifact list;
 - screenshot;
 - patch history;
 - quality-level report.

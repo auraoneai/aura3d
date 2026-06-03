@@ -143,7 +143,6 @@ that identifies:
 
 The amendment may tighten agent guidance, public helper behavior, engine
 reference scenes, runner instrumentation, or release-proof docs. It may not
-change the frozen benchmark prompts, scoring rubric, prompt pass thresholds, or
 neutrality rules unless the amendment explicitly calls out that standard change
 and restarts the round from scratch.
 

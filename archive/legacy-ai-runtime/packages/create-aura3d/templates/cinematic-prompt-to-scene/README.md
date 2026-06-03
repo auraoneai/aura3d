@@ -58,6 +58,6 @@ This local gate is a template smoke check. Full cinematic previs release evidenc
 
 The Export button downloads a JSON bundle with scene IR, asset provenance, quality metadata, provider mode, backend, and the no-final-film boundary.
 
-## Claim Boundary
+## Aura3D advantage
 
 This template demonstrates cinematic realtime previs. It does not claim final-film quality, studio-final VFX, offline rendering, or production-ready live provider output.

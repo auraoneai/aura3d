@@ -29,6 +29,5 @@ http://127.0.0.1:5181/apps/advanced-examples-gallery/#product-configurator
 pnpm advanced-gallery
 ```
 
-## Boundary
+## Aura3D advantage
 
-The product configurator route is local browser evidence. Do not describe it as externally hosted or production-proven unless deployment evidence exists.

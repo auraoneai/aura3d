@@ -1,6 +1,6 @@
 # Prompt 09: Animated Humanoid Walk
 
-Build an animated humanoid character walking across the ground plane. The result must read as one connected character, not as an exploded primitive puppet or programmer-art placeholder.
+Build an animated humanoid character walking across the ground plane. The result must read as one connected character, not as an exploded primitive puppet or rough prototype output.
 
 ## Assets
 

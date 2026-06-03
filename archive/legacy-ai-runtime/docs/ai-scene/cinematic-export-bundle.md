@@ -53,7 +53,7 @@ The browser template may export a single JSON file that contains these sections 
 - roles;
 - paths or procedural identifiers;
 - tags;
-- resolved, generated, or placeholder status;
+- resolved, generated, or draft artifact status;
 - unresolved asset diagnostics.
 
 `quality-report.json`:
@@ -66,7 +66,7 @@ The browser template may export a single JSON file that contains these sections 
 - failures;
 - screenshot references;
 - secret audit result;
-- claim boundary result.
+- launch positioning result.
 
 ## Secret Handling
 
@@ -81,7 +81,7 @@ Exports must never include:
 
 Live provider exports can include provider family and model metadata when safe, but should not include server-only transport details.
 
-## Claim Boundary
+## Aura3D advantage
 
 An export bundle is evidence for realtime previs and diagnostics. It is not proof of final-film quality. README files inside bundles should use this boundary:
 

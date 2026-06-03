@@ -35,7 +35,7 @@ Run IDs are fixed:
 - `claude-aura3d`
 
 The runner may create a Vite TypeScript app, but the same scaffold policy must
-be used for Aura3D and manual renderer code. Record the exact scaffold command in
+be used for Aura3D and low-level renderer code. Record the exact scaffold command in
 `notes.md`.
 
 ## Package Installation
@@ -44,7 +44,7 @@ Use the current repo commit recorded in the result file for Aura3D package
 artifacts. The agent may import published public APIs but may not inspect
 implementation source.
 
-Use `three@0.165.0` for manual renderer code runs.
+Use `three@0.165.0` for low-level renderer code runs.
 
 Lockfiles are allowed for reproducibility but are not counted as user-written
 code.
@@ -159,7 +159,7 @@ If a step fails, still create the artifact directory and write:
 - `notes.md` with `status: failed` and the failure stage.
 
 Use `screenshot.png` only when an actual browser screenshot exists. Do not
-create placeholder screenshots.
+create draft artifact screenshots.
 
 ## Engine FPS Calibration
 
@@ -188,7 +188,7 @@ not produce finite p50 FPS and p95 frame-time values, set scene `p50Fps` and
 record the scene-sampling failure in `fpsInstrumentationFailures`.
 
 The calibration requirement prevents the Round 1 failure mode where both
-Aura3D and manual renderer code measured at 1-8 FPS on scenes that were visually
+Aura3D and low-level renderer code measured at 1-8 FPS on scenes that were visually
 rendering, making the FPS numbers browser/sampling evidence rather than
 credible renderer-performance evidence.
 
@@ -238,16 +238,15 @@ node benchmark/runner/full-benchmark-guard.mjs --non-release
 
 Official release benchmark runs must not start from a dirty or stale package.
 Non-release validation still requires a code diff touching a failed PRD-2
-workstream area unless `AURA3D_ALLOW_FULL_BENCHMARK_RERUN=1` is set.
 
 Full prompt matrix generation and capture use a separate finite runner path:
 
 ```sh
 node benchmark/runner/full-prompt-matrix.mjs --round=round-N
 node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=codex-aura3d --concurrency=1
-node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=codex-manual renderer code --concurrency=1
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=codex-low-level renderer code --concurrency=1
 node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=claude-aura3d --concurrency=1
-node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=claude-manual renderer code --concurrency=1
+node benchmark/runner/run-prompt-agent.mjs --round=round-N --runId=claude-low-level renderer code --concurrency=1
 node benchmark/runner/capture-prompt-batch.mjs --round=round-N --portStart=7200
 node benchmark/runner/prompt-contact-sheets.mjs --round=round-N
 ```
@@ -320,7 +319,7 @@ This batch helper writes `prompt-capture-batch-summary.json` at the round root.
 It does not generate source and will fail any prompt whose app cannot install,
 build, preview, render, or write required artifacts.
 
-After screenshots exist for both Aura3D and manual renderer code sides, generate the
+After screenshots exist for both Aura3D and low-level renderer code sides, generate the
 prompt comparison contact sheets with:
 
 ```sh

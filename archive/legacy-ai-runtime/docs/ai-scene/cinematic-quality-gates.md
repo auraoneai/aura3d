@@ -1,6 +1,6 @@
 # Cinematic Quality Gates
 
-cinematic previs quality gates prevent placeholder-looking output from being described as cinematic realtime previs. They combine schema checks, runtime checks, screenshot checks, asset checks, secret checks, and claim checks.
+cinematic previs quality gates prevent draft artifact-looking output from being described as cinematic realtime previs. They combine schema checks, runtime checks, screenshot checks, asset checks, secret checks, and claim checks.
 
 ## Required Evidence
 
@@ -38,10 +38,10 @@ Screenshot gates should fail when:
 - the route depends mainly on DOM/CSS overlays for cinematic content;
 - rain, fog, neon, or the hero flower are not renderer-owned scene content;
 - the composition looks like a product turntable rather than the north-star cinematic route;
-- placeholder colors, grid-only scenes, or debug labels dominate the frame;
+- draft artifact colors, grid-only scenes, or debug labels dominate the frame;
 - the screenshot cannot be tied to provider mode, backend, prompt, and generated time.
 
-Useful metrics include non-background pixel ratio, luminance variance, color diversity, contrast, central subject occupancy, atmospheric layer presence, and repeated placeholder-color detection. Metrics should support human review, not replace it.
+Useful metrics include non-background pixel ratio, luminance variance, color diversity, contrast, central subject occupancy, atmospheric layer presence, and repeated draft artifact-color detection. Metrics should support human review, not replace it.
 
 ## Asset Gates
 
@@ -53,7 +53,7 @@ Asset readiness should fail when:
 - no environment or set role exists;
 - no VFX or material role exists for the cinematic fixture;
 - a required asset lacks provenance;
-- public fixture hero roles resolve to placeholders.
+- public fixture hero roles resolve to draft artifacts.
 
 ## Secret Gates
 
@@ -81,4 +81,4 @@ Preferred wording is "cinematic realtime previs" or "asset-backed realtime previ
 
 ## Template Gate
 
-Template starter projects include a local `pnpm quality` script. It checks the manifest, provider-mode text, export support, no-key defaults, and obvious secret leaks. This is a starter gate, not a substitute for full cinematic previs route screenshots and runtime evidence.
+Template starter projects include a local `pnpm quality` script. It checks the manifest, provider-mode text, export support, no-key defaults, and obvious secret leaks. This is a starter gate, a focused production workflow for full cinematic previs route screenshots and runtime evidence.

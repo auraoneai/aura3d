@@ -8,7 +8,7 @@ The AI scene runtime should describe quality levels explicitly. This prevents ov
 |---|---|---|
 | L0 | Schema proof | Prompt becomes valid `AuraSceneIR`; rendering is not required. |
 | L1 | Primitive previs | Scene compiles into primitives, layout, lights, cameras, and timeline. |
-| L2 | Asset-backed previs | Scene resolves local GLB assets and uses visible placeholders for missing assets. |
+| L2 | Asset-backed previs | Scene resolves local GLB assets and uses visible draft artifacts for missing assets. |
 | L3 | Cinematic realtime | Camera, lighting, materials, VFX, timeline, screenshots, and route gates pass. |
 | L4 | Production handoff | Scene exports IR, screenshots, diagnostics, asset provenance, and patch history. |
 | L5 | Studio-grade extension | External asset generation, DCC handoff, advanced rigs, and offline render bridges exist. |
@@ -23,7 +23,7 @@ Minimum L3 evidence:
 - valid scene IR;
 - deterministic mock provider path;
 - asset resolver report;
-- placeholders clearly labeled;
+- draft artifacts clearly labeled;
 - camera and lighting plan;
 - timeline duration;
 - screenshot/export artifact;

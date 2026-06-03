@@ -2,7 +2,7 @@
 
 Version: `1.0.0`
 
-This page is the durable documentation for the current first-class WebGPU product surface. It replaces the temporary PRD-level checklist with code-backed routes, runtime contracts, scripts, reports, and claim boundaries.
+This page is the durable documentation for the current first-class WebGPU product surface. It replaces the temporary PRD-level checklist with code-backed routes, runtime contracts, scripts, reports, and release notes.
 
 WebGPU is a conditional backend in Aura3D. The codebase includes explicit WebGPU routes and production-runtime paths, but WebGL2 remains the broadly available default route backend unless a workflow asks for WebGPU or uses an auto-selection mode that publishes its decision.
 
@@ -124,8 +124,6 @@ The completion audit intentionally checks for missing reports. Run the earlier W
 
 `tools/webgpu-feature-matrix/index.ts` is the source for the current feature rows. As of version `1.0.0`, supported rows include triangle geometry, indexed geometry, lines, points, PBR, sampled textures, render targets, readback, instancing, lifecycle, and compute. Partial rows include HDR/IBL, postprocess, shadows, skinning, morph targets, transmission, and device-loss diagnostics.
 
-A `supported` row means the named evidence files exist and the row is covered by focused route, unit, browser, or report evidence. It does not prove all browser/GPU combinations or broad WebGPU/WebGL2 parity.
-
 ## Verification Coverage
 
 Focused unit coverage:
@@ -159,7 +157,7 @@ Focused browser coverage:
 - `tests/browser/runtime-parity-webgpu-product-viewer.spec.ts`
 - `tests/browser/runtime-parity-webgpu-sdk-production.spec.ts`
 
-## Claim Boundary
+## Aura3D advantage
 
 Allowed wording:
 

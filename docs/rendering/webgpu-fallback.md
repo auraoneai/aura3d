@@ -65,6 +65,4 @@ pnpm webgpu
 
 ## Boundaries
 
-Do not document full WebGPU parity across browsers and GPUs. The current supported claim is route and device-probe evidence for named WebGPU workflows.
-
 This does not claim full real-hardware WebGPU support.

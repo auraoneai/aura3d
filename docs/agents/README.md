@@ -2,7 +2,6 @@
 
 Aura3D Agent Manual: browser 3D SDK for AI coding agents. Use this guide for prompt-to-3D TypeScript apps, typed GLB/glTF assets, scene kits, diagnostics, screenshots, and deploy checks.
 
-
 Aura3D is the 3D SDK for AI coding agents.
 
 Describe the scene. Bring the GLB. Own the TypeScript.
@@ -25,7 +24,6 @@ edit, build, screenshot, and ship.
 - Typed GLB/glTF asset references so agents cannot invent asset URLs.
 - Diagnostics, route-health checks, screenshots, and deployment checks so a
   generated scene has to prove it runs.
-- Claim boundaries: Aura3D is not an LLM, not an asset store, and not a hidden
   scene generator. It is source code plus typed assets.
 
 Read these first:

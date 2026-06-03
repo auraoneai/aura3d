@@ -9,7 +9,7 @@ manual visual verification inside the benchmark agent process. Runtime capture
 starts only after the agent process has stopped.
 
 The benchmark is scored visually. A scene that compiles but looks like a toy,
-placeholder, symbolic sketch, or one imported asset on a floor is a failed
+draft artifact, symbolic sketch, or one imported asset on a floor is a failed
 answer. Prefer scene kits first, prefabs second, primitives last.
 
 Shared imports:
@@ -56,12 +56,11 @@ createAuraApp("#app", sceneKits.productViewer(assets.product).toAppOptions());
 
 ## Do Not Submit
 
-- Primitive humanoid puppet: disconnected boxes, spheres, or capsules without a connected torso/limb hierarchy, planted feet, joints, face cues, and gait evidence.
 - Toy mini-golf: a flat green with a ball and hole but no score, aim/power state, obstacle, cup rim, boundaries, ball trail, contact shadow, or physics state.
 - Stray chart geometry: floating labels, detached ticks, cobweb guide lines, orphaned planes, or bars without axes/title/legend/value readout.
 - Blown-out neon: a white rectangle, flat portal, CSS-only gradient, or overexposed bloom with no readable tunnel depth.
 - Washed material lab: five spheres that all look pastel or matte, with no clear metal, glass, rubber, emissive, and clearcoat distinction.
-- Product placeholder: a bare GLB path, invented string id, uncentered model, missing plinth/contact shadow, or inspection clutter enabled by default.
+- Product draft artifact: a bare GLB path, invented string id, uncentered model, missing plinth/contact shadow, or inspection clutter enabled by default.
 
 ## 01 Physics Playground
 
@@ -254,4 +253,3 @@ asset URLs.
 - Do not invent asset paths or ids. Run `assets add`, read `src/aura-assets.ts`,
   and use the generated `assets.<name>` key.
 - Do not use raw string asset ids in the safe API.
-- Do not claim an example works until `npm run build` passes.

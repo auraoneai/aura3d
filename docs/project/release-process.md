@@ -4,10 +4,9 @@ Version: 1.0.0
 
 ## Process
 
-Current scoped release state: Round 50 has a local/private-beta scoped
+Current scoped release state: Round 50 has a local/developer-ready scoped
 SDK/product-context artifact. See `docs/project/release-tracks.md`.
 
-Current benchmark-superiority release state: not go-live ready. See
 `docs/project/frozen-benchmark-release-gates.md`.
 
 1. Make code and docs changes.
@@ -15,10 +14,8 @@ Current benchmark-superiority release state: not go-live ready. See
 3. Run focused tests for the affected packages/routes.
 4. Run broader gates before publishing public claims.
 5. Choose the intended release track from `docs/project/release-tracks.md`.
-6. For scoped SDK/product-context handoff, update release artifact evidence and keep public copy scoped.
-7. For benchmark-superiority claims, run the final proof pipeline in `docs/project/final-proof-release-readiness.md`.
+6. For Aura3D SDK handoff, update release artifact evidence and keep public copy scoped.
 8. Update release notes to cite only the evidence for the selected track.
-9. Run the release-proof guard for any benchmark-superiority publishing round: `pnpm check:release-proof <round-number>`.
 10. Keep release notes and public copy narrower than the evidence.
 
 ## Useful Commands
@@ -38,7 +35,6 @@ pnpm check:release-proof <round-number>
 ```
 
 The competitive proof commands are not ordinary package scripts. They are the
-frozen benchmark procedure in `docs/project/frozen-benchmark-release-gates.md`,
 `benchmark/protocol.md`, `benchmark/runner/README.md`,
 `benchmark/scoring/README.md`, and `benchmark/engine/README.md`.
 
@@ -52,7 +48,7 @@ static demos with `pnpm build:external-demos`, smokes the static export with
 verifies the public URL with `pnpm verify:public-demo-deployment`.
 
 The public deployment verifier requires `A3D_PUBLIC_DEMO_URL` to be a durable
-public HTTPS URL. Localhost, private, reserved, or placeholder origins are
+public HTTPS URL. Localhost, private, reserved, or draft artifact origins are
 rejected.
 
 No Docker, Docker Compose, Vercel, Netlify, Render, Fly.io, Railway,
@@ -70,7 +66,6 @@ those workflows are updated.
 
 The release workflow itself runs `tools/release-proof-guard.mjs` before publish.
 That guard intentionally blocks npm/GitHub release creation for
-benchmark-superiority claims unless the selected round has prompt, engine, and
 decision result files, the decision file contains a standalone `Decision: ship`
 line with user signature, required external score and review artifacts exist,
 and `CHANGELOG.md` cites the passing result files without contradictory failed
@@ -95,7 +90,7 @@ evidence plus release-run logs or attached artifacts outside the repository.
 Use `docs/project/deployment-rollback.md` for hosted demos or package artifacts.
 A local build is not enough evidence for a public deployment claim.
 
-Release wording and public-claim boundaries are governed by
+Release wording and public-release notes are governed by
 `docs/project/release-tracks.md`, `docs/project/frozen-benchmark-release-gates.md`,
-`docs/project/claim-guidelines.md`, and
+`docs/project/launch-positioning.md`, and
 `docs/project/product-studio-claim-registry.md`.

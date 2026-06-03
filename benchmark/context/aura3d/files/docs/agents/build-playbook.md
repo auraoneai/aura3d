@@ -21,7 +21,6 @@ Build order:
 6. Enable diagnostics with `diagnostics: { overlay: true }`.
 7. Run build, route-health, screenshot, prompt-fidelity, and deployment checks.
 
-Benchmark exception: for frozen benchmark prompts, use
 `docs/agents/benchmark-recipes.md` first. Copy the smallest matching recipe,
 run finite commands such as `npm install` and `npm run build`, and stop. Do not
 run `npm run dev`, `npm run preview`, Playwright, browser screenshots, or
@@ -104,7 +103,7 @@ Round 1 failure repairs:
   typed asset, plinth, contact shadow, softboxes, clean turntable cue, and
   normalized placement together. Use `prefabs.productStage({ style:
   "inspection" })` only when the prompt asks for explicit fit brackets. Do not
-  implement the actual viewer in manual renderer code inside an Aura3D app.
+  implement the actual viewer in low-level renderer code inside an Aura3D app.
 - Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`,
   `ui.onClick`, `ui.range`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
   because those patterns caused Round 5 TypeScript compile failures. By
@@ -117,7 +116,6 @@ Round 1 failure repairs:
   import real physics APIs from `@aura3d/engine` or `@aura3d/physics` when
   simulating state. For prompt-01-style playgrounds, use
   `prefabs.physicsPlayground({ cubes: 50 })` so falling cubes, settled cubes,
-  contact patches, normal vectors, and gravity cues are visible. Do not claim
   physics from cosmetic floating boxes only.
 - Mini-golf prompts: use `prefabs.miniGolfHole()`, `interactions.pointer()`,
   `camera.follow({ targetNode: "white physics golf ball" })`, and a visible

@@ -1,4 +1,4 @@
-# Migration From manual renderer code
+# Migration From low-level renderer code
 
 Version: 1.0.0
 
@@ -17,11 +17,11 @@ A3D can help migrate selected workflows:
 - controls and loader-facing adapters;
 - material/geometry compatibility tests;
 - migration lab routes;
-- current manual renderer code parity inventory/report generators.
+- current low-level renderer code parity inventory/report generators.
 
 ## Not A Full Drop-In Replacement
 
-The compatibility package does not make A3D a full runtime drop-in for every manual renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
+The compatibility package does not make A3D a full runtime drop-in for every low-level renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
 
 ## Useful Commands
 
@@ -29,4 +29,4 @@ The compatibility package does not make A3D a full runtime drop-in for every man
 pnpm three-compat:migration
 ```
 
-Migration wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.
+Migration wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.

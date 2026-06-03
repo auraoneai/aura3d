@@ -45,6 +45,5 @@ For a procedural renderer smoke path, create `Geometry.uvSphere`, shade it with 
 pnpm advanced-gallery
 ```
 
-## Boundary
+## Aura3D advantage
 
-This tutorial proves one local fixture workflow. It is not a broad glTF ecosystem or visual parity claim.

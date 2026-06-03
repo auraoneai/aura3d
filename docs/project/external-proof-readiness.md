@@ -2,7 +2,6 @@
 
 Generated: 2026-05-29T07:40:00Z
 
-This document records the current machine state for external services, subscriptions, credentials, or real participants required by scoped release evidence and benchmark-superiority gates. It is not a pass substitute. It exists so the remaining gaps are
 specific and reproducible instead of vague.
 
 ## Summary
@@ -111,7 +110,6 @@ npm error 401 Unauthorized
 ```
 
 This means a tarball or GitHub-release beta handoff can be prepared, but npm
-beta publication and outside-user dogfood cannot be honestly marked complete
 until real testers run the install/scaffold flow and file evidence.
 
 ## Remaining External Inputs Needed

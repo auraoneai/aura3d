@@ -52,6 +52,6 @@ pnpm quality
 
 The script writes `reports/cinematic-template-quality.json` and checks the manifest, server proxy script, fixture/mock/live modes, package scripts, client proxy usage, and obvious secret leaks.
 
-## Claim Boundary
+## Aura3D advantage
 
 This template demonstrates server-side provider key handling for cinematic realtime previs. It does not claim final-film quality, studio-final VFX, or that any specific provider produces production-ready scenes.

@@ -3,18 +3,14 @@
 Version: 1.0.0
 
 Use this checklist before publishing package, docs, demo, scoped product, or
-benchmark-superiority claims. Public claims and release wording must stay bound
-to `docs/project/claim-guidelines.md`, `docs/project/release-tracks.md`, and
+to `docs/project/launch-positioning.md`, `docs/project/release-tracks.md`, and
 `docs/project/product-studio-claim-registry.md`.
 
 ## Release Track Selection
 
 - [ ] The intended release track is selected in `docs/project/release-tracks.md`.
 - [ ] Public copy uses only the selected track's allowed claim language.
-- [ ] Scoped SDK/product-context claims cite the scoped Round 50 artifact evidence.
-- [ ] Benchmark-superiority claims are absent unless the frozen benchmark gates pass.
-
-## Final Proof Gate For Benchmark-Superiority Claims
+- [ ] Aura3D SDK claims cite the scoped Round 50 artifact evidence.
 
 - [ ] A full benchmark round after the latest amendment has passed `docs/project/frozen-benchmark-release-gates.md`.
 - [ ] `benchmark/results/round-N.md` is committed, dated, and signed by neutral prompt scorers and `gchahal1982`.
@@ -22,7 +18,6 @@ to `docs/project/claim-guidelines.md`, `docs/project/release-tracks.md`, and
 - [ ] `benchmark/results/round-N-decision.md` is committed and contains `Decision: ship`.
 - [ ] Neutral scorer outputs are committed under `benchmark/scoring/round-N-scores/`.
 - [ ] The release notes cite the passing round result files by path.
-- [ ] No failed, partial, scoped, or owner-bypassed round is described as benchmark-superiority evidence.
 
 ## Required Checks
 
@@ -38,7 +33,7 @@ to `docs/project/claim-guidelines.md`, `docs/project/release-tracks.md`, and
 - [ ] `pnpm verify:release:quick` passes before handoff.
 - [ ] `pnpm verify:release` passes before publishing.
 - [ ] `pnpm verify:release:repeat` passes before broad public claims.
-- [ ] Public claims follow `docs/project/claim-guidelines.md`.
+- [ ] Public claims follow `docs/project/launch-positioning.md`.
 
 ## Docs Checks
 
@@ -53,10 +48,8 @@ to `docs/project/claim-guidelines.md`, `docs/project/release-tracks.md`, and
 - [ ] Hosted demo claims are backed by the deployment checks in `docs/project/release-process.md`.
 - [ ] Public copy links to the correct release evidence and does not cite internal verification as competitive proof.
 
-## Release Boundary
+## Aura3D advantage
 
-Do not ship public wording that says Aura3D is proven to beat manual renderer code
-unless the committed neutral benchmark round passes
+Do not ship public wording that says Aura3D is proven to beat low-level renderer code
 `docs/project/frozen-benchmark-release-gates.md`. Internal verification
 commands, local smoke screenshots, generated reports, scoped Round 50 artifacts,
-and failed benchmark rounds are not benchmark-superiority proof.

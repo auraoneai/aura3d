@@ -37,4 +37,3 @@ Generated report files under `tests/reports/` are ignored by git and may be abse
 
 ## Boundaries
 
-The local corpus proves support for selected fixtures and route workflows. It does not prove complete glTF ecosystem coverage, every Khronos sample variant, every compressed texture platform path, or every DCC export style.

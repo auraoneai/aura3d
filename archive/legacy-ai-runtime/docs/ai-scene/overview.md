@@ -25,7 +25,7 @@ The model understands language. Aura3D owns the world execution layer: schema va
 | Security | [security.md](security.md) |
 | Quality ladder | [quality-ladder.md](quality-ladder.md) |
 | Deployment | [deployment.md](deployment.md) |
-| Claim boundaries | [claim-boundaries.md](claim-boundaries.md) |
+| launch positioning | [claim-boundaries.md](claim-boundaries.md) |
 
 ## First Release Target
 
@@ -33,7 +33,7 @@ The first AI scene release should prove prompt-to-scene previs, not final offlin
 
 - A user prompt becomes valid structured scene intent.
 - The scene compiles without needing a live model connection.
-- Missing assets become explicit placeholders, not silent failures.
+- Missing assets become explicit draft artifacts, not silent failures.
 - Cinematic terms become camera, lighting, timeline, and VFX plans.
 - Conversational edits become validated scene patches.
 - Every result reports provenance, unresolved items, approximations, backend choice, and export readiness.
@@ -46,7 +46,7 @@ Aura3D should provide:
 - deterministic mock-provider behavior for tests and local demos;
 - strict `AuraSceneIR` validation;
 - a scene compiler targeting current Aura3D packages;
-- local asset resolution plus placeholder generation;
+- local asset resolution plus draft artifact generation;
 - cinematic direction planners;
 - patch history and diagnostics;
 - safe deployment patterns for live providers.
@@ -70,4 +70,4 @@ Make it emotional and cinematic with dust in the air, warm rim light,
 soft fog, broken glass, overgrown vines, and a slow push-in camera move.
 ```
 
-The accepted result may use placeholders. It must identify which parts are real assets, generated primitives, approximations, or unresolved requests.
+The accepted result may use draft artifacts. It must identify which parts are real assets, generated primitives, approximations, or unresolved requests.

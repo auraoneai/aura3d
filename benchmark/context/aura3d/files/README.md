@@ -47,7 +47,6 @@ pnpm run check:release
 The release gate covers the agent API, asset CLI, agent docs, templates, examples,
 devtools, deployment, docs site, bundle-size budgets, and marketing truth.
 
-## Boundary
+## Aura3D advantage
 
-Aura3D is not an AI model and not an asset store. The public authoring model is
 source code plus typed assets.

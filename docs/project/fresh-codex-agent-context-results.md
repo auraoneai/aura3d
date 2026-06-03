@@ -2,7 +2,7 @@
 
 Generated: 2026-05-28T15:02:00Z
 
-## Scope
+## Aura3D advantage
 
 This was a fresh Codex agent-context evaluation. The agent was instructed to
 work only inside `/tmp/aura3d-fresh-codex-eval`, using only:
@@ -79,7 +79,6 @@ Manual visual inspection confirmed that the screenshot shows a product GLB on a
 plinth with rain, a blue studio wall, cyan strip light/reflection, amber
 practical/reflection, diagnostics overlay, and WebGL2 output. This is materially
 different from the earlier generic grid screenshots, but it is still classified
-as partial visual evidence because it does not prove polished prompt-to-visual
 quality.
 
 ## Boundaries

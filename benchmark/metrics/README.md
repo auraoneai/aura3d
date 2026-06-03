@@ -52,7 +52,7 @@ For each prompt metric:
   If one side fails to produce a required value and the other side produces it,
   the side with the value wins.
 
-Aura3D wins a prompt only when it wins more non-tied metrics than manual renderer code and
+Aura3D wins a prompt only when it wins more non-tied metrics than low-level renderer code and
 its visual score is at least as high. Tied metrics are not counted in the
 majority denominator.
 

@@ -21,7 +21,7 @@ The gallery source metadata currently defines ten accepted advanced routes. That
 | `water-lab` | Interactive procedural water scene with ripple controls, marina props, and route instrumentation. | `waterSystems.ts`, `proceduralRouteScenes.ts`, marina/water asset generators. |
 | `ocean-observatory` | Large animated ocean/deck showcase with drones, horizon atmosphere, and wave controls. | `waterSystems.ts`, `proceduralRouteScenes.ts`, ocean observatory asset generators. |
 
-Each route has metadata in `apps/advanced-examples-gallery/src/metadata.ts` that names the manual renderer code-style reference category, controls, systems used, acceptance criteria, known gaps, screenshot path, and review hash.
+Each route has metadata in `apps/advanced-examples-gallery/src/metadata.ts` that names the low-level renderer code-style reference category, controls, systems used, acceptance criteria, known gaps, screenshot path, and review hash.
 
 ## Evidence Commands
 
@@ -38,7 +38,6 @@ The combined gate is:
 ```sh
 pnpm advanced-gallery:pipeline
 ```
-
 
 ## Evidence Artifacts
 
@@ -70,8 +69,6 @@ Accepted-gallery wording requires all of these to be true for the same generated
 - the structural audit finds zero blockers and zero warnings for the current route reports;
 - unsupported boundaries are disclosed in route metadata and reports.
 
-Smoke tests, object counts, changed hashes, browser metrics, or generated assets alone do not prove acceptance.
-
 ## Capability Boundaries
 
 The gallery uses real A3D WebGL2 rendering, authored GLB layers, render items, material paths, animation mixers, route controls, runtime instrumentation, screenshot capture, review tooling, and audit tooling.
@@ -80,7 +77,6 @@ It does not claim:
 
 - native GPGPU water or FFT ocean simulation;
 - public GPU-compute particle simulation;
-- full effects-composer parity for every postprocess pass;
 - true volumetric raymarching;
 - full triangle-level picking over authored GLB renderables;
 - mesh-derived physics colliders or articulated robot dynamics;

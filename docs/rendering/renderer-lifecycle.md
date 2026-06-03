@@ -30,4 +30,3 @@ pnpm exec vitest run tests/unit/rendering/resource-lifetime.test.ts tests/unit/r
 
 ## Boundaries
 
-Lifecycle reports prove the resources named by those reports. They do not prove browser garbage collection behavior, every third-party integration, or every WebGPU driver path.

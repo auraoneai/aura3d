@@ -15,7 +15,7 @@ The scene compiler turns `AuraSceneIR` into an executable Aura3D runtime scene. 
 ## Outputs
 
 - Aura3D render source or scene graph.
-- Resolved assets and placeholder assets.
+- Resolved assets and draft artifact assets.
 - Runtime cameras, lights, materials, and animation cues.
 - Diagnostics for approximations, unsupported items, and unresolved requests.
 - Export bundle metadata.
@@ -23,7 +23,7 @@ The scene compiler turns `AuraSceneIR` into an executable Aura3D runtime scene. 
 ## Compile Stages
 
 1. Validate the IR.
-2. Resolve assets and placeholders.
+2. Resolve assets and draft artifacts.
 3. Build environment and world scale.
 4. Place objects and characters.
 5. Compile materials or approximations.
@@ -43,7 +43,7 @@ Compiler diagnostics should include:
 - `backendReason`;
 - `objectsCompiled`;
 - `assetsResolved`;
-- `placeholdersUsed`;
+- `draft artifactsUsed`;
 - `materialsApproximated`;
 - `vfxApproximated`;
 - `physicsApproximated`;
@@ -56,6 +56,6 @@ Compiler diagnostics should include:
 
 Compiled scenes must render without a live model connection. The provider can be offline after the IR is produced. This keeps CI, route health, replay, and export deterministic.
 
-## Failure Boundary
+## Production Guardrails
 
 If the compiler cannot produce a renderable scene, it should return a structured failure with diagnostics. It should not produce a blank canvas or silently hide unresolved assets.

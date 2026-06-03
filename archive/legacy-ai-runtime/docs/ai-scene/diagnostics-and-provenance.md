@@ -10,7 +10,7 @@ AI scene diagnostics explain what Aura3D actually built from a prompt. Provenanc
 - selected backend
 - quality target
 - resolved assets
-- placeholder assets
+- draft artifact assets
 - approximations
 - unresolved items
 - warnings

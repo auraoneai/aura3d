@@ -18,7 +18,7 @@ Editor-runtime code provides reusable browser authoring primitives. It is separa
 - Gizmo/timeline-facing runtime helpers.
 - Static export and diagnostics helpers.
 
-## Boundary
+## Aura3D advantage
 
 The editor runtime is a package surface, not a complete product guarantee for a Unity/Unreal-style editor. UI behavior must be verified against browser tests before being documented as supported.
 

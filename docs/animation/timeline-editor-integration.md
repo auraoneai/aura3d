@@ -12,7 +12,7 @@ Editor-facing animation state is split between the animation runtime and editor-
 - `packages/editor-runtime/src/TimelineModel.ts`
 - `packages/editor-runtime/src/index.ts`
 
-## Current Boundary
+## Aura3D advantage
 
 The runtime supports clips, tracks, mixers, layers, and motion diagnostics. The editor-runtime package provides timeline primitives that can be used by browser authoring surfaces.
 

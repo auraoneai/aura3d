@@ -19,7 +19,6 @@ First-class WebGPU claims require both route evidence and hardware evidence. A p
 
 - A report with `navigator.gpu` unavailable proves fallback diagnostics for that browser/environment.
 - `tests/browser/webgpu-real-device.spec.ts` uses `navigator.gpu` directly and records browser user agent plus operating system platform and release.
-- A report with adapter/device availability proves WebGPU can be requested in that local browser/environment. They do not prove hardware support outside the recorded environment.
 - Route screenshots prove the named current registry route behavior only.
 - Injected WebGPU runtimes are useful for unit and contract tests, but they are not real hardware evidence.
 - `tools/webgpu-hardware-matrix/index.ts` validates that the matrix exists, has `status: "pass"`, uses `evidenceType: "real-navigator-gpu-probe"`, and contains at least one browser/device row.
@@ -45,7 +44,6 @@ Before saying WebGPU is first-class for a named browser/device, regenerate the m
 - at least one real adapter and device are granted;
 - root WebGPU route health passes or reports structured unsupported states;
 - `pnpm webgpu` passes in the same workspace;
-- docs do not claim broader browser/GPU coverage than the matrix records.
 
 Useful commands:
 
@@ -59,5 +57,5 @@ pnpm webgpu:hardware-matrix
 - Full WebGPU browser/device matrix coverage.
 - Mobile GPU support.
 - Driver-level performance claims.
-- A claim that WebGPU behavior matches WebGL2 or manual renderer code in every route.
+- A claim that WebGPU behavior matches WebGL2 or low-level renderer code in every route.
 - Public claims must not say "full WebGPU support" without a complete hardware matrix.

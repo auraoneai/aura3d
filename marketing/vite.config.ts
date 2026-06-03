@@ -9,14 +9,28 @@ const repoRoot = resolve(marketingDir, "..");
 const rootServer = typeof rootConfig.server === "object" ? rootConfig.server : {};
 
 const docsDir = resolve(marketingDir, "docs");
+const appInputs = [
+  "apps/advanced-examples-gallery/index.html",
+  "apps/wow-boombox-texture-lab/index.html",
+  "apps/wow-concept-car-cinema/index.html",
+  "apps/wow-damaged-helmet-pbr-detail/index.html",
+  "apps/wow-simple-transforms/index.html",
+  "apps/wow-standard-material-spheres/index.html",
+  "apps/wow-tokyo-keyframes/index.html",
+  "apps/wow-webgpu-compute-particles/index.html"
+];
 const htmlInputs = Object.fromEntries([
-  ["marketing/index", resolve(marketingDir, "index.html")],
+  ["index", resolve(marketingDir, "index.html")],
   ...readdirSync(docsDir)
     .filter((file) => file.endsWith(".html"))
     .map((file) => [
-      `marketing/docs/${file.replace(/\.html$/, "")}`,
+      `docs/${file.replace(/\.html$/, "")}`,
       resolve(docsDir, file)
-    ] as const)
+    ] as const),
+  ...appInputs.map((file) => [
+    file.replace(/\/index\.html$/, "/index"),
+    resolve(repoRoot, file)
+  ] as const)
 ]);
 
 function copyMarketingPublicFiles() {

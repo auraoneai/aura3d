@@ -8,7 +8,6 @@ Generated: 2026-05-29T09:30:47.378Z
 |---|---:|---:|---:|---:|---:|---|
 | Codex | yes | yes | 0 | 0 | 1 | Generated app uses the public prompt-plan engine surface and typed assets emitted by aura assets add. Verification used the local repo toolchain; Claude Code, Cursor, and Copilot remain separate external runs. |
 | Codex five-task eval | yes | yes | 0 | 0 | 1 | 5/5 requested tasks passed product-quality or deploy-bundle verification. This strengthens the Codex-local baseline only; Claude Code, Cursor, and Copilot remain separate external runs. |
-| Codex repair eval | yes | yes | 0 | 0 | 1 | A controlled failed screenshot was generated first, then repaired through prompt-plan recipe guidance without using raw model URLs. This remains local Codex evidence; it does not replace external agent repair runs. |
 
 ## Codex Five-Task Eval
 
@@ -39,7 +38,7 @@ Source prompt: Repair a failed rainy product reveal that currently looks like on
 - `.github/copilot-instructions.md`
 - `docs/agents/agent-context.md`
 - `docs/agents/build-playbook.md`
-- `docs/agents/claims-and-boundaries.md`
+- `docs/agents/launch-positioning.md`
 - `docs/agents/codebase-map.md`
 - `docs/agents/verification.md`
 

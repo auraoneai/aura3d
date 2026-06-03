@@ -24,7 +24,7 @@ Important code:
 - `packages/ecs/src/index.ts`
 - `packages/ecs/tests/ecs.test.ts`
 
-## Boundary
+## Aura3D advantage
 
 Renderer-facing examples mostly use scene graph structures. ECS is available for runtime organization, but docs should not imply every scene feature has an ECS-first authoring path unless that path exists in code and tests.
 

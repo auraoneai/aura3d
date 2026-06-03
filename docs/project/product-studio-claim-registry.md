@@ -14,7 +14,7 @@ This file is retained because `pnpm verify:claims` reads it as the public claim 
 
 | Claim | Gate | Evidence Required |
 |---|---|---|
-| A3D is better than manual renderer code. | Full measured manual renderer code superiority claim-defense gate | The generated manual renderer code superiority audit and claim-defense reports must exist and pass, and the public wording must match the measured categories exactly. |
+| A3D is better than low-level renderer code. | Full measured low-level renderer code superiority claim-defense gate | The generated low-level renderer code superiority audit and claim-defense reports must exist and pass, and the public wording must match the measured categories exactly. |
 | A3D is production-ready for every browser 3D use case. | Release, browser, and support matrix gates | Current release, browser, package, route, and support reports must pass for the exact claim. |
 | A3D has unqualified WebGPU support across browsers and devices. | WebGPU hardware and route matrix | `tests/reports/webgpu-hardware-matrix.json` plus route reports must prove the named browsers/devices. |
 | A3D is Unity/Unreal for the web. | Out of scope | No current gate supports this claim. |

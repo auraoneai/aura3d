@@ -74,7 +74,7 @@
           "renderer-rain-particles",
           "fixtures/threejs-parity/assets/character/robot-expressive.glb"
         ],
-        "placeholderAssets": [],
+        "proxyAssets": [],
         "productTurntableSignals": []
       }
     },
@@ -99,9 +99,9 @@
       "detail": "realAssets=robot-expressive,procedural-neon-alley,glowing-flower,renderer-rain-particles,fixtures/threejs-parity/assets/character/robot-expressive.glb"
     },
     {
-      "id": "zero-hero-placeholders",
+      "id": "zero-hero-proxies",
       "pass": true,
-      "detail": "placeholderAssets=none"
+      "detail": "proxyAssets=none"
     },
     {
       "id": "required-hero-prop",

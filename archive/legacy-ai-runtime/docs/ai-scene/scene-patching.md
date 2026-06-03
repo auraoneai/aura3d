@@ -52,7 +52,7 @@ After applying a patch, Aura3D should be able to report:
 
 - changed fields;
 - added/removed nodes;
-- new placeholders;
+- new draft artifacts;
 - changed backend requirements;
 - changed export readiness;
 - warnings and blocked edits.

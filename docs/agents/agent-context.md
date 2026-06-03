@@ -18,7 +18,6 @@ Prompt-to-visual workflow:
 
 - For ordinary product apps, follow `docs/agents/prompt-to-3d-workflow.md` before dropping into low-level primitives.
 
-- For frozen benchmark prompts, first open
   `docs/agents/benchmark-recipes.md`. Copy the smallest matching scene-kit
   recipe and make only prompt-required edits.
 - Use `sceneKits.<name>()` before prefabs or primitives. Scene kits return scene
@@ -76,7 +75,7 @@ Do not submit:
   axes/title/legend.
 - Blown-out neon that reads as a white portal, rectangle, or CSS background.
 - Washed material labs where all materials look identical.
-- Product placeholders using string asset ids, invented URLs, missing contact
+- Product draft artifacts using string asset ids, invented URLs, missing contact
   shadows, or inspection clutter by default.
 
 Physics API boundary:

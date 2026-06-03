@@ -57,5 +57,4 @@ pnpm advanced-gallery:pipeline
 
 - Imported GLB part selection is evidence-bound. Do not imply triangle-level authored-asset picking unless the route/test proves that exact path.
 - XR controller sampling and AR hit-test behavior are route/app evidence surfaces, not a blanket package claim.
-- Controls compatibility with manual renderer code is scoped to supported adapters and tested workflows.
-- UI presence does not prove interaction quality; route evidence must show that controls change scene state or camera state.
+- Controls compatibility with low-level renderer code is scoped to supported adapters and tested workflows.

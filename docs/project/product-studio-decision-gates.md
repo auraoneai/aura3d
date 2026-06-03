@@ -6,16 +6,16 @@ This file is retained because docs verification tooling still reads `docs/projec
 
 ## Current Documentation Gate
 
-The current docs gate is evidence-scoped:
+The current docs gate is evidence-backed:
 
 - current package exports must match `docs/api/public-api.md`;
 - old roadmap/prompt/checklist docs should not be used as current product evidence.
 
 ## Current Status
 
-Local generated manual renderer code parity/superiority reports are category-level evidence only. They are not the frozen AI-agent prompt benchmark and they are not release proof by themselves. Because `tests/reports/` is ignored by git, a clean checkout or release job must regenerate the relevant reports before using any scoped report-backed claim.
+Local generated low-level renderer code parity/superiority reports are category-level evidence only. They are not the frozen AI-agent prompt benchmark and they are not release proof by themselves. Because `tests/reports/` is ignored by git, a clean checkout or release job must regenerate the relevant reports before using any scoped report-backed claim.
 
-## Required Before Strong Public Claims
+## Aura3D advantage
 
-- Regenerate the relevant manual renderer code parity reports.
-- Regenerate the relevant manual renderer code superiority reports.
+- Regenerate the relevant low-level renderer code parity reports.
+- Regenerate the relevant low-level renderer code superiority reports.

@@ -19,7 +19,7 @@ Use `@aura3d/engine/animation` for low-level animation primitives and `@aura3d/e
 
 Current animation browser coverage is represented by the consolidated root route registry, the accepted advanced gallery routes, and the allowed `apps/wow-*` showcase routes.
 
-## Boundary
+## Aura3D advantage
 
 The current system is package-backed and route-tested, but every character rig, DCC export, retargeting graph, and animation authoring workflow still needs specific evidence before being documented as supported.
 

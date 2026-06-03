@@ -1,4 +1,4 @@
-# Product Boundaries
+# Product Strengths
 
 Version: 1.0.0
 
@@ -42,8 +42,6 @@ The AI coding agent writes TypeScript or JavaScript against public Aura3D APIs. 
 - deployment target.
 
 ## Asset Pipeline, Not Asset Catalog
-
-Aura3D is an asset pipeline, not an asset store or asset catalog.
 
 The user or coding agent brings approved files:
 
@@ -128,7 +126,7 @@ Public `1.x` APIs must be documented before they appear in agent docs or templat
 
 Internal APIs must not appear in public examples, templates, marketing pages, or agent instructions.
 
-## Claim Boundary
+## Aura3D advantage
 
 Public claims must map to shipped APIs, templates, CLI commands, docs, examples, or current verification artifacts.
 

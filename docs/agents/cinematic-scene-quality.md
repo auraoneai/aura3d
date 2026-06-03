@@ -4,8 +4,6 @@ Version: 1.0.0
 
 Use this guide when an AI coding agent builds a cinematic Aura3D scene or edits the `cinematic-scene` template.
 
-The current Aura3D product is agent-written TypeScript, not a provider-backed prompt-to-scene runtime. A cinematic scene should therefore be authored as normal source code using public Aura3D APIs, scene kits, primitives, typed assets, cameras, lights, materials, effects, timeline helpers, diagnostics, and deployment checks.
-
 ## Target Experience
 
 A cinematic Aura3D scene should feel like realtime previs in the browser:
@@ -28,7 +26,7 @@ Use this ladder to decide whether a cinematic scene is ready for a public demo o
 | --- | --- | --- | --- |
 | L0 | Schema or text proof | The idea exists only as prompt text, JSON, or comments. | No |
 | L1 | Primitive sketch | The scene renders simple boxes, labels, and symbolic objects. | Internal only |
-| L2 | Asset-backed draft | The scene has some real assets but still depends on obvious placeholders. | Only if labeled as a draft |
+| L2 | Asset-backed draft | The scene has some real assets but still depends on obvious draft artifacts. | Only if labeled as a draft |
 | L3 | Realtime cinematic scene | Assets or procedural geometry, lighting, camera, material contrast, and atmosphere read visually. | Yes |
 | L4 | Production handoff | The scene includes exportable source, assets, diagnostics, screenshots, and deployment checks. | Yes |
 
@@ -83,7 +81,7 @@ Before accepting a cinematic scene, check that the visual result contains at lea
 - atmosphere that does not wash the image into a flat rectangle;
 - camera framing that keeps the hero object readable.
 
-## Public Claim Boundary
+## Aura3D advantage
 
 Allowed:
 
@@ -91,8 +89,6 @@ Allowed:
 - "realtime previs-style browser scene"
 - "camera motion, lighting, atmosphere, and typed assets"
 - "agent-written TypeScript scene"
-
-Blocked unless separately proven by current evidence:
 
 - final film quality;
 - Pixar-quality output;

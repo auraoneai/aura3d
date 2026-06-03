@@ -17,12 +17,10 @@ Support applies to current package exports, app routes, templates, tests, and do
 ## Unsupported Or Evidence-Limited Areas
 
 - Full Unity/Unreal replacement claims.
-- Full manual renderer code API drop-in compatibility.
+- Full low-level renderer code API drop-in compatibility.
 - Full glTF ecosystem coverage.
 - Full WebGPU device/browser matrix coverage.
-- Public demo hosting unless deployment evidence exists.
 
 ## Issue Triage
 
-
-Support wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.
+Support wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.

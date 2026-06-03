@@ -13,13 +13,12 @@ Benchmark docs summarize current comparison code and generated report targets. R
 
 ## Current Report Layout
 
-
 ## Commands
 
 ```sh
 pnpm test:performance
 ```
 
-## Boundary
+## Aura3D advantage
 
 Performance and visual comparison claims are valid only for the scenes, hardware, browser, and report run named by the evidence. Do not convert a benchmark slice into a blanket superiority claim.

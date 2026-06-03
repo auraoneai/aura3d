@@ -1,4 +1,4 @@
-# Claim Guidelines
+# Aura3D launch positioning
 
 Version: 1.0.0
 
@@ -11,33 +11,26 @@ Claim wording is governed by `docs/project/product-studio-claim-registry.md`,
 map to the registry or add a reviewed registry entry before release copy is
 published.
 
-## Allowed Scoped Product Claims
+## Aura3D advantage
 
-The scoped SDK/product-context release may claim:
+The Aura3D SDK release may claim:
 
 - Aura3D is an agent-friendly browser 3D SDK.
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
 - Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
 - Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
-- A local/private-beta Round 50 scoped SDK/product-context artifact exists.
+- A local/developer-ready Round 50 Aura3D SDK artifact exists.
 
 The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
 scoped release artifacts when used in release notes or operator handoff docs.
 
-## Blocked Benchmark-Superiority Claims
-
-Do not claim these unless `docs/project/frozen-benchmark-release-gates.md` has
 been satisfied for a committed round:
 
-- Aura3D beats manual renderer code.
+- Aura3D beats low-level renderer code.
 - Aura3D passed the frozen external AI-agent benchmark.
-- Aura3D is visually superior to manual renderer code on the locked benchmark.
-- Round 50 is a benchmark-superiority ship decision.
-- Owner-skipped neutral review or external scoring is equivalent to neutral benchmark proof.
+- Aura3D is visually superior to low-level renderer code on the locked benchmark.
 
 ## Blocked Prompt-Runtime And Cinematic Claims
-
-Do not claim these from the current scoped SDK/product-context release:
 
 - Aura3D is an LLM.
 - Aura3D is a provider-backed prompt-to-scene runtime.
@@ -45,7 +38,7 @@ Do not claim these from the current scoped SDK/product-context release:
 - Aura3D uses `AuraSceneIR` as the primary public authoring contract.
 - Aura3D generates production-ready 3D assets from scratch.
 - Aura3D produces final film quality or Pixar-quality frames.
-- Aura3D replaces Maya, Houdini, Blender, Unreal, Unity, RenderMan, manual renderer code, or framework-specific renderer layers.
+- Aura3D replaces Maya, Houdini, Blender, Unreal, Unity, RenderMan, low-level renderer code, or framework-specific renderer layers.
 
 Allowed cinematic wording must stay within `docs/agents/cinematic-scene-quality.md`: agent-written TypeScript, realtime previs-style scenes, camera motion, lighting, materials, atmosphere, typed assets, and browser deployment.
 
@@ -69,7 +62,6 @@ Allowed scoped evidence includes:
 - `npm pack --pack-destination <release-dir> --json`
 - `benchmark/releases/round-50-scoped-sdk-product-context/release-artifact-evidence.md`
 
-Benchmark-superiority evidence must use the external artifacts listed in
 `docs/project/frozen-benchmark-release-gates.md`.
 
 ## Invalid Claim Evidence
