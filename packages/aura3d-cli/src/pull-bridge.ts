@@ -64,6 +64,14 @@ function hasEnv(name: string): boolean {
 export function buildSearchAdapters(
   env: NodeJS.ProcessEnv = process.env,
 ): SourceAdapter[] {
+  // Primary: the hosted ~850k Aura3D catalog via its `/search` endpoint (hybrid
+  // keyword + semantic + quality ranking). It already aggregates Objaverse,
+  // Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and the CC0 mirror, so it
+  // supersedes per-source live federation. Fall back to live sources only if the
+  // hosted-catalog adapter isn't available in this build.
+  const auraIndex = optionalFactory("createAuraIndexAdapter");
+  if (auraIndex) return [auraIndex()];
+
   const adapters: SourceAdapter[] = [...defaultAdapters()];
 
   const polyHaven = optionalFactory("createPolyHavenAdapter");

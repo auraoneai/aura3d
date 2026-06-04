@@ -32,13 +32,32 @@ const sh = (cmd, args, opts = {}) =>
   execFileSync(cmd, args, { encoding: "utf8", maxBuffer: 1 << 28, ...opts });
 const log = (...a) => console.log(...a);
 
-// Quaternius pack slug -> itch.io game_id. Extend this list freely; each pack is
-// CC0. (A fuller list can be harvested from quaternius.com/index.html.)
-const QUATERNIUS = [
-  { slug: "3d-card-kit-fantasy", gameId: 2758621 },
-  { slug: "ultimate-nature-pack", gameId: 1019643 },
-  { slug: "ultimate-modular-ruins", gameId: 1808412 },
-];
+// Auto-harvest Quaternius packs from the itch.io creator page, whose game cells
+// each carry a numeric `data-game_id` (the id the itch API needs) and a link to
+// the game slug. All Quaternius packs are CC0. (The page JS-paginates, so this
+// reliably yields the server-rendered set ~29; quaternius.com hides slugs behind
+// a JS widget and can't be used.)
+function discoverQuaternius() {
+  let html;
+  try {
+    html = fetchText("https://quaternius.itch.io");
+  } catch {
+    return [];
+  }
+  const packs = [];
+  const seen = new Set();
+  // Split on each game cell's id attribute; the slug is the first itch link in it.
+  for (const cell of html.split('data-game_id="').slice(1)) {
+    const idm = cell.match(/^(\d+)/);
+    if (!idm) continue;
+    const gameId = Number(idm[1]);
+    if (seen.has(gameId)) continue;
+    seen.add(gameId);
+    const slugm = cell.match(/quaternius\.itch\.io\/([a-z0-9-]+)/);
+    packs.push({ gameId, slug: slugm ? slugm[1] : `game-${gameId}` });
+  }
+  return packs;
+}
 
 function titleFromFile(name) {
   return name
@@ -137,8 +156,9 @@ function quaterniusUploadId(gameId) {
 
 function extractQuaternius(limit) {
   if (!ITCH_KEY) { log("[quaternius] no ITCH_API_KEY, skipping"); return { packs: 0 }; }
-  const list = limit ? QUATERNIUS.slice(0, limit) : QUATERNIUS;
-  log(`[quaternius] processing ${list.length} packs`);
+  const all = discoverQuaternius();
+  const list = limit ? all.slice(0, limit) : all;
+  log(`[quaternius] discovered ${all.length} packs, processing ${list.length}`);
   let packs = 0;
   for (const { slug, gameId } of list) {
     try {

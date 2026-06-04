@@ -78,6 +78,8 @@ interface SketchfabModel {
   readonly isDownloadable?: boolean;
   readonly faceCount?: number;
   readonly vertexCount?: number;
+  readonly likeCount?: number;
+  readonly viewCount?: number;
   readonly license?: SketchfabLicense | null;
   readonly thumbnails?: SketchfabThumbnails;
   readonly tags?: readonly SketchfabTag[];
@@ -192,6 +194,8 @@ function toCanonical(
     format: "glb",
     license,
     thumbnailUrl: bestThumbnail(model.thumbnails),
+    likeCount: typeof model.likeCount === "number" ? model.likeCount : undefined,
+    viewCount: typeof model.viewCount === "number" ? model.viewCount : undefined,
     triangles: typeof model.faceCount === "number" ? model.faceCount : undefined,
     tags,
     sourcePage,

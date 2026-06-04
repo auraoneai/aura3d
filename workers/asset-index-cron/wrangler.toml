@@ -22,6 +22,17 @@ account_id = "bd3fbe37a66521e496ea1b90f669f8b7"
 binding = "ASSET_INDEX"
 bucket_name = "aura3d-asset-index"
 
+# D1 store for the catalog at scale (queryable past the single-JSON ~30-50k ceiling).
+[[d1_databases]]
+binding = "DB"
+database_name = "aura3d-asset-index"
+database_id = "466a9243-4976-40ec-afbb-c29b7f177568"
+
+# Workers AI — embeds the search query (bge-base, same model as the asset vectors)
+# so /search can rerank candidates semantically.
+[ai]
+binding = "AI"
+
 # Nightly at 07:00 UTC.
 [triggers]
 crons = ["0 7 * * *"]
