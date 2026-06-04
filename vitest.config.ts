@@ -45,7 +45,8 @@ export default defineConfig({
       "@aura3d/workflows": new URL("./packages/workflows/src/index.ts", import.meta.url).pathname,
       "@aura3d/editor-runtime": new URL("./packages/editor-runtime/src/index.ts", import.meta.url).pathname,
       "@aura3d/editor": new URL("./packages/editor/src/index.ts", import.meta.url).pathname,
-      "@aura3d/debug": new URL("./packages/debug/src/index.ts", import.meta.url).pathname
+      "@aura3d/debug": new URL("./packages/debug/src/index.ts", import.meta.url).pathname,
+      "@aura3d/asset-index": new URL("./packages/asset-index/src/index.ts", import.meta.url).pathname
     }
   }
 });

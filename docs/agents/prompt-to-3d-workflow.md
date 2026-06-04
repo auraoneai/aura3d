@@ -35,13 +35,14 @@ Aura3D does not provide:
 ## Default Workflow
 
 1. Restate the requested 3D experience as scene intent.
-2. Add the real asset with `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`.
-3. Import `assets` from `./src/aura-assets` or the generated relative path for the app.
-4. Start from `definePromptPlan(...)` or the closest `sceneKits.<name>()` helper.
-5. Add only prompt-required customization.
-6. Enable diagnostics or collect scene evidence when the output will be reviewed.
-7. Run finite build and check commands appropriate to the app.
-8. Use screenshots, route health, typed asset provenance, and deployment checks as evidence.
+2. If you do not already have the asset file, resolve it from the catalog: run `npx @aura3d/cli@latest assets search "<intent>"`, pick an auto-pullable candidate (CC0 / CC-BY, verified, direct-download), and let the CLI pull and type it. Everything else is a deep-link you open and license yourself. Then use `model(assets.x)` with the generated key. Do not invent a URL or fall back to a primitive for a named real object.
+3. Add a real asset you already have on disk with `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`.
+4. Import `assets` from `./src/aura-assets` or the generated relative path for the app.
+5. Start from `definePromptPlan(...)` or the closest `sceneKits.<name>()` helper.
+6. Add only prompt-required customization.
+7. Enable diagnostics or collect scene evidence when the output will be reviewed.
+8. Run finite build and check commands appropriate to the app.
+9. Use screenshots, route health, typed asset provenance, and deployment checks as evidence.
 
 ## Typed Asset Rule
 

@@ -15,6 +15,9 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@aura3d/asset-index": "workspace:*"
+  },
   "description": "Aura3D CLI for typed GLB/glTF assets, agent setup, diagnostics, and static deploy checks for browser 3D apps.",
   "keywords": [
     "aura3d",

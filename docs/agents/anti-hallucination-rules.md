@@ -11,6 +11,18 @@
   `model(assets.robot)` or `sceneKits.productViewer(assets.sneaker)`.
 - Do not use `unsafeModelUrl(...)` for benchmark product proof unless the prompt
   explicitly asks for an unsafe temporary URL escape hatch.
+- Do not `import * as THREE`, import from `three` / `three/examples/...`, or
+  instantiate `new GLTFLoader()`. Write `@aura3d/engine` public APIs and let
+  `createAuraApp(...)` own the renderer, scene graph, camera, and loop.
+- Do not paste memorized or guessed GLB URLs such as
+  `raw.githubusercontent.com/.../KhronosGroup/.../DamagedHelmet.glb`. A
+  remembered URL is hallucinated provenance, not a verified asset.
+- When a prompt names a real-world object and no typed asset exists yet, resolve
+  it through the asset catalog with `npx @aura3d/cli@latest assets search
+  "<object>"`, pick an auto-pullable candidate (CC0 / CC-BY, verified,
+  direct-download; everything else is a deep-link you license yourself), and use
+  the generated `model(assets.x)`. Do not fall back to a primitive puppet or an
+  invented URL for a named real object.
 - Do not import `PhysicsWorld`, `Shape`, or `PhysicsDebugAdapter` from
   `@aura3d/engine`. Use benchmark-visible scene kits/prefabs and the documented
   root `physics` namespace, including `physics.world(...)`, `physics.box(...)`,
