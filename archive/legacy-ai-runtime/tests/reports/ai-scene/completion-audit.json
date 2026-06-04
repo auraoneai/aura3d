@@ -1,0 +1,110 @@
+{
+  "schema": "a3d-ai-scene-completion-audit",
+  "generatedAt": "2026-05-27T08:44:58.629Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [],
+    "requiredReports": [
+      "tests/reports/ai-scene/readiness.json",
+      "tests/reports/ai-scene/route-health.json",
+      "tests/reports/ai-scene/provider-contracts.json",
+      "tests/reports/ai-scene/scene-ir-schema-audit.json",
+      "tests/reports/ai-scene/prompt-to-scene-evidence.json",
+      "tests/reports/ai-scene/scene-diff-audit.json",
+      "tests/reports/ai-scene/cinematic-scene-report.json",
+      "tests/reports/ai-scene/claim-scan.json",
+      "tests/reports/ai-scene/quality.json",
+      "tests/reports/ai-scene/report-freshness.json",
+      "tests/reports/ai-scene/secret-audit.json"
+    ],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "tests-reports-ai-scene-readiness-json",
+      "path": "tests/reports/ai-scene/readiness.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/readiness.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-route-health-json",
+      "path": "tests/reports/ai-scene/route-health.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/route-health.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-provider-contracts-json",
+      "path": "tests/reports/ai-scene/provider-contracts.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/provider-contracts.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-scene-ir-schema-audit-json",
+      "path": "tests/reports/ai-scene/scene-ir-schema-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/scene-ir-schema-audit.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-prompt-to-scene-evidence-json",
+      "path": "tests/reports/ai-scene/prompt-to-scene-evidence.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/prompt-to-scene-evidence.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-scene-diff-audit-json",
+      "path": "tests/reports/ai-scene/scene-diff-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/scene-diff-audit.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-cinematic-scene-report-json",
+      "path": "tests/reports/ai-scene/cinematic-scene-report.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/cinematic-scene-report.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-claim-scan-json",
+      "path": "tests/reports/ai-scene/claim-scan.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/claim-scan.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-quality-json",
+      "path": "tests/reports/ai-scene/quality.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/quality.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-report-freshness-json",
+      "path": "tests/reports/ai-scene/report-freshness.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/report-freshness.json exists."
+    },
+    {
+      "id": "tests-reports-ai-scene-secret-audit-json",
+      "path": "tests/reports/ai-scene/secret-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/ai-scene/secret-audit.json exists."
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": []
+}

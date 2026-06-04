@@ -7,7 +7,7 @@ import {
   type RuntimeParityFrameRenderResult,
   type RenderDeviceDiagnostics,
   type RendererAnimationLoop,
-  type RendererFrameCapture,
+  type RendererFrameCaptureWithMetadata,
   type RendererInput,
   type RendererOptions,
   type RenderItem,
@@ -75,7 +75,7 @@ export class A3DRenderer {
     };
   }
 
-  captureFrame(source?: A3DScene | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RendererFrameCapture {
+  captureFrame(source?: A3DScene | RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RendererFrameCaptureWithMetadata {
     return this.renderer.captureFrame(source ? normalizeSource(source) : undefined, camera);
   }
 

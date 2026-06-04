@@ -8,13 +8,13 @@ This tutorial uses the current asset and renderer APIs with a local GLB fixture.
 
 ```sh
 pnpm install
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open a related running example:
 
 ```text
-http://127.0.0.1:5180/apps/advanced-examples-gallery/#product-configurator
+http://127.0.0.1:5181/apps/advanced-examples-gallery/#product-configurator
 ```
 
 ## Minimal Code
@@ -45,6 +45,5 @@ For a procedural renderer smoke path, create `Geometry.uvSphere`, shade it with 
 pnpm advanced-gallery
 ```
 
-## Boundary
+## Aura3D advantage
 
-This tutorial proves one local fixture workflow. It is not a broad glTF ecosystem or visual parity claim.

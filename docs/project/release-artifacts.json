@@ -7,7 +7,20 @@
       "version": "1.0.0",
       "pathOrUrl": "release-artifacts/aura3d-engine-1.0.0.tgz",
       "sha256": "4eb6ad707235de068ae6bfd3fb4049df67fcdc40435fbba4833e1bdb063e5d6c",
-      "createdAt": "2026-05-25T18:15:00.000-07:00"
+      "createdAt": "2026-05-25T18:15:00.000-07:00",
+      "status": "candidate-record",
+      "evidenceScope": "package artifact inventory only",
+      "notPublishProof": true,
+      "notBenchmarkProof": true
     }
+  ],
+  "schema": "aura3d-release-artifacts/1.0",
+  "status": "candidate-only",
+  "scope": "scoped SDK/product-context launch artifact inventory",
+  "notReleaseProof": true,
+  "notes": [
+    "This file records candidate or historical artifact paths only until an official benchmark pass, user approval, and publish/go-live result exist.",
+    "Do not treat this file as npm publication proof or broad benchmark release proof.",
+    "Final publish evidence must include the actual artifact path or URL, SHA-256, creation time, benchmark result paths, and approval artifact."
   ]
 }

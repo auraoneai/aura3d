@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-boombox-texture-lab",
-  title: "A3D Boom Box Texture Lab",
-  subtitle: "Imported Boom Box GLB rendered through A3D with base color, normal, metallic-roughness, occlusion texture detail, HDR lighting, and grounded product staging.",
-  assetId: "boom-box",
+  title: "A3D Avocado Texture Lab",
+  subtitle: "Imported Avocado GLB rendered through A3D with organic material texture, normal detail, HDR lighting, and grounded product staging.",
+  assetId: "avocado",
   environmentId: "studio-small-08",
   controls: {
     yaw: -0.32,

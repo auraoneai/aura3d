@@ -6,6 +6,7 @@ import {
   type CurrentRoutesViewerControls,
   type CurrentRoutesViewerSnapshot
 } from "../../../packages/engine/src/threejs-example-parity/index";
+import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 export interface WowShowcaseConfig {
   readonly appId: string;
@@ -47,6 +48,7 @@ const FALLBACK_WIDTH = 1440;
 const FALLBACK_HEIGHT = 960;
 const MAX_PIXEL_RATIO = 2;
 const MAX_RENDER_EDGE = 2160;
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
 
 export async function startWowShowcase(config: WowShowcaseConfig): Promise<void> {
   const root = document.getElementById("app");
@@ -54,6 +56,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     throw new Error(`${config.appId} requires #app and canvas#viewport.`);
   }
+  const chromeHidden = applyRouteChromeMode();
 
   let renderSize = syncCanvasRenderSize(canvas);
   let viewer: CurrentRoutesFlagshipViewer | undefined;
@@ -89,7 +92,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
     window.__a3dWowRuntime = runtime;
     (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
     const now = performance.now();
-    if (force || now - lastUi > 250) {
+    if (!chromeHidden && (force || now - lastUi > 250)) {
       renderUi(root, runtime);
       lastUi = now;
     }
@@ -102,7 +105,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       canvas,
       width: renderSize.width,
       height: renderSize.height,
-      origin: location.origin,
+      origin: publicAssetOrigin(),
       assetId: config.assetId,
       environmentId: config.environmentId
     });
@@ -158,12 +161,18 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   }
 }
 
+function publicAssetOrigin(): string {
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  return configured ?? PUBLIC_ASSET_ORIGIN;
+}
+
 function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: number; readonly height: number } {
   const rect = canvas.getBoundingClientRect();
   const cssWidth = rect.width > 0 ? rect.width : FALLBACK_WIDTH;
   const cssHeight = rect.height > 0 ? rect.height : FALLBACK_HEIGHT;
-  const pixelRatio = Math.min(MAX_PIXEL_RATIO, Math.max(1, window.devicePixelRatio || 1));
-  const edgeScale = Math.min(1, MAX_RENDER_EDGE / Math.max(cssWidth * pixelRatio, cssHeight * pixelRatio));
+  const quality = routeRenderQuality({ maxPixelRatio: MAX_PIXEL_RATIO, maxRenderEdge: MAX_RENDER_EDGE });
+  const pixelRatio = Math.min(quality.maxPixelRatio, Math.max(1, window.devicePixelRatio || 1));
+  const edgeScale = Math.min(1, quality.maxRenderEdge / Math.max(cssWidth * pixelRatio, cssHeight * pixelRatio));
   const width = Math.max(1, Math.round(cssWidth * pixelRatio * edgeScale));
   const height = Math.max(1, Math.round(cssHeight * pixelRatio * edgeScale));
   if (canvas.width !== width) canvas.width = width;

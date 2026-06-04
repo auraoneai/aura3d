@@ -1,109 +1,102 @@
-# Agent Context Pack
+# Agent Context
 
-Version: 1.0.0
+Aura3D is a developer library, template system, asset CLI, diagnostics surface,
+and deployment checker for AI coding agents that write browser 3D app code.
 
-This is the first file an AI coding agent should read when dropped into the A3D repo.
+Primary active areas:
 
-## One-Minute Summary
+- `packages/engine/src/agent-api/` for public scene helpers and scene kits
+- `packages/aura3d-cli/src/` for assets, agent init, doctor, and deploy checks
+- `packages/react/src/` for the optional React adapter
+- `packages/create-aura3d/templates/` for starter templates
+- `apps/hello-world-typed-asset/`, `apps/material-lighting/`, and
+  `apps/camera-path/` for starter examples
 
-Aura3D / A3D is a TypeScript-first browser 3D engine and workflow SDK. It has first-party packages for engine lifecycle, math, scene graph, ECS, rendering, assets, animation, physics, controls, input, audio, scripting, product workflows, editor runtime, diagnostics, and Three.js compatibility. The root published package is `@aura3d/engine`; workspace packages also exist under `packages/*`.
+Do not use archived `archive/legacy-ai-runtime/` files from active code.
 
-A3D is not a Three.js wrapper. Three.js appears in this repo as a reference target, compatibility surface, benchmark baseline, and migration aid.
+Prompt-to-visual workflow:
 
-## First Commands
+- For ordinary product apps, follow `docs/agents/prompt-to-3d-workflow.md` before dropping into low-level primitives.
 
-```sh
-pnpm install
-pnpm typecheck
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
-```
+  `docs/agents/benchmark-recipes.md`. Copy the smallest matching scene-kit
+  recipe and make only prompt-required edits.
+- Use `sceneKits.<name>()` before prefabs or primitives. Scene kits return scene
+  nodes, camera, lights, effects, interactions, UI, diagnostics, acceptance
+  evidence, `customize(...)`, and `toAppOptions()`.
+- Scene-kit mapping: physics playground -> `sceneKits.physicsPlayground()`,
+  particle fountain -> `sceneKits.particleFountain(...)`, solar system ->
+  `sceneKits.solarSystem()`, neon tunnel -> `sceneKits.neonTunnel()`, data
+  visualization -> `sceneKits.dataViz({ dataset })`, mini-golf ->
+  `sceneKits.miniGolf()`, material lab -> `sceneKits.materialLab()`, city block
+  -> `sceneKits.cityBlock({ timeOfDay })`, humanoid ->
+  `sceneKits.humanoidWalk({ animationState: "benchmark-pose" })`, product
+  viewer -> `sceneKits.productViewer(assets.product)`.
+- Put user assets through the asset CLI first. Import typed refs such as
+  `assets.product`; do not use raw strings, invented URLs, or unrelated copied
+  assets.
+- Include camera, lighting, effects, interaction, acceptance criteria, and
+  negative criteria when the prompt gives them. If the prompt is covered by a
+  scene kit, prefer `kit.customize(...)` over rebuilding systems.
+- Prompt plans are still supported for app planning: use `definePromptPlan(...)`,
+  `compilePromptPlan(plan)`, inspect `report.repairHints`, then render with
+  `promptPlanToScene(plan)`. Do not treat a weak render as done because it
+  compiled.
+- Reject output that is only one imported asset on a grid with symbolic lines,
+  labels, or unrelated primitives.
 
-Open the local registry:
+Expected screenshot requirements:
 
-```text
-http://127.0.0.1:5180/
-```
+- Physics playground: falling cubes, settled pile, ramp/catch geometry, contact
+  patches, gravity/velocity cue, reset affordance, and grounded lighting.
+- Particle fountain: dense upward flow, lifetime color variation, emitter base,
+  splash/collision context, and an emission-rate UI that changes a real value.
+- Solar system: sun glow, six labeled planets, orbit paths, stars/dust, distinct
+  material classes, and whole-system framing.
+- Neon tunnel: inside-the-tube camera, receding rings, rails, reflections, fog
+  depth, sparks/motes, and controlled bloom.
+- Data visualization: bars, axes, numeric ticks, title, legend, selected value or
+  hover readout, and no orphaned labels.
+- Mini-golf: ball, cup, aim/power state, score, obstacle, boundaries, ball trail
+  or contact cue, and follow-camera target evidence.
+- Material lab: mirror metal, transparent glass, matte rubber, emissive glow,
+  clearcoat highlights, contact shadows, and class distinction.
+- City block: many buildings, windows, roads, sidewalks, crosswalks, props,
+  traffic/street lights, and visible day/night state.
+- Humanoid: one connected character, planted feet, sockets, hands/feet attached,
+  face cues, and motion/path evidence.
+- Product viewer: typed model centered, scaled, seated, lit by softboxes, on a
+  plinth/stage with contact shadow and orbit/turntable cues.
 
-If the port is busy, use another local Vite port and keep links rooted at `/`.
+Do not submit:
 
-## Current Route Surface
+- Primitive humanoid puppets made from disconnected primitives.
+- Toy mini-golf with no score, obstacle, cup rim, aim/power, or physics evidence.
+- Stray chart geometry with detached labels, ticks, guide lines, or bars without
+  axes/title/legend.
+- Blown-out neon that reads as a white portal, rectangle, or CSS background.
+- Washed material labs where all materials look identical.
+- Product draft artifacts using string asset ids, invented URLs, missing contact
+  shadows, or inspection clutter by default.
 
-Only these local browser examples are allowed:
+Physics API boundary:
 
-- root `index.html`
-- `/apps/advanced-examples-gallery/#water-lab`
-- `/apps/advanced-examples-gallery/#ocean-observatory`
-- `/apps/advanced-examples-gallery/#reactor-post`
-- `/apps/advanced-examples-gallery/#smart-city`
-- `/apps/advanced-examples-gallery/#data-galaxy`
-- `/apps/advanced-examples-gallery/#product-configurator`
-- `/apps/advanced-examples-gallery/#robotics-lab`
-- `/apps/advanced-examples-gallery/#physics-playground`
-- `/apps/advanced-examples-gallery/#fog-cathedral`
-- `/apps/advanced-examples-gallery/#digital-twin`
-- `/apps/wow-tokyo-keyframes/`
-- `/apps/wow-robot-expressive-rig/`
-- `/apps/wow-concept-car-cinema/`
-- `/apps/wow-damaged-helmet-pbr-detail/`
-- `/apps/wow-antique-camera-viewer/`
-- `/apps/wow-duck-prop-studio/`
-- `/apps/wow-cesium-milk-truck-viewer/`
-- `/apps/wow-soldier-animation-viewer/`
-- `/apps/wow-boombox-texture-lab/`
-- `/apps/wow-avocado-pbr-study/`
-- `/apps/wow-clearcoat-material-sample/`
-- `/apps/wow-sheen-material-grid/`
-- `/apps/wow-standard-animated-cube/`
-- `/apps/wow-standard-product-camera/`
-- `/apps/wow-standard-material-spheres/`
-- `/apps/wow-simple-triangle/`
-- `/apps/wow-simple-transforms/`
-- `/apps/wow-simple-material-lighting/`
-- `/apps/wow-simple-points-lines/`
-- `/apps/wow-additional-variant-product/`
-- `/apps/wow-additional-transmission-sample/`
-- `/apps/wow-additional-cesium-man-animation/`
+- Use visible scene kits and prefabs first.
+- Call simulation helpers through the safe root `physics` namespace:
+  `physics.world(...)`, `physics.box(...)`, `physics.sphere(...)`,
+  `physics.step(...)`, `physics.debugNodes(...)`, and
+  `physics.worldFromScene(...)`.
+- Do not import `PhysicsWorld`, `Shape`, or `PhysicsDebugAdapter` from
+  `@aura3d/engine`.
+- Use `games.createMiniGolfState()` for mini-golf shots, score, collisions, cup
+  trigger, reset, and follow-camera metrics.
 
-`apps/wow-common/` is shared support code, not a standalone route. The old `examples/` tree is pruned.
+Runtime and verification:
 
-## High-Value Entry Points
-
-| Area | Public import | Source |
-|---|---|---|
-| Root app helpers | `@aura3d/engine` | `packages/engine/src/index.ts` |
-| Direct renderer scene control | `@aura3d/engine/advanced-runtime` | `packages/engine/src/advanced-runtime/` |
-| Production runtime | `@aura3d/engine/production-runtime` | `packages/engine/src/production-runtime/` |
-| Rendering | `@aura3d/engine/rendering` or `@aura3d/rendering` | `packages/rendering/src/` |
-| Assets | `@aura3d/engine/assets` or `@aura3d/assets` | `packages/assets/src/` |
-| Animation | `@aura3d/engine/animation` or `@aura3d/animation` | `packages/animation/src/` |
-| Physics | `@aura3d/engine/physics` or `@aura3d/physics` | `packages/physics/src/` |
-| Controls | `@aura3d/engine/controls` or `@aura3d/controls` | `packages/controls/src/` |
-| Workflows | `@aura3d/engine/workflows` or `@aura3d/workflows` | `packages/workflows/src/` |
-| Three.js compatibility | `@aura3d/engine/three-compat` or `@aura3d/three-compat` | `packages/three-compat/src/` |
-
-Check `package.json` exports and `tsconfig.base.json` paths before adding imports.
-
-## Common Build Pattern
-
-For most feature work:
-
-1. Find the owning package in `packages/*/src`.
-2. Read the matching docs under `docs/concepts`, `docs/rendering`, `docs/assets`, `docs/animation`, or `docs/project`.
-3. Add or adjust package code.
-4. Export public API through the package `src/index.ts` only if needed.
-5. Add focused unit coverage under `tests/unit/<area>/`.
-6. Add or update browser coverage only for canvas, route, asset, or DOM behavior.
-7. Run focused tests first, then `pnpm typecheck`.
-8. Update docs and evidence wording if public behavior changed.
-
-## Evidence Rule
-
-`tests/reports/` contains local generated evidence and is not durable source. Do not claim current parity, superiority, accepted screenshots, or production readiness from report names alone. Regenerate the relevant lane and cite the exact command or report.
-
-## Things To Avoid
-
-- Do not re-add `examples/` or non-allowlisted local app routes.
-- Do not present A3D as a full Three.js, Unity, or Unreal replacement.
-- Do not treat a screenshot or a single route as broad engine proof.
-- Do not deep-import private package files from consumers unless there is an established local test-only pattern.
-- Do not update generated public API docs by hand; use `pnpm verify:api-docs -- --write` when export surfaces change.
+- Build/test, then terminate normally. Do not run `npm run dev`, Playwright,
+  browser screenshots, or manual visual verification from inside the benchmark
+  agent process.
+- Create one Aura app per route. Do not animate by repeatedly disposing and
+  recreating `createAuraApp(...)`; use scene animations and separate DOM overlays
+  instead.
+- One-click remounts for discrete state changes, such as a city day/night toggle,
+  are acceptable when the click visibly changes the 3D scene.

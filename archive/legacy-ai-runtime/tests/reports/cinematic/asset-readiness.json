@@ -1,0 +1,107 @@
+{
+  "schema": "a3d-cinematic-asset-readiness",
+  "generatedAt": "2026-05-27T19:38:58.883Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "webgl2",
+    "requiredFiles": [
+      "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+      "fixtures/cinematic-assets/procedural/rainy-neon-alley.json",
+      "fixtures/cinematic-assets/procedural/glowing-flower.json",
+      "fixtures/cinematic-assets/procedural/rainy-neon-alley.json",
+      "fixtures/threejs-parity/assets/character/robot-expressive.glb"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "source-evidence",
+      "path": "apps/cinematic-prompt-to-scene",
+      "present": true,
+      "status": "present",
+      "detail": "Audited fixture asset roles for renderer-owned hero, prop, environment, and VFX coverage.",
+      "sourceEvidence": {
+        "routePath": "apps/cinematic-prompt-to-scene",
+        "providerMode": "fixture",
+        "backend": "webgl2",
+        "domOverlayCount": 10,
+        "cssOverlaySelectors": [
+          "rain",
+          "fog",
+          "neon",
+          "story-flower",
+          "alley-wall"
+        ],
+        "rendererOwnedHeroProps": [
+          "glowing-flower"
+        ],
+        "rendererOwnedEnvironment": [
+          "procedural-neon-alley"
+        ],
+        "rendererOwnedVfx": [
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "source-renderer-owned-vfx"
+        ],
+        "realAssets": [
+          "robot-expressive",
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "fixtures/threejs-parity/assets/character/robot-expressive.glb"
+        ],
+        "proxyAssets": [],
+        "productTurntableSignals": []
+      }
+    },
+    {
+      "id": "fixtures-threejs-parity-assets-character-robot-expressive-glb",
+      "path": "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+      "present": true,
+      "status": "present",
+      "detail": "Renderer-owned cinematic asset file evidence."
+    },
+    {
+      "id": "fixtures-cinematic-assets-procedural-rainy-neon-alley-json",
+      "path": "fixtures/cinematic-assets/procedural/rainy-neon-alley.json",
+      "present": true,
+      "status": "present",
+      "detail": "Renderer-owned cinematic asset file evidence."
+    },
+    {
+      "id": "fixtures-cinematic-assets-procedural-glowing-flower-json",
+      "path": "fixtures/cinematic-assets/procedural/glowing-flower.json",
+      "present": true,
+      "status": "present",
+      "detail": "Renderer-owned cinematic asset file evidence."
+    },
+    {
+      "id": "fixtures-cinematic-assets-procedural-rainy-neon-alley-json",
+      "path": "fixtures/cinematic-assets/procedural/rainy-neon-alley.json",
+      "present": true,
+      "status": "present",
+      "detail": "Renderer-owned cinematic asset file evidence."
+    },
+    {
+      "id": "fixtures-threejs-parity-assets-character-robot-expressive-glb",
+      "path": "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+      "present": true,
+      "status": "present",
+      "detail": "Renderer-owned cinematic asset file evidence."
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "webgl2",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": []
+}

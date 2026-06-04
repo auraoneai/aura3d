@@ -42,6 +42,19 @@ export interface A3DGroundedStageOptions {
   readonly floorRoughness?: number;
   readonly backdropRoughness?: number;
   readonly floorMetallic?: number;
+  readonly minWidth?: number;
+  readonly minHeight?: number;
+  readonly minDepth?: number;
+  readonly widthScale?: number;
+  readonly heightScale?: number;
+  readonly depthScale?: number;
+  readonly depthPadding?: number;
+  readonly floorOffset?: number;
+  readonly floorThickness?: number;
+  readonly backdropWidthScale?: number;
+  readonly backdropHeightScale?: number;
+  readonly backdropDepthOffsetScale?: number;
+  readonly backdropThickness?: number;
   readonly contactShadows?: boolean;
   readonly background?: boolean;
   readonly shadowLightDirection?: A3DVec3;
@@ -285,14 +298,20 @@ export function createStudioLighting(options: A3DStudioLightingOptions = {}): re
 
 export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroundedStageOptions = {}): A3DGroundedStage {
   const labelPrefix = options.labelPrefix ?? "a3d-current-routes-grounded-stage";
-  const width = Math.max(3.8, (bounds.max[0] - bounds.min[0]) * 2.4);
-  const height = Math.max(2.6, (bounds.max[1] - bounds.min[1]) * 2.35);
-  const depth = Math.max(3.2, (bounds.max[2] - bounds.min[2]) * 3.2 + 1.35);
+  const assetExtent = boundsExtent(bounds);
+  const width = Math.max(options.minWidth ?? 3.8, (bounds.max[0] - bounds.min[0]) * (options.widthScale ?? 2.4));
+  const height = Math.max(options.minHeight ?? 2.6, (bounds.max[1] - bounds.min[1]) * (options.heightScale ?? 2.35));
+  const depth = Math.max(
+    options.minDepth ?? 3.2,
+    (bounds.max[2] - bounds.min[2]) * (options.depthScale ?? 3.2) + (options.depthPadding ?? 1.35)
+  );
   const centerX = (bounds.min[0] + bounds.max[0]) / 2;
   const centerY = (bounds.min[1] + bounds.max[1]) / 2;
   const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
-  const floorY = bounds.min[1] - 0.05;
-  const backZ = bounds.min[2] - depth * 0.42;
+  const floorOffset = options.floorOffset ?? Math.min(0.05, assetExtent * 0.035);
+  const floorThickness = options.floorThickness ?? Math.min(0.035, Math.max(0.002, assetExtent * 0.018));
+  const floorY = bounds.min[1] - floorOffset;
+  const backZ = bounds.min[2] - depth * (options.backdropDepthOffsetScale ?? 0.42);
   const stageGeometry = Geometry.litCube(1);
   const floorMaterial = new PBRMaterial({
     name: `${labelPrefix}-floor-material`,
@@ -321,7 +340,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
       label: `${labelPrefix}-floor`,
       geometry: stageGeometry,
       material: floorMaterial,
-      modelMatrix: composeMat4([centerX, floorY, centerZ + depth * 0.12], [0, 0, 0, 1], [width, 0.035, depth])
+      modelMatrix: composeMat4([centerX, floorY, centerZ + depth * 0.12], [0, 0, 0, 1], [width, floorThickness, depth])
     },
     ...(contactShadow?.renderItems ?? [])
   ];
@@ -330,7 +349,11 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroun
       label: `${labelPrefix}-backdrop`,
       geometry: stageGeometry,
       material: backdropMaterial,
-      modelMatrix: composeMat4([centerX, centerY + height * 0.9, backZ], [0, 0, 0, 1], [width * 1.35, height * 2.8, 0.05])
+      modelMatrix: composeMat4(
+        [centerX, centerY + height * 0.9, backZ],
+        [0, 0, 0, 1],
+        [width * (options.backdropWidthScale ?? 1.35), height * (options.backdropHeightScale ?? 2.8), options.backdropThickness ?? 0.05]
+      )
     }
   ];
   const diagnostics: A3DGroundedStageDiagnostics = {
@@ -369,16 +392,18 @@ export function createCameraFrame(options: A3DCameraFrameOptions): A3DCameraFram
   const base = productViewerCameraPreset(preset);
   const targetOffset = productViewerTargetOffset(options.bounds, options.target ?? [0, 0, 0], preset);
   const framedBounds = offsetBounds(options.bounds, targetOffset);
+  const extent = boundsExtent(framedBounds);
   const yawRadians = base.yawRadians + (options.yawRadians ?? 0);
   const pitchRadians = clamp(base.pitchRadians + (options.pitchRadians ?? 0), -1.2, 1.2);
   const zoom = clamp(options.zoom ?? 1, 0.25, 4);
   const paddingRatio = clamp(options.paddingRatio ?? base.paddingRatio * zoom, 0.02, 1.2);
+  const minDistance = Math.min(base.minDistance * zoom, Math.max(0.012, extent * 12 * zoom));
   const frame = computePerspectiveCameraFrame(framedBounds, options.viewport, {
     ...base,
     yawRadians,
     pitchRadians,
     paddingRatio,
-    minDistance: base.minDistance * zoom
+    minDistance
   });
   return {
     camera: {
@@ -473,6 +498,15 @@ function offsetBounds(bounds: CameraFrameBounds, offset: readonly [number, numbe
     min: [bounds.min[0] + offset[0], bounds.min[1] + offset[1], bounds.min[2] + offset[2]],
     max: [bounds.max[0] + offset[0], bounds.max[1] + offset[1], bounds.max[2] + offset[2]]
   };
+}
+
+function boundsExtent(bounds: CameraFrameBounds): number {
+  return Math.max(
+    0.001,
+    bounds.max[0] - bounds.min[0],
+    bounds.max[1] - bounds.min[1],
+    bounds.max[2] - bounds.min[2]
+  );
 }
 
 function clamp(value: number, min: number, max: number): number {

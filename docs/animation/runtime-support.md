@@ -25,8 +25,6 @@ Primary entrypoints:
 
 ## Browser Evidence
 
-Current app-route evidence is limited to the consolidated local registry: `apps/advanced-examples-gallery/` plus the allowed `apps/wow-*` showcase routes. Focused browser tests include `tests/browser/current-routes-route-health.spec.ts`, `tests/browser/advanced-examples-gallery.spec.ts`, and the retained `tests/browser/threejs-parity-*-parity.spec.ts` animation/skinning specs.
-
 ## Limits
 
 - Current skinning uses uniform-array palette paths with documented limits in renderer code and tests; data-texture skinning is not documented as a complete public feature.

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>A3D AI Scene Runtime Basic</title>
+    <style>
+      :root{color-scheme:dark;--bg:#07090d;--panel:#101720;--panel2:#0d131b;--line:#273241;--text:#eef3f8;--muted:#9eadbd;--accent:#56d6a9;--accent2:#8bb7ff;--warn:#f2c76b;--danger:#ff7b72}
+      *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.shell{display:grid;grid-template-columns:minmax(560px,1fr) 420px;min-height:100vh}.stage{position:relative;display:grid;place-items:center;min-height:100vh;background:radial-gradient(circle at 50% 30%,#16202d 0,#0b0f16 45%,#05070a 100%)}canvas{width:100%;height:100vh;display:block}.hud{position:absolute;left:18px;top:18px;display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid rgba(255,255,255,.16);background:rgba(5,8,12,.72);border-radius:999px;padding:7px 10px;font-size:12px;color:#d8e5ef}.pill strong{color:var(--accent)}.panel{display:grid;grid-template-rows:auto auto auto 1fr;gap:14px;padding:18px;background:linear-gradient(180deg,var(--panel),#0a1017);border-left:1px solid var(--line);min-width:0}.title{display:grid;gap:6px}.title h1{margin:0;font-size:21px;letter-spacing:0}.title p{margin:0;color:var(--muted);line-height:1.45;font-size:13px}.field{display:grid;gap:8px}.field label{font-size:11px;text-transform:uppercase;color:#b9c8d7;font-weight:700}.field textarea,.field input,.field select{width:100%;border:1px solid var(--line);background:#060a10;color:var(--text);border-radius:7px;padding:10px 11px;font:inherit;font-size:13px}.field textarea{min-height:92px;resize:vertical;line-height:1.4}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}button{border:1px solid #335a75;background:#183145;color:#f5fbff;border-radius:7px;padding:10px 11px;font:inherit;font-size:13px;font-weight:800;cursor:pointer}button.primary{background:#186348;border-color:#2bb984}button.secondary{background:#16243a;border-color:#3a5f9c}button:focus-visible,.field textarea:focus,.field input:focus,.field select:focus{outline:2px solid var(--accent2);outline-offset:2px}.status{display:grid;grid-template-columns:1fr 1fr;gap:8px}.metric{border:1px solid var(--line);border-radius:7px;background:var(--panel2);padding:9px;min-width:0}.metric span{display:block;color:#8fa1b3;font-size:10px;text-transform:uppercase;font-weight:800}.metric strong{display:block;margin-top:3px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.output{display:grid;gap:10px;min-height:0}.output header{display:flex;align-items:center;justify-content:space-between;gap:10px}.output h2{font-size:13px;margin:0;color:#dce8f4}.output pre{margin:0;min-height:260px;max-height:42vh;overflow:auto;border:1px solid var(--line);border-radius:7px;background:#05080d;color:#cde0f2;padding:12px;font-size:12px;line-height:1.45}.warning{border:1px solid rgba(242,199,107,.45);background:rgba(242,199,107,.08);color:#f8d989;border-radius:7px;padding:10px;font-size:12px;line-height:1.35}.error{color:var(--danger)}@media(max-width:940px){.shell{grid-template-columns:1fr}.stage{min-height:58vh}canvas{height:58vh}.panel{border-left:0;border-top:1px solid var(--line)}.row,.actions,.status{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="stage" aria-label="Generated scene viewport">
+        <canvas id="viewport" width="1280" height="900"></canvas>
+        <div class="hud">
+          <span class="pill">provider <strong id="hud-provider">mock</strong></span>
+          <span class="pill">status <strong id="hud-status">loading</strong></span>
+          <span class="pill">objects <strong id="hud-objects">0</strong></span>
+          <span class="pill">patches <strong id="hud-patches">0</strong></span>
+        </div>
+      </section>
+      <aside class="panel">
+        <section class="title">
+          <h1>A3D AI Scene Runtime Basic</h1>
+          <p>Runtime-basic starter with a deterministic MockProvider. It runs offline, shows generated scene IR, and keeps live provider keys out of browser code.</p>
+        </section>
+        <section class="field">
+          <label for="prompt">Scene prompt</label>
+          <textarea id="prompt">Create a compact browser scene with one character proxy, one hero prop, camera, lighting, timeline, diagnostics, and no-key mock provider mode.</textarea>
+        </section>
+        <div class="row">
+          <section class="field">
+            <label for="provider">Provider</label>
+            <select id="provider">
+              <option value="mock">MockProvider</option>
+              <option value="configured">Configured provider</option>
+            </select>
+          </section>
+          <section class="field">
+            <label for="edit">Conversational edit</label>
+            <input id="edit" value="Add more fog and make the flower brighter">
+          </section>
+        </div>
+        <div class="actions">
+          <button class="primary" id="generate" type="button">Generate Scene</button>
+          <button class="secondary" id="patch" type="button">Apply Edit</button>
+          <button id="sample" type="button">Load Sample</button>
+          <button id="export" type="button">Export JSON</button>
+        </div>
+        <section class="status">
+          <div class="metric"><span>Provider mode</span><strong id="provider-mode">mock</strong></div>
+          <div class="metric"><span>Network used</span><strong id="network-used">false</strong></div>
+          <div class="metric"><span>Scene id</span><strong id="scene-id">pending</strong></div>
+          <div class="metric"><span>Warnings</span><strong id="warning-count">0</strong></div>
+        </section>
+        <section class="warning">
+          Optional live providers should be called through a server proxy. Do not expose OpenAI, Anthropic, Gemini, or local gateway secrets in browser bundles.
+        </section>
+        <section class="output">
+          <header>
+            <h2>Generated Aura Scene IR</h2>
+            <span id="error" class="error"></span>
+          </header>
+          <pre id="ir-output">{}</pre>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

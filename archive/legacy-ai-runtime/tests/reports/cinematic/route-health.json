@@ -1,0 +1,284 @@
+{
+  "schema": "a3d-cinematic-route-health",
+  "generatedAt": "2026-05-27T19:36:43.984Z",
+  "pass": true,
+  "inputs": {
+    "origin": "http://127.0.0.1:58240",
+    "providerMode": "fixture",
+    "backend": "webgl2",
+    "requiredFiles": [
+      "/apps/cinematic-prompt-to-scene/"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "fixture",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "path": "/apps/cinematic-prompt-to-scene/",
+      "runtime": {
+        "appId": "cinematic-prompt-to-scene",
+        "status": "running",
+        "title": "Rainy Neon Alley",
+        "subtitle": "Create a rainy neon alley at night. A lonely robot finds a glowing flower. Make it emotional and cinematic with wet pavement, fog, rain particles, blue rim light, neon reflections, and a slow 12-second dolly-in.",
+        "asset": "Robot Expressive",
+        "environment": "Industrial Sunset Pure Sky",
+        "frameCount": 4,
+        "drawCalls": 74,
+        "fps": 0,
+        "averageFrameMs": 28.93,
+        "textures": 0,
+        "materials": 3,
+        "renderWidth": 1616,
+        "renderHeight": 1010,
+        "renderer": "a3d-webgl2",
+        "backend": "webgl2",
+        "cinematicScene": {
+          "id": "rainy-neon-alley",
+          "rendererOwned": true,
+          "renderItemCount": 13,
+          "heroPropCount": 1,
+          "environmentGeometryCount": 6,
+          "vfxCount": 2,
+          "practicalLightCount": 3,
+          "flags": [
+            {
+              "id": "material:wet-pavement",
+              "feature": "material",
+              "label": "Wet pavement",
+              "source": "renderer-material",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Wet pavement is renderer-owned PBR material data, not a CSS shine overlay."
+              ]
+            },
+            {
+              "id": "material:cinematic-set-concrete",
+              "feature": "material",
+              "label": "Cinematic set concrete",
+              "source": "renderer-material",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Set material is renderer-owned PBR scene content."
+              ]
+            },
+            {
+              "id": "material:neon-emissive",
+              "feature": "material",
+              "label": "Neon emissive",
+              "source": "renderer-material",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Neon proof is an emissive renderer material and can drive bloom/practical light evidence."
+              ]
+            },
+            {
+              "id": "material:hero-prop-glow",
+              "feature": "material",
+              "label": "Hero prop glow",
+              "source": "renderer-material",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Hero prop glow is real material data and must not be replaced by a DOM halo."
+              ]
+            },
+            {
+              "id": "vfx:cinematic-rainy-neon-alley-rain",
+              "feature": "vfx",
+              "label": "Rain particle system",
+              "source": "renderer-vfx",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Rain is point geometry owned by the renderer, not a DOM/CSS overlay."
+              ]
+            },
+            {
+              "id": "vfx:cinematic-rainy-neon-alley-fog",
+              "feature": "vfx",
+              "label": "Fog volume system",
+              "source": "renderer-vfx",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Fog is represented as renderer fog/volume data, not a translucent DOM layer."
+              ]
+            },
+            {
+              "id": "lighting:cinematic-emissive-practicals",
+              "feature": "lighting",
+              "label": "Emissive practical light system",
+              "source": "renderer-light",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "Neon/glowing props produce renderer light metadata and do not rely on DOM glow."
+              ]
+            },
+            {
+              "id": "asset:glowing-flower",
+              "feature": "asset",
+              "label": "Generated glowing flower hero prop",
+              "source": "renderer-scene",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "The story flower is procedural mesh content in the renderer."
+              ]
+            },
+            {
+              "id": "environment:rainy-neon-alley",
+              "feature": "environment",
+              "label": "Procedural rainy neon alley set",
+              "source": "renderer-scene",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "The alley is built from renderer-owned wall, pavement, and neon geometry."
+              ]
+            },
+            {
+              "id": "camera:cinematic-dolly",
+              "feature": "camera",
+              "label": "Timeline-driven dolly camera",
+              "source": "renderer-camera",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "The route animates camera zoom and yaw through the renderer viewer controls."
+              ]
+            },
+            {
+              "id": "timeline:12s-shot",
+              "feature": "timeline",
+              "label": "12 second cinematic shot plan",
+              "source": "renderer-timeline",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "The cinematic route owns a playable/scrubbable timeline."
+              ]
+            },
+            {
+              "id": "blocking:robot-flower-alley",
+              "feature": "blocking",
+              "label": "Robot, flower, and alley scene blocking",
+              "source": "renderer-scene",
+              "rendererOwned": true,
+              "sceneContent": true,
+              "domOverlay": false,
+              "satisfiesPublicCinematicGate": true,
+              "diagnostics": [
+                "The renderer places the hero character, flower prop, walls, lights, and floor in scene space."
+              ]
+            }
+          ],
+          "validation": {
+            "ok": true,
+            "rendererOwnedFeatures": [
+              "material",
+              "vfx",
+              "lighting",
+              "asset",
+              "environment",
+              "camera",
+              "timeline",
+              "blocking"
+            ],
+            "diagnostics": [
+              "All required cinematic evidence features are renderer-owned."
+            ]
+          },
+          "diagnostics": [
+            "Compiled 13 renderer-owned cinematic render items.",
+            "Compiled 720 rain particles into renderer point geometry.",
+            "Fog volume compiled as route-supported renderer atmospheric approximation.",
+            "Compiled 3 emissive practical lights.",
+            "All required cinematic evidence features are renderer-owned."
+          ]
+        }
+      },
+      "screenshot": "tests/reports/cinematic/screenshots/cinematic-route-health.png",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1283341,
+        "uniqueColorBuckets": 335,
+        "averageLuma": 54.361398,
+        "averageSaturation": 0.249004,
+        "foregroundAverageSaturation": 0.213243,
+        "saturatedPixelCoverage": 0.414519,
+        "foregroundPixels": 862455,
+        "foregroundCoverage": 0.665475,
+        "largestForegroundComponentPixels": 858137,
+        "largestForegroundComponentCoverage": 0.662143,
+        "centerForegroundCoverage": 0.994318,
+        "foregroundBoundsCoverage": 0.93283,
+        "detailEdgeDensity": 0.006061,
+        "localContrast": 40.312982
+      },
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "webgl2",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": [
+    {
+      "path": "tests/reports/cinematic/screenshots/cinematic-route-health.png",
+      "present": true,
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1283341,
+        "uniqueColorBuckets": 335,
+        "averageLuma": 54.361398,
+        "averageSaturation": 0.249004,
+        "foregroundAverageSaturation": 0.213243,
+        "saturatedPixelCoverage": 0.414519,
+        "foregroundPixels": 862455,
+        "foregroundCoverage": 0.665475,
+        "largestForegroundComponentPixels": 858137,
+        "largestForegroundComponentCoverage": 0.662143,
+        "centerForegroundCoverage": 0.994318,
+        "foregroundBoundsCoverage": 0.93283,
+        "detailEdgeDensity": 0.006061,
+        "localContrast": 40.312982
+      }
+    }
+  ]
+}

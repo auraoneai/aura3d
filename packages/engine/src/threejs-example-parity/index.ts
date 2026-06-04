@@ -13,6 +13,22 @@ import {
 } from "./FlagshipFoundation";
 import type { EnvironmentLightingOptions } from "@aura3d/rendering";
 import type { Material } from "@aura3d/rendering";
+import { Geometry } from "../../../rendering/src/Geometry";
+import type { RenderItem } from "../../../rendering/src/ForwardPass";
+import type { CollectedLight } from "../../../rendering/src/LightCollector";
+import {
+  createCinematicMaterialPreset,
+  createCinematicPBRMaterial
+} from "../../../rendering/src/cinematic/CinematicMaterialPresets";
+import { createEmissivePracticalLightSystem } from "../../../rendering/src/cinematic/EmissivePracticalLightSystem";
+import { createFogVolumeSystem } from "../../../rendering/src/cinematic/FogVolumeSystem";
+import { createRainParticleSystem } from "../../../rendering/src/cinematic/RainParticleSystem";
+import {
+  createRendererOwnedEvidenceFlag,
+  validateRendererOwnedCinematicEvidence,
+  type CinematicRendererEvidenceFlag,
+  type CinematicRendererEvidenceValidation
+} from "../../../rendering/src/cinematic/CinematicEvidence";
 import type { GLTFMaterialRenderStateOverride } from "../../../assets/src/GLTFRenderResources";
 import {
   applyCarConceptMaterialStability,
@@ -38,6 +54,7 @@ import {
   type CurrentRoutesEnvironmentId,
   type CurrentRoutesEnvironmentPreset
 } from "../../../environments/src/threejs-example-parity/index";
+import { PointLight, composeMat4 } from "../../../scene/src/index";
 
 export {
   listCurrentRoutesFlagshipAssets,
@@ -63,7 +80,10 @@ export interface CurrentRoutesFlagshipViewerOptions {
   readonly origin?: string;
   readonly assetId?: CurrentRoutesFlagshipAssetId;
   readonly environmentId?: CurrentRoutesEnvironmentId;
+  readonly cinematicScene?: CurrentRoutesCinematicSceneId;
 }
+
+export type CurrentRoutesCinematicSceneId = "rainy-neon-alley";
 
 export interface CurrentRoutesViewerControls {
   readonly yaw: number;
@@ -106,8 +126,30 @@ export interface CurrentRoutesViewerSnapshot {
     readonly rendererMs: number;
     readonly environmentStatus?: "loading" | "ready" | "error";
   };
+  readonly cinematicScene?: CurrentRoutesCinematicSceneEvidence;
   readonly screenshotCount: number;
   readonly error?: string;
+}
+
+export interface CurrentRoutesCinematicSceneEvidence {
+  readonly id: CurrentRoutesCinematicSceneId;
+  readonly rendererOwned: true;
+  readonly renderItemCount: number;
+  readonly heroPropCount: number;
+  readonly environmentGeometryCount: number;
+  readonly vfxCount: number;
+  readonly practicalLightCount: number;
+  readonly flags: readonly CinematicRendererEvidenceFlag[];
+  readonly validation: CinematicRendererEvidenceValidation;
+  readonly diagnostics: readonly string[];
+}
+
+interface CurrentRoutesCinematicSceneResources {
+  readonly id: CurrentRoutesCinematicSceneId;
+  readonly renderItems: readonly RenderItem[];
+  readonly collectedLights: readonly CollectedLight[];
+  readonly evidence: CurrentRoutesCinematicSceneEvidence;
+  dispose(): void;
 }
 
 type MaterialBaseline = ReadonlyMap<Material, {
@@ -126,6 +168,8 @@ export class CurrentRoutesFlagshipViewer {
   private stage: A3DGroundedStage;
   private renderer: CurrentRoutesInteractiveRenderer;
   private materialBaseline: MaterialBaseline;
+  private cinematicSceneId: CurrentRoutesCinematicSceneId | undefined;
+  private cinematicScene: CurrentRoutesCinematicSceneResources | undefined;
   private screenshotCount = 0;
   private cameraFrame: A3DCameraFrame;
   private error: string | undefined;
@@ -155,6 +199,7 @@ export class CurrentRoutesFlagshipViewer {
     readonly stage: A3DGroundedStage;
     readonly renderer: CurrentRoutesInteractiveRenderer;
     readonly loading: CurrentRoutesViewerSnapshot["loading"];
+    readonly cinematicSceneId?: CurrentRoutesCinematicSceneId;
   }) {
     this.origin = options.origin;
     this.viewport = options.viewport;
@@ -162,6 +207,10 @@ export class CurrentRoutesFlagshipViewer {
     this.environmentPreset = options.environmentPreset;
     this.stage = options.stage;
     this.renderer = options.renderer;
+    this.cinematicSceneId = options.cinematicSceneId;
+    this.cinematicScene = options.cinematicSceneId
+      ? createCurrentRoutesCinematicScene(options.cinematicSceneId, this.scene.resources.bounds, this.stage.floorY)
+      : undefined;
     this.materialBaseline = captureMaterialBaseline(options.scene);
     this.controls = {
       ...this.controls,
@@ -213,6 +262,7 @@ export class CurrentRoutesFlagshipViewer {
       environmentPreset,
       stage,
       renderer,
+      cinematicSceneId: options.cinematicScene,
       loading: {
         assetMs: round(assetMs),
         environmentMs: 0,
@@ -239,8 +289,12 @@ export class CurrentRoutesFlagshipViewer {
     nextStage.update({ backgroundBlur: this.controls.backgroundBlur, backgroundVisible: this.controls.backgroundVisible });
     this.scene.dispose();
     this.stage.dispose();
+    this.cinematicScene?.dispose();
     this.scene = nextScene;
     this.stage = nextStage;
+    this.cinematicScene = this.cinematicSceneId
+      ? createCurrentRoutesCinematicScene(this.cinematicSceneId, this.scene.resources.bounds, this.stage.floorY)
+      : undefined;
     this.materialBaseline = captureMaterialBaseline(nextScene);
     this.applyMaterialControls();
     this.cameraFrame = this.createCamera();
@@ -341,11 +395,17 @@ export class CurrentRoutesFlagshipViewer {
         viewport: this.viewport,
         ...(this.environment ? { environment: this.environment } : {}),
         environmentLighting,
-        renderItems: this.stage.renderItems({
-          shadows: this.controls.shadows,
-          backgroundVisible: this.controls.backgroundVisible
-        }),
-        collectedLights: createStudioLighting({ preset: "product", shadows: this.controls.shadows }),
+        renderItems: [
+          ...this.stage.renderItems({
+            shadows: this.controls.shadows,
+            backgroundVisible: this.controls.backgroundVisible
+          }),
+          ...(this.cinematicScene?.renderItems ?? [])
+        ],
+        collectedLights: [
+          ...createStudioLighting({ preset: "product", shadows: this.controls.shadows }),
+          ...(this.cinematicScene?.collectedLights ?? [])
+        ],
         shadow: this.controls.shadows,
         postprocess: false
       });
@@ -408,6 +468,7 @@ export class CurrentRoutesFlagshipViewer {
       camera: this.cameraFrame.diagnostics,
       metrics: this.renderer.getMetrics(),
       loading: this.loading,
+      ...(this.cinematicScene ? { cinematicScene: this.cinematicScene.evidence } : {}),
       screenshotCount: this.screenshotCount,
       ...(this.error ? { error: this.error } : {})
     };
@@ -416,6 +477,7 @@ export class CurrentRoutesFlagshipViewer {
   dispose(): void {
     this.renderer.dispose();
     this.stage.dispose();
+    this.cinematicScene?.dispose();
     this.environment?.dispose();
     this.scene.dispose();
   }
@@ -467,6 +529,272 @@ export class CurrentRoutesFlagshipViewer {
   private applyMaterialControls(): void {
     applyMaterialControls(this.scene, this.materialBaseline, this.controls);
   }
+}
+
+function createCurrentRoutesCinematicScene(
+  id: CurrentRoutesCinematicSceneId,
+  bounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] },
+  floorY: number
+): CurrentRoutesCinematicSceneResources {
+  if (id !== "rainy-neon-alley") {
+    throw new Error(`Unsupported cinematic scene '${id}'.`);
+  }
+
+  const centerX = (bounds.min[0] + bounds.max[0]) / 2;
+  const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
+  const height = Math.max(1, bounds.max[1] - bounds.min[1]);
+  const width = Math.max(2.8, bounds.max[0] - bounds.min[0] + 3.2);
+  const depth = Math.max(4.2, bounds.max[2] - bounds.min[2] + 4.6);
+  const geometries: Geometry[] = [];
+  const materials: Material[] = [];
+  const renderItems: RenderItem[] = [];
+  const flags: CinematicRendererEvidenceFlag[] = [];
+
+  const wetPavementPreset = createCinematicMaterialPreset("wet-pavement");
+  const concretePreset = createCinematicMaterialPreset("cinematic-set-concrete");
+  const neonPreset = createCinematicMaterialPreset("neon-emissive");
+  const flowerPreset = createCinematicMaterialPreset("hero-prop-glow");
+  flags.push(
+    wetPavementPreset.rendererOwnedEvidence,
+    concretePreset.rendererOwnedEvidence,
+    neonPreset.rendererOwnedEvidence,
+    flowerPreset.rendererOwnedEvidence
+  );
+
+  const cube = keepGeometry(Geometry.litCube(1));
+  const flowerSphere = keepGeometry(Geometry.uvSphere(0.5, 24, 12));
+  const flowerStem = keepGeometry(Geometry.cylinder({ radius: 0.5, height: 1, segments: 16 }));
+  const wetPavement = keepMaterial(createCinematicPBRMaterial("wet-pavement"));
+  const concrete = keepMaterial(createCinematicPBRMaterial("cinematic-set-concrete", {
+    baseColor: [0.09, 0.105, 0.13, 1],
+    roughness: 0.54,
+    environmentMapIntensity: 0.18,
+    environmentMapSpecularIntensity: 0.28
+  }));
+  const neonBlue = keepMaterial(createCinematicPBRMaterial("neon-emissive", {
+    name: "cinematic/neon-cyan",
+    baseColor: [0.04, 0.74, 1, 1],
+    emissiveColor: [0.04, 0.74, 1],
+    emissiveStrength: 7.2
+  }));
+  const neonPink = keepMaterial(createCinematicPBRMaterial("neon-emissive", {
+    name: "cinematic/neon-magenta",
+    baseColor: [1, 0.16, 0.82, 1],
+    emissiveColor: [1, 0.16, 0.82],
+    emissiveStrength: 5.8
+  }));
+  const flowerGlow = keepMaterial(createCinematicPBRMaterial("hero-prop-glow", {
+    name: "cinematic/glowing-story-flower",
+    baseColor: [0.62, 1, 0.18, 1],
+    emissiveColor: [0.42, 1, 0.16],
+    emissiveStrength: 5.5,
+    roughness: 0.18,
+    clearcoatFactor: 0.45
+  }));
+  const flowerPetal = keepMaterial(createCinematicPBRMaterial("hero-prop-glow", {
+    name: "cinematic/glowing-story-flower-petal",
+    baseColor: [0.96, 1, 0.36, 1],
+    emissiveColor: [0.8, 1, 0.22],
+    emissiveStrength: 2.8,
+    roughness: 0.28
+  }));
+
+  addItem("cinematic/wet-reflective-pavement", cube, wetPavement, [centerX, floorY + 0.012, centerZ + 0.1], [width * 1.26, 0.024, depth * 1.28]);
+  addItem("cinematic/neon-alley-left-wall", cube, concrete, [centerX - width * 0.62, floorY + height * 1.05, centerZ + 0.05], [0.05, height * 2.2, depth * 1.25]);
+  addItem("cinematic/neon-alley-right-wall", cube, concrete, [centerX + width * 0.62, floorY + height * 1.05, centerZ + 0.05], [0.05, height * 2.2, depth * 1.25]);
+  addItem("cinematic/neon-alley-back-wall", cube, concrete, [centerX, floorY + height * 1.08, centerZ - depth * 0.56], [width * 1.25, height * 2.25, 0.05]);
+  addItem("cinematic/cyan-neon-practical", cube, neonBlue, [centerX - width * 0.58, floorY + height * 1.62, centerZ - depth * 0.06], [0.045, 0.08, depth * 0.92]);
+  addItem("cinematic/magenta-neon-practical", cube, neonPink, [centerX + width * 0.58, floorY + height * 1.18, centerZ + depth * 0.08], [0.045, 0.08, depth * 0.82]);
+
+  const flowerX = centerX + Math.min(width * 0.32, 1.05);
+  const flowerZ = centerZ + Math.min(depth * 0.28, 1.25);
+  addItem("cinematic/glowing-flower-stem", flowerStem, flowerGlow, [flowerX, floorY + 0.22, flowerZ], [0.035, 0.42, 0.035]);
+  addItem("cinematic/glowing-flower-core", flowerSphere, flowerGlow, [flowerX, floorY + 0.48, flowerZ], [0.16, 0.16, 0.16]);
+  addItem("cinematic/glowing-flower-petal-top", flowerSphere, flowerPetal, [flowerX, floorY + 0.62, flowerZ], [0.12, 0.22, 0.05]);
+  addItem("cinematic/glowing-flower-petal-bottom", flowerSphere, flowerPetal, [flowerX, floorY + 0.35, flowerZ], [0.12, 0.22, 0.05]);
+  addItem("cinematic/glowing-flower-petal-left", flowerSphere, flowerPetal, [flowerX - 0.15, floorY + 0.48, flowerZ], [0.22, 0.12, 0.05]);
+  addItem("cinematic/glowing-flower-petal-right", flowerSphere, flowerPetal, [flowerX + 0.15, floorY + 0.48, flowerZ], [0.22, 0.12, 0.05]);
+
+  const rain = createRainParticleSystem({
+    id: "cinematic-rainy-neon-alley-rain",
+    particleCount: 720,
+    bounds: {
+      min: [centerX - width * 0.58, floorY + 0.38, centerZ - depth * 0.55],
+      max: [centerX + width * 0.58, floorY + height * 2.35, centerZ + depth * 0.62]
+    },
+    seed: 13
+  });
+  renderItems.push(rain.renderItem);
+  flags.push(rain.rendererOwnedEvidence);
+
+  const fog = createFogVolumeSystem({
+    id: "cinematic-rainy-neon-alley-fog",
+    density: 0.42,
+    color: [0.16, 0.24, 0.32]
+  });
+  const practicals = createEmissivePracticalLightSystem([
+    {
+      id: "cinematic-cyan-neon",
+      sourceObjectId: "cinematic/cyan-neon-practical",
+      color: [0.04, 0.74, 1],
+      intensity: 3.2,
+      radiusMeters: 5.5
+    },
+    {
+      id: "cinematic-magenta-neon",
+      sourceObjectId: "cinematic/magenta-neon-practical",
+      color: [1, 0.16, 0.82],
+      intensity: 2.6,
+      radiusMeters: 4.8
+    },
+    {
+      id: "cinematic-story-flower",
+      sourceObjectId: "cinematic/glowing-flower-core",
+      color: [0.58, 1, 0.16],
+      intensity: 2.9,
+      radiusMeters: 2.6
+    }
+  ]);
+  flags.push(
+    fog.rendererOwnedEvidence,
+    practicals.rendererOwnedEvidence,
+    createRendererOwnedEvidenceFlag({
+      id: "asset:glowing-flower",
+      feature: "asset",
+      label: "Generated glowing flower hero prop",
+      source: "renderer-scene",
+      diagnostics: ["The story flower is procedural mesh content in the renderer."]
+    }),
+    createRendererOwnedEvidenceFlag({
+      id: "environment:rainy-neon-alley",
+      feature: "environment",
+      label: "Procedural rainy neon alley set",
+      source: "renderer-scene",
+      diagnostics: ["The alley is built from renderer-owned wall, pavement, and neon geometry."]
+    }),
+    createRendererOwnedEvidenceFlag({
+      id: "camera:cinematic-dolly",
+      feature: "camera",
+      label: "Timeline-driven dolly camera",
+      source: "renderer-camera",
+      diagnostics: ["The route animates camera zoom and yaw through the renderer viewer controls."]
+    }),
+    createRendererOwnedEvidenceFlag({
+      id: "timeline:12s-shot",
+      feature: "timeline",
+      label: "12 second cinematic shot plan",
+      source: "renderer-timeline",
+      diagnostics: ["The cinematic route owns a playable/scrubbable timeline."]
+    }),
+    createRendererOwnedEvidenceFlag({
+      id: "blocking:robot-flower-alley",
+      feature: "blocking",
+      label: "Robot, flower, and alley scene blocking",
+      source: "renderer-scene",
+      diagnostics: ["The renderer places the hero character, flower prop, walls, lights, and floor in scene space."]
+    })
+  );
+
+  const validation = validateRendererOwnedCinematicEvidence(flags, [
+    "asset",
+    "environment",
+    "material",
+    "lighting",
+    "vfx",
+    "camera",
+    "timeline",
+    "blocking"
+  ]);
+  return {
+    id,
+    renderItems,
+    collectedLights: [
+      createPointLight("cinematic-cyan-neon", [centerX - width * 0.44, floorY + height * 1.6, centerZ - depth * 0.08], [0.04, 0.74, 1], 2.7, 6.5),
+      createPointLight("cinematic-magenta-neon", [centerX + width * 0.44, floorY + height * 1.2, centerZ + depth * 0.08], [1, 0.16, 0.82], 2.2, 5.8),
+      createPointLight("cinematic-story-flower", [flowerX, floorY + 0.5, flowerZ], [0.58, 1, 0.16], 2.2, 3.2)
+    ],
+    evidence: {
+      id,
+      rendererOwned: true,
+      renderItemCount: renderItems.length,
+      heroPropCount: 1,
+      environmentGeometryCount: 6,
+      vfxCount: 2,
+      practicalLightCount: practicals.practicals.length,
+      flags,
+      validation,
+      diagnostics: [
+        `Compiled ${renderItems.length} renderer-owned cinematic render items.`,
+        ...rain.diagnostics,
+        ...fog.diagnostics,
+        ...practicals.diagnostics,
+        ...validation.diagnostics
+      ]
+    },
+    dispose() {
+      const ownedGeometries = new Set(geometries);
+      const ownedMaterials = new Set<Material>(materials);
+      for (const item of renderItems) {
+        if (!ownedGeometries.has(item.geometry)) item.geometry.dispose();
+        const material = item.material as Material | undefined;
+        if (material && !ownedMaterials.has(material)) material.dispose();
+      }
+      for (const geometry of geometries) geometry.dispose();
+      for (const material of materials) material.dispose();
+    }
+  };
+
+  function keepGeometry(geometry: Geometry): Geometry {
+    geometries.push(geometry);
+    return geometry;
+  }
+
+  function keepMaterial(material: Material): Material {
+    materials.push(material);
+    return material;
+  }
+
+  function addItem(
+    label: string,
+    geometry: Geometry,
+    material: Material,
+    position: readonly [number, number, number],
+    scale: readonly [number, number, number]
+  ): void {
+    renderItems.push({
+      label,
+      geometry,
+      material,
+      modelMatrix: composeMat4([...position], [0, 0, 0, 1], [...scale]),
+      includeInAutoFrame: false
+    });
+  }
+}
+
+function createPointLight(
+  name: string,
+  position: readonly [number, number, number],
+  color: readonly [number, number, number],
+  intensity: number,
+  range: number
+): CollectedLight {
+  const source = new PointLight(name);
+  source.color = [...color] as [number, number, number];
+  source.intensity = intensity;
+  source.range = range;
+  return {
+    kind: "point",
+    color,
+    intensity,
+    position,
+    direction: [0, -1, 0],
+    range,
+    spotAngle: 0,
+    penumbra: 0,
+    castsShadow: false,
+    layerMask: source.layerMask,
+    source
+  };
 }
 
 export function createCurrentRoutesFlagshipViewer(options: CurrentRoutesFlagshipViewerOptions): Promise<CurrentRoutesFlagshipViewer> {

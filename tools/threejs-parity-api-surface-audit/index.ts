@@ -15,7 +15,6 @@ const expectedExports = [
   "./input",
   "./workflows",
   "./workflows/production-runtime",
-  "./three-compat",
   "./debug"
 ] as const;
 
@@ -31,13 +30,17 @@ const sourceEntrypoints = [
   "packages/input/src/index.ts",
   "packages/workflows/src/index.ts",
   "packages/workflows/src/production-runtime/index.ts",
-  "packages/three-compat/src/index.ts",
   "packages/debug/src/index.ts"
 ] as const;
+const separatePackageEntrypoints = [
+  "packages/three-compat/src/index.ts"
+] as const;
 const missingSources = sourceEntrypoints.filter((entry) => !fileExists(entry));
+const missingSeparatePackageSources = separatePackageEntrypoints.filter((entry) => !fileExists(entry));
 const issues = [
   ...missingExports.map((entry) => reportIssue(`missing-export:${entry}`, `package.json does not export ${entry}.`, "blocker")),
-  ...missingSources.map((entry) => reportIssue(`missing-source:${entry}`, `Missing source entrypoint ${entry}.`, "blocker"))
+  ...missingSources.map((entry) => reportIssue(`missing-source:${entry}`, `Missing source entrypoint ${entry}.`, "blocker")),
+  ...missingSeparatePackageSources.map((entry) => reportIssue(`missing-separate-package-source:${entry}`, `Missing separate compatibility package source entrypoint ${entry}.`, "blocker"))
 ];
 
 writeJson(outputPath, {
@@ -47,7 +50,9 @@ writeJson(outputPath, {
   expectedExports,
   missingExports,
   sourceEntrypoints,
+  separatePackageEntrypoints,
   missingSources,
+  missingSeparatePackageSources,
   issues
 });
 console.log(`Three.js parity API surface audit written: ${outputPath}`);

@@ -1,17 +1,10 @@
 # Aura3D And Unity/Unreal Web Workflows
 
-Version: `1.0.0`
+Use Aura3D for browser-native scenes that an AI coding agent can edit as
+TypeScript source with typed asset refs and static deployment checks.
 
-Unity and Unreal are broad native/editor/game-engine platforms. A3D is a TypeScript-first browser 3D engine and workflow SDK.
+Use Unity or Unreal when the project needs a full editor, native runtime,
+large-scale game tooling, marketplace integrations, or an established studio
+pipeline.
 
-## Accurate Positioning
-
-A3D is strongest for browser-native product viewers, configurators, asset inspection, material review, animation inspection, physics route demos, WebGL2/WebGPU experiments, and Three.js migration workflows.
-
-## What Not To Claim
-
-- A3D is not documented as a Unity replacement.
-- A3D is not documented as an Unreal replacement.
-- A3D does not provide a comparable full editor, marketplace, build pipeline, native runtime, or engine ecosystem.
-
-Any Unity/Unreal comparison should stay at workflow level and cite the current A3D package, route, and report evidence.
+Aura3D is not positioned as a Unity or Unreal replacement.

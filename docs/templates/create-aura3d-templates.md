@@ -1,51 +1,27 @@
 # create-aura3d Templates
 
-Version: `1.0.0`
+Vite 3D templates for AI coding agents, browser 3D apps, GLB/glTF product viewers, cinematic WebGL scenes, interactive mini-games, route health tests, screenshot tests, and static deployment checks.
 
-The scaffolding API is implemented in `packages/create-aura3d/src/index.ts`.
+## Starter templates
 
-## Public Template Union
+- `product-viewer`: 3D product viewer template for a user-provided GLB/glTF asset, orbit camera, studio lighting, diagnostics, route health, and screenshot tests.
+- `cinematic-scene`: cinematic WebGL scene template for camera motion, lights, atmosphere, imported assets, and realtime previs-style browser scenes. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
+- `mini-game`: interactive browser mini-game template for primitives, follow-camera behavior, score/HUD state, route health, and deployable output.
 
-`CreateA3DTemplate` currently allows:
+## Scaffold
 
-- `external-parity-product-viewer`
-- `external-parity-material-studio`
-- `external-parity-asset-gallery`
-- `external-parity-interactive-scene`
-- `production-product-viewer`
-- `production-product-configurator`
-- `production-asset-inspector`
-- `production-material-studio`
-- `production-architecture-viewer`
-- `production-webgpu-starter`
-- `three-compat-architecture-interior`
-- `three-compat-asset-inspector`
-- `three-compat-character-viewer`
-- `three-compat-custom-threejs-migration`
-- `three-compat-large-scene`
-- `three-compat-material-authoring`
-- `three-compat-postprocess-scene`
-- `three-compat-premium-product-viewer`
-
-Template directories exist under both `templates/` and `packages/create-aura3d/templates/` for package/scaffold workflows.
-
-## Current Behavior
-
-`createA3DProject` copies the selected template into a target directory and writes `@aura3d/engine` into the generated `package.json`. In current code, the default `packageVersion` fallback is `0.1.0-alpha.0`; callers should pass `packageVersion` when scaffolding a project for a specific release.
-
-## Verification
-
-Useful focused checks:
-
-```sh
-pnpm test:templates
-pnpm verify:templates
+```bash
+npx create-aura3d@latest my-app --template product-viewer
 ```
 
-## Current Verification Caveat
+Each template includes:
 
-`pnpm verify:templates` is the correct template gate, but the current workspace fails that gate before the templates can be treated as release-ready starter artifacts. The observed failures are package/export issues rather than Markdown issues: external/asset-oriented templates fail to bundle browser builds through `@aura3d/assets` because `@loaders.gl/core` is unresolved from the packaged output, production templates fail on missing `@aura3d/engine-runtime` production subpath specifiers, and three-compat templates fail the private-package guard. Keep template release claims conditional until those package/template issues are fixed and the gate passes.
+- `npm run dev`
+- `npm run build`
+- `npm run test`
+- `tests/route-health.spec.ts`
+- `tests/screenshot.spec.ts`
+- `README.md` for humans and agents
+- public `@aura3d/engine` imports only
 
-## Boundary
-
-Templates are starter projects. They do not prove production readiness unless the generated project is built, run, and verified by the relevant smoke tests.
+Additional template ideas are held in `archive/held-back-create-aura3d-templates/` until they have the same docs, tests, scaffold smoke coverage, and package manifest support as the active starter templates.

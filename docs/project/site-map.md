@@ -1,74 +1,44 @@
-# Aura3D Docs Site Map
+# Site Map
 
 Version: 1.0.0
 
-This file is the deployment manifest for the current documentation set.
+## Public Marketing Pages
 
-## Current Project Docs
+| Path | Public purpose | Target title | Meta focus |
+| --- | --- | --- | --- |
+| `/marketing/index.html` | Human-facing product page | Aura3D: TypeScript 3D SDK for AI Agents | prompt-to-code browser 3D, scene kits, typed GLB/glTF assets, diagnostics, screenshots, deploy checks |
+| `/marketing/docs/index.html` | Website docs landing page | Aura3D Docs: AI Agents, Typed Assets, Browser 3D | agent workflows, typed assets, browser 3D docs |
+| `/marketing/docs/agent-quickstart.html` | Public quickstart | Aura3D Agent Quickstart: Prompt to Browser 3D | scaffold, scene kits, GLB/glTF assets, Vite, screenshots |
+| `/marketing/docs/prompt-recipes.html` | Prompt recipes | Aura3D Prompt Recipes: AI-Generated 3D Scene Kits | physics, particles, data, material labs, mini golf, product viewer |
+| `/marketing/docs/assets.html` | Typed asset workflow | Aura3D Typed Assets: GLB/glTF Workflow for Agents | CLI assets add, TypeScript refs, prevent invented paths |
+| `/marketing/docs/templates.html` | Template docs | Aura3D Templates: Vite 3D Product Viewer and Mini Game | Vite 3D templates, product viewer, cinematic scene, mini-game |
+| `/marketing/docs/deployment.html` | Deploy docs | Aura3D Deployment: Static Checks for Browser 3D Apps | route health, screenshots, Vercel, Netlify, Cloudflare Pages, S3, R2 |
+| `/marketing/docs/api.html` | API overview | Aura3D Public API: TypeScript Browser 3D Imports | public imports, scenes, models, cameras, lights, effects, physics, UI |
+| `/marketing/docs/claims.html` | Release notes | Aura3D Aura3D Evidence and Release Notes | truthful claims, scoped release, benchmark boundaries |
+| `/marketing/docs/evidence.html` | Evidence summary | Aura3D Evidence: Diagnostics, Screenshots, Release Checks | diagnostics, route health, screenshots, release checks |
 
-- [Documentation index](documentation-index.md)
-- [Current state](current-state.md)
-- [Getting started](getting-started.md)
-- [Implementation plan](implementation-plan.md)
-- [Verification evidence](verification-evidence.md)
-- [Completion audit](completion-audit.md)
-- [Three.js superiority status](threejs-superiority-status.md)
-- [Superiority evidence workflow](superiority-evidence-workflow.md)
-- [Three.js parity status](threejs-parity-status.md)
-- [Claim guidelines](claim-guidelines.md)
-- [Known limits](known-limits.md)
-- [Migration](migration.md)
-- [Compatibility](compatibility.md)
+## Repo Documentation
 
-## Agent Docs
-
-- [AI agent orientation](../agents/README.md)
-- [Agent context pack](../agents/agent-context.md)
-- [Codebase map for agents](../agents/codebase-map.md)
-- [Build playbook for agents](../agents/build-playbook.md)
-- [Agent verification guide](../agents/verification.md)
-- [Claims and boundaries for agents](../agents/claims-and-boundaries.md)
-
-## API
-
-- [API overview](../api/readme.md)
-- [App API](../api/app-api.md)
+- `/llms.txt`: compact agent reference
+- `/marketing/docs/agent-quickstart.html`: agent quickstart
+- `/marketing/docs/prompt-recipes.html`: prompt-to-3D workflow and prompt recipes
+- `/marketing/docs/templates.html`: template list
 - [Public API reference](../api/public-api.md)
-
-## Tutorials
-
-- [Getting started real scene](tutorials-getting-started-real-scene.md)
-- [Product configurator tutorial](tutorials-product-configurator.md)
-
-## Domain Docs
-
-- [Animation runtime support](../animation/runtime-support.md)
-- [Asset corpus report](../assets/asset-corpus-report.md)
-- [Benchmark evidence](../benchmarks/readme.md)
-- [Controls, interaction, and picking](../controls/interaction-and-picking.md)
-- [Profiling and diagnostics](../debug/profiling-and-diagnostics.md)
-- [Three.js comparison](../comparisons/threejs.md)
-- [Advanced examples gallery](../examples/advanced-gallery.md)
-- [Physics runtime](../physics/runtime.md)
-- [Rendering concept](../concepts/rendering.md)
-- [Renderer lifecycle](../rendering/renderer-lifecycle.md)
-- [WebGPU hardware matrix](../rendering/webgpu-hardware-matrix.md)
-- [create-aura3d templates](../templates/create-aura3d-templates.md)
-- [Product and authoring workflows](../workflows/product-and-authoring-workflows.md)
-
-## Release And Governance
-
+- [Getting started tutorial](tutorials-getting-started-real-scene.md)
 - [Changelog](../../CHANGELOG.md)
-- [Release process](release-process.md)
+- [Final proof and release readiness](final-proof-release-readiness.md)
 - [Release checklist](release-checklist.md)
-- [Deployment rollback](deployment-rollback.md)
-- [Security policy](security-policy.md)
-- [Support policy](support-policy.md)
-- [Browser and hardware matrix](browser-hardware-matrix.md)
+- [Release process](release-process.md)
 
-## Examples
+## Local Example Routes
 
-- [Advanced examples gallery](../examples/advanced-gallery.md)
-- Root local route registry: `../../index.html`
-- Advanced gallery route app: `../../apps/advanced-examples-gallery/`
-- Authored showcase route apps: `../../apps/wow-*`
+- `/apps/hello-world-typed-asset/`: typed asset example
+- `/apps/material-lighting/`: material and light example
+- `/apps/camera-path/`: camera path example
+- `/apps/advanced-examples-gallery/`: advanced gallery route with prompt and product examples
+
+## Agent Setup Website Pages
+
+- `/marketing/docs/agent-rules.html`: public Aura3D rules for AI coding agents
+- `/marketing/docs/claude.html`: Claude setup page
+- `/marketing/docs/cursor.html`: Cursor setup page

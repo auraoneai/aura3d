@@ -35,6 +35,12 @@ export {
   A3DScene,
   A3DAppLifecycle
 } from "./advanced-runtime/index.js";
+export * from "./agent-api/index.js";
+export * from "./devtools/AuraDiagnosticsOverlay.js";
+export * from "./devtools/AuraAssetPanel.js";
+export * from "./devtools/AuraPerformancePanel.js";
+export * from "./testing/screenshot.js";
+export * from "./testing/routeHealth.js";
 export type {
   A3DAppLifecycleSnapshot,
   A3DDisposable,
@@ -42,7 +48,19 @@ export type {
   A3DSceneMeshOptions,
   A3DSceneRenderSourceOptions
 } from "./advanced-runtime/index.js";
+import {
+  markAuraLazySystemLoaded,
+  markAuraLazySystemRequested
+} from "./agent-api/index.js";
 import type { A3DApp, A3DAppRendererLike } from "@aura3d/apps";
+import type {
+  PostProcessComposer,
+  PostProcessComposerOptions
+} from "@aura3d/rendering";
+import type {
+  ProductAsset,
+  ProductAssetLoadOptions
+} from "@aura3d/product-studio";
 import {
   createAnimationLabWorkflow,
   createAssetViewerWorkflow,
@@ -92,6 +110,22 @@ export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironmen
 
 export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> {
   return await loadRenderableAsset(urlOrAsset, options);
+}
+
+export async function loadProductAssetLazy(options: ProductAssetLoadOptions): Promise<ProductAsset> {
+  markAuraLazySystemRequested("product-gltf-loader", "loadProductAssetLazy");
+  const started = Date.now();
+  const productStudio = await import("@aura3d/product-studio");
+  markAuraLazySystemLoaded("product-gltf-loader", Date.now() - started);
+  return productStudio.loadProductAsset(options);
+}
+
+export async function createPostProcessComposerLazy(options: PostProcessComposerOptions): Promise<PostProcessComposer> {
+  markAuraLazySystemRequested("postprocess", "createPostProcessComposerLazy");
+  const started = Date.now();
+  const rendering = await import("@aura3d/rendering");
+  markAuraLazySystemLoaded("postprocess", Date.now() - started);
+  return new rendering.PostProcessComposer(options);
 }
 
 export interface A3DMaterialVariantController<TVariantId extends string = string> {

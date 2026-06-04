@@ -1,0 +1,30 @@
+# Cloudflare Worker: nightly refresh of the Aura3D asset-index catalog.
+#
+# Auth is supplied ONLY via the CLOUDFLARE_API_TOKEN environment variable at
+# deploy time — never put a token in this file. The account_id below is an
+# identifier, not a secret.
+name = "aura3d-asset-index-cron"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+# The asset-index package transitively imports node:fs/node:path (the file-backed
+# IndexStore, which this Worker does NOT use — it uses the R2-backed store). The
+# flag lets those imports resolve as polyfilled dead code in the bundle.
+compatibility_flags = ["nodejs_compat"]
+account_id = "bd3fbe37a66521e496ea1b90f669f8b7"
+
+# Resolve the workspace package to its TypeScript source so the bundle does not
+# require a separate dist build of @aura3d/asset-index.
+[alias]
+"@aura3d/asset-index" = "../../packages/asset-index/src/index.ts"
+
+# Durable storage for the catalog JSON the cron writes and the read path serves.
+[[r2_buckets]]
+binding = "ASSET_INDEX"
+bucket_name = "aura3d-asset-index"
+
+# Nightly at 07:00 UTC.
+[triggers]
+crons = ["0 7 * * *"]
+
+[vars]
+INDEX_KEY = "asset-index.json"

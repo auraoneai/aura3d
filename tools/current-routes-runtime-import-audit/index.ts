@@ -36,7 +36,13 @@ const roots = [
   "apps/wow-simple-points-lines",
   "apps/wow-additional-variant-product",
   "apps/wow-additional-transmission-sample",
-  "apps/wow-additional-cesium-man-animation"
+  "apps/wow-additional-cesium-man-animation",
+  "apps/wow-webgpu-triangle",
+  "apps/wow-webgpu-render-target",
+  "apps/wow-webgpu-pbr-asset",
+  "apps/wow-webgpu-product-viewer",
+  "apps/wow-webgpu-instancing",
+  "apps/wow-webgpu-compute-particles"
 ] as const;
 
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);

@@ -99,6 +99,7 @@ export * from "./passes/TransparentPass";
 export * from "./passes/SkyboxPass";
 export * from "./passes/ToneMappingPass";
 export * from "./postprocess/ProductionEffectComposer";
+export * from "./postprocess/ProductionPostProcessTypes";
 export * from "./postprocess/BloomPass";
 export * from "./postprocess/SSAOPass";
 export * from "./postprocess/DOFPass";

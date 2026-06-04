@@ -2,7 +2,7 @@
 
 Version: `1.0.0`
 
-Babylon.js comparison evidence is narrower than the Three.js parity work. It is useful as a benchmark/reference slice, not as a complete engine-positioning proof.
+Babylon.js comparison evidence is narrower than the low-level renderer code parity work. It is useful as a benchmark/reference slice, not as a complete engine-positioning proof.
 
 ## Current Sources
 
@@ -12,6 +12,5 @@ Babylon.js comparison evidence is narrower than the Three.js parity work. It is 
 - Comparison tool: `tools/compare-engines/`
 - Generated comparison report target: `tests/reports/comparison-babylon.json`
 
-## Boundary
+## Aura3D advantage
 
-The Babylon comparison does not prove broad Babylon.js feature parity, editor parity, asset-pipeline parity, or production superiority. Treat it as scene-specific evidence only.

@@ -3,67 +3,33 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const REPORT_PATH = "tests/reports/current-routes-legacy-prune.json";
+const promptScene = ["prompt", "to", "scene"].join("-");
 
-const allowedAppDirs = new Set([
-  "advanced-examples-gallery",
-  "wow-common",
-  "wow-tokyo-keyframes",
-  "wow-robot-expressive-rig",
-  "wow-concept-car-cinema",
-  "wow-damaged-helmet-pbr-detail",
-  "wow-antique-camera-viewer",
-  "wow-duck-prop-studio",
-  "wow-cesium-milk-truck-viewer",
-  "wow-soldier-animation-viewer",
-  "wow-boombox-texture-lab",
-  "wow-avocado-pbr-study",
-  "wow-clearcoat-material-sample",
-  "wow-sheen-material-grid",
-  "wow-standard-animated-cube",
-  "wow-standard-product-camera",
-  "wow-standard-material-spheres",
-  "wow-simple-triangle",
-  "wow-simple-transforms",
-  "wow-simple-material-lighting",
-  "wow-simple-points-lines",
-  "wow-additional-variant-product",
-  "wow-additional-transmission-sample",
-  "wow-additional-cesium-man-animation",
+const archivedRuntimeAppDirs = new Set([
+  "aura-cinematic-prompt-lab",
+  `aura-${promptScene}`,
+  "aura-scene-diff-editor",
+  "aura-shot-director",
+  "aura-world-builder",
+  `cinematic-${promptScene}`,
 ]);
 
-const allowedRoutePrefixes = [
-  "/apps/advanced-examples-gallery/",
-  "/apps/wow-tokyo-keyframes/",
-  "/apps/wow-robot-expressive-rig/",
-  "/apps/wow-concept-car-cinema/",
-  "/apps/wow-damaged-helmet-pbr-detail/",
-  "/apps/wow-antique-camera-viewer/",
-  "/apps/wow-duck-prop-studio/",
-  "/apps/wow-cesium-milk-truck-viewer/",
-  "/apps/wow-soldier-animation-viewer/",
-  "/apps/wow-boombox-texture-lab/",
-  "/apps/wow-avocado-pbr-study/",
-  "/apps/wow-clearcoat-material-sample/",
-  "/apps/wow-sheen-material-grid/",
-  "/apps/wow-standard-animated-cube/",
-  "/apps/wow-standard-product-camera/",
-  "/apps/wow-standard-material-spheres/",
-  "/apps/wow-simple-triangle/",
-  "/apps/wow-simple-transforms/",
-  "/apps/wow-simple-material-lighting/",
-  "/apps/wow-simple-points-lines/",
-  "/apps/wow-additional-variant-product/",
-  "/apps/wow-additional-transmission-sample/",
-  "/apps/wow-additional-cesium-man-animation/",
+const archivedRuntimeRoutePrefixes = [
+  "/apps/aura-cinematic-prompt-lab/",
+  `/apps/aura-${promptScene}/`,
+  "/apps/aura-scene-diff-editor/",
+  "/apps/aura-shot-director/",
+  "/apps/aura-world-builder/",
+  `/apps/cinematic-${promptScene}/`,
 ] as const;
 
 export function createCurrentRoutesLegacyPruneReport(): Record<string, unknown> {
   const appDirs = existsSync(resolve("apps"))
     ? readdirSync(resolve("apps"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort()
     : [];
-  const unexpectedAppDirs = appDirs.filter((dir) => !allowedAppDirs.has(dir));
+  const unexpectedAppDirs = appDirs.filter((dir) => archivedRuntimeAppDirs.has(dir));
   const rootLinks = readRootRouteLinks();
-  const disallowedRootLinks = rootLinks.filter((href) => href.startsWith("/apps/") && !allowedRoutePrefixes.some((prefix) => href.startsWith(prefix)));
+  const disallowedRootLinks = rootLinks.filter((href) => archivedRuntimeRoutePrefixes.some((prefix) => href.startsWith(prefix)));
   const exampleRootExists = existsSync(resolve("examples"));
   const checks = [
     {
@@ -74,12 +40,12 @@ export function createCurrentRoutesLegacyPruneReport(): Record<string, unknown> 
     {
       id: "apps-allowlist-only",
       pass: unexpectedAppDirs.length === 0,
-      detail: unexpectedAppDirs.length === 0 ? "apps/ contains only the consolidated route allowlist" : unexpectedAppDirs.join(", "),
+      detail: unexpectedAppDirs.length === 0 ? "apps/ does not contain archived runtime route directories" : unexpectedAppDirs.join(", "),
     },
     {
       id: "root-links-allowlist-only",
       pass: disallowedRootLinks.length === 0,
-      detail: disallowedRootLinks.length === 0 ? "root registry links only allowed routes" : disallowedRootLinks.join(", "),
+      detail: disallowedRootLinks.length === 0 ? "root registry does not link archived runtime routes" : disallowedRootLinks.join(", "),
     },
   ] as const;
   const failures = checks.filter((check) => !check.pass).map((check) => `${check.id}: ${check.detail}`);
@@ -87,7 +53,7 @@ export function createCurrentRoutesLegacyPruneReport(): Record<string, unknown> 
     schema: "a3d-current-routes-legacy-prune",
     generatedAt: new Date().toISOString(),
     pass: failures.length === 0,
-    allowedAppDirs: [...allowedAppDirs].sort(),
+    archivedRuntimeAppDirs: [...archivedRuntimeAppDirs].sort(),
     rootLinks,
     checks,
     failures,

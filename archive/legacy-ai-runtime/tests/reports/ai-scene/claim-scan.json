@@ -1,0 +1,912 @@
+{
+  "schema": "a3d-ai-scene-claim-scan",
+  "generatedAt": "2026-05-27T08:28:41.410Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [
+      "RuntimeScenePRD.md"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    },
+    "scannedGlobs": [
+      "README.md",
+      "RuntimeScenePRD.md",
+      "docs/**/*.md",
+      "packages/**/package.json",
+      "apps/**/README.md"
+    ]
+  },
+  "evidence": [
+    {
+      "id": "readme-md",
+      "path": "README.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "v2prd-md",
+      "path": "RuntimeScenePRD.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "apps-advanced-examples-gallery-readme-md",
+      "path": "apps/advanced-examples-gallery/README.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-readme-md",
+      "path": "docs/agents/README.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-agent-context-md",
+      "path": "docs/agents/agent-context.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-ai-scene-build-playbook-md",
+      "path": "docs/agents/ai-scene-build-playbook.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-ai-scene-verification-md",
+      "path": "docs/agents/ai-scene-verification.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-build-playbook-md",
+      "path": "docs/agents/build-playbook.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-claims-and-boundaries-md",
+      "path": "docs/agents/claims-and-boundaries.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-codebase-map-md",
+      "path": "docs/agents/codebase-map.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-agents-verification-md",
+      "path": "docs/agents/verification.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-asset-resolution-md",
+      "path": "docs/ai-scene/asset-resolution.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-asset-resolver-md",
+      "path": "docs/ai-scene/asset-resolver.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-aura-scene-ir-md",
+      "path": "docs/ai-scene/aura-scene-ir.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-cinematic-direction-md",
+      "path": "docs/ai-scene/cinematic-direction.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-cinematic-director-md",
+      "path": "docs/ai-scene/cinematic-director.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-claim-boundaries-md",
+      "path": "docs/ai-scene/claim-boundaries.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-deployment-md",
+      "path": "docs/ai-scene/deployment.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-diagnostics-and-provenance-md",
+      "path": "docs/ai-scene/diagnostics-and-provenance.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-llm-integration-md",
+      "path": "docs/ai-scene/llm-integration.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-overview-md",
+      "path": "docs/ai-scene/overview.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-prompt-to-scene-md",
+      "path": "docs/ai-scene/prompt-to-scene.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-provider-adapters-md",
+      "path": "docs/ai-scene/provider-adapters.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-quality-gates-md",
+      "path": "docs/ai-scene/quality-gates.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-quality-ladder-md",
+      "path": "docs/ai-scene/quality-ladder.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-scene-compiler-md",
+      "path": "docs/ai-scene/scene-compiler.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-scene-ir-schema-md",
+      "path": "docs/ai-scene/scene-ir-schema.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-scene-patching-md",
+      "path": "docs/ai-scene/scene-patching.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-security-and-secrets-md",
+      "path": "docs/ai-scene/security-and-secrets.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-ai-scene-security-md",
+      "path": "docs/ai-scene/security.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-animation-external-character-corpus-md",
+      "path": "docs/animation/external-character-corpus.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-animation-runtime-support-md",
+      "path": "docs/animation/runtime-support.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-animation-timeline-editor-integration-md",
+      "path": "docs/animation/timeline-editor-integration.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-api-app-api-md",
+      "path": "docs/api/app-api.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-api-public-api-md",
+      "path": "docs/api/public-api.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-api-readme-md",
+      "path": "docs/api/readme.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-assets-asset-corpus-report-md",
+      "path": "docs/assets/asset-corpus-report.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-assets-gltf-compression-md",
+      "path": "docs/assets/gltf-compression.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-benchmarks-babylon-comparison-md",
+      "path": "docs/benchmarks/babylon-comparison.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-benchmarks-pbr-rendering-comparison-md",
+      "path": "docs/benchmarks/pbr-rendering-comparison.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-benchmarks-readme-md",
+      "path": "docs/benchmarks/readme.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-benchmarks-threejs-comparison-md",
+      "path": "docs/benchmarks/threejs-comparison.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-comparisons-babylonjs-md",
+      "path": "docs/comparisons/babylonjs.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-comparisons-threejs-md",
+      "path": "docs/comparisons/threejs.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-comparisons-unity-unreal-web-md",
+      "path": "docs/comparisons/unity-unreal-web.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-animation-md",
+      "path": "docs/concepts/animation.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-assets-md",
+      "path": "docs/concepts/assets.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-editor-runtime-md",
+      "path": "docs/concepts/editor-runtime.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-engine-lifecycle-md",
+      "path": "docs/concepts/engine-lifecycle.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-physics-md",
+      "path": "docs/concepts/physics.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-rendering-md",
+      "path": "docs/concepts/rendering.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-concepts-scene-vs-ecs-md",
+      "path": "docs/concepts/scene-vs-ecs.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-controls-interaction-and-picking-md",
+      "path": "docs/controls/interaction-and-picking.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-debug-profiling-and-diagnostics-md",
+      "path": "docs/debug/profiling-and-diagnostics.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-editor-browser-first-workflow-md",
+      "path": "docs/editor/browser-first-workflow.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-editor-diagnostics-workflow-md",
+      "path": "docs/editor/diagnostics-workflow.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-examples-advanced-gallery-md",
+      "path": "docs/examples/advanced-gallery.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-physics-runtime-md",
+      "path": "docs/physics/runtime.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-browser-hardware-matrix-md",
+      "path": "docs/project/browser-hardware-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-claim-guidelines-md",
+      "path": "docs/project/claim-guidelines.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-compatibility-md",
+      "path": "docs/project/compatibility.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-competitive-positioning-md",
+      "path": "docs/project/competitive-positioning.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-completion-audit-md",
+      "path": "docs/project/completion-audit.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-current-state-md",
+      "path": "docs/project/current-state.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-deployment-rollback-md",
+      "path": "docs/project/deployment-rollback.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-documentation-index-md",
+      "path": "docs/project/documentation-index.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-getting-started-md",
+      "path": "docs/project/getting-started.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-go-to-market-strategy-md",
+      "path": "docs/project/go-to-market-strategy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-implementation-plan-md",
+      "path": "docs/project/implementation-plan.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-known-limits-md",
+      "path": "docs/project/known-limits.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-marketing-site-md",
+      "path": "docs/project/marketing-site.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-migration-md",
+      "path": "docs/project/migration.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-product-studio-claim-registry-md",
+      "path": "docs/project/product-studio-claim-registry.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-product-studio-decision-gates-md",
+      "path": "docs/project/product-studio-decision-gates.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-release-checklist-md",
+      "path": "docs/project/release-checklist.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-release-process-md",
+      "path": "docs/project/release-process.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-requirements-trace-md",
+      "path": "docs/project/requirements-trace.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-security-policy-md",
+      "path": "docs/project/security-policy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-site-map-md",
+      "path": "docs/project/site-map.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-superiority-evidence-workflow-md",
+      "path": "docs/project/superiority-evidence-workflow.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-support-policy-md",
+      "path": "docs/project/support-policy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-parity-claim-boundary-md",
+      "path": "docs/project/threejs-parity-claim-boundary.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-parity-code-backlog-md",
+      "path": "docs/project/threejs-parity-code-backlog.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-parity-parity-matrix-md",
+      "path": "docs/project/threejs-parity-parity-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-parity-status-md",
+      "path": "docs/project/threejs-parity-status.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-parity-threejs-inventory-md",
+      "path": "docs/project/threejs-parity-threejs-inventory.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-threejs-superiority-status-md",
+      "path": "docs/project/threejs-superiority-status.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-tutorials-getting-started-real-scene-md",
+      "path": "docs/project/tutorials-getting-started-real-scene.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-tutorials-product-configurator-md",
+      "path": "docs/project/tutorials-product-configurator.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-project-verification-evidence-md",
+      "path": "docs/project/verification-evidence.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-environment-lighting-md",
+      "path": "docs/rendering/environment-lighting.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-material-matrix-md",
+      "path": "docs/rendering/material-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-postprocess-md",
+      "path": "docs/rendering/postprocess.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-renderer-lifecycle-md",
+      "path": "docs/rendering/renderer-lifecycle.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-[REDACTED_SECRET]",
+      "path": "docs/rendering/[REDACTED_SECRET].md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-texture-compression-md",
+      "path": "docs/rendering/texture-compression.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-webgpu-fallback-md",
+      "path": "docs/rendering/webgpu-fallback.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-webgpu-hardware-matrix-md",
+      "path": "docs/rendering/webgpu-hardware-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-rendering-webgpu-route-and-report-evidence-md",
+      "path": "docs/rendering/webgpu-route-and-report-evidence.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-templates-create-aura3d-templates-md",
+      "path": "docs/templates/create-aura3d-templates.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "docs-workflows-product-and-authoring-workflows-md",
+      "path": "docs/workflows/product-and-authoring-workflows.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-ai-scene-package-json",
+      "path": "packages/ai-scene/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-animation-package-json",
+      "path": "packages/animation/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-apps-package-json",
+      "path": "packages/apps/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-assets-package-json",
+      "path": "packages/assets/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-audio-package-json",
+      "path": "packages/audio/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-controls-package-json",
+      "path": "packages/controls/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-core-package-json",
+      "path": "packages/core/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-create-aura3d-package-json",
+      "path": "packages/create-aura3d/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-debug-package-json",
+      "path": "packages/debug/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-ecs-package-json",
+      "path": "packages/ecs/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-editor-runtime-package-json",
+      "path": "packages/editor-runtime/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-editor-package-json",
+      "path": "packages/editor/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-engine-package-json",
+      "path": "packages/engine/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-environments-package-json",
+      "path": "packages/environments/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-input-package-json",
+      "path": "packages/input/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-materials-package-json",
+      "path": "packages/materials/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-math-package-json",
+      "path": "packages/math/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-physics-package-json",
+      "path": "packages/physics/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-product-studio-package-json",
+      "path": "packages/product-studio/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-rendering-package-json",
+      "path": "packages/rendering/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-scene-package-json",
+      "path": "packages/scene/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-scripting-package-json",
+      "path": "packages/scripting/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-test-utils-package-json",
+      "path": "packages/test-utils/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-three-compat-package-json",
+      "path": "packages/three-compat/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    },
+    {
+      "id": "packages-workflows-package-json",
+      "path": "packages/workflows/package.json",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for AI scene blocked claim language."
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": []
+}

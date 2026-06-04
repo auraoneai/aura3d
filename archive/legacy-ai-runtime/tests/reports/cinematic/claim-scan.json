@@ -1,0 +1,286 @@
+{
+  "schema": "a3d-cinematic-claim-scan",
+  "generatedAt": "2026-05-27T19:37:44.166Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "static",
+    "requiredFiles": [
+      "CinematicPrevisPRD.md"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "readme-md",
+      "path": "README.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-browser-hardware-matrix-md",
+      "path": "docs/project/browser-hardware-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-claim-guidelines-md",
+      "path": "docs/project/claim-guidelines.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-compatibility-md",
+      "path": "docs/project/compatibility.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-competitive-positioning-md",
+      "path": "docs/project/competitive-positioning.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-completion-audit-md",
+      "path": "docs/project/completion-audit.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-current-state-md",
+      "path": "docs/project/current-state.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-deployment-rollback-md",
+      "path": "docs/project/deployment-rollback.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-documentation-index-md",
+      "path": "docs/project/documentation-index.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-getting-started-md",
+      "path": "docs/project/getting-started.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-go-to-market-strategy-md",
+      "path": "docs/project/go-to-market-strategy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-implementation-plan-md",
+      "path": "docs/project/implementation-plan.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-known-limits-md",
+      "path": "docs/project/known-limits.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-marketing-site-md",
+      "path": "docs/project/marketing-site.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-migration-md",
+      "path": "docs/project/migration.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-product-studio-claim-registry-md",
+      "path": "docs/project/product-studio-claim-registry.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-product-studio-decision-gates-md",
+      "path": "docs/project/product-studio-decision-gates.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-release-checklist-md",
+      "path": "docs/project/release-checklist.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-release-process-md",
+      "path": "docs/project/release-process.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-requirements-trace-md",
+      "path": "docs/project/requirements-trace.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-security-policy-md",
+      "path": "docs/project/security-policy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-site-map-md",
+      "path": "docs/project/site-map.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-superiority-evidence-workflow-md",
+      "path": "docs/project/superiority-evidence-workflow.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-support-policy-md",
+      "path": "docs/project/support-policy.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-parity-claim-boundary-md",
+      "path": "docs/project/threejs-parity-claim-boundary.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-parity-code-backlog-md",
+      "path": "docs/project/threejs-parity-code-backlog.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-parity-parity-matrix-md",
+      "path": "docs/project/threejs-parity-parity-matrix.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-parity-status-md",
+      "path": "docs/project/threejs-parity-status.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-parity-threejs-inventory-md",
+      "path": "docs/project/threejs-parity-threejs-inventory.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-threejs-superiority-status-md",
+      "path": "docs/project/threejs-superiority-status.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-tutorials-getting-started-real-scene-md",
+      "path": "docs/project/tutorials-getting-started-real-scene.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-tutorials-product-configurator-md",
+      "path": "docs/project/tutorials-product-configurator.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "docs-project-verification-evidence-md",
+      "path": "docs/project/verification-evidence.md",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "marketing-index-html",
+      "path": "marketing/index.html",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "marketing-src-main-ts",
+      "path": "marketing/src/main.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "marketing-src-styles-css",
+      "path": "marketing/src/styles.css",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    },
+    {
+      "id": "marketing-vite-config-ts",
+      "path": "marketing/vite.config.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "static",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": []
+}

@@ -26,6 +26,12 @@ const allowedAppDirs = new Set([
   "wow-additional-variant-product",
   "wow-additional-transmission-sample",
   "wow-additional-cesium-man-animation",
+  "wow-webgpu-triangle",
+  "wow-webgpu-render-target",
+  "wow-webgpu-pbr-asset",
+  "wow-webgpu-product-viewer",
+  "wow-webgpu-instancing",
+  "wow-webgpu-compute-particles",
 ]);
 
 const appDirs = existsSync(resolve("apps"))

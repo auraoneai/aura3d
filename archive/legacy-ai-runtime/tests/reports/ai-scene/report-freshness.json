@@ -1,0 +1,112 @@
+{
+  "schema": "a3d-ai-scene-report-freshness",
+  "generatedAt": "2026-05-27T08:42:44.141Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [],
+    "requiredReports": [
+      "tests/reports/ai-scene/route-health.json",
+      "tests/reports/ai-scene/provider-contracts.json",
+      "tests/reports/ai-scene/scene-ir-schema-audit.json",
+      "tests/reports/ai-scene/prompt-to-scene-evidence.json",
+      "tests/reports/ai-scene/scene-diff-audit.json",
+      "tests/reports/ai-scene/cinematic-scene-report.json",
+      "tests/reports/ai-scene/claim-scan.json",
+      "tests/reports/ai-scene/secret-audit.json",
+      "tests/reports/ai-scene/quality.json"
+    ],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "tests-reports-ai-scene-route-health-json",
+      "path": "tests/reports/ai-scene/route-health.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:31.673Z",
+      "ageMs": 852468
+    },
+    {
+      "id": "tests-reports-ai-scene-provider-contracts-json",
+      "path": "tests/reports/ai-scene/provider-contracts.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:20.264Z",
+      "ageMs": 863877
+    },
+    {
+      "id": "tests-reports-ai-scene-scene-ir-schema-audit-json",
+      "path": "tests/reports/ai-scene/scene-ir-schema-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:21.129Z",
+      "ageMs": 863012
+    },
+    {
+      "id": "tests-reports-ai-scene-prompt-to-scene-evidence-json",
+      "path": "tests/reports/ai-scene/prompt-to-scene-evidence.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:37.878Z",
+      "ageMs": 846263
+    },
+    {
+      "id": "tests-reports-ai-scene-scene-diff-audit-json",
+      "path": "tests/reports/ai-scene/scene-diff-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:38.751Z",
+      "ageMs": 845390
+    },
+    {
+      "id": "tests-reports-ai-scene-cinematic-scene-report-json",
+      "path": "tests/reports/ai-scene/cinematic-scene-report.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:39.630Z",
+      "ageMs": 844511
+    },
+    {
+      "id": "tests-reports-ai-scene-claim-scan-json",
+      "path": "tests/reports/ai-scene/claim-scan.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:41.410Z",
+      "ageMs": 842731
+    },
+    {
+      "id": "tests-reports-ai-scene-secret-audit-json",
+      "path": "tests/reports/ai-scene/secret-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:42.499Z",
+      "ageMs": 841642
+    },
+    {
+      "id": "tests-reports-ai-scene-quality-json",
+      "path": "tests/reports/ai-scene/quality.json",
+      "present": true,
+      "status": "present",
+      "detail": "Report is fresh.",
+      "generatedAt": "2026-05-27T08:28:40.718Z",
+      "ageMs": 843423
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": []
+}

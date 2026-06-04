@@ -12,20 +12,22 @@ describe("public API docs", () => {
       "@aura3d/apps",
       "@aura3d/assets",
       "@aura3d/audio",
+      "@aura3d/cli",
       "@aura3d/controls",
       "@aura3d/core",
-      "@aura3d/create-aura3d",
+      "create-aura3d",
       "@aura3d/debug",
       "@aura3d/ecs",
       "@aura3d/editor",
       "@aura3d/editor-runtime",
-      "@aura3d/engine-runtime",
+      "@aura3d/engine",
       "@aura3d/environments",
       "@aura3d/input",
       "@aura3d/materials",
       "@aura3d/math",
       "@aura3d/physics",
       "@aura3d/product-studio",
+      "@aura3d/react",
       "@aura3d/rendering",
       "@aura3d/scene",
       "@aura3d/scripting",
@@ -44,7 +46,7 @@ describe("public API docs", () => {
     expect(readFileSync(report.outputPath, "utf8")).toBe(renderApiDocs(report.packages));
   });
 
-  it("documents representative public exports from rendering, assets, editor, and runtime packages", () => {
+  it("documents representative public exports from rendering, assets, editor, and engine packages", () => {
     const docs = readFileSync("docs/api/public-api.md", "utf8");
 
     expect(docs).toContain("## @aura3d/rendering");
@@ -60,6 +62,8 @@ describe("public API docs", () => {
     expect(docs).toContain("export * from \"./Engine.js\";");
     expect(docs).toContain("## @aura3d/product-studio");
     expect(docs).toContain("export { createProductStudio } from \"./ProductStudio\";");
+    expect(docs).toContain("## @aura3d/engine");
+    expect(docs).not.toContain("## @aura3d/engine-runtime");
     expect(docs).toContain("## @aura3d/workflows");
     expect(docs).toContain("export { createAssetViewerWorkflow } from \"./AssetViewerWorkflow\";");
   });

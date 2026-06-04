@@ -45,6 +45,8 @@ import {
 } from "./galleryInteractionAdapter";
 import "./styles.css";
 
+const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
+
 declare global {
   interface Window {
     __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime;
@@ -967,9 +969,10 @@ function resolveRendererEnvironmentLightingEvidence(
 
 async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackgroundLoadState): Promise<void> {
   try {
-    const response = await fetch(state.definition.hdrUri);
+    const hdrUrl = resolvePublicAssetUrl(state.definition.hdrUri);
+    const response = await fetch(hdrUrl);
     if (!response.ok) {
-      throw new Error(`Failed to load HDR environment ${state.definition.hdrUri}: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load HDR environment ${hdrUrl}: ${response.status} ${response.statusText}`);
     }
     const buffer = await response.arrayBuffer();
     state.environment = loadProductionHdrEnvironment(buffer, {
@@ -982,6 +985,13 @@ async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackg
   } catch (error) {
     state.error = formatError(error);
   }
+}
+
+function resolvePublicAssetUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) return url;
+  const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
+  return new URL(url, origin).href;
 }
 
 function normalizeHash(hash: string): string | null {

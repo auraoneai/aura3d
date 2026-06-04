@@ -1,6 +1,7 @@
 {
   "name": "@aura3d/engine-runtime",
   "version": "1.0.0",
+  "private": true,
   "type": "module",
   "exports": {
     ".": {
@@ -24,5 +25,6 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*",
     "@aura3d/workflows": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

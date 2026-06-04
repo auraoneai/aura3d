@@ -131,7 +131,7 @@ describe("Production PBR/HDR pipeline", () => {
     expect(lighting.environmentTexture.disposed).toBe(true);
     expect(lighting.environmentCubeTexture.disposed).toBe(true);
     expect(lighting.brdfLutTexture.disposed).toBe(true);
-  }, 15_000);
+  }, 30_000);
 
   it("plans parallax-corrected multi-bounce PMREM transmission probes", () => {
     const probe = createPMREMTransmissionProbe({

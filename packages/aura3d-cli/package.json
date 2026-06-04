@@ -1,0 +1,43 @@
+{
+  "name": "@aura3d/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "aura3d": "./dist/cli.js",
+    "aura": "./dist/cli.js",
+    "cli": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@aura3d/asset-index": "workspace:*"
+  },
+  "description": "Aura3D CLI for typed GLB/glTF assets, agent setup, diagnostics, and static deploy checks for browser 3D apps.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "gltf",
+    "glb",
+    "typed-assets",
+    "ai-agents",
+    "vite",
+    "static-deploy",
+    "diagnostics"
+  ],
+  "homepage": "https://github.com/gchahal1982/aura3d#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gchahal1982/aura3d.git",
+    "directory": "packages/aura3d-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/gchahal1982/aura3d/issues"
+  },
+  "license": "MIT"
+}

@@ -26,6 +26,9 @@
       "@aura3d/core": [
         "packages/core/src/index.ts"
       ],
+      "@aura3d/asset-index": [
+        "packages/asset-index/src/index.ts"
+      ],
       "@aura3d/scene": [
         "packages/scene/src/index.ts"
       ],
@@ -46,6 +49,12 @@
       ],
       "@aura3d/engine": [
         "packages/engine/src/index.ts"
+      ],
+      "@aura3d/cli": [
+        "packages/aura3d-cli/src/index.ts"
+      ],
+      "@aura3d/react": [
+        "packages/react/src/index.ts"
       ],
       "@aura3d/engine-runtime": [
         "packages/engine/src/index.ts"
@@ -83,6 +92,9 @@
       "@aura3d/create-aura3d": [
         "packages/create-aura3d/src/index.ts"
       ],
+      "create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
       "@aura3d/physics": [
         "packages/physics/src/index.ts"
       ],
@@ -94,6 +106,9 @@
       ],
       "@aura3d/assets": [
         "packages/assets/src/index.ts"
+      ],
+      "@aura3d/assets/browser": [
+        "packages/assets/src/browser-index.ts"
       ],
       "@aura3d/input": [
         "packages/input/src/index.ts"

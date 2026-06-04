@@ -21,7 +21,6 @@ Version: 1.0.0
 Diagnostics feed several feature gates:
 
 - renderer lifecycle and disposal evidence in `docs/rendering/renderer-lifecycle.md`;
-- resource/memory superiority reports in `tools/superiority-resource-lifecycle/` and `tools/superiority-memory-lifecycle/`;
 - advanced-gallery route reports and structural audit in `tools/advanced-gallery-report-audit/`;
 - shader/material validation in rendering and material tests;
 - physics debug evidence in physics routes and unit tests;
@@ -33,8 +32,6 @@ Useful focused commands:
 
 ```sh
 pnpm exec vitest run tests/unit/debug --reporter=dot
-pnpm superiority:resource-lifecycle
-pnpm superiority:memory-lifecycle
 pnpm advanced-gallery:audit
 pnpm test:performance
 ```
@@ -44,7 +41,6 @@ Run broader checks before release claims:
 ```sh
 pnpm typecheck
 pnpm test
-pnpm superiority
 ```
 
 ## How To Use Reports
@@ -65,4 +61,3 @@ Use `ReportExporter` or the existing tool helper patterns when adding new eviden
 - Resource lifecycle reports prove the scoped reload/test path, not every possible app.
 - Advanced-gallery audit proves the ten-route evidence set only when it has current full-gallery screenshots and matching hashes.
 - Debug overlays are developer evidence, not user-facing production UI.
-- Performance superiority claims require passing `tests/reports/superiority/performance.json`, not only profiler output.

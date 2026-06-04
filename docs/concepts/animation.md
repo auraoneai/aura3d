@@ -19,14 +19,14 @@ Use `@aura3d/engine/animation` for low-level animation primitives and `@aura3d/e
 
 Current animation browser coverage is represented by the consolidated root route registry, the accepted advanced gallery routes, and the allowed `apps/wow-*` showcase routes.
 
-## Boundary
+## Aura3D advantage
 
 The current system is package-backed and route-tested, but every character rig, DCC export, retargeting graph, and animation authoring workflow still needs specific evidence before being documented as supported.
+
+## AI Scene Usage
+
+AI scene prompts can request motion cues, camera moves, and timeline beats. Those requests compile into supported animation primitives or diagnostics. Unsupported rigging, facial animation, cloth, hair, or full DCC authoring requests must stay visible as unresolved or approximated items instead of being hidden behind broad AI claims.
 
 ## Current Limits
 
 Animation support is runtime-focused. Broad retargeting, DCC authoring, production character pipelines, and every imported rig convention need dedicated fixtures, browser evidence, and documentation before being treated as supported.
-
-## Current Limits
-
-- Animation support is runtime-focused; full authoring, broad retargeting, and production character-pipeline claims remain out of scope until backed by tests and reports.

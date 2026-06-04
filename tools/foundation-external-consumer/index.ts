@@ -22,6 +22,8 @@ const productManifestDataUri = dataUri("application/json", readFileSync(resolve(
 const violations: string[] = [];
 let state: ExternalConsumerState | undefined;
 let installStdout = "";
+let npmLsThreeStdout = "";
+let npmLsThreeExitCode = 0;
 
 try {
   if (!existsSync(tarballPath)) {
@@ -37,6 +39,15 @@ try {
       });
     } catch (error) {
       violations.push(`npm install failed: ${formatExecError(error)}`);
+    }
+  }
+
+  if (violations.length === 0) {
+    const npmLsThree = runNpmLsThree(tempProject);
+    npmLsThreeStdout = npmLsThree.stdout;
+    npmLsThreeExitCode = npmLsThree.exitCode;
+    if (npmLsThree.installed) {
+      violations.push("Clean root-engine consumer install unexpectedly installed Three.js.");
     }
   }
 
@@ -101,6 +112,11 @@ const report = {
   tarballPath: relativeRoot(tarballPath),
   tarballSha256: packageSmoke.tarballSha256 ?? (existsSync(tarballPath) ? createHash("sha256").update(readFileSync(tarballPath)).digest("hex") : null),
   installStdoutTail: installStdout.split("\n").slice(-12).join("\n"),
+  npmLsThree: {
+    exitCode: npmLsThreeExitCode,
+    installed: npmLsThreeStdout ? hasInstalledThree(npmLsThreeStdout) : false,
+    stdoutTail: npmLsThreeStdout.split("\n").slice(-20).join("\n")
+  },
   requiredImports,
   state,
   screenshot: {
@@ -233,6 +249,31 @@ function formatExecError(error: unknown): string {
     typeof record.stdout === "string" && record.stdout.trim().length > 0 ? `stdout: ${record.stdout.trim()}` : undefined,
     typeof record.stderr === "string" && record.stderr.trim().length > 0 ? `stderr: ${record.stderr.trim()}` : undefined
   ].filter(Boolean).join(" ");
+}
+
+function runNpmLsThree(cwd: string): { readonly stdout: string; readonly exitCode: number; readonly installed: boolean } {
+  try {
+    const stdout = execFileSync("npm", ["ls", "three", "--json", "--depth=0"], {
+      cwd,
+      encoding: "utf8",
+      maxBuffer: 2 * 1024 * 1024
+    });
+    return { stdout, exitCode: 0, installed: hasInstalledThree(stdout) };
+  } catch (error) {
+    const record = error as { readonly status?: unknown; readonly stdout?: unknown };
+    const stdout = typeof record.stdout === "string" ? record.stdout : "";
+    const exitCode = typeof record.status === "number" ? record.status : 1;
+    return { stdout, exitCode, installed: hasInstalledThree(stdout) };
+  }
+}
+
+function hasInstalledThree(stdout: string): boolean {
+  try {
+    const parsed = JSON.parse(stdout) as { readonly dependencies?: Record<string, unknown> };
+    return Boolean(parsed.dependencies?.three);
+  } catch {
+    return /node_modules[\/\\]three|\"three\"/.test(stdout);
+  }
 }
 
 interface ExternalConsumerState {

@@ -31,12 +31,9 @@ Useful focused commands:
 
 ```sh
 pnpm exec vitest run --config tests/assets/vitest.config.ts
-pnpm threejs-parity:inventory
-pnpm superiority:feature-parity
 ```
 
 Generated report files under `tests/reports/` are ignored by git and may be absent until the relevant command runs.
 
 ## Boundaries
 
-The local corpus proves support for selected fixtures and route workflows. It does not prove complete glTF ecosystem coverage, every Khronos sample variant, every compressed texture platform path, or every DCC export style.

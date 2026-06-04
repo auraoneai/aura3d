@@ -13,5 +13,6 @@
   "dependencies": {
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

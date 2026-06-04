@@ -11,6 +11,5 @@ Babylon.js is a mature web 3D engine. A3D comparison coverage is limited to loca
 - `tools/compare-engines/`
 - `tests/reports/comparison-babylon.json`
 
-## Boundary
+## Aura3D advantage
 
-Do not claim broad Babylon.js parity or superiority. Current docs may describe only the specific benchmark scenes and reports that exist in the repository.

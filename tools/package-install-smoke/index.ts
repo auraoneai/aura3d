@@ -157,7 +157,8 @@ export function runPackageInstallSmoke(
       "@aura3d/engine/rendering",
       "@aura3d/engine/scene",
       "@aura3d/engine/math",
-      "@aura3d/engine/assets"
+      "@aura3d/engine/assets",
+      "@aura3d/engine/assets/browser"
     ],
     smokeAssertions: [
       "root export map resolves",
@@ -168,7 +169,11 @@ export function runPackageInstallSmoke(
       "Geometry.litCube creates vertex/index buffers",
       "PBRMaterial can be instantiated",
       "External parity generated environment lighting validates BRDF LUT and diffuse irradiance resources",
-      "clean Vite browser build resolves engine export map and subpath imports"
+      "clean Vite browser build resolves engine browser export map and browser-safe subpath imports",
+      "benchmark helper snippets compile from the packed root public API",
+      "packed helper snippets expose performance budgets, character visual QA, mini-golf state, charts, effects, city, solar, product, and physics helpers",
+      "all ten scene kit one-call snippets compile from a packed package install",
+      "packed scene kit snippets cover typed product assets without invented string ids"
     ],
     installStdoutTail: installStdout.split("\n").slice(-12).join("\n"),
     smokeStdout: smokeStdout.trim(),
@@ -211,40 +216,166 @@ assert.equal(lighting.resources.validation.brdfLutTexture, true);
 assert.equal(lighting.resources.validation.diffuseIrradiance, true);
 assert.ok(lighting.resources.specularMipCount >= 4);
 
+assert.equal(typeof root.scene, "function");
+assert.equal(typeof root.prefabs?.physicsPlayground, "function");
+assert.equal(typeof root.games?.createMiniGolfState, "function");
+assert.equal(typeof root.character?.primitiveHumanoid, "function");
+assert.equal(typeof root.character?.lowPolyHumanoid, "function");
+assert.equal(typeof root.charts?.barGrid3D, "function");
+assert.equal(typeof root.performance?.budgetFor, "function");
+assert.equal(typeof root.sceneKits?.physicsPlayground, "function");
+assert.equal(typeof root.sceneKits?.productViewer, "function");
+assert.equal(typeof root.defineAuraAssets, "function");
+
+const smokeAssets = root.defineAuraAssets({
+  product: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/package-smoke-product.glb",
+    bounds: [1.3, 0.62, 0.84],
+    metadata: { materials: ["mesh", "rubber", "laces"] }
+  }
+});
+const dataSet = Array.from({ length: 6 }, (_, row) =>
+  Array.from({ length: 6 }, (_, col) => Math.min(0.96, 0.22 + row * 0.09 + col * 0.055))
+);
+const sceneKitCases = [
+  ["physicsPlayground", root.sceneKits.physicsPlayground()],
+  ["particleFountain", root.sceneKits.particleFountain({ particleCount: 900, emissionRate: 80 })],
+  ["solarSystem", root.sceneKits.solarSystem()],
+  ["neonTunnel", root.sceneKits.neonTunnel()],
+  ["dataViz", root.sceneKits.dataViz({ dataset: dataSet })],
+  ["miniGolf", root.sceneKits.miniGolf()],
+  ["materialLab", root.sceneKits.materialLab()],
+  ["cityBlock", root.sceneKits.cityBlock({ timeOfDay: "night" })],
+  ["humanoidWalk", root.sceneKits.humanoidWalk({ animationState: "benchmark-pose" })],
+  ["productViewer", root.sceneKits.productViewer(smokeAssets.product)]
+];
+for (const [name, kit] of sceneKitCases) {
+  assert.ok(Array.isArray(kit.nodes), \`\${name} scene kit exposes nodes\`);
+  assert.ok(kit.nodes.length > 0, \`\${name} scene kit has renderable nodes\`);
+  assert.equal(typeof kit.toAppOptions, "function", \`\${name} scene kit exposes toAppOptions()\`);
+  assert.equal(typeof kit.customize, "function", \`\${name} scene kit exposes customize()\`);
+  const appOptions = kit.toAppOptions();
+  assert.ok(appOptions.scene, \`\${name} scene kit returns app scene\`);
+  const appScene = typeof appOptions.scene.toJSON === "function" ? appOptions.scene.toJSON() : appOptions.scene;
+  assert.ok(Array.isArray(appScene.nodes) && appScene.nodes.length > 0, \`\${name} toAppOptions scene has nodes\`);
+  assert.ok(Array.isArray(kit.acceptanceEvidence) && kit.acceptanceEvidence.length > 0, \`\${name} scene kit exposes acceptance evidence\`);
+}
+
+const helperScene = root.scene()
+  .addMany(root.prefabs.physicsPlayground({ cubes: 50 }))
+  .addMany(root.prefabs.particleFountain())
+  .addMany(root.prefabs.solarSystem())
+  .addMany(root.prefabs.neonTunnel({ rings: 24 }))
+  .addMany(root.charts.barGrid3D({ grid: 6, selected: { row: 6, col: 6 } }))
+  .addMany(root.games.miniGolf())
+  .addMany(root.prefabs.materialSwatches())
+  .addMany(root.city.createState({ timeOfDay: "night", blocks: 20 }).nodes())
+  .addMany(root.character.primitiveHumanoid())
+  .addMany(root.prefabs.productStage());
+let sceneKitScene = root.scene();
+for (const [, kit] of sceneKitCases) sceneKitScene = sceneKitScene.addMany(kit.nodes);
+const helperEvidence = root.collectAuraSceneEvidence(helperScene.toJSON());
+const sceneKitEvidence = root.collectAuraSceneEvidence(sceneKitScene.toJSON());
+assert.ok(helperEvidence.performance.budgets.length >= 10);
+assert.ok(sceneKitEvidence.performance.budgets.length >= 10);
+assert.ok(helperEvidence.performance.budgets.some((budget) => budget.helper === "physicsPlayground" && budget.maxDrawCalls > 0));
+assert.equal(root.character.visualQA(root.character.primitiveHumanoid()).connected, true);
+assert.equal(root.games.createMiniGolfState().shoot({ vector: [3, 0, -1.2], power: 1.45 }).shots, 1);
+
 console.log(JSON.stringify({
   ok: true,
   cubeVertices: cube.vertexBuffer.vertexCount,
   cubeIndices: cube.indexBuffer.data.length,
   material: material.name,
   environmentPreset: lighting.preset,
-  specularMipCount: lighting.resources.specularMipCount
+  specularMipCount: lighting.resources.specularMipCount,
+  helperBudgets: helperEvidence.performance.budgets.map((budget) => budget.helper),
+  sceneKits: sceneKitCases.map(([name]) => name),
+  sceneKitBudgets: sceneKitEvidence.performance.budgets.map((budget) => budget.helper)
 }));
 `;
 }
 
 function viteSmokeSource(packageName: string): string {
   return `
-import { Engine } from ${JSON.stringify(packageName)};
+import { camera, character, charts, city, collectAuraSceneEvidence, createAuraApp, defineAuraAssets, effects, games, lights, performance, prefabs, scene, sceneKits, timeline } from ${JSON.stringify(packageName)};
 import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from ${JSON.stringify(`${packageName}/rendering`)};
-import { Scene } from ${JSON.stringify(`${packageName}/scene`)};
-import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets`)};
+import { Scene as CoreScene } from ${JSON.stringify(`${packageName}/scene`)};
+import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets/browser`)};
 
 const cube = Geometry.litCube(1);
 const material = new PBRMaterial({ name: "vite-smoke-pbr", baseColor: [0.7, 0.3, 0.2, 1] });
 const lighting = createExternalParityEnvironmentLighting("studio");
-const scene = new Scene();
+const coreScene = new CoreScene();
 const loader = new GLTFLoader();
+const smokeAssets = defineAuraAssets({
+  product: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/package-smoke-product.glb",
+    bounds: [1.3, 0.62, 0.84],
+    metadata: { materials: ["mesh", "rubber", "laces"] }
+  }
+});
+const dataSet = Array.from({ length: 6 }, (_, row) =>
+  Array.from({ length: 6 }, (_, col) => Math.min(0.96, 0.22 + row * 0.09 + col * 0.055))
+);
+const sceneKitCases = [
+  ["physicsPlayground", sceneKits.physicsPlayground()],
+  ["particleFountain", sceneKits.particleFountain({ particleCount: 900, emissionRate: 80 })],
+  ["solarSystem", sceneKits.solarSystem()],
+  ["neonTunnel", sceneKits.neonTunnel()],
+  ["dataViz", sceneKits.dataViz({ dataset: dataSet })],
+  ["miniGolf", sceneKits.miniGolf()],
+  ["materialLab", sceneKits.materialLab()],
+  ["cityBlock", sceneKits.cityBlock({ timeOfDay: "night" })],
+  ["humanoidWalk", sceneKits.humanoidWalk({ animationState: "benchmark-pose" })],
+  ["productViewer", sceneKits.productViewer(smokeAssets.product)]
+];
+for (const [name, kit] of sceneKitCases) {
+  if (!Array.isArray(kit.nodes) || kit.nodes.length === 0) throw new Error(\`\${name} scene kit did not expose nodes\`);
+  if (!Array.isArray(kit.acceptanceEvidence) || kit.acceptanceEvidence.length === 0) throw new Error(\`\${name} scene kit did not expose acceptance evidence\`);
+  const appOptions = kit.toAppOptions();
+  const appScene = typeof appOptions.scene.toJSON === "function" ? appOptions.scene.toJSON() : appOptions.scene;
+  if (!Array.isArray(appScene.nodes) || appScene.nodes.length === 0) throw new Error(\`\${name} scene kit toAppOptions did not expose scene nodes\`);
+}
+const helperScene = scene()
+  .addMany(prefabs.physicsPlayground({ cubes: 50 }))
+  .addMany(prefabs.particleFountain())
+  .addMany(prefabs.solarSystem())
+  .addMany(prefabs.neonTunnel({ rings: 24 }))
+  .addMany(charts.barGrid3D({ grid: 6, selected: { row: 6, col: 6 } }))
+  .addMany(games.miniGolf())
+  .addMany(prefabs.materialSwatches())
+  .addMany(city.createState({ timeOfDay: "night", blocks: 20 }).nodes())
+  .addMany(character.primitiveHumanoid())
+  .addMany(prefabs.productStage())
+  .add(lights.studio())
+  .camera(camera.neon())
+  .timeline(timeline.loop({ duration: 2, captureTime: 0.5 }));
+let sceneKitScene = scene();
+for (const [, kit] of sceneKitCases) sceneKitScene = sceneKitScene.addMany(kit.nodes);
+const helperEvidence = collectAuraSceneEvidence(helperScene.toJSON());
+const sceneKitEvidence = collectAuraSceneEvidence(sceneKitScene.toJSON());
 
 globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
-  engine: typeof Engine,
+  createAuraApp: typeof createAuraApp,
   cubeVertices: cube.vertexBuffer.vertexCount,
   material: material.name,
   environmentPreset: lighting.preset,
-  scene: scene.root.name,
+  scene: coreScene.root.name,
   loader: typeof loader.load,
   renderer: typeof Renderer,
   loadRenderableAsset: typeof loadRenderableAsset,
-  createRenderableScene: typeof createRenderableScene
+  createRenderableScene: typeof createRenderableScene,
+  helperBudgetCount: helperEvidence.performance.budgets.length,
+  neonBudget: performance.budgetFor("neonTunnel")?.maxDrawCalls,
+  characterConnected: character.visualQA(character.primitiveHumanoid()).connected,
+  effectCount: helperScene.toJSON().nodes.filter((node) => node.kind === "effect").length,
+  sceneKitCount: sceneKitCases.length,
+  sceneKitBudgetCount: sceneKitEvidence.performance.budgets.length
 };
 `;
 }

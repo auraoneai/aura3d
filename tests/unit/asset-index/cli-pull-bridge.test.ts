@@ -1,0 +1,218 @@
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { normalizeLicense, type AuraCanonicalAsset, type ResolveCandidate } from "@aura3d/asset-index";
+import {
+  runResolve,
+  runSearch,
+  selectPullable,
+  toResolveConstraints,
+} from "../../../packages/aura3d-cli/src/pull-bridge";
+
+/**
+ * These tests pin the license-safety contract of the CLI pull bridge without a
+ * full CLI harness: the pure `selectPullable` seam and the resolve flow with
+ * injected resolver + downloader, so no network is touched.
+ */
+
+function asset(partial: Partial<AuraCanonicalAsset> & Pick<AuraCanonicalAsset, "id">): AuraCanonicalAsset {
+  return {
+    source: partial.source ?? "test",
+    title: partial.title ?? "Test Asset",
+    url: partial.url ?? "https://example.test/model.glb",
+    access: partial.access ?? "direct-download",
+    format: partial.format ?? "glb",
+    license: partial.license ?? normalizeLicense("CC0"),
+    tags: partial.tags ?? [],
+    ...partial,
+  };
+}
+
+function candidate(a: AuraCanonicalAsset, score = 10): ResolveCandidate {
+  return { asset: a, score };
+}
+
+/** A tiny resolver stand-in matching the FederatedResolver.resolve shape. */
+function stubResolver(candidates: readonly ResolveCandidate[]): { resolve: (query: unknown) => Promise<unknown> } {
+  return {
+    resolve: async () => ({
+      query: { text: "" },
+      candidates,
+      warnings: [] as string[],
+    }),
+  };
+}
+
+describe("selectPullable", () => {
+  it("picks the first auto-pullable candidate (CC0, direct-download)", () => {
+    const cc0 = asset({ id: "os3a:a", license: normalizeLicense("CC0") });
+    const result = selectPullable([candidate(cc0)]);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.candidate.asset.id).toBe("os3a:a");
+  });
+
+  it("refuses an UNVERIFIED top candidate and explains why", () => {
+    const unverified = asset({ id: "khronos:x", license: normalizeLicense(undefined) });
+    const result = selectPullable([candidate(unverified)]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toContain("UNVERIFIED");
+      expect(result.reason).toContain("will not auto-pull");
+    }
+  });
+
+  it("refuses a deep-link-only candidate even if license is CC0", () => {
+    const deepLink = asset({ id: "market:y", access: "deep-link-only", license: normalizeLicense("CC0") });
+    const result = selectPullable([candidate(deepLink)]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain("deep-link");
+  });
+
+  it("skips a non-pullable first candidate to reach a pullable one", () => {
+    const unverified = asset({ id: "khronos:x", license: normalizeLicense(undefined) });
+    const cc0 = asset({ id: "os3a:a", license: normalizeLicense("CC0") });
+    const result = selectPullable([candidate(unverified, 20), candidate(cc0, 5)]);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.candidate.asset.id).toBe("os3a:a");
+  });
+
+  it("reports an empty candidate set distinctly", () => {
+    const result = selectPullable([]);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain("No candidates matched");
+  });
+});
+
+describe("toResolveConstraints", () => {
+  it("threads license/maxTris/animated and redistributableOnly", () => {
+    const c = toResolveConstraints({ license: ["CC0"], maxTriangles: 50000, animated: true }, true);
+    expect(c).toEqual({ license: ["CC0"], maxTriangles: 50000, animated: true, redistributableOnly: true });
+  });
+
+  it("omits unset fields and redistributableOnly when false", () => {
+    const c = toResolveConstraints({}, false);
+    expect(c).toEqual({});
+  });
+});
+
+describe("runResolve", () => {
+  it("downloads the top pullable candidate and runs the add pipeline -> typed ref", async () => {
+    const projectDir = makeProject();
+    const cc0 = asset({
+      id: "os3a:bench",
+      title: "Park Bench",
+      url: "https://example.test/Bench_01.glb",
+      license: normalizeLicense("CC0"),
+    });
+
+    const downloaded: string[] = [];
+    const report = await runResolve({
+      query: "park bench",
+      name: "bench",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(cc0)]) as never,
+      download: async (url, dest) => {
+        downloaded.push(url);
+        writeFileSync(dest, minimalGlb());
+      },
+    });
+
+    expect(report.ok).toBe(true);
+    expect(downloaded).toEqual(["https://example.test/Bench_01.glb"]);
+    expect(report.typedRef).toBe("model(assets.bench)");
+    const typed = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+    expect(typed).toContain('"bench"');
+  });
+
+  it("captures attribution into messages for CC-BY assets", async () => {
+    const projectDir = makeProject();
+    const ccby = asset({
+      id: "src:knight",
+      title: "Knight",
+      url: "https://example.test/knight.glb",
+      license: normalizeLicense("CC-BY-4.0", "https://example.test/knight"),
+      attribution: "Jane Modeler",
+      sourcePage: "https://example.test/knight",
+    });
+
+    const report = await runResolve({
+      query: "knight",
+      name: "knight",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(ccby)]) as never,
+      download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.messages.some((m) => m.includes("Attribution required") && m.includes("Jane Modeler"))).toBe(true);
+  });
+
+  it("refuses (throws) when no candidate is auto-pullable, never downloading", async () => {
+    const projectDir = makeProject();
+    const unverified = asset({ id: "khronos:x", license: normalizeLicense(undefined) });
+    let downloads = 0;
+    await expect(
+      runResolve({
+        query: "x",
+        name: "x",
+        projectDir,
+        makeResolver: () => stubResolver([candidate(unverified)]) as never,
+        download: async () => {
+          downloads += 1;
+        },
+      }),
+    ).rejects.toThrow(/resolve refused/i);
+    expect(downloads).toBe(0);
+  });
+
+  it("rejects an invalid --name", async () => {
+    await expect(
+      runResolve({ query: "x", name: "1-bad name", makeResolver: () => stubResolver([]) as never }),
+    ).rejects.toThrow(/valid identifier/i);
+  });
+});
+
+describe("runSearch", () => {
+  it("labels candidates by auto-pullability and reports the manual-check note", async () => {
+    const cc0 = asset({ id: "os3a:a", title: "CC0 Thing", license: normalizeLicense("CC0") });
+    const unverified = asset({ id: "khronos:b", title: "Unknown", license: normalizeLicense(undefined) });
+    const report = await runSearch({
+      query: "thing",
+      makeResolver: () => stubResolver([candidate(cc0, 20), candidate(unverified, 10)]) as never,
+    });
+    expect(report.candidates).toHaveLength(2);
+    expect(report.candidates.find((c) => c.id === "os3a:a")?.autoPullable).toBe(true);
+    expect(report.candidates.find((c) => c.id === "khronos:b")?.autoPullable).toBe(false);
+  });
+
+  it("surfaces the manual-license-check message when nothing is auto-pullable", async () => {
+    const unverified = asset({ id: "khronos:b", license: normalizeLicense(undefined) });
+    const report = await runSearch({
+      query: "x",
+      makeResolver: () => stubResolver([candidate(unverified)]) as never,
+    });
+    expect(report.messages.some((m) => m.includes("manual license check"))).toBe(true);
+  });
+});
+
+function makeProject(): string {
+  const dir = join(tmpdir(), `aura3d-pull-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "package.json"), JSON.stringify({ type: "module" }));
+  return dir;
+}
+
+/** A minimal valid single-chunk GLB the addAsset inspector accepts. */
+function minimalGlb(): Buffer {
+  const json = Buffer.from(JSON.stringify({ asset: { version: "2.0" }, images: [{ uri: "data:image/png;base64,AA==" }] }), "utf8");
+  const padded = Buffer.concat([json, Buffer.alloc((4 - (json.length % 4)) % 4, 0x20)]);
+  const header = Buffer.alloc(12);
+  header.write("glTF", 0, "utf8");
+  header.writeUInt32LE(2, 4);
+  header.writeUInt32LE(12 + 8 + padded.length, 8);
+  const chunkHeader = Buffer.alloc(8);
+  chunkHeader.writeUInt32LE(padded.length, 0);
+  chunkHeader.write("JSON", 4, "utf8");
+  return Buffer.concat([header, chunkHeader, padded]);
+}

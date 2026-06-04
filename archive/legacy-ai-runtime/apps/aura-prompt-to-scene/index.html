@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aura Prompt To Scene</title>
+    <link rel="stylesheet" href="/apps/aura-prompt-to-scene/src/styles.css">
+  </head>
+  <body>
+    <canvas id="viewport" width="1440" height="900" aria-label="Generated Aura3D AI scene preview"></canvas>
+    <main class="shell">
+      <section class="prompt-panel" aria-label="Prompt controls">
+        <div class="status-row">
+          <span id="status-pill" class="status-pill">idle</span>
+          <span id="provider-label" class="provider-label">MockProvider</span>
+        </div>
+        <h1>Aura Prompt To Scene</h1>
+        <label for="prompt-input">Prompt</label>
+        <textarea id="prompt-input" spellcheck="false"></textarea>
+        <div class="button-row">
+          <button id="generate-button" type="button">Generate Scene</button>
+          <button id="screenshot-button" type="button">Screenshot</button>
+          <button id="export-button" type="button">Export</button>
+        </div>
+        <label for="edit-input">Conversation edit</label>
+        <div class="edit-row">
+          <input id="edit-input" type="text" value="Make the robot smaller, add more fog, and move the camera lower.">
+          <button id="patch-button" type="button">Apply Patch</button>
+        </div>
+        <div id="patch-log" class="patch-log" aria-live="polite"></div>
+      </section>
+
+      <aside class="inspector" aria-label="Generated scene inspector">
+        <section>
+          <h2>Generated IR</h2>
+          <pre id="ir-output">{}</pre>
+        </section>
+        <section>
+          <h2>Diagnostics</h2>
+          <pre id="diagnostics-output">{}</pre>
+        </section>
+      </aside>
+    </main>
+    <a id="download-link" class="download-link" download="aura-prompt-to-scene-export.json">download</a>
+    <script type="module" src="/apps/aura-prompt-to-scene/src/main.ts"></script>
+  </body>
+</html>

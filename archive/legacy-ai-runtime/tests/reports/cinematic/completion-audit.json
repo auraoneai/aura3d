@@ -1,0 +1,101 @@
+{
+  "schema": "a3d-cinematic-completion-audit",
+  "generatedAt": "2026-05-27T19:37:44.906Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "static",
+    "requiredFiles": [],
+    "requiredReports": [
+      "tests/reports/cinematic/provider-contracts.json",
+      "tests/reports/cinematic/route-health.json",
+      "tests/reports/cinematic/screenshot-quality.json",
+      "tests/reports/cinematic/runtime-readiness.json",
+      "tests/reports/cinematic/scene-diff-quality.json",
+      "tests/reports/cinematic/asset-readiness.json",
+      "tests/reports/cinematic/secret-audit.json",
+      "tests/reports/cinematic/claim-scan.json"
+    ],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "tests-reports-cinematic-provider-contracts-json",
+      "path": "tests/reports/cinematic/provider-contracts.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/provider-contracts.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-route-health-json",
+      "path": "tests/reports/cinematic/route-health.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/route-health.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-screenshot-quality-json",
+      "path": "tests/reports/cinematic/screenshot-quality.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/screenshot-quality.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-runtime-readiness-json",
+      "path": "tests/reports/cinematic/runtime-readiness.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/runtime-readiness.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-scene-diff-quality-json",
+      "path": "tests/reports/cinematic/scene-diff-quality.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/scene-diff-quality.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-asset-readiness-json",
+      "path": "tests/reports/cinematic/asset-readiness.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/asset-readiness.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-secret-audit-json",
+      "path": "tests/reports/cinematic/secret-audit.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/secret-audit.json exists and was audited."
+    },
+    {
+      "id": "tests-reports-cinematic-claim-scan-json",
+      "path": "tests/reports/cinematic/claim-scan.json",
+      "present": true,
+      "status": "present",
+      "detail": "tests/reports/cinematic/claim-scan.json exists and was audited."
+    },
+    {
+      "id": "v3prd-checklist",
+      "path": "CinematicPrevisPRD.md",
+      "present": true,
+      "status": "present",
+      "detail": "Audited CinematicPrevisPRD.md checkboxes and referenced file paths.",
+      "checkedTaskCount": 201,
+      "uncheckedTaskCount": 0,
+      "referencedPathCount": 163,
+      "missingPaths": []
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "static",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": []
+}

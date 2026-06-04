@@ -2,23 +2,13 @@ import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject } from "../../packages/create-aura3d/src";
 
-const templates: readonly CreateA3DTemplate[] = [
-  "production-product-viewer",
-  "production-product-configurator",
-  "production-asset-inspector",
-  "production-material-studio",
-  "production-architecture-viewer",
-  "production-webgpu-starter"
-];
-
-describe("Production create-aura3d templates", () => {
-  it("mirrors every Production template and can scaffold it", () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), "a3d-production-runtime-create-"));
+describe("create-aura3d templates", () => {
+  it("mirrors every starter template and can scaffold it", () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), "a3d-create-"));
     try {
-      for (const template of templates) {
-        expect(existsSync(resolve(`templates/${template}/index.html`))).toBe(true);
+      for (const template of CREATE_AURA3D_TEMPLATES) {
         expect(existsSync(resolve(`packages/create-aura3d/templates/${template}/index.html`))).toBe(true);
         const result = createA3DProject({
           targetDir: join(tempRoot, template),
@@ -29,7 +19,8 @@ describe("Production create-aura3d templates", () => {
         expect(existsSync(join(result.targetDir, "package.json"))).toBe(true);
         expect(existsSync(join(result.targetDir, "index.html"))).toBe(true);
         expect(existsSync(join(result.targetDir, "src", "main.ts"))).toBe(true);
-        expect(existsSync(join(result.targetDir, "asset-manifest.json"))).toBe(true);
+        expect(existsSync(join(result.targetDir, "tests", "route-health.spec.ts"))).toBe(true);
+        expect(existsSync(join(result.targetDir, "tests", "screenshot.spec.ts"))).toBe(true);
       }
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });

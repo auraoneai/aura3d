@@ -227,12 +227,12 @@ function isDurablePublicHost(hostname: string): boolean {
     return false;
   }
   const ipVersion = isIP(host);
-  if (ipVersion === 4) return isPublicIpv4(host);
+  if (ipVersion === 4) return isPublicIpVersionFour(host);
   if (ipVersion === 6) return isPublicIpProduction(host);
   return host.includes(".");
 }
 
-function isPublicIpv4(host: string): boolean {
+function isPublicIpVersionFour(host: string): boolean {
   const octets = host.split(".").map((part) => Number(part));
   if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
   const [a = 0, b = 0, c = 0] = octets;

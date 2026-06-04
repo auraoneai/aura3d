@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Aura3D Agent Quickstart for TypeScript 3D Apps</title>
+<meta name="description" content="Create an Aura3D browser 3D app with Vite, scene kits, typed assets, diagnostics, and AI-assisted TypeScript development." />
+<link rel="canonical" href="https://aura3d.auraone.ai/docs/agent-quickstart.html" />
+<meta property="og:site_name" content="Aura3D" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Aura3D Agent Quickstart for TypeScript 3D Apps" />
+<meta property="og:description" content="Create an Aura3D browser 3D app with Vite, scene kits, typed assets, diagnostics, and AI-assisted TypeScript development." />
+<meta property="og:url" content="https://aura3d.auraone.ai/docs/agent-quickstart.html" />
+<meta property="og:image" content="/og/aura3d-og.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Aura3D Agent Quickstart for TypeScript 3D Apps" />
+<meta name="twitter:description" content="Create an Aura3D browser 3D app with Vite, scene kits, typed assets, diagnostics, and AI-assisted TypeScript development." />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="shortcut icon" href="/favicon.svg" />
+<meta name="theme-color" content="#07080a" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Aura3D Agent Quickstart for TypeScript 3D Apps","description":"Create an Aura3D browser 3D app with Vite, scene kits, typed assets, diagnostics, and AI-assisted TypeScript development.","url":"https://aura3d.auraone.ai/docs/agent-quickstart.html","publisher":{"@type":"Organization","name":"Aura3D"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,wght@1,400;1,500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/marketing/src/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a href="/" class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+      </svg>
+      <span>Aura3D</span>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/#workflows">Agent API</a>
+      <a class="nav-link" href="/#prompts">AI prompts</a>
+      <a class="nav-link" href="/#gallery">Examples</a>
+      <a class="nav-link" href="/#templates">Templates</a>
+      <a class="nav-link" href="/#packages">Packages</a>
+      <a class="nav-link" href="/#deployment">Deploy</a>
+      <a class="nav-link" href="/llms.txt">llms.txt</a>
+    </div>
+    <div class="nav-actions">
+      <div class="nav-social" aria-label="Aura3D source and package links">
+        <a class="nav-social-link" href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener" aria-label="Aura3D GitHub repository">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-1.04-.01-1.89-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.27 9.27 0 0 1 12 6.98c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.95.68 1.92 0 1.38-.01 2.49-.01 2.83 0 .27.18.59.69.49A10.05 10.05 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z" /></svg>
+          <span>GitHub</span>
+        </a>
+        <a class="nav-social-link nav-social-npm" href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener" aria-label="@aura3d/engine on npm">
+          <span class="npm-logo" aria-hidden="true">npm</span>
+          <span>npm</span>
+        </a>
+      </div>
+      <span class="nav-version">MIT</span>
+      <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
+      <a class="btn btn-primary" href="/docs/agent-quickstart.html">Get started <span class="arr"></span></a>
+    </div>
+  </div>
+</nav>
+<header class="doc-hero">
+  <div class="wrap doc-hero-grid">
+    <div>
+      <span class="hero-tag"><span class="pill">DOCS</span><b>Quickstart</b><span class="mute">Aura3D</span></span>
+      <h1>Create a real TypeScript 3D app before the agent starts customizing it.</h1>
+      <p class="hero-lede">Aura3D gives coding assistants a stable SDK, working templates, and typed asset imports so generated scenes stay understandable and shippable.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="/docs/agent-quickstart.html">Start building <span class="arr"></span></a>
+        <a class="btn btn-ghost" href="/#gallery">See examples</a>
+      </div>
+    </div>
+    <aside class="doc-hero-panel">
+      <div class="hero-overlay-top">
+        <span class="scene-chip"><span class="dot"></span>quickstart</span>
+        <span class="scene-stat">Aura3D</span>
+      </div>
+      <div class="split-code-head">
+        <div class="split-code-tabs">
+          <span class="split-code-tab active">new project</span>
+          <span class="split-code-tab">TypeScript</span>
+        </div>
+        <span class="mono mute-2" style="font-size:11px">copy</span>
+      </div>
+      <pre class="code doc-code"><code>npx create-aura3d@latest my-scene --template product-viewer
+cd my-scene
+npx @aura3d/cli@latest assets add ./assets/product.glb --name product
+npm run dev</code></pre>
+    </aside>
+  </div>
+</header>
+<section class="tape doc-tape">
+  <div class="wrap tape-inner">
+    <span class="tape-label">Docs</span>
+    <div class="doc-pill-row">
+          <a class="doc-pill" href="/docs/index.html">Docs</a>
+          <a class="doc-pill active" href="/docs/agent-quickstart.html">Quickstart</a>
+          <a class="doc-pill" href="/docs/prompt-recipes.html">Prompts</a>
+          <a class="doc-pill" href="/docs/assets.html">Assets</a>
+          <a class="doc-pill" href="/docs/templates.html">Templates</a>
+          <a class="doc-pill" href="/docs/deployment.html">Deploy</a>
+          <a class="doc-pill" href="/docs/api.html">API</a>
+          <a class="doc-pill" href="/docs/agent-rules.html">Agent setup</a>
+          <a class="doc-pill" href="/docs/claude.html">Claude</a>
+          <a class="doc-pill" href="/docs/cursor.html">Cursor</a>
+    </div>
+  </div>
+</section>
+<section class="section-tight">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">Quickstart</span>
+        <h2 class="h2">The fastest reliable path is template first, customization second.</h2>
+        <p class="lede">Start with a working route, then ask your coding assistant to add scene kits, primitives, materials, lights, interactions, and typed assets through the public Aura3D API.</p>
+      </div>
+    </div>
+    <div class="doc-card-grid">
+
+          <a class="doc-card" href="/docs/templates.html">
+            <span class="doc-card-kicker mono">Quickstart</span>
+            <h3>Create the app</h3>
+            <p>Use create-aura3d to scaffold a Vite project with a known route and SDK setup.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/docs/agent-rules.html">
+            <span class="doc-card-kicker mono">Quickstart</span>
+            <h3>Give the agent context</h3>
+            <p>Use llms.txt and the agent setup guide so generated code stays on public Aura3D APIs.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/docs/assets.html">
+            <span class="doc-card-kicker mono">Quickstart</span>
+            <h3>Add real assets</h3>
+            <p>Register supplied GLB/glTF files through the CLI before writing product viewer code.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+
+          <a class="doc-card" href="/docs/deployment.html">
+            <span class="doc-card-kicker mono">Quickstart</span>
+            <h3>Deploy cleanly</h3>
+            <p>Build static output and confirm assets, routes, and browser paths are ready for hosting.</p>
+            <span class="doc-card-link">Read guide <span class="arr"></span></span>
+          </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a href="/" class="brand">
+          <svg class="brand-mark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="6" stroke="#4ade9d" stroke-width="1.4" fill="rgba(74,222,157,0.12)" />
+        <ellipse cx="12" cy="12" rx="11" ry="3" stroke="#4ade9d" stroke-width="1" opacity="0.6" transform="rotate(-22 12 12)" />
+        <circle cx="12" cy="12" r="1.6" fill="#4ade9d" />
+      </svg>
+          <span>Aura3D</span>
+        </a>
+        <p class="foot-blurb">Aura3D is a TypeScript browser 3D SDK for AI-assisted development: scene kits, primitives, typed GLB/glTF assets, Vite templates, diagnostics, and static deployment checks.</p>
+      </div>
+      <div class="foot-col">
+        <h4>Product</h4>
+        <a href="/#workflows">Agent API</a>
+        <a href="/#prompts">AI prompts</a>
+        <a href="/#gallery">Examples</a>
+        <a href="/docs/api.html">API overview</a>
+      </div>
+      <div class="foot-col">
+        <h4>Build</h4>
+        <a href="/docs/agent-quickstart.html">Quickstart</a>
+        <a href="/docs/templates.html">Templates</a>
+        <a href="/docs/assets.html">Typed assets</a>
+        <a href="/docs/deployment.html">Deployment</a>
+      </div>
+      <div class="foot-col">
+        <h4>Guides</h4>
+        <a href="/docs/prompt-recipes.html">Prompt recipes</a>
+        <a href="/docs/agent-rules.html">Agent setup</a>
+        <a href="/docs/claude.html">Claude guide</a>
+        <a href="/docs/cursor.html">Cursor guide</a>
+      </div>
+      <div class="foot-col">
+        <h4>Reference</h4>
+        <a href="/llms.txt">llms.txt</a>
+        <a href="/docs/index.html">Documentation</a>
+        <a href="/#deployment">Deploy checks</a>
+        <a href="/#templates">Create app</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Aura3D · MIT licensed</span>
+      <span>Prompt-to-3D workflows · typed assets · editable TypeScript</span>
+    </div>
+  </div>
+</footer>
+<script type="module" src="/marketing/src/main.ts"></script>
+</body>
+</html>

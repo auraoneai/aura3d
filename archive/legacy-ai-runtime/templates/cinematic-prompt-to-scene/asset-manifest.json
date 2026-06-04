@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d-cinematic-asset-manifest/0.1",
+  "library": "cinematic-prompt-to-scene",
+  "description": "No-key procedural assets for the cinematic previs cinematic prompt-to-scene starter.",
+  "assets": [
+    {
+      "id": "wet-neon-alley-set",
+      "role": "environment",
+      "kind": "procedural-set",
+      "path": "procedural://wet-neon-alley-set",
+      "tags": ["alley", "wet-pavement", "neon", "rain", "cinematic"],
+      "quality": "hero"
+    },
+    {
+      "id": "small-guardian-robot",
+      "role": "character",
+      "kind": "procedural-geometry",
+      "path": "procedural://small-guardian-robot",
+      "tags": ["robot", "guardian", "silhouette", "hero"],
+      "quality": "hero"
+    },
+    {
+      "id": "glowing-flower",
+      "role": "hero-prop",
+      "kind": "procedural-geometry",
+      "path": "procedural://glowing-flower",
+      "tags": ["flower", "emissive", "hope", "warm-practical"],
+      "quality": "hero"
+    },
+    {
+      "id": "rain-and-depth-haze",
+      "role": "vfx",
+      "kind": "procedural-particles",
+      "path": "procedural://rain-and-depth-haze",
+      "tags": ["rain", "fog", "haze", "atmosphere"],
+      "quality": "shot"
+    },
+    {
+      "id": "wet-asphalt-material",
+      "role": "material",
+      "kind": "procedural-material",
+      "path": "procedural://wet-asphalt-material",
+      "tags": ["asphalt", "reflection", "roughness", "pbr-intent"],
+      "quality": "shot"
+    },
+    {
+      "id": "blue-rim-warm-practical-rig",
+      "role": "light",
+      "kind": "procedural-light-rig",
+      "path": "procedural://blue-rim-warm-practical-rig",
+      "tags": ["blue-rim-light", "warm-practical", "cinematic"],
+      "quality": "shot"
+    }
+  ]
+}

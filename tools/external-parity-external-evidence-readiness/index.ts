@@ -643,7 +643,7 @@ function externalBaselineWorkflowValidation(root: string): { readonly path: ".gi
     ["merged final audit job", "final-audits:"],
     ["baseline evidence artifact download", "pattern: external-parity-*-baseline-evidence"],
     ["merged artifact restore", "merge-multiple: true"],
-    ["allowlisted artifact ingestion", "ingest-external-baseline-artifacts.mjs --no-audit _v4-external-baseline-evidence"],
+    ["allowlisted artifact ingestion", "ingest-external-baseline-artifacts.mjs --no-audit _external-baseline-evidence"],
     ["final audit artifact upload", "external-parity-external-baseline-final-audits"],
     ["external evidence runbook upload", "tests/reports/external-parity-external-evidence-missing-artifacts.md"],
     ["completion runbook upload", "tests/reports/external-parity-completion-audit-runbook.md"],

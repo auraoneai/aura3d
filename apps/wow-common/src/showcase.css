@@ -45,6 +45,10 @@ body {
   pointer-events: none;
 }
 
+html[data-chrome="hidden"] #app {
+  display: none !important;
+}
+
 .hud {
   box-sizing: border-box;
   padding: 18px;

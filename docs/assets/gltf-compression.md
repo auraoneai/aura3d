@@ -26,7 +26,6 @@ Useful focused checks:
 ```sh
 pnpm exec vitest run --config tests/assets/vitest.config.ts
 pnpm exec playwright test tests/browser/asset-compression-browser.spec.ts
-pnpm threejs-parity:inventory
 ```
 
 ## Boundaries

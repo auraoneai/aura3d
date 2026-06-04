@@ -1,10 +1,9 @@
-# Aura3D Known Limits
+# Aura3D Roadmap focus
 
 Version: 1.0.0
 
 ## Current Report Limits
 
-- The local Three.js parity and superiority report sets currently pass in this workspace after regeneration.
 - `tests/reports/` is ignored by git, so report state is local and must be regenerated in clean checkouts, release jobs, and any workspace used for public claim evidence.
 - Passing local reports support only the exact measured categories and routes named by those reports.
 
@@ -13,7 +12,7 @@ Version: 1.0.0
 - Renderer scene frustum culling is implemented, but it is not a broad large-scene performance claim.
 - WebGPU behavior depends on browser and hardware support.
 - PBR/IBL/material claims are feature-specific and route/report-specific. HDR environment map input is supported on named paths, but it is not physically complete image-based lighting.
-- Postprocess support covers named passes and routes, not every Three.js or game-engine post stack.
+- Postprocess support covers named passes and routes, not every low-level renderer code or game-engine post stack.
 - Material coverage includes one primary UV path for glTF render resources, bounded KTX2/Basis transcoding coverage, GPU capability-driven format selection, and no product-studio material-matrix visual coverage.
 - Shadow coverage includes unit-level moving-camera cascade split stress and point/spot shadow maps, but browser visual stress for long moving-camera paths remains evidence-bound.
 - Skinning palette strategy and external character breadth remain evidence-bound.
@@ -27,6 +26,6 @@ Version: 1.0.0
 ## Workflow Limits
 
 - A3D is not documented as a Unity or Unreal replacement.
-- Three.js compatibility helpers do not mean full Three.js API parity.
 - Local examples are not public hosted demo evidence.
 - Template scaffolds are starter projects and require build/run verification.
+

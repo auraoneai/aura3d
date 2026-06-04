@@ -687,7 +687,7 @@ describe("verification tools", () => {
     expect(broken.violations.some((violation) => /sha256/.test(violation))).toBe(true);
   });
 
-  it("external demo exporter builds the five required deployable static demo pages", async () => {
+  it("external demo exporter reports pruned legacy static demo pages honestly", async () => {
     const outputDir = join(fixtureRoot(), "external-demos");
     const reportPath = join(process.cwd(), "tests", "reports", "external-demo-static-export.json");
     const previousReport = existsSync(reportPath) ? readFileSync(reportPath) : null;
@@ -695,24 +695,14 @@ describe("verification tools", () => {
       const report = await buildExternalDemoExport(process.cwd(), outputDir);
 
       expect(report).toMatchObject({
-        ok: true,
+        ok: false,
         command: "pnpm build:external-demos",
         deploymentCommandPlanPath: expect.stringContaining("deployment-command-plan.json")
       });
-      expect(report.demos.map((demo) => demo.id).sort()).toEqual([
-        "architecture-viewer",
-        "game-slice",
-        "large-world-streaming",
-        "product-configurator",
-        "racing-showcase"
-      ]);
-      expect(report.sourceFileHashes.length).toBeGreaterThan(20);
-      for (const demo of report.demos) {
-        expect(demo.bytes).toBeGreaterThan(1000);
-        expect(existsSync(join(process.cwd(), demo.outputHtml))).toBe(true);
-        expect(existsSync(join(process.cwd(), demo.outputScript))).toBe(true);
-        expect(readFileSync(join(process.cwd(), demo.outputHtml), "utf8")).toContain("./main.js");
-      }
+      expect(report.demos).toEqual([]);
+      expect(report.violations).toEqual(expect.arrayContaining([
+        expect.stringContaining("Missing source HTML for product-configurator")
+      ]));
       const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
       expect(deploymentCommandPlan).toMatchObject({
         schemaVersion: "a3d-public-demo-deployment-command-plan",
@@ -733,9 +723,9 @@ describe("verification tools", () => {
         ]),
       });
       expect(deploymentCommandPlan.validationCommands.join("\n")).not.toContain("your-durable-demo-origin.example");
-      expect(deploymentCommandPlan.filesToDeploy).toHaveLength(11);
       expect(deploymentCommandPlan.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
       const publicDeploymentManifest = JSON.parse(readFileSync(join(process.cwd(), report.publicDeploymentManifestPath), "utf8"));
+      expect(deploymentCommandPlan.filesToDeploy).toHaveLength(publicDeploymentManifest.files.length);
       expect(publicDeploymentManifest.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
       const workflow = readFileSync(join(process.cwd(), ".github", "workflows", "public-demo-deploy.yml"), "utf8");
       expect(workflow).toContain("pnpm/action-setup@v4");

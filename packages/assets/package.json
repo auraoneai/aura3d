@@ -6,6 +6,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser-index.d.ts",
+      "import": "./dist/browser-index.js"
     }
   },
   "main": "./dist/index.js",
@@ -14,5 +18,6 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

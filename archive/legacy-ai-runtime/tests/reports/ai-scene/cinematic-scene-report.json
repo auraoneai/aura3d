@@ -1,0 +1,190 @@
+{
+  "schema": "a3d-cinematic-scene-report",
+  "generatedAt": "2026-05-27T08:28:39.630Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [
+      "packages/ai-scene/src/AuraCinematicDirector.ts",
+      "packages/ai-scene/src/AuraCameraPlanner.ts",
+      "packages/ai-scene/src/AuraLightingPlanner.ts",
+      "packages/ai-scene/src/AuraTimelinePlanner.ts"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "cinematic-plan",
+      "path": "createCinematicDirector.plan",
+      "present": true,
+      "status": "present",
+      "detail": "1 cameras, 1 shots, 1 timeline cues, 1 VFX cues."
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": [],
+  "plan": {
+    "cameras": [
+      {
+        "id": "cam-greenhouse-previs-close",
+        "stableId": "cam-greenhouse-previs-close",
+        "label": "Close product camera",
+        "kind": "perspective",
+        "position": [
+          1.9,
+          1.1,
+          2.1
+        ],
+        "target": [
+          0,
+          0.65,
+          0
+        ],
+        "focalLengthMm": 70,
+        "fovDegrees": 31
+      }
+    ],
+    "lighting": {
+      "id": "light-warm-cinematic",
+      "label": "Warm cinematic lighting",
+      "mood": "hopeful cinematic warm",
+      "exposure": 1.12,
+      "keyLight": {
+        "direction": [
+          -0.45,
+          -0.9,
+          -0.35
+        ],
+        "color": [
+          1,
+          0.82,
+          0.56
+        ],
+        "intensity": 1.45
+      },
+      "fillLight": {
+        "direction": [
+          0.58,
+          -0.45,
+          0.2
+        ],
+        "color": [
+          0.45,
+          0.7,
+          1
+        ],
+        "intensity": 0.34
+      },
+      "rimLight": {
+        "direction": [
+          0.1,
+          -0.38,
+          0.9
+        ],
+        "color": [
+          0.75,
+          1,
+          0.8
+        ],
+        "intensity": 0.38
+      }
+    },
+    "shots": [
+      {
+        "id": "shot-generated-opening",
+        "label": "Generated opening shot",
+        "cameraId": "cam-greenhouse-previs-close",
+        "startSeconds": 0,
+        "endSeconds": 6,
+        "movement": "push-in",
+        "notes": "Default push-in shot generated from cinematic language."
+      }
+    ],
+    "timeline": [
+      {
+        "id": "cue-generated-camera",
+        "startSeconds": 0,
+        "endSeconds": 6,
+        "kind": "camera",
+        "targetId": "cam-greenhouse-previs-close",
+        "action": "push-in"
+      }
+    ],
+    "vfx": [
+      {
+        "id": "vfx-generated-dust",
+        "kind": "dust",
+        "intensity": 0.35,
+        "notes": "Subtle dust motes for readable cinematic depth."
+      }
+    ],
+    "look": {
+      "id": "look-warm",
+      "label": "Warm cinematic grade",
+      "contrast": 1.08,
+      "saturation": 1.08,
+      "bloom": 0.1,
+      "notes": "Warm realtime grade for previs."
+    },
+    "diagnostics": [
+      {
+        "code": "AURA_CINEMATIC_PLAN_CREATED",
+        "severity": "info",
+        "path": "cinematic",
+        "message": "Mapped prompt language 'macro close' to deterministic camera, light, timeline, and VFX plans.",
+        "fixSuggestion": "Add explicit camera direction to control shot planning."
+      }
+    ],
+    "cameraPlan": [
+      {
+        "shotId": "shot_001",
+        "cameraId": "camera_hero",
+        "movement": "orbit",
+        "lens": "wide",
+        "startSeconds": 0,
+        "endSeconds": 12
+      }
+    ],
+    "lightingPlan": [
+      {
+        "id": "light_key_01",
+        "role": "key",
+        "mood": "blue-rim-neon"
+      },
+      {
+        "id": "light_rim_01",
+        "role": "rim",
+        "mood": "blue-rim-neon"
+      }
+    ],
+    "timelinePlan": {
+      "durationSeconds": 12,
+      "beats": [
+        {
+          "id": "cue_robot_look",
+          "kind": "look-at",
+          "targetId": "robot_01"
+        },
+        {
+          "id": "cue_flower_glow",
+          "kind": "emissive-pulse",
+          "targetId": "flower_01"
+        }
+      ]
+    },
+    "vfxPlan": [
+      {
+        "id": "fog_01",
+        "kind": "fog",
+        "density": 0.28
+      }
+    ]
+  }
+}

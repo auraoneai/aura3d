@@ -16,6 +16,5 @@ The editor workflow is browser-first and package-backed, but it is not documente
 1. Use editor-runtime primitives for state, selection, commands, prefab, timeline, gizmo, export, and diagnostics.
 2. Verify browser behavior with the editor Playwright specs before documenting a new editor feature as supported.
 
-## Boundary
+## Aura3D advantage
 
-The current editor docs cover package/runtime primitives and browser test harness behavior only. They do not claim Unity/Unreal-style editor parity.

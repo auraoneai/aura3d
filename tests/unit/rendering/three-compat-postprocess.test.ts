@@ -12,7 +12,8 @@ import {
   SSAOPassThreeCompat,
   TAAPassThreeCompat,
   VignettePassThreeCompat,
-  createThreeCompatBaseFrame
+  createThreeCompatBaseFrame,
+  createThreeCompatDemoFrame
 } from "../../../packages/rendering/src";
 import { EffectComposerCompat, RenderPassCompat, UnrealBloomPassCompat } from "../../../packages/three-compat/src";
 
@@ -43,5 +44,34 @@ describe("ThreeCompat postprocess", () => {
     expect(output.vignette).toBeGreaterThan(0);
     expect(output.outlines).toBeGreaterThan(0);
     expect(compatOutput.bloom).toBeGreaterThan(0);
+  });
+
+  it("applies real pixel kernels when a compatibility frame includes pixels", () => {
+    const composer = new EffectComposerThreeCompat()
+      .addPass(new RenderPassThreeCompat())
+      .addPass(new BloomPassThreeCompat())
+      .addPass(new SSAOPassThreeCompat())
+      .addPass(new TAAPassThreeCompat())
+      .addPass(new FXAAPassThreeCompat())
+      .addPass(new DepthOfFieldPassThreeCompat())
+      .addPass(new MotionBlurPassThreeCompat())
+      .addPass(new ColorGradingPassThreeCompat())
+      .addPass(new VignettePassThreeCompat())
+      .addPass(new OutlinePassThreeCompat());
+    const output = composer.render(createThreeCompatDemoFrame("pixel-source"));
+
+    expect(output.pixels).toBeInstanceOf(Uint8Array);
+    expect(output.visualChangedPixels).toBeGreaterThan(1000);
+    expect(output.visualPasses).toEqual(expect.arrayContaining([
+      "BloomPass",
+      "SSAOPass",
+      "TAAPass",
+      "FXAAPass",
+      "DepthOfFieldPass",
+      "MotionBlurPass",
+      "ColorGradingPass",
+      "VignettePass",
+      "OutlinePass"
+    ]));
   });
 });

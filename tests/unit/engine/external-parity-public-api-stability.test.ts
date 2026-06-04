@@ -92,7 +92,10 @@ test("ExternalParity package manifest exposes installable product paths", () => 
     devDependencies: Record<string, string>;
   };
   expect(manifest.exports).toMatchObject({
-    ".": "./dist/engine/index.js",
+    ".": {
+      browser: "./dist/engine/agent-api/index.js",
+      import: "./dist/engine/index.js"
+    },
     "./apps": "./dist/apps/index.js",
     "./engine": "./dist/engine/index.js",
     "./create-aura3d": "./dist/create-aura3d/index.js"
@@ -105,6 +108,6 @@ test("ExternalParity package manifest exposes installable product paths", () => 
   expect(manifest.devDependencies).toMatchObject({
     "@aura3d/apps": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
-    "@aura3d/create-aura3d": "workspace:*"
+    "create-aura3d": "workspace:*"
   });
 });

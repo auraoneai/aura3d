@@ -8,6 +8,9 @@ export interface ProductionPngStats {
   readonly nonBlackPixels: number;
   readonly uniqueColorBuckets: number;
   readonly averageLuma: number;
+  readonly averageSaturation: number;
+  readonly foregroundAverageSaturation: number;
+  readonly saturatedPixelCoverage: number;
   readonly foregroundPixels: number;
   readonly foregroundCoverage: number;
   readonly largestForegroundComponentPixels: number;
@@ -74,6 +77,9 @@ function analyzePixels(pixels: Uint8Array, width: number, height: number, channe
   let nonBlackPixels = 0;
   let lumaTotal = 0;
   let lumaSquareTotal = 0;
+  let saturationTotal = 0;
+  let foregroundSaturationTotal = 0;
+  let saturatedPixels = 0;
   const buckets = new Set<number>();
   const background = estimateBackgroundColor(pixels, width, height, channels);
   const foregroundMask = new Uint8Array(width * height);
@@ -98,11 +104,14 @@ function analyzePixels(pixels: Uint8Array, width: number, height: number, channe
       const blue = pixels[offset + 2] ?? 0;
       const alpha = channels === 4 ? pixels[offset + 3] ?? 255 : 255;
       const luma = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+      const saturation = rgbSaturation(red, green, blue);
       const backgroundDistance = Math.hypot(red - background[0], green - background[1], blue - background[2]);
       const foreground = alpha > 16 && (backgroundDistance > 28 || Math.abs(luma - background[3]) > 18);
       if (foreground) {
         foregroundMask[y * width + x] = 1;
         foregroundPixels += 1;
+        foregroundSaturationTotal += saturation;
+        if (saturation > 0.14 && luma > 12) saturatedPixels += 1;
         minForegroundX = Math.min(minForegroundX, x);
         minForegroundY = Math.min(minForegroundY, y);
         maxForegroundX = Math.max(maxForegroundX, x);
@@ -115,6 +124,7 @@ function analyzePixels(pixels: Uint8Array, width: number, height: number, channe
       if (red + green + blue > 12) nonBlackPixels += 1;
       lumaTotal += luma;
       lumaSquareTotal += luma * luma;
+      saturationTotal += saturation;
       buckets.add(((red >> 4) << 8) | ((green >> 4) << 4) | (blue >> 4));
       if (x + 1 < width) {
         const rightOffset = offset + channels;
@@ -144,6 +154,9 @@ function analyzePixels(pixels: Uint8Array, width: number, height: number, channe
     nonBlackPixels,
     uniqueColorBuckets: buckets.size,
     averageLuma: Number(averageLuma.toFixed(6)),
+    averageSaturation: Number((saturationTotal / Math.max(1, totalPixels)).toFixed(6)),
+    foregroundAverageSaturation: Number((foregroundSaturationTotal / Math.max(1, foregroundPixels)).toFixed(6)),
+    saturatedPixelCoverage: Number((saturatedPixels / Math.max(1, totalPixels)).toFixed(6)),
     foregroundPixels,
     foregroundCoverage: Number((foregroundPixels / Math.max(1, totalPixels)).toFixed(6)),
     largestForegroundComponentPixels,
@@ -153,6 +166,12 @@ function analyzePixels(pixels: Uint8Array, width: number, height: number, channe
     detailEdgeDensity: Number((detailEdges / detailComparisons).toFixed(6)),
     localContrast: Number(Math.sqrt(lumaVariance).toFixed(6))
   };
+}
+
+function rgbSaturation(red: number, green: number, blue: number): number {
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  return max > 0 ? (max - min) / max : 0;
 }
 
 function estimateBackgroundColor(pixels: Uint8Array, width: number, height: number, channels: number): readonly [number, number, number, number] {

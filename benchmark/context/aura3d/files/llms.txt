@@ -1,0 +1,156 @@
+Aura3D quick patterns for AI coding agents.
+
+Scaffold:
+```bash
+npx create-aura3d@latest my-scene --template product-viewer
+cd my-scene
+npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
+npm run dev
+```
+
+Hello world with typed assets:
+```ts
+import { createAuraApp, lights, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(model(assets.robot)).add(lights.studio())
+});
+```
+
+Public imports for agent-authored apps:
+```ts
+import {
+  createAuraApp,
+  collectAuraSceneEvidence,
+  definePromptPlan,
+  compilePromptPlan,
+  promptPlanToScene,
+  scene,
+  model,
+  camera,
+  lights,
+  material,
+  effects,
+  prefabs,
+  sceneKits,
+  primitives,
+  group,
+  groups,
+  shadows,
+  timeline,
+  interactions,
+  physics,
+  labels,
+  environments,
+  games,
+  charts,
+  character,
+  city,
+  product,
+  solar,
+  particles,
+  defineAuraAssets,
+  ui
+} from "@aura3d/engine";
+```
+
+Benchmark priority:
+- Use `sceneKits.<name>()` first for benchmark prompts.
+- Use `prefabs.*` only when the prompt needs lower-level composition.
+- Use primitives only for small prompt-specific additions, never as the main scene system.
+- A nonblank screenshot is not enough. The image must visibly match the prompt.
+- Read `docs/agents/benchmark-recipes.md` before writing benchmark code.
+- For benchmark runs, run finite commands such as `npm install` and `npm run build`, then stop. Do not run `npm run dev`, `npm run preview`, Playwright, browser screenshot capture, or manual visual verification inside the agent process.
+
+Root scene-kit examples:
+```ts
+import { createAuraApp, sceneKits } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const dataset = [
+  [0.42, 0.68, 0.91],
+  [0.55, 0.77, 0.83],
+  [0.31, 0.59, 0.72]
+] as const;
+
+createAuraApp("#app", sceneKits.physicsPlayground().toAppOptions());
+createAuraApp("#app", sceneKits.particleFountain({ particleCount: 2400, emissionRate: 120 }).toAppOptions());
+createAuraApp("#app", sceneKits.solarSystem().toAppOptions());
+createAuraApp("#app", sceneKits.neonTunnel().toAppOptions());
+createAuraApp("#app", sceneKits.dataViz({ dataset }).toAppOptions());
+createAuraApp("#app", sceneKits.miniGolf().toAppOptions());
+createAuraApp("#app", sceneKits.materialLab().toAppOptions());
+createAuraApp("#app", sceneKits.cityBlock({ timeOfDay: "night" }).toAppOptions());
+createAuraApp("#app", sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).toAppOptions());
+createAuraApp("#app", sceneKits.productViewer(assets.product).toAppOptions());
+```
+
+Scene-kit selection table:
+| Prompt family | Start with | Expected screenshot contains |
+| --- | --- | --- |
+| Physics playground | `sceneKits.physicsPlayground()` | falling cubes, settled pile, ramp/catch geometry, contact patches, gravity cue, reset affordance |
+| Particle fountain | `sceneKits.particleFountain({ particleCount, emissionRate })` | dense upward flow, lifetime color variation, nozzle/emitter base, splash or collision context, emission-rate UI |
+| Solar system | `sceneKits.solarSystem()` | sun glow, six labeled planets, orbit paths, depth framing, stars/dust, readable scale cues |
+| Neon tunnel | `sceneKits.neonTunnel()` | inside-the-tube view, receding rings, rails, reflective floor/walls, fog depth, controlled bloom |
+| 3D data visualization | `sceneKits.dataViz({ dataset })` | bars, axes, numeric ticks, title, legend, selected value or hover readout, no orphan labels |
+| Mini golf | `sceneKits.miniGolf()` | ball, cup, aim/power state, score, obstacle, course boundaries, follow-camera target cue |
+| Material lab | `sceneKits.materialLab()` | mirror metal, transparent glass, matte rubber, emissive glow, clearcoat highlights, contact shadows |
+| City block | `sceneKits.cityBlock({ timeOfDay })` | many buildings, window grids, streets, crosswalks, props, traffic/street lights, visible day/night state |
+| Humanoid walk | `sceneKits.humanoidWalk({ animationState: "benchmark-pose" })` | one connected humanoid, planted feet, shoulder/hip sockets, face cues, motion/path evidence |
+| Product viewer | `sceneKits.productViewer(assets.product)` | typed model centered, scaled, seated on plinth, contact shadow, softboxes, orbit/turntable cues |
+
+Do not submit examples:
+- Do not submit a primitive humanoid puppet made from disconnected boxes, spheres, or capsules. Use `sceneKits.humanoidWalk()` or `character.lowPolyHumanoid()` and run `character.visualQA(nodes)` when you customize.
+- Do not submit toy mini-golf with only a flat plane and a ball. Use `sceneKits.miniGolf()` or `games.createMiniGolfState()` so score, aim, obstacle, cup, boundaries, and physics evidence are visible.
+- Do not submit stray chart geometry, floating labels, detached ticks, or cobweb guide lines. Use `sceneKits.dataViz()` or `charts.visualQA(nodes)`.
+- Do not submit blown-out neon that becomes a white rectangle or flat portal. Use `sceneKits.neonTunnel()` and keep bloom/fog controlled.
+- Do not submit a washed material lab where metal, glass, rubber, emissive, and clearcoat look identical. Use `sceneKits.materialLab()` and preserve contrast/reflections/contact shadows.
+
+Physics API boundary:
+- Prefer `sceneKits.physicsPlayground()`, `sceneKits.miniGolf()`, `prefabs.physicsPlayground(...)`, `prefabs.physicsRamp()`, and `prefabs.miniGolfHole()` for benchmark-visible physics evidence.
+- Use the safe root `physics` namespace from `@aura3d/engine` for simulation state: `physics.world(...)`, `physics.body(...)`, `physics.box(...)`, `physics.sphere(...)`, `physics.step(...)`, `physics.debug(...)`, and `physics.debugNodes(...)`.
+- Use `physics.worldFromScene(scene)` when you authored nodes with `.physics(...)` and want Aura3D to create bodies/colliders from the scene.
+- Do not import `PhysicsWorld`, `Shape`, or `PhysicsDebugAdapter` from `@aura3d/engine`.
+- Do not hand-roll mini-golf physics when `games.createMiniGolfState()` covers shots, score, collisions, cup trigger, reset, and follow-camera metrics.
+
+Typed asset rule:
+- Add assets with the CLI before writing model code: `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`.
+- Read generated `src/aura-assets.ts` and import `assets` from `./aura-assets`.
+- Use `model(assets.model)` or `sceneKits.productViewer(assets.product)` with the exact generated key.
+- Do not use `model("model")`, string asset ids, invented URLs, unrelated copied GLBs, or `unsafeModelUrl(...)` for benchmark product proof.
+- `unsafeModelUrl(...)` is only an explicit temporary escape hatch outside safe benchmark code.
+
+Prompt-plan pattern:
+```ts
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: ["product centered", "studio lighting visible"]
+} as const);
+
+const compiled = compilePromptPlan(plan);
+createAuraApp("#app", { scene: promptPlanToScene(plan) });
+console.log(compiled.report.visualSystems, compiled.report.repairHints);
+```
+
+Diagnostics and QA:
+- Use `collectAuraSceneEvidence(scene)` to report physics bodies/colliders, interaction modes, camera state, animation clips, typed asset provenance, and performance budgets.
+- Use `charts.visualQA(nodes)`, `character.visualQA(nodes)`, `city.visualQA(nodes)`, `product.visualQA(nodes)`, and `solar.visualQA(nodes)` before accepting customized prompt scenes.
+- If visual review fails, apply `compilePromptPlan(plan).report.repairHints` or switch back to the matching scene kit before changing labels or claims.
+
+Small UI rules:
+- Use `ui.html`, `ui.setText`, `ui.onClick`, `ui.range`, `ui.slider`, and `ui.onInput` for HUD text, counters, buttons, and sliders.
+- Do not use `HTMLStrongElement` or untyped `event.currentTarget` in benchmark TypeScript.
+- Create one Aura app per route. Do not call `dispose()` and `createAuraApp()` every animation frame. Use `.animate(...)`, `timeline.loop(...)`, or ordinary DOM overlay updates.
+
+Verification:
+```bash
+npm run build
+npm run test
+npx @aura3d/cli@latest assets validate
+```

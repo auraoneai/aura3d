@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Aura3D Agent API Visual Smoke Harness</title>
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #020617;
+        color: white;
+        font: 13px system-ui, sans-serif;
+      }
+
+      #mount {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      canvas {
+        width: 640px;
+        height: 360px;
+      }
+
+      #shoot {
+        position: fixed;
+        left: 16px;
+        top: 16px;
+        z-index: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="shoot" type="button">shoot</button>
+    <div id="mount"></div>
+    <script type="module" src="/tests/browser/agent-api-visual-smoke-harness.js"></script>
+  </body>
+</html>

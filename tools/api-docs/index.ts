@@ -23,7 +23,21 @@ const defaultReportPath = "tests/reports/api-docs.json";
 
 export function collectPublicPackageApis(root = process.cwd()): readonly PublicPackageApi[] {
   const packagesRoot = join(root, "packages");
-  return readdirSync(packagesRoot, { withFileTypes: true })
+  const rootPackageJson = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
+    readonly name?: string;
+    readonly version?: string;
+    readonly private?: boolean;
+  };
+  const rootEngineApi = rootPackageJson.private === true ? [] : [{
+    packageName: rootPackageJson.name ?? "@aura3d/engine",
+    version: rootPackageJson.version ?? "0.0.0",
+    packagePath: ".",
+    entrypointPath: "packages/engine/src/index.ts",
+    exportStatements: collectExportStatements(readFileSync(join(root, "packages", "engine", "src", "index.ts"), "utf8"))
+  }];
+  return [
+    ...rootEngineApi,
+    ...readdirSync(packagesRoot, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => join(packagesRoot, entry.name))
     .filter((packageDir) => existsSync(join(packageDir, "package.json")))
@@ -58,7 +72,12 @@ export function collectPublicPackageApis(root = process.cwd()): readonly PublicP
         exportStatements: collectExportStatements(readFileSync(entrypointPath, "utf8"))
       };
     })
-    .sort((a, b) => a.packageName.localeCompare(b.packageName));
+  ].sort((a, b) => apiDocsPackageSortKey(a.packageName).localeCompare(apiDocsPackageSortKey(b.packageName)));
+}
+
+function apiDocsPackageSortKey(packageName: string): string {
+  if (packageName === "create-aura3d") return "@aura3d/core/create-aura3d";
+  return packageName;
 }
 
 export function renderApiDocs(packages: readonly PublicPackageApi[]): string {
@@ -90,7 +109,7 @@ export function renderApiDocs(packages: readonly PublicPackageApi[]): string {
       `## ${pkg.packageName}`,
       "",
       `- Version: \`${pkg.version}\``,
-      `- Package manifest: \`${pkg.packagePath}/package.json\``,
+      `- Package manifest: \`${pkg.packagePath === "." ? "package.json" : `${pkg.packagePath}/package.json`}\``,
       `- Public entrypoint: \`${pkg.entrypointPath}\``,
       "",
       "### Export Declarations",

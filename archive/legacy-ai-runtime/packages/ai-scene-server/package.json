@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/ai-scene-server",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@aura3d/ai-scene": "workspace:*"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

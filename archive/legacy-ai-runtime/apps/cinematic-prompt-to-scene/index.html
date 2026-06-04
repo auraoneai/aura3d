@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A3D Cinematic Prompt To Scene</title>
+    <link rel="stylesheet" href="/apps/cinematic-prompt-to-scene/src/styles.css">
+    <script>
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("chrome") === "hidden") {
+            document.documentElement.setAttribute("data-chrome", "hidden");
+          }
+        } catch (_e) { /* ignore */ }
+      })();
+    </script>
+  </head>
+  <body>
+    <canvas id="viewport" class="cinematic-drift" width="1440" height="900" aria-label="A3D Cinematic Prompt To Scene"></canvas>
+    <div class="cinematic-atmosphere" aria-hidden="true">
+      <div class="rain rain-a"></div>
+      <div class="rain rain-b"></div>
+      <div class="fog fog-a"></div>
+      <div class="fog fog-b"></div>
+      <div class="alley-wall wall-left"></div>
+      <div class="alley-wall wall-right"></div>
+      <div class="neon-tube tube-cyan"></div>
+      <div class="neon-tube tube-magenta"></div>
+      <div class="patch-lantern"></div>
+      <div class="story-flower">
+        <span class="petal petal-a"></span>
+        <span class="petal petal-b"></span>
+        <span class="petal petal-c"></span>
+        <span class="petal petal-d"></span>
+        <span class="flower-core"></span>
+        <span class="flower-stem"></span>
+      </div>
+      <div class="shot-caption">12s dolly-in · wet neon alley · fixture provider</div>
+    </div>
+    <main id="app"></main>
+    <script id="cinematic-scene-fixture" type="application/json">
+      {
+        "providerMode": "fixture",
+        "prompt": "Create a rainy neon alley at night. A lonely robot finds a glowing flower. Make it emotional and cinematic with wet pavement, fog, rain particles, blue rim light, neon reflections, and a slow 12-second dolly-in.",
+        "qualityTarget": "L3-cinematic-realtime",
+        "backend": "webgl2",
+        "assets": [
+          { "id": "robot-expressive", "role": "hero character", "source": "fixtures/threejs-parity/assets/character/robot-expressive.glb" },
+          { "id": "procedural-neon-alley", "role": "environment set", "source": "renderer:procedural/rainy-neon-alley" },
+          { "id": "glowing-flower", "role": "hero prop", "source": "renderer:procedural/glowing-flower" },
+          { "id": "renderer-rain-particles", "role": "renderer vfx rain fog glow", "source": "renderer:vfx/RainParticleSystem" }
+        ],
+        "shot": {
+          "durationSeconds": 12,
+          "movement": "slow dolly-in",
+          "mood": "lonely, rain-soaked, hopeful"
+        }
+      }
+    </script>
+    <script type="module" src="/apps/cinematic-prompt-to-scene/src/main.ts"></script>
+  </body>
+</html>

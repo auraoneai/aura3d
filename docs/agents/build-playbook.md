@@ -1,114 +1,161 @@
-# Build Playbook For Agents
+# Build Playbook
 
-Version: 1.0.0
-
-Use this when a user asks an AI agent to build, fix, document, or verify something in A3D.
-
-## Triage The Request
-
-Classify the request before editing:
-
-| User asks for | Start in |
-|---|---|
-| New SDK behavior | Owning `packages/*/src`, public API docs, focused unit tests. |
-| Rendering feature or visual fix | `packages/rendering/src`, relevant route/app, rendering docs, unit plus browser evidence. |
-| Asset/glTF support | `packages/assets/src`, fixtures/corpus tests, asset docs. |
-| Animation/skinning/morph behavior | `packages/animation/src`, `packages/assets/src/GLTFAnimationRuntime.ts`, rendering skinning code, route tests. |
-| Physics behavior | `packages/physics/src`, scene/physics bridge tests, physics docs. |
-| Product/workflow app behavior | `packages/workflows/src`, `packages/product-studio/src`, app route if visible. |
-| Docs only | Existing docs page plus `docs/agents` if the guidance changes. |
-| Route/gallery work | `index.html`, `apps/advanced-examples-gallery`, `apps/wow-*`, route-health tests/tools. |
-| Public claims | Claim docs plus current generated evidence lane. |
-
-## Source Rules
-
-- Keep implementation in the owning package. Avoid reaching across package internals.
-- Use public imports from `@aura3d/*` or exported root subpaths where possible.
-- Update `src/index.ts` only when the API should be public.
-- If a public export changes, regenerate/check API docs with `pnpm verify:api-docs`.
-- Keep renderer, asset, app, and workflow ownership separate. A route should compose package behavior, not become the only implementation.
-- Every long-lived app, renderer, device, asset resource, listener, or lifecycle owner needs an explicit cleanup path.
-- Keep route labels, docs, tests, and metadata synchronized when a route changes.
-
-## Common Recipes
-
-### Add Package Behavior
-
-1. Find the package owner in [codebase-map.md](codebase-map.md).
-2. Add implementation under `packages/<area>/src`.
-3. Export through `packages/<area>/src/index.ts` if public.
-4. Add focused tests under `tests/unit/<area>`.
-5. Run a focused test and `pnpm typecheck`.
-6. Update docs if behavior or API changed.
-
-### Add Or Change Renderer Behavior
-
-1. Inspect `packages/rendering/src/index.ts` and the specific renderer module.
-2. Add unit coverage for deterministic data, state, bounds, render-queue, material, shader, or resource behavior.
-3. Use browser tests when the change depends on real canvas, WebGL2, WebGPU, screenshots, or route health.
-4. Update rendering docs if the feature changes public expectations.
-5. Avoid broad claims unless the matching route/report lane passes.
-
-### Add Or Change Asset Loading
-
-1. Start in `packages/assets/src`.
-2. Prefer structured loader/parser changes over ad hoc string handling.
-3. Update inspection/diagnostics when a new asset capability can fail or be unsupported.
-4. Add fixture or corpus coverage when possible.
-5. Update docs in `docs/assets` or `docs/concepts/assets.md`.
-
-### Add Or Change A Browser Route
-
-The current repo intentionally has a narrow local route surface.
-
-1. If the route is advanced-gallery work, add it to `apps/advanced-examples-gallery/src/metadata.ts` and route composition.
-2. If the route is authored-showcase work, place it under `apps/wow-*` and reuse `apps/wow-common`.
-3. Update root `index.html` so the registry remains the single source of truth.
-4. Update `tests/browser/current-routes-route-health.spec.ts` and `tools/current-routes-*` allowlist logic when the route count or path set changes.
-5. Run current route-health and the gallery or wow screenshot lane.
-6. Do not create a new top-level `examples/` tree.
-
-### Change Advanced Gallery Visuals
-
-1. Read [docs/examples/advanced-gallery.md](../examples/advanced-gallery.md).
-2. Change route code, route-specific modules, authored layer policies, or metadata.
-3. Run focused tests first.
-4. Regenerate gallery evidence only when the visual/source changes are ready:
-
-```sh
-pnpm advanced-gallery:pipeline
-```
-
-Accepted-gallery wording is valid only when screenshot, metadata hash, review, and audit all describe the same generated report set.
-
-### Update Public Documentation
-
-1. Verify every path, command, route, and package name against the repo.
-2. Prefer evidence-scoped language.
-3. Add or update links in `docs/project/documentation-index.md` and `docs/project/site-map.md` when adding a new major doc area.
-4. Run docs checks.
-
-## Import Guidance
-
-Use these styles for consumer-facing examples:
+Use the public Aura3D API first:
 
 ```ts
-import { createA3DApp } from "@aura3d/engine";
-import { A3DRenderer, A3DScene } from "@aura3d/engine/advanced-runtime";
-import { Renderer } from "@aura3d/engine/rendering";
-import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
+import { compilePromptPlan, createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
 ```
 
-Inside packages, follow existing local patterns. Many package source files import sibling modules directly, while cross-package imports should use package aliases from `tsconfig.base.json`.
+Build order:
 
-## Documentation Sync Checklist
+1. Choose a starter template.
+2. Add or validate user assets with `@aura3d/cli`.
+3. Write a `definePromptPlan(...)` with subject asset, scene type, camera,
+   lighting, effects, interaction, and screenshot acceptance criteria.
+4. Compile the plan with `compilePromptPlan(plan)` and inspect
+   `report.visualSystems`, `report.negativeCriteria`, and
+   `report.repairHints`.
+5. Render with `promptPlanToScene(plan)` instead of improvising unrelated
+   primitives.
+6. Enable diagnostics with `diagnostics: { overlay: true }`.
+7. Run build, route-health, screenshot, prompt-fidelity, and deployment checks.
 
-Before finishing a code change, check whether these must also change:
+`docs/agents/benchmark-recipes.md` first. Copy the smallest matching recipe,
+run finite commands such as `npm install` and `npm run build`, and stop. Do not
+run `npm run dev`, `npm run preview`, Playwright, browser screenshots, or
+manual visual verification from inside the benchmark agent process. Return the
+build command, the runner-owned run command, and assumptions; do not perform
+runner-owned runtime capture.
 
-- `docs/api/public-api.md` for exported API.
-- `docs/project/getting-started.md` for route/server/command changes.
-- `docs/project/site-map.md` for new major docs or removed docs.
-- `docs/examples/advanced-gallery.md` for gallery metadata, route, or evidence changes.
-- `docs/project/claim-guidelines.md` and `docs/project/known-limits.md` for claim boundary changes.
-- This `docs/agents` folder when the agent workflow itself changes.
+`createAuraApp("#app", ...)` supplies viewport-safe layout defaults for a
+direct empty app container. Do not add CSS merely to remove body margin or make
+the canvas fill the screenshot; add CSS only for overlays and controls.
 
+Minimal prompt-plan shape:
+
+```ts
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: [
+    "product is centered and recognizable",
+    "studio lighting shapes the asset"
+  ]
+} as const);
+
+const compiled = compilePromptPlan(plan);
+
+createAuraApp("#app", { scene: promptPlanToScene(plan) });
+
+console.log(compiled.report.repairHints);
+```
+
+Do not treat a compiling app or nonblank screenshot as visual proof. The
+screenshot must visibly satisfy the prompt without relying on labels,
+diagnostics, or a lone asset plus decorative cues.
+
+If screenshot review fails, apply `compilePromptPlan(plan).report.repairHints`
+before changing the review label. Typical repairs are tighter framing, more
+foreground/background structure, stronger key/fill/rim lighting, real
+environment response for effects, and visible state for game interactions.
+
+Round 1 failure repairs:
+
+- Particle/VFX prompts: start with `prefabs.particleFountain(...)` or
+  `effects.particles({ emitter: "fountain" | "swirl", particleCount: 1000 })`.
+  Use high counts for fountains (`prefabs.particleFountain({ count: 2400 })`)
+  when the screenshot must prove dense live particles. Do not accept a visible
+  emitter, HUD counter, or single trail curve with no particle volume. For the
+  fountain benchmark, add a real `ui.range`/`ui.onInput` emission-rate control
+  and keep the prefab's nozzle, ground plane, splash ring, lifetime color
+  swatches, and upward/falling arcs in frame. A label-only button does not
+  satisfy the control requirement.
+- Physics playground prompts: start with
+  `prefabs.physicsPlayground({ cubes: 50 })` for renderable ramp/cube/contact
+  evidence. Add simulation state through the safe root `physics` namespace
+  (`physics.world(...)`, `physics.box(...)`, `physics.step(...)`,
+  `physics.debug(...)`, `physics.debugNodes(...)`). If nodes already have `.physics(...)`, use
+  `physics.worldFromScene(scene)` so authored geometry creates colliders. Do not
+  build only a custom 2D canvas around the physics package, and do not invent
+  root class imports.
+- 3D data visualization prompts: start with `prefabs.dataBars3D({ grid: 6 })`.
+  It already includes bars, top caps, base shadows, floor guides, axis rails,
+  wall ticks, label chips, a grounded legend, a selected-metric callout, bloom,
+  and hover metadata. Add DOM title, X/Z/height axis labels, numeric ticks, and
+  hover/readout text around the single Aura app; these labels are mandatory for
+  benchmark proof. Do not call `dispose()` and `createAuraApp()` in a frame loop
+  to animate bar heights.
+- Material lab prompts: use `prefabs.materialSwatches()` plus
+  `material.metal()`, `material.glass()`, `material.rubber()`,
+  `material.emissive()`, and `material.clearcoat()` so material classes are
+  visible without reading labels. Keep the contrast wall, environment panels,
+  refracted glass cards, softbox strips, and clearcoat highlights in frame;
+  they are what make glass, chrome, and layered glossy paint read in screenshots.
+  Use `material.labParameters()` when the prompt asks for editable roughness,
+  metalness, transmission, clearcoat, or emissive controls.
+- City prompts: use `prefabs.cityBlock({ blocks: 20, litWindows: true })`
+  before custom buildings. A city scene needs streets, lit windows, scale
+  variation, crosswalks, sidewalks, street lights, storefront/roof detail,
+  fog or depth, and an obvious day/night state or toggle marker. A day/night
+  toggle must change the 3D scene's sky/background, lighting, windows, street
+  lights, and state marker; text-only toggles fail the prompt. Use
+  `city.createState(...)` for a small mutable day/night controller.
+- Product prompts: use `prefabs.productViewer(assets.product)`,
+  `interactions.orbit()`, and `camera.product()`. The helper keeps the
+  typed asset, plinth, contact shadow, softboxes, clean turntable cue, and
+  normalized placement together. Use `prefabs.productStage({ style:
+  "inspection" })` only when the prompt asks for explicit fit brackets. Do not
+  implement the actual viewer in low-level renderer code inside an Aura3D app.
+- Small HUDs and controls: use `ui.html`, `ui.setText`, `ui.setPressed`,
+  `ui.onClick`, `ui.range`, `ui.slider`, `ui.powerMeter`, `ui.scoreCounter`,
+  `ui.resetButton`, and `ui.onInput`. Avoid `HTMLStrongElement` and untyped `event.currentTarget`
+  because those patterns caused Round 5 TypeScript compile failures. By
+  default, `ui.html("#app", markup)` inserts markup inside `#app`, so nested
+  scene containers remain visible within the viewport. If you query a canvas or
+  container with `document.querySelector`, you may pass that nullable result to
+  `createAuraApp`; missing targets throw a clear Aura runtime error instead of
+  creating TypeScript friction around nested helper functions.
+- Physics prompts: use `prefabs.physicsRamp()` as the visible scene cue and
+  use the safe root `physics` namespace from `@aura3d/engine` for simulation
+  state. Do not import `PhysicsWorld`, `Shape`, or
+  `PhysicsDebugAdapter` from `@aura3d/engine`; those are not agent-facing root
+  exports. For prompt-01-style playgrounds, use
+  `prefabs.physicsPlayground({ cubes: 50 })` so falling cubes, settled cubes,
+  physics from cosmetic floating boxes only.
+- Mini-golf prompts: use `prefabs.miniGolfHole()`, `interactions.pointer()`,
+  `camera.miniGolf()`, `games.createMiniGolfState()`, and a visible score HUD.
+  Keep the aim line, shot-power meter, ball ghosts, contact shadow, obstacle
+  contact flash, cup, and follow-camera ball framing visible. Use the state
+  controller for shot/score/contact metrics instead of hand-written game
+  physics. Do not build gameplay only in a detached 2D overlay.
+- Solar-system prompts: use
+  `prefabs.solarSystem({ labels: "attached", orbitSegments: 24, starCount: 42 })`
+  so the six readable planet labels are attached to their planets in the 3D
+  scene. Do not ship a detached legend, a sun plus only three unlabeled
+  planets, or a tilted floor-like plate in place of space.
+- Animation prompts: prefer `character.lowPolyHumanoid({ clip: "walk" })`
+  for primitive humanoids and `.animate({ clip: "float" | "pulse" | "walk" | "turntable" | "bar-height-grow", speed, duration, captureTime })`
+  and `timeline.loop({ duration, captureTime })`; agents must stop after build/test commands and not
+  leave dev servers running. For benchmark character prompts, start from
+  `character.lowPolyHumanoid({ clip: "benchmark-pose", showJoints: false, motionTrail: false })`
+  so the authored skinned neutral human, planted-foot phase, clean silhouette,
+  path, contact shadow, face cues, stride, and walk-cycle animation are visible.
+- Benchmark prompts: write the smallest complete scene first, run finite
+  commands such as `npm run build`, and exit. Do not run dev servers,
+  Playwright, browser screenshot capture, or manual visual verification from
+  inside the agent process.
+- Neon tunnel, mini-golf, and humanoid prompts: start from
+  `prefabs.neonTunnel`, `prefabs.miniGolfHole`, and
+  `character.lowPolyHumanoid` before custom primitive placement.
+- Neon tunnel scenes should keep the prefab's octagonal rings, diagonal braces,
+  perspective rails, floor reflections, fog, bloom, sparks, ambient particles,
+  and dolly camera in frame. Do not replace it with a single portal, flat
+  gradient, or CSS-only animation.
+
+Keep edits scoped to active product paths. Archived legacy runtime files are
+historical reference only.

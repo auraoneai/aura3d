@@ -14,5 +14,6 @@
     "@aura3d/core": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "@aura3d/workflows": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

@@ -247,7 +247,7 @@ test.describe("ExternalParity editor authoring workflow", () => {
     expect(runtime).not.toContain("EditorShell");
     expect(runtime).not.toContain("__AURA3D_EDITOR_APP__");
     const exportedByPath = new Map(exportedFiles.map((file) => [file.path, file.content]));
-    await page.route(`${server.origin}/__v4_editor_export/**`, async (route) => {
+    await page.route(`${server.origin}/__editor_export/**`, async (route) => {
       const name = new URL(route.request().url()).pathname.split("/").pop() ?? "index.html";
       const content = exportedByPath.get(name);
       await route.fulfill({
@@ -257,7 +257,7 @@ test.describe("ExternalParity editor authoring workflow", () => {
       });
     });
 
-    await page.goto(`${server.origin}/__v4_editor_export/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/__editor_export/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
     await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const exportedState = await exportedProjectState(page);

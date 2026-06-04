@@ -16,6 +16,7 @@ import {
 } from "@aura3d/rendering";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { multiplyMat4, type Mat4 } from "@aura3d/scene";
+import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 type Pipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type Mixer = ReturnType<typeof createGLTFSceneAnimationMixer>;
@@ -90,10 +91,11 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     throw new Error(`${config.appId} requires #app and canvas#viewport.`);
   }
+  const chromeHidden = applyRouteChromeMode();
 
   let size = syncCanvasSize(canvas);
   let runtime = createRuntime(config, "loading", size, performance.now(), 0, 0);
-  publish(root, runtime, true);
+  if (!chromeHidden) publish(root, runtime, true);
   drawFallbackFrame(canvas, config.clearColor ?? [0.86, 0.86, 0.84, 1]);
 
   const started = performance.now();
@@ -251,7 +253,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
 	          timings.diagnosticsMs = Math.round(performance.now() - diagnosticsStarted);
 	          diagnosticsPublished = true;
 	        }
-        if (frameCount === 1 || now - lastUi > 250) {
+        if (!chromeHidden && (frameCount === 1 || now - lastUi > 250)) {
           publish(root, runtime, frameCount === 1);
           lastUi = now;
         }
@@ -266,13 +268,13 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
 	          error: formatError(error),
 	          timings
 	        });
-        publish(root, runtime, true);
+        if (!chromeHidden) publish(root, runtime, true);
       }
     };
     requestAnimationFrame(render);
   } catch (error) {
     runtime = createRuntime(config, "error", size, started, frameCount, fps, { pipeline, error: formatError(error), timings });
-    publish(root, runtime, true);
+    if (!chromeHidden) publish(root, runtime, true);
   }
 }
 
@@ -364,8 +366,9 @@ function syncCanvasSize(canvas: HTMLCanvasElement): { readonly width: number; re
   const rect = canvas.getBoundingClientRect();
   const cssWidth = Math.max(1, rect.width || window.innerWidth || 1440);
   const cssHeight = Math.max(1, rect.height || window.innerHeight || 900);
-  const dpr = Math.min(MAX_DPR, Math.max(1, window.devicePixelRatio || 1));
-  const edgeScale = Math.min(1, MAX_RENDER_EDGE / Math.max(cssWidth * dpr, cssHeight * dpr));
+  const quality = routeRenderQuality({ maxPixelRatio: MAX_DPR, maxRenderEdge: MAX_RENDER_EDGE });
+  const dpr = Math.min(quality.maxPixelRatio, Math.max(1, window.devicePixelRatio || 1));
+  const edgeScale = Math.min(1, quality.maxRenderEdge / Math.max(cssWidth * dpr, cssHeight * dpr));
   const width = Math.round(cssWidth * dpr * edgeScale);
   const height = Math.round(cssHeight * dpr * edgeScale);
   if (canvas.width !== width) canvas.width = width;

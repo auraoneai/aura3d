@@ -42,3 +42,28 @@ pnpm verify:claims
 ## Issue Templates
 
 Use `.github/ISSUE_TEMPLATE/bug_report.yml` for defects and `.github/ISSUE_TEMPLATE/feature_request.yml` for enhancements.
+
+
+## Good First Issues
+
+Good first contributions include:
+
+- improving agent docs, prompt recipes, and typed asset examples;
+- adding Vite template documentation for browser 3D apps;
+- tightening comparison wording while preserving claim boundaries;
+- adding screenshot or route-health evidence to examples;
+- improving troubleshooting docs for blank canvas, missing GLB/glTF assets, Vite deploy paths, and screenshot failures.
+
+## Docs And Example PRs
+
+For docs or example pull requests, include:
+
+- the source prompt or use case;
+- asset source and license when a GLB/glTF file is involved;
+- commands run and whether each passed or failed;
+- screenshot path or route-health evidence when visuals changed;
+- any claim boundary that applies, especially for manual renderer code comparisons or benchmark wording.
+
+## Issue Reports
+
+When filing an issue, include package version, template or route, prompt, asset source, commands run, runtime error, route-health output, screenshot evidence, and deployment target when relevant.

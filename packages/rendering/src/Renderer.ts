@@ -121,6 +121,112 @@ export interface RendererFrameCapture {
   readonly height: number;
   readonly pixels: Uint8Array;
   readonly diagnostics: RenderDeviceDiagnostics;
+  readonly capturedAt?: string;
+  readonly renderSize?: RendererFrameCaptureRenderSize;
+  readonly pixelHash?: string;
+  readonly pixelDigest?: RendererFrameCapturePixelDigest;
+  readonly pixelStats?: RendererFrameCapturePixelStats;
+  readonly diagnosticsSummary?: RendererFrameCaptureDiagnosticsSummary;
+  readonly metadata?: RendererFrameCaptureMetadata;
+}
+
+export interface RendererFrameCaptureWithMetadata extends RendererFrameCapture {
+  readonly capturedAt: string;
+  readonly renderSize: RendererFrameCaptureRenderSize;
+  readonly pixelHash: string;
+  readonly pixelDigest: RendererFrameCapturePixelDigest;
+  readonly pixelStats: RendererFrameCapturePixelStats;
+  readonly diagnosticsSummary: RendererFrameCaptureDiagnosticsSummary;
+  readonly metadata: RendererFrameCaptureMetadata;
+}
+
+export interface RendererFrameCaptureRenderSize {
+  readonly width: number;
+  readonly height: number;
+  readonly pixelCount: number;
+  readonly byteLength: number;
+  readonly aspectRatio: number;
+}
+
+export interface RendererFrameCapturePixelDigest {
+  readonly algorithm: "sha256";
+  readonly encoding: "hex";
+  readonly source: "rgba8";
+  readonly value: string;
+  readonly byteLength: number;
+}
+
+export interface RendererFrameCapturePixelStats {
+  readonly totalPixels: number;
+  readonly opaquePixels: number;
+  readonly opaqueRatio: number;
+  readonly transparentPixels: number;
+  readonly transparentRatio: number;
+  readonly nonBlankPixels: number;
+  readonly nonBlankRatio: number;
+  readonly underexposedPixels: number;
+  readonly underexposedRatio: number;
+  readonly overexposedPixels: number;
+  readonly overexposedRatio: number;
+  readonly clippedChannelPixels: number;
+  readonly clippedChannelRatio: number;
+  readonly averageLuminance: number;
+  readonly minLuminance: number;
+  readonly maxLuminance: number;
+  readonly averageAlpha: number;
+  readonly averageRgb: readonly [number, number, number];
+  readonly thresholds: {
+    readonly nonBlankLuminance: number;
+    readonly underexposedLuminance: number;
+    readonly overexposedLuminance: number;
+    readonly clippedChannel: number;
+  };
+}
+
+export interface RendererFrameCaptureDiagnosticsSummary {
+  readonly backend: RenderDevice["kind"];
+  readonly renderer: string;
+  readonly vendor: string;
+  readonly capabilities: readonly string[];
+  readonly limitations: readonly string[];
+  readonly drawCalls: number;
+  readonly resources: {
+    readonly buffers: number;
+    readonly shaders: number;
+    readonly renderTargets?: number;
+    readonly textures?: number;
+  };
+  readonly memoryBytes?: {
+    readonly buffers?: number;
+    readonly textures?: number;
+    readonly approximateGpu?: number;
+  };
+  readonly scene?: {
+    readonly submittedObjects?: number;
+    readonly visibleObjects?: number;
+    readonly culledObjects?: number;
+    readonly frustumTestedObjects?: number;
+  };
+  readonly postprocess?: {
+    readonly passes?: number;
+    readonly passNames?: readonly string[];
+    readonly targetFormat?: "rgba8" | "rgba16f" | "rgba32f";
+    readonly renderTargets?: number;
+    readonly textures?: number;
+    readonly targetWidth?: number;
+    readonly targetHeight?: number;
+  };
+  readonly contextLost: boolean;
+  readonly lastError: string | null;
+}
+
+export interface RendererFrameCaptureMetadata {
+  readonly capturedAt: string;
+  readonly renderSize: RendererFrameCaptureRenderSize;
+  readonly pixelHash: string;
+  readonly pixelDigest: RendererFrameCapturePixelDigest;
+  readonly pixelStats: RendererFrameCapturePixelStats;
+  readonly diagnosticsSummary: RendererFrameCaptureDiagnosticsSummary;
 }
 
 export interface RenderSource {
@@ -621,13 +727,22 @@ export class Renderer {
     return this.render({ ...options, renderItems: items }, camera);
   }
 
-  captureFrame(source?: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RendererFrameCapture {
+  captureFrame(source?: RenderSource | Iterable<RenderItem> | Scene, camera?: CameraLike): RendererFrameCaptureWithMetadata {
     const diagnostics = source ? this.render(source, camera) : this.device.getDiagnostics();
+    const pixels = this.device.readPixels(0, 0, this.width, this.height);
+    const metadata = createRendererFrameCaptureMetadata(this.device, this.width, this.height, pixels, diagnostics);
     return {
       width: this.width,
       height: this.height,
-      pixels: this.device.readPixels(0, 0, this.width, this.height),
-      diagnostics
+      pixels,
+      diagnostics,
+      capturedAt: metadata.capturedAt,
+      renderSize: metadata.renderSize,
+      pixelHash: metadata.pixelHash,
+      pixelDigest: metadata.pixelDigest,
+      pixelStats: metadata.pixelStats,
+      diagnosticsSummary: metadata.diagnosticsSummary,
+      metadata
     };
   }
 
@@ -1922,6 +2037,279 @@ function createPostprocessDiagnostics(
       rendererDepthAvailable: context.rendererDepthAvailable
     })
   };
+}
+
+const CAPTURE_NON_BLANK_LUMINANCE_THRESHOLD = 1 / 255;
+const CAPTURE_UNDEREXPOSED_LUMINANCE_THRESHOLD = 5 / 255;
+const CAPTURE_OVEREXPOSED_LUMINANCE_THRESHOLD = 250 / 255;
+const CAPTURE_CLIPPED_CHANNEL_THRESHOLD = 254;
+
+function createRendererFrameCaptureMetadata(
+  device: RenderDevice,
+  width: number,
+  height: number,
+  pixels: Uint8Array,
+  diagnostics: RenderDeviceDiagnostics
+): RendererFrameCaptureMetadata {
+  const pixelDigest = createRendererFramePixelDigest(pixels);
+  return {
+    capturedAt: new Date().toISOString(),
+    renderSize: {
+      width,
+      height,
+      pixelCount: width * height,
+      byteLength: pixels.byteLength,
+      aspectRatio: roundCaptureMetric(height > 0 ? width / height : 0)
+    },
+    pixelHash: pixelDigest.value,
+    pixelDigest,
+    pixelStats: createRendererFramePixelStats(pixels, width, height),
+    diagnosticsSummary: createRendererFrameDiagnosticsSummary(device, diagnostics)
+  };
+}
+
+function createRendererFramePixelDigest(pixels: Uint8Array): RendererFrameCapturePixelDigest {
+  return {
+    algorithm: "sha256",
+    encoding: "hex",
+    source: "rgba8",
+    value: sha256Hex(pixels),
+    byteLength: pixels.byteLength
+  };
+}
+
+function createRendererFramePixelStats(pixels: Uint8Array, width: number, height: number): RendererFrameCapturePixelStats {
+  const totalPixels = Math.max(0, width * height);
+  const divisor = totalPixels > 0 ? totalPixels : 1;
+  let opaquePixels = 0;
+  let transparentPixels = 0;
+  let nonBlankPixels = 0;
+  let underexposedPixels = 0;
+  let overexposedPixels = 0;
+  let clippedChannelPixels = 0;
+  let luminanceSum = 0;
+  let alphaSum = 0;
+  let redSum = 0;
+  let greenSum = 0;
+  let blueSum = 0;
+  let minLuminance = totalPixels > 0 ? Number.POSITIVE_INFINITY : 0;
+  let maxLuminance = 0;
+
+  for (let pixel = 0; pixel < totalPixels; pixel += 1) {
+    const offset = pixel * 4;
+    const red = pixels[offset] ?? 0;
+    const green = pixels[offset + 1] ?? 0;
+    const blue = pixels[offset + 2] ?? 0;
+    const alpha = pixels[offset + 3] ?? 0;
+    const luminance = ((0.2126 * red) + (0.7152 * green) + (0.0722 * blue)) / 255;
+
+    redSum += red;
+    greenSum += green;
+    blueSum += blue;
+    alphaSum += alpha;
+    luminanceSum += luminance;
+    minLuminance = Math.min(minLuminance, luminance);
+    maxLuminance = Math.max(maxLuminance, luminance);
+
+    if (alpha === 255) opaquePixels += 1;
+    if (alpha === 0) transparentPixels += 1;
+    if (alpha > 0 && luminance > CAPTURE_NON_BLANK_LUMINANCE_THRESHOLD) nonBlankPixels += 1;
+    if (alpha > 0 && luminance <= CAPTURE_UNDEREXPOSED_LUMINANCE_THRESHOLD) underexposedPixels += 1;
+    if (alpha > 0 && luminance >= CAPTURE_OVEREXPOSED_LUMINANCE_THRESHOLD) overexposedPixels += 1;
+    if (
+      alpha > 0 &&
+      (red >= CAPTURE_CLIPPED_CHANNEL_THRESHOLD ||
+        green >= CAPTURE_CLIPPED_CHANNEL_THRESHOLD ||
+        blue >= CAPTURE_CLIPPED_CHANNEL_THRESHOLD)
+    ) {
+      clippedChannelPixels += 1;
+    }
+  }
+
+  return {
+    totalPixels,
+    opaquePixels,
+    opaqueRatio: captureRatio(opaquePixels, totalPixels),
+    transparentPixels,
+    transparentRatio: captureRatio(transparentPixels, totalPixels),
+    nonBlankPixels,
+    nonBlankRatio: captureRatio(nonBlankPixels, totalPixels),
+    underexposedPixels,
+    underexposedRatio: captureRatio(underexposedPixels, totalPixels),
+    overexposedPixels,
+    overexposedRatio: captureRatio(overexposedPixels, totalPixels),
+    clippedChannelPixels,
+    clippedChannelRatio: captureRatio(clippedChannelPixels, totalPixels),
+    averageLuminance: roundCaptureMetric(luminanceSum / divisor),
+    minLuminance: roundCaptureMetric(minLuminance),
+    maxLuminance: roundCaptureMetric(maxLuminance),
+    averageAlpha: roundCaptureMetric((alphaSum / divisor) / 255),
+    averageRgb: [
+      roundCaptureMetric((redSum / divisor) / 255),
+      roundCaptureMetric((greenSum / divisor) / 255),
+      roundCaptureMetric((blueSum / divisor) / 255)
+    ],
+    thresholds: {
+      nonBlankLuminance: roundCaptureMetric(CAPTURE_NON_BLANK_LUMINANCE_THRESHOLD),
+      underexposedLuminance: roundCaptureMetric(CAPTURE_UNDEREXPOSED_LUMINANCE_THRESHOLD),
+      overexposedLuminance: roundCaptureMetric(CAPTURE_OVEREXPOSED_LUMINANCE_THRESHOLD),
+      clippedChannel: roundCaptureMetric(CAPTURE_CLIPPED_CHANNEL_THRESHOLD / 255)
+    }
+  };
+}
+
+function createRendererFrameDiagnosticsSummary(device: RenderDevice, diagnostics: RenderDeviceDiagnostics): RendererFrameCaptureDiagnosticsSummary {
+  const resources = {
+    buffers: diagnostics.buffers,
+    shaders: diagnostics.shaders,
+    ...(diagnostics.renderTargets !== undefined ? { renderTargets: diagnostics.renderTargets } : {}),
+    ...(diagnostics.textures !== undefined ? { textures: diagnostics.textures } : {})
+  };
+  const memoryBytes = {
+    ...(diagnostics.bufferBytes !== undefined ? { buffers: diagnostics.bufferBytes } : {}),
+    ...(diagnostics.textureBytes !== undefined ? { textures: diagnostics.textureBytes } : {}),
+    ...(diagnostics.approximateGpuMemoryBytes !== undefined ? { approximateGpu: diagnostics.approximateGpuMemoryBytes } : {})
+  };
+  const scene = {
+    ...(diagnostics.submittedObjects !== undefined ? { submittedObjects: diagnostics.submittedObjects } : {}),
+    ...(diagnostics.visibleObjects !== undefined ? { visibleObjects: diagnostics.visibleObjects } : {}),
+    ...(diagnostics.culledObjects !== undefined ? { culledObjects: diagnostics.culledObjects } : {}),
+    ...(diagnostics.frustumTestedObjects !== undefined ? { frustumTestedObjects: diagnostics.frustumTestedObjects } : {})
+  };
+  const postprocess = {
+    ...(diagnostics.postprocessPasses !== undefined ? { passes: diagnostics.postprocessPasses } : {}),
+    ...(diagnostics.postprocessPassNames !== undefined ? { passNames: diagnostics.postprocessPassNames } : {}),
+    ...(diagnostics.postprocessTargetFormat !== undefined ? { targetFormat: diagnostics.postprocessTargetFormat } : {}),
+    ...(diagnostics.postprocessRenderTargets !== undefined ? { renderTargets: diagnostics.postprocessRenderTargets } : {}),
+    ...(diagnostics.postprocessTextures !== undefined ? { textures: diagnostics.postprocessTextures } : {}),
+    ...(diagnostics.postprocessTargetWidth !== undefined ? { targetWidth: diagnostics.postprocessTargetWidth } : {}),
+    ...(diagnostics.postprocessTargetHeight !== undefined ? { targetHeight: diagnostics.postprocessTargetHeight } : {})
+  };
+
+  return {
+    backend: device.kind,
+    renderer: device.info.renderer,
+    vendor: device.info.vendor,
+    capabilities: device.info.capabilities ?? [],
+    limitations: device.info.limitations ?? [],
+    drawCalls: diagnostics.drawCalls,
+    resources,
+    ...(Object.keys(memoryBytes).length > 0 ? { memoryBytes } : {}),
+    ...(Object.keys(scene).length > 0 ? { scene } : {}),
+    ...(Object.keys(postprocess).length > 0 ? { postprocess } : {}),
+    contextLost: diagnostics.contextLost,
+    lastError: diagnostics.lastError
+  };
+}
+
+function captureRatio(count: number, total: number): number {
+  return roundCaptureMetric(total > 0 ? count / total : 0);
+}
+
+function roundCaptureMetric(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.round(value * 1000000) / 1000000;
+}
+
+const SHA256_INITIAL_HASH = [
+  0x6a09e667,
+  0xbb67ae85,
+  0x3c6ef372,
+  0xa54ff53a,
+  0x510e527f,
+  0x9b05688c,
+  0x1f83d9ab,
+  0x5be0cd19
+] as const;
+
+const SHA256_ROUND_CONSTANTS = [
+  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+] as const;
+
+function sha256Hex(bytes: Uint8Array): string {
+  const paddedLength = Math.ceil((bytes.length + 9) / 64) * 64;
+  const bitLengthHigh = Math.floor(bytes.length / 0x20000000);
+  const bitLengthLow = (bytes.length % 0x20000000) * 8;
+  const hash: number[] = [...SHA256_INITIAL_HASH];
+  const words = new Uint32Array(64);
+
+  for (let block = 0; block < paddedLength; block += 64) {
+    for (let index = 0; index < 16; index += 1) {
+      const offset = block + index * 4;
+      words[index] = (
+        (sha256PaddedByte(bytes, offset, paddedLength, bitLengthHigh, bitLengthLow) << 24) |
+        (sha256PaddedByte(bytes, offset + 1, paddedLength, bitLengthHigh, bitLengthLow) << 16) |
+        (sha256PaddedByte(bytes, offset + 2, paddedLength, bitLengthHigh, bitLengthLow) << 8) |
+        sha256PaddedByte(bytes, offset + 3, paddedLength, bitLengthHigh, bitLengthLow)
+      ) >>> 0;
+    }
+
+    for (let index = 16; index < 64; index += 1) {
+      const first = words[index - 15]!;
+      const second = words[index - 2]!;
+      const sigma0 = rightRotate32(first, 7) ^ rightRotate32(first, 18) ^ (first >>> 3);
+      const sigma1 = rightRotate32(second, 17) ^ rightRotate32(second, 19) ^ (second >>> 10);
+      words[index] = (words[index - 16]! + sigma0 + words[index - 7]! + sigma1) >>> 0;
+    }
+
+    let a = hash[0]!;
+    let b = hash[1]!;
+    let c = hash[2]!;
+    let d = hash[3]!;
+    let e = hash[4]!;
+    let f = hash[5]!;
+    let g = hash[6]!;
+    let h = hash[7]!;
+
+    for (let index = 0; index < 64; index += 1) {
+      const sigma1 = rightRotate32(e, 6) ^ rightRotate32(e, 11) ^ rightRotate32(e, 25);
+      const choice = (e & f) ^ (~e & g);
+      const temp1 = (h + sigma1 + choice + SHA256_ROUND_CONSTANTS[index]! + words[index]!) >>> 0;
+      const sigma0 = rightRotate32(a, 2) ^ rightRotate32(a, 13) ^ rightRotate32(a, 22);
+      const majority = (a & b) ^ (a & c) ^ (b & c);
+      const temp2 = (sigma0 + majority) >>> 0;
+
+      h = g;
+      g = f;
+      f = e;
+      e = (d + temp1) >>> 0;
+      d = c;
+      c = b;
+      b = a;
+      a = (temp1 + temp2) >>> 0;
+    }
+
+    hash[0] = (hash[0]! + a) >>> 0;
+    hash[1] = (hash[1]! + b) >>> 0;
+    hash[2] = (hash[2]! + c) >>> 0;
+    hash[3] = (hash[3]! + d) >>> 0;
+    hash[4] = (hash[4]! + e) >>> 0;
+    hash[5] = (hash[5]! + f) >>> 0;
+    hash[6] = (hash[6]! + g) >>> 0;
+    hash[7] = (hash[7]! + h) >>> 0;
+  }
+
+  return hash.map((word) => word.toString(16).padStart(8, "0")).join("");
+}
+
+function sha256PaddedByte(bytes: Uint8Array, index: number, paddedLength: number, bitLengthHigh: number, bitLengthLow: number): number {
+  if (index < bytes.length) return bytes[index]!;
+  if (index === bytes.length) return 0x80;
+  const lengthOffset = index - (paddedLength - 8);
+  if (lengthOffset < 0) return 0;
+  if (lengthOffset < 4) return (bitLengthHigh >>> ((3 - lengthOffset) * 8)) & 0xff;
+  return (bitLengthLow >>> ((7 - lengthOffset) * 8)) & 0xff;
+}
+
+function rightRotate32(value: number, bits: number): number {
+  return ((value >>> bits) | (value << (32 - bits))) >>> 0;
 }
 
 function withRendererFrameDiagnostics(

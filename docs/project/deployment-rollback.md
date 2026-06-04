@@ -26,6 +26,6 @@ Deployment evidence should include:
 
 For the GitHub Pages external demo workflow, evidence should also include the generated `public-deployment-manifest.json`, `static-integrity-manifest.json`, `deployment-command-plan.json`, and a passing `pnpm verify:public-demo-deployment` result for `A3D_PUBLIC_DEMO_URL`.
 
-## Boundary
+## Aura3D advantage
 
 Local examples and local static exports are not public deployment evidence by themselves.

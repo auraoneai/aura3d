@@ -1,15 +1,19 @@
-# Migration From Three.js
+# Migration From low-level renderer code
 
 Version: 1.0.0
 
 ## Current Migration Surface
 
+Migration support is optional and lives outside the default `@aura3d/engine`
+runtime install path. Use the separate compatibility package when a migration
+workflow needs Three.js-shaped APIs:
+
+```sh
+npm install @aura3d/three-compat three
+```
+
 Migration support lives primarily in:
 
-- `packages/three-compat/src/index.ts`
-- `packages/three-compat/src/migration/`
-- `packages/create-aura3d/templates/three-compat-custom-threejs-migration/`
-- `packages/create-aura3d/templates/three-compat-asset-inspector/`
 - `tests/unit/three-compat/`
 - `tests/browser/three-compat-*.spec.ts`
 
@@ -21,18 +25,22 @@ A3D can help migrate selected workflows:
 - controls and loader-facing adapters;
 - material/geometry compatibility tests;
 - migration lab routes;
-- current Three.js parity inventory/report generators.
+- current low-level renderer code parity inventory/report generators.
 
 ## Not A Full Drop-In Replacement
 
-The compatibility package does not make A3D a full runtime drop-in for every Three.js API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
+The compatibility package does not make A3D a full runtime drop-in for every low-level renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
+
+`@aura3d/engine@1.0.3` removes Three.js from the root engine runtime and npm
+dependency graph. Three.js parity, migration, and compatibility tooling remain
+available outside the default engine install path. Public Aura3D agent APIs,
+typed assets, templates, diagnostics, and screenshots continue to use
+Aura3D-owned runtime code.
 
 ## Useful Commands
 
 ```sh
 pnpm three-compat:migration
-pnpm threejs-parity:migration-audit
-pnpm threejs-parity:inventory
 ```
 
-Migration wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.
+Migration wording and public-release notes are governed by `docs/project/product-studio-claim-registry.md`.

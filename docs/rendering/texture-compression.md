@@ -22,4 +22,3 @@ Texture compression support is split between asset decoding/transcoding and rend
 
 ## Boundaries
 
-Compressed texture support depends on browser/device extensions, transcoder availability, texture format, and fallback policy. Do not claim universal KTX2/Basis support without a passing device-specific report.

@@ -26,9 +26,7 @@ Useful focused checks:
 
 ```sh
 pnpm exec vitest run tests/unit/rendering/resource-lifetime.test.ts tests/unit/rendering/render-state-leaks.test.ts
-pnpm superiority:resource-lifecycle
 ```
 
 ## Boundaries
 
-Lifecycle reports prove the resources named by those reports. They do not prove browser garbage collection behavior, every third-party integration, or every WebGPU driver path.

@@ -24,4 +24,4 @@ Material support is implemented across the rendering, assets, and materials pack
 
 ## Boundaries
 
-The renderer does not claim exact shader equivalence for every Three.js material or every glTF extension. Claims must name the material feature, route/test evidence, and current limitations.
+The renderer does not claim exact shader equivalence for every low-level renderer code material or every glTF extension. Claims must name the material feature, route/test evidence, and current roadmap items.
