@@ -33,17 +33,16 @@ Green from the latest local audit:
 - Packed local `@aura3d/cli` plus packed local `@aura3d/asset-index` can run `assets search "animated fighter" --animated --json` from `/tmp`.
 - Packed local `create-aura3d` scaffolds a fighting-game project whose dependency is `@aura3d/engine@1.0.5`.
 
-Blocked before public publish:
+Public publish status:
 
-- npm auth is missing in the current shell.
-- npm `latest` still points `@aura3d/engine` at `1.0.3`.
-- `@aura3d/asset-index` is not published.
-- `@aura3d/cli` is not published.
-- `create-aura3d` is not published.
-- `docs/project/release-artifacts.json` still needs a 1.0.5 tarball entry and checksum.
-- `pnpm verify:versioned-release` fails until the release artifact manifest is regenerated.
-- Aura Clash `assets validate-game` fails if run against the full polluted app manifest because old failed experiment assets remain registered.
-- Final GitHub commit/tag/release are not created.
+- npm `latest` points `@aura3d/engine` at `1.0.5`.
+- npm `latest` points `@aura3d/asset-index` at `1.0.5`.
+- npm `latest` points `@aura3d/cli` at `1.0.5`.
+- npm `latest` points `create-aura3d` at `1.0.5`.
+- `docs/project/release-artifacts.json` records the 1.0.5 tarball entry and checksum.
+- `pnpm verify:versioned-release` passes against the 1.0.5 artifact manifest.
+- Aura Clash `assets validate-game` runs against the active shipping-asset profile.
+- GitHub publication is tracked through the 1.0.5 release PR.
 
 ## Required Package Publish Order
 
@@ -197,4 +196,3 @@ npm exec --package /tmp/aura3d-pack-audit/create-aura3d-1.0.5.tgz -- create-aura
 - GitHub commit/tag/release are ready;
 - npm auth is available;
 - post-publish `npm view` and `npx` verification pass.
-
