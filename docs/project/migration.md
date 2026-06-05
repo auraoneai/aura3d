@@ -1,6 +1,6 @@
 # Migration From low-level renderer code
 
-Version: 1.0.0
+Version: 1.0.5
 
 ## Current Migration Surface
 
@@ -31,11 +31,11 @@ A3D can help migrate selected workflows:
 
 The compatibility package does not make A3D a full runtime drop-in for every low-level renderer code API, example, addon, shader chunk, loader, or renderer path. Migration docs should name the specific API or workflow that is supported and point to code/tests.
 
-`@aura3d/engine@1.0.3` removes Three.js from the root engine runtime and npm
+`@aura3d/engine@1.0.5` keeps Three.js out of the root engine runtime and npm
 dependency graph. Three.js parity, migration, and compatibility tooling remain
 available outside the default engine install path. Public Aura3D agent APIs,
-typed assets, templates, diagnostics, and screenshots continue to use
-Aura3D-owned runtime code.
+typed assets, templates, diagnostics, screenshots, runtime helpers, and catalog
+workflows continue to use Aura3D-owned runtime code.
 
 ## Useful Commands
 

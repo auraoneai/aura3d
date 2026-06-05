@@ -1,6 +1,6 @@
 # Aura3D Roadmap focus
 
-Version: 1.0.0
+Version: 1.0.5
 
 ## Current Report Limits
 

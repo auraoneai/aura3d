@@ -1,6 +1,6 @@
 # Renderer Postprocess
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Postprocess support exists in the renderer package and current app routes.
 

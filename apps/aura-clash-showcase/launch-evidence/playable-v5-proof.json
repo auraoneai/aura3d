@@ -1,0 +1,119 @@
+{
+  "ok": true,
+  "route": "http://127.0.0.1:5173/playable/",
+  "capturedAt": "2026-06-05T10:37:36.354Z",
+  "screenshots": {
+    "firstFrame": "launch-evidence/first-frame.png",
+    "combatFrame": "launch-evidence/combat-frame.png"
+  },
+  "proof": {
+    "route": "/playable/",
+    "version": "v5-hard-reset",
+    "noLegacyFighterGlbs": true,
+    "playable": true,
+    "totalHits": 1,
+    "lastHitFrame": 25,
+    "roundTime": 98,
+    "callout": "FIGHT",
+    "player": {
+      "name": "Flux Vanta",
+      "health": 100,
+      "meter": 27,
+      "x": -0.531,
+      "y": 0,
+      "grounded": true,
+      "action": "special",
+      "combo": 1,
+      "attacking": "special"
+    },
+    "rival": {
+      "name": "Nyx Circuit",
+      "health": 80,
+      "meter": 5,
+      "x": 0.762,
+      "y": 0,
+      "grounded": true,
+      "action": "idle",
+      "combo": 0,
+      "attacking": null
+    },
+    "bounds": {
+      "minX": -3.1,
+      "maxX": 3.1
+    },
+    "typedAssets": {
+      "catalogProof": "/aura-assets/v5CatalogRobot.f084bbcd.glb",
+      "catalogTitle": "Cyberpunk Robot",
+      "license": "CC-BY-4.0",
+      "attribution": "Josh_NC"
+    },
+    "runtime": {
+      "aura3dAppFrame": 46,
+      "aura3dFrameLoop": true,
+      "aura3dRuntimeNodes": true,
+      "input": true,
+      "deterministicPhysics": true,
+      "hitWindows": true,
+      "ai": true,
+      "effects": true,
+      "hud": true,
+      "accessibility": true
+    },
+    "accessibility": {
+      "reducedMotion": true,
+      "highContrast": true,
+      "reducedFlash": true
+    }
+  },
+  "auraEvidencePresent": true,
+  "dom": {
+    "playerState": "SPECIAL - 100 HP",
+    "rivalState": "IDLE - 80 HP",
+    "callout": "FIGHT",
+    "toast": "Flux Vanta lands special for 20 damage.",
+    "motionPressed": "true",
+    "contrastPressed": "true",
+    "canvas": {
+      "width": 1398,
+      "height": 1050,
+      "clientWidth": 1398,
+      "clientHeight": 1050
+    }
+  },
+  "network": {
+    "checkedResponseCount": 124,
+    "glbResponses": [
+      {
+        "url": "http://127.0.0.1:5173/aura-assets/v5CatalogRobot.f084bbcd.glb",
+        "status": 200
+      }
+    ],
+    "cssResponses": [
+      {
+        "url": "http://127.0.0.1:5173/src/game-v5/playable.css?t=1780654917325",
+        "status": 200
+      }
+    ],
+    "jsResponseCount": 121,
+    "badResponses": [],
+    "failedRequests": []
+  },
+  "console": [
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x124001d4400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x124001d4400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x124001d4400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x124001d4400]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    }
+  ]
+}

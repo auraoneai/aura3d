@@ -27,8 +27,338 @@ import type {
   GLTFSceneAnimationRuntime,
   GLTFSceneAnimationRuntimeOptions
 } from "@aura3d/assets/browser";
+import type { AnimationPose } from "@aura3d/animation";
+import type {
+  GameHudBindingKind,
+  GameRuntimeSubsystemOwnership
+} from "./GameRuntime";
+import { createFrameLoop } from "./FrameLoop";
+import {
+  createCombatWorld,
+  createGameCameraDirector,
+  createGameEffects,
+  applyGameCombatEventsToRuntime,
+  createGameAccessibilityFocus,
+  createGameAccessibilityLabel,
+  createGameAccessibilityRuntimeSettings,
+  createGameHighContrastSource,
+  createGameHudBindings,
+  createGameHudComboBinding,
+  createGameHudDebugToggleBinding,
+  createGameHudHealthBinding,
+  createGameHudMeterBinding,
+  createGameHudRoundBinding,
+  createGameHudSnapshot,
+  createGameHudTimerBinding,
+  createGameBoxCollider,
+  createGameCapsuleCollider,
+  createGameColliderDebugGeometry,
+  createGameCombatDebugGeometry,
+  createGameDebugOverlayData,
+  createGameDebugSceneNodes,
+  createGameHitboxDebugGeometry,
+  createGameFighting2DRules,
+  createGameInput,
+  createGameInputReplay,
+  createGameInputReplayDriver,
+  createGameJumpAssist,
+  createGameKinematicBody,
+  createGamePauseControlsSource,
+  createGameRectCollider,
+  createGameReducedFlashSource,
+  createGameReducedMotionSource,
+  createGameSphereCollider,
+  createGameTouchControlLayout,
+  gameColliderAabb,
+  gameColliders,
+  gameEffectPresets,
+  gameGuardboxes,
+  gameHitboxes,
+  gameHurtboxes,
+  gameInputReplayEventsAt,
+  gamePushboxes,
+  gameTriggerVolumes,
+  type GameInputOptions
+} from "./GameRuntime";
+import {
+  collectGameRuntimeEvidence as collectGameRuntimeEvidenceV105,
+  type GameRuntimeEvidence,
+  type GameRuntimeEvidenceOptions,
+  type GameRuntimeSourceEvidence
+} from "./GameEvidence";
+import {
+  calculateRuntimeNodeBounds,
+  type AuraRuntimeNodeAnimationPoseBindingMetadata,
+  type AuraRuntimeNodeAnimationBindingMetadata,
+  type AuraRuntimeNodeBounds,
+  type AuraRuntimeNodeEffectAttachment,
+  type RuntimeNodeMorphTargetWeights
+} from "./RuntimeNodeHandle";
+import { createRuntimeNodeSpec } from "./GameSceneBridge";
+import {
+  createFightingGameKit,
+  fighting as fightingGameKit
+} from "./game-kits/fighting";
+import {
+  createPromptAnimationEpisodePlan,
+  createPromptAnimationStoryBible,
+  definePromptAnimationStoryboard
+} from "./PromptAnimationContract";
+import {
+  applyShotPlaybackFrame,
+  createShotPlaybackPlan,
+  createShotTimeline,
+  installShotPlayback,
+  sampleShotPlaybackPlan
+} from "./ShotTimeline";
+import {
+  captionCueAtTime,
+  createCaptionTimingProof,
+  deriveCaptionTrackFromDialogue
+} from "./DialoguePerformance";
+import {
+  createAuraVoiceVisemeTrack,
+  createGlbBlendshapeVisemeCue,
+  createPrimitiveMouthVisemeCues,
+  sampleVisemeTrack
+} from "./VisemeController";
+import {
+  createAuraVoiceBridgePackage,
+  createAuraVoiceDubRerenderProof,
+  createAuraVoiceRerenderPlan,
+  sampleAuraVoiceBridgeAtTime
+} from "./AuraVoiceBridge";
+import { createCartoonDirectorPlan } from "./CartoonDirector";
+import { createCartoonPerformance } from "./CartoonPerformance";
+import {
+  createCartoonRenderOutputPackageMetadata,
+  createCartoonRenderQueue
+} from "./CartoonRenderQueue";
+import { collectPromptAnimationEvidence } from "./PromptAnimationEvidence";
 
 export { Engine } from "@aura3d/core";
+export {
+  asAuraAppHandle,
+  isAuraAppHandle,
+  type AuraAppFrame,
+  type AuraAppFrameCallback,
+  type AuraAppHandle,
+  type AuraAppNodeRegistryLike,
+  type AuraAppRuntimeState,
+  type AuraAppScreenshot
+} from "./AuraAppHandle";
+export {
+  FrameLoop,
+  createFrameLoop,
+  type FrameLoopCallback,
+  type FrameLoopFrame,
+  type FrameLoopOptions,
+  type FrameLoopSnapshot,
+  type FrameLoopSource
+} from "./FrameLoop";
+export {
+  createCombatWorld,
+  createGameCameraDirector,
+  createGameEffects,
+  applyGameCombatEventsToRuntime,
+  createGameAccessibilityFocus,
+  createGameAccessibilityLabel,
+  createGameAccessibilityRuntimeSettings,
+  createGameHighContrastSource,
+  createGameHudBindings,
+  createGameHudComboBinding,
+  createGameHudDebugToggleBinding,
+  createGameHudHealthBinding,
+  createGameHudMeterBinding,
+  createGameHudRoundBinding,
+  createGameHudSnapshot,
+  createGameHudTimerBinding,
+  createGameBoxCollider,
+  createGameCapsuleCollider,
+  createGameColliderDebugGeometry,
+  createGameCombatDebugGeometry,
+  createGameDebugOverlayData,
+  createGameDebugSceneNodes,
+  createGameHitboxDebugGeometry,
+  createGameInput,
+  createGameInputReplay,
+  createGameInputReplayDriver,
+  createGameJumpAssist,
+  createGameKinematicBody,
+  createGamePauseControlsSource,
+  createGameRectCollider,
+  createGameReducedFlashSource,
+  createGameReducedMotionSource,
+  createGameSphereCollider,
+  createGameTouchControlLayout,
+  gameColliderAabb,
+  gameColliders,
+  gameInputReplayEventsAt,
+  createGameLoopPlan,
+  type GameAccessibilityFocusOptions,
+  type GameAccessibilityLabelOptions,
+  type GameAccessibilityPauseControlsOptions,
+  type GameAccessibilityPreferenceOptions,
+  type GameAccessibilityRuntimeSettings,
+  type GameAccessibilityRuntimeSettingsOptions,
+  type GameAccessibilitySource,
+  type GameAccessibilitySourceKind,
+  type GameAabb,
+  type GameBounds3,
+  type GameCameraDirector,
+  type GameCameraDirectorOptions,
+  type GameCameraSnapshot,
+  type GameCameraTarget,
+  type GameCollisionBox,
+  type GameCombatActorOptions,
+  type GameCombatActorSnapshot,
+  type GameCombatActiveAttackSnapshot,
+  type GameCombatEvent,
+  type GameCombatEventRuntimeBridgeOptions,
+  type GameCombatEventRuntimeBridgeResult,
+  type GameCombatEventType,
+  type GameCombatMove,
+  type GameCombatWorld,
+  type GameCombatWorldSnapshot,
+  type GameBoxCollider,
+  type GameBoxColliderOptions,
+  type GameCapsuleCollider,
+  type GameCapsuleColliderOptions,
+  type GameCollider,
+  type GameColliderAxis,
+  type GameColliderBase,
+  type GameColliderDimension,
+  type GameColliderFactoryOptions,
+  type GameColliderKind,
+  type GameColliderPlane,
+  type GameDebugGeometryNode,
+  type GameDebugGeometryOptions,
+  type GameDebugGeometryPrimitive,
+  type GameDebugOverlayData,
+  type GameDebugOverlayMetric,
+  type GameDebugOverlayOptions,
+  type GameDebugOverlaySection,
+  type GameDebugSceneNode,
+  type GameDebugSceneNodeOptions,
+  type GameDebugScenePrimitive,
+  type GameEffectInstance,
+  type GameEffectAttachment,
+  type GameEffectKind,
+  type GameEffectOptions,
+  type GameEffectsController,
+  type GameEffectsSnapshot,
+  type GameHudActorBindingOptions,
+  type GameHudBinding,
+  type GameHudBindingKind,
+  type GameHudComboBindingOptions,
+  type GameHudDebugToggleBindingOptions,
+  type GameHudResolvedValue,
+  type GameHudRoundBindingOptions,
+  type GameHudSourceKind,
+  type GameHudSnapshot,
+  type GameHudSnapshotItem,
+  type GameHudSnapshotOptions,
+  type GameHudTimerBindingOptions,
+  type GameHudValueFormat,
+  type GameInputActionState,
+  type GameInputAxisSettings,
+  type GameInputAxisBinding,
+  type GameInputController,
+  type GameInputOptions,
+  type GameInputReplayDriver,
+  type GameInputReplayDriverSnapshot,
+  type GameInputReplayEvent,
+  type GameInputReplayOptions,
+  type GameInputReplayPlan,
+  type GameInputSnapshot,
+  type GameJumpAssistController,
+  type GameJumpAssistOptions,
+  type GameJumpAssistSnapshot,
+  type GameJumpAssistUpdate,
+  type GameKinematicBody,
+  type GameKinematicBodyOptions,
+  type GameKinematicBodySnapshot,
+  type GameLoopPlan,
+  type GamePointerSnapshot,
+  type GameRectCollider,
+  type GameRectColliderOptions,
+  type GameRuntimeSubsystemId,
+  type GameRuntimeSubsystemOwnership,
+  type GameSphereCollider,
+  type GameSphereColliderOptions,
+  type GameSubsystemOwner,
+  type GameTouchControlAnchor,
+  type GameTouchControlKind,
+  type GameTouchControlLayout,
+  type GameTouchControlLayoutOptions,
+  type GameTouchControlRegion,
+  type GameTouchControlRequest,
+  type GameVec3,
+  type GamepadSnapshot
+} from "./GameRuntime";
+export {
+  collectGameSceneRuntimeNodes,
+  createGameSceneBridge,
+  createRuntimeNodeSpec,
+  type GameSceneBridge,
+  type GameSceneBridgeApp,
+  type GameSceneBridgeBodyLike,
+  type GameSceneBridgeEvidence,
+  type GameSceneBridgeNodeHandle,
+  type GameSceneRuntimeNode
+} from "./GameSceneBridge";
+export {
+  calculateRuntimeNodeBounds,
+  createRuntimeNodeEffectAttachment,
+  runtimeNodeHasTag,
+  type AuraRuntimeNodeAnimationPoseBindingMetadata,
+  type AuraRuntimeNodeAnimationBindingMetadata,
+  type AuraRuntimeNodeBounds,
+  type AuraRuntimeNodeEffectAttachment,
+  type AuraRuntimeNodeEffectKind,
+  type RuntimeNodeAnimationSpecLike,
+  type RuntimeNodeBoundsInput,
+  type RuntimeNodeHandleLike,
+  type RuntimeNodeMorphTargetWeights,
+  type RuntimeNodeVec3
+} from "./RuntimeNodeHandle";
+export {
+  createFightingGameKit,
+  fighting,
+  fighterRuntimeNode,
+  type FightingActorState,
+  type FightingControls,
+  type FightingGameKit,
+  type FightingGameKitOptions,
+  type FightingGameSnapshot,
+  type FightingStageOptions
+} from "./game-kits/fighting";
+export { gameKits } from "./game-kits";
+export type {
+  GameRuntimeEvidence,
+  GameRuntimeEvidenceApp,
+  GameRuntimeEvidenceOptions,
+  GameRuntimeSourceEvidence
+} from "./GameEvidence";
+export * from "./GameAssetValidation.js";
+export * from "./CharacterAssembly.js";
+export * from "./AssetEvidence.js";
+export * from "./AnimationController.js";
+export {
+  gameAssetValidation,
+  quaterniusGameReadyFighterValidationContract,
+  validateQuaterniusGameReadyFighterAsset
+} from "./GameAssetValidation.js";
+export { createAnimationController } from "./AnimationController.js";
+export * from "./PromptAnimationContract.js";
+export * from "./AuraVoiceBridge.js";
+export * from "./ShotTimeline.js";
+export * from "./DialoguePerformance.js";
+export * from "./VisemeController.js";
+export * from "./PromptAnimationEvidence.js";
+export * from "./CartoonDirector.js";
+export * from "./CartoonPerformance.js";
+export * from "./CartoonRenderQueue.js";
 
 export type AuraVec3 = readonly [number, number, number];
 export type AuraColor = `#${string}` | string;
@@ -227,6 +557,7 @@ export interface AuraPrimitiveOptions extends AuraTransformSpec {
 export interface AuraAnimationSpec {
   readonly clip?: string;
   readonly loop?: boolean;
+  readonly restart?: boolean;
   readonly speed?: number;
   readonly startTime?: number;
   readonly duration?: number;
@@ -239,6 +570,12 @@ export interface AuraAnimationSpec {
   readonly chain?: "root" | "left-arm" | "right-arm" | "left-leg" | "right-leg";
   readonly rootBob?: boolean;
   readonly jointHierarchy?: boolean;
+}
+
+export interface AuraRuntimeNodeSpec {
+  readonly id: string;
+  readonly tags?: readonly string[];
+  readonly mutable?: boolean;
 }
 
 export interface AuraInteractionSpec {
@@ -424,6 +761,7 @@ export interface AuraModelNode extends AuraTransformSpec {
   readonly animation?: AuraAnimationSpec;
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
+  readonly runtime?: AuraRuntimeNodeSpec;
 }
 
 export interface AuraPrimitiveNode extends AuraTransformSpec {
@@ -437,6 +775,7 @@ export interface AuraPrimitiveNode extends AuraTransformSpec {
   readonly animation?: AuraAnimationSpec;
   readonly interaction?: AuraInteractionSpec;
   readonly physics?: AuraNodePhysicsSpec;
+  readonly runtime?: AuraRuntimeNodeSpec;
 }
 
 export interface AuraGroupNode extends AuraTransformSpec {
@@ -445,6 +784,7 @@ export interface AuraGroupNode extends AuraTransformSpec {
   readonly children: readonly AuraSceneNode[];
   readonly animation?: AuraAnimationSpec;
   readonly character?: AuraCharacterRigSpec;
+  readonly runtime?: AuraRuntimeNodeSpec;
 }
 
 export type AuraLightType = "ambient" | "directional" | "point" | "studio" | "rect" | "softbox";
@@ -518,6 +858,7 @@ export interface AuraLabelNode extends AuraTransformSpec {
   readonly occlusionAware?: boolean;
   readonly collisionAvoidance?: boolean;
   readonly animation?: AuraAnimationSpec;
+  readonly runtime?: AuraRuntimeNodeSpec;
 }
 
 export interface AuraEnvironmentNode {
@@ -747,6 +1088,10 @@ export class AuraNodeBuilder<TNode extends AuraSceneNode> {
 
   physics(spec: AuraNodePhysicsSpec): AuraNodeBuilder<TNode & { readonly physics: AuraNodePhysicsSpec }> {
     return this.with({ physics: spec });
+  }
+
+  runtime(spec: AuraRuntimeNodeSpec): AuraNodeBuilder<TNode & { readonly runtime: AuraRuntimeNodeSpec }> {
+    return this.with({ runtime: { mutable: true, ...spec } });
   }
 
   toJSON(): TNode {
@@ -4079,6 +4424,8 @@ export const games = {
   miniGolfCourse: (): readonly AuraSceneNode[] => prefabs.miniGolfCourse(),
   createMiniGolfState: (): AuraMiniGolfStateController => createMiniGolfStateController(),
   miniGolfPointerShot: miniGolfPointerShotFromDrag,
+  fighting: fightingGameKit,
+  createFightingGameKit,
   miniGolfScene: (): AuraSceneBuilder =>
     scene()
       .background("#12321d")
@@ -4087,6 +4434,505 @@ export const games = {
       .camera(camera.follow({ targetNode: "white physics golf ball", distance: 4.2 }))
       .timeline(timeline.loop({ seconds: 8 }))
 } as const;
+
+export interface AuraGameLoopPlan {
+  readonly kind: "aura-game-loop-plan";
+  readonly fixedDt: number;
+  readonly maxSubSteps: number;
+  readonly timeScale: number;
+}
+
+export interface AuraGameInputPlan {
+  readonly kind: "aura-game-input-plan";
+  readonly actions: Record<string, readonly string[]>;
+  readonly axes: Record<string, AuraGameInputAxisBinding>;
+  readonly bufferMs: number;
+}
+
+export interface AuraGameInputAxisBinding {
+  readonly negative?: string;
+  readonly positive?: string;
+}
+
+export interface AuraGameInputActionState {
+  readonly pressed: boolean;
+  readonly held: boolean;
+  readonly released: boolean;
+  readonly buffered: boolean;
+  readonly value: number;
+}
+
+export interface AuraGameInputReplayEvent {
+  readonly frame: number;
+  readonly time: number;
+  readonly type: "press" | "release";
+  readonly binding: string;
+}
+
+export interface AuraGameInputSnapshot {
+  readonly kind: "aura-game-input-snapshot";
+  readonly frame: number;
+  readonly time: number;
+  readonly activeBindings: readonly string[];
+  readonly actions: Record<string, AuraGameInputActionState>;
+}
+
+export interface AuraGameInputController extends AuraGameInputPlan {
+  update(dt?: number): AuraGameInputSnapshot;
+  snapshot(): AuraGameInputSnapshot;
+  pressed(action: string): boolean;
+  held(action: string): boolean;
+  released(action: string): boolean;
+  buffered(action: string, windowMs?: number): boolean;
+  axis(name: string, negativeAction?: string, positiveAction?: string): number;
+  press(binding: string): void;
+  release(binding: string): void;
+  setAction(action: string, held: boolean): void;
+  recorded(): readonly AuraGameInputReplayEvent[];
+  replay(events: readonly AuraGameInputReplayEvent[]): AuraGameInputSnapshot;
+  clearReplay(): void;
+  dispose(): void;
+}
+
+export interface AuraGameRuntimeEvidence {
+  readonly kind: "aura-game-runtime-evidence";
+  readonly source?: GameRuntimeSourceEvidence;
+  readonly ownership?: readonly GameRuntimeSubsystemOwnership[];
+  readonly loop: {
+    readonly frame: number;
+    readonly time: number;
+    readonly paused: boolean;
+  };
+  readonly runtimeNodes: {
+    readonly count: number;
+    readonly ids: readonly string[];
+  };
+  readonly systems: {
+    readonly mutableNodes: boolean;
+    readonly frameLoop: boolean;
+    readonly inputPlan: boolean;
+    readonly physicsPlan: boolean;
+    readonly animationPlan: boolean;
+    readonly effectsPlan: boolean;
+    readonly cameraPlan: boolean;
+    readonly collisionPlan?: boolean;
+    readonly stagePlan?: boolean;
+  };
+  readonly input?: {
+    readonly configured: boolean;
+    readonly actions: readonly string[];
+    readonly axes: readonly string[];
+    readonly activeBindings: readonly string[];
+    readonly frame: number;
+  };
+  readonly physics?: {
+    readonly kinematicBodies: number;
+    readonly groundedBodies: number;
+  };
+  readonly collision?: {
+    readonly combatWorld: boolean;
+    readonly actors: number;
+    readonly activeAttacks: number;
+    readonly events: number;
+  };
+  readonly animation?: {
+    readonly controllers: number;
+    readonly activeClips: readonly string[];
+    readonly eventCount: number;
+  };
+  readonly effects?: {
+    readonly active: number;
+    readonly spawned: number;
+    readonly pooled: number;
+  };
+  readonly camera?: {
+    readonly active: boolean;
+    readonly fov?: number;
+    readonly zoom?: number;
+    readonly shake?: number;
+    readonly reducedMotion?: boolean;
+  };
+  readonly assets?: {
+    readonly typedAssets: number;
+    readonly missingAssets: readonly string[];
+  };
+  readonly stage?: {
+    readonly id?: string;
+    readonly safeZones: boolean;
+    readonly bounds?: unknown;
+    readonly warnings: readonly string[];
+  };
+  readonly hud?: {
+    readonly bindings: number;
+    readonly kinds: readonly GameHudBindingKind[];
+    readonly targetIds: readonly string[];
+    readonly debugToggles: number;
+    readonly interactive: number;
+    readonly warnings: readonly string[];
+  };
+  readonly accessibility?: {
+    readonly sources: number;
+    readonly labels: number;
+    readonly focusScopes: number;
+    readonly reducedMotion: boolean;
+    readonly reducedFlash: boolean;
+    readonly highContrast: boolean;
+    readonly pauseControls: boolean;
+    readonly warnings: readonly string[];
+  };
+  readonly warnings?: readonly string[];
+}
+
+export function collectGameRuntimeEvidence(
+  app: Pick<AuraApp, "runtime" | "nodes">,
+  options: GameRuntimeEvidenceOptions = {}
+): AuraGameRuntimeEvidence {
+  return collectGameRuntimeEvidenceV105(app, options);
+}
+
+function createGameInputController(options: {
+  readonly actions: Record<string, readonly string[]>;
+  readonly axes?: Record<string, AuraGameInputAxisBinding>;
+  readonly bufferMs?: number;
+  readonly target?: EventTarget;
+  readonly autoListen?: boolean;
+}): AuraGameInputController {
+  const actions = options.actions;
+  const axes = options.axes ?? {};
+  const bufferMs = options.bufferMs ?? 120;
+  const activeBindings = new Set<string>();
+  const activeActionOverrides = new Set<string>();
+  const previousHeld = new Map<string, boolean>();
+  const currentHeld = new Map<string, boolean>();
+  const pressedEdges = new Set<string>();
+  const releasedEdges = new Set<string>();
+  const lastPressedAt = new Map<string, number>();
+  const replayEvents: AuraGameInputReplayEvent[] = [];
+  let frame = 0;
+  let time = 0;
+  let latestSnapshot: AuraGameInputSnapshot = {
+    kind: "aura-game-input-snapshot",
+    frame,
+    time,
+    activeBindings: [],
+    actions: {}
+  };
+
+  const resolveHeld = (action: string): boolean => {
+    if (activeActionOverrides.has(action)) return true;
+    const bindings = actions[action] ?? [];
+    return bindings.some((binding) => activeBindings.has(binding));
+  };
+  const record = (type: AuraGameInputReplayEvent["type"], binding: string) => {
+    replayEvents.push({ frame, time, type, binding });
+  };
+  const pressBinding = (binding: string, shouldRecord = true) => {
+    activeBindings.add(binding);
+    if (actions[binding]) activeActionOverrides.add(binding);
+    if (shouldRecord) record("press", binding);
+  };
+  const releaseBinding = (binding: string, shouldRecord = true) => {
+    activeBindings.delete(binding);
+    activeActionOverrides.delete(binding);
+    if (shouldRecord) record("release", binding);
+  };
+  const toSnapshot = (): AuraGameInputSnapshot => {
+    const actionStates: Record<string, AuraGameInputActionState> = {};
+    const nowMs = time * 1000;
+    for (const action of Object.keys(actions)) {
+      const held = currentHeld.get(action) ?? false;
+      actionStates[action] = {
+        pressed: pressedEdges.has(action),
+        held,
+        released: releasedEdges.has(action),
+        buffered: pressedEdges.has(action) || nowMs - (lastPressedAt.get(action) ?? Number.NEGATIVE_INFINITY) <= bufferMs,
+        value: held ? 1 : 0
+      };
+    }
+    return {
+      kind: "aura-game-input-snapshot",
+      frame,
+      time,
+      activeBindings: [...activeBindings].sort(),
+      actions: actionStates
+    };
+  };
+  const update = (dt = 1 / 60): AuraGameInputSnapshot => {
+    frame += 1;
+    time += Math.max(0, dt);
+    pressedEdges.clear();
+    releasedEdges.clear();
+    for (const action of Object.keys(actions)) {
+      const held = resolveHeld(action);
+      const wasHeld = previousHeld.get(action) ?? false;
+      currentHeld.set(action, held);
+      if (held && !wasHeld) {
+        pressedEdges.add(action);
+        lastPressedAt.set(action, time * 1000);
+      }
+      if (!held && wasHeld) releasedEdges.add(action);
+      previousHeld.set(action, held);
+    }
+    latestSnapshot = toSnapshot();
+    return latestSnapshot;
+  };
+  const target = options.target ?? (typeof window !== "undefined" ? window : undefined);
+  const onKeyDown = (event: Event) => {
+    const keyboard = event as KeyboardEvent;
+    if (keyboard.repeat) return;
+    if (keyboard.code) pressBinding(keyboard.code);
+    if (keyboard.key && keyboard.key !== keyboard.code) pressBinding(keyboard.key);
+  };
+  const onKeyUp = (event: Event) => {
+    const keyboard = event as KeyboardEvent;
+    if (keyboard.code) releaseBinding(keyboard.code);
+    if (keyboard.key && keyboard.key !== keyboard.code) releaseBinding(keyboard.key);
+  };
+  if (options.autoListen !== false && target?.addEventListener) {
+    target.addEventListener("keydown", onKeyDown);
+    target.addEventListener("keyup", onKeyUp);
+  }
+
+  return {
+    kind: "aura-game-input-plan",
+    actions,
+    axes,
+    bufferMs,
+    update,
+    snapshot() {
+      return latestSnapshot;
+    },
+    pressed(action) {
+      return pressedEdges.has(action);
+    },
+    held(action) {
+      return currentHeld.get(action) ?? resolveHeld(action);
+    },
+    released(action) {
+      return releasedEdges.has(action);
+    },
+    buffered(action, windowMs = bufferMs) {
+      return pressedEdges.has(action) || time * 1000 - (lastPressedAt.get(action) ?? Number.NEGATIVE_INFINITY) <= windowMs;
+    },
+    axis(name, negativeAction, positiveAction) {
+      const binding = axes[name];
+      const negative = negativeAction ?? binding?.negative;
+      const positive = positiveAction ?? binding?.positive;
+      if (!negative && !positive) return this.held(name) ? 1 : 0;
+      return (positive && this.held(positive) ? 1 : 0) - (negative && this.held(negative) ? 1 : 0);
+    },
+    press(binding) {
+      pressBinding(binding);
+    },
+    release(binding) {
+      releaseBinding(binding);
+    },
+    setAction(action, held) {
+      if (held) {
+        activeActionOverrides.add(action);
+        record("press", action);
+      } else {
+        activeActionOverrides.delete(action);
+        record("release", action);
+      }
+    },
+    recorded() {
+      return [...replayEvents];
+    },
+    replay(events) {
+      activeBindings.clear();
+      activeActionOverrides.clear();
+      for (const event of events) {
+        if (event.type === "press") pressBinding(event.binding, false);
+        else releaseBinding(event.binding, false);
+      }
+      return update(0);
+    },
+    clearReplay() {
+      replayEvents.length = 0;
+    },
+    dispose() {
+      if (target?.removeEventListener) {
+        target.removeEventListener("keydown", onKeyDown);
+        target.removeEventListener("keyup", onKeyUp);
+      }
+      activeBindings.clear();
+      activeActionOverrides.clear();
+      previousHeld.clear();
+      currentHeld.clear();
+      pressedEdges.clear();
+      releasedEdges.clear();
+    }
+  };
+}
+
+export interface AuraGameRules {
+  readonly kind: "aura-game-rules";
+  readonly gravity: number;
+  readonly roundSeconds: number;
+  readonly maxHealth: number;
+  readonly maxGuard: number;
+  readonly maxMeter: number;
+  readonly stageBounds: {
+    readonly minX: number;
+    readonly maxX: number;
+  };
+}
+
+export interface AuraGameRuntimeOptions {
+  readonly loop?: Partial<Omit<AuraGameLoopPlan, "kind">> | undefined;
+  readonly input?: GameInputOptions | undefined;
+  readonly rules?: Partial<Omit<AuraGameRules, "kind">> | undefined;
+  readonly effectPoolSize?: number | undefined;
+}
+
+export interface AuraGameRuntime {
+  readonly kind: "aura-game-runtime";
+  readonly loop: AuraGameLoopPlan;
+  readonly rules: AuraGameRules;
+  readonly input?: ReturnType<typeof createGameInput> | undefined;
+  readonly combat: ReturnType<typeof createCombatWorld>;
+  readonly camera: ReturnType<typeof createGameCameraDirector>;
+  readonly effects: ReturnType<typeof createGameEffects>;
+  readonly bodies: readonly ReturnType<typeof createGameKinematicBody>[];
+}
+
+export function createAuraGameRules(options: Partial<Omit<AuraGameRules, "kind">> = {}): AuraGameRules {
+  return {
+    kind: "aura-game-rules",
+    gravity: options.gravity ?? 24,
+    roundSeconds: options.roundSeconds ?? 90,
+    maxHealth: options.maxHealth ?? 100,
+    maxGuard: options.maxGuard ?? 100,
+    maxMeter: options.maxMeter ?? 100,
+    stageBounds: options.stageBounds ?? {
+      minX: -4.5,
+      maxX: 4.5
+    }
+  };
+}
+
+export const gameRules = Object.assign(createAuraGameRules, {
+  fighting2D: createGameFighting2DRules
+});
+
+export function createAuraGameRuntime(options: AuraGameRuntimeOptions = {}): AuraGameRuntime {
+  return {
+    kind: "aura-game-runtime",
+    loop: {
+      kind: "aura-game-loop-plan",
+      fixedDt: options.loop?.fixedDt ?? 1 / 60,
+      maxSubSteps: options.loop?.maxSubSteps ?? 5,
+      timeScale: options.loop?.timeScale ?? 1
+    },
+    rules: createAuraGameRules(options.rules),
+    input: options.input ? createGameInput(options.input) : undefined,
+    combat: createCombatWorld(),
+    camera: createGameCameraDirector({
+      stageBounds: {
+        minX: options.rules?.stageBounds?.minX ?? -4.5,
+        maxX: options.rules?.stageBounds?.maxX ?? 4.5
+      }
+    }),
+    effects: createGameEffects({ poolSize: options.effectPoolSize }),
+    bodies: []
+  };
+}
+
+export const game = {
+  createRuntime: createAuraGameRuntime,
+  rules: gameRules,
+  loop: (options: Partial<Omit<AuraGameLoopPlan, "kind">> = {}): AuraGameLoopPlan => ({
+    kind: "aura-game-loop-plan",
+    fixedDt: options.fixedDt ?? 1 / 60,
+    maxSubSteps: options.maxSubSteps ?? 5,
+    timeScale: options.timeScale ?? 1
+  }),
+  frameLoop: createFrameLoop,
+  runtimeNode: createRuntimeNodeSpec,
+  input: createGameInput,
+  inputReplay: createGameInputReplay,
+  inputReplayDriver: createGameInputReplayDriver,
+  inputReplayEventsAt: gameInputReplayEventsAt,
+  touchControls: createGameTouchControlLayout,
+  kinematicBody: createGameKinematicBody,
+  jumpAssist: createGameJumpAssist,
+  collider: {
+    box: createGameBoxCollider,
+    sphere: createGameSphereCollider,
+    capsule: createGameCapsuleCollider,
+    rect: createGameRectCollider,
+    aabb: gameColliderAabb,
+    factories: gameColliders
+  },
+  hitbox: gameHitboxes,
+  hurtbox: gameHurtboxes,
+  guardbox: gameGuardboxes,
+  pushbox: gamePushboxes,
+  trigger: gameTriggerVolumes,
+  combatWorld: createCombatWorld,
+  combatEvents: applyGameCombatEventsToRuntime,
+  cameraDirector: createGameCameraDirector,
+  effects: createGameEffects,
+  effectPresets: gameEffectPresets,
+  debug: {
+    colliders: createGameColliderDebugGeometry,
+    hitboxes: createGameHitboxDebugGeometry,
+    combat: createGameCombatDebugGeometry,
+    overlay: createGameDebugOverlayData,
+    sceneNodes: createGameDebugSceneNodes
+  },
+  hud: {
+    health: createGameHudHealthBinding,
+    meter: createGameHudMeterBinding,
+    timer: createGameHudTimerBinding,
+    combo: createGameHudComboBinding,
+    round: createGameHudRoundBinding,
+    debugToggle: createGameHudDebugToggleBinding,
+    bindings: createGameHudBindings,
+    snapshot: createGameHudSnapshot
+  },
+  accessibility: {
+    label: createGameAccessibilityLabel,
+    focus: createGameAccessibilityFocus,
+    reducedMotion: createGameReducedMotionSource,
+    reducedFlash: createGameReducedFlashSource,
+    highContrast: createGameHighContrastSource,
+    pauseControls: createGamePauseControlsSource,
+    settings: createGameAccessibilityRuntimeSettings
+  },
+  fighting: createFightingGameKit,
+  evidence: collectGameRuntimeEvidence
+} as const;
+
+export const cartoon = {
+  episodePlan: createPromptAnimationEpisodePlan,
+  storyBible: createPromptAnimationStoryBible,
+  storyboard: definePromptAnimationStoryboard,
+  shotTimeline: createShotTimeline,
+  shotPlaybackPlan: createShotPlaybackPlan,
+  sampleShotPlaybackPlan,
+  applyShotPlaybackFrame,
+  installShotPlayback,
+  captionsFromDialogue: deriveCaptionTrackFromDialogue,
+  captionCueAtTime,
+  captionTimingProof: createCaptionTimingProof,
+  visemeTrack: createAuraVoiceVisemeTrack,
+  primitiveMouthVisemes: createPrimitiveMouthVisemeCues,
+  glbBlendshapeViseme: createGlbBlendshapeVisemeCue,
+  sampleVisemeTrack,
+  auraVoiceBridgePackage: createAuraVoiceBridgePackage,
+  sampleAuraVoiceBridgeAtTime,
+  auraVoiceRerenderPlan: createAuraVoiceRerenderPlan,
+  auraVoiceDubRerenderProof: createAuraVoiceDubRerenderProof,
+  director: createCartoonDirectorPlan,
+  performance: createCartoonPerformance,
+  renderQueue: createCartoonRenderQueue,
+  renderOutputPackage: createCartoonRenderOutputPackageMetadata,
+  evidence: collectPromptAnimationEvidence
+} as const;
+
+export const animationStudio = cartoon;
 
 function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]): AuraParticleBudgetDiagnostics {
   const flattened = groups.flatten(nodes);
@@ -4751,6 +5597,7 @@ export const character = {
   lowPolyHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createLowPolyHumanoid(options),
   authoredHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createAuthoredLowPolyHumanoid(options),
   primitiveHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createHierarchicalPrimitiveHumanoid(options),
+  performance: createCartoonPerformance,
   importedRigRuntime: async (options: GLTFSceneAnimationRuntimeOptions): Promise<GLTFSceneAnimationRuntime> => {
     markAuraLazySystemRequested("character-rig", "character.importedRigRuntime");
     const started = performanceNow();
@@ -6168,16 +7015,103 @@ export interface AuraSceneEvidence {
     readonly helperCount: number;
     readonly nodeBudgetExceeded: readonly AuraHelperBudgetId[];
   };
+  readonly gameRuntime: GameRuntimeEvidence;
   readonly rendering: AuraRendererDiagnosticReport;
   readonly assets: readonly AuraAssetProvenance[];
+}
+
+export interface AuraFrameInfo {
+  readonly dt: number;
+  readonly fixedDt: number;
+  readonly time: number;
+  readonly frame: number;
+  readonly alpha: number;
+  readonly paused: boolean;
+  readonly source: "raf" | "manual" | "fixed";
+  readonly substep: number;
+  readonly substeps: number;
+}
+
+export type AuraFrameCallback = (frame: AuraFrameInfo) => void;
+
+export interface AuraRuntimeNodeSnapshot {
+  readonly id: string;
+  readonly kind: AuraSceneNode["kind"];
+  readonly name?: string;
+  readonly tags: readonly string[];
+  readonly position: AuraVec3;
+  readonly rotation: AuraVec3;
+  readonly scale: number | AuraVec3;
+  readonly visible: boolean;
+  readonly animation?: AuraAnimationSpec;
+  readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
+  readonly animationPose?: AnimationPose;
+  readonly animationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;
+  readonly morphTargets?: RuntimeNodeMorphTargetWeights;
+  readonly bounds?: AuraRuntimeNodeBounds;
+  readonly effects?: readonly AuraRuntimeNodeEffectAttachment[];
+}
+
+export interface AuraRuntimeNodeHandle {
+  readonly id: string;
+  readonly kind: AuraSceneNode["kind"];
+  readonly name?: string;
+  readonly tags: readonly string[];
+  position: AuraVec3;
+  rotation: AuraVec3;
+  scale: number | AuraVec3;
+  visible: boolean;
+  setPosition(x: number, y: number, z: number): this;
+  translate(x: number, y: number, z: number): this;
+  setRotation(x: number, y: number, z: number): this;
+  setScale(scale: number | AuraVec3): this;
+  setVisible(visible: boolean): this;
+  setMaterial(material: AuraMaterialSpec): this;
+  play(clip: string, options?: Omit<AuraAnimationSpec, "clip">): this;
+  setAnimation(animation: AuraAnimationSpec | undefined): this;
+  setAnimationBinding(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined): this;
+  setAnimationPose(pose: AnimationPose | undefined, metadata?: AuraRuntimeNodeAnimationPoseBindingMetadata): this;
+  animationPose(): AnimationPose | undefined;
+  setMorphTarget(name: string, weight: number): this;
+  setMorphTargets(weights: RuntimeNodeMorphTargetWeights): this;
+  morphTargets(): RuntimeNodeMorphTargetWeights;
+  bounds(): AuraRuntimeNodeBounds;
+  attachEffect(effect: AuraRuntimeNodeEffectAttachment): this;
+  effects(): readonly AuraRuntimeNodeEffectAttachment[];
+  snapshot(): AuraRuntimeNodeSnapshot;
+}
+
+export interface AuraRuntimeNodeRegistry {
+  get(id: string): AuraRuntimeNodeHandle | undefined;
+  require(id: string): AuraRuntimeNodeHandle;
+  has(id: string): boolean;
+  ids(): readonly string[];
+  all(): readonly AuraRuntimeNodeHandle[];
+}
+
+export interface AuraRuntimeState {
+  readonly paused: boolean;
+  readonly frame: number;
+  readonly time: number;
+  readonly fixedDt: number;
+  readonly alpha: number;
 }
 
 export interface AuraApp {
   readonly canvas?: HTMLCanvasElement;
   readonly scene: AuraSceneSnapshot;
   readonly backend: AuraBackend;
+  readonly nodes: AuraRuntimeNodeRegistry;
+  readonly runtime: AuraRuntimeState;
   setScene(scene: AuraSceneBuilder | AuraSceneSnapshot): void;
+  onFrame(callback: AuraFrameCallback): () => void;
+  offFrame(callback: AuraFrameCallback): void;
+  input(options: GameInputOptions): ReturnType<typeof createGameInput>;
+  pause(): void;
+  resume(): void;
+  step(dt?: number): void;
   diagnostics(): AuraDiagnostics;
+  evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
   screenshot(): AuraScreenshot;
   dispose(): void;
 }
@@ -6220,6 +7154,239 @@ export class AuraRuntimeError extends Error {
   }
 }
 
+type MutableAuraRuntimeSceneNode = AuraSceneNode & {
+  position?: AuraVec3;
+  rotation?: AuraVec3;
+  scale?: number | AuraVec3;
+  visible?: boolean;
+  material?: AuraMaterialSpec;
+  animation?: AuraAnimationSpec;
+};
+
+interface MutableAuraRuntimeNodeRegistry extends AuraRuntimeNodeRegistry {
+  reset(snapshot: AuraSceneSnapshot): void;
+}
+
+function createAuraRuntimeNodeRegistry(snapshot: AuraSceneSnapshot): MutableAuraRuntimeNodeRegistry {
+  let handles = new Map<string, AuraRuntimeNodeHandle>();
+  const registry: MutableAuraRuntimeNodeRegistry = {
+    get(id) {
+      return handles.get(id);
+    },
+    require(id) {
+      const handle = handles.get(id);
+      if (!handle) {
+        throw new AuraRuntimeError(
+          "missing-asset",
+          `Aura3D runtime node "${id}" was not found. Suggested fix: add .runtime({ id: "${id}" }) to the model, primitive, group, or label you want to mutate.`
+        );
+      }
+      return handle;
+    },
+    has(id) {
+      return handles.has(id);
+    },
+    ids() {
+      return [...handles.keys()];
+    },
+    all() {
+      return [...handles.values()];
+    },
+    reset(nextSnapshot) {
+      handles = collectRuntimeNodeHandles(nextSnapshot);
+    }
+  };
+  registry.reset(snapshot);
+  return registry;
+}
+
+function collectRuntimeNodeHandles(snapshot: AuraSceneSnapshot): Map<string, AuraRuntimeNodeHandle> {
+  const next = new Map<string, AuraRuntimeNodeHandle>();
+  for (const node of snapshot.nodes) {
+    const runtime = "runtime" in node ? node.runtime : undefined;
+    if (!runtime?.id) continue;
+    next.set(runtime.id, createRuntimeNodeHandle(node as MutableAuraRuntimeSceneNode, runtime));
+  }
+  return next;
+}
+
+function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: AuraRuntimeNodeSpec): AuraRuntimeNodeHandle {
+  const tags = runtime.tags ?? [];
+  const attachedEffects: AuraRuntimeNodeEffectAttachment[] = [];
+  const morphTargetWeights = new Map<string, number>();
+  let animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined;
+  let animationPose: AnimationPose | undefined;
+  let animationPoseBinding: AuraRuntimeNodeAnimationPoseBindingMetadata | undefined;
+  const getVisible = () => node.kind === "model" ? node.visible !== false : node.visible !== false;
+  const getBounds = () =>
+    calculateRuntimeNodeBounds({
+      position: node.position,
+      scale: node.scale,
+      size: "size" in node ? node.size : undefined
+    });
+  return {
+    id: runtime.id,
+    kind: node.kind,
+    name: "name" in node ? node.name : undefined,
+    tags,
+    get position() {
+      return node.position ?? [0, 0, 0];
+    },
+    set position(next) {
+      node.position = next;
+    },
+    get rotation() {
+      return node.rotation ?? [0, 0, 0];
+    },
+    set rotation(next) {
+      node.rotation = next;
+    },
+    get scale() {
+      return node.scale ?? 1;
+    },
+    set scale(next) {
+      node.scale = next;
+    },
+    get visible() {
+      return getVisible();
+    },
+    set visible(next) {
+      node.visible = next;
+    },
+    setPosition(x, y, z) {
+      node.position = [x, y, z];
+      return this;
+    },
+    translate(x, y, z) {
+      const current = node.position ?? [0, 0, 0];
+      node.position = [current[0] + x, current[1] + y, current[2] + z];
+      return this;
+    },
+    setRotation(x, y, z) {
+      node.rotation = [x, y, z];
+      return this;
+    },
+    setScale(scale) {
+      node.scale = scale;
+      return this;
+    },
+    setVisible(visible) {
+      node.visible = visible;
+      return this;
+    },
+    setMaterial(nextMaterial) {
+      node.material = nextMaterial;
+      return this;
+    },
+    play(clip, options = {}) {
+      node.animation = { ...options, clip };
+      return this;
+    },
+    setAnimation(animation) {
+      node.animation = animation;
+      return this;
+    },
+    setAnimationBinding(binding) {
+      animationBinding = binding;
+      return this;
+    },
+    setAnimationPose(pose, metadata) {
+      animationPose = pose ? cloneRuntimeAnimationPose(pose) : undefined;
+      animationPoseBinding = pose ? metadata : undefined;
+      if (pose?.morphTargets) {
+        for (const [name, weight] of Object.entries(pose.morphTargets)) {
+          const normalizedName = name.trim();
+          if (normalizedName) {
+            morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+          }
+        }
+      }
+      return this;
+    },
+    animationPose() {
+      return animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined;
+    },
+    setMorphTarget(name, weight) {
+      const normalizedName = name.trim();
+      if (!normalizedName) {
+        throw new AuraRuntimeError("missing-asset", "Aura3D morph target name is required.");
+      }
+      morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+      return this;
+    },
+    setMorphTargets(weights) {
+      morphTargetWeights.clear();
+      for (const [name, weight] of Object.entries(weights)) {
+        const normalizedName = name.trim();
+        if (normalizedName) {
+          morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+        }
+      }
+      return this;
+    },
+    morphTargets() {
+      return Object.fromEntries(morphTargetWeights.entries());
+    },
+    bounds() {
+      return getBounds();
+    },
+    attachEffect(effect) {
+      attachedEffects.push(effect);
+      return this;
+    },
+    effects() {
+      return [...attachedEffects];
+    },
+    snapshot() {
+      return {
+        id: runtime.id,
+        kind: node.kind,
+        name: "name" in node ? node.name : undefined,
+        tags,
+        position: node.position ?? [0, 0, 0],
+        rotation: node.rotation ?? [0, 0, 0],
+        scale: node.scale ?? 1,
+        visible: getVisible(),
+        animation: node.animation,
+        animationBinding,
+        animationPose: animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined,
+        animationPoseBinding,
+        morphTargets: Object.fromEntries(morphTargetWeights.entries()),
+        bounds: getBounds(),
+        effects: [...attachedEffects]
+      };
+    }
+  };
+}
+
+function cloneRuntimeAnimationPose(pose: AnimationPose): AnimationPose {
+  return {
+    bones: Object.fromEntries(
+      Object.entries(pose.bones ?? {}).map(([bone, transform]) => [
+        bone,
+        {
+          position: transform.position ? { ...transform.position } : undefined,
+          rotation: transform.rotation ? { ...transform.rotation } : undefined,
+          scale: transform.scale ? { ...transform.scale } : undefined
+        }
+      ])
+    ),
+    morphTargets: pose.morphTargets ? { ...pose.morphTargets } : undefined,
+    rootMotion: pose.rootMotion
+      ? {
+          translation: pose.rootMotion.translation ? { ...pose.rootMotion.translation } : undefined,
+          rotation: pose.rootMotion.rotation ? { ...pose.rootMotion.rotation } : undefined
+        }
+      : undefined,
+    metadata: pose.metadata ? { ...pose.metadata } : undefined
+  };
+}
+
+function sanitizeRuntimeMorphWeight(weight: number): number {
+  if (!Number.isFinite(weight)) return 0;
+  return Math.max(0, Math.min(1, weight));
+}
+
 export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptions): AuraApp {
   let snapshot = normalizeSceneSnapshot(options.scene);
   let renderSnapshot = flattenSceneSnapshot(snapshot);
@@ -6231,10 +7398,35 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   const overlay = canvas && shouldRenderOverlay(options.diagnostics, snapshot) ? createDiagnosticsOverlay(canvas, diagnosticsState) : undefined;
   let disposed = false;
   let animationHandle = 0;
-  let productionController: { dispose(): void } | undefined;
+  let productionController: WebGLRenderController | undefined;
   let lastTime = 0;
   let mountRevision = 0;
   let canvasRuntimePhysics: ReturnType<typeof createRuntimeScenePhysics> | undefined;
+  const runtimeNodes = createAuraRuntimeNodeRegistry(renderSnapshot);
+  const frameCallbacks = new Set<AuraFrameCallback>();
+  let runtimePaused = options.autoStart === false;
+  let runtimeFrame = 0;
+  let runtimeTime = 0;
+  const runtimeFixedDt = 1 / 60;
+  let runtimeAlpha = 0;
+  const ownedInputControllers = new Set<ReturnType<typeof createGameInput>>();
+  const runRuntimeFrame = (dt: number, source: AuraFrameInfo["source"]) => {
+    runtimeFrame += 1;
+    runtimeTime += dt;
+    runtimeAlpha = runtimeFixedDt > 0 ? Math.max(0, Math.min(1, (dt % runtimeFixedDt) / runtimeFixedDt)) : 0;
+    const frame: AuraFrameInfo = {
+      dt,
+      fixedDt: runtimeFixedDt,
+      time: runtimeTime,
+      frame: runtimeFrame,
+      alpha: runtimeAlpha,
+      paused: runtimePaused,
+      source,
+      substep: 1,
+      substeps: 1
+    };
+    for (const callback of [...frameCallbacks]) callback(frame);
+  };
   const shouldUseProductionRendererForCurrentScene = () =>
     Boolean(canvas && renderSnapshot.nodes.some(isWebGLRenderableNode) && typeof window !== "undefined");
   const resetDiagnosticsForCurrentScene = (backend: AuraBackend) => {
@@ -6255,7 +7447,11 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     if (disposed) return;
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
-    canvasRuntimePhysics?.step(delta / 1000);
+    const dt = delta / 1000;
+    if (!runtimePaused) {
+      runRuntimeFrame(dt, "raf");
+      canvasRuntimePhysics?.step(dt);
+    }
     diagnosticsState.evidence = collectAuraSceneEvidence(renderSnapshot);
     diagnosticsState.fps = Math.round(1000 / delta);
     diagnosticsState.drawCalls = renderSceneToCanvas(canvas, renderSnapshot, time);
@@ -6279,7 +7475,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     overlay?.update();
     const revision = ++mountRevision;
     if (shouldUseProductionRenderer && canvas) {
-      void startProductionRender(canvas, renderSnapshot, diagnosticsState, options, overlay)
+      void startProductionRender(canvas, renderSnapshot, diagnosticsState, options, overlay, runRuntimeFrame, () => runtimePaused)
         .then((controller) => {
           if (disposed || revision !== mountRevision) {
             controller.dispose();
@@ -6312,10 +7508,72 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     setScene(nextScene) {
       snapshot = normalizeSceneSnapshot(nextScene);
       renderSnapshot = flattenSceneSnapshot(snapshot);
+      runtimeNodes.reset(renderSnapshot);
       mountCurrentScene();
+    },
+    nodes: runtimeNodes,
+    get runtime() {
+      return {
+        paused: runtimePaused,
+        frame: runtimeFrame,
+        time: runtimeTime,
+        fixedDt: runtimeFixedDt,
+        alpha: runtimeAlpha
+      };
+    },
+    onFrame(callback) {
+      frameCallbacks.add(callback);
+      return () => {
+        frameCallbacks.delete(callback);
+      };
+    },
+    offFrame(callback) {
+      frameCallbacks.delete(callback);
+    },
+    input(inputOptions) {
+      const controller = createGameInput(inputOptions);
+      ownedInputControllers.add(controller);
+      return controller;
+    },
+    pause() {
+      runtimePaused = true;
+    },
+    resume() {
+      runtimePaused = false;
+      if (!animationHandle && !productionController && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+        animationHandle = requestAnimationFrame(render);
+      }
+    },
+    step(dt = 1 / 60) {
+      const seconds = Math.max(0, dt);
+      runRuntimeFrame(seconds, "manual");
+      canvasRuntimePhysics?.step(seconds);
+      const previousPaused = runtimePaused;
+      runtimePaused = true;
+      if (productionController) {
+        productionController.render(performanceNow());
+      } else {
+        render(performanceNow());
+      }
+      runtimePaused = previousPaused;
     },
     diagnostics() {
       return snapshotDiagnostics(diagnosticsState);
+    },
+    evidence(evidenceOptions = {}) {
+      return collectGameRuntimeEvidenceV105(
+        {
+          runtime: {
+            paused: runtimePaused,
+            frame: runtimeFrame,
+            time: runtimeTime,
+            fixedDt: runtimeFixedDt,
+            alpha: runtimeAlpha
+          },
+          nodes: runtimeNodes
+        },
+        evidenceOptions
+      );
     },
     screenshot() {
       return captureAuraScreenshot(canvas);
@@ -6323,6 +7581,8 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      for (const controller of ownedInputControllers) controller.dispose();
+      ownedInputControllers.clear();
       productionController?.dispose();
       overlay?.dispose();
     }
@@ -6356,6 +7616,10 @@ export function collectAuraSceneEvidence(sceneValue: AuraSceneBuilder | AuraScen
   const assetProvenance = snapshot.nodes
     .filter((node): node is AuraModelNode => node.kind === "model")
     .map((node) => createAssetProvenance(node.asset));
+  const runtimeNodeIds = snapshot.nodes
+    .map((node) => "runtime" in node ? node.runtime?.id : undefined)
+    .filter((id): id is string => Boolean(id));
+  const expectsGameRuntime = runtimeNodeIds.length > 0 || interactionNodes.some((node) => node.mode === "keyboard" || node.mode === "drag-vector" || node.mode === "click-impulse");
 
   return {
     physics: {
@@ -6394,6 +7658,34 @@ export function collectAuraSceneEvidence(sceneValue: AuraSceneBuilder | AuraScen
       collisionAvoidance: labelNodes.filter((node) => node.collisionAvoidance === true).length
     },
     performance: createPerformanceEvidence(snapshot),
+    gameRuntime: collectGameRuntimeEvidenceV105(
+      {
+        runtime: {
+          frame: 0,
+          time: 0,
+          paused: true
+        },
+        nodes: {
+          ids: () => runtimeNodeIds
+        }
+      },
+      {
+        animation: {
+          controllers: animatedNodes.length,
+          activeClips: clips,
+          eventCount: 0
+        },
+        assets: {
+          typedAssets: assetProvenance.filter((asset) => asset.source === "typed-aura-assets-manifest").length,
+          missingAssets: []
+        },
+        source: {
+          mode: "scene-source",
+          expectsGame: expectsGameRuntime,
+          label: "collectAuraSceneEvidence"
+        }
+      }
+    ),
     rendering: createRendererDiagnosticReport(snapshot),
     assets: assetProvenance
   };
@@ -6506,6 +7798,7 @@ export function createAuraAssetLoadError(asset: AuraAssetRef<"model">, reason: s
 }
 
 interface WebGLRenderController {
+  render(time?: number): void;
   dispose(): void;
 }
 
@@ -6522,7 +7815,9 @@ async function startProductionRender(
   snapshot: AuraSceneSnapshot,
   diagnosticsState: MutableDiagnostics,
   options: AuraCreateAppOptions,
-  overlay?: { update(): void }
+  overlay?: { update(): void },
+  beforeRender?: (dt: number, source: AuraFrameInfo["source"]) => void,
+  isPaused: () => boolean = () => false
 ): Promise<WebGLRenderController> {
   const renderableNode = snapshot.nodes.find(isWebGLRenderableNode);
   if (!renderableNode) {
@@ -6538,8 +7833,12 @@ async function startProductionRender(
 
   let disposed = false;
   let animationHandle = 0;
+  let lastTime = 0;
   const renderFrame = (time = performanceNow()) => {
     if (disposed) return;
+    const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
+    lastTime = time;
+    if (!isPaused()) beforeRender?.(delta / 1000, "raf");
     const drawCalls = renderer.render(time);
     diagnosticsState.backend = "webgl2";
     diagnosticsState.fps = diagnosticsState.fps || 60;
@@ -6556,6 +7855,9 @@ async function startProductionRender(
   renderFrame();
 
   return {
+    render(time = performanceNow()) {
+      renderFrame(time);
+    },
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
@@ -6568,6 +7870,7 @@ function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
   if (snapshot.timeline?.mode === "loop") return true;
   if (snapshot.camera.mode === "dolly" || snapshot.camera.mode === "follow" || snapshot.camera.mode === "path" || snapshot.camera.mode === "flythrough") return true;
   return snapshot.nodes.some((node) => {
+    if ("runtime" in node && node.runtime?.mutable !== false) return true;
     if ((node.kind === "model" || node.kind === "primitive") && node.animation) return true;
     if (node.kind !== "effect") return false;
     return node.effect === "particles" || node.effect === "rain";
@@ -8052,12 +9355,9 @@ function normalizeSceneSnapshot(value: AuraSceneBuilder | AuraSceneSnapshot): Au
   return value instanceof AuraSceneBuilder ? value.toJSON() : value;
 }
 
-function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement {
+function resolveCanvas(target: AuraAppTarget): HTMLCanvasElement | undefined {
   if (!target) {
-    throw new AuraRuntimeError(
-      "missing-canvas",
-      "Aura3D could not mount because the app target was null or undefined. Suggested fix: pass a selector like createAuraApp(\"#app\", ...) or check document.querySelector before mounting."
-    );
+    return undefined;
   }
   if (typeof target === "string") {
     if (typeof document === "undefined") {

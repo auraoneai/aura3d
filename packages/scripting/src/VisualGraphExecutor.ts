@@ -1,4 +1,16 @@
 import { validateGraph, type VisualEdge, type VisualGraph } from "./VisualGraph";
+import {
+  type VisualAnimationControllerState,
+  type VisualAnimationEvent,
+  type VisualCollisionEvent,
+  type VisualCombatEvent,
+  type VisualGraphDiagnostic,
+  type VisualGraphExecutionContext,
+  type VisualGraphSideEffect,
+  type VisualInputSet,
+  type VisualStateCollection,
+  type VisualVector3
+} from "./VisualGraphContext";
 import { getVisualNodeDefinition } from "./VisualNodeCatalog";
 import { type VisualNode } from "./VisualNode";
 
@@ -8,18 +20,28 @@ export interface VisualExecutionResult {
   readonly values: ReadonlyMap<string, unknown>;
   readonly executionOrder: readonly string[];
   readonly nodeKinds: readonly string[];
+  readonly sideEffects: readonly VisualGraphSideEffect[];
+  readonly diagnostics: readonly VisualGraphDiagnostic[];
   readonly blockedClaims: readonly string[];
 }
 
 export class VisualGraphExecutor {
-  execute(graph: VisualGraph): VisualExecutionResult {
-    const errors = validateGraph(graph);
+  private readonly defaultContext: VisualGraphExecutionContext;
+
+  constructor(context: VisualGraphExecutionContext = {}) {
+    this.defaultContext = context;
+  }
+
+  execute(graph: VisualGraph, context: VisualGraphExecutionContext = this.defaultContext): VisualExecutionResult {
+    const errors = validateGraph(graph, { context });
     if (errors.length > 0) {
       throw new Error(errors.join("; "));
     }
 
     const values = new Map<string, unknown>();
     const executionOrder: string[] = [];
+    const sideEffects: VisualGraphSideEffect[] = [];
+    const diagnostics: VisualGraphDiagnostic[] = [];
     const nodes = new Map(graph.nodes.map((node) => [node.id, node]));
     const visiting = new Set<string>();
     const visited = new Set<string>();
@@ -38,7 +60,7 @@ export class VisualGraphExecutor {
         executeNode(edge.fromNode);
       }
 
-      setNodeOutput(values, node, executeVisualNode(node, graph.edges.filter((edge) => edge.toNode === node.id), values));
+      setNodeOutput(values, node, executeVisualNode(node, graph.edges.filter((edge) => edge.toNode === node.id), values, context, sideEffects, diagnostics));
 
       visiting.delete(nodeId);
       visited.add(nodeId);
@@ -53,22 +75,39 @@ export class VisualGraphExecutor {
       values,
       executionOrder,
       nodeKinds: [...new Set(graph.nodes.map((node) => node.kind))].sort(),
+      sideEffects,
+      diagnostics,
       blockedClaims: [
         "Unity Visual Scripting parity",
         "Unreal Blueprint parity",
         "async latent action graph parity",
-        "editor-authored visual scripting parity"
+        "editor-authored visual scripting parity",
+        "live engine installGraph bridge parity"
       ]
     };
   }
 }
 
-function executeVisualNode(node: VisualNode, inputEdges: readonly VisualEdge[], values: Map<string, unknown>): unknown {
+function executeVisualNode(
+  node: VisualNode,
+  inputEdges: readonly VisualEdge[],
+  values: Map<string, unknown>,
+  context: VisualGraphExecutionContext,
+  sideEffects: VisualGraphSideEffect[],
+  diagnostics: VisualGraphDiagnostic[]
+): unknown {
   const definition = getVisualNodeDefinition(node.kind);
   if (!definition) throw new Error(`Unsupported visual node kind: ${node.kind}`);
   const input = (port: string): unknown => getInputValue(node, port, inputEdges, values);
-  const number = (port: string): number => Number(input(port) ?? 0);
+  const number = (port: string): number => finiteNumber(input(port));
   const boolean = (port: string): boolean => Boolean(input(port));
+  const string = (port: string): string => String(input(port) ?? "");
+  const optionalString = (port: string): string | undefined => {
+    const value = input(port);
+    return typeof value === "string" && value.length > 0 ? value : undefined;
+  };
+  const object = (port: string): unknown => stableClone(input(port) ?? {});
+
   switch (node.kind) {
     case "const":
       return node.data?.value;
@@ -76,7 +115,7 @@ function executeVisualNode(node: VisualNode, inputEdges: readonly VisualEdge[], 
       return input("in");
     case "add":
       return inputEdges.length > 1
-        ? inputEdges.reduce((total, edge) => total + Number(readEdgeValue(edge, values) ?? 0), 0)
+        ? inputEdges.reduce((total, edge) => total + finiteNumber(readEdgeValue(edge, values)), 0)
         : number("in");
     case "subtract":
       return number("a") - number("b");
@@ -195,7 +234,257 @@ function executeVisualNode(node: VisualNode, inputEdges: readonly VisualEdge[], 
         isOpen
       });
     }
+
+    case "onStart": {
+      const active = (context.frame ?? 0) === 0 && (context.time ?? 0) === 0;
+      return outputs(active, { out: active, active });
+    }
+    case "onFrame": {
+      const frame = { dt: context.dt ?? 0, time: context.time ?? 0, frame: context.frame ?? 0 };
+      return outputs(frame, { out: true, dt: frame.dt, time: frame.time, frame: frame.frame, context: frame });
+    }
+    case "getNode": {
+      const nodeId = string("nodeId");
+      const runtimeNode = collectionGet(context.runtimeNodes, nodeId);
+      if (!runtimeNode) {
+        diagnostics.push({ level: "warning", code: "runtime.nodeMissing", message: `Runtime node not found: ${nodeId}`, nodeId: node.id });
+      }
+      return outputs(stableClone(runtimeNode ?? null), {
+        node: stableClone(runtimeNode ?? null),
+        nodeId,
+        exists: runtimeNode !== undefined,
+        position: normalizeVector(runtimeNode?.position)
+      });
+    }
+    case "setPosition":
+      return command("runtime.setPosition", node, context, sideEffects, string("nodeId"), {
+        nodeId: string("nodeId"),
+        position: normalizeVector(input("position"))
+      });
+    case "translate": {
+      const nodeId = string("nodeId");
+      const current = normalizeVector(collectionGet(context.runtimeNodes, nodeId)?.position);
+      const delta = normalizeVector(input("delta"));
+      return command("runtime.translate", node, context, sideEffects, nodeId, {
+        nodeId,
+        from: current,
+        delta,
+        position: addVectors(current, delta)
+      });
+    }
+    case "rotate":
+      return command("runtime.rotate", node, context, sideEffects, string("nodeId"), {
+        nodeId: string("nodeId"),
+        rotation: normalizeVector(input("rotation"))
+      });
+    case "setVisible":
+      return command("runtime.setVisible", node, context, sideEffects, string("nodeId"), {
+        nodeId: string("nodeId"),
+        visible: boolean("visible")
+      });
+    case "setMaterial":
+      return command("runtime.setMaterial", node, context, sideEffects, string("nodeId"), {
+        nodeId: string("nodeId"),
+        material: object("material")
+      });
+
+    case "pressed":
+      return inputFlag(context.input?.pressed, string("action"));
+    case "held":
+      return inputFlag(context.input?.held, string("action"));
+    case "released":
+      return inputFlag(context.input?.released, string("action"));
+    case "axis":
+      return finiteNumber(context.input?.axes?.[string("axis")]);
+    case "buffered":
+      return inputFlag(context.input?.buffered, string("action"));
+    case "combo":
+      return inputFlag(context.input?.combos, string("combo"));
+
+    case "playClip":
+      return command("animation.playClip", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        clip: string("clip"),
+        loop: boolean("loop")
+      });
+    case "restartClip":
+      return command("animation.restartClip", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        clip: string("clip"),
+        restart: true
+      });
+    case "crossFade":
+      return command("animation.crossFade", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        clip: string("clip"),
+        duration: number("duration"),
+        restart: boolean("restart"),
+        layer: optionalString("layer")
+      });
+    case "setLayerWeight":
+      return command("animation.setLayerWeight", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        layer: string("layer"),
+        weight: number("weight")
+      });
+    case "onAnimationEvent": {
+      const event = findAnimationEvent(context, string("controllerId"), string("eventType"), optionalString("clip"));
+      return outputs(stableClone(event ?? null), {
+        out: event !== undefined,
+        fired: event !== undefined,
+        event: stableClone(event ?? null)
+      });
+    }
+    case "setMorphTarget": {
+      const morphTarget = string("morphTarget");
+      const weight = number("weight");
+      return command("animation.setMorphTarget", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        morphTarget,
+        weight,
+        weights: { [morphTarget]: weight }
+      });
+    }
+    case "setMorphTargets":
+      return command("animation.setMorphTargets", node, context, sideEffects, string("controllerId"), {
+        controllerId: string("controllerId"),
+        weights: object("weights")
+      });
+    case "getClipTime": {
+      const controller = collectionGet(context.animationControllers, string("controllerId"));
+      return outputs(controller?.clipTime ?? 0, {
+        out: controller?.clipTime ?? 0,
+        clip: controller?.currentClip ?? ""
+      });
+    }
+
+    case "setVelocity":
+      return command("physics.setVelocity", node, context, sideEffects, string("bodyId"), {
+        bodyId: string("bodyId"),
+        velocity: normalizeVector(input("velocity"))
+      });
+    case "jump":
+      return command("physics.jump", node, context, sideEffects, string("bodyId"), {
+        bodyId: string("bodyId"),
+        impulse: number("impulse")
+      });
+    case "dash":
+      return command("physics.dash", node, context, sideEffects, string("bodyId"), {
+        bodyId: string("bodyId"),
+        direction: normalizeVector(input("direction")),
+        speed: number("speed")
+      });
+    case "onCollisionEnter": {
+      const event = findCollisionEvent(context.collisionEvents, "enter", string("bodyId"), optionalString("otherBodyId"));
+      return outputs(stableClone(event ?? null), { out: event !== undefined, collided: event !== undefined, event: stableClone(event ?? null) });
+    }
+    case "onCollisionExit": {
+      const event = findCollisionEvent(context.collisionEvents, "exit", string("bodyId"), optionalString("otherBodyId"));
+      return outputs(stableClone(event ?? null), { out: event !== undefined, collided: event !== undefined, event: stableClone(event ?? null) });
+    }
+    case "raycast": {
+      const hit = collectionGet(context.raycastHits, string("queryId"));
+      return outputs(stableClone(hit ?? null), { hit: hit?.hit === true, result: stableClone(hit ?? null) });
+    }
+    case "overlap": {
+      const overlap = collectionGet(context.overlaps, string("queryId"));
+      return outputs(stableClone(overlap ?? null), { hit: (overlap?.bodyIds.length ?? 0) > 0, result: stableClone(overlap ?? null) });
+    }
+
+    case "openHitbox":
+      return command("combat.openHitbox", node, context, sideEffects, string("hitboxId"), {
+        hitboxId: string("hitboxId"),
+        ownerId: string("ownerId"),
+        damage: number("damage"),
+        payload: object("payload")
+      });
+    case "closeHitbox":
+      return command("combat.closeHitbox", node, context, sideEffects, string("hitboxId"), {
+        hitboxId: string("hitboxId")
+      });
+    case "setHurtbox":
+      return command("combat.setHurtbox", node, context, sideEffects, string("hurtboxId"), {
+        hurtboxId: string("hurtboxId"),
+        ownerId: string("ownerId"),
+        payload: object("payload")
+      });
+    case "onHit": {
+      const event = findCombatHit(context.combatEvents, optionalString("actorId"), optionalString("hitboxId"));
+      return outputs(stableClone(event ?? null), { out: event !== undefined, hit: event !== undefined, event: stableClone(event ?? null) });
+    }
+    case "applyDamage":
+      return command("combat.applyDamage", node, context, sideEffects, string("targetId"), {
+        targetId: string("targetId"),
+        amount: number("amount"),
+        sourceId: optionalString("sourceId")
+      });
+    case "applyKnockback":
+      return command("combat.applyKnockback", node, context, sideEffects, string("targetId"), {
+        targetId: string("targetId"),
+        velocity: normalizeVector(input("velocity")),
+        sourceId: optionalString("sourceId")
+      });
+
+    case "follow":
+      return command("camera.follow", node, context, sideEffects, string("targetId"), {
+        targetId: string("targetId"),
+        stiffness: number("stiffness")
+      });
+    case "frameTargets":
+      return command("camera.frameTargets", node, context, sideEffects, undefined, {
+        targetIds: object("targetIds"),
+        padding: number("padding")
+      });
+    case "shake":
+      return command("camera.shake", node, context, sideEffects, context.camera?.id, {
+        intensity: number("intensity"),
+        duration: number("duration")
+      });
+    case "cutTo":
+      return command("camera.cutTo", node, context, sideEffects, context.camera?.id, {
+        position: normalizeVector(input("position")),
+        target: stableClone(input("target") ?? null)
+      });
+
+    case "captureSnapshot": {
+      const snapshot = cleanObject({
+        kind: "evidence.snapshot",
+        label: optionalString("label") ?? node.id,
+        frame: context.frame,
+        time: context.time,
+        dt: context.dt,
+        runtimeNodes: context.runtimeNodes,
+        animationControllers: context.animationControllers,
+        physicsBodies: context.physicsBodies,
+        camera: context.camera,
+        evidence: context.evidence
+      });
+      pushSideEffect(sideEffects, "evidence.captureSnapshot", node, context, optionalString("label"), snapshot);
+      return outputs(snapshot, { out: true, snapshot });
+    }
+    case "markProof":
+      return command("evidence.markProof", node, context, sideEffects, string("proofId"), {
+        proofId: string("proofId"),
+        details: object("details")
+      });
+    case "assertState": {
+      const operator = optionalString("operator") ?? "equals";
+      const actual = input("actual");
+      const expected = input("expected");
+      const passed = evaluateAssertion(actual, expected, operator);
+      const assertion = cleanObject({
+        kind: "evidence.assertState",
+        operator,
+        actual,
+        expected,
+        passed
+      });
+      pushSideEffect(sideEffects, "evidence.assertState", node, context, undefined, assertion);
+      return outputs(assertion, { out: passed, passed, assertion });
+    }
   }
+
+  throw new Error(`Unsupported visual node kind: ${node.kind}`);
 }
 
 function getInputValue(node: VisualNode, portId: string, inputEdges: readonly VisualEdge[], values: Map<string, unknown>): unknown {
@@ -230,4 +519,145 @@ interface VisualNodeOutputs {
   readonly [visualNodeOutputsBrand]: true;
   readonly value: unknown;
   readonly byPort?: Readonly<Record<string, unknown>>;
+}
+
+function finiteNumber(value: unknown): number {
+  const numeric = Number(value ?? 0);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function inputFlag(source: VisualInputSet | undefined, key: string): boolean {
+  if (!source || key.length === 0) return false;
+  return Array.isArray(source) ? source.includes(key) : (source as Readonly<Record<string, boolean>>)[key] === true;
+}
+
+function normalizeVector(value: unknown, fallback: Required<Record<"x" | "y" | "z", number>> = { x: 0, y: 0, z: 0 }): Required<Record<"x" | "y" | "z", number>> {
+  if (Array.isArray(value)) {
+    return { x: finiteNumber(value[0] ?? fallback.x), y: finiteNumber(value[1] ?? fallback.y), z: finiteNumber(value[2] ?? fallback.z) };
+  }
+  if (typeof value === "object" && value !== null) {
+    const vector = value as VisualVector3 & Record<string, unknown>;
+    return {
+      x: finiteNumber(vector.x ?? fallback.x),
+      y: finiteNumber(vector.y ?? fallback.y),
+      z: finiteNumber(vector.z ?? fallback.z)
+    };
+  }
+  return { ...fallback };
+}
+
+function addVectors(a: Required<Record<"x" | "y" | "z", number>>, b: Required<Record<"x" | "y" | "z", number>>): Required<Record<"x" | "y" | "z", number>> {
+  return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+}
+
+function command(
+  kind: string,
+  node: VisualNode,
+  context: VisualGraphExecutionContext,
+  sideEffects: VisualGraphSideEffect[],
+  target: string | undefined,
+  payload: Readonly<Record<string, unknown>>
+): VisualNodeOutputs {
+  const commandPayload = cleanObject({ kind, target, ...payload });
+  pushSideEffect(sideEffects, kind, node, context, target, commandPayload);
+  return outputs(commandPayload, { out: true, command: commandPayload });
+}
+
+function pushSideEffect(
+  sideEffects: VisualGraphSideEffect[],
+  kind: string,
+  node: VisualNode,
+  context: VisualGraphExecutionContext,
+  target: string | undefined,
+  payload: unknown
+): void {
+  sideEffects.push(cleanObject({
+    kind,
+    nodeId: node.id,
+    target,
+    frame: context.frame,
+    time: context.time,
+    payload
+  }) as VisualGraphSideEffect);
+}
+
+function collectionGet<T extends { readonly id: string }>(collection: VisualStateCollection<T> | undefined, id: string): T | undefined {
+  if (!collection || id.length === 0) return undefined;
+  return Array.isArray(collection) ? collection.find((entry) => entry.id === id) : (collection as Readonly<Record<string, T>>)[id];
+}
+
+function findAnimationEvent(
+  context: VisualGraphExecutionContext,
+  controllerId: string,
+  eventType: string,
+  clip: string | undefined
+): VisualAnimationEvent | undefined {
+  const controller = collectionGet<VisualAnimationControllerState>(context.animationControllers, controllerId);
+  const events = [...(context.animationEvents ?? []), ...(controller?.events ?? [])];
+  return events.find((event) =>
+    event.type === eventType &&
+    (event.controllerId === undefined || event.controllerId === controllerId) &&
+    (clip === undefined || event.clip === undefined || event.clip === clip)
+  );
+}
+
+function findCollisionEvent(
+  events: readonly VisualCollisionEvent[] | undefined,
+  type: VisualCollisionEvent["type"],
+  bodyId: string,
+  otherBodyId: string | undefined
+): VisualCollisionEvent | undefined {
+  return events?.find((event) =>
+    event.type === type &&
+    (event.bodyId === bodyId || event.otherBodyId === bodyId) &&
+    (otherBodyId === undefined || event.bodyId === otherBodyId || event.otherBodyId === otherBodyId)
+  );
+}
+
+function findCombatHit(events: readonly VisualCombatEvent[] | undefined, actorId: string | undefined, hitboxId: string | undefined): VisualCombatEvent | undefined {
+  return events?.find((event) =>
+    event.type === "hit" &&
+    (actorId === undefined || event.actorId === actorId || event.targetId === actorId) &&
+    (hitboxId === undefined || event.hitboxId === hitboxId)
+  );
+}
+
+function evaluateAssertion(actual: unknown, expected: unknown, operator: string): boolean {
+  switch (operator) {
+    case "equals":
+      return stableStringify(actual) === stableStringify(expected);
+    case "notEquals":
+      return stableStringify(actual) !== stableStringify(expected);
+    case "truthy":
+      return Boolean(actual);
+    case "falsy":
+      return !actual;
+    default:
+      return false;
+  }
+}
+
+function stableClone<T>(value: T): T {
+  return cleanObject(value) as T;
+}
+
+function cleanObject(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((entry) => cleanObject(entry));
+  }
+  if (typeof value === "object" && value !== null) {
+    const output: Record<string, unknown> = {};
+    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
+      const entry = (value as Record<string, unknown>)[key];
+      if (entry !== undefined) {
+        output[key] = cleanObject(entry);
+      }
+    }
+    return output;
+  }
+  return value;
+}
+
+function stableStringify(value: unknown): string {
+  return JSON.stringify(cleanObject(value));
 }

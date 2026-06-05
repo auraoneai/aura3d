@@ -1497,8 +1497,8 @@ function applySkinningUniforms(
       material: material.name
     });
   }
-  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > 64) {
-    throw new RenderDeviceError("Skinning jointCount must be an integer in [1, 64]", "INVALID_SKINNING_PALETTE", {
+  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > 96) {
+    throw new RenderDeviceError("Skinning jointCount must be an integer in [1, 96]", "INVALID_SKINNING_PALETTE", {
       jointCount: skinning.jointCount
     });
   }

@@ -136,11 +136,14 @@ function resolveRequest(root: string, pathname: string): string | undefined {
   const normalizedPath = normalize(contextualPathForLegacyPath(pathname)).replace(/^(\.\.[/\\])+/, "");
   const candidates: string[] = [];
   const loadersBrowserMappedPath = browserMappedLoadersGLPath(normalizedPath);
+  const legacyGameSliceTemplatePath = gameSliceTemplatePath(normalizedPath);
 
   if (normalizedPath === "/" || normalizedPath === ".") {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
   } else if (loadersBrowserMappedPath) {
     candidates.push(join(root, loadersBrowserMappedPath));
+  } else if (legacyGameSliceTemplatePath) {
+    candidates.push(join(root, legacyGameSliceTemplatePath));
   } else {
     candidates.push(join(root, normalizedPath));
   }
@@ -172,6 +175,17 @@ function resolveRequest(root: string, pathname: string): string | undefined {
     }
   }
 
+  return undefined;
+}
+
+function gameSliceTemplatePath(pathname: string): string | undefined {
+  const normalized = pathname.replace(/\\/g, "/").replace(/^\//, "");
+  if (normalized === "examples/game-slice") {
+    return "templates/game-slice/index.html";
+  }
+  if (normalized.startsWith("examples/game-slice/")) {
+    return normalized.replace(/^examples\/game-slice/, "templates/game-slice");
+  }
   return undefined;
 }
 

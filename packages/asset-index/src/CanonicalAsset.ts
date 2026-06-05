@@ -63,6 +63,10 @@ export interface AuraCanonicalAsset {
   readonly triangles?: number;
   readonly hasAnimations?: boolean;
   readonly bounds?: AuraAssetBounds;
+  /** Source popularity signal (e.g. Sketchfab likes) — feeds quality ranking. */
+  readonly likeCount?: number;
+  /** Source popularity signal (e.g. Sketchfab views) — feeds quality ranking. */
+  readonly viewCount?: number;
   /** Lowercased keywords used for relevance ranking. */
   readonly tags: readonly string[];
   /** Authoritative human page for the asset (license, author, terms). */

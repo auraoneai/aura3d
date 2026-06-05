@@ -1,6 +1,6 @@
 # Product And Authoring Workflows
 
-Version: 1.0.0
+Version: 1.0.5
 
 A3D includes workflow packages for product viewers, configurators, asset inspection, material studios, animation labs, comparison scenes, and authoring/runtime bridges. These features were created from the product-workflow and advanced-gallery execution records and now live in `@aura3d/workflows`, `@aura3d/product-studio`, `@aura3d/editor-runtime`, and the consolidated root route registry.
 

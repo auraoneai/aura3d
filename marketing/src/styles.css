@@ -318,6 +318,286 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
   border-color: var(--ink);
 }
 .btn-primary:hover { background: var(--accent); border-color: var(--accent); }
+
+/* ── Aura Clash flagship integration ───────────────────────── */
+.nav-link.nav-link-feature {
+  color: var(--ink);
+  border: 1px solid rgba(245,180,84,0.22);
+  background:
+    radial-gradient(120px 48px at 50% 0%, rgba(245,180,84,0.12), transparent 72%),
+    rgba(245,180,84,0.05);
+}
+
+.wwx-feature {
+  padding: 104px 0 86px;
+  background:
+    radial-gradient(900px 420px at 82% 16%, rgba(245,180,84,0.18), transparent 68%),
+    radial-gradient(720px 420px at 16% 88%, rgba(106,169,255,0.11), transparent 70%);
+}
+
+.wwx-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
+  gap: 34px;
+  align-items: stretch;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid rgba(245,180,84,0.24);
+  border-radius: 28px;
+  background:
+    linear-gradient(135deg, rgba(245,180,84,0.09), rgba(7,8,10,0.4) 32%, rgba(74,222,157,0.05)),
+    rgba(7,8,10,0.74);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 30px 120px rgba(0,0,0,0.42);
+  overflow: hidden;
+}
+
+.wwx-copy {
+  min-height: 530px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+}
+
+.wwx-copy .h2 {
+  max-width: 13ch;
+  font-size: clamp(38px, 5.2vw, 76px);
+  letter-spacing: -0.055em;
+}
+
+.wwx-copy .lede {
+  max-width: 58ch;
+}
+
+.wwx-actions,
+.wwx-source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.wwx-proof-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.wwx-proof-grid span {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.035);
+  color: rgba(244,246,248,0.76);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.wwx-source-row {
+  padding-top: 6px;
+}
+
+.wwx-source-row a {
+  color: rgba(244,246,248,0.72);
+  font-family: var(--mono);
+  font-size: 12px;
+  border-bottom: 1px solid rgba(74,222,157,0.34);
+}
+
+.wwx-source-row a:hover {
+  color: var(--accent);
+}
+
+.wwx-stage {
+  position: relative;
+  min-height: 540px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(520px 260px at 50% 22%, rgba(245,180,84,0.18), transparent 70%),
+    #050608;
+}
+
+.wwx-canvas,
+.wwx-static-link,
+.wwx-static-preview {
+  width: 100%;
+  height: 100%;
+  min-height: 540px;
+}
+
+.wwx-canvas {
+  border: 0;
+  background: #050608;
+}
+
+.wwx-static-link {
+  display: block;
+  position: relative;
+  isolation: isolate;
+  color: inherit;
+  background: #050608;
+}
+
+.wwx-static-link::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5,6,8,0.06), transparent 42%, rgba(5,6,8,0.36)),
+    radial-gradient(520px 220px at 50% 72%, rgba(74,222,157,0.14), transparent 72%);
+  opacity: 0.86;
+  transition: opacity .18s ease;
+}
+
+.wwx-static-link::after {
+  content: "Play Aura Clash";
+  position: absolute;
+  z-index: 5;
+  right: 18px;
+  bottom: 18px;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid rgba(74,222,157,0.4);
+  border-radius: 999px;
+  background: rgba(7,8,10,0.82);
+  color: #f4f6f8;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 28px rgba(74,222,157,0.1);
+  backdrop-filter: blur(12px);
+}
+
+.wwx-static-link:hover::before,
+.wwx-static-link:focus-visible::before {
+  opacity: 0.42;
+}
+
+.wwx-static-link:hover .wwx-static-preview,
+.wwx-static-link:focus-visible .wwx-static-preview {
+  transform: scale(1.025);
+}
+
+.wwx-static-preview {
+  display: block;
+  object-fit: cover;
+  object-position: center top;
+  background: #050608;
+  transform: scale(1.01);
+  transition: transform .22s ease;
+}
+
+.wwx-stage-badge {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 18px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: calc(100% - 36px);
+  padding: 9px 12px;
+  border: 1px solid rgba(245,180,84,0.22);
+  border-radius: 999px;
+  background: rgba(7,8,10,0.78);
+  color: rgba(244,246,248,0.76);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(12px);
+}
+
+.example-poster[data-has-image="true"] {
+  background:
+    linear-gradient(180deg, rgba(5,6,8,0.1), rgba(5,6,8,0.78)),
+    #050608;
+}
+
+.example-poster-image {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-image: var(--example-poster-image);
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.01);
+}
+
+.example-poster[data-has-image="true"] .example-poster-image {
+  opacity: 1;
+}
+
+.example-poster[data-has-image="true"] .example-poster-grid {
+  opacity: 0.22;
+}
+
+.example-poster[data-has-image="true"] .example-poster-copy,
+.example-poster[data-has-image="true"] .example-poster-action {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 980px) {
+  .wwx-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .wwx-copy {
+    min-height: auto;
+  }
+
+  .wwx-copy .h2 {
+    max-width: 16ch;
+  }
+
+  .wwx-stage,
+  .wwx-canvas,
+  .wwx-static-link,
+  .wwx-static-preview {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 680px) {
+  .wwx-feature {
+    padding: 72px 0 58px;
+  }
+
+  .wwx-shell {
+    border-radius: 20px;
+  }
+
+  .wwx-proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wwx-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .wwx-stage,
+  .wwx-canvas,
+  .wwx-static-link,
+  .wwx-static-preview {
+    min-height: 340px;
+  }
+}
 .btn-ghost { background: transparent; border-color: var(--line-strong); }
 .btn .arr {
   width: 6px; height: 6px;
@@ -341,44 +621,60 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
-  gap: 24px;
+  height: 58px;
+  gap: 14px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  flex: 0 0 auto;
+  gap: 8px;
   font-weight: 500;
   letter-spacing: -0.02em;
-  font-size: 15px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 .brand-mark {
-  width: 22px; height: 22px;
+  width: 20px; height: 20px;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 2px;
+  white-space: nowrap;
 }
 .nav-link {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--ink-2);
-  padding: 6px 12px;
+  padding: 6px 9px;
   border-radius: 6px;
   transition: color .15s, background .15s;
+  white-space: nowrap;
 }
 .nav-link:hover { color: var(--ink); background: var(--bg-2); }
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex: 0 0 auto;
+  gap: 6px;
+  white-space: nowrap;
+}
+.nav .btn {
+  min-height: 36px;
+  padding: 0 13px;
+  font-size: 13px;
 }
 .nav-version {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--ink-3);
-  padding: 4px 10px;
+  padding: 4px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
   letter-spacing: 0.02em;
@@ -965,6 +1261,199 @@ pre.code {
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+
+/* ── Aura Clash showcase ─────────────────────────────────── */
+.aura-clash {
+  padding-top: 96px;
+  background:
+    radial-gradient(860px 420px at 88% 12%, rgba(255,93,77,0.1), transparent 68%),
+    radial-gradient(720px 360px at 12% 100%, rgba(245,180,84,0.08), transparent 70%);
+}
+
+.aura-clash-shell {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.012)),
+    rgba(8,10,12,0.86);
+  box-shadow: 0 26px 90px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.aura-clash-copy {
+  min-width: 0;
+  padding: clamp(30px, 4.4vw, 56px);
+  border-right: 1px solid var(--line);
+  background:
+    radial-gradient(460px 260px at 10% 0%, rgba(245,180,84,0.1), transparent 70%),
+    linear-gradient(180deg, rgba(255,255,255,0.026), rgba(255,255,255,0));
+}
+
+.aura-clash-copy .h2 {
+  max-width: 12ch;
+  margin-top: 18px;
+  font-size: clamp(38px, 5vw, 72px);
+}
+
+.aura-clash-copy .lede {
+  margin-top: 20px;
+  max-width: 50ch;
+}
+
+.aura-clash-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.aura-clash-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 34px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.aura-clash-stat {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008)),
+    rgba(7,8,10,0.44);
+}
+
+.aura-clash-stat .k,
+.aura-clash-stat .v {
+  display: block;
+  font-family: var(--mono);
+}
+
+.aura-clash-stat .k {
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.aura-clash-stat .v {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-1);
+  overflow-wrap: anywhere;
+}
+
+.aura-clash-panel {
+  position: relative;
+  min-height: 620px;
+  overflow: hidden;
+  background:
+    radial-gradient(520px 360px at 52% 42%, rgba(255,93,77,0.16), transparent 62%),
+    radial-gradient(520px 360px at 72% 72%, rgba(74,222,157,0.11), transparent 68%),
+    linear-gradient(135deg, #15100d, #060708 58%, #10150f);
+}
+
+.showcase-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.aura-clash-panel::before,
+.aura-clash-panel::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.aura-clash-panel::before {
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(245,180,84,0.12) 42% 44%, transparent 44% 100%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 54px),
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.026) 0 1px, transparent 1px 54px);
+  mask-image: radial-gradient(circle at 50% 48%, black, transparent 74%);
+  opacity: .9;
+}
+
+.aura-clash-panel::after {
+  width: 340px;
+  height: 340px;
+  right: 8%;
+  top: 18%;
+  border-radius: 999px;
+  border: 1px solid rgba(245,180,84,0.22);
+  background:
+    conic-gradient(from 20deg, rgba(255,93,77,0.18), transparent 22%, rgba(74,222,157,0.18), transparent 58%, rgba(245,180,84,0.2), transparent 100%),
+    radial-gradient(circle, rgba(255,255,255,0.05), transparent 56%);
+  filter: blur(.2px);
+}
+
+.aura-clash-stage {
+  position: absolute;
+  inset: 18px;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.aura-clash-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid rgba(245,180,84,0.25);
+  border-radius: 999px;
+  background: rgba(7,8,10,0.66);
+  color: rgba(244,246,248,0.82);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  backdrop-filter: blur(10px);
+}
+
+.aura-clash-panel .example-poster {
+  background:
+    radial-gradient(420px 260px at 62% 34%, rgba(255,93,77,0.22), transparent 65%),
+    radial-gradient(360px 240px at 28% 76%, rgba(245,180,84,0.16), transparent 70%),
+    linear-gradient(135deg, rgba(26,14,11,0.98), rgba(5,7,9,0.99) 56%, rgba(8,18,13,0.98));
+  border-color: rgba(245,180,84,0.2);
+}
+
+.aura-clash-panel .example-poster-kicker {
+  color: var(--amber);
+}
+
+.aura-clash-panel .example-poster-copy strong {
+  font-size: clamp(38px, 5.4vw, 70px);
+  letter-spacing: -.06em;
+  max-width: 8ch;
+}
+
+.aura-clash-panel .example-poster-action {
+  border-color: rgba(245,180,84,0.34);
+  background: rgba(245,180,84,0.1);
+}
+
+.aura-clash-panel .example-poster-action:hover {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #120904;
 }
 
 /* ── Package matrix ────────────────────────────────────────── */
@@ -1771,17 +2260,17 @@ footer {
 .nav-social {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  margin-right: 2px;
+  gap: 6px;
+  margin-right: 0;
 }
 
 .nav-social-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  height: 36px;
-  padding: 0 12px;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
   border: 1px solid rgba(74,222,157,0.22);
   border-radius: 999px;
   color: rgba(244,246,248,0.88);
@@ -1790,15 +2279,15 @@ footer {
     rgba(7,8,10,0.54);
   text-decoration: none;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 10.5px;
   letter-spacing: 0.04em;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
   transition: color .18s ease, border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
 }
 
 .nav-social-link svg {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   flex: 0 0 auto;
 }
 
@@ -1816,13 +2305,13 @@ footer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
+  width: 24px;
   height: 16px;
   border-radius: 3px;
   background: #cb3837;
   color: #fff;
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   letter-spacing: -0.06em;
   line-height: 1;
@@ -1950,4 +2439,46 @@ a.tape-item:hover {
 
 @media (max-width: 640px) {
   .tape-items { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1080px) {
+  .aura-clash-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .aura-clash-copy {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .aura-clash-panel {
+    min-height: 460px;
+  }
+}
+
+@media (max-width: 640px) {
+  .aura-clash {
+    padding-top: 72px;
+  }
+
+  .aura-clash-actions,
+  .aura-clash-actions .btn {
+    width: 100%;
+  }
+
+  .aura-clash-actions .btn {
+    justify-content: center;
+  }
+
+  .aura-clash-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .aura-clash-panel {
+    min-height: 390px;
+  }
+
+  .aura-clash-stage {
+    display: none;
+  }
 }

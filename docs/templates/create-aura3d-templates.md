@@ -1,12 +1,12 @@
-# create-aura3d Templates
+# create-aura3d templates
 
-Vite 3D templates for AI coding agents, browser 3D apps, GLB/glTF product viewers, cinematic WebGL scenes, interactive mini-games, route health tests, screenshot tests, and static deployment checks.
+`create-aura3d` scaffolds Vite apps that use the public `@aura3d/engine` API, typed GLB/glTF assets, route health checks, screenshot contracts, and static deployment workflows.
 
 ## Starter templates
 
-- `product-viewer`: 3D product viewer template for a user-provided GLB/glTF asset, orbit camera, studio lighting, diagnostics, route health, and screenshot tests.
-- `cinematic-scene`: cinematic WebGL scene template for camera motion, lights, atmosphere, imported assets, and realtime previs-style browser scenes. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
-- `mini-game`: interactive browser mini-game template for primitives, follow-camera behavior, score/HUD state, route health, and deployable output.
+- `product-viewer`: A GLB/glTF product viewer with typed asset references, orbit camera, studio lighting, diagnostics, route health, and screenshot tests.
+- `cinematic-scene`: A cinematic browser scene with camera motion, lighting, atmosphere, imported assets, and presentation-ready visual composition. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
+- `mini-game`: An interactive browser game starter for input, HUD state, primitives, follow-camera behavior, scoring, route health, screenshot tests, and deployable output.
 
 ## Scaffold
 
@@ -14,14 +14,33 @@ Vite 3D templates for AI coding agents, browser 3D apps, GLB/glTF product viewer
 npx create-aura3d@latest my-app --template product-viewer
 ```
 
-Each template includes:
+Every active template includes:
 
 - `npm run dev`
 - `npm run build`
 - `npm run test`
 - `tests/route-health.spec.ts`
 - `tests/screenshot.spec.ts`
-- `README.md` for humans and agents
-- public `@aura3d/engine` imports only
+- typed asset guidance;
+- public `@aura3d/engine` imports only;
+- a README for humans and AI coding agents.
 
-Additional template ideas are held in `archive/held-back-create-aura3d-templates/` until they have the same docs, tests, scaffold smoke coverage, and package manifest support as the active starter templates.
+## Mini-game quality target
+
+The World War X showcase is the production reference for the `mini-game` direction. It demonstrates how a browser-native Aura3D game can combine:
+
+- a 10-fighter roster;
+- generated GLB fighter assets;
+- typed asset members from `src/aura-assets.ts`;
+- `model(assets.x)` runtime usage;
+- primitives, materials, lighting, effects, and camera composition;
+- arcade physics, hitboxes, projectiles, guard state, meter, and results;
+- Summit Remix prompt presets;
+- route evidence, accessibility settings, poster capture, and Playwright contracts;
+- marketing integration through a poster-first homepage section.
+
+Use World War X as the documentation bar for future game templates: production copy, inspectable TypeScript, typed assets, evidence routes, screenshot states, and static-deploy readiness.
+
+## Held-back templates
+
+Additional template ideas stay in `archive/held-back-create-aura3d-templates/` until they have documentation, tests, scaffold smoke coverage, package manifest support, and the same production-grade route evidence as the active starter templates.

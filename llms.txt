@@ -17,13 +17,17 @@ You are NOT writing three.js:
 | `new THREE.BoxGeometry(...)` (set-dressing only) | `primitives.*` |
 
 Resolve real objects from the asset catalog FIRST:
-- If a prompt names a real-world object (a helmet, a sneaker, a camera, a car), do not model it from primitives and do not invent a URL. Resolve it through the Aura3D asset resolver / catalog: `npx @aura3d/cli@latest assets search "<object>"`.
-- The catalog returns license-checked candidates. Auto-pullable candidates (CC0 / CC-BY, verified, direct-download) are pulled to disk and typed for you; everything else is a deep-link you open and license yourself. Pick an auto-pullable candidate, then use the generated typed `assets.x` with `model(assets.x)`.
-- Primitives are only for set-dressing around a resolved real asset, or when no clean catalog asset matches the prompt. They are never a substitute for a named real object.
+- If a prompt names a real-world object (a helmet, a sneaker, a camera, a car), do not model it from primitives and do not invent a URL. Resolve it through the Aura3D asset catalog: `npx @aura3d/cli@latest assets search "<object>"`.
+- The catalog is large (~850k license-verified GLB/glTF assets aggregated from Objaverse, Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and CC0 packs). It is searched by **meaning + quality**, not just keywords, so use a natural descriptive phrase ("battle-worn knight helmet", "cozy wooden cabin") - the best-matching, highest-quality, license-clean candidates come back ranked.
+- Auto-pullable candidates (CC0 / CC-BY, verified, direct-download) are pulled to disk and typed for you; run `assets resolve "<object>" --name <name>` to pull the top match and get a typed `assets.<name>`. Then use it with `model(assets.<name>)`.
+- Primitives are only for set-dressing around a resolved real asset, or in the rare case no clean catalog asset matches. They are never a substitute for a named real object - with ~850k assets, a real match almost always exists.
 
 Scaffold:
 ```bash
 npx create-aura3d@latest my-scene --template product-viewer
+npx create-aura3d@latest my-fighter --template fighting-game
+npx create-aura3d@latest my-cartoon --template cartoon-channel
+npx create-aura3d@latest my-episode --template prompt-cartoon-channel
 cd my-scene
 npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
 npm run dev
@@ -42,11 +46,16 @@ createAuraApp("#app", {
 Public imports for agent-authored apps:
 ```ts
 import {
+  AnimationController,
   createAuraApp,
+  createAnimationController,
   collectAuraSceneEvidence,
+  collectPromptAnimationEvidence,
+  compilePromptEpisodePlan,
   definePromptPlan,
   compilePromptPlan,
   promptPlanToScene,
+  captionCueAtTime,
   scene,
   model,
   camera,
@@ -64,6 +73,7 @@ import {
   physics,
   labels,
   environments,
+  game,
   games,
   charts,
   character,
@@ -72,9 +82,159 @@ import {
   solar,
   particles,
   defineAuraAssets,
+  createAudioStemManifest,
+  createAuraVoiceBridgePackage,
+  createAuraVoiceVisemeTrack,
+  createCaptionTimingProof,
+  createCartoonRenderOutputPackageMetadata,
+  createGlbBlendshapeVisemeCue,
+  createPrimitiveMouthVisemeCues,
+  createPromptAnimationDeterministicScreenshotFixtureMetadata,
+  createShotPlaybackPlan,
+  evaluatePromptAnimationPublishReadiness,
+  installShotPlayback,
+  sampleAuraVoiceBridgeAtTime,
+  validateAuraVoiceBridgePackage,
   ui
 } from "@aura3d/engine";
 ```
+
+Game runtime pattern:
+```ts
+import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const app = createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.fighter).runtime(game.runtimeNode("player", { tags: ["fighter"] })))
+    .add(lights.studio())
+});
+
+const player = app.nodes.require("player");
+const input = game.input({
+  actions: {
+    moveLeft: ["KeyA", "ArrowLeft"],
+    moveRight: ["KeyD", "ArrowRight"],
+    light: ["KeyJ"]
+  },
+  axes: {
+    moveX: { negative: "moveLeft", positive: "moveRight" }
+  }
+});
+
+app.onFrame(({ dt }) => {
+  input.update(dt);
+  player.translate(input.axis("moveX") * dt * 1.5, 0, 0);
+  if (input.pressed("light")) player.play("light", { restart: true, speed: 1.2 });
+});
+```
+
+Game runtime rules:
+- Use `create-aura3d --template fighting-game` when the user asks for a playable browser fighting-game starter.
+- Create one Aura app per route; do not call `createAuraApp()` every frame.
+- Use `.runtime(game.runtimeNode("id"))` for nodes that gameplay code needs to mutate.
+- Use `app.onFrame(...)`, `app.offFrame(...)`, `app.pause()`, `app.resume()`, and `app.step(dt)` for runtime updates and deterministic tests.
+- Use `app.input(...)` when input should be disposed with the app; use `game.input(...)` for standalone tests and tools.
+- Call `input.update(dt)` once per frame before querying `pressed`, `held`, `released`, `buffered`, `input.combo(...)`, or `axis`.
+- Use `game.evidence(app)` to prove runtime nodes and frame-loop activity.
+- Keep typed assets from `./aura-assets`; do not use string ids, invented URLs, or direct loader code.
+
+Aura3D 1.0.5 game runtime helpers:
+```ts
+const stage = games.fighting.stagePreset("neon-dojo");
+const stageIssues = games.fighting.validateStage(stage);
+
+const fighting = game.fighting({
+  playerId: "player",
+  opponentId: "opponent",
+  stage: { width: stage.combatBounds.maxX - stage.combatBounds.minX },
+  autoListen: true
+});
+
+const touchLayout = game.touchControls({
+  width: window.innerWidth,
+  height: window.innerHeight,
+  buttons: [
+    { action: "jump", label: "Jump", binding: "TouchJump" },
+    { action: "light", label: "Light", binding: "TouchLight" }
+  ]
+});
+
+const jumpAssist = game.jumpAssist({ coyoteMs: 100, bufferMs: 120 });
+const replayPlan = game.inputReplay(fighting.input.recorded(), { fps: 60, label: "round-1" });
+const replayDriver = game.inputReplayDriver(
+  game.input({ actions: fighting.controls.actions, axes: fighting.controls.axes, autoListen: false }),
+  replayPlan
+);
+
+const colliders = [
+  game.collider.capsule({ id: "player-body", center: fighting.bodies.player.position, radius: 0.34, height: 1.7 }),
+  game.collider.capsule({ id: "opponent-body", center: fighting.bodies.opponent.position, radius: 0.34, height: 1.7 })
+];
+
+const hud = game.hud.bindings([
+  game.hud.health({ actorId: "player", label: "Player health" }),
+  game.hud.health({ actorId: "opponent", label: "Opponent health" }),
+  game.hud.timer({ valuePath: "round.timeRemaining" }),
+  game.hud.debugToggle({ action: "debug", statePath: "debug.visible" })
+]);
+
+const accessibility = [
+  game.accessibility.label({ targetId: "player-health", label: "Player health", live: true }),
+  game.accessibility.reducedMotion({ enabled: false }),
+  game.accessibility.reducedFlash({ enabled: false }),
+  game.accessibility.highContrast({ enabled: false }),
+  game.accessibility.pauseControls({ actions: ["pause", "Escape"], resumeActions: ["pause", "Enter"], menuId: "pause-menu" })
+];
+
+const overlay = game.debug.overlay({
+  runtime: app.runtime,
+  input: fighting.input,
+  bodies: [fighting.bodies.player, fighting.bodies.opponent],
+  combat: fighting.combat,
+  effects: fighting.effects,
+  camera: fighting.camera,
+  colliders,
+  warnings: stageIssues.map((issue) => issue.message)
+});
+```
+
+Animation controller pattern:
+```ts
+const animation = new AnimationController({
+  clipRegistry: assets.fighter,
+  requiredClips: ["Idle", "Walk", "LightPunch"],
+  suppressRootMotion: true
+});
+
+app.onFrame(({ dt }) => {
+  fighting.update(dt);
+  animation.update(dt);
+  if (fighting.input.pressed("light")) {
+    animation.crossFade("LightPunch", 0.08, { restart: true });
+  }
+});
+```
+
+Aura3D 1.0.5 animation/editor/visual scripting rules:
+- Read `docs/api/animation-runtime-events.md` before changing skeletal animation, animation events, or viseme/blendshape sync docs or examples.
+- Read `docs/api/editor-visual-scripting.md` before changing editor-runtime, timeline, project serialization, visual graph, or graph-to-runtime bridge docs or examples.
+- Use typed asset metadata for clip, skeleton, and morph target names. If the names are not in `src/aura-assets.ts`, `aura.assets.json`, an asset inspection report, or a source/license evidence file, inspect the asset first instead of guessing.
+- Use `AnimationController` / `createAnimationController(...)` for named clips, restart, crossfade, layers, events, diagnostics, and deterministic pose snapshots.
+- Use `animation.onEvent(...)` for clip-local gameplay events such as `hitbox.open`, `hitbox.close`, `sfx`, `vfx`, `camera.impulse`, `caption`, and `viseme`.
+- Use runtime node `setAnimationPose(...)`, `setMorphTarget(...)`, and `setMorphTargets(...)` for pose/morph state. Do not reach into renderer internals from app code.
+- For AuraVoice/cartoon sync, sample bridge or viseme timing and apply typed morph weights to the runtime node:
+
+```ts
+app.onFrame(({ time }) => {
+  const sample = sampleAuraVoiceBridgeAtTime(bridgePackage, time, "host");
+  app.nodes.require("host").setMorphTargets(sample.viseme?.blendshapeWeights ?? {});
+});
+```
+
+- `@aura3d/editor-runtime` and `@aura3d/scripting` are public package surfaces for tools and tests. Live browser routes still mount through `@aura3d/engine`.
+- Visual graphs can validate and emit deterministic side effects. A graph is not proven to drive a browser scene until those side effects are applied to a mounted Aura app and captured in browser evidence.
+- Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.0.5 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
 
 Benchmark priority:
 - Use `sceneKits.<name>()` first for benchmark prompts.
@@ -141,6 +301,140 @@ Typed asset rule:
 - Use `model(assets.model)` or `sceneKits.productViewer(assets.product)` with the exact generated key.
 - Do not use `model("model")`, string asset ids, invented URLs, unrelated copied GLBs, or `unsafeModelUrl(...)` for benchmark product proof.
 - `unsafeModelUrl(...)` is only an explicit temporary escape hatch outside safe benchmark code.
+
+Game and cartoon asset readiness:
+- Before claiming a playable game route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-game`.
+- Before claiming a prompt-to-cartoon or AuraVoice episode route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-cartoon`.
+- Use `npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair` for repeatable character plans. Add every body, hair, prop, outfit, and stage part through `assets add` first.
+- A readiness report is not visual proof. Do not mark visual-quality, animation-quality, or launch-quality gates complete without screenshot/runtime evidence.
+- Use `create-aura3d --template prompt-cartoon-channel` for prompt-driven episode scaffolds that need AuraVoice manifests, shot timelines, dialogue beats, visemes, captions, and render plans. The shorter `cartoon-channel` template name remains supported.
+
+Aura3D 1.0.5 package/readiness declarations:
+```bash
+npx create-aura3d@latest my-fighter --template fighting-game
+npx create-aura3d@latest my-episode --template prompt-cartoon-channel
+npx @aura3d/cli@latest assets validate-game
+npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest check-deploy --dist dist
+pnpm game-runtime:docs
+pnpm game-runtime:template
+pnpm game-runtime:package
+pnpm game-runtime:release
+pnpm prompt-animation:docs
+pnpm prompt-animation:template
+pnpm prompt-animation:package
+pnpm prompt-animation:release
+```
+
+Do not claim game, prompt-cartoon, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
+
+Prompt-cartoon and AuraVoice pattern:
+```ts
+const plan = compilePromptEpisodePlan({
+  episodeId: "moon-garden",
+  title: "Moon Garden Helpers",
+  prompt: "Two robots clean a glowing moon garden.",
+  language: "en",
+  runtime: { duration: 30, frameRate: 30, resolution: { width: 1280, height: 720 }, maxTimingDriftFrames: 1 },
+  characters: [
+    { id: "miko", name: "Miko", role: "hero", asset: assets.miko },
+    { id: "luma", name: "Luma", role: "sidekick", asset: assets.luma }
+  ],
+  locations: [{ id: "moon-garden", name: "Moon Garden", mood: "soft neon bedtime" }],
+  beats: [
+    {
+      id: "beat-001",
+      locationId: "moon-garden",
+      summary: "Miko and Luma clean the glowing weeds.",
+      visualIntent: "Typed characters with readable captions and gentle light.",
+      duration: 8,
+      characters: ["miko", "luma"],
+      dialogue: [{ speakerId: "miko", text: "The moon garden is glowing again.", emotion: "curious" }]
+    }
+  ],
+  route: "/episodes/moon-garden"
+});
+
+const visemes = createAuraVoiceVisemeTrack({
+  episodeId: plan.episodePlan.episodeId,
+  language: plan.episodePlan.language,
+  frameRate: plan.shotTimeline.frameRate,
+  cues: plan.dialogueTrack.lines.flatMap((line) =>
+    createPrimitiveMouthVisemeCues({
+      characterId: line.speakerId,
+      speakerId: line.speakerId,
+      lineId: line.lineId,
+      startTime: line.startTime,
+      endTime: line.endTime
+    }).map((cue) => createGlbBlendshapeVisemeCue(cue))
+  )
+});
+
+const audioStems = createAudioStemManifest({
+  episodeId: plan.episodePlan.episodeId,
+  duration: plan.dialogueTrack.duration,
+  stems: plan.dialogueTrack.lines.map((line) => ({
+    id: `audio:${line.lineId}`,
+    role: "dialogue",
+    path: line.audioFile ?? `assets/audio/${line.language}/${line.lineId}.wav`,
+    startTime: line.startTime,
+    duration: line.endTime - line.startTime,
+    language: line.language
+  }))
+});
+
+const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+  episodePlan: plan.episodePlan,
+  shotTimeline: plan.shotTimeline,
+  renderQueue: plan.renderQueue
+});
+
+const bridge = createAuraVoiceBridgePackage({
+  episodePlan: plan.episodePlan,
+  storyboard: plan.storyboard,
+  shotTimeline: plan.shotTimeline,
+  dialogueTrack: plan.dialogueTrack,
+  captionTrack: plan.captionTrack,
+  visemes,
+  audioStems,
+  renderQueue: plan.renderQueue,
+  renderOutputPackage
+});
+
+const playback = createShotPlaybackPlan({
+  timeline: plan.shotTimeline,
+  performance: plan.performance,
+  captions: plan.captionTrack,
+  visemes,
+  runtimeNodeByCharacterId: { miko: "miko", luma: "luma" },
+  loop: true
+});
+
+const app = createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.miko).runtime(game.runtimeNode("miko")))
+    .add(model(assets.luma).runtime(game.runtimeNode("luma")))
+});
+installShotPlayback(app, playback);
+
+const bridgeIssues = validateAuraVoiceBridgePackage(bridge);
+const sample = sampleAuraVoiceBridgeAtTime(bridge, 3);
+const evidence = collectPromptAnimationEvidence({
+  bridgePackage: bridge,
+  screenshots: [
+    {
+      id: "shot-001",
+      time: sample.time,
+      path: "artifacts/screenshots/shot-001.png",
+      hash: "sha256:replace-with-rendered-screenshot-hash",
+      width: 1280,
+      height: 720
+    }
+  ],
+  routeHealth: { status: "pass" }
+});
+const readiness = evaluatePromptAnimationPublishReadiness(evidence);
+```
 
 Prompt-plan pattern:
 ```ts

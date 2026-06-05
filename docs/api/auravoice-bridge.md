@@ -1,0 +1,216 @@
+# AuraVoice Bridge API
+
+AuraVoice owns script, voice, caption, viseme, dub, and audio-stem timing.
+Aura3D owns typed 3D scene assembly, character performance, camera choreography,
+render queues, screenshots, and visual evidence. The bridge between them is a
+source contract built from public `@aura3d/engine` exports.
+
+Use this page for AuraVoice/Aura3D package handoff examples. Do not import
+private engine files, `three`, `three/examples`, or loader internals. Do not
+invent GLB URLs or string model ids. Add real character and prop files through
+the Aura3D CLI, then use generated typed assets.
+
+```bash
+npx @aura3d/cli@latest assets add ./assets/miko.glb --name miko
+npx @aura3d/cli@latest assets add ./assets/luma.glb --name luma
+```
+
+```ts
+import {
+  collectPromptAnimationEvidence,
+  compilePromptEpisodePlan,
+  createAudioStemManifest,
+  createAuraApp,
+  createAuraVoiceBridgePackage,
+  createAuraVoiceVisemeTrack,
+  createCaptionTimingProof,
+  createCartoonRenderOutputPackageMetadata,
+  createGlbBlendshapeVisemeCue,
+  createPrimitiveMouthVisemeCues,
+  createShotPlaybackPlan,
+  evaluatePromptAnimationPublishReadiness,
+  game,
+  installShotPlayback,
+  lights,
+  model,
+  sampleAuraVoiceBridgeAtTime,
+  scene,
+  validateAuraVoiceBridgePackage
+} from "@aura3d/engine";
+import { assets } from "./aura-assets";
+```
+
+## Bridge package flow
+
+```ts
+const plan = compilePromptEpisodePlan({
+  episodeId: "moon-garden",
+  title: "Moon Garden Helpers",
+  prompt: "Two friendly robots clean a glowing moon garden.",
+  language: "en",
+  runtime: {
+    duration: 12,
+    frameRate: 30,
+    resolution: { width: 1280, height: 720 },
+    maxTimingDriftFrames: 1,
+    reducedMotion: true,
+    highContrast: true
+  },
+  characters: [
+    { id: "miko", name: "Miko", role: "hero", voiceId: "auravoice:miko", asset: assets.miko },
+    { id: "luma", name: "Luma", role: "sidekick", voiceId: "auravoice:luma", asset: assets.luma }
+  ],
+  locations: [
+    {
+      id: "moon-garden",
+      name: "Moon Garden",
+      description: "Bioluminescent plants with caption-safe framing.",
+      mood: "soft neon bedtime"
+    }
+  ],
+  beats: [
+    {
+      id: "beat-001",
+      locationId: "moon-garden",
+      summary: "Miko and Luma sweep glowing moon weeds.",
+      visualIntent: "Typed robot characters, readable captions, and gentle moonlit staging.",
+      duration: 12,
+      characters: ["miko", "luma"],
+      dialogue: [
+        { speakerId: "miko", text: "The moon garden is glowing again.", emotion: "curious" },
+        { speakerId: "luma", text: "Then let us make it sparkle.", emotion: "happy" }
+      ]
+    }
+  ],
+  route: "/episodes/moon-garden"
+});
+```
+
+Build caption, viseme, audio-stem, render-output, and bridge contracts from the
+same timing source:
+
+AuraVoice v2 viseme cues may include `phoneme`, `phonemeId`, `word`, `wordIndex`, `wordStartTime`, and `wordEndTime`; Aura3D preserves those fields when deriving primitive mouth-card or GLB blendshape playback. Dubbing maps must preserve original and dubbed storyboard, shot, dialogue, caption, speaker, and character ids unless AuraVoice emits an explicit retime instruction in the shot timeline.
+
+```ts
+const visemes = createAuraVoiceVisemeTrack({
+  episodeId: plan.episodePlan.episodeId,
+  language: plan.episodePlan.language,
+  frameRate: plan.shotTimeline.frameRate,
+  cues: plan.dialogueTrack.lines.flatMap((line) =>
+    createPrimitiveMouthVisemeCues({
+      characterId: line.speakerId,
+      speakerId: line.speakerId,
+      lineId: line.lineId,
+      startTime: line.startTime,
+      endTime: line.endTime
+    }).map((cue) => createGlbBlendshapeVisemeCue(cue))
+  )
+});
+
+const audioStems = createAudioStemManifest({
+  episodeId: plan.episodePlan.episodeId,
+  duration: plan.dialogueTrack.duration,
+  stems: plan.dialogueTrack.lines.map((line) => ({
+    id: `audio:${line.lineId}`,
+    role: "dialogue",
+    path: line.audioFile ?? `assets/audio/${line.language}/${line.lineId}.wav`,
+    startTime: line.startTime,
+    duration: line.endTime - line.startTime,
+    language: line.language
+  }))
+});
+
+const captionTimingProof = createCaptionTimingProof(plan.dialogueTrack, plan.captionTrack, {
+  frameRate: plan.shotTimeline.frameRate,
+  maxAllowedDriftFrames: plan.episodePlan.runtime.maxTimingDriftFrames
+});
+
+const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+  episodePlan: plan.episodePlan,
+  shotTimeline: plan.shotTimeline,
+  renderQueue: plan.renderQueue
+});
+
+const bridgePackage = createAuraVoiceBridgePackage({
+  episodePlan: plan.episodePlan,
+  storyboard: plan.storyboard,
+  shotTimeline: plan.shotTimeline,
+  dialogueTrack: plan.dialogueTrack,
+  captionTrack: plan.captionTrack,
+  visemes,
+  audioStems,
+  renderQueue: plan.renderQueue,
+  renderOutputPackage
+});
+
+const bridgeIssues = validateAuraVoiceBridgePackage(bridgePackage);
+const sample = sampleAuraVoiceBridgeAtTime(bridgePackage, 3);
+```
+
+## Runtime playback
+
+```ts
+const playback = createShotPlaybackPlan({
+  timeline: plan.shotTimeline,
+  performance: plan.performance,
+  captions: plan.captionTrack,
+  visemes,
+  runtimeNodeByCharacterId: { miko: "miko", luma: "luma" },
+  loop: true
+});
+
+const app = createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.miko).runtime(game.runtimeNode("miko", { tags: ["character"] })))
+    .add(model(assets.luma).runtime(game.runtimeNode("luma", { tags: ["character"] })))
+    .add(lights.studio())
+});
+
+installShotPlayback(app, playback);
+```
+
+## Evidence contract
+
+```ts
+const promptEvidence = collectPromptAnimationEvidence({
+  bridgePackage,
+  screenshots: [
+    {
+      id: "shot-001",
+      time: sample.time,
+      path: "artifacts/screenshots/shot-001.png",
+      hash: "sha256:replace-after-capture",
+      width: 1280,
+      height: 720
+    }
+  ],
+  routeHealth: { status: "planned" }
+});
+
+const readiness = evaluatePromptAnimationPublishReadiness(promptEvidence);
+
+window.__AURA3D_AURAVOICE_SOURCE_EVIDENCE__ = {
+  bridgeIssues,
+  captionTimingProof,
+  readiness,
+  promptEvidence,
+  note: "Source evidence only; render, audio, screenshot, deployment, and visual review proof are still required."
+};
+```
+
+The screenshot hash above is a placeholder in source examples. Replace it only
+after deterministic capture has produced real bytes, a stable path, and a
+content hash.
+
+## Source versus execution gates
+
+| Gate | Source-complete signal | Execution-required proof |
+| --- | --- | --- |
+| Contract id | Bridge package declares the AuraVoice/Aura3D prompt-animation contract | Evidence JSON emitted by the package/render pipeline |
+| Timing | Dialogue, captions, phoneme-aligned visemes, audio stems, and shot timeline share one frame rate | Drift report with caption, phoneme, viseme, and audio sample proof |
+| Playback | `createShotPlaybackPlan(...)` and `installShotPlayback(...)` target runtime node ids | Browser route report showing captions, visemes, character performance, and camera cuts |
+| Artifacts | Render queue and render-output metadata list planned stills, video, captions, stems, thumbnails, and evidence JSON | Actual artifact paths, byte sizes, SHA-256 hashes, media types, and stable ids |
+| Readiness | `evaluatePromptAnimationPublishReadiness(...)` is called from source evidence | Archived readiness JSON plus screenshot/video, accessibility, route-health, package-smoke, deployment, and review proof |
+
+Source-complete bridge packages are ready for execution gates. They are not
+publish-ready until the later proof artifacts exist.

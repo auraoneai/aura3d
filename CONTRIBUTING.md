@@ -1,10 +1,10 @@
 # Contributing Guide
 
-Version: 1.0.0
+Version: 1.0.5
 
 ## Scope
 
-Contributions for version `1.0.0` must preserve the current governance rules:
+Contributions for version `1.0.5` must preserve the current governance rules:
 
 - keep implementation edits scoped to the owning package or tool;
 - do not revert unrelated work from other agents or contributors;

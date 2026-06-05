@@ -13,9 +13,9 @@ export class SkinnedUnlitMaterial extends Material {
   constructor(options: SkinnedUnlitMaterialOptions = {}) {
     const color = options.color ?? [1, 1, 1, 1];
     validateColor(color);
-    const maxJoints = options.maxJoints ?? 64;
-    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 64) {
-      throw new Error("SkinnedUnlitMaterial maxJoints must be an integer in [1, 64]");
+    const maxJoints = options.maxJoints ?? 96;
+    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 96) {
+      throw new Error("SkinnedUnlitMaterial maxJoints must be an integer in [1, 96]");
     }
     super({
       name: options.name ?? "skinned-unlit",

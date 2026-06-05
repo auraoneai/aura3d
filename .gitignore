@@ -179,6 +179,7 @@ yarn.lock
 # Temporary files
 tmp/
 temp/
+downloads/
 *.tmp
 *.temp
 *.bak
@@ -334,3 +335,12 @@ fixtures/
 !tsconfig.json
 !.npmrc
 !.pnpmfile.cjs
+.vercel
+
+# Local source asset archives and bulky generated candidates
+apps/aura-clash-showcase/assets/candidates/
+apps/aura-clash-showcase/assets/quaternius-source/
+apps/aura-clash-showcase/assets/source/
+apps/aura-clash-showcase/assets/quaternius-*.json
+apps/world-war-x-showcase/
+marketing/public/aura-assets/

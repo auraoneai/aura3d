@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, unlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
@@ -41,8 +41,17 @@ function copyMarketingPublicFiles() {
       mkdirSync(outDir, { recursive: true });
       mirrorMarketingHtmlOutput(outDir);
       for (const file of ["favicon.svg", "robots.txt", "sitemap.xml", "llms.txt"]) {
-        const source = resolve(repoRoot, file);
+        const marketingSource = resolve(marketingDir, file);
+        const source = existsSync(marketingSource) ? marketingSource : resolve(repoRoot, file);
         if (existsSync(source)) copyFileSync(source, resolve(outDir, file));
+      }
+
+      copyAuraClashApp(outDir);
+
+      const auraClashAssetsDir = resolve(repoRoot, "apps/aura-clash-showcase/public/aura-assets");
+      if (existsSync(auraClashAssetsDir)) {
+        pruneAuraClashRuntimeAssets(resolve(outDir, "aura-assets"));
+        copyAuraClashRuntimeAssets(auraClashAssetsDir, resolve(outDir, "aura-assets"));
       }
 
       const dracoDir = resolveDracoDir();
@@ -55,6 +64,83 @@ function copyMarketingPublicFiles() {
       }
     }
   };
+}
+
+function copyAuraClashApp(outDir: string): void {
+  const sourceDir = resolve(repoRoot, "apps/aura-clash-showcase/dist");
+  if (!existsSync(resolve(sourceDir, "index.html"))) return;
+
+  copyDir(resolve(sourceDir, "assets"), resolve(outDir, "assets"));
+  const routeRoots = [
+    "apps/aura-clash-showcase",
+    "apps/aura-clash",
+    "showcase/aura-clash"
+  ];
+  const routeLeaves = [
+    "",
+    "playable",
+    "evidence",
+    "accessibility",
+    "deploy-check",
+    "poster"
+  ];
+  for (const routeRoot of routeRoots) {
+    for (const routeLeaf of routeLeaves) {
+      const targetDir = routeLeaf ? resolve(outDir, routeRoot, routeLeaf) : resolve(outDir, routeRoot);
+      mkdirSync(targetDir, { recursive: true });
+      copyFileSync(resolve(sourceDir, "index.html"), resolve(targetDir, "index.html"));
+    }
+  }
+
+  for (const routeLeaf of ["playable", "evidence", "accessibility", "deploy-check", "poster"]) {
+    const targetDir = resolve(outDir, routeLeaf);
+    mkdirSync(targetDir, { recursive: true });
+    copyFileSync(resolve(sourceDir, "index.html"), resolve(targetDir, "index.html"));
+  }
+
+  for (const file of ["robots.txt", "sitemap.xml"]) {
+    const source = resolve(repoRoot, "apps/aura-clash-showcase", file);
+    if (!existsSync(source)) continue;
+    mkdirSync(resolve(outDir, "apps/aura-clash-showcase"), { recursive: true });
+    mkdirSync(resolve(outDir, "apps/aura-clash"), { recursive: true });
+    mkdirSync(resolve(outDir, "showcase/aura-clash"), { recursive: true });
+    copyFileSync(source, resolve(outDir, "apps/aura-clash-showcase", file));
+    copyFileSync(source, resolve(outDir, "apps/aura-clash", file));
+    copyFileSync(source, resolve(outDir, "showcase/aura-clash", file));
+  }
+}
+
+function copyDir(sourceDir: string, targetDir: string): void {
+  mkdirSync(targetDir, { recursive: true });
+  for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
+    const source = resolve(sourceDir, entry.name);
+    const target = resolve(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      copyDir(source, target);
+    } else if (entry.isFile()) {
+      copyFileSync(source, target);
+    }
+  }
+}
+
+function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void {
+  mkdirSync(targetDir, { recursive: true });
+  const activePrefixes = ["v4UAL1Standard."];
+  for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (!activePrefixes.some((prefix) => entry.name.startsWith(prefix))) continue;
+    copyFileSync(resolve(sourceDir, entry.name), resolve(targetDir, entry.name));
+  }
+}
+
+function pruneAuraClashRuntimeAssets(targetDir: string): void {
+  if (!existsSync(targetDir)) return;
+  const activePrefixes = ["v4UAL1Standard."];
+  for (const entry of readdirSync(targetDir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    if (activePrefixes.some((prefix) => entry.name.startsWith(prefix))) continue;
+    unlinkSync(resolve(targetDir, entry.name));
+  }
 }
 
 function mirrorMarketingHtmlOutput(outDir: string): void {
@@ -105,6 +191,7 @@ function resolveDracoDir(): string | undefined {
 
 export default defineConfig({
   root: repoRoot,
+  publicDir: resolve(marketingDir, "public"),
   plugins: [
     ...(rootConfig.plugins ?? []),
     copyMarketingPublicFiles()
@@ -121,6 +208,7 @@ export default defineConfig({
     target: "es2022",
     sourcemap: false,
     assetsInlineLimit: 0,
+    chunkSizeWarningLimit: 650,
     outDir: resolve(marketingDir, "dist"),
     emptyOutDir: true,
     rollupOptions: {

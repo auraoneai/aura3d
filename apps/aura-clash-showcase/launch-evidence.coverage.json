@@ -1,0 +1,302 @@
+{
+  "name": "Aura Clash PRD evidence coverage",
+  "version": "1.0.0",
+  "prd": "../../docs/project/aura-clash-showcase.md",
+  "output": "launch-evidence/prd-evidence-coverage.json",
+  "activeScopeEndHeading": "# Legacy World War X PRD Archive",
+  "purpose": "Maps every remaining unchecked Aura Clash showcase item to the durable evidence or manual approval artifact required before that checkbox can be marked complete.",
+  "uncheckedItemPattern": "^- \\[ \\] ",
+  "archivedItemPattern": "^- \\[archived\\] ",
+  "rules": [
+    {
+      "id": "active-gate-463-build-app-and-marketing",
+      "kind": "command-evidence",
+      "prdLineHint": 463,
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json"
+      ],
+      "match": {
+        "includesAll": [
+          "Build app and marketing site"
+        ]
+      },
+      "notes": "Gate 463 closes only after local-gates.json reports ok:true and includes successful aura-clash-build and marketing-build result ids."
+    },
+    {
+      "id": "active-gate-464-deploy-to-vercel",
+      "kind": "deployment-evidence",
+      "prdLineHint": 464,
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json"
+      ],
+      "match": {
+        "includesAll": [
+          "Deploy to Vercel"
+        ]
+      },
+      "notes": "Gate 464 closes only after vercel-deploy.json reports ok:true and includes a production deployment URL."
+    },
+    {
+      "id": "active-gate-465-deployed-route-and-glb-200",
+      "kind": "deployment-evidence",
+      "prdLineHint": 465,
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ],
+      "match": {
+        "includesAll": [
+          "Confirm deployed route and GLB URLs return 200"
+        ]
+      },
+      "notes": "Gate 465 closes only after deployed-routes.json reports ok:true for deployed route probes and manifest-referenced GLB URL probes."
+    },
+    {
+      "id": "active-gate-494-deployed-route-confirmed",
+      "kind": "deployment-evidence",
+      "prdLineHint": 494,
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ],
+      "match": {
+        "includesAll": [
+          "Deployed route confirmed"
+        ]
+      },
+      "notes": "Gate 494 closes only after deployed-routes.json reports ok:true for the deployed Aura Clash route family, metadata files, and manifest-referenced GLBs."
+    },
+    {
+      "id": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "tests/reports/aura3d104/typecheck.json",
+        "tests/reports/aura3d104/build.json",
+        "tests/reports/aura3d104/validation-suite.json",
+        "tests/reports/game-runtime/*.json",
+        "tests/reports/prompt-animation/*.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Build app and marketing site",
+          "Gameplay smoke passes",
+          "local-gates",
+          "typecheck",
+          "build",
+          "browser smoke",
+          "browser tests",
+          "unit/browser/build validation",
+          "command validation",
+          "fresh scaffold build",
+          "package-smoke",
+          "package smoke",
+          "validation-suite",
+          "Run unit/browser/build validation",
+          "Run `aura3d assets validate-game`",
+          "validate-game",
+          "Run `aura3d assets validate-cartoon`",
+          "validate-cartoon"
+        ]
+      },
+      "notes": "These gates may only close from durable JSON command evidence, not from source files or prior console memory."
+    },
+    {
+      "id": "generated-public-api-declarations",
+      "kind": "command-evidence",
+      "requiredArtifacts": [
+        "tests/reports/aura3d104/dist-agent-api-types.json",
+        "dist/engine/agent-api/index.d.ts"
+      ],
+      "match": {
+        "includesAny": [
+          "generated `dist/engine/agent-api/index.d.ts`",
+          "generated declaration",
+          "generated declarations",
+          "public types",
+          "dist types",
+          "new public types"
+        ]
+      },
+      "notes": "The declaration gate requires generated dist output plus a verifier report that names the expected public runtime and prompt-animation APIs."
+    },
+    {
+      "id": "first-frame-screenshot-and-review",
+      "kind": "screenshot-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md"
+      ],
+      "match": {
+        "includesAny": [
+          "First-frame screenshot",
+          "first-frame screenshot",
+          "Capture and review first-frame screenshot",
+          "screenshot proof",
+          "screenshot capture",
+          "screenshot artifact",
+          "nonblank image",
+          "nonblank screenshot",
+          "browser screenshots"
+        ]
+      },
+      "notes": "Screenshot existence and nonblank metadata are not visual approval. They only satisfy capture/review-package gates."
+    },
+    {
+      "id": "deployment-and-route-proof",
+      "kind": "deployment-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Deploy to Vercel",
+          "Vercel",
+          "deployed route",
+          "Deployed route",
+          "deployed route/GLB proof",
+          "GLB URLs return 200",
+          "production URL",
+          "deployment proof"
+        ]
+      },
+      "notes": "Deployment checkboxes require production deployment JSON and route/asset probes against the deployed host."
+    },
+    {
+      "id": "human-visual-approval",
+      "kind": "manual-approval",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Visual screenshot approved by user",
+          "visual approval",
+          "Human visual approval",
+          "user visual approval",
+          "approved by user",
+          "visual QA",
+          "visual-quality",
+          "worldclass visual",
+          "10/10 visually",
+          "Materials avoid flat debug colors"
+        ]
+      },
+      "notes": "Subjective visual-quality gates require explicit durable human approval and must remain unchecked until that file exists."
+    },
+    {
+      "id": "typed-glb-asset-and-game-art-quality",
+      "kind": "asset-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+        "apps/aura-clash-showcase/assets/quaternius-asset-provenance.json",
+        "apps/aura-clash-showcase/aura.assets.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Quaternius-derived",
+          "production assets",
+          "asset validator",
+          "asset validators",
+          "typed GLB",
+          "typed-GLB",
+          "source assets",
+          "material readability",
+          "thumbnail generation",
+          "source review criteria"
+        ]
+      },
+      "notes": "Asset-quality gates need provenance, typed registration, bounds, material, thumbnail, and no-fallback evidence before visual approval can close final art gates."
+    },
+    {
+      "id": "aura3d-105-package-readiness",
+      "kind": "cross-runtime-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "tests/reports/game-runtime/package-smoke.json",
+        "tests/reports/aura3d104/validation-suite.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Aura3D `1.0.5`",
+          "Aura3D 1.0.5",
+          "1.0.5",
+          "external Vite app",
+          "fresh external Vite",
+          "package smoke passes",
+          "package-smoke"
+        ]
+      },
+      "notes": "Aura3D 1.0.5 release readiness must be proven by cross-runtime evidence and fresh consumer package smoke."
+    },
+    {
+      "id": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "tests/reports/prompt-animation/auravoice-contract-proof.json",
+        "tests/reports/prompt-animation/auravoice-sample-render-gates.json",
+        "tests/reports/prompt-animation/auravoice-sample-render-package-gates.json",
+        "tests/reports/prompt-animation/viseme-sync-proof.json",
+        "tests/reports/prompt-animation/dub-sync-proof.json",
+        "tests/reports/prompt-animation/prompt-animation-evidence.json",
+        "tests/reports/prompt-animation/validate-cartoon.json",
+        "tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png",
+        "tests/reports/prompt-animation/render-package/episode.mp4",
+        "tests/reports/prompt-animation/render-package/thumbnail.png",
+        "tests/reports/prompt-animation/render-package/captions.vtt",
+        "tests/reports/prompt-animation/render-package/timeline.json",
+        "tests/reports/prompt-animation/render-package/audio-stems.json",
+        "tests/reports/prompt-animation/render-package/youtube-draft.json"
+      ],
+      "match": {
+        "includesAny": [
+          "AuraVoice",
+          "voiceover",
+          "viseme",
+          "caption",
+          "cartoon",
+          "YouTube",
+          "episode",
+          "render package",
+          "video",
+          "thumbnail",
+          "captions",
+          "timeline",
+          "audio stems",
+          "storyboard",
+          "title-safe",
+          "dub sync",
+          "one-frame"
+        ]
+      },
+      "notes": "Prompt-to-animation and AuraVoice collaboration gates close only after render-package, sync, storyboard, and sample evidence exists."
+    },
+    {
+      "id": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json"
+      ],
+      "match": {
+        "includesAny": [
+          "Remaining launch blockers",
+          "Still unchecked until executed",
+          "Validation still intentionally remains unchecked",
+          "Actual AuraClash screenshot proof",
+          "approval remain pending",
+          "remains pending"
+        ]
+      },
+      "notes": "Summary blockers remain open until the underlying evidence classes they reference are complete."
+    }
+  ],
+  "failurePolicy": {
+    "uncoveredUncheckedItem": "exit-1",
+    "missingManifest": "exit-1",
+    "missingPrd": "exit-1"
+  }
+}

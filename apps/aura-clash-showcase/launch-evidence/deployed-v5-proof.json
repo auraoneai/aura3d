@@ -1,0 +1,111 @@
+{
+  "ok": true,
+  "checkedAt": "2026-06-05T10:52:47.002Z",
+  "deploymentUrl": "https://marketing-o8ezewdio-veerone.vercel.app",
+  "customDomain": "https://aura3d.auraone.ai",
+  "results": [
+    {
+      "url": "https://aura3d.auraone.ai/playable",
+      "navStatus": 200,
+      "ok": true,
+      "screenshots": {
+        "firstFrame": "launch-evidence/deployed-playable-first-frame.png",
+        "combatFrame": "launch-evidence/deployed-playable-combat-frame.png"
+      },
+      "before": {
+        "frame": 19,
+        "playerX": -1.85,
+        "rivalHealth": 100
+      },
+      "after": {
+        "frame": 29,
+        "playerX": -0.86,
+        "rivalHealth": 80,
+        "totalHits": 1,
+        "callout": "HIT"
+      },
+      "hasV5Proof": true,
+      "hasAuraEvidence": true,
+      "network": {
+        "checkedResponseCount": 5,
+        "glbResponses": [
+          {
+            "url": "https://aura3d.auraone.ai/aura-assets/v5CatalogRobot.f084bbcd.glb",
+            "status": 200
+          }
+        ],
+        "cssResponses": [
+          {
+            "url": "https://aura3d.auraone.ai/assets/AuraClashV5App-uMT-Jobe.css",
+            "status": 200
+          }
+        ],
+        "jsResponseCount": 2,
+        "badResponses": [],
+        "failedRequests": []
+      },
+      "consoleErrors": [],
+      "consoleWarnings": [
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x11c001cfc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x11c001cfc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x11c001cfc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+        },
+        {
+          "type": "warning",
+          "text": "[.WebGL-0x11c001cfc00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+        }
+      ]
+    },
+    {
+      "url": "https://aura3d.auraone.ai/apps/aura-clash",
+      "navStatus": 200,
+      "ok": true,
+      "screenshots": {
+        "firstFrame": "launch-evidence/deployed-apps-aura-clash-first-frame.png",
+        "combatFrame": "launch-evidence/deployed-apps-aura-clash-combat-frame.png"
+      },
+      "before": {
+        "frame": 18,
+        "playerX": -1.85,
+        "rivalHealth": 100
+      },
+      "after": {
+        "frame": 28,
+        "playerX": -0.88,
+        "rivalHealth": 80,
+        "totalHits": 1,
+        "callout": "HIT"
+      },
+      "hasV5Proof": true,
+      "hasAuraEvidence": true,
+      "network": {
+        "checkedResponseCount": 5,
+        "glbResponses": [
+          {
+            "url": "https://aura3d.auraone.ai/aura-assets/v5CatalogRobot.f084bbcd.glb",
+            "status": 200
+          }
+        ],
+        "cssResponses": [
+          {
+            "url": "https://aura3d.auraone.ai/assets/AuraClashV5App-uMT-Jobe.css",
+            "status": 200
+          }
+        ],
+        "jsResponseCount": 2,
+        "badResponses": [],
+        "failedRequests": []
+      },
+      "consoleErrors": [],
+      "consoleWarnings": []
+    }
+  ]
+}

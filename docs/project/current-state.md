@@ -1,6 +1,6 @@
 # Current State
 
-Version: 1.0.0
+Version: 1.0.5
 
 Aura3D is a developer library, asset deployment pipeline, template system,
 diagnostics surface, and agent-readable documentation set for AI coding agents

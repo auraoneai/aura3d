@@ -1,6 +1,6 @@
 # Rendering
 
-Version: `1.0.0`
+Version: 1.0.5
 
 The public authoring layer is `createAuraApp` plus declarative scene helpers.
 The runtime supplies defaults for canvas setup, pixel ratio, resize, render

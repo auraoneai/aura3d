@@ -22,3 +22,7 @@ export * from "./SoftBodyFixtures.js";
 export * from "./FractureFixtures.js";
 export * from "./FluidFixtures.js";
 export * from "./FireSmokeFixtures.js";
+export * from "./CollisionVolumes.js";
+export * from "./KinematicBody.js";
+export * from "./KinematicWorld.js";
+export * from "./HitboxWorld.js";

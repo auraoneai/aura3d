@@ -1,6 +1,6 @@
 # Renderer Skinning And Morphs
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Skinning and morph support spans animation, assets, and rendering packages.
 

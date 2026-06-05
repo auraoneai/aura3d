@@ -2,11 +2,15 @@
 import {
   addAsset,
   checkDeploy,
+  createCharacterAssemblyPlan,
   createAssetThumbnails,
   doctor,
   initAgentFiles,
+  inspectAsset,
   listAssets,
   scanAssets,
+  validateCartoonAssets,
+  validateGameAssets,
   validateAssets,
   writeTypedAssets,
   readAssetManifest
@@ -23,11 +27,42 @@ async function main(): Promise<void> {
       const file = args[2];
       const name = readOption("--name");
       if (!file || !name) throw new Error("Usage: aura3d assets add ./model.glb --name robot");
-      print(addAsset({ file, name, publicPath: readOption("--public-path"), outputDir: readOption("--output") }));
+      print(addAsset({
+        file,
+        name,
+        type: readAssetType(),
+        publicPath: readOption("--public-path"),
+        outputDir: readOption("--output"),
+        sourceUrl: readOption("--source-url"),
+        license: readOption("--license"),
+        author: readOption("--author"),
+        sourceFamily: readOption("--source-family"),
+        attribution: readOption("--attribution")
+      }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));
+    } else if (action === "inspect") {
+      const file = readInspectFile();
+      if (!file) throw new Error("Usage: aura3d assets inspect ./model.glb [--animation] [--humanoid]");
+      print(inspectAsset({
+        file,
+        animation: hasFlag("--animation"),
+        humanoid: hasFlag("--humanoid"),
+        skeleton: hasFlag("--skeleton"),
+        morphs: hasFlag("--morphs"),
+        license: hasFlag("--license")
+      }));
     } else if (action === "validate") {
-      print(validateAssets());
+      print(validateAssets(readAssetValidationOptions()));
+    } else if (action === "validate-game") {
+      print(validateGameAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
+    } else if (action === "validate-cartoon") {
+      print(validateCartoonAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
+    } else if (action === "assemble-character") {
+      const name = readOption("--name");
+      const body = readOption("--body");
+      if (!name || !body) throw new Error("Usage: aura3d assets assemble-character --name hero --body bodyAsset [--part hair=hairAsset] [--part weapon=weaponAsset]");
+      print(createCharacterAssemblyPlan({ name, body, parts: readParts("--part"), output: readOption("--output") }));
     } else if (action === "list") {
       console.log(JSON.stringify(listAssets(), null, 2));
     } else if (action === "typegen") {
@@ -74,9 +109,13 @@ async function main(): Promise<void> {
     console.log(`Aura3D CLI
 
 Commands:
-  aura3d assets add ./model.glb --name robot
+  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio] [--license CC0-1.0] [--source-url URL] [--author NAME]
   aura3d assets scan ./assets
-  aura3d assets validate
+  aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
+  aura3d assets validate [--asset assetId] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-game [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-cartoon [--asset character] [--output artifacts/aura3d/cartoon-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
   aura3d assets thumbnail
@@ -100,6 +139,69 @@ function readOption(name: string): string | undefined {
 
 function hasFlag(name: string): boolean {
   return args.includes(name);
+}
+
+function readInspectFile(): string | undefined {
+  return args.slice(2).find((value) => !value.startsWith("--"));
+}
+
+function readEvidenceOutput(): string | undefined {
+  if (hasFlag("--output")) {
+    const output = readOption("--output");
+    if (!output || output.startsWith("--")) throw new Error("Expected --output <path>.");
+    return output;
+  }
+  if (hasFlag("--evidence")) {
+    const evidence = readOption("--evidence");
+    if (!evidence || evidence.startsWith("--")) throw new Error("Expected --evidence <path>.");
+    return evidence;
+  }
+  return undefined;
+}
+
+function readAssetValidationOptions(): { readonly noPlaceholders?: boolean; readonly requireLicense?: boolean; readonly provenanceFile?: string; readonly assetIds?: readonly string[] } {
+  const options: { noPlaceholders?: boolean; requireLicense?: boolean; provenanceFile?: string; assetIds?: readonly string[] } = {};
+  if (hasFlag("--no-placeholders")) options.noPlaceholders = true;
+  if (hasFlag("--require-license")) options.requireLicense = true;
+  const assetIds = readRepeatedOptions("--asset").flatMap((value) => value.split(",").map((entry) => entry.trim()).filter(Boolean));
+  if (assetIds.length > 0) options.assetIds = assetIds;
+  if (hasFlag("--provenance")) {
+    const provenanceFile = readOption("--provenance");
+    if (!provenanceFile || provenanceFile.startsWith("--")) throw new Error("Expected --provenance <path>.");
+    options.provenanceFile = provenanceFile;
+  }
+  return options;
+}
+
+function readRepeatedOptions(name: string): readonly string[] {
+  const values: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] !== name) continue;
+    const value = args[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`Expected ${name} <value>.`);
+    values.push(value);
+  }
+  return values;
+}
+
+function readParts(name: string): readonly { readonly slot: string; readonly asset: string }[] {
+  const parts: { slot: string; asset: string }[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] !== name) continue;
+    const value = args[index + 1];
+    if (!value || value.startsWith("--")) throw new Error(`Expected ${name} slot=asset`);
+    const [slot, asset] = value.split("=");
+    if (!slot || !asset) throw new Error(`Expected ${name} slot=asset, got "${value}"`);
+    parts.push({ slot, asset });
+  }
+  return parts;
+}
+
+function readAssetType(): "model" | "texture" | "environment" | "audio" | undefined {
+  const value = readOption("--type");
+  if (!value) return undefined;
+  if (value === "model" || value === "texture" || value === "environment" || value === "audio") return value;
+  throw new Error(`Unsupported --type value "${value}". Use model, texture, environment, or audio.`);
 }
 
 function readResolveConstraints(): CliResolveConstraints {

@@ -1,8 +1,43 @@
 # Changelog
 
-Version: 1.0.0
+Version: 1.0.5
 
 All notable changes for Aura3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
+
+## 1.0.5
+
+### 1.0.5 Highlights
+
+- Added release evidence for skeletal animation playback, clip restart, clip blending, animation events, and viseme/blendshape synchronization.
+- Added editor-runtime timeline, inspector, project serialization, and visual graph bridge evidence for the first 1.0.5 authoring-tools release lane.
+- Added visual scripting runtime bridge evidence for deterministic frame, animation-event, combat, camera, and snapshot graph hooks.
+- Added strict Aura Clash asset provenance evidence with typed asset names, source paths, CC0 license evidence, sha256 checksums, and no-placeholder validation.
+- Added fighting-game, cartoon-channel, and prompt-cartoon-channel starter smoke evidence with browser-generated first-frame screenshots.
+
+### 1.0.5 Release Candidate Notes
+
+- Public package metadata is aligned on `1.0.5` across the workspace package manifests.
+- The 1.0.5 readiness report passes with concrete reports and PNG evidence under `tests/reports/aura3d105/`.
+- Aura Clash launch screenshots remain optional showcase evidence in the 1.0.5 verifier, not package-release blockers.
+- Broad production, marketplace, or engine-superiority claims remain governed by the existing claim registry and external proof policies.
+
+## 1.0.4
+
+### 1.0.4 Highlights
+
+- Added the federated Aura3D asset catalog release track through `@aura3d/asset-index`, the hosted Cloudflare `/search` endpoint, source adapters, semantic ranking seams, license normalization, and refresh/index interfaces.
+- Wired the Aura3D CLI asset workflow to the hosted catalog through `assets search` and `assets resolve`, so AI agents can resolve named real-world objects to license-aware, typed GLB/glTF assets instead of primitives or hallucinated URLs.
+- Added prompt-plan intent resolution to the public agent API with unresolved intent subjects, resolved asset subjects, resolver injection, subject type guards, and compile-time refusal for unresolved prompt assets.
+- Updated `llms.txt` and agent docs with catalog-first, no-three.js, no-`GLTFLoader`, no raw-URL guidance for prompt-to-3D workflows.
+- Folded the Aura3D game-runtime and prompt-animation source contracts into the 1.0.4 release line, including frame-loop, input, fighting-game source helpers, runtime evidence, prompt episode, caption, AuraVoice bridge, viseme, and deterministic screenshot metadata APIs.
+- Added 1.0.4 release documentation for the catalog worker, D1 index, source adapters, CLI bridge, prompt resolver seam, operational proof gates, and known loose ends.
+
+### 1.0.4 Release Candidate Notes
+
+- Public package metadata is aligned on `1.0.4` across the workspace package manifests.
+- Current docs, governance checklists, and public API reference metadata now target the `1.0.4` release line.
+- Publication remains blocked until fresh install/build/typecheck/smoke/browser/deployment/catalog proof evidence is generated from this exact source tree.
+- Broad competitive or production superiority claims remain blocked unless they cite current, committed, neutral evidence. The catalog and runtime work support the launch story, but do not replace release proof gates.
 
 ## 1.0.0
 

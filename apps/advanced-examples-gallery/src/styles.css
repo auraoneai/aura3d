@@ -29,14 +29,12 @@ body::before {
 html[data-demo="water-lab"] body::before {
   background:
     linear-gradient(90deg, rgba(5, 8, 12, 0.1), rgba(5, 8, 12, 0) 35%, rgba(5, 8, 12, 0.58) 76%),
-    url("../assets/backdrops/water-lab.png") center / cover no-repeat,
     radial-gradient(circle at 72% 35%, rgba(255, 129, 40, 0.76) 0 3.5%, rgba(255, 129, 40, 0.22) 7%, transparent 17%),
     linear-gradient(180deg, #101d34 0 31%, #fb7240 31% 39%, #18283a 39% 46%, #061018 46% 100%);
 }
 
 html[data-demo="ocean-observatory"] body::before {
   background:
-    url("../assets/backdrops/ocean-observatory.png") center / cover no-repeat,
     linear-gradient(90deg, rgba(5, 8, 12, 0.18), rgba(5, 8, 12, 0.03) 44%, rgba(5, 8, 12, 0.42) 86%),
     linear-gradient(180deg, #061528 0%, #09243a 42%, #03111e 100%);
 }
@@ -56,21 +54,18 @@ html[data-demo="digital-twin"] {
 html[data-demo="smart-city"] body::before,
 html[data-demo="digital-twin"] body::before {
   background:
-    url("../assets/backdrops/digital-twin.png") center / cover no-repeat,
     radial-gradient(circle at 58% 34%, rgba(72, 209, 255, 0.13), transparent 25%),
     linear-gradient(180deg, #050b12 0%, #07111b 48%, #030507 100%);
 }
 
 html[data-demo="smart-city"] body::before {
   background:
-    url("../assets/backdrops/smart-city.png") center / cover no-repeat,
     radial-gradient(circle at 58% 34%, rgba(72, 209, 255, 0.13), transparent 25%),
     linear-gradient(180deg, #050b12 0%, #07111b 48%, #030507 100%);
 }
 
 html[data-demo="data-galaxy"] body::before {
   background:
-    url("../assets/backdrops/data-galaxy.png") center / cover no-repeat,
     radial-gradient(circle at 47% 46%, rgba(109, 72, 255, 0.26), transparent 24%),
     radial-gradient(circle at 64% 42%, rgba(30, 220, 255, 0.18), transparent 21%),
     linear-gradient(180deg, #01030a, #050610 62%, #010207);
@@ -81,7 +76,6 @@ html[data-demo="robotics-lab"] body::before,
 html[data-demo="physics-playground"] body::before,
 html[data-demo="fog-cathedral"] body::before {
   background:
-    url("../assets/backdrops/product-configurator.png") center / cover no-repeat,
     radial-gradient(circle at 52% 34%, rgba(105, 161, 210, 0.14), transparent 24%),
     linear-gradient(180deg, #070b10, #0b1118 48%, #040608);
 }
@@ -95,21 +89,18 @@ html[data-demo="product-configurator"] body::before {
 
 html[data-demo="robotics-lab"] body::before {
   background:
-    url("../assets/backdrops/robotics-lab.png") center / cover no-repeat,
     radial-gradient(circle at 52% 34%, rgba(105, 161, 210, 0.14), transparent 24%),
     linear-gradient(180deg, #070b10, #0b1118 48%, #040608);
 }
 
 html[data-demo="physics-playground"] body::before {
   background:
-    url("../assets/backdrops/physics-playground.png") center / cover no-repeat,
     radial-gradient(circle at 52% 34%, rgba(105, 161, 210, 0.14), transparent 24%),
     linear-gradient(180deg, #070b10, #0b1118 48%, #040608);
 }
 
 html[data-demo="fog-cathedral"] body::before {
   background:
-    url("../assets/backdrops/fog-cathedral.png") center / cover no-repeat,
     radial-gradient(circle at 52% 34%, rgba(105, 161, 210, 0.14), transparent 24%),
     linear-gradient(180deg, #070b10, #0b1118 48%, #040608);
 }

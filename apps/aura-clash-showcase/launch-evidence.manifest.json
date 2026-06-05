@@ -1,0 +1,566 @@
+{
+  "name": "Aura Clash launch evidence manifest",
+  "version": "1.0.0",
+  "prd": "../../docs/project/aura-clash-showcase.md",
+  "purpose": "Defines the evidence files and commands required before remaining Aura Clash showcase launch checkboxes may be marked complete.",
+  "activePrdGateSourceReadiness": {
+    "463": {
+      "id": "build-app-and-marketing",
+      "checkbox": "Build app and marketing site.",
+      "category": "Evidence",
+      "sourceReady": true,
+      "command": "npm run launch:local-gates",
+      "cwd": "apps/aura-clash-showcase",
+      "requiredArtifact": "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+      "requiredProof": [
+        "`local-gates.json` reports `ok: true`.",
+        "`local-gates.json` contains successful `aura-clash-build` and `marketing-build` result ids."
+      ]
+    },
+    "464": {
+      "id": "deploy-to-vercel",
+      "checkbox": "Deploy to Vercel.",
+      "category": "Deploy",
+      "sourceReady": true,
+      "command": "npm run launch:deploy",
+      "cwd": "apps/aura-clash-showcase",
+      "requiredArtifact": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+      "requiredProof": [
+        "`vercel-deploy.json` reports `ok: true`.",
+        "`vercel-deploy.json` contains a production deployment URL and at least one Vercel deployment URL."
+      ]
+    },
+    "465": {
+      "id": "deployed-route-and-glb-200",
+      "checkbox": "Confirm deployed route and GLB URLs return 200.",
+      "category": "Deploy",
+      "sourceReady": true,
+      "command": "AURA_CLASH_ORIGIN='<production-origin>' npm run launch:evidence",
+      "cwd": "apps/aura-clash-showcase",
+      "requiredArtifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "requiredProof": [
+        "`deployed-routes.json` reports `ok: true`.",
+        "All canonical Aura Clash route probes return HTTP 200.",
+        "Every manifest-referenced GLB probe returns HTTP 200 with a nonzero byte length or content length."
+      ]
+    },
+    "494": {
+      "id": "deployed-route-confirmed",
+      "checkbox": "Deployed route confirmed.",
+      "category": "Deploy",
+      "sourceReady": true,
+      "command": "AURA_CLASH_ORIGIN='<production-origin>' npm run launch:evidence",
+      "cwd": "apps/aura-clash-showcase",
+      "requiredArtifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "requiredProof": [
+        "`deployed-routes.json` reports `ok: true`.",
+        "The deployed `/showcase/aura-clash/` route family, sitemap, robots, and manifest-referenced GLBs pass the route evidence probe."
+      ]
+    }
+  },
+  "sourceEvidence": {
+    "launchGlbProvenance": {
+      "files": [
+        "apps/aura-clash-showcase/launch-evidence.command-plan.json",
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+        "apps/aura-clash-showcase/aura.assets.json",
+        "apps/aura-clash-showcase/assets/quaternius-asset-provenance.json",
+        "apps/aura-clash-showcase/scripts/check-production-assets.mjs"
+      ],
+      "proves": [
+        "Every public launch GLB has provenance, license note, thumbnail, bounds, material summary, and intended route usage.",
+        "Every playable fighter uses a typed GLB with no approved primitive fallback.",
+        "Playable fighter source validation evidence includes scale, pivot policy, facing policy, bounds, material readability, and thumbnail coverage."
+      ],
+      "notes": [
+        "launch-evidence.command-plan.json lists the durable command-proof outputs required before the cross-runtime evidence checker can close command gates.",
+        "The PRD updater uses this file only for source-quality typed-GLB/provenance coverage.",
+        "This is source-only PRD evidence and does not replace browser screenshot, review-package, or human visual approval gates."
+      ]
+    },
+    "gameRuntimeEvidence": {
+      "files": [
+        "packages/engine/src/agent-api/GameEvidence.ts",
+        "packages/engine/src/agent-api/GameRuntime.ts",
+        "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
+        "apps/aura-clash-showcase/src/main.ts",
+        "apps/aura-clash-showcase/src/game/AuraClashGame.ts"
+      ],
+      "proves": [
+        "collectGameRuntimeEvidence reports loop, runtime nodes, input, kinematic bodies, collision, animation, effects, camera, assets, stage, HUD, accessibility, and subsystem ownership.",
+        "The showcase exports route-source runtime evidence and displays hitbox, animation, and physics body fields from the live runtime.",
+        "Runtime effect instances are pooled and can follow configured Aura3D/gameplay attachments through source-owned attachment position resolvers."
+      ],
+      "notes": [
+        "This source evidence does not replace browser screenshots or route smoke output.",
+        "Ownership evidence is explicit; app-owned gameplay decisions are not mislabeled as renderer internals."
+      ]
+    },
+    "stageSafeZone": {
+      "files": [
+        "packages/engine/src/agent-api/game-kits/fighting.ts",
+        "apps/aura-clash-showcase/src/game/StageDirector.ts",
+        "apps/aura-clash-showcase/src/scenes/createStageScene.ts",
+        "apps/aura-clash-showcase/src/data/stages.ts"
+      ],
+      "proves": [
+        "Fighting stage source exposes foreground, combat-lane, midground, skyline, and parallax layers with nonblocking rules.",
+        "validateStage checks positive safe-zone area, safe-zone containment inside combat bounds, camera-safe layers, and no fighter-blocking layers.",
+        "The showcase stage scene mounts a typed Aura Clash duel-stage GLB plus fog, bloom, lights, and camera-safe source markers."
+      ],
+      "notes": [
+        "This source evidence does not mark screenshot visual approval gates."
+      ]
+    },
+    "treeShakableExports": {
+      "files": [
+        "packages/engine/src/agent-api/GameRuntime.ts",
+        "packages/engine/src/agent-api/game-kits/fighting.ts",
+        "packages/engine/src/agent-api/index.ts",
+        "docs/examples/fighting-game.md"
+      ],
+      "proves": [
+        "Game runtime helpers are exported as named functions and typed namespaces without loading external GLB fixtures by default.",
+        "Fighting stage presets are procedural unless an app explicitly imports typed GLB assets.",
+        "Public examples use typed assets and public Aura3D imports instead of private renderer internals or string asset ids."
+      ],
+      "notes": [
+        "Package-size and tree-shaking behavior still require package smoke/build evidence before release."
+      ]
+    }
+  },
+  "commands": {
+    "localGates": {
+      "command": "npm run launch:local-gates",
+      "cwd": "apps/aura-clash-showcase",
+      "output": "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+      "prdGates": [463, 491],
+      "proves": [
+        "Build app and marketing site.",
+        "Gameplay smoke passes.",
+        "`apps/aura-clash-showcase` asset gate output: `npm run assets:check` must pass and confirm only manifest-referenced GLBs are shipped.",
+        "`apps/aura-clash-showcase` route metadata output: `npm run routes:check` must pass and confirm canonical, Open Graph, Twitter, sitemap, and final `/showcase/aura-clash/` routes.",
+        "Aura Clash production build output: `npm run build` must complete successfully from `apps/aura-clash-showcase`.",
+        "Aura Clash browser smoke evidence: playable, route-health, deploy-check, and screenshot specs must pass against the built app.",
+        "Marketing production build output: `npm run build` must complete successfully from `marketing`.",
+        "`apps/aura-clash-showcase/launch-evidence/local-gates.json` reports `ok: true`."
+      ]
+    },
+    "firstFrameScreenshot": {
+      "command": "npm run launch:screenshot",
+      "cwd": "apps/aura-clash-showcase",
+      "outputs": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json"
+      ],
+      "proves": [
+        "First-frame screenshot artifact: screenshot capture must produce a nonblank image showing the current Aura Clash route.",
+        "Default screenshot wiring captures the arena-establishing first frame plus fighter-readability and effects/HUD/debug compositions unless route or environment declarations override them.",
+        "`apps/aura-clash-showcase/launch-evidence/first-frame.json` reports `ok: true`."
+      ],
+      "notes": [
+        "The updater requires screenshot metadata and the screenshot file before marking screenshot metadata gates.",
+        "The updater requires screenshot-smoke evidence or an explicit nonblank metadata field before marking the nonblank screenshot artifact gate.",
+        "The updater marks `Capture and review first-frame screenshot.` only when screenshot metadata exists and `review-package.md` exists.",
+        "The updater never marks visually reviewed or user-approved screenshot gates from screenshot capture alone."
+      ]
+    },
+    "vercelDeploy": {
+      "command": "npm run launch:deploy",
+      "cwd": "apps/aura-clash-showcase",
+      "output": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+      "prdGates": [464],
+      "proves": [
+        "Deploy to Vercel.",
+        "Vercel production deployment evidence: deployment command must finish and return the production URL.",
+        "`apps/aura-clash-showcase/launch-evidence/vercel-deploy.json` reports `ok: true`."
+      ]
+    },
+    "deployedRouteEvidence": {
+      "command": "npm run launch:evidence",
+      "cwd": "apps/aura-clash-showcase",
+      "output": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "prdGates": [465, 494],
+      "proves": [
+        "Confirm deployed route and GLB URLs return 200.",
+        "Deployed route confirmed.",
+        "Deployed route proof: `/showcase/aura-clash/`, `/showcase/aura-clash/playable/`, `/showcase/aura-clash/evidence/`, `/showcase/aura-clash/accessibility/`, `/showcase/aura-clash/deploy-check/`, and `/showcase/aura-clash/poster/` must return successful responses.",
+        "Deployed GLB proof: every manifest-referenced GLB under `/showcase/aura-clash/aura-assets/` or `/apps/aura-clash-showcase/aura-assets/` must return a successful response with a nonzero content length.",
+        "`apps/aura-clash-showcase/launch-evidence/deployed-routes.json` reports `ok: true`."
+      ]
+    },
+    "reviewPackage": {
+      "command": "npm run launch:review-package",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/review-package.md",
+      "proves": [
+        "Human review package exists for visual approval.",
+        "Capture and review first-frame screenshot.",
+        "Review package source wiring surfaces first-frame metadata, screenshot compositions, launch asset visual source evidence, and visual approval artifact status without approving the gate automatically.",
+        "`apps/aura-clash-showcase/launch-evidence/review-package.md` exists."
+      ],
+      "notes": [
+        "The review package summarizes evidence for human review, but does not self-approve visual quality.",
+        "The updater still requires durable `launch-evidence/visual-approval.json` metadata before marking user visual approval or subjective visual-quality checkboxes."
+      ]
+    },
+    "visualApproval": {
+      "command": "npm run launch:approve-visual",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/visual-approval.json",
+      "proves": [
+        "Visual screenshot approved by user.",
+        "User visual approval: the screenshot must be explicitly approved by the user before the `Visual screenshot approved by user` checkbox is marked complete.",
+        "User explicitly approves the visual screenshot.",
+        "Approval evidence is bound to the reviewed screenshot, screenshot metadata, and review package by SHA-256 hash and byte size."
+      ],
+      "notes": [
+        "Requires explicit user approval before execution.",
+        "Requires a named approver and confirmation through AURA_CLASH_APPROVED_BY plus AURA_CLASH_VISUAL_APPROVAL_CONFIRMED=1 or equivalent CLI flags.",
+        "The PRD updater rejects visual approval evidence unless screenshot, screenshot metadata, and review package hashes and byte sizes match the current files.",
+        "Does not prove deployment, local gates, package smoke, or AuraVoice sample approval."
+      ]
+    },
+    "crossRuntimeEvidence": {
+      "command": "npm run launch:cross-runtime-evidence",
+      "cwd": "apps/aura-clash-showcase",
+      "output": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+      "proves": [
+        "Aura3D `1.0.5` package smoke passes in a fresh external Vite app.",
+        "Run unit/browser/build validation for the new APIs and CLI commands.",
+        "Confirm generated `dist/engine/agent-api/index.d.ts` exposes the new public types.",
+        "`pnpm typecheck`, `pnpm build`, game-runtime command gates, and prompt-animation command gates.",
+        "Run `aura3d assets validate-cartoon` against an AuraVoice-backed cartoon sample.",
+        "AuraVoice sample episode renders from prompt to audio to Aura3D animation with synchronized captions and visemes.",
+        "AuraVoice sample episode render package includes video, thumbnail, captions, timeline, audio stems, and evidence JSON.",
+        "Character mouth movement stays within one frame at 30 fps of AuraVoice viseme timing.",
+        "Caption display stays within one frame at 30 fps of AuraVoice dialogue timing.",
+        "Browser screenshot gallery contains at least one title-safe thumbnail and three storyboard frames."
+      ],
+      "notes": [
+        "This command does not generate package-smoke, browser, video, or AuraVoice proof artifacts.",
+        "It only aggregates existing durable reports and gives the PRD updater one evidence file to inspect.",
+        "The default validation-suite input is `tests/reports/aura3d104/validation-suite.json`.",
+        "Individual command-proof defaults include `tests/reports/aura3d104/typecheck.json`, `tests/reports/aura3d104/build.json`, `tests/reports/aura3d104/dist-agent-api-types.json`, `tests/reports/game-runtime/*.json`, and `tests/reports/prompt-animation/*.json`.",
+        "The default validate-cartoon input is `tests/reports/prompt-animation/validate-cartoon.json`.",
+        "Set AURA_CLASH_CROSS_RUNTIME_REQUIRED=1 when the command should fail on missing cross-runtime evidence."
+      ]
+    },
+    "prdEvidenceCoverage": {
+      "command": "npm run launch:coverage-check",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "docs/project/aura-clash-showcase.md",
+        "apps/aura-clash-showcase/launch-evidence.coverage.json"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+      "proves": [
+        "Every remaining unchecked Aura Clash showcase item is explicitly mapped to durable evidence or a manual approval artifact.",
+        "No evidence, deploy, screenshot, package-smoke, AuraVoice render, or subjective visual approval item is silently treated as source-complete.",
+        "Remaining unchecked items can be audited by artifact class before the PRD updater marks any checkbox complete."
+      ],
+      "notes": [
+        "This command does not run builds, tests, browser captures, package smoke, AuraVoice renders, deploys, or approvals.",
+        "It only checks PRD coverage metadata and writes a coverage report.",
+        "A passing coverage report means the remaining work is classified; it does not mean the evidence artifacts exist."
+      ]
+    },
+    "commandPlanCheck": {
+      "command": "npm run launch:command-plan-check",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence.command-plan.json"
+      ],
+      "proves": [
+        "The launch command plan has required groups, ids, outputs, and no duplicate command ids.",
+        "The documented command-proof outputs are source-checked before expensive evidence execution."
+      ],
+      "notes": [
+        "This source check does not execute the commands listed in the plan."
+      ]
+    },
+    "commandPlanDryRun": {
+      "command": "npm run launch:command-plan",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence.command-plan.json"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/command-plan-run.json",
+      "proves": [
+        "The full launch command plan can be materialized into a durable dry-run report before execution.",
+        "Manual-only commands remain skipped unless forced or explicitly approved."
+      ],
+      "notes": [
+        "The app-level script runs the command plan in dry-run mode unless `--execute` is explicitly passed to the underlying runner."
+      ]
+    },
+    "evidenceWiringCheck": {
+      "command": "npm run launch:wiring-check",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence.coverage.json",
+        "apps/aura-clash-showcase/launch-evidence.command-plan.json",
+        "apps/aura-clash-showcase/launch-evidence.manifest.json"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/evidence-wiring.json",
+      "proves": [
+        "Coverage-manifest required artifacts are declared by the command plan, launch manifest, source evidence, wildcard evidence class, or current source/static files.",
+        "AuraVoice, Aura3D package-smoke, screenshot, deployment, and approval artifact names cannot silently drift across the PRD coverage metadata and launch evidence plan."
+      ],
+      "notes": [
+        "This is a source wiring check only; it does not run expensive commands or prove the artifacts exist unless they are static/source files."
+      ]
+    },
+    "readinessReport": {
+      "command": "npm run launch:readiness",
+      "cwd": "apps/aura-clash-showcase",
+      "outputs": [
+        "apps/aura-clash-showcase/launch-evidence/readiness.json",
+        "apps/aura-clash-showcase/launch-evidence/readiness.md"
+      ],
+      "proves": [
+        "The nine remaining active PRD evidence gates are mapped to concrete artifact statuses and command paths.",
+        "Operators can see which launch evidence, deploy proof, screenshot proof, and approval artifacts are still missing before attempting PRD closure."
+      ],
+      "notes": [
+        "This report is readiness classification only. It does not mark PRD checkboxes and does not replace generated evidence or user approval."
+      ]
+    },
+    "completionAudit": {
+      "command": "npm run launch:completion-check",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "docs/project/aura-clash-showcase.md",
+        "apps/aura-clash-showcase/launch-evidence/readiness.json"
+      ],
+      "output": "apps/aura-clash-showcase/launch-evidence/completion-audit.json",
+      "proves": [
+        "No active Aura Clash showcase checkboxes remain unchecked before the thread goal is marked complete.",
+        "Any remaining open active checkbox is listed with line number, readiness gate id, missing artifact ids, and command path."
+      ],
+      "notes": [
+        "This is a final audit gate. It fails while evidence/deploy/approval checkboxes remain open."
+      ]
+    },
+    "prdUpdate": {
+      "command": "npm run launch:update-prd",
+      "cwd": "apps/aura-clash-showcase",
+      "inputs": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json",
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json"
+      ],
+      "recognizedLocalGateIds": [
+        "assets-check",
+        "routes-check",
+        "aura-clash-build",
+        "playable-smoke",
+        "screenshot-smoke",
+        "route-health",
+        "deploy-check",
+        "marketing-build",
+        "assets-validate-game",
+        "aura3d-assets-validate-game",
+        "validate-game"
+      ],
+      "notes": [
+        "Set AURA_CLASH_PRD_UPDATE_DRY_RUN=1 for dry-run mode.",
+        "Run `npm run launch:approve-visual` only after explicit user approval to create durable visual-approval.json evidence.",
+        "Deployment checkboxes require vercel-deploy.json with ok:true; environment flags are not durable deployment evidence.",
+        "Aura3D package-smoke and AuraVoice prompt-animation checkboxes require cross-runtime-evidence.json with the corresponding artifact gates reporting true.",
+        "The updater only marks the `vercel-deploy.json` checkbox when that JSON file itself reports `ok: true`.",
+        "The updater only marks `Run `aura3d assets validate-game` against AuraClash production assets.` when local-gates evidence contains a passing `assets-validate-game`, `aura3d-assets-validate-game`, or `validate-game` result.",
+        "The updater only marks source-quality typed-GLB gates when `aura-clash-launch-asset-evidence.json` contains the required provenance, license, bounds, material, thumbnail, typed asset, and no-fallback fields."
+      ]
+    },
+    "proofWorkflow": {
+      "command": "npm run launch:proof",
+      "cwd": "apps/aura-clash-showcase",
+      "output": "apps/aura-clash-showcase/launch-evidence/workflow.json",
+      "notes": [
+        "Runs local gates, screenshot capture, and review-package generation by default.",
+        "Set AURA_CLASH_RUN_VERCEL_DEPLOY=1 only when production deployment is explicitly approved.",
+        "Set AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 after deployment.",
+        "Set AURA_CLASH_RUN_COMMAND_PLAN_CHECK=1 when the workflow should source-check launch-evidence.command-plan.json.",
+        "Set AURA_CLASH_RUN_COMMAND_PLAN=1 when the workflow should write command-plan-run.json in dry-run mode.",
+        "Set AURA_CLASH_RUN_EVIDENCE_WIRING_CHECK=1 when the workflow should source-check coverage-to-command-plan artifact wiring.",
+        "Set AURA_CLASH_RUN_READINESS_REPORT=1 when the workflow should write readiness.json/readiness.md with remaining PRD gate status.",
+        "Set AURA_CLASH_RUN_COMPLETION_AUDIT=1 when the workflow should fail unless active Aura Clash showcase checkboxes are all checked.",
+        "Set AURA_CLASH_RUN_CROSS_RUNTIME_EVIDENCE=1 after Aura3D package-smoke and AuraVoice prompt-animation proof artifacts have been generated.",
+        "Set AURA_CLASH_RUN_PRD_EVIDENCE_COVERAGE=1 when the workflow should write prd-evidence-coverage.json before the PRD updater runs.",
+        "Set AURA_CLASH_UPDATE_PRD=1 only when evidence should update docs/project/aura-clash-showcase.md."
+      ]
+    },
+    "localProofAlias": {
+      "command": "npm run launch:proof-local",
+      "cwd": "apps/aura-clash-showcase",
+      "outputs": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md",
+        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/evidence-wiring.json",
+        "apps/aura-clash-showcase/launch-evidence/readiness.json",
+        "apps/aura-clash-showcase/launch-evidence/readiness.md",
+        "apps/aura-clash-showcase/launch-evidence/workflow.json"
+      ],
+      "proves": [
+        "A single local-only command path exists for build/smoke/screenshot/review-package/source-wiring/readiness evidence without deploying.",
+        "The command does not set Vercel deploy, deployed-route evidence, PRD update, visual approval, cross-runtime aggregation, or final completion audit flags."
+      ]
+    },
+    "completeProofAlias": {
+      "command": "npm run launch:proof-complete",
+      "cwd": "apps/aura-clash-showcase",
+      "outputs": [
+        "docs/project/aura-clash-showcase.md",
+        "apps/aura-clash-showcase/launch-evidence/workflow.json",
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/evidence-wiring.json",
+        "apps/aura-clash-showcase/launch-evidence/readiness.json",
+        "apps/aura-clash-showcase/launch-evidence/readiness.md",
+        "apps/aura-clash-showcase/launch-evidence/completion-audit.json"
+      ],
+      "proves": [
+        "A single strict final command path exists for PRD update and completion audit after the required evidence artifacts, deployment proof, and visual approval have already been generated.",
+        "The completion audit fails while any active Aura Clash showcase checkbox remains unchecked."
+      ]
+    }
+  },
+  "updaterCoverageRules": {
+    "screenshotCapture": {
+      "requiredEvidence": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png exists",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json includes screenshotCount/compositionCount/captures metadata for the three visual-review compositions",
+        "local-gates `screenshot-smoke` passes or screenshot metadata includes an explicit nonblank field"
+      ],
+      "canMark": [
+        "First-frame screenshot artifact: screenshot capture must produce a nonblank image showing the current Aura Clash route.",
+        "`apps/aura-clash-showcase/launch-evidence/first-frame.json` reports `ok: true`."
+      ]
+    },
+    "reviewPackage": {
+      "requiredEvidence": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png exists",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md exists"
+      ],
+      "canMark": [
+        "Capture and review first-frame screenshot.",
+        "`apps/aura-clash-showcase/launch-evidence/review-package.md` exists."
+      ]
+    },
+    "userVisualApproval": {
+      "requiredEvidence": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png exists",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md exists",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json with `ok: true`, `approved: true`, `approvedBy`, `approvedAt`, reviewed screenshot path, screenshot metadata path, review package path, and matching SHA-256 hashes plus byte sizes for all three files"
+      ],
+      "canMark": [
+        "Visual screenshot approved by user.",
+        "User visual approval: the screenshot must be explicitly approved by the user before the `Visual screenshot approved by user` checkbox is marked complete.",
+        "User explicitly approves the visual screenshot.",
+        "AuraClash screenshot package is explicitly approved by the user.",
+        "User visually approves the final AuraClash screenshot and the first AuraVoice animation sample if that sample is part of the same launch claim.",
+        "Capture and approve an AuraClash screenshot after the runtime route fixes.",
+        "`apps/aura-clash-showcase/launch-evidence/first-frame.png` exists and is visually reviewed."
+      ],
+      "cannotMarkWithoutDurableApproval": true
+    },
+    "visualQuality": {
+      "requiredEvidence": [
+        "local-gates browser smoke evidence passes where relevant",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md exists",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json with durable approval metadata"
+      ],
+      "canMark": [
+        "Screenshot evidence shows debug overlays, readable fighters, effects, HUD, and stage depth.",
+        "Visual identity is memorable enough for marketing screenshots.",
+        "Lighting provides readable silhouettes and premium screenshot contrast.",
+        "AuraClash is not world-class until real runtime gameplay is implemented with responsive controls, animation states, camera direction, collision, effects, polish, and visual QA evidence."
+      ]
+    },
+    "threeScreenshotCompositions": {
+      "requiredEvidence": [
+        "All userVisualApproval evidence",
+        "first-frame metadata contains `compositionCount`/`screenshotCount` of at least 3 or an array of at least 3 screenshots, captures, or compositions"
+      ],
+      "canMark": [
+        "At least three screenshot compositions look good: match start, combat impact, super move/result."
+      ]
+    },
+    "sourceQuality": {
+      "requiredEvidence": [
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+        "For every launch GLB: provenance, license note, thumbnail, bounds, material summary, and route usage",
+        "For every playable fighter: deliveryMode `typed-glb`, typed asset key, scale, pivot policy, facing policy, bounds evidence, material readability evidence, thumbnail evidence, and fallbackApproval `none - clean typed GLB required`"
+      ],
+      "canMark": [
+        "Every launch GLB has provenance, license note, thumbnail, bounds, material summary, and intended route usage.",
+        "Each playable fighter has a clean typed GLB with no primitive fighter fallback in the launch route."
+      ],
+      "cannotMarkVisualQuality": true
+    },
+    "deploymentCompletion": {
+      "requiredEvidence": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json with `ok: true`",
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json with `ok: true` and a production deployment URL"
+      ],
+      "canMark": [
+        "AuraClash playable route passes local gates and deployed route/GLB proof.",
+        "Deploy and verify public route, sitemap, robots, and GLB URLs."
+      ]
+    },
+    "allLaunchEvidence": {
+      "requiredEvidence": [
+        "All deploymentCompletion evidence",
+        "All sourceQuality evidence",
+        "All userVisualApproval evidence"
+      ],
+      "canMark": [
+        "Existing Aura Clash launch gates pass with evidence.",
+        "All evidence artifacts are generated, attached, and reflected in the PRD checklist.",
+        "PRD updater marks only evidence-backed checkboxes."
+      ]
+    }
+  },
+  "remainingHumanGate": {
+    "checkbox": "Visual screenshot approved by user.",
+    "requiredEvidence": [
+      "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+      "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+      "apps/aura-clash-showcase/launch-evidence/review-package.md",
+      "Explicit user approval in the conversation or release notes"
+    ],
+    "automationRule": "The updater may only mark this checkbox when launch-evidence/visual-approval.json reports ok:true, approved:true, approvedBy, approvedAt, the expected gate, and references to the reviewed screenshot plus review package."
+  }
+}

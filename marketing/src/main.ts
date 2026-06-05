@@ -35,6 +35,8 @@ function openExample(iframe: HTMLIFrameElement): void {
 }
 
 function posterTitle(iframe: HTMLIFrameElement): string {
+  const customTitle = iframe.dataset.posterTitle?.trim();
+  if (customTitle) return customTitle;
   return iframe.title
     .replace(/^Aura3D\s*·\s*/i, "")
     .replace(/\s*·\s*/g, " ")
@@ -49,18 +51,33 @@ function attachPoster(iframe: HTMLIFrameElement, mode: "lazy" | "static"): void 
   iframe.classList.add("example-frame");
   if (mode === "static") iframe.classList.add("example-frame-static");
 
+  const posterKicker = iframe.dataset.posterKicker ?? (mode === "static" ? "preview" : "lazy live demo");
+  const posterDescription = iframe.dataset.posterDescription
+    ?? (mode === "static"
+      ? "Open the full route when you want the live 3D app."
+      : "Poster first. The live scene starts when this panel is near the viewport.");
+  const posterAction = iframe.dataset.posterAction ?? "Open live example";
+  const posterImage = iframe.dataset.posterImage?.trim();
+
   const poster = document.createElement("div");
   poster.className = `example-poster example-poster-${mode}`;
   poster.innerHTML = `
+    <div class="example-poster-image" aria-hidden="true"></div>
     <div class="example-poster-orb" aria-hidden="true"></div>
     <div class="example-poster-grid" aria-hidden="true"></div>
     <div class="example-poster-copy">
-      <span class="example-poster-kicker">${mode === "static" ? "preview" : "lazy live demo"}</span>
+      <span class="example-poster-kicker">${posterKicker}</span>
       <strong>${posterTitle(iframe)}</strong>
-      <span>${mode === "static" ? "Open the full route when you want the live 3D app." : "Poster first. The live scene starts when this panel is near the viewport."}</span>
+      <span>${posterDescription}</span>
     </div>
-    <button class="example-poster-action" type="button">Open live example</button>
+    <button class="example-poster-action" type="button">${posterAction}</button>
   `;
+
+  if (posterImage) {
+    const image = poster.querySelector<HTMLElement>(".example-poster-image");
+    image?.style.setProperty("--example-poster-image", `url("${posterImage.replace(/"/g, "%22")}")`);
+    poster.dataset.hasImage = "true";
+  }
 
   const action = poster.querySelector<HTMLButtonElement>(".example-poster-action");
   action?.addEventListener("click", (event) => {

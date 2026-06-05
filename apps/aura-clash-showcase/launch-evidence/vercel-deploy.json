@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "generatedAt": "2026-06-05T10:53:09.593Z",
+  "deploymentUrl": "https://marketing-o8ezewdio-veerone.vercel.app",
+  "productionAliases": [
+    "https://marketing-veerone.vercel.app",
+    "https://aura3d.auraone.ai"
+  ],
+  "deploymentId": "dpl_5ngSJ8hTnaL4BUGbDT962PF1GFVM",
+  "inspectorUrl": "https://vercel.com/veerone/marketing/5ngSJ8hTnaL4BUGbDT962PF1GFVM",
+  "command": "PATH=/Users/gurbakshchahal/.nvm/versions/node/v20.19.0/bin:$PATH npx vercel@54.9.1 deploy --prebuilt --prod --archive tgz",
+  "aliasCommand": "PATH=/Users/gurbakshchahal/.nvm/versions/node/v20.19.0/bin:$PATH npx vercel@54.9.1 alias set marketing-o8ezewdio-veerone.vercel.app aura3d.auraone.ai",
+  "notes": [
+    "Node 22 Vercel upload failed with TLS bad record mac/write EPIPE.",
+    "Node 20 with archive upload succeeded.",
+    "Deploy output was reduced to active V5 assets only."
+  ]
+}
