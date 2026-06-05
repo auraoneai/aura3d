@@ -996,7 +996,7 @@ layout(location = 0) in vec3 a_position;
 layout(location = 5) in vec4 a_joints;
 layout(location = 6) in vec4 a_weights;
 uniform mat4 u_modelViewProjection;
-uniform mat4 u_jointMatrices[64];
+uniform mat4 u_jointMatrices[96];
 uniform float u_jointCount;
 void main() {
   float maxJoint = max(u_jointCount - 1.0, 0.0);
@@ -1043,7 +1043,7 @@ uniform mat4 u_normalMatrix;
 uniform vec2 u_baseColorTextureOffset;
 uniform vec2 u_baseColorTextureScale;
 uniform float u_baseColorTextureRotation;
-uniform mat4 u_jointMatrices[64];
+uniform mat4 u_jointMatrices[96];
 uniform float u_jointCount;
 out vec3 v_normal;
 out vec4 v_tangent;

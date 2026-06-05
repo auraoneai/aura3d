@@ -1,6 +1,6 @@
 # Renderer Environment Lighting
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Environment lighting is implemented through renderer environment resources, environment presets, and fixture manifests.
 

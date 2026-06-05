@@ -1,6 +1,6 @@
 # Product Strengths
 
-Version: 1.0.0
+Version: 1.0.5
 
 This document captures durable product rules extracted from legacy planning work. It is the current product boundary for Aura3D documentation, examples, templates, marketing, and agent instructions.
 

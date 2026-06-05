@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2026-06-05T05:05:25.222Z",
+  "candidates": [
+    {
+      "file": "apps/aura-clash-showcase/assets/candidates/animated-humanoid-robot.glb",
+      "name": "animated-humanoid-robot.glb",
+      "sizeBytes": 5500216,
+      "sceneCount": 1,
+      "nodeCount": 48,
+      "meshCount": 6,
+      "skinCount": 1,
+      "animationCount": 4,
+      "animations": [
+        "IDLE",
+        "WALK",
+        "RUN",
+        "ALL"
+      ],
+      "materials": [
+        "HEAD",
+        "EYES",
+        "BODY",
+        "HINGE",
+        "material",
+        "material_5"
+      ]
+    },
+    {
+      "file": "apps/aura-clash-showcase/assets/candidates/minotaur-flying-knee-punch.glb",
+      "name": "minotaur-flying-knee-punch.glb",
+      "sizeBytes": 1847248,
+      "sceneCount": 1,
+      "nodeCount": 277,
+      "meshCount": 64,
+      "skinCount": 1,
+      "animationCount": 1,
+      "animations": [
+        "Armature|Armature|mixamo.com|Layer0"
+      ],
+      "materials": [
+        "Scene_-_Root"
+      ]
+    },
+    {
+      "file": "apps/aura-clash-showcase/assets/candidates/minotaur-hook-punch.glb",
+      "name": "minotaur-hook-punch.glb",
+      "sizeBytes": 1747528,
+      "sceneCount": 1,
+      "nodeCount": 277,
+      "meshCount": 64,
+      "skinCount": 1,
+      "animationCount": 1,
+      "animations": [
+        "Armature|Armature|mixamo.com|Layer0"
+      ],
+      "materials": [
+        "Scene_-_Root"
+      ]
+    }
+  ]
+}

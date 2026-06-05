@@ -1,6 +1,6 @@
 # WebGPU Route And Report Evidence
 
-Version: `1.0.0`
+Version: 1.0.5
 
 This page is the durable documentation for the current first-class WebGPU product surface. It replaces the temporary PRD-level checklist with code-backed routes, runtime contracts, scripts, reports, and release notes.
 

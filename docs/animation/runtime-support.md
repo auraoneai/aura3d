@@ -1,6 +1,6 @@
 # Animation Runtime Support
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Aura3D has first-party animation runtime code in `packages/animation` and glTF animation binding code in `packages/assets`.
 

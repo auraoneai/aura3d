@@ -150,6 +150,25 @@ export { deserializeGraph, serializeGraph, validateGraph } from "./VisualGraph";
 export type { SerializedVisualGraph, VisualEdge, VisualGraph } from "./VisualGraph";
 export { VisualGraphExecutor } from "./VisualGraphExecutor";
 export type { VisualExecutionResult } from "./VisualGraphExecutor";
+export type {
+  VisualAnimationControllerState,
+  VisualAnimationEvent,
+  VisualCameraState,
+  VisualCollisionEvent,
+  VisualCombatEvent,
+  VisualGraphDiagnostic,
+  VisualGraphExecutionContext,
+  VisualGraphSideEffect,
+  VisualGraphValidationOptions,
+  VisualInputSet,
+  VisualInputSnapshot,
+  VisualOverlapResult,
+  VisualPhysicsBodyState,
+  VisualRaycastHit,
+  VisualRuntimeNodeState,
+  VisualStateCollection,
+  VisualVector3
+} from "./VisualGraphContext";
 export { createVisualNode, getVisualNodeDefinition, listVisualNodeDefinitions } from "./VisualNodeCatalog";
 export type { VisualNodeCategory, VisualNodeDefinition } from "./VisualNodeCatalog";
 export { validateNode } from "./VisualNode";

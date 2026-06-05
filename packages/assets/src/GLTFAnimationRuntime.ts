@@ -614,7 +614,7 @@ export class GLTFSceneAnimationRuntime {
         if (!renderable.skinning) continue;
         const mesh = meshesByName.get(renderable.geometry);
         const skin = mesh?.skinIndex === undefined ? undefined : this.options.asset.skins[mesh.skinIndex];
-        if (!mesh || !skin || skin.joints.length > 64) continue;
+        if (!mesh || !skin || skin.joints.length > 96) continue;
         this.skinningBindings.push({ node, renderable, mesh, skin });
       }
     }

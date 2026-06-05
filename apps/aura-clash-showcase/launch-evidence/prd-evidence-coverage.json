@@ -1,0 +1,136 @@
+{
+  "ok": true,
+  "generatedAt": "2026-06-05T19:29:55.671Z",
+  "manifest": "apps/aura-clash-showcase/launch-evidence.coverage.json",
+  "prd": "docs/project/aura-clash-showcase.md",
+  "activeScopeEndHeading": "# Legacy World War X PRD Archive",
+  "activeScopeLineCount": 188,
+  "totalUnchecked": 0,
+  "coveredUnchecked": 0,
+  "uncoveredUnchecked": 0,
+  "rules": [
+    {
+      "id": "active-gate-463-build-app-and-marketing",
+      "kind": "command-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json"
+      ]
+    },
+    {
+      "id": "active-gate-464-deploy-to-vercel",
+      "kind": "deployment-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json"
+      ]
+    },
+    {
+      "id": "active-gate-465-deployed-route-and-glb-200",
+      "kind": "deployment-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ]
+    },
+    {
+      "id": "active-gate-494-deployed-route-confirmed",
+      "kind": "deployment-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ]
+    },
+    {
+      "id": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "tests/reports/aura3d104/typecheck.json",
+        "tests/reports/aura3d104/build.json",
+        "tests/reports/aura3d104/validation-suite.json",
+        "tests/reports/game-runtime/*.json",
+        "tests/reports/prompt-animation/*.json"
+      ]
+    },
+    {
+      "id": "generated-public-api-declarations",
+      "kind": "command-evidence",
+      "requiredArtifacts": [
+        "tests/reports/aura3d104/dist-agent-api-types.json",
+        "dist/engine/agent-api/index.d.ts"
+      ]
+    },
+    {
+      "id": "first-frame-screenshot-and-review",
+      "kind": "screenshot-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+        "apps/aura-clash-showcase/launch-evidence/review-package.md"
+      ]
+    },
+    {
+      "id": "deployment-and-route-proof",
+      "kind": "deployment-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+        "apps/aura-clash-showcase/launch-evidence/deployed-routes.json"
+      ]
+    },
+    {
+      "id": "human-visual-approval",
+      "kind": "manual-approval",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json"
+      ]
+    },
+    {
+      "id": "typed-glb-asset-and-game-art-quality",
+      "kind": "asset-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+        "apps/aura-clash-showcase/assets/quaternius-asset-provenance.json",
+        "apps/aura-clash-showcase/aura.assets.json"
+      ]
+    },
+    {
+      "id": "aura3d-105-package-readiness",
+      "kind": "cross-runtime-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "tests/reports/game-runtime/package-smoke.json",
+        "tests/reports/aura3d104/validation-suite.json"
+      ]
+    },
+    {
+      "id": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "tests/reports/prompt-animation/auravoice-contract-proof.json",
+        "tests/reports/prompt-animation/auravoice-sample-render-gates.json",
+        "tests/reports/prompt-animation/auravoice-sample-render-package-gates.json",
+        "tests/reports/prompt-animation/viseme-sync-proof.json",
+        "tests/reports/prompt-animation/dub-sync-proof.json",
+        "tests/reports/prompt-animation/prompt-animation-evidence.json",
+        "tests/reports/prompt-animation/validate-cartoon.json",
+        "tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png",
+        "tests/reports/prompt-animation/render-package/episode.mp4",
+        "tests/reports/prompt-animation/render-package/thumbnail.png",
+        "tests/reports/prompt-animation/render-package/captions.vtt",
+        "tests/reports/prompt-animation/render-package/timeline.json",
+        "tests/reports/prompt-animation/render-package/audio-stems.json",
+        "tests/reports/prompt-animation/render-package/youtube-draft.json"
+      ]
+    },
+    {
+      "id": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "requiredArtifacts": [
+        "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+        "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+        "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+        "apps/aura-clash-showcase/launch-evidence/visual-approval.json"
+      ]
+    }
+  ],
+  "covered": [],
+  "uncovered": []
+}

@@ -1,6 +1,6 @@
 # Aura3D And Babylon.js
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Babylon.js is a mature web 3D engine. A3D comparison coverage is limited to local benchmark and report slices.
 

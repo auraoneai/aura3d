@@ -1,6 +1,6 @@
 # Aura3D launch positioning
 
-Version: 1.0.0
+Version: 1.0.5
 
 Every public claim must map to a shipped API, CLI command, template, example,
 diagnostic, docs artifact, report, or release artifact.
@@ -19,13 +19,14 @@ The Aura3D SDK release may claim:
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
 - Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
 - Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
-- `@aura3d/engine@1.0.3` does not install Three.js as a root engine runtime dependency.
+- `@aura3d/engine@1.0.5` does not install Three.js as a root engine runtime dependency.
 - A local/developer-ready Round 50 Aura3D SDK artifact exists.
 
 The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
 scoped release artifacts when used in release notes or operator handoff docs.
 
-been satisfied for a committed round:
+Do not claim the following until the neutral benchmark, claim-defense, and
+release gates have been satisfied for a committed round:
 
 - Aura3D beats low-level renderer code.
 - Aura3D passed the frozen external AI-agent benchmark.

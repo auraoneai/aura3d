@@ -1,0 +1,61 @@
+{
+  "name": "@aura3d/aura-clash-showcase",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura Clash flagship Aura3D browser fighting game showcase with typed GLB assets, Quaternius CC0-style fighters, cinematic arenas, accessibility controls, evidence routes, and deploy-ready TypeScript.",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "typecheck": "tsc -p tsconfig.shipping.json --noEmit",
+    "typecheck:all": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "assets:stage": "node scripts/stage-quaternius-selection.mjs --reset",
+    "assets:build": "node scripts/build-aura-clash-source-glbs.mjs",
+    "test": "playwright test",
+    "test:route-health": "playwright test tests/route-health.spec.ts",
+    "test:playable": "playwright test tests/playable-smoke.spec.ts",
+    "test:accessibility": "playwright test tests/accessibility.spec.ts",
+    "test:deploy": "playwright test tests/deploy-check.spec.ts",
+    "test:screenshot": "playwright test tests/screenshot.spec.ts",
+    "assets:register": "node scripts/register-assets.mjs",
+    "assets:check": "node scripts/check-production-assets.mjs",
+    "routes:check": "node scripts/check-route-metadata.mjs",
+    "launch:evidence": "node scripts/collect-launch-evidence.mjs",
+    "launch:screenshot": "node scripts/capture-first-frame.mjs",
+    "launch:local-gates": "node scripts/run-local-launch-gates.mjs",
+    "launch:update-prd": "node scripts/update-prd-from-launch-evidence.mjs",
+    "launch:proof": "node scripts/run-launch-proof-workflow.mjs",
+    "launch:proof-local": "AURA_CLASH_RUN_COMMAND_PLAN_CHECK=1 AURA_CLASH_RUN_EVIDENCE_WIRING_CHECK=1 AURA_CLASH_RUN_PRD_EVIDENCE_COVERAGE=1 AURA_CLASH_RUN_READINESS_REPORT=1 npm run launch:proof",
+    "launch:proof-complete": "AURA_CLASH_UPDATE_PRD=1 AURA_CLASH_RUN_CROSS_RUNTIME_EVIDENCE=1 AURA_CLASH_RUN_PRD_EVIDENCE_COVERAGE=1 AURA_CLASH_RUN_EVIDENCE_WIRING_CHECK=1 AURA_CLASH_RUN_READINESS_REPORT=1 AURA_CLASH_RUN_COMPLETION_AUDIT=1 npm run launch:proof",
+    "launch:deploy": "node scripts/run-vercel-deploy-evidence.mjs",
+    "launch:review-package": "node scripts/create-launch-review-package.mjs",
+    "launch:readiness": "node scripts/create-launch-readiness-report.mjs",
+    "launch:completion-check": "node scripts/check-prd-completion.mjs",
+    "launch:approve-visual": "node scripts/record-visual-approval.mjs",
+    "launch:cross-runtime-evidence": "node scripts/check-cross-runtime-evidence.mjs",
+    "launch:command-plan": "node ../../tools/evidence/run-command-plan.mjs --plan launch-evidence.command-plan.json --out launch-evidence/command-plan-run.json",
+    "launch:command-plan-check": "node ../../tools/evidence/check-command-plan.mjs launch-evidence.command-plan.json",
+    "launch:coverage-check": "node scripts/check-prd-evidence-coverage.mjs",
+    "launch:wiring-check": "node scripts/check-evidence-wiring.mjs",
+    "launch:manifest-check": "node scripts/check-launch-evidence-manifest.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
+  },
+  "keywords": [
+    "aura3d",
+    "browser-game-engine",
+    "typescript-3d-sdk",
+    "fighting-game",
+    "glb-assets",
+    "webgl-game",
+    "threejs-alternative",
+    "babylonjs-alternative",
+    "game-showcase"
+  ]
+}

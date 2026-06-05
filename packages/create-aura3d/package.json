@@ -1,16 +1,22 @@
 {
   "name": "create-aura3d",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "type": "module",
   "bin": {
-    "create-aura3d": "./dist/cli.js"
+    "create-aura3d": "dist/cli.js"
   },
   "files": [
     "dist",
     "templates/product-viewer",
     "templates/cinematic-scene",
-    "templates/mini-game"
+    "templates/mini-game",
+    "templates/fighting-game",
+    "templates/cartoon-channel",
+    "templates/prompt-cartoon-channel"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -19,26 +25,31 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "description": "Scaffold Vite browser 3D apps for Aura3D with product viewer, cinematic scene, and mini-game templates.",
+  "description": "Scaffold Aura3D browser 3D apps for product viewers, cinematic scenes, mini-games, fighting-game runtimes, and prompt-driven cartoon channels.",
   "keywords": [
     "create-aura3d",
     "vite",
     "3d-template",
     "browser-3d",
     "product-viewer",
+    "fighting-game",
+    "prompt-cartoon-channel",
+    "cartoon-animation",
+    "prompt-to-video",
+    "game-runtime",
     "gltf",
     "glb",
     "typescript",
     "ai-agents"
   ],
-  "homepage": "https://github.com/gchahal1982/aura3d#readme",
+  "homepage": "https://github.com/auraoneai/aura3d#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gchahal1982/aura3d.git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
     "directory": "packages/create-aura3d"
   },
   "bugs": {
-    "url": "https://github.com/gchahal1982/aura3d/issues"
+    "url": "https://github.com/auraoneai/aura3d/issues"
   },
   "license": "MIT"
 }

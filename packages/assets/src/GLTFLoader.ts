@@ -27,7 +27,7 @@ type GLTFAccessorType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
 const DEFAULT_GLTF_MATERIAL_NAME = "default-material";
 const RUNTIME_MATERIAL_KEY_MARKER = "#aura3d-runtime:";
 const DISPOSE_GLTF_ASSET = Symbol("disposeGLTFAsset");
-const MAX_RENDERABLE_SKIN_JOINTS = 64;
+const MAX_RENDERABLE_SKIN_JOINTS = 96;
 
 interface GLTFBuffer {
   readonly uri?: string;

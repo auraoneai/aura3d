@@ -1,6 +1,6 @@
 # Documentation Index
 
-Version: 1.0.0
+Version: 1.0.5
 
 ## Agent Docs
 
@@ -21,7 +21,11 @@ Version: 1.0.0
 - Current state: `docs/project/current-state.md`
 - Product boundaries: `docs/project/product-boundaries.md`
 - Release tracks: `docs/project/release-tracks.md`
-- Final proof release readiness: `docs/project/final-proof-release-readiness.md`
+- Aura3D 1.0.5 release gates: `docs/project/aura3d-105-release-gates.md`
+- Game runtime release contract: `docs/project/game-runtime-release.md`
+- Aura Clash showcase: `docs/project/aura-clash-showcase.md`
+- Asset catalog 1.0.4 release: `docs/project/asset-catalog-1.0.4-release.md`
+- External proof readiness: `docs/project/external-proof-readiness.md`
 - Three.js runtime removal PRD: `docs/project/three-runtime-removal-prd.md`
 - Release process: `docs/project/release-process.md`
 - Release checklist: `docs/project/release-checklist.md`
@@ -33,6 +37,16 @@ Version: 1.0.0
 
 - Public API: `docs/api/public-api.md`
 - API readme: `docs/api/readme.md`
+- Game runtime API: `docs/api/game-runtime.md`
+- Animation runtime/events API: `docs/api/animation-runtime-events.md`
+- Editor and visual scripting API: `docs/api/editor-visual-scripting.md`
+- Asset evidence API: `docs/api/assets.md`
+- Fighting-game example: `docs/examples/fighting-game.md`
+- Prompt animation API: `docs/api/prompt-animation.md`
+- AuraVoice bridge API: `docs/api/auravoice-bridge.md`
+- Cartoon-channel example: `docs/examples/cartoon-channel.md`
+- Prompt-to-episode example: `docs/examples/prompt-to-episode.md`
+- Aura Clash boundary: Aura Clash requires 1.0.5 runtime, animation, asset, screenshot, deploy, and visual approval evidence before it should be marketed as a polished game showcase.
 - Concepts: `docs/concepts/`
 - Rendering: `docs/rendering/`
 - Physics: `docs/physics/`

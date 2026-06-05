@@ -12,8 +12,16 @@ describe("create-aura3d templates", () => {
       expect(result.template).toBe(template);
       expect(existsSync(join(targetDir, "package.json"))).toBe(true);
       expect(existsSync(join(targetDir, "tests", "route-health.spec.ts"))).toBe(true);
-      expect(existsSync(join(targetDir, "tests", "screenshot.spec.ts"))).toBe(true);
+      expect(hasTemplateSmokeSpec(targetDir)).toBe(true);
       expect(existsSync(join(targetDir, "src", "main.ts"))).toBe(true);
     }
   });
 });
+
+function hasTemplateSmokeSpec(targetDir: string): boolean {
+  return [
+    "screenshot.spec.ts",
+    "gameplay-smoke.spec.ts",
+    "storyboard-playback.spec.ts"
+  ].some((file) => existsSync(join(targetDir, "tests", file)));
+}

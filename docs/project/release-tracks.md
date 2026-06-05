@@ -1,9 +1,9 @@
 # Release Tracks
 
-Version: 1.0.3
-Date: 2026-06-03
+Version: 1.0.5
+Date: 2026-06-05
 
-Aura3D v1.0.3 is the root-runtime cleanup track for the public SDK, docs, npm package, GitHub repository, and marketing site.
+Aura3D v1.0.5 is the runtime-animation, asset-catalog, prompt-resolution, CLI, template, docs, npm package, GitHub repository, and marketing-site release track.
 
 ## Launch Positioning
 
@@ -13,19 +13,27 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 ## Current Release
 
-- npm package: `@aura3d/engine@1.0.3`
+- npm package target: `@aura3d/engine@1.0.5`
 - Public developer API: `@aura3d/engine`
+- CLI package target: `@aura3d/cli@1.0.5`
+- Scaffold package target: `create-aura3d@1.0.5`
 - Website: `https://aura3d.auraone.ai`
 - Repository: `https://github.com/auraoneai/aura3d`
 - Primary install path: `npm install @aura3d/engine`
 
+## 1.0.5 Release Note
+
+`@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
+
+Current publication blocker: npm `latest` still points at `@aura3d/engine@1.0.3`, `@aura3d/cli` is not yet published, `create-aura3d` is not yet published, and the release-artifact manifest must match the 1.0.5 tarball before public launch claims are made.
+
+## 1.0.4 Release Note
+
+`@aura3d/engine@1.0.4` was the asset-catalog and game-runtime source track that led into 1.0.5. Treat it as historical planning context, not the active public package target.
+
 ## 1.0.3 Release Note
 
-`@aura3d/engine@1.0.3` removes Three.js from the root engine runtime and npm
-dependency graph. Three.js parity, migration, and compatibility tooling remain
-available outside the default engine install path. Public Aura3D agent APIs,
-typed assets, templates, diagnostics, and screenshots continue to use
-Aura3D-owned runtime code.
+`@aura3d/engine@1.0.3` removed Three.js from the root engine runtime and npm dependency graph. That cleanup remains part of the 1.0.4 baseline.
 
 ## Launch Copy
 

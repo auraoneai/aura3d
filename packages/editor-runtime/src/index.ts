@@ -49,6 +49,19 @@ export type { ShaderGraphDiagnostic, ShaderGraphEdge, ShaderGraphFixture, Shader
 export { createStaticExportHtml, createStaticExportRuntime } from "./StaticExportRuntime";
 export type { StaticExportHtmlOptions, StaticExportRuntimeOptions } from "./StaticExportRuntime";
 export * from "./ProjectSerializer.js";
+export {
+  TimelineRuntimeBridge,
+  createTimelineRuntimeBridge
+} from "./TimelineRuntimeBridge";
+export type {
+  TimelineRuntimeAnimationApplication,
+  TimelineRuntimeBindingConfig,
+  TimelineRuntimeBridgeConfig,
+  TimelineRuntimeBridgeSnapshot,
+  TimelineRuntimeSignalDispatch,
+  TimelineRuntimeTarget,
+  TimelineRuntimeTargetSnapshot
+} from "./TimelineRuntimeBridge";
 export { TranslateGizmo } from "./TranslateGizmo";
 export { TimelineClip, TimelineModel, TimelineTrack } from "./TimelineModel";
 export type {
@@ -58,6 +71,7 @@ export type {
   TimelineEasingName,
   TimelineLoopMode,
   TimelineModelConfig,
+  TimelineSignalEventSnapshot,
   TimelineSnapshot,
   TimelineTrackConfig,
   TimelineTrackSnapshot

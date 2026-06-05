@@ -16,7 +16,14 @@ import {
   TimelineTrack,
   TransformCommand,
   TranslateGizmo,
-  type Command
+  collectEditorProjectEvidence,
+  createTimelineRuntimeBridge,
+  parseEditorProject,
+  serializeEditorProject,
+  type Command,
+  type EditorProjectDocument,
+  type TimelineRuntimeAnimationApplication,
+  type TimelineRuntimeSignalDispatch
 } from "../src/index";
 
 test("CommandHistory executes undo and redo deterministically", async () => {
@@ -393,4 +400,198 @@ test("TimelineModel ports bounded track, clip, easing, loop, lock, mute, and sig
 
   const lockedTrack = timeline.tracks.find((track) => track.id === "signal-track");
   assert.throws(() => lockedTrack?.addClip(new TimelineClip({ name: "Late Signal", startTime: 1, duration: 0.1 })), /locked timeline track/);
+});
+
+test("TimelineRuntimeBridge applies editor-authored clips and signals to runtime targets", () => {
+  const timeline = new TimelineModel({
+    id: "combat-timeline",
+    duration: 1.5,
+    loopMode: "none",
+    tracks: [
+      {
+        id: "fighter-animation",
+        name: "Fighter Animation",
+        type: "animation",
+        weight: 0.5,
+        clips: [
+          {
+            id: "light-punch",
+            name: "Light Punch",
+            startTime: 0,
+            duration: 0.8,
+            assetId: "fighter-glb",
+            clipName: "LightPunch",
+            blendMode: "mix",
+            weight: 0.8,
+            clipInOffset: 0.1,
+            properties: {
+              runtimeNodeId: "player",
+              authoringLane: "upper-body"
+            }
+          }
+        ]
+      },
+      {
+        id: "combat-events",
+        name: "Combat Events",
+        type: "signal",
+        clips: [
+          {
+            id: "hitbox-open",
+            name: "Hitbox Open",
+            startTime: 0.25,
+            duration: 0.05,
+            properties: {
+              event: "hitbox.open",
+              targetId: "player",
+              hitbox: "right-fist"
+            }
+          }
+        ]
+      }
+    ]
+  });
+  const applications: TimelineRuntimeAnimationApplication[] = [];
+  const signals: TimelineRuntimeSignalDispatch[] = [];
+  const bridge = createTimelineRuntimeBridge({
+    timeline,
+    bindings: [
+      {
+        trackId: "fighter-animation",
+        targetId: "player",
+        assetId: "fighter-glb",
+        clipNameMap: { LightPunch: "LightPunch" }
+      }
+    ],
+    targets: [
+      {
+        id: "player",
+        applyTimelineAnimation(application) {
+          applications.push(application);
+        },
+        applyTimelineSignal(signal) {
+          signals.push(signal);
+        },
+        snapshot() {
+          return { applications: applications.length, signals: signals.length };
+        }
+      }
+    ]
+  });
+
+  const first = bridge.applyAt(0.25);
+  assert.equal(applications.length, 1);
+  assert.equal(applications[0]?.targetId, "player");
+  assert.equal(applications[0]?.clipName, "LightPunch");
+  assert.equal(applications[0]?.assetTime, 0.35);
+  assert.equal(applications[0]?.blendWeight, 0.4);
+  assert.equal(signals.length, 1);
+  assert.equal(signals[0]?.event, "hitbox.open");
+  assert.equal(first.kind, "aura-editor-timeline-runtime-bridge");
+  assert.equal(first.evidence.timelineToRuntimeBridge, true);
+  assert.equal(first.evidence.animationClipBinding, true);
+  assert.equal(first.evidence.signalDispatch, true);
+  const targetSnapshot = first.targets[0]?.snapshot as { applications: number } | undefined;
+  assert.equal(targetSnapshot?.applications, 1);
+
+  bridge.applyAt(0.26);
+  assert.equal(signals.length, 1);
+  bridge.applyAt(0.25, { replaySignals: true });
+  assert.equal(signals.length, 2);
+});
+
+test("ProjectSerializer round-trips editor timelines, runtime bindings, asset provenance, and visual graph hooks", () => {
+  const timeline = new TimelineModel({
+    id: "episode-timeline",
+    name: "Episode Timeline",
+    duration: 2,
+    tracks: [
+      {
+        id: "character-animation",
+        name: "Character Animation",
+        type: "animation",
+        clips: [{ id: "idle", name: "Idle", startTime: 0, duration: 2, assetId: "toon-glb", clipName: "Idle" }]
+      },
+      {
+        id: "markers",
+        name: "Markers",
+        type: "signal",
+        clips: [{ id: "mouth-aa", name: "Mouth AA", startTime: 0.4, duration: 0.05, properties: { event: "viseme", targetId: "toon", viseme: "AA" } }]
+      }
+    ]
+  });
+  const project: EditorProjectDocument = {
+    schema: "a3d-editor-project",
+    version: 105,
+    name: "1.0.5 Editor Workflow",
+    nodes: [{ id: "toon", name: "Typed Toon", runtimeNodeId: "toon" }],
+    assets: [
+      {
+        id: "toon-glb",
+        name: "toon.glb",
+        type: "glb",
+        uri: "assets/toon.glb",
+        source: "Aura3D typed asset catalog fixture",
+        license: "CC0",
+        clips: ["Idle"],
+        morphTargets: ["AA"]
+      }
+    ],
+    timelines: [
+      {
+        ...timeline.toConfig(),
+        bindings: [{ trackId: "character-animation", targetId: "toon", assetId: "toon-glb" }],
+        evidence: {
+          authoredInEditor: true,
+          runtimeReplay: true,
+          animationEvents: true
+        }
+      }
+    ],
+    visualGraphs: [
+      {
+        id: "graph-viseme",
+        name: "Viseme Graph",
+        nodes: [{ id: "on-viseme", type: "event" }],
+        edges: [],
+        runtimeBindings: [{ nodeId: "on-viseme", targetId: "toon", event: "viseme" }]
+      }
+    ],
+    editor: {
+      selectedNodeId: "toon",
+      activeTool: "timeline",
+      activeTimelineId: "episode-timeline",
+      playMode: "edit"
+    },
+    evidence: {
+      serializedBy: "editor-runtime",
+      roundTripReady: true,
+      browserWorkflowReady: false
+    }
+  };
+
+  const serialized = serializeEditorProject(project);
+  assert.match(serialized, /"timelines"/);
+  assert.match(serialized, /"visualGraphs"/);
+  const parsed = parseEditorProject(serialized);
+  assert.equal(parsed.timelines?.[0]?.bindings?.[0]?.targetId, "toon");
+  assert.equal(parsed.timelines?.[0]?.tracks?.[1]?.clips?.[0]?.properties?.event, "viseme");
+
+  const evidence = collectEditorProjectEvidence(parsed);
+  assert.equal(evidence.kind, "aura-editor-project-evidence");
+  assert.equal(evidence.timelineCount, 1);
+  assert.equal(evidence.visualGraphCount, 1);
+  assert.equal(evidence.timelineBindingCount, 1);
+  assert.equal(evidence.signalMarkerCount, 1);
+  assert.equal(evidence.typedAssetEvidenceCount, 1);
+  assert.equal(evidence.roundTripReady, true);
+  assert.equal(evidence.evidence.timelineSerialization, true);
+  assert.equal(evidence.evidence.visualGraphSerialization, true);
+  assert.equal(evidence.evidence.runtimeReplayBindings, true);
+  assert.equal(evidence.evidence.sourceLicenseAssetEvidence, true);
+
+  assert.throws(() => serializeEditorProject({
+    ...project,
+    timelines: [{ ...timeline.toConfig(), bindings: [{ trackId: "character-animation", targetId: "" }] }]
+  }), /targetId is required/);
 });

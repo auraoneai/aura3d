@@ -110,9 +110,9 @@ export class SkinnedLitMaterial extends Material {
     validateNonNegative(options.iridescenceThicknessMaximum ?? 400, "iridescenceThicknessMaximum");
     validateNonNegative(options.dispersion ?? 0, "dispersion");
     validatePositive(options.ior ?? 1.5, "ior");
-    const maxJoints = options.maxJoints ?? 64;
-    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 64) {
-      throw new Error("SkinnedLitMaterial maxJoints must be an integer in [1, 64]");
+    const maxJoints = options.maxJoints ?? 96;
+    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 96) {
+      throw new Error("SkinnedLitMaterial maxJoints must be an integer in [1, 96]");
     }
     super({
       name: options.name ?? "skinned-lit",

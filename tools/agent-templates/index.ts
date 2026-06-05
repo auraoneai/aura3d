@@ -1,10 +1,12 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../check-common";
 
-const templates = ["product-viewer", "cinematic-scene", "mini-game"];
+const templates = [...CREATE_AURA3D_TEMPLATES];
+const templateNames = new Set<string>(templates);
+const rootPackagedTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
 const heldBackTemplateDirs = [
   "asset-gallery",
   "interactive-scene",
@@ -30,6 +32,7 @@ const tsconfig = JSON.parse(readFileSync("tsconfig.base.json", "utf8")) as {
   compilerOptions?: { paths?: Record<string, readonly string[]> };
 };
 const expectedTemplateFiles = templates.map((template) => `templates/${template}`);
+const expectedRootTemplateFiles = rootPackagedTemplates.map((template) => `templates/${template}`);
 const activePackageTemplateDirs = readdirSync("packages/create-aura3d/templates", { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
@@ -45,21 +48,26 @@ const checks: ReleaseCheck[] = [
     existsCheck(`packages/create-aura3d/templates/${template}/playwright.config.ts`, `${template} Playwright config`),
     existsCheck(`packages/create-aura3d/templates/${template}/src/main.ts`, `${template} main`),
     existsCheck(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, `${template} route health test`),
-    existsCheck(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, `${template} screenshot test`),
+    templateSmokeSpecCheck(template),
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["@aura3d/engine"], `${template} public Aura3D api`)
+  ]),
+  ...rootPackagedTemplates.flatMap((template) => [
     existsCheck(`templates/${template}/package.json`, `${template} packaged root template package`),
     existsCheck(`templates/${template}/playwright.config.ts`, `${template} packaged root template Playwright config`),
     existsCheck(`templates/${template}/src/main.ts`, `${template} packaged root template main`),
+    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`)
+  ]),
+  ...rootPackagedTemplates.flatMap((template) => [
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`),
-    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`)
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`)
   ]),
   fileIncludes("packages/create-aura3d/src/index.ts", templates, "create command templates"),
   {
     id: "root-package-template-scope",
     pass:
-      expectedTemplateFiles.every((file) => rootPackage.files?.includes(file)) &&
-      (rootPackage.files ?? []).filter((file) => file.startsWith("templates/")).every((file) => expectedTemplateFiles.includes(file)),
+      expectedRootTemplateFiles.every((file) => rootPackage.files?.includes(file)) &&
+      (rootPackage.files ?? []).filter((file) => file.startsWith("templates/")).every((file) => expectedRootTemplateFiles.includes(file)),
     detail: `root package templates: ${(rootPackage.files ?? []).filter((file) => file.startsWith("templates/")).join(", ")}`
   },
   {
@@ -70,8 +78,8 @@ const checks: ReleaseCheck[] = [
     detail: `create package templates: ${(createPackage.files ?? []).filter((file) => file.startsWith("templates/")).join(", ")}`
   },
   {
-    id: "only-three-active-create-aura3d-template-directories",
-    pass: activePackageTemplateDirs.length === templates.length && activePackageTemplateDirs.every((template) => templates.includes(template)),
+    id: "active-create-aura3d-template-directories",
+    pass: activePackageTemplateDirs.length === templates.length && activePackageTemplateDirs.every((template) => templateNames.has(template)),
     detail: `active package template dirs: ${activePackageTemplateDirs.join(", ")}`
   },
   {
@@ -90,9 +98,9 @@ const checks: ReleaseCheck[] = [
 
 const scaffoldSmoke = runScaffoldSmoke();
 checks.push({
-  id: "create-aura3d-scaffold-build-route-health-screenshot",
+  id: "create-aura3d-scaffold-build-route-health-smoke",
   pass: scaffoldSmoke.pass,
-  detail: scaffoldSmoke.pass ? `${scaffoldSmoke.results.length} generated template projects built, ran route-health, and saved screenshots` : scaffoldSmoke.failures.join("; ")
+  detail: scaffoldSmoke.pass ? `${scaffoldSmoke.results.length} generated template projects built and ran route-health plus template smoke specs` : scaffoldSmoke.failures.join("; ")
 });
 
 writeReport("tests/reports/agent-templates.json", "aura3d-agent-templates", checks, {
@@ -121,23 +129,29 @@ function runScaffoldSmoke(): {
       });
       writeWorkspaceViteConfig(targetDir);
       writeWorkspacePlaywrightConfig(targetDir);
+      const smokeSpecs = templateSmokeSpecs(template);
       run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
-      run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
+      run("pnpm", ["exec", "playwright", "test", ...smokeSpecs.map((spec) => `tests/${spec}`), "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
       const routeReportPath = resolve(targetDir, "tests/reports/route-health.json");
       const screenshotReportPath = resolve(targetDir, "tests/reports/screenshot.json");
       const screenshotPath = resolve(targetDir, "tests/reports/screenshot.png");
-      const routeReport = JSON.parse(readFileSync(routeReportPath, "utf8")) as { drawCalls?: number };
-      const screenshotReport = JSON.parse(readFileSync(screenshotReportPath, "utf8")) as { bytes?: number; profile?: Record<string, unknown> };
+      const routeReport = existsSync(routeReportPath)
+        ? JSON.parse(readFileSync(routeReportPath, "utf8")) as { drawCalls?: number }
+        : undefined;
+      const screenshotReport = existsSync(screenshotReportPath)
+        ? JSON.parse(readFileSync(screenshotReportPath, "utf8")) as { bytes?: number; profile?: Record<string, unknown> }
+        : undefined;
       results.push({
         template,
         files: scaffold.files.length,
         build: true,
+        smokeSpecs,
         routeHealth: existsSync(routeReportPath),
         screenshot: existsSync(screenshotPath),
-        drawCalls: routeReport.drawCalls,
-        screenshotBytes: screenshotReport.bytes,
-        screenshotProfile: screenshotReport.profile,
-        screenshotFileBytes: statSync(screenshotPath).size
+        drawCalls: routeReport?.drawCalls,
+        screenshotBytes: screenshotReport?.bytes,
+        screenshotProfile: screenshotReport?.profile,
+        screenshotFileBytes: existsSync(screenshotPath) ? statSync(screenshotPath).size : undefined
       });
     } catch (error) {
       failures.push(`${template}: ${error instanceof Error ? error.message : String(error)}`);
@@ -146,6 +160,21 @@ function runScaffoldSmoke(): {
   }
 
   return { pass: failures.length === 0, results, failures };
+}
+
+function templateSmokeSpecCheck(template: string): ReleaseCheck {
+  const specs = templateSmokeSpecs(template);
+  return {
+    id: `${template}-template-smoke-spec`,
+    pass: specs.every((spec) => existsSync(`packages/create-aura3d/templates/${template}/tests/${spec}`)),
+    detail: `${template} smoke specs: ${specs.join(", ")}`
+  };
+}
+
+function templateSmokeSpecs(template: string): readonly string[] {
+  if (template === "fighting-game") return ["route-health.spec.ts", "gameplay-smoke.spec.ts"];
+  if (template === "cartoon-channel" || template === "prompt-cartoon-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
+  return ["route-health.spec.ts", "screenshot.spec.ts"];
 }
 
 function writeWorkspacePlaywrightConfig(targetDir: string): void {

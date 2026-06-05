@@ -1,0 +1,48 @@
+{
+  "rewrites": [
+    {
+      "source": "/showcase/aura-clash",
+      "destination": "/apps/aura-clash-showcase/"
+    },
+    {
+      "source": "/playable",
+      "destination": "/apps/aura-clash-showcase/playable/"
+    },
+    {
+      "source": "/playable/:path*",
+      "destination": "/apps/aura-clash-showcase/playable/:path*"
+    },
+    {
+      "source": "/apps/aura-clash",
+      "destination": "/apps/aura-clash-showcase/"
+    },
+    {
+      "source": "/apps/aura-clash/:path*",
+      "destination": "/apps/aura-clash-showcase/:path*"
+    },
+    {
+      "source": "/showcase/aura-clash/:path*",
+      "destination": "/apps/aura-clash-showcase/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/apps/aura-clash-showcase/aura-assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/showcase/aura-clash/aura-assets/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}

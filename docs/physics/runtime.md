@@ -1,6 +1,6 @@
 # Physics Runtime
 
-Version: 1.0.0
+Version: 1.0.5
 
 `@aura3d/physics` is the first-party deterministic physics package created for rigid bodies, colliders, constraints, raycasts, scene sync, debug draw, and workflow evidence. The package is exported from `@aura3d/engine/physics`.
 

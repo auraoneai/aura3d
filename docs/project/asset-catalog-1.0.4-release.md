@@ -1,6 +1,6 @@
 # Aura3D 1.0.4 Asset Catalog And Prompt Resolution Release
 
-Version: 1.0.4
+Version: 1.0.5
 Status: Source-ready; release proof pending build, package smoke, and launch evidence.
 
 Aura3D 1.0.4 folds the federated asset catalog and prompt-resolution seam into the engine release track. The goal is simple: when a developer or AI coding agent asks for a real object, Aura3D should resolve a real, license-aware GLB/glTF candidate instead of generating placeholder primitives or hallucinating raw URLs.
@@ -62,7 +62,7 @@ Hosts and the CLI can implement the resolver by calling the hosted catalog, down
 
 ## Release evidence still required
 
-This document records source intent. It does not prove release readiness. Before `@aura3d/engine@1.0.4` is published, the release needs:
+This document records the source intent that began in the 1.0.4 track and now feeds the 1.0.5 release gate. Before `@aura3d/engine@1.0.5`, `@aura3d/asset-index@1.0.5`, and `@aura3d/cli@1.0.5` are published, the release needs:
 
 - typecheck evidence
 - build evidence

@@ -1,6 +1,6 @@
 # Site Map
 
-Version: 1.0.0
+Version: 1.0.5
 
 ## Public Marketing Pages
 
@@ -26,9 +26,12 @@ Version: 1.0.0
 - [Public API reference](../api/public-api.md)
 - [Getting started tutorial](tutorials-getting-started-real-scene.md)
 - [Changelog](../../CHANGELOG.md)
-- [Final proof and release readiness](final-proof-release-readiness.md)
+- [External proof readiness](external-proof-readiness.md)
 - [Release checklist](release-checklist.md)
 - [Release process](release-process.md)
+- [Aura3D 1.0.5 release gates](aura3d-105-release-gates.md)
+- [Game runtime release contract](game-runtime-release.md)
+- [Aura Clash showcase](aura-clash-showcase.md)
 
 ## Local Example Routes
 

@@ -1,6 +1,6 @@
 # Renderer Texture Compression
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Texture compression support is split between asset decoding/transcoding and renderer texture submission.
 

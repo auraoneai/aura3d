@@ -1,0 +1,324 @@
+{
+  "ok": true,
+  "generatedAt": "2026-06-05T19:29:23.349Z",
+  "coverage": "apps/aura-clash-showcase/launch-evidence.coverage.json",
+  "commandPlan": "apps/aura-clash-showcase/launch-evidence.command-plan.json",
+  "manifest": "apps/aura-clash-showcase/launch-evidence.manifest.json",
+  "knownArtifactCount": 94,
+  "coverageArtifactCount": 43,
+  "unknownArtifactCount": 0,
+  "knownSources": [
+    "command-plan:notes",
+    "command-plan:auraClashLocal",
+    "command-plan:auraClashDeploy",
+    "command-plan:aura3d104",
+    "command-plan:promptAnimation",
+    "command-plan:finalAggregation",
+    "launch-evidence.manifest.json:commands",
+    "launch-evidence.manifest.json:sourceEvidence"
+  ],
+  "coverageArtifacts": [
+    {
+      "ruleId": "active-gate-463-build-app-and-marketing",
+      "kind": "command-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "active-gate-464-deploy-to-vercel",
+      "kind": "deployment-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "active-gate-465-deployed-route-and-glb-200",
+      "kind": "deployment-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "active-gate-494-deployed-route-confirmed",
+      "kind": "deployment-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/aura3d104/typecheck.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/aura3d104/build.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/aura3d104/validation-suite.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/game-runtime/*.json",
+      "known": true,
+      "reason": "wildcard evidence class"
+    },
+    {
+      "ruleId": "local-build-smoke-and-validation",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/prompt-animation/*.json",
+      "known": true,
+      "reason": "wildcard evidence class"
+    },
+    {
+      "ruleId": "generated-public-api-declarations",
+      "kind": "command-evidence",
+      "artifact": "tests/reports/aura3d104/dist-agent-api-types.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "generated-public-api-declarations",
+      "kind": "command-evidence",
+      "artifact": "dist/engine/agent-api/index.d.ts",
+      "known": true,
+      "reason": "current source/static artifact exists"
+    },
+    {
+      "ruleId": "first-frame-screenshot-and-review",
+      "kind": "screenshot-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/first-frame.png",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "first-frame-screenshot-and-review",
+      "kind": "screenshot-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/first-frame.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "first-frame-screenshot-and-review",
+      "kind": "screenshot-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/review-package.md",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "deployment-and-route-proof",
+      "kind": "deployment-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "deployment-and-route-proof",
+      "kind": "deployment-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "human-visual-approval",
+      "kind": "manual-approval",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/visual-approval.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "typed-glb-asset-and-game-art-quality",
+      "kind": "asset-evidence",
+      "artifact": "apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "typed-glb-asset-and-game-art-quality",
+      "kind": "asset-evidence",
+      "artifact": "apps/aura-clash-showcase/assets/quaternius-asset-provenance.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "typed-glb-asset-and-game-art-quality",
+      "kind": "asset-evidence",
+      "artifact": "apps/aura-clash-showcase/aura.assets.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura3d-105-package-readiness",
+      "kind": "cross-runtime-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura3d-105-package-readiness",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/game-runtime/package-smoke.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura3d-105-package-readiness",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/aura3d104/validation-suite.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/auravoice-contract-proof.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/auravoice-sample-render-gates.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/auravoice-sample-render-package-gates.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/viseme-sync-proof.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/dub-sync-proof.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/prompt-animation-evidence.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/validate-cartoon.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/episode.mp4",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/thumbnail.png",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/captions.vtt",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/timeline.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/audio-stems.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "aura-voice-prompt-animation-youtube",
+      "kind": "cross-runtime-evidence",
+      "artifact": "tests/reports/prompt-animation/render-package/youtube-draft.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/local-gates.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    },
+    {
+      "ruleId": "final-launch-blocker-summary",
+      "kind": "summary-evidence",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/visual-approval.json",
+      "known": true,
+      "reason": "declared by command plan, launch manifest, or sourceEvidence"
+    }
+  ],
+  "unknown": []
+}

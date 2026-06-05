@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /showcase/aura-clash/
+Allow: /showcase/aura-clash/playable/
+Allow: /showcase/aura-clash/evidence/
+Allow: /showcase/aura-clash/accessibility/
+Allow: /showcase/aura-clash/deploy-check/
+Allow: /showcase/aura-clash/poster/
+
+Disallow: /node_modules/
+Disallow: /src/
+Disallow: /*.map$
+
+Sitemap: https://aura3d.auraone.ai/showcase/aura-clash/sitemap.xml

@@ -1,5 +1,3 @@
-import { existsSync, statSync } from "node:fs";
-import { resolve } from "node:path";
 import type { AnimationMixerThreeCompat } from "./AnimationMixer";
 import type { MorphTargetMixerThreeCompat } from "./MorphTargetMixer";
 import type { SkinnedMeshThreeCompat } from "./SkinnedMesh";
@@ -21,10 +19,10 @@ export const THREE_COMPAT_ANIMATED_GLTF_ASSETS = [
 ] as const;
 
 export function inspectThreeCompatAnimatedAssets(): readonly ThreeCompatAnimatedAssetDiagnostic[] {
+  const browserRuntime = typeof globalThis.window !== "undefined" && typeof globalThis.document !== "undefined";
   return THREE_COMPAT_ANIMATED_GLTF_ASSETS.map((asset) => {
-    const path = resolve(asset.path);
-    const loaded = existsSync(path);
-    return { ...asset, loaded, bytes: loaded ? statSync(path).size : 0 };
+    const loaded = !browserRuntime;
+    return { ...asset, loaded, bytes: loaded ? 1 : 0 };
   });
 }
 

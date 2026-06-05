@@ -1,6 +1,6 @@
 # Profiling And Diagnostics
 
-Version: 1.0.0
+Version: 1.0.5
 
 `@aura3d/debug` and the report-generation tools provide the diagnostics layer behind renderer, material, physics, animation, resource-lifecycle, and public-claim evidence. The package is exported from `@aura3d/engine/debug`.
 

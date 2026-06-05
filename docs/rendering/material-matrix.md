@@ -1,6 +1,6 @@
 # Renderer Material Matrix
 
-Version: `1.0.0`
+Version: 1.0.5
 
 Material support is implemented across the rendering, assets, and materials packages.
 

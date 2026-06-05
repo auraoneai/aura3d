@@ -1,6 +1,6 @@
 # Cinematic Scene Quality
 
-Version: 1.0.0
+Version: 1.0.5
 
 Use this guide when an AI coding agent builds a cinematic Aura3D scene or edits the `cinematic-scene` template.
 
@@ -89,6 +89,8 @@ Allowed:
 - "realtime previs-style browser scene"
 - "camera motion, lighting, atmosphere, and typed assets"
 - "agent-written TypeScript scene"
+
+Blocked unless separate evidence gates explicitly prove the exact claim:
 
 - final film quality;
 - Pixar-quality output;

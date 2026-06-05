@@ -47,11 +47,26 @@ export interface TimelineActiveClipSnapshot {
   readonly trackType: TimelineTrackConfig["type"];
   readonly clipId: string;
   readonly clipName: string;
+  readonly assetId?: string;
+  readonly assetClipName?: string;
+  readonly runtimeTargetId?: string;
   readonly localTime: number;
   readonly assetTime: number;
   readonly normalizedTime: number;
   readonly blendWeight: number;
   readonly blendMode: TimelineClipBlendMode;
+  readonly properties: Record<string, string | number | boolean>;
+}
+
+export interface TimelineSignalEventSnapshot {
+  readonly trackId: string;
+  readonly trackName: string;
+  readonly clipId: string;
+  readonly clipName: string;
+  readonly event: string;
+  readonly time: number;
+  readonly localTime: number;
+  readonly properties: Record<string, string | number | boolean>;
 }
 
 export interface TimelineTrackSnapshot {
@@ -81,6 +96,7 @@ export interface TimelineSnapshot {
   readonly activeClips: readonly TimelineActiveClipSnapshot[];
   readonly tracks: readonly TimelineTrackSnapshot[];
   readonly signalEvents: readonly string[];
+  readonly signalEventDetails: readonly TimelineSignalEventSnapshot[];
   readonly evidence: {
     readonly oldCodebasePort: true;
     readonly boundedTimelineAuthoring: true;
@@ -173,6 +189,26 @@ export class TimelineClip {
     }
     return Number(result.toFixed(4));
   }
+
+  toConfig(): TimelineClipConfig {
+    return {
+      id: this.id,
+      name: this.name,
+      startTime: this.startTime,
+      duration: this.duration,
+      assetId: this.assetId,
+      clipName: this.clipName,
+      easeInDuration: this.easeInDuration,
+      easeOutDuration: this.easeOutDuration,
+      easeIn: this.easeIn,
+      easeOut: this.easeOut,
+      speedMultiplier: this.speedMultiplier,
+      blendMode: this.blendMode,
+      weight: this.weight,
+      clipInOffset: this.clipInOffset,
+      properties: { ...this.properties }
+    };
+  }
 }
 
 export class TimelineTrack {
@@ -223,6 +259,19 @@ export class TimelineTrack {
       locked: this.locked,
       weight: this.weight,
       clipCount: this.clipsInternal.length
+    };
+  }
+
+  toConfig(): TimelineTrackConfig {
+    return {
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      muted: this.muted,
+      locked: this.locked,
+      weight: this.weight,
+      clips: this.clipsInternal.map((clip) => clip.toConfig()),
+      properties: { ...this.properties }
     };
   }
 }
@@ -309,15 +358,29 @@ export class TimelineModel {
       trackType: track.type,
       clipId: clip.id,
       clipName: clip.name,
+      assetId: clip.assetId,
+      assetClipName: clip.clipName ?? clip.name,
+      runtimeTargetId: runtimeTargetIdFromProperties(clip.properties),
       localTime: Number(clip.localTime(this.timeInternal).toFixed(4)),
       assetTime: Number(clip.assetTime(this.timeInternal).toFixed(4)),
       normalizedTime: Number(clip.normalizedTime(this.timeInternal).toFixed(4)),
       blendWeight: Number((clip.blendWeight(this.timeInternal) * track.weight).toFixed(4)),
-      blendMode: clip.blendMode
+      blendMode: clip.blendMode,
+      properties: { ...clip.properties }
     })));
-    const signalEvents = this.tracksInternal.flatMap((track) => track.type === "signal"
-      ? track.activeClips(this.timeInternal).map((clip) => typeof clip.properties.event === "string" ? clip.properties.event : clip.clipName ?? clip.id)
+    const signalEventDetails = this.tracksInternal.flatMap((track) => track.type === "signal"
+      ? track.activeClips(this.timeInternal).map((clip) => ({
+        trackId: track.id,
+        trackName: track.name,
+        clipId: clip.id,
+        clipName: clip.name,
+        event: typeof clip.properties.event === "string" ? clip.properties.event : clip.clipName ?? clip.id,
+        time: Number(this.timeInternal.toFixed(4)),
+        localTime: Number(clip.localTime(this.timeInternal).toFixed(4)),
+        properties: { ...clip.properties }
+      }))
       : []);
+    const signalEvents = signalEventDetails.map((event) => event.event);
     for (const signal of signalEvents) this.emittedSignals.add(signal);
     const clips = this.tracksInternal.flatMap((track) => track.clips);
     return {
@@ -337,6 +400,7 @@ export class TimelineModel {
       activeClips,
       tracks: this.tracksInternal.map((track) => track.snapshot()),
       signalEvents: [...this.emittedSignals].sort(),
+      signalEventDetails,
       evidence: {
         oldCodebasePort: true,
         boundedTimelineAuthoring: true,
@@ -346,6 +410,18 @@ export class TimelineModel {
         loopPlayback: this.loopMode !== "none",
         signalMarkers: this.tracksInternal.some((track) => track.type === "signal" && track.clips.length > 0)
       }
+    };
+  }
+
+  toConfig(): TimelineModelConfig {
+    return {
+      id: this.id,
+      name: this.name,
+      duration: this.duration,
+      loopMode: this.loopMode,
+      speed: this.speed,
+      frameRate: this.frameRate,
+      tracks: this.tracksInternal.map((track) => track.toConfig())
     };
   }
 
@@ -381,4 +457,10 @@ function clamp(value: number, min: number, max: number): number {
 
 function modulo(value: number, divisor: number): number {
   return ((value % divisor) + divisor) % divisor;
+}
+
+function runtimeTargetIdFromProperties(properties: Record<string, string | number | boolean>): string | undefined {
+  if (typeof properties.runtimeNodeId === "string" && properties.runtimeNodeId.trim().length > 0) return properties.runtimeNodeId;
+  if (typeof properties.targetId === "string" && properties.targetId.trim().length > 0) return properties.targetId;
+  return undefined;
 }

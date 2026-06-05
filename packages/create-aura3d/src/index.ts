@@ -2,7 +2,14 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const CREATE_AURA3D_TEMPLATES = ["product-viewer", "cinematic-scene", "mini-game"] as const;
+export const CREATE_AURA3D_TEMPLATES = [
+  "product-viewer",
+  "cinematic-scene",
+  "mini-game",
+  "fighting-game",
+  "cartoon-channel",
+  "prompt-cartoon-channel"
+] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
 export interface CreateA3DProjectOptions {
@@ -39,7 +46,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   };
   packageJson.dependencies = {
     ...(packageJson.dependencies ?? {}),
-    "@aura3d/engine": options.packageVersion ?? "1.0.0"
+    "@aura3d/engine": options.packageVersion ?? "1.0.5"
   };
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
   return {

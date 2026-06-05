@@ -1,7 +1,7 @@
 {
   "asset": {
     "version": "2.0",
-    "generator": "A3D V3 asset fixture generator (product-camera)"
+    "generator": "A3D Foundation asset fixture generator (product-camera)"
   },
   "scene": 0,
   "scenes": [

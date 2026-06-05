@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aura3D 1.0.5 Template Harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #07111f;
+        color: #f8fafc;
+        font-family: Arial, sans-serif;
+      }
+
+      #app {
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" aria-label="Aura3D template viewport"></div>
+    <div id="hud" role="region" aria-label="Template runtime status" aria-live="polite"></div>
+    <script type="module">
+      const template = new URLSearchParams(window.location.search).get("template");
+      const allowed = new Set(["fighting-game", "cartoon-channel", "prompt-cartoon-channel"]);
+      if (!allowed.has(template)) {
+        throw new Error(`Unsupported Aura3D template harness target: ${template}`);
+      }
+      await import(`/packages/create-aura3d/templates/${template}/src/main.ts`);
+    </script>
+  </body>
+</html>

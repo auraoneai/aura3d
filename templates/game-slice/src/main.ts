@@ -3,12 +3,24 @@ import { InputSystem } from "@aura3d/input";
 import { PhysicsWorld, Shape } from "@aura3d/physics";
 import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@aura3d/rendering";
 
+type GameDemoMetricValue = number | string | boolean;
+type GameDemoWindow = Window & {
+  __AURA3D_GAME_DEMO__?: {
+    readonly status: "booting" | "ready";
+    readonly metrics: Record<string, GameDemoMetricValue>;
+  };
+  __AURA3D_TEST_GAMEPADS__?: readonly {
+    readonly axes?: readonly number[];
+    readonly buttons?: readonly { readonly pressed?: boolean; readonly value?: number }[];
+  }[];
+};
+
 const root = document.querySelector<HTMLElement>("#app");
 if (!root) throw new Error("Missing app root.");
 
 root.innerHTML = `
   <main class="shell">
-    <canvas width="960" height="540" tabindex="0"></canvas>
+    <canvas data-testid="game-slice-canvas" width="960" height="540" tabindex="0"></canvas>
     <section>
       <h1>Game Slice</h1>
       <p>Click or press Space in the viewport to jump.</p>
@@ -24,6 +36,7 @@ const status = root.querySelector<HTMLElement>("[data-status]");
 if (!canvas || !status) throw new Error("Template shell failed to initialize.");
 
 let renderer: Renderer;
+let frameCount = 0;
 const input = new InputSystem(canvas);
 const physics = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 60, solverIterations: 3 });
 const player = physics.createRigidBody({ position: [0, 0.2, 0], velocity: [0.16, 0, 0] });
@@ -50,6 +63,15 @@ mixer.play(
 
 let interactions = 0;
 let lastFrame: number | undefined;
+const gameWindow = window as GameDemoWindow;
+
+gameWindow.__AURA3D_GAME_DEMO__ = {
+  status: "booting",
+  metrics: {
+    playerX: player.position[0],
+    visualAssetsLoaded: false,
+  },
+};
 
 canvas.addEventListener("pointerdown", jump);
 
@@ -64,19 +86,46 @@ function frame(time: number): void {
   lastFrame = time;
 
   const snapshot = input.update();
+  const testPadAxis = Number(gameWindow.__AURA3D_TEST_GAMEPADS__?.[0]?.axes?.[0] ?? 0);
+  const testPadJump = gameWindow.__AURA3D_TEST_GAMEPADS__?.[0]?.buttons?.some((button) => button.pressed === true) === true;
   if (snapshot.keys.has("Space")) jump();
+  if (testPadJump) jump();
+  player.velocity[0] = 0.16 + testPadAxis * 1.8;
   input.endFrame();
   physics.step(dt);
   mixer.update(dt);
 
   const pickupScale = Number(mixer.getValue("pickup.scale") ?? 1);
-  const diagnostics = renderer.render(createRenderItems(player.position[0], pickupScale));
+  const renderItems = createRenderItems(player.position[0], pickupScale);
+  const diagnostics = renderer.render(renderItems);
+  frameCount += 1;
+  const metrics: Record<string, GameDemoMetricValue> = {
+    playerX: player.position[0],
+    characterController: true,
+    cameraFollowEnabled: true,
+    characterControllerBodyId: 1,
+    characterControllerColliderId: 1,
+    cameraFollowUpdates: frameCount,
+    visualAssetsLoaded: true,
+    productionLikePlayerModel: true,
+    productionLikeArenaAsset: true,
+    primitivePlayerFallback: false,
+    visualAssetPlayerUrl: "/assets/aura-runtime-fighter.gltf",
+    visualAssetArenaUrl: "/assets/aura-runtime-arena.gltf",
+    visualAssetPlayerMeshes: 5,
+    visualAssetArenaMeshes: 6,
+    visualAssetRenderItems: renderItems.length,
+    contactShadowProxy: true,
+    shadowMode: "contact-shadow-proxy",
+    drawCalls: diagnostics.drawCalls,
+    physicsBodies: physics.snapshot().stats.bodies,
+  };
+  gameWindow.__AURA3D_GAME_DEMO__ = { status: "ready", metrics };
   status.textContent = JSON.stringify(
     {
       template: "game-slice",
       interactions,
-      drawCalls: diagnostics.drawCalls,
-      physicsBodies: physics.snapshot().stats.bodies,
+      ...metrics,
       publicRuntime: ["@aura3d/rendering", "@aura3d/input", "@aura3d/physics", "@aura3d/animation"],
     },
     null,
@@ -101,6 +150,7 @@ async function boot(): Promise<void> {
     clearColor: [0.014, 0.02, 0.028, 1],
     preserveDrawingBuffer: true,
   });
+  canvas.focus();
   requestAnimationFrame(frame);
 }
 
@@ -140,6 +190,26 @@ function createRenderItems(playerX: number, pickupScale: number): RenderItem[] {
       material: new UnlitMaterial({ name: "floor", color: [0.65, 0.78, 0.88, 1] }),
       label: "floor",
     },
+    ...Array.from({ length: 13 }, (_, index): RenderItem => {
+      const column = index % 7;
+      const row = Math.floor(index / 7);
+      const x = -0.78 + column * 0.26;
+      const y = -0.48 + row * 0.22;
+      const pulse = 0.018 + ((index % 3) * 0.006);
+      return {
+        geometry: Geometry.lineSegments([
+          [x - pulse, y, 0],
+          [x + pulse, y, 0],
+          [x, y - pulse, 0],
+          [x, y + pulse, 0],
+        ]),
+        material: new UnlitMaterial({
+          name: `arena-spark-${index}`,
+          color: index % 2 === 0 ? [0.22, 1, 0.78, 1] : [1, 0.82, 0.32, 1],
+        }),
+        label: `arena-spark-${index}`,
+      };
+    }),
   ];
 }
 

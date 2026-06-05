@@ -38,8 +38,8 @@ export class Renderable {
     this.castShadow = descriptor.castShadow ?? true;
     this.receiveShadow = descriptor.receiveShadow ?? true;
     if (descriptor.skinning !== undefined) {
-      if (!Number.isInteger(descriptor.skinning.jointCount) || descriptor.skinning.jointCount <= 0 || descriptor.skinning.jointCount > 64) {
-        throw new ValidationError("RENDERABLE_SKINNING", "Renderable skinning jointCount must be an integer in [1, 64].");
+      if (!Number.isInteger(descriptor.skinning.jointCount) || descriptor.skinning.jointCount <= 0 || descriptor.skinning.jointCount > 96) {
+        throw new ValidationError("RENDERABLE_SKINNING", "Renderable skinning jointCount must be an integer in [1, 96].");
       }
       if (descriptor.skinning.matrices.length !== descriptor.skinning.jointCount * 16 || !Array.from(descriptor.skinning.matrices).every(Number.isFinite)) {
         throw new ValidationError("RENDERABLE_SKINNING", "Renderable skinning matrices must contain one finite mat4 per joint.");

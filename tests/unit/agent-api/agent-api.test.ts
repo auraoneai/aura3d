@@ -18,6 +18,7 @@ import {
   definePromptPlan,
   effects,
   environments,
+  game,
   group,
   groups,
   games,
@@ -86,6 +87,110 @@ describe("agent API", () => {
       .toJSON();
     expect(snapshot.nodes[0]).toMatchObject({ kind: "primitive", primitive: "sphere" });
     expect(snapshot.camera.mode).toBe("follow");
+  });
+
+  test("marks scene nodes as mutable runtime nodes for game loops", () => {
+    const snapshot = scene()
+      .add(primitives.box({ name: "runtime player" }).runtime(game.runtimeNode("player", { tags: ["fighter", "local"] })))
+      .toJSON();
+    const node = snapshot.nodes[0];
+
+    expect(node).toMatchObject({
+      kind: "primitive",
+      name: "runtime player",
+      runtime: {
+        id: "player",
+        mutable: true,
+        tags: ["fighter", "local"]
+      }
+    });
+  });
+
+  test("exposes Aura3D game runtime plans and evidence shape", () => {
+    const loop = game.loop({ fixedDt: 1 / 120, maxSubSteps: 8 });
+    const input = game.input({
+      actions: {
+        light: ["KeyJ", "GamepadWest"],
+        jump: ["KeyW", "GamepadSouth"]
+      },
+      axes: {
+        moveX: { negative: "moveLeft", positive: "moveRight" }
+      },
+      bufferMs: 160
+    });
+    const evidence = game.evidence({
+      runtime: { paused: false, frame: 3, time: 0.05, fixedDt: 1 / 60, alpha: 0 },
+      nodes: {
+        get: () => undefined,
+        require: () => {
+          throw new Error("not needed");
+        },
+        has: (id: string) => id === "player",
+        ids: () => ["player"],
+        all: () => []
+      }
+    });
+
+    expect(loop).toMatchObject({ kind: "aura-game-loop-plan", fixedDt: 1 / 120, maxSubSteps: 8, timeScale: 1 });
+    expect(input).toMatchObject({ kind: "aura-game-input-plan", bufferMs: 160, axes: { moveX: { negative: "moveLeft", positive: "moveRight" } } });
+    expect(evidence).toMatchObject({
+      kind: "aura-game-runtime-evidence",
+      loop: { frame: 3, paused: false },
+      runtimeNodes: { count: 1, ids: ["player"] },
+      systems: { mutableNodes: true, frameLoop: true }
+    });
+  });
+
+  test("tracks game input pressed held released axis buffer and replay events", () => {
+    const input = game.input({
+      actions: {
+        moveLeft: ["KeyA"],
+        moveRight: ["KeyD"],
+        light: ["KeyJ"]
+      },
+      axes: {
+        moveX: { negative: "moveLeft", positive: "moveRight" }
+      },
+      bufferMs: 140,
+      autoListen: false
+    });
+
+    input.press("KeyD");
+    input.press("KeyJ");
+    let snapshot = input.update(1 / 60);
+
+    expect(snapshot.actions.moveRight).toMatchObject({ pressed: true, held: true, released: false, buffered: true });
+    expect(input.axis("moveX")).toBe(1);
+    expect(input.pressed("light")).toBe(true);
+    expect(input.buffered("light")).toBe(true);
+
+    input.release("KeyJ");
+    snapshot = input.update(1 / 60);
+
+    expect(snapshot.actions.light).toMatchObject({ pressed: false, held: false, released: true, buffered: true });
+    expect(input.held("moveRight")).toBe(true);
+    expect(input.recorded().map((event) => `${event.type}:${event.binding}`)).toEqual([
+      "press:KeyD",
+      "press:KeyJ",
+      "release:KeyJ"
+    ]);
+
+    const replay = game.input({
+      actions: {
+        moveLeft: ["KeyA"],
+        moveRight: ["KeyD"],
+        light: ["KeyJ"]
+      },
+      axes: {
+        moveX: { negative: "moveLeft", positive: "moveRight" }
+      },
+      autoListen: false
+    });
+    const replaySnapshot = replay.replay(input.recorded());
+
+    expect(replaySnapshot.actions.moveRight).toMatchObject({ pressed: true, held: true });
+    expect(replay.axis("moveX")).toBe(1);
+    expect(replay.held("light")).toBe(false);
   });
 
   test("supports hierarchical groups with inherited transforms", () => {

@@ -20,4 +20,36 @@ export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./Retargeting.js";
-export * from "./threejs-compatibility";
+export * from "./AnimationClipEvents.js";
+export { AnimationClipRegistry } from "./AnimationClipRegistry.js";
+export type {
+  AnimationClipDefinition,
+  AnimationClipId,
+  AnimationClipManifest,
+  AnimationClipRegistryDiagnostic,
+  AnimationClipRegistryDiagnosticSeverity,
+  AnimationClipRegistryOptions,
+  AnimationClipSampleContext,
+  AnimationClipSampler,
+  AnimationKeyframe,
+  AnimationTrack as AnimationClipTrack,
+  AnimationTrackTarget,
+  RegisteredAnimationClip
+} from "./AnimationClipRegistry.js";
+export * from "./AnimationController.js";
+export * from "./HumanoidRetargeting.js";
+export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
+export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
+export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";
+export { AnimationMixerThreeCompat } from "./threejs-compatibility/AnimationMixer.js";
+export { SkeletonThreeCompat } from "./threejs-compatibility/Skeleton.js";
+export type { ThreeCompatBone } from "./threejs-compatibility/Skeleton.js";
+export { SkinnedMeshThreeCompat } from "./threejs-compatibility/SkinnedMesh.js";
+export { MorphTargetMixerThreeCompat } from "./threejs-compatibility/MorphTargetMixer.js";
+export type { ThreeCompatMorphTargetWeight } from "./threejs-compatibility/MorphTargetMixer.js";
+export {
+  createThreeCompatAnimationDiagnostics,
+  inspectThreeCompatAnimatedAssets,
+  THREE_COMPAT_ANIMATED_GLTF_ASSETS
+} from "./threejs-compatibility/AnimationDiagnostics.js";
+export type { ThreeCompatAnimatedAssetDiagnostic } from "./threejs-compatibility/AnimationDiagnostics.js";

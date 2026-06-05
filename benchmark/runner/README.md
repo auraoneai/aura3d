@@ -222,7 +222,7 @@ recorded failures and return to implementation.
 Package integrity is release-blocking:
 
 ```sh
-node benchmark/runner/tarball-audit.mjs --tarball=benchmark/runs/round-N/_packages/aura3d-engine-1.0.0.tgz --round-root=benchmark/runs/round-N
+node benchmark/runner/tarball-audit.mjs --tarball=benchmark/runs/round-N/_packages/aura3d-engine-1.0.4.tgz --round-root=benchmark/runs/round-N
 ```
 
 The tarball audit fails when `dist/engine/agent-api/index.js` is missing required

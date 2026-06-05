@@ -1,0 +1,322 @@
+[
+  {
+    "id": "v4LizardWarrior",
+    "source": "assets/candidates/lizard-warrior-rig.glb",
+    "url": "/aura-assets/v4LizardWarrior.f44358f1.glb",
+    "sizeMB": 7.87,
+    "bounds": [
+      55.273,
+      65.004,
+      48.72
+    ],
+    "center": [
+      -11.409,
+      31.502,
+      -17.761
+    ],
+    "grounded": false,
+    "maxDimension": 65.004,
+    "animations": [],
+    "humanoid": {
+      "humanoid": false,
+      "status": "non-humanoid",
+      "confidence": "low",
+      "skinCount": 0,
+      "jointCount": 0,
+      "matchedBones": [],
+      "missingBones": [
+        "hips",
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "messages": [
+        "No humanoid skeleton signals detected."
+      ]
+    },
+    "warnings": [
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "v4RobotWarrior",
+    "source": "assets/candidates/robot-warrior-lowpoly.glb",
+    "url": "/aura-assets/v4RobotWarrior.855036a5.glb",
+    "sizeMB": 2.29,
+    "bounds": [
+      592.61,
+      1096.114,
+      894.401
+    ],
+    "center": [
+      16.352,
+      21.764,
+      85.363
+    ],
+    "grounded": false,
+    "maxDimension": 1096.114,
+    "animations": [
+      "idle"
+    ],
+    "humanoid": {
+      "humanoid": false,
+      "status": "non-humanoid",
+      "confidence": "low",
+      "skinCount": 0,
+      "jointCount": 0,
+      "matchedBones": [],
+      "missingBones": [
+        "hips",
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "messages": [
+        "No humanoid skeleton signals detected."
+      ]
+    },
+    "warnings": [
+      "no texture references detected",
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "v4SkeletonFighter",
+    "source": "assets/candidates/skeleton-cartoon.glb",
+    "url": "/aura-assets/v4SkeletonFighter.7c4c7ebd.glb",
+    "sizeMB": 0.6,
+    "bounds": [
+      101,
+      2.214,
+      2.208
+    ],
+    "center": [
+      49.5,
+      0.107,
+      -0.005
+    ],
+    "grounded": false,
+    "maxDimension": 101,
+    "animations": [
+      "skeleton-skeleton|idle",
+      "skeleton-skeleton|attack",
+      "skeleton-skeleton|run",
+      "skeleton-skeleton|spawn"
+    ],
+    "humanoid": {
+      "humanoid": false,
+      "status": "unknown",
+      "confidence": "medium",
+      "skinCount": 1,
+      "jointCount": 47,
+      "matchedBones": [
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "missingBones": [
+        "hips"
+      ],
+      "messages": [
+        "Humanoid status is unknown; missing bone groups: hips."
+      ]
+    },
+    "warnings": [
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "v4RunnerFighter",
+    "source": "assets/candidates/animated-girl-walk.glb",
+    "url": "/aura-assets/v4RunnerFighter.93872fc2.glb",
+    "sizeMB": 3.62,
+    "bounds": [
+      107.674,
+      171.364,
+      37.758
+    ],
+    "center": [
+      10.502,
+      76.068,
+      -1.542
+    ],
+    "grounded": false,
+    "maxDimension": 171.364,
+    "animations": [
+      "Take 001"
+    ],
+    "humanoid": {
+      "humanoid": true,
+      "status": "humanoid",
+      "confidence": "high",
+      "skinCount": 1,
+      "jointCount": 78,
+      "matchedBones": [
+        "hips",
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "missingBones": [],
+      "messages": [
+        "Humanoid signals detected from skinned joints."
+      ]
+    },
+    "warnings": [
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "v4SoldierFighter",
+    "source": "assets/candidates/low-poly-soldier-free.glb",
+    "url": "/aura-assets/v4SoldierFighter.aeb15d9a.glb",
+    "sizeMB": 1.54,
+    "bounds": [
+      3.079,
+      9.481,
+      2
+    ],
+    "center": [
+      0.54,
+      -2.869,
+      0
+    ],
+    "grounded": false,
+    "maxDimension": 9.481,
+    "animations": [
+      "rig|idle -loop",
+      "rig|air -loop",
+      "rig|knife_action",
+      "rig|run -loop",
+      "rig|walk -loop"
+    ],
+    "humanoid": {
+      "humanoid": true,
+      "status": "humanoid",
+      "confidence": "high",
+      "skinCount": 1,
+      "jointCount": 41,
+      "matchedBones": [
+        "hips",
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "missingBones": [],
+      "messages": [
+        "Humanoid signals detected from skinned joints."
+      ]
+    },
+    "warnings": [
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "auraBotFighter",
+    "source": "assets/candidates/animated-humanoid-robot.glb",
+    "url": "/aura-assets/auraBotFighter.252b3a16.glb",
+    "sizeMB": 5.25,
+    "bounds": [
+      17.509,
+      9.101,
+      27.461
+    ],
+    "center": [
+      -0.059,
+      -1.816,
+      -1.531
+    ],
+    "grounded": false,
+    "maxDimension": 27.461,
+    "animations": [
+      "IDLE",
+      "WALK",
+      "RUN",
+      "ALL"
+    ],
+    "humanoid": {
+      "humanoid": false,
+      "status": "unknown",
+      "confidence": "low",
+      "skinCount": 1,
+      "jointCount": 34,
+      "matchedBones": [
+        "hips",
+        "head"
+      ],
+      "missingBones": [
+        "spine",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "messages": [
+        "Humanoid status is unknown; missing bone groups: spine, leftArm, rightArm, leftLeg, rightLeg."
+      ]
+    },
+    "warnings": [
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  },
+  {
+    "id": "minotaurHookPunch",
+    "source": "assets/candidates/minotaur-hook-punch.glb",
+    "url": "/aura-assets/minotaurHookPunch.aa7ee57b.glb",
+    "sizeMB": 1.67,
+    "bounds": [
+      143.282,
+      200.822,
+      58.309
+    ],
+    "center": [
+      0.154,
+      95.023,
+      3.123
+    ],
+    "grounded": false,
+    "maxDimension": 200.822,
+    "animations": [
+      "Armature|Armature|mixamo.com|Layer0"
+    ],
+    "humanoid": {
+      "humanoid": true,
+      "status": "humanoid",
+      "confidence": "high",
+      "skinCount": 1,
+      "jointCount": 79,
+      "matchedBones": [
+        "hips",
+        "spine",
+        "head",
+        "leftArm",
+        "rightArm",
+        "leftLeg",
+        "rightLeg"
+      ],
+      "missingBones": [],
+      "messages": [
+        "Humanoid signals detected from skinned joints."
+      ]
+    },
+    "warnings": [
+      "no texture references detected",
+      "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+    ]
+  }
+]

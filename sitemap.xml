@@ -4,66 +4,156 @@
     <loc>https://aura3d.auraone.ai/</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <priority>1.00</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/index.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/index.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
+    <priority>0.92</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/agent-quickstart.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/agent-quickstart.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/prompt-recipes.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/agent-rules.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.84</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/assets.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/api.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.88</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/templates.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/assets.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/deployment.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/templates.html</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.86</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/docs/prompt-recipes.html</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/docs/deployment.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.82</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/api.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/claude.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/agent-rules.html</loc>
+    <loc>https://aura3d.auraone.ai/docs/cursor.html</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.78</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/claude.html</loc>
+    <loc>https://aura3d.auraone.ai/apps/advanced-examples-gallery/</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.86</priority>
   </url>
   <url>
-    <loc>https://aura3d.auraone.ai/marketing/docs/cursor.html</loc>
+    <loc>https://aura3d.auraone.ai/apps/wow-concept-car-cinema/</loc>
     <lastmod>2026-06-03</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.76</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-webgpu-compute-particles/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.74</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-tokyo-keyframes/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.72</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-damaged-helmet-pbr-detail/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.72</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-boombox-texture-lab/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-standard-material-spheres/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/apps/wow-simple-transforms/</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.68</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/docs/aura-clash-showcase.html</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.86</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.88</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/playable/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.84</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/evidence/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/accessibility/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.68</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/deploy-check/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.66</priority>
+  </url>
+  <url>
+    <loc>https://aura3d.auraone.ai/showcase/aura-clash/poster/</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.78</priority>
   </url>
 </urlset>
