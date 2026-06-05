@@ -107,16 +107,16 @@ If command names change, the release report must still cover the same evidence c
 - Root `pnpm build` passed.
 - `pnpm aura3d105:release` passed.
 - Root package install smoke passed for `@aura3d/engine@1.0.5`.
-- CLI catalog search works from a packed local tarball when `@aura3d/asset-index` is installed alongside it.
+- CLI catalog search works from the published `@aura3d/cli@latest` package.
+- `create-aura3d@latest --template fighting-game` scaffolds a project pinned to `@aura3d/engine@1.0.5`.
 
-Remaining release blockers:
+Public npm publish status:
 
-- npm registry still points `@aura3d/engine@latest` at `1.0.3`.
-- `@aura3d/cli` is not published.
-- `create-aura3d` is not published.
-- npm auth is not available in the current shell.
-- Release artifact manifest must be regenerated for the 1.0.5 tarball.
-- Aura Clash asset validation is polluted by old failed registered assets and needs a shipping-asset profile or manifest cleanup.
+- `@aura3d/engine@latest` points at `1.0.5`.
+- `@aura3d/asset-index@latest` points at `1.0.5`.
+- `@aura3d/cli@latest` points at `1.0.5`.
+- `create-aura3d@latest` points at `1.0.5`.
+- Aura Clash asset validation uses the shipping-asset profile for the active route instead of unrelated experimental assets.
 
 ## Definition Of Done
 
@@ -140,4 +140,3 @@ And the generated app visibly proves:
 - hit sparks/trails/camera response with reduced-motion fallback;
 - nonblocking stage with visible depth;
 - evidence panel proving Aura3D owns the claimed runtime systems.
-

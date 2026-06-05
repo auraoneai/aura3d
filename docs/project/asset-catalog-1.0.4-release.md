@@ -60,9 +60,9 @@ The engine stays network-free. It exposes structural interfaces only:
 
 Hosts and the CLI can implement the resolver by calling the hosted catalog, downloading an approved asset, and registering it through the typed asset pipeline. `compilePromptPlan(...)` must reject unresolved intent subjects.
 
-## Release evidence still required
+## Release Evidence
 
-This document records the source intent that began in the 1.0.4 track and now feeds the 1.0.5 release gate. Before `@aura3d/engine@1.0.5`, `@aura3d/asset-index@1.0.5`, and `@aura3d/cli@1.0.5` are published, the release needs:
+This document records the source intent that began in the 1.0.4 track and feeds the 1.0.5 public release. `@aura3d/engine@1.0.5`, `@aura3d/asset-index@1.0.5`, and `@aura3d/cli@1.0.5` are published; release claims remain tied to these evidence classes:
 
 - typecheck evidence
 - build evidence

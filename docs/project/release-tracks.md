@@ -25,7 +25,7 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 `@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
 
-Current publication blocker: npm `latest` still points at `@aura3d/engine@1.0.3`, `@aura3d/cli` is not yet published, `create-aura3d` is not yet published, and the release-artifact manifest must match the 1.0.5 tarball before public launch claims are made.
+Publication status: npm `latest` points at `@aura3d/engine@1.0.5`, `@aura3d/asset-index@1.0.5`, `@aura3d/cli@1.0.5`, and `create-aura3d@1.0.5`. Public launch claims should still be backed by the package, docs, website, Aura Clash, and deployed-route gates.
 
 ## 1.0.4 Release Note
 

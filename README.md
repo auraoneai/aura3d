@@ -15,9 +15,9 @@ Use Aura3D when you are building browser 3D apps, prompt-authored scenes, produc
 
 ## Current release
 
-`@aura3d/engine@1.0.5` is the current release candidate for browser-native game routes, visible GLB animation runtime evidence, prompt-cartoon playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence. The root engine runtime remains free of Three.js imports; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
+`@aura3d/engine@1.0.5` is the current public release for browser-native game routes, visible GLB animation runtime evidence, prompt-cartoon playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence. The root engine runtime remains free of Three.js imports; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
 
-Registry status before publish: npm `latest` still points at `@aura3d/engine@1.0.3`, and `@aura3d/cli` / `create-aura3d` must be published before the `npx ...@latest` commands below work for external users. Do not claim the 1.0.5 release is live until registry verification passes.
+Registry status: npm `latest` points at `@aura3d/engine@1.0.5`, `@aura3d/asset-index@1.0.5`, `@aura3d/cli@1.0.5`, and `create-aura3d@1.0.5`, so the `npx ...@latest` commands below work for external users.
 
 ## Aura3D 1.0.5 asset catalog
 
