@@ -1,0 +1,102 @@
+{
+  "schema": "aura-clash-flagship-readiness",
+  "ok": true,
+  "status": "flagship-ready",
+  "generatedAt": "2026-06-06T02:03:46.754Z",
+  "appRoot": "apps/aura-clash-showcase",
+  "gates": [
+    {
+      "id": "flagship-playwright-suite-present",
+      "title": "Flagship Playwright suite covers the manual failure modes",
+      "ok": true,
+      "summary": "The flagship Playwright suite exists and names controls, KO/reset, artifact, performance, and audio gates.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "control-key-coverage",
+      "title": "A/D/S/Space/Shift/Q/J/K/L/P/R controls are release-gated",
+      "ok": true,
+      "summary": "The flagship suite must exercise every shipped keyboard control, including down, guard, special, pause, and reset.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "runtime-controls-proof",
+      "title": "Runtime proof publishes controls evidence every frame",
+      "ok": true,
+      "summary": "window.__AURA_CLASH_ARENA_PROOF__ must include controls.lastInput, downSupported, specialRequiresMeter, koLocked, and resetCount in the normal writeProof path.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "ko-lock-reset-gated",
+      "title": "KO lock and reset behavior are release-gated",
+      "ok": true,
+      "summary": "The flagship suite must prove KO cannot keep taking damage or repeat attacks until reset, and reset clears the round.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "normal-hit-vfx-no-debug-cubes",
+      "title": "Normal-play hit VFX are not debug cubes or generic box artifacts",
+      "ok": true,
+      "summary": "The normal hit-effect path must be a designed VFX path, not lit cube render items.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "performance-proof-contract",
+      "title": "Flagship proof exposes explicit performance budgets",
+      "ok": true,
+      "summary": "The playable route must publish performance.frameTimeMs, fps, drawCalls, and budgetOk and the test suite must enforce thresholds.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "audio-proof-contract",
+      "title": "Flagship proof exposes audio readiness instead of silent placeholders",
+      "ok": true,
+      "summary": "The playable route must publish audio readiness with music, SFX, mute, and last cue evidence.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "script-wiring",
+      "title": "Flagship gates are runnable from app and root package scripts",
+      "ok": true,
+      "summary": "The new readiness tool and Playwright suite must be reachable through stable package scripts.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/package.json",
+        "package.json"
+      ],
+      "blockers": [],
+      "status": "pass"
+    }
+  ],
+  "blockers": []
+}

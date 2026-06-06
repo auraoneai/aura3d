@@ -12,7 +12,7 @@ export const maraVolt = {
     title: "Rushdown striker",
     slug: "mara-volt",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Fast entry, chain pressure, air-to-ground punishes",
     designPillar:
       "Immediate pressure fighter for players who want fast confirms, short cancels, and visible electric hit sparks."
@@ -267,4 +267,3 @@ export const maraVolt = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-

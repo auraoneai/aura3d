@@ -125,7 +125,7 @@ function copyDir(sourceDir: string, targetDir: string): void {
 
 function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void {
   mkdirSync(targetDir, { recursive: true });
-  const activePrefixes = ["v4UAL1Standard."];
+  const activePrefixes = ["auraClashTrainingMannequin."];
   for (const entry of readdirSync(sourceDir, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
     if (!activePrefixes.some((prefix) => entry.name.startsWith(prefix))) continue;
@@ -135,7 +135,7 @@ function copyAuraClashRuntimeAssets(sourceDir: string, targetDir: string): void 
 
 function pruneAuraClashRuntimeAssets(targetDir: string): void {
   if (!existsSync(targetDir)) return;
-  const activePrefixes = ["v4UAL1Standard."];
+  const activePrefixes = ["auraClashTrainingMannequin."];
   for (const entry of readdirSync(targetDir, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
     if (activePrefixes.some((prefix) => entry.name.startsWith(prefix))) continue;

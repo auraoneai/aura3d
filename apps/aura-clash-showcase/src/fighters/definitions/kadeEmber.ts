@@ -12,7 +12,7 @@ export const kadeEmber = {
     title: "Balanced striker",
     slug: "kade-ember",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Clean confirms, anti-air, fire sweep pressure",
     designPillar:
       "Balanced reference fighter that proves the launch roster has a readable baseline kit."
@@ -267,4 +267,3 @@ export const kadeEmber = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-

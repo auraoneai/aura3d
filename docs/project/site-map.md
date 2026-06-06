@@ -1,6 +1,7 @@
 # Site Map
 
 Version: 1.0.5
+Planning alignment: 1.0.6 release gates
 
 ## Public Marketing Pages
 
@@ -29,6 +30,8 @@ Version: 1.0.5
 - [External proof readiness](external-proof-readiness.md)
 - [Release checklist](release-checklist.md)
 - [Release process](release-process.md)
+- [Aura3D 1.0.6 game engine and flagship showcase PRD](aura3d-106-game-engine-and-showcase-prd.md)
+- [Aura3D 1.0.6 release gates](aura3d-106-release-gates.md)
 - [Aura3D 1.0.5 release gates](aura3d-105-release-gates.md)
 - [Game runtime release contract](game-runtime-release.md)
 - [Aura Clash showcase](aura-clash-showcase.md)

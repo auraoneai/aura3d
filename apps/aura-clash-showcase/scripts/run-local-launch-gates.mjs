@@ -47,7 +47,7 @@ const commands = [
       "assets",
       "validate-game",
       "--asset",
-      "v4UAL1Standard",
+      "auraClashTrainingMannequin",
       "--output",
       "launch-evidence/assets-validate-game.json"
     ]

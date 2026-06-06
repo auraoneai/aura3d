@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createAuraApp, defineAuraAssets, game, lights, model, scene } from "../../../packages/engine/src";
+import { createAuraApp, createGameApp, defineAuraAssets, game, lights, model, scene } from "../../../packages/engine/src";
 
 type PackageJson = {
   readonly scripts?: Record<string, string>;
@@ -106,11 +106,86 @@ describe("game runtime source gates", () => {
     expect(templateMain).toContain("diagnostics: { overlay: true");
     expect(templateMain).toContain("const combat = game.combatWorld()");
     expect(templateMain).toContain("__AURA3D_GAME_EVIDENCE__");
+    expect(templateMain).toContain("__AURA3D_GAME_RUNTIME__");
     expect(templateMain).toContain("app.evidence({");
     expect(templateMoves.match(/hitboxes:\s*\[/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
-    expect(templateMain.match(/createAuraApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain.match(/createGameApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain).not.toContain("createAuraApp(");
     expect(templateMain).not.toContain("app.setScene(");
     expect(templateMain).not.toMatch(/\bfrom\s+["']three["']|GLTFLoader|three\/examples/);
+  });
+
+  it("proves public GameAppRuntime lifecycle methods and evidence from the public createGameApp API", () => {
+    const runtime = createGameApp(null, {
+      autoStart: false,
+      loop: { fixedDt: 1 / 20 },
+      scene: scene()
+        .add(
+          model(assets.fighter, { name: "typed runtime fighter" })
+            .position(0, 1, 0)
+            .runtime(game.runtimeNode("player", { tags: ["fighter", "typed-glb"] }))
+        )
+        .add(lights.studio()),
+      input: {
+        actions: {
+          light: ["KeyJ"]
+        },
+        autoListen: false
+      }
+    });
+    const frames: number[] = [];
+
+    runtime.onFrame((frame) => {
+      frames.push(frame.frame);
+      runtime.app.nodes.require("player").translate(0.25, 0, 0);
+    });
+
+    expect(runtime.evidence).toMatchObject({
+      kind: "aura-game-app-runtime-evidence",
+      status: "idle",
+      started: false,
+      frame: 0,
+      inputControllers: 1,
+      activeInputControllers: 1
+    });
+
+    runtime.start();
+    runtime.input?.press("KeyJ");
+    runtime.step(1 / 20);
+    runtime.pause();
+    runtime.resize(800, 450, 1.5);
+    runtime.resume();
+    runtime.step(1 / 20);
+
+    expect(frames).toEqual([1, 2]);
+    expect(runtime.evidence).toMatchObject({
+      status: "running",
+      started: true,
+      frame: 2,
+      startCount: 1,
+      pauseCount: 1,
+      resumeCount: 1,
+      stepCount: 2,
+      resizeCount: 1,
+      lastResize: { width: 800, height: 450, pixelRatio: 1.5 },
+      app: {
+        loop: {
+          frame: 2
+        },
+        systems: {
+          mutableNodes: true
+        }
+      }
+    });
+    expect(runtime.app.nodes.require("player").position).toEqual([0.5, 1, 0]);
+
+    const disposed = runtime.dispose();
+    expect(disposed).toMatchObject({
+      status: "disposed",
+      disposed: true,
+      disposeCount: 1,
+      activeInputControllers: 0
+    });
   });
 
   it("keeps root game facade helper exports source-visible without private runtime imports", () => {
@@ -157,11 +232,19 @@ describe("game runtime source gates", () => {
 
     expectIncludesAll(cli, [
       'action === "inspect"',
-      'print(inspectAsset({ file, animation: hasFlag("--animation"), humanoid: hasFlag("--humanoid") }))',
+      "print(inspectAsset({",
+      'animation: hasFlag("--animation")',
+      'humanoid: hasFlag("--humanoid")',
+      'skeleton: hasFlag("--skeleton")',
+      'morphs: hasFlag("--morphs")',
+      'license: hasFlag("--license")',
       'action === "validate-game"',
-      "print(validateGameAssets({ output: readEvidenceOutput() }))",
+      "print(validateGameAssets({",
+      "output: readEvidenceOutput()",
+      "...readAssetValidationOptions()",
+      'gameProfile: profile',
       'action === "validate-cartoon"',
-      "print(validateCartoonAssets({ output: readEvidenceOutput() }))",
+      "print(validateCartoonAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }))",
       'action === "assemble-character"',
       'createCharacterAssemblyPlan({ name, body, parts: readParts("--part")',
       "aura3d assets inspect ./model.glb",
@@ -188,7 +271,9 @@ describe("game runtime source gates", () => {
     const fightingKit = readSource("packages/engine/src/agent-api/game-kits/fighting.ts");
 
     expectIncludesAll(templateMain, [
-      "app.input(",
+      "createGameApp(\"#app\"",
+      "const input = gameApp.input",
+      "gameApp.onFrame",
       "input.update(dt)",
       "createFighterNode(\"player\"",
       "createFighterNode(\"rival\"",
@@ -198,13 +283,15 @@ describe("game runtime source gates", () => {
       "game.effects(",
       "combat.beginAttack",
       "app.evidence({",
-      "__AURA3D_GAME_EVIDENCE__"
+      "__AURA3D_GAME_EVIDENCE__",
+      "__AURA3D_GAME_RUNTIME__"
     ]);
     expectIncludesAll(templateFighters, [
       "export function createFighterNode",
       "game.runtimeNode(id"
     ]);
-    expect(templateMain.match(/createAuraApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain.match(/createGameApp\(/g)?.length ?? 0).toBe(1);
+    expect(templateMain).not.toContain("createAuraApp(");
     expect(templateMain).not.toContain("model(\"");
     expect(templateAssets).toContain("defineAuraAssets");
     expect(routeHealth).toContain("fighting-game route loads");

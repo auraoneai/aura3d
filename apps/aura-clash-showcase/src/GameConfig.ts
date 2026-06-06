@@ -370,7 +370,7 @@ export function runtimeFighter(
 
 export const roster: Fighter[] = auraClashOriginalRoster.map(runtimeFighter);
 
-export const V1_ROSTER = auraClashOriginalRoster;
+export const ORIGINAL_ROSTER = auraClashOriginalRoster;
 
 export function fighterDefinitionById(
   id: string

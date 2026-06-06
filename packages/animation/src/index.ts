@@ -10,6 +10,7 @@ export * from "./Skeleton.js";
 export * from "./Skinning.js";
 export * from "./BlendTree.js";
 export * from "./AnimationStateMachine.js";
+export * from "./AnimationStateGraph.js";
 export * from "./RootMotion.js";
 export * from "./MotionQuality.js";
 export * from "./LocomotionController.js";

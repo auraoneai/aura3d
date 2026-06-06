@@ -82,7 +82,7 @@ export function createFighterAnimationController(
 ): AnimationController<FighterClip> {
   return new AnimationController<FighterClip>({
     id: `${id}-animation-controller`,
-    ...(asset ? { clipRegistry: asset } : {}),
+    ...(asset ? { clipRegistry: animationClipRegistry(asset) } : {}),
     clips: fighterAnimationClips,
     requiredClips: REQUIRED_FIGHTER_CLIPS,
     suppressRootMotion: true,
@@ -91,6 +91,17 @@ export function createFighterAnimationController(
       { id: "upper-body", role: "attack", bodyMask: "upper-body", restartFromFrameZero: true }
     ]
   });
+}
+
+function animationClipRegistry(asset: AuraAssetRef<"model">) {
+  const metadata: Record<string, unknown> = { ...(asset.metadata ?? {}) };
+  return {
+    id: asset.id,
+    name: asset.id,
+    url: asset.url,
+    hash: asset.hash,
+    metadata
+  };
 }
 
 export function createFighterNode(

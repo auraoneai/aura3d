@@ -15,7 +15,7 @@ import {
   writeTypedAssets,
   readAssetManifest
 } from "./index.js";
-import { runResolve, runSearch, type CliResolveConstraints } from "./pull-bridge.js";
+import { runResolve, runSearch, type CliAssetSearchProfile, type CliResolveConstraints } from "./pull-bridge.js";
 
 const args = process.argv.slice(2);
 
@@ -55,7 +55,12 @@ async function main(): Promise<void> {
     } else if (action === "validate") {
       print(validateAssets(readAssetValidationOptions()));
     } else if (action === "validate-game") {
-      print(validateGameAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
+      const profile = readCliAssetProfile();
+      print(validateGameAssets({
+        output: readEvidenceOutput(),
+        ...readAssetValidationOptions(),
+        ...(profile === "fighting-character" ? { gameProfile: profile } : {})
+      }));
     } else if (action === "validate-cartoon") {
       print(validateCartoonAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
     } else if (action === "assemble-character") {
@@ -75,7 +80,7 @@ async function main(): Promise<void> {
       console.log(`Serve ${manifest.outputDir} at ${manifest.assetBasePath}`);
     } else if (action === "search") {
       const query = args[2];
-      if (!query || query.startsWith("--")) throw new Error("Usage: aura3d assets search <query> [--license cc0|cc-by] [--max-tris N] [--animated] [--json]");
+      if (!query || query.startsWith("--")) throw new Error("Usage: aura3d assets search <query> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]");
       const report = await runSearch({ query, constraints: readResolveConstraints() });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
@@ -85,7 +90,7 @@ async function main(): Promise<void> {
     } else if (action === "resolve") {
       const query = args[2];
       const name = readOption("--name");
-      if (!query || query.startsWith("--") || !name) throw new Error("Usage: aura3d assets resolve <query> --name <name> [--license cc0|cc-by] [--max-tris N] [--animated]");
+      if (!query || query.startsWith("--") || !name) throw new Error("Usage: aura3d assets resolve <query> --name <name> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated]");
       const report = await runResolve({ query, name, constraints: readResolveConstraints() });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
@@ -113,14 +118,14 @@ Commands:
   aura3d assets scan ./assets
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-game [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-game [--profile fighting-character] [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets validate-cartoon [--asset character] [--output artifacts/aura3d/cartoon-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
   aura3d assets thumbnail
-  aura3d assets search <query> [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
-  aura3d assets resolve <query> --name <name> [--license cc0|cc-by] [--max-tris N] [--animated]
+  aura3d assets search <query> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
+  aura3d assets resolve <query> --name <name> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated]
   aura3d doctor
   aura3d check-deploy --dist dist
   aura3d init --agent all`);
@@ -220,14 +225,37 @@ function readResolveConstraints(): CliResolveConstraints {
     constraints.maxTriangles = parsed;
   }
   if (hasFlag("--animated")) constraints.animated = true;
-  return constraints;
+  const profile = readCliAssetProfile();
+  return profile === "general" ? constraints : { ...constraints, profile };
 }
 
-function printSearchReport(report: { readonly query: string; readonly candidates: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string }[]; readonly deepLinks: readonly { readonly id: string; readonly title: string; readonly sourcePage?: string }[]; readonly warnings: readonly string[]; readonly messages: readonly string[] }): void {
+function readCliAssetProfile(): CliAssetSearchProfile {
+  const value = readOption("--profile");
+  if (!value) return "general";
+  if (value === "fighting-character") return value;
+  throw new Error(`Unsupported --profile value "${value}". Use fighting-character.`);
+}
+
+function printSearchReport(report: { readonly query: string; readonly profile: CliAssetSearchProfile; readonly candidates: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly rejectedCandidates?: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly deepLinks: readonly { readonly id: string; readonly title: string; readonly sourcePage?: string }[]; readonly warnings: readonly string[]; readonly messages: readonly string[] }): void {
   for (const message of report.messages) console.log(message);
   for (const candidate of report.candidates) {
-    const tag = candidate.autoPullable ? "auto-pullable" : "manual license check required";
+    const profileTag = candidate.profile
+      ? candidate.profile.suitable
+        ? ", profile-ready"
+        : ", profile-rejected"
+      : "";
+    const tag = candidate.autoPullable ? `auto-pullable${profileTag}` : `manual license check required${profileTag}`;
     console.log(`  [${candidate.source}] ${candidate.id}  "${candidate.title}"  ${candidate.license}  (${tag})`);
+    if (candidate.profile && !candidate.profile.suitable) {
+      for (const reason of candidate.profile.rejectionReasons) console.log(`    rejects: ${reason}`);
+    }
+  }
+  if (report.rejectedCandidates && report.rejectedCandidates.length > 0) {
+    console.log("Rejected by profile:");
+    for (const candidate of report.rejectedCandidates) {
+      console.log(`  [${candidate.source}] ${candidate.id}  "${candidate.title}"  ${candidate.license}`);
+      for (const reason of candidate.profile?.rejectionReasons ?? []) console.log(`    rejects: ${reason}`);
+    }
   }
   if (report.deepLinks.length > 0) {
     console.log("Marketplace deep-links (manual download, license check required):");

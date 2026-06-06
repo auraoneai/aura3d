@@ -31,6 +31,7 @@ import { addAsset } from "./index.js";
 import type { AssetCliResult } from "./index.js";
 
 const {
+  evaluateGameAssetProfile,
   FederatedResolver,
   defaultAdapters,
   isAutoPullable,
@@ -39,8 +40,8 @@ const {
 /**
  * Optional, concurrently-authored adapter factories. They may not be exported
  * yet (other agents own those files), so we look them up off the module
- * namespace at runtime instead of hard-importing — a missing factory simply
- * means that source is unavailable, not a build break.
+ * namespace at runtime instead of hard-importing. A missing factory simply
+ * skips that optional source instead of causing a build break.
  */
 type AdapterFactory = () => SourceAdapter;
 
@@ -100,10 +101,13 @@ export function buildDeepLinkAdapter(): SourceAdapter | undefined {
   return factory ? factory() : undefined;
 }
 
+export type CliAssetSearchProfile = "general" | "fighting-character";
+
 export interface CliResolveConstraints {
   readonly license?: readonly ("CC0" | "CC-BY")[];
   readonly maxTriangles?: number;
   readonly animated?: boolean;
+  readonly profile?: CliAssetSearchProfile;
 }
 
 /** Translate CLI flags into the index's ResolveConstraints shape. */
@@ -115,11 +119,19 @@ export function toResolveConstraints(
     license?: readonly ("CC0" | "CC-BY")[];
     maxTriangles?: number;
     animated?: boolean;
+    format?: "glb" | "gltf";
     redistributableOnly?: boolean;
   } = {};
-  if (cli.license && cli.license.length > 0) constraints.license = cli.license;
-  if (typeof cli.maxTriangles === "number") constraints.maxTriangles = cli.maxTriangles;
-  if (typeof cli.animated === "boolean") constraints.animated = cli.animated;
+  if (cli.profile === "fighting-character") {
+    constraints.license = cli.license && cli.license.length > 0 ? cli.license : ["CC0", "CC-BY"];
+    constraints.animated = true;
+    constraints.format = "glb";
+    constraints.maxTriangles = cli.maxTriangles ?? 200_000;
+  } else {
+    if (cli.license && cli.license.length > 0) constraints.license = cli.license;
+    if (typeof cli.maxTriangles === "number") constraints.maxTriangles = cli.maxTriangles;
+    if (typeof cli.animated === "boolean") constraints.animated = cli.animated;
+  }
   if (redistributableOnly) constraints.redistributableOnly = true;
   return constraints;
 }
@@ -143,8 +155,14 @@ export interface PullableRefusal {
 
 export function selectPullable(
   candidates: readonly ResolveCandidate[],
+  options: { readonly profile?: CliAssetSearchProfile } = {},
 ): PullableSelection | PullableRefusal {
-  const pullable = candidates.find((c) => isAutoPullable(c.asset));
+  const profile = options.profile ?? "general";
+  const pullable = candidates.find((c) => {
+    if (!isAutoPullable(c.asset)) return false;
+    if (profile !== "fighting-character") return true;
+    return evaluateGameAssetProfile(c.asset, "fighting-character").suitable;
+  });
   if (pullable) return { ok: true, candidate: pullable };
 
   if (candidates.length === 0) {
@@ -153,6 +171,23 @@ export function selectPullable(
       reason:
         "No candidates matched the query. Try a broader query or relax constraints.",
     };
+  }
+  if (profile === "fighting-character") {
+    const rejectedPullable = candidates.filter((c) => isAutoPullable(c.asset));
+    if (rejectedPullable.length > 0) {
+      return {
+        ok: false,
+        reason:
+          "No auto-pullable candidate passed the fighting-character profile. " +
+          rejectedPullable.slice(0, 5).map((candidate) => {
+            const evaluation = evaluateGameAssetProfile(candidate.asset, "fighting-character");
+            const reasons = evaluation.rejectionReasons.length > 0
+              ? evaluation.rejectionReasons.join("; ")
+              : "profile did not report a concrete reason";
+            return `"${candidate.asset.title}" (${candidate.asset.id}): ${reasons}`;
+          }).join(" | "),
+      };
+    }
   }
   const top = candidates[0]!.asset;
   return {
@@ -206,19 +241,27 @@ export interface SearchCandidateLine {
   readonly autoPullable: boolean;
   readonly access: AuraCanonicalAsset["access"];
   readonly sourcePage?: string;
+  readonly profile?: {
+    readonly name: "fighting-character";
+    readonly suitable: boolean;
+    readonly rejectionReasons: readonly string[];
+    readonly warnings: readonly string[];
+  };
 }
 
 export interface SearchReport {
   readonly ok: boolean;
   readonly query: string;
+  readonly profile: CliAssetSearchProfile;
   readonly candidates: readonly SearchCandidateLine[];
+  readonly rejectedCandidates: readonly SearchCandidateLine[];
   /** Deep-link discovery suggestions shown only when nothing is auto-pullable. */
   readonly deepLinks: readonly SearchCandidateLine[];
   readonly warnings: readonly string[];
   readonly messages: readonly string[];
 }
 
-function toLine(candidate: ResolveCandidate): SearchCandidateLine {
+function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfile = "general"): SearchCandidateLine {
   const { asset } = candidate;
   const line: {
     id: string;
@@ -228,6 +271,7 @@ function toLine(candidate: ResolveCandidate): SearchCandidateLine {
     autoPullable: boolean;
     access: AuraCanonicalAsset["access"];
     sourcePage?: string;
+    profile?: SearchCandidateLine["profile"];
   } = {
     id: asset.id,
     source: asset.source,
@@ -237,6 +281,15 @@ function toLine(candidate: ResolveCandidate): SearchCandidateLine {
     access: asset.access,
   };
   if (asset.sourcePage) line.sourcePage = asset.sourcePage;
+  if (profile === "fighting-character") {
+    const evaluation = evaluateGameAssetProfile(asset, "fighting-character");
+    line.profile = {
+      name: "fighting-character",
+      suitable: evaluation.suitable,
+      rejectionReasons: evaluation.rejectionReasons,
+      warnings: evaluation.warnings,
+    };
+  }
   return line;
 }
 
@@ -257,14 +310,31 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
     : makeDefaultResolver(adapters, limit);
 
   const constraints = toResolveConstraints(options.constraints ?? {}, false);
+  const profile = options.constraints?.profile ?? "general";
   const result: ResolveResult = await resolver.resolve({
     text: options.query,
     constraints,
   });
 
-  const candidates = result.candidates.map(toLine);
+  const rankedCandidates = rankForProfile(result.candidates, profile);
+  const candidateLines = rankedCandidates.map((candidate) => toLine(candidate, profile));
+  const candidates = profile === "fighting-character"
+    ? candidateLines.filter((candidate) => candidate.profile?.suitable === true)
+    : candidateLines;
+  const rejectedCandidates = profile === "fighting-character"
+    ? candidateLines.filter((candidate) => candidate.profile?.suitable !== true)
+    : [];
   const anyPullable = candidates.some((c) => c.autoPullable);
+  const anyProfileSuitable = profile === "general" || candidates.some((c) => c.profile?.suitable);
+  const anyProfilePullable = profile === "general" || candidates.some((c) => c.autoPullable && c.profile?.suitable);
   const warnings = [...result.warnings];
+  if (profile === "fighting-character") {
+    for (const candidate of candidateLines) {
+      for (const warning of candidate.profile?.warnings ?? []) {
+        warnings.push(`${candidate.id}: ${warning}`);
+      }
+    }
+  }
 
   let deepLinks: SearchCandidateLine[] = [];
   if (!anyPullable) {
@@ -283,13 +353,25 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
   }
 
   const messages: string[] = [];
-  if (candidates.length === 0) {
+  if (candidateLines.length === 0) {
     messages.push(`No candidates found for "${options.query}".`);
   } else {
-    messages.push(`${candidates.length} candidate(s) for "${options.query}".`);
+    messages.push(`${candidates.length} candidate(s) for "${options.query}" using ${profile} profile.`);
+    if (rejectedCandidates.length > 0) {
+      messages.push(`${rejectedCandidates.length} rejected candidate(s) moved to rejectedCandidates by the ${profile} profile.`);
+    }
     if (!anyPullable) {
       messages.push(
         "No auto-pullable candidate. Listed assets need a manual license check before use.",
+      );
+    }
+    if (profile === "fighting-character" && !anyProfileSuitable) {
+      messages.push(
+        "No fighting-character-ready candidate. Listed candidates were rejected by the game-asset profile; inspect rejectionReasons before resolving.",
+      );
+    } else if (profile === "fighting-character" && !anyProfilePullable) {
+      messages.push(
+        "No auto-pullable fighting-character-ready candidate. Resolve will refuse until a downloadable licensed candidate also passes the profile.",
       );
     }
   }
@@ -302,7 +384,9 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
   return {
     ok: true,
     query: options.query,
+    profile,
     candidates,
+    rejectedCandidates,
     deepLinks,
     warnings,
     messages,
@@ -324,6 +408,7 @@ export interface ResolveOptions {
 
 export interface ResolveReport {
   readonly ok: boolean;
+  readonly profile: CliAssetSearchProfile;
   readonly messages: readonly string[];
   readonly warnings: readonly string[];
   readonly typedRef?: string;
@@ -352,9 +437,10 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
   // Constrain the resolve to redistributable, directly-downloadable assets up
   // front, then apply the pure selection seam as a belt-and-suspenders refusal.
   const constraints = toResolveConstraints(options.constraints ?? {}, true);
+  const profile = options.constraints?.profile ?? "general";
   const result = await resolver.resolve({ text: options.query, constraints });
 
-  const selection = selectPullable(result.candidates);
+  const selection = selectPullable(rankForProfile(result.candidates, profile), { profile });
   if (!selection.ok) {
     throw new Error(`Aura3D resolve refused: ${selection.reason}`);
   }
@@ -372,6 +458,11 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
     file: tempFile,
     name: options.name,
     ...(options.projectDir ? { projectDir: options.projectDir } : {}),
+    sourceUrl: asset.sourcePage ?? asset.url,
+    license: asset.license.spdx,
+    sourceFamily: asset.source,
+    attribution: asset.attribution,
+    author: asset.attribution,
   });
 
   const typedRef = `model(assets.${options.name})`;
@@ -388,10 +479,27 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
 
   return {
     ok: add.ok,
+    profile,
     messages,
     warnings: result.warnings,
     typedRef,
-    asset: toLine(selection.candidate),
+    asset: toLine(selection.candidate, profile),
     add,
   };
+}
+
+function rankForProfile(
+  candidates: readonly ResolveCandidate[],
+  profile: CliAssetSearchProfile,
+): readonly ResolveCandidate[] {
+  if (profile !== "fighting-character") return candidates;
+  return [...candidates].sort((a, b) => {
+    const aEval = evaluateGameAssetProfile(a.asset, "fighting-character");
+    const bEval = evaluateGameAssetProfile(b.asset, "fighting-character");
+    return (
+      Number(bEval.suitable) - Number(aEval.suitable) ||
+      (b.score + bEval.scoreBonus) - (a.score + aEval.scoreBonus) ||
+      a.asset.id.localeCompare(b.asset.id)
+    );
+  });
 }

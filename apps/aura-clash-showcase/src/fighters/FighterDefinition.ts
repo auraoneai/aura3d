@@ -31,7 +31,7 @@ export type FighterMetadata = Readonly<{
   title: string;
   slug: string;
   rosterGroup: "Aura Clash Originals";
-  role: "V1 playable fighter";
+  role: "original playable fighter";
   archetype: string;
   designPillar: string;
 }>;
@@ -95,4 +95,3 @@ export function fighterAssetReference(
       `Resolve through generated aura-assets.ts and pass ${`assets.${assetKey}`} to model() through the typed Aura3D asset manifest.`
   };
 }
-

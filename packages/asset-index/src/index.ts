@@ -33,6 +33,8 @@ export type {
 export { defaultFetchJson } from "./SourceAdapter.js";
 
 export { scoreAsset, matchesConstraints } from "./ranking.js";
+export { evaluateGameAssetProfile } from "./game-profile.js";
+export type { GameAssetProfile, GameAssetProfileEvaluation } from "./game-profile.js";
 
 export type {
   ResolveCandidate,

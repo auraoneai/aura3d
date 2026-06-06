@@ -11,6 +11,15 @@ npx @aura3d/cli@latest assets search "battle-worn knight helmet"
 npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 
+For game fighters or acted humanoid characters, use the fighting-character
+profile rather than a generic catalog query:
+
+```bash
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter --no-placeholders --require-license
+```
+
 The hosted catalog read path is:
 
 ```text
@@ -44,7 +53,7 @@ project keeps experimental assets in `aura.assets.json`, validate the actual
 shipping set by asset id:
 
 ```bash
-npx @aura3d/cli@latest assets validate-game --asset hero --asset arena
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset hero --asset arena
 ```
 
 The `--asset` flag scopes validation and evidence to the ids passed on the

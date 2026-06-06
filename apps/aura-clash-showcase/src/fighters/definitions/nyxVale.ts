@@ -12,7 +12,7 @@ export const nyxVale = {
     title: "Agile trickster",
     slug: "nyx-vale",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Side switches, evasive taps, whiff traps",
     designPillar:
       "Technical movement fighter with readable feints, high meter start, and lower direct damage."
@@ -267,4 +267,3 @@ export const nyxVale = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-

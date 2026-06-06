@@ -152,6 +152,102 @@ describe("@aura3d/cli assets", () => {
     expect(shippingReport.assets.map((asset) => asset.id)).toEqual(["shippingFighter"]);
   });
 
+  test("fighting-character game profile accepts a rigged animated fighter with provenance", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "fighter.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle_Loop", "Walk_Loop", "Punch_Jab"]
+    })));
+    addAsset({
+      projectDir,
+      file: "assets/fighter.gltf",
+      name: "profileFighter",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/profile-fighter",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateGameAssets({
+      projectDir,
+      gameProfile: "fighting-character",
+      assetIds: ["profileFighter"]
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.profile).toBe("game");
+    expect(report.gameProfile).toBe("fighting-character");
+    expect(report.assets[0]?.gameReady).toBe(true);
+  });
+
+  test("fighting-character game profile rejects static non-rigged candidates with reasons", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "static-prop.gltf"), JSON.stringify({
+      asset: {
+        version: "2.0",
+        extras: {
+          aura3d: {
+            provenance: {
+              license: "CC0-1.0",
+              sourceUrl: "https://example.test/static-prop",
+              sourceFamily: "test-fixture"
+            }
+          }
+        }
+      },
+      materials: [{ name: "prop" }],
+      nodes: [{ name: "StaticProp", mesh: 0 }],
+      meshes: [{ primitives: [{}] }],
+      images: [{ uri: "data:image/png;base64,AA==" }],
+      accessors: [{ min: [-0.25, 0, -0.25], max: [0.25, 0.4, 0.25] }]
+    }));
+    addAsset({
+      projectDir,
+      file: "assets/static-prop.gltf",
+      name: "staticProp",
+      license: "CC0-1.0",
+      sourceUrl: "https://example.test/static-prop",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateGameAssets({
+      projectDir,
+      gameProfile: "fighting-character",
+      assetIds: ["staticProp"]
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.failures.join("\n")).toContain("fighting-character profile requires embedded animation clips");
+    expect(report.failures.join("\n")).toContain("requires humanoid metadata");
+    expect(report.failures.join("\n")).toContain("height 0.4m is too small");
+    expect(report.assets[0]?.gameReady).toBe(false);
+  });
+
+  test("fighting-character game profile rejects rigged animated IP-risk candidates", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "fan-fighter.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle_Loop", "Walk_Loop", "Punch_Jab"]
+    })));
+    addAsset({
+      projectDir,
+      file: "assets/fan-fighter.gltf",
+      name: "marioFanFighter",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/mario-fan-art-fighter",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateGameAssets({
+      projectDir,
+      gameProfile: "fighting-character",
+      assetIds: ["marioFanFighter"]
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.failures.join("\n")).toContain("IP-risk metadata");
+    expect(report.assets[0]?.gameReady).toBe(false);
+  });
+
   test("writes agent instruction files", () => {
     const projectDir = createProject();
     const written = initAgentFiles({ projectDir, agent: "all" });

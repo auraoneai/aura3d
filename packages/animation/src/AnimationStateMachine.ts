@@ -3,11 +3,18 @@ export type StateTransition = {
   readonly label?: string;
   readonly priority?: number;
   readonly exitTime?: number;
+  readonly consumeParameters?: readonly string[];
   readonly condition: (parameters: Readonly<Record<string, number | boolean | string>>) => boolean;
 };
 
 export type AnimationState = {
   readonly name: string;
+  readonly duration?: number;
+  readonly oneShot?: boolean;
+  readonly terminal?: boolean;
+  readonly onComplete?: string;
+  readonly completedParameter?: string;
+  readonly resetParametersOnEnter?: readonly string[];
   readonly transitions?: readonly StateTransition[];
 };
 
@@ -15,6 +22,11 @@ export type AnimationStateMachineGraphState = {
   readonly name: string;
   readonly current: boolean;
   readonly transitionCount: number;
+  readonly duration?: number;
+  readonly oneShot?: boolean;
+  readonly terminal?: boolean;
+  readonly completed?: boolean;
+  readonly onComplete?: string;
 };
 
 export type AnimationStateMachineGraphTransition = {
@@ -24,6 +36,7 @@ export type AnimationStateMachineGraphTransition = {
   readonly priority: number;
   readonly label: string;
   readonly exitTime?: number;
+  readonly consumeParameters?: readonly string[];
 };
 
 export type AnimationStateMachineGraphSnapshot = {
@@ -42,6 +55,9 @@ export class AnimationStateMachine {
 
   constructor(states: readonly AnimationState[], initialState: string) {
     for (const state of states) {
+      if (state.duration !== undefined && (!Number.isFinite(state.duration) || state.duration < 0)) {
+        throw new Error(`State ${state.name} has invalid duration.`);
+      }
       for (const transition of state.transitions ?? []) {
         if (transition.exitTime !== undefined && (!Number.isFinite(transition.exitTime) || transition.exitTime < 0)) {
           throw new Error(`Transition from ${state.name} to ${transition.to} has invalid exit time.`);
@@ -52,7 +68,13 @@ export class AnimationStateMachine {
     if (!this.states.has(initialState)) {
       throw new Error(`Initial state ${initialState} does not exist.`);
     }
+    for (const state of this.states.values()) {
+      if (state.onComplete !== undefined && !this.states.has(state.onComplete)) {
+        throw new Error(`State ${state.name} completion target ${state.onComplete} does not exist.`);
+      }
+    }
     this.currentState = initialState;
+    this.resetParametersForState(this.requireState(initialState));
   }
 
   setParameter(name: string, value: number | boolean | string): void {
@@ -64,10 +86,25 @@ export class AnimationStateMachine {
       throw new Error("AnimationStateMachine delta must be finite and non-negative.");
     }
     this.stateTime += delta;
-    const state = this.states.get(this.currentState);
-    if (!state) {
-      throw new Error(`Current state ${this.currentState} does not exist.`);
+    const state = this.requireState(this.currentState);
+
+    if (isStateComplete(state, this.stateTime)) {
+      if (state.completedParameter) {
+        this.parameters[state.completedParameter] = true;
+      }
+      if (state.onComplete) {
+        this.transitionTo(state.onComplete);
+        return this.currentState;
+      }
+      if (state.terminal || state.oneShot) {
+        return this.currentState;
+      }
     }
+
+    if (state.terminal || state.oneShot) {
+      return this.currentState;
+    }
+
     const transition = [...(state.transitions ?? [])]
       .filter((candidate) => candidate.condition(this.parameters))
       .filter((candidate) => candidate.exitTime === undefined || this.stateTime >= candidate.exitTime)
@@ -76,8 +113,8 @@ export class AnimationStateMachine {
       if (!this.states.has(transition.to)) {
         throw new Error(`Transition target ${transition.to} does not exist.`);
       }
-      this.currentState = transition.to;
-      this.stateTime = 0;
+      consumeParameters(this.parameters, transition.consumeParameters);
+      this.transitionTo(transition.to);
     }
     return this.currentState;
   }
@@ -90,7 +127,12 @@ export class AnimationStateMachine {
       states.push({
         name: state.name,
         current: state.name === this.currentState,
-        transitionCount: stateTransitions.length
+        transitionCount: stateTransitions.length,
+        ...(state.duration === undefined ? {} : { duration: state.duration }),
+        ...(state.oneShot ? { oneShot: true } : {}),
+        ...(state.terminal ? { terminal: true } : {}),
+        ...(state.name === this.currentState && isStateComplete(state, this.stateTime) ? { completed: true } : {}),
+        ...(state.onComplete === undefined ? {} : { onComplete: state.onComplete })
       });
       stateTransitions.forEach((transition, index) => {
         transitions.push({
@@ -99,7 +141,10 @@ export class AnimationStateMachine {
           index,
           priority: transition.priority ?? 0,
           label: transition.label ?? `${state.name}->${transition.to}`,
-          ...(transition.exitTime === undefined ? {} : { exitTime: transition.exitTime })
+          ...(transition.exitTime === undefined ? {} : { exitTime: transition.exitTime }),
+          ...(transition.consumeParameters === undefined || transition.consumeParameters.length === 0
+            ? {}
+            : { consumeParameters: [...transition.consumeParameters] })
         });
       });
     }
@@ -126,8 +171,47 @@ export class AnimationStateMachine {
     }
     return lines.join("\n");
   }
+
+  private requireState(name: string): AnimationState {
+    const state = this.states.get(name);
+    if (!state) {
+      throw new Error(`Current state ${name} does not exist.`);
+    }
+    return state;
+  }
+
+  private transitionTo(name: string): void {
+    const state = this.requireState(name);
+    this.currentState = name;
+    this.stateTime = 0;
+    this.resetParametersForState(state);
+  }
+
+  private resetParametersForState(state: AnimationState): void {
+    consumeParameters(this.parameters, state.resetParametersOnEnter);
+  }
 }
 
 function formatNumber(value: number): string {
   return Number(value.toFixed(6)).toString();
+}
+
+function isStateComplete(state: AnimationState, stateTime: number): boolean {
+  return state.duration !== undefined && stateTime >= state.duration;
+}
+
+function consumeParameters(
+  parameters: Record<string, number | boolean | string>,
+  names: readonly string[] | undefined
+): void {
+  for (const name of names ?? []) {
+    const value = parameters[name];
+    if (typeof value === "boolean") {
+      parameters[name] = false;
+    } else if (typeof value === "number") {
+      parameters[name] = 0;
+    } else if (typeof value === "string") {
+      parameters[name] = "";
+    }
+  }
 }

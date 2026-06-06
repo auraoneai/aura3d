@@ -1,19 +1,22 @@
 # Aura Clash Showcase
 
-Version: 1.0.5
-Status: Active showcase documentation
+Version: 1.0.6 planning alignment
+Status: Active development-showcase documentation
 Replaces: `GameShowCasePRD.md`
 
-Aura Clash is the flagship browser-game showcase for Aura3D. It exists to prove the public Aura3D SDK can support a typed-asset, browser-native fighting-game route with runtime nodes, input, movement, combat, animation state, HUD updates, evidence, screenshots, and static deployment checks.
+Aura Clash Arena is the active browser-game development showcase for Aura3D. It exists to prove the public Aura3D SDK can support a typed-asset, browser-native fighting-game route with runtime nodes, input, movement, combat, animation state, HUD updates, evidence, screenshots, and static deployment checks.
+
+It is not currently a flagship-quality game and must not be marketed as proof of a mature game engine until the 1.0.6 release gates pass.
 
 This document is the maintained product and evidence source for the showcase. Historical implementation logs from the former root PRD were summarized here and should not be reintroduced as root planning files.
 
 ## Product Target
 
-- Working title: `Aura Clash`
+- Working title: `Aura Clash Arena`
 - Route target: `/playable` during development and `/showcase/aura-clash/playable/` for marketing-linked deployment.
 - App target: `apps/aura-clash-showcase/`
-- Package baseline: `@aura3d/engine@1.0.5`
+- Current package baseline: `@aura3d/engine@1.0.5`
+- Target gate: `docs/project/aura3d-106-release-gates.md`
 - Asset rule: all runtime models must be typed assets from `src/aura-assets.ts`; do not use string model ids, invented GLB URLs, raw loaders, or direct Three.js imports.
 
 ## Pivot Decision
@@ -31,7 +34,7 @@ World War X remains legacy archive/context only. Aura Clash is the active showca
 
 ## Creative Direction
 
-Aura Clash should read as a premium stylized neon arcade arena fighter:
+Aura Clash Arena should move toward a premium stylized neon arcade arena fighter, but current public copy must describe it as a development showcase until the visual/gameplay gates pass:
 
 - Side-view 2.5D fighting composition.
 - Deep void/teal/violet/amber arena identity.
@@ -73,26 +76,25 @@ Known game-feel requirements from recent reviews:
 Use the Aura3D CLI and typed asset flow:
 
 ```bash
-npx @aura3d/cli@latest assets search "animated stylized humanoid fighter" --animated --json
-npx @aura3d/cli@latest assets resolve "animated stylized humanoid fighter" --name fighter
+npx @aura3d/cli@latest assets search "animated stylized humanoid fighter" --profile fighting-character --json
+npx @aura3d/cli@latest assets resolve "animated stylized humanoid fighter" --name fighter --profile fighting-character
 npx @aura3d/cli@latest assets add ./assets/source/fighter.glb --name fighter
-npx @aura3d/cli@latest assets validate-game --output launch-evidence/assets-validate-game.json
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --output launch-evidence/assets-validate-game.json
 ```
 
 The CLI/catalog path is a release blocker. If `npx @aura3d/cli@latest` is not published and externally usable, the public agent instructions are broken.
 
-Current reality from the 1.0.5 audit:
+Current reality from the 1.0.6 audit:
 
-- Local workspace CLI catalog search works.
-- Packed CLI tarball plus `@aura3d/asset-index` tarball can search the hosted catalog from a temp directory.
-- npm registry does not yet expose `@aura3d/cli`.
-- The final V6 route uses a validated local animation-ready asset instance, not a fresh prompt-resolved fighter from npm.
-- The catalog returned candidates, but the resolved candidate used during development was not good enough as a shipping fighter.
+- Local workspace CLI catalog search works with `--profile fighting-character`.
+- Local workspace CLI resolve can pull an animated GLB candidate into a temp project and preserve source URL, license, author/attribution, and source family in `aura.assets.json`.
+- The active route is now contextual `Aura Clash Arena`, not an attempt-numbered implementation path.
+- The profile improves filtering, but it does not guarantee flagship-quality fighters. Candidate quality, rig compatibility, bounds, clips, material readability, and art direction still require validation and visual review.
 
-Release rule: do not claim the AI prompt asset workflow is fixed until `@aura3d/asset-index@1.0.5` and `@aura3d/cli@1.0.5` are published and this command works outside the monorepo:
+Release rule: do not claim the AI prompt asset workflow is fully release-fixed until the published `@aura3d/cli@latest` can run this command outside the monorepo and retain provenance:
 
 ```bash
-npx @aura3d/cli@latest assets search "animated fighter" --animated --json
+npx @aura3d/cli@latest assets search "animated fighter" --profile fighting-character --json
 ```
 
 ## Evidence Checklist
@@ -154,23 +156,24 @@ The active test file should live at:
 apps/aura-clash-showcase/tests/playable-smoke.spec.ts
 ```
 
-## Current 1.0.5 Status
+## Current Status
 
 What is real:
 
-- Aura Clash now has a V6 route using Aura3D runtime APIs and typed assets.
+- Aura Clash Arena has a contextual route using Aura3D runtime APIs and typed assets.
 - Local build and smoke tests have passed during the release audit.
-- The arena design was improved from the primitive/flat V5 route.
+- The arena design was improved from earlier primitive/flat attempts.
 - The route proves basic movement, animation state, damage, HUD updates, and evidence hooks.
 
 What is still not good enough:
 
 - The game is not visually or mechanically strong enough to claim “world-class.”
+- The game is not yet a flagship-quality showcase.
 - Catalog/AI prompt asset resolution did not deliver final usable fighter assets.
 - Some combat states and KO/reset behavior need polish.
 - Normal play must not show box/line artifacts for hit effects.
 - `Q`, `L`, jump/down, KO loop, and damage tuning need focused regression tests after fixes.
-- Aura Clash should not be used as proof that Aura3D is comparable to Unity or Unreal.
+- Aura Clash Arena should not be used as proof that Aura3D is comparable to Unity, Unreal, Babylon.js, or a mature commercial game engine.
 
 ## Definition Of Done
 
@@ -184,4 +187,3 @@ Aura Clash is done when:
 - Local and deployed smoke tests pass.
 - Screenshots are visually approved.
 - Evidence JSON proves Aura3D owns the runtime systems being claimed.
-

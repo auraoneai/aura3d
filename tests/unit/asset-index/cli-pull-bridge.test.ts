@@ -82,12 +82,39 @@ describe("selectPullable", () => {
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.reason).toContain("No candidates matched");
   });
+
+  it("refuses auto-pullable candidates that fail the fighting-character profile", () => {
+    const staticAircraft = asset({
+      id: "os3a:aircraft",
+      title: "Static Aircraft",
+      tags: ["aircraft", "vehicle"],
+      hasAnimations: false,
+    });
+    const result = selectPullable([candidate(staticAircraft)], { profile: "fighting-character" });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toContain("fighting-character");
+      expect(result.reason).toContain("marked static");
+      expect(result.reason).toContain("aircraft");
+    }
+  });
 });
 
 describe("toResolveConstraints", () => {
   it("threads license/maxTris/animated and redistributableOnly", () => {
     const c = toResolveConstraints({ license: ["CC0"], maxTriangles: 50000, animated: true }, true);
     expect(c).toEqual({ license: ["CC0"], maxTriangles: 50000, animated: true, redistributableOnly: true });
+  });
+
+  it("maps fighting-character profile to animated redistributable GLB constraints", () => {
+    const c = toResolveConstraints({ profile: "fighting-character" }, true);
+    expect(c).toEqual({
+      license: ["CC0", "CC-BY"],
+      maxTriangles: 200_000,
+      animated: true,
+      format: "glb",
+      redistributableOnly: true,
+    });
   });
 
   it("omits unset fields and redistributableOnly when false", () => {
@@ -123,6 +150,14 @@ describe("runResolve", () => {
     expect(report.typedRef).toBe("model(assets.bench)");
     const typed = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
     expect(typed).toContain('"bench"');
+    const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+      assets: Array<{ id: string; provenance?: { license?: string; sourceUrl?: string; sourceFamily?: string } }>;
+    };
+    expect(manifest.assets.find((entry) => entry.id === "bench")?.provenance).toMatchObject({
+      license: "CC0-1.0",
+      sourceUrl: "https://example.test/Bench_01.glb",
+      sourceFamily: "test",
+    });
   });
 
   it("captures attribution into messages for CC-BY assets", async () => {
@@ -171,6 +206,31 @@ describe("runResolve", () => {
       runResolve({ query: "x", name: "1-bad name", makeResolver: () => stubResolver([]) as never }),
     ).rejects.toThrow(/valid identifier/i);
   });
+
+  it("refuses profile-unsuitable downloads during fighting-character resolve", async () => {
+    const projectDir = makeProject();
+    const staticProp = asset({
+      id: "os3a:prop",
+      title: "Static Prop",
+      tags: ["prop"],
+      hasAnimations: false,
+    });
+    let downloads = 0;
+
+    await expect(
+      runResolve({
+        query: "animated humanoid fighter",
+        name: "fighter",
+        projectDir,
+        constraints: { profile: "fighting-character" },
+        makeResolver: () => stubResolver([candidate(staticProp)]) as never,
+        download: async () => {
+          downloads += 1;
+        },
+      }),
+    ).rejects.toThrow(/fighting-character profile/i);
+    expect(downloads).toBe(0);
+  });
 });
 
 describe("runSearch", () => {
@@ -181,9 +241,67 @@ describe("runSearch", () => {
       query: "thing",
       makeResolver: () => stubResolver([candidate(cc0, 20), candidate(unverified, 10)]) as never,
     });
+    expect(report.profile).toBe("general");
     expect(report.candidates).toHaveLength(2);
+    expect(report.rejectedCandidates).toHaveLength(0);
     expect(report.candidates.find((c) => c.id === "os3a:a")?.autoPullable).toBe(true);
     expect(report.candidates.find((c) => c.id === "khronos:b")?.autoPullable).toBe(false);
+  });
+
+  it("annotates fighting-character candidates with suitability and rejection reasons", async () => {
+    const fighter = asset({
+      id: "os3a:fighter",
+      title: "Animated Humanoid Fighter",
+      tags: ["animated", "humanoid", "fighter"],
+      hasAnimations: true,
+    });
+    const aircraft = asset({
+      id: "os3a:aircraft",
+      title: "Static Aircraft",
+      tags: ["aircraft", "vehicle"],
+      hasAnimations: false,
+    });
+
+    const report = await runSearch({
+      query: "animated humanoid fighter",
+      constraints: { profile: "fighting-character" },
+      makeResolver: () => stubResolver([candidate(aircraft, 100), candidate(fighter, 10)]) as never,
+    });
+
+    expect(report.candidates[0]?.id).toBe("os3a:fighter");
+    expect(report.candidates.find((c) => c.id === "os3a:fighter")?.profile?.suitable).toBe(true);
+    expect(report.candidates.find((c) => c.id === "os3a:aircraft")).toBeUndefined();
+    const rejected = report.rejectedCandidates.find((c) => c.id === "os3a:aircraft");
+    expect(rejected?.profile?.suitable).toBe(false);
+    expect(rejected?.profile?.rejectionReasons.join("\n")).toContain("marked static");
+  });
+
+  it("does not mark unverified or IP-risk animated characters as fighting-character ready", async () => {
+    const unverified = asset({
+      id: "src:unverified-fighter",
+      title: "Animated Humanoid Fighter",
+      tags: ["animated", "humanoid", "fighter"],
+      hasAnimations: true,
+      license: normalizeLicense(undefined),
+    });
+    const fanAsset = asset({
+      id: "src:mario-fighter",
+      title: "Mario Fan Art Fighter",
+      tags: ["animated", "humanoid", "fighter", "fanart"],
+      hasAnimations: true,
+    });
+
+    const report = await runSearch({
+      query: "animated humanoid fighter",
+      constraints: { profile: "fighting-character" },
+      makeResolver: () => stubResolver([candidate(unverified, 100), candidate(fanAsset, 90)]) as never,
+    });
+
+    expect(report.messages.join("\n")).toContain("No fighting-character-ready candidate");
+    expect(report.candidates).toHaveLength(0);
+    expect(report.rejectedCandidates.every((c) => c.profile?.suitable === false)).toBe(true);
+    expect(report.rejectedCandidates.find((c) => c.id === "src:unverified-fighter")?.profile?.rejectionReasons.join("\n")).toContain("not verified redistributable");
+    expect(report.rejectedCandidates.find((c) => c.id === "src:mario-fighter")?.profile?.rejectionReasons.join("\n")).toContain("IP-risk");
   });
 
   it("surfaces the manual-license-check message when nothing is auto-pullable", async () => {

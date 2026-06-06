@@ -12,7 +12,7 @@ export const jinFlux = {
     title: "Midrange zoner",
     slug: "jin-flux",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Energy arcs, spacing traps, meter routes",
     designPillar:
       "Meter-forward zoner with visible ring projectiles and strong route evidence for the HUD."
@@ -267,4 +267,3 @@ export const jinFlux = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-

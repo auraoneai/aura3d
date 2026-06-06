@@ -68,8 +68,8 @@ Do not import `three`, `GLTFLoader`, renderer internals, raw GLB URLs, or string
 model ids. If an example needs a character, add or resolve a real asset first.
 
 ```bash
-npx @aura3d/cli@latest assets search "stylized humanoid fighter with idle run punch clips"
-npx @aura3d/cli@latest assets resolve "stylized humanoid fighter with idle run punch clips" --name fighter
+npx @aura3d/cli@latest assets search "stylized humanoid fighter with idle run punch clips" --profile fighting-character --json
+npx @aura3d/cli@latest assets resolve "stylized humanoid fighter with idle run punch clips" --name fighter --profile fighting-character
 npx @aura3d/cli@latest assets inspect ./assets/fighter.glb --animation --skeleton --morphs --license
 npx @aura3d/cli@latest assets add ./assets/fighter.glb --name fighter
 ```

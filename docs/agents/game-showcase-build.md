@@ -10,7 +10,7 @@ Use this guide when editing, reviewing, or documenting `apps/world-war-x-showcas
 - Use public imports from `@aura3d/engine`.
 - Mount one Aura app per route with `createAuraApp`.
 - Use typed GLB members from `src/aura-assets.ts`; never pass string asset IDs to `model(...)`.
-- Keep the roster at 10 V1 fighters unless the PRD changes.
+- Keep the roster at 10 original fighters unless the PRD changes.
 - Keep public copy production-grade: original satirical 1v1 arena fighter, browser-native, built with `@aura3d/engine`.
 - Do not use franchise comparisons or renderer-library comparison marketing in public copy.
 - Keep arcade action non-lethal, stylized, and comedic.
@@ -19,7 +19,7 @@ Use this guide when editing, reviewing, or documenting `apps/world-war-x-showcas
 
 The app has a complete documentation and evidence contract around these systems:
 
-- 10-fighter G7+India+Russia+China roster in `src/fighters/v1Roster.ts`.
+- 10-fighter G7+India+Russia+China roster in `src/fighters/originalRoster.ts`.
 - Typed asset keys in `src/fighters/FighterDefinition.ts`.
 - Generated fighter GLB registration in `src/aura-assets.ts`.
 - Generated GLB creation script in `scripts/generate-fighter-glbs.mjs`.
@@ -28,7 +28,7 @@ The app has a complete documentation and evidence contract around these systems:
 - Evidence, accessibility, capture, and route-health contracts under `src/evidence`, `src/accessibility`, and `src/capture`.
 - Playwright contracts under `tests`.
 
-## V1 roster
+## Original Roster
 
 | Fighter | Country inspiration | Leader snapshot | Asset member |
 | --- | --- | --- | --- |

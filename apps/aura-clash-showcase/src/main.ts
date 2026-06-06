@@ -1,1 +1,1 @@
-void import("./game-v6/AuraClashV6App").then((module) => module.mountAuraClashV6App());
+void import("./playable/AuraClashArenaApp").then((module) => module.mountAuraClashArenaApp());

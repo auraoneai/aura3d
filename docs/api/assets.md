@@ -76,14 +76,34 @@ evidence such as `license`, `licenseNote`, `sourcePath`, `publicUrl`, `hash`, or
 Use the game readiness report before building a playable route:
 
 ```bash
-npx @aura3d/cli@latest assets validate-game
+npx @aura3d/cli@latest assets validate-game --profile fighting-character
 ```
+
+When sourcing fighters from the catalog, search and resolve with the same
+profile:
+
+```bash
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" \
+  --profile fighting-character \
+  --json
+
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" \
+  --name fighter \
+  --profile fighting-character
+```
+
+`--profile fighting-character` maps the prompt to animated, redistributable GLB
+candidates with a browser-sized triangle budget. `assets resolve` keeps the
+selected candidate's source URL, license, author/attribution, and source family
+in `aura.assets.json`, so release evidence can explain exactly where the typed
+asset came from.
 
 When a showcase keeps old candidate assets in the manifest for audit history,
 validate the actual shipping set explicitly:
 
 ```bash
 npx @aura3d/cli@latest assets validate-game \
+  --profile fighting-character \
   --asset fighter \
   --asset arena \
   --output launch-evidence/assets-validate-game.json

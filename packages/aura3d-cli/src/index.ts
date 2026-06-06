@@ -168,11 +168,13 @@ export interface AssetValidationOptions {
 }
 
 export type AuraAssetReadinessProfile = "game" | "cartoon";
+export type AuraGameAssetReadinessProfile = "fighting-character";
 export type AuraAssetReadinessStatus = "passed" | "failed";
 
 export interface AssetReadinessOptions {
   readonly projectDir?: string;
   readonly output?: string;
+  readonly gameProfile?: AuraGameAssetReadinessProfile;
   readonly noPlaceholders?: boolean;
   readonly requireLicense?: boolean;
   readonly provenanceFile?: string;
@@ -182,6 +184,7 @@ export interface AssetReadinessOptions {
 export interface AssetReadinessReport {
   readonly schema: "aura3d.asset-readiness/1.0";
   readonly profile: AuraAssetReadinessProfile;
+  readonly gameProfile?: AuraGameAssetReadinessProfile;
   readonly ok: boolean;
   readonly status: AuraAssetReadinessStatus;
   readonly validator: AssetReadinessValidatorEvidence;
@@ -763,6 +766,7 @@ export function initAgentFiles(options: { readonly projectDir?: string; readonly
 
 function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: AssetReadinessOptions): AssetReadinessReport {
   const projectDir = resolve(options.projectDir ?? process.cwd());
+  const gameProfile = profile === "game" ? options.gameProfile : undefined;
   const sourceManifest = readAssetManifest(projectDir);
   const manifest = filterAssetManifest(sourceManifest, options.assetIds);
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
@@ -788,14 +792,18 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
     const licenseVerified = hasUsableLicenseEvidence(provenance);
     const assetWarnings = [...asset.warnings];
     const readinessIssues = createAssetReadinessIssues(profile, asset);
+    const profileIssues = gameProfile === "fighting-character"
+      ? createFightingCharacterReadinessIssues(asset, provenance, licenseVerified)
+      : { failures: [] as string[], warnings: [] as string[] };
     if (asset.type === "model" && !asset.bounds) assetWarnings.push("Missing bounds; camera framing, collision proxies, and thumbnail composition will be weaker.");
     if (asset.type === "model" && asset.materials.length === 0) assetWarnings.push("No material names detected; authored visual diagnostics will be limited.");
     if (asset.type === "model" && asset.sizeBytes > 50 * 1024 * 1024) assetWarnings.push("Large model over 50MB; consider mesh/texture optimization before browser deployment.");
     if (asset.type === "model" && asset.animations.length > 0 && asset.humanoid?.status === "unknown") assetWarnings.push("Animated model has unknown humanoid status; inspect with --humanoid before using it as an acted character.");
     assetWarnings.push(...readinessIssues.warnings);
-    failures.push(...readinessIssues.failures);
-    warnings.push(...readinessIssues.warnings);
-    const gameReady = asset.type === "model" && Boolean(asset.bounds) && asset.materials.length > 0 && asset.sizeBytes <= 50 * 1024 * 1024 && readinessIssues.failures.length === 0;
+    assetWarnings.push(...profileIssues.warnings);
+    pushUnique(failures, [...readinessIssues.failures, ...profileIssues.failures]);
+    pushUnique(warnings, [...readinessIssues.warnings, ...profileIssues.warnings]);
+    const gameReady = asset.type === "model" && Boolean(asset.bounds) && asset.materials.length > 0 && asset.sizeBytes <= 50 * 1024 * 1024 && readinessIssues.failures.length === 0 && profileIssues.failures.length === 0;
     const cartoonReady = asset.type === "model"
       ? Boolean(asset.bounds) && (asset.animations.length > 0 || /prop|set|stage|background|environment/i.test(asset.id))
       : asset.type === "audio" || asset.type === "texture";
@@ -838,6 +846,11 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       if (asset.type !== "model") continue;
       if (!asset.gameReady) warnings.push(`${asset.id}: not game-ready yet; expected bounds, named materials, and browser-sized payload.`);
     }
+    if (gameProfile === "fighting-character") {
+      if (modelAssets.length < 1) failures.push("fighting-character profile requires at least one typed fighter model.");
+      if (animatedModels.length < modelAssets.length) failures.push("fighting-character profile requires every selected model asset to include embedded animation clips.");
+      if (humanoidModels < modelAssets.length) failures.push("fighting-character profile requires every selected model asset to include humanoid/skeleton metadata.");
+    }
   } else {
     if (modelAssets.length === 0) failures.push("Cartoon readiness requires at least one typed model/set/prop GLB or GLTF.");
     if (animatedModels.length === 0) warnings.push("No animated character clips detected. Prompt-to-episode output can use transform animation, but character acting needs skeletal or pose clips.");
@@ -856,6 +869,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
   const report: AssetReadinessReport = {
     schema: "aura3d.asset-readiness/1.0",
     profile,
+    ...(gameProfile ? { gameProfile } : {}),
     ok,
     status: ok ? "passed" : "failed",
     validator: createReadinessValidatorEvidence(profile),
@@ -1068,9 +1082,149 @@ function createAssetReadinessIssues(
   return { failures, warnings };
 }
 
+function createFightingCharacterReadinessIssues(
+  asset: AuraCliAssetEntry,
+  provenance: AuraCliAssetProvenance | undefined,
+  licenseVerified: boolean
+): { readonly failures: readonly string[]; readonly warnings: readonly string[] } {
+  const failures: string[] = [];
+  const warnings: string[] = [];
+  const prefix = `${asset.id}:`;
+
+  if (asset.type !== "model") {
+    failures.push(`${prefix} fighting-character profile requires a model asset, found ${asset.type}.`);
+    return { failures, warnings };
+  }
+
+  if (asset.format !== "glb" && asset.format !== "gltf") {
+    failures.push(`${prefix} fighting-character profile requires GLB/GLTF model input, found ${asset.format}.`);
+  }
+
+  if (!licenseVerified) {
+    failures.push(`${prefix} fighting-character profile requires verified redistributable license/provenance evidence.`);
+  }
+
+  if (!provenance?.sourceUrl && !provenance?.sourceFamily) {
+    failures.push(`${prefix} fighting-character profile requires catalog/source provenance for release evidence.`);
+  }
+
+  if (asset.animations.length === 0) {
+    failures.push(`${prefix} fighting-character profile requires embedded animation clips.`);
+  }
+
+  const missing = missingRequiredGameClips(asset.animations);
+  if (missing.length > 0) {
+    failures.push(`${prefix} fighting-character profile missing required animation clip${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}.`);
+  }
+
+  const skeletonJointCount = asset.skeleton?.jointCount ?? 0;
+  if (!asset.humanoid?.humanoid && skeletonJointCount < 6) {
+    failures.push(`${prefix} fighting-character profile requires humanoid metadata or at least 6 skeleton joints; found ${skeletonJointCount}.`);
+  }
+
+  const metadataRisk = findFightingCharacterMetadataRisk(asset);
+  if (metadataRisk) {
+    failures.push(`${prefix} fighting-character profile rejects ${metadataRisk.kind} metadata "${metadataRisk.term}"; use complete, original, license-safe humanoid fighter assets.`);
+  }
+
+  if (!asset.boundsMetadata) {
+    failures.push(`${prefix} fighting-character profile requires bounds metadata for scale, ground, and lane checks.`);
+  } else {
+    const bounds = asset.boundsMetadata;
+    const height = bounds.size[1];
+    if (bounds.maxDimension > 4.5) {
+      failures.push(`${prefix} fighting-character profile bounds too large (${bounds.maxDimension}m max); expected character-scale <= 4.5m.`);
+    }
+    if (height < 0.75) {
+      failures.push(`${prefix} fighting-character profile height ${height}m is too small for a readable humanoid fighter.`);
+    }
+    if (!bounds.grounded) {
+      warnings.push(`${prefix} fighting-character profile bounds are not grounded at pivot; min.y is ${bounds.min[1]}m.`);
+    }
+  }
+
+  if (asset.materials.length === 0) {
+    failures.push(`${prefix} fighting-character profile requires at least one readable material.`);
+  }
+
+  if (asset.sizeBytes > 50 * 1024 * 1024) {
+    failures.push(`${prefix} fighting-character profile payload is ${asset.sizeBytes} bytes; expected <= 52428800 for browser gameplay.`);
+  }
+
+  return { failures, warnings };
+}
+
 function isCharacterLikeAsset(asset: AuraCliAssetEntry): boolean {
   if (asset.humanoid?.humanoid) return true;
   return /fighter|player|opponent|enemy|hero|character|avatar|humanoid|npc|body|mara/i.test(asset.id);
+}
+
+function findFightingCharacterMetadataRisk(asset: AuraCliAssetEntry): { readonly kind: "non-character" | "IP-risk"; readonly term: string } | undefined {
+  const text = [
+    asset.id,
+    asset.source,
+    asset.provenance?.sourceUrl ?? "",
+    asset.provenance?.sourceFamily ?? "",
+    asset.provenance?.author ?? "",
+    ...(asset.nodeNames ?? []),
+    ...asset.materials,
+  ].join(" ").toLowerCase();
+
+  const ipRiskTerms = [
+    "fan art",
+    "fanart",
+    "copyright",
+    "copyrighted",
+    "ripped",
+    "pokemon",
+    "mario",
+    "sonic",
+    "naruto",
+    "dragon ball",
+    "fortnite",
+    "marvel",
+    "dc comics",
+    "star wars",
+    "disney",
+  ];
+  const ipRisk = ipRiskTerms.find((term) => text.includes(term));
+  if (ipRisk) return { kind: "IP-risk", term: ipRisk };
+
+  const nonCharacterTerms = [
+    "aircraft",
+    "airplane",
+    "vehicle",
+    "building",
+    "architecture",
+    "environment",
+    "terrain",
+    "prop",
+    "furniture",
+    "sculpt",
+    "sculpture",
+    "statue",
+    "bust",
+    "figurine",
+    "miniature",
+    "photogrammetry",
+    "pedestal",
+    "spider",
+    "animal",
+    "quadruped",
+    "creature",
+    "insect",
+    "dragon",
+    "dinosaur",
+    "horse",
+    "dog",
+    "cat",
+    "bird",
+    "fish",
+  ];
+  const nonCharacter = nonCharacterTerms.find((term) => text.includes(term));
+  if (nonCharacter) return { kind: "non-character", term: nonCharacter };
+
+  return undefined;
 }
 
 function missingRequiredGameClips(animations: readonly string[]): readonly string[] {
@@ -1088,6 +1242,12 @@ function hasFloatingHairRisk(asset: AuraCliAssetEntry): boolean {
   if (!names.includes("hair")) return false;
   const hasBodyAnchor = /body|torso|spine|chest|head|neck|skull|face|hips|pelvis/.test(names);
   return !hasBodyAnchor;
+}
+
+function pushUnique(target: string[], values: readonly string[]): void {
+  for (const value of values) {
+    if (!target.includes(value)) target.push(value);
+  }
 }
 
 function resolvePublicArtifactPath(projectDir: string, manifest: AuraCliAssetManifest, url: string): string | undefined {

@@ -135,6 +135,11 @@ import {
   createCartoonRenderQueue
 } from "./CartoonRenderQueue";
 import { collectPromptAnimationEvidence } from "./PromptAnimationEvidence";
+import {
+  createGameAppRuntime,
+  type GameAppRuntime,
+  type GameAppRuntimeOptions
+} from "./GameAppRuntime";
 
 export { Engine } from "@aura3d/core";
 export {
@@ -147,6 +152,15 @@ export {
   type AuraAppRuntimeState,
   type AuraAppScreenshot
 } from "./AuraAppHandle";
+export {
+  createGameAppRuntime,
+  type GameAppRuntime,
+  type GameAppRuntimeEvidence,
+  type GameAppRuntimeLoopOptions,
+  type GameAppRuntimeOptions,
+  type GameAppRuntimeResize,
+  type GameAppRuntimeStatus
+} from "./GameAppRuntime";
 export {
   FrameLoop,
   createFrameLoop,
@@ -7124,6 +7138,12 @@ export interface AuraCreateAppOptions {
   readonly resize?: boolean;
 }
 
+export interface AuraCreateGameAppOptions extends AuraCreateAppOptions {
+  readonly loop?: GameAppRuntimeOptions["loop"];
+  readonly input?: GameAppRuntimeOptions["input"];
+  readonly runtimeEvidence?: GameAppRuntimeOptions["evidence"];
+}
+
 export interface AuraDiagnosticsOptions {
   readonly overlay?: boolean;
   readonly assetPanel?: boolean;
@@ -7587,6 +7607,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       overlay?.dispose();
     }
   };
+}
+
+export function createGameApp(target: AuraAppTarget, options: AuraCreateGameAppOptions): GameAppRuntime<AuraApp> {
+  const { input, loop, runtimeEvidence, ...appOptions } = options;
+  const app = createAuraApp(target, { ...appOptions, autoStart: false });
+  return createGameAppRuntime(app, {
+    autoStart: options.autoStart,
+    loop,
+    input,
+    evidence: runtimeEvidence
+  });
 }
 
 export function createAuraRouteHealthSnapshot(app: AuraApp): {

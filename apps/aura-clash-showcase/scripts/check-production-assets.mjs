@@ -53,6 +53,11 @@ const requiredAssets = [
     source: "assets/source/scenes/aura-clash-playable-scene.glb",
     maxSizeBytes: 22_000_000,
   },
+  {
+    name: "auraClashTrainingMannequin",
+    source: "assets/quaternius-source/selected/animations/UAL1_Standard.glb",
+    maxSizeBytes: 9_000_000,
+  },
 ];
 
 const fighterAssetNames = new Set([
@@ -66,6 +71,7 @@ const fighterAssetNames = new Set([
 
 const routeUseSourceFiles = [
   "src/main.ts",
+  "src/playable/AuraClashArenaApp.ts",
   "src/scenes/createFighterNodes.ts",
   "src/scenes/createFightScene.ts",
   "src/scenes/createStageScene.ts",
@@ -446,6 +452,10 @@ function assertLaunchRouteUse() {
     if (!source.includes(`assets.${assetName}`)) {
       fail(`Launch route source must reference typed fighter asset assets.${assetName}.`);
     }
+  }
+
+  if (!source.includes("assets.auraClashTrainingMannequin")) {
+    fail("Launch route source must reference the active typed training mannequin asset assets.auraClashTrainingMannequin.");
   }
 
   if (/model\(\s*["'`]/.test(source)) {

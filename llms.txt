@@ -20,6 +20,7 @@ Resolve real objects from the asset catalog FIRST:
 - If a prompt names a real-world object (a helmet, a sneaker, a camera, a car), do not model it from primitives and do not invent a URL. Resolve it through the Aura3D asset catalog: `npx @aura3d/cli@latest assets search "<object>"`.
 - The catalog is large (~850k license-verified GLB/glTF assets aggregated from Objaverse, Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and CC0 packs). It is searched by **meaning + quality**, not just keywords, so use a natural descriptive phrase ("battle-worn knight helmet", "cozy wooden cabin") - the best-matching, highest-quality, license-clean candidates come back ranked.
 - Auto-pullable candidates (CC0 / CC-BY, verified, direct-download) are pulled to disk and typed for you; run `assets resolve "<object>" --name <name>` to pull the top match and get a typed `assets.<name>`. Then use it with `model(assets.<name>)`.
+- For playable fighter/character prompts, add the game-asset profile: `npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json`, then `npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character`. The profile filters toward animated redistributable GLB candidates and keeps catalog provenance in `aura.assets.json`.
 - Primitives are only for set-dressing around a resolved real asset, or in the rare case no clean catalog asset matches. They are never a substitute for a named real object - with ~850k assets, a real match almost always exists.
 
 Scaffold:
@@ -303,7 +304,7 @@ Typed asset rule:
 - `unsafeModelUrl(...)` is only an explicit temporary escape hatch outside safe benchmark code.
 
 Game and cartoon asset readiness:
-- Before claiming a playable game route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-game`.
+- Before claiming a playable game route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-game --profile fighting-character` for fighter-heavy routes.
 - Before claiming a prompt-to-cartoon or AuraVoice episode route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-cartoon`.
 - Use `npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair` for repeatable character plans. Add every body, hair, prop, outfit, and stage part through `assets add` first.
 - A readiness report is not visual proof. Do not mark visual-quality, animation-quality, or launch-quality gates complete without screenshot/runtime evidence.
@@ -313,7 +314,7 @@ Aura3D 1.0.5 package/readiness declarations:
 ```bash
 npx create-aura3d@latest my-fighter --template fighting-game
 npx create-aura3d@latest my-episode --template prompt-cartoon-channel
-npx @aura3d/cli@latest assets validate-game
+npx @aura3d/cli@latest assets validate-game --profile fighting-character
 npx @aura3d/cli@latest assets validate-cartoon
 npx @aura3d/cli@latest check-deploy --dist dist
 pnpm game-runtime:docs
@@ -327,6 +328,13 @@ pnpm prompt-animation:release
 ```
 
 Do not claim game, prompt-cartoon, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
+
+Aura3D 1.0.6 game-engine/showcase claim rules:
+- Treat 1.0.6 as a release-blocked target until `docs/project/aura3d-106-release-gates.md` passes.
+- Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
+- Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
+- Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.
+- Use a static approved poster/link in marketing previews unless the live playable embed passes the same visual and gameplay gates as the route itself.
 
 Prompt-cartoon and AuraVoice pattern:
 ```ts

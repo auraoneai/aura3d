@@ -1,6 +1,6 @@
-# Product Strengths
+# Aura3D Product Boundaries
 
-Version: 1.0.5
+Version: 1.0.6 planning alignment
 
 This document captures durable product rules extracted from legacy planning work. It is the current product boundary for Aura3D documentation, examples, templates, marketing, and agent instructions.
 
@@ -41,9 +41,9 @@ The AI coding agent writes TypeScript or JavaScript against public Aura3D APIs. 
 - licensing decisions;
 - deployment target.
 
-## Asset Pipeline, Not Asset Catalog
+## Asset Pipeline And Catalog, Not Asset Generation
 
-The user or coding agent brings approved files:
+Aura3D supports both local asset registration and catalog-assisted discovery. The user or coding agent must still work with approved assets:
 
 - `.glb`
 - `.gltf`
@@ -54,13 +54,15 @@ The user or coding agent brings approved files:
 - animation clips
 - audio
 
-Aura3D starts after the asset exists on disk:
+Aura3D starts after the asset exists on disk or after the CLI resolves a verified auto-pullable catalog candidate:
 
 ```bash
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character
 npx @aura3d/cli@latest assets add ./assets/product.glb --name product
 ```
 
-The CLI validates, fingerprints, copies or references, extracts metadata, and generates typed imports. It does not purchase, license, host, generate, or bless the asset.
+The CLI validates, fingerprints, copies or references, extracts metadata, preserves provenance where available, and generates typed imports. It does not purchase, create, host, or bless an asset as production-ready art. Game-character assets still require profile validation, visual review, licensing review, animation review, and route evidence.
 
 ## No Runtime Prompt-To-IR Product Claim
 
@@ -74,6 +76,8 @@ Do not describe the current product as:
 - a server-side OpenAI, Anthropic, Gemini, or local-model proxy;
 - a master cinematic asset universe;
 - a consumer prompt-only 3D app.
+- not as a mature commercial game engine.
+- not as a Unity, Unreal, or Babylon.js replacement.
 
 Allowed replacement concepts:
 
@@ -82,6 +86,7 @@ Allowed replacement concepts:
 - typed asset metadata;
 - prompt plans that produce source-code-oriented scene guidance;
 - scene kits that agents call from TypeScript.
+- a browser game-runtime foundation when the relevant runtime, asset, animation, and deployment gates have current evidence.
 
 ## No Release-Number Artifact Names
 

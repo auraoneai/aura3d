@@ -35,7 +35,7 @@ Aura3D does not provide:
 ## Default Workflow
 
 1. Restate the requested 3D experience as scene intent.
-2. If you do not already have the asset file, resolve it from the catalog: run `npx @aura3d/cli@latest assets search "<intent>"`, pick an auto-pullable candidate (CC0 / CC-BY, verified, direct-download), and let the CLI pull and type it. Everything else is a deep-link you open and license yourself. Then use `model(assets.x)` with the generated key. Do not invent a URL or fall back to a primitive for a named real object.
+2. If you do not already have the asset file, resolve it from the catalog: run `npx @aura3d/cli@latest assets search "<intent>"`, pick an auto-pullable candidate (CC0 / CC-BY, verified, direct-download), and let the CLI pull and type it. For fighter or acted humanoid prompts, use `--profile fighting-character` on both `assets search` and `assets resolve` so the CLI filters toward animated redistributable GLB candidates and stores source/license provenance. Everything else is a deep-link you open and license yourself. Then use `model(assets.x)` with the generated key. Do not invent a URL or fall back to a primitive for a named real object.
 3. Add a real asset you already have on disk with `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`.
 4. Import `assets` from `./src/aura-assets` or the generated relative path for the app.
 5. Start from `definePromptPlan(...)` or the closest `sceneKits.<name>()` helper.

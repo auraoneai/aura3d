@@ -12,7 +12,7 @@ export const sableIron = {
     title: "Defensive tactician",
     slug: "sable-iron",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Parry windows, guard return, heavy counter",
     designPillar:
       "Defensive specialist for proving guard, reduced flash, and counter-readable HUD states."
@@ -267,4 +267,3 @@ export const sableIron = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-

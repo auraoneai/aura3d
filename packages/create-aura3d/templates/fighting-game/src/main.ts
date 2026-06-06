@@ -1,4 +1,4 @@
-import { camera, createAuraApp, effects, game, lights, scene, ui } from "@aura3d/engine";
+import { camera, createGameApp, effects, game, lights, scene, ui } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 import {
   animationLayer,
@@ -25,6 +25,7 @@ import "./styles.css";
 type Aura3DGameWindow = Window & {
   __AURA3D_GAME_DEBUG__?: unknown;
   __AURA3D_GAME_EVIDENCE__?: unknown;
+  __AURA3D_GAME_RUNTIME__?: unknown;
   __AURA3D_GAME_REPLAY__?: unknown;
   __AURA3D_GAME_SOURCE__?: unknown;
 };
@@ -112,24 +113,6 @@ const accessibilitySources = [
   })
 ];
 
-const arena = scene()
-  .background("#10071c")
-  .addMany(fightingStage.nodes)
-  .add(createFighterNode("player", "playerFighter", "Player fighter", playerStart, 1, "#45f5bb", typedFighterAssets))
-  .add(createFighterNode("rival", "rivalFighter", "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets))
-  .addMany([
-    effects.bloom({ intensity: 0.32 }),
-    lights.studio({ intensity: 1.15 }),
-    lights.directional({ name: "rim light", color: "#80ffd4", intensity: 0.7 }).position(0, 4, 3),
-    camera
-      .perspective({ position: [0, 1.75, 5.8], target: [0, 0.85, 0], fov: 42 })
-  ]);
-
-const app = createAuraApp("#app", {
-  diagnostics: { overlay: true, performancePanel: true },
-  scene: arena
-});
-
 const inputOptions = {
   actions: {
     ...fightingControls.actions,
@@ -142,7 +125,28 @@ const inputOptions = {
   gamepad: true
 } as const;
 
-const input = app.input(inputOptions);
+const arena = scene()
+  .background("#10071c")
+  .addMany(fightingStage.nodes)
+  .add(createFighterNode("player", "playerFighter", "Player fighter", playerStart, 1, "#45f5bb", typedFighterAssets))
+  .add(createFighterNode("rival", "rivalFighter", "Rival fighter", rivalStart, -1, "#ffca5f", typedFighterAssets))
+  .addMany([
+    effects.bloom({ intensity: 0.32 }),
+    lights.studio({ intensity: 1.15 }),
+    lights.directional({ name: "rim light", color: "#80ffd4", intensity: 0.7 }).position(0, 4, 3)
+  ])
+  .camera(camera.perspective({ position: [0, 1.75, 5.8], target: [0, 0.85, 0], fov: 42 }));
+
+const gameApp = createGameApp("#app", {
+  diagnostics: { overlay: true, performancePanel: true },
+  input: inputOptions,
+  loop: { fixedDt: 1 / 60 },
+  scene: arena
+});
+
+const app = gameApp.app;
+const input = gameApp.input;
+if (!input) throw new Error("create-aura3d fighting-game template failed to create runtime-owned input.");
 const replayInput = game.input({ ...inputOptions, autoListen: false, gamepad: false });
 const openingReplay = game.inputReplay(
   [
@@ -196,6 +200,11 @@ gameWindow.__AURA3D_GAME_SOURCE__ = {
   template: "fighting-game",
   package: "create-aura3d",
   publicEngineApi: true,
+  lifecycle: {
+    kind: gameApp.kind,
+    usesCreateGameApp: true,
+    runtimeEvidenceGlobal: "__AURA3D_GAME_RUNTIME__"
+  },
   typedAssetPattern: "src/aura-assets.ts",
   typedAssetKeys: REQUIRED_FIGHTER_ASSETS,
   missingAssets: missingFighterAssets,
@@ -223,7 +232,7 @@ ui.onClick(replayButton, () => {
 
 ui.onClick(pauseButton, () => setPaused(!paused));
 
-app.onFrame(({ dt }) => {
+gameApp.onFrame(({ dt }) => {
   const activeInput = replayActive ? replayInput : input;
   if (replayActive) {
     replayDriver.step(dt);
@@ -360,6 +369,7 @@ app.onFrame(({ dt }) => {
     totalHitCount,
     liveInputEvents: input.recorded()
   };
+  gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
   gameWindow.__AURA3D_GAME_DEBUG__ = game.debug.overlay({
     runtime: app.runtime,
     input: activeInput,
@@ -397,8 +407,8 @@ function setPaused(next: boolean): void {
   paused = next;
   ui.setPressed(pauseButton, paused);
   ui.setText(pauseButton, paused ? "Resume" : "Pause");
-  if (paused) app.pause();
-  else app.resume();
+  if (paused) gameApp.pause();
+  else gameApp.resume();
 }
 
 function syncFighterAnimation(controller: ReturnType<typeof createFighterAnimationController>, clip: FighterClip, dt: number): void {

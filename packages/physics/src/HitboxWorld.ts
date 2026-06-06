@@ -32,6 +32,7 @@ export type CombatantDescriptor = {
   readonly meter?: number;
   readonly blocking?: boolean;
   readonly invulnerableFrames?: number;
+  readonly knockedOut?: boolean;
   readonly metadata?: Readonly<Record<string, unknown>>;
 };
 
@@ -96,10 +97,12 @@ export type CombatantSnapshot = {
   readonly hitstunFrames: number;
   readonly blockstunFrames: number;
   readonly recoveryFrames: number;
+  readonly knockedOut: boolean;
 };
 
 export type HitboxWorldSnapshot = {
   readonly frame: number;
+  readonly roundLocked: boolean;
   readonly combatants: readonly CombatantSnapshot[];
   readonly hitboxes: readonly ActiveHitboxSnapshot[];
   readonly events: readonly CombatEvent[];
@@ -212,6 +215,20 @@ export type CombatTimerEvent =
       readonly combatantId: CombatantId;
     };
 
+export type CombatKnockoutEvent = {
+  readonly type: "knockout";
+  readonly frame: number;
+  readonly combatantId: CombatantId;
+  readonly attackerId?: CombatantId;
+  readonly moveId?: string;
+};
+
+export type CombatRoundResetEvent = {
+  readonly type: "round-reset";
+  readonly frame: number;
+  readonly combatants: readonly CombatantId[];
+};
+
 export type CombatPushboxEvent = {
   readonly type: "pushbox-overlap";
   readonly frame: number;
@@ -221,10 +238,18 @@ export type CombatPushboxEvent = {
   readonly penetration: number;
 };
 
-export type CombatEvent = CombatHitEvent | CombatBlockEvent | CombatHitboxLifecycleEvent | CombatTimerEvent | CombatPushboxEvent;
+export type CombatEvent =
+  | CombatHitEvent
+  | CombatBlockEvent
+  | CombatHitboxLifecycleEvent
+  | CombatTimerEvent
+  | CombatPushboxEvent
+  | CombatKnockoutEvent
+  | CombatRoundResetEvent;
 
 export type HitboxWorldDescriptor = {
   readonly detectPushboxOverlaps?: boolean;
+  readonly lockOnKnockout?: boolean;
 };
 
 type CombatantRecord = {
@@ -246,7 +271,21 @@ type CombatantRecord = {
   hitstunFrames: number;
   blockstunFrames: number;
   recoveryFrames: number;
+  knockedOut: boolean;
   metadata: Readonly<Record<string, unknown>> | undefined;
+  baseline: CombatantBaseline;
+};
+
+type CombatantBaseline = {
+  readonly position: [number, number, number];
+  readonly facing: CombatFacing;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly guard: number;
+  readonly maxGuard: number;
+  readonly meter: number;
+  readonly blocking: boolean;
+  readonly invulnerableFrames: number;
 };
 
 type ActiveHitboxRecord = {
@@ -280,15 +319,18 @@ type ActiveHitboxRecord = {
 
 export class HitboxWorld {
   readonly detectPushboxOverlaps: boolean;
+  readonly lockOnKnockout: boolean;
   private readonly combatantsById = new Map<CombatantId, CombatantRecord>();
   private readonly hitboxesById = new Map<string, ActiveHitboxRecord>();
   private nextHitboxId = 1;
   private frame = 0;
+  private roundLocked = false;
   private lastEvents: readonly CombatEvent[] = [];
   private readonly pendingEvents: CombatEvent[] = [];
 
   constructor(descriptor: HitboxWorldDescriptor = {}) {
     this.detectPushboxOverlaps = descriptor.detectPushboxOverlaps ?? true;
+    this.lockOnKnockout = descriptor.lockOnKnockout ?? true;
   }
 
   registerCombatant(descriptor: CombatantDescriptor): CombatantSnapshot {
@@ -335,7 +377,8 @@ export class HitboxWorld {
   }
 
   setGuarding(id: CombatantId, blocking: boolean): void {
-    this.requireCombatant(id).blocking = blocking;
+    const combatant = this.requireCombatant(id);
+    combatant.blocking = !combatant.knockedOut && blocking;
   }
 
   setHurtboxes(id: CombatantId, volumes: readonly CollisionVolume[]): void {
@@ -354,10 +397,10 @@ export class HitboxWorld {
     const owner = this.requireCombatant(descriptor.ownerId);
     const id = descriptor.id ?? `${String(descriptor.ownerId)}:${descriptor.moveId}:${this.nextHitboxId}`;
     this.nextHitboxId += 1;
+    const activeFrames = normalizeActiveFrames(descriptor.activeFrames ?? { start: 0, end: 2 });
     if (this.hitboxesById.has(id)) {
       throw new Error(`Hitbox ${id} already exists.`);
     }
-    const activeFrames = normalizeActiveFrames(descriptor.activeFrames ?? { start: 0, end: 2 });
     const record: ActiveHitboxRecord = {
       id,
       ownerId: descriptor.ownerId,
@@ -388,6 +431,12 @@ export class HitboxWorld {
     };
     validateFiniteVec3(record.knockback, "hitbox knockback");
     validateFiniteVec3(record.blockKnockback, "hitbox blockKnockback");
+    if (this.roundLocked || owner.knockedOut) {
+      return snapshotHitbox({
+        ...record,
+        expired: true
+      });
+    }
     this.hitboxesById.set(record.id, record);
     this.pendingEvents.push({
       type: "hitbox-spawned",
@@ -406,6 +455,33 @@ export class HitboxWorld {
         this.hitboxesById.delete(id);
       }
     }
+  }
+
+  reset(combatants?: readonly CombatantDescriptor[]): HitboxWorldSnapshot {
+    this.hitboxesById.clear();
+    this.pendingEvents.length = 0;
+    this.lastEvents = [];
+    this.roundLocked = false;
+
+    if (combatants) {
+      this.combatantsById.clear();
+      for (const combatant of combatants) {
+        this.registerCombatant(combatant);
+      }
+    } else {
+      for (const combatant of this.combatantsById.values()) {
+        resetCombatantRecord(combatant);
+      }
+    }
+
+    this.lastEvents = [
+      {
+        type: "round-reset",
+        frame: this.frame,
+        combatants: this.combatants().map((combatant) => combatant.id)
+      }
+    ];
+    return this.snapshot();
   }
 
   step(frames = 1): readonly CombatEvent[] {
@@ -429,6 +505,7 @@ export class HitboxWorld {
   snapshot(): HitboxWorldSnapshot {
     return {
       frame: this.frame,
+      roundLocked: this.roundLocked,
       combatants: this.combatants(),
       hitboxes: this.hitboxes(),
       events: this.lastEvents.map(cloneCombatEvent)
@@ -448,6 +525,10 @@ export class HitboxWorld {
     if (this.detectPushboxOverlaps) {
       events.push(...this.collectPushboxEvents());
     }
+    if (this.roundLocked) {
+      this.frame += 1;
+      return events;
+    }
     for (const record of this.sortedHitboxRecords()) {
       if (record.expired || record.hitCount >= record.maxHits) {
         record.expired = true;
@@ -458,8 +539,15 @@ export class HitboxWorld {
         record.expired = true;
         continue;
       }
+      if (owner.knockedOut) {
+        record.expired = true;
+        continue;
+      }
       if (isHitboxActive(record)) {
         events.push(...this.resolveHitbox(record, owner));
+        if (this.roundLocked) {
+          break;
+        }
       }
       if (!record.recoveryStarted && record.ageFrames > record.activeFrames.end && record.recoveryFrames > 0) {
         record.recoveryStarted = true;
@@ -471,6 +559,12 @@ export class HitboxWorld {
           frames: record.recoveryFrames
         });
       }
+    }
+    if (this.roundLocked) {
+      this.expireAllHitboxes(events);
+      events.push(...this.tickTimers());
+      this.frame += 1;
+      return events;
     }
     events.push(...this.tickTimers());
     for (const record of this.sortedHitboxRecords()) {
@@ -513,6 +607,12 @@ export class HitboxWorld {
         record.hitCount += 1;
         events.push(hitEvent);
         events.push(...this.applyHitTimers(record, owner, defender));
+        if (defender.health <= 0 && !defender.knockedOut) {
+          events.push(...this.knockOutCombatant(defender, owner, record));
+          if (this.roundLocked) {
+            break;
+          }
+        }
       }
     }
     return events;
@@ -582,6 +682,32 @@ export class HitboxWorld {
     };
   }
 
+  private knockOutCombatant(
+    defender: CombatantRecord,
+    owner: CombatantRecord,
+    record: ActiveHitboxRecord
+  ): CombatKnockoutEvent[] {
+    defender.knockedOut = true;
+    defender.blocking = false;
+    defender.invulnerableFrames = 0;
+    defender.hitStopFrames = 0;
+    defender.hitstunFrames = 0;
+    defender.blockstunFrames = 0;
+    defender.recoveryFrames = 0;
+    if (this.lockOnKnockout) {
+      this.roundLocked = true;
+    }
+    return [
+      {
+        type: "knockout",
+        frame: this.frame,
+        combatantId: defender.id,
+        attackerId: owner.id,
+        moveId: record.moveId
+      }
+    ];
+  }
+
   private applyHitTimers(record: ActiveHitboxRecord, owner: CombatantRecord, defender: CombatantRecord): CombatTimerEvent[] {
     const events: CombatTimerEvent[] = [];
     events.push(...setTimer(defender, "hitstunFrames", record.hitstunFrames, "hitstun-start", this.frame));
@@ -614,7 +740,7 @@ export class HitboxWorld {
 
   private collectPushboxEvents(): CombatPushboxEvent[] {
     const events: CombatPushboxEvent[] = [];
-    const combatants = this.sortedCombatantRecords().filter((combatant) => combatant.pushbox !== null);
+    const combatants = this.sortedCombatantRecords().filter((combatant) => combatant.pushbox !== null && !combatant.knockedOut);
     for (let aIndex = 0; aIndex < combatants.length; aIndex += 1) {
       for (let bIndex = aIndex + 1; bIndex < combatants.length; bIndex += 1) {
         const combatantA = combatants[aIndex]!;
@@ -665,6 +791,12 @@ export class HitboxWorld {
     this.hitboxesById.delete(record.id);
   }
 
+  private expireAllHitboxes(events: CombatEvent[]): void {
+    for (const record of this.sortedHitboxRecords()) {
+      this.expireHitbox(record, events);
+    }
+  }
+
   private requireCombatant(id: CombatantId): CombatantRecord {
     const combatant = this.combatantsById.get(id);
     if (!combatant) {
@@ -693,28 +825,46 @@ function createCombatantRecord(descriptor: CombatantDescriptor): CombatantRecord
   const maxGuard = positiveFinite(descriptor.maxGuard ?? descriptor.guard ?? 100, "combatant maxGuard");
   const position = cloneVec3(descriptor.position ?? [0, 0.9, 0]);
   validateFiniteVec3(position, "combatant position");
+  const health = clampNonNegative(descriptor.health ?? maxHealth, maxHealth);
+  const guard = clampNonNegative(descriptor.guard ?? maxGuard, maxGuard);
+  const facing = descriptor.facing && descriptor.facing < 0 ? -1 : 1;
+  const blocking = descriptor.blocking ?? false;
+  const invulnerableFrames = nonNegativeInteger(descriptor.invulnerableFrames ?? 0, "combatant invulnerableFrames");
+  const meter = nonNegativeFinite(descriptor.meter ?? 0, "combatant meter");
   return {
     id: descriptor.id,
     team: descriptor.team,
     position,
-    facing: descriptor.facing && descriptor.facing < 0 ? -1 : 1,
+    facing,
     hurtboxes: (descriptor.hurtboxes ?? [hurtbox({ id: "body", halfExtents: [0.36, 0.86, 0.28] })]).map((volume) => requireVolumeKind(volume, "hurtbox")),
     guardBoxes: (descriptor.guardBoxes ?? [guardbox({ id: "guard", offset: [0.18, 0, 0], halfExtents: [0.28, 0.82, 0.3] })]).map((volume) =>
       requireVolumeKind(volume, "guardbox")
     ),
     pushbox: descriptor.pushbox === null ? null : requireVolumeKind(descriptor.pushbox ?? pushbox({ id: "push", halfExtents: [0.32, 0.84, 0.26] }), "pushbox"),
-    health: clampNonNegative(descriptor.health ?? maxHealth, maxHealth),
+    health,
     maxHealth,
-    guard: clampNonNegative(descriptor.guard ?? maxGuard, maxGuard),
+    guard,
     maxGuard,
-    meter: nonNegativeFinite(descriptor.meter ?? 0, "combatant meter"),
-    blocking: descriptor.blocking ?? false,
-    invulnerableFrames: nonNegativeInteger(descriptor.invulnerableFrames ?? 0, "combatant invulnerableFrames"),
+    meter,
+    blocking,
+    invulnerableFrames,
     hitStopFrames: 0,
     hitstunFrames: 0,
     blockstunFrames: 0,
     recoveryFrames: 0,
-    metadata: descriptor.metadata
+    knockedOut: descriptor.knockedOut ?? health <= 0,
+    metadata: descriptor.metadata,
+    baseline: {
+      position: cloneVec3(position),
+      facing,
+      health,
+      maxHealth,
+      guard,
+      maxGuard,
+      meter,
+      blocking,
+      invulnerableFrames
+    }
   };
 }
 
@@ -743,6 +893,7 @@ function applyCombatantDescriptor(record: CombatantRecord, descriptor: Combatant
   }
   if (descriptor.health !== undefined) {
     record.health = clampNonNegative(descriptor.health, record.maxHealth);
+    record.knockedOut = descriptor.knockedOut ?? record.health <= 0;
   }
   if (descriptor.maxGuard !== undefined) {
     record.maxGuard = positiveFinite(descriptor.maxGuard, "combatant maxGuard");
@@ -759,12 +910,22 @@ function applyCombatantDescriptor(record: CombatantRecord, descriptor: Combatant
   if (descriptor.invulnerableFrames !== undefined) {
     record.invulnerableFrames = nonNegativeInteger(descriptor.invulnerableFrames, "combatant invulnerableFrames");
   }
+  if (descriptor.knockedOut !== undefined) {
+    record.knockedOut = descriptor.knockedOut;
+    if (record.knockedOut) {
+      record.health = 0;
+      record.blocking = false;
+    }
+  }
   if (descriptor.metadata !== undefined) {
     record.metadata = descriptor.metadata;
   }
 }
 
 function canHitCombatant(record: ActiveHitboxRecord, owner: CombatantRecord, defender: CombatantRecord): boolean {
+  if (owner.knockedOut || defender.knockedOut) {
+    return false;
+  }
   if (owner.id === defender.id && !record.canHitOwner) {
     return false;
   }
@@ -772,6 +933,23 @@ function canHitCombatant(record: ActiveHitboxRecord, owner: CombatantRecord, def
     return false;
   }
   return true;
+}
+
+function resetCombatantRecord(record: CombatantRecord): void {
+  record.position = cloneVec3(record.baseline.position);
+  record.facing = record.baseline.facing;
+  record.health = record.baseline.health;
+  record.maxHealth = record.baseline.maxHealth;
+  record.guard = record.baseline.guard;
+  record.maxGuard = record.baseline.maxGuard;
+  record.meter = record.baseline.meter;
+  record.blocking = record.baseline.blocking;
+  record.invulnerableFrames = record.baseline.invulnerableFrames;
+  record.hitStopFrames = 0;
+  record.hitstunFrames = 0;
+  record.blockstunFrames = 0;
+  record.recoveryFrames = 0;
+  record.knockedOut = record.health <= 0;
 }
 
 function firstOverlappingPair(
@@ -888,7 +1066,8 @@ function snapshotCombatant(record: CombatantRecord): CombatantSnapshot {
     hitStopFrames: record.hitStopFrames,
     hitstunFrames: record.hitstunFrames,
     blockstunFrames: record.blockstunFrames,
-    recoveryFrames: record.recoveryFrames
+    recoveryFrames: record.recoveryFrames,
+    knockedOut: record.knockedOut
   };
 }
 

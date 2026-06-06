@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/debug",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "type": "module",
   "dependencies": {
     "@aura3d/animation": "workspace:*",

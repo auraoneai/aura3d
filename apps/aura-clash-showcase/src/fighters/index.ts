@@ -40,5 +40,4 @@ export {
   auraClashOriginalRoster,
   auraClashOriginalRosterById,
   auraClashOriginalRosterIds
-} from "./v1Roster";
-
+} from "./originalRoster";

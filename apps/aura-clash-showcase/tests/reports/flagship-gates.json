@@ -1,0 +1,41 @@
+{
+  "schema": "aura-clash-flagship-gates",
+  "ok": true,
+  "status": "flagship-ready",
+  "startedAt": "2026-06-06T02:03:45.473Z",
+  "generatedAt": "2026-06-06T02:04:49.081Z",
+  "appRoot": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase",
+  "commandCount": 2,
+  "completedCount": 2,
+  "failedCount": 0,
+  "results": [
+    {
+      "id": "flagship-readiness-tool",
+      "command": "npm",
+      "args": [
+        "run",
+        "flagship:readiness"
+      ],
+      "ok": true,
+      "code": 0,
+      "signal": null,
+      "durationMs": 1319,
+      "stdout": "\n> @aura3d/aura-clash-showcase@0.1.0 flagship:readiness\n> node scripts/check-flagship-readiness-evidence.mjs\n\n{\n  \"schema\": \"aura-clash-flagship-readiness\",\n  \"ok\": true,\n  \"status\": \"flagship-ready\",\n  \"generatedAt\": \"2026-06-06T02:03:46.754Z\",\n  \"appRoot\": \"apps/aura-clash-showcase\",\n  \"gates\": [\n    {\n      \"id\": \"flagship-playwright-suite-present\",\n      \"title\": \"Flagship Playwright suite covers the manual failure modes\",\n      \"ok\": true,\n      \"summary\": \"The flagship Playwright suite exists and names controls, KO/reset, artifact, performance, and audio gates.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"control-key-coverage\",\n      \"title\": \"A/D/S/Space/Shift/Q/J/K/L/P/R controls are release-gated\",\n      \"ok\": true,\n      \"summary\": \"The flagship suite must exercise every shipped keyboard control, including down, guard, special, pause, and reset.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"runtime-controls-proof\",\n      \"title\": \"Runtime proof publishes controls evidence every frame\",\n      \"ok\": true,\n      \"summary\": \"window.__AURA_CLASH_ARENA_PROOF__ must include controls.lastInput, downSupported, specialRequiresMeter, koLocked, and resetCount in the normal writeProof path.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"ko-lock-reset-gated\",\n      \"title\": \"KO lock and reset behavior are release-gated\",\n      \"ok\": true,\n      \"summary\": \"The flagship suite must prove KO cannot keep taking damage or repeat attacks until reset, and reset clears the round.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"normal-hit-vfx-no-debug-cubes\",\n      \"title\": \"Normal-play hit VFX are not debug cubes or generic box artifacts\",\n      \"ok\": true,\n      \"summary\": \"The normal hit-effect path must be a designed VFX path, not lit cube render items.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts\",\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"performance-proof-contract\",\n      \"title\": \"Flagship proof exposes explicit performance budgets\",\n      \"ok\": true,\n      \"summary\": \"The playable route must publish performance.frameTimeMs, fps, drawCalls, and budgetOk and the test suite must enforce thresholds.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts\",\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"audio-proof-contract\",\n      \"title\": \"Flagship proof exposes audio readiness instead of silent placeholders\",\n      \"ok\": true,\n      \"summary\": \"The playable route must publish audio readiness with music, SFX, mute, and last cue evidence.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts\",\n        \"apps/aura-clash-showcase/tests/flagship-readiness.spec.ts\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    },\n    {\n      \"id\": \"script-wiring\",\n      \"title\": \"Flagship gates are runnable from app and root package scripts\",\n      \"ok\": true,\n      \"summary\": \"The new readiness tool and Playwright suite must be reachable through stable package scripts.\",\n      \"evidencePaths\": [\n        \"apps/aura-clash-showcase/package.json\",\n        \"package.json\"\n      ],\n      \"blockers\": [],\n      \"status\": \"pass\"\n    }\n  ],\n  \"blockers\": []\n}\n",
+      "stderr": ""
+    },
+    {
+      "id": "flagship-playwright",
+      "command": "npm",
+      "args": [
+        "run",
+        "test:flagship"
+      ],
+      "ok": true,
+      "code": 0,
+      "signal": null,
+      "durationMs": 62286,
+      "stdout": "\n> @aura3d/aura-clash-showcase@0.1.0 test:flagship\n> playwright test tests/flagship-readiness.spec.ts\n\n\nRunning 4 tests using 1 worker\n\n  ✓  1 [chromium] › tests/flagship-readiness.spec.ts:91:3 › Aura Clash flagship readiness gates › all shipped controls produce explicit gameplay proof and do not silently no-op (17.6s)\n  ✓  2 [chromium] › tests/flagship-readiness.spec.ts:163:3 › Aura Clash flagship readiness gates › KO state locks combat until reset and reset clears round state (27.1s)\n  ✓  3 [chromium] › tests/flagship-readiness.spec.ts:199:3 › Aura Clash flagship readiness gates › normal play does not ship debug-style hit artifacts (11.2s)\n  ✓  4 [chromium] › tests/flagship-readiness.spec.ts:215:3 › Aura Clash flagship readiness gates › flagship proof exposes performance and audio budgets instead of placeholders (4.2s)\n\n  4 passed (1.0m)\n",
+      "stderr": "(node:33783) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:33783) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+    }
+  ]
+}

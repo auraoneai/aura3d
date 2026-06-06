@@ -12,7 +12,7 @@ export const rookAtlas = {
     title: "Heavy grappler",
     slug: "rook-atlas",
     rosterGroup: "Aura Clash Originals",
-    role: "V1 playable fighter",
+    role: "original playable fighter",
     archetype: "Armor frames, throws, guard crushes",
     designPillar:
       "Readable heavy fighter with slow commitments, strong guard damage, and high silhouette weight."
@@ -267,4 +267,3 @@ export const rookAtlas = {
     }
   ]
 } as const satisfies AuraClashFighterDefinition;
-
