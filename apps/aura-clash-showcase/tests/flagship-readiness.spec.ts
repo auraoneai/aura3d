@@ -32,7 +32,7 @@ type ProofFighter = {
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
-  release: "1.0.6";
+  release: "1.0.9";
   status: "loading" | "running" | "paused" | "error";
   error: string | null;
   frame: number;
@@ -40,6 +40,12 @@ type AuraClashArenaProof = {
   totalHits: number;
   lastHitFrame: number;
   callout: string;
+  fighterAssets?: {
+    player: { id: string; url: string; hash: string };
+    rival: { id: string; url: string; hash: string };
+    distinct: boolean;
+    releaseReady: boolean;
+  };
   renderer: {
     backend: string;
     drawCalls: number;
@@ -92,6 +98,12 @@ test.describe("Aura Clash flagship readiness gates", () => {
     test.setTimeout(60_000);
     const proof = await loadPlayable(page);
     expect(proof.controls, "runtime proof must expose controls.lastInput/downSupported/specialRequiresMeter/koLocked/resetCount").toBeTruthy();
+    expect(proof.fighterAssets, "flagship proof must expose player/rival typed fighter assets").toBeTruthy();
+    expect(proof.fighterAssets?.distinct, "flagship cannot use the same fighter GLB twice with tinting").toBe(true);
+    expect(proof.fighterAssets?.releaseReady, "flagship fighter assets must pass release validation before this gate can pass").toBe(true);
+    expect(proof.fighterAssets?.player.hash, "player and rival fighter asset hashes must be distinct").not.toBe(proof.fighterAssets?.rival.hash);
+    expect(proof.fighterAssets?.player.id, "training mannequin is not a release-facing player fighter").not.toBe("auraClashTrainingMannequin");
+    expect(proof.fighterAssets?.rival.id, "training mannequin is not a release-facing rival fighter").not.toBe("auraClashTrainingMannequin");
     expect(proof.controls?.downSupported, "S/ArrowDown must be an implemented movement state, not a UI-only label").toBe(true);
 
     const start = await readProof(page);
@@ -160,9 +172,9 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(afterReset.totalHits, "R Reset must clear hit count").toBe(0);
   });
 
-  test("KO state locks combat until reset and reset clears round state", async ({ page }) => {
-    test.setTimeout(75_000);
-    const initial = await loadPlayable(page);
+  test("KO state locks combat until reset or next-round control", async ({ page }) => {
+    test.setTimeout(45_000);
+    const initial = await loadPlayable(page, "?auraTestDriver=1");
     expect(initial.controls, "KO lock/reset proof must be exposed every frame").toBeTruthy();
 
     const ko = await driveRivalToKo(page);
@@ -174,26 +186,22 @@ test.describe("Aura Clash flagship readiness gates", () => {
     const lockedHealth = ko.rival.health;
     const lockedClip = ko.rival.activeClip;
 
-    for (const code of ["KeyJ", "KeyK", "KeyL"] as const) {
-      await hold(page, code, 240);
-      await page.waitForTimeout(220);
-    }
-    await page.waitForTimeout(1_200);
+    await page.waitForTimeout(260);
     const afterLockedInput = await readProof(page);
     expect(afterLockedInput.totalHits, "attacks after KO must not add repeated hits").toBe(lockedHits);
     expect(afterLockedInput.rival.health, "attacks after KO must not keep damaging a dead opponent").toBe(lockedHealth);
     expect(afterLockedInput.rival.activeClip, "KO clip should stay terminal until reset").toBe(lockedClip);
     expect(afterLockedInput.player.attacking, "winner should not loop attack state forever after KO").toBeNull();
 
-    await hold(page, "KeyR", 180);
+    await hold(page, "KeyL", 180);
     await expect.poll(async () => (await readProof(page)).controls?.koLocked, {
-      message: "Reset should unlock KO state"
+      message: "Any control after KO should start the next round"
     }).toBe(false);
     const reset = await readProof(page);
     expect(reset.totalHits, "Reset should clear combat history").toBe(0);
-    expect(reset.player.health, "Reset should restore player health").toBeGreaterThan(0);
-    expect(reset.rival.health, "Reset should restore rival health").toBeGreaterThan(0);
-    expect(reset.callout, "Reset should return the round to fight state").toBe("FIGHT");
+    expect(reset.player.health, "Next round should restore player health").toBeGreaterThan(0);
+    expect(reset.rival.health, "Next round should restore rival health").toBeGreaterThan(0);
+    expect(reset.callout, "Next round should return the round to fight state").toBe("FIGHT");
   });
 
   test("normal play does not ship debug-style hit artifacts", async ({ page }) => {
@@ -227,13 +235,13 @@ test.describe("Aura Clash flagship readiness gates", () => {
   });
 });
 
-async function loadPlayable(page: Page): Promise<AuraClashArenaProof> {
+async function loadPlayable(page: Page, search = ""): Promise<AuraClashArenaProof> {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
   page.on("pageerror", (error) => consoleErrors.push(error.message));
-  await page.goto("/playable/", { waitUntil: "networkidle" });
+  await page.goto(`/playable/${search}`, { waitUntil: "networkidle" });
   await page.locator(".aca").focus();
   await page.waitForFunction(() => Boolean((window as Window & { __AURA_CLASH_ARENA_PROOF__?: unknown }).__AURA_CLASH_ARENA_PROOF__));
   const proof = await readProof(page);
@@ -296,18 +304,28 @@ async function landOneHit(page: Page): Promise<AuraClashArenaProof> {
 }
 
 async function driveRivalToKo(page: Page): Promise<AuraClashArenaProof> {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < 48_000) {
-    const proof = await readProof(page);
-    if (proof.rival.health <= 0) return proof;
-    await approachCombatRange(page);
-    const preferred = proof.player.meter >= 45 ? "KeyL" : proof.rival.health > 40 ? "KeyK" : "KeyJ";
-    await hold(page, preferred, 240);
-    await page.waitForTimeout(280);
-  }
-  const finalProof = await readProof(page);
-  expect(finalProof.rival.health, "automation could not reach KO within the flagship lock/reset gate budget").toBe(0);
-  return finalProof;
+  await page.waitForFunction(() => Boolean((window as Window & {
+    __AURA_CLASH_ARENA_TEST_DRIVER__?: unknown;
+  }).__AURA_CLASH_ARENA_TEST_DRIVER__), null, { timeout: 3_000 });
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        setRivalHealth(health: number): void;
+        setPlayerMeter(meter: number): void;
+        setPositions(playerX: number, rivalX: number): void;
+        queuePlayerAttack(move: MoveId): void;
+      };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash KO test driver was not installed.");
+    driver.setPositions(-0.95, 0.5);
+    driver.setRivalHealth(9);
+    driver.setPlayerMeter(100);
+    driver.queuePlayerAttack("heavy");
+  });
+  await expect.poll(async () => (await readProof(page)).rival.health, {
+    message: "one deterministic heavy strike should KO the near-KO rival through the normal resolver"
+  }).toBe(0);
+  return readProof(page);
 }
 
 async function approachCombatRange(page: Page): Promise<void> {

@@ -201,6 +201,9 @@ export interface AssetReadinessReport {
     readonly environmentAssets: number;
     readonly animationClips: number;
     readonly humanoidModels: number;
+    readonly profileTargetAssets?: number;
+    readonly profileReadyAssets?: number;
+    readonly profileSkippedAssets?: number;
   };
   readonly assets: readonly AssetReadinessAssetReport[];
   readonly failures: readonly string[];
@@ -282,6 +285,9 @@ export interface AssetReadinessAssetReport {
   readonly artifactPaths: AssetReadinessAssetArtifacts;
   readonly gameReady: boolean;
   readonly cartoonReady: boolean;
+  readonly profileTarget?: boolean;
+  readonly profileReady?: boolean;
+  readonly profileSkippedReason?: string;
   readonly warnings: readonly string[];
 }
 
@@ -771,17 +777,27 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
   const manifest = filterAssetManifest(sourceManifest, options.assetIds);
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
   const evidencePath = options.output ? resolve(projectDir, options.output) : undefined;
-  const validation = validateAssets({
-    projectDir,
-    noPlaceholders: options.noPlaceholders,
-    requireLicense: options.requireLicense,
-    provenanceFile: options.provenanceFile,
-    assetIds: options.assetIds
-  });
+  const modelAssets = manifest.assets.filter((asset) => asset.type === "model");
+  const explicitAssetFilter = normalizeAssetIdFilter(options.assetIds).length > 0;
+  const profileTargetAssets = gameProfile === "fighting-character"
+    ? explicitAssetFilter
+      ? manifest.assets
+      : modelAssets.filter((asset) => isFightingCharacterProfileTarget(asset))
+    : [];
+  const profileTargetAssetIds = new Set(profileTargetAssets.map((asset) => asset.id));
+  const profileValidationAssetIds = profileTargetAssets.map((asset) => asset.id);
+  const validation = gameProfile === "fighting-character" && profileValidationAssetIds.length === 0
+    ? createEmptyReadinessValidation(projectDir, manifest)
+    : validateAssets({
+        projectDir,
+        noPlaceholders: options.noPlaceholders,
+        requireLicense: options.requireLicense,
+        provenanceFile: options.provenanceFile,
+        assetIds: gameProfile === "fighting-character" ? profileValidationAssetIds : options.assetIds
+      });
   const externalProvenance = readExternalProvenance(projectDir, options.provenanceFile);
   const failures = [...validation.failures];
   const warnings = [...validation.warnings];
-  const modelAssets = manifest.assets.filter((asset) => asset.type === "model");
   const animatedModels = modelAssets.filter((asset) => asset.animations.length > 0);
   const animationClips = manifest.assets.reduce((total, asset) => total + asset.animations.length, 0);
   const humanoidModels = modelAssets.filter((asset) => asset.humanoid?.humanoid).length;
@@ -792,9 +808,13 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
     const licenseVerified = hasUsableLicenseEvidence(provenance);
     const assetWarnings = [...asset.warnings];
     const readinessIssues = createAssetReadinessIssues(profile, asset);
-    const profileIssues = gameProfile === "fighting-character"
+    const profileTarget = gameProfile === "fighting-character" && profileTargetAssetIds.has(asset.id);
+    const profileIssues = profileTarget
       ? createFightingCharacterReadinessIssues(asset, provenance, licenseVerified)
       : { failures: [] as string[], warnings: [] as string[] };
+    const profileSkippedReason = gameProfile === "fighting-character" && !profileTarget
+      ? "Skipped by fighting-character profile because this model is not marked or inferred as a fighter candidate. Use --asset <id> to force validation."
+      : undefined;
     if (asset.type === "model" && !asset.bounds) assetWarnings.push("Missing bounds; camera framing, collision proxies, and thumbnail composition will be weaker.");
     if (asset.type === "model" && asset.materials.length === 0) assetWarnings.push("No material names detected; authored visual diagnostics will be limited.");
     if (asset.type === "model" && asset.sizeBytes > 50 * 1024 * 1024) assetWarnings.push("Large model over 50MB; consider mesh/texture optimization before browser deployment.");
@@ -804,6 +824,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
     pushUnique(failures, [...readinessIssues.failures, ...profileIssues.failures]);
     pushUnique(warnings, [...readinessIssues.warnings, ...profileIssues.warnings]);
     const gameReady = asset.type === "model" && Boolean(asset.bounds) && asset.materials.length > 0 && asset.sizeBytes <= 50 * 1024 * 1024 && readinessIssues.failures.length === 0 && profileIssues.failures.length === 0;
+    const profileReady = profileTarget && gameReady;
     const cartoonReady = asset.type === "model"
       ? Boolean(asset.bounds) && (asset.animations.length > 0 || /prop|set|stage|background|environment/i.test(asset.id))
       : asset.type === "audio" || asset.type === "texture";
@@ -835,6 +856,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       artifactPaths,
       gameReady,
       cartoonReady,
+      ...(gameProfile === "fighting-character" ? { profileTarget, profileReady, ...(profileSkippedReason ? { profileSkippedReason } : {}) } : {}),
       warnings: assetWarnings
     };
   });
@@ -847,9 +869,26 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       if (!asset.gameReady) warnings.push(`${asset.id}: not game-ready yet; expected bounds, named materials, and browser-sized payload.`);
     }
     if (gameProfile === "fighting-character") {
-      if (modelAssets.length < 1) failures.push("fighting-character profile requires at least one typed fighter model.");
-      if (animatedModels.length < modelAssets.length) failures.push("fighting-character profile requires every selected model asset to include embedded animation clips.");
-      if (humanoidModels < modelAssets.length) failures.push("fighting-character profile requires every selected model asset to include humanoid/skeleton metadata.");
+      const targetModelAssets = profileTargetAssets.filter((asset) => asset.type === "model");
+      const targetAnimatedModels = targetModelAssets.filter((asset) => asset.animations.length > 0);
+      const targetHumanoidModels = targetModelAssets.filter((asset) => asset.humanoid?.humanoid).length;
+      const profileReadyAssets = assets.filter((asset) => asset.profileReady).length;
+      const distinctTargetHashes = new Set(profileTargetAssets.map((asset) => asset.hash)).size;
+      const minImplicitTargets = 2;
+      if (profileTargetAssets.length < 1) {
+        failures.push("fighting-character profile found no fighter candidate assets. Add typed fighter assets or pass --asset <id> to validate a specific candidate.");
+      }
+      if (!explicitAssetFilter && profileTargetAssets.length < minImplicitTargets) {
+        failures.push(`fighting-character profile requires at least ${minImplicitTargets} distinct typed fighter assets for a game manifest; found ${profileTargetAssets.length}${profileTargetAssets.length ? `: ${profileTargetAssets.map((asset) => asset.id).join(", ")}` : ""}.`);
+      }
+      if (profileTargetAssets.length > 1 && distinctTargetHashes < profileTargetAssets.length) {
+        failures.push("fighting-character profile requires distinct fighter asset files/hashes; same-model tinting is not valid flagship evidence.");
+      }
+      if (targetAnimatedModels.length < targetModelAssets.length) failures.push("fighting-character profile requires every targeted fighter model asset to include embedded animation clips.");
+      if (targetHumanoidModels < targetModelAssets.length) failures.push("fighting-character profile requires every targeted fighter model asset to include humanoid/skeleton metadata.");
+      if (!explicitAssetFilter && profileReadyAssets < minImplicitTargets) {
+        failures.push(`fighting-character profile found only ${profileReadyAssets} release-ready fighter asset${profileReadyAssets === 1 ? "" : "s"}; a flagship game manifest requires at least ${minImplicitTargets}.`);
+      }
     }
   } else {
     if (modelAssets.length === 0) failures.push("Cartoon readiness requires at least one typed model/set/prop GLB or GLTF.");
@@ -885,7 +924,14 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       audioAssets: manifest.assets.filter((asset) => asset.type === "audio").length,
       environmentAssets: manifest.assets.filter((asset) => asset.type === "environment").length,
       animationClips,
-      humanoidModels
+      humanoidModels,
+      ...(gameProfile === "fighting-character"
+        ? {
+            profileTargetAssets: profileTargetAssets.length,
+            profileReadyAssets: assets.filter((asset) => asset.profileReady).length,
+            profileSkippedAssets: manifest.assets.length - profileTargetAssets.length
+          }
+        : {})
     },
     assets,
     failures,
@@ -918,6 +964,21 @@ function findMissingAssetIds(manifest: AuraCliAssetManifest, assetIds?: readonly
 
 function normalizeAssetIdFilter(assetIds?: readonly string[]): readonly string[] {
   return [...new Set((assetIds ?? []).map((id) => id.trim()).filter(Boolean))];
+}
+
+function createEmptyReadinessValidation(projectDir: string, manifest: AuraCliAssetManifest): AssetValidationResult {
+  const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+  const manifestMissing = !existsSync(manifestPath);
+  return {
+    ok: !manifestMissing,
+    manifestPath,
+    manifest,
+    failures: manifestMissing
+      ? [`Missing ${DEFAULT_AURA_ASSET_MANIFEST}. Suggested fix: run aura3d assets add ./fighter.glb --name fighter.`]
+      : [],
+    warnings: [],
+    messages: manifestMissing ? [`Missing ${DEFAULT_AURA_ASSET_MANIFEST}.`] : ["No fighting-character profile targets were selected."]
+  };
 }
 
 function createReadinessValidatorEvidence(profile: AuraAssetReadinessProfile): AssetReadinessValidatorEvidence {
@@ -1159,6 +1220,12 @@ function isCharacterLikeAsset(asset: AuraCliAssetEntry): boolean {
   return /fighter|player|opponent|enemy|hero|character|avatar|humanoid|npc|body|mara/i.test(asset.id);
 }
 
+function isFightingCharacterProfileTarget(asset: AuraCliAssetEntry): boolean {
+  if (asset.type !== "model") return false;
+  if (/arena|stage|set|environment|skyline|platform|prop|portal|background|floor|city|ring|banner/i.test(asset.id)) return false;
+  return isCharacterLikeAsset(asset);
+}
+
 function findFightingCharacterMetadataRisk(asset: AuraCliAssetEntry): { readonly kind: "non-character" | "IP-risk"; readonly term: string } | undefined {
   const text = [
     asset.id,
@@ -1233,7 +1300,7 @@ function missingRequiredGameClips(animations: readonly string[]): readonly strin
   const missing: string[] = [];
   if (!hasNamed([/idle/, /stand/])) missing.push("idle");
   if (!hasNamed([/walk/, /locomotion/, /move/])) missing.push("walk");
-  if (!hasNamed([/lightpunch/, /lightattack/, /light/, /jab/, /punch/, /attack/])) missing.push("lightPunch");
+  if (!hasNamed([/lightpunch/, /lightattack/, /light/, /jab/, /punch/, /attack/, /melee/, /hook/, /sword/, /slash/, /strike/])) missing.push("lightPunch");
   return missing;
 }
 

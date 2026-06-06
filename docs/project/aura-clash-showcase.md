@@ -1,12 +1,12 @@
 # Aura Clash Showcase
 
-Version: 1.0.6 planning alignment
+Version: 1.0.9 planning alignment
 Status: Active development-showcase documentation
 Replaces: `GameShowCasePRD.md`
 
 Aura Clash Arena is the active browser-game development showcase for Aura3D. It exists to prove the public Aura3D SDK can support a typed-asset, browser-native fighting-game route with runtime nodes, input, movement, combat, animation state, HUD updates, evidence, screenshots, and static deployment checks.
 
-It is not currently a flagship-quality game and must not be marketed as proof of a mature game engine until the 1.0.6 release gates pass.
+It is not currently a flagship-quality game and must not be marketed as proof of a mature game engine until the 1.0.9 release gates pass.
 
 This document is the maintained product and evidence source for the showcase. Historical implementation logs from the former root PRD were summarized here and should not be reintroduced as root planning files.
 
@@ -16,7 +16,7 @@ This document is the maintained product and evidence source for the showcase. Hi
 - Route target: `/playable` during development and `/showcase/aura-clash/playable/` for marketing-linked deployment.
 - App target: `apps/aura-clash-showcase/`
 - Current package baseline: `@aura3d/engine@1.0.5`
-- Target gate: `docs/project/aura3d-106-release-gates.md`
+- Target gate: `docs/project/aura3d-109-release-gates.md`
 - Asset rule: all runtime models must be typed assets from `src/aura-assets.ts`; do not use string model ids, invented GLB URLs, raw loaders, or direct Three.js imports.
 
 ## Pivot Decision
@@ -84,7 +84,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --outpu
 
 The CLI/catalog path is a release blocker. If `npx @aura3d/cli@latest` is not published and externally usable, the public agent instructions are broken.
 
-Current reality from the 1.0.6 audit:
+Current reality from the 1.0.9 audit:
 
 - Local workspace CLI catalog search works with `--profile fighting-character`.
 - Local workspace CLI resolve can pull an animated GLB candidate into a temp project and preserve source URL, license, author/attribution, and source family in `aura.assets.json`.

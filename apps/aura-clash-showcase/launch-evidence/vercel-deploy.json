@@ -1,0 +1,40 @@
+{
+  "ok": true,
+  "generatedAt": "2026-06-06T06:08:44.123Z",
+  "startedAt": "2026-06-06T06:08:32.606Z",
+  "repoRoot": "/Users/gurbakshchahal/aura3d",
+  "deployCwd": "/Users/gurbakshchahal/aura3d/marketing",
+  "claimedOrigin": "https://aura3d.auraone.ai",
+  "productionUrl": "https://marketing-pisrylljh-veerone.vercel.app",
+  "command": "vercel",
+  "args": [
+    "--prebuilt",
+    "--prod",
+    "--yes",
+    "--archive",
+    "tgz"
+  ],
+  "durationMs": 11516,
+  "code": 0,
+  "signal": null,
+  "deploymentUrls": [
+    "https://marketing-pisrylljh-veerone.vercel.app",
+    "https://vercel.com/veerone/marketing/Gb7yDAtsp15t9a4zqJLB4w5wxKDN"
+  ],
+  "prdGateCoverage": [
+    {
+      "id": "deploy-to-vercel",
+      "prdLineHint": 464,
+      "prdLabel": "Deploy to Vercel.",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/vercel-deploy.json",
+      "requiredFields": [
+        "ok: true",
+        "productionUrl",
+        "deploymentUrls"
+      ],
+      "ok": true
+    }
+  ],
+  "stdout": "https://marketing-pisrylljh-veerone.vercel.app",
+  "stderr": "Vercel CLI 48.9.0\nRetrieving project…\nDeploying veerone/marketing\nUploading [--------------------] (0.0B/9.6MB)\nUploading [=====---------------] (2.4MB/9.6MB)\nUploading [==========----------] (4.8MB/9.6MB)\nUploading [===============-----] (7.3MB/9.6MB)\nUploading [====================] (9.6MB/9.6MB)\nInspect: https://vercel.com/veerone/marketing/Gb7yDAtsp15t9a4zqJLB4w5wxKDN [6s]\nProduction: https://marketing-pisrylljh-veerone.vercel.app [6s]\nBuilding\nBuilding\nCompleting\n"
+}

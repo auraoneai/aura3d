@@ -6,5 +6,10 @@ allowBuilds:
   sharp: true
   workerd: true
 minimumReleaseAgeExclude:
+  - '@aura3d/engine'
+  - '@aura3d/asset-index'
   - '@aura3d/engine@1.0.0'
   - '@aura3d/engine@1.0.1'
+  - '@aura3d/engine@1.0.9'
+  - '@aura3d/asset-index@1.0.8'
+  - '@aura3d/asset-index@1.0.9'

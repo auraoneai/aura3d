@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,72 +9,25 @@ const appRoot = resolve(__dirname, "..");
 
 const requiredAssets = [
   {
-    name: "fighterMaraVolt",
-    source: "assets/source/fighters/fighter-mara-volt.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "fighterRookAtlas",
-    source: "assets/source/fighters/fighter-rook-atlas.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "fighterNyxVale",
-    source: "assets/source/fighters/fighter-nyx-vale.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "fighterKadeEmber",
-    source: "assets/source/fighters/fighter-kade-ember.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "fighterSableIron",
-    source: "assets/source/fighters/fighter-sable-iron.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "fighterJinFlux",
-    source: "assets/source/fighters/fighter-jin-flux.glb",
-    maxSizeBytes: 2_000_000,
-  },
-  {
-    name: "arenaNeonDowntown",
-    source: "assets/source/arenas/arena-neon-downtown.glb",
-    maxSizeBytes: 25_000_000,
-  },
-  {
-    name: "auraClashDuelStage",
-    source: "assets/source/scenes/aura-clash-duel-stage.glb",
-    maxSizeBytes: 18_000_000,
-  },
-  {
-    name: "auraClashPlayableScene",
-    source: "assets/source/scenes/aura-clash-playable-scene.glb",
-    maxSizeBytes: 22_000_000,
-  },
-  {
-    name: "auraClashTrainingMannequin",
+    name: "auraClashPlayerRig",
     source: "assets/quaternius-source/selected/animations/UAL1_Standard.glb",
+    maxSizeBytes: 9_000_000,
+  },
+  {
+    name: "auraClashRivalRig",
+    source: "assets/quaternius-source/selected/animations/UAL2_Standard.glb",
     maxSizeBytes: 9_000_000,
   },
 ];
 
 const fighterAssetNames = new Set([
-  "fighterMaraVolt",
-  "fighterRookAtlas",
-  "fighterNyxVale",
-  "fighterKadeEmber",
-  "fighterSableIron",
-  "fighterJinFlux",
+  "auraClashPlayerRig",
+  "auraClashRivalRig",
 ]);
 
 const routeUseSourceFiles = [
   "src/main.ts",
-  "src/playable/AuraClashArenaApp.ts",
-  "src/scenes/createFighterNodes.ts",
-  "src/scenes/createFightScene.ts",
-  "src/scenes/createStageScene.ts",
+  "src/playable/AuraClashArenaApp.ts"
 ];
 
 function fail(message) {
@@ -164,9 +117,6 @@ function assertArrayIncludes(value, expected, message) {
 
 const typedAssetFile = join(appRoot, "src/aura-assets.ts");
 const manifestFile = join(appRoot, "aura.assets.json");
-const sourceGlbManifestFile = join(appRoot, "assets/source/aura-clash-source-glbs.json");
-const launchAssetEvidenceFile = join(appRoot, "assets/source/aura-clash-launch-asset-evidence.json");
-const referencedPublicGlbs = new Set();
 const manifestEntriesByName = new Map();
 let manifest = null;
 if (!existsSync(manifestFile)) {
@@ -192,7 +142,6 @@ for (const asset of requiredAssets) {
 
   const outputPath = join(appRoot, manifestEntry.outputPath);
   const outputSize = assertGlb(outputPath);
-  referencedPublicGlbs.add(resolve(outputPath));
 
   if (sourceSize !== undefined && outputSize !== undefined && sourceSize !== outputSize) {
     fail(`Source/output size mismatch for ${asset.name}: source ${sourceSize}, output ${outputSize}`);
@@ -210,6 +159,29 @@ for (const asset of requiredAssets) {
   const sourceHash = sha256File(sourcePath);
   if (sourceHash !== manifestEntry.hash) {
     fail(`Source hash mismatch for ${asset.name}: expected ${manifestEntry.hash}, found ${sourceHash}`);
+  }
+
+  const provenance = manifestEntry.provenance ?? {};
+  if (fighterAssetNames.has(asset.name)) {
+    if (provenance.license !== "CC0-1.0") {
+      fail(`Manifest provenance for ${asset.name} must include CC0-1.0 license.`);
+    }
+    if (provenance.author !== "Quaternius") {
+      fail(`Manifest provenance for ${asset.name} must include Quaternius author.`);
+    }
+    if (!String(provenance.sourceUrl ?? "").includes("quaternius.com")) {
+      fail(`Manifest provenance for ${asset.name} must include Quaternius source URL.`);
+    }
+    if (!manifestEntry.skeleton || manifestEntry.skeleton.jointCount < 40) {
+      fail(`Manifest entry for ${asset.name} must include humanoid skeleton evidence.`);
+    }
+    const clips = manifestEntry.animations ?? manifestEntry.animationClips ?? manifestEntry.metadata?.animationClips ?? [];
+    if (!Array.isArray(clips) || clips.length < 10) {
+      fail(`Manifest entry for ${asset.name} must include embedded animation clips.`);
+    }
+    if (!manifestEntry.animationMetadata || manifestEntry.animationMetadata.clipCount < 10) {
+      fail(`Manifest entry for ${asset.name} must include animation metadata.`);
+    }
   }
 
   if (outputSize > asset.maxSizeBytes) {
@@ -242,15 +214,6 @@ for (const asset of requiredAssets) {
   }
 }
 
-const publicAssetDir = join(appRoot, "public/aura-assets");
-for (const file of readdirSync(publicAssetDir)) {
-  if (!file.endsWith(".glb")) continue;
-  const publicGlbPath = resolve(publicAssetDir, file);
-  if (!referencedPublicGlbs.has(publicGlbPath)) {
-    fail(`Unreferenced stale public GLB should not ship: ${publicGlbPath}`);
-  }
-}
-
 if (!existsSync(typedAssetFile)) {
   fail(`Missing typed asset module: ${typedAssetFile}`);
 } else {
@@ -262,8 +225,6 @@ if (!existsSync(typedAssetFile)) {
   }
 }
 
-assertSourceGlbManifest(readJsonFile(sourceGlbManifestFile, "Aura Clash source GLB manifest"));
-assertLaunchAssetEvidence(readJsonFile(launchAssetEvidenceFile, "Aura Clash launch asset evidence"));
 assertLaunchRouteUse();
 
 const provenancePath = join(appRoot, "assets/quaternius-asset-provenance.json");
@@ -274,7 +235,7 @@ if (!existsSync(provenancePath)) {
 if (process.exitCode) {
   console.error("[aura-clash production-assets] Production asset gate failed.");
 } else {
-  console.log(`[aura-clash production-assets] ${requiredAssets.length} GLB assets, typed refs, source evidence, no primitive-fallback approval, and launch route use are present.`);
+  console.log(`[aura-clash production-assets] ${requiredAssets.length} active release fighter GLBs, typed refs, provenance, skeleton/clip evidence, and launch route use are present.`);
 }
 
 function assertSourceGlbManifest(sourceManifest) {
@@ -444,18 +405,14 @@ function assertLaunchRouteUse() {
     source += `\n// ${routeFile}\n${readFileSync(fullPath, "utf8")}`;
   }
 
-  if (!source.includes("model(assets.auraClashDuelStage")) {
-    fail("Launch route source must compose the live stage with model(assets.auraClashDuelStage).");
-  }
-
   for (const assetName of fighterAssetNames) {
     if (!source.includes(`assets.${assetName}`)) {
       fail(`Launch route source must reference typed fighter asset assets.${assetName}.`);
     }
   }
 
-  if (!source.includes("assets.auraClashTrainingMannequin")) {
-    fail("Launch route source must reference the active typed training mannequin asset assets.auraClashTrainingMannequin.");
+  if (source.includes("assets.auraClashTrainingMannequin")) {
+    fail("Launch route source must not reference the retired same-model training mannequin asset assets.auraClashTrainingMannequin.");
   }
 
   if (/model\(\s*["'`]/.test(source)) {

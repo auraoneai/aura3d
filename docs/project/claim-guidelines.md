@@ -1,7 +1,7 @@
 # Aura3D Claim Guidelines
 
-Version: 1.0.5
-Planning alignment: 1.0.6 release gates
+Version: 1.0.9
+Planning alignment: 1.0.9 release gates
 
 Every public claim must map to a shipped API, CLI command, template, example,
 diagnostic, docs artifact, report, or release artifact.
@@ -14,15 +14,15 @@ published.
 
 ## Aura3D advantage
 
-The current `1.0.5` Aura3D SDK release may claim:
+The current `1.0.9` Aura3D SDK release may claim:
 
 - Aura3D is an agent-friendly browser 3D SDK.
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
 - Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
 - Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
-- `@aura3d/engine@1.0.5` does not install Three.js as a root engine runtime dependency.
+- `@aura3d/engine@1.0.9` does not install Three.js as a root engine runtime dependency.
 - Aura Clash Arena is a development showcase and runtime proof target.
-- 1.0.6 is a planned release gate for a stronger game-engine foundation and showcase, not a shipped claim.
+- 1.0.9 is a scoped runtime-foundation release with current npm, docs, deployed-route, and readiness evidence.
 
 The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
 scoped release artifacts when used in release notes or operator handoff docs.
@@ -45,7 +45,7 @@ release gates have been satisfied for a committed round:
 - Aura3D replaces Maya, Houdini, Blender, Unreal, Unity, RenderMan, low-level renderer code, or framework-specific renderer layers.
 - Aura3D has Babylon.js parity or mature commercial game-engine completeness.
 - Aura Clash is flagship-quality, production-ready, world-class, or proof of a mature game engine.
-- Aura Clash proves final game art, final combat feel, or final animation quality before the 1.0.6 showcase gates pass.
+- Aura Clash proves final game art, final combat feel, or final animation quality before the 1.0.9 showcase gates pass.
 - The AI prompt/catalog CLI always returns production-ready game assets.
 - Aura3D bundles Three.js in the default `@aura3d/engine` runtime.
 
@@ -95,13 +95,13 @@ Do not market future roadmap items as shipped.
 
 ## Aura Clash Allowed Wording
 
-Allowed before the 1.0.6 gates pass:
+Allowed before the 1.0.9 gates pass:
 
 - Aura Clash Arena is a browser fighting-game development showcase.
 - Aura Clash Arena proves selected runtime mechanics: boot, frame advancement, typed GLB load, input, state changes, hit resolution, HUD updates, screenshots, and evidence.
 - Aura Clash Arena still has open visual, gameplay, audio, asset-quality, performance, and deployment-parity blockers.
 
-Not allowed before the 1.0.6 gates pass:
+Not allowed before the 1.0.9 gates pass:
 
 - Aura Clash is a polished flagship game.
 - Aura Clash proves Aura3D is a mature game engine.

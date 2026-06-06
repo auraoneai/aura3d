@@ -2,7 +2,7 @@
   "schema": "aura-clash-flagship-readiness",
   "ok": true,
   "status": "flagship-ready",
-  "generatedAt": "2026-06-06T02:03:46.754Z",
+  "generatedAt": "2026-06-06T06:12:22.662Z",
   "appRoot": "apps/aura-clash-showcase",
   "gates": [
     {
@@ -34,6 +34,18 @@
       "summary": "window.__AURA_CLASH_ARENA_PROOF__ must include controls.lastInput, downSupported, specialRequiresMeter, koLocked, and resetCount in the normal writeProof path.",
       "evidencePaths": [
         "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "distinct-release-fighter-assets",
+      "title": "Flagship proof rejects same-model tinting and training mannequin fighters",
+      "ok": true,
+      "summary": "The flagship route must publish player/rival typed fighter asset ids, URLs, hashes, distinctness, and release readiness. Same-model tinting and the training mannequin must fail release gates.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+        "apps/aura-clash-showcase/tests/flagship-readiness.spec.ts"
       ],
       "blockers": [],
       "status": "pass"

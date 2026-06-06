@@ -2,12 +2,12 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export interface Aura3D106DocsClaimsReport {
-  readonly schema: "aura3d106-docs-claims";
+export interface Aura3D109DocsClaimsReport {
+  readonly schema: "aura3d109-docs-claims";
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly currentVersion: string;
-  readonly targetVersion: "1.0.6";
+  readonly targetVersion: "1.0.9";
   readonly gates: readonly DocsClaimGate[];
   readonly evidencePaths: readonly string[];
   readonly blockers: readonly string[];
@@ -21,10 +21,10 @@ interface DocsClaimGate {
   readonly blockers: readonly string[];
 }
 
-const defaultOutPath = "tests/reports/aura3d106/docs-claims.json";
-const targetVersion = "1.0.6" as const;
+const defaultOutPath = "tests/reports/aura3d109/docs-claims.json";
+const targetVersion = "1.0.9" as const;
 
-export function createAura3D106DocsClaimsReport(root = process.cwd()): Aura3D106DocsClaimsReport {
+export function createAura3D109DocsClaimsReport(root = process.cwd()): Aura3D109DocsClaimsReport {
   const currentVersion = readPackageVersion(root, "package.json");
   const gates = [
     packageVersionGate(root, currentVersion),
@@ -36,7 +36,7 @@ export function createAura3D106DocsClaimsReport(root = process.cwd()): Aura3D106
   const blockers = gates.flatMap((gate) => gate.blockers.map((blocker) => `${gate.id}: ${blocker}`));
   const evidencePaths = [...new Set(gates.flatMap((gate) => gate.evidencePaths))].sort();
   return {
-    schema: "aura3d106-docs-claims",
+    schema: "aura3d109-docs-claims",
     ok: blockers.length === 0,
     generatedAt: new Date().toISOString(),
     currentVersion,
@@ -47,7 +47,7 @@ export function createAura3D106DocsClaimsReport(root = process.cwd()): Aura3D106
   };
 }
 
-export function writeAura3D106DocsClaimsReport(root: string, report: Aura3D106DocsClaimsReport, outPath = defaultOutPath): void {
+export function writeAura3D109DocsClaimsReport(root: string, report: Aura3D109DocsClaimsReport, outPath = defaultOutPath): void {
   const absolute = join(root, outPath);
   mkdirSync(dirname(absolute), { recursive: true });
   writeFileSync(absolute, `${JSON.stringify(report, null, 2)}\n`);
@@ -88,7 +88,7 @@ function packageVersionGate(root: string, currentVersion: string): DocsClaimGate
 }
 
 function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsClaimGate {
-  const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", "docs/project/aura3d-106-release-gates.md"];
+  const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", "docs/project/aura3d-109-release-gates.md"];
   const blockers: string[] = [];
   const required: readonly (readonly [string, readonly string[]])[] = [
     [
@@ -96,15 +96,15 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       [
         `@aura3d/engine@${currentVersion}`,
         `Aura3D ${currentVersion} is a runtime foundation release, not a mature commercial game engine release.`,
-        "The 1.0.6 game-engine/showcase target remains release-blocked",
+        "The scoped 1.0.9 gates pass",
         "not yet a flagship-quality game"
       ]
     ],
     [
       "llms.txt",
       [
-        "Aura3D 1.0.6 game-engine/showcase claim rules",
-        "Treat 1.0.6 as a release-blocked target",
+        "Aura3D 1.0.9 game-engine/showcase claim rules",
+        "Treat 1.0.9 as a scoped runtime-foundation release",
         "Do not describe Aura3D as a mature commercial game engine",
         "Aura Clash Arena may be described as a development showcase"
       ]
@@ -119,11 +119,11 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       ]
     ],
     [
-      "docs/project/aura3d-106-release-gates.md",
+      "docs/project/aura3d-109-release-gates.md",
       [
-        "Current decision: `release-blocked`",
+        "Current decision: `release-ready-for-scoped-1.0.9`",
         `Current published baseline: \`@aura3d/engine@${currentVersion}\``,
-        "Do not run `npm publish`, create a GitHub release, or deploy marketing copy that claims 1.0.6 readiness"
+        "Do not run a future `npm publish`, create a GitHub release, or deploy marketing copy that claims readiness beyond the scoped 1.0.9 foundation"
       ]
     ]
   ];
@@ -132,8 +132,8 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
     id: "current-release-boundary",
     ok: blockers.length === 0,
     summary: blockers.length === 0
-      ? "README, llms, claim guidelines, and 1.0.6 release gates consistently present 1.0.5 as current and 1.0.6 as release-blocked."
-      : "Current release and 1.0.6 boundary wording is incomplete.",
+      ? "README, llms, claim guidelines, and 1.0.9 release gates consistently present 1.0.9 as a scoped runtime-foundation release."
+      : "Current release and 1.0.9 boundary wording is incomplete.",
     evidencePaths,
     blockers
   };
@@ -148,10 +148,10 @@ function marketingClaimGate(root: string, currentVersion: string): DocsClaimGate
     "Aura Clash Arena is the current browser fighting-game proof target",
     "not yet proof of a mature commercial game engine or a flagship-quality fighting game",
     "Static approved preview",
-    "1.0.6 gates blocked"
+    "scoped 1.0.9 proof"
   ], blockers);
   assertSnippets(root, "marketing/sections/aura-clash-homepage.html", [
-    "Live embed disabled until 1.0.6 visual and gameplay gates pass.",
+    "Live embed disabled until 1.0.9 visual and gameplay gates pass.",
     "static preview linking to the playable development route"
   ], blockers);
   return {
@@ -271,9 +271,9 @@ function readOption(name: string): string | undefined {
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   const root = process.cwd();
-  const report = createAura3D106DocsClaimsReport(root);
+  const report = createAura3D109DocsClaimsReport(root);
   const outPath = readOption("--out") ?? defaultOutPath;
-  writeAura3D106DocsClaimsReport(root, report, outPath);
+  writeAura3D109DocsClaimsReport(root, report, outPath);
   console.log(JSON.stringify(report, null, 2));
   if (!report.ok) process.exitCode = 1;
 }

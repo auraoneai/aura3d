@@ -23,7 +23,7 @@ import {
   type GLTFSceneAnimationRuntimeSnapshot,
   type ProductionGLTFRenderMetadata,
   type ProductionGLTFRenderPipeline
-} from "@aura3d/assets";
+} from "@aura3d/assets/browser";
 import {
   AnimationAction,
   AnimationLayer,
@@ -63,10 +63,23 @@ import {
   createDefaultShaderLibrary
 } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4 } from "@aura3d/scene";
-import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets";
+import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets/browser";
+
+export {
+  collectTypedGLBActorRenderItems,
+  createTypedGLBActor,
+  createTypedGLBActorEvidence
+} from "./TypedGLBActor.js";
+export type {
+  TypedGLBActor,
+  TypedGLBActorAsset,
+  TypedGLBActorEvidence,
+  TypedGLBActorOptions,
+  TypedGLBActorTintOptions,
+  TypedGLBActorTransformOptions
+} from "./TypedGLBActor.js";
 
 export * as productionRendering from "@aura3d/rendering";
-export * as productionWorkflows from "@aura3d/workflows";
 
 export const productionAssets = {
   createProductionGLTFRenderMetadata,

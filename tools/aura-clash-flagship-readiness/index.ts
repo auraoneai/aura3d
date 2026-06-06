@@ -39,6 +39,9 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
   const rootPackage = readJson(rootPackagePath);
   const writeProofBlock = block(source.text, /function writeProof\(input:/, /input\.root\.dataset\.arenaStatus = proof;/);
   const sparkBlock = block(source.text, /function createSparkItems\(sparks:/, /function item\(/);
+  const computesDistinctFighterHashes =
+    source.text.includes("distinct: player.hash !== rival.hash") ||
+    source.text.includes("distinct: String(player.hash) !== String(rival.hash)");
 
   const gates: FlagshipGate[] = [
     gate({
@@ -111,6 +114,32 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
         ...missingAll(writeProofBlock, ["lastInput", "downSupported", "specialRequiresMeter", "koLocked", "resetCount"]).map(
           (field) => `writeProof() is missing controls.${field}.`
         )
+      ]
+    }),
+    gate({
+      id: "distinct-release-fighter-assets",
+      title: "Flagship proof rejects same-model tinting and training mannequin fighters",
+      ok:
+        writeProofBlock.includes("fighterAssets:") &&
+        computesDistinctFighterHashes &&
+        source.text.includes("releaseReady: true") &&
+        !source.text.includes("auraClashTrainingMannequin") &&
+        flagshipTest.text.includes("flagship cannot use the same fighter GLB twice with tinting") &&
+        flagshipTest.text.includes("training mannequin is not a release-facing player fighter"),
+      summary:
+        "The flagship route must publish player/rival typed fighter asset ids, URLs, hashes, distinctness, and release readiness. Same-model tinting and the training mannequin must fail release gates.",
+      evidencePaths: [toRepo(root, appSourcePath), toRepo(root, testPath)],
+      blockers: [
+        ...(writeProofBlock.includes("fighterAssets:") ? [] : ["writeProof() does not publish proof.fighterAssets."]),
+        ...(computesDistinctFighterHashes ? [] : ["fighter asset proof does not compute distinct hashes."]),
+        ...(source.text.includes("releaseReady: true") ? [] : ["fighter asset proof does not mark the active player/rival assets as releaseReady: true."]),
+        ...(source.text.includes("auraClashTrainingMannequin") ? ["Active flagship source still references auraClashTrainingMannequin; same-model training assets cannot be release proof."] : []),
+        ...(flagshipTest.text.includes("flagship cannot use the same fighter GLB twice with tinting")
+          ? []
+          : ["flagship Playwright suite does not reject same-model tinting."]),
+        ...(flagshipTest.text.includes("training mannequin is not a release-facing player fighter")
+          ? []
+          : ["flagship Playwright suite does not reject the training mannequin as a release-facing fighter."])
       ]
     }),
     gate({

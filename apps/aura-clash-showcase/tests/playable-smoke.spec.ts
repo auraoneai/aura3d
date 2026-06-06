@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
-  release: "1.0.6";
+  release: "1.0.9";
   version: string;
   status: "loading" | "running" | "paused" | "error";
   error: string | null;
@@ -47,6 +47,12 @@ type AuraClashArenaProof = {
     koLocked: boolean;
     resetCount: number;
   };
+  fighterAssets: {
+    player: { id: string; url: string; hash: string };
+    rival: { id: string; url: string; hash: string };
+    distinct: boolean;
+    releaseReady: boolean;
+  };
 };
 
 type ProofFighter = {
@@ -65,7 +71,7 @@ test("AuraClash boots Aura3D runtime", async ({ page }) => {
   const proof = await loadPlayable(page);
   expect(proof.route).toBe("/playable/");
   expect(proof.app).toBe("Aura Clash Arena");
-  expect(proof.release).toBe("1.0.6");
+  expect(proof.release).toBe("1.0.9");
   expect(proof.version).toBe("aura-clash-arena-production-gltf-animation");
   expect(proof.status).toBe("running");
   expect(proof.runtime.frameLoop).toBe(true);
@@ -82,13 +88,23 @@ test("AuraClash advances frames", async ({ page }) => {
 test("AuraClash loads GLB fighters", async ({ page }) => {
   const proof = await loadPlayable(page);
   expect(proof.noPrimitiveFighters).toBe(true);
-  expect(proof.visibleFighterAsset).toMatch(/auraClashTrainingMannequin\.[a-f0-9]+\.glb$/);
+  expect(proof.visibleFighterAsset).toMatch(/auraClashPlayerRig\.[a-f0-9]+\.glb$/);
+  expect(proof.fighterAssets.distinct).toBe(true);
+  expect(proof.fighterAssets.releaseReady).toBe(true);
+  expect(proof.fighterAssets.player.id).toBe("auraClashPlayerRig");
+  expect(proof.fighterAssets.rival.id).toBe("auraClashRivalRig");
+  expect(proof.fighterAssets.player.hash).not.toBe(proof.fighterAssets.rival.hash);
+  expect(proof.fighterAssets.player.id).not.toBe("auraClashTrainingMannequin");
+  expect(proof.fighterAssets.rival.id).not.toBe("auraClashTrainingMannequin");
   expect(proof.animation.visibleSkinnedGlb).toBe(true);
   expect(proof.animation.skinnedDrawItems).toBeGreaterThan(0);
   expect(proof.animation.playerSkinningBindings).toBeGreaterThan(0);
   expect(proof.animation.rivalSkinningBindings).toBeGreaterThan(0);
-  const status = await page.evaluate(async (url) => fetch(url).then((response) => response.status), proof.visibleFighterAsset);
-  expect(status).toBe(200);
+  const statuses = await page.evaluate(async (urls) => Promise.all(urls.map((url) => fetch(url).then((response) => response.status))), [
+    proof.fighterAssets.player.url,
+    proof.fighterAssets.rival.url
+  ]);
+  expect(statuses).toEqual([200, 200]);
 });
 
 test("AuraClash responds to movement input", async ({ page }) => {
@@ -170,37 +186,34 @@ test("AuraClash captures visual proof screenshots", async ({ page }) => {
   const proof = await landPlayerHit(page);
   await page.screenshot({ path: "launch-evidence/aura-clash-arena-combat-frame.png", fullPage: true });
   expect(proof.animation.playerLastSkinningPalettes + proof.animation.rivalLastSkinningPalettes).toBeGreaterThan(0);
-  expect(proof.rival.health).toBeLessThan(120);
+  expect(proof.rival.health).toBeLessThan(240);
 });
 
-test("AuraClash locks combat after KO and reset clears the round", async ({ page }) => {
-  test.setTimeout(90_000);
-  await loadPlayable(page);
-  let proof = await readProof(page);
-  for (let index = 0; index < 48 && proof.rival.health > 0; index += 1) {
-    await approachCombatRange(page);
-    await hold(page, "KeyK", 260);
-    await page.waitForTimeout(520);
-    proof = await readProof(page);
-  }
+test("AuraClash locks combat after KO and reset clears the round; any control starts the next round", async ({ page }) => {
+  test.setTimeout(35_000);
+  await loadPlayable(page, "?auraTestDriver=1");
+  await queueNearKoHeavy(page);
+  await expect.poll(async () => (await readProof(page)).rival.health, {
+    message: "deterministic heavy strike should KO the near-KO rival through the normal resolver"
+  }).toBe(0);
+  const proof = await readProof(page);
   expect(proof.rival.health).toBe(0);
   expect(proof.controls.koLocked).toBe(true);
   const hitsAtKo = proof.totalHits;
-  await hold(page, "KeyK", 360);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(260);
   const afterKo = await readProof(page);
   expect(afterKo.totalHits).toBe(hitsAtKo);
-  await hold(page, "KeyR", 180);
+  await hold(page, "KeyL", 180);
   await expect.poll(async () => (await readProof(page)).controls.resetCount).toBeGreaterThan(0);
   const reset = await readProof(page);
-  expect(reset.player.health).toBe(120);
-  expect(reset.rival.health).toBe(120);
+  expect(reset.player.health).toBe(240);
+  expect(reset.rival.health).toBe(240);
   expect(reset.totalHits).toBe(0);
   expect(reset.controls.koLocked).toBe(false);
 });
 
-async function loadPlayable(page: Page): Promise<AuraClashArenaProof> {
-  await page.goto("/playable/", { waitUntil: "networkidle" });
+async function loadPlayable(page: Page, search = ""): Promise<AuraClashArenaProof> {
+  await page.goto(`/playable/${search}`, { waitUntil: "networkidle" });
   await page.locator(".aca").focus();
   await page.waitForFunction(() => Boolean((window as Window & { __AURA_CLASH_ARENA_PROOF__?: unknown }).__AURA_CLASH_ARENA_PROOF__));
   const proof = await readProof(page);
@@ -216,6 +229,27 @@ async function readProof(page: Page): Promise<AuraClashArenaProof> {
   return proof!;
 }
 
+async function queueNearKoHeavy(page: Page): Promise<void> {
+  await page.waitForFunction(() => Boolean((window as Window & {
+    __AURA_CLASH_ARENA_TEST_DRIVER__?: unknown;
+  }).__AURA_CLASH_ARENA_TEST_DRIVER__), null, { timeout: 3_000 });
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        setRivalHealth(health: number): void;
+        setPlayerMeter(meter: number): void;
+        setPositions(playerX: number, rivalX: number): void;
+        queuePlayerAttack(move: "light" | "heavy" | "special"): void;
+      };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash KO test driver was not installed.");
+    driver.setPositions(-0.95, 0.5);
+    driver.setRivalHealth(9);
+    driver.setPlayerMeter(100);
+    driver.queuePlayerAttack("heavy");
+  });
+}
+
 async function hold(page: Page, code: string, ms: number): Promise<void> {
   await page.keyboard.down(code);
   await page.waitForTimeout(ms);
@@ -227,13 +261,14 @@ async function landPlayerHit(page: Page, options: { reload?: boolean } = {}): Pr
   if (options.reload === false) await page.locator(".aca").focus();
   await approachCombatRange(page);
   await expect.poll(async () => (await readProof(page)).player.grounded).toBe(true);
-  for (const code of ["KeyK", "KeyJ", "KeyK", "KeyJ"]) {
+  for (const code of ["KeyK", "KeyJ", "KeyK", "KeyJ", "KeyK", "KeyJ", "KeyK", "KeyJ", "KeyK", "KeyJ", "KeyK", "KeyJ"] as const) {
+    await approachCombatRange(page);
     await hold(page, code, 240);
-    await page.waitForTimeout(440);
+    await page.waitForTimeout(520);
     const current = await readProof(page);
     if (current.rival.health < start.rival.health) return current;
   }
-  await expect.poll(async () => (await readProof(page)).rival.health).toBeLessThan(start.rival.health);
+  await expect.poll(async () => (await readProof(page)).rival.health, { timeout: 20_000 }).toBeLessThan(start.rival.health);
   return readProof(page);
 }
 

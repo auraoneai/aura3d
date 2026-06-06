@@ -1,6 +1,6 @@
 # Current State
 
-Version: 1.0.6 planning alignment
+Version: 1.0.9
 
 Aura3D is a developer library, asset deployment pipeline, template system,
 diagnostics surface, and agent-readable documentation set for AI coding agents
@@ -20,21 +20,21 @@ Active product pillars:
 
 Current published package version:
 
-- `@aura3d/engine@1.0.5`
-- `@aura3d/cli@1.0.5`
-- `@aura3d/asset-index@1.0.5`
-- `create-aura3d@1.0.5`
+- `@aura3d/engine@1.0.9`
+- `@aura3d/cli@1.0.9`
+- `@aura3d/asset-index@1.0.9`
+- `create-aura3d@1.0.9`
 
 Current release tracks:
 
-- Aura3D SDK local/developer-ready artifact: complete for the scoped 1.0.5 foundation. See `docs/project/release-tracks.md`.
-- Aura3D 1.0.6 mature game-engine and flagship-showcase target: blocked until `docs/project/aura3d-106-release-gates.md` passes.
+- Aura3D SDK npm/deployed artifact: complete for the scoped 1.0.9 runtime-foundation release. See `docs/project/release-tracks.md` and `docs/project/aura3d-109-release-gates.md`.
+- Aura3D mature game-engine and flagship-showcase target: still future work beyond the scoped 1.0.9 claim boundary.
 
 Current Aura Clash status:
 
 - Aura Clash Arena is a development showcase and runtime proof target.
 - It should not be described as a flagship-quality game or proof of mature game-engine parity.
-- Public pages should use static approved poster imagery/linking until the live playable route clears gameplay, visual, performance, and deployed-parity gates.
+- Public pages may link the deployed playable route when release evidence is current, but marketing copy must keep Aura Clash framed as a development showcase rather than a polished commercial game.
 
 Legacy pre-cutover work is preserved under `archive/legacy-ai-runtime/` and is
 not an active product surface.

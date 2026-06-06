@@ -179,6 +179,119 @@ describe("@aura3d/cli assets", () => {
     expect(report.assets[0]?.gameReady).toBe(true);
   });
 
+  test("fighting-character game profile skips non-fighter models in mixed game manifests", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "player.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle_Loop", "Walk_Loop", "Punch_Jab"]
+    })));
+    const rivalGltf = createAnimatedCharacterGltf({
+      clips: ["Idle_Loop", "Walk_Loop", "Punch_Jab"]
+    });
+    (rivalGltf.materials as { name: string }[])[0] = { name: "rival-body" };
+    writeFileSync(join(projectDir, "assets", "rival.gltf"), JSON.stringify(rivalGltf));
+    writeFileSync(join(projectDir, "assets", "arena.gltf"), JSON.stringify({
+      asset: {
+        version: "2.0",
+        extras: {
+          aura3d: {
+            provenance: {
+              license: "CC0-1.0",
+              sourceUrl: "https://example.test/arena-stage",
+              sourceFamily: "test-fixture"
+            }
+          }
+        }
+      },
+      materials: [{ name: "stage" }],
+      nodes: [{ name: "ArenaStage", mesh: 0 }],
+      meshes: [{ primitives: [{}] }],
+      accessors: [{ min: [-4, 0, -2], max: [4, 2, 2] }]
+    }));
+
+    addAsset({
+      projectDir,
+      file: "assets/player.gltf",
+      name: "playerFighter",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/player-fighter",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({
+      projectDir,
+      file: "assets/rival.gltf",
+      name: "rivalFighter",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/rival-fighter",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({
+      projectDir,
+      file: "assets/arena.gltf",
+      name: "arenaStage",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/arena-stage",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateGameAssets({
+      projectDir,
+      gameProfile: "fighting-character",
+      noPlaceholders: true,
+      requireLicense: true
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.summary.profileTargetAssets).toBe(2);
+    expect(report.summary.profileReadyAssets).toBe(2);
+    expect(report.summary.profileSkippedAssets).toBe(1);
+    expect(report.assets.find((asset) => asset.id === "arenaStage")).toMatchObject({
+      profileTarget: false,
+      profileSkippedReason: expect.stringContaining("Skipped by fighting-character profile")
+    });
+    expect(report.failures.join("\n")).not.toContain("arenaStage");
+  });
+
+  test("fighting-character full-manifest validation fails with fewer than two distinct release-ready fighters", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "fighter.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle_Loop", "Walk_Loop", "Punch_Jab"]
+    })));
+    writeFileSync(join(projectDir, "assets", "arena.gltf"), JSON.stringify({
+      asset: { version: "2.0" },
+      materials: [{ name: "stage" }],
+      nodes: [{ name: "ArenaStage", mesh: 0 }],
+      meshes: [{ primitives: [{}] }],
+      accessors: [{ min: [-4, 0, -2], max: [4, 2, 2] }]
+    }));
+
+    addAsset({
+      projectDir,
+      file: "assets/fighter.gltf",
+      name: "profileFighter",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/profile-fighter",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({ projectDir, file: "assets/arena.gltf", name: "arenaStage" });
+
+    const report = validateGameAssets({
+      projectDir,
+      gameProfile: "fighting-character"
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.summary.profileTargetAssets).toBe(1);
+    expect(report.summary.profileReadyAssets).toBe(1);
+    expect(report.summary.profileSkippedAssets).toBe(1);
+    expect(report.failures.join("\n")).toContain("requires at least 2 distinct typed fighter assets");
+    expect(report.failures.join("\n")).toContain("found only 1 release-ready fighter asset");
+    expect(report.failures.join("\n")).not.toContain("arenaStage");
+  });
+
   test("fighting-character game profile rejects static non-rigged candidates with reasons", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "static-prop.gltf"), JSON.stringify({

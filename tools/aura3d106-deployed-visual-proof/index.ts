@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Page, type Request } from "@playwright/test";
 
 export interface Aura3D106DeployedVisualProofReport {
-  readonly schema: "aura3d106-deployed-visual-proof";
+  readonly schema: "aura3d109-deployed-visual-proof";
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly targetUrls: readonly string[];
@@ -91,6 +91,12 @@ interface AuraClashArenaProof {
   readonly frame?: unknown;
   readonly totalHits?: unknown;
   readonly visibleFighterAsset?: unknown;
+  readonly fighterAssets?: {
+    readonly player?: { readonly id?: unknown; readonly url?: unknown; readonly hash?: unknown };
+    readonly rival?: { readonly id?: unknown; readonly url?: unknown; readonly hash?: unknown };
+    readonly distinct?: unknown;
+    readonly releaseReady?: unknown;
+  };
   readonly renderer?: { readonly drawCalls?: unknown };
   readonly player?: { readonly x?: unknown; readonly y?: unknown; readonly health?: unknown; readonly grounded?: unknown; readonly action?: unknown; readonly activeClip?: unknown };
   readonly rival?: { readonly x?: unknown; readonly y?: unknown; readonly health?: unknown; readonly grounded?: unknown; readonly action?: unknown; readonly activeClip?: unknown };
@@ -113,8 +119,13 @@ interface AuraClashArenaProof {
   readonly audio?: { readonly musicReady?: unknown; readonly sfxReady?: unknown; readonly enabled?: unknown };
 }
 
-const defaultOutPath = "tests/reports/aura3d106/deployed-visual-proof.json";
-const defaultTargetUrls = ["https://aura3d.auraone.ai/playable", "https://aura3d.auraone.ai/apps/aura-clash"] as const;
+const screenshotDir = "tests/reports/aura3d109/deployed-visual-proof";
+const defaultOutPath = "tests/reports/aura3d109/deployed-visual-proof.json";
+const defaultTargetUrls = [
+  "https://aura3d.auraone.ai/playable",
+  "https://aura3d.auraone.ai/apps/aura-clash",
+  "https://aura3d.auraone.ai/showcase/aura-clash/playable/"
+] as const;
 
 export async function createAura3D106DeployedVisualProofReport(): Promise<Aura3D106DeployedVisualProofReport> {
   const targetUrls = readListOption("--url") ?? readEnvList("AURA_CLASH_DEPLOYED_URLS") ?? [...defaultTargetUrls];
@@ -122,11 +133,11 @@ export async function createAura3D106DeployedVisualProofReport(): Promise<Aura3D
   const browser = await chromium.launch();
   try {
     const localReference = localReferenceUrl
-      ? await captureRoute(browser, localReferenceUrl, "tests/reports/aura3d106/deployed-visual-proof/local-reference.png")
+      ? await captureRoute(browser, localReferenceUrl, `${screenshotDir}/local-reference.png`)
       : null;
     const checks: DeployedRouteProof[] = [];
     for (const [index, url] of targetUrls.entries()) {
-      const page = await captureRoute(browser, url, `tests/reports/aura3d106/deployed-visual-proof/deployed-${index + 1}.png`).catch((error: unknown) => ({
+      const page = await captureRoute(browser, url, `${screenshotDir}/deployed-${index + 1}.png`).catch((error: unknown) => ({
         error: error instanceof Error ? error.message : String(error)
       }));
       if ("error" in page) {
@@ -151,7 +162,7 @@ export async function createAura3D106DeployedVisualProofReport(): Promise<Aura3D
     }
     const blockers = checks.flatMap((check) => check.blockers.map((blocker) => `${check.url}: ${blocker}`));
     return {
-      schema: "aura3d106-deployed-visual-proof",
+      schema: "aura3d109-deployed-visual-proof",
       ok: blockers.length === 0 && checks.length > 0,
       generatedAt: new Date().toISOString(),
       targetUrls,
@@ -260,7 +271,7 @@ function validateRouteProof(page: BrowserRouteProof): string[] {
     blockers.push("window.__AURA_CLASH_ARENA_PROOF__ is missing.");
   } else {
     if (page.proof.app !== "Aura Clash Arena") blockers.push(`proof app mismatch: ${String(page.proof.app)}.`);
-    if (page.proof.release !== "1.0.6") blockers.push(`proof release mismatch: ${String(page.proof.release)}.`);
+    if (page.proof.release !== "1.0.9") blockers.push(`proof release mismatch: ${String(page.proof.release)}.`);
     if (page.proof.status !== "running") blockers.push(`proof status is ${String(page.proof.status)}, expected running after control smoke.`);
     if (page.proof.error !== null) blockers.push(`proof error is not null: ${String(page.proof.error)}.`);
     if (numberValue(page.proof.frame) <= 0) blockers.push("proof frame did not advance.");
@@ -270,6 +281,13 @@ function validateRouteProof(page: BrowserRouteProof): string[] {
     if (page.proof.runtime?.evidence !== true) blockers.push("proof.runtime.evidence is not true.");
     if (page.proof.animation?.visibleSkinnedGlb !== true) blockers.push("proof.animation.visibleSkinnedGlb is not true.");
     if (numberValue(page.proof.animation?.skinnedDrawItems) <= 0) blockers.push("proof.animation.skinnedDrawItems did not prove visible GLB fighters.");
+    if (page.proof.fighterAssets?.player?.id !== "auraClashPlayerRig") blockers.push(`proof.fighterAssets.player.id is ${String(page.proof.fighterAssets?.player?.id)}, expected auraClashPlayerRig.`);
+    if (page.proof.fighterAssets?.rival?.id !== "auraClashRivalRig") blockers.push(`proof.fighterAssets.rival.id is ${String(page.proof.fighterAssets?.rival?.id)}, expected auraClashRivalRig.`);
+    if (page.proof.fighterAssets?.distinct !== true) blockers.push("proof.fighterAssets.distinct is not true.");
+    if (page.proof.fighterAssets?.releaseReady !== true) blockers.push("proof.fighterAssets.releaseReady is not true.");
+    if (page.proof.visibleFighterAsset === "/aura-assets/auraClashTrainingMannequin.d8672924.glb") {
+      blockers.push("proof still exposes retired auraClashTrainingMannequin as the visible fighter asset.");
+    }
     if (page.proof.controls?.downSupported !== true) blockers.push("proof.controls.downSupported is not true.");
     if (page.proof.controls?.specialRequiresMeter !== true) blockers.push("proof.controls.specialRequiresMeter is not true.");
     if (page.proof.audio?.musicReady !== true || page.proof.audio?.sfxReady !== true) blockers.push("proof.audio does not show music and SFX readiness.");
@@ -279,16 +297,27 @@ function validateRouteProof(page: BrowserRouteProof): string[] {
   if (/Aura Clash V\d|game-v\d|debug cube|primitive fighter/i.test(page.bodyTextSample)) {
     blockers.push("deployed body text exposes stale version/debug/procedural wording.");
   }
+  if (/auraClashTrainingMannequin|same-model|training mannequin/i.test(page.bodyTextSample)) {
+    blockers.push("deployed body text still references the retired same-model training mannequin proof.");
+  }
+  const modelUrls = page.resources.models.map((probe) => probe.url).join("\n");
+  if (!modelUrls.includes("auraClashPlayerRig")) blockers.push("deployed GLB resources do not include auraClashPlayerRig.");
+  if (!modelUrls.includes("auraClashRivalRig")) blockers.push("deployed GLB resources do not include auraClashRivalRig.");
+  if (modelUrls.includes("auraClashTrainingMannequin")) blockers.push("deployed GLB resources still include the retired auraClashTrainingMannequin.");
   return blockers;
 }
 
 function compareRouteParity(page: BrowserRouteProof, localReference: BrowserRouteProof | null): RouteParityProof {
   const blockers: string[] = [];
-  const releaseMatches = page.proof?.release === "1.0.6";
+  const releaseMatches = page.proof?.release === "1.0.9";
   const appMatches = page.proof?.app === "Aura Clash Arena";
   const proofVersionMatches = typeof page.proof?.version === "string" && page.proof.version.includes("aura-clash-arena");
-  const routeMatches = page.proof?.route === "/playable/" || page.finalUrl.includes("/playable") || page.finalUrl.includes("/apps/aura-clash");
-  if (!releaseMatches) blockers.push("deployed proof does not match current release 1.0.6.");
+  const routeMatches =
+    page.proof?.route === "/playable/" ||
+    page.finalUrl.includes("/playable") ||
+    page.finalUrl.includes("/apps/aura-clash") ||
+    page.finalUrl.includes("/showcase/aura-clash/playable");
+  if (!releaseMatches) blockers.push("deployed proof does not match current release 1.0.9.");
   if (!appMatches) blockers.push("deployed proof does not match Aura Clash Arena app contract.");
   if (!proofVersionMatches) blockers.push("deployed proof does not expose the current Aura Clash Arena proof version.");
   if (!routeMatches) blockers.push("deployed proof/final URL does not match a supported Aura Clash route.");

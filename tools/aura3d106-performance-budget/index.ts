@@ -179,8 +179,8 @@ function distSizeGate(measurements: PerformanceMeasurements): PerformanceGate {
     id: "built-route-asset-size-budgets",
     ok: blockers.length === 0,
     summary: blockers.length === 0
-      ? "Built Aura Clash JS, CSS, GLB, and total route payload sizes are inside the 1.0.6 budgets."
-      : "Built Aura Clash route assets exceed one or more 1.0.6 budgets.",
+      ? "Built Aura Clash JS, CSS, GLB, and total route payload sizes are inside the current release budgets."
+      : "Built Aura Clash route assets exceed one or more current release budgets.",
     evidencePaths: ["apps/aura-clash-showcase/dist"],
     blockers
   };

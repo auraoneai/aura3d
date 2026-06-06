@@ -7,43 +7,43 @@ import {
   type VersionedSourceNameReport
 } from "../versioned-source-name-check/index.js";
 
-export type Aura3D106GateStatus = "pass" | "fail" | "not-implemented";
+export type Aura3D109GateStatus = "pass" | "fail" | "not-implemented";
 
-export interface Aura3D106GateResult {
+export interface Aura3D109GateResult {
   readonly id: string;
   readonly title: string;
-  readonly status: Aura3D106GateStatus;
+  readonly status: Aura3D109GateStatus;
   readonly ok: boolean;
   readonly summary: string;
   readonly evidencePaths: readonly string[];
   readonly blockers: readonly string[];
 }
 
-export interface Aura3D106ReleaseReadinessReport {
-  readonly schema: "aura3d106-release-readiness";
+export interface Aura3D109ReleaseReadinessReport {
+  readonly schema: "aura3d109-release-readiness";
   readonly ok: boolean;
   readonly status: "prepublish-ready" | "release-ready" | "release-blocked";
-  readonly phase: Aura3D106ReadinessPhase;
+  readonly phase: Aura3D109ReadinessPhase;
   readonly generatedAt: string;
   readonly claimBoundary: string;
-  readonly gates: readonly Aura3D106GateResult[];
+  readonly gates: readonly Aura3D109GateResult[];
   readonly blockers: readonly string[];
   readonly versionedSourceNames: VersionedSourceNameReport;
 }
 
-const defaultReportPath = "tests/reports/aura3d106/readiness.json";
-const versionedSourceNameReportPath = "tests/reports/aura3d106/versioned-source-names.json";
+const defaultReportPath = "tests/reports/aura3d109/readiness.json";
+const versionedSourceNameReportPath = "tests/reports/aura3d109/versioned-source-names.json";
 
-export type Aura3D106ReadinessPhase = "prepublish" | "final";
+export type Aura3D109ReadinessPhase = "prepublish" | "final";
 
-export interface Aura3D106ReadinessOptions {
-  readonly phase?: Aura3D106ReadinessPhase;
+export interface Aura3D109ReadinessOptions {
+  readonly phase?: Aura3D109ReadinessPhase;
 }
 
-export function createAura3D106ReleaseReadinessReport(root = process.cwd(), options: Aura3D106ReadinessOptions = {}): Aura3D106ReleaseReadinessReport {
+export function createAura3D109ReleaseReadinessReport(root = process.cwd(), options: Aura3D109ReadinessOptions = {}): Aura3D109ReleaseReadinessReport {
   const phase = options.phase ?? "final";
   const versionedSourceNames = validateVersionedSourceNames({ root });
-  const gates: Aura3D106GateResult[] = [
+  const gates: Aura3D109GateResult[] = [
     {
       id: "versioned-source-names",
       title: "No active v1/v2/v3/v4/v5/v6/v7 implementation names",
@@ -52,7 +52,7 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       summary: versionedSourceNames.ok
         ? "Active source, docs, marketing, tests, and launch evidence do not expose version-attempt implementation names."
         : `${versionedSourceNames.violations.length} version-attempt naming violation(s) remain.`,
-      evidencePaths: ["tests/reports/aura3d106/versioned-source-names.json"],
+      evidencePaths: ["tests/reports/aura3d109/versioned-source-names.json"],
       blockers: versionedSourceNames.violations.map((violation) =>
         `${violation.path}${violation.line ? `:${violation.line}` : ""} ${violation.rule} ${JSON.stringify(violation.match)}`
       )
@@ -159,6 +159,7 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
         "tests/reports/animation-runtime/viseme-blendshape-sync.png",
         "tests/browser/animation-runtime-105.spec.ts",
         "packages/engine/src/agent-api/AnimationController.ts",
+        "packages/engine/src/production-runtime/TypedGLBActor.ts",
         "packages/engine/src/production-runtime/index.ts",
         "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
         "apps/aura-clash-showcase/tests/playable-smoke.spec.ts"
@@ -174,11 +175,15 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
         ],
         [
           "packages/engine/src/production-runtime/index.ts",
-          ["createImportedAnimationRuntime", "loadProductionGLTFRenderPipeline", "GLTFSceneAnimationRuntimeSnapshot"]
+          ["createImportedAnimationRuntime", "loadProductionGLTFRenderPipeline", "GLTFSceneAnimationRuntimeSnapshot", "createTypedGLBActor"]
+        ],
+        [
+          "packages/engine/src/production-runtime/TypedGLBActor.ts",
+          ["export interface TypedGLBActor", "createTypedGLBActor", "loadProductionGLTFRenderPipeline", "createGLTFSceneAnimationRuntime", "playClip", "skinningPalettesUpdated"]
         ],
         [
           "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
-          ["loadProductionGLTFRenderPipeline", "createGLTFSceneAnimationRuntime", "visibleSkinnedGlb", "playerLastSkinningPalettes"]
+          ["createTypedGLBActor", "playClip", "visibleSkinnedGlb", "playerLastSkinningPalettes"]
         ],
         [
           "apps/aura-clash-showcase/tests/playable-smoke.spec.ts",
@@ -267,7 +272,7 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       root,
       id: "local-cli-catalog-pack-proof",
       title: "Packed local CLI/catalog proof before npm publish",
-      reportPaths: ["tests/reports/aura3d106/local-cli-catalog-pack-proof.json"],
+      reportPaths: ["tests/reports/aura3d109/local-cli-catalog-pack-proof.json"],
       passSummary:
         "Packed local @aura3d/cli and @aura3d/asset-index tarballs install in a clean app, expose publishable dependency metadata, filter fighting-character search candidates, and reject unsuitable static aircraft resolution.",
       failSummary: "Packed local CLI/catalog proof is missing or failing.",
@@ -277,11 +282,36 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       root,
       id: "published-cli-catalog-proof",
       title: "Published npx prompt/catalog CLI proof",
-      reportPaths: ["tests/reports/aura3d106/published-cli-catalog-proof.json"],
+      reportPaths: ["tests/reports/aura3d109/published-cli-catalog-proof.json"],
       passSummary:
         "Published `npx @aura3d/cli@latest` proves fighting-character search profile metadata and rejects unsuitable static aircraft resolution.",
       failSummary: "Published `npx @aura3d/cli@latest` prompt/catalog profile proof is missing or failing.",
       additionalEvidencePaths: ["tools/aura3d106-published-cli-proof/index.ts"]
+    }),
+    jsonReportGate({
+      root,
+      id: "published-engine-package-proof",
+      title: "Published @aura3d/engine tarball includes runtime files",
+      reportPaths: ["tests/reports/aura3d109/published-engine-proof.json"],
+      passSummary:
+        "Published @aura3d/engine tarball contains TypedGLBActor and GameAppRuntime runtime files.",
+      failSummary:
+        "Published @aura3d/engine tarball is missing required runtime files or cannot be packed from npm.",
+      additionalEvidencePaths: ["tools/aura3d109-published-engine-proof/index.ts"]
+    }),
+    jsonReportGate({
+      root,
+      id: "published-create-aura3d-template-proof",
+      title: "Published create-aura3d scaffolds current engine templates",
+      reportPaths: ["tests/reports/aura3d109/published-create-aura3d-proof.json"],
+      passSummary:
+        "Published `npx create-aura3d@latest` scaffolds fighting-game templates with @aura3d/engine 1.0.9.",
+      failSummary:
+        "Published create-aura3d scaffold proof is missing or produces stale @aura3d/engine template dependencies.",
+      additionalEvidencePaths: [
+        "packages/create-aura3d/src/index.ts",
+        "packages/create-aura3d/templates/fighting-game/package.json"
+      ]
     })] : []),
     jsonReportGate({
       root,
@@ -300,7 +330,7 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       root,
       id: "aura-clash-deployed-visual-proof",
       title: "Deployed Aura Clash route parity, assets, screenshots, and visual quality proof",
-      reportPaths: ["tests/reports/aura3d106/deployed-visual-proof.json"],
+      reportPaths: ["tests/reports/aura3d109/deployed-visual-proof.json"],
       passSummary:
         "Deployed Aura Clash routes return 200, load JS/CSS/GLB/texture/audio assets, expose current runtime proof, respond to controls, render nonblank screenshots, and match the current Aura Clash contract.",
       failSummary:
@@ -316,10 +346,10 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       root,
       id: "peer-grade-performance",
       title: "Renderer, profiler, resource manager, and performance budgets",
-      reportPaths: ["tests/reports/aura3d106/performance-budget.json"],
+      reportPaths: ["tests/reports/aura3d109/performance-budget.json"],
       passSummary:
-        "Aura Clash and 1.0.6 release evidence enforce unclamped frame-time/FPS/draw-call budgets plus built JS/CSS/GLB route payload budgets.",
-      failSummary: "Aura3D 1.0.6 performance budget evidence is missing or failing.",
+        "Aura Clash and 1.0.9 release evidence enforce unclamped frame-time/FPS/draw-call budgets plus built JS/CSS/GLB route payload budgets.",
+      failSummary: "Aura3D 1.0.9 performance budget evidence is missing or failing.",
       additionalEvidencePaths: [
         "tools/aura3d106-performance-budget/index.ts",
         "apps/aura-clash-showcase/tests/reports/flagship-gates.json",
@@ -331,16 +361,16 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
       root,
       id: "docs-marketing-claims",
       title: "Docs, README, llms, marketing, npm, and GitHub claims match evidence",
-      reportPaths: ["tests/reports/aura3d106/docs-claims.json"],
+      reportPaths: ["tests/reports/aura3d109/docs-claims.json"],
       passSummary:
-        "README, llms, docs, marketing, header labels, package versions, and 1.0.6 release-blocked claims are aligned with current evidence.",
-      failSummary: "Docs, README, llms, marketing, package versions, or public claims are not aligned with current 1.0.6 evidence.",
+        "README, llms, docs, marketing, header labels, package versions, and scoped 1.0.9 claims are aligned with current evidence.",
+      failSummary: "Docs, README, llms, marketing, package versions, or public claims are not aligned with current 1.0.9 evidence.",
       additionalEvidencePaths: [
         "tools/aura3d106-docs-claims/index.ts",
         "README.md",
         "llms.txt",
         "docs/project/claim-guidelines.md",
-        "docs/project/aura3d-106-release-gates.md",
+        "docs/project/aura3d-109-release-gates.md",
         "marketing/index.html",
         "marketing/src/styles.css"
       ]
@@ -350,21 +380,21 @@ export function createAura3D106ReleaseReadinessReport(root = process.cwd(), opti
   const blockers = gates.flatMap((gate) => gate.blockers.map((blocker) => `${gate.id}: ${blocker}`));
   const ok = gates.every((gate) => gate.ok);
   return {
-    schema: "aura3d106-release-readiness",
+    schema: "aura3d109-release-readiness",
     ok,
     status: ok ? (phase === "prepublish" ? "prepublish-ready" : "release-ready") : "release-blocked",
     phase,
     generatedAt: new Date().toISOString(),
     claimBoundary:
-      "Aura3D 1.0.6 is not release-ready until every PRD P0 gate has concrete command, test, screenshot, asset, docs, package, and deployed evidence. Not-implemented gates are blockers, not TODO notes.",
+      "Aura3D 1.0.9 is not release-ready until every PRD P0 gate has concrete command, test, screenshot, asset, docs, package, and deployed evidence. Not-implemented gates are blockers, not TODO notes.",
     gates,
     blockers,
     versionedSourceNames
   };
 }
 
-export function writeAura3D106ReleaseReadinessReport(
-  report: Aura3D106ReleaseReadinessReport,
+export function writeAura3D109ReleaseReadinessReport(
+  report: Aura3D109ReleaseReadinessReport,
   root = process.cwd(),
   reportPath = defaultReportPath
 ): void {
@@ -383,7 +413,7 @@ interface SourceEvidenceGateOptions {
   readonly requiredSnippets: readonly (readonly [path: string, snippets: readonly string[]])[];
 }
 
-function sourceEvidenceGate(options: SourceEvidenceGateOptions): Aura3D106GateResult {
+function sourceEvidenceGate(options: SourceEvidenceGateOptions): Aura3D109GateResult {
   const blockers: string[] = [];
   for (const path of options.evidencePaths) {
     if (!existsSync(join(options.root, path))) blockers.push(`Missing evidence file: ${path}`);
@@ -424,7 +454,7 @@ interface CombinedEvidenceGateOptions extends SourceEvidenceGateOptions {
   readonly reportPaths: readonly string[];
 }
 
-function combinedEvidenceGate(options: CombinedEvidenceGateOptions): Aura3D106GateResult {
+function combinedEvidenceGate(options: CombinedEvidenceGateOptions): Aura3D109GateResult {
   const sourceGate = sourceEvidenceGate(options);
   const reportGate = jsonReportGate({
     root: options.root,
@@ -449,7 +479,7 @@ function combinedEvidenceGate(options: CombinedEvidenceGateOptions): Aura3D106Ga
   };
 }
 
-function jsonReportGate(options: JsonReportGateOptions): Aura3D106GateResult {
+function jsonReportGate(options: JsonReportGateOptions): Aura3D109GateResult {
   const blockers: string[] = [];
   for (const path of options.reportPaths) {
     const report = readJsonReport(join(options.root, path));
@@ -493,25 +523,25 @@ function readJsonReport(path: string): { readonly exists: boolean; readonly ok: 
   }
 }
 
-function notImplementedGate(id: string, title: string, blocker: string): Aura3D106GateResult {
+function notImplementedGate(id: string, title: string, blocker: string): Aura3D109GateResult {
   return {
     id,
     title,
     status: "not-implemented",
     ok: false,
-    summary: "This 1.0.6 PRD gate has not been implemented or wired to authoritative evidence yet.",
+    summary: "This 1.0.9 PRD gate has not been implemented or wired to authoritative evidence yet.",
     evidencePaths: [],
     blockers: [blocker]
   };
 }
 
-function failedGate(id: string, title: string, blocker: string, evidencePaths: readonly string[]): Aura3D106GateResult {
+function failedGate(id: string, title: string, blocker: string, evidencePaths: readonly string[]): Aura3D109GateResult {
   return {
     id,
     title,
     status: "fail",
     ok: false,
-    summary: "This 1.0.6 PRD gate has partial implementation evidence but remains release-blocking.",
+    summary: "This 1.0.9 PRD gate has partial implementation evidence but remains release-blocking.",
     evidencePaths,
     blockers: [blocker]
   };
@@ -525,10 +555,10 @@ function readOption(name: string): string | undefined {
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   const phase = readOption("--phase") === "prepublish" ? "prepublish" : "final";
-  const report = createAura3D106ReleaseReadinessReport(process.cwd(), { phase });
+  const report = createAura3D109ReleaseReadinessReport(process.cwd(), { phase });
   const reportPath = readOption("--out") ?? defaultReportPath;
   writeVersionedSourceNameReport(report.versionedSourceNames, versionedSourceNameReportPath);
-  writeAura3D106ReleaseReadinessReport(report, process.cwd(), reportPath);
+  writeAura3D109ReleaseReadinessReport(report, process.cwd(), reportPath);
   console.log(JSON.stringify(report, null, 2));
   if (!report.ok) process.exitCode = 1;
 }

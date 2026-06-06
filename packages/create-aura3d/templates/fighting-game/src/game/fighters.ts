@@ -34,9 +34,10 @@ export const REQUIRED_FIGHTER_CLIPS: readonly FighterClip[] = [
 ];
 
 export const publicAssetInstructions = [
-  "npx @aura3d/cli@latest assets add ./assets/player-fighter.glb --name playerFighter",
-  "npx @aura3d/cli@latest assets add ./assets/rival-fighter.glb --name rivalFighter",
-  "npx @aura3d/cli@latest assets validate-game"
+  "npx @aura3d/cli@latest assets search \"animated humanoid fighting character\" --profile fighting-character --json",
+  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name playerFighter --profile fighting-character",
+  "npx @aura3d/cli@latest assets resolve \"animated humanoid fighting character\" --name rivalFighter --profile fighting-character",
+  "npx @aura3d/cli@latest assets validate-game --profile fighting-character --json"
 ] as const;
 
 export const fighterAnimationClips: readonly AuraNamedAnimationClipDefinition<FighterClip>[] = REQUIRED_FIGHTER_CLIPS.map((id) => ({

@@ -2,9 +2,9 @@
 
 This template demonstrates Aura3D's public game runtime APIs:
 
-- `createAuraApp(...)` for one mounted Aura app.
+- `createGameApp(...)` for one mounted Aura game app with lifecycle evidence.
 - `.runtime(game.runtimeNode("id"))` for mutable fighter and camera nodes.
-- `app.input(...)` for app-owned keyboard/gamepad input.
+- `gameApp.input` / `gameApp.inputController(...)` for runtime-owned keyboard/gamepad input.
 - `game.inputReplay(...)` and `game.inputReplayDriver(...)` for deterministic replay smoke paths.
 - `game.kinematicBody(...)` and `game.jumpAssist(...)` for 2.5D movement, gravity, coyote time, jump buffering, dash, and knockback.
 - `game.combatWorld(...)` for hitboxes, hurtboxes, guard, hit-stop, stun, recovery, and typed combat events.
@@ -43,8 +43,9 @@ Controls:
 Add fighter assets:
 
 ```bash
-npx @aura3d/cli@latest assets add ./assets/player-fighter.glb --name playerFighter
-npx @aura3d/cli@latest assets add ./assets/rival-fighter.glb --name rivalFighter
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name playerFighter --profile fighting-character
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name rivalFighter --profile fighting-character
 ```
 
 The CLI writes typed definitions to `src/aura-assets.ts`. The starter imports
@@ -55,8 +56,13 @@ or `unsafeModelUrl(...)`.
 Before claiming the route is asset-ready, run:
 
 ```bash
-npx @aura3d/cli@latest assets validate-game
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --json
 ```
+
+If the catalog returns no production-ready fighting-character candidate, keep
+the route in placeholder mode and do not invent a GLB URL. The refusal is a
+valid safety result; production proof requires two distinct typed fighter
+assets that pass the profile gate.
 
 The source-level readiness declaration in `src/game/stage.ts` is not launch
 evidence. Before claiming build, package, visual, accessibility, or launch

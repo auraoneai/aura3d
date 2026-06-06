@@ -65,11 +65,17 @@ export class FrameLoop {
     this.requestFrame =
       options.useRaf === false
         ? undefined
-        : options.requestFrame ?? (typeof requestAnimationFrame === "undefined" ? undefined : requestAnimationFrame);
+        : options.requestFrame ??
+          (typeof globalThis.requestAnimationFrame === "undefined"
+            ? undefined
+            : (callback) => globalThis.requestAnimationFrame(callback));
     this.cancelFrame =
       options.useRaf === false
         ? undefined
-        : options.cancelFrame ?? (typeof cancelAnimationFrame === "undefined" ? undefined : cancelAnimationFrame);
+        : options.cancelFrame ??
+          (typeof globalThis.cancelAnimationFrame === "undefined"
+            ? undefined
+            : (handle) => globalThis.cancelAnimationFrame(handle));
     if (options.autoStart) this.start();
   }
 

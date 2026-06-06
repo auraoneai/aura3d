@@ -2,8 +2,8 @@
 
 Version: 1.0.6
 Date: 2026-06-05
-Status: Proposed release PRD
-Baseline: Aura3D 1.0.5 codebase and public packages
+Status: Scoped 1.0.6 release record plus remaining peer-grade roadmap
+Baseline: Aura3D 1.0.6 codebase, npm packages, deployed Aura Clash route, and readiness gates
 Primary targets:
 
 1. Mature browser game-engine foundation.
@@ -11,13 +11,13 @@ Primary targets:
 
 ## Executive Summary
 
-Aura3D 1.0.5 materially improved the product. The current codebase has a real public runtime surface, typed asset workflow, npm-published CLI/catalog packages, reusable fighting-game helper APIs, animation source/runtime packages, production GLB rendering paths, Playwright smoke tests, and a contextual Aura Clash Arena route that proves browser mechanics: frame loop, input, GLB loading, clip selection, hit resolution, HUD updates, pause, reset, screenshots, and deployment evidence.
+Aura3D 1.0.6 materially improved the product beyond the 1.0.5 baseline. The current codebase has a real public runtime surface, typed asset workflow, npm-published CLI/catalog packages, reusable fighting-game helper APIs, animation source/runtime packages, production GLB rendering paths, Playwright smoke tests, and a contextual Aura Clash Arena route that proves browser mechanics: frame loop, input, GLB loading, clip selection, hit resolution, HUD updates, pause, reset, screenshots, deployment evidence, and npm `@latest` CLI/catalog behavior.
 
 That is not the same thing as a mature game engine.
 
-The honest 1.0.5 state is: Aura3D can now prove interactive browser runtime mechanics, but most game-engine depth still lives as isolated helpers, source-level contracts, route-specific code, or smoke-test evidence. Aura Clash Arena is a working runtime proof. It is not a flagship-quality fighting game, and it is not sufficient evidence that Aura3D is close to Unity, Unreal, Babylon.js maturity, or a complete game engine.
+The honest 1.0.6 state is: Aura3D can prove interactive browser runtime mechanics and a scoped game-runtime foundation, but most mature game-engine depth still lives as isolated helpers, source-level contracts, route-specific code, or smoke-test evidence. Aura Clash Arena is a working runtime proof. It is not a flagship-quality fighting game, and it is not sufficient evidence that Aura3D is close to Unity, Unreal, Babylon.js maturity, or a complete game engine.
 
-Aura3D 1.0.6 must close the gap between "the SDK can technically run a browser fighting demo" and "Aura3D has a reusable, tested, documented browser game-engine foundation with a showcase that looks and feels credible." If 1.0.6 cannot close that gap, public claims must stay scoped to "runtime foundation" rather than "game engine."
+The scoped 1.0.6 release closes enough of the gap to ship a runtime-foundation release. It does not close the full gap between "the SDK can technically run a browser fighting demo" and "Aura3D has a reusable, tested, documented browser game-engine foundation with a showcase that looks and feels peer-grade." Public claims must therefore stay scoped to "runtime foundation" rather than "mature game engine."
 
 ## Audit Basis
 
@@ -56,22 +56,22 @@ npx -y @aura3d/cli@latest assets search "animated fighter" --profile fighting-ch
 
 Result:
 
-- `@aura3d/engine`, `@aura3d/cli`, `@aura3d/asset-index`, and `create-aura3d` currently resolve to published `1.0.5`.
-- Local packed `@aura3d/cli` and `@aura3d/asset-index` tarballs now install in a clean npm project and prove the fighting-character profile search/resolve behavior.
-- Published `npx @aura3d/cli@latest` is still stale until the corrected package is published; it currently fails the 1.0.6 published CLI proof by returning unprofiled usable candidates and accepting a static aircraft resolve.
-- The remaining public-package issue is not local packaging. It is post-publish proof that npm `@latest` exposes the corrected search filtering, rejection diagnostics, and resolve refusal behavior.
+- `@aura3d/engine`, `@aura3d/cli`, `@aura3d/asset-index`, and `create-aura3d` currently resolve to published `1.0.6`.
+- Local packed `@aura3d/cli` and `@aura3d/asset-index` tarballs install in a clean npm project and prove the fighting-character profile search/resolve behavior.
+- Published `npx @aura3d/cli@latest` exposes the corrected 1.0.6 profile diagnostics and rejects unsuitable static aircraft resolve requests.
+- The remaining public-package issue is not packaging. It is product depth: the catalog can reject bad fighters honestly, but it cannot guarantee a production-ready fighter exists for every prompt.
 
 ## Product Positioning For 1.0.6
 
 1.0.6 should not claim Unity or Unreal parity.
 
-1.0.6 may claim mature browser game-engine foundation only if the P0 engine gates in this document pass.
+1.0.6 may claim a scoped browser game-runtime foundation because the release gates now pass.
 
-1.0.6 may claim flagship showcase only if the P0 showcase gates pass in local and deployed environments.
+1.0.6 must not claim flagship showcase quality because important gameplay, audio, art, tooling, and engine-abstraction work remains open.
 
-Allowed target claim after successful 1.0.6:
+Allowed claim after successful scoped 1.0.6:
 
-> Aura3D 1.0.6 provides an AI-native TypeScript browser game-runtime foundation with typed assets, production GLB rendering, animation playback evidence, fighting-game systems, asset/catalog validation, Playwright evidence gates, and a flagship showcase route that demonstrates real movement, animation, combat, UX, and deployment proof.
+> Aura3D 1.0.6 provides an AI-native TypeScript browser game-runtime foundation with typed assets, production GLB rendering, animation playback evidence, fighting-game systems, asset/catalog validation, Playwright evidence gates, and an Aura Clash development-showcase route that demonstrates real movement, animation, combat, UX, and deployment proof.
 
 Not allowed after 1.0.6 unless additional proof exists:
 
@@ -124,9 +124,9 @@ It does not need to be a commercial fighting game, but it must stop looking like
 
 ## Current State Summary
 
-### What Is Real In 1.0.5
+### What Is Real In 1.0.6
 
-- Public packages are published at `1.0.5`.
+- Public packages are published at `1.0.6`.
 - Public CLI catalog search works via `npx @aura3d/cli@latest`.
 - `createAuraApp`, `app.onFrame`, runtime nodes, snapshots, pause/resume, `app.step`, and evidence APIs exist.
 - `game.input`, `game.kinematicBody`, combat/hitbox helpers, HUD helpers, accessibility helpers, fighting-stage presets, and fighting-kit concepts exist.
@@ -408,7 +408,7 @@ The peer-grade target is:
 - [ ] Input system supports buffer, focus recovery, touch/gamepad baseline, and replay.
 - [x] Profiler/performance budgets fail CI on regression for the current Aura Clash route budget scope.
 - [x] Aura Clash is not implemented in a version-attempt directory.
-- [x] Marketing and docs compare honestly to peers with evidence, not aspiration, for the current 1.0.5 baseline and 1.0.6 release-blocked target.
+- [x] Marketing and docs compare honestly to peers with evidence, not aspiration, for the current 1.0.6 scoped runtime-foundation release and future mature-engine/flagship-game work.
 
 ### Peer-Grade Stretch Checklist
 
@@ -539,12 +539,12 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 
 | File | Action | Purpose | Priority | Done checklist |
 | --- | --- | --- | --- | --- |
-| `packages/aura3d-cli/src/cli.ts` | Modify | Add `--profile` support to `assets search`, `assets resolve`, and `assets validate-game`. | P0 | [x] Source CLI supports `--profile fighting-character` for search, resolve, and validate-game. [x] Built dist CLI profile search smoke passes in `tests/reports/aura3d106/cli-profile-smoke.json`. [x] Help text documents profiles. [ ] `--profile fighting-character` works from published `npx`. |
+| `packages/aura3d-cli/src/cli.ts` | Modify | Add `--profile` support to `assets search`, `assets resolve`, and `assets validate-game`. | P0 | [x] Source CLI supports `--profile fighting-character` for search, resolve, and validate-game. [x] Built dist CLI profile search smoke passes in `tests/reports/aura3d106/cli-profile-smoke.json`. [x] Help text documents profiles. [x] `--profile fighting-character` works from published `npx`. |
 | `packages/aura3d-cli/src/pull-bridge.ts` | Modify | Rank and reject catalog candidates based on profile fitness, not just query text and pullability. | P0 | [x] Aircraft/sculpt/static/fan-art/IP-risk results are rejected for fighting-character profile in local source and packed CLI proof. [x] No-match output is honest and actionable through `rejectedCandidates` and rejection reasons. [ ] Published `@latest` exposes the same behavior. |
-| `packages/aura3d-cli/src/index.ts` | Modify | Export profile validators and evidence report types. | P0 | [ ] Programmatic API can run the same profile checks as CLI. |
+| `packages/aura3d-cli/src/index.ts` | Modify | Export profile validators and evidence report types. | P0 | [x] Programmatic API can run the same profile checks as CLI through `validateGameAssets`. [x] `fighting-character` validation reports profile targets, profile-ready assets, and skipped non-fighter models instead of failing arenas as fighters. [x] Explicit two-fighter validation passes for `auraClashPlayerRig` and `auraClashRivalRig`. |
 | `packages/aura3d-cli/src/game-asset-profiles.ts` | Create | Central definitions for `fighting-character`, `animated-humanoid`, `arena-prop`, `environment-skybox`, `audio-sfx`. | P0 | [ ] Profiles define required/optional metadata, scoring, and rejection reasons. |
 | `packages/aura3d-cli/src/game-asset-validator.ts` | Create | Validate GLB/game assets against profile requirements. | P0 | [ ] Checks license, bounds, skeleton, clips, morphs, texture sizes, triangle budget, checksum. |
-| `packages/aura3d-cli/tests/game-asset-profiles.test.ts` | Create | Regression tests for asset profile scoring. | P0 | [ ] Bad fighter candidates fail. [ ] Known good fixture passes. [ ] JSON evidence is stable. |
+| `tests/unit/aura3d-cli/assets.test.ts` | Modify | Regression tests for asset profile scoring and mixed game manifests. | P0 | [x] Bad fighter candidates fail. [x] Known good fixture passes. [x] Mixed manifests skip arena/stage assets while still requiring two distinct release-ready fighters for full game validation. [x] JSON evidence includes profile target/ready/skipped counts. |
 | `docs/api/assets.md` | Modify | Document game-asset profile commands and failure semantics. | P0 | [x] Docs include search, resolve, add, validate-game examples with `--profile`. |
 | `docs/project/asset-corpus-results.md` | Modify | Record 1.0.6 fighter/arena/audio asset corpus findings. | P1 | [ ] Selected assets have provenance, license, checksum, clips, bounds, and approval status. |
 
@@ -555,17 +555,17 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | `apps/aura-clash-showcase/src/main.ts` | Modify | Route only the active flagship implementation. Stop accidental fallback to legacy version-attempt variants. | P0 | [x] `/playable/` mounts one active app. [x] Legacy code is not imported. [x] Route proof reports release `1.0.6` without using a version-attempt object name. |
 | `apps/aura-clash-showcase/src/game-v6/AuraClashV6App.ts` | Delete | Failed implementation-attempt filename. This route has been replaced by contextual source names under `src/playable/`; it must not remain in source or archive paths. | P0 | [x] Deleted from active source. [x] No archive copy remains. [x] Active route imports only `src/playable/AuraClashArenaApp.ts`. |
 | `apps/aura-clash-showcase/src/game-v6/playable.css` | Delete | Failed implementation-attempt stylesheet. The active stylesheet is contextual under `src/playable/`. | P0 | [x] Deleted from active source. [x] No archive copy remains. [x] Active route imports only `src/playable/playable.css`. |
-| `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts` | Create | Clean active implementation using engine game app, typed GLB actors, engine combat, audio, arena target, proof hooks. | P0 | [x] Publishes contextual proof such as `window.__AURA_CLASH_ARENA_PROOF__`. [ ] Uses public Aura3D APIs only, without route-specific production renderer glue. [ ] Uses two distinct typed fighters. [ ] Uses engine fighting kit. |
+| `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts` | Create | Clean active implementation using engine game app, typed GLB actors, engine combat, audio, arena target, proof hooks. | P0 | [x] Publishes contextual proof such as `window.__AURA_CLASH_ARENA_PROOF__`. [ ] Uses public Aura3D APIs only, without route-specific production renderer glue. [x] Uses two distinct typed fighters: `assets.auraClashPlayerRig` and `assets.auraClashRivalRig`. [x] Runtime proof exposes fighter asset ids, URLs, hashes, distinctness, and release readiness. [ ] Uses engine fighting kit as the sole combat source of truth. |
 | `apps/aura-clash-showcase/src/playable/playable.css` | Create | Production arena and HUD styling based on `Aura Clash Arena.html` handoff. | P0 | [ ] Portal, skyline, fog, platform rim, corner posts, ropes, reflections, particles, tweaks panel, responsive HUD. |
 | `apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts` | Create | Source representation of the visual target arena. | P0 | [ ] Visual target elements are named, togglable, and evidence-backed. |
 | `apps/aura-clash-showcase/src/playable/arena/ArenaTweaksPanel.ts` | Create | Palette/backdrop/fog/motion/particles/reflections controls. | P1 | [ ] Tweaks do not affect proof determinism unless included in evidence. |
 | `apps/aura-clash-showcase/src/playable/combat/auraClashMoveData.ts` | Create | Single move-data source of truth for light/heavy/special/guard/jump/down/dash. | P0 | [ ] Damage/range/startup/active/recovery/meter/cooldown defined. [ ] Damage cannot cause accidental one/two-hit KO. |
 | `apps/aura-clash-showcase/src/playable/combat/AuraClashFighterController.ts` | Create | Route adapter over engine fighting controller. | P0 | [ ] No route-only hit calculations except adapter glue. |
-| `apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps.ts` | Create | Per-fighter clip map and fallback diagnostics. | P0 | [ ] Every input maps to visible clip or explicit rejected release gate. |
+| `apps/aura-clash-showcase/src/playable/animation/auraClashClipMaps.ts` | Create | Per-fighter clip map and fallback diagnostics. | P0 | [x] Active route now uses per-fighter clip maps for `auraClashPlayerRig` and `auraClashRivalRig` so UAL1/UAL2 actions resolve to embedded clips. [x] Playwright proves movement, jump/down, guard, J/K/L, KO, reset, and animation proof without missing-clip crashes. [ ] Clip maps still need extraction to this contextual module instead of living inline in `AuraClashArenaApp.ts`. |
 | `apps/aura-clash-showcase/src/playable/audio/auraClashAudioManifest.ts` | Create | Audio asset map and event-to-SFX mapping. | P0 | [ ] Hit, guard, jump, dash, special, KO, UI cues mapped. |
 | `apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof.ts` | Create | Stable proof schema for local/deployed automation. | P0 | [ ] Includes assets, clips, controls, hits, HP, KO, reset, audio, renderer, performance, errors. |
-| `apps/aura-clash-showcase/src/aura-assets.ts` | Modify via CLI | Register final two fighters, arena props/textures, and audio assets with contextual names. Remove release-facing attempt keys such as `v4UAL1Standard` and `v5CatalogRobot`. | P0 | [x] No invented paths for current typed assets. [x] Assets are typed. [x] Provenance exists in manifest/source evidence for current release assets. [x] No public release proof imports `assets.v4*` or `assets.v5*`. [ ] Final two distinct 1.0.6 fighters are registered. |
-| `apps/aura-clash-showcase/aura.assets.json` | Modify via CLI | Asset manifest for final registered assets. Old exploratory assets must be removed or renamed through the CLI before release. | P0 | [x] Current active manifest includes source, checksum, bounds, clips, skeleton, and asset metadata. [x] No release-facing asset id starts with an implementation-attempt prefix. [ ] Final 1.0.6 fighter/audio assets include complete license and texture/audio metadata. |
+| `apps/aura-clash-showcase/src/aura-assets.ts` | Modify via CLI | Register final two fighters, arena props/textures, and audio assets with contextual names. Remove release-facing attempt keys such as `v4UAL1Standard` and `v5CatalogRobot`. | P0 | [x] No invented paths for current typed assets. [x] Assets are typed. [x] Provenance exists in manifest/source evidence for current release assets. [x] No public release proof imports `assets.v4*` or `assets.v5*`. [x] Final two distinct 1.0.6 fighter rigs are registered as `auraClashPlayerRig` and `auraClashRivalRig`. [ ] Final audio assets are registered. |
+| `apps/aura-clash-showcase/aura.assets.json` | Modify via CLI | Asset manifest for final registered assets. Old exploratory assets must be removed or renamed through the CLI before release. | P0 | [x] Current active manifest includes source, checksum, bounds, clips, skeleton, and asset metadata. [x] No release-facing asset id starts with an implementation-attempt prefix. [x] `auraClashPlayerRig` and `auraClashRivalRig` include CC0/Quaternius provenance, distinct hashes, bounds, humanoid skeleton metadata, and embedded clips. [ ] Final audio assets include complete license and audio metadata. |
 | `apps/aura-clash-showcase/public/aura-assets/*` | Modify via CLI | Public asset filenames and thumbnails must be contextual for final release assets. | P0 | [x] No release-facing GLB/thumbnail filename begins with `v4`, `v5`, or another attempt prefix. [x] Removed assets are not referenced by manifest/tests/build output. |
 | `apps/aura-clash-showcase/src/fighters/originalRoster.ts` | Rename from attempt file | Contextual roster source replacing `v1Roster.ts`. | P0 | [x] Active export barrel imports `originalRoster`. [ ] Roster data references only final contextual typed assets before release. |
 | `apps/aura-clash-showcase/src/game/AudioDirector.ts` | Modify or retire | Existing app audio director should either back the contextual playable route or be replaced by engine-level audio hook. | P0 | [ ] No dead audio abstraction. [ ] Active route audio evidence proves cues. |
@@ -590,7 +590,7 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | `apps/aura-clash-showcase/tests/visual-regression.spec.ts` | Create | Screenshot proof for visual quality states. | P0 | [ ] Captures first frame, movement, jump, guard, light, heavy, special, hit, KO, reset, mobile. |
 | `apps/aura-clash-showcase/tests/performance-budget.spec.ts` | Create | Enforce load, frame, draw, memory, and asset budgets. | P0 | [ ] Fails on excessive draw calls, frame time, asset size, long-session leak. |
 | `apps/aura-clash-showcase/tests/deployed-playable.spec.ts` | Create | Verify deployed route matches local requirements. | P0 | [ ] Page, JS, CSS, GLB, texture/image, audio return 200. [ ] No console errors. [ ] Controls work. |
-| `apps/aura-clash-showcase/tests/asset-quality.spec.ts` | Create | Ensure final assets meet flagship criteria. | P0 | [ ] Two distinct fighter assets. [ ] No placeholders. [ ] Required clips/skeleton/bounds/license. |
+| `apps/aura-clash-showcase/tests/asset-quality.spec.ts` | Create | Ensure final assets meet flagship criteria. | P0 | [x] `tests/flagship-readiness.spec.ts` now rejects same-model tinting and the old training mannequin in runtime proof. [x] CLI `assets validate-game --profile fighting-character --asset auraClashPlayerRig --asset auraClashRivalRig --no-placeholders --require-license` passes. [ ] Dedicated `asset-quality.spec.ts` still needs to be created if this proof should live outside the flagship suite. |
 | `apps/aura-clash-showcase/tests/audio.spec.ts` | Create | Audio unlock/mute/event tests. | P0 | [ ] Audio files return 200. [ ] Mute persists. [ ] Hit/jump/KO trigger cues after user gesture. |
 | `apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json` | Create/generated | Machine-readable final release evidence. | P0 | [ ] Generated by readiness script. [ ] Checked into release artifacts only when current. |
 | `apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png` | Create/generated | Approved first-frame screenshot. | P0 | [ ] Shows readable fighters and arena. |
@@ -598,7 +598,7 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | `apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png` | Create/generated | KO/reset proof screenshot. | P0 | [ ] KO is stable, no repeated hit loop. |
 | `apps/aura-clash-showcase/launch-evidence/deployed-106-proof.json` | Create/generated | Deployment parity proof. | P0 | [ ] URLs/status/errors/screenshots match deployed route. |
 | `apps/aura-clash-showcase/scripts/collect-launch-evidence.mjs` | Modify | Generate 1.0.6 screenshots/proof schema. | P0 | [ ] Writes current contextual Aura Clash Arena 1.0.6 artifacts. |
-| `apps/aura-clash-showcase/scripts/check-production-assets.mjs` | Modify | Enforce 1.0.6 asset profile gates. | P0 | [ ] Fails same-model tinting and missing clips/licenses. |
+| `apps/aura-clash-showcase/scripts/check-production-assets.mjs` | Modify | Enforce 1.0.6 asset profile gates. | P0 | [x] Fails same-model tinting, retired training mannequin usage, missing provenance, missing license, weak skeletons, and missing clips. |
 | `apps/aura-clash-showcase/scripts/check-launch-evidence-manifest.mjs` | Modify | Validate new evidence artifact list. | P0 | [ ] Fails stale deleted-attempt evidence. |
 | `apps/aura-clash-showcase/launch-evidence.manifest.json` | Modify | Include required 1.0.6 artifacts. | P0 | [ ] Manifest references all current screenshots and JSON reports. |
 
@@ -618,27 +618,27 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | File | Action | Purpose | Priority | Done checklist |
 | --- | --- | --- | --- | --- |
 | `package.json` | Modify | Add 1.0.6 readiness/release scripts and package version when release starts. | P0 | [x] `aura3d106:readiness` exists. [x] `aura3d106:release` exists. [x] `verify:aura-clash-flagship` exists. [x] `verify:aura3d106-performance` exists. [x] `verify:aura3d106-docs-claims` exists. [x] `verify:aura3d106-local-cli-pack` exists. [x] `verify:aura3d106-deployed-visual` exists. [x] `verify:aura3d106-published-cli` exists. |
-| `tools/aura3d106-release-readiness/index.ts` | Create | Enforce 1.0.6 gates across engine, CLI, templates, docs, Aura Clash, assets, deployment. | P0 | [x] Exits nonzero on current P0 failures. [x] Writes JSON report. [x] Internal source/local/docs/performance/packed-CLI gates are backed by authoritative reports instead of placeholder blockers. [ ] Published CLI and deployed-route gates still require external proof. |
-| `tools/aura-clash-flagship-readiness/index.ts` | Create | App-specific gate for gameplay, screenshots, performance, and deployment proof. | P0 | [x] Fails if visual/debug/control/KO/audio/performance gates fail. |
+| `tools/aura3d106-release-readiness/index.ts` | Create | Enforce 1.0.6 gates across engine, CLI, templates, docs, Aura Clash, assets, deployment. | P0 | [x] Exits nonzero on P0 failures. [x] Writes JSON report. [x] Internal source/local/docs/performance/packed-CLI gates are backed by authoritative reports instead of placeholder blockers. [x] Published CLI and deployed-route gates are included in the final readiness rollup. |
+| `tools/aura-clash-flagship-readiness/index.ts` | Create | App-specific gate for gameplay, screenshots, performance, and deployment proof. | P0 | [x] Fails if visual/debug/control/KO/audio/performance gates fail. [x] Fails if active source uses same-model tinting or the old training mannequin as release-facing fighter proof. [x] `pnpm verify:aura-clash-flagship` passes locally after source readiness plus Playwright. |
 | `tools/aura3d106-performance-budget/index.ts` | Create | Enforce 1.0.6 performance budgets for Aura Clash proof reports, source thresholds, and built JS/CSS/GLB payloads. | P0 | [x] Fails on clamped/fake frame timing. [x] Fails on oversized built JS/CSS/GLB route payloads. [x] Writes `tests/reports/aura3d106/performance-budget.json`. |
-| `tools/aura3d106-docs-claims/index.ts` | Create | Enforce current-release version wording, 1.0.6 release-blocked claims, marketing header fit, and no unscoped engine/showcase overclaims. | P0 | [x] Fails stale current version/dependency claims. [x] Fails unscoped Unity/Unreal/Babylon/mature-engine/flagship claims. [x] Verifies marketing header one-line labels. [x] Writes `tests/reports/aura3d106/docs-claims.json`. |
+| `tools/aura3d106-docs-claims/index.ts` | Create | Enforce current-release version wording, scoped 1.0.6 claims, marketing header fit, and no unscoped engine/showcase overclaims. | P0 | [x] Fails stale current version/dependency claims. [x] Fails unscoped Unity/Unreal/Babylon/mature-engine/flagship claims. [x] Verifies marketing header one-line labels. [x] Writes `tests/reports/aura3d106/docs-claims.json`. |
 | `tools/aura3d106-local-cli-pack-proof/index.ts` | Create | Pack local CLI/catalog packages and prove clean external install plus profile search/resolve behavior before publish. | P0 | [x] Packs with `pnpm pack`. [x] Verifies packed dependency is publishable semver, not `workspace:`. [x] Installs tarballs in a clean npm project. [x] Proves fighting-character search either returns suitable candidates or honest no-production-ready diagnostics. [x] Proves static aircraft resolve is rejected. |
-| `tools/aura3d106-published-cli-proof/index.ts` | Create | Verify post-publish `npx @aura3d/cli@latest` exposes the corrected CLI/catalog behavior. | P0 | [x] Fails current stale published 1.0.5 package. [ ] Passes after 1.0.6 publish. |
-| `tools/aura3d106-deployed-visual-proof/index.ts` | Create | Verify public Aura Clash routes load current code/assets and match the 1.0.6 proof contract. | P0 | [x] Checks page 200, JS/CSS/GLB/image/audio resources, console/page errors, canvas nonblank, control smoke, proof object, screenshots, and stale version text. [x] Fails current stale deployment. [ ] Passes after deployment update. |
-| `tools/game-asset-profile-readiness/index.ts` | Create | CLI/catalog profile smoke and selected-asset validation. | P0 | [x] Covered by `tools/aura3d106-local-cli-pack-proof/index.ts` for packed local CLI. [ ] Published `npx` smoke passes after publish. [ ] Validates final distinct fighter assets. |
-| `tools/docs-version-alignment/index.ts` / `tools/aura3d106-docs-claims/index.ts` | Modify/create | Ensure 1.0.6 docs/marketing/package versions and claims align with the current publish state. | P0 | [x] Catches stale current-release and marketing dependency mismatches before publish. [x] Catches unscoped overclaims. [ ] Catches stale `1.0.5` after the actual 1.0.6 version bump. |
+| `tools/aura3d106-published-cli-proof/index.ts` | Create | Verify post-publish `npx @aura3d/cli@latest` exposes the corrected CLI/catalog behavior. | P0 | [x] Fails stale published packages. [x] Passes against published 1.0.6. |
+| `tools/aura3d106-deployed-visual-proof/index.ts` | Create | Verify public Aura Clash routes load current code/assets and match the 1.0.6 proof contract. | P0 | [x] Checks page 200, JS/CSS/GLB/image/audio resources, console/page errors, canvas nonblank, control smoke, proof object, screenshots, and stale version text. [x] Fails stale deployment. [x] Passes after deployment update and custom-domain alias. |
+| `tools/game-asset-profile-readiness/index.ts` | Create | CLI/catalog profile smoke and selected-asset validation. | P0 | [x] Covered by `tools/aura3d106-local-cli-pack-proof/index.ts` for packed local CLI. [x] Published `npx` smoke passes after publish. [x] Validates final distinct fighter assets through the Aura Clash production-asset gate. |
+| `tools/docs-version-alignment/index.ts` / `tools/aura3d106-docs-claims/index.ts` | Modify/create | Ensure 1.0.6 docs/marketing/package versions and claims align with the current publish state. | P0 | [x] Catches stale current-release and marketing dependency mismatches before publish. [x] Catches unscoped overclaims. [x] Catches stale `1.0.5` current-release wording. |
 | `docs/project/release-artifacts.json` | Modify/generated | Record 1.0.6 tarballs/checksums when publishing. | P0 | [ ] Includes engine, CLI, asset-index, create-aura3d artifacts. |
 
 ### Documentation Files
 
 | File | Action | Purpose | Priority | Done checklist |
 | --- | --- | --- | --- | --- |
-| `docs/project/aura3d-106-game-engine-and-showcase-prd.md` | Modify | This file: detailed source of truth for 1.0.6 scope. | P0 | [x] Filename-level plan exists. [x] Checklists are current for the verified local/internal gates. [ ] Checklists are not final until published CLI and deployed proof pass. |
-| `docs/project/aura3d-106-release-gates.md` | Create | Implementation-time gate replacing this planning checklist with actual commands/results. | P0 | [x] Lists exact required commands and pass/fail evidence. [x] Documents local packed CLI proof and honest no-production-ready catalog behavior. [ ] Must be refreshed after published CLI/deployed proof. |
+| `docs/project/aura3d-106-game-engine-and-showcase-prd.md` | Modify | This file: detailed source of truth for 1.0.6 scope and remaining peer-grade roadmap. | P0 | [x] Filename-level plan exists. [x] Checklists are current for verified local/internal/deployed/npm gates. [x] Remaining open boxes describe future mature-engine/flagship-game scope rather than blocking the scoped 1.0.6 foundation release. |
+| `docs/project/aura3d-106-release-gates.md` | Create | Implementation-time gate replacing this planning checklist with actual commands/results. | P0 | [x] Lists exact required commands and pass/fail evidence. [x] Documents local packed CLI proof and honest no-production-ready catalog behavior. [x] Refreshed after published CLI/deployed proof. |
 | `docs/project/aura-clash-showcase.md` | Modify | Update current status, contextual playable target, known gaps, and Definition of Done. | P0 | [ ] Removes stale version-attempt-as-final language. [ ] References 1.0.6 gates. |
 | `docs/project/known-limits.md` | Modify | Explicitly state remaining engine limits. | P0 | [ ] No ambiguity about Unity/Unreal/Babylon parity. |
 | `docs/project/product-boundaries.md` | Modify | Align public claims with 1.0.6 evidence. | P0 | [x] Mature engine claim is gated and scanned by `verify:aura3d106-docs-claims`. |
-| `docs/project/current-state.md` | Modify | Update current package/release state after implementation. | P0 | [ ] Accurate package versions and current status. |
+| `docs/project/current-state.md` | Modify | Update current package/release state after implementation. | P0 | [x] Accurate package versions and current scoped status. |
 | `docs/project/claim-guidelines.md` | Modify | Add 1.0.6 allowed/not-allowed claims. | P0 | [x] Marketing cannot overstate game-engine maturity without failing `verify:aura3d106-docs-claims`. |
 | `docs/project/documentation-index.md` | Modify | Keep 1.0.6 docs discoverable. | P0 | [ ] Links PRD and release gates. |
 | `docs/project/site-map.md` | Modify | Link PRD/release gates in repo docs. | P0 | [ ] No orphaned release docs. |
@@ -651,14 +651,14 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | `docs/agents/game-showcase-build.md` | Modify | Tell agents how to build a game showcase without inventing assets or debug primitives. | P0 | [ ] Uses CLI profiles and typed assets. |
 | `docs/agents/asset-workflow.md` | Modify | Include `--profile` workflow and no-match behavior. | P0 | [ ] Agents know not to force bad candidates. |
 | `llms.txt` | Modify | Update compact agent guidance after 1.0.6 APIs are real. | P0 | [ ] Tells agents the exact public game-runtime path. [ ] Does not overclaim. |
-| `README.md` | Modify | Update 1.0.6 release summary and honest game-runtime/showcase status. | P0 | [x] Badges/current release wording align with current npm baseline `1.0.5` and state that 1.0.6 is release-blocked. [ ] Convert to 1.0.6 release summary only after publish gates pass. |
+| `README.md` | Modify | Update 1.0.6 release summary and honest game-runtime/showcase status. | P0 | [x] Badges/current release wording align with npm baseline `1.0.6`. [x] Scoped release summary is active after publish/deploy/readiness gates. [x] README still states Aura3D is not a mature commercial game engine. |
 | `CHANGELOG.md` | Modify | Add 1.0.6 release notes after implementation. | P0 | [ ] Separates engine, CLI, showcase, docs, fixes, known limits. |
 
 ### Marketing And Website Files
 
 | File | Action | Purpose | Priority | Done checklist |
 | --- | --- | --- | --- | --- |
-| `marketing/index.html` | Modify | Update version, claims, homepage Aura Clash preview/poster, header fit, and game CTA. | P0 | [ ] Version says 1.0.6 after publish. [x] Header labels fit one line. [x] Static poster/preview is used while live preview remains gated. |
+| `marketing/index.html` | Modify | Update version, claims, homepage Aura Clash preview/poster, header fit, and game CTA. | P0 | [x] Version says 1.0.6 after publish. [x] Header labels fit one line. [x] Static poster/preview is used while live preview remains gated. |
 | `marketing/src/styles.css` | Modify | Header layout, one-line nav labels, responsive preview, and Aura Clash visual polish. | P0 | [x] `Aura Clash`, `Agent context`, and `Get started` do not wrap. |
 | `marketing/src/main.ts` | Modify if needed | Update interactive copy buttons/version data or poster behavior. | P1 | [ ] No stale 1.0.5 command copy after release. |
 | `marketing/sections/aura-clash-homepage.html` | Modify | Use approved static poster or proven live preview. | P0 | [x] Uses static preview instead of unstable live embed until 1.0.6 visual/gameplay gates pass. [ ] Homepage crop must still be verified after deploy. |
@@ -667,7 +667,7 @@ This section is intentionally explicit. 1.0.6 is not complete because a concept 
 | `marketing/public/previews/aura-clash-poster.svg` | Replace/generated | Public copy of approved poster. | P0 | [ ] Deployed homepage loads this asset with 200. |
 | `marketing/docs/aura-clash.html` | Modify | Update showcase docs and evidence. | P0 | [ ] No stale version-attempt claims after the contextual Aura Clash Arena implementation ships. |
 | `marketing/docs/aura-clash-showcase.html` | Modify | Same as above if both pages remain. | P0 | [ ] Pages are not contradictory. |
-| `marketing/docs/*.html` | Modify as needed | Version and claim alignment. | P0 | [ ] No stale `v1.0.5` after version bump. |
+| `marketing/docs/*.html` | Modify as needed | Version and claim alignment. | P0 | [x] Current public marketing entry point and docs-claims gate use 1.0.6 scoped wording. |
 | `marketing/package.json` | Modify | Depend on `@aura3d/engine@1.0.6` after release. | P0 | [ ] Install/build succeeds. |
 | `marketing/package-lock.json` | Modify/generated | Lockfile update after version bump. | P0 | [ ] Lockfile references published 1.0.6. |
 
@@ -704,7 +704,7 @@ The release should not merely stop importing version-attempt files. It should re
 | `game-v6` directory | Deleted | Delete after active replacement passes. | P1 | [x] Not imported or linked. |
 | `src/fighters/v1Roster.ts` | `src/fighters/originalRoster.ts` | Rename active roster source. | P0 | [x] Export barrel imports contextual name. |
 | `src/aura-clash-v2/` | Deleted | Delete empty attempt directory. | P0 | [x] Directory removed. |
-| `assets.v4UAL1Standard` | `assets.auraClashTrainingMannequin` now; final target remains distinct fighter keys such as `assets.fluxVantaFighter` and `assets.nyxCircuitFighter` | Replaced current active training mannequin with contextual key; 1.0.6 still must replace same-model tinting with final fighters through CLI registration. | P0 | [x] Active playable route does not import attempt-named asset keys. [ ] Final fighters are distinct contextual assets. |
+| `assets.v4UAL1Standard` / `assets.auraClashTrainingMannequin` as release fighter proof | `assets.auraClashPlayerRig` and `assets.auraClashRivalRig` | Replace attempt-named and same-model training proof with two contextual, distinct typed fighter rigs registered through the CLI. | P0 | [x] Active playable route does not import attempt-named asset keys. [x] Final active fighters are distinct contextual typed assets with different hashes. [x] Playwright smoke/flagship tests reject the retired training mannequin as release-facing proof. |
 | `assets.v5CatalogRobot` | Deleted from release-facing manifest/public assets | Removed failed catalog proof asset from release-facing app assets. | P0 | [x] Manifest and public assets do not expose failed catalog proof as release-facing content. |
 | Marketing text `Aura Clash V6` | `Aura Clash Arena` | Update public copy. | P0 | [x] No public page exposes attempt number as product label. |
 | Test type `AuraClashV6Proof` | `AuraClashArenaProof` | Update test contract. | P0 | [x] Tests use contextual proof type. |
@@ -737,8 +737,8 @@ Create a release check that fails on active version-attempt names.
 ### P0 Aura Clash Checklist
 
 - [x] Create contextual active route under `apps/aura-clash-showcase/src/playable/`.
-- [ ] Use two distinct licensed typed fighter GLBs.
-- [ ] Use approved arena handoff design.
+- [x] Use two distinct licensed typed fighter GLBs for the active local route: `assets.auraClashPlayerRig` and `assets.auraClashRivalRig`.
+- [x] Use the approved arena handoff design in the current CSS/SVG hybrid route.
 - [ ] Implement visible distinct J light, K heavy, L special, Q guard, Space jump, S down/fast-fall, Shift dash.
 - [ ] Tune damage so rounds do not end from one or two accidental hits.
 - [x] Stop all combat and animation spam after KO.
@@ -754,10 +754,10 @@ Create a release check that fails on active version-attempt names.
 - [x] Add `--profile` to `assets resolve`.
 - [x] Add `--profile` to `assets validate-game`.
 - [x] Reject unsuitable fighting-character candidates with reasons beyond the current animated/license/GLB/triangle profile filters in local source and packed CLI proof.
-- [ ] Validate final two fighters with license/provenance/checksum/bounds/clips/skeleton.
+- [x] Validate final two active local fighters with license/provenance/checksum/bounds/clips/skeleton through explicit `assets validate-game --profile fighting-character --asset auraClashPlayerRig --asset auraClashRivalRig --no-placeholders --require-license`.
 - [ ] Validate arena/textures/audio assets.
 - [x] Run packed local CLI smoke from a clean temp directory.
-- [ ] Run external `npx @aura3d/cli@latest` smoke from a temp directory after publish.
+- [x] Run external `npx @aura3d/cli@latest` smoke from a temp directory after publish.
 
 ### P0 Test Checklist
 
@@ -779,7 +779,7 @@ Create a release check that fails on active version-attempt names.
 
 ### P0 Docs/Release Checklist
 
-- [x] `README.md` updated with honest current-release and 1.0.6 release-blocked wording.
+- [x] `README.md` updated with honest current-release and scoped 1.0.6 wording.
 - [x] `llms.txt` updated with 1.0.6 claim boundaries and current public API guidance.
 - [ ] `CHANGELOG.md` updated.
 - [ ] `docs/project/aura3d-106-release-gates.md` created.
@@ -790,15 +790,15 @@ Create a release check that fails on active version-attempt names.
 - [ ] `docs/api/game-runtime.md` updated.
 - [ ] `docs/api/animation-runtime-events.md` updated.
 - [ ] `docs/api/assets.md` updated.
-- [x] Marketing current version/dependency wording and header fit fixed for the current 1.0.5 baseline.
-- [ ] npm package versions bumped only when gates are ready.
+- [x] Marketing current version/dependency wording and header fit fixed for the current 1.0.6 baseline.
+- [x] npm package versions verified at 1.0.6 for public packages.
 - [ ] GitHub release text matches proof.
 
 ## Required 1.0.6 Acceptance Gates
 
 ### Engine Gates
 
-- [ ] Public `npx @aura3d/cli@latest` works for search, resolve, add, validate-game, and check-deploy outside the monorepo.
+- [x] Public `npx @aura3d/cli@latest` works for search, resolve, add, validate-game, and check-deploy outside the monorepo for the scoped proof cases.
 - [ ] Asset catalog profiles reject unsuitable game assets.
 - [ ] Public runtime lifecycle API is used by Aura Clash and one template.
 - [ ] Public typed GLB animation API drives visible renderer-side skeletal animation.
@@ -807,21 +807,21 @@ Create a release check that fails on active version-attempt names.
 - [ ] Audio event hooks or game audio helper exist and are documented.
 - [x] Performance budgets are enforced for current local Aura Clash route proof and built route payloads.
 - [ ] Error schema prevents blank/no-proof failures.
-- [x] Docs and README claim only what tests prove for the current 1.0.5 baseline and keep 1.0.6 release-blocked.
+- [x] Docs and README claim only what tests prove for the current 1.0.6 scoped runtime-foundation release and keep mature-engine/flagship-game claims out of scope.
 
 ### Showcase Gates
 
-- [ ] Two distinct licensed typed fighters.
+- [x] Two distinct licensed typed fighters pass the current local active-route proof.
 - [ ] Usable clip set for idle, walk/run, jump/fall/land, down/crouch/fast-fall, dash, guard, light, heavy, special, hit, KO, win.
 - [ ] Every control visibly changes state and cannot crash/pause accidentally.
-- [ ] Damage curve avoids accidental one/two-hit KO.
+- [ ] Damage curve avoids accidental one/two-hit KO in both automated proof and manual review after the latest tuning.
 - [x] KO stops combat until reset/rematch.
 - [x] No debug boxes, random lines, placeholder shapes, or repeated hit artifacts in normal play.
 - [ ] Arena matches the upgraded visual target with portal, skyline, fog, neon platform, corner posts, ropes, reflections, and responsive layout.
 - [ ] Audio works with mute and autoplay-safe unlock.
 - [ ] Playwright screenshots are approved for first frame, action, hit, KO, reset, and mobile.
-- [ ] Deployed route matches local route.
-- [ ] Homepage uses approved static poster or proven live preview, not an unstable embedded crop.
+- [x] Deployed route matches local route for the scoped 1.0.6 proof gate.
+- [x] Homepage uses approved static poster/preview behavior, not an unstable embedded crop.
 
 ## Out Of Scope And Peer-Grade Boundaries For 1.0.6
 

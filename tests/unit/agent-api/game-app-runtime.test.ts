@@ -158,6 +158,57 @@ describe("createGameApp", () => {
     runtime.dispose();
   });
 
+  it("binds browser requestAnimationFrame so auto-start game loops do not throw Illegal invocation", () => {
+    const originalRequestFrame = globalThis.requestAnimationFrame;
+    const originalCancelFrame = globalThis.cancelAnimationFrame;
+    let scheduled: FrameRequestCallback | undefined;
+
+    Object.defineProperty(globalThis, "requestAnimationFrame", {
+      configurable: true,
+      value(this: typeof globalThis, callback: FrameRequestCallback) {
+        if (this !== globalThis) throw new TypeError("Illegal invocation");
+        scheduled = callback;
+        return 101;
+      }
+    });
+    Object.defineProperty(globalThis, "cancelAnimationFrame", {
+      configurable: true,
+      value(this: typeof globalThis, _handle: number) {
+        if (this !== globalThis) throw new TypeError("Illegal invocation");
+      }
+    });
+
+    try {
+      const runtime = createGameApp(null, {
+        loop: { fixedDt: 1 / 60 },
+        scene: runtimeScene()
+      });
+      let frames = 0;
+      runtime.onFrame(() => {
+        frames += 1;
+      });
+
+      expect(runtime.evidence).toMatchObject({ status: "running", startCount: 1 });
+      expect(typeof scheduled).toBe("function");
+
+      scheduled?.((typeof performance === "undefined" ? Date.now() : performance.now()) + 1000 / 30);
+
+      expect(frames).toBeGreaterThan(0);
+      expect(runtime.evidence.frame).toBeGreaterThan(0);
+
+      runtime.dispose();
+    } finally {
+      Object.defineProperty(globalThis, "requestAnimationFrame", {
+        configurable: true,
+        value: originalRequestFrame
+      });
+      Object.defineProperty(globalThis, "cancelAnimationFrame", {
+        configurable: true,
+        value: originalCancelFrame
+      });
+    }
+  });
+
   it("supports offFrame and idempotent dispose without advancing removed callbacks", () => {
     const runtime = createGameApp(null, {
       autoStart: false,

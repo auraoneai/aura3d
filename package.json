@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "packageManager": "pnpm@11.1.3",
   "private": false,
   "type": "module",
@@ -483,7 +483,17 @@
     "benchmark:scene-kits": "node benchmark/runner/scene-kit-snippet-smoke.mjs",
     "benchmark:contact-sheet": "node benchmark/runner/visual-qa-gates.mjs --mode=smoke --requireHumanReview=false",
     "benchmark:visual-qa": "node benchmark/runner/visual-qa-gates.mjs --mode=acceptance",
-    "benchmark:performance-budgets": "node benchmark/runner/scene-kit-performance-budget.mjs"
+    "benchmark:performance-budgets": "node benchmark/runner/scene-kit-performance-budget.mjs",
+    "aura3d109:readiness": "pnpm verify:aura3d109-published-engine && tsx --tsconfig tsconfig.base.json tools/aura3d106-release-readiness/index.ts --out tests/reports/aura3d109/readiness.json",
+    "verify:aura3d109-performance": "tsx --tsconfig tsconfig.base.json tools/aura3d106-performance-budget/index.ts --out tests/reports/aura3d109/performance-budget.json",
+    "verify:aura3d109-docs-claims": "tsx --tsconfig tsconfig.base.json tools/aura3d106-docs-claims/index.ts --out tests/reports/aura3d109/docs-claims.json",
+    "verify:aura3d109-local-cli-pack": "pnpm build && tsx --tsconfig tsconfig.base.json tools/aura3d106-local-cli-pack-proof/index.ts --out tests/reports/aura3d109/local-cli-catalog-pack-proof.json",
+    "verify:aura3d109-published-cli": "tsx --tsconfig tsconfig.base.json tools/aura3d106-published-cli-proof/index.ts --out tests/reports/aura3d109/published-cli-catalog-proof.json",
+    "verify:aura3d109-deployed-visual": "tsx --tsconfig tsconfig.base.json tools/aura3d106-deployed-visual-proof/index.ts --out tests/reports/aura3d109/deployed-visual-proof.json",
+    "aura3d109:prepublish-readiness": "tsx --tsconfig tsconfig.base.json tools/aura3d106-release-readiness/index.ts --phase prepublish --out tests/reports/aura3d109/prepublish-readiness.json",
+    "aura3d109:release": "pnpm evidence:command --id aura3d109-release --out tests/reports/aura3d109/release-command.json --log tests/reports/aura3d109/release.log --cwd . -- pnpm aura3d109:release:raw",
+    "aura3d109:release:raw": "pnpm verify:aura3d109-published-engine && tsx --tsconfig tsconfig.base.json tools/aura3d106-release-readiness/index.ts --out tests/reports/aura3d109/release.json",
+    "verify:aura3d109-published-engine": "tsx --tsconfig tsconfig.base.json tools/aura3d109-published-engine-proof/index.ts --out tests/reports/aura3d109/published-engine-proof.json"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",

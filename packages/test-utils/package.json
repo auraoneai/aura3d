@@ -9,5 +9,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
-  }
+  },
+  "version": "1.0.9"
 }

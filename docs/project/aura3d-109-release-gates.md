@@ -1,23 +1,25 @@
-# Aura3D 1.0.6 Release Gates
+# Aura3D 1.0.9 Release Gates
 
-Version: 1.0.6 target
-Status: Draft release gate, release-blocking
-Current published baseline: `@aura3d/engine@1.0.5`
-Related PRD: `docs/project/aura3d-106-game-engine-and-showcase-prd.md`
+Version: 1.0.9
+Status: Scoped release gate, current evidence passing
+Current published baseline: `@aura3d/engine@1.0.9`
+Related PRD: `docs/project/aura3d-109-game-engine-and-showcase-prd.md`
 
-Aura3D 1.0.6 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.
+Aura3D 1.0.9 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.
 
-This document is intentionally stricter than the 1.0.5 release notes. Aura3D 1.0.5 proves a browser runtime foundation and an Aura Clash development showcase. It does not prove Unity, Unreal, Babylon.js, or full game-engine parity.
+This document is intentionally stricter than the 1.0.9 release notes. Aura3D 1.0.9 proves a browser runtime foundation and an Aura Clash development showcase. It does not prove Unity, Unreal, Babylon.js, or full game-engine parity.
 
 ## Current Release Decision
 
-Current decision: `release-blocked`
+Current decision: `release-ready-for-scoped-1.0.9`
 
-Reason: the 1.0.6 PRD still has open P0 blockers for runtime unification, reusable GLB actor animation, engine-owned combat simulation, game-asset profile validation, flagship-quality Aura Clash gameplay/art/audio/performance, and deployed proof parity.
+Reason: the scoped 1.0.9 gates now pass for the public runtime foundation, typed GLB actor evidence, CLI/catalog profile behavior, Aura Clash development-showcase proof, docs/claims, performance, npm `@latest`, and deployed route parity.
+
+This decision does not promote Aura3D to a mature commercial game engine, and it does not promote Aura Clash Arena to a flagship-quality fighting game. Remaining peer-grade engine/showcase work stays tracked in `docs/project/aura3d-109-game-engine-and-showcase-prd.md` and future release tracks.
 
 Allowed current public wording:
 
-- Aura3D 1.0.5 is an AI-native TypeScript browser 3D SDK.
+- Aura3D 1.0.9 is an AI-native TypeScript browser 3D SDK.
 - Aura3D supports typed GLB/glTF asset workflows, scene kits, runtime helpers, diagnostics, screenshots, and deployment checks.
 - Aura Clash Arena is a development showcase and runtime proof target.
 - Aura Clash Arena is not yet proof of a mature game engine or a flagship-quality fighting game.
@@ -33,7 +35,7 @@ Disallowed current public wording:
 
 ## P0 Release Gates
 
-Every P0 gate must pass before any 1.0.6 game-engine or flagship-showcase release claim.
+Every P0 gate must pass before any 1.0.9 game-engine or flagship-showcase release claim.
 
 | Gate | Required evidence | Blocking if missing |
 | --- | --- | --- |
@@ -49,16 +51,20 @@ Every P0 gate must pass before any 1.0.6 game-engine or flagship-showcase releas
 | Audio | Licensed/owned music/SFX, mute, autoplay-safe unlock, event-driven hit/jump/guard/special/KO cues, and proof that files return 200. | Yes |
 | Performance | Load, JS, GLB, texture, draw-call/frame-time, memory, and mobile budgets with current reports. | Yes |
 | Deployment parity | Local and deployed `/playable` proof for page 200, JS/CSS 200, GLB/texture/audio 200, no console errors, no blank canvas, controls work, screenshots match. | Yes |
-| Docs/claims | README, `llms.txt`, docs, marketing pages, npm/GitHub copy, and site metadata use scoped 1.0.5/1.0.6 wording and do not overclaim. | Yes |
+| Docs/claims | README, `llms.txt`, docs, marketing pages, npm/GitHub copy, and site metadata use scoped 1.0.9/1.0.9 wording and do not overclaim. | Yes |
 
 ## Current Known Blockers
 
-- Published `@aura3d/cli@latest` is still the old public package and fails the fighting-character profile proof: it does not expose profile diagnostics in search results and it accepts a static aircraft as a fighter resolve target.
-- The deployed Aura Clash routes are stale. Current live `/playable` and `/apps/aura-clash` still serve attempt-numbered chunks, attempt-named typed assets, and an old attempt proof object instead of the contextual 1.0.6 route proof.
-- Local Aura Clash gates, local CLI/profile tests, local packed CLI proof, docs/claims, performance budgets, and versioned-source-name gates have evidence, but they do not clear the release until npm `@latest` and deployed-route proof also pass.
-- Any GitHub/npm release must wait until the gates above pass and the current evidence is regenerated.
+No release-blocking P0 issues remain for the scoped 1.0.9 runtime-foundation release.
 
-## Required Commands Before 1.0.6 Publish
+Non-blocking limitations that must stay out of public claims:
+
+- Aura3D is still not a Unity, Unreal, or Babylon.js parity engine.
+- Aura Clash Arena is still a development showcase, not a commercial-quality fighting game.
+- The CLI/catalog profile now rejects unsuitable game assets with reasons, but it does not guarantee that every prompt has a production-ready fighter candidate.
+- Game audio, editor-grade tooling, rollback/networking, full animation graph authoring, and broad asset-marketplace quality remain future work.
+
+## Required Commands Before 1.0.9 Publish
 
 Run these from the repository root and keep the generated evidence with the release:
 
@@ -67,27 +73,27 @@ pnpm verify:docs-version
 pnpm verify:docs-consistency
 pnpm check:marketing-truth
 pnpm check:marketing-links
-pnpm verify:versioned-source-names -- --out tests/reports/aura3d106/versioned-source-names.json
+pnpm verify:versioned-source-names -- --out tests/reports/aura3d109/versioned-source-names.json
 pnpm --dir apps/aura-clash-showcase assets:check
 pnpm --dir apps/aura-clash-showcase typecheck
 pnpm --dir apps/aura-clash-showcase build
 pnpm --dir apps/aura-clash-showcase test
 pnpm --dir marketing build
-pnpm verify:aura3d106-local-cli-pack
-pnpm verify:aura3d106-deployed-visual
+pnpm verify:aura3d109-local-cli-pack
+pnpm verify:aura3d109-deployed-visual
 pnpm check:tarballs
 pnpm check:clean-install
-pnpm aura3d106:prepublish-readiness
+pnpm aura3d109:prepublish-readiness
 ```
 
-Expected state today: local/source/package gates should pass, but `pnpm aura3d106:prepublish-readiness` remains blocked until the public deployment is updated. The final `pnpm aura3d106:readiness` command remains blocked until the corrected packages are also published to npm and `pnpm verify:aura3d106-published-cli` passes against `@latest`.
+Expected state today: the scoped 1.0.9 release gates pass when regenerated from the repository root. `pnpm aura3d109:readiness` is the final rollup command.
 
 ## Packed CLI Catalog Proof Before Publish
 
-Before any `npm publish`, prove the exact packed local CLI and catalog packages from a clean external npm project. This is separate from `pnpm verify:aura3d106-published-cli`, which intentionally checks the already-published `@latest` package after publication.
+Before any future `npm publish`, prove the exact packed local CLI and catalog packages from a clean external npm project. This is separate from `pnpm verify:aura3d109-published-cli`, which checks the already-published `@latest` package after publication.
 
 ```bash
-pnpm verify:aura3d106-local-cli-pack
+pnpm verify:aura3d109-local-cli-pack
 ```
 
 This command builds the workspace, packs `packages/asset-index` and `packages/aura3d-cli` with `pnpm pack`, checks that the packed CLI manifest rewrites `workspace:` dependencies to publishable semver, installs both tarballs in a clean npm project, and runs:
@@ -106,20 +112,20 @@ Rejected assets such as spiders, aircraft, static props, IP-risk characters, and
 
 ## Publish Sequence
 
-Do not run `npm publish`, create a GitHub release, or deploy marketing copy that claims 1.0.6 readiness unless:
+Do not run a future `npm publish`, create a GitHub release, or deploy marketing copy that claims readiness beyond the scoped 1.0.9 foundation unless:
 
 - every P0 gate above has current evidence;
-- `pnpm aura3d106:prepublish-readiness` exits successfully;
+- `pnpm aura3d109:prepublish-readiness` exits successfully;
 - the packed local CLI/catalog proof above passes from a clean external npm project;
 - local and deployed Aura Clash proof match;
 - npm package smoke tests pass from a clean external directory using packed local tarballs;
 - `README.md`, `llms.txt`, docs, marketing, npm metadata, and GitHub release notes all use the same scoped claims.
 
-After npm publication, run:
+After npm publication or deployment changes, run:
 
 ```bash
-pnpm verify:aura3d106-published-cli
-pnpm aura3d106:readiness
+pnpm verify:aura3d109-published-cli
+pnpm aura3d109:readiness
 ```
 
-Both must pass against `@aura3d/cli@latest` before marking the release complete or updating public marketing copy from release-blocked wording to 1.0.6 release wording.
+Both must pass against `@aura3d/cli@latest` and the deployed custom domain before marking the scoped release complete.
