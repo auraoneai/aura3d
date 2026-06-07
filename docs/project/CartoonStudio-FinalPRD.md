@@ -242,12 +242,13 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 - [x] Added `tools/cartoon-studio-visual-fidelity-gate` — decodes real frame PNGs to RGBA (sharp), runs `analyzeRgbaFrameVisualMetrics` + `analyzeRgbaFrameMotionRegions`, FAILs on blank/static/no-motion. Verified: catches solid-black + byte-identical frames; PASSes on the real 1280×720 render.
 - Verification: `pnpm typecheck` ✅, `pnpm build` ✅, 56 cartoon/grounding/toon unit tests ✅, `episode:render` produces a real 2.48 MB VP9 webm with verified flags ✅, fidelity gate PASS on real pixels ✅.
 
-### Phase 1 — Real 3D render path (THE core blocker; still placeholder art) — 🟡 PARTIAL
-- [x] Implement `CartoonToonMaterial` + `applyCartoonRenderPreset` — **modules built + tested** (real cel ramp+rim GLSL registered in `ShaderLibrary`, Sobel outline + color-grade wiring; 12 tests). *Not yet applied in `main.ts` — blocked on the renderer swap below.*
-- [x] Implement `FfmpegFrameEncoder` — **done** (`createFfmpegFrameEncoderAdapter`, real ffmpeg vp9/h264, returns playable bytes, proof-only when ffmpeg absent; 6 tests incl. a real e2e webm encode). *Audio-track muxing still TODO; not yet the template default.*
-- [ ] **BLOCKER — not safely completable autonomously:** `skinned-animation-runtime.ts` — route uses a **skinning/morph-capable renderer**. The cartoon route uses `createAuraApp`'s agent renderer whose shader has **no skinning/morph** (confirmed §0.5.1). Fixing this means either rewriting the route onto `A3DRenderer`+`GLTFAnimationRuntime` (the aura-clash pattern — breaks the existing `createAuraApp` route tests, multi-day) or adding JOINTS/WEIGHTS/`u_jointMatrices`/morph to the shared agent renderer (high blast radius on the published `@aura3d/engine`). Needs a deliberate, reviewed engineering effort.
-- [ ] `render-live-route.ts` (capture real 3D route) — **blocked** on the renderer swap.
-- [ ] `toHaveScreenshot` baselines; re-target the visual-fidelity gate to real 3D frames — **blocked** on a real 3D render existing.
+### Phase 1 — Real 3D render path — ✅ COMPLETE (additive path; existing route + tests untouched)
+- [x] `CartoonToonMaterial` + `applyCartoonRenderPreset` — real cel ramp+rim GLSL registered in `ShaderLibrary` (+12 tests), and **applied** in the live render path (cel banding + Sobel outline + storybook color-grade visible in captured pixels).
+- [x] `FfmpegFrameEncoder` — real ffmpeg vp9/h264 encoder, returns playable bytes, proof-only when ffmpeg absent (+6 tests incl. real e2e webm). *(audio-track mux = Phase 2.)*
+- [x] **Renderer swap solved as an additive path** — `src/render-live-route.ts` renders TWO **skinned** GLB characters via `A3DRenderer` + `createTypedGLBActor` (real GPU skinning palettes), grounded on a floor plane. Built as a NEW path so the existing `createAuraApp` route + its tests are untouched (avoids the high-blast-radius rewrite).
+- [x] `scripts/render-live.ts` (`episode:render-3d`) — captures the real 3D route headlessly (vite + Playwright), applies the toon post-pass, encodes a real VP9 webm via `FfmpegFrameEncoder`.
+- [x] Visual-fidelity gate run on the **real 3D frames** → PASS (grounded, cel-shaded characters whose skeletons re-pose across time — genuine skinning, verified in pixels). *(`toHaveScreenshot` baselines deferred — live capture lighting/timing isn't yet pixel-deterministic; the fidelity gate covers content+motion instead.)*
+- Note: the published `@aura3d/engine` lacks the registered toon shader + has a stricter material binder, so the capture aliases `@aura3d/*` to the monorepo `dist/` (the same pattern aura-clash uses). Skinning works against the published engine too; only the toon material needs the source/dist build.
 
 ### Phase 2 — Performance, camera, lip-sync, audio
 - [ ] `CartoonStagePerformance` + `CartoonWorldState`: walk/sweep/polish; lilies dim→sparkle.
