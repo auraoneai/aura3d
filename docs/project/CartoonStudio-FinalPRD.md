@@ -242,12 +242,12 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 - [x] Added `tools/cartoon-studio-visual-fidelity-gate` — decodes real frame PNGs to RGBA (sharp), runs `analyzeRgbaFrameVisualMetrics` + `analyzeRgbaFrameMotionRegions`, FAILs on blank/static/no-motion. Verified: catches solid-black + byte-identical frames; PASSes on the real 1280×720 render.
 - Verification: `pnpm typecheck` ✅, `pnpm build` ✅, 56 cartoon/grounding/toon unit tests ✅, `episode:render` produces a real 2.48 MB VP9 webm with verified flags ✅, fidelity gate PASS on real pixels ✅.
 
-### Phase 1 — Real 3D render path (THE core blocker; still placeholder art)
-- [ ] Add `skinned-animation-runtime.ts`: route uses a **skinning/morph-capable renderer** (`@aura3d/assets` `GLTFAnimationRuntime` / `AnimationController` / `A3DRenderer`) — the agent renderer can't skin.
-- [ ] Implement `CartoonToonMaterial` + `applyCartoonRenderPreset`; apply in `main.ts` (toon + outline + lighting/grade).
-- [ ] Implement `render-live-route.ts`: capture the real 3D route via `BrowserFrameCaptureAdapter`.
-- [ ] Implement `FfmpegFrameEncoder`/muxer (video **+ audio** track); make `VideoExportPipeline` default to real capture+encode in the template.
-- [ ] Add `toHaveScreenshot` baselines; re-target the visual-fidelity gate to the real frames; keep deterministic.
+### Phase 1 — Real 3D render path (THE core blocker; still placeholder art) — 🟡 PARTIAL
+- [x] Implement `CartoonToonMaterial` + `applyCartoonRenderPreset` — **modules built + tested** (real cel ramp+rim GLSL registered in `ShaderLibrary`, Sobel outline + color-grade wiring; 12 tests). *Not yet applied in `main.ts` — blocked on the renderer swap below.*
+- [x] Implement `FfmpegFrameEncoder` — **done** (`createFfmpegFrameEncoderAdapter`, real ffmpeg vp9/h264, returns playable bytes, proof-only when ffmpeg absent; 6 tests incl. a real e2e webm encode). *Audio-track muxing still TODO; not yet the template default.*
+- [ ] **BLOCKER — not safely completable autonomously:** `skinned-animation-runtime.ts` — route uses a **skinning/morph-capable renderer**. The cartoon route uses `createAuraApp`'s agent renderer whose shader has **no skinning/morph** (confirmed §0.5.1). Fixing this means either rewriting the route onto `A3DRenderer`+`GLTFAnimationRuntime` (the aura-clash pattern — breaks the existing `createAuraApp` route tests, multi-day) or adding JOINTS/WEIGHTS/`u_jointMatrices`/morph to the shared agent renderer (high blast radius on the published `@aura3d/engine`). Needs a deliberate, reviewed engineering effort.
+- [ ] `render-live-route.ts` (capture real 3D route) — **blocked** on the renderer swap.
+- [ ] `toHaveScreenshot` baselines; re-target the visual-fidelity gate to real 3D frames — **blocked** on a real 3D render existing.
 
 ### Phase 2 — Performance, camera, lip-sync, audio
 - [ ] `CartoonStagePerformance` + `CartoonWorldState`: walk/sweep/polish; lilies dim→sparkle.
