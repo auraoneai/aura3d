@@ -10,7 +10,9 @@ export const CREATE_AURA3D_TEMPLATES = [
   "cartoon-channel",
   "prompt-cartoon-channel",
   "cartoon-studio",
-  "episode-builder"
+  "episode-builder",
+  "animation-studio",
+  "character-controller",
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
