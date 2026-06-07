@@ -7,7 +7,6 @@ import {
   effects,
   game,
   group,
-  groundedPlacement,
   labels,
   lights,
   material,
@@ -153,6 +152,19 @@ if (!captureMode) installCartoonStudioPanel(document.body);
 //   luma -> min/max y [0, 1.8], foot origin
 // The path box sits at y=0.05 with a 0.04-thick top, so its walkable surface is
 // at y = 0.05 + 0.02 = 0.07; both characters rest their lowest point there.
+// Local grounding helper (kept in-template so the scaffold builds against the
+// published @aura3d/engine). Grounds a scaled asset's lowest point on `floorY`
+// and normalizes its height to `targetHeight`.
+function groundedPlacement(
+  bounds: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] },
+  opts: { readonly targetHeight: number; readonly x: number; readonly z: number; readonly floorY: number }
+): { position: [number, number, number]; scale: number } {
+  const height = bounds.max[1] - bounds.min[1];
+  const scale = height > 0 && opts.targetHeight > 0 ? opts.targetHeight / height : 1;
+  const y = opts.floorY + -bounds.min[1] * scale;
+  return { position: [opts.x, y, opts.z], scale };
+}
+
 const PATH_FLOOR_Y = 0.07;
 const CHARACTER_TARGET_HEIGHT = 1.5;
 const mikoBounds = { min: [-0.033, -0.013, -0.009], max: [0.033, 0.013, 0.008] } as const;

@@ -55,7 +55,10 @@ export const assets = defineAuraAssets({
       license: "CC0",
       source: "Aura3D bundled humanoid starter fixture",
       animationClips: ["Idle", "Run", "TPose", "Walk"],
-      mouthReadiness: "no-mouth-rig"
+      // The luma GLB has no facial blendshapes, so the route drives a primitive
+      // mouth-card fallback (PRD Path A) for its lip-sync. This is the honest,
+      // accurate readiness — not "no-mouth-rig".
+      mouthReadiness: "primitive-mouth-card"
     }
   },
   moonGarden: {

@@ -7,6 +7,8 @@
     "jsx": "react-jsx",
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "//": "render-live-route.ts is the experimental real-3D path; it needs engine exports newer than the published @aura3d/engine and runs only via `npm run episode:render-3d` (which aliases @aura3d/* to a monorepo build). Excluded from the default scaffold typecheck/build.",
+  "exclude": ["src/render-live-route.ts"]
 }
 
