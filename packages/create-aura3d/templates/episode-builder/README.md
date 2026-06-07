@@ -1,5 +1,9 @@
 # Aura3D Episode Builder Template
 
+> **Status: example / experimental.** The flagship cartoon pipeline is the
+> [`cartoon-studio`](../cartoon-studio) template. This template is a
+> contract/example only.
+
 This template demonstrates a guided prompt-to-episode builder on top of the
 AuraVoice-to-Aura3D prompt-animation contract.
 

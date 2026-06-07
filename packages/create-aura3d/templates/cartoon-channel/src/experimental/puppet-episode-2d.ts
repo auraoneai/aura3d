@@ -1,5 +1,5 @@
-import { episode, episodeSampleDescription, youtubeDraftMetadata } from "./episode";
-import type { CartoonRouteSampleForVisual } from "./sample-episode-visual";
+import { episode, episodeSampleDescription, youtubeDraftMetadata } from "../episode";
+import type { CartoonRouteSampleForVisual } from "../sample-episode-visual";
 import "./puppet-episode-2d.css";
 
 export interface PuppetEpisode2DOptions {

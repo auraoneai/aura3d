@@ -1,5 +1,5 @@
-import { episode, episodeSampleDescription } from "./episode";
-import type { CartoonRouteSampleForVisual } from "./sample-episode-visual";
+import { episode, episodeSampleDescription } from "../episode";
+import type { CartoonRouteSampleForVisual } from "../sample-episode-visual";
 import "./image-puppet-episode.css";
 
 export interface ImagePuppetEpisodeOptions {

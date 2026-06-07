@@ -1,5 +1,9 @@
 # Aura3D Cartoon Channel Template
 
+> **Status: example / experimental.** The flagship cartoon pipeline is the
+> [`cartoon-studio`](../cartoon-studio) template. This template is a
+> contract/example only.
+
 This template demonstrates the AuraVoice-to-Aura3D prompt-animation contract.
 
 It uses:

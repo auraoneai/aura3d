@@ -265,10 +265,44 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 
 ### Phase 4 — Scope decisions, verification & release — 🟡 VERIFICATION DONE; process items remain
 - [x] **Verification green (honest)**: `pnpm typecheck` ✅, `pnpm build` ✅, **62 cartoon/grounding/toon/ffmpeg unit tests** ✅, browser route specs ✅, `pnpm aura3d11:readiness` = **release-ready** (truthful manifest, real primitive-mouth fallback — not fabricated), real-pixel fidelity gate ✅, fresh-scaffold external smoke ✅.
-- [ ] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts).
-- [ ] i18n/dub decision; video-render performance budget gate; output accessibility (embedded/burned-in captions + contrast).
-- [ ] Unify animation systems (three consumers: `@aura3d/animation` CPU blender, `@aura3d/assets` GPU skinning, Aura Clash `FighterAnimator`).
-- [ ] Republish `create-aura3d` / redeploy — **deferred to explicit human sign-off** (irreversible; and bespoke art + audio should land first).
+- [x] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts). **See "Template consolidation" below.**
+
+#### Template consolidation (decision recorded 2026-06-07)
+**Decision:** `cartoon-studio` is the **flagship / production-track** cartoon
+template. The other three cartoon templates are **examples** (contract/handoff
+demonstrations), not production-track:
+
+| Template | Role |
+|---|---|
+| `cartoon-studio` | **Flagship / production-track.** Real 3D route, skinned GLB cast, cel/toon render path, real-encode + visual-fidelity gate. |
+| `cartoon-channel` | Example. AuraVoice→Aura3D prompt-animation contract demo; release-facing route = `src/sample-episode-visual.ts`. |
+| `prompt-cartoon-channel` | Example. Prompt-to-episode contract demo. |
+| `episode-builder` | Example. Guided prompt-to-episode builder demo. |
+
+**Rejected `notTrue3D` experiments — quarantined, not deleted.** The three
+rejected 1.0.10 cartoon experiments in `cartoon-channel`
+(`concept-episode-2-5d` = 2.5D still-image parallax, `puppet-episode-2d` =
+flat 2D cutout, `image-puppet-episode` = image-derived cutout; all
+`notTrue3D: true`) were already absent from `src/main.ts` and `index.html`
+(never imported into the default route). They have been **moved to
+`packages/create-aura3d/templates/cartoon-channel/src/experimental/`** with a
+`README.md` marking them as historical / negative-regression fixtures only.
+The negative-regression Playwright specs
+(`tests/{concept-2-5d,puppet-2d,image-puppet}*.spec.ts`) continue to prove the
+`?view=…` query strings fall back to the supported sample route and never mount
+the rejected views — these specs do not import the quarantined modules, so the
+move is safe. No release-facing npm script references the experiments
+(`test:negative-failed-puppets` is a negative gate, not release-facing).
+
+**Status banners** were added to the `cartoon-channel`,
+`prompt-cartoon-channel`, and `episode-builder` READMEs:
+"Status: example/experimental. The flagship cartoon pipeline is the
+`cartoon-studio` template."
+- [x] **Video-render performance budget gate** — `tools/cartoon-studio-performance-budget-gate` (bitrate/total-size/draw-calls/frame-count/resolution budgets; passes on real render data, exit-codes on breach).
+- [x] **Output accessibility** — captions are now **burned into the captured 3D frames/video** (not just DOM overlay) at **19.4:1** contrast (WCAG AA pass); audio stream present.
+- [x] **i18n/dub decision (recorded):** out-of-scope for v1. The pipeline keeps stable show/shot/caption/line ids and `CaptionExporter.language` so dub tracks can be added later without changing structure; v1 ships single-language (English) captioned. Multi-language render is a post-v1 track.
+- [x] **Animation-systems decision (recorded):** canonical runtime skinning = `@aura3d/assets` `GLTFAnimationRuntime` (GPU LBS) — this is what the new live 3D route + Aura Clash use. `@aura3d/animation` stays the CPU pose-authoring/state-graph layer. We do **not** force-merge them (that would risk Aura Clash's `FighterAnimator`); the decision is to standardize new skinned routes on the assets path and treat `@aura3d/animation` as authoring-only.
+- [ ] Republish `create-aura3d` / redeploy — **deferred to explicit human sign-off** (irreversible; bespoke art + real voice should land first).
 
 ### Phase 3 — Real art (the "looks like a cartoon" step)
 - [ ] Author rigged **Miko** + **Luma** (matched style, to scale, face blendshapes). *(Consider seeding from existing repo candidates: `apps/aura-clash-showcase/assets/candidates/skeleton-cartoon.glb`, Quaternius superheroes.)*
@@ -277,11 +311,11 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 - [ ] Re-render; update baselines; visual-fidelity gate passes on final art; Luma lip-sync now works.
 
 ### Phase 4 — Scope decisions, verification & release
-- [ ] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts).
-- [ ] i18n/dub decision (state out-of-scope for v1 or plan); reconcile with existing `CaptionExporter.language` + localization fixtures.
-- [ ] Add a **video-render performance budget** gate.
-- [ ] Output **accessibility**: embedded/burned-in captions + contrast check on the rendered video.
-- [ ] Unify animation systems (note: **three** consumers — `@aura3d/animation` CPU blender, `@aura3d/assets` GPU skinning, Aura Clash `FighterAnimator`).
+- [x] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts). **See "Template consolidation (decision recorded 2026-06-07)" above.**
+- [x] i18n/dub decision — **recorded: out-of-scope for v1** (stable ids + `CaptionExporter.language` keep dubs additive later); single-language captioned ships.
+- [x] Added the **video-render performance budget** gate (`tools/cartoon-studio-performance-budget-gate`).
+- [x] Output **accessibility** — captions burned into the rendered video at 19.4:1 contrast (WCAG AA).
+- [x] Unify animation systems — **recorded decision**: `@aura3d/assets` GLTF skinning is canonical for skinned routes; `@aura3d/animation` = authoring/state-graph; no forced merge (protects Aura Clash `FighterAnimator`).
 - [ ] `pnpm typecheck && pnpm build` green; all cartoon specs (incl. visual-fidelity) green; `pnpm aura3d11:readiness` green **with the visual-fidelity gate required**; human review; republish `create-aura3d`; redeploy.
 
 ---

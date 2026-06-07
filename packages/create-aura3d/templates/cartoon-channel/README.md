@@ -1,5 +1,13 @@
 # Aura3D Cartoon Channel Template
 
+> **Status: example / experimental.** The flagship cartoon pipeline is the
+> [`cartoon-studio`](../cartoon-studio) template. This `cartoon-channel`
+> template is a contract/example demonstrating the AuraVoice-to-Aura3D handoff.
+> Its release-facing route is `src/sample-episode-visual.ts`. The rejected
+> `notTrue3D` puppet/parallax experiments are quarantined under
+> [`src/experimental/`](./src/experimental) as negative-regression fixtures
+> only and are not wired into any release-facing route or script.
+
 This template demonstrates the AuraVoice-to-Aura3D prompt-animation contract.
 
 It uses:
@@ -65,7 +73,9 @@ npm run test:negative-failed-puppets
 
 That gate proves the old `?view=concept-2-5d`, `?view=puppet-2d`, and
 `?view=image-puppet` query strings fall back to the supported sample episode
-route and do not expose release-facing puppet/parallax proof objects.
+route and do not expose release-facing puppet/parallax proof objects. The
+rejected experiment modules themselves live under `src/experimental/` (see
+`src/experimental/README.md`) and are never imported by the app.
 
 Do not use `tests/reports/prompt-animation/cartoon-image-puppet-animation.webm`
 or the old 2.5D/cutout routes as product evidence. Aura3D's accepted cartoon

@@ -28,6 +28,7 @@
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { createStudioLighting, createTypedGLBActor, type TypedGLBActor } from "@aura3d/engine/production-runtime";
 import {
+  captionCueAtTime,
   createCameraPathFromPreset,
   sampleCameraPath,
   sampleVisemeTrack,
@@ -51,7 +52,11 @@ import { episode } from "./episode";
 
 interface LiveCharacter {
   readonly actor: TypedGLBActor;
+  /** Default/fallback clip from the spec (used when a beat's staged clip is absent). */
   readonly clip: string;
+  /** Every animation clip this GLB exposes (used to validate per-beat staged clips). */
+  readonly availableClips: readonly string[];
+  /** Default/fallback opening position + yaw (used when no beat staging is defined). */
   readonly position: readonly [number, number, number];
   readonly yaw: number;
   readonly scale: number;
@@ -80,9 +85,23 @@ interface LiveRouteSeekProof {
     readonly cameraPosition: readonly [number, number, number];
     readonly fov: number;
   };
+  /**
+   * Active burned-in caption for this beat (sampled from the episode caption track
+   * at the shot's episode time). The capture script draws `text` into the captured
+   * frame pixels so the exported video has visible captions, not just a DOM overlay.
+   */
+  readonly caption: {
+    readonly text: string;
+    readonly speakerId: string;
+    readonly captionId: string;
+  };
   readonly characters: readonly {
     readonly id: string;
     readonly clip: string;
+    /** Staged world position this beat (proves per-beat blocking / sweep staging). */
+    readonly position: readonly [number, number, number];
+    /** True when this character is staged at the broom playing the sweep stand-in clip. */
+    readonly sweeping: boolean;
     readonly tracksApplied: number;
     readonly skinningPalettesUpdated: number;
     readonly skinningBindingCount: number;
@@ -233,6 +252,66 @@ const CHARACTER_SPECS = [
 // primitive mouth-indicator quad parented to each character's head (below), which
 // the cartoon viseme contract explicitly allows as the primitive-mouth fallback.
 const MIKO_MOUTH_MORPH_INDEX = 1;
+
+// STAGED PERFORMANCE / BLOCKING (HONEST: the "sweep" clip is a STAND-IN — these
+// GLBs ship no authored sweep/broom animation, so we reuse an available body clip
+// as a sweep-like motion and MOVE the character to the broom prop so the staging
+// reads in pixels). The broom prop's hero owner is miko (see episode.props
+// glow-broom ownerCharacterId). The broom HANDLE world position is below; miko
+// walks from her opening mark toward the broom during the teamwork beat and plays
+// a sweep stand-in clip, so frames captured at the teamwork beat visibly show miko
+// AT the broom vs. her opening mark. luma walks in to help.
+const BROOM_HANDLE_POSITION = [-0.55, GROUND_Y, 0.25] as const;
+// miko stands just to the broom's working side (slightly screen-left of the handle,
+// facing it) so the body + the broom prop frame together at the teamwork beat.
+const MIKO_SWEEP_MARK = [BROOM_HANDLE_POSITION[0] + 0.18, GROUND_Y, BROOM_HANDLE_POSITION[2] - 0.02] as const;
+
+/** Per-beat staging for one character: where it stands and which clip it plays. The
+ * sweep clip is a STAND-IN (no authored sweep exists on these rigs). */
+interface CharacterStaging {
+  readonly position: readonly [number, number, number];
+  readonly yaw: number;
+  readonly clip: string;
+  /** True for the teamwork sweep mark (used by the seek proof to flag the staged sweep). */
+  readonly sweeping: boolean;
+}
+
+// Per-character, per-beat staging. Keyed by shotId. miko: opens at her mark with a
+// neutral walk, crosses to the broom for the teamwork sweep (stand-in clip), then
+// settles for the goodnight wave. luma mirrors with its own walk/run clips. Clips
+// are validated against each GLB's real clip list at mount (fallback to clip[0]).
+const STAGING_BY_CHARACTER: Record<string, Record<string, CharacterStaging>> = {
+  miko: {
+    "shot-moon-garden-open": { position: [-0.95, GROUND_Y, 0], yaw: Math.PI * 0.12, clip: "Walking", sweeping: false },
+    // Sweep stand-in: "Punch" is the closest available arm-driven clip on miko's rig.
+    "shot-glow-stone-teamwork": { position: MIKO_SWEEP_MARK, yaw: -Math.PI * 0.5, clip: "Punch", sweeping: true },
+    "shot-moon-garden-finish": { position: [-0.65, GROUND_Y, 0], yaw: Math.PI * 0.12, clip: "Wave", sweeping: false }
+  },
+  luma: {
+    "shot-moon-garden-open": { position: [1.0, GROUND_Y, 0], yaw: -Math.PI * 0.12, clip: "Run", sweeping: false },
+    // luma walks in toward the broom to help during teamwork.
+    "shot-glow-stone-teamwork": { position: [0.25, GROUND_Y, 0.2], yaw: -Math.PI * 0.62, clip: "Walk", sweeping: false },
+    "shot-moon-garden-finish": { position: [0.68, GROUND_Y, 0], yaw: -Math.PI * 0.12, clip: "Idle", sweeping: false }
+  }
+};
+
+/** Resolve the staging for `characterId` at `shotId`, validated against the GLB's
+ * real clip list (falls back to the spec clip, then clip[0]). */
+function stagingFor(
+  characterId: string,
+  shotId: string,
+  availableClips: readonly string[],
+  fallbackClip: string,
+  fallbackPosition: readonly [number, number, number],
+  fallbackYaw: number
+): CharacterStaging {
+  const staged = STAGING_BY_CHARACTER[characterId]?.[shotId];
+  if (!staged) {
+    return { position: fallbackPosition, yaw: fallbackYaw, clip: fallbackClip, sweeping: false };
+  }
+  const clip = availableClips.includes(staged.clip) ? staged.clip : fallbackClip;
+  return { ...staged, clip };
+}
 
 // Per-shot camera framing. The live route captures animation-clip time (0..~2s),
 // while the episode shot timeline / viseme track live on the 0..60s episode
@@ -392,6 +471,7 @@ export async function mountLiveRenderRoute(): Promise<void> {
     characters.push({
       actor,
       clip,
+      availableClips: snapshot.clips,
       position: spec.position,
       yaw: spec.yaw,
       scale: spec.scale,
@@ -498,11 +578,22 @@ export async function mountLiveRenderRoute(): Promise<void> {
     const visemeTime = visemeTimeForShot(shot, time);
 
     const characterProofs: LiveRouteSeekProof["characters"] = characters.map((character) => {
-      const apply = character.actor.playClip(character.clip, time);
+      // STAGED PERFORMANCE: resolve this character's blocking + clip for THIS beat.
+      // miko crosses to the broom and plays a sweep stand-in clip at the teamwork
+      // beat; positions differ per beat so captured frames visibly move the body.
+      const staging = stagingFor(
+        character.actor.id,
+        shot.shotId,
+        character.availableClips,
+        character.clip,
+        character.position,
+        character.yaw
+      );
+      const apply = character.actor.playClip(staging.clip, time);
       const root = character.actor.pipeline.resources.scene.root;
-      const rotation = quatFromEuler(0, character.yaw, 0);
+      const rotation = quatFromEuler(0, staging.yaw, 0);
       root.transform
-        .setPosition(character.position[0], character.position[1], character.position[2])
+        .setPosition(staging.position[0], staging.position[1], staging.position[2])
         .setRotation(rotation[0], rotation[1], rotation[2], rotation[3])
         .setScale(character.scale, character.scale, character.scale);
 
@@ -533,6 +624,8 @@ export async function mountLiveRenderRoute(): Promise<void> {
       return {
         id: character.actor.id,
         clip: apply.clipName,
+        position: staging.position,
+        sweeping: staging.sweeping,
         tracksApplied: apply.tracksApplied,
         skinningPalettesUpdated: apply.skinningPalettesUpdated,
         skinningBindingCount: character.actor.snapshot().skinningBindingCount,
@@ -545,6 +638,17 @@ export async function mountLiveRenderRoute(): Promise<void> {
     });
 
     mouthItems = nextMouthItems;
+
+    // BURNED-IN CAPTION: sample the active caption cue from the episode caption
+    // track at this shot's episode time (one-to-one with the AuraVoice dialogue).
+    // The text is reported here; the capture script draws it INTO the frame pixels
+    // (see render-live.ts) so the exported video carries visible captions.
+    const captionCue = captionCueAtTime(episode.captionTrack, shot.episodeTime);
+    const caption = {
+      text: captionCue?.text ?? "",
+      speakerId: captionCue?.speakerId ?? "",
+      captionId: captionCue?.captionId ?? ""
+    };
 
     // Drive the camera explicitly from this shot's preset path.
     const path = cameraPathByShot.get(shot.shotId)!;
@@ -567,6 +671,7 @@ export async function mountLiveRenderRoute(): Promise<void> {
         cameraPosition: camera.position,
         fov: camera.fov
       },
+      caption,
       characters: characterProofs
     };
   };
