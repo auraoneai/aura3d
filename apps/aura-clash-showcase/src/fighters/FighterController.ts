@@ -15,6 +15,7 @@ export interface FighterControllerTuning {
   walkSpeed: number;
   dashSpeed: number;
   jumpVelocity: number;
+  jumpHorizontalSpeed: number;
   gravity: number;
   laneMinX: number;
   laneMaxX: number;
@@ -25,6 +26,7 @@ export const defaultFighterControllerTuning: FighterControllerTuning = {
   walkSpeed: 0.0055,
   dashSpeed: 0.018,
   jumpVelocity: 0.028,
+  jumpHorizontalSpeed: 0.012,
   gravity: 0.0025,
   laneMinX: -3.2,
   laneMaxX: 3.2,
@@ -75,10 +77,15 @@ export function updateFighterController(
   } else if (input.jump && fighter.position.y <= 0) {
     action = "jump";
     lockMs = 340;
+    // Directional jump: A/D + W carries horizontal momentum and turns the fighter
+    // to face the leap, instead of a purely vertical hop.
+    const jumpFacing = input.move !== 0 ? (input.move > 0 ? 1 : -1) : fighter.facing;
     next = {
       ...next,
+      facing: jumpFacing,
       velocity: {
         ...next.velocity,
+        x: input.move !== 0 ? input.move * tuning.jumpHorizontalSpeed : next.velocity.x,
         y: tuning.jumpVelocity,
       },
     };
