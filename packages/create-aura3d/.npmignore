@@ -1,0 +1,8 @@
+# Never publish template build output or installed deps — templates ship as source
+templates/*/node_modules
+templates/*/dist
+templates/*/.turbo
+templates/*/coverage
+templates/*/test-results
+templates/*/playwright-report
+**/node_modules
