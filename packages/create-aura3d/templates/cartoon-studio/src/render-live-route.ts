@@ -45,7 +45,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@aura3d/rendering";
-import { composeMat4, multiplyMat4, perspectiveMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
+import { composeMat4, multiplyMat4, perspectiveMat4, PointLight, quatFromEuler, type Mat4 } from "@aura3d/scene";
 import { visemeTrack } from "./render-plan";
 import { episode } from "./episode";
 
@@ -71,6 +71,8 @@ interface LiveRouteSeekProof {
   readonly time: number;
   readonly drawCalls: number;
   readonly skinnedRenderItems: number;
+  /** Eased dim→sparkle world-state at this seek time (0 = dim beat, 1 = full twinkle). */
+  readonly gardenGlow: number;
   readonly shot: {
     readonly shotId: string;
     readonly presetId: string;
@@ -125,6 +127,76 @@ type LiveRouteWindow = Window & {
 };
 
 const GROUND_Y = 0;
+
+/**
+ * MOON-GARDEN WORLD-STATE (HONEST: primitive/emissive geometry, NOT authored GLB
+ * art). The episode's setting — "two robots in a glowing moon garden" — is built
+ * here from the same shapes/positions/emissive colors as the cartoon-channel
+ * PRIMITIVE reference set (`cartoon-channel/src/main.ts createAuraRenderedCartoonScene`
+ * + `sets.ts`), translated into the A3DRenderer scene-source mesh format this live
+ * route already uses (Geometry + PBRMaterial + modelMatrix RenderItems).
+ *
+ * It contains: a crater/garden floor + mound, a glowing moon portal orb + cyan rim
+ * backdrop, several glow stones, moon lilies (emissive stem + bloom), a broom prop
+ * (handle + bristles), and two colored night-garden point lights.
+ *
+ * The story's dim→sparkle world-state change (lilies "losing their sparkle" → the
+ * garden "twinkling again") is driven by `setGardenGlow(t01)` below: every glow
+ * material's emissive strength is scaled from a dim floor up to full twinkle, so
+ * frames captured early (beat-open) vs late (beat-finish) visibly differ in glow.
+ */
+
+/** An emissive garden material whose strength is driven by the dim→sparkle state. */
+interface GlowMaterial {
+  readonly material: PBRMaterial;
+  /** Emissive strength at the dim "losing their sparkle" beat. */
+  readonly dim: number;
+  /** Emissive strength at the full "twinkling again" beat. */
+  readonly full: number;
+}
+
+const glowMaterials: GlowMaterial[] = [];
+
+/** Captured clip-time span over which the garden ramps dim→sparkle. Matches the
+ * `clipSpan` the shot plan uses, so beat-open≈0 (dim) and beat-finish≈end (full). */
+const GARDEN_GLOW_SPAN = 2.1;
+
+function makeGlowMaterial(
+  name: string,
+  baseColor: readonly [number, number, number, number],
+  emissiveColor: readonly [number, number, number],
+  dim: number,
+  full: number
+): PBRMaterial {
+  const material = new PBRMaterial({
+    name,
+    baseColor,
+    metallic: 0,
+    roughness: 0.85,
+    emissiveColor,
+    emissiveStrength: dim
+  });
+  glowMaterials.push({ material, dim, full });
+  return material;
+}
+
+/**
+ * Drive the dim→sparkle world-state. `t01` is the normalized seek progress through
+ * the captured timeline (0 at beat-open, 1 at beat-finish). Every registered glow
+ * material's emissive strength is lerped from its dim floor to its full twinkle, so
+ * the captured early vs late frames differ in glow brightness. A gentle eased curve
+ * keeps the brighten reduced-motion-safe (no abrupt flash). */
+function setGardenGlow(t01: number): number {
+  const clamped = t01 < 0 ? 0 : t01 > 1 ? 1 : t01;
+  // Smoothstep for a soft, non-flashing ramp.
+  const eased = clamped * clamped * (3 - 2 * clamped);
+  for (const glow of glowMaterials) {
+    // `emissiveStrength` has no public setter; drive the same uniform the
+    // constructor seeds (`u_emissiveStrength`) so the forward PBR pass picks it up.
+    glow.material.setParameter("u_emissiveStrength", glow.dim + (glow.full - glow.dim) * eased);
+  }
+  return eased;
+}
 
 // Two distinct rigged GLBs the template already ships in /public/aura-assets.
 // Both are real skinned characters with multiple animation clips (verified by
@@ -363,11 +435,19 @@ export async function mountLiveRenderRoute(): Promise<void> {
     clearColor: [0.043, 0.058, 0.101, 1]
   });
 
-  // 3. Ground plane so the characters are clearly grounded and lit.
-  const groundItems = createGroundItems();
+  // 3. Primitive moon-garden set (crater floor + mound, glowing moon orb + rim,
+  // glow stones, moon lilies, broom prop) so the characters stand IN the episode's
+  // setting. HONEST: primitive/emissive geometry, not authored GLB art.
+  const gardenItems = createGardenItems();
+  // Seed the dim "losing their sparkle" state for the very first frame.
+  setGardenGlow(0);
 
-  // Real directional key/fill/rim rig from the published production runtime.
-  const lights: readonly CollectedLight[] = createStudioLighting({ preset: "softbox", shadows: false, intensityScale: 1 });
+  // Real directional key/fill/rim rig from the published production runtime, PLUS
+  // two colored night-garden point lights (cyan key + warm gold rim).
+  const lights: readonly CollectedLight[] = [
+    ...createStudioLighting({ preset: "softbox", shadows: false, intensityScale: 0.7 }),
+    ...createGardenLights()
+  ];
 
   // Primitive mouth-indicator quads, rebuilt each frame from the current viseme
   // sample (the actually-visible lip-sync — see MORPH HONESTY above).
@@ -375,7 +455,7 @@ export async function mountLiveRenderRoute(): Promise<void> {
 
   const source: RenderSource = {
     collectRenderItems: () => [
-      ...groundItems,
+      ...gardenItems,
       ...characters.flatMap(collectCharacterItems),
       ...mouthItems
     ],
@@ -404,6 +484,13 @@ export async function mountLiveRenderRoute(): Promise<void> {
   const poseAt = (time: number, options: LiveSeekOptions = {}): LiveRouteSeekProof => {
     const shot = shotForClipTime(shotPlan, time);
     const nextMouthItems: RenderItem[] = [];
+
+    // WORLD-STATE dim→sparkle: normalize seek time across the captured span (the
+    // three episode beats map onto clip-time 0..GARDEN_GLOW_SPAN; see buildShotPlan).
+    // Early frames (beat-open) render dim "losing their sparkle"; late frames
+    // (beat-finish) render full "twinkling again". This updates emissive strength on
+    // every glow material so captured early vs late frames differ in glow brightness.
+    const gardenGlow = setGardenGlow(time / GARDEN_GLOW_SPAN);
 
     // Sweep the viseme sample time across the shot's dialogue as clip time advances
     // within the shot, so consecutive captured frames show the mouth open AND close
@@ -472,6 +559,7 @@ export async function mountLiveRenderRoute(): Promise<void> {
       time,
       drawCalls: diagnostics.drawCalls,
       skinnedRenderItems,
+      gardenGlow,
       shot: {
         shotId: shot.shotId,
         presetId: String(shot.presetId),
@@ -557,17 +645,166 @@ function buildMouthItem(id: string, headWorldMatrix: Mat4, openHeight: number, c
   };
 }
 
-function createGroundItems(): RenderItem[] {
-  const cube = Geometry.litCube(1);
-  const ground = new PBRMaterial({
-    name: "live-route-ground",
-    baseColor: [0.13, 0.15, 0.2, 1],
-    metallic: 0.04,
-    roughness: 0.92,
-    emissiveColor: [0.02, 0.03, 0.05],
-    emissiveStrength: 0.06
+// Shared garden geometry (built once, reused across RenderItems each frame).
+const GARDEN_CUBE = Geometry.litCube(1);
+const GARDEN_SPHERE = Geometry.uvSphere(0.5, 24, 16);
+const GARDEN_CYLINDER = Geometry.cylinder({ radius: 0.5, height: 1, segments: 20, capped: true });
+const GARDEN_TORUS_RIM = Geometry.cylinder({ radius: 0.5, height: 1, segments: 28, capped: false });
+
+/**
+ * Build the primitive moon garden around the characters. HONEST: these are
+ * primitive/emissive shapes (sphere/cylinder/box), not authored GLB art. Shapes,
+ * positions, and emissive colors mirror the cartoon-channel reference set
+ * (`createAuraRenderedCartoonScene`). Glow-stone/lily/orb/broom emissive strengths
+ * are registered via `makeGlowMaterial`, so `setGardenGlow(t01)` can drive the
+ * dim→sparkle world-state on every captured frame.
+ *
+ * NOTE: garden materials are built ONCE and reused, so the glowMaterials registry
+ * is populated exactly once even if this is somehow called again.
+ */
+function createGardenItems(): RenderItem[] {
+  // --- Static (non-glow) night-garden geometry ---
+  const gardenFloor = new PBRMaterial({
+    name: "live-route-garden-floor",
+    baseColor: [0.09, 0.29, 0.245, 1], // #17493e crater garden
+    metallic: 0.02,
+    roughness: 0.78,
+    emissiveColor: [0.03, 0.09, 0.08],
+    emissiveStrength: 0.18
   });
-  return [groundItem("ground", cube, ground, [0, -0.06, 0], [6, 0.12, 4])];
+  const craterRim = new PBRMaterial({
+    name: "live-route-crater-rim",
+    baseColor: [0.07, 0.21, 0.18, 1],
+    metallic: 0.02,
+    roughness: 0.82,
+    emissiveColor: [0.02, 0.06, 0.06],
+    emissiveStrength: 0.12
+  });
+  const skyPlate = new PBRMaterial({
+    name: "live-route-garden-sky",
+    baseColor: [0.04, 0.16, 0.255, 1], // #0a2941 night sky plate
+    metallic: 0,
+    roughness: 1,
+    emissiveColor: [0.06, 0.28, 0.4],
+    emissiveStrength: 0.55
+  });
+  const broomHandle = new PBRMaterial({
+    name: "live-route-broom-handle",
+    baseColor: [0.55, 0.42, 0.26, 1],
+    metallic: 0.1,
+    roughness: 0.7,
+    emissiveColor: [0.12, 0.1, 0.06],
+    emissiveStrength: 0.1
+  });
+
+  // --- Glow materials (driven by setGardenGlow dim→sparkle) ---
+  // Moon portal orb + cyan rim backdrop.
+  const moonOrb = makeGlowMaterial(
+    "live-route-moon-orb",
+    [0.72, 0.95, 1, 1], // #b7f4ff
+    [0.49, 0.886, 1], // #7de2ff cyan glow
+    0.45,
+    1.55
+  );
+  const moonRim = makeGlowMaterial("live-route-moon-rim", [0.49, 0.886, 1, 1], [0.49, 0.886, 1], 0.4, 1.7);
+  // Glow stones (warm gold + cyan) — the "wake the glow stones" payoff.
+  const stoneGold = makeGlowMaterial("live-route-stone-gold", [1, 0.882, 0.557, 1], [1, 0.882, 0.557], 0.12, 1.85);
+  const stoneCyan = makeGlowMaterial("live-route-stone-cyan", [0.49, 0.886, 1, 1], [0.49, 0.886, 1], 0.1, 1.7);
+  // Moon lilies — "losing their sparkle" (dim) → "twinkling again" (full).
+  const lilyStem = makeGlowMaterial("live-route-lily-stem", [0.25, 1, 0.75, 1], [0.25, 1, 0.75], 0.15, 1.05);
+  const lilyBloom = makeGlowMaterial("live-route-lily-bloom", [0.917, 0.988, 1, 1], [0.843, 0.984, 1], 0.1, 1.35);
+  // Broom bristles get a soft glow tip.
+  const broomBristles = makeGlowMaterial("live-route-broom-bristles", [1, 0.882, 0.557, 1], [1, 0.882, 0.557], 0.18, 1.0);
+
+  return [
+    // Crater/garden floor + mound (characters stand on this).
+    groundItem("garden-floor", GARDEN_CUBE, gardenFloor, [0, -0.06, -0.2], [6, 0.12, 4]),
+    groundItem("garden-mound", GARDEN_CYLINDER, craterRim, [0, 0.0, -0.55], [3.0, 0.16, 1.4]),
+    // Night-sky plate + glowing moon portal orb and cyan rim backdrop.
+    groundItem("garden-sky", GARDEN_CUBE, skyPlate, [0, 2.0, -2.6], [9.0, 4.4, 0.12]),
+    glowItem("moon-orb", GARDEN_SPHERE, moonOrb, [0, 2.05, -2.42], [1.55, 1.55, 0.16]),
+    glowItem("moon-rim", GARDEN_TORUS_RIM, moonRim, [0, 2.05, -2.46], [1.95, 1.95, 0.1]),
+    // Glow stones scattered across the crater floor.
+    glowItem("glow-stone-l", GARDEN_SPHERE, stoneGold, [-1.7, 0.12, 0.45], [0.26, 0.13, 0.2]),
+    glowItem("glow-stone-c", GARDEN_SPHERE, stoneCyan, [-0.15, 0.1, 0.35], [0.2, 0.1, 0.16]),
+    glowItem("glow-stone-r", GARDEN_SPHERE, stoneGold, [1.75, 0.12, 0.4], [0.26, 0.13, 0.2]),
+    glowItem("glow-stone-back", GARDEN_SPHERE, stoneCyan, [0.55, 0.1, -0.7], [0.2, 0.1, 0.16]),
+    // Moon lilies (emissive stem + bloom) flanking the robots.
+    glowItem("lily-stem-l", GARDEN_CYLINDER, lilyStem, [-2.05, 0.32, -0.2], [0.05, 0.62, 0.05]),
+    glowItem("lily-bloom-l", GARDEN_SPHERE, lilyBloom, [-2.05, 0.66, -0.2], [0.34, 0.16, 0.26]),
+    glowItem("lily-stem-r", GARDEN_CYLINDER, lilyStem, [2.1, 0.32, -0.3], [0.05, 0.62, 0.05]),
+    glowItem("lily-bloom-r", GARDEN_SPHERE, lilyBloom, [2.1, 0.66, -0.3], [0.34, 0.16, 0.26]),
+    // Broom prop (handle + glowing bristles), miko's hero prop.
+    broomItem("broom-handle", GARDEN_CYLINDER, broomHandle, [-0.55, 0.5, 0.25], [0.045, 1.0, 0.045], -0.55),
+    broomItem("broom-bristles", GARDEN_CUBE, broomBristles, [-0.82, 0.18, 0.27], [0.32, 0.18, 0.12], -0.2)
+  ];
+}
+
+/** Two colored night-garden point lights (cyan key + warm gold rim), mirroring the
+ * reference set's `lights.point` rig. Backed by real `PointLight` source nodes so
+ * they satisfy `CollectedLight`. These complement the emissive glow geometry. */
+function createGardenLights(): CollectedLight[] {
+  const make = (
+    name: string,
+    color: readonly [number, number, number],
+    position: readonly [number, number, number],
+    intensity: number,
+    range: number
+  ): CollectedLight => {
+    const source = new PointLight(name);
+    source.intensity = intensity;
+    source.range = range;
+    return {
+      kind: "point",
+      color,
+      intensity,
+      position,
+      direction: [0, -1, 0],
+      range,
+      spotAngle: 0,
+      penumbra: 0,
+      castsShadow: false,
+      layerMask: 0xffffffff,
+      source
+    };
+  };
+  return [
+    make("garden-cyan-key", [0.49, 0.886, 1], [-1.8, 2.4, 1.2], 2.8, 12),
+    make("garden-warm-rim", [1, 0.882, 0.557], [1.8, 1.7, 0.8], 2.0, 10)
+  ];
+}
+
+function glowItem(
+  label: string,
+  geometry: Geometry,
+  material: PBRMaterial,
+  position: readonly [number, number, number],
+  scale: readonly [number, number, number]
+): RenderItem {
+  return {
+    label,
+    geometry,
+    material,
+    modelMatrix: composeMat4([...position], quatFromEuler(0, 0, 0), [...scale]) as Mat4,
+    includeInAutoFrame: false
+  };
+}
+
+function broomItem(
+  label: string,
+  geometry: Geometry,
+  material: PBRMaterial,
+  position: readonly [number, number, number],
+  scale: readonly [number, number, number],
+  rollZ: number
+): RenderItem {
+  return {
+    label,
+    geometry,
+    material,
+    modelMatrix: composeMat4([...position], quatFromEuler(0, 0, rollZ), [...scale]) as Mat4,
+    includeInAutoFrame: false
+  };
 }
 
 function groundItem(
