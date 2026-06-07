@@ -186,6 +186,43 @@ interface CapturedFrame {
   readonly raw: Uint8Array;
 }
 
+const seekProofs: unknown[] = [];
+
+interface SeekReadResult {
+  readonly proof: unknown;
+  readonly raw: Uint8Array;
+}
+
+/** Drive the route's seek hook at `time` (with optional mouth override) and read
+ * back the rendered canvas as raw RGBA bytes. */
+async function seekAndReadPixels(
+  page: import("@playwright/test").Page,
+  time: number,
+  options?: { mouthOverride?: number }
+): Promise<SeekReadResult> {
+  const result = await page.evaluate(
+    ({ t, w, h, opts }) => {
+      const win = window as unknown as {
+        __auraSeek__: (time: number, options?: { mouthOverride?: number }) => unknown;
+        __AURA_LIVE_SEEK_LAST__?: unknown;
+      };
+      const proof = win.__auraSeek__(t, opts);
+      win.__AURA_LIVE_SEEK_LAST__ = proof;
+      const canvas = document.querySelector("#live-canvas") as HTMLCanvasElement;
+      // Copy the WebGL canvas into a 2D canvas to read back stable RGBA bytes.
+      const copy = document.createElement("canvas");
+      copy.width = w;
+      copy.height = h;
+      const ctx = copy.getContext("2d")!;
+      ctx.drawImage(canvas, 0, 0, w, h);
+      const data = ctx.getImageData(0, 0, w, h).data;
+      return { proof, pixels: Array.from(data) };
+    },
+    { t: time, w: WIDTH, h: HEIGHT, opts: options }
+  );
+  return { proof: result.proof, raw: Uint8Array.from(result.pixels as number[]) };
+}
+
 async function main(): Promise<void> {
   mkdirSync(FRAMES_DIR, { recursive: true });
 
@@ -202,6 +239,14 @@ async function main(): Promise<void> {
   });
   const captured: CapturedFrame[] = [];
   let readyProof: unknown;
+  let mouthProof: {
+    time: number;
+    shot: unknown;
+    changedPixels: number;
+    meanRgbDiff: number;
+    openProof: unknown;
+    closedProof: unknown;
+  } | undefined;
   try {
     const page = await browser.newPage({ viewport: { width: WIDTH + 40, height: HEIGHT + 40 }, deviceScaleFactor: 1 });
     page.on("console", (msg) => {
@@ -227,31 +272,58 @@ async function main(): Promise<void> {
     console.log("route ready:", JSON.stringify(readyProof));
 
     for (const time of CAPTURE_TIMES) {
-      const result = await page.evaluate(
-        ({ t, w, h }) => {
-          const win = window as unknown as {
-            __auraSeek__: (time: number) => unknown;
-            __AURA_LIVE_SEEK_LAST__?: unknown;
-          };
-          const proof = win.__auraSeek__(t);
-          win.__AURA_LIVE_SEEK_LAST__ = proof;
-          const canvas = document.querySelector("#live-canvas") as HTMLCanvasElement;
-          // Copy the WebGL canvas into a 2D canvas to read back stable RGBA bytes.
-          const copy = document.createElement("canvas");
-          copy.width = w;
-          copy.height = h;
-          const ctx = copy.getContext("2d")!;
-          ctx.drawImage(canvas, 0, 0, w, h);
-          const data = ctx.getImageData(0, 0, w, h).data;
-          return { proof, pixels: Array.from(data) };
-        },
-        { t: time, w: WIDTH, h: HEIGHT }
-      );
-      const raw = Uint8Array.from(result.pixels as number[]);
+      const result = await seekAndReadPixels(page, time);
+      const raw = result.raw;
       captured.push({ time, raw });
-      const proof = result.proof as { drawCalls: number; skinnedRenderItems: number };
-      console.log(`captured t=${time.toFixed(2)}s drawCalls=${proof.drawCalls} skinnedItems=${proof.skinnedRenderItems}`);
+      seekProofs.push(result.proof);
+      const proof = result.proof as {
+        drawCalls: number;
+        skinnedRenderItems: number;
+        shot?: { presetId: string; cameraPosition: number[] };
+        characters?: { id: string; mouthOpenness: number; primitiveMouthOpen: number; mouthMorphWeight: number }[];
+      };
+      const miko = proof.characters?.find((c) => c.id === "miko");
+      console.log(
+        `captured t=${time.toFixed(2)}s draw=${proof.drawCalls} skinned=${proof.skinnedRenderItems} ` +
+          `cam=${proof.shot?.presetId}@[${proof.shot?.cameraPosition.map((v) => v.toFixed(1)).join(",")}] ` +
+          `miko.mouthOpen=${miko?.mouthOpenness.toFixed(2)} primitiveOpen=${miko?.primitiveMouthOpen.toFixed(3)} morphW=${miko?.mouthMorphWeight.toFixed(2)}`
+      );
     }
+
+    // ISOLATED LIP-SYNC A/B PROOF: render the SAME pose + SAME close-up camera with
+    // the mouth forced fully open vs fully closed, so the ONLY difference between the
+    // two frames is the mouth indicator. This proves the lip-sync alone moves pixels
+    // (the per-frame captures above also vary skeleton/camera, which would otherwise
+    // confound an isolated mouth measurement).
+    const MOUTH_PROOF_TIME = 1.7; // close-up shot (miko fills frame)
+    const mouthClosed = await seekAndReadPixels(page, MOUTH_PROOF_TIME, { mouthOverride: 0 });
+    const mouthOpen = await seekAndReadPixels(page, MOUTH_PROOF_TIME, { mouthOverride: 1 });
+    const closedPng = await rawRgbaToPng(applyToonTreatment(mouthClosed.raw, WIDTH, HEIGHT).pixels, WIDTH, HEIGHT);
+    const openPng = await rawRgbaToPng(applyToonTreatment(mouthOpen.raw, WIDTH, HEIGHT).pixels, WIDTH, HEIGHT);
+    writeFileSync(resolve(FRAMES_DIR, "mouth-closed.png"), closedPng);
+    writeFileSync(resolve(FRAMES_DIR, "mouth-open.png"), openPng);
+    let changedPixels = 0;
+    let totalDiff = 0;
+    for (let i = 0; i < mouthClosed.raw.length; i += 4) {
+      const d =
+        Math.abs(mouthClosed.raw[i]! - mouthOpen.raw[i]!) +
+        Math.abs(mouthClosed.raw[i + 1]! - mouthOpen.raw[i + 1]!) +
+        Math.abs(mouthClosed.raw[i + 2]! - mouthOpen.raw[i + 2]!);
+      totalDiff += d;
+      if (d > 30) changedPixels += 1;
+    }
+    mouthProof = {
+      time: MOUTH_PROOF_TIME,
+      shot: (mouthOpen.proof as { shot?: unknown }).shot,
+      changedPixels,
+      meanRgbDiff: totalDiff / (mouthClosed.raw.length / 4) / 3,
+      openProof: (mouthOpen.proof as { characters?: unknown }).characters,
+      closedProof: (mouthClosed.proof as { characters?: unknown }).characters
+    };
+    console.log(
+      `\nlip-sync A/B (same pose+camera, mouth open vs closed): changedPixels=${changedPixels} ` +
+        `meanRgbDiff=${mouthProof.meanRgbDiff.toFixed(3)} -> frames mouth-open.png / mouth-closed.png`
+    );
   } finally {
     await browser.close();
     await server.close();
@@ -311,7 +383,12 @@ async function main(): Promise<void> {
     frameRate: FRAME_RATE,
     captureTimes: CAPTURE_TIMES,
     toon: toonInfo,
-    ready: readyProof
+    ready: readyProof,
+    // Per-frame seek proofs: per-shot camera framing + per-character lip-sync state
+    // (AuraVoice mouthOpenness, primitive mouth-indicator open height, GLB morph weight).
+    seekProofs,
+    // Isolated lip-sync A/B proof (same pose + camera, mouth open vs closed).
+    mouthProof
   };
   writeFileSync(resolve(OUTPUT_DIR, "render-live-summary.json"), `${JSON.stringify(summary, null, 2)}\n`);
 
