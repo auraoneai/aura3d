@@ -25,6 +25,11 @@ It uses:
   true mesh reconstruction and cannot orbit behind the painted characters.
   Use `/?view=concept-2-5d&sampleTime=24&animateParallax=1` to keep the same
   shot/caption while the layered camera moves.
+- A separate puppet-animation route at `/?view=puppet-2d&sampleTime=24`.
+  This is the route that moves actual character parts: robot head bob, blinking
+  eyes, broom sweep, rake/push arms, wheelbarrow roll, moon pulse, foreground
+  glow, caption timing, and timeline proof. The source PNG supplies the art
+  direction/backdrop; the moving actors are explicit 2D puppet overlays.
 
 Replace primitive characters with typed GLB assets by running:
 
@@ -73,6 +78,13 @@ The animated route for live review is:
 /?view=concept-2-5d&sampleTime=24&animateParallax=1
 ```
 
+That route is camera/parallax motion only. To review actual character motion,
+open:
+
+```text
+/?view=puppet-2d&sampleTime=24
+```
+
 Record the moving proof with:
 
 ```bash
@@ -83,6 +95,18 @@ That writes:
 
 ```text
 tests/reports/prompt-animation/cartoon-2-5d-concept-animation.webm
+```
+
+Record the puppet animation with:
+
+```bash
+npm run record:puppet
+```
+
+That writes:
+
+```text
+tests/reports/prompt-animation/cartoon-2d-puppet-animation.webm
 ```
 
 In that route, Aura3D's role is the episode contract, shot timing, caption

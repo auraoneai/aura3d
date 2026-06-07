@@ -47,6 +47,7 @@ import {
   visemeTrack
 } from "./render-plan";
 import { installConceptEpisode2_5D } from "./concept-episode-2-5d";
+import { installPuppetEpisode2D } from "./puppet-episode-2d";
 import { installSampleEpisodeVisual } from "./sample-episode-visual";
 
 declare global {
@@ -125,6 +126,11 @@ document.body.dataset.cartoonStoryBibleProps = String(storyBible.props.length);
 const cartoonView = new URLSearchParams(window.location.search).get("view");
 if (cartoonView === "concept-2-5d") {
   installConceptEpisode2_5D({
+    sampleAt: sampleCartoonRouteAt,
+    duration: episode.episodePlan.runtime.duration
+  });
+} else if (cartoonView === "puppet-2d") {
+  installPuppetEpisode2D({
     sampleAt: sampleCartoonRouteAt,
     duration: episode.episodePlan.runtime.duration
   });
