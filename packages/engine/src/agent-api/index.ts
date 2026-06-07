@@ -28,6 +28,7 @@ export * from "./FrameEncoder.js";
 export * from "./BrowserFrameCaptureAdapter.js";
 export * from "./MediaRecorderFrameEncoder.js";
 export * from "./WebCodecsFrameEncoder.js";
+export * from "./FfmpegFrameEncoder.js";
 export * from "./PngSequenceEncoder.js";
 export * from "./AudioMuxer.js";
 export {
