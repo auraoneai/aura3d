@@ -7,7 +7,6 @@ import {
   effects,
   game,
   group,
-  installShotPlayback,
   labels,
   lights,
   material,
@@ -253,21 +252,49 @@ const shotPlaybackApplyOptions = {
   }
 } as const;
 
-// Deterministically pose every character (position, rotation, animation clip, mouth)
-// at the requested time. This is what makes a seek render a real frame of the
-// generated cartoon instead of only updating the caption text.
-function seekCartoonEpisode(time: number) {
-  applyShotPlaybackFrame(app, sampleShotPlaybackPlan(shotPlaybackPlan, time), shotPlaybackApplyOptions);
+// Map a director action to an actual GLB clip so the characters play real skeletal
+// animation instead of standing in their imported bind (T) pose.
+function clipForAction(action: string | undefined): string {
+  switch (action) {
+    case "walk":
+    case "move":
+      return "Walking";
+    case "wave":
+    case "greet":
+    case "point":
+    case "react":
+    case "celebrate":
+    case "happy":
+      return "Wave";
+    case "jump":
+      return "Jump";
+    case "punch":
+    case "action":
+    case "clean":
+      return "Punch";
+    default:
+      return "Idle"; // idle / speak / listen
+  }
 }
-window.__AURA3D_CARTOON_EPISODE_SEEK__ = seekCartoonEpisode;
+
+// Deterministically pose every character (position, rotation, animation clip, mouth)
+// at the requested time, injecting a real GLB clip per action so nobody is T-posed.
+function applyCartoonFrameAt(time: number) {
+  const frame = sampleShotPlaybackPlan(shotPlaybackPlan, time);
+  const nodeUpdates = frame.nodeUpdates.map((update) => ({
+    ...update,
+    animationClip: update.animationClip ?? clipForAction(update.action)
+  }));
+  applyShotPlaybackFrame(app, { ...frame, nodeUpdates }, shotPlaybackApplyOptions);
+}
+window.__AURA3D_CARTOON_EPISODE_SEEK__ = applyCartoonFrameAt;
 
 if (captureMode) {
-  // Deterministic capture: the seek hook is the single source of truth, so pose
-  // the opening beat now and let each capture seek drive the rendered frame.
-  seekCartoonEpisode(1);
+  // Deterministic capture: the seek hook drives the rendered frame.
+  applyCartoonFrameAt(1);
 } else {
-  // Live preview: play the episode timeline on the runtime clock.
-  installShotPlayback(app, shotPlaybackPlan, shotPlaybackApplyOptions);
+  // Live preview: play the episode timeline on the runtime clock with real clips.
+  app.onFrame((frame) => applyCartoonFrameAt(frame.time));
 }
 
 function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position: readonly [number, number, number], color: string) {
