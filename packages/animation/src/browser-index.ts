@@ -21,7 +21,7 @@ export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./Retargeting.js";
 export * from "./AnimationClipEvents.js";
-export { AnimationClipRegistry } from "./AnimationClipRegistry.js";
+export { AnimationClipRegistry, validateCartoonClipMap } from "./AnimationClipRegistry.js";
 export type {
   AnimationClipDefinition,
   AnimationClipId,
@@ -34,6 +34,8 @@ export type {
   AnimationKeyframe,
   AnimationTrack as AnimationClipTrack,
   AnimationTrackTarget,
+  CartoonClipMapReadiness,
+  CartoonClipMapReadinessOptions,
   RegisteredAnimationClip
 } from "./AnimationClipRegistry.js";
 export * from "./AnimationController.js";

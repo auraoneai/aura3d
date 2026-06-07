@@ -33,7 +33,13 @@ import {
   type DialogueLine,
   type DialogueTrackArtifact
 } from "./DialoguePerformance.js";
-import { createCartoonRenderQueue, type CartoonRenderQueueArtifact, type CartoonViewport } from "./CartoonRenderQueue.js";
+import {
+  createCartoonRenderOutputPackageMetadata,
+  createCartoonRenderQueue,
+  type CartoonRenderOutputPackageMetadata,
+  type CartoonRenderQueueArtifact,
+  type CartoonViewport
+} from "./CartoonRenderQueue.js";
 import { createShotTimeline, type ShotTimelineArtifact, type ShotTimelineShot } from "./ShotTimeline.js";
 
 export interface CartoonDirectorCharacterInput {
@@ -118,6 +124,34 @@ export interface CartoonDirectorPlan {
   readonly captionTrack: CaptionTrackArtifact;
   readonly performance: CartoonPerformanceArtifact;
   readonly renderQueue: CartoonRenderQueueArtifact;
+  readonly renderOutputPackage: CartoonRenderOutputPackageMetadata;
+  readonly assetSlots: readonly CartoonDirectorAssetSlot[];
+  readonly motionRequirements: readonly CartoonDirectorMotionRequirement[];
+  readonly reviewGates: readonly CartoonDirectorReviewGate[];
+}
+
+export interface CartoonDirectorAssetSlot {
+  readonly id: PromptAnimationId;
+  readonly kind: "character" | "location" | "prop";
+  readonly required: boolean;
+  readonly assetId?: string | undefined;
+  readonly readiness: "typed-asset" | "needs-asset" | "primitive-fallback";
+  readonly requirements: readonly string[];
+}
+
+export interface CartoonDirectorMotionRequirement {
+  readonly id: PromptAnimationId;
+  readonly targetId: PromptAnimationId;
+  readonly kind: "body" | "mouth" | "gesture" | "camera" | "caption";
+  readonly required: boolean;
+  readonly evidence: string;
+}
+
+export interface CartoonDirectorReviewGate {
+  readonly id: PromptAnimationId;
+  readonly required: boolean;
+  readonly status: "pending" | "pass";
+  readonly detail: string;
 }
 
 export function defineCartoonDirectorPlan<const TPlan extends CartoonDirectorPlan>(plan: TPlan): TPlan {
@@ -413,6 +447,12 @@ export function createCartoonDirectorPlan(input: CartoonDirectorInput): CartoonD
     viewport: input.viewport,
     generatedAt: input.generatedAt
   });
+  const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+    episodePlan,
+    shotTimeline,
+    renderQueue,
+    generatedAt: input.generatedAt
+  });
 
   return {
     kind: "cartoon-director-plan",
@@ -423,7 +463,11 @@ export function createCartoonDirectorPlan(input: CartoonDirectorInput): CartoonD
     dialogueTrack,
     captionTrack,
     performance,
-    renderQueue
+    renderQueue,
+    renderOutputPackage,
+    assetSlots: createCartoonDirectorAssetSlots(characters, locations, props),
+    motionRequirements: createCartoonDirectorMotionRequirements(shots, dialogueLines, performanceCues),
+    reviewGates: createCartoonDirectorReviewGates(renderOutputPackage)
   };
 }
 
@@ -472,4 +516,95 @@ function defaultGestureForEmotion(emotion: string | undefined): PromptAnimationI
 
 function createCueGestureState(gestureId: PromptAnimationId | undefined): CartoonPerformanceGestureState | undefined {
   return resolveCartoonGesture(gestureId)?.gesture;
+}
+
+function createCartoonDirectorAssetSlots(
+  characters: readonly PromptAnimationCharacter[],
+  locations: readonly PromptAnimationLocation[],
+  props: readonly PromptAnimationProp[]
+): readonly CartoonDirectorAssetSlot[] {
+  return [
+    ...characters.map((character): CartoonDirectorAssetSlot => ({
+      id: character.id,
+      kind: "character",
+      required: true,
+      ...(character.rig.asset?.id ? { assetId: character.rig.asset.id } : {}),
+      readiness: character.rig.asset ? "typed-asset" : "primitive-fallback",
+      requirements: ["cartoon-character profile", "mouth or blendshape evidence", "body motion evidence"]
+    })),
+    ...locations.map((location): CartoonDirectorAssetSlot => ({
+      id: location.id,
+      kind: "location",
+      required: true,
+      readiness: location.sceneNodes && location.sceneNodes.length > 0 ? "typed-asset" : "needs-asset",
+      requirements: ["cartoon-set or authored scene nodes", "walkable/composition evidence"]
+    })),
+    ...props.map((prop): CartoonDirectorAssetSlot => ({
+      id: prop.id,
+      kind: "prop",
+      required: prop.role === "hero-prop" || prop.role === "interactive",
+      ...(prop.asset?.id ? { assetId: prop.asset.id } : {}),
+      readiness: prop.asset ? "typed-asset" : prop.primitiveFallback ? "primitive-fallback" : "needs-asset",
+      requirements: ["typed asset when hero/interactive", "license/provenance evidence"]
+    }))
+  ];
+}
+
+function createCartoonDirectorMotionRequirements(
+  shots: readonly ShotTimelineShot[],
+  dialogueLines: readonly DialogueLine[],
+  cues: readonly CartoonPerformanceCue[]
+): readonly CartoonDirectorMotionRequirement[] {
+  return [
+    ...shots.map((shot): CartoonDirectorMotionRequirement => ({
+      id: `${shot.shotId}:camera`,
+      targetId: shot.shotId,
+      kind: "camera",
+      required: true,
+      evidence: `camera move "${shot.camera.move}" is sampled by the render queue`
+    })),
+    ...dialogueLines.map((line): CartoonDirectorMotionRequirement => ({
+      id: `${line.lineId}:mouth`,
+      targetId: line.speakerId,
+      kind: "mouth",
+      required: true,
+      evidence: `dialogue line "${line.lineId}" requires viseme or mouth-card motion`
+    })),
+    ...cues.map((cue): CartoonDirectorMotionRequirement => ({
+      id: `${cue.id}:body`,
+      targetId: cue.characterId,
+      kind: cue.gesture || cue.gestureId ? "gesture" : "body",
+      required: true,
+      evidence: `performance cue "${cue.id}" drives ${cue.action} from ${cue.startTime}s to ${cue.endTime}s`
+    }))
+  ];
+}
+
+function createCartoonDirectorReviewGates(outputPackage: CartoonRenderOutputPackageMetadata): readonly CartoonDirectorReviewGate[] {
+  return [
+    {
+      id: "encoded-video",
+      required: true,
+      status: "pending",
+      detail: `Review package must include encoded video output at ${outputPackage.reviewPackagePaths.video.join(" or ")}.`
+    },
+    {
+      id: "captions",
+      required: true,
+      status: "pass",
+      detail: `Caption sidecars are planned at ${outputPackage.reviewPackagePaths.captions.join(", ")}.`
+    },
+    {
+      id: "thumbnail",
+      required: true,
+      status: "pass",
+      detail: `Thumbnail is captured from route state ${outputPackage.thumbnailCapture.sourceSceneStateId}.`
+    },
+    {
+      id: "human-review",
+      required: true,
+      status: "pending",
+      detail: "Named human visual approval is required before publish-ready claims."
+    }
+  ];
 }

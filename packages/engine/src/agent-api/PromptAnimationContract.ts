@@ -179,6 +179,25 @@ export interface PromptAnimationProductionMetadata {
   readonly notes?: readonly string[] | undefined;
 }
 
+export type PromptAnimationAssetMode = "source-only" | "placeholder" | "typed-assets" | "mixed";
+export type PromptAnimationMotionMode = "source-only" | "static-preview" | "timeline-driven" | "clip-driven" | "performance-driven";
+export type PromptAnimationRenderOutputMode = "source-only" | "preview-only" | "render-ready" | "publish-ready";
+export type PromptAnimationReviewStatus = "not-reviewed" | "needs-review" | "approved" | "rejected";
+export type PromptAnimationPublishTarget = "none" | "internal-review" | "web" | "youtube" | "youtube-shorts";
+export type PromptAnimationReadinessStatus = "source-only" | "preview-only" | "render-ready" | "publish-ready";
+
+export interface PromptAnimationEpisodeReadiness {
+  readonly assetMode: PromptAnimationAssetMode;
+  readonly motionMode: PromptAnimationMotionMode;
+  readonly renderOutputMode: PromptAnimationRenderOutputMode;
+  readonly reviewStatus: PromptAnimationReviewStatus;
+  readonly publishTarget: PromptAnimationPublishTarget;
+  readonly status: PromptAnimationReadinessStatus;
+  readonly sourceOnlyAcceptedAsPublishProof: false;
+  readonly requiresHumanReview: boolean;
+  readonly notes?: readonly string[] | undefined;
+}
+
 export interface PromptAnimationYouTubeDraftMetadata {
   readonly title: string;
   readonly description?: string | undefined;
@@ -308,6 +327,7 @@ export interface PromptAnimationEpisodePlan extends PromptAnimationArtifactBase<
   readonly safety: PromptAnimationSafetyMetadata;
   readonly accessibilityProof?: PromptAnimationAccessibilityProofMetadata | undefined;
   readonly production: PromptAnimationProductionMetadata;
+  readonly readiness?: PromptAnimationEpisodeReadiness | undefined;
   readonly youtube?: PromptAnimationYouTubeDraftMetadata | undefined;
 }
 
@@ -348,6 +368,7 @@ export interface PromptAnimationEpisodePlanInput {
   readonly safety?: Partial<PromptAnimationSafetyMetadata> | undefined;
   readonly accessibilityProof?: PromptAnimationAccessibilityProofMetadata | undefined;
   readonly production?: PromptAnimationProductionMetadata | undefined;
+  readonly readiness?: PromptAnimationEpisodeReadiness | undefined;
   readonly youtube?: PromptAnimationYouTubeDraftMetadata | undefined;
   readonly generatedAt?: string | undefined;
 }
@@ -459,6 +480,7 @@ export function createPromptAnimationEpisodePlan(input: PromptAnimationEpisodePl
     ...promptAnimationChildSafeDefaults,
     ...input.safety
   };
+  const production = input.production ?? {};
   return {
     artifact: "episode.plan",
     contractId: promptAnimationContractVersion,
@@ -479,7 +501,16 @@ export function createPromptAnimationEpisodePlan(input: PromptAnimationEpisodePl
         highContrastDefault: input.runtime.highContrast ?? safety.highContrastDefault ?? true,
         maxTimingDriftFrames: input.runtime.maxTimingDriftFrames ?? 1
       }),
-    production: input.production ?? {},
+    production,
+    readiness:
+      input.readiness ??
+      createPromptAnimationEpisodeReadiness({
+        assetMode: input.characters.some((character) => character.rig.asset) ? "typed-assets" : "placeholder",
+        motionMode: "timeline-driven",
+        renderOutputMode: "preview-only",
+        reviewStatus: production.reviewStatus === "approved" ? "approved" : "needs-review",
+        publishTarget: production.target ?? "internal-review"
+      }),
     ...(input.youtube ? { youtube: input.youtube } : {}),
     ...(input.generatedAt ? { generatedAt: input.generatedAt } : {})
   };
@@ -487,6 +518,83 @@ export function createPromptAnimationEpisodePlan(input: PromptAnimationEpisodePl
 
 export function createPromptEpisodePlan(input: PromptAnimationEpisodePlanInput): PromptAnimationEpisodePlan {
   return createPromptAnimationEpisodePlan(input);
+}
+
+export function createPromptAnimationEpisodeReadiness(
+  input: Omit<PromptAnimationEpisodeReadiness, "status" | "sourceOnlyAcceptedAsPublishProof" | "requiresHumanReview"> & {
+    readonly status?: PromptAnimationReadinessStatus | undefined;
+    readonly sourceOnlyAcceptedAsPublishProof?: false | undefined;
+    readonly requiresHumanReview?: boolean | undefined;
+  }
+): PromptAnimationEpisodeReadiness {
+  const status = input.status ?? resolvePromptAnimationReadinessStatus(input.renderOutputMode, input.reviewStatus);
+  return {
+    assetMode: input.assetMode,
+    motionMode: input.motionMode,
+    renderOutputMode: input.renderOutputMode,
+    reviewStatus: input.reviewStatus,
+    publishTarget: input.publishTarget,
+    status,
+    sourceOnlyAcceptedAsPublishProof: false,
+    requiresHumanReview: input.requiresHumanReview ?? input.reviewStatus !== "approved",
+    ...(input.notes ? { notes: input.notes } : {})
+  };
+}
+
+export function validatePromptAnimationEpisodeReadiness(
+  readiness: PromptAnimationEpisodeReadiness,
+  path = "readiness"
+): readonly PromptAnimationValidationIssue[] {
+  const issues: PromptAnimationValidationIssue[] = [];
+  if (readiness.sourceOnlyAcceptedAsPublishProof !== false) {
+    issues.push(
+      createPromptAnimationIssue(
+        "error",
+        "readiness-source-only-publish-proof",
+        "Source-only prompt-animation proof cannot be accepted as publish-ready evidence.",
+        { path: `${path}.sourceOnlyAcceptedAsPublishProof` }
+      )
+    );
+  }
+  if (readiness.status === "publish-ready" && readiness.renderOutputMode !== "publish-ready") {
+    issues.push(
+      createPromptAnimationIssue("error", "readiness-publish-output-mode", "Publish-ready status requires publish-ready render output.", {
+        path: `${path}.renderOutputMode`
+      })
+    );
+  }
+  if (readiness.status === "publish-ready" && readiness.reviewStatus !== "approved") {
+    issues.push(
+      createPromptAnimationIssue("error", "readiness-publish-review", "Publish-ready status requires approved human review.", {
+        path: `${path}.reviewStatus`
+      })
+    );
+  }
+  if (readiness.status === "publish-ready" && (readiness.assetMode === "source-only" || readiness.assetMode === "placeholder")) {
+    issues.push(
+      createPromptAnimationIssue("error", "readiness-publish-assets", "Publish-ready status requires typed production assets.", {
+        path: `${path}.assetMode`
+      })
+    );
+  }
+  if (readiness.status === "publish-ready" && (readiness.motionMode === "source-only" || readiness.motionMode === "static-preview")) {
+    issues.push(
+      createPromptAnimationIssue("error", "readiness-publish-motion", "Publish-ready status requires timeline, clip, or performance-driven motion.", {
+        path: `${path}.motionMode`
+      })
+    );
+  }
+  return issues;
+}
+
+function resolvePromptAnimationReadinessStatus(
+  renderOutputMode: PromptAnimationRenderOutputMode,
+  reviewStatus: PromptAnimationReviewStatus
+): PromptAnimationReadinessStatus {
+  if (renderOutputMode === "source-only") return "source-only";
+  if (renderOutputMode === "preview-only") return "preview-only";
+  if (renderOutputMode === "render-ready") return "render-ready";
+  return reviewStatus === "approved" ? "publish-ready" : "render-ready";
 }
 
 export function createPromptAnimationIssue(

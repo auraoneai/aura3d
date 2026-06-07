@@ -46,9 +46,6 @@ import {
   visemeFrameSyncSourceProof,
   visemeTrack
 } from "./render-plan";
-import { installConceptEpisode2_5D } from "./concept-episode-2-5d";
-import { installImagePuppetEpisode } from "./image-puppet-episode";
-import { installPuppetEpisode2D } from "./puppet-episode-2d";
 import { installSampleEpisodeVisual } from "./sample-episode-visual";
 
 declare global {
@@ -69,6 +66,9 @@ declare global {
       readonly bridgeIssues: readonly unknown[];
       readonly promptAnimationEvidence: unknown;
       readonly publishReadiness: unknown;
+      readonly releaseFacingViews: readonly string[];
+      readonly rejectedViews: readonly string[];
+      readonly rejectedViewReason: string;
       readonly sourceProofs: unknown;
       readonly sampleRenderSourceWorkflow: unknown;
       diagnostics(): unknown;
@@ -124,29 +124,13 @@ captionOverlay.dataset.captionId = playbackProbeSamples[0]?.captionId ?? firstCa
 document.body.dataset.cartoonShotCount = String(episode.shotTimeline.shots.length);
 document.body.dataset.cartoonCaptionCount = String(episode.captionTrack.cues.length);
 document.body.dataset.cartoonStoryBibleProps = String(storyBible.props.length);
-const cartoonView = new URLSearchParams(window.location.search).get("view");
-if (cartoonView === "concept-2-5d") {
-  installConceptEpisode2_5D({
-    sampleAt: sampleCartoonRouteAt,
-    duration: episode.episodePlan.runtime.duration
-  });
-} else if (cartoonView === "puppet-2d") {
-  installPuppetEpisode2D({
-    sampleAt: sampleCartoonRouteAt,
-    duration: episode.episodePlan.runtime.duration
-  });
-} else if (cartoonView === "image-puppet") {
-  installImagePuppetEpisode({
-    sampleAt: sampleCartoonRouteAt,
-    duration: episode.episodePlan.runtime.duration
-  });
-} else {
-  installSampleEpisodeVisual({
-    sampleAt: sampleCartoonRouteAt,
-    duration: episode.episodePlan.runtime.duration,
-    usesTypedAssets: missingCartoonCharacterAssets.length === 0
-  });
-}
+document.body.dataset.cartoonReleaseFacingView = "sample-episode-visual";
+document.body.dataset.cartoonRejectedViews = "concept-2-5d,puppet-2d,image-puppet";
+installSampleEpisodeVisual({
+  sampleAt: sampleCartoonRouteAt,
+  duration: episode.episodePlan.runtime.duration,
+  usesTypedAssets: missingCartoonCharacterAssets.length === 0
+});
 
 const app = createAuraApp("#app", {
   scene: scene()
@@ -197,6 +181,10 @@ window.__AURA3D_CARTOON_TEMPLATE__ = {
   bridgeIssues,
   promptAnimationEvidence,
   publishReadiness,
+  releaseFacingViews: ["sample-episode-visual"],
+  rejectedViews: ["concept-2-5d", "puppet-2d", "image-puppet"],
+  rejectedViewReason:
+    "Rejected 1.0.10 puppet/parallax experiments are quarantined from the release-facing cartoon-channel route because still-image parallax, flat cutout motion, and notTrue3D proof cannot satisfy Aura3D 1.1 cartoon animation readiness.",
   sourceProofs: {
     captionFrameSyncSourceProof,
     visemeFrameSyncSourceProof,

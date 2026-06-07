@@ -4,26 +4,32 @@ import { AURAVOICE_AURA3D_PROMPT_ANIMATION_CONTRACT_ID } from "./contract";
 
 export const episodeContractId = AURAVOICE_AURA3D_PROMPT_ANIMATION_CONTRACT_ID;
 
-export type CartoonAssetKey = "miko" | "luma" | "glowBroom" | "glowStones" | "moonLilies";
+export type CartoonAssetKey = "miko" | "luma" | "moonGarden" | "glowBroom" | "glowStones" | "moonLilies";
 
 type TypedCartoonAssets = Partial<Record<CartoonAssetKey, AuraAssetRef<"model">>>;
 
 const typedCartoonAssets = assets as TypedCartoonAssets;
 
 export const requiredCartoonCharacterAssets = ["miko", "luma"] as const;
+export const requiredCartoonSetAssets = ["moonGarden"] as const;
 export const optionalCartoonPropAssets = ["glowBroom", "glowStones", "moonLilies"] as const;
 export const publicCartoonAssetInstructions = [
-  "npx @aura3d/cli@latest assets add ./assets/miko.glb --name miko",
-  "npx @aura3d/cli@latest assets add ./assets/luma.glb --name luma",
-  "npx @aura3d/cli@latest assets validate-cartoon"
+  "npx @aura3d/cli@latest assets resolve \"stylized rigged cartoon child robot\" --name miko --profile cartoon-character",
+  "npx @aura3d/cli@latest assets resolve \"stylized rigged cartoon helper robot\" --name luma --profile cartoon-character",
+  "npx @aura3d/cli@latest assets resolve \"stylized moon garden set\" --name moonGarden --profile cartoon-set",
+  "npx @aura3d/cli@latest assets validate-cartoon --episode --require-license --no-placeholders"
 ] as const;
 
 export const missingCartoonCharacterAssets = requiredCartoonCharacterAssets.filter((key) => !typedCartoonAssets[key]);
+export const missingCartoonSetAssets = requiredCartoonSetAssets.filter((key) => !typedCartoonAssets[key]);
 export const typedCartoonAssetSummary = {
   requiredCharacterAssets: requiredCartoonCharacterAssets,
+  requiredSetAssets: requiredCartoonSetAssets,
   optionalPropAssets: optionalCartoonPropAssets,
   typedCharacterAssetCount: requiredCartoonCharacterAssets.length - missingCartoonCharacterAssets.length,
-  missingCharacterAssets: missingCartoonCharacterAssets
+  typedSetAssetCount: requiredCartoonSetAssets.length - missingCartoonSetAssets.length,
+  missingCharacterAssets: missingCartoonCharacterAssets,
+  missingSetAssets: missingCartoonSetAssets
 } as const;
 
 function typedAsset(key: CartoonAssetKey): AuraAssetRef<"model"> | undefined {
@@ -98,7 +104,7 @@ export const episode = compilePromptEpisodePlan({
   runtime: {
     duration: 60,
     frameRate: 30,
-    resolution: { width: 1920, height: 1080 },
+    resolution: { width: 1280, height: 720 },
     aspectRatio: "16:9",
     reducedMotion: true,
     highContrast: true,

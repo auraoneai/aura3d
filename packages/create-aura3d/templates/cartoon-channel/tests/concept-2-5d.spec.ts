@@ -1,52 +1,30 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test("2.5D concept route shows layered parallax from the moon garden source frame", async ({ page, request }) => {
+test("2.5D concept query is quarantined from the release-facing cartoon route", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/?view=concept-2-5d&sampleTime=24&parallax=0.78&animateParallax=1");
 
-  const sourceResponse = await request.get("/aura-assets/moon-garden-feature-frame.png");
-  expect(sourceResponse.ok()).toBe(true);
-  expect(sourceResponse.headers()["content-type"]).toContain("image/png");
+  await expect(page.locator("#sample-episode-visual")).toBeVisible();
+  await expect(page.locator("#concept-episode-2-5d")).toHaveCount(0);
+  await expect(page.locator("[data-sample-caption]")).toContainText(/tiny circle|stones|cleanup/i);
 
-  const reportDir = resolve(findWorkspaceRoot(process.cwd()), "tests/reports/prompt-animation");
-  mkdirSync(reportDir, { recursive: true });
+  const quarantine = await page.evaluate(() => ({
+    releaseFacingView: document.body.dataset.cartoonReleaseFacingView,
+    rejectedViews: document.body.dataset.cartoonRejectedViews,
+    conceptProof: (window as unknown as { __AURA3D_CARTOON_2_5D_PROOF__?: unknown }).__AURA3D_CARTOON_2_5D_PROOF__,
+    template: (window as unknown as {
+      __AURA3D_CARTOON_TEMPLATE__?: {
+        readonly releaseFacingViews?: readonly string[];
+        readonly rejectedViews?: readonly string[];
+        readonly rejectedViewReason?: string;
+      };
+    }).__AURA3D_CARTOON_TEMPLATE__
+  }));
 
-  for (const [label, parallax] of [
-    ["left", -0.78],
-    ["center", 0],
-    ["right", 0.78]
-  ] as const) {
-    await page.goto(`/?view=concept-2-5d&sampleTime=24&parallax=${parallax}`);
-
-    const frame = page.locator("#concept-episode-2-5d");
-    await expect(frame).toBeVisible();
-    await expect(page.locator("[data-concept-caption]")).toContainText(/tiny circle|stones|cleanup/i);
-
-    const proof = await page.evaluate(() => window.__AURA3D_CARTOON_2_5D_PROOF__);
-    expect(proof?.episodeId).toBe("moon-garden-cleanup-001");
-    expect(proof?.mode).toBe("2.5d-parallax-concept");
-    expect(proof?.sourceImage).toBe("/aura-assets/moon-garden-feature-frame.png");
-    expect(proof?.notTrue3D).toBe(true);
-    expect(proof?.screenshotTarget).toBe("#concept-episode-2-5d");
-    expect(proof?.layers.map((layer) => layer.id)).toEqual(["far-background", "midground-set", "character-plane", "foreground-garden"]);
-    expect(proof?.aura3dRole).toContain("episode contract and shot timing");
-    expect(proof?.limitations.join(" ")).toMatch(/not mesh reconstruction/i);
-    expect(proof?.parallax).toBeCloseTo(parallax, 2);
-
-    const screenshot = await page.locator(".concept-2-5d__frame").screenshot({ animations: "disabled" });
-    expect(screenshot.byteLength).toBeGreaterThan(90_000);
-    writeFileSync(resolve(reportDir, `cartoon-2-5d-concept-${label}.png`), screenshot);
-  }
+  expect(quarantine.releaseFacingView).toBe("sample-episode-visual");
+  expect(quarantine.rejectedViews).toContain("concept-2-5d");
+  expect(quarantine.conceptProof).toBeUndefined();
+  expect(quarantine.template?.releaseFacingViews).toEqual(["sample-episode-visual"]);
+  expect(quarantine.template?.rejectedViews).toContain("concept-2-5d");
+  expect(quarantine.template?.rejectedViewReason).toMatch(/notTrue3D|still-image|cutout/i);
 });
-
-function findWorkspaceRoot(start: string) {
-  let current = start;
-  for (let depth = 0; depth < 8; depth += 1) {
-    if (existsSync(resolve(current, "pnpm-workspace.yaml"))) return current;
-    const parent = resolve(current, "..");
-    if (parent === current) break;
-    current = parent;
-  }
-  return start;
-}

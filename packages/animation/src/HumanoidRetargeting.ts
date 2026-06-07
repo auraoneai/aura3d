@@ -126,6 +126,20 @@ export interface RetargetHumanoidPoseOptions {
   readonly scaleRootMotion?: boolean;
 }
 
+export interface CartoonHumanoidRetargetingOptions extends HumanoidRetargetingOptions {
+  readonly requiredClips?: readonly string[];
+  readonly availableClips?: readonly string[];
+  readonly mouthBlendshapeNames?: readonly string[];
+  readonly retargetMapProvided?: boolean;
+}
+
+export interface CartoonHumanoidRetargetingDiagnostics extends HumanoidRigDiagnostics {
+  readonly kind: "cartoon-humanoid-retargeting-diagnostics";
+  readonly mouthReady: boolean;
+  readonly clipReady: boolean;
+  readonly retargetMapProvided: boolean;
+}
+
 export function analyzeHumanoidRig(
   rig: HumanoidRigDefinition,
   options: HumanoidRetargetingOptions = {}
@@ -395,6 +409,55 @@ export function humanoidRetargetingDiagnostics(
   options: HumanoidRetargetingOptions = {}
 ): readonly HumanoidRetargetingDiagnostic[] {
   return createHumanoidRetargetingMap(source, target, options).diagnostics;
+}
+
+export function analyzeCartoonHumanoidRetargeting(
+  rig: HumanoidRigDefinition,
+  options: CartoonHumanoidRetargetingOptions = {}
+): CartoonHumanoidRetargetingDiagnostics {
+  const base = analyzeHumanoidRig(rig, { minRequiredCoverage: 0.9, requireRestPose: true, ...options });
+  const diagnostics: HumanoidRetargetingDiagnostic[] = [...base.diagnostics];
+  const requiredClips = options.requiredClips ?? ["Idle", "Talk", "Gesture", "Walk"];
+  const availableClips = new Set(options.availableClips ?? []);
+  const missingClips = requiredClips.filter((clip) => !availableClips.has(clip));
+  const mouthReady = (options.mouthBlendshapeNames?.length ?? 0) > 0
+    || Array.isArray(rig.metadata?.mouthBlendshapeNames) && (rig.metadata.mouthBlendshapeNames as unknown[]).length > 0;
+  const retargetMapProvided = options.retargetMapProvided ?? Boolean(rig.metadata?.retargetMapProvided);
+
+  if (!mouthReady) {
+    diagnostics.push({
+      severity: "error",
+      code: "CARTOON_MOUTH_METADATA_MISSING",
+      message: "Cartoon retargeting requires mouth blendshape or mouth-card metadata.",
+      rigId: rig.id
+    });
+  }
+  for (const clip of missingClips) {
+    diagnostics.push({
+      severity: "error",
+      code: "CARTOON_REQUIRED_CLIP_MISSING",
+      message: `Cartoon retargeting requires clip "${clip}".`,
+      rigId: rig.id
+    });
+  }
+  if (!retargetMapProvided) {
+    diagnostics.push({
+      severity: "error",
+      code: "CARTOON_RETARGET_MAP_MISSING",
+      message: "Cartoon retargeting requires external bone-map/retarget metadata.",
+      rigId: rig.id
+    });
+  }
+
+  return {
+    kind: "cartoon-humanoid-retargeting-diagnostics",
+    ...base,
+    ok: !diagnostics.some((diagnostic) => diagnostic.severity === "error"),
+    diagnostics,
+    mouthReady,
+    clipReady: missingClips.length === 0,
+    retargetMapProvided
+  };
 }
 
 const HUMANOID_SIDE_PAIRS: readonly { readonly left: HumanoidBoneName; readonly right: HumanoidBoneName }[] = [

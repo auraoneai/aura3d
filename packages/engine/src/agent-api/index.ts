@@ -25,6 +25,10 @@ import {
 } from "@aura3d/physics";
 
 export * from "./FrameEncoder.js";
+export * from "./BrowserFrameCaptureAdapter.js";
+export * from "./MediaRecorderFrameEncoder.js";
+export * from "./WebCodecsFrameEncoder.js";
+export * from "./PngSequenceEncoder.js";
 export * from "./AudioMuxer.js";
 export {
   GameInspector,
@@ -53,6 +57,7 @@ export type {
 export * from "./RenderProgressTracker.js";
 export * from "./VideoExportPipeline.js";
 export * from "./AudioVisemeAnalyzer.js";
+export * from "./ExternalPhonemeAnalyzer.js";
 export * from "./WaveformVisualizer.js";
 export * from "./VisemeTimelineTrack.js";
 export * from "./EpisodeStructure.js";
@@ -65,15 +70,22 @@ export * from "./CameraPathEditor.js";
 export * from "./CaptionExporter.js";
 export * from "./ThumbnailGenerator.js";
 export * from "./YouTubeMetadataGenerator.js";
+export * from "./YouTubeUploadAdapter.js";
 export * from "./PublishingPipeline.js";
+export * from "./CloudRenderAdapter.js";
+export * from "./BatchEpisodeRenderer.js";
 export * from "./CartoonAssetManifest.js";
 export * from "./AssetLibraryBrowser.js";
 export * from "./DialogueAlignment.js";
 export * from "./PerformancePoseEditor.js";
+export * from "./PerformanceCaptureSession.js";
 export * from "./PerformanceBlender.js";
 export * from "./PerformanceScriptParser.js";
 export * from "./BodyLanguageLibrary.js";
 export * from "./EpisodeTemplates.js";
+export * from "./CartoonMotionQuality.js";
+export * from "./CartoonRouteProof.js";
+export * from "./CartoonEpisodePackage.js";
 
 import type {
   GLTFSceneAnimationRuntime,
@@ -193,12 +205,42 @@ import {
 } from "./CartoonRenderQueue";
 import { collectPromptAnimationEvidence } from "./PromptAnimationEvidence";
 import {
+  createCartoonMotionQualityReport,
+  validateCartoonMotionQuality
+} from "./CartoonMotionQuality";
+import {
+  createCartoonRouteProof,
+  validateCartoonRouteProof
+} from "./CartoonRouteProof";
+import {
+  createCartoonEpisodePackageManifest,
+  validateCartoonEpisodePackage
+} from "./CartoonEpisodePackage";
+import {
   createGameAppRuntime,
   type GameAppRuntime,
   type GameAppRuntimeOptions
 } from "./GameAppRuntime";
 
 export { Engine } from "@aura3d/core";
+export {
+  analyzeRgbaFrameMotionRegions,
+  createCartoonMaterialStyle,
+  createCartoonRenderPreset,
+  createCartoonVisualQualityReport
+} from "@aura3d/rendering";
+export type {
+  CartoonFrameVisualInput,
+  CartoonFrameVisualQuality,
+  CartoonMaterialStyle,
+  CartoonMaterialStyleOptions,
+  CartoonRenderPresetEvidence,
+  CartoonRenderPresetOptions,
+  CartoonVisualQualityOptions,
+  CartoonVisualQualityReport,
+  FrameMotionRegion,
+  FrameMotionRegionMetrics
+} from "@aura3d/rendering";
 export {
   asAuraAppHandle,
   isAuraAppHandle,
@@ -5015,6 +5057,12 @@ export const cartoon = {
   performance: createCartoonPerformance,
   renderQueue: createCartoonRenderQueue,
   renderOutputPackage: createCartoonRenderOutputPackageMetadata,
+  motionQuality: createCartoonMotionQualityReport,
+  validateMotionQuality: validateCartoonMotionQuality,
+  routeProof: createCartoonRouteProof,
+  validateRouteProof: validateCartoonRouteProof,
+  episodePackage: createCartoonEpisodePackageManifest,
+  validateEpisodePackage: validateCartoonEpisodePackage,
   evidence: collectPromptAnimationEvidence
 } as const;
 

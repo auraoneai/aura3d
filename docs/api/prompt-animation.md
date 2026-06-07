@@ -63,6 +63,22 @@ Required files:
 
 These files are data contracts. Aura3D scenes are still authored as TypeScript against `@aura3d/engine`.
 
+## 1.1 cartoon-studio boundary
+
+Aura3D 1.1 plans to promote `cartoon-studio` from source-level prompt-animation scaffolding into a real episode-production workflow. The target output is not only JSON contracts; it is a package folder containing a playable WebM, optional MP4, thumbnail, captions, metadata, route proof, asset provenance, render manifest, visual acceptance report, and review notes.
+
+Until those render/package gates exist and pass, prompt-animation examples are source-complete examples. They can prove planning, timing, typed asset references, shot playback intent, and evidence schemas. They do not prove final animation quality by themselves.
+
+Rejected as publish-ready animation proof:
+
+- one generated still image with CSS pan, zoom, wobble, shake, or fake parallax;
+- subtitles over a static frame;
+- a whole scene moving as one flat layer;
+- reports marked `sourceOnly: true`, `notTrue3D: true`, or `image-puppet`;
+- placeholder screenshot hashes or in-memory frame-encoder summaries presented as video output.
+
+Generated images are still useful as concept art, thumbnails, textures, background plates, or style references. The animation claim must come from typed assets, rigged GLB clips or explicit segmented puppet parts, shot timelines, visemes, captions, rendered files, motion metrics, and review evidence.
+
 ## Minimum flow
 
 `compilePromptEpisodePlan(...)` is the shortest public path from prompt-level intent to the source artifacts needed by a prompt-cartoon route.

@@ -255,8 +255,7 @@ for (const token of [
   "tools/prompt-animation-dub-sync/index.ts",
   "\"prompt-animation:evidence\"",
   "tools/prompt-animation-evidence/index.ts",
-  "\"prompt-animation:release\"",
-  "pnpm prompt-animation:unit && pnpm prompt-animation:browser && pnpm prompt-animation:template && pnpm prompt-animation:docs && pnpm prompt-animation:package"
+  "\"prompt-animation:release\""
 ]) {
   checks.push({
     id: `package-script-token:${token}`,
@@ -264,6 +263,34 @@ for (const token of [
     detail: `package scripts should include ${token}`
   });
 }
+
+const packageScripts = JSON.parse(packageJson) as { scripts?: Record<string, string> };
+const promptAnimationReleaseRaw = packageScripts.scripts?.["prompt-animation:release:raw"] ?? "";
+const requiredReleaseSteps = [
+  "pnpm prompt-animation:unit",
+  "pnpm prompt-animation:browser",
+  "pnpm prompt-animation:template",
+  "pnpm prompt-animation:docs",
+  "pnpm prompt-animation:validate-cartoon",
+  "pnpm prompt-animation:package",
+  "pnpm prompt-animation:auravoice-contract",
+  "pnpm prompt-animation:auravoice-render",
+  "pnpm prompt-animation:viseme-sync",
+  "pnpm prompt-animation:dub-sync",
+  "pnpm prompt-animation:evidence"
+];
+for (const step of requiredReleaseSteps) {
+  checks.push({
+    id: `package-release-step:${step}`,
+    ok: promptAnimationReleaseRaw.includes(step),
+    detail: `prompt-animation release should run ${step}`
+  });
+}
+checks.push({
+  id: "package-release-step-order",
+  ok: isOrdered(promptAnimationReleaseRaw, requiredReleaseSteps),
+  detail: "prompt-animation release should run unit, browser, template, docs, cartoon validation, package, AuraVoice, viseme, dub, and evidence gates in order"
+});
 
 const auraVoiceSampleRenderGates = createAuraVoiceSampleRenderGateEvidence();
 for (const gate of auraVoiceSampleRenderGates.gates) {
@@ -274,13 +301,36 @@ for (const gate of auraVoiceSampleRenderGates.gates) {
   });
 }
 
+const cartoonStudioReadinessPath = "tests/reports/aura3d11/readiness.json";
+const cartoonStudioReadiness = readJsonFrom(root, cartoonStudioReadinessPath) as
+  | { ok?: boolean; status?: string; gates?: readonly { id?: string; ok?: boolean }[]; blockers?: readonly string[] }
+  | null;
+checks.push({
+  id: "cartoon-studio-1.1-rendered-package-readiness",
+  ok: cartoonStudioReadiness?.ok === true && cartoonStudioReadiness.status === "release-ready",
+  detail: `${cartoonStudioReadinessPath} must be ok:true/release-ready so old source-only prompt-animation readiness cannot mask missing rendered output.`
+});
+for (const gateId of ["cartoon-package", "visual-quality", "motion-quality", "template-smoke"]) {
+  checks.push({
+    id: `cartoon-studio-1.1-gate:${gateId}`,
+    ok: cartoonStudioReadiness?.gates?.some((gate) => gate.id === gateId && gate.ok === true) === true,
+    detail: `${cartoonStudioReadinessPath} must include passing ${gateId} evidence.`
+  });
+}
+
 const failures = checks.filter((check) => !check.ok);
 const report = {
   kind: "aura-prompt-animation-readiness",
   ok: failures.length === 0,
-  scope: "source-only-readiness",
+  scope: "source-plus-rendered-cartoon-package-readiness",
   reportPath: "tests/reports/prompt-animation/auravoice-sample-render-gates.json",
   auraVoiceSampleRenderGates,
+  cartoonStudioReadiness: {
+    path: cartoonStudioReadinessPath,
+    ok: cartoonStudioReadiness?.ok === true,
+    status: cartoonStudioReadiness?.status ?? "missing",
+    blockers: cartoonStudioReadiness?.blockers ?? []
+  },
   checks,
   failures
 };
@@ -299,10 +349,30 @@ function readFrom(base: string, file: string): string {
   return existsSync(path) ? readFileSync(path, "utf8") : "";
 }
 
+function readJsonFrom(base: string, file: string): unknown | null {
+  const text = readFrom(base, file);
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 function includesAll(source: readonly string[] | string | undefined, tokens: readonly string[]): boolean {
   if (!source) return false;
   if (Array.isArray(source)) return tokens.every((token) => source.includes(token));
   return tokens.every((token) => source.includes(token));
+}
+
+function isOrdered(source: string, tokens: readonly string[]): boolean {
+  let cursor = 0;
+  for (const token of tokens) {
+    const index = source.indexOf(token, cursor);
+    if (index < 0) return false;
+    cursor = index + token.length;
+  }
+  return true;
 }
 
 function createAuraVoiceSampleRenderGateEvidence(): {

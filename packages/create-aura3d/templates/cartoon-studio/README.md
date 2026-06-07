@@ -17,6 +17,7 @@ It uses:
 - A source-level studio panel with shot, dialogue, and render timeline tracks.
 - Asset library slot metadata for required characters and optional props.
 - Render pipeline metadata that agents can inspect before running full browser evidence.
+- Template-local episode package scripts that write a deterministic `dist/episodes/moon-garden-001` review folder.
 
 Replace primitive characters with typed GLB assets by running:
 
@@ -44,3 +45,38 @@ Before closing build, route, asset, screenshot, render, or visual-quality gates,
 archive the matching `npm run build`, `assets validate-cartoon`, browser
 evidence, screenshot hashes, render outputs, and human or automated review
 artifacts.
+
+## Episode package scripts
+
+The template includes the 1.1 Cartoon Studio command lane:
+
+```bash
+npm run episode:plan
+npm run episode:preview
+npm run episode:render
+npm run episode:package
+npm run episode:review
+npm run episode:verify
+```
+
+The package is written to:
+
+```text
+dist/episodes/moon-garden-001/
+  thumbnail.png
+  captions.vtt
+  captions.srt
+  metadata.json
+  route-proof.json
+  asset-provenance.json
+  render-manifest.json
+  visual-acceptance.json
+  review-package.md
+```
+
+If no browser video encoder adapter is available, `episode:render` writes
+`episode.png-sequence-fallback.json` and deterministic PNG frame placeholders
+under `frames/`. That fallback proves the package/review workflow, but it is not
+publish-ready cartoon video evidence. A release build must attach a real
+WebM/MP4 encoder, use typed character/set assets, and pass human visual review
+before claiming the episode is ready to publish.

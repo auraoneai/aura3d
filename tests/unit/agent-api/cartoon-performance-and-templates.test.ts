@@ -4,6 +4,7 @@ import {
   alignDialogueToAudio,
   blendPerformancePoses,
   bodyLanguageLibrary,
+  createPerformanceTransitionPlan,
   episodeTemplate,
   parsePerformanceScriptCue,
   resolveBodyLanguageGesture
@@ -30,6 +31,14 @@ describe("cartoon performance and episode template APIs", () => {
       kind: "performance-blend",
       body: { energy: 0.6, headTilt: 0.1 },
       facial: { eyeOpen: 0.85 }
+    });
+    expect(createPerformanceTransitionPlan(neutral, excited, { duration: 0.2, frameRate: 10 })).toMatchObject({
+      kind: "performance-transition-plan",
+      fromPoseId: "neutral-custom",
+      toPoseId: "excited-custom",
+      sampleCount: 3,
+      smooth: true,
+      deterministic: true
     });
     expect(parsePerformanceScriptCue("[excited] [gestures:wave] Hello there")).toMatchObject({
       emotion: "excited",

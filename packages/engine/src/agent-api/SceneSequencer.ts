@@ -33,6 +33,20 @@ export interface SceneSequencerSample {
 
 export type SceneSequencer = SceneSequencerPlan;
 
+export interface SceneSequencerPlaybackSnapshot extends SceneSequencerSample {
+  readonly status: "playing" | "paused";
+  readonly duration: PromptAnimationSeconds;
+}
+
+export interface SceneSequencerPlaybackController {
+  snapshot(): SceneSequencerPlaybackSnapshot;
+  play(): SceneSequencerPlaybackSnapshot;
+  pause(): SceneSequencerPlaybackSnapshot;
+  scrub(time: PromptAnimationSeconds): SceneSequencerPlaybackSnapshot;
+  jumpToShot(shotId: PromptAnimationId): SceneSequencerPlaybackSnapshot;
+  step(dt: PromptAnimationSeconds): SceneSequencerPlaybackSnapshot;
+}
+
 export interface LegacySceneSequencerSnapshot {
   readonly kind: "scene-sequencer";
   readonly currentTime: number;
@@ -130,4 +144,45 @@ export function sampleSceneSequencer(plan: SceneSequencerPlan, time: PromptAnima
     transition: sampleShotTransition(plan.transitions, normalized),
     activeCharacterIds
   };
+}
+
+export function createSceneSequencerPlayback(plan: SceneSequencerPlan): SceneSequencerPlaybackController {
+  let time = 0;
+  let status: "playing" | "paused" = "paused";
+  const duration = plan.timeline.duration || Math.max(0, ...plan.timeline.shots.map((shot) => shot.endTime));
+  const snapshot = (): SceneSequencerPlaybackSnapshot => ({
+    ...sampleSceneSequencer(plan, time),
+    status,
+    duration
+  });
+
+  return {
+    snapshot,
+    play() {
+      status = "playing";
+      return snapshot();
+    },
+    pause() {
+      status = "paused";
+      return snapshot();
+    },
+    scrub(nextTime) {
+      time = clampSequencerTime(nextTime, duration);
+      return snapshot();
+    },
+    jumpToShot(shotId) {
+      const shot = plan.timeline.shots.find((candidate) => candidate.shotId === shotId || candidate.id === shotId);
+      if (!shot) throw new Error(`Unknown shot "${shotId}".`);
+      time = clampSequencerTime(shot.startTime, duration);
+      return snapshot();
+    },
+    step(dt) {
+      if (status === "playing") time = clampSequencerTime(time + dt, duration);
+      return snapshot();
+    }
+  };
+}
+
+function clampSequencerTime(time: PromptAnimationSeconds, duration: PromptAnimationSeconds): PromptAnimationSeconds {
+  return normalizePromptAnimationTime(Math.max(0, Math.min(duration, time)));
 }

@@ -179,6 +179,36 @@ npx @aura3d/cli@latest assets validate-cartoon \
   --require-license
 ```
 
+For the planned 1.1 `cartoon-studio` flow, production-ready evidence requires at least two distinct typed character assets and one typed set:
+
+```bash
+npx @aura3d/cli@latest assets resolve "stylized rigged cartoon child robot" \
+  --name miko \
+  --profile cartoon-character
+
+npx @aura3d/cli@latest assets resolve "stylized rigged cartoon helper robot" \
+  --name luma \
+  --profile cartoon-character
+
+npx @aura3d/cli@latest assets resolve "stylized moon garden set" \
+  --name moonGarden \
+  --profile cartoon-set
+
+npx @aura3d/cli@latest assets validate-cartoon \
+  --require-license \
+  --no-placeholders
+```
+
+The 1.1 readiness expectation is stricter than "the manifest has assets." The report must be able to explain:
+
+- character distinctness, source, license, author, checksum, and deploy path;
+- whether each character has skeletal animation clips, retargetable humanoid metadata, or an explicitly declared segmented-puppet fallback;
+- whether mouth movement can use inspected GLB morph targets, primitive mouth cards, or only amplitude-based fallback timing;
+- whether the set has usable scale, bounds, framing, walkability, and material/texture evidence;
+- whether dialogue, SFX, and music assets are typed audio files or explicitly missing from the publish scope.
+
+Do not work around failed cartoon asset validation with a generated still image, raw URL, primitive-only character, or unlicensed placeholder. Still-image puppet output may be kept only as negative evidence for a motion gate, not as a publish-ready asset path.
+
 ## Asset evidence
 
 The readiness commands emit JSON with:

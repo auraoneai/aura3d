@@ -10,9 +10,13 @@ import {
   AudioTimelineTrack,
   SceneAudioBridge,
   createAudioTimelineMixSnapshot,
+  createAudioWaveformReviewData,
+  createCartoonAudioMixer,
   createAudioWaveform,
   createAudioWaveformPath,
-  sampleAudioWaveformAtTime
+  sampleAudioWaveformAtTime,
+  validateAudioCaptionSync,
+  validateEpisodeAudioAssets
 } from "../src/index";
 
 class MockParam {
@@ -262,4 +266,88 @@ test("AudioTimelineTrack edits clips, routes buses, and ducks music under dialog
   assert.equal(musicBus?.volume, 0.2);
   assert.equal(voiceBus?.volume, 1);
   assert.deepEqual(snapshot.activeSamples.map((sample) => sample.clipId).sort(), ["bed", "line1b"]);
+});
+
+test("cartoon episode audio readiness reports missing typed audio assets", () => {
+  const readiness = validateEpisodeAudioAssets([
+    {
+      kind: "aura-asset-ref",
+      id: "moonGardenMusic",
+      type: "audio",
+      format: "ogg",
+      url: "/aura-assets/moon-garden-music.ogg",
+      license: "CC0"
+    },
+    {
+      kind: "aura-asset-ref",
+      id: "mikoLine1",
+      type: "model",
+      format: "glb",
+      url: "/aura-assets/miko.glb",
+      license: "CC0"
+    }
+  ], [
+    { id: "mikoLine1", role: "dialogue", requireLicense: true },
+    { id: "lumaLine1", role: "dialogue", requireLicense: true },
+    { id: "moonGardenMusic", role: "music", requireLicense: true }
+  ]);
+
+  assert.equal(readiness.ok, false);
+  assert.equal(readiness.requiredCount, 3);
+  assert.equal(readiness.readyCount, 1);
+  assert.deepEqual(readiness.missingAssetIds, ["lumaLine1"]);
+  assert.deepEqual(readiness.diagnostics.map((issue) => issue.code), [
+    "audio-asset-wrong-type",
+    "audio-asset-missing"
+  ]);
+});
+
+test("cartoon dialogue audio stems stay aligned with captions within one frame", () => {
+  const dialogue = new AudioTimelineTrack({ id: "dialogue", role: "dialogue" });
+  dialogue.addClip({ id: "miko-line-1", startTime: 1, duration: 1.5 });
+  dialogue.addClip({ id: "luma-line-1", startTime: 3, duration: 1 });
+
+  const synced = validateAudioCaptionSync([dialogue], [
+    { id: "caption-1", audioClipId: "miko-line-1", startTime: 1 + 1 / 60, endTime: 2.5 },
+    { id: "caption-2", audioClipId: "luma-line-1", startTime: 3, endTime: 4 }
+  ], { frameRate: 30, toleranceFrames: 1 });
+  const broken = validateAudioCaptionSync([dialogue], [
+    { id: "caption-3", audioClipId: "miko-line-1", startTime: 1.25, endTime: 2.5 }
+  ], { frameRate: 30, toleranceFrames: 1 });
+
+  assert.equal(synced.ok, true);
+  assert.equal(synced.checkedCueCount, 2);
+  assert.equal(broken.ok, false);
+  assert.equal(broken.issues[0]?.code, "caption-audio-start-out-of-sync");
+});
+
+test("cartoon audio waveform review data and mixer defaults expose route evidence", () => {
+  const waveform = createAudioWaveform(createMockAudioBuffer([new Float32Array([-1, 1, 0.5, -0.5])], 4), {
+    samplesPerPeak: 2
+  });
+  const reviewData = createAudioWaveformReviewData([
+    { id: "miko-line-1", label: "Miko line 1", startTime: 1, waveform }
+  ], { width: 120, height: 48 });
+  const context = {
+    state: "running",
+    destination: new MockNode() as unknown as AudioNode,
+    currentTime: 0,
+    resume: async () => {},
+    suspend: async () => {},
+    close: async () => {},
+    createGain: () => new MockGain() as unknown as GainNode,
+    createBufferSource: () => new MockSource() as unknown as AudioBufferSourceNode,
+    createPanner: () => new MockNode() as unknown as PannerNode,
+    createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
+    createConvolver: () => new MockNode() as unknown as ConvolverNode
+  };
+  const cartoonMixer = createCartoonAudioMixer(context, { musicVolume: 0.4 });
+  const evidence = cartoonMixer.evidence({ unlocked: true });
+
+  assert.equal(reviewData.kind, "audio-waveform-review-data");
+  assert.equal(reviewData.stemCount, 1);
+  assert.equal(reviewData.stems[0]?.path.length, 2);
+  assert.deepEqual(evidence.buses.map((bus) => bus.name).sort(), ["ambient", "master", "music", "sfx", "voice"]);
+  assert.equal(evidence.buses.find((bus) => bus.name === "music")?.volume, 0.4);
+  assert.equal(evidence.unlocked, true);
 });

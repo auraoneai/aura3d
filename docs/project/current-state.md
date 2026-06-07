@@ -29,6 +29,7 @@ Current release tracks:
 
 - Aura3D SDK npm/deployed artifact: complete for the scoped 1.0.10 runtime-foundation release. See `docs/project/release-tracks.md` and `docs/project/aura3d-110-release-gates.md`.
 - Aura3D mature game-engine and flagship-showcase target: still future work beyond the scoped 1.0.10 claim boundary.
+- Aura3D 1.1 Cartoon Studio: proposed major-release track. The current codebase has prompt-animation contracts, AuraVoice bridge metadata, shot timelines, captions, viseme cues, render queues, typed asset profiles, and source-level templates. It does not yet have a completed publish-ready cartoon episode pipeline. The 1.1 definition of done is tracked in `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
 
 Current Aura Clash status:
 
@@ -38,3 +39,10 @@ Current Aura Clash status:
 
 Legacy pre-cutover work is preserved under `archive/legacy-ai-runtime/` and is
 not an active product surface.
+
+Current cartoon/animation boundary:
+
+- `cartoon-channel` and `prompt-cartoon-channel` are source-level examples unless their browser render, motion, package, and review gates pass.
+- `cartoon-studio` is the planned 1.1 production template, not a completed shipped studio workflow yet.
+- Still-image puppet output, including CSS wobble, pan, zoom, shake, fake parallax, subtitles over a generated still, or reports marked `notTrue3D: true`, is rejected as publish-ready cartoon evidence.
+- Aura3D may use generated images as concept frames, thumbnails, textures, style references, or background plates, but the animation claim must come from typed assets, rigs or segmented puppet parts, timelines, visemes, captions, render output, and visual/motion acceptance evidence.

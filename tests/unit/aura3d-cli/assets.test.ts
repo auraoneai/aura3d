@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { addAsset, initAgentFiles, inspectAsset, listAssets, validateAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
+import { addAsset, initAgentFiles, inspectAsset, listAssets, validateAssets, validateCartoonAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli assets", () => {
   test("adds a glTF asset, writes manifest, and generates typed imports", () => {
@@ -361,6 +361,147 @@ describe("@aura3d/cli assets", () => {
     expect(report.assets[0]?.gameReady).toBe(false);
   });
 
+  test("cartoon episode validation accepts two distinct characters plus one set with mouth and provenance readiness", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "miko.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle", "Talk", "Wave"]
+    })));
+    const lumaGltf = createAnimatedCharacterGltf({
+      clips: ["Idle", "Talk", "Point"]
+    });
+    (lumaGltf.materials as { name: string }[])[0] = { name: "luma-body" };
+    writeFileSync(join(projectDir, "assets", "luma.gltf"), JSON.stringify(lumaGltf));
+    writeFileSync(join(projectDir, "assets", "moon-garden-set.gltf"), JSON.stringify(createCartoonSetGltf()));
+
+    addAsset({
+      projectDir,
+      file: "assets/miko.gltf",
+      name: "miko",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/miko-cartoon-character",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({
+      projectDir,
+      file: "assets/luma.gltf",
+      name: "luma",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/luma-cartoon-character",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({
+      projectDir,
+      file: "assets/moon-garden-set.gltf",
+      name: "moonGarden",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/moon-garden-set",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateCartoonAssets({
+      projectDir,
+      episode: true,
+      noPlaceholders: true,
+      requireLicense: true,
+      output: "artifacts/aura3d/cartoon-assets.json"
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.cartoonEpisode).toMatchObject({
+      enabled: true,
+      ok: true,
+      selectedSets: ["moonGarden"],
+      assetProvenanceArtifact: "artifacts/aura3d/asset-provenance.json"
+    });
+    expect(report.cartoonEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
+    expect(report.summary).toMatchObject({
+      cartoonCharacters: 2,
+      cartoonSets: 1,
+      episodeReadyCharacters: 2,
+      mouthReadyCharacters: 2,
+      animationReadyCharacters: 2
+    });
+    expect(report.cartoonEpisode?.readiness.find((entry) => entry.id === "miko")).toMatchObject({
+      role: "character",
+      episodeReady: true,
+      mouthMode: "blendshape-lip-sync"
+    });
+  });
+
+  test("cartoon-studio template manifest passes strict episode asset validation", () => {
+    const projectDir = join(process.cwd(), "packages/create-aura3d/templates/cartoon-studio");
+
+    const report = validateCartoonAssets({
+      projectDir,
+      episode: true,
+      noPlaceholders: true,
+      requireLicense: true
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.cartoonEpisode).toMatchObject({
+      enabled: true,
+      ok: true,
+      selectedSets: ["moonGarden"]
+    });
+    expect(report.cartoonEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
+    expect(report.summary).toMatchObject({
+      cartoonCharacters: 2,
+      cartoonSets: 1,
+      episodeReadyCharacters: 2,
+      mouthReadyCharacters: 2,
+      animationReadyCharacters: 2
+    });
+    expect(report.warnings.join("\n")).toContain("no typed audio assets");
+  });
+
+  test("cartoon episode validation rejects missing set, duplicate characters, and missing mouth readiness", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "static-body.gltf"), JSON.stringify(createAnimatedCharacterGltf({
+      clips: ["Idle"]
+    }, { mouth: false })));
+
+    addAsset({
+      projectDir,
+      file: "assets/static-body.gltf",
+      name: "miko",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/miko-cartoon-character",
+      sourceFamily: "test-fixture"
+    });
+    addAsset({
+      projectDir,
+      file: "assets/static-body.gltf",
+      name: "luma",
+      license: "CC0-1.0",
+      author: "Fixture Author",
+      sourceUrl: "https://example.test/luma-cartoon-character",
+      sourceFamily: "test-fixture"
+    });
+
+    const report = validateCartoonAssets({
+      projectDir,
+      episode: true,
+      noPlaceholders: true,
+      requireLicense: true
+    });
+
+    expect(report.ok).toBe(false);
+    expect(report.cartoonEpisode?.ok).toBe(false);
+    expect(report.failures.join("\n")).toContain("requires distinct character files/hashes");
+    expect(report.failures.join("\n")).toContain("requires at least 1 typed cartoon set/location asset");
+    expect(report.failures.join("\n")).toContain("requires blendshape, mouth-card, viseme, talk, face, or primitive mouth fallback metadata");
+    expect(report.summary).toMatchObject({
+      cartoonCharacters: 2,
+      cartoonSets: 0,
+      mouthReadyCharacters: 0
+    });
+  });
+
   test("writes agent instruction files", () => {
     const projectDir = createProject();
     const written = initAgentFiles({ projectDir, agent: "all" });
@@ -380,9 +521,13 @@ function createProject(): string {
   return projectDir;
 }
 
-function createAnimatedCharacterGltf(options: { readonly provenance?: boolean; readonly clips?: readonly string[] } = {}): Record<string, unknown> {
+function createAnimatedCharacterGltf(
+  options: { readonly provenance?: boolean; readonly clips?: readonly string[] } = {},
+  readiness: { readonly mouth?: boolean } = {}
+): Record<string, unknown> {
   const includeProvenance = options.provenance !== false;
   const clips = options.clips ?? ["Idle"];
+  const includeMouth = readiness.mouth !== false;
   return {
     asset: {
       version: "2.0",
@@ -409,8 +554,8 @@ function createAnimatedCharacterGltf(options: { readonly provenance?: boolean; r
     meshes: [
       {
         name: "Face",
-        extras: { targetNames: ["Smile", "AA"] },
-        primitives: [{ targets: [{}, {}] }]
+        ...(includeMouth ? { extras: { targetNames: ["Smile", "AA"] } } : {}),
+        primitives: includeMouth ? [{ targets: [{}, {}] }] : [{}]
       }
     ],
     nodes: [
@@ -430,5 +575,28 @@ function createAnimatedCharacterGltf(options: { readonly provenance?: boolean; r
     })),
     images: [{ uri: "data:image/png;base64,AA==" }],
     accessors: [{ min: [-1, 0, -1], max: [1, 2, 1] }]
+  };
+}
+
+function createCartoonSetGltf(): Record<string, unknown> {
+  return {
+    asset: {
+      version: "2.0",
+      extras: {
+        aura3d: {
+          provenance: {
+            license: "CC0-1.0",
+            author: "Fixture Author",
+            sourceUrl: "https://example.test/moon-garden-set",
+            sourceFamily: "test-fixture"
+          }
+        }
+      }
+    },
+    materials: [{ name: "moonGardenToon" }],
+    nodes: [{ name: "MoonGardenWalkableSet", mesh: 0 }],
+    meshes: [{ primitives: [{}] }],
+    images: [{ uri: "data:image/png;base64,AA==" }],
+    accessors: [{ min: [-4, 0, -3], max: [4, 2, 3] }]
   };
 }

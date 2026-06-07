@@ -580,11 +580,13 @@ export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView,
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
 export * from "./cinematic/index";
 export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
-export { analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
+export { analyzeRgbaFrameMotionRegions, analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type {
   FrameVisualBounds,
   FrameVisualMetrics,
   FrameVisualMetricsOptions,
+  FrameMotionRegion,
+  FrameMotionRegionMetrics,
   FrameVisualQualityResult,
   FrameVisualQualityThresholds
 } from "./FrameVisualMetrics";
@@ -912,3 +914,4 @@ export * from "./effects/GPUParticleBackend.js";
 export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
+export * from "./cartoon/index.js";

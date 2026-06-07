@@ -237,6 +237,8 @@ function createMuxedVideo(): ReturnType<ReturnType<typeof createAudioMuxer>["mux
       maxSyncDriftFrames: 0
     },
     audioTrackCount: 0,
-    byteLength: 10
+    byteLength: 10,
+    outputMode: "metadata-only",
+    publishReady: false
   };
 }

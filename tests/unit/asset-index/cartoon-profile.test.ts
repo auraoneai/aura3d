@@ -139,9 +139,9 @@ describe("evaluateCartoonAssetProfile", () => {
   it("exposes a CC0 curated cartoon starter pack with profile-ready entries", () => {
     const summary = cartoonStarterPackSummary();
     expect(summary).toEqual({
-      characterCount: 5,
+      characterCount: 7,
       propCount: 10,
-      setCount: 5,
+      setCount: 6,
       allLicenseVerified: true,
     });
 
@@ -217,10 +217,99 @@ describe("evaluateCartoonAssetProfile", () => {
 
     expect(report.ok).toBe(true);
     expect(report.summary).toMatchObject({
-      totalAssets: 20,
-      modelAssets: 20,
-      animatedModels: 5
+      totalAssets: 23,
+      modelAssets: 23,
+      animatedModels: 7
     });
     expect(report.assets.every((entry) => entry.licenseVerified && entry.cartoonReady)).toBe(true);
+  });
+
+  it("passes episode-ready cartoon validation for two distinct starter characters and one set", () => {
+    const projectDir = join(tmpdir(), `aura3d-cartoon-episode-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    const outputDir = join(projectDir, "public", "aura-assets");
+    mkdirSync(outputDir, { recursive: true });
+    mkdirSync(join(projectDir, "src"), { recursive: true });
+
+    const selected = [
+      cartoonStarterPack.find((entry) => entry.id === "cartoon-starter:miko"),
+      cartoonStarterPack.find((entry) => entry.id === "cartoon-starter:luma"),
+      cartoonStarterPack.find((entry) => entry.id === "cartoon-starter:set-moon-garden"),
+    ].filter((entry): entry is NonNullable<typeof entry> => Boolean(entry));
+
+    const assets = selected.map((entry, index) => {
+      const fileName = `${entry.id.replace(/[^a-z0-9]+/gi, "-")}.glb`;
+      const outputPath = `public/aura-assets/${fileName}`;
+      const payload = Buffer.from(`starter-pack-episode-${entry.id}`);
+      const hash = `sha256-${createHash("sha256").update(payload).digest("hex")}`;
+      writeFileSync(join(projectDir, outputPath), payload);
+      return {
+        id: entry.id,
+        type: "model",
+        format: "glb",
+        source: `starter/${fileName}`,
+        outputPath,
+        url: `/aura-assets/${fileName}`,
+        hash,
+        sizeBytes: payload.length,
+        bounds: entry.bounds,
+        boundsMetadata: {
+          min: [-entry.bounds[0] / 2, 0, -entry.bounds[2] / 2],
+          max: [entry.bounds[0] / 2, entry.bounds[1], entry.bounds[2] / 2],
+          size: entry.bounds,
+          center: [0, entry.bounds[1] / 2, 0],
+          maxDimension: Math.max(...entry.bounds),
+          grounded: true
+        },
+        materials: ["toonBase"],
+        animations: entry.hasAnimations ? ["Idle", "Talk", "Wave"] : [],
+        morphTargets: entry.kind === "character"
+          ? { targetCount: 2, targetNames: ["AA", "Smile"], meshes: [], messages: [] }
+          : { targetCount: 0, targetNames: [], meshes: [], messages: [] },
+        provenance: {
+          sourcePath: `starter/${fileName}`,
+          sourceUrl: entry.sourcePage,
+          license: entry.license,
+          author: "Kenney",
+          sourceFamily: entry.source,
+          attribution: "Kenney",
+          checkedAt: "2026-06-06T00:00:00.000Z"
+        },
+        textures: [],
+        dependencies: [],
+        thumbnailUrl: `/aura-assets/${entry.id.replace(/[^a-z0-9]+/gi, "-")}.thumb.svg`,
+        warnings: []
+      };
+    });
+
+    writeFileSync(join(projectDir, "aura.assets.json"), JSON.stringify({
+      schema: "aura3d.assets/1.0",
+      assetBasePath: "/aura-assets/",
+      outputDir: "public/aura-assets",
+      typegen: "src/aura-assets.ts",
+      assets
+    }, null, 2));
+    writeFileSync(join(projectDir, "src", "aura-assets.ts"), "export const assets = {} as const;\n");
+
+    const report = validateCartoonAssets({
+      projectDir,
+      episode: true,
+      noPlaceholders: true,
+      requireLicense: true,
+    });
+
+    expect(report.ok).toBe(true);
+    expect(report.cartoonEpisode).toMatchObject({
+      enabled: true,
+      ok: true,
+      selectedCharacters: ["cartoon-starter:miko", "cartoon-starter:luma"],
+      selectedSets: ["cartoon-starter:set-moon-garden"],
+    });
+    expect(report.summary).toMatchObject({
+      cartoonCharacters: 2,
+      cartoonSets: 1,
+      episodeReadyCharacters: 2,
+      mouthReadyCharacters: 2,
+      animationReadyCharacters: 2,
+    });
   });
 });

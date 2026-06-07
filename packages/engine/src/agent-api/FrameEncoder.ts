@@ -4,6 +4,16 @@ import { normalizePromptAnimationTime, type PromptAnimationFrameRate, type Promp
 export type FrameEncoderCodec = "vp9" | "vp8" | "h264" | "av1" | "png-sequence";
 export type FrameEncoderContainer = "webm" | "mp4" | "png-sequence";
 export type FrameEncoderStatus = "idle" | "encoding" | "finalized";
+export type FrameEncoderOutputMode = "memory-summary" | "encoded-video" | "encoded-chunks" | "png-sequence" | "unsupported";
+
+export interface FrameEncoderCapability {
+  readonly supported: boolean;
+  readonly reason?: string | undefined;
+  readonly supportedCodecs?: readonly FrameEncoderCodec[] | undefined;
+  readonly supportedContainers?: readonly FrameEncoderContainer[] | undefined;
+  readonly canProducePlayableFile?: boolean | undefined;
+  readonly requiresExternalMuxer?: boolean | undefined;
+}
 
 export interface FrameEncoderFrame {
   readonly frame: number;
@@ -32,12 +42,20 @@ export interface EncodedVideoArtifact {
   readonly duration: PromptAnimationSeconds;
   readonly byteLength: number;
   readonly chunks: readonly EncodedVideoChunk[];
+  readonly outputMode?: FrameEncoderOutputMode | undefined;
+  readonly proofOnly?: boolean | undefined;
+  readonly playable?: boolean | undefined;
+  readonly unsupportedReason?: string | undefined;
   readonly output?: Blob | Uint8Array | string | undefined;
 }
 
 export interface FrameEncoderAdapter {
+  readonly kind?: string | undefined;
+  readonly proofOnly?: boolean | undefined;
+  readonly outputMode?: FrameEncoderOutputMode | undefined;
+  readonly capability?: FrameEncoderCapability | undefined;
   encode(frame: FrameEncoderFrame): Promise<EncodedVideoChunk> | EncodedVideoChunk;
-  finalize(summary: Omit<EncodedVideoArtifact, "kind" | "output">): Promise<Blob | Uint8Array | string | undefined> | Blob | Uint8Array | string | undefined;
+  finalize(summary: Omit<EncodedVideoArtifact, "kind" | "output" | "outputMode" | "proofOnly" | "playable" | "unsupportedReason">): Promise<Blob | Uint8Array | string | undefined> | Blob | Uint8Array | string | undefined;
   reset?(): void;
 }
 
@@ -70,9 +88,15 @@ export function createFrameEncoder(options: CreateFrameEncoderOptions): FrameEnc
   let status: FrameEncoderStatus = "idle";
   let chunks: EncodedVideoChunk[] = [];
   let output: Blob | Uint8Array | string | undefined;
+  const outputMode = adapter.outputMode ?? (adapter.proofOnly ? "memory-summary" : "encoded-video");
 
   const snapshot = (): EncodedVideoArtifact => {
     const duration = chunks.length === 0 ? 0 : normalizePromptAnimationTime(chunks.reduce((sum, chunk) => sum + chunk.durationMs, 0) / 1000);
+    const playable = output !== undefined
+      && adapter.proofOnly !== true
+      && outputMode === "encoded-video"
+      && adapter.capability?.supported !== false
+      && adapter.capability?.canProducePlayableFile !== false;
     return {
       kind: "encoded-video",
       codec,
@@ -83,6 +107,10 @@ export function createFrameEncoder(options: CreateFrameEncoderOptions): FrameEnc
       frameCount: chunks.length,
       duration,
       byteLength: chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0),
+      outputMode,
+      proofOnly: adapter.proofOnly === true,
+      playable,
+      ...(adapter.capability?.supported === false && adapter.capability.reason ? { unsupportedReason: adapter.capability.reason } : {}),
       chunks,
       ...(output !== undefined ? { output } : {})
     };
@@ -133,6 +161,10 @@ export function createFrameEncoder(options: CreateFrameEncoderOptions): FrameEnc
 
 export function createInMemoryFrameEncoderAdapter(): FrameEncoderAdapter {
   return {
+    kind: "in-memory-frame-encoder",
+    proofOnly: true,
+    outputMode: "memory-summary",
+    capability: { supported: true, reason: "In-memory adapter records frame metadata only and does not write playable media." },
     encode(frame) {
       return {
         frame: frame.frame,

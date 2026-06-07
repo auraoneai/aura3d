@@ -43,10 +43,13 @@ export interface MuxedVideoArtifact {
   readonly muxPlan: AudioMuxPlan;
   readonly audioTrackCount: number;
   readonly byteLength: number;
+  readonly outputMode: "metadata-only" | "muxed-output";
+  readonly publishReady: boolean;
   readonly output?: Blob | Uint8Array | string | undefined;
 }
 
 export interface AudioMuxerAdapter {
+  readonly proofOnly?: boolean | undefined;
   mux(input: { readonly video: EncodedVideoArtifact; readonly plan: AudioMuxPlan; readonly stems: readonly AudioMuxerInputStem[] }): Promise<Blob | Uint8Array | string | undefined> | Blob | Uint8Array | string | undefined;
 }
 
@@ -59,12 +62,14 @@ export interface CreateAudioMuxerOptions {
   readonly container?: AudioMuxerContainer | undefined;
   readonly audioCodec?: AudioMuxerCodec | undefined;
   readonly adapter?: AudioMuxerAdapter | undefined;
+  readonly readinessMode?: "proof" | "publish" | undefined;
 }
 
 export function createAudioMuxer(options: CreateAudioMuxerOptions = {}): AudioMuxer {
   const container = options.container ?? "webm";
   const audioCodec = options.audioCodec ?? (container === "mp4" ? "aac" : "opus");
   const adapter = options.adapter ?? { mux: () => undefined };
+  const readinessMode = options.readinessMode ?? "proof";
 
   return {
     createPlan(video, stems, frameRate = video.frameRate) {
@@ -73,6 +78,9 @@ export function createAudioMuxer(options: CreateAudioMuxerOptions = {}): AudioMu
     async mux(video, stems, frameRate = video.frameRate) {
       const plan = createAudioMuxPlan({ video, stems, frameRate, container, audioCodec });
       const output = await adapter.mux({ video, plan, stems });
+      if (readinessMode === "publish" && stems.length > 0 && (adapter.proofOnly || output === undefined)) {
+        throw new Error("Publish audio muxing requires a real muxed output artifact when audio stems are present.");
+      }
       return {
         kind: "muxed-video",
         container,
@@ -82,6 +90,8 @@ export function createAudioMuxer(options: CreateAudioMuxerOptions = {}): AudioMu
         muxPlan: plan,
         audioTrackCount: plan.tracks.length,
         byteLength: video.byteLength + estimateAudioByteLength(stems),
+        outputMode: output === undefined ? "metadata-only" : "muxed-output",
+        publishReady: output !== undefined && (!adapter.proofOnly || stems.length === 0),
         ...(output !== undefined ? { output } : {})
       };
     }

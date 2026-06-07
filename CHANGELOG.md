@@ -1,8 +1,23 @@
 # Changelog
 
-Version: 1.0.9
+Version: 1.1.0
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents.
+
+## 1.1.0
+
+### 1.1.0 Highlights
+
+- Shipped the Aura3D 1.1 **Cartoon Studio** vertical slice: typed cartoon assets, episode plan/show-bible, shot timeline, captions (VTT/SRT), amplitude-based visemes, render queue, WebM episode export, episode package folder, motion-quality and visual-quality gates, and a human review package. Implements `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
+- Added cartoon production stretch adapters as honest, capability-probed contracts: optional external phoneme analyzer, cloud render adapter, YouTube upload adapter, webcam/mocap performance-capture session, and a manifest-backed asset-library browser. Missing credentials/providers produce diagnostics rather than fake success.
+- Added editor-runtime review tooling: episode review panel, visual review dashboard, multi-user review/quorum workflow, camera path editor, and a source-level nonlinear animation editor.
+- Bumped all 28 published workspace packages to `1.1.0`.
+
+### 1.1.0 Release Notes — scope and honest limits
+
+- **Cartoon Studio is a structured vertical slice, not Pixar.** The Moon Garden sample renders a real WebM and package, but the bundled character assets are **placeholder-grade**: `miko` and `luma` share a base GLB, `luma` uses a generic `humanoid-fixture.glb`, and the motion-gate frames are a 2D stylized representation. These are starter/CI assets, not finished authored characters.
+- **Aura Clash was NOT newly authored in 1.1.** The showcase was rebuilt against the 1.1 animation engine and re-deployed, but it has **no new fighter assets and no gameplay redesign** this cycle; the gameplay/feel pass remains outstanding. It is still a development showcase and browser-runtime proof target, not a flagship-quality fighting game.
+- Aura3D 1.1 is a scoped runtime + cartoon-production release. It is not a Unity/Unreal/Babylon parity claim, not a magic image-to-video engine, and not a full animation studio.
 
 ## 1.0.9
 

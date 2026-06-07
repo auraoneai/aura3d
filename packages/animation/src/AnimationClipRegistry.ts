@@ -88,6 +88,23 @@ export interface AnimationClipRegistryDiagnostic<TClipId extends string = string
   readonly clipId?: TClipId;
 }
 
+export interface CartoonClipMapReadinessOptions<TClipId extends string = string> {
+  readonly requiredActions?: readonly string[] | undefined;
+  readonly clipMap: Readonly<Record<string, TClipId | readonly TClipId[] | undefined>>;
+  readonly aliases?: Readonly<Record<string, string>> | undefined;
+  readonly segmentedFallbackDeclared?: boolean | undefined;
+}
+
+export interface CartoonClipMapReadiness<TClipId extends string = string> {
+  readonly ok: boolean;
+  readonly segmentedFallbackDeclared: boolean;
+  readonly requiredActions: readonly string[];
+  readonly missingActions: readonly string[];
+  readonly missingClipIds: readonly TClipId[];
+  readonly aliasActions: readonly string[];
+  readonly diagnostics: readonly AnimationClipRegistryDiagnostic<TClipId>[];
+}
+
 export interface AnimationClipManifest<
   TClipId extends string = string,
   TEvent extends AnimationClipEvent = AnimationClipEvent,
@@ -262,6 +279,57 @@ export function createAnimationClipRegistry<
   options: AnimationClipRegistryOptions = {}
 ): AnimationClipRegistry<TClipId, TEvent, TPose> {
   return new AnimationClipRegistry(clips, options);
+}
+
+export function validateCartoonClipMap<
+  TClipId extends string = string,
+  TEvent extends AnimationClipEvent = AnimationClipEvent,
+  TPose = unknown
+>(
+  registry: AnimationClipRegistry<TClipId, TEvent, TPose>,
+  options: CartoonClipMapReadinessOptions<TClipId>
+): CartoonClipMapReadiness<TClipId> {
+  const requiredActions = options.requiredActions ?? ["speak", "listen", "gesture", "walk", "action"];
+  const missingActions: string[] = [];
+  const missingClipIds: TClipId[] = [];
+  const aliasActions: string[] = [];
+  const diagnostics: AnimationClipRegistryDiagnostic<TClipId>[] = [];
+
+  for (const action of requiredActions) {
+    const mapped = options.clipMap[action] ?? options.clipMap[options.aliases?.[action] ?? ""];
+    if (options.aliases?.[action]) aliasActions.push(action);
+    const clipIds = Array.isArray(mapped) ? mapped : mapped ? [mapped] : [];
+    if (clipIds.length === 0) {
+      missingActions.push(action);
+      diagnostics.push({
+        severity: options.segmentedFallbackDeclared ? "warning" : "error",
+        code: "CARTOON_CLIP_ACTION_MISSING",
+        message: `Cartoon action "${action}" is missing a clip map entry.`
+      });
+      continue;
+    }
+    for (const clipId of clipIds) {
+      if (!registry.has(clipId)) {
+        missingClipIds.push(clipId);
+        diagnostics.push({
+          severity: options.segmentedFallbackDeclared ? "warning" : "error",
+          code: "CARTOON_CLIP_ID_MISSING",
+          message: `Cartoon action "${action}" references missing clip "${clipId}".`,
+          clipId
+        });
+      }
+    }
+  }
+
+  return {
+    ok: options.segmentedFallbackDeclared ? missingActions.length === 0 : diagnostics.every((diagnostic) => diagnostic.severity !== "error"),
+    segmentedFallbackDeclared: options.segmentedFallbackDeclared === true,
+    requiredActions,
+    missingActions,
+    missingClipIds,
+    aliasActions,
+    diagnostics
+  };
 }
 
 function validateClipDefinition(definition: AnimationClipDefinition): void {

@@ -8,6 +8,8 @@ export type CartoonStarterPackRole =
   | "villain"
   | "narrator"
   | "background"
+  | "miko"
+  | "luma"
   | "furniture"
   | "vehicle"
   | "nature"
@@ -16,7 +18,8 @@ export type CartoonStarterPackRole =
   | "outdoor-park"
   | "school"
   | "space-station"
-  | "underwater";
+  | "underwater"
+  | "moon-garden";
 
 export type CartoonStarterPackKind = "character" | "prop" | "set";
 
@@ -40,6 +43,8 @@ const CDN_BASE = "https://cdn.jsdelivr.net/gh/gchahal1982/aura3d-cc0-assets@main
 const KENNEY_LICENSE_PAGE = "https://kenney.nl/assets";
 
 export const cartoonStarterPack: readonly CartoonStarterPackEntry[] = [
+  starterCharacter("cartoon-starter:miko", "miko", "Miko Moon Garden Helper", "kenney/blocky-characters/character-a.glb"),
+  starterCharacter("cartoon-starter:luma", "luma", "Luma Moon Garden Helper", "kenney/blocky-characters/character-b.glb"),
   starterCharacter("cartoon-starter:hero", "hero", "Hero Character", "kenney/blocky-characters/character-a.glb"),
   starterCharacter("cartoon-starter:sidekick", "sidekick", "Sidekick Character", "kenney/blocky-characters/character-b.glb"),
   starterCharacter("cartoon-starter:villain", "villain", "Villain Character", "kenney/blocky-characters/character-c.glb"),
@@ -60,6 +65,7 @@ export const cartoonStarterPack: readonly CartoonStarterPackEntry[] = [
   starterSet("cartoon-starter:set-school", "school", "School Room Set", "kenney/modular-dungeon-kit/room-wide.glb", ["school", "classroom", "set", "walkable"]),
   starterSet("cartoon-starter:set-space-station", "space-station", "Space Station Set", "kenney/modular-space-kit/room-large.glb", ["space", "station", "set", "walkable"]),
   starterSet("cartoon-starter:set-underwater", "underwater", "Underwater Cove Set", "kenney/pirate-kit/ship-wreck.glb", ["underwater", "ocean", "set", "walkable"]),
+  starterSet("cartoon-starter:set-moon-garden", "moon-garden", "Moon Garden Set", "kenney/platformer-kit/block-grass-large.glb", ["moon", "garden", "outdoor", "set", "walkable"]),
 ] as const;
 
 export function cartoonStarterPackSummary(): {
@@ -92,7 +98,7 @@ export function createCartoonStarterPackAdapter(): SourceAdapter {
 
 function starterCharacter(
   id: string,
-  role: Extract<CartoonStarterPackRole, "hero" | "sidekick" | "villain" | "narrator" | "background">,
+  role: Extract<CartoonStarterPackRole, "hero" | "sidekick" | "villain" | "narrator" | "background" | "miko" | "luma">,
   title: string,
   mirrorPath: string,
 ): CartoonStarterPackEntry {
@@ -106,7 +112,7 @@ function starterCharacter(
     pack: "blocky-characters",
     license: "CC0",
     sourcePage: KENNEY_LICENSE_PAGE,
-    tags: ["cartoon", "stylized", "low-poly", "character", "humanoid", "starter", role],
+    tags: ["cartoon", "stylized", "low-poly", "character", "humanoid", "starter", role, "rigged", "animated", "mouth", "viseme", "expression", "primitive mouth-card fallback"],
     bounds: [0.8, 1.7, 0.8],
     hasAnimations: true,
     triangles: 8_000,
@@ -139,7 +145,7 @@ function starterProp(
 
 function starterSet(
   id: string,
-  role: Extract<CartoonStarterPackRole, "indoor-room" | "outdoor-park" | "school" | "space-station" | "underwater">,
+  role: Extract<CartoonStarterPackRole, "indoor-room" | "outdoor-park" | "school" | "space-station" | "underwater" | "moon-garden">,
   title: string,
   mirrorPath: string,
   tags: readonly string[],

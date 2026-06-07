@@ -1,0 +1,183 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "Aura3D cartoon-studio local starter set anchor"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Moon Garden starter set anchor",
+      "nodes": [0, 1, 2]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "moon garden floor anchor",
+      "mesh": 0,
+      "translation": [0, 0, 0]
+    },
+    {
+      "name": "moon garden glow stone anchor",
+      "mesh": 1,
+      "translation": [0.45, 0.04, 0.25]
+    },
+    {
+      "name": "moon garden skyline anchor",
+      "mesh": 2,
+      "translation": [0, 0, -0.65]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "moon garden floor",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          },
+          "indices": 1,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "glow stone marker",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 2
+          },
+          "indices": 3,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "name": "skyline marker",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4
+          },
+          "indices": 5,
+          "material": 2
+        }
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "soft blue moon path",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.06, 0.18, 0.28, 1],
+        "roughnessFactor": 0.82,
+        "metallicFactor": 0
+      }
+    },
+    {
+      "name": "warm glow stone",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [1, 0.82, 0.34, 1],
+        "roughnessFactor": 0.42,
+        "metallicFactor": 0
+      },
+      "emissiveFactor": [0.8, 0.55, 0.18]
+    },
+    {
+      "name": "distant teal skyline",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [0.12, 0.38, 0.42, 1],
+        "roughnessFactor": 0.9,
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3",
+      "min": [-1.6, 0, -0.6],
+      "max": [1.6, 0, 0.6]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5123,
+      "count": 6,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3",
+      "min": [-0.14, 0, -0.14],
+      "max": [0.14, 0.2, 0.14]
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 6,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 4,
+      "type": "VEC3",
+      "min": [-1.4, 0, 0],
+      "max": [1.4, 0.5, 0]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5123,
+      "count": 6,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 48,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 48,
+      "byteLength": 12,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 60,
+      "byteLength": 48,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 108,
+      "byteLength": 12,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 120,
+      "byteLength": 48,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 168,
+      "byteLength": 12,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 180,
+      "uri": "data:application/octet-stream;base64,zczMvZqZmb7MzMy+zczMPwAAAAAAAAAAAAAAAAAAAD8AAAAAAAAAAAAAAAAAAAAAzczMP5qZmb7MzMy+zcwMvQAAAAAFAAAAAQAAAAEAAAACAAAACtejvT0KF7U9Che1PQoXtT0KF7U9CtejvT0KFzU+AAAAAAAAPk0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAUABAAc2Mz+zsxMPs3MzD4AAAAAZmbmPwAAAAAAAAAAAAAAAAAAAAAAAAAAAM3MzD4AAAAAZmbmPwAAAAAAAAAABAUA"
+    }
+  ]
+}

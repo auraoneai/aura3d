@@ -123,6 +123,22 @@ export interface AnimationControllerSnapshot<TClipId extends string = string> {
   readonly clips: readonly AnimationClipPlaybackState<TClipId>[];
 }
 
+export type CartoonAnimationAction = "speak" | "listen" | "gesture" | "walk" | "action";
+
+export interface CartoonAnimationTimelineBinding<TClipId extends string = string> {
+  readonly action: CartoonAnimationAction;
+  readonly clipId: TClipId;
+  readonly loop: AnimationLoopMode | boolean;
+  readonly restartOnEnter: boolean;
+}
+
+export interface CartoonAnimationTimelineSample<TClipId extends string = string> {
+  readonly time: number;
+  readonly action: CartoonAnimationAction;
+  readonly clipId: TClipId;
+  readonly playback: AnimationClipPlaybackState<TClipId>;
+}
+
 export interface AnimationClipLoopEvent<TClipId extends string = string> {
   readonly clipId: TClipId;
   readonly playbackId: string;
@@ -252,6 +268,32 @@ export class AnimationController<
       loop: "once",
       restart: options.restart ?? true
     });
+  }
+
+  bindCartoonTimelineAction(
+    action: CartoonAnimationAction,
+    bindings: readonly CartoonAnimationTimelineBinding<TClipId>[],
+    time: number,
+    options: Omit<AnimationPlayOptions<TClipId>, "loop" | "restart"> = {}
+  ): CartoonAnimationTimelineSample<TClipId> {
+    const binding = bindings.find((candidate) => candidate.action === action);
+    if (!binding) throw new Error(`No cartoon animation binding registered for action "${action}".`);
+    const playback = this.play(binding.clipId, {
+      ...options,
+      loop: binding.loop,
+      restart: binding.restartOnEnter,
+      metadata: {
+        ...(options.metadata ?? {}),
+        cartoonAction: action,
+        timelineTime: time
+      }
+    });
+    return {
+      time,
+      action,
+      clipId: binding.clipId,
+      playback
+    };
   }
 
   pause(clipId?: TClipId): void {

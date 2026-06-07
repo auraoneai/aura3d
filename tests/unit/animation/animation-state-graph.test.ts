@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { AnimationStateGraph } from "../../../packages/animation/src/AnimationStateGraph";
+import {
+  AnimationStateGraph,
+  analyzeCartoonHumanoidRetargeting,
+  createCartoonAnimationStateGraph,
+  sampleCartoonAnimationStateGraph
+} from "../../../packages/animation/src";
 
 describe("AnimationStateGraph one-shot and terminal states", () => {
   it("consumes trigger parameters so held attack input does not repeat one-shots", () => {
@@ -68,5 +73,57 @@ describe("AnimationStateGraph one-shot and terminal states", () => {
         { name: "attack", duration: 0.2, oneShot: true, onComplete: "missing" }
       ], "idle")
     ).toThrow(/completion target missing does not exist/);
+  });
+
+  it("provides a deterministic reusable cartoon state graph", () => {
+    const graph = createCartoonAnimationStateGraph();
+    const samples = sampleCartoonAnimationStateGraph(graph, [
+      { isListening: true },
+      { isSpeaking: true },
+      { gesture: "wave" },
+      {},
+      { isSpeaking: false, isListening: false },
+      {},
+      { isWalking: true },
+      { action: "reach" }
+    ], 0.2);
+
+    expect(samples.map((sample) => sample.state)).toEqual([
+      "listen",
+      "speak",
+      "gesture",
+      "gesture",
+      "idle",
+      "idle",
+      "walk",
+      "action"
+    ]);
+    expect(graph.graphSnapshot().transitions.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("reports unsupported cartoon humanoid retargeting rigs with useful diagnostics", () => {
+    const diagnostics = analyzeCartoonHumanoidRetargeting({
+      id: "unsupported-rig",
+      bones: {
+        hips: { name: "hips" },
+        spine: { name: "spine" },
+        head: { name: "head" }
+      },
+      metadata: {}
+    }, {
+      requiredClips: ["Idle", "Talk"],
+      availableClips: ["Idle"]
+    });
+
+    expect(diagnostics.ok).toBe(false);
+    expect(diagnostics.mouthReady).toBe(false);
+    expect(diagnostics.clipReady).toBe(false);
+    expect(diagnostics.retargetMapProvided).toBe(false);
+    expect(diagnostics.diagnostics.map((issue) => issue.code)).toEqual(expect.arrayContaining([
+      "HUMANOID_REQUIRED_BONE_MISSING",
+      "CARTOON_MOUTH_METADATA_MISSING",
+      "CARTOON_REQUIRED_CLIP_MISSING",
+      "CARTOON_RETARGET_MAP_MISSING"
+    ]));
   });
 });

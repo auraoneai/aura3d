@@ -266,6 +266,7 @@ export interface CartoonPerformanceCoverage {
   readonly blockingCueCount: number;
   readonly gazeCueCount: number;
   readonly animatedCharacterIds: readonly PromptAnimationId[];
+  readonly staticCharacterIds: readonly PromptAnimationId[];
   readonly uncoveredDialogueLineIds: readonly PromptAnimationId[];
   readonly issues: readonly PromptAnimationValidationIssue[];
 }
@@ -478,6 +479,7 @@ export function createCartoonPerformanceCoverage(
   dialogue?: DialogueTrackArtifact
 ): CartoonPerformanceCoverage {
   const animatedCharacterIds = new Set<string>();
+  const nonStaticCharacterIds = new Set<string>();
   const coveredLineIds = new Set<string>();
   let speakingCueCount = 0;
   let bodyCueCount = 0;
@@ -488,6 +490,7 @@ export function createCartoonPerformanceCoverage(
 
   for (const cue of performance.cues) {
     animatedCharacterIds.add(cue.characterId);
+    if (cartoonPerformanceCueHasMotion(cue)) nonStaticCharacterIds.add(cue.characterId);
     if (cue.action === "speak") speakingCueCount += 1;
     if (cue.body) bodyCueCount += 1;
     if (cue.facial) facialCueCount += 1;
@@ -505,6 +508,15 @@ export function createCartoonPerformanceCoverage(
   }
 
   const issues = [...validateCartoonPerformance(performance)];
+  for (const characterId of animatedCharacterIds) {
+    if (!nonStaticCharacterIds.has(characterId)) {
+      issues.push(
+        createPromptAnimationIssue("error", "performance-character-static", `Character "${characterId}" has no body, facial, gesture, blocking, gaze, clip, or root-motion evidence.`, {
+          path: `characters.${characterId}`
+        })
+      );
+    }
+  }
   for (const lineId of uncoveredDialogueLineIds) {
     issues.push(
       createPromptAnimationIssue("error", "performance-dialogue-uncovered", `Dialogue line "${lineId}" has no speaking cue.`, {
@@ -522,9 +534,21 @@ export function createCartoonPerformanceCoverage(
     blockingCueCount,
     gazeCueCount,
     animatedCharacterIds: [...animatedCharacterIds],
+    staticCharacterIds: [...animatedCharacterIds].filter((characterId) => !nonStaticCharacterIds.has(characterId)),
     uncoveredDialogueLineIds,
     issues
   };
+}
+
+function cartoonPerformanceCueHasMotion(cue: CartoonPerformanceCue): boolean {
+  if (cue.animationClip) return true;
+  if (cue.gesture || cue.gestureId) return true;
+  if (cue.body?.rootMotion || cue.body?.rotation || cue.body?.position || cue.body?.headTilt || cue.body?.torsoLean || cue.body?.shoulderRaise) return true;
+  if (cue.body?.energy !== undefined && cue.body.energy > 0.05) return true;
+  if (cue.facial?.mouth || cue.facial?.eyeOpen !== undefined || cue.facial?.blinkRate !== undefined || cue.facial?.brow || cue.facial?.eyes) return true;
+  if (cue.blocking?.position || cue.blocking?.rotation || cue.blocking?.scale) return true;
+  if (cue.gaze) return true;
+  return cue.action !== "idle" && cue.action !== "hold";
 }
 
 function normalizeLibraryKey(value: string): string {

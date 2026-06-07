@@ -111,12 +111,24 @@ export interface CartoonRenderQueueItem {
   readonly sourceSceneState?: CartoonRenderSceneStateSource | undefined;
 }
 
+export interface CartoonRenderOutputTarget {
+  readonly outputId: PromptAnimationId;
+  readonly kind: CartoonRenderOutputKind;
+  readonly path: string;
+  readonly required: boolean;
+}
+
 export interface CartoonRenderQueueArtifact extends PromptAnimationArtifactBase<"render-queue"> {
   readonly route: string;
   readonly language: PromptAnimationLanguageCode;
   readonly frameRate: PromptAnimationFrameRate;
   readonly viewport: CartoonViewport;
   readonly captureTimes: readonly PromptAnimationSeconds[];
+  readonly seekMode?: "timeline-time" | "frame-index" | undefined;
+  readonly frameList?: readonly number[] | undefined;
+  readonly outputTargets?: readonly CartoonRenderOutputTarget[] | undefined;
+  readonly thumbnailFrame?: number | undefined;
+  readonly evidenceFrames?: readonly number[] | undefined;
   readonly outputs: readonly CartoonRenderOutput[];
   readonly evidenceTargets: readonly CartoonEvidenceTarget[];
   readonly items: readonly CartoonRenderQueueItem[];
@@ -310,6 +322,16 @@ export function createCartoonRenderQueue(options: CreateCartoonRenderQueueOption
     frameRate,
     viewport,
     captureTimes,
+    seekMode: "timeline-time",
+    frameList: items.map((item) => item.frame),
+    outputTargets: outputs.map((output) => ({
+      outputId: output.id,
+      kind: output.kind,
+      path: output.path,
+      required: output.required ?? false
+    })),
+    thumbnailFrame: items[0]?.frame ?? 0,
+    evidenceFrames: items.map((item) => item.frame),
     outputs,
     evidenceTargets,
     items,
@@ -375,6 +397,21 @@ export function validateCartoonRenderQueue(queue: CartoonRenderQueueArtifact): r
   }
   if (queue.outputs.length === 0) {
     issues.push(createPromptAnimationIssue("error", "render-outputs-missing", "Render queue needs at least one output."));
+  }
+  if (queue.seekMode && queue.seekMode !== "timeline-time" && queue.seekMode !== "frame-index") {
+    issues.push(createPromptAnimationIssue("error", "render-seek-mode-invalid", "Render queue seek mode must be timeline-time or frame-index."));
+  }
+  if (queue.frameList && queue.frameList.length !== queue.items.length) {
+    issues.push(createPromptAnimationIssue("error", "render-frame-list-mismatch", "Render queue frame list must match render items."));
+  }
+  if (queue.outputTargets && queue.outputTargets.some((target) => !target.path)) {
+    issues.push(createPromptAnimationIssue("error", "render-output-target-path-missing", "Every render output target needs a path."));
+  }
+  if (queue.thumbnailFrame !== undefined && !queue.items.some((item) => item.frame === queue.thumbnailFrame)) {
+    issues.push(createPromptAnimationIssue("error", "render-thumbnail-frame-missing", "Thumbnail frame must be present in the render queue."));
+  }
+  if (queue.evidenceFrames && queue.evidenceFrames.some((frame) => !queue.items.some((item) => item.frame === frame))) {
+    issues.push(createPromptAnimationIssue("error", "render-evidence-frame-missing", "Evidence frames must be present in the render queue."));
   }
   issues.push(...validateCartoonRenderOutputs(queue.outputs));
   for (const item of queue.items) {

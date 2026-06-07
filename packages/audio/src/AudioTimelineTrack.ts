@@ -93,6 +93,30 @@ export interface AudioTimelineMixOptions {
   readonly soloBuses?: readonly string[];
 }
 
+export interface AudioCaptionCue {
+  readonly id: string;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly text?: string;
+  readonly audioClipId?: string;
+}
+
+export interface AudioCaptionSyncIssue {
+  readonly code: string;
+  readonly message: string;
+  readonly cueId: string;
+  readonly clipId?: string;
+  readonly deltaFrames?: number;
+}
+
+export interface AudioCaptionSyncReport {
+  readonly ok: boolean;
+  readonly frameRate: number;
+  readonly toleranceFrames: number;
+  readonly checkedCueCount: number;
+  readonly issues: readonly AudioCaptionSyncIssue[];
+}
+
 export class AudioTimelineTrack {
   readonly id: string;
   readonly name: string;
@@ -290,6 +314,74 @@ export function createAudioTimelineMixSnapshot(
     buses: [...busByName.values()].sort((a, b) => a.busName.localeCompare(b.busName)),
     dialogueActive,
     duckingApplied
+  };
+}
+
+export function validateAudioCaptionSync(
+  tracks: readonly AudioTimelineTrack[],
+  captions: readonly AudioCaptionCue[],
+  options: { readonly frameRate?: number; readonly toleranceFrames?: number } = {}
+): AudioCaptionSyncReport {
+  const frameRate = finitePositive(options.frameRate ?? 30, "Audio caption sync frameRate");
+  const toleranceFrames = Math.max(0, Math.floor(options.toleranceFrames ?? 1));
+  const dialogueClips = tracks
+    .filter((track) => track.role === "dialogue")
+    .flatMap((track) => track.clips.map((clip) => ({ track, clip })));
+  const issues: AudioCaptionSyncIssue[] = [];
+
+  for (const cue of captions) {
+    const cueStart = validateNonNegative(cue.startTime, "Audio caption cue startTime");
+    const cueEnd = validateNonNegative(cue.endTime, "Audio caption cue endTime");
+    if (cueEnd <= cueStart) {
+      issues.push({
+        code: "caption-invalid-range",
+        cueId: cue.id,
+        message: `Caption "${cue.id}" endTime must be after startTime.`
+      });
+      continue;
+    }
+
+    const match = cue.audioClipId
+      ? dialogueClips.find(({ clip }) => clip.id === cue.audioClipId)
+      : dialogueClips.find(({ clip }) => Math.abs((clip.startTime - cueStart) * frameRate) <= toleranceFrames);
+    if (!match) {
+      issues.push({
+        code: "caption-audio-clip-missing",
+        cueId: cue.id,
+        clipId: cue.audioClipId,
+        message: `Caption "${cue.id}" has no matching dialogue audio clip.`
+      });
+      continue;
+    }
+
+    const startDeltaFrames = Math.abs((match.clip.startTime - cueStart) * frameRate);
+    const endDeltaFrames = Math.abs((match.clip.startTime + match.clip.duration - cueEnd) * frameRate);
+    if (startDeltaFrames > toleranceFrames) {
+      issues.push({
+        code: "caption-audio-start-out-of-sync",
+        cueId: cue.id,
+        clipId: match.clip.id,
+        deltaFrames: startDeltaFrames,
+        message: `Caption "${cue.id}" starts ${startDeltaFrames.toFixed(2)} frames away from dialogue clip "${match.clip.id}".`
+      });
+    }
+    if (endDeltaFrames > toleranceFrames) {
+      issues.push({
+        code: "caption-audio-end-out-of-sync",
+        cueId: cue.id,
+        clipId: match.clip.id,
+        deltaFrames: endDeltaFrames,
+        message: `Caption "${cue.id}" ends ${endDeltaFrames.toFixed(2)} frames away from dialogue clip "${match.clip.id}".`
+      });
+    }
+  }
+
+  return {
+    ok: issues.length === 0,
+    frameRate,
+    toleranceFrames,
+    checkedCueCount: captions.length,
+    issues
   };
 }
 

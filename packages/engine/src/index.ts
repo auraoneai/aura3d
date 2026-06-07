@@ -12,7 +12,27 @@ export type {
   A3DAppWorkflowPreset
 } from "@aura3d/apps";
 export { Engine } from "@aura3d/core";
-export { Renderer, createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "@aura3d/rendering";
+export {
+  Renderer,
+  analyzeRgbaFrameMotionRegions,
+  createCartoonMaterialStyle,
+  createCartoonRenderPreset,
+  createCartoonVisualQualityReport,
+  createExternalParityEnvironmentPipeline,
+  listExternalParityEnvironmentTargets
+} from "@aura3d/rendering";
+export type {
+  CartoonFrameVisualInput,
+  CartoonFrameVisualQuality,
+  CartoonMaterialStyle,
+  CartoonMaterialStyleOptions,
+  FrameMotionRegion,
+  FrameMotionRegionMetrics,
+  CartoonRenderPresetEvidence,
+  CartoonRenderPresetOptions,
+  CartoonVisualQualityOptions,
+  CartoonVisualQualityReport
+} from "@aura3d/rendering";
 export {
   GLTFLoader,
   createAssetCompatibilityReport,

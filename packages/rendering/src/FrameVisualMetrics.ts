@@ -40,6 +40,23 @@ export interface FrameVisualMetrics {
   readonly bounds?: FrameVisualBounds;
 }
 
+export interface FrameMotionRegion {
+  readonly id: string;
+  readonly bounds: FrameVisualBounds;
+  readonly changedPixels: number;
+  readonly changedRatio: number;
+}
+
+export interface FrameMotionRegionMetrics {
+  readonly width: number;
+  readonly height: number;
+  readonly changedPixels: number;
+  readonly changedRatio: number;
+  readonly regions: readonly FrameMotionRegion[];
+  readonly characterVisible: boolean;
+  readonly characterMotionRegionCount: number;
+}
+
 export interface FrameVisualQualityThresholds {
   readonly minNonDarkRatio?: number;
   readonly minSalientRatio?: number;
@@ -196,6 +213,72 @@ export function evaluateFrameVisualQuality(
     thresholdFailure("localContrastRatio", metrics.localContrastRatio, thresholds.minLocalContrastRatio, "min")
   ].filter((failure): failure is string => Boolean(failure));
   return { ok: failures.length === 0, failures };
+}
+
+export function analyzeRgbaFrameMotionRegions(
+  previous: Uint8Array | Uint8ClampedArray,
+  next: Uint8Array | Uint8ClampedArray,
+  width: number,
+  height: number,
+  options: { readonly deltaThreshold?: number | undefined; readonly minRegionPixels?: number | undefined } = {}
+): FrameMotionRegionMetrics {
+  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
+    throw new RangeError("Frame motion metrics require positive integer width and height.");
+  }
+  if (previous.length !== width * height * 4 || next.length !== width * height * 4) {
+    throw new RangeError("Frame motion metrics require two RGBA frames with width * height * 4 bytes.");
+  }
+  const deltaThreshold = options.deltaThreshold ?? 18;
+  const minRegionPixels = options.minRegionPixels ?? Math.max(4, Math.round(width * height * 0.002));
+  let changedPixels = 0;
+  let minX = width;
+  let minY = height;
+  let maxX = -1;
+  let maxY = -1;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const index = (y * width + x) * 4;
+      const delta =
+        Math.abs((next[index] ?? 0) - (previous[index] ?? 0)) +
+        Math.abs((next[index + 1] ?? 0) - (previous[index + 1] ?? 0)) +
+        Math.abs((next[index + 2] ?? 0) - (previous[index + 2] ?? 0));
+      if (delta <= deltaThreshold) continue;
+      changedPixels += 1;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+
+  const bounds = maxX >= minX && maxY >= minY
+    ? {
+        minX,
+        minY,
+        maxX,
+        maxY,
+        width: maxX - minX + 1,
+        height: maxY - minY + 1
+      }
+    : undefined;
+  const regions = bounds && changedPixels >= minRegionPixels
+    ? [{
+        id: "motion-region-1",
+        bounds,
+        changedPixels,
+        changedRatio: changedPixels / (width * height)
+      }]
+    : [];
+  return {
+    width,
+    height,
+    changedPixels,
+    changedRatio: changedPixels / (width * height),
+    regions,
+    characterVisible: regions.length > 0,
+    characterMotionRegionCount: regions.length
+  };
 }
 
 function thresholdFailure(name: string, actual: number, expected: number | undefined, direction: "min" | "max"): string | undefined {

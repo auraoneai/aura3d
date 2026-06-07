@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("cartoon studio storyboard caption renders", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText(/Aura3D cartoon studio|moon|robot/i)).toBeVisible();
+  await expect(page.locator("#caption-overlay")).toContainText(/moon|sparkle|garden/i);
 });
 
 test("storyboard playback, character performance, caption timing, cuts, and nonblank cartoon frames are sourced", async ({
@@ -11,28 +11,33 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
   await page.goto("/");
 
   const routeProof = (await page.evaluate(() => {
-    const template = (window as unknown as {
-      __AURA3D_CARTOON_TEMPLATE__?: {
+    const proof = (window as unknown as {
+      __AURA3D_CARTOON_EPISODE_PROOF__?: {
+        proofKind: string;
         shotIds: readonly string[];
         captionIds: readonly string[];
         storyBible?: unknown;
         studio?: unknown;
+        sourceOnlyAcceptedAsPublishProof: boolean;
         playbackProbeSamples: readonly unknown[];
         sampleAt(time: number): unknown;
       };
-    }).__AURA3D_CARTOON_TEMPLATE__;
+    }).__AURA3D_CARTOON_EPISODE_PROOF__;
     return {
-      shotIds: template?.shotIds ?? [],
-      captionIds: template?.captionIds ?? [],
-      storyBible: template?.storyBible,
-      studio: template?.studio,
-      samples: [1, 21, 43].map((time) => template?.sampleAt(time)),
-      playbackProbeSamples: template?.playbackProbeSamples ?? [],
+      proofKind: proof?.proofKind,
+      shotIds: proof?.shotIds ?? [],
+      captionIds: proof?.captionIds ?? [],
+      storyBible: proof?.storyBible,
+      studio: proof?.studio,
+      sourceOnlyAcceptedAsPublishProof: proof?.sourceOnlyAcceptedAsPublishProof,
+      samples: [1, 21, 43].map((time) => proof?.sampleAt(time)),
+      playbackProbeSamples: proof?.playbackProbeSamples ?? [],
       bodyShotCount: document.body.dataset.cartoonShotCount,
       bodyCaptionCount: document.body.dataset.cartoonCaptionCount,
       bodyPanels: document.body.dataset.cartoonStudioPanels
     };
   })) as {
+    proofKind?: string;
     shotIds: string[];
     captionIds: string[];
     storyBible?: {
@@ -55,11 +60,14 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
       nodeUpdates?: Array<{ characterId?: string; action?: string; emotion?: string }>;
     }>;
     playbackProbeSamples: unknown[];
+    sourceOnlyAcceptedAsPublishProof?: boolean;
     bodyShotCount?: string;
     bodyCaptionCount?: string;
     bodyPanels?: string;
   };
 
+  expect(routeProof.proofKind).toBe("aura3d-cartoon-episode-proof");
+  expect(routeProof.sourceOnlyAcceptedAsPublishProof).toBe(false);
   expect(routeProof.shotIds).toEqual([
     "shot-moon-garden-open",
     "shot-glow-stone-teamwork",

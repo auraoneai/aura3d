@@ -20,6 +20,9 @@ export interface AudioVisemeAnalysisFrame {
 
 export interface AudioVisemeAnalysis {
   readonly kind: "audio-viseme-analysis";
+  readonly analysisKind: "amplitude-only" | "phoneme-aligned";
+  readonly phonemeAlignmentPresent: boolean;
+  readonly manualCorrectionRecommended: boolean;
   readonly characterId: PromptAnimationId;
   readonly language: PromptAnimationLanguageCode;
   readonly sampleRate: number;
@@ -44,6 +47,7 @@ export interface AnalyzeAudioVisemesOptions {
   readonly analysisWindowSeconds?: PromptAnimationSeconds | undefined;
   readonly silenceThreshold?: number | undefined;
   readonly blendshapeMap?: Record<string, string> | undefined;
+  readonly phonemeAlignmentPresent?: boolean | undefined;
   readonly generatedAt?: string | undefined;
 }
 
@@ -86,6 +90,9 @@ export function analyzeAudioVisemes(options: AnalyzeAudioVisemesOptions): AudioV
 
   return {
     kind: "audio-viseme-analysis",
+    analysisKind: options.phonemeAlignmentPresent ? "phoneme-aligned" : "amplitude-only",
+    phonemeAlignmentPresent: options.phonemeAlignmentPresent === true,
+    manualCorrectionRecommended: options.phonemeAlignmentPresent !== true,
     characterId: options.characterId,
     language: options.language,
     sampleRate: options.sampleRate,

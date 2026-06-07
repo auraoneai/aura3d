@@ -63,6 +63,8 @@ export class TimelineUI {
       const trackSnapshot = snapshot.tracks.find((candidate) => candidate.id === track.id);
       const lane = this.el("div", "aura-timeline__track");
       lane.dataset.trackId = track.id;
+      lane.dataset.trackKind = trackSnapshot?.kind ?? "generic";
+      lane.dataset.waveform = String(trackSnapshot?.kind === "dialogue" || trackSnapshot?.kind === "audio" || trackSnapshot?.kind === "sfx" || trackSnapshot?.kind === "viseme");
       lane.style.minHeight = `${trackSnapshot?.laneHeight ?? 32}px`;
       const label = this.el("div", "aura-timeline__track-label");
       label.textContent = track.name;
@@ -78,6 +80,9 @@ export class TimelineUI {
         clipEl.style.background = trackSnapshot?.color ?? "#334155";
         if (snapshot.selectedIds.includes(clip.id)) clipEl.dataset.selected = "true";
         const click = (event: MouseEvent): void => {
+          if (trackSnapshot?.kind === "shot") {
+            this.controller.jumpToShot(clip.id);
+          }
           this.controller.selectClip(clip.id, event.shiftKey);
           this.render();
         };

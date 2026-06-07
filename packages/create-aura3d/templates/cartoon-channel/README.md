@@ -18,25 +18,11 @@ It uses:
 - An Aura3D-rendered cartoon scene graph for visual review: moon garden,
   stylized robot characters, props, lights, camera, captions, and typed GLB
   character asset evidence through `src/aura-assets.ts`.
-- A separate 2.5D concept route at `/?view=concept-2-5d&sampleTime=24`.
-  This route uses `public/aura-assets/moon-garden-feature-frame.png` as source
-  art, splits it into depth planes, and pans those planes at different rates.
-  It is useful for explaining a still-image-to-episode workflow, but it is not
-  true mesh reconstruction and cannot orbit behind the painted characters.
-  Use `/?view=concept-2-5d&sampleTime=24&animateParallax=1` to keep the same
-  shot/caption while the layered camera moves.
-- A separate puppet-animation route at `/?view=puppet-2d&sampleTime=24`.
-  This is the route that moves actual character parts: robot head bob, blinking
-  eyes, broom sweep, rake/push arms, wheelbarrow roll, moon pulse, foreground
-  glow, caption timing, and timeline proof. The source PNG supplies the art
-  direction/backdrop; the moving actors are explicit 2D puppet overlays.
-- An image-derived puppet route at `/?view=image-puppet&sampleTime=24`.
-  This is the route that actually uses the generated moon-garden PNG as the
-  source for moving pixels. It duplicates the same flattened image into masked
-  cutout layers for the blue robot, yellow robot, tools, cart, moon, and
-  foreground, then animates those cutouts. The result is not as clean as true
-  production layers because the PNG has no separated background plate, masks, or
-  depth map, but the moving pieces are sourced from the generated image itself.
+- A release-facing route that deliberately ignores the rejected
+  `concept-2-5d`, `puppet-2d`, and `image-puppet` query views. Those earlier
+  experiments remain only as negative evidence: still-image parallax, flat
+  cutout motion, and `notTrue3D` proof are not accepted as Aura3D 1.1 cartoon
+  animation readiness.
 
 Replace primitive characters with typed GLB assets by running:
 
@@ -71,78 +57,21 @@ The visual test captures a review frame at:
 tests/reports/prompt-animation/cartoon-sample-episode.png
 ```
 
-The 2.5D concept test captures three parallax positions at:
-
-```text
-tests/reports/prompt-animation/cartoon-2-5d-concept-left.png
-tests/reports/prompt-animation/cartoon-2-5d-concept-center.png
-tests/reports/prompt-animation/cartoon-2-5d-concept-right.png
-```
-
-The animated route for live review is:
-
-```text
-/?view=concept-2-5d&sampleTime=24&animateParallax=1
-```
-
-That route is camera/parallax motion only. To review actual character motion,
-open:
-
-```text
-/?view=puppet-2d&sampleTime=24
-```
-
-To review actual generated-image pixels moving as approximate cutouts, open:
-
-```text
-/?view=image-puppet&sampleTime=24
-```
-
-Record the moving proof with:
+Run the failed-puppet negative gate:
 
 ```bash
-npm run record:2.5d
+npm run test:negative-failed-puppets
 ```
 
-That writes:
+That gate proves the old `?view=concept-2-5d`, `?view=puppet-2d`, and
+`?view=image-puppet` query strings fall back to the supported sample episode
+route and do not expose release-facing puppet/parallax proof objects.
 
-```text
-tests/reports/prompt-animation/cartoon-2-5d-concept-animation.webm
-```
-
-Record the puppet animation with:
-
-```bash
-npm run record:puppet
-```
-
-That writes:
-
-```text
-tests/reports/prompt-animation/cartoon-2d-puppet-animation.webm
-```
-
-Record the image-derived cutout animation with:
-
-```bash
-npm run record:image-puppet
-```
-
-That writes:
-
-```text
-tests/reports/prompt-animation/cartoon-image-puppet-animation.webm
-```
-
-In that route, Aura3D's role is the episode contract, shot timing, caption
-timing, proof metadata, camera/parallax plan, and optional foreground 3D
-composition. The moon garden PNG is treated as concept source art. Production
-2.5D would need separated character/background/foreground masks or a depth map
-for cleaner parallax than rectangular layer crops.
-
-Inside the Aura3D monorepo, that path resolves to the repo-level report
-directory. In a generated standalone app, it resolves inside the generated
-project.
+Do not use `tests/reports/prompt-animation/cartoon-image-puppet-animation.webm`
+or the old 2.5D/cutout routes as product evidence. Aura3D's accepted cartoon
+animation proof must come from typed assets or explicitly segmented rigs with
+independent body-region motion, caption timing, visible mouth movement, and
+render/package evidence.
 
 This scaffold intentionally does not claim publish readiness from source alone.
 Before closing build, route, asset, screenshot, render, or visual-quality gates,

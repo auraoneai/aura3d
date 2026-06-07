@@ -1,6 +1,8 @@
 import type { Command } from "./Command";
 import { EditorRuntime } from "./EditorRuntime";
+import type { EpisodeReviewPanelSnapshot } from "./EpisodeReviewPanel";
 import type { HierarchyLikeNode } from "./HierarchyModel";
+import type { RenderQueuePanelSnapshot } from "./RenderQueuePanel";
 import { AssetDropZone, type AssetDropPlacement, type CartoonAssetCategory, type CartoonEditorAssetReference } from "./AssetDropZone";
 
 export interface CartoonSceneTransform {
@@ -32,12 +34,33 @@ export interface CartoonSceneEditorSnapshot {
     readonly transformGizmos: true;
     readonly propertyInspector: true;
     readonly sceneSaveLoad: true;
+    readonly episodeState: boolean;
   };
+  readonly episode: CartoonSceneEpisodeSnapshot;
 }
 
 export interface CartoonSceneEditorOptions {
   readonly runtime?: EditorRuntime;
   readonly root?: CartoonSceneNode;
+  readonly episode?: Partial<CartoonSceneEpisodeState>;
+}
+
+export interface CartoonSceneEpisodeState {
+  readonly shots: readonly string[];
+  readonly assets: readonly string[];
+  readonly captions: readonly string[];
+  readonly visemes: readonly string[];
+  readonly renderState?: RenderQueuePanelSnapshot;
+  readonly reviewState?: EpisodeReviewPanelSnapshot;
+}
+
+export interface CartoonSceneEpisodeSnapshot extends CartoonSceneEpisodeState {
+  readonly shotCount: number;
+  readonly assetCount: number;
+  readonly captionCount: number;
+  readonly visemeCount: number;
+  readonly hasRenderState: boolean;
+  readonly hasReviewState: boolean;
 }
 
 export class CartoonSceneEditor {
@@ -45,10 +68,12 @@ export class CartoonSceneEditor {
   readonly root: CartoonSceneNode;
   readonly dropZone: AssetDropZone<CartoonSceneNode>;
   private cameraPreviewIdInternal: string | null = null;
+  private episodeState: CartoonSceneEpisodeState;
 
   constructor(options: CartoonSceneEditorOptions = {}) {
     this.runtime = options.runtime ?? new EditorRuntime();
     this.root = options.root ?? createCartoonSceneNode({ id: "scene-root", name: "Scene", kind: "set" });
+    this.episodeState = normalizeEpisodeState(options.episode ?? {});
     this.dropZone = new AssetDropZone<CartoonSceneNode>({
       history: this.runtime.history,
       createNode: (asset, placement) => this.createNodeFromAsset(asset, placement),
@@ -100,6 +125,11 @@ export class CartoonSceneEditor {
     this.cameraPreviewIdInternal = id;
   }
 
+  setEpisodeState(state: Partial<CartoonSceneEpisodeState>): CartoonSceneEpisodeSnapshot {
+    this.episodeState = normalizeEpisodeState({ ...this.episodeState, ...state });
+    return this.episodeSnapshot();
+  }
+
   serializeScene(): CartoonSceneNode {
     return cloneNode(this.root);
   }
@@ -133,8 +163,26 @@ export class CartoonSceneEditor {
         assetPlacement: nodes.some((node) => node.asset),
         transformGizmos: true,
         propertyInspector: true,
-        sceneSaveLoad: true
-      }
+        sceneSaveLoad: true,
+        episodeState: this.episodeState.shots.length > 0
+          || this.episodeState.captions.length > 0
+          || this.episodeState.visemes.length > 0
+          || Boolean(this.episodeState.renderState)
+          || Boolean(this.episodeState.reviewState)
+      },
+      episode: this.episodeSnapshot()
+    };
+  }
+
+  private episodeSnapshot(): CartoonSceneEpisodeSnapshot {
+    return {
+      ...this.episodeState,
+      shotCount: this.episodeState.shots.length,
+      assetCount: this.episodeState.assets.length,
+      captionCount: this.episodeState.captions.length,
+      visemeCount: this.episodeState.visemes.length,
+      hasRenderState: Boolean(this.episodeState.renderState),
+      hasReviewState: Boolean(this.episodeState.reviewState)
     };
   }
 
@@ -158,6 +206,17 @@ export class CartoonSceneEditor {
     if (!node) throw new Error(`Cartoon scene node does not exist: ${id}`);
     return node;
   }
+}
+
+function normalizeEpisodeState(state: Partial<CartoonSceneEpisodeState>): CartoonSceneEpisodeState {
+  return {
+    shots: [...(state.shots ?? [])],
+    assets: [...(state.assets ?? [])],
+    captions: [...(state.captions ?? [])],
+    visemes: [...(state.visemes ?? [])],
+    renderState: state.renderState,
+    reviewState: state.reviewState
+  };
 }
 
 export function createCartoonSceneNode(config: {

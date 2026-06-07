@@ -1,13 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
   AssetLibraryBrowser,
+  analyzeAudioVisemes,
+  createCartoonDirectorPlan,
+  createCartoonPerformance,
+  createCartoonPerformanceCoverage,
+  createCartoonRenderOutputPackageMetadata,
+  createCartoonRenderQueue,
   createAudioDrivenVisemeTrack,
   createAudioMuxer,
   createCameraPathFromPreset,
   createEpisodeStructure,
   createFrameEncoder,
+  createPerformanceCaptureSession,
   createPublishPackage,
+  createPromptAnimationEpisodePlan,
+  createPromptAnimationEpisodeReadiness,
+  createPublishingPackage,
   createSceneSequencer,
+  createSceneSequencerPlayback,
   createShotCompositionGuide,
   createShotTransitionPlan,
   createThumbnailArtifact,
@@ -15,6 +26,7 @@ import {
   createVisemeTimelineTrack,
   createWaveformVisualization,
   defineCaptionTrack,
+  defineAuraAssets,
   defineCartoonAssetManifest,
   exportCaptionTrackSrt,
   exportCaptionTrackVtt,
@@ -22,12 +34,19 @@ import {
   sampleSceneSequencer,
   sampleShotTransition,
   sampleVisemeTimelineTrack,
+  validateCartoonRenderQueue,
+  validateCartoonAssetManifest,
+  validatePerformanceCaptureCapability,
+  validatePromptAnimationEpisodeReadiness,
   type CartoonRenderOutputPackageMetadata,
   type CartoonRenderQueueArtifact,
   type ShotTimelineArtifact
 } from "../../../packages/engine/src";
 
 const generatedAt = "2026-06-06T00:00:00.000Z";
+const typedAssets = defineAuraAssets({
+  miko: { type: "model", format: "glb", url: "/aura-assets/miko.glb" }
+});
 
 function renderQueue(): CartoonRenderQueueArtifact {
   return {
@@ -153,6 +172,112 @@ function shotTimeline(): ShotTimelineArtifact {
 }
 
 describe("cartoon production pipeline APIs", () => {
+  it("distinguishes source, preview, render, and publish readiness in episode plans", () => {
+    const sourceOnly = createPromptAnimationEpisodeReadiness({
+      assetMode: "source-only",
+      motionMode: "source-only",
+      renderOutputMode: "source-only",
+      reviewStatus: "not-reviewed",
+      publishTarget: "none"
+    });
+    const publishReady = createPromptAnimationEpisodeReadiness({
+      assetMode: "typed-assets",
+      motionMode: "performance-driven",
+      renderOutputMode: "publish-ready",
+      reviewStatus: "approved",
+      publishTarget: "youtube"
+    });
+
+    expect(sourceOnly).toMatchObject({
+      status: "source-only",
+      sourceOnlyAcceptedAsPublishProof: false,
+      requiresHumanReview: true
+    });
+    expect(publishReady).toMatchObject({
+      status: "publish-ready",
+      sourceOnlyAcceptedAsPublishProof: false,
+      requiresHumanReview: false
+    });
+    expect(validatePromptAnimationEpisodeReadiness(sourceOnly)).toEqual([]);
+    expect(validatePromptAnimationEpisodeReadiness({
+      ...sourceOnly,
+      status: "publish-ready"
+    })).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "readiness-publish-output-mode" }),
+      expect.objectContaining({ code: "readiness-publish-review" }),
+      expect.objectContaining({ code: "readiness-publish-assets" }),
+      expect.objectContaining({ code: "readiness-publish-motion" })
+    ]));
+  });
+
+  it("builds director plans with asset slots, motion requirements, render package, and review gates", () => {
+    const plan = createCartoonDirectorPlan({
+      episodeId: "episode-1",
+      title: "Moon Garden",
+      prompt: "Two helpers fix moon flowers.",
+      language: "en",
+      runtime: { duration: 4, frameRate: 24, resolution: { width: 1280, height: 720 }, maxTimingDriftFrames: 1 },
+      characters: [
+        { id: "miko", name: "Miko", asset: typedAssets.miko },
+        { id: "luma", name: "Luma" }
+      ],
+      locations: [{ id: "garden", name: "Moon Garden" }],
+      beats: [{
+        id: "beat-1",
+        locationId: "garden",
+        summary: "Miko explains the glowing flower.",
+        visualIntent: "Wide two-shot with a gentle push-in.",
+        characters: ["miko", "luma"],
+        dialogue: [{ speakerId: "miko", text: "The moon flowers need a tiny spark.", emotion: "curious" }]
+      }]
+    });
+
+    expect(plan.renderOutputPackage).toMatchObject({ artifact: "render-output-package", packageId: "episode-1:render-package" });
+    expect(plan.assetSlots).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "miko", kind: "character", readiness: "typed-asset" }),
+      expect.objectContaining({ id: "luma", kind: "character", readiness: "primitive-fallback" })
+    ]));
+    expect(plan.motionRequirements).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "camera", targetId: "shot-1" }),
+      expect.objectContaining({ kind: "mouth", targetId: "miko" })
+    ]));
+    expect(plan.reviewGates).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "encoded-video", required: true, status: "pending" }),
+      expect.objectContaining({ id: "human-review", required: true, status: "pending" })
+    ]));
+  });
+
+  it("creates render queues with frame lists, output targets, thumbnail frame, and evidence frames", () => {
+    const episodePlan = createPromptAnimationEpisodePlan({
+      episodeId: "episode-1",
+      title: "Moon Garden",
+      language: "en",
+      runtime: { duration: 2, frameRate: 30, resolution: { width: 1280, height: 720 } },
+      characters: [],
+      locations: []
+    });
+    const queue = createCartoonRenderQueue({
+      episodePlan,
+      shotTimeline: shotTimeline(),
+      route: "/cartoon"
+    });
+    const outputPackageMetadata = createCartoonRenderOutputPackageMetadata({
+      episodePlan,
+      shotTimeline: shotTimeline(),
+      renderQueue: queue
+    });
+
+    expect(queue).toMatchObject({
+      seekMode: "timeline-time",
+      frameList: expect.any(Array),
+      outputTargets: expect.arrayContaining([expect.objectContaining({ kind: "webm", path: "dist/render/episode.webm" })]),
+      thumbnailFrame: queue.items[0]?.frame,
+      evidenceFrames: queue.items.map((item) => item.frame)
+    });
+    expect(validateCartoonRenderQueue(queue)).toEqual([]);
+    expect(outputPackageMetadata.thumbnailCapture.source).toBe("same-aura3d-scene-state");
+  });
+
   it("encodes frames, muxes audio, and assembles a publish package", async () => {
     const queue = renderQueue();
     const outputs = outputPackage();
@@ -184,6 +309,14 @@ describe("cartoon production pipeline APIs", () => {
     expect(result.plan).toMatchObject({ frameCount: 2, audioStemCount: 1, outputPath: "dist/episode.webm" });
     expect(result.encodedVideo.frameCount).toBe(2);
     expect(result.muxedVideo.audioTrackCount).toBe(1);
+    expect(result.output).toMatchObject({
+      path: "dist/episode.webm",
+      byteLength: expect.any(Number),
+      frameCount: 2,
+      duration: expect.any(Number),
+      hasEncodedOutput: false,
+      hasMuxedOutput: false
+    });
     expect(result.progress.status).toBe("completed");
 
     const captions = defineCaptionTrack({
@@ -205,9 +338,26 @@ describe("cartoon production pipeline APIs", () => {
 
     expect(exportCaptionTrackVtt(captions)).toContain("WEBVTT");
     expect(exportCaptionTrackSrt(captions)).toContain("00:00:00,000");
+    expect(exportCaptionTrackVtt(captions)).toContain("caption-1");
     expect(publish.ok).toBe(true);
     expect(publish.thumbnail.plan).toMatchObject({ outputPath: "dist/thumb.png", width: 320, height: 180 });
     expect(publish.youtube).toMatchObject({ title: "Moon Garden", madeForKids: true });
+
+    const publishing = await createPublishingPackage({
+      outputPackage: outputs,
+      captions,
+      videoResult: result,
+      thumbnailRuntime: {
+        captureThumbnail: () => new Uint8Array([9, 8, 7, 6])
+      }
+    });
+
+    expect(publishing.readiness).toMatchObject({ status: "pass" });
+    expect(publishing.videoByteLength).toBeGreaterThan(0);
+    expect(publishing.captions.every((caption) => caption.byteLength > 0 && caption.checksum.startsWith("caption-"))).toBe(true);
+    expect(publishing.thumbnail).toMatchObject({ path: "dist/thumb.png", byteLength: 4 });
+    expect(publishing.routeProofPath).toBe("dist/render/route-proof.json");
+    expect(publishing.provenancePath).toBe("dist/render/asset-provenance.json");
   });
 
   it("creates waveform, viseme, sequencer, camera, and asset-library evidence", () => {
@@ -227,6 +377,18 @@ describe("cartoon production pipeline APIs", () => {
       frameRate: 30,
       sampleRate: 30,
       samples: new Float32Array([0, 0.2, 0.7, 0.1])
+    });
+    expect(analyzeAudioVisemes({
+      episodeId: "episode-1",
+      characterId: "hero",
+      language: "en",
+      frameRate: 30,
+      sampleRate: 30,
+      samples: new Float32Array([0, 0.2, 0.7, 0.1])
+    })).toMatchObject({
+      analysisKind: "amplitude-only",
+      phonemeAlignmentPresent: false,
+      manualCorrectionRecommended: true
     });
     const edited = createVisemeTimelineTrack({
       episodeId: "episode-1",
@@ -271,13 +433,29 @@ describe("cartoon production pipeline APIs", () => {
     const sequencer = createSceneSequencer({ timeline: shotTimeline(), episode: structure });
     expect(sampleSceneSequencer(sequencer, 1.2).shot?.shotId).toBe("shot-2");
     expect(sampleShotTransition(createShotTransitionPlan({ timeline: shotTimeline() }), 1)).toMatchObject({ fromOpacity: 0, toOpacity: 1 });
+    const playback = createSceneSequencerPlayback(sequencer);
+    expect(playback.play()).toMatchObject({ status: "playing" });
+    expect(playback.step(1.25).shot?.shotId).toBe("shot-2");
+    expect(playback.pause()).toMatchObject({ status: "paused" });
+    expect(playback.scrub(0.2).shot?.shotId).toBe("shot-1");
+    expect(playback.jumpToShot("shot-2")).toMatchObject({ shot: expect.objectContaining({ shotId: "shot-2" }) });
 
     const camera = createCameraPathFromPreset({ id: "camera", presetId: "close-up", startTime: 0, endTime: 2 });
     expect(sampleCameraPath(camera, 1).fov).toBe(32);
+    const presetSamples = [
+      createCameraPathFromPreset({ id: "static", presetId: "establishing", startTime: 0, endTime: 1 }),
+      createCameraPathFromPreset({ id: "push-in", presetId: "close-up", startTime: 0, endTime: 1 }),
+      createCameraPathFromPreset({ id: "dolly", presetId: "dolly-zoom", startTime: 0, endTime: 1 }),
+      createCameraPathFromPreset({ id: "pan", presetId: "pan", startTime: 0, endTime: 1 }),
+      createCameraPathFromPreset({ id: "close-up", presetId: "close-up", startTime: 0, endTime: 1 }),
+      createCameraPathFromPreset({ id: "two-shot", presetId: "two-shot", startTime: 0, endTime: 1 })
+    ].map((path) => ({ id: path.id, sample: sampleCameraPath(path, 0.5) }));
+    expect(presetSamples.map((sample) => sample.id)).toEqual(["static", "push-in", "dolly", "pan", "close-up", "two-shot"]);
+    expect(presetSamples.every((entry) => entry.sample.position.length === 3 && entry.sample.target.length === 3)).toBe(true);
     expect(createShotCompositionGuide("rule-of-thirds").lines).toHaveLength(4);
     expect(createThumbnailArtifact({ path: "thumb.png", viewport: { width: 1280, height: 720 }, time: 1 }).checksum).toMatch(/^thumb-/);
 
-    const browser = new AssetLibraryBrowser(defineCartoonAssetManifest([
+    const manifest = defineCartoonAssetManifest([
       {
         id: "hero",
         kind: "character",
@@ -292,14 +470,122 @@ describe("cartoon production pipeline APIs", () => {
         metadata: { role: "hero", provenanceVerified: true }
       },
       { id: "park", kind: "set", assetId: "assets.park", style: "rounded cartoon", license: "CC0" }
-    ]));
+    ]);
+    const browser = new AssetLibraryBrowser(manifest);
     expect(browser.setFilter({ kind: "character", lipSyncReady: true })).toMatchObject({ total: 2, visible: 1 });
     expect(browser.select("hero").selectedId).toBe("hero");
+    expect(browser.editorReference()).toMatchObject({
+      kind: "aura-asset-ref",
+      id: "hero",
+      source: "assets.hero",
+      license: "CC0",
+      category: "character",
+      clips: ["Idle", "Talk"],
+      lipSyncReady: true
+    });
+    expect(browser.marketplaceSnapshot()).toMatchObject({
+      kind: "asset-library-marketplace-browser",
+      sourceCount: 1,
+      offlineCatalogOnly: true,
+      externalServicesIntegrated: false,
+      visibleAssetIds: ["hero"]
+    });
+    expect(manifest.readiness).toMatchObject({
+      characterCount: 1,
+      setCount: 1,
+      lipSyncReadyCount: 1,
+      typedAssetReferenceCount: 2,
+      issues: []
+    });
+    expect(validateCartoonAssetManifest(manifest)).toEqual([]);
+    expect(validateCartoonAssetManifest(defineCartoonAssetManifest([
+      { id: "bad", kind: "character", assetId: "bad.glb", style: "flat", license: "" }
+    ]))).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "cartoon-asset-typed-reference-missing" }),
+      expect.objectContaining({ code: "cartoon-asset-license-missing" }),
+      expect.objectContaining({ code: "cartoon-character-mouth-readiness-missing" })
+    ]));
     expect(browser.detail()).toMatchObject({
       kind: "asset-library-detail",
       animationPreview: { clips: ["Idle", "Talk"], previewable: true },
       materialPreview: { materialCount: 2, celShadingReady: true },
       metadata: { license: "CC0", attribution: "Kenney", role: "hero", provenanceVerified: true }
+    });
+  });
+
+  it("captures manual, webcam, and motion-capture performance as honest source-level contracts", () => {
+    expect(validatePerformanceCaptureCapability({
+      kind: "webcam",
+      available: false,
+      permission: "unknown",
+      supportedSignals: ["face", "gaze"]
+    })).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "performance-capture-source-unavailable" }),
+      expect.objectContaining({ code: "performance-capture-permission-required" })
+    ]));
+
+    const webcam = createPerformanceCaptureSession({
+      id: "webcam-session",
+      episodeId: "episode-1",
+      characterId: "hero",
+      frameRate: 24,
+      source: {
+        kind: "webcam",
+        available: true,
+        permission: "granted",
+        supportedSignals: ["face", "gaze"],
+        provider: "browser-user-media"
+      }
+    });
+    webcam.start();
+    webcam.recordSample({
+      id: "face-0",
+      characterId: "hero",
+      time: 0,
+      facial: { mouth: "open", eyeOpen: 0.9 },
+      gaze: { mode: "camera", intensity: 0.8 },
+      confidence: 0.92,
+      sourceFrameId: "camera-frame-0"
+    });
+    const webcamSnapshot = webcam.stop();
+    expect(webcamSnapshot).toMatchObject({
+      kind: "performance-capture-session",
+      source: { kind: "webcam" },
+      sampleCount: 1,
+      requiresRuntimeDevicePermission: true,
+      externalServiceIntegrated: false,
+      evidence: { webcamCaptureContract: true, performanceDriven: true }
+    });
+    expect(webcam.toPerformanceArtifact().cues[0]).toMatchObject({
+      characterId: "hero",
+      action: "react",
+      facial: { mouth: "open" }
+    });
+
+    const mocap = createPerformanceCaptureSession({
+      id: "mocap-session",
+      episodeId: "episode-1",
+      characterId: "hero",
+      frameRate: 30,
+      source: {
+        kind: "motion-capture",
+        available: true,
+        permission: "granted",
+        supportedSignals: ["body", "hands"],
+        provider: "manual-test-provider"
+      }
+    });
+    mocap.start();
+    mocap.recordSample({
+      id: "body-0",
+      characterId: "hero",
+      time: 0,
+      body: { posture: "lean-forward", armPose: "waving", energy: 0.7 },
+      confidence: 0.88
+    });
+    expect(mocap.snapshot()).toMatchObject({
+      evidence: { motionCaptureContract: true, performanceDriven: true },
+      averageConfidence: 0.88
     });
   });
 
@@ -310,6 +596,46 @@ describe("cartoon production pipeline APIs", () => {
     const muxed = await createAudioMuxer().mux(encoded, [], 24);
 
     expect(encoded).toMatchObject({ frameCount: 1, container: "webm" });
-    expect(muxed).toMatchObject({ audioTrackCount: 0, container: "webm" });
+    expect(muxed).toMatchObject({ audioTrackCount: 0, container: "webm", outputMode: "metadata-only", publishReady: false });
+
+    await expect(createAudioMuxer({ readinessMode: "publish" }).mux(encoded, [{
+      id: "dialogue",
+      role: "dialogue",
+      path: "dialogue.wav",
+      startTime: 0,
+      duration: 1
+    }], 24)).rejects.toThrow(/real muxed output/i);
+  });
+
+  it("fails cartoon performance coverage for static characters", () => {
+    const staticPerformance = createCartoonPerformance({
+      episodeId: "episode-1",
+      frameRate: 24,
+      cues: [{
+        id: "hero-static",
+        characterId: "hero",
+        startTime: 0,
+        endTime: 1,
+        action: "idle"
+      }]
+    });
+    const movingPerformance = createCartoonPerformance({
+      episodeId: "episode-1",
+      frameRate: 24,
+      cues: [{
+        id: "hero-wave",
+        characterId: "hero",
+        startTime: 0,
+        endTime: 1,
+        action: "wave",
+        gestureId: "small-wave"
+      }]
+    });
+
+    expect(createCartoonPerformanceCoverage(staticPerformance).staticCharacterIds).toEqual(["hero"]);
+    expect(createCartoonPerformanceCoverage(staticPerformance).issues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: "performance-character-static" })
+    ]));
+    expect(createCartoonPerformanceCoverage(movingPerformance).issues).toEqual([]);
   });
 });

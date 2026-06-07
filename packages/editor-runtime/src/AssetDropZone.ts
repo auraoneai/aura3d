@@ -5,7 +5,9 @@ import type { EditorProjectAssetDocument } from "./ProjectSerializer";
 export type CartoonAssetCategory = "character" | "set" | "prop" | "camera" | "light" | "audio" | "material" | "unknown";
 
 export interface CartoonEditorAssetReference extends EditorProjectAssetDocument {
+  readonly kind?: "aura-asset-ref" | "editor-asset-ref";
   readonly category?: CartoonAssetCategory;
+  readonly profile?: "cartoon-character" | "cartoon-set" | "cartoon-prop" | "cartoon-audio" | string;
   readonly style?: string;
   readonly rigType?: "humanoid" | "creature" | "prop" | "none";
   readonly lipSyncReady?: boolean;
@@ -113,8 +115,19 @@ export function readAssetFromDataTransfer(dataTransfer: DataTransfer | null): Ca
 function validateAssetReference(asset: CartoonEditorAssetReference): void {
   if (!asset.id?.trim()) throw new Error("Dropped Aura3D asset id is required.");
   if (!asset.name?.trim()) throw new Error(`Dropped Aura3D asset name is required: ${asset.id}`);
+  if ((asset.uri && /^https?:\/\//i.test(asset.uri) || asset.source && /^https?:\/\//i.test(asset.source)) && asset.kind !== "aura-asset-ref") {
+    throw new Error(`Dropped asset "${asset.id}" must be a typed Aura3D asset reference, not a raw URL.`);
+  }
   if (asset.source !== undefined && !asset.source.trim()) throw new Error(`Dropped Aura3D asset source cannot be empty: ${asset.id}`);
   if (asset.license !== undefined && !asset.license.trim()) throw new Error(`Dropped Aura3D asset license cannot be empty: ${asset.id}`);
+  if (asset.category === "character") {
+    if (asset.rigType === "none") throw new Error(`Cartoon character asset "${asset.id}" must be rigged.`);
+    if ((asset.clips?.length ?? 0) === 0) throw new Error(`Cartoon character asset "${asset.id}" requires animation clip metadata.`);
+    if (!asset.lipSyncReady) throw new Error(`Cartoon character asset "${asset.id}" requires lip-sync readiness metadata.`);
+  }
+  if ((asset.category === "set" || asset.category === "audio") && !asset.license) {
+    throw new Error(`Cartoon ${asset.category} asset "${asset.id}" requires license metadata.`);
+  }
 }
 
 function validatePlacement(placement: AssetDropPlacement): void {

@@ -5,16 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "episode:plan": "tsx scripts/episode.ts plan",
+    "episode:preview": "tsx scripts/episode.ts preview",
+    "episode:render": "tsx scripts/episode.ts render",
+    "episode:package": "tsx scripts/episode.ts package",
+    "episode:review": "tsx scripts/episode.ts review",
+    "episode:verify": "npm run episode:render && npm run episode:package && npm run episode:review && tsx scripts/episode.ts verify",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
+    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/episode-render.spec.ts tests/motion-quality.spec.ts tests/visual-review.spec.ts --workers=1"
   },
   "dependencies": {
+    "@aura3d/animation": "1.0.6",
+    "@aura3d/assets": "1.0.6",
+    "@aura3d/core": "1.0.6",
+    "@aura3d/physics": "1.0.6",
     "@aura3d/engine": "1.0.10"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vite": "^7.2.4"
   }

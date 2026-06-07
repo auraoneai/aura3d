@@ -36,6 +36,30 @@ export interface AudioWaveformPathOptions {
   readonly padding?: number;
 }
 
+export interface AudioWaveformReviewStem {
+  readonly id: string;
+  readonly label?: string;
+  readonly startTime: number;
+  readonly waveform: AudioWaveformData;
+}
+
+export interface AudioWaveformReviewStemView {
+  readonly id: string;
+  readonly label: string;
+  readonly startTime: number;
+  readonly duration: number;
+  readonly peakCount: number;
+  readonly path: readonly AudioWaveformPathPoint[];
+}
+
+export interface AudioWaveformReviewData {
+  readonly kind: "audio-waveform-review-data";
+  readonly stemCount: number;
+  readonly width: number;
+  readonly height: number;
+  readonly stems: readonly AudioWaveformReviewStemView[];
+}
+
 export type AudioWaveformInput = AudioBuffer | AudioClip;
 
 export function createAudioWaveform(input: AudioWaveformInput, options: AudioWaveformOptions = {}): AudioWaveformData {
@@ -113,6 +137,28 @@ export function createAudioWaveformPath(waveform: AudioWaveformData, options: Au
     yMax: centerY - clamp(peak.min, -1, 1) * halfHeight,
     rmsHeight: clamp(peak.rms, 0, 1) * halfHeight
   }));
+}
+
+export function createAudioWaveformReviewData(
+  stems: readonly AudioWaveformReviewStem[],
+  options: AudioWaveformPathOptions
+): AudioWaveformReviewData {
+  const width = finitePositive(options.width, "width");
+  const height = finitePositive(options.height, "height");
+  return {
+    kind: "audio-waveform-review-data",
+    stemCount: stems.length,
+    width,
+    height,
+    stems: stems.map((stem) => ({
+      id: stem.id,
+      label: stem.label ?? stem.id,
+      startTime: Math.max(0, stem.startTime),
+      duration: stem.waveform.duration,
+      peakCount: stem.waveform.peakCount,
+      path: createAudioWaveformPath(stem.waveform, { ...options, width, height })
+    }))
+  };
 }
 
 export function audioWaveformPeakRange(waveform: AudioWaveformData): { readonly min: number; readonly max: number; readonly rmsMax: number } {

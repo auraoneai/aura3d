@@ -27,6 +27,7 @@ Scaffold:
 ```bash
 npx create-aura3d@latest my-scene --template product-viewer
 npx create-aura3d@latest my-fighter --template fighting-game
+npx create-aura3d@latest my-studio --template cartoon-studio
 npx create-aura3d@latest my-cartoon --template cartoon-channel
 npx create-aura3d@latest my-episode --template prompt-cartoon-channel
 cd my-scene
@@ -236,6 +237,14 @@ app.onFrame(({ time }) => {
 - `@aura3d/editor-runtime` and `@aura3d/scripting` are public package surfaces for tools and tests. Live browser routes still mount through `@aura3d/engine`.
 - Visual graphs can validate and emit deterministic side effects. A graph is not proven to drive a browser scene until those side effects are applied to a mounted Aura app and captured in browser evidence.
 - Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.0.10 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
+
+Aura3D 1.1 Cartoon Studio rules:
+- Use `create-aura3d --template cartoon-studio` for the planned 1.1 cartoon episode workflow. `cartoon-channel` and `prompt-cartoon-channel` remain source-level examples unless their render/package gates pass.
+- Resolve typed cartoon assets before writing episode code. Use `assets resolve ... --profile cartoon-character` for characters and `--profile cartoon-set` for sets when those profiles are available; otherwise add local licensed GLB/glTF assets with `assets add` and keep provenance in `aura.assets.json`.
+- A publish-ready cartoon episode needs real route playback, independently moving characters, visible mouth motion during dialogue, exported captions, render/package evidence, and review artifacts.
+- Do not claim a generated still image with CSS pan/zoom/shake/wobble, fake parallax, or subtitles is real Aura3D animation. Routes or reports marked `notTrue3D: true`, `sourceOnly: true`, or `image-puppet` are negative or experimental evidence only.
+- Do not claim Pixar quality, magic image-to-video, full animation-studio replacement, Unity/Unreal parity, or automated YouTube production unless the 1.1 PRD gates and human review evidence prove the narrower claim.
+- Use generated images as concept art, thumbnails, textures, background plates, or style references. The episode itself must be driven by typed assets, rigs or explicitly segmented puppet parts, timelines, visemes, captions, and render evidence.
 
 Benchmark priority:
 - Use `sceneKits.<name>()` first for benchmark prompts.

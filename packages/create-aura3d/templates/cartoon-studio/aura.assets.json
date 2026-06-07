@@ -1,0 +1,157 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "luma",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/luma.humanoid-fixture.glb",
+      "outputPath": "public/aura-assets/luma.humanoid-fixture.glb",
+      "url": "/aura-assets/luma.humanoid-fixture.glb",
+      "hash": "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
+      "sizeBytes": 2160468,
+      "bounds": [1.1, 1.8, 0.8],
+      "boundsMetadata": {
+        "min": [-0.55, 0, -0.4],
+        "max": [0.55, 1.8, 0.4],
+        "size": [1.1, 1.8, 0.8],
+        "center": [0, 0.9, 0],
+        "maxDimension": 1.8,
+        "grounded": true
+      },
+      "materials": ["luma-body", "luma-face", "luma-accent"],
+      "materialMetadata": [
+        { "name": "luma-body", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "luma-face", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "luma-accent", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
+      ],
+      "animations": ["Idle", "Walking", "Wave", "Punch", "Jump"],
+      "animationMetadata": {
+        "clipCount": 5,
+        "clips": [
+          { "index": 0, "name": "Idle", "channelCount": 6, "samplerCount": 6, "targetPaths": ["rotation"], "targetNodes": ["Body", "Head", "UpperArm.L", "UpperArm.R"] },
+          { "index": 1, "name": "Walking", "channelCount": 8, "samplerCount": 8, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 2, "name": "Wave", "channelCount": 5, "samplerCount": 5, "targetPaths": ["rotation"], "targetNodes": ["Head", "UpperArm.R", "LowerArm.R"] },
+          { "index": 3, "name": "Punch", "channelCount": 5, "samplerCount": 5, "targetPaths": ["rotation"], "targetNodes": ["Body", "UpperArm.L", "LowerArm.L"] },
+          { "index": 4, "name": "Jump", "channelCount": 7, "samplerCount": 7, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] }
+        ]
+      },
+      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 10 },
+      "skeleton": { "jointCount": 10, "skinnedMeshCount": 1 },
+      "morphTargets": { "targetCount": 0, "targetNames": [] },
+      "textures": [],
+      "dependencies": [],
+      "nodeNames": ["Luma", "Body", "Head", "mouth card", "UpperArm.L", "UpperArm.R", "UpperLeg.L", "UpperLeg.R"],
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D curated starter pack",
+        "sourcePath": "public/aura-assets/luma.humanoid-fixture.glb",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/luma.humanoid-fixture.glb",
+        "attribution": "Bundled Aura3D starter rig for local cartoon-studio validation.",
+        "evidence": ["cartoon-character", "primitive mouth card", "rigged humanoid robot"]
+      },
+      "thumbnailUrl": "/aura-assets/luma.thumb.svg",
+      "warnings": []
+    },
+    {
+      "id": "miko",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/miko.047f5e5f.glb",
+      "outputPath": "public/aura-assets/miko.047f5e5f.glb",
+      "url": "/aura-assets/miko.047f5e5f.glb",
+      "hash": "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+      "sizeBytes": 463988,
+      "bounds": [0.066, 0.026, 0.017],
+      "boundsMetadata": {
+        "min": [-0.033, -0.013, -0.009],
+        "max": [0.033, 0.013, 0.008],
+        "size": [0.066, 0.026, 0.017],
+        "center": [0, 0, 0],
+        "maxDimension": 0.066,
+        "grounded": true
+      },
+      "materials": ["Grey", "Main", "Black"],
+      "materialMetadata": [
+        { "name": "Grey", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "Main", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "Black", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
+      ],
+      "animations": ["Dance", "Death", "Idle", "Jump", "Punch", "Running", "Walking", "Wave"],
+      "animationMetadata": {
+        "clipCount": 8,
+        "clips": [
+          { "index": 0, "name": "Dance", "channelCount": 12, "samplerCount": 12, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body", "UpperArm.L", "UpperArm.R"] },
+          { "index": 1, "name": "Death", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body", "UpperArm.L", "UpperArm.R"] },
+          { "index": 2, "name": "Idle", "channelCount": 7, "samplerCount": 7, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body"] },
+          { "index": 3, "name": "Jump", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 4, "name": "Punch", "channelCount": 8, "samplerCount": 8, "targetPaths": ["rotation"], "targetNodes": ["Body", "UpperArm.L", "LowerArm.L"] },
+          { "index": 5, "name": "Running", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 6, "name": "Walking", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 7, "name": "Wave", "channelCount": 8, "samplerCount": 8, "targetPaths": ["rotation"], "targetNodes": ["Head", "UpperArm.R", "LowerArm.R"] }
+        ]
+      },
+      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 10 },
+      "skeleton": { "jointCount": 10, "skinnedMeshCount": 1 },
+      "morphTargets": { "targetCount": 1, "targetNames": ["mouthSmile"] },
+      "textures": [],
+      "dependencies": [],
+      "nodeNames": ["Miko", "Head", "Body", "mouth card", "UpperArm.L", "UpperArm.R", "UpperLeg.L", "UpperLeg.R"],
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D curated starter pack",
+        "sourcePath": "public/aura-assets/miko.047f5e5f.glb",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/miko.047f5e5f.glb",
+        "attribution": "Bundled Aura3D starter rig for local cartoon-studio validation.",
+        "evidence": ["cartoon-character", "blendshape mouth", "rigged humanoid robot"]
+      },
+      "thumbnailUrl": "/aura-assets/miko.thumb.svg",
+      "warnings": []
+    },
+    {
+      "id": "moonGarden",
+      "type": "model",
+      "format": "gltf",
+      "source": "public/aura-assets/moonGarden.gltf",
+      "outputPath": "public/aura-assets/moonGarden.gltf",
+      "url": "/aura-assets/moonGarden.gltf",
+      "hash": "sha256-85a288d6d434cc5c56ac154c3e996c2ad7612791622fc20a339fb647a6d426bd",
+      "sizeBytes": 3744,
+      "bounds": [3.2, 0.6, 1.2],
+      "boundsMetadata": {
+        "min": [-1.6, 0, -0.6],
+        "max": [1.6, 0.6, 0.6],
+        "size": [3.2, 0.6, 1.2],
+        "center": [0, 0.3, 0],
+        "maxDimension": 3.2,
+        "grounded": true
+      },
+      "materials": ["soft blue moon path", "warm glow stone", "distant teal skyline"],
+      "materialMetadata": [
+        { "name": "soft blue moon path", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "warm glow stone", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "distant teal skyline", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
+      ],
+      "animations": [],
+      "textures": [],
+      "dependencies": [],
+      "nodeNames": ["Moon Garden starter set anchor", "moon garden floor anchor", "moon garden glow stone anchor", "moon garden skyline anchor", "walkable garden set"],
+      "provenance": {
+        "license": "MIT",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D curated starter pack",
+        "sourcePath": "public/aura-assets/moonGarden.gltf",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/moonGarden.gltf",
+        "attribution": "Bundled Aura3D Moon Garden starter set for local cartoon-studio validation.",
+        "evidence": ["cartoon-set", "moon garden", "walkable set", "framing ready"]
+      },
+      "thumbnailUrl": "/aura-assets/moonGarden.thumb.svg",
+      "warnings": []
+    }
+  ]
+}

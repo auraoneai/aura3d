@@ -12,6 +12,14 @@ export interface TimelineEditorControllerOptions {
   readonly snapEnabled?: boolean;
   readonly snapInterval?: number;
   readonly onPreviewTime?: (time: number, snapshot: TimelineEditorSnapshot) => void;
+  readonly routeBinding?: TimelineRoutePlaybackBinding;
+}
+
+export interface TimelineRoutePlaybackBinding {
+  play?(): void;
+  pause?(): void;
+  scrub(time: number, snapshot: TimelineEditorSnapshot): void;
+  jumpToShot?(shotId: string, time: number, snapshot: TimelineEditorSnapshot): void;
 }
 
 export interface TimelineEditorClipboard {
@@ -57,6 +65,7 @@ export class TimelineEditorController {
   private snapIntervalInternal: number;
   private clipboardInternal: TimelineEditorClipboard = { clips: [] };
   private readonly preview?: (time: number, snapshot: TimelineEditorSnapshot) => void;
+  private routeBinding?: TimelineRoutePlaybackBinding;
 
   constructor(options: TimelineEditorControllerOptions = {}) {
     this.timeline = options.timeline ?? new TimelineModel({ duration: 10, frameRate: 30, loopMode: "none" });
@@ -66,6 +75,7 @@ export class TimelineEditorController {
     this.snapEnabledInternal = options.snapEnabled ?? true;
     this.snapIntervalInternal = positive(options.snapInterval ?? (this.timeline.frameRate > 0 ? 1 / this.timeline.frameRate : 1 / 30), "Timeline snapInterval");
     this.preview = options.onPreviewTime;
+    this.routeBinding = options.routeBinding;
   }
 
   get zoomPixelsPerSecond(): number {
@@ -208,7 +218,9 @@ export class TimelineEditorController {
 
   scrubTo(time: number): void {
     this.timeline.seek(this.snapTime(time));
-    this.preview?.(this.timeline.currentTime, this.snapshot());
+    const snapshot = this.snapshot();
+    this.preview?.(this.timeline.currentTime, snapshot);
+    this.routeBinding?.scrub(this.timeline.currentTime, snapshot);
   }
 
   stepFrames(frames: number): void {
@@ -219,8 +231,31 @@ export class TimelineEditorController {
   }
 
   togglePlayback(): void {
-    if (this.timeline.isPlaying) this.timeline.pause();
-    else this.timeline.play();
+    if (this.timeline.isPlaying) {
+      this.timeline.pause();
+      this.routeBinding?.pause?.();
+    } else {
+      this.timeline.play();
+      this.routeBinding?.play?.();
+    }
+  }
+
+  bindRoutePlayback(binding: TimelineRoutePlaybackBinding | undefined): void {
+    this.routeBinding = binding;
+  }
+
+  jumpToShot(shotId: string): number {
+    const target = this.timeline.tracks
+      .filter((track) => timelineTrackKindFromConfig(track.toConfig()) === "shot")
+      .flatMap((track) => track.clips)
+      .find((clip) => clip.id === shotId || clip.properties.shotId === shotId || clip.name === shotId);
+    if (!target) throw new Error(`Timeline shot does not exist: ${shotId}`);
+    this.timeline.seek(target.startTime);
+    const snapshot = this.snapshot();
+    this.preview?.(this.timeline.currentTime, snapshot);
+    this.routeBinding?.scrub(this.timeline.currentTime, snapshot);
+    this.routeBinding?.jumpToShot?.(shotId, this.timeline.currentTime, snapshot);
+    return this.timeline.currentTime;
   }
 
   handleKeyboardShortcut(key: string): boolean {

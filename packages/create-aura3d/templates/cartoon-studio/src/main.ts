@@ -5,6 +5,7 @@ import {
   createShotPlaybackPlan,
   effects,
   game,
+  group,
   installShotPlayback,
   labels,
   lights,
@@ -13,8 +14,7 @@ import {
   primitives,
   sampleAuraVoiceBridgeAtTime,
   sampleShotPlaybackPlan,
-  scene,
-  type AuraAssetRef
+  scene
 } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 import {
@@ -23,8 +23,7 @@ import {
   missingCartoonCharacterAssets,
   publicCartoonAssetInstructions,
   requiredCartoonCharacterAssets,
-  typedCartoonAssetSummary,
-  type CartoonAssetKey
+  typedCartoonAssetSummary
 } from "./episode";
 import {
   accessibilityProofMetadata,
@@ -49,15 +48,31 @@ import { cartoonStudioSupport, installCartoonStudioPanel } from "./studio";
 
 declare global {
   interface Window {
-    __AURA3D_CARTOON_TEMPLATE__?: {
+    __AURA3D_CARTOON_EPISODE_SEEK__?: (time: number) => void;
+    __AURA3D_CARTOON_EPISODE_PROOF__?: CartoonEpisodeRouteProof;
+    __AURA3D_CARTOON_TEMPLATE__?: CartoonEpisodeRouteProof;
+  }
+}
+
+interface CartoonEpisodeRouteProof {
+      readonly proofKind: "aura3d-cartoon-episode-proof";
       readonly contractId: string;
       readonly template: string;
       readonly storyBible: unknown;
+      readonly shots: readonly unknown[];
+      readonly captions: readonly unknown[];
+      readonly visemes: readonly unknown[];
+      readonly gestures: readonly unknown[];
+      readonly assets: unknown;
+      readonly renderStatus: unknown;
+      readonly errors: readonly string[];
+      readonly sourceOnlyAcceptedAsPublishProof: false;
       readonly shotIds: readonly string[];
       readonly captionIds: readonly string[];
       readonly playbackProbeTimes: readonly number[];
       readonly playbackProbeSamples: readonly unknown[];
       readonly renderQueueItems: number;
+      readonly renderPreset: unknown;
       readonly typedAssets: unknown;
       readonly requiredTypedAssets: readonly string[];
       readonly missingTypedAssets: readonly string[];
@@ -69,8 +84,6 @@ declare global {
       readonly sourceProofs: unknown;
       readonly sampleRenderSourceWorkflow: unknown;
       sampleAt(time: number): unknown;
-    };
-  }
 }
 
 const firstStoryboardShot = episode.storyboard.scenes[0]?.shots[0];
@@ -78,13 +91,21 @@ const firstCaption = episode.captionTrack.cues[0];
 const thumbnailCapture = renderOutputPackage.thumbnailCapture;
 const thumbnailCaption = captionCueAtTime(episode.captionTrack, thumbnailCapture.time);
 const storyBible = episode.storyBible;
-const typedCartoonAssets = assets as Partial<Record<CartoonAssetKey, AuraAssetRef<"model">>>;
+const captureMode = new URLSearchParams(window.location.search).get("capture") === "thumbnail";
+const cartoonRenderPreset = createCartoonStudioRouteRenderPreset({
+  name: "moon-garden-cartoon-studio",
+  resolution: episode.episodePlan.runtime.resolution,
+  materialStyle: { treatment: "cel" },
+  reducedMotion: episode.episodePlan.runtime.reducedMotion,
+  reducedFlash: true
+});
 
 const captionOverlay = document.createElement("div");
 captionOverlay.id = "caption-overlay";
 captionOverlay.textContent = firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D cartoon studio";
 captionOverlay.style.cssText = [
   "position:fixed",
+  captureMode ? "display:none" : "",
   "left:50%",
   "bottom:28px",
   "transform:translateX(-50%)",
@@ -121,14 +142,30 @@ document.body.dataset.cartoonShotCount = String(episode.shotTimeline.shots.lengt
 document.body.dataset.cartoonCaptionCount = String(episode.captionTrack.cues.length);
 document.body.dataset.cartoonStoryBibleProps = String(storyBible.props.length);
 document.body.dataset.cartoonStudioPanels = cartoonStudioSupport.panels.join(",");
-installCartoonStudioPanel(document.body);
+if (!captureMode) installCartoonStudioPanel(document.body);
 
 const app = createAuraApp("#app", {
   scene: scene()
     .background("#081b2a")
-    .add(createCharacterBody("miko", "Miko", "miko", [-0.8, 0.75, 0], [0.32, 0.42, 0.32], 0.72, "#7de2ff"))
+    .add(
+      model(assets.moonGarden, { name: "Moon Garden typed set asset" })
+        .position(0, 0, -0.02)
+        .scale(1)
+        .runtime(game.runtimeNode("moonGarden", { tags: ["set", "typed-asset", "moon-garden"] }))
+    )
+    .add(
+      model(assets.miko, { name: "Miko typed cartoon character" })
+        .position(-0.8, 0.75, 0)
+        .scale(0.72)
+        .runtime(game.runtimeNode("miko", { tags: ["character", "miko", "typed-asset"] }))
+    )
     .add(createMouthCard("miko:mouth", "Miko", [-0.8, 0.8, 0.32], "#f8fff2"))
-    .add(createCharacterBody("luma", "Luma", "luma", [0.8, 0.72, 0], [0.3, 0.38, 0.3], 0.68, "#ffe18e"))
+    .add(
+      model(assets.luma, { name: "Luma typed cartoon character" })
+        .position(0.8, 0.72, 0)
+        .scale(0.68)
+        .runtime(game.runtimeNode("luma", { tags: ["character", "luma", "typed-asset"] }))
+    )
     .add(createMouthCard("luma:mouth", "Luma", [0.8, 0.77, 0.32], "#40ffbf"))
     .add(
       primitives
@@ -148,22 +185,40 @@ const app = createAuraApp("#app", {
         .position(-0.38, 0.2, 0.18)
         .scale([0.12, 0.24, 0.04])
     )
-    .add(labels.hud(firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D cartoon studio"))
+    .add(captureMode ? group("thumbnail capture label placeholder") : labels.hud(firstCaption?.text ?? firstStoryboardShot?.storyBeat ?? "Aura3D cartoon studio"))
     .add(lights.studio({ intensity: 1.2 }))
     .add(effects.bloom({ intensity: 0.18, color: "#7de2ff" }))
     .camera(camera.perspective({ position: [0, 1.4, 4.2], target: [0, 0.7, 0], fov: 42 })),
-  diagnostics: true
+  diagnostics: !captureMode
 });
 
-window.__AURA3D_CARTOON_TEMPLATE__ = {
+const cartoonEpisodeProof: CartoonEpisodeRouteProof = {
+  proofKind: "aura3d-cartoon-episode-proof",
   contractId: episodeContractId,
   template: "cartoon-studio",
   storyBible,
+  shots: episode.shotTimeline.shots,
+  captions: episode.captionTrack.cues,
+  visemes: visemeTrack.cues,
+  gestures: episode.performance.cues,
+  assets: typedCartoonAssetSummary,
+  renderStatus: {
+    route: renderPlan.route,
+    renderQueueItems: renderPlan.items.length,
+    outputs: renderPlan.outputs.map((output) => output.kind),
+    preset: cartoonRenderPreset,
+    sourceOnlyAcceptedAsPublishProof: false,
+    publishReadyFromCurrentEvidence: publishReadiness.ready,
+    issueCount: publishReadiness.issues.length
+  },
+  errors: bridgeIssues.map((issue) => String((issue as { message?: unknown }).message ?? issue)),
+  sourceOnlyAcceptedAsPublishProof: false,
   shotIds: episode.shotTimeline.shots.map((shot) => shot.shotId),
   captionIds: episode.captionTrack.cues.map((caption) => caption.captionId),
   playbackProbeTimes,
   playbackProbeSamples,
   renderQueueItems: renderPlan.items.length,
+  renderPreset: cartoonRenderPreset,
   typedAssets: typedCartoonAssetSummary,
   requiredTypedAssets: requiredCartoonCharacterAssets,
   missingTypedAssets: missingCartoonCharacterAssets,
@@ -182,6 +237,14 @@ window.__AURA3D_CARTOON_TEMPLATE__ = {
     return sampleCartoonRouteAt(time);
   }
 };
+window.__AURA3D_CARTOON_EPISODE_PROOF__ = cartoonEpisodeProof;
+window.__AURA3D_CARTOON_TEMPLATE__ = cartoonEpisodeProof;
+window.__AURA3D_CARTOON_EPISODE_SEEK__ = (time: number) => {
+  const sample = sampleCartoonRouteAt(time);
+  captionOverlay.textContent = sample.captionText ?? firstCaption?.text ?? "";
+  captionOverlay.dataset.shotId = sample.shotId ?? "";
+  captionOverlay.dataset.captionId = sample.captionId ?? "";
+};
 
 installShotPlayback(app, shotPlaybackPlan, {
   primitiveMouthNodeByCharacterId: {
@@ -195,33 +258,6 @@ installShotPlayback(app, shotPlaybackPlan, {
   }
 });
 
-function createCharacterBody(
-  id: "miko" | "luma",
-  name: string,
-  assetKey: CartoonAssetKey,
-  position: readonly [number, number, number],
-  fallbackScale: readonly [number, number, number],
-  modelScale: number,
-  color: string
-) {
-  const asset = typedCartoonAssets[assetKey];
-  const runtime = game.runtimeNode(id, { tags: ["character", id, asset ? "typed-asset" : "primitive-fallback"] });
-  if (asset) {
-    return model(asset, { name: `${name} typed character asset` })
-      .position(position[0], position[1], position[2])
-      .scale(modelScale)
-      .runtime(runtime);
-  }
-  return primitives
-    .sphere({
-      name: `${name} primitive fallback body - add ${assetKey} with the Aura3D CLI`,
-      material: material.pbr({ color, roughness: 0.54 })
-    })
-    .position(position[0], position[1], position[2])
-    .scale(fallbackScale)
-    .runtime(runtime);
-}
-
 function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position: readonly [number, number, number], color: string) {
   return primitives
     .box({
@@ -231,6 +267,38 @@ function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position
     .position(position[0], position[1], position[2])
     .scale([0.22, 0.035, 0.025])
     .runtime(game.runtimeNode(id, { tags: ["mouth", "primitive", name.toLowerCase()] }));
+}
+
+function createCartoonStudioRouteRenderPreset(input: {
+  readonly name: string;
+  readonly resolution: { readonly width: number; readonly height: number };
+  readonly materialStyle: { readonly treatment: "cel" | "preserve-pbr" };
+  readonly reducedMotion?: boolean | undefined;
+  readonly reducedFlash?: boolean | undefined;
+}) {
+  return {
+    kind: "cartoon-render-preset-evidence",
+    name: input.name,
+    resolution: input.resolution,
+    lights: ["soft-key", "cool-rim", "set-fill", "emissive-practicals"],
+    shadows: { soft: true, contact: true },
+    postprocess: {
+      bloom: input.reducedFlash ? 0.08 : 0.18,
+      colorGrade: "storybook-night",
+      fogDepthCue: true
+    },
+    materialStyle: {
+      treatment: input.materialStyle.treatment,
+      outline: input.materialStyle.treatment === "cel",
+      rampSteps: input.materialStyle.treatment === "cel" ? 4 : 7,
+      saturation: 1.08,
+      blackLineWeight: input.materialStyle.treatment === "cel" ? 0.9 : 0
+    },
+    frameBudgetMs: 16.7,
+    debugOverlaysAllowedInExport: false,
+    reducedMotion: input.reducedMotion ?? false,
+    reducedFlash: input.reducedFlash ?? false
+  } as const;
 }
 
 function sampleCartoonRouteAt(time: number) {

@@ -221,6 +221,87 @@ export const spanishDubMap = defineDubMap({
   generatedAt: episode.episodePlan.generatedAt
 });
 
+const spanishLineTextBySourceText = new Map<string, string>([
+  ["Luma, the moon lilies are losing their sparkle.", "Luma, los lirios lunares estan perdiendo su brillo."],
+  ["Then we sweep softly and wake the glow stones.", "Entonces barremos con suavidad y despertamos las piedras brillantes."],
+  ["I will polish the blue stones one tiny circle at a time.", "Pulire las piedras azules con circulos pequenitos."],
+  ["And I will hum the garden's sleepy cleanup song.", "Y yo tarareare la cancion tranquila del jardin."],
+  ["The moon lilies are twinkling again.", "Los lirios lunares vuelven a centellear."],
+  ["Goodnight, little garden. Keep glowing.", "Buenas noches, jardin pequeno. Sigue brillando."]
+]);
+
+function spanishTextForLine(text: string): string {
+  return spanishLineTextBySourceText.get(text) ?? text;
+}
+
+export const spanishDubCaptionMetadata = {
+  artifact: "alternate-language-caption-metadata",
+  schema: "aura3d-cartoon-studio-alternate-language-captions/v1",
+  contractId: renderContractId,
+  episodeId: episode.episodePlan.episodeId,
+  sourceLanguage: episode.dialogueTrack.language,
+  targetLanguage: spanishDubMap.targetLanguage,
+  cues: episode.captionTrack.cues.map((cue) => {
+    const sourceLine = episode.dialogueTrack.lines.find((line) => line.lineId === cue.lineId);
+    return {
+      captionId: cue.captionId,
+      lineId: cue.lineId,
+      shotId: cue.shotId,
+      sceneId: cue.sceneId,
+      speakerId: cue.speakerId,
+      sourceText: cue.text,
+      text: spanishTextForLine(sourceLine?.text ?? cue.text),
+      language: "es",
+      startTime: cue.startTime,
+      endTime: cue.endTime,
+      lineSafe: cue.lineSafe
+    };
+  }),
+  generatedAt: episode.episodePlan.generatedAt
+} as const;
+
+export const alternateLanguageDubMetadata = {
+  artifact: "cartoon-alternate-language-dub-proof",
+  schema: "aura3d-cartoon-studio-alternate-language-dub-proof/v1",
+  contractId: renderContractId,
+  episodeId: episode.episodePlan.episodeId,
+  sourceLanguage: episode.dialogueTrack.language,
+  alternateLanguageCount: 1,
+  alternateLanguages: [
+    {
+      language: spanishDubMap.targetLanguage,
+      label: "Spanish",
+      title: "Limpieza del Jardin Lunar",
+      dubMapArtifact: spanishDubMap.artifact,
+      lineCount: spanishDubMap.entries.length,
+      captionCueCount: spanishDubCaptionMetadata.cues.length,
+      captionMetadata: spanishDubCaptionMetadata,
+      audioStemSlots: episode.dialogueTrack.lines.map((line) => ({
+        id: `dub-slot:es:${line.lineId}`,
+        lineId: line.lineId,
+        speakerId: line.speakerId,
+        language: "es",
+        assetRequiredBeforePublish: true
+      })),
+      stableIds: {
+        shotIds: spanishDubMap.entries.every((entry) => entry.originalShotId === entry.dubbedShotId),
+        storyboardIds: spanishDubMap.entries.every((entry) => entry.originalStoryboardId === entry.dubbedStoryboardId),
+        sceneIds: spanishDubMap.entries.every((entry) => entry.originalSceneId === entry.dubbedSceneId),
+        lineIds: spanishDubMap.entries.every((entry) => entry.originalLineId === entry.dubbedLineId),
+        captionIds: spanishDubMap.entries.every((entry) => entry.originalCaptionId === entry.dubbedCaptionId),
+        characterIds: spanishDubMap.entries.every((entry) => entry.originalCharacterId === entry.dubbedCharacterId)
+      },
+      publishBoundary: "Metadata-only alternate-language proof. Add licensed/typed Spanish dialogue stems before claiming a rendered Spanish dub."
+    }
+  ],
+  assetPolicy: {
+    inventsAudioAssets: false,
+    inventsModelAssets: false,
+    typedAssetSource: "./src/aura-assets"
+  },
+  generatedAt: episode.episodePlan.generatedAt
+} as const;
+
 export const phonemeVisemeDubSyncSourceProof = {
   contractId: renderContractId,
   sourceOnly: true,
@@ -253,6 +334,59 @@ export const phonemeVisemeDubSyncSourceProof = {
     stableLineIds: spanishDubMap.entries.every((entry) => entry.originalLineId === entry.dubbedLineId)
   },
   executionBoundary: "Source harness only; actual phoneme, viseme, and dub playback proof requires rendered frame/video evidence."
+} as const;
+
+export const cartoonStudioShowBibleBatchRenderPlan = {
+  artifact: "cartoon-show-bible-batch-render-plan",
+  schema: "aura3d-cartoon-studio-show-bible-batch-render-plan/v1",
+  contractId: renderContractId,
+  sourceStoryBible: {
+    episodeId: episode.storyBible.episodeId,
+    title: episode.storyBible.title,
+    characterIds: episode.storyBible.characters.map((character) => character.id),
+    locationIds: episode.storyBible.locations.map((location) => location.id),
+    propIds: episode.storyBible.props.map((prop) => prop.id),
+    continuityRules: episode.storyBible.continuityRules ?? []
+  },
+  renderJobs: [
+    {
+      id: "batch:moon-garden-cleanup-001",
+      episodeId: episode.episodePlan.episodeId,
+      title: episode.episodePlan.title,
+      sourceStoryBibleEpisodeId: episode.storyBible.episodeId,
+      route: renderPlan.route,
+      outputDirectory: "dist/episodes/moon-garden-001",
+      language: episode.episodePlan.language,
+      shotIds: episode.shotTimeline.shots.map((shot) => shot.shotId),
+      requiredTypedAssetKeys: typedCartoonAssetSummary.requiredCharacterAssets,
+      command: "npm run episode:render -- --episode moon-garden-cleanup-001"
+    },
+    {
+      id: "batch:moon-garden-glow-check-002",
+      episodeId: "moon-garden-glow-check-002",
+      title: "Moon Garden Glow Check",
+      sourceStoryBibleEpisodeId: episode.storyBible.episodeId,
+      route: renderPlan.route,
+      outputDirectory: "dist/episodes/moon-garden-002",
+      language: episode.episodePlan.language,
+      reusedCharacterIds: episode.storyBible.characters.map((character) => character.id),
+      reusedLocationIds: episode.storyBible.locations.map((location) => location.id),
+      reusedPropIds: episode.storyBible.props.map((prop) => prop.id),
+      requiredTypedAssetKeys: typedCartoonAssetSummary.requiredCharacterAssets,
+      command: "npm run episode:render -- --episode moon-garden-glow-check-002",
+      metadataOnly: true,
+      publishBoundary: "Second episode job reuses the same show bible and asset slots; rendered media is produced only when the template runner is executed with real typed assets."
+    }
+  ],
+  guarantees: {
+    oneShowBible: true,
+    multipleEpisodes: true,
+    noInventedAssets: true,
+    stableCharacterIds: true,
+    stableLocationIds: true,
+    stablePropIds: true
+  },
+  generatedAt: episode.episodePlan.generatedAt
 } as const;
 
 export const performanceCoverage = createCartoonPerformanceCoverage(episode.performance, episode.dialogueTrack);
@@ -363,6 +497,34 @@ export const sampleRenderSourceWorkflow = {
     "Actual captions/timeline/audio-stems/evidence JSON files with hashes",
     "Human visual review approval"
   ]
+} as const;
+
+export const templateEpisodePackageWorkflow = {
+  contractId: renderContractId,
+  sourceOnly: false,
+  status: "template-package-runner-ready",
+  packageDirectory: "dist/episodes/moon-garden-001",
+  commands: [
+    "npm run episode:plan",
+    "npm run episode:preview",
+    "npm run episode:render",
+    "npm run episode:package",
+    "npm run episode:review",
+    "npm run episode:verify"
+  ],
+  requiredArtifacts: [
+    "thumbnail.png",
+    "captions.vtt",
+    "captions.srt",
+    "metadata.json",
+    "route-proof.json",
+    "asset-provenance.json",
+    "render-manifest.json",
+    "visual-acceptance.json",
+    "review-package.md"
+  ],
+  renderOutputMode: "episode.webm-or-png-sequence-fallback-marker",
+  publishBoundary: "PNG sequence fallback proves template packaging only; publish-ready claims require a real encoded WebM or MP4 plus human review."
 } as const;
 
 export const auraVoicePackage = createAuraVoiceBridgePackage({

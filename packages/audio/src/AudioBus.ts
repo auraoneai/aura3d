@@ -17,6 +17,14 @@ export class AudioBus {
     this.output.connect(destination ?? context.destination);
   }
 
+  get volume(): number {
+    return this.storedVolume;
+  }
+
+  get isMuted(): boolean {
+    return this.muted;
+  }
+
   setVolume(value: number): void {
     if (!Number.isFinite(value) || value < 0) {
       throw new Error("Audio bus volume must be a non-negative finite number");

@@ -1,6 +1,14 @@
 # Cartoon Channel Example
 
-Use the prompt-cartoon template for a production episode starter:
+`cartoon-channel` and `prompt-cartoon-channel` are source-level prompt-animation examples. They are useful for learning the AuraVoice bridge, shot timelines, captions, visemes, render queues, and evidence contracts. They are not, by themselves, proof of a publish-ready cartoon episode.
+
+Use `cartoon-studio` for the planned 1.1 production episode workflow:
+
+```bash
+npx create-aura3d@latest my-studio --template cartoon-studio
+```
+
+Use the prompt-cartoon template for a source-level episode starter:
 
 ```bash
 npx create-aura3d@latest my-episode --template prompt-cartoon-channel
@@ -16,6 +24,8 @@ Cartoon-channel routes use public `@aura3d/engine` APIs, typed assets generated
 by the Aura3D CLI, AuraVoice timing packages, shot timelines, captions,
 phoneme-aligned visemes, render queues, and evidence manifests. Do not import `three`, use
 `GLTFLoader`, invent raw GLB URLs, or pass string ids to `model(...)`.
+
+Important release boundary: still-image puppet experiments, CSS-only image wobble, whole-frame pan/zoom/shake, fake parallax plates, and subtitle-over-still videos are rejected as publish-ready animation proof. If a route is marked `notTrue3D: true`, `sourceOnly: true`, `image-puppet`, or similar, treat it as experimental or negative evidence only.
 
 Add real character assets first:
 

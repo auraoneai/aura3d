@@ -12,11 +12,14 @@ export interface PublishingPackageArtifact {
   readonly contractId: string;
   readonly episodeId: PromptAnimationId;
   readonly videoPath: string;
+  readonly videoByteLength: number;
   readonly captions: readonly CaptionExportArtifact[];
   readonly thumbnailPlan: ThumbnailGenerationPlan;
   readonly thumbnail?: ThumbnailArtifact | undefined;
   readonly youtubeMetadata: YouTubeMetadataArtifact;
   readonly evidencePath: string;
+  readonly routeProofPath: string;
+  readonly provenancePath: string;
   readonly readiness: PublishingReadinessReport;
 }
 
@@ -38,10 +41,18 @@ export interface CreatePublishingPackageOptions {
   readonly captions?: CaptionTrackArtifact | undefined;
   readonly videoResult?: VideoExportResult | undefined;
   readonly thumbnailRuntime?: ThumbnailCaptureRuntime | undefined;
+  readonly routeProofPath?: string | undefined;
+  readonly provenancePath?: string | undefined;
 }
 
 export async function createPublishingPackage(options: CreatePublishingPackageOptions): Promise<PublishingPackageArtifact> {
-  const captionExports = options.captions ? [exportCaptionTrack(options.captions, "vtt"), exportCaptionTrack(options.captions, "srt")] : [];
+  const captionOutputs = options.outputPackage.outputs.captions;
+  const captionExports = options.captions
+    ? [
+        exportCaptionTrack(options.captions, "vtt", captionOutputs.find((output) => output.kind === "caption-vtt")?.path),
+        exportCaptionTrack(options.captions, "srt", captionOutputs.find((output) => output.kind === "caption-srt")?.path)
+      ]
+    : [];
   const thumbnailPlan = createThumbnailGenerationPlan({ packageMetadata: options.outputPackage });
   const thumbnail = options.thumbnailRuntime ? await generateThumbnailArtifact(thumbnailPlan, options.thumbnailRuntime) : undefined;
   const youtubeMetadata = generateYouTubeMetadata({
@@ -54,11 +65,14 @@ export async function createPublishingPackage(options: CreatePublishingPackageOp
     contractId: promptAnimationContractVersion,
     episodeId: options.outputPackage.episodeId,
     videoPath,
+    videoByteLength: options.videoResult?.output.byteLength ?? options.videoResult?.muxedVideo.byteLength ?? 0,
     captions: captionExports,
     thumbnailPlan,
     ...(thumbnail ? { thumbnail } : {}),
     youtubeMetadata,
-    evidencePath: options.outputPackage.outputs.evidenceJson?.path ?? ""
+    evidencePath: options.outputPackage.outputs.evidenceJson?.path ?? options.outputPackage.reviewPackagePaths.evidence,
+    routeProofPath: options.routeProofPath ?? "dist/render/route-proof.json",
+    provenancePath: options.provenancePath ?? "dist/render/asset-provenance.json"
   };
   return {
     ...artifact,
@@ -105,11 +119,16 @@ export function validatePublishingPackage(
 ): PublishingReadinessReport {
   const checks: PublishingReadinessCheck[] = [
     { id: "video", passed: Boolean(pkg.videoPath), message: "Video output path is present." },
+    { id: "video-bytes", passed: pkg.videoByteLength > 0, message: "Video output byte length is greater than zero." },
     { id: "captions", passed: pkg.captions.length > 0, message: "At least one caption export is present." },
+    { id: "caption-bytes", passed: pkg.captions.every((caption) => caption.byteLength > 0), message: "Caption exports have non-empty file text." },
     { id: "thumbnail", passed: Boolean(pkg.thumbnailPlan.outputPath), message: "Thumbnail output path is present." },
+    { id: "thumbnail-artifact", passed: Boolean(pkg.thumbnail?.path && pkg.thumbnail.byteLength > 0 && pkg.thumbnail.checksum), message: "Thumbnail artifact includes path, bytes, and checksum." },
     { id: "metadata-title", passed: Boolean(pkg.youtubeMetadata.title), message: "YouTube title is present." },
     { id: "metadata-language", passed: Boolean(pkg.youtubeMetadata.defaultLanguage), message: "YouTube default language is present." },
-    { id: "evidence", passed: Boolean(pkg.evidencePath), message: "Evidence JSON output path is present." }
+    { id: "evidence", passed: Boolean(pkg.evidencePath), message: "Evidence JSON output path is present." },
+    { id: "route-proof", passed: Boolean(pkg.routeProofPath), message: "Route proof JSON output path is present." },
+    { id: "provenance", passed: Boolean(pkg.provenancePath), message: "Asset provenance JSON output path is present." }
   ];
   const issues = checks
     .filter((check) => !check.passed)

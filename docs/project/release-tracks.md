@@ -27,6 +27,27 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 Publication status: npm `latest` points at `@aura3d/engine@1.0.10`, `@aura3d/asset-index@1.0.10`, `@aura3d/cli@1.0.10`, and `create-aura3d@1.0.10`. Public launch claims must remain scoped: Aura3D is a runtime foundation release, and Aura Clash Arena is a development showcase/runtime proof target, not proof of a mature commercial game engine.
 
+## 1.1 Cartoon Studio Track
+
+Aura3D 1.1 is the proposed cartoon-studio and animation-engine release track. It builds on 1.0.10 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
+
+The 1.1 track is complete only when a clean external project can scaffold `cartoon-studio`, validate two typed character assets and one typed set, preview a real episode route, render a playable episode file, export captions and metadata, write a package folder, and produce motion/visual/review evidence.
+
+Allowed planning language:
+
+- "Aura3D 1.1 is planned to provide a browser-native cartoon episode pipeline."
+- "The target workflow turns typed assets, show-bible metadata, shot timelines, dialogue/captions, visemes, and render queues into an episode package."
+- "The release gate will reject still-image puppet output as animation proof."
+
+Blocked language until the 1.1 gates pass:
+
+- "Aura3D generates Pixar-quality cartoons."
+- "Aura3D turns any still image into a production animated episode."
+- "Aura3D replaces Blender, Maya, Toon Boom, Unity, Unreal, or a production animation studio."
+- "A still image with CSS transforms, shake, pan, zoom, fake parallax, or subtitles is real cartoon animation."
+
+Primary planning doc: `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
+
 ## 1.0.5 Release Note
 
 `@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.

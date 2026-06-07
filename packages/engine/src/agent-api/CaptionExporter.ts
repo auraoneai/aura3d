@@ -10,17 +10,28 @@ export interface CaptionExportArtifact {
   readonly cueCount: number;
   readonly text: string;
   readonly mimeType: string;
+  readonly byteLength: number;
+  readonly checksum: string;
+  readonly path?: string | undefined;
 }
 
-export function exportCaptionTrack(captions: CaptionTrackArtifact, format: CaptionExportFormat): CaptionExportArtifact {
+export function exportCaptionTrack(captions: CaptionTrackArtifact, format: CaptionExportFormat, path?: string): CaptionExportArtifact {
+  const text = format === "vtt" ? captionsToVtt(captions.cues) : captionsToSrt(captions.cues);
   return {
     kind: "caption-export",
     format,
     language: captions.language,
     cueCount: captions.cues.length,
-    text: format === "vtt" ? captionsToVtt(captions.cues) : captionsToSrt(captions.cues),
-    mimeType: format === "vtt" ? "text/vtt" : "application/x-subrip"
+    text,
+    mimeType: format === "vtt" ? "text/vtt" : "application/x-subrip",
+    byteLength: new TextEncoder().encode(text).byteLength,
+    checksum: captionTextChecksum(text),
+    ...(path ? { path } : {})
   };
+}
+
+export function exportCaptionTrackFile(captions: CaptionTrackArtifact, format: CaptionExportFormat, path: string): CaptionExportArtifact {
+  return exportCaptionTrack(captions, format, path);
 }
 
 export function exportCaptionTrackVtt(track: CaptionTrackArtifact): string {
@@ -70,4 +81,13 @@ export function captionCueFileSafeText(cue: CaptionCue): string {
 
 function pad2(value: number): string {
   return String(value).padStart(2, "0");
+}
+
+function captionTextChecksum(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `caption-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }

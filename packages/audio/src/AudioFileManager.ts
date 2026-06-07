@@ -13,6 +13,7 @@ export interface AudioFileAssetLike {
   readonly url: string;
   readonly hash?: string;
   readonly sizeBytes?: number;
+  readonly license?: string;
 }
 
 export type AudioFileInput = string | URL | AudioFileAssetLike | AudioClip;
@@ -42,6 +43,28 @@ export interface ResolvedAudioFileRequest {
   readonly cacheKey: string;
   readonly name?: string;
   readonly asset?: AudioFileAssetLike;
+}
+
+export interface EpisodeAudioAssetRequirement {
+  readonly id: string;
+  readonly role?: "dialogue" | "music" | "sfx" | "ambient";
+  readonly required?: boolean;
+  readonly requireLicense?: boolean;
+}
+
+export interface EpisodeAudioAssetDiagnostic {
+  readonly severity: "error" | "warning";
+  readonly code: string;
+  readonly message: string;
+  readonly assetId: string;
+}
+
+export interface EpisodeAudioAssetReadiness {
+  readonly ok: boolean;
+  readonly requiredCount: number;
+  readonly readyCount: number;
+  readonly missingAssetIds: readonly string[];
+  readonly diagnostics: readonly EpisodeAudioAssetDiagnostic[];
 }
 
 export class AudioFileManager {
@@ -153,6 +176,72 @@ export class AudioFileManager {
       buffer: decoded
     });
   }
+}
+
+export function validateEpisodeAudioAssets(
+  assets: readonly AudioFileAssetLike[],
+  requirements: readonly EpisodeAudioAssetRequirement[],
+  options: { readonly requireLicense?: boolean } = {}
+): EpisodeAudioAssetReadiness {
+  const byId = new Map(assets.filter((asset) => asset.id).map((asset) => [asset.id!, asset]));
+  const diagnostics: EpisodeAudioAssetDiagnostic[] = [];
+  const missingAssetIds: string[] = [];
+  let requiredCount = 0;
+  let readyCount = 0;
+
+  for (const requirement of requirements) {
+    const required = requirement.required ?? true;
+    if (required) requiredCount++;
+    const asset = byId.get(requirement.id);
+    if (!asset) {
+      if (required) {
+        missingAssetIds.push(requirement.id);
+        diagnostics.push({
+          severity: "error",
+          code: "audio-asset-missing",
+          assetId: requirement.id,
+          message: `Required ${requirement.role ?? "audio"} asset "${requirement.id}" is missing.`
+        });
+      }
+      continue;
+    }
+    if (asset.kind === "aura-asset-ref" && asset.type !== "audio") {
+      diagnostics.push({
+        severity: "error",
+        code: "audio-asset-wrong-type",
+        assetId: requirement.id,
+        message: `Typed asset "${requirement.id}" is "${asset.type ?? "unknown"}", not audio.`
+      });
+      continue;
+    }
+    if (!asset.url.trim()) {
+      diagnostics.push({
+        severity: "error",
+        code: "audio-asset-missing-url",
+        assetId: requirement.id,
+        message: `Audio asset "${requirement.id}" is missing a URL.`
+      });
+      continue;
+    }
+    if ((options.requireLicense || requirement.requireLicense) && !asset.license) {
+      diagnostics.push({
+        severity: "error",
+        code: "audio-asset-missing-license",
+        assetId: requirement.id,
+        message: `Audio asset "${requirement.id}" is missing license metadata.`
+      });
+      continue;
+    }
+    readyCount++;
+  }
+
+  return {
+    ok: diagnostics.every((diagnostic) => diagnostic.severity !== "error"),
+    requiredCount,
+    readyCount,
+    missingAssetIds,
+    diagnostics
+  };
 }
 
 async function defaultFetchAudio(url: string, init?: { readonly signal?: AbortSignal }): Promise<AudioFileFetchResponseLike> {

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "1.0.10",
+  "version": "1.1.0",
   "packageManager": "pnpm@11.1.3",
   "private": false,
   "type": "module",
@@ -505,7 +505,14 @@
     "aura3d110:release": "pnpm evidence:command --id aura3d110-release --out tests/reports/aura3d110/release-command.json --log tests/reports/aura3d110/release.log --cwd . -- pnpm aura3d110:release:raw",
     "aura3d110:release:raw": "pnpm verify:aura3d110-published-engine && pnpm verify:aura3d110-published-create && tsx --tsconfig tsconfig.base.json tools/aura3d106-release-readiness/index.ts --out tests/reports/aura3d110/release.json",
     "verify:aura3d110-published-engine": "tsx --tsconfig tsconfig.base.json tools/aura3d109-published-engine-proof/index.ts --out tests/reports/aura3d110/published-engine-proof.json",
-    "verify:aura3d110-published-create": "tsx --tsconfig tsconfig.base.json tools/aura3d109-published-create-aura3d-proof/index.ts --out tests/reports/aura3d110/published-create-aura3d-proof.json"
+    "verify:aura3d110-published-create": "tsx --tsconfig tsconfig.base.json tools/aura3d109-published-create-aura3d-proof/index.ts --out tests/reports/aura3d110/published-create-aura3d-proof.json",
+    "cartoon-studio:package:proof": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-package-proof/index.ts --package-dir packages/create-aura3d/templates/cartoon-studio/dist/episodes/moon-garden-001 --out tests/reports/aura3d11/cartoon-package.json",
+    "cartoon-studio:visual-quality": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-visual-quality-gate/index.ts --package-dir packages/create-aura3d/templates/cartoon-studio/dist/episodes/moon-garden-001 --out tests/reports/aura3d11/cartoon-visual-quality.json",
+    "cartoon-studio:motion-quality": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-motion-quality-gate/index.ts --package-dir packages/create-aura3d/templates/cartoon-studio/dist/episodes/moon-garden-001 --out tests/reports/aura3d11/cartoon-motion-quality.json",
+    "cartoon-studio:docs-claims": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-docs-claims/index.ts --out tests/reports/aura3d11/cartoon-docs-claims.json",
+    "cartoon-studio:template:smoke": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-template-smoke/index.ts --out tests/reports/aura3d11/cartoon-template-smoke.json",
+    "cartoon-studio:template:smoke:external": "tsx --tsconfig tsconfig.base.json tools/cartoon-studio-template-smoke/index.ts --execute-external --out tests/reports/aura3d11/cartoon-template-smoke.json",
+    "aura3d11:readiness": "tsx --tsconfig tsconfig.base.json tools/aura3d11-release-readiness/index.ts --package-dir packages/create-aura3d/templates/cartoon-studio/dist/episodes/moon-garden-001 --execute-template-smoke --out tests/reports/aura3d11/readiness.json"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",

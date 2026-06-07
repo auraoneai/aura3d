@@ -108,6 +108,37 @@ The showcase currently targets:
 
 Open the source route at `apps/aura-clash-showcase/`. Treat the current route as a development showcase until the 1.0.10 gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 
+## Aura3D 1.1 Cartoon Studio roadmap
+
+Aura3D 1.1 is the planned cartoon-production release track. Its goal is to turn the existing prompt-animation, AuraVoice timing, typed-asset, shot-timeline, caption, viseme, render-queue, and evidence contracts into a real browser-native episode pipeline.
+
+The intended 1.1 workflow is:
+
+```bash
+npx create-aura3d@latest moon-garden --template cartoon-studio
+cd moon-garden
+npx @aura3d/cli@latest assets resolve "stylized rigged cartoon child robot" --name miko --profile cartoon-character
+npx @aura3d/cli@latest assets resolve "stylized rigged cartoon helper robot" --name luma --profile cartoon-character
+npx @aura3d/cli@latest assets resolve "stylized moon garden set" --name moonGarden --profile cartoon-set
+npx @aura3d/cli@latest assets validate-cartoon --require-license --no-placeholders
+npm run episode:plan
+npm run episode:preview
+npm run episode:render
+npm run episode:package
+npm run episode:review
+```
+
+The 1.1 target output is a package folder with a playable video file, thumbnail, captions, metadata, route proof, typed asset provenance, render manifest, visual acceptance report, and human review package. The planned flagship example is a short Moon Garden Helpers episode with two typed characters and one typed set.
+
+This is not a promise of Pixar-quality automatic animation, full Blender/Maya/Unity/Unreal studio parity, or magic image-to-video. A generated still image with CSS wobble, pan, zoom, shake, subtitles, or fake parallax is not Aura3D cartoon proof. The 1.1 release gate must reject still-image puppet output unless it is used as a negative regression fixture.
+
+See:
+
+- `docs/project/aura3d-1.1-cartoon-studio-prd.md`
+- `docs/examples/cartoon-studio.md`
+- `docs/workflows/cartoon-episode-production.md`
+- `docs/rendering/cartoon-render-preset.md`
+
 ## 30-second product viewer
 
 ```ts

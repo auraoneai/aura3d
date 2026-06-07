@@ -1,4 +1,5 @@
 export {
+  validateCartoonAssets,
   validateGameAssets
 } from "./index.js";
 
@@ -11,7 +12,11 @@ export type {
   AssetReadinessReport,
   AssetReadinessAssetReport,
   AssetReadinessValidationContract,
-  AuraGameAssetReadinessProfile
+  AuraGameAssetReadinessProfile,
+  CartoonEpisodeAssetReadiness,
+  CartoonEpisodeAssetRole,
+  CartoonEpisodeMouthReadinessMode,
+  CartoonEpisodeReadinessReport
 } from "./index.js";
 
 export type {

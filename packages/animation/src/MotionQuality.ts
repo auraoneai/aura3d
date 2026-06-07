@@ -17,6 +17,12 @@ export interface AnimationMotionQualityReport {
   readonly healthy: boolean;
 }
 
+export interface CartoonAnimationMotionQualityReport extends AnimationMotionQualityReport {
+  readonly kind: "cartoon-animation-motion-quality";
+  readonly staticPoseRejected: boolean;
+  readonly issues: readonly string[];
+}
+
 export interface AnimationMotionQualityOptions {
   readonly maxSamples?: number;
   readonly minimumSamples?: number;
@@ -94,6 +100,26 @@ export function summarizeAnimationMotion(
       && timeRangeSeconds >= minimumTimeRangeSeconds
       && poseDiversityScore >= minimumPoseDiversityScore
       && (activeTrackFrames > 0 || activeSkinningFrames > 0 || animatedSubjectFrames > 0)
+  };
+}
+
+export function summarizeCartoonAnimationMotion(
+  samples: readonly AnimationMotionSample[],
+  options: Pick<AnimationMotionQualityOptions, "minimumSamples" | "minimumTimeRangeSeconds" | "minimumPoseDiversityScore"> = {}
+): CartoonAnimationMotionQualityReport {
+  const base = summarizeAnimationMotion(samples, options);
+  const issues = [
+    base.sampleCount < (options.minimumSamples ?? 8) ? "not enough motion samples" : undefined,
+    base.timeRangeSeconds < (options.minimumTimeRangeSeconds ?? 0.18) ? "motion time range is too short" : undefined,
+    base.poseDiversityScore < (options.minimumPoseDiversityScore ?? 0.08) ? "pose diversity is too low" : undefined,
+    base.activeTrackFrames === 0 && base.activeSkinningFrames === 0 && base.animatedSubjectFrames === 0 ? "no active track, skinning, or subject motion" : undefined
+  ].filter((issue): issue is string => Boolean(issue));
+  return {
+    ...base,
+    kind: "cartoon-animation-motion-quality",
+    staticPoseRejected: issues.length > 0,
+    issues,
+    healthy: issues.length === 0
   };
 }
 

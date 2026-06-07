@@ -1,9 +1,12 @@
 export { AudioBus } from "./AudioBus";
 export { AudioClip } from "./AudioClip";
 export type { AudioClipOptions } from "./AudioClip";
-export { AudioFileManager } from "./AudioFileManager";
+export { AudioFileManager, validateEpisodeAudioAssets } from "./AudioFileManager";
 export type {
   AudioDecodeContextLike,
+  EpisodeAudioAssetDiagnostic,
+  EpisodeAudioAssetReadiness,
+  EpisodeAudioAssetRequirement,
   AudioFileAssetLike,
   AudioFileFetchResponseLike,
   AudioFileInput,
@@ -11,8 +14,11 @@ export type {
   AudioFileRequest,
   ResolvedAudioFileRequest
 } from "./AudioFileManager";
-export { createAudioTimelineMixSnapshot, defaultAudioTimelineBusForRole, AudioTimelineTrack } from "./AudioTimelineTrack";
+export { createAudioTimelineMixSnapshot, defaultAudioTimelineBusForRole, validateAudioCaptionSync, AudioTimelineTrack } from "./AudioTimelineTrack";
 export type {
+  AudioCaptionCue,
+  AudioCaptionSyncIssue,
+  AudioCaptionSyncReport,
   AudioTimelineBusMix,
   AudioTimelineClip,
   AudioTimelineClipOptions,
@@ -23,14 +29,17 @@ export type {
   AudioTimelineTrackOptions,
   AudioTimelineTrackRole
 } from "./AudioTimelineTrack";
-export { audioWaveformPeakRange, createAudioWaveform, createAudioWaveformPath, sampleAudioWaveformAtTime } from "./AudioWaveform";
+export { audioWaveformPeakRange, createAudioWaveform, createAudioWaveformPath, createAudioWaveformReviewData, sampleAudioWaveformAtTime } from "./AudioWaveform";
 export type {
   AudioWaveformData,
   AudioWaveformInput,
   AudioWaveformOptions,
   AudioWaveformPathOptions,
   AudioWaveformPathPoint,
-  AudioWaveformPeak
+  AudioWaveformPeak,
+  AudioWaveformReviewData,
+  AudioWaveformReviewStem,
+  AudioWaveformReviewStemView
 } from "./AudioWaveform";
 export { sampleAudioEffectsAnalysisFixture } from "./AudioEffectsAnalysisFixtures";
 export type {
@@ -52,7 +61,8 @@ export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } 
 export type { AudioEffect } from "./AudioEffect";
 export { AudioListener } from "./AudioListener";
 export type { Vec3Like } from "./AudioListener";
-export { AudioMixer } from "./AudioMixer";
+export { AudioMixer, createAudioMixerEvidence, createCartoonAudioMixer } from "./AudioMixer";
+export type { AudioMixerBusEvidence, AudioMixerEvidence, CartoonAudioMixer, CartoonAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
 export { AudioSystem } from "./AudioSystem";

@@ -10,6 +10,8 @@ export type CameraPresetId =
   | "tracking"
   | "crane"
   | "dolly-zoom"
+  | "pan"
+  | "two-shot"
   | string;
 
 export interface CameraPreset {
@@ -85,6 +87,24 @@ export const cameraPresetLibrary: readonly CameraPreset[] = [
     subjectDistance: 3.8,
     fov: 55,
     composition: ["headroom", "center-punch"]
+  },
+  {
+    id: "pan",
+    label: "Pan",
+    description: "Horizontal reveal across a set or two-character staging.",
+    camera: { move: "pan", from: [-1.4, 1.7, 4.4], to: [1.4, 1.7, 4.4], target: [0, 1.2, 0], fov: 42 },
+    subjectDistance: 4.4,
+    fov: 42,
+    composition: ["safe-area", "leading-room"]
+  },
+  {
+    id: "two-shot",
+    label: "Two Shot",
+    description: "Readable two-character dialogue framing with both performers visible.",
+    camera: { move: "static", position: [0, 1.75, 4.8], target: [0, 1.25, 0], fov: 44 },
+    subjectDistance: 4.8,
+    fov: 44,
+    composition: ["two-character-framing", "headroom", "safe-area"]
   }
 ];
 

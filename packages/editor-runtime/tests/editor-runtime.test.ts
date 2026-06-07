@@ -5,14 +5,19 @@ import { Scene } from "@aura3d/scene";
 import {
   CommandHistory,
   CartoonSceneEditor,
+  CameraPathEditor,
   CurveEditor,
   CreateNodeCommand,
   DeleteNodeCommand,
   EditorRuntime,
+  EpisodeReviewPanel,
   InspectorModel,
   KeyframeEditor,
+  MultiUserReviewWorkflow,
+  NonlinearAnimationEditor,
   PickingService,
   PropertyPanel,
+  RenderQueuePanel,
   SceneOutliner,
   Selection,
   SetPropertyCommand,
@@ -22,6 +27,7 @@ import {
   TimelineTrack,
   TransformCommand,
   TranslateGizmo,
+  VisualReviewDashboard,
   collectEditorProjectEvidence,
   createTimelineRuntimeBridge,
   createTimelineTrackConfig,
@@ -33,6 +39,12 @@ import {
   type TimelineRuntimeAnimationApplication,
   type TimelineRuntimeSignalDispatch
 } from "../src/index";
+import { createAudioWaveformReviewData, type AudioWaveformData } from "../../audio/src/index";
+import {
+  createAuraVoiceVisemeTrack,
+  createVisemeTimelineTrack,
+  sampleVisemeTimelineTrack
+} from "../../engine/src/agent-api/index";
 
 test("CommandHistory executes undo and redo deterministically", async () => {
   const target = { position: { x: 0, y: 0, z: 0 } };
@@ -682,8 +694,27 @@ test("KeyframeEditor and CurveEditor author deterministic bezier keyframes on ti
 
 test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compose and edit cartoon scene nodes", async () => {
   const editor = new CartoonSceneEditor();
+  const reviewPanel = new EpisodeReviewPanel({
+    packageId: "moon-garden-001",
+    packageHash: "sha256-review",
+    status: "needs-review",
+    notes: [],
+    rejectedFrames: []
+  });
+  const renderQueue = new RenderQueuePanel([
+    { id: "episode-webm", label: "Episode WebM", status: "running", progress: 0.25, currentFrame: 45, totalFrames: 180 }
+  ]);
+  editor.setEpisodeState({
+    shots: ["intro", "dialogue"],
+    assets: ["typed-toon"],
+    captions: ["caption-1"],
+    visemes: ["miko-aa"],
+    renderState: renderQueue.snapshot(),
+    reviewState: reviewPanel.snapshot()
+  });
   const node = await editor.placeAsset(
     {
+      kind: "aura-asset-ref",
       id: "typed-toon",
       name: "Typed Toon",
       type: "glb",
@@ -700,6 +731,10 @@ test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compos
   assert.equal(node.transform.position.x, 1);
   assert.deepEqual(editor.runtime.currentSelection(), [node.id]);
   assert.equal(editor.snapshot().placedAssetCount, 1);
+  assert.equal(editor.snapshot().episode.shotCount, 2);
+  assert.equal(editor.snapshot().episode.hasRenderState, true);
+  assert.equal(editor.snapshot().episode.hasReviewState, true);
+  assert.equal(editor.snapshot().evidence.episodeState, true);
 
   await editor.setTransform(node.id, { scale: { x: 2, y: 2, z: 2 } });
   assert.equal(node.transform.scale.x, 2);
@@ -725,20 +760,328 @@ test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compos
   const restored = new CartoonSceneEditor();
   restored.loadScene(serialized);
   assert.equal(restored.snapshot().nodeCount, 2);
+
+  await assert.rejects(() => editor.placeAsset({
+    id: "raw-url-character",
+    name: "Raw URL Character",
+    type: "glb",
+    uri: "https://example.test/raw-character.glb",
+    category: "character",
+    clips: ["Idle"],
+    lipSyncReady: true
+  }), /typed Aura3D asset reference/);
 });
 
-test("Timeline track type helpers create cartoon timeline lanes compatible with TimelineModel", () => {
+test("Timeline track type helpers create cartoon timeline lanes compatible with route playback", () => {
   const dialogue = createTimelineTrackConfig("dialogue", "Dialogue");
   const captions = createTimelineTrackConfig("caption", "Captions");
+  const shots = createTimelineTrackConfig("shot", "Shots");
+  const routeCalls: string[] = [];
   const timeline = new TimelineModel({
     duration: 3,
     tracks: [
+      { ...shots, clips: [{ id: "shot-open", name: "Open", startTime: 0.5, duration: 1, properties: { shotId: "open" } }] },
       { ...dialogue, clips: [{ id: "line", name: "Line", startTime: 0, duration: 1, properties: { speaker: "Narrator" } }] },
       { ...captions, clips: [{ id: "caption", name: "Caption", startTime: 0, duration: 1, properties: { text: "Hello" } }] }
     ]
   });
-  assert.equal(timeline.tracks[0].type, "audio");
-  assert.equal(timeline.tracks[0].properties.auraTrackKind, "dialogue");
-  assert.equal(timeline.tracks[1].type, "generic");
-  assert.equal(timeline.snapshot().trackCount, 2);
+  const controller = new TimelineEditorController({
+    timeline,
+    routeBinding: {
+      play: () => routeCalls.push("play"),
+      pause: () => routeCalls.push("pause"),
+      scrub: (time) => routeCalls.push(`scrub:${time}`),
+      jumpToShot: (shotId, time) => routeCalls.push(`shot:${shotId}:${time}`)
+    }
+  });
+
+  assert.equal(timeline.tracks[1].type, "audio");
+  assert.equal(timeline.tracks[1].properties.auraTrackKind, "dialogue");
+  assert.equal(timeline.tracks[2].type, "generic");
+  assert.equal(timeline.snapshot().trackCount, 3);
+  assert.equal(controller.jumpToShot("open"), 0.5);
+  controller.togglePlayback();
+  controller.togglePlayback();
+  assert.deepEqual(routeCalls, ["scrub:0.5", "shot:open:0.5", "play", "pause"]);
+});
+
+test("EpisodeReviewPanel and RenderQueuePanel serialize approval and render progress", () => {
+  const review = new EpisodeReviewPanel({
+    packageId: "moon-garden-001",
+    status: "needs-review",
+    notes: [],
+    rejectedFrames: []
+  });
+  review.addNote({ id: "note-1", author: "director", text: "Caption clears action.", time: 2 });
+  const approved = review.approve("reviewer", "2026-06-06T00:00:00.000Z");
+  const rejected = new EpisodeReviewPanel({
+    packageId: "moon-garden-002",
+    status: "needs-review",
+    notes: [],
+    rejectedFrames: []
+  });
+  rejected.rejectFrame({ id: "frame-12", time: 1.2, reason: "mouth shape is static" });
+  const queue = new RenderQueuePanel([
+    { id: "png-sequence", label: "PNG Sequence", status: "queued", progress: 0 },
+    { id: "episode-webm", label: "Episode WebM", status: "running", progress: 0.5, currentFrame: 90, totalFrames: 180 }
+  ]);
+  const done = queue.updateProgress("episode-webm", 1, {
+    status: "done",
+    currentFrame: 180,
+    totalFrames: 180,
+    outputPath: "dist/episodes/moon-garden-001/episode.webm"
+  });
+
+  assert.equal(approved.approvalRecorded, true);
+  assert.equal(approved.noteCount, 1);
+  assert.equal(rejected.snapshot().rejectedFrameCount, 1);
+  assert.throws(() => rejected.approve("reviewer"), /rejected frames/);
+  assert.equal(done.doneCount, 1);
+  assert.equal(done.runningCount, 0);
+  assert.deepEqual(done.outputPaths, ["dist/episodes/moon-garden-001/episode.webm"]);
+});
+
+test("EpisodeReviewPanel supports waveform review lanes, manual viseme edits, and visual review dashboard evidence", () => {
+  const waveform: AudioWaveformData = {
+    duration: 1,
+    sampleRate: 4,
+    channels: 1,
+    peakCount: 4,
+    samplesPerPeak: 1,
+    normalized: true,
+    peaks: [
+      { min: -0.2, max: 0.25, rms: 0.18 },
+      { min: -0.7, max: 0.8, rms: 0.56 },
+      { min: -1, max: 0.9, rms: 0.72 },
+      { min: -0.1, max: 0.2, rms: 0.12 }
+    ]
+  };
+  const waveformReview = createAudioWaveformReviewData([
+    { id: "miko-dialogue", label: "Miko dialogue", startTime: 2, waveform }
+  ], { width: 240, height: 48 });
+  const sourceVisemes = createAuraVoiceVisemeTrack({
+    episodeId: "moon-garden",
+    language: "en-US",
+    frameRate: 24,
+    cues: [{
+      id: "source-aa",
+      characterId: "miko",
+      startTime: 2,
+      endTime: 2.25,
+      visemeId: "aa",
+      mouthOpenness: 0.4,
+      weight: 0.7
+    }]
+  });
+  const editedVisemes = createVisemeTimelineTrack({
+    episodeId: "moon-garden",
+    language: "en-US",
+    frameRate: 24,
+    sourceTrack: sourceVisemes,
+    manualEdits: [{
+      id: "manual-oh",
+      reason: "director adjusted close-up mouth shape",
+      cue: {
+        id: "manual-oh-cue",
+        characterId: "miko",
+        startTime: 2.08,
+        endTime: 2.32,
+        visemeId: "oh",
+        mouthOpenness: 0.82,
+        weight: 1
+      }
+    }]
+  });
+  assert.equal(sampleVisemeTimelineTrack(editedVisemes, 2.12, "miko").visemeId, "oh");
+
+  const review = new EpisodeReviewPanel({
+    packageId: "moon-garden-review",
+    status: "needs-review",
+    notes: [],
+    rejectedFrames: []
+  });
+  review.setWaveformLanes(waveformReview.stems.map((stem) => ({
+    id: stem.id,
+    label: stem.label,
+    startTime: stem.startTime,
+    duration: stem.duration,
+    peakCount: stem.peakCount,
+    pathPointCount: stem.path.length
+  })));
+  review.applyManualVisemeEdit({
+    id: editedVisemes.manualEdits[0].id,
+    characterId: editedVisemes.manualEdits[0].cue.characterId,
+    visemeId: editedVisemes.manualEdits[0].cue.visemeId,
+    startTime: editedVisemes.manualEdits[0].cue.startTime,
+    endTime: editedVisemes.manualEdits[0].cue.endTime,
+    reason: editedVisemes.manualEdits[0].reason
+  });
+  review.addNote({ id: "note-mouth", author: "director", text: "Hold OH through the close-up.", time: 2.1 });
+  review.rejectFrame({ id: "frame-51", time: 2.125, reason: "mouth shape drifts before manual edit" });
+
+  const snapshot = review.snapshot();
+  assert.equal(snapshot.waveformLaneCount, 1);
+  assert.equal(snapshot.manualVisemeEditCount, 1);
+  assert.equal(snapshot.reviewUiEvidence.waveformReview, true);
+  assert.equal(snapshot.reviewUiEvidence.manualVisemeEdits, true);
+  assert.equal(snapshot.reviewUiEvidence.reviewerNotes, true);
+  assert.equal(snapshot.reviewUiEvidence.visualFrameReview, true);
+
+  const dashboard = new VisualReviewDashboard([snapshot]).snapshot();
+  assert.equal(dashboard.kind, "visual-review-dashboard");
+  assert.deepEqual(dashboard.approvalBlockedPackageIds, ["moon-garden-review"]);
+  assert.equal(dashboard.failedFrames[0].reason, "mouth shape drifts before manual edit");
+  assert.equal(dashboard.reviewerNotes[0].text, "Hold OH through the close-up.");
+  assert.equal(dashboard.waveformLanes[0].pathPointCount, 4);
+  assert.equal(dashboard.manualVisemeEdits[0].visemeId, "oh");
+  assert.equal(dashboard.evidence.listsFailedFrames, true);
+  assert.equal(dashboard.evidence.listsReviewerNotes, true);
+  assert.equal(dashboard.evidence.waveformReview, true);
+  assert.equal(dashboard.evidence.manualVisemeEdits, true);
+  assert.equal(dashboard.evidence.approvalBlocking, true);
+});
+
+test("CameraPathEditor edits shot camera moves through timeline keyframes and route playback evidence", async () => {
+  const routeCalls: string[] = [];
+  const shots = createTimelineTrackConfig("shot", "Shots");
+  const camera = createTimelineTrackConfig("camera", "Camera");
+  const timeline = new TimelineModel({
+    duration: 5,
+    frameRate: 24,
+    tracks: [
+      { ...shots, clips: [{ id: "shot-open", name: "Open", startTime: 1, duration: 2, properties: { shotId: "open" } }] },
+      { ...camera, clips: [{ id: "camera-open", name: "Open Camera", startTime: 1, duration: 2, properties: { shotId: "open" } }] }
+    ]
+  });
+  const controller = new TimelineEditorController({
+    timeline,
+    routeBinding: {
+      scrub: (time) => routeCalls.push(`scrub:${time}`),
+      jumpToShot: (shotId, time) => routeCalls.push(`shot:${shotId}:${time}`)
+    }
+  });
+  const cameraClip = timeline.tracks[1].clips[0];
+  const cameraEditor = new CameraPathEditor();
+
+  await cameraEditor.setCameraKeyframe(cameraClip, {
+    id: "open-start",
+    time: 1,
+    position: [0, 1.6, 4],
+    target: [0, 1.2, 0],
+    fov: 42,
+    focusDistance: 4,
+    shake: 0,
+    interpolation: "linear"
+  });
+  await cameraEditor.setCameraKeyframe(cameraClip, {
+    id: "open-end",
+    time: 3,
+    position: [1, 1.8, 3],
+    target: [0.2, 1.4, 0],
+    fov: 32,
+    focusDistance: 3,
+    shake: 0.08,
+    interpolation: "linear"
+  });
+  await cameraEditor.setCameraKeyframe(cameraClip, {
+    id: "open-end",
+    time: 3,
+    position: [1.5, 1.8, 2.8],
+    target: [0.25, 1.4, 0],
+    fov: 30,
+    focusDistance: 2.8,
+    shake: 0.05,
+    interpolation: "linear"
+  });
+
+  const keyframes = cameraEditor.readCameraPathKeyframes(cameraClip);
+  assert.equal(keyframes.length, 2);
+  assert.deepEqual(keyframes[1].position, [1.5, 1.8, 2.8]);
+  assert.equal(readTimelineKeyframes(cameraClip).length, 18);
+
+  const sample = cameraEditor.sample(cameraClip, 2);
+  assert.deepEqual(sample.position, [0.75, 1.7, 3.4]);
+  assert.equal(sample.fov, 36);
+
+  const evidence = cameraEditor.evidence(cameraClip);
+  assert.equal(evidence.cameraKeyframeCount, 2);
+  assert.equal(evidence.editablePropertyCount, 9);
+  assert.equal(evidence.evidence.shotCameraMoveEditing, true);
+  assert.equal(evidence.evidence.cameraPositionCurves, true);
+  assert.equal(evidence.evidence.cameraTargetCurves, true);
+  assert.equal(evidence.evidence.fovCurve, true);
+
+  assert.equal(controller.jumpToShot("open"), 1);
+  assert.deepEqual(routeCalls, ["scrub:1", "shot:open:1"]);
+  assert.equal(controller.serializeTimeline().tracks?.[1]?.clips?.[0]?.properties?.cameraPathEdited, "true");
+});
+
+test("MultiUserReviewWorkflow blocks publish until assigned notes resolve and reviewer quorum approves", () => {
+  const workflow = new MultiUserReviewWorkflow({
+    packageId: "moon-garden-001",
+    requiredReviewerCount: 2,
+    participants: [
+      { id: "director", name: "Director", role: "owner" },
+      { id: "animation", name: "Animation Reviewer", role: "reviewer" },
+      { id: "audio", name: "Audio Reviewer", role: "reviewer" }
+    ],
+    threads: [],
+    decisions: []
+  });
+
+  const open = workflow.addThread({
+    id: "thread-mouth-shape",
+    authorId: "director",
+    text: "Miko mouth shape misses the long vowel.",
+    time: 1.25,
+    frame: 30,
+    assignedTo: "animation",
+    resolved: false
+  });
+  assert.equal(open.canPublish, false);
+  assert.equal(open.unresolvedThreadCount, 1);
+  assert.equal(open.evidence.assignmentWorkflow, true);
+
+  workflow.recordDecision({ reviewerId: "animation", status: "approved", at: "2026-06-06T00:00:00.000Z" });
+  assert.equal(workflow.snapshot().canPublish, false);
+  workflow.resolveThread("thread-mouth-shape");
+  const approved = workflow.recordDecision({ reviewerId: "audio", status: "approved", at: "2026-06-06T00:01:00.000Z" });
+
+  assert.equal(approved.status, "approved");
+  assert.equal(approved.canPublish, true);
+  assert.equal(approved.evidence.multiUserReview, true);
+  assert.equal(approved.evidence.reviewerQuorum, true);
+});
+
+test("NonlinearAnimationEditor edits bins, sequences, nested timelines, and clip operations", async () => {
+  const editor = new NonlinearAnimationEditor({
+    activeSequenceId: "main",
+    binAssets: [
+      { id: "miko-wave", name: "Miko Wave", kind: "animation", assetId: "assets.miko", clipName: "Wave", duration: 1.5 },
+      { id: "line-voice", name: "Line Voice", kind: "audio", assetId: "assets.mikoDialogueStem", duration: 2 }
+    ],
+    sequences: [
+      { id: "main", name: "Main Sequence", timeline: { duration: 8, frameRate: 24, loopMode: "none" } },
+      { id: "reaction", name: "Reaction Insert", timeline: { duration: 2, frameRate: 24, loopMode: "none" } }
+    ]
+  });
+  const animationTrack = await editor.addTrack("animation", "Character Animation");
+  await editor.addTrack("dialogue", "Dialogue");
+  const clipId = await editor.insertAssetClip(animationTrack, "miko-wave", { id: "wave-1", startTime: 0 });
+
+  await editor.trimClip(clipId, 1.25);
+  const splitIds = await editor.splitClip(clipId, 0.5);
+  assert.deepEqual(splitIds, ["wave-1-a", "wave-1-b"]);
+  const duplicateId = await editor.duplicateClip("wave-1-b", 1);
+  await editor.moveClip(duplicateId, 3);
+  await editor.insertNestedSequence(animationTrack, "reaction", { id: "reaction-nest", startTime: 5 });
+
+  const snapshot = editor.snapshot();
+  assert.equal(snapshot.kind, "nonlinear-animation-editor");
+  assert.equal(snapshot.sequenceCount, 2);
+  assert.equal(snapshot.nestedSequenceClipCount, 1);
+  assert.equal(snapshot.evidence.nonlinearSequences, true);
+  assert.equal(snapshot.evidence.trimSplitMoveDuplicate, true);
+  assert.equal(snapshot.evidence.multiTrackTimeline, true);
+  assert.equal(editor.serialize().sequences.find((sequence) => sequence.id === "main")?.timeline?.tracks?.length, 2);
 });

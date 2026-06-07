@@ -10,6 +10,18 @@ private engine files, `three`, `three/examples`, or loader internals. Do not
 invent GLB URLs or string model ids. Add real character and prop files through
 the Aura3D CLI, then use generated typed assets.
 
+AuraVoice/Aura3D timing evidence is necessary but not sufficient for a cartoon episode claim. A bridge package proves that dialogue, captions, audio stems, viseme cues, and shots share timing ids. It does not prove that characters visibly acted, mouths moved in rendered frames, audio was muxed into a video, or a publish-ready package was produced.
+
+For the 1.1 Cartoon Studio track, label lip-sync modes honestly:
+
+- `phoneme-aligned`: AuraVoice or another timing source supplied phoneme/word alignment.
+- `blendshape-lip-sync`: typed GLB morph targets were inspected and driven at runtime.
+- `primitive-mouth-card`: a fallback mouth-card layer was driven from cues.
+- `amplitude-only`: audio amplitude was mapped to mouth openness; this is a heuristic, not phoneme recognition.
+- `missing-mouth-motion`: dialogue exists but rendered mouth movement has not been proven.
+
+Do not describe amplitude-only output as high-quality lip sync. Do not count still-image mouth wobble, global image shake, or subtitle-only changes as rendered mouth movement.
+
 ```bash
 npx @aura3d/cli@latest assets add ./assets/miko.glb --name miko
 npx @aura3d/cli@latest assets add ./assets/luma.glb --name luma

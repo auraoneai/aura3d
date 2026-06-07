@@ -35,12 +35,27 @@ export interface VideoExportPlan {
 export interface VideoExportResult {
   readonly kind: "video-export-result";
   readonly plan: VideoExportPlan;
+  readonly output: VideoExportOutputSummary;
   readonly encodedVideo: EncodedVideoArtifact;
   readonly muxedVideo: MuxedVideoArtifact;
   readonly progress: RenderProgressSnapshot;
   readonly checksum: string;
   readonly renderTimeMs: number;
 }
+
+export interface VideoExportOutputSummary {
+  readonly path: string;
+  readonly mimeType: string;
+  readonly byteLength: number;
+  readonly frameCount: number;
+  readonly duration: PromptAnimationSeconds;
+  readonly hasEncodedOutput: boolean;
+  readonly hasMuxedOutput: boolean;
+  readonly encodedOutputMode: NonNullable<EncodedVideoArtifact["outputMode"]>;
+  readonly playableEncodedOutput: boolean;
+}
+
+export type VideoExportReadinessMode = "proof" | "publish";
 
 export interface CreateVideoExportPipelineOptions {
   readonly renderQueue: CartoonRenderQueueArtifact;
@@ -53,6 +68,7 @@ export interface CreateVideoExportPipelineOptions {
   readonly muxer?: AudioMuxer | undefined;
   readonly progress?: RenderProgressTracker | undefined;
   readonly now?: (() => number) | undefined;
+  readonly readinessMode?: VideoExportReadinessMode | undefined;
 }
 
 export interface VideoExportPipeline {
@@ -68,7 +84,7 @@ export function createVideoExportPlan(input: {
   readonly audioStems?: readonly AudioMuxerInputStem[] | AudioStemManifestArtifact | undefined;
   readonly codec?: FrameEncoderCodec | undefined;
 }): VideoExportPlan {
-  const videoOutput = input.outputPackage.outputs.webm ?? input.outputPackage.outputs.mp4;
+  const videoOutput = selectVideoOutput(input.outputPackage, input.codec);
   const codec = input.codec ?? (videoOutput?.codec as FrameEncoderCodec | undefined) ?? (videoOutput?.kind === "mp4" ? "h264" : "vp9");
   const audioStems = normalizeAudioStemInput(input.audioStems);
   return {
@@ -88,6 +104,15 @@ export function createVideoExportPlan(input: {
   };
 }
 
+function selectVideoOutput(
+  outputPackage: CartoonRenderOutputPackageMetadata,
+  codec?: FrameEncoderCodec | undefined
+): CartoonRenderOutputPackageMetadata["outputs"]["webm"] | CartoonRenderOutputPackageMetadata["outputs"]["mp4"] | undefined {
+  if (codec === "h264") return outputPackage.outputs.mp4 ?? outputPackage.outputs.webm;
+  if (codec === "png-sequence") return outputPackage.outputs.webm ?? outputPackage.outputs.mp4;
+  return outputPackage.outputs.webm ?? outputPackage.outputs.mp4;
+}
+
 export function createVideoExportPipeline(options: CreateVideoExportPipelineOptions): VideoExportPipeline {
   const now = options.now ?? defaultNow;
   const plan = createVideoExportPlan(options);
@@ -100,12 +125,16 @@ export function createVideoExportPipeline(options: CreateVideoExportPipelineOpti
   const muxer = options.muxer ?? createAudioMuxer({ container: plan.codec === "h264" ? "mp4" : "webm" });
   const progress = options.progress ?? createRenderProgressTracker({ totalFrames: options.renderQueue.items.length, now });
   const audioStems = normalizeAudioStemInput(options.audioStems);
+  const readinessMode = options.readinessMode ?? "proof";
   let cancelled = false;
 
   return {
     plan,
     progress,
     async render() {
+      if (readinessMode === "publish" && options.encoderAdapter?.proofOnly) {
+        throw new Error(`Publish video export requires a real encoder adapter; ${options.encoderAdapter.kind ?? "adapter"} is proof-only.`);
+      }
       const startedAt = now();
       progress.start(`Rendering ${plan.frameCount} frames.`);
       for (const item of options.renderQueue.items) {
@@ -130,7 +159,16 @@ export function createVideoExportPipeline(options: CreateVideoExportPipelineOpti
       }
 
       const encodedVideo = await encoder.finalize();
+      if (readinessMode === "publish" && encodedVideo.output === undefined) {
+        throw new Error("Publish video export requires a real encoded output artifact.");
+      }
+      if (readinessMode === "publish" && encodedVideo.playable !== true) {
+        throw new Error(`Publish video export requires a playable encoded output artifact; ${encodedVideo.outputMode ?? "unknown"} output is not publish-ready.`);
+      }
       const muxedVideo = await muxer.mux(encodedVideo, audioStems, options.renderQueue.frameRate);
+      if (readinessMode === "publish" && audioStems.length > 0 && muxedVideo.output === undefined) {
+        throw new Error("Publish video export with audio stems requires a real muxed output artifact.");
+      }
       progress.complete("Render export complete.");
       return createVideoExportResult(plan, encodedVideo, muxedVideo, progress.snapshot(), startedAt, now());
     },
@@ -163,6 +201,17 @@ function createVideoExportResult(
   return {
     kind: "video-export-result",
     plan,
+    output: {
+      path: plan.outputPath,
+      mimeType: muxedVideo.mimeType,
+      byteLength: muxedVideo.byteLength,
+      frameCount: encodedVideo.frameCount,
+      duration: normalizePromptAnimationTime(muxedVideo.duration),
+      hasEncodedOutput: encodedVideo.output !== undefined,
+      hasMuxedOutput: muxedVideo.output !== undefined,
+      encodedOutputMode: encodedVideo.outputMode ?? "memory-summary",
+      playableEncodedOutput: encodedVideo.playable === true
+    },
     encodedVideo,
     muxedVideo,
     progress,

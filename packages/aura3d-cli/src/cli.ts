@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { spawnSync } from "node:child_process";
 import {
   addAsset,
   checkDeploy,
@@ -104,6 +105,8 @@ async function main(): Promise<void> {
     }
   } else if (command === "doctor") {
     print(doctor());
+  } else if (command === "cartoon") {
+    runCartoonCommand(args[1]);
   } else if (command === "check-deploy") {
     print(checkDeploy({ distDir: readOption("--dist") }));
   } else if (command === "init") {
@@ -119,17 +122,57 @@ Commands:
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets validate-game [--profile fighting-character] [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-cartoon [--asset character] [--output artifacts/aura3d/cartoon-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-cartoon [--episode] [--asset character] [--output artifacts/aura3d/cartoon-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
   aura3d assets thumbnail
   aura3d assets search <query> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
   aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]
+  aura3d cartoon plan|preview|render|package|review|verify [--dry-run]
   aura3d doctor
   aura3d check-deploy --dist dist
   aura3d init --agent all`);
   }
+}
+
+function runCartoonCommand(action: string | undefined): void {
+  const scriptByAction: Record<string, string> = {
+    plan: "episode:plan",
+    preview: "episode:preview",
+    render: "episode:render",
+    package: "episode:package",
+    review: "episode:review",
+    verify: "episode:verify"
+  };
+  const script = action ? scriptByAction[action] : undefined;
+  if (!script) {
+    throw new Error("Usage: aura3d cartoon plan|preview|render|package|review|verify [--dry-run]");
+  }
+  const command = process.env.npm_execpath && process.env.npm_execpath.includes("pnpm")
+    ? "pnpm"
+    : "npm";
+  const commandArgs = command === "pnpm" ? ["run", script] : ["run", script];
+  const report = {
+    ok: true,
+    command: "cartoon",
+    action,
+    delegatedScript: script,
+    runner: command,
+    cwd: process.cwd(),
+    dryRun: hasFlag("--dry-run")
+  };
+  if (hasFlag("--dry-run")) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+  const result = spawnSync(command, commandArgs, {
+    cwd: process.cwd(),
+    stdio: "inherit",
+    shell: process.platform === "win32"
+  });
+  if (result.error) throw result.error;
+  process.exitCode = result.status ?? 1;
 }
 
 main().catch((error) => {
@@ -164,8 +207,9 @@ function readEvidenceOutput(): string | undefined {
   return undefined;
 }
 
-function readAssetValidationOptions(): { readonly noPlaceholders?: boolean; readonly requireLicense?: boolean; readonly provenanceFile?: string; readonly assetIds?: readonly string[] } {
-  const options: { noPlaceholders?: boolean; requireLicense?: boolean; provenanceFile?: string; assetIds?: readonly string[] } = {};
+function readAssetValidationOptions(): { readonly episode?: boolean; readonly noPlaceholders?: boolean; readonly requireLicense?: boolean; readonly provenanceFile?: string; readonly assetIds?: readonly string[] } {
+  const options: { episode?: boolean; noPlaceholders?: boolean; requireLicense?: boolean; provenanceFile?: string; assetIds?: readonly string[] } = {};
+  if (hasFlag("--episode")) options.episode = true;
   if (hasFlag("--no-placeholders")) options.noPlaceholders = true;
   if (hasFlag("--require-license")) options.requireLicense = true;
   const assetIds = readRepeatedOptions("--asset").flatMap((value) => value.split(",").map((entry) => entry.trim()).filter(Boolean));

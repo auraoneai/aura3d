@@ -2,14 +2,18 @@ export type { Command, CommandContext } from "./Command";
 export { CommandHistory, CommandTransactionError } from "./CommandHistory";
 export { AssetDropZone, readAssetFromDataTransfer, serializeAssetForDrag } from "./AssetDropZone";
 export type { AssetDropPlacement, AssetDropResult, AssetDropZoneOptions, CartoonAssetCategory, CartoonEditorAssetReference } from "./AssetDropZone";
+export { CameraPathEditor, createCameraPathEditor, readCameraPathKeyframes } from "./CameraPathEditor";
+export type { EditorCameraPathEvidence, EditorCameraPathKeyframe, EditorCameraPathSample, EditorCameraVector3 } from "./CameraPathEditor";
 export { CartoonSceneEditor, createCartoonSceneNode } from "./CartoonSceneEditor";
-export type { CartoonSceneEditorOptions, CartoonSceneEditorSnapshot, CartoonSceneNode, CartoonSceneTransform } from "./CartoonSceneEditor";
+export type { CartoonSceneEditorOptions, CartoonSceneEditorSnapshot, CartoonSceneEpisodeSnapshot, CartoonSceneEpisodeState, CartoonSceneNode, CartoonSceneTransform } from "./CartoonSceneEditor";
 export { CurveEditor } from "./CurveEditor";
 export type { TimelineCurveEvidence, TimelineCurvePoint, TimelineCurveSample } from "./CurveEditor";
 export { DiagnosticsOverlayModel } from "./DiagnosticsOverlayModel";
 export type { EditorDiagnosticsInput, EditorDiagnosticsResource, EditorDiagnosticsSnapshot } from "./DiagnosticsOverlayModel";
 export { EditorRuntime } from "./EditorRuntime";
 export type { EditorMode, EditorRuntimeSnapshot } from "./EditorRuntime";
+export { EpisodeReviewPanel, createEpisodeReviewPanel } from "./EpisodeReviewPanel";
+export type { EpisodeReviewManualVisemeEdit, EpisodeReviewNote, EpisodeReviewPanelSnapshot, EpisodeReviewPanelState, EpisodeReviewRejectedFrame, EpisodeReviewStatus, EpisodeReviewWaveformLane } from "./EpisodeReviewPanel";
 export { EditorStateModel, createMemoryEditorStateStorage } from "./EditorStateModel";
 export type { EditorGridSnapSettings, EditorStateChange, EditorStateSnapshot, EditorStateStorage, EditorViewportSettings } from "./EditorStateModel";
 export { EditorPluginHost } from "./EditorPluginHost";
@@ -49,6 +53,26 @@ export type {
 } from "./LocalizationAccessibilityFixtures";
 export { MaterialVariantWorkflow } from "./MaterialVariantWorkflow";
 export type { MaterialVariantRenderOptions, MaterialVariantState } from "./MaterialVariantWorkflow";
+export { MultiUserReviewWorkflow, createMultiUserReviewWorkflow } from "./MultiUserReviewWorkflow";
+export type {
+  MultiUserReviewWorkflowSnapshot,
+  MultiUserReviewWorkflowState,
+  ReviewDecision,
+  ReviewDecisionStatus,
+  ReviewParticipant,
+  ReviewParticipantRole,
+  ReviewThread,
+  ReviewWorkflowStatus
+} from "./MultiUserReviewWorkflow";
+export { NonlinearAnimationEditor, createNonlinearAnimationEditor } from "./NonlinearAnimationEditor";
+export type {
+  NonlinearAnimationEditorSnapshot,
+  NonlinearAnimationEditorState,
+  NonlinearBinAsset,
+  NonlinearBinAssetKind,
+  NonlinearSequenceConfig,
+  NonlinearSequenceSnapshot
+} from "./NonlinearAnimationEditor";
 export { PickingService } from "./PickingService";
 export type { EditorPickHit, EditorPickTarget, EditorPickingColorId, EditorPickingEvidenceSnapshot } from "./PickingService";
 export { PlayModeBridge } from "./PlayModeBridge";
@@ -58,6 +82,8 @@ export type { CreatePrefabOptions, EditorPrefab, EditorPrefabNodeBase, EditorPre
 export { PropertyPanel } from "./PropertyPanel";
 export type { PropertyPanelField, PropertyPanelOptions } from "./PropertyPanel";
 export { RotateGizmo } from "./RotateGizmo";
+export { RenderQueuePanel, createRenderQueuePanel } from "./RenderQueuePanel";
+export type { RenderQueuePanelItem, RenderQueuePanelItemStatus, RenderQueuePanelSnapshot } from "./RenderQueuePanel";
 export { ScaleGizmo } from "./ScaleGizmo";
 export { SceneOutliner } from "./SceneOutliner";
 export type { SceneOutlinerItem, SceneOutlinerOptions } from "./SceneOutliner";
@@ -83,7 +109,7 @@ export type {
 } from "./TimelineRuntimeBridge";
 export { TranslateGizmo } from "./TranslateGizmo";
 export { TimelineEditorController } from "./TimelineEditorController";
-export type { TimelineEditorClipboard, TimelineEditorControllerOptions, TimelineEditorSnapshot } from "./TimelineEditorController";
+export type { TimelineEditorClipboard, TimelineEditorControllerOptions, TimelineEditorSnapshot, TimelineRoutePlaybackBinding } from "./TimelineEditorController";
 export { TimelineClip, TimelineModel, TimelineTrack } from "./TimelineModel";
 export type {
   TimelineActiveClipSnapshot,
@@ -101,6 +127,8 @@ export { TIMELINE_TRACK_TYPES, createTimelineTrackConfig, timelineTrackKindFromC
 export type { CreateTimelineTrackConfigOptions, TimelineEditorTrackKind, TimelineTrackTypeDefinition } from "./TimelineTrackTypes";
 export { TimelineUI, renderTimelineUI } from "./TimelineUI";
 export type { TimelineUIOptions, TimelineUIRenderResult } from "./TimelineUI";
+export { VisualReviewDashboard, createVisualReviewDashboard } from "./VisualReviewDashboard";
+export type { VisualReviewDashboardPackage, VisualReviewDashboardSnapshot } from "./VisualReviewDashboard";
 export { CreateNodeCommand } from "./commands/CreateNodeCommand";
 export type { NodeContainer } from "./commands/CreateNodeCommand";
 export { DeleteNodeCommand } from "./commands/DeleteNodeCommand";

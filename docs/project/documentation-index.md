@@ -21,6 +21,7 @@ Version: 1.0.10 planning alignment
 - Current state: `docs/project/current-state.md`
 - Product boundaries: `docs/project/product-boundaries.md`
 - Release tracks: `docs/project/release-tracks.md`
+- Aura3D 1.1 Cartoon Studio PRD: `docs/project/aura3d-1.1-cartoon-studio-prd.md`
 - Aura3D 1.0.10 release gates: `docs/project/aura3d-110-release-gates.md`
 - Aura3D 1.0.6 superseded release gates: `docs/project/aura3d-106-release-gates.md`
 - Aura3D 1.0.5 release gates: `docs/project/aura3d-105-release-gates.md`
