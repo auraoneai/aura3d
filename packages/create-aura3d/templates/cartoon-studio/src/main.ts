@@ -1,4 +1,5 @@
 import {
+  applyShotPlaybackFrame,
   camera,
   captionCueAtTime,
   createAuraApp,
@@ -239,24 +240,35 @@ const cartoonEpisodeProof: CartoonEpisodeRouteProof = {
 };
 window.__AURA3D_CARTOON_EPISODE_PROOF__ = cartoonEpisodeProof;
 window.__AURA3D_CARTOON_TEMPLATE__ = cartoonEpisodeProof;
-window.__AURA3D_CARTOON_EPISODE_SEEK__ = (time: number) => {
-  const sample = sampleCartoonRouteAt(time);
-  captionOverlay.textContent = sample.captionText ?? firstCaption?.text ?? "";
-  captionOverlay.dataset.shotId = sample.shotId ?? "";
-  captionOverlay.dataset.captionId = sample.captionId ?? "";
-};
-
-installShotPlayback(app, shotPlaybackPlan, {
+const shotPlaybackApplyOptions = {
   primitiveMouthNodeByCharacterId: {
     miko: "miko:mouth",
     luma: "luma:mouth"
   },
-  onCaption(caption, framePlan) {
+  playAnimationClips: true,
+  onCaption(caption: { readonly text?: string; readonly captionId?: string } | undefined, framePlan: { readonly shotId?: string }) {
     captionOverlay.textContent = caption?.text ?? firstCaption?.text ?? "";
     captionOverlay.dataset.shotId = framePlan.shotId ?? "";
     captionOverlay.dataset.captionId = caption?.captionId ?? "";
   }
-});
+} as const;
+
+// Deterministically pose every character (position, rotation, animation clip, mouth)
+// at the requested time. This is what makes a seek render a real frame of the
+// generated cartoon instead of only updating the caption text.
+function seekCartoonEpisode(time: number) {
+  applyShotPlaybackFrame(app, sampleShotPlaybackPlan(shotPlaybackPlan, time), shotPlaybackApplyOptions);
+}
+window.__AURA3D_CARTOON_EPISODE_SEEK__ = seekCartoonEpisode;
+
+if (captureMode) {
+  // Deterministic capture: the seek hook is the single source of truth, so pose
+  // the opening beat now and let each capture seek drive the rendered frame.
+  seekCartoonEpisode(1);
+} else {
+  // Live preview: play the episode timeline on the runtime clock.
+  installShotPlayback(app, shotPlaybackPlan, shotPlaybackApplyOptions);
+}
 
 function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position: readonly [number, number, number], color: string) {
   return primitives
