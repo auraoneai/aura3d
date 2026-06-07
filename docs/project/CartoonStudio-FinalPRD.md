@@ -250,11 +250,25 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 - [x] Visual-fidelity gate run on the **real 3D frames** → PASS (grounded, cel-shaded characters whose skeletons re-pose across time — genuine skinning, verified in pixels). *(`toHaveScreenshot` baselines deferred — live capture lighting/timing isn't yet pixel-deterministic; the fidelity gate covers content+motion instead.)*
 - Note: the published `@aura3d/engine` lacks the registered toon shader + has a stricter material binder, so the capture aliases `@aura3d/*` to the monorepo `dist/` (the same pattern aura-clash uses). Skinning works against the published engine too; only the toon material needs the source/dist build.
 
-### Phase 2 — Performance, camera, lip-sync, audio
-- [ ] `CartoonStagePerformance` + `CartoonWorldState`: walk/sweep/polish; lilies dim→sparkle.
-- [ ] `ShotTimeline` consumes camera samples (camera moves per shot) + transition opacities; gaze head rotation.
-- [ ] Forward viseme blendshape weights → `setMorphTargets` → mouths move. *(Miko works now; **Luma blocked until Phase 3 art** — soldier GLB has no blendshapes.)*
-- [ ] Load real dialogue/SFX audio; mux into the video. *(Requires the Phase 1 encoder to accept an audio track.)*
+### Phase 2 — Performance, camera, lip-sync, audio — 🟡 MOSTLY DONE (audio blocked)
+- [x] **World-state dim→sparkle** + garden: `render-live-route.ts` ramps glow-stone/lily emissive across the 3 beats (mean luma 68→155 first→final, pixel-verified). Garden set/props built (Phase 3 substitute).
+- [x] **Per-shot camera moves**: establishing wide → two-shot → close-up push-in (CameraChoreographer presets; framing change pixel-verified).
+- [x] **Visible lip-sync**: mouth indicator driven by sampled visemes (open/closed = 4261px A/B). Honest: Miko's GLB morphs are degenerate + Luma has none, so the visible mouth is a **primitive mouth-card fallback** (PRD Path A), not blendshapes.
+- [~] Scripted staged performance (walk-to-broom → sweep → polish): characters play real skeletal clips and the garden is staged, but beat-accurate choreography is **partial**.
+- [ ] **BLOCKED — real dialogue/SFX audio**: no audio exists (AuraVoice is timing-only; no TTS/recordings). Needs a TTS provider or recorded stems; `FfmpegFrameEncoder` audio-track mux is then a small addition.
+
+### Phase 3 — Real art — 🟡 SUBSTITUTE DONE; bespoke art BLOCKED
+- [x] **Cast (substitute)**: real **rigged** GLBs used + skinned in the 3D route (proven in pixels); `ASSET-LICENSES.md` documents provenance honestly.
+- [x] **Set + props (substitute)**: primitive moon garden (orb, glow-stones, lilies, broom, night lights) built in the live route.
+- [ ] **BLOCKED — bespoke authored art**: on-model rigged **Miko**/**Luma** (with real face blendshapes for true lip-sync) + an authored moon-garden set. Requires 3D modeling/rigging/texturing — cannot be produced by this agent; needs an artist or licensed/commissioned assets. (Current cast = three.js RobotExpressive + Mixamo Soldier; not the intended characters.)
+- [ ] Ingest bespoke assets via `assets add`; re-render; add `toHaveScreenshot` baselines once the render is deterministic.
+
+### Phase 4 — Scope decisions, verification & release — 🟡 VERIFICATION DONE; process items remain
+- [x] **Verification green (honest)**: `pnpm typecheck` ✅, `pnpm build` ✅, **62 cartoon/grounding/toon/ffmpeg unit tests** ✅, browser route specs ✅, `pnpm aura3d11:readiness` = **release-ready** (truthful manifest, real primitive-mouth fallback — not fabricated), real-pixel fidelity gate ✅, fresh-scaffold external smoke ✅.
+- [ ] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts).
+- [ ] i18n/dub decision; video-render performance budget gate; output accessibility (embedded/burned-in captions + contrast).
+- [ ] Unify animation systems (three consumers: `@aura3d/animation` CPU blender, `@aura3d/assets` GPU skinning, Aura Clash `FighterAnimator`).
+- [ ] Republish `create-aura3d` / redeploy — **deferred to explicit human sign-off** (irreversible; and bespoke art + audio should land first).
 
 ### Phase 3 — Real art (the "looks like a cartoon" step)
 - [ ] Author rigged **Miko** + **Luma** (matched style, to scale, face blendshapes). *(Consider seeding from existing repo candidates: `apps/aura-clash-showcase/assets/candidates/skeleton-cartoon.glb`, Quaternius superheroes.)*
