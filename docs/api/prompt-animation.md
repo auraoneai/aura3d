@@ -451,3 +451,362 @@ Treat these as separate gates:
 
 Do not publish placeholder screenshot hashes or mark a prompt-cartoon route
 publish-ready from source declarations alone.
+
+## 1.1 engine cartoon, render, and publishing APIs
+
+Aura3D 1.1 adds public `@aura3d/engine` exports that turn the prompt-animation
+contracts into rendered episode packages with honest, capability-probed
+boundaries. Each section below documents real exported symbols. The cloud,
+upload, phoneme, and capture adapters are optional integration seams: when they
+are not configured they return diagnostics and do nothing, instead of pretending
+work happened. These APIs do not generate video from a still image and make no
+film-studio or full-studio parity claim; they validate timing, motion, route,
+and packaging evidence.
+
+```ts
+import {
+  createCartoonEpisodePackageManifest,
+  createCartoonMotionQualityReport,
+  createCartoonRouteProof,
+  createCloudRenderAdapter,
+  createExternalPhonemeAnalyzerAdapter,
+  createFrameEncoder,
+  createPerformanceCaptureSession,
+  createSceneSequencer,
+  createVideoExportPipeline,
+  createWebCodecsFrameEncoderAdapter,
+  createYouTubeUploadAdapter,
+  AssetLibraryBrowser,
+  validateCartoonEpisodePackage,
+  validateCartoonMotionQuality,
+  validateCartoonRouteProof
+} from "@aura3d/engine";
+```
+
+### Cartoon episode package writer and validator
+
+`createCartoonEpisodePackageManifest(...)` builds an
+`CartoonEpisodePackageManifest` (`aura3d-cartoon-episode-package/v1`) describing
+the on-disk package folder, and `validateCartoonEpisodePackage(manifest)` returns
+a `CartoonEpisodePackageValidationReport` with `status: "pass" | "fail"`.
+
+Key fields: `rootPath`, `publishTarget` (`"review" | "publish"`), and a `files`
+list of `CartoonEpisodePackageFile` records (each with `role`, `path`, `present`,
+optional `byteLength`/`sha256`/`mimeType`). The required roles come from
+`requiredCartoonEpisodePackageRoles` (thumbnail, captions VTT + SRT,
+metadata JSON, prompt-animation evidence JSON, route-proof JSON, asset-provenance
+JSON, render-manifest JSON, visual-acceptance JSON, motion-quality JSON, and the
+review-package markdown) plus a video role: `video-webm` is required, with
+`video-mp4` accepted as an alternative present video. The optional `routeProof`,
+`motionQuality`, `visualAcceptanceStatus`, and `assetProvenanceStatus` fields are
+all checked, and a manifest flagged `sourceOnly: true` or `notTrue3D: true` fails.
+
+```ts
+const packageManifest = createCartoonEpisodePackageManifest({
+  episodeId: plan.episodePlan.episodeId,
+  packageId: `${plan.episodePlan.episodeId}:package`,
+  rootPath: "dist/episodes/moon-garden",
+  publishTarget: "review",
+  routeProof,
+  motionQuality,
+  visualAcceptanceStatus: "pass",
+  assetProvenanceStatus: "pass",
+  files: [
+    { role: "video-webm", path: "episode.webm", present: true, byteLength: 4_200_000 },
+    { role: "thumbnail", path: "thumbnail.webp", present: true, byteLength: 64_000 },
+    { role: "captions-vtt", path: "captions.vtt", present: true, byteLength: 2_400 },
+    { role: "captions-srt", path: "captions.srt", present: true, byteLength: 2_500 },
+    { role: "metadata-json", path: "metadata.json", present: true, byteLength: 1_200 },
+    { role: "prompt-animation-evidence-json", path: "evidence.json", present: true, byteLength: 8_000 },
+    { role: "route-proof-json", path: "route-proof.json", present: true, byteLength: 6_000 },
+    { role: "asset-provenance-json", path: "asset-provenance.json", present: true, byteLength: 3_000 },
+    { role: "render-manifest-json", path: "render-manifest.json", present: true, byteLength: 5_000 },
+    { role: "visual-acceptance-json", path: "visual-acceptance.json", present: true, byteLength: 1_500 },
+    { role: "motion-quality-json", path: "motion-quality.json", present: true, byteLength: 4_000 },
+    { role: "review-package-md", path: "review.md", present: true, byteLength: 900 }
+  ]
+});
+
+const packageReport = validateCartoonEpisodePackage(packageManifest);
+console.log(packageReport.status, packageReport.missingRoles, packageReport.emptyRoles);
+```
+
+### Cartoon motion-quality analysis
+
+`createCartoonMotionQualityReport(...)` analyzes sampled rendered frames and
+timeline segments to reject still-image / global-only motion, and
+`validateCartoonMotionQuality(report)` re-checks a stored report. The schema is
+`aura3d-cartoon-motion-quality/v1`.
+
+Input frames are `CartoonMotionFrameSample` records (`frame`, `time`,
+`frameHash`, `globalDelta`, optional `cameraMoveExpected`, and per-`regions`
+`CartoonMotionFrameRegionSample` deltas keyed by `kind`: head, torso, arm, hand,
+leg, mouth, prop, background). Segments (`CartoonMotionSegmentInput`) carry a
+`kind` (establishing, dialogue, action, camera, transition) and a frame range.
+Thresholds default from `defaultCartoonMotionQualityThresholds` (min frame-hash
+changes, min global/region/mouth deltas, min independent moving region kinds, and
+max global-only frame ratio). The report fails when motion is global-only, when
+dialogue/action segments lack enough independently moving region kinds, or when a
+dialogue segment has no mouth motion.
+
+```ts
+const motionQuality = createCartoonMotionQualityReport({
+  episodeId: plan.episodePlan.episodeId,
+  frameRate: 30,
+  frames: sampledFrames, // CartoonMotionFrameSample[] captured from the render
+  segments: [
+    { id: "seg-dialogue-1", shotId: "shot-001", kind: "dialogue", startFrame: 0, endFrame: 240 }
+  ]
+});
+
+console.log(motionQuality.status, motionQuality.globalOnlyMotion);
+const motionIssues = validateCartoonMotionQuality(motionQuality);
+```
+
+### Cartoon route proof
+
+`createCartoonRouteProof(...)` builds a `CartoonRouteProof`
+(`aura3d-cartoon-route-proof/v1`) that proves a playback route actually rendered
+characters, captions, visemes, gestures, and controls; `validateCartoonRouteProof`
+re-checks a stored proof.
+
+Key inputs: `route`, `duration`, `frameRate`, `assets`
+(`CartoonRouteProofAsset` with `role`, `typedAsset`, `source` and `ready` flags),
+`shots` (`CartoonRouteProofShot` with expected vs. visible character ids,
+`nonblank`, `frameCount`, `frameHashes`), `captions`, `visemes`
+(`mode` includes `"missing-mouth-motion"`, which fails), `gestures`, a `render`
+state (`CartoonRouteProofRenderState` with `nonblank`, `sourceOnly`, `notTrue3D`,
+overlay/chrome flags), and a `playback` state
+(`CartoonRouteProofPlaybackState` requiring play/pause/scrub/jump). The output
+carries `checks` (`CartoonRouteReadinessCheck[]`), `issues`, and
+`status`. Source-only / not-true-3D routes and visible debug overlays fail.
+
+```ts
+const routeProof = createCartoonRouteProof({
+  episodeId: plan.episodePlan.episodeId,
+  route: "/episodes/moon-garden",
+  duration: 60,
+  frameRate: 30,
+  assets: [
+    { id: "miko", role: "character", typedAsset: true, source: "aura-assets", ready: true },
+    { id: "luma", role: "character", typedAsset: true, source: "aura-assets", ready: true },
+    { id: "moon-garden", role: "set", typedAsset: true, source: "aura-assets", ready: true }
+  ],
+  shots: renderedShots,       // CartoonRouteProofShot[]
+  captions: renderedCaptions, // rendered: true
+  visemes: renderedVisemes,   // rendered: true, mode: "blendshape-lip-sync"
+  gestures: renderedGestures, // rendered: true
+  render: { frameCount: 1800, nonblank: true, sourceOnly: false, notTrue3D: false },
+  playback: {
+    canPlay: true, canPause: true, canScrub: true, canJumpShots: true,
+    captionsToggle: true, muteToggle: true, reducedMotion: true, reducedFlash: true
+  }
+});
+
+console.log(routeProof.status, routeProof.checks.filter((check) => !check.passed));
+```
+
+### Render queue
+
+`createCartoonRenderQueue(...)` (covered in the minimum-flow example above)
+returns a `CartoonRenderQueueArtifact` (`render-queue`) of per-frame
+`CartoonRenderQueueItem` capture targets, each bound to a deterministic
+`CartoonRenderSceneStateSource` (stable `sceneStateId`, `deterministicSeed`, and
+matching AuraVoice timestamp). `validateCartoonRenderQueue(queue)` enforces the
+route, frame rate, capture times, outputs, frame-list/thumbnail/evidence frame
+integrity, and scene-state binding. Default outputs and evidence targets come
+from `defaultCartoonRenderOutputs` and `defaultCartoonEvidenceTargets`.
+
+```ts
+const renderQueue = createCartoonRenderQueue({
+  episodePlan: plan.episodePlan,
+  shotTimeline: plan.shotTimeline,
+  route: "/episodes/moon-garden",
+  viewport: { width: 1920, height: 1080 }
+});
+
+const queueIssues = validateCartoonRenderQueue(renderQueue);
+console.log(renderQueue.items.length, renderQueue.frameRate, queueIssues);
+```
+
+### Video export pipeline and frame-encoder adapters
+
+`createVideoExportPipeline(...)` drives a render queue against a
+`VideoExportRuntime` (you implement `captureFrame(item)` and optional
+`seek`/`step`), encodes frames through a `FrameEncoder`, muxes audio, and returns
+a `VideoExportResult`. `createVideoExportPlan(...)` produces just the
+`VideoExportPlan` (output path, mime type, `codec`, frame count) without running.
+
+The pipeline has an explicit honesty boundary controlled by `readinessMode`
+(`"proof" | "publish"`, default `"proof"`):
+
+- In `"proof"` mode it runs with the default in-memory encoder adapter
+  (`createInMemoryFrameEncoderAdapter()`, `proofOnly: true`), which records frame
+  metadata only and produces no playable file. The result's
+  `output.encodedOutputMode` is `"memory-summary"` and
+  `output.playableEncodedOutput` is `false`.
+- In `"publish"` mode it throws if the encoder adapter is proof-only, if the
+  encoded artifact has no real `output`, if the output is not `playable`, or if
+  audio stems were provided but no muxed output was produced.
+
+`createFrameEncoder(...)` returns a `FrameEncoder`; codecs are
+`vp9 | vp8 | h264 | av1 | png-sequence`. The `EncodedVideoArtifact` exposes
+`outputMode` (`memory-summary | encoded-video | encoded-chunks | png-sequence |
+unsupported`), `proofOnly`, `playable`, and `output`.
+
+WebCodecs boundary: `createWebCodecsFrameEncoderAdapter(...)` emits encoded video
+chunks via the browser `VideoEncoder`, and `probeWebCodecsFrameEncoder(codec)`
+reports a `WebCodecsFrameEncoderCapability`. Its default `outputMode` is
+`"encoded-chunks"` and `canProducePlayableFile` is `false`: raw WebCodecs chunks
+are NOT a playable MP4/WebM file. A real container writer/muxer is required
+(`requiresExternalMuxer: true`); pass a custom `outputFactory` (and
+`playableOutput: true`) only when you actually produce a real container, which is
+what `"publish"` mode demands.
+
+```ts
+const exportPlan = createVideoExportPlan({ renderQueue, outputPackage: renderOutputPackage });
+
+// Proof export: validates timing/coverage, no playable file is produced.
+const proofPipeline = createVideoExportPipeline({
+  renderQueue,
+  outputPackage: renderOutputPackage,
+  runtime,                 // implements captureFrame(item)
+  audioStems,              // AudioStemManifestArtifact or AudioMuxerInputStem[]
+  readinessMode: "proof"
+});
+const proofResult = await proofPipeline.render();
+console.log(proofResult.output.encodedOutputMode, proofResult.output.playableEncodedOutput); // "memory-summary" false
+
+// Publish export: requires a real, playable encoder adapter (e.g. WebCodecs + a container writer).
+const publishPipeline = createVideoExportPipeline({
+  renderQueue,
+  outputPackage: renderOutputPackage,
+  runtime,
+  audioStems,
+  encoderAdapter: createWebCodecsFrameEncoderAdapter({
+    codec: "h264",
+    playableOutput: true,
+    outputFactory: writeRealMp4Container // your real container writer
+  }),
+  readinessMode: "publish"
+});
+```
+
+### Optional, capability-probed stretch adapters
+
+These adapters are honest seams for capabilities Aura3D does not perform itself.
+Each ships a `probe*` / `capability` check that returns `supported: false` plus
+diagnostics when unconfigured, and the adapter no-ops (or returns a blocked
+result) rather than faking work.
+
+Cloud render: `createCloudRenderAdapter(options)` and
+`probeCloudRenderAdapter(options)`. Providers are
+`local | github-actions | render-farm | custom`. Without a `submit` handler or
+configured endpoint/credentials the capability is `unsupported` /
+`missing-credentials` and `submit(...)` returns a `status: "unsupported"`
+`CloudRenderJobResult`. Build a request with `createCloudRenderJobRequest(...)`.
+
+```ts
+const cloud = createCloudRenderAdapter({ provider: "render-farm" });
+console.log(cloud.available, cloud.capability.status, cloud.capability.diagnostics);
+const cloudResult = await cloud.submit(
+  createCloudRenderJobRequest({ packageManifest, renderQueue })
+);
+```
+
+YouTube upload: `createYouTubeUploadAdapter(options)` with
+`probeYouTubeUploadAdapter`, `createYouTubeUploadPackage(publishingPackage)`, and
+`validateYouTubeUploadPackage(pkg)`. Without an `upload` handler/credentials the
+capability is `unsupported`/`missing-credentials` and `upload(...)` returns a
+`status: "blocked"` result; package validation must also pass (video,
+thumbnail, title, captions). Defaults to `dryRun: true`.
+
+```ts
+const youtube = createYouTubeUploadAdapter(); // unconfigured -> blocked, dry run
+const uploadResult = await youtube.upload(createYouTubeUploadPackage(publishingPackage));
+console.log(youtube.capability.status, uploadResult.status, uploadResult.diagnostics);
+```
+
+External phoneme analyzer: `createExternalPhonemeAnalyzerAdapter(options)` with
+`probeExternalPhonemeAnalyzer`. With no `provider` it is `unsupported` and falls
+back to amplitude-only visemes (returning `ok: false` plus a diagnostic); a wired
+provider returns an `ExternalPhonemeAlignment` of `ExternalPhonemeTiming`
+records that upgrade the viseme analysis.
+
+```ts
+const phonemes = createExternalPhonemeAnalyzerAdapter(); // unconfigured -> amplitude-only fallback
+const phonemeResult = await phonemes.analyze({
+  episodeId: plan.episodePlan.episodeId,
+  characterId: "miko",
+  language: "en",
+  transcript: "These moon weeds are glowing again."
+});
+console.log(phonemeResult.ok, phonemeResult.status, phonemeResult.diagnostics);
+```
+
+Performance capture: `createPerformanceCaptureSession(options)` returns a
+`PerformanceCaptureRecordingSession`. Sources are `manual | webcam |
+motion-capture`; non-manual sources require an available capability with granted
+runtime permission, and `start()` throws otherwise. Recorded
+`PerformanceCaptureRecordingSample`s convert to a `CartoonPerformanceArtifact`
+via `toPerformanceArtifact()`. The snapshot always reports
+`externalServiceIntegrated: false`. Capabilities can be checked with
+`validatePerformanceCaptureCapability(capability)`.
+
+```ts
+const capture = createPerformanceCaptureSession({
+  id: "capture-001",
+  episodeId: plan.episodePlan.episodeId,
+  characterId: "miko",
+  frameRate: 30,
+  source: { kind: "manual", available: true, permission: "not-required", supportedSignals: ["body", "face"] }
+});
+capture.start();
+const performance = capture.toPerformanceArtifact();
+```
+
+Asset-library browser: `new AssetLibraryBrowser(manifest)` filters and inspects a
+`CartoonAssetManifest`. `setFilter`, `select`, `snapshot`, `detail`,
+`editorReference`, and `marketplaceSnapshot` enforce typed `assets.*` references
+and license metadata (`editorReference` throws for non-typed or unlicensed
+entries). Snapshots report `externalServicesIntegrated: false`; there is no live
+marketplace, only the offline typed manifest.
+
+```ts
+const browser = new AssetLibraryBrowser(cartoonAssetManifest);
+const visible = browser.setFilter({ kind: "character", lipSyncReady: true });
+console.log(visible.visible, visible.evidence.typedAssetReferencesOnly);
+```
+
+### Scene sequencer and camera choreographer
+
+`createSceneSequencer({ episode, timeline })` returns a `SceneSequencerPlan`
+(`scene-sequencer`) binding episode structure to the shot timeline;
+`sampleSceneSequencer(plan, time)` returns the active scene/shot/transition and
+`createSceneSequencerPlayback(plan)` gives a play/pause/scrub/jump controller.
+(A legacy `createSceneSequencer(timeline, structure)` overload remains.)
+
+`createCameraChoreography({ episodeId, paths })` returns a
+`CameraChoreographyArtifact` of `CameraPath`s; build paths with
+`createCameraPathFromPreset(...)` or `shotReverseShotCameraPaths(...)`, sample
+with `sampleCameraPath(path, time)`, and convert a `CameraSample` to a shot
+camera instruction with `cameraInstructionFromSample(sample)`.
+
+```ts
+const sequencer = createSceneSequencer({ episode: episodeStructure, timeline: plan.shotTimeline });
+const playback = createSceneSequencerPlayback(sequencer);
+
+const cameras = createCameraChoreography({
+  episodeId: plan.episodePlan.episodeId,
+  paths: [
+    createCameraPathFromPreset({
+      id: "shot-001:cam",
+      presetId: "over-shoulder",
+      startTime: 0,
+      endTime: 8,
+      subjectPosition: [0.7, 0.75, 0]
+    })
+  ]
+});
+const cameraSample = sampleCameraPath(cameras.paths[0], 3);
+```

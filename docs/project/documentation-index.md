@@ -43,6 +43,10 @@ Version: 1.1.0 planning alignment
 - Game runtime API: `docs/api/game-runtime.md`
 - Animation runtime/events API: `docs/api/animation-runtime-events.md`
 - Editor and visual scripting API: `docs/api/editor-visual-scripting.md`
+- Editor review tooling API (1.1): `docs/api/editor-review-tooling.md`
+- Cartoon audio API (1.1): `docs/audio/cartoon-audio.md`
+- Cartoon animation helpers (1.1): `docs/animation/runtime-support.md`
+- Cartoon render preset/quality (1.1): `docs/rendering/cartoon-render-preset.md`
 - Asset evidence API: `docs/api/assets.md`
 - Fighting-game example: `docs/examples/fighting-game.md`
 - Prompt animation API: `docs/api/prompt-animation.md`

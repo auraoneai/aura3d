@@ -17,11 +17,11 @@
     "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/episode-render.spec.ts tests/motion-quality.spec.ts tests/visual-review.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/animation": "1.0.6",
-    "@aura3d/assets": "1.0.6",
-    "@aura3d/core": "1.0.6",
-    "@aura3d/physics": "1.0.6",
-    "@aura3d/engine": "1.0.10"
+    "@aura3d/animation": "1.1.0",
+    "@aura3d/assets": "1.1.0",
+    "@aura3d/core": "1.1.0",
+    "@aura3d/physics": "1.1.0",
+    "@aura3d/engine": "1.1.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
