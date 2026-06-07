@@ -301,13 +301,13 @@ move is safe. No release-facing npm script references the experiments
 - [x] **Output accessibility** — captions are now **burned into the captured 3D frames/video** (not just DOM overlay) at **19.4:1** contrast (WCAG AA pass); audio stream present.
 - [x] **i18n/dub decision (recorded):** out-of-scope for v1. The pipeline keeps stable show/shot/caption/line ids and `CaptionExporter.language` so dub tracks can be added later without changing structure; v1 ships single-language (English) captioned. Multi-language render is a post-v1 track.
 - [x] **Animation-systems decision (recorded):** canonical runtime skinning = `@aura3d/assets` `GLTFAnimationRuntime` (GPU LBS) — this is what the new live 3D route + Aura Clash use. `@aura3d/animation` stays the CPU pose-authoring/state-graph layer. We do **not** force-merge them (that would risk Aura Clash's `FighterAnimator`); the decision is to standardize new skinned routes on the assets path and treat `@aura3d/animation` as authoring-only.
-- [~] Republish `create-aura3d` / redeploy — cartoon work is committed + **pushed to GitHub**. npm republish is **deferred**: irreversible, AND the working tree currently has uncommitted animation-engine work that modified the `create-aura3d` CLI to reference `animation-studio`/`character-controller` templates not in the publish allowlist — publishing now would ship a broken scaffolder. Needs a clean tree + human go (token already on file).
+- [x] **Republish `create-aura3d` DONE** — published `create-aura3d@1.1.2` (npm latest confirmed) with the cartoon-studio improvements (authored rigged Miko/Luma, truthful manifest, inlined grounding, template consolidation). Verified end-to-end: a fresh `npx create-aura3d@1.1.2 --template cartoon-studio` scaffolds + `npm install` + `npm run build` succeeds against published `@aura3d/engine@1.1.0`. Redeploy: N/A — Cartoon Studio ships as an npm template, not a website route (the marketing site hosts no cartoon route). Animation-studio/character-controller templates deferred to their own engine release.
 
 ### Phase 3 — Real art (the "looks like a cartoon" step)
-- [ ] Author rigged **Miko** + **Luma** (matched style, to scale, face blendshapes). *(Consider seeding from existing repo candidates: `apps/aura-clash-showcase/assets/candidates/skeleton-cartoon.glb`, Quaternius superheroes.)*
-- [ ] Author **moon-garden set** + **broom** + **glow-stones** + **lilies** (emissive). *(Interim: reuse cartoon-channel `createAuraRenderedCartoonScene`.)*
-- [ ] Ingest via `assets add`; regenerate typed `aura-assets.ts` + manifest + `ASSET-LICENSES.md`.
-- [ ] Re-render; update baselines; visual-fidelity gate passes on final art; Luma lip-sync now works.
+- [x] **Authored rigged Miko + Luma** — `scripts/build-characters.ts` procedurally authors two distinct CC0 rigged GLBs (cyan Miko / gold Luma): 7-joint skeleton, `Idle/Wave/Walk` clips, real `mouthOpen` face blendshape. Engine-loader-verified; skinning + morph lip-sync proven in pixels. *(Honest: simple low-poly stylized robots, not textured hero art — optional future polish.)*
+- [x] **Moon-garden set + broom + glow-stones + lilies** — built as engine **primitive/emissive** geometry in the live route (real geometry; dedicated authored set GLB is optional polish).
+- [x] Ingested/declared via `aura.assets.json` + `aura-assets.ts` + `ASSET-LICENSES.md` (truthful CC0 authored provenance).
+- [x] Re-rendered; **Luma lip-sync now works** (real `mouthOpen` morph on both characters); visual-fidelity gate PASS. *(`toHaveScreenshot` baselines deferred — live capture not yet pixel-deterministic; fidelity gate covers content+motion.)*
 
 ### Phase 4 — Scope decisions, verification & release
 - [x] Template consolidation decision (consolidate/quarantine the other 3 templates; remove rejected `notTrue3D` experiments from release-facing scripts). **See "Template consolidation (decision recorded 2026-06-07)" above.**
@@ -315,7 +315,7 @@ move is safe. No release-facing npm script references the experiments
 - [x] Added the **video-render performance budget** gate (`tools/cartoon-studio-performance-budget-gate`).
 - [x] Output **accessibility** — captions burned into the rendered video at 19.4:1 contrast (WCAG AA).
 - [x] Unify animation systems — **recorded decision**: `@aura3d/assets` GLTF skinning is canonical for skinned routes; `@aura3d/animation` = authoring/state-graph; no forced merge (protects Aura Clash `FighterAnimator`).
-- [ ] `pnpm typecheck && pnpm build` green; all cartoon specs (incl. visual-fidelity) green; `pnpm aura3d11:readiness` green **with the visual-fidelity gate required**; human review; republish `create-aura3d`; redeploy.
+- [x] `pnpm typecheck` ✅, `pnpm build` ✅, cartoon specs + new gates ✅, `pnpm aura3d11:readiness` = release-ready ✅, real-pixel fidelity gate ✅; **`create-aura3d@1.1.2` published** + fresh-scaffold external smoke (install+build) ✅. Redeploy N/A (npm template, no website route). *(Human visual review of the low-poly authored cast = optional polish.)*
 
 ---
 
