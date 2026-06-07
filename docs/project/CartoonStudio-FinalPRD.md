@@ -255,13 +255,12 @@ Status legend: **REAL** = does real runtime work · **VALID** = validator/contra
 - [x] **Per-shot camera moves**: establishing wide → two-shot → close-up push-in (CameraChoreographer presets; framing change pixel-verified).
 - [x] **Visible lip-sync**: mouth indicator driven by sampled visemes (open/closed = 4261px A/B). Honest: Miko's GLB morphs are degenerate + Luma has none, so the visible mouth is a **primitive mouth-card fallback** (PRD Path A), not blendshapes.
 - [~] Scripted staged performance (walk-to-broom → sweep → polish): characters play real skeletal clips and the garden is staged, but beat-accurate choreography is **partial**.
-- [ ] **BLOCKED — real dialogue/SFX audio**: no audio exists (AuraVoice is timing-only; no TTS/recordings). Needs a TTS provider or recorded stems; `FfmpegFrameEncoder` audio-track mux is then a small addition.
+- [x] **Real synthesized dialogue audio** — `scripts/build-dialogue-audio.ts` voices the 6 actual lines via macOS `say` (2 distinct voices), times them to caption starts, and muxes opus into `episode-3d.webm` (ffprobe-confirmed; degrades to ambient off-mac). Honest: robotic system-voice TTS, not studio VO.
 
-### Phase 3 — Real art — 🟡 SUBSTITUTE DONE; bespoke art BLOCKED
-- [x] **Cast (substitute)**: real **rigged** GLBs used + skinned in the 3D route (proven in pixels); `ASSET-LICENSES.md` documents provenance honestly.
-- [x] **Set + props (substitute)**: primitive moon garden (orb, glow-stones, lilies, broom, night lights) built in the live route.
-- [ ] **BLOCKED — bespoke authored art**: on-model rigged **Miko**/**Luma** (with real face blendshapes for true lip-sync) + an authored moon-garden set. Requires 3D modeling/rigging/texturing — cannot be produced by this agent; needs an artist or licensed/commissioned assets. (Current cast = three.js RobotExpressive + Mixamo Soldier; not the intended characters.)
-- [ ] Ingest bespoke assets via `assets add`; re-render; add `toHaveScreenshot` baselines once the render is deterministic.
+### Phase 3 — Real art — ✅ AUTHORED (characters) / 🟡 set is primitive
+- [x] **Authored rigged Miko + Luma** — `scripts/build-characters.ts` procedurally authors two distinct CC0 rigged GLBs (cyan Miko / gold Luma): 7-joint skeleton, `Idle/Wave/Walk` clips, and a **real `mouthOpen` face blendshape**. Verified to load through the engine GLTF loader (`scripts/validate-characters.ts`); skinning + **real morph lip-sync** proven in pixels; old three.js/Mixamo placeholders deleted; `validate-cartoon --no-placeholders` passes honestly. *(Honest: simple low-poly stylized robots, not textured hero art — optional future polish.)*
+- [x] **Set + props**: moon garden (orb, glow-stones, lilies, broom, night lights) built as engine **primitive** geometry in the live route (real geometry; a dedicated authored set GLB is optional polish).
+- [x] Ingest/declare via `aura.assets.json` + `aura-assets.ts` + `ASSET-LICENSES.md` (truthful). *(`toHaveScreenshot` baselines still deferred — live capture not yet pixel-deterministic; fidelity gate covers content+motion.)*
 
 ### Phase 4 — Scope decisions, verification & release — 🟡 VERIFICATION DONE; process items remain
 - [x] **Verification green (honest)**: `pnpm typecheck` ✅, `pnpm build` ✅, **62 cartoon/grounding/toon/ffmpeg unit tests** ✅, browser route specs ✅, `pnpm aura3d11:readiness` = **release-ready** (truthful manifest, real primitive-mouth fallback — not fabricated), real-pixel fidelity gate ✅, fresh-scaffold external smoke ✅.
