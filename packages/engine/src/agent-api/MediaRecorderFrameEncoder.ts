@@ -45,10 +45,15 @@ export function createMediaRecorderFrameEncoderAdapter(options: CreateMediaRecor
     ...probeMediaRecorderFrameEncoder(codec, options.mimeType),
     ...(options.recorderSupported !== undefined ? { supported: options.recorderSupported } : {})
   };
+  // Honest labeling: this adapter only yields a real playable video when the caller
+  // injects a real `outputFactory`. Without one, finalize() returns a metadata
+  // summary blob (NOT a playable video), so it must be reported as proof-only /
+  // memory-summary rather than claiming encoded-video.
+  const hasRealOutput = typeof options.outputFactory === "function";
   return {
     kind: "media-recorder-frame-encoder",
-    proofOnly: false,
-    outputMode: capability.supported ? "encoded-video" : "unsupported",
+    proofOnly: !hasRealOutput,
+    outputMode: !capability.supported ? "unsupported" : hasRealOutput ? "encoded-video" : "memory-summary",
     capability,
     encode(frame) {
       if (!capability.supported) throw new Error(capability.reason ?? "MediaRecorder frame encoder is unsupported.");

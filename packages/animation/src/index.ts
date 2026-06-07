@@ -11,6 +11,7 @@ export * from "./Skinning.js";
 export * from "./BlendTree.js";
 export * from "./AnimationStateMachine.js";
 export * from "./AnimationStateGraph.js";
+export * from "./LocomotionKit.js";
 export * from "./RootMotion.js";
 export * from "./MotionQuality.js";
 export * from "./LocomotionController.js";
@@ -20,9 +21,8 @@ export * from "./IK.js";
 export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
-export * from "./Retargeting.js";
 export * from "./AnimationClipEvents.js";
-export { AnimationClipRegistry, validateCartoonClipMap } from "./AnimationClipRegistry.js";
+export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateCartoonClipMap } from "./AnimationClipRegistry.js";
 export type {
   AnimationClipDefinition,
   AnimationClipId,

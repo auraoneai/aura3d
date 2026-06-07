@@ -19,9 +19,10 @@ export * from "./IK.js";
 export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
-export * from "./Retargeting.js";
 export * from "./AnimationClipEvents.js";
-export { AnimationClipRegistry, validateCartoonClipMap } from "./AnimationClipRegistry.js";
+export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateCartoonClipMap } from "./AnimationClipRegistry.js";
+export { createCartoonAnimationStateGraph, createLocomotionAnimationStateGraph, sampleCartoonAnimationStateGraph } from "./AnimationStateGraph.js";
+export * from "./LocomotionKit.js";
 export type {
   AnimationClipDefinition,
   AnimationClipId,

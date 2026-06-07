@@ -332,6 +332,62 @@ export function validateCartoonClipMap<
   };
 }
 
+/**
+ * Generic (non-cartoon) clip-map readiness validator for locomotion / fighter / Animation Studio
+ * clip sets. Same readiness shape as {@link validateCartoonClipMap} but with neutral diagnostic
+ * codes and a configurable required-action set (defaults to a locomotion set).
+ */
+export function validateAnimationClipMap<
+  TClipId extends string = string,
+  TEvent extends AnimationClipEvent = AnimationClipEvent,
+  TPose = unknown
+>(
+  registry: AnimationClipRegistry<TClipId, TEvent, TPose>,
+  options: CartoonClipMapReadinessOptions<TClipId>
+): CartoonClipMapReadiness<TClipId> {
+  const requiredActions = options.requiredActions ?? ["idle", "walk", "run"];
+  const missingActions: string[] = [];
+  const missingClipIds: TClipId[] = [];
+  const aliasActions: string[] = [];
+  const diagnostics: AnimationClipRegistryDiagnostic<TClipId>[] = [];
+
+  for (const action of requiredActions) {
+    const mapped = options.clipMap[action] ?? options.clipMap[options.aliases?.[action] ?? ""];
+    if (options.aliases?.[action]) aliasActions.push(action);
+    const clipIds = Array.isArray(mapped) ? mapped : mapped ? [mapped] : [];
+    if (clipIds.length === 0) {
+      missingActions.push(action);
+      diagnostics.push({
+        severity: options.segmentedFallbackDeclared ? "warning" : "error",
+        code: "ANIMATION_CLIP_ACTION_MISSING",
+        message: `Required action "${action}" is missing a clip map entry.`
+      });
+      continue;
+    }
+    for (const clipId of clipIds) {
+      if (!registry.has(clipId)) {
+        missingClipIds.push(clipId);
+        diagnostics.push({
+          severity: options.segmentedFallbackDeclared ? "warning" : "error",
+          code: "ANIMATION_CLIP_ID_MISSING",
+          message: `Required action "${action}" references missing clip "${clipId}".`,
+          clipId
+        });
+      }
+    }
+  }
+
+  return {
+    ok: options.segmentedFallbackDeclared ? missingActions.length === 0 : diagnostics.every((diagnostic) => diagnostic.severity !== "error"),
+    segmentedFallbackDeclared: options.segmentedFallbackDeclared === true,
+    requiredActions,
+    missingActions,
+    missingClipIds,
+    aliasActions,
+    diagnostics
+  };
+}
+
 function validateClipDefinition(definition: AnimationClipDefinition): void {
   if (!definition.id) {
     throw new Error("Animation clips must have a stable id.");

@@ -57,8 +57,8 @@ describe("game runtime frame-loop and package source contracts", () => {
     expect(agentApi).toContain("runtimeNode: createRuntimeNodeSpec");
     expect(agentApi).toContain("export function model");
     expect(agentApi).toContain("export function scene");
-    expect(frameLoop).toContain('typeof requestAnimationFrame === "undefined"');
-    expect(frameLoop).toContain('typeof cancelAnimationFrame === "undefined"');
+    expect(frameLoop).toContain('typeof globalThis.requestAnimationFrame === "undefined"');
+    expect(frameLoop).toContain('typeof globalThis.cancelAnimationFrame === "undefined"');
     expect(frameLoop).toContain('typeof performance === "undefined"');
     expect([agentApi, frameLoop, appHandle, runtimeNodeHandle, gameRuntime].join("\n")).not.toMatch(/\bfrom\s+["']node:|require\(["']node:/);
     expect(agentApi).not.toMatch(/\bfrom\s+["']three["']|three\/examples|new GLTFLoader/);

@@ -171,3 +171,13 @@ const diagnostics = analyzeCartoonHumanoidRetargeting(rig, {
 - Retargeting is future work for broad DCC interoperability.
 - Timeline authoring is future work; this is not a production character-animation toolchain.
 - A rig profile format and Browser evidence using at least two real externally authored skinned glTF characters are required before claiming broad character-animation readiness.
+
+## Non-Goals (explicit)
+
+The following are NOT provided as production systems and must not be claimed as parity (see `docs/project/known-limits.md`; enforced by the `animation-engine-docs-claims` gate):
+
+- Motion matching is a deterministic fixture, NOT a real engine; inertialization is NOT implemented.
+- Ragdoll is a physics-sandbox preset only — there is no production ragdoll controller, joint limits, or animation-to-physics blend.
+- Full-body IK / FABRIK / CCD are NOT implemented; only analytical two-bone IK exists.
+- Production foot-locking, spring-bone, cloth, and hair simulation are fixtures/non-goals.
+- Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is NOT a goal.

@@ -24,8 +24,23 @@ export const assets = defineAuraAssets({
       role: "cartoon-character",
       license: "CC0",
       source: "Aura3D bundled humanoid starter fixture",
-      animationClips: ["Idle", "Walking", "Wave", "Punch", "Jump"],
-      mouthReadiness: "primitive-mouth-card"
+      animationClips: [
+        "Dance",
+        "Death",
+        "Idle",
+        "Jump",
+        "No",
+        "Punch",
+        "Running",
+        "Sitting",
+        "Standing",
+        "ThumbsUp",
+        "Walking",
+        "WalkJump",
+        "Wave",
+        "Yes"
+      ],
+      mouthReadiness: "facial-morph-targets"
     }
   },
   luma: {
@@ -39,8 +54,8 @@ export const assets = defineAuraAssets({
       role: "cartoon-character",
       license: "CC0",
       source: "Aura3D bundled humanoid starter fixture",
-      animationClips: ["Idle", "Walking", "Wave", "Punch", "Jump"],
-      mouthReadiness: "primitive-mouth-card"
+      animationClips: ["Idle", "Run", "TPose", "Walk"],
+      mouthReadiness: "no-mouth-rig"
     }
   },
   moonGarden: {

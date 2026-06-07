@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  AURA_CLASH_ARENA_PROOF_RELEASE,
   AURA_CLASH_ARENA_PROOF_SCHEMA_VERSION,
   AURA_CLASH_ARENA_PROOF_VERSION,
   createAuraClashArenaProof,
@@ -189,7 +190,7 @@ describe("Aura Clash arena proof schema", () => {
     expect(proof.schemaVersion).toBe(AURA_CLASH_ARENA_PROOF_SCHEMA_VERSION);
     expect(proof.route).toBe("/playable/");
     expect(proof.app).toBe("Aura Clash Arena");
-    expect(proof.release).toBe("1.0.9");
+    expect(proof.release).toBe(AURA_CLASH_ARENA_PROOF_RELEASE);
     expect(proof.version).toBe(AURA_CLASH_ARENA_PROOF_VERSION);
     expect(proof.noPrimitiveFighters).toBe(true);
     expect(proof.deterministicReplay.stable).toBe(true);

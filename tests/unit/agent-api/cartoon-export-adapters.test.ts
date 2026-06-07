@@ -203,7 +203,15 @@ describe("cartoon video export adapters", () => {
     const mediaAdapter = createMediaRecorderFrameEncoderAdapter({ recorderSupported: true });
     const webCodecsAdapter = createWebCodecsFrameEncoderAdapter({ supported: true });
 
-    expect(mediaAdapter).toMatchObject({ kind: "media-recorder-frame-encoder", proofOnly: false, outputMode: "encoded-video" });
+    // Honest contract: without a real output factory the MediaRecorder adapter only
+    // produces a metadata summary blob, so it must report proof-only / memory-summary.
+    expect(mediaAdapter).toMatchObject({ kind: "media-recorder-frame-encoder", proofOnly: true, outputMode: "memory-summary" });
+    // With an injected real encoder it may honestly claim encoded video.
+    const realMediaAdapter = createMediaRecorderFrameEncoderAdapter({
+      recorderSupported: true,
+      outputFactory: () => new Uint8Array([1, 2, 3, 4])
+    });
+    expect(realMediaAdapter).toMatchObject({ kind: "media-recorder-frame-encoder", proofOnly: false, outputMode: "encoded-video" });
     expect(webCodecsAdapter).toMatchObject({ kind: "webcodecs-frame-encoder", proofOnly: false, outputMode: "encoded-chunks" });
     expect(webCodecsAdapter.capability).toMatchObject({
       codec: "h264",

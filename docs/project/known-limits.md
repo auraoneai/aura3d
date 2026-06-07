@@ -38,6 +38,18 @@ Version: 1.1.0 planning alignment
 - Same-model tinting, debug-like hit artifacts, repeated KO loops, weak move readability, and one/two-hit accidental rounds remain release blockers if reproduced.
 - Homepage and marketing pages should use a static approved poster/link until the live playable route passes visual and gameplay gates.
 
+## Animation Engine Non-Goals And Fixtures
+
+These animation capabilities are explicitly NOT provided as production systems. They must never be claimed as parity or production-ready (the `tools/animation-engine-docs-claims` gate enforces this):
+
+- Motion matching is NOT a real engine. `packages/animation/src/MotionMatchingFixtures.ts` is a deterministic fixture (it carries a `claimBoundary` saying it is not a full animation database, inertialization, pose application, foot locking, or Unity/Unreal middleware parity).
+- Inertialization is NOT implemented.
+- Ragdoll is NOT a production system. `packages/physics/src/PhysicsSandboxFixtures.ts` only spawns a hinge-constrained sandbox preset; there is no `RagdollController`, no joint limits, and no animation-to-physics blend.
+- Full-body IK / FABRIK / CCD are NOT implemented. Only an analytical two-bone IK solver exists (`packages/animation/src/IK.ts`).
+- Production foot-locking, spring-bone, cloth, and hair simulation are NOT provided. `packages/animation/src/SecondaryAnimationFixtures.ts` is a deterministic fixture, not production secondary animation.
+- Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is NOT claimed.
+- Skinned toon/cel materials are NOT shipped yet (cartoon shading for rigged characters is deferred); the WebGPU skinning path is evidence-bound; GPU morph targets are capped (4 targets / 64 verts, with CPU fallback); skinned GPU instancing is not provided.
+
 ## Asset Catalog Limits
 
 - `npx @aura3d/cli@latest assets search` can discover catalog candidates, but search success is not proof that an asset is production-ready.

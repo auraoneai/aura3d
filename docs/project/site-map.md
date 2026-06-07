@@ -31,6 +31,8 @@ Planning alignment: 1.1.0 release gates
 - [Release checklist](release-checklist.md)
 - [Release process](release-process.md)
 - [Aura3D 1.1 Cartoon Studio PRD](aura3d-1.1-cartoon-studio-prd.md)
+- [Aura3D Animation Engine PRD](aura3d-animation-engine-prd.md)
+- [Aura3D Animation Engine progress](aura3d-animation-engine-progress.md)
 - [Aura3D 1.1.0 release gates](aura3d-110-release-gates.md)
 - [Aura3D 1.0.6 superseded release gates](aura3d-106-release-gates.md)
 - [Aura3D 1.0.5 release gates](aura3d-105-release-gates.md)

@@ -52,6 +52,34 @@ export function sampleCartoonAnimationStateGraph(
   });
 }
 
+export interface LocomotionAnimationStateGraphOptions {
+  readonly idleState?: string;
+}
+
+/**
+ * Reusable locomotion state graph (idle <-> walk <-> run) for character-controller and
+ * Animation Studio templates. Parameters: `isMoving` (walk), `isRunning` (run). Mirrors
+ * {@link createCartoonAnimationStateGraph} so both share the deterministic state-machine core.
+ */
+export function createLocomotionAnimationStateGraph(options: LocomotionAnimationStateGraphOptions = {}): AnimationStateMachine {
+  const idle = options.idleState ?? "idle";
+  const states: readonly AnimationState[] = [
+    {
+      name: idle,
+      transitions: [transition("run", "isRunning", 60), transition("walk", "isMoving", 40)]
+    },
+    {
+      name: "walk",
+      transitions: [transition("run", "isRunning", 60), transition(idle, "isMoving", 0, undefined, false)]
+    },
+    {
+      name: "run",
+      transitions: [transition("walk", "isRunning", 0, undefined, false), transition(idle, "isMoving", 0, undefined, false)]
+    }
+  ];
+  return new AnimationStateMachine(states, idle);
+}
+
 function transition(
   to: string,
   parameter: string,

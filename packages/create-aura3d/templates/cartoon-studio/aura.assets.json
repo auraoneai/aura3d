@@ -22,29 +22,27 @@
         "maxDimension": 1.8,
         "grounded": true
       },
-      "materials": ["luma-body", "luma-face", "luma-accent"],
+      "materials": ["Vanguard_VisorMat", "VanguardBodyMat"],
       "materialMetadata": [
-        { "name": "luma-body", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
-        { "name": "luma-face", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
-        { "name": "luma-accent", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
+        { "name": "Vanguard_VisorMat", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
+        { "name": "VanguardBodyMat", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
       ],
-      "animations": ["Idle", "Walking", "Wave", "Punch", "Jump"],
+      "animations": ["Idle", "Run", "TPose", "Walk"],
       "animationMetadata": {
-        "clipCount": 5,
+        "clipCount": 4,
         "clips": [
-          { "index": 0, "name": "Idle", "channelCount": 6, "samplerCount": 6, "targetPaths": ["rotation"], "targetNodes": ["Body", "Head", "UpperArm.L", "UpperArm.R"] },
-          { "index": 1, "name": "Walking", "channelCount": 8, "samplerCount": 8, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
-          { "index": 2, "name": "Wave", "channelCount": 5, "samplerCount": 5, "targetPaths": ["rotation"], "targetNodes": ["Head", "UpperArm.R", "LowerArm.R"] },
-          { "index": 3, "name": "Punch", "channelCount": 5, "samplerCount": 5, "targetPaths": ["rotation"], "targetNodes": ["Body", "UpperArm.L", "LowerArm.L"] },
-          { "index": 4, "name": "Jump", "channelCount": 7, "samplerCount": 7, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] }
+          { "index": 0, "name": "Idle", "channelCount": 156, "samplerCount": 156, "targetPaths": ["translation", "rotation", "scale"], "targetNodes": ["mixamorig:Hips", "mixamorig:Spine", "mixamorig:Head", "mixamorig:LeftArm", "mixamorig:RightArm"] },
+          { "index": 1, "name": "Run", "channelCount": 156, "samplerCount": 156, "targetPaths": ["translation", "rotation", "scale"], "targetNodes": ["mixamorig:Hips", "mixamorig:LeftUpLeg", "mixamorig:RightUpLeg", "mixamorig:Spine"] },
+          { "index": 2, "name": "TPose", "channelCount": 156, "samplerCount": 156, "targetPaths": ["translation", "rotation", "scale"], "targetNodes": ["mixamorig:Hips", "mixamorig:Spine", "mixamorig:LeftArm", "mixamorig:RightArm"] },
+          { "index": 3, "name": "Walk", "channelCount": 156, "samplerCount": 156, "targetPaths": ["translation", "rotation", "scale"], "targetNodes": ["mixamorig:Hips", "mixamorig:LeftUpLeg", "mixamorig:RightUpLeg", "mixamorig:Spine"] }
         ]
       },
-      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 10 },
-      "skeleton": { "jointCount": 10, "skinnedMeshCount": 1 },
+      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 49 },
+      "skeleton": { "jointCount": 49, "skinnedMeshCount": 2 },
       "morphTargets": { "targetCount": 0, "targetNames": [] },
       "textures": [],
       "dependencies": [],
-      "nodeNames": ["Luma", "Body", "Head", "mouth card", "UpperArm.L", "UpperArm.R", "UpperLeg.L", "UpperLeg.R"],
+      "nodeNames": ["Character", "vanguard_Mesh", "vanguard_visor", "mixamorig:Hips", "mixamorig:Spine", "mixamorig:Spine1", "mixamorig:Spine2", "mixamorig:Neck", "mixamorig:Head", "mixamorig:HeadTop_End", "mixamorig:LeftShoulder", "mixamorig:LeftArm", "mixamorig:LeftForeArm", "mixamorig:LeftHand", "mixamorig:LeftHandThumb1", "mixamorig:LeftHandThumb2", "mixamorig:LeftHandThumb3", "mixamorig:LeftHandThumb4", "mixamorig:LeftHandIndex1", "mixamorig:LeftHandIndex2", "mixamorig:LeftHandIndex3", "mixamorig:LeftHandIndex4", "mixamorig:LeftHandMiddle1", "mixamorig:LeftHandMiddle2", "mixamorig:LeftHandMiddle3", "mixamorig:LeftHandMiddle4", "mixamorig:LeftHandRing1", "mixamorig:LeftHandRing2", "mixamorig:LeftHandRing3", "mixamorig:LeftHandRing4", "mixamorig:LeftHandPinky1", "mixamorig:LeftHandPinky2", "mixamorig:LeftHandPinky3", "mixamorig:LeftHandPinky4", "mixamorig:RightShoulder", "mixamorig:RightArm", "mixamorig:RightForeArm", "mixamorig:RightHand", "mixamorig:RightHandThumb1", "mixamorig:RightHandThumb2", "mixamorig:RightHandThumb3", "mixamorig:RightHandThumb4", "mixamorig:RightHandIndex1", "mixamorig:RightHandIndex2", "mixamorig:RightHandIndex3", "mixamorig:RightHandIndex4", "mixamorig:RightHandMiddle1", "mixamorig:RightHandMiddle2", "mixamorig:RightHandMiddle3", "mixamorig:RightHandMiddle4", "mixamorig:RightHandRing1", "mixamorig:RightHandRing2", "mixamorig:RightHandRing3", "mixamorig:RightHandRing4", "mixamorig:RightHandPinky1", "mixamorig:RightHandPinky2", "mixamorig:RightHandPinky3", "mixamorig:RightHandPinky4", "mixamorig:LeftUpLeg", "mixamorig:LeftLeg", "mixamorig:LeftFoot", "mixamorig:LeftToeBase", "mixamorig:LeftToe_End", "mixamorig:RightUpLeg", "mixamorig:RightLeg", "mixamorig:RightFoot", "mixamorig:RightToeBase", "mixamorig:RightToe_End"],
       "provenance": {
         "license": "CC0-1.0",
         "author": "Aura3D",
@@ -52,7 +50,7 @@
         "sourcePath": "public/aura-assets/luma.humanoid-fixture.glb",
         "sourceUrl": "https://aura3d.auraone.ai/aura-assets/luma.humanoid-fixture.glb",
         "attribution": "Bundled Aura3D starter rig for local cartoon-studio validation.",
-        "evidence": ["cartoon-character", "primitive mouth card", "rigged humanoid robot"]
+        "evidence": ["cartoon-character", "Mixamo Vanguard humanoid mesh", "rigged mixamorig skeleton"]
       },
       "thumbnailUrl": "/aura-assets/luma.thumb.svg",
       "warnings": []
@@ -81,26 +79,32 @@
         { "name": "Main", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] },
         { "name": "Black", "visible": true, "readable": true, "opacity": 1, "alphaMode": "OPAQUE", "reasons": [] }
       ],
-      "animations": ["Dance", "Death", "Idle", "Jump", "Punch", "Running", "Walking", "Wave"],
+      "animations": ["Dance", "Death", "Idle", "Jump", "No", "Punch", "Running", "Sitting", "Standing", "ThumbsUp", "Walking", "WalkJump", "Wave", "Yes"],
       "animationMetadata": {
-        "clipCount": 8,
+        "clipCount": 14,
         "clips": [
           { "index": 0, "name": "Dance", "channelCount": 12, "samplerCount": 12, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body", "UpperArm.L", "UpperArm.R"] },
           { "index": 1, "name": "Death", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body", "UpperArm.L", "UpperArm.R"] },
           { "index": 2, "name": "Idle", "channelCount": 7, "samplerCount": 7, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Body"] },
-          { "index": 3, "name": "Jump", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
-          { "index": 4, "name": "Punch", "channelCount": 8, "samplerCount": 8, "targetPaths": ["rotation"], "targetNodes": ["Body", "UpperArm.L", "LowerArm.L"] },
-          { "index": 5, "name": "Running", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
-          { "index": 6, "name": "Walking", "channelCount": 10, "samplerCount": 10, "targetPaths": ["translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
-          { "index": 7, "name": "Wave", "channelCount": 8, "samplerCount": 8, "targetPaths": ["rotation"], "targetNodes": ["Head", "UpperArm.R", "LowerArm.R"] }
+          { "index": 3, "name": "Jump", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 4, "name": "No", "channelCount": 7, "samplerCount": 7, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Neck"] },
+          { "index": 5, "name": "Punch", "channelCount": 15, "samplerCount": 15, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperArm.L", "LowerArm.L"] },
+          { "index": 6, "name": "Running", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 7, "name": "Sitting", "channelCount": 10, "samplerCount": 10, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 8, "name": "Standing", "channelCount": 10, "samplerCount": 10, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 9, "name": "ThumbsUp", "channelCount": 15, "samplerCount": 15, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperArm.R", "LowerArm.R"] },
+          { "index": 10, "name": "Walking", "channelCount": 20, "samplerCount": 20, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 11, "name": "WalkJump", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Body", "UpperLeg.L", "UpperLeg.R"] },
+          { "index": 12, "name": "Wave", "channelCount": 18, "samplerCount": 18, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "UpperArm.R", "LowerArm.R"] },
+          { "index": 13, "name": "Yes", "channelCount": 7, "samplerCount": 7, "targetPaths": ["weights", "translation", "rotation"], "targetNodes": ["Head", "Neck"] }
         ]
       },
-      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 10 },
-      "skeleton": { "jointCount": 10, "skinnedMeshCount": 1 },
-      "morphTargets": { "targetCount": 1, "targetNames": ["mouthSmile"] },
+      "humanoid": { "status": "candidate", "humanoid": true, "boneCount": 43 },
+      "skeleton": { "jointCount": 43, "skinnedMeshCount": 2 },
+      "morphTargets": { "targetCount": 3, "targetNames": ["Angry", "Surprised", "Sad"] },
       "textures": [],
       "dependencies": [],
-      "nodeNames": ["Miko", "Head", "Body", "mouth card", "UpperArm.L", "UpperArm.R", "UpperLeg.L", "UpperLeg.R"],
+      "nodeNames": ["RootNode", "RobotArmature", "Bone", "Foot.L", "Foot.L_end", "Body", "Torso", "Hips", "Abdomen", "Neck", "Head", "Head_end", "Shoulder.L", "UpperArm.L", "Arm.L", "LowerArm.L", "Palm2.L", "Middle1.L", "Middle2.L", "Middle2.L_end", "Thumb.L", "Thumb2.L", "Thumb2.L_end", "Palm1.L", "Index.L", "Index2.L", "Index2.L_end", "Palm3.L", "Ring1.L", "Ring2.L", "Ring2.L_end", "Shoulder.R", "UpperArm.R", "Arm.R", "LowerArm.R", "Palm2.R", "Middle1.R", "Middle2.R", "Middle2.R_end", "Thumb.R", "Thumb2.R", "Thumb2.R_end", "Palm1.R", "Index.R", "Index2.R", "Index2.R_end", "Palm3.R", "Ring1.R", "Ring2.R", "Ring2.R_end", "UpperLeg.L", "Leg.L", "LowerLeg.L", "LowerLeg.L_end", "UpperLeg.R", "Leg.R", "LowerLeg.R", "LowerLeg.R_end", "PoleTarget.L", "PoleTarget.L_end", "Foot.R", "Foot.R_end", "PoleTarget.R", "PoleTarget.R_end", "Hand.R", "Hand.L"],
       "provenance": {
         "license": "CC0-1.0",
         "author": "Aura3D",
@@ -108,7 +112,7 @@
         "sourcePath": "public/aura-assets/miko.047f5e5f.glb",
         "sourceUrl": "https://aura3d.auraone.ai/aura-assets/miko.047f5e5f.glb",
         "attribution": "Bundled Aura3D starter rig for local cartoon-studio validation.",
-        "evidence": ["cartoon-character", "blendshape mouth", "rigged humanoid robot"]
+        "evidence": ["cartoon-character", "facial morph targets (Angry/Surprised/Sad)", "rigged humanoid robot"]
       },
       "thumbnailUrl": "/aura-assets/miko.thumb.svg",
       "warnings": []
@@ -140,7 +144,7 @@
       "animations": [],
       "textures": [],
       "dependencies": [],
-      "nodeNames": ["Moon Garden starter set anchor", "moon garden floor anchor", "moon garden glow stone anchor", "moon garden skyline anchor", "walkable garden set"],
+      "nodeNames": ["moon garden floor anchor", "moon garden glow stone anchor", "moon garden skyline anchor"],
       "provenance": {
         "license": "MIT",
         "author": "Aura3D",

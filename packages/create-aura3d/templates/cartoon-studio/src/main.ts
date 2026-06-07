@@ -7,6 +7,7 @@ import {
   effects,
   game,
   group,
+  groundedPlacement,
   labels,
   lights,
   material,
@@ -144,6 +145,21 @@ document.body.dataset.cartoonStoryBibleProps = String(storyBible.props.length);
 document.body.dataset.cartoonStudioPanels = cartoonStudioSupport.panels.join(",");
 if (!captureMode) installCartoonStudioPanel(document.body);
 
+// Ground the cartoon characters on the moon-garden path and normalize their
+// wildly different native scales (miko bounds ~0.066m tall, luma ~1.8m) to a
+// single on-screen height so neither floats nor dwarfs the other. Bounds come
+// from the generated typed assets (`boundsMetadata` in aura.assets.json):
+//   miko -> min/max y [-0.013, 0.013], center origin
+//   luma -> min/max y [0, 1.8], foot origin
+// The path box sits at y=0.05 with a 0.04-thick top, so its walkable surface is
+// at y = 0.05 + 0.02 = 0.07; both characters rest their lowest point there.
+const PATH_FLOOR_Y = 0.07;
+const CHARACTER_TARGET_HEIGHT = 1.5;
+const mikoBounds = { min: [-0.033, -0.013, -0.009], max: [0.033, 0.013, 0.008] } as const;
+const lumaBounds = { min: [-0.55, 0, -0.4], max: [0.55, 1.8, 0.4] } as const;
+const mikoPlacement = groundedPlacement(mikoBounds, { targetHeight: CHARACTER_TARGET_HEIGHT, x: -0.8, z: 0, floorY: PATH_FLOOR_Y });
+const lumaPlacement = groundedPlacement(lumaBounds, { targetHeight: CHARACTER_TARGET_HEIGHT, x: 0.8, z: 0, floorY: PATH_FLOOR_Y });
+
 const app = createAuraApp("#app", {
   scene: scene()
     .background("#081b2a")
@@ -155,18 +171,18 @@ const app = createAuraApp("#app", {
     )
     .add(
       model(assets.miko, { name: "Miko typed cartoon character" })
-        .position(-0.8, 0.75, 0)
-        .scale(0.72)
+        .position(mikoPlacement.position[0], mikoPlacement.position[1], mikoPlacement.position[2])
+        .scale(mikoPlacement.scale)
         .runtime(game.runtimeNode("miko", { tags: ["character", "miko", "typed-asset"] }))
     )
-    .add(createMouthCard("miko:mouth", "Miko", [-0.8, 0.8, 0.32], "#f8fff2"))
+    .add(createMouthCard("miko:mouth", "Miko", [mikoPlacement.position[0], mikoPlacement.position[1] + CHARACTER_TARGET_HEIGHT * 0.92, 0.32], "#f8fff2"))
     .add(
       model(assets.luma, { name: "Luma typed cartoon character" })
-        .position(0.8, 0.72, 0)
-        .scale(0.68)
+        .position(lumaPlacement.position[0], lumaPlacement.position[1], lumaPlacement.position[2])
+        .scale(lumaPlacement.scale)
         .runtime(game.runtimeNode("luma", { tags: ["character", "luma", "typed-asset"] }))
     )
-    .add(createMouthCard("luma:mouth", "Luma", [0.8, 0.77, 0.32], "#40ffbf"))
+    .add(createMouthCard("luma:mouth", "Luma", [lumaPlacement.position[0], lumaPlacement.position[1] + CHARACTER_TARGET_HEIGHT * 0.92, 0.32], "#40ffbf"))
     .add(
       primitives
         .box({ name: "moon garden path", material: material.pbr({ color: "#182d3f", roughness: 0.78 }) })

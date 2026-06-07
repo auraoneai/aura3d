@@ -58,7 +58,10 @@ async function writePackage(mode: CartoonEpisodePackageMode, options: { only?: R
     }
   }
 
-  if (!options.only && (mode === "render" || mode === "package")) await renderEpisodeMedia(pkg);
+  if (!options.only && (mode === "render" || mode === "package")) {
+    await renderEpisodeMedia(pkg);
+    await verifyEncodedOutputs(pkg);
+  }
   if (!options.only && mode === "package") await captureRouteThumbnail(pkg);
   if (!options.only) await writeChecksumManifest(pkg);
   console.log(JSON.stringify({
@@ -99,6 +102,50 @@ async function writeChecksumManifest(pkg: CartoonEpisodePackageBuild) {
   manifest.artifacts = artifactEntries;
   manifest.requiredFiles = pkg.requiredFiles;
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+}
+
+// After encoding, rewrite the encoded-video claims in the package JSON so they are
+// VERIFIED facts (true only when episode.webm actually exists at a real size) instead
+// of the hardcoded `true` the artifact builder emits before encoding runs.
+async function verifyEncodedOutputs(pkg: CartoonEpisodePackageBuild) {
+  const webmPath = path.join(pkg.packageDirectory, "episode.webm");
+  const webmExists = existsSync(webmPath);
+  const webmBytes = webmExists ? (await stat(webmPath)).size : 0;
+  const realWebm = webmExists && webmBytes > 32_768;
+
+  await patchPackageJson(path.join(pkg.packageDirectory, "render-manifest.json"), (m) => {
+    m.hasEncodedVideo = realWebm;
+    if (m.encodedVideo && typeof m.encodedVideo === "object") {
+      (m.encodedVideo as Record<string, unknown>).verified = realWebm;
+      (m.encodedVideo as Record<string, unknown>).byteLength = webmBytes;
+    }
+  });
+  await patchPackageJson(path.join(pkg.packageDirectory, "visual-acceptance.json"), (m) => {
+    m.encodedVideoPresent = realWebm;
+    const checks = m.checks;
+    if (Array.isArray(checks)) {
+      const check = checks.find((c) => (c as Record<string, unknown>)?.id === "real-encoded-video") as Record<string, unknown> | undefined;
+      if (check) {
+        check.passed = realWebm;
+        check.evidence = { ...(check.evidence as Record<string, unknown>), byteLength: webmBytes, verified: realWebm };
+      }
+    }
+  });
+  await patchPackageJson(path.join(pkg.packageDirectory, "metadata.json"), (m) => {
+    const boundary = m.outputBoundary as Record<string, unknown> | undefined;
+    if (boundary) boundary.webmPresent = realWebm;
+  });
+  await patchPackageJson(path.join(pkg.packageDirectory, "prompt-animation-evidence.json"), (m) => {
+    const renderOutput = m.renderOutput as Record<string, unknown> | undefined;
+    if (renderOutput) renderOutput.encodedVideoPresent = realWebm;
+  });
+}
+
+async function patchPackageJson(filePath: string, patch: (data: Record<string, unknown>) => void) {
+  if (!existsSync(filePath)) return;
+  const data = JSON.parse(await readFile(filePath, "utf8")) as Record<string, unknown>;
+  patch(data);
+  await writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
 async function renderEpisodeMedia(pkg: CartoonEpisodePackageBuild) {

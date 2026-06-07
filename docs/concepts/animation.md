@@ -30,3 +30,5 @@ AI scene prompts can request motion cues, camera moves, and timeline beats. Thos
 ## Current Limits
 
 Animation support is runtime-focused. Broad retargeting, DCC authoring, production character pipelines, and every imported rig convention need dedicated fixtures, browser evidence, and documentation before being treated as supported.
+
+Explicit non-goals (NOT provided as production systems; see `docs/project/known-limits.md`): motion matching is a deterministic fixture, not a real engine; inertialization is not implemented; ragdoll is a physics-sandbox preset with no controller, joint limits, or animation-to-physics blend; full-body IK / FABRIK / CCD are not implemented (only two-bone IK); production foot-locking, spring-bone, cloth, and hair simulation are fixtures; Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is not a goal.

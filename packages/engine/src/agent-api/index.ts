@@ -75,6 +75,7 @@ export * from "./PublishingPipeline.js";
 export * from "./CloudRenderAdapter.js";
 export * from "./BatchEpisodeRenderer.js";
 export * from "./CartoonAssetManifest.js";
+export * from "./SceneGroundingUtils.js";
 export * from "./AssetLibraryBrowser.js";
 export * from "./DialogueAlignment.js";
 export * from "./PerformancePoseEditor.js";
@@ -481,6 +482,7 @@ export * from "./CartoonDirector.js";
 export * from "./CartoonPerformance.js";
 export * from "./CartoonRenderQueue.js";
 export * from "./CartoonAssetManifest.js";
+export * from "./SceneGroundingUtils.js";
 export * from "./AssetLibraryBrowser.js";
 
 export type AuraVec3 = readonly [number, number, number];

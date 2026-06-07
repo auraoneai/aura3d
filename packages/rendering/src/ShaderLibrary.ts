@@ -1,6 +1,7 @@
 import { ShaderPreprocessor, type ShaderPreprocessOptions } from "./ShaderPreprocessor";
 import { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
+import { registerCartoonToonShader } from "./cartoon/CartoonToonMaterial.js";
 
 export interface ShaderSourcePair {
   readonly name: string;
@@ -2734,5 +2735,9 @@ void main() {
 }
 `
   });
+  // Register the cartoon/cel toon program (banded N·L ramp + Fresnel rim).
+  // This is a real GLSL program compiled through the same library path as the
+  // built-in shaders; CartoonToonMaterial targets it via CARTOON_TOON_SHADER_NAME.
+  registerCartoonToonShader(library);
   return library;
 }
