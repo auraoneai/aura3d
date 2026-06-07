@@ -41,6 +41,7 @@ import {
   quantizeToonBand
 } from "@aura3d/rendering";
 import { createFfmpegFrameEncoderAdapter } from "@aura3d/engine";
+import { buildDialogueAudioTrack, type DialogueAudioResult } from "./build-dialogue-audio.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_ROOT = resolve(__dirname, "..");
@@ -171,8 +172,22 @@ function resolveFfBinary(name: "ffmpeg" | "ffprobe"): string {
 
 interface AudioMuxResult {
   readonly muxed: boolean;
-  readonly audioKind: "placeholder-ambient";
-  readonly dialogueAudio: false;
+  readonly audioKind: "placeholder-ambient" | "macos-say-dialogue";
+  readonly dialogueAudio: boolean;
+  readonly voiceSource?: "macos-say-tts";
+  /** Per-line voice + timing table (only for real dialogue). */
+  readonly dialogueLines?: {
+    readonly lineId: string;
+    readonly speakerId: string;
+    readonly voice: string;
+    readonly text: string;
+    readonly startTime: number;
+    readonly endTime: number;
+    readonly spokenDuration: number;
+  }[];
+  readonly voices?: Record<string, string>;
+  /** Total muxed audio/episode length in seconds (dialogue extends the video). */
+  readonly muxedDurationSeconds?: number;
   readonly codec?: string;
   readonly channels?: number;
   readonly sampleRate?: number;
@@ -225,7 +240,77 @@ function muxPlaceholderAmbientAudio(videoPath: string, durationSeconds: number):
     muxed: true,
     audioKind: "placeholder-ambient",
     dialogueAudio: false,
+    muxedDurationSeconds: durationSeconds,
     note: "Soft synthesized ambient bed muxed via ffmpeg to prove the audio-mux path. NOT dialogue; real voice needs a TTS step."
+  };
+}
+
+/**
+ * Mux the REAL macOS-`say` synthesized dialogue track (episode-length, each line at
+ * its dialogue startTime over a faint ambient bed) into the silent webm.
+ *
+ * The captured video is only a short proof clip, but the dialogue spans the full
+ * episode. To keep EVERY spoken line audible at its true timecode, we extend the
+ * video to the dialogue/episode length by holding the last frame (`tpad`), then mux
+ * the dialogue track as libopus. The result is an episode-length webm whose audio
+ * stream carries the genuinely synthesized voices.
+ *
+ * HONESTY: `say` is real on-device TTS, but a robotic system voice — placeholder-grade
+ * VO, not studio voice acting. Labeled `voiceSource: "macos-say-tts"`.
+ */
+function muxDialogueAudio(videoPath: string, dialogue: DialogueAudioResult): AudioMuxResult {
+  if (!dialogue.available || !dialogue.trackPath || !existsSync(dialogue.trackPath)) {
+    return {
+      muxed: false,
+      audioKind: "macos-say-dialogue",
+      dialogueAudio: false,
+      note: dialogue.note
+    };
+  }
+  const ffmpeg = resolveFfBinary("ffmpeg");
+  const tmpOut = `${videoPath}.dialogue.webm`;
+  const target = dialogue.durationSeconds;
+  const args = [
+    "-y",
+    "-i", videoPath,
+    "-i", dialogue.trackPath,
+    // Hold the final captured frame out to the full episode length so the dialogue
+    // track (which spans the whole episode) is not clipped by the short proof clip.
+    "-filter_complex", `[0:v]tpad=stop_mode=clone:stop_duration=${target.toFixed(3)}[v]`,
+    "-map", "[v]",
+    "-map", "1:a:0",
+    "-c:v", "libvpx-vp9",
+    "-b:v", "0",
+    "-crf", "34",
+    "-c:a", "libopus",
+    "-b:a", "96k",
+    "-t", target.toFixed(3),
+    tmpOut
+  ];
+  const run = spawnSync(ffmpeg, args, { encoding: "utf8" });
+  if (run.status !== 0 || !existsSync(tmpOut)) {
+    return {
+      muxed: false,
+      audioKind: "macos-say-dialogue",
+      dialogueAudio: false,
+      voiceSource: dialogue.voiceSource,
+      voices: dialogue.voices,
+      dialogueLines: dialogue.lines,
+      note: `ffmpeg dialogue mux failed (status=${run.status}). stderr: ${(run.stderr ?? "").slice(-500)}`
+    };
+  }
+  rmSync(videoPath, { force: true });
+  renameSync(tmpOut, videoPath);
+  // The standalone dialogue WAV is kept alongside the webm as an audio stem.
+  return {
+    muxed: true,
+    audioKind: "macos-say-dialogue",
+    dialogueAudio: true,
+    voiceSource: dialogue.voiceSource,
+    voices: dialogue.voices,
+    dialogueLines: dialogue.lines,
+    muxedDurationSeconds: target,
+    note: dialogue.note
   };
 }
 
@@ -694,10 +779,28 @@ async function main(): Promise<void> {
   const video = finalized;
   writeFileSync(VIDEO_PATH, video);
 
-  // PLACEHOLDER AMBIENT AUDIO MUX (HONEST: not dialogue — no TTS in this template).
-  // Mux a soft, non-flashing ambient bed into the silent webm so the audio-mux path
-  // is proven end-to-end, then ffprobe the result to confirm a real audio stream.
-  const audioMux = muxPlaceholderAmbientAudio(VIDEO_PATH, durationSeconds);
+  // REAL DIALOGUE AUDIO (macOS `say` TTS) with graceful degrade to placeholder ambient.
+  // 1. Try to synthesize the episode's dialogue lines with `say` (distinct voice per
+  //    character) and assemble an episode-length track (each line at its startTime over
+  //    a faint ambient bed). 2. If `say` is available, mux that real dialogue (extending
+  //    the video to the episode length so all lines survive). 3. Otherwise fall back to
+  //    the soft placeholder ambient bed. Then ffprobe to confirm a real audio stream.
+  const dialogue = buildDialogueAudioTrack(OUTPUT_DIR);
+  let audioMux: AudioMuxResult;
+  if (dialogue.available) {
+    console.log(
+      `\ndialogue audio: synthesized ${dialogue.lines.length} lines via macOS \`say\` ` +
+        `(voices: ${Object.entries(dialogue.voices).map(([k, v]) => `${k}=${v}`).join(", ")})`
+    );
+    audioMux = muxDialogueAudio(VIDEO_PATH, dialogue);
+    if (!audioMux.muxed) {
+      console.warn(`dialogue mux failed, falling back to placeholder ambient. ${audioMux.note}`);
+      audioMux = muxPlaceholderAmbientAudio(VIDEO_PATH, durationSeconds);
+    }
+  } else {
+    console.log(`\ndialogue audio: macOS \`say\` unavailable — falling back to placeholder ambient.`);
+    audioMux = muxPlaceholderAmbientAudio(VIDEO_PATH, durationSeconds);
+  }
   const audioProbe = audioMux.muxed ? probeAudioStream(VIDEO_PATH) : { raw: "" };
   const audio = {
     ...audioMux,
@@ -723,7 +826,9 @@ async function main(): Promise<void> {
     captureTimes: CAPTURE_TIMES,
     toon: toonInfo,
     ready: readyProof,
-    // Phase 2 — placeholder ambient audio (NOT dialogue): mux + ffprobe confirmation.
+    // Phase 2 — REAL dialogue audio via macOS `say` TTS (distinct voice per character,
+    // each line at its dialogue startTime over a faint ambient bed), muxed as libopus
+    // with ffprobe confirmation. Gracefully degrades to placeholder ambient off-mac.
     audio,
     // Phase 2 — staged performance: miko crosses to the broom + sweep stand-in clip,
     // proven in pixels (open-beat vs teamwork-beat frame diff) AND world coords.
@@ -744,7 +849,21 @@ async function main(): Promise<void> {
   console.log(`frames dir: ${FRAMES_DIR}`);
   console.log(`fidelity PNGs: ${FIDELITY_FRAME_IDS.map((id) => `${id}.png`).join(", ")}`);
   console.log(`video: ${VIDEO_PATH} (${muxedBytes} bytes${audioMux.muxed ? `, audio: ${audioProbe.codec}` : ", NO audio"})`);
-  console.log(`audio: kind=${audio.audioKind} dialogueAudio=${audio.dialogueAudio} (placeholder ambient, not dialogue)`);
+  console.log(
+    `audio: kind=${audio.audioKind} dialogueAudio=${audio.dialogueAudio}` +
+      (audio.dialogueAudio
+        ? ` voiceSource=${audio.voiceSource} lines=${audio.dialogueLines?.length ?? 0} (REAL macOS-say TTS — robotic, placeholder-grade VO)`
+        : " (placeholder ambient, not dialogue)")
+  );
+  if (audio.dialogueAudio && audio.dialogueLines) {
+    console.log("--- per-line voice + timing (spoken dialogue) ---");
+    for (const l of audio.dialogueLines) {
+      console.log(
+        `  ${l.lineId}: voice=${l.voice} speaker=${l.speakerId} start=${l.startTime}s ` +
+          `spoken=${l.spokenDuration.toFixed(2)}s "${l.text.slice(0, 40)}"`
+      );
+    }
+  }
   console.log(`toon: bands=${toonInfo.bands} outline=${toonInfo.outline} colorGrade=${toonInfo.colorGrade}`);
 }
 

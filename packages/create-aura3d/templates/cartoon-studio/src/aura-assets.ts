@@ -16,49 +16,34 @@ export const assets = defineAuraAssets({
   miko: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/miko.047f5e5f.glb",
-    bounds: [0.066, 0.026, 0.017],
-    hash: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    url: "/aura-assets/miko.authored.glb",
+    bounds: [0.66, 1.47, 0.43],
+    hash: "sha256-15d37c49f79d3f0e7d70f199e058935605802dcb61434cc458684e512486f705",
     metadata: {
       contractId: assetContractId,
       role: "cartoon-character",
       license: "CC0",
-      source: "Aura3D bundled humanoid starter fixture",
-      animationClips: [
-        "Dance",
-        "Death",
-        "Idle",
-        "Jump",
-        "No",
-        "Punch",
-        "Running",
-        "Sitting",
-        "Standing",
-        "ThumbsUp",
-        "Walking",
-        "WalkJump",
-        "Wave",
-        "Yes"
-      ],
+      source: "Aura3D-authored procedural cartoon robot (scripts/build-characters.ts)",
+      animationClips: ["Idle", "Wave", "Walk"],
+      // Authored GLB ships ONE real face blendshape, `mouthOpen`, driven by viseme
+      // mouthOpenness for real geometric lip-sync (no primitive mouth-card).
       mouthReadiness: "facial-morph-targets"
     }
   },
   luma: {
     type: "model",
     format: "glb",
-    url: "/aura-assets/luma.humanoid-fixture.glb",
-    bounds: [1.1, 1.8, 0.8],
-    hash: "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
+    url: "/aura-assets/luma.authored.glb",
+    bounds: [0.62, 1.94, 0.34],
+    hash: "sha256-ccfcb4accdf58127337bd0b8f9ae10a160b6365b3a92f85b777476c524c92989",
     metadata: {
       contractId: assetContractId,
       role: "cartoon-character",
       license: "CC0",
-      source: "Aura3D bundled humanoid starter fixture",
-      animationClips: ["Idle", "Run", "TPose", "Walk"],
-      // The luma GLB has no facial blendshapes, so the route drives a primitive
-      // mouth-card fallback (PRD Path A) for its lip-sync. This is the honest,
-      // accurate readiness — not "no-mouth-rig".
-      mouthReadiness: "primitive-mouth-card"
+      source: "Aura3D-authored procedural cartoon robot (scripts/build-characters.ts)",
+      animationClips: ["Idle", "Wave", "Walk"],
+      // Authored GLB ships the same real `mouthOpen` face blendshape as miko.
+      mouthReadiness: "facial-morph-targets"
     }
   },
   moonGarden: {
