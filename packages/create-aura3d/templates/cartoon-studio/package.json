@@ -10,6 +10,7 @@
     "episode:render": "tsx scripts/episode.ts render",
     "episode:package": "tsx scripts/episode.ts package",
     "episode:review": "tsx scripts/episode.ts review",
+    "episode:render-3d": "tsx scripts/render-live.ts",
     "episode:verify": "npm run episode:render && npm run episode:package && npm run episode:review && tsx scripts/episode.ts verify",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
