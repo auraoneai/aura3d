@@ -8,9 +8,10 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/sample-episode-visual.spec.ts tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts --workers=1",
+    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/sample-episode-visual.spec.ts tests/concept-2-5d.spec.ts tests/puppet-2d.spec.ts tests/image-puppet.spec.ts --workers=1",
     "record:2.5d": "playwright test tests/concept-2-5d-animation.spec.ts --workers=1",
-    "record:puppet": "playwright test tests/puppet-2d-animation.spec.ts --workers=1"
+    "record:puppet": "playwright test tests/puppet-2d-animation.spec.ts --workers=1",
+    "record:image-puppet": "playwright test tests/image-puppet-animation.spec.ts --workers=1"
   },
   "dependencies": {
     "@aura3d/engine": "1.0.10"

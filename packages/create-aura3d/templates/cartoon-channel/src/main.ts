@@ -47,6 +47,7 @@ import {
   visemeTrack
 } from "./render-plan";
 import { installConceptEpisode2_5D } from "./concept-episode-2-5d";
+import { installImagePuppetEpisode } from "./image-puppet-episode";
 import { installPuppetEpisode2D } from "./puppet-episode-2d";
 import { installSampleEpisodeVisual } from "./sample-episode-visual";
 
@@ -131,6 +132,11 @@ if (cartoonView === "concept-2-5d") {
   });
 } else if (cartoonView === "puppet-2d") {
   installPuppetEpisode2D({
+    sampleAt: sampleCartoonRouteAt,
+    duration: episode.episodePlan.runtime.duration
+  });
+} else if (cartoonView === "image-puppet") {
+  installImagePuppetEpisode({
     sampleAt: sampleCartoonRouteAt,
     duration: episode.episodePlan.runtime.duration
   });

@@ -30,6 +30,13 @@ It uses:
   eyes, broom sweep, rake/push arms, wheelbarrow roll, moon pulse, foreground
   glow, caption timing, and timeline proof. The source PNG supplies the art
   direction/backdrop; the moving actors are explicit 2D puppet overlays.
+- An image-derived puppet route at `/?view=image-puppet&sampleTime=24`.
+  This is the route that actually uses the generated moon-garden PNG as the
+  source for moving pixels. It duplicates the same flattened image into masked
+  cutout layers for the blue robot, yellow robot, tools, cart, moon, and
+  foreground, then animates those cutouts. The result is not as clean as true
+  production layers because the PNG has no separated background plate, masks, or
+  depth map, but the moving pieces are sourced from the generated image itself.
 
 Replace primitive characters with typed GLB assets by running:
 
@@ -85,6 +92,12 @@ open:
 /?view=puppet-2d&sampleTime=24
 ```
 
+To review actual generated-image pixels moving as approximate cutouts, open:
+
+```text
+/?view=image-puppet&sampleTime=24
+```
+
 Record the moving proof with:
 
 ```bash
@@ -107,6 +120,18 @@ That writes:
 
 ```text
 tests/reports/prompt-animation/cartoon-2d-puppet-animation.webm
+```
+
+Record the image-derived cutout animation with:
+
+```bash
+npm run record:image-puppet
+```
+
+That writes:
+
+```text
+tests/reports/prompt-animation/cartoon-image-puppet-animation.webm
 ```
 
 In that route, Aura3D's role is the episode contract, shot timing, caption
