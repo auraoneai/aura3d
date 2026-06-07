@@ -1,9 +1,9 @@
 # Release Tracks
 
-Version: 1.0.10
+Version: 1.1.0
 Date: 2026-06-06
 
-Aura3D v1.0.10 is the runtime-foundation, typed GLB actor evidence, asset-catalog profile, CLI, template, docs, npm package, GitHub repository, marketing-site, and Aura Clash development-showcase release track.
+Aura3D v1.1.0 is the runtime-foundation, typed GLB actor evidence, asset-catalog profile, CLI, template, docs, npm package, GitHub repository, marketing-site, and Aura Clash development-showcase release track.
 
 ## Launch Positioning
 
@@ -13,23 +13,23 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 ## Current Release
 
-- npm package target: `@aura3d/engine@1.0.10`
+- npm package target: `@aura3d/engine@1.1.0`
 - Public developer API: `@aura3d/engine`
-- CLI package target: `@aura3d/cli@1.0.10`
-- Scaffold package target: `create-aura3d@1.0.10`
+- CLI package target: `@aura3d/cli@1.1.0`
+- Scaffold package target: `create-aura3d@1.1.0`
 - Website: `https://aura3d.auraone.ai`
 - Repository: `https://github.com/auraoneai/aura3d`
 - Primary install path: `npm install @aura3d/engine`
 
-## 1.0.10 Release Note
+## 1.1.0 Release Note
 
-`@aura3d/engine@1.0.10` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
+`@aura3d/engine@1.1.0` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
 
-Publication status: npm `latest` points at `@aura3d/engine@1.0.10`, `@aura3d/asset-index@1.0.10`, `@aura3d/cli@1.0.10`, and `create-aura3d@1.0.10`. Public launch claims must remain scoped: Aura3D is a runtime foundation release, and Aura Clash Arena is a development showcase/runtime proof target, not proof of a mature commercial game engine.
+Publication status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`. Public launch claims must remain scoped: Aura3D is a runtime foundation release, and Aura Clash Arena is a development showcase/runtime proof target, not proof of a mature commercial game engine.
 
 ## 1.1 Cartoon Studio Track
 
-Aura3D 1.1 is the proposed cartoon-studio and animation-engine release track. It builds on 1.0.10 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
+Aura3D 1.1 is the proposed cartoon-studio and animation-engine release track. It builds on 1.1.0 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
 
 The 1.1 track is complete only when a clean external project can scaffold `cartoon-studio`, validate two typed character assets and one typed set, preview a real episode route, render a playable episode file, export captions and metadata, write a package folder, and produce motion/visual/review evidence.
 
@@ -52,7 +52,7 @@ Primary planning doc: `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
 
 `@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
 
-Publication status: historical. The current npm `latest` release is 1.0.10.
+Publication status: historical. The current npm `latest` release is 1.1.0.
 
 ## 1.0.4 Release Note
 

@@ -1,6 +1,6 @@
 # Current State
 
-Version: 1.0.10
+Version: 1.1.0
 
 Aura3D is a developer library, asset deployment pipeline, template system,
 diagnostics surface, and agent-readable documentation set for AI coding agents
@@ -20,15 +20,15 @@ Active product pillars:
 
 Current published package version:
 
-- `@aura3d/engine@1.0.10`
-- `@aura3d/cli@1.0.10`
-- `@aura3d/asset-index@1.0.10`
-- `create-aura3d@1.0.10`
+- `@aura3d/engine@1.1.0`
+- `@aura3d/cli@1.1.0`
+- `@aura3d/asset-index@1.1.0`
+- `create-aura3d@1.1.0`
 
 Current release tracks:
 
-- Aura3D SDK npm/deployed artifact: complete for the scoped 1.0.10 runtime-foundation release. See `docs/project/release-tracks.md` and `docs/project/aura3d-110-release-gates.md`.
-- Aura3D mature game-engine and flagship-showcase target: still future work beyond the scoped 1.0.10 claim boundary.
+- Aura3D SDK npm/deployed artifact: complete for the scoped 1.1.0 runtime-foundation release. See `docs/project/release-tracks.md` and `docs/project/aura3d-110-release-gates.md`.
+- Aura3D mature game-engine and flagship-showcase target: still future work beyond the scoped 1.1.0 claim boundary.
 - Aura3D 1.1 Cartoon Studio: proposed major-release track. The current codebase has prompt-animation contracts, AuraVoice bridge metadata, shot timelines, captions, viseme cues, render queues, typed asset profiles, and source-level templates. It does not yet have a completed publish-ready cartoon episode pipeline. The 1.1 definition of done is tracked in `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
 
 Current Aura Clash status:

@@ -1,6 +1,6 @@
 # Aura3D Verification Evidence
 
-Version: 1.0.10
+Version: 1.1.0
 
 This document summarizes current verification evidence and release boundaries.
 It does not replace `docs/project/release-tracks.md` or

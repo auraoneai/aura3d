@@ -1,6 +1,6 @@
 # Release Checklist
 
-Version: 1.0.10
+Version: 1.1.0
 
 Use this checklist before publishing package, docs, demo, scoped product, or
 to `docs/project/launch-positioning.md`, `docs/project/release-tracks.md`, and
@@ -38,7 +38,7 @@ to `docs/project/launch-positioning.md`, `docs/project/release-tracks.md`, and
 ## Docs Checks
 
 - [ ] No docs reference deleted milestone or planning files as current standards.
-- [ ] Versioned governance docs reference `Version: 1.0.10`.
+- [ ] Versioned governance docs reference `Version: 1.1.0`.
 - [ ] Links in `docs/project/site-map.md` resolve.
 
 ## Go-Live Checks

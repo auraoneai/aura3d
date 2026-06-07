@@ -1,6 +1,6 @@
 # Aura3D Animation Runtime, Events, And Viseme Sync
 
-Status: 1.0.10 scoped runtime-foundation guidance.
+Status: 1.1.0 scoped runtime-foundation guidance.
 
 This page documents the safe agent pattern for skeletal animation, animation
 events, and viseme/blendshape sync. It is intentionally stricter than the
@@ -17,7 +17,7 @@ Use this page with:
 
 ## Current Boundary
 
-The 1.0.10 source baseline already has:
+The 1.1.0 source baseline already has:
 
 - `createAuraApp(...)`, `app.onFrame(...)`, `app.step(dt)`, and runtime nodes.
 - `AnimationController` / `createAnimationController(...)` with named clips,
@@ -28,7 +28,7 @@ The 1.0.10 source baseline already has:
 - Prompt animation helpers for captions, AuraVoice bridge packages, viseme
   tracks, and deterministic evidence metadata.
 
-Aura3D 1.0.10 release claims must prove:
+Aura3D 1.1.0 release claims must prove:
 
 - Named GLB clips visibly deform skinned characters in a browser route.
 - Restarting an attack clip visibly resets the clip to frame zero.
@@ -151,7 +151,7 @@ app.onFrame(({ dt }) => {
 ```
 
 Current controller binding mirrors active clip, local time, speed, loop state,
-layer metadata, event source, and binding metadata onto the runtime node. 1.0.10
+layer metadata, event source, and binding metadata onto the runtime node. 1.1.0
 renderer work must prove that the bound state also drives visible skinned GLB
 pose output and morph target output in browser evidence.
 
@@ -372,7 +372,7 @@ const proof = {
 };
 ```
 
-The deterministic proof is necessary but not sufficient. 1.0.10 release gates
+The deterministic proof is necessary but not sufficient. 1.1.0 release gates
 also require browser screenshots proving visible character deformation, event
 effects, overlays, captions, and morph target changes.
 

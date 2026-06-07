@@ -141,7 +141,7 @@ Game runtime rules:
 - Use `game.evidence(app)` to prove runtime nodes and frame-loop activity.
 - Keep typed assets from `./aura-assets`; do not use string ids, invented URLs, or direct loader code.
 
-Aura3D 1.0.10 game runtime helpers:
+Aura3D 1.1.0 game runtime helpers:
 ```ts
 const stage = games.fighting.stagePreset("neon-dojo");
 const stageIssues = games.fighting.validateStage(stage);
@@ -218,7 +218,7 @@ app.onFrame(({ dt }) => {
 });
 ```
 
-Aura3D 1.0.10 animation/editor/visual scripting rules:
+Aura3D 1.1.0 animation/editor/visual scripting rules:
 - Read `docs/api/animation-runtime-events.md` before changing skeletal animation, animation events, or viseme/blendshape sync docs or examples.
 - Read `docs/api/editor-visual-scripting.md` before changing editor-runtime, timeline, project serialization, visual graph, or graph-to-runtime bridge docs or examples.
 - Use typed asset metadata for clip, skeleton, and morph target names. If the names are not in `src/aura-assets.ts`, `aura.assets.json`, an asset inspection report, or a source/license evidence file, inspect the asset first instead of guessing.
@@ -236,7 +236,7 @@ app.onFrame(({ time }) => {
 
 - `@aura3d/editor-runtime` and `@aura3d/scripting` are public package surfaces for tools and tests. Live browser routes still mount through `@aura3d/engine`.
 - Visual graphs can validate and emit deterministic side effects. A graph is not proven to drive a browser scene until those side effects are applied to a mounted Aura app and captured in browser evidence.
-- Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.0.10 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
+- Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.1.0 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
 
 Aura3D 1.1 Cartoon Studio rules:
 - Use `create-aura3d --template cartoon-studio` for the planned 1.1 cartoon episode workflow. `cartoon-channel` and `prompt-cartoon-channel` remain source-level examples unless their render/package gates pass.
@@ -319,7 +319,7 @@ Game and cartoon asset readiness:
 - A readiness report is not visual proof. Do not mark visual-quality, animation-quality, or launch-quality gates complete without screenshot/runtime evidence.
 - Use `create-aura3d --template prompt-cartoon-channel` for prompt-driven episode scaffolds that need AuraVoice manifests, shot timelines, dialogue beats, visemes, captions, and render plans. The shorter `cartoon-channel` template name remains supported.
 
-Aura3D 1.0.10 package/readiness declarations:
+Aura3D 1.1.0 package/readiness declarations:
 ```bash
 npx create-aura3d@latest my-fighter --template fighting-game
 npx create-aura3d@latest my-episode --template prompt-cartoon-channel
@@ -338,8 +338,8 @@ pnpm prompt-animation:release
 
 Do not claim game, prompt-cartoon, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.0.10 game-engine/showcase claim rules:
-- Treat 1.0.10 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
+Aura3D 1.1.0 game-engine/showcase claim rules:
+- Treat 1.1.0 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.

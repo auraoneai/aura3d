@@ -1,6 +1,6 @@
 # Aura3D Editor And Visual Scripting API
 
-Status: 1.0.10 scoped release guidance.
+Status: 1.1.0 scoped release guidance.
 
 This page documents the safe authoring-tool pattern for Aura3D editor-runtime
 and visual scripting work. It is scoped to browser authoring, timeline runtime

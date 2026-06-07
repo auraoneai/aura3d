@@ -15,15 +15,17 @@ Use Aura3D when you are building agent-written browser 3D apps, prompt-authored 
 
 ## Current release
 
-`@aura3d/engine@1.0.10` is the current public release for browser-native game routes, visible GLB animation runtime evidence, prompt-cartoon playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence. The root engine runtime remains free of Three.js imports; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
+`@aura3d/engine@1.1.0` is the current public release for browser-native game routes, visible GLB animation runtime evidence, prompt-cartoon playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence. The root engine runtime remains free of Three.js imports; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
 
-Aura3D 1.0.10 is a runtime foundation release, not a mature commercial game engine release. The scoped 1.0.10 gates pass for npm packages, CLI/catalog profile behavior, deployed Aura Clash runtime proof, docs/claims, and performance evidence.
+Aura3D 1.1.0 adds the **Cartoon Studio** vertical slice on top of the runtime foundation: typed cartoon assets, an episode plan/show-bible, shot timeline, captions (VTT/SRT), amplitude-based visemes, a render queue, WebM episode export, an episode + review package, and motion/visual quality gates that reject still-image fake motion. Scaffold it with `npx create-aura3d@1.1.0 my-app --template cartoon-studio`.
 
-Registry status: npm `latest` points at `@aura3d/engine@1.0.10`, `@aura3d/asset-index@1.0.10`, `@aura3d/cli@1.0.10`, and `create-aura3d@1.0.10`, so the `npx ...@latest` commands below work for external users.
+Honest scope: Aura3D 1.1.0 is a runtime + cartoon-production release, not a mature commercial game engine and not Pixar-grade animation. The bundled cartoon characters are placeholder-grade starter assets (miko/luma share a base GLB; luma uses a generic humanoid fixture). Aura Clash was rebuilt against the 1.1 engine and re-deployed but was **not** newly authored this cycle — no new fighter art and no gameplay redesign — so it remains a development showcase, not a flagship game. The scoped 1.1.0 gates pass for npm packages, CLI/catalog profile behavior, deployed Aura Clash runtime proof, docs/claims, and performance evidence.
 
-## Aura3D 1.0.10 asset catalog
+Registry status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`, so the `npx ...@latest` commands below work for external users.
 
-Aura3D 1.0.10 includes the catalog-first asset workflow for AI coding agents. When a prompt names a real object, agents should search the hosted Aura3D catalog before writing scene code:
+## Aura3D 1.1.0 asset catalog
+
+Aura3D 1.1.0 includes the catalog-first asset workflow for AI coding agents. When a prompt names a real object, agents should search the hosted Aura3D catalog before writing scene code:
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"
@@ -41,16 +43,16 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 ```
 
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
-## Aura3D 1.0.10 runtime launch track
+## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.0.10 is the active runtime and animation evidence foundation for the next public showcase wave:
+Aura3D 1.1.0 is the active runtime and animation evidence foundation for the next public showcase wave:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game routes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
 - `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-cartoon-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored cartoon/video workflows. The shorter `cartoon-channel` template name remains supported.
 - `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
 
-Aura Clash requires Aura3D 1.0.10 runtime and animation evidence before it should be marketed as a polished public game showcase. Until the runtime, screenshot, route, GLB, package-smoke, and visual approval gates pass, Aura Clash remains a development showcase proving the direction of the public API.
+Aura Clash requires Aura3D 1.1.0 runtime and animation evidence before it should be marketed as a polished public game showcase. Until the runtime, screenshot, route, GLB, package-smoke, and visual approval gates pass, Aura Clash remains a development showcase proving the direction of the public API.
 
 ## Install
 
@@ -106,7 +108,7 @@ The showcase currently targets:
 - arcade movement, hitboxes, guard state, meter, AI pressure, and results;
 - evidence routes, accessibility settings, poster capture, Playwright contracts, sitemap and robots integration, and marketing homepage placement.
 
-Open the source route at `apps/aura-clash-showcase/`. Treat the current route as a development showcase until the 1.0.10 gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
+Open the source route at `apps/aura-clash-showcase/`. Treat the current route as a development showcase until the 1.1.0 gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 
 ## Aura3D 1.1 Cartoon Studio roadmap
 
@@ -155,7 +157,7 @@ createAuraApp("#app", {
 
 The safe API uses generated refs such as `assets.robot`. Do not write `model("robot")`, hand-written GLB URLs, or invented asset ids.
 
-## Aura3D 1.0.10 game runtime example
+## Aura3D 1.1.0 game runtime example
 
 Add typed assets before writing model code:
 
@@ -280,7 +282,7 @@ const evidence = app.evidence({
 console.log(touchLayout.controls.length, replayDriver.snapshot(), overlay.sections, evidence.systems);
 ```
 
-## Aura3D 1.0.10 prompt-cartoon and AuraVoice example
+## Aura3D 1.1.0 prompt-cartoon and AuraVoice example
 
 Prompt-cartoon routes use typed assets, contract artifacts, shot playback, captions, visemes, and AuraVoice timing packages.
 
@@ -472,7 +474,7 @@ pnpm run check:release
 
 Use release checks to confirm package integrity, generated assets, examples, and static deployment output before shipping.
 
-Aura3D 1.0.10 route-specific readiness commands:
+Aura3D 1.1.0 route-specific readiness commands:
 
 ```bash
 npx @aura3d/cli@latest assets validate-game
@@ -490,13 +492,13 @@ pnpm prompt-animation:release
 
 Do not mark a game, prompt-cartoon, or AuraVoice route launch-ready from source evidence alone. Asset readiness, package smoke, browser route health, deterministic screenshots, visual review, accessibility proof, and deployment checks must also pass.
 
-Aura3D 1.0.10 game-engine/showcase readiness is stricter:
+Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 
 ```bash
 pnpm aura3d110:readiness
 ```
 
-Expected current state: the scoped 1.0.10 release gates pass. The remaining mature-engine and flagship-game work stays tracked as future scope in `docs/project/aura3d-110-release-gates.md`.
+Expected current state: the scoped 1.1.0 release gates pass. The remaining mature-engine and flagship-game work stays tracked as future scope in `docs/project/aura3d-110-release-gates.md`.
 
 ## Contributing
 

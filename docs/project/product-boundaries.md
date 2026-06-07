@@ -1,6 +1,6 @@
 # Aura3D Product Boundaries
 
-Version: 1.0.10 planning alignment
+Version: 1.1.0 planning alignment
 
 This document captures durable product rules extracted from legacy planning work. It is the current product boundary for Aura3D documentation, examples, templates, marketing, and agent instructions.
 

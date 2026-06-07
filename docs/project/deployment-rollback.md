@@ -1,6 +1,6 @@
 # Deployment Rollback Plan
 
-Version: 1.0.10
+Version: 1.1.0
 
 This repository primarily documents local package, route, template, and report workflows. Public demo deployment must be treated separately from local build evidence.
 

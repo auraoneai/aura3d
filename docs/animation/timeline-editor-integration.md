@@ -1,6 +1,6 @@
 # Timeline And Editor Integration
 
-Version: 1.0.10
+Version: 1.1.0
 
 Editor-facing animation state is split between the animation runtime and editor-runtime package.
 
