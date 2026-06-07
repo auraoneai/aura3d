@@ -228,20 +228,21 @@ describe("prompt animation source gates", () => {
 
   it("keeps package-smoke and release-gate scripts wired into prompt animation readiness", () => {
     const scripts = readPackageJson().scripts ?? {};
-    const packageSmoke = scripts["prompt-animation:package"] ?? "";
-    const release = scripts["prompt-animation:release"] ?? "";
+    const packageSmoke = scripts["prompt-animation:package:raw"] ?? "";
+    const release = scripts["prompt-animation:release:raw"] ?? "";
 
-    expect(scripts["prompt-animation:unit"]).toContain("tests/unit/agent-api");
-    expect(scripts["prompt-animation:browser"]).toContain("packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts");
-    expect(scripts["prompt-animation:browser"]).toContain("packages/create-aura3d/templates/prompt-cartoon-channel/tests/storyboard-playback.spec.ts");
+    expect(scripts["prompt-animation:unit:raw"]).toContain("tests/unit/agent-api");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/cartoon-channel/tests/sample-episode-visual.spec.ts");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/prompt-cartoon-channel/tests/storyboard-playback.spec.ts");
     expect(packageSmoke).toContain("prompt-animation:template");
     expect(packageSmoke).toContain("prompt-animation:docs");
     expect(packageSmoke).toContain("tools/prompt-animation-package-smoke/index.ts");
-    expect(scripts["prompt-animation:auravoice-contract"]).toContain("tools/prompt-animation-auravoice-contract/index.ts");
-    expect(scripts["prompt-animation:auravoice-render"]).toContain("tools/prompt-animation-auravoice-render/index.ts");
-    expect(scripts["prompt-animation:viseme-sync"]).toContain("tools/prompt-animation-viseme-sync/index.ts");
-    expect(scripts["prompt-animation:dub-sync"]).toContain("tools/prompt-animation-dub-sync/index.ts");
-    expect(scripts["prompt-animation:evidence"]).toContain("tools/prompt-animation-evidence/index.ts");
+    expect(scripts["prompt-animation:auravoice-contract:raw"]).toContain("tools/prompt-animation-auravoice-contract/index.ts");
+    expect(scripts["prompt-animation:auravoice-render:raw"]).toContain("tools/prompt-animation-auravoice-render/index.ts");
+    expect(scripts["prompt-animation:viseme-sync:raw"]).toContain("tools/prompt-animation-viseme-sync/index.ts");
+    expect(scripts["prompt-animation:dub-sync:raw"]).toContain("tools/prompt-animation-dub-sync/index.ts");
+    expect(scripts["prompt-animation:evidence:raw"]).toContain("tools/prompt-animation-evidence/index.ts");
     for (const gate of ["unit", "browser", "template", "docs", "package"]) {
       expect(release).toContain(`pnpm prompt-animation:${gate}`);
     }

@@ -76,6 +76,7 @@ export type KinematicBodySnapshot = {
   readonly velocity: Vec3;
   readonly facing: CombatFacing;
   readonly grounded: boolean;
+  readonly crouching: boolean;
   readonly moveInput: Vec3;
   readonly halfExtents: Vec3;
   readonly dashFramesRemaining: number;
@@ -97,6 +98,19 @@ export type KinematicBodyEvent =
       readonly position: Vec3;
       readonly velocity: Vec3;
       readonly duration: number;
+    }
+  | {
+      readonly type: "fast-fall";
+      readonly bodyId: KinematicBodyId;
+      readonly position: Vec3;
+      readonly velocity: Vec3;
+      readonly speed: number;
+    }
+  | {
+      readonly type: "crouch";
+      readonly bodyId: KinematicBodyId;
+      readonly active: boolean;
+      readonly position: Vec3;
     }
   | {
       readonly type: "land";
@@ -153,6 +167,7 @@ export class KinematicBody {
   private jumpQueued = false;
   private dashQueued = false;
   private queuedDashDirection: CombatFacing | null = null;
+  private crouchActive = false;
   private dashTimeRemaining = 0;
   private dashCooldownRemaining = 0;
   private readonly pendingEvents: KinematicBodyEvent[] = [];
@@ -231,6 +246,34 @@ export class KinematicBody {
 
   dash(direction?: number): void {
     this.queueDash(direction);
+  }
+
+  fastFall(speed = this.maxFallSpeed): void {
+    const fallSpeed = finiteNonNegative(Math.abs(speed), "kinematic fastFall speed");
+    if (this.grounded || fallSpeed <= 0) {
+      return;
+    }
+    this.velocity[1] = Math.min(this.velocity[1], -fallSpeed);
+    this.pendingEvents.push({
+      type: "fast-fall",
+      bodyId: this.id,
+      position: cloneVec3(this.position),
+      velocity: cloneVec3(this.velocity),
+      speed: fallSpeed
+    });
+  }
+
+  crouch(active = true): void {
+    if (this.crouchActive === active) {
+      return;
+    }
+    this.crouchActive = active;
+    this.pendingEvents.push({
+      type: "crouch",
+      bodyId: this.id,
+      active,
+      position: cloneVec3(this.position)
+    });
   }
 
   applyKnockback(impulse: Vec3, options: KnockbackOptions = {}): void {
@@ -384,6 +427,7 @@ export class KinematicBody {
       velocity: cloneVec3(this.velocity),
       facing: this.facing,
       grounded: this.grounded,
+      crouching: this.crouchActive,
       moveInput: [this.moveInput[0], 0, this.moveInput[1]],
       halfExtents: cloneVec3(this.halfExtents),
       dashFramesRemaining: this.dashTimeRemaining,

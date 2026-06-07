@@ -160,6 +160,234 @@
       ]
     },
     {
+      "id": "auraClashDashSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-scifi/laserSmall_000.ogg",
+      "outputPath": "public/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "url": "/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "hash": "sha256-72b589eadd41781257ac859e4f4d030222e623390e4a1a83f6d05329a6e026f1",
+      "sizeBytes": 7286,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-scifi/laserSmall_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:12.196Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashDashSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashDeniedSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-interface/error_001.ogg",
+      "outputPath": "public/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "url": "/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "hash": "sha256-46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433",
+      "sizeBytes": 7373,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-interface/error_001.ogg",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:16.053Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashDeniedSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashDrawSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-interface/bong_001.ogg",
+      "outputPath": "public/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "url": "/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "hash": "sha256-d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710",
+      "sizeBytes": 4848,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-interface/bong_001.ogg",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:16.570Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashDrawSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
       "id": "auraClashDuelStage",
       "type": "model",
       "format": "glb",
@@ -258,6 +486,310 @@
       "thumbnailUrl": "/aura-assets/auraClashDuelStage.thumb.svg",
       "warnings": [
         "no texture references detected"
+      ]
+    },
+    {
+      "id": "auraClashGuardSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-impact/impactMetal_medium_000.ogg",
+      "outputPath": "public/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "url": "/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "hash": "sha256-a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003",
+      "sizeBytes": 7117,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-impact/impactMetal_medium_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:11.065Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashGuardSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashHitSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-impact/impactPunch_heavy_000.ogg",
+      "outputPath": "public/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "url": "/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "hash": "sha256-b33a8f14068aec24ec69ba85e5e87fdc41228975f6a1a3e44a6e7d6fc3d9f8d8",
+      "sizeBytes": 11617,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-impact/impactPunch_heavy_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/impact-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:10.598Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashHitSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashJumpSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-scifi/thrusterFire_000.ogg",
+      "outputPath": "public/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "url": "/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "hash": "sha256-0fdc474d93f209debf1fc4ea77765a669dcb7676db31b4d8a0a509685bccf374",
+      "sizeBytes": 201216,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-scifi/thrusterFire_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:11.644Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashJumpSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashKoSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-scifi/lowFrequency_explosion_000.ogg",
+      "outputPath": "public/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "url": "/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "hash": "sha256-3cb48d86dab63140cfb9aaeea4d4a6846abaca5831d157d8adbec0490da26343",
+      "sizeBytes": 14317,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-scifi/lowFrequency_explosion_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:13.346Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashKoSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
       ]
     },
     {
@@ -7876,6 +8408,310 @@
       "warnings": [
         "no texture references detected",
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "auraClashSpecialSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-scifi/laserLarge_000.ogg",
+      "outputPath": "public/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "url": "/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "hash": "sha256-a56d95794cd732d6c2d66ce488c14cf557fe526c282897c9a77675c2bd9b77e6",
+      "sizeBytes": 25566,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-scifi/laserLarge_000.ogg",
+        "sourceUrl": "https://kenney.nl/assets/sci-fi-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:12.756Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashSpecialSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashUiConfirmSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-interface/confirmation_001.ogg",
+      "outputPath": "public/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "url": "/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "hash": "sha256-063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a",
+      "sizeBytes": 8968,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-interface/confirmation_001.ogg",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:13.980Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashUiConfirmSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashUiToggleSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-interface/toggle_001.ogg",
+      "outputPath": "public/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "url": "/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "hash": "sha256-ca1d2dde5f0b286abac4f070e23edab8f30927c8a533665cdf2ac6492a415e49",
+      "sizeBytes": 7369,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-interface/toggle_001.ogg",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:15.410Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashUiToggleSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
+      ]
+    },
+    {
+      "id": "auraClashWinSfx",
+      "type": "audio",
+      "format": "ogg",
+      "source": "assets/source/audio/kenney-interface/confirmation_004.ogg",
+      "outputPath": "public/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "url": "/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "hash": "sha256-568967a3d9f8a8f6af54ea01729c4882284308f2a27d78c07ffd7ee0d6951661",
+      "sizeBytes": 12391,
+      "materials": [],
+      "materialMetadata": [],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "Skeleton detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "Morph target detection is only available for GLB/glTF model assets."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/audio/kenney-interface/confirmation_004.ogg",
+        "sourceUrl": "https://kenney.nl/assets/interface-sounds",
+        "license": "CC0-1.0",
+        "author": "Kenney",
+        "checkedAt": "2026-06-06T13:41:14.689Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "unknown",
+        "messages": [
+          "No orientation metadata detected; facing direction cannot be proven."
+        ]
+      },
+      "nodeNames": [],
+      "thumbnailUrl": "/aura-assets/auraClashWinSfx.thumb.svg",
+      "warnings": [
+        "bounds could not be extracted"
       ]
     },
     {

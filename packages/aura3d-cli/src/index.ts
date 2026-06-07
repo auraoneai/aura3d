@@ -2,6 +2,15 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSyn
 import { createHash } from "node:crypto";
 import { dirname, extname, join, relative, resolve } from "node:path";
 
+export {
+  cartoonCliAssetProfiles,
+  getCartoonAssetProfileDefinition
+} from "./cartoon-asset-profiles.js";
+export type {
+  AuraCliCartoonAssetProfile,
+  AuraCliCartoonAssetProfileDefinition
+} from "./cartoon-asset-profiles.js";
+
 export type AuraCliAssetType = "model" | "texture" | "environment" | "audio";
 export type AuraCliHumanoidStatus = "humanoid" | "non-humanoid" | "unknown";
 export type AuraCliHumanoidConfidence = "high" | "medium" | "low";

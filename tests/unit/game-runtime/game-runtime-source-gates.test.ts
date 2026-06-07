@@ -115,6 +115,34 @@ describe("game runtime source gates", () => {
     expect(templateMain).not.toMatch(/\bfrom\s+["']three["']|GLTFLoader|three\/examples/);
   });
 
+  it("keeps fighting-kit hitbox debug overlays opt-in at the engine level", () => {
+    const kit = game.fighting({ opponentAi: false });
+
+    kit.combat.beginAttack("player", kit.moves.light);
+    const normal = kit.debugHitboxOverlay();
+    const debug = kit.debugHitboxOverlay({ enabled: true });
+
+    expect(normal).toMatchObject({
+      kind: "aura-fighting-debug-hitbox-overlay",
+      enabled: false,
+      normalPassVisible: false,
+      volumes: []
+    });
+    expect(debug).toMatchObject({
+      enabled: true,
+      normalPassVisible: false,
+      volumes: [
+        expect.objectContaining({
+          id: "light-palm",
+          ownerId: "player",
+          moveId: "light",
+          active: false,
+          color: "#f97316"
+        })
+      ]
+    });
+  });
+
   it("proves public GameAppRuntime lifecycle methods and evidence from the public createGameApp API", () => {
     const runtime = createGameApp(null, {
       autoStart: false,
@@ -186,6 +214,46 @@ describe("game runtime source gates", () => {
       disposeCount: 1,
       activeInputControllers: 0
     });
+  });
+
+  it("publishes standardized game evidence for input, movement, combat, animation, renderer, audio, and errors", () => {
+    const app = createAuraApp(null, {
+      autoStart: false,
+      scene: scene().add(
+        model(assets.fighter, { name: "evidence fighter" })
+          .runtime(game.runtimeNode("player", { tags: ["fighter"] }))
+      )
+    });
+    const input = game.input({ actions: { light: ["KeyJ"] }, autoListen: false });
+    const body = game.kinematicBody({ id: "player-body", position: [0, 0, 0], velocity: [2, 0, 0], groundY: 0 });
+    const combat = game.combatWorld();
+    combat.addActor({ id: "player", team: "p1", position: [0, 0, 0], facing: 1 });
+
+    input.press("KeyJ");
+    input.update(1 / 60);
+    app.step(1 / 60);
+
+    expect(app.evidence({
+      input,
+      bodies: [body],
+      combat,
+      animation: { controllers: 1, activeClips: ["Idle"], eventCount: 2 },
+      renderer: { backend: "webgl2", drawCalls: 12, frameTimeMs: 12.4, renderSize: [1280, 720], assetFailures: ["missing-texture"], contextLost: false },
+      audio: { unlocked: true, muted: false, cuesTriggered: ["hit"], musicPlaying: true, errors: ["late-unlock"] },
+      errors: [{ severity: "warning", code: "clip-fallback", message: "Used fallback idle clip." }],
+      source: { expectsGame: true }
+    })).toMatchObject({
+      input: { configured: true, actions: ["light"], frame: 1 },
+      movement: { bodies: 1, groundedBodies: 1, airborneBodies: 0, movingBodies: 1 },
+      collision: { combatWorld: true, actors: 1 },
+      animation: { controllers: 1, activeClips: ["Idle"], eventCount: 2 },
+      renderer: { backend: "webgl2", drawCalls: 12, frameTimeMs: 12.4, renderSize: [1280, 720], assetFailures: ["missing-texture"], contextLost: false },
+      audio: { unlocked: true, muted: false, cuesTriggered: ["hit"], musicPlaying: true, errors: ["late-unlock"] },
+      errors: [{ severity: "warning", code: "clip-fallback", message: "Used fallback idle clip." }]
+    });
+
+    input.dispose();
+    app.dispose();
   });
 
   it("keeps root game facade helper exports source-visible without private runtime imports", () => {

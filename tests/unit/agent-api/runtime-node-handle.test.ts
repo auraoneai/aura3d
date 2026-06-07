@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createAuraApp, game, material, primitives, scene } from "../../../packages/engine/src";
+import { createAuraApp, createRuntimeNodeImportedAssetEvidence, game, material, primitives, scene } from "../../../packages/engine/src";
 import { AnimationController, type AnimationPose } from "../../../packages/engine/src/agent-api/AnimationController";
 
 const poseAt = (x: number, focus = 0): AnimationPose => ({
@@ -194,6 +194,72 @@ describe("runtime node handle", () => {
 
     controller.dispose();
     expect(fighter.snapshot().animationPose).toBeUndefined();
+
+    app.dispose();
+  });
+
+  it("exposes imported GLB evidence and structured missing binding diagnostics on runtime nodes", () => {
+    const app = createAuraApp(null, {
+      autoStart: false,
+      scene: scene().add(
+        primitives
+          .box({ name: "imported hero proxy" })
+          .runtime(game.runtimeNode("hero", { tags: ["character", "imported-glb"] }))
+      )
+    });
+    const hero = app.nodes.require("hero");
+
+    const evidence = createRuntimeNodeImportedAssetEvidence({
+      assetId: "assets.hero",
+      nodeId: "hero",
+      skeletonBones: ["Hips", "Spine", "Head"],
+      clips: ["Idle", "Talk"],
+      activeClip: "Talk",
+      skinningPalette: { jointCount: 3, matrixCount: 3, updated: true },
+      morphTargets: ["AA", "Smile"],
+      bounds: { position: [0, 1, 0], size: [1, 2, 1] },
+      renderItemCount: 4,
+      skinnedRenderItemCount: 3,
+      morphRenderItemCount: 1,
+      requiredClips: ["Idle", "Talk"],
+      requiredBones: ["Hips", "Head"],
+      requiredMorphTargets: ["AA"]
+    });
+    hero.setImportedAssetEvidence(evidence);
+
+    expect(hero.snapshot().importedAssetEvidence).toMatchObject({
+      kind: "aura-runtime-node-imported-asset-evidence",
+      assetId: "assets.hero",
+      nodeId: "hero",
+      skeleton: { boneCount: 3, boneNames: ["Hips", "Spine", "Head"] },
+      clips: ["Idle", "Talk"],
+      activeClip: "Talk",
+      skinningPalette: { jointCount: 3, matrixCount: 3, updated: true },
+      morphTargets: ["AA", "Smile"],
+      renderItemCount: 4,
+      skinnedRenderItemCount: 3,
+      morphRenderItemCount: 1,
+      diagnostics: []
+    });
+    expect(hero.importedAssetEvidence()?.bounds?.size).toEqual([1, 2, 1]);
+
+    const missing = createRuntimeNodeImportedAssetEvidence({
+      assetId: "assets.hero",
+      clips: ["Idle"],
+      skeletonBones: ["Hips"],
+      morphTargets: ["Smile"],
+      requiredClips: ["Talk"],
+      requiredBones: ["Head"],
+      requiredMorphTargets: ["AA"]
+    });
+
+    expect(missing.diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
+      "missing-clip",
+      "missing-bone",
+      "missing-morph",
+      "missing-skinning-palette",
+      "missing-render-items"
+    ]);
 
     app.dispose();
   });

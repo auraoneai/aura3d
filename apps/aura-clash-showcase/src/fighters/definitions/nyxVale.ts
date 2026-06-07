@@ -259,7 +259,7 @@ export const nyxVale = {
     },
     {
       rule: "typed-asset",
-      note: "Use assets.fighterNyxVale through the generated typed asset manifest."
+      note: "Use fighter.asset.typedAssetMember, which resolves to a final Aura Clash release rig in the generated typed asset manifest."
     },
     {
       rule: "readable-hud",

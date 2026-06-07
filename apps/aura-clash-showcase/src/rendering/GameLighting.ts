@@ -72,6 +72,35 @@ export const auraClashLightingReviewCriteria = {
   ],
 } as const;
 
+export interface AuraClashLightingEvidence {
+  readonly contractId: typeof auraClashLightingReviewCriteria.contractId;
+  readonly presetId: string;
+  readonly readable: boolean;
+  readonly validatedStates: readonly ["first", "action", "ko"];
+  readonly ambientIntensity: number;
+  readonly keyIntensity: number;
+  readonly minRimIntensity: number;
+  readonly silhouetteSeparation: "rim-and-key";
+  readonly backgroundSeparation: "dark-stage-with-cyan-emerald-rim";
+}
+
+export function createAuraClashLightingEvidence(
+  preset: GameLightingPreset = auraClashLightingPreset
+): AuraClashLightingEvidence {
+  const minRimIntensity = Math.min(preset.rimLeft.intensity, preset.rimRight.intensity);
+  return {
+    contractId: auraClashLightingReviewCriteria.contractId,
+    presetId: preset.id,
+    readable: preset.ambient.intensity >= 0.25 && preset.key.intensity >= 1 && minRimIntensity >= 1.2,
+    validatedStates: ["first", "action", "ko"],
+    ambientIntensity: preset.ambient.intensity,
+    keyIntensity: preset.key.intensity,
+    minRimIntensity,
+    silhouetteSeparation: "rim-and-key",
+    backgroundSeparation: "dark-stage-with-cyan-emerald-rim"
+  };
+}
+
 export function createAuraClashLightRig(preset: GameLightingPreset = auraClashLightingPreset) {
   return [
     lights.ambient({

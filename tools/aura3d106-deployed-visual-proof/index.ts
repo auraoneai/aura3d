@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { inflateSync } from "node:zlib";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, type Page, type Request } from "@playwright/test";
@@ -121,6 +121,7 @@ interface AuraClashArenaProof {
 
 const screenshotDir = "tests/reports/aura3d109/deployed-visual-proof";
 const defaultOutPath = "tests/reports/aura3d109/deployed-visual-proof.json";
+const expectedRelease = readExpectedRelease();
 const defaultTargetUrls = [
   "https://aura3d.auraone.ai/playable",
   "https://aura3d.auraone.ai/apps/aura-clash",
@@ -271,7 +272,7 @@ function validateRouteProof(page: BrowserRouteProof): string[] {
     blockers.push("window.__AURA_CLASH_ARENA_PROOF__ is missing.");
   } else {
     if (page.proof.app !== "Aura Clash Arena") blockers.push(`proof app mismatch: ${String(page.proof.app)}.`);
-    if (page.proof.release !== "1.0.9") blockers.push(`proof release mismatch: ${String(page.proof.release)}.`);
+    if (page.proof.release !== expectedRelease) blockers.push(`proof release mismatch: ${String(page.proof.release)}.`);
     if (page.proof.status !== "running") blockers.push(`proof status is ${String(page.proof.status)}, expected running after control smoke.`);
     if (page.proof.error !== null) blockers.push(`proof error is not null: ${String(page.proof.error)}.`);
     if (numberValue(page.proof.frame) <= 0) blockers.push("proof frame did not advance.");
@@ -309,7 +310,7 @@ function validateRouteProof(page: BrowserRouteProof): string[] {
 
 function compareRouteParity(page: BrowserRouteProof, localReference: BrowserRouteProof | null): RouteParityProof {
   const blockers: string[] = [];
-  const releaseMatches = page.proof?.release === "1.0.9";
+  const releaseMatches = page.proof?.release === expectedRelease;
   const appMatches = page.proof?.app === "Aura Clash Arena";
   const proofVersionMatches = typeof page.proof?.version === "string" && page.proof.version.includes("aura-clash-arena");
   const routeMatches =
@@ -317,7 +318,7 @@ function compareRouteParity(page: BrowserRouteProof, localReference: BrowserRout
     page.finalUrl.includes("/playable") ||
     page.finalUrl.includes("/apps/aura-clash") ||
     page.finalUrl.includes("/showcase/aura-clash/playable");
-  if (!releaseMatches) blockers.push("deployed proof does not match current release 1.0.9.");
+  if (!releaseMatches) blockers.push(`deployed proof does not match current release ${expectedRelease}.`);
   if (!appMatches) blockers.push("deployed proof does not match Aura Clash Arena app contract.");
   if (!proofVersionMatches) blockers.push("deployed proof does not expose the current Aura Clash Arena proof version.");
   if (!routeMatches) blockers.push("deployed proof/final URL does not match a supported Aura Clash route.");
@@ -544,6 +545,15 @@ function readEnvList(name: string): string[] | undefined {
 
 function splitList(value: string): string[] {
   return value.split(",").map((entry) => entry.trim()).filter(Boolean);
+}
+
+function readExpectedRelease(): string {
+  try {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as { readonly version?: string };
+    return pkg.version ?? "1.0.9";
+  } catch {
+    return "1.0.9";
+  }
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);

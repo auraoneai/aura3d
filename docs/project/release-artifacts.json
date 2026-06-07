@@ -1,26 +1,60 @@
 {
-  "version": "1.0.5",
+  "schema": "aura3d-release-artifacts/1.0",
+  "version": "1.0.10",
+  "status": "published",
+  "scope": "Aura3D 1.0.10 npm package artifact inventory",
+  "createdAt": "2026-06-05T22:20:00.000-07:00",
   "artifacts": [
     {
-      "type": "tarball",
+      "type": "npm-tarball",
       "name": "@aura3d/engine",
-      "version": "1.0.5",
-      "pathOrUrl": "release-artifacts/aura3d-engine-1.0.5.tgz",
-      "sha256": "69bf96d5ea1d9b83d68c3b4d012402114015a72554321dda9cc41ba3e3ce4453",
-      "createdAt": "2026-06-05T20:11:52.213Z",
-      "status": "candidate-record",
-      "evidenceScope": "1.0.5 package artifact inventory only",
-      "notPublishProof": true,
-      "notBenchmarkProof": true
+      "version": "1.0.10",
+      "pathOrUrl": "https://registry.npmjs.org/@aura3d/engine/-/engine-1.0.10.tgz",
+      "sha1": "dda19956c972eb68b5e6827beaba6876c794b043",
+      "sha256": "f6715d1a9c5045a771f44d9994631115d4e9f2359c5fa4bf0d6b921d005a45e9",
+      "integrity": "sha512-KxOUEXhjruZjwKkDquTYg6aL5IpSgloHa600oN6nU8/GhW7DnD/MaiMF8TzI+Nv43tz2x9waIA0tq/th9Ut+Rg==",
+      "source": "npm registry"
+    },
+    {
+      "type": "npm-tarball",
+      "name": "@aura3d/cli",
+      "version": "1.0.10",
+      "pathOrUrl": "https://registry.npmjs.org/@aura3d/cli/-/cli-1.0.10.tgz",
+      "sha1": "422d4bc2fe0ba7d1a219d4d7881f6e873ed5e156",
+      "sha256": "911cc9c4d01256f3c6e10987ee8b12889b219e4ed0a4cec6a6a460a0d01bc2f0",
+      "integrity": "sha512-Q8VYjEskBo2KHRn43oVD6GWIcSJyPQ5F6TQRE1o+eMXUAWNT3muVETywU4pIKDnpKUkjvrJ66POPlk9H3wXsdg==",
+      "source": "npm registry"
+    },
+    {
+      "type": "npm-tarball",
+      "name": "@aura3d/asset-index",
+      "version": "1.0.10",
+      "pathOrUrl": "https://registry.npmjs.org/@aura3d/asset-index/-/asset-index-1.0.10.tgz",
+      "sha1": "a23b8a1af2a0219a18ba4ef9dfc5f11fd460f607",
+      "sha256": "31a16e98f1df5611f4b7316aea388fb559b0fa90081a8cb04a69d691e2969196",
+      "integrity": "sha512-JqnrJRR9e1FHaw9hCK4oL3roY9T9Si5xoE0dfoSJTbfWlrqpEO1TuSOoJAAwtFHmuLre+/6rHc4WpTkXERYMKQ==",
+      "source": "npm registry"
+    },
+    {
+      "type": "npm-tarball",
+      "name": "create-aura3d",
+      "version": "1.0.10",
+      "pathOrUrl": "https://registry.npmjs.org/create-aura3d/-/create-aura3d-1.0.10.tgz",
+      "sha1": "cd167dbdcfc090556717a3ae8013536c4b58861a",
+      "sha256": "022ca4f2f3ea57dcc26e3c6fa8fb2e2ee10e9e85a01b37ddd56869aa41206fe4",
+      "integrity": "sha512-YXG8uVvbuI6IDrghArHWR/PfaI7LTIPOZwA0kLJz92CGlIrB/qUyPb0eJHWaMzt64a0geX7MiTI+GTNIlwV8/A==",
+      "source": "npm registry"
     }
   ],
-  "schema": "aura3d-release-artifacts/1.0",
-  "status": "candidate-only",
-  "scope": "scoped SDK/product-context launch artifact inventory",
-  "notReleaseProof": true,
+  "verification": {
+    "npmViewCommand": "npm view <package>@1.0.10 name version dist.tarball dist.shasum dist.integrity --json",
+    "sha256Command": "curl -fsSL <tarball-url> | shasum -a 256",
+    "readinessCommand": "pnpm aura3d110:readiness",
+    "deployedProofCommand": "pnpm verify:aura3d110-deployed-visual"
+  },
   "notes": [
-    "This file records candidate or historical artifact paths only until an official benchmark pass, user approval, and publish/go-live result exist.",
-    "Do not treat this file as npm publication proof or broad benchmark release proof.",
-    "Final publish evidence must include the actual artifact path or URL, SHA-256, creation time, benchmark result paths, and approval artifact."
+    "This file records published npm artifacts for the scoped 1.0.10 runtime/showcase release.",
+    "It is package publication evidence, not proof that Aura3D has reached Unity, Unreal, Babylon.js, or mature game-engine parity.",
+    "Use docs/project/aura3d-110-release-gates.md, docs/project/game-runtime-release.md, docs/project/aura-clash-showcase.md, and docs/examples/cartoon-channel.md for current engine, showcase, and cartoon-production gates."
   ]
 }

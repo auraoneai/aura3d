@@ -1,187 +1,130 @@
-# World War X game showcase build guide
+# Aura Clash Arena Showcase Build Guide
 
-World War X is the production game showcase for Aura3D: an original satirical 1v1 browser arena fighter built with `@aura3d/engine`.
+Version: 1.0.10
 
-Use this guide when editing, reviewing, or documenting `apps/world-war-x-showcase`.
+Use this guide when editing, reviewing, or documenting the active Aura3D game showcase in `apps/aura-clash-showcase`.
 
-## Non-negotiables
+Aura Clash Arena is the current browser-game development showcase for Aura3D. It proves a scoped runtime foundation: typed GLB assets, a public game lifecycle, input, animation state, engine combat evidence, HUD updates, screenshots, deployment checks, and npm/CLI proof.
+
+It is not proof that Aura3D is a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product. It is also not yet a flagship-quality fighting game.
+
+## Non-Negotiables
 
 - Read `llms.txt` before authoring Aura3D code.
 - Use public imports from `@aura3d/engine`.
-- Mount one Aura app per route with `createAuraApp`.
-- Use typed GLB members from `src/aura-assets.ts`; never pass string asset IDs to `model(...)`.
-- Keep the roster at 10 original fighters unless the PRD changes.
-- Keep public copy production-grade: original satirical 1v1 arena fighter, browser-native, built with `@aura3d/engine`.
-- Do not use franchise comparisons or renderer-library comparison marketing in public copy.
-- Keep arcade action non-lethal, stylized, and comedic.
-
-## Current app shape
-
-The app has a complete documentation and evidence contract around these systems:
-
-- 10-fighter G7+India+Russia+China roster in `src/fighters/originalRoster.ts`.
-- Typed asset keys in `src/fighters/FighterDefinition.ts`.
-- Generated fighter GLB registration in `src/aura-assets.ts`.
-- Generated GLB creation script in `scripts/generate-fighter-glbs.mjs`.
-- Runtime app orchestration in `src/WorldWarXApp.ts`.
-- Combat state, hitboxes, projectiles, movement, guard, meter, and result flow under `src/combat`, `src/physics`, and `src/state`.
-- Evidence, accessibility, capture, and route-health contracts under `src/evidence`, `src/accessibility`, and `src/capture`.
-- Playwright contracts under `tests`.
-
-## Original Roster
-
-| Fighter | Country inspiration | Leader snapshot | Asset member |
-| --- | --- | --- | --- |
-| The Dealbreaker | United States | Donald J. Trump | `assets.fighterDealbreaker` |
-| The Central Banker | Canada | Mark Carney | `assets.fighterCentralBanker` |
-| The Republic Duelist | France | Emmanuel Macron | `assets.fighterRepublicDuelist` |
-| The Iron Ledger | Germany | Friedrich Merz | `assets.fighterIronLedger` |
-| The Roman Signal | Italy | Giorgia Meloni | `assets.fighterRomanSignal` |
-| The Rising Circuit | Japan | Sanae Takaichi | `assets.fighterRisingCircuit` |
-| The Barrister | United Kingdom | Keir Starmer | `assets.fighterBarrister` |
-| The Lotus Storm | India | Narendra Modi | `assets.fighterLotusStorm` |
-| The Kremlin Shadow | Russia | Vladimir Putin | `assets.fighterKremlinShadow` |
-| The Dragon Protocol | China | Xi Jinping | `assets.fighterDragonProtocol` |
-
-Roster metadata uses the June 3, 2026 snapshot date. Copy must describe these as stylized fictionalized public-leader avatars with original move names, original visual motifs, and no official emblems.
-
-## Typed GLB assets
-
-The current app uses 10 generated GLB slots:
-
-- `fighterDealbreaker`
-- `fighterCentralBanker`
-- `fighterRepublicDuelist`
-- `fighterIronLedger`
-- `fighterRomanSignal`
-- `fighterRisingCircuit`
-- `fighterBarrister`
-- `fighterLotusStorm`
-- `fighterKremlinShadow`
-- `fighterDragonProtocol`
-
-The app registers them through `defineAuraAssets` in `src/aura-assets.ts`. The generator script writes stylized fighter GLBs to `public/aura-assets/fighters` and the marketing public asset folder.
-
-When adding or replacing model assets, use the Aura3D asset workflow:
+- Use one app/runtime owner per route through the current public game-runtime path.
+- Use typed assets from `src/aura-assets.ts`; never pass string asset ids, invented GLB URLs, raw loaders, or direct Three.js imports.
+- Use the asset catalog profile for fighter prompts:
 
 ```bash
-npx @aura3d/cli@latest assets add ./assets/model.glb --name model
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json
+npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character
+npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset auraClashPlayerRig --asset auraClashRivalRig --no-placeholders --require-license
 ```
 
-Then import generated typed assets and use `model(assets.name)`.
+- If the catalog returns no production-ready candidate, stop and report the rejection reasons. Do not force a static prop, aircraft, spider, unlicensed sculpt, or broken-scale model into a fighter slot.
+- Do not use primitives as release-facing fighter art. Primitives are allowed for set dressing, debug modes, and deterministic tests only.
+- Hide hitboxes, boxes, line artifacts, and debug rigs in normal play. Debug visuals must be behind an explicit debug/evidence mode.
+- Keep public copy scoped to "development showcase" and "runtime proof" until gameplay, asset, art, audio, performance, deployment, and visual approval gates all pass.
 
-## Routes
+## Active App Shape
 
-`WORLD_WAR_X_ROUTES` in `src/evidence/route-health.ts` is the route source of truth.
+| Area | Current source |
+| --- | --- |
+| App bootstrap | `apps/aura-clash-showcase/src/main.ts` |
+| Active playable route | `apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts` |
+| Active route stylesheet | `apps/aura-clash-showcase/src/playable/playable.css` |
+| Typed assets | `apps/aura-clash-showcase/src/aura-assets.ts` and `apps/aura-clash-showcase/aura.assets.json` |
+| Fighter definitions | `apps/aura-clash-showcase/src/fighters/` and `apps/aura-clash-showcase/src/data/` |
+| Runtime/game helpers | `apps/aura-clash-showcase/src/game/`, `src/state/`, `src/rendering/`, `src/arenas/` |
+| Route evidence | `apps/aura-clash-showcase/evidence/` and `apps/aura-clash-showcase/launch-evidence/` |
+| Browser tests | `apps/aura-clash-showcase/tests/` |
 
-| Route key | Path | Marker |
-| --- | --- | --- |
-| `landing` | `/` | `[data-wwx-route="landing"]` |
-| `evidence` | `/evidence` | `[data-wwx-route="evidence"]` |
-| `playable` | `/playable` | `[data-wwx-route="playable"]` |
-| `summitRemix` | `/summit-remix` | `[data-wwx-route="summit-remix"]` |
-| `poster` | `/poster` | `[data-wwx-route="poster"]` |
-| `accessibility` | `/accessibility` | `[data-wwx-route="accessibility"]` |
-| `deployCheck` | `/deploy-check` | `[data-wwx-route="deploy-check"]` |
+Legacy numbered attempt directories must remain deleted. Do not recreate attempt-number source directories or proof object names.
 
-Every route exposes route-specific evidence selectors. Keep selectors stable because tests and docs consume them directly.
+## Required Gameplay Surface
 
-## Evidence manifest
+Every release-facing route must prove these controls in automated browser tests and runtime evidence:
 
-Use `createWorldWarXEvidenceManifest()` from `src/evidence/model.ts`.
+| Control | Expected behavior |
+| --- | --- |
+| `A` / Left | Move left inside arena bounds. |
+| `D` / Right | Move right inside arena bounds. |
+| `S` / Down | Crouch or fast-fall; the visible state must change. |
+| `Space` | Jump high enough to read visually; landing should recover. |
+| `Shift` | Dash with bounded distance and recovery. |
+| `Q` | Guard without pausing or crashing. |
+| `J` | Light attack with a distinct visible clip/state/window. |
+| `K` | Heavy attack with a distinct visible clip/state/window. |
+| `L` | Special attack or explicit no-meter feedback; it must not pause, crash, or lock the route. |
+| `P` | Pause/resume. |
+| `R` | Reset/rematch; all HP, timer, input, AI, meter, hitboxes, and animation states return to baseline. |
 
-The app exposes evidence in two places:
+Combat must stop after KO until reset/rematch. Post-KO hitboxes must be inert, and KO animation must not loop as repeated combat.
 
-```ts
-window.__WORLD_WAR_X_EVIDENCE__ = evidence;
-```
+## Asset Rules
 
-```html
-<script type="application/json" data-world-war-x-evidence>
-  { "...": "serialized evidence manifest" }
-</script>
-```
+The active release-facing fighters are contextual typed assets:
 
-The manifest schema is `wwx-evidence.v1` and includes:
+- `assets.auraClashPlayerRig`
+- `assets.auraClashRivalRig`
 
-- route definitions;
-- required DOM evidence hooks;
-- content safety checklist status;
-- performance budgets;
-- accessibility settings;
-- poster scenarios;
-- reviewer notes.
+Release-facing proof must not depend on:
 
-## Summit Remix
+- same-model tinting as the only fighter distinction;
+- retired attempt-named catalog proof assets;
+- `assets.auraClashTrainingMannequin`;
+- string ids;
+- raw remote URLs;
+- route-local GLB loader code.
 
-Summit Remix is the bounded prompt-remix feature for arena presentation. Keep copy focused on arcade arena changes and visible Aura3D systems.
-
-Current presets:
-
-- `currency-storm`: ticker boards, currency particles, market lighting, volatility hazards.
-- `orbital-debate`: orbital glass floor, star parallax, low-gravity presentation, cyan bloom.
-- `paperwork-blizzard`: paper particles, gavel sparks, smoke haze, stamp decals.
-
-Do not imply open-ended LLM generation. The current implementation uses curated prompt presets and clear repair hints.
-
-## Poster capture
-
-`WORLD_WAR_X_POSTER_SCENARIOS` in `src/capture/poster-scenarios.ts` defines four deterministic capture scenarios:
-
-- `key-art-command-map`
-- `playable-frontline`
-- `summit-remix-diplomacy`
-- `accessibility-safe-frame`
-
-Poster routes must set `[data-wwx-capture-ready]` only after the camera, lighting, overlays, and route-specific acceptance criteria are stable.
-
-## Tests
-
-Playwright contracts:
-
-- `route-health.spec.ts`
-- `screenshot.spec.ts`
-- `playable-smoke.spec.ts`
-- `summit-remix.spec.ts`
-- `deploy-check.spec.ts`
-
-Environment variables:
+When adding an arena prop, texture, music loop, or SFX, register it:
 
 ```bash
-WORLD_WAR_X_BASE_URL=http://127.0.0.1:5173
-WORLD_WAR_X_ROUTE_PREFIX=
+npx @aura3d/cli@latest assets add ./assets/hit.wav --name auraClashHitSfx --type audio
 ```
 
-Do not run Playwright, builds, or deploy checks from an agent process unless explicitly asked. These tests are the route contract for implementation and review.
+Then import through the generated `assets` object and include it in deployment proof.
 
-## Marketing integration
+## Evidence Contract
 
-The marketing homepage uses a poster-first World War X section and links to `/apps/world-war-x-showcase/`. Sitemap and robots entries include the live app route and the docs copy target.
+Normal proof must include:
 
-Keep marketing copy aligned to:
+- page 200 for `/playable`, `/apps/aura-clash`, and `/showcase/aura-clash/playable/`;
+- JS/CSS/GLB/texture/image/audio 200s;
+- no console errors or page errors;
+- nonblank canvas;
+- runtime proof object `window.__AURA_CLASH_ARENA_PROOF__`;
+- typed asset names and hashes;
+- frame count advancement;
+- visible movement and attacks;
+- HP changes only through combat collision;
+- KO lock and reset recovery;
+- screenshots for first frame, action, hit, KO, reset, and mobile.
 
-> World War X is an original satirical 1v1 arena fighter, browser-native, built with `@aura3d/engine`.
+Current release evidence is rolled up by:
 
-Header GitHub and npm links remain prominent on the marketing site.
+```bash
+pnpm --dir apps/aura-clash-showcase test:playable
+pnpm --dir apps/aura-clash-showcase test:flagship
+pnpm verify:aura-clash-flagship
+pnpm verify:aura3d110-performance
+pnpm verify:aura3d110-deployed-visual
+pnpm aura3d110:readiness
+```
 
-## Content safety and copy
+Do not mark a route as flagship quality without visual approval. A green smoke test can prove mechanics and still leave art, animation, audio, and game feel below the public bar.
 
-World War X is satire, not a political simulator.
+## Copy Boundary
 
-Use:
+Allowed:
 
-- stylized fictionalized public-leader avatars;
-- original fighter codenames;
-- public-persona archetype humor;
-- non-lethal arcade effects;
-- confetti, paperwork, shields, debate waves, currency bursts, and comic knockback;
-- explicit no-endorsement copy.
+> Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.
 
-Avoid:
+Not allowed:
 
-- official emblems, seals, or party logos;
-- private-life claims;
-- protected-trait jokes;
-- real-world casualty, assassination, or war-crime framing;
-- realistic weapons as primary specials;
-- copied franchise names, moves, UI patterns, or audio.
+- "Aura Clash is a polished flagship fighting game."
+- "Aura3D is a Unity replacement."
+- "Aura3D is an Unreal competitor."
+- "Aura3D has Babylon.js parity."
+- "The AI prompt catalog always finds production-ready fighters."

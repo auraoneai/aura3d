@@ -246,6 +246,14 @@ export class AnimationController<
     return cloneState(playback);
   }
 
+  playOnce(clipId: TClipId, options: Omit<AnimationPlayOptions<TClipId>, "loop"> = {}): AnimationClipPlaybackState<TClipId> {
+    return this.play(clipId, {
+      ...options,
+      loop: "once",
+      restart: options.restart ?? true
+    });
+  }
+
   pause(clipId?: TClipId): void {
     for (const state of this.selectStates(clipId)) {
       if (state.status === "playing") {

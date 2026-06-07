@@ -1,0 +1,509 @@
+{
+  "generatedAt": "2026-06-06T22:52:36.265Z",
+  "startedAt": "2026-06-06T22:52:27.766Z",
+  "origin": "https://aura3d.auraone.ai",
+  "canonicalBasePath": "/showcase/aura-clash",
+  "appBasePath": "/apps/aura-clash-showcase",
+  "manifestPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/aura.assets.json",
+  "routeCount": 6,
+  "metadataCount": 4,
+  "manifestGlbCount": 11,
+  "manifestAudioCount": 11,
+  "targetCount": 32,
+  "ok": true,
+  "failedCount": 0,
+  "kindStatus": {
+    "route": {
+      "ok": true,
+      "total": 6,
+      "failed": 0
+    },
+    "metadata": {
+      "ok": true,
+      "total": 4,
+      "failed": 0
+    },
+    "glb": {
+      "ok": true,
+      "total": 11,
+      "failed": 0
+    },
+    "audio": {
+      "ok": true,
+      "total": 11,
+      "failed": 0
+    }
+  },
+  "prdGateCoverage": [
+    {
+      "id": "deployed-route-and-glb-200",
+      "prdLineHint": 465,
+      "prdLabel": "Confirm deployed route and GLB URLs return 200.",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "requiredKinds": [
+        "route",
+        "glb"
+      ],
+      "ok": true,
+      "requiredKindStatus": {
+        "route": {
+          "ok": true,
+          "total": 6,
+          "failed": 0
+        },
+        "glb": {
+          "ok": true,
+          "total": 11,
+          "failed": 0
+        }
+      }
+    },
+    {
+      "id": "deployed-route-confirmed",
+      "prdLineHint": 494,
+      "prdLabel": "Deployed route confirmed.",
+      "artifact": "apps/aura-clash-showcase/launch-evidence/deployed-routes.json",
+      "requiredKinds": [
+        "route",
+        "metadata",
+        "glb"
+      ],
+      "ok": true,
+      "requiredKindStatus": {
+        "route": {
+          "ok": true,
+          "total": 6,
+          "failed": 0
+        },
+        "metadata": {
+          "ok": true,
+          "total": 4,
+          "failed": 0
+        },
+        "glb": {
+          "ok": true,
+          "total": 11,
+          "failed": 0
+        }
+      }
+    }
+  ],
+  "results": [
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 355
+    },
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/playable/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 241
+    },
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/evidence/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/evidence/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/evidence/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 197
+    },
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/accessibility/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/accessibility/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/accessibility/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 226
+    },
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/deploy-check/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/deploy-check/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/deploy-check/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 298
+    },
+    {
+      "kind": "route",
+      "label": "/showcase/aura-clash/poster/",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/poster/",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/poster/",
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": null,
+      "byteLength": 3503,
+      "durationMs": 142
+    },
+    {
+      "kind": "metadata",
+      "label": "/robots.txt",
+      "url": "https://aura3d.auraone.ai/robots.txt",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/robots.txt",
+      "contentType": "text/plain; charset=utf-8",
+      "contentLength": 395,
+      "byteLength": 395,
+      "durationMs": 134
+    },
+    {
+      "kind": "metadata",
+      "label": "/sitemap.xml",
+      "url": "https://aura3d.auraone.ai/sitemap.xml",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/sitemap.xml",
+      "contentType": "application/xml",
+      "contentLength": null,
+      "byteLength": 4879,
+      "durationMs": 250
+    },
+    {
+      "kind": "metadata",
+      "label": "/showcase/aura-clash/sitemap.xml",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/sitemap.xml",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/sitemap.xml",
+      "contentType": "application/xml",
+      "contentLength": null,
+      "byteLength": 1239,
+      "durationMs": 117
+    },
+    {
+      "kind": "metadata",
+      "label": "/showcase/aura-clash/robots.txt",
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/robots.txt",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/robots.txt",
+      "contentType": "text/plain; charset=utf-8",
+      "contentLength": 368,
+      "byteLength": 368,
+      "durationMs": 117
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/arenaNeonDowntown.56a42b19.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntown.56a42b19.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/arenaNeonDowntown.56a42b19.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 16459256,
+      "durationMs": 500
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/auraClashDuelStage.09735d3b.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashDuelStage.09735d3b.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashDuelStage.09735d3b.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 11157588,
+      "durationMs": 968
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/auraClashPlayableScene.15296b6b.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayableScene.15296b6b.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashPlayableScene.15296b6b.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 14270384,
+      "durationMs": 952
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 8114364,
+      "durationMs": 656
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 8061600,
+      "durationMs": 566
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterJinFlux.6404abf6.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterJinFlux.6404abf6.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterJinFlux.6404abf6.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 677320,
+      "durationMs": 334
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterKadeEmber.5e387f1c.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterKadeEmber.5e387f1c.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterKadeEmber.5e387f1c.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 677228,
+      "durationMs": 507
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterMaraVolt.18af93d3.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterMaraVolt.18af93d3.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterMaraVolt.18af93d3.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 1047560,
+      "durationMs": 344
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterNyxVale.13e7bfa8.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterNyxVale.13e7bfa8.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterNyxVale.13e7bfa8.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 1031856,
+      "durationMs": 469
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterRookAtlas.09571256.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterRookAtlas.09571256.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterRookAtlas.09571256.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 665164,
+      "durationMs": 379
+    },
+    {
+      "kind": "glb",
+      "label": "/aura-assets/fighterSableIron.3d88a3a7.glb",
+      "url": "https://aura3d.auraone.ai/aura-assets/fighterSableIron.3d88a3a7.glb",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/fighterSableIron.3d88a3a7.glb",
+      "contentType": "model/gltf-binary",
+      "contentLength": null,
+      "byteLength": 935824,
+      "durationMs": 391
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashDashSfx.72b589ea.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 7286,
+      "byteLength": 7286,
+      "durationMs": 23
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 7373,
+      "byteLength": 7373,
+      "durationMs": 72
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashDrawSfx.d21d0f0b.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 4848,
+      "byteLength": 4848,
+      "durationMs": 24
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 7117,
+      "byteLength": 7117,
+      "durationMs": 27
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 11617,
+      "byteLength": 11617,
+      "durationMs": 23
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 201216,
+      "byteLength": 201216,
+      "durationMs": 59
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 14317,
+      "byteLength": 14317,
+      "durationMs": 22
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 25566,
+      "byteLength": 25566,
+      "durationMs": 30
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 8968,
+      "byteLength": 8968,
+      "durationMs": 24
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 7369,
+      "byteLength": 7369,
+      "durationMs": 23
+    },
+    {
+      "kind": "audio",
+      "label": "/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "url": "https://aura3d.auraone.ai/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "ok": true,
+      "status": 200,
+      "statusText": "OK",
+      "finalUrl": "https://aura3d.auraone.ai/aura-assets/auraClashWinSfx.568967a3.ogg",
+      "contentType": "audio/ogg",
+      "contentLength": 12391,
+      "byteLength": 12391,
+      "durationMs": 27
+    }
+  ]
+}

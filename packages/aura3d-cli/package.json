@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/cli",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "bin": {
     "aura3d": "dist/cli.js",
@@ -22,7 +22,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@aura3d/asset-index": "^1.0.9"
+    "@aura3d/asset-index": "workspace:^1.0.10"
   },
   "description": "Aura3D CLI for typed GLB/glTF assets, game/cartoon readiness, character assembly, agent setup, diagnostics, and deploy checks.",
   "keywords": [

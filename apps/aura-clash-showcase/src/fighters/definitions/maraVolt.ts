@@ -259,7 +259,7 @@ export const maraVolt = {
     },
     {
       rule: "typed-asset",
-      note: "Use assets.fighterMaraVolt through the generated typed asset manifest."
+      note: "Use fighter.asset.typedAssetMember, which resolves to a final Aura Clash release rig in the generated typed asset manifest."
     },
     {
       rule: "reduced-flash-safe",

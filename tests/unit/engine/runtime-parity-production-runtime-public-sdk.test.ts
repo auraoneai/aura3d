@@ -11,6 +11,7 @@ import {
   createCameraFrame,
   createDirectionalLight,
   createFirstPersonControls,
+  createImportedAnimationRuntime,
   createGroundedStage,
   createMapControls,
   createOrbitControls,
@@ -21,9 +22,11 @@ import {
   createStudioLighting,
   createTrackballControls,
   loadGltfScene,
-  loadHdrEnvironment
+  loadHdrEnvironment,
+  type A3DGltfScene
 } from "@aura3d/engine/production-runtime";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
+import { Renderable, Scene } from "@aura3d/scene";
 
 describe("RuntimeParity production public SDK", () => {
   it("exports the developer-facing renderer product API", () => {
@@ -43,9 +46,110 @@ describe("RuntimeParity production public SDK", () => {
     expect(typeof createPointerLockControls).toBe("function");
     expect(typeof createProductViewer).toBe("function");
     expect(typeof createAnimationController).toBe("function");
+    expect(typeof createImportedAnimationRuntime).toBe("function");
     expect(typeof createPhysicsScene).toBe("function");
     expect(A3D_THREEJS_EXAMPLE_PARITY_TARGETS.keyframes).toBe("webgl_animation_keyframes");
     expect(A3D_THREEJS_EXAMPLE_PARITY_TARGETS.skinningIk).toBe("webgl_animation_skinning_ik");
+  });
+
+  it("exposes imported GLTF animation restart, one-shot, blend, event, morph, and snapshot helpers", () => {
+    const scene = new Scene();
+    const body = scene.createNode("CharacterRoot");
+    const face = scene.createNode("AnimatedMorphCube");
+    scene.root.addChild(body);
+    scene.root.addChild(face);
+    const renderable = new Renderable({
+      geometry: "geometry:animated-morph-cube",
+      material: "material:character",
+      morphWeights: [0, 0]
+    });
+    scene.addRenderable(face, renderable);
+    const idle = new AnimationClip({
+      name: "Idle",
+      duration: 1,
+      tracks: [new AnimationTrack({
+        target: "CharacterRoot.translation",
+        valueType: "vector3",
+        keyframes: [
+          { time: 0, value: [0, 0, 0] },
+          { time: 1, value: [0.2, 0, 0] }
+        ]
+      })]
+    });
+    const gesture = new AnimationClip({
+      name: "Gesture",
+      duration: 1,
+      tracks: [
+        new AnimationTrack({
+          target: "CharacterRoot.translation",
+          valueType: "vector3",
+          keyframes: [
+            { time: 0, value: [0, 0, 0] },
+            { time: 1, value: [1, 0, 0] }
+          ]
+        }),
+        new AnimationTrack({
+          target: "AnimatedMorphCube.weights",
+          valueType: "number-array",
+          keyframes: [
+            { time: 0, value: [0, 0] },
+            { time: 1, value: [0.75, 0.25] }
+          ]
+        })
+      ],
+      events: [{ name: "gesture-start", time: 0.2, payload: { cue: "wave" } }]
+    });
+    const gltfScene = {
+      resources: { scene },
+      asset: { animations: [idle, gesture], meshes: [], skins: [] },
+      metadata: { assetId: "synthetic-character" }
+    } as unknown as A3DGltfScene;
+
+    const runtime = createImportedAnimationRuntime(gltfScene);
+
+    expect(runtime.restartClip("Idle")).toMatchObject({
+      clipName: "Idle",
+      time: 0,
+      transformTracksApplied: 1
+    });
+    expect(runtime.playOneShot("Gesture", { time: gesture.duration })).toMatchObject({
+      clipName: "Gesture",
+      oneShot: true,
+      complete: true,
+      morphWeightTracksApplied: 1
+    });
+    const blended = runtime.blendClips([
+      { clipName: "Idle", time: 1, weight: 0.25 },
+      { clipName: "Gesture", time: 1, weight: 0.75 }
+    ]);
+    expect(blended.blendedClipCount).toBe(2);
+    expect(body.transform.position[0]).toBeCloseTo(0.8);
+
+    const morph = runtime.setMorphWeights("AnimatedMorphCube.weights", [0.35, 0.9], {
+      labels: ["smile", "blink"],
+      time: 0.15
+    });
+    expect(morph.morphWeightTracksApplied).toBe(1);
+    expect(renderable.morphWeights).toEqual([0.35, 0.9]);
+    expect(runtime.inspectClipBindings("Gesture")[0]).toMatchObject({
+      clipName: "Gesture",
+      boundTrackCount: 2,
+      morphWeightTrackCount: 1
+    });
+
+    const mixer = runtime.createMixer({ autoPlay: false });
+    mixer.playExclusive("Gesture", { reset: true, loopMode: "once" });
+    const update = mixer.update(0.25);
+    expect(update.events).toEqual([{ clipName: "Gesture", name: "gesture-start", time: 0.2, payload: { cue: "wave" } }]);
+    expect(update.applyResult.tracksApplied).toBe(2);
+    expect(runtime.snapshot()).toMatchObject({
+      clipCount: 2,
+      clips: ["Idle", "Gesture"],
+      lastApply: {
+        clipName: "morph:AnimatedMorphCube.weights",
+        morphWeightTracksApplied: 1
+      }
+    });
   });
 
   it("keeps the A3D production SDK entrypoint independent from Three.js runtime imports", () => {

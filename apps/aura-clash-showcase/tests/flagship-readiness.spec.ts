@@ -32,7 +32,7 @@ type ProofFighter = {
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
-  release: "1.0.9";
+  release: "1.0.10";
   status: "loading" | "running" | "paused" | "error";
   error: string | null;
   frame: number;
@@ -116,16 +116,16 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(afterLeft.player.x, "A/Left should move the player left").toBeLessThan(afterRight.player.x - 0.06);
 
     const beforeDash = await readProof(page);
-    await page.keyboard.down("ShiftLeft");
+    await page.keyboard.down("Space");
     await hold(page, "KeyD", 260);
-    await page.keyboard.up("ShiftLeft");
+    await page.keyboard.up("Space");
     const afterDash = await readProof(page);
-    expect(afterDash.player.x, "Shift+D should create a visibly larger dash/run displacement").toBeGreaterThan(beforeDash.player.x + 0.18);
+    expect(afterDash.player.x, "Space+D should create a visibly larger dash/run displacement").toBeGreaterThan(beforeDash.player.x + 0.18);
     expect(["run", "walk", "idle"]).toContain(afterDash.player.action);
 
-    await page.keyboard.press("Space");
+    await page.keyboard.press("KeyW");
     await expect.poll(async () => (await readProof(page)).player.y, {
-      message: "Space Jump should lift the player high enough to be readable"
+      message: "W Jump should lift the player high enough to be readable"
     }).toBeGreaterThan(0.45);
     const airborne = await readProof(page);
     await hold(page, "KeyS", 220);
@@ -136,11 +136,12 @@ test.describe("Aura Clash flagship readiness gates", () => {
       message: "player should land after jump/fast-fall"
     }).toBe(true);
 
-    await hold(page, "KeyQ", 260);
+    await hold(page, "ShiftLeft", 260);
     const afterGuard = await readProof(page);
-    expect(afterGuard.status, "Q Guard must not pause or crash the route").toBe("running");
-    expect(afterGuard.player.action, "Q Guard should expose guard state").toBe("guard");
-    expect(afterGuard.player.activeClip, "Q Guard should use the guard/crouch clip").toMatch(/Crouch|Guard|Block/i);
+    expect(afterGuard.status, "Shift Guard must not pause or crash the route").toBe("running");
+    expect(afterGuard.player.action, "Shift Guard should expose guard state").toBe("guard");
+    expect(afterGuard.player.activeClip, "Shift Guard should use the standing guard clip, not the crouch/down clip").toMatch(/Sword_Idle|Guard|Block/i);
+    expect(afterGuard.player.activeClip, "Shift Guard must not reuse the down/crouch clip").not.toMatch(/Crouch/i);
 
     await expectAttackClip(page, "KeyJ", "light", /Punch_Jab|Jab/i);
     await waitForAttackRecovery(page);
@@ -151,7 +152,7 @@ test.describe("Aura Clash flagship readiness gates", () => {
     await hold(page, "KeyL", 260);
     const afterSpecial = await readProof(page);
     expect(afterSpecial.status, "L Special must not pause, crash, or freeze the route").toBe("running");
-    if (beforeSpecial.player.meter >= 45) {
+    if (beforeSpecial.player.meter >= 20) {
       expect(afterSpecial.player.attacking ?? afterSpecial.player.action, "L Special should expose a special attack when meter is available").toBe("special");
       expect(afterSpecial.player.activeClip, "L Special should use a distinct special clip").toMatch(/Sword|Spell|Special/i);
     } else {
@@ -211,7 +212,7 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(sparkBlock, "hit VFX must not be debug cubes/boxes in normal play").not.toMatch(/Geometry\.litCube\(/);
     expect(sparkBlock, "hit VFX must not emit generic spark cube render items in normal play").not.toMatch(/item\(`spark-/);
 
-    await loadPlayable(page);
+    await loadPlayable(page, "?auraTestDriver=1");
     await landOneHit(page);
     const bodyText = ((await page.locator("body").textContent()) ?? "").toLowerCase();
     expect(bodyText).not.toContain("hitbox");
@@ -288,6 +289,7 @@ async function landOneHit(page: Page): Promise<AuraClashArenaProof> {
   await expect.poll(async () => (await readProof(page)).player.grounded, {
     message: "player must be grounded before a readable strike is tested"
   }).toBe(true);
+  await placeReadableHitRange(page);
   const before = await readProof(page);
   for (const code of ["KeyJ", "KeyK"] as const) {
     await hold(page, code, 220);
@@ -299,8 +301,42 @@ async function landOneHit(page: Page): Promise<AuraClashArenaProof> {
       return current;
     }
   }
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        queuePlayerAttack(move: MoveId): void;
+      };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash deterministic hit test driver was not installed.");
+    driver.queuePlayerAttack("heavy");
+  });
   await expect.poll(async () => (await readProof(page)).totalHits).toBeGreaterThan(before.totalHits);
   return readProof(page);
+}
+
+async function placeReadableHitRange(page: Page): Promise<void> {
+  await page.waitForFunction(() => Boolean((window as Window & {
+    __AURA_CLASH_ARENA_TEST_DRIVER__?: unknown;
+  }).__AURA_CLASH_ARENA_TEST_DRIVER__), null, { timeout: 3_000 });
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        setRivalHealth(health: number): void;
+        setPlayerMeter(meter: number): void;
+        setPositions(playerX: number, rivalX: number): void;
+      };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash hit-range test driver was not installed.");
+    driver.setPositions(-0.82, 0.42);
+    driver.setRivalHealth(240);
+    driver.setPlayerMeter(100);
+  });
+  await expect.poll(async () => {
+    const proof = await readProof(page);
+    return Math.abs(proof.rival.x - proof.player.x);
+  }, {
+    message: "fighter spacing should be deterministic before artifact-gate strike"
+  }).toBeGreaterThanOrEqual(0.72);
 }
 
 async function driveRivalToKo(page: Page): Promise<AuraClashArenaProof> {

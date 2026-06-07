@@ -1,5 +1,5 @@
 import { game, games } from "@aura3d/engine";
-import { publicAssetInstructions, REQUIRED_FIGHTER_ASSETS, REQUIRED_FIGHTER_CLIPS } from "./fighters";
+import { publicAssetInstructions, REQUIRED_FIGHTER_ASSETS, REQUIRED_FIGHTER_CLIPS, type FighterAssetKey } from "./fighters";
 
 type GameVec3 = readonly [number, number, number];
 
@@ -21,9 +21,17 @@ export const fightingStageBounds = {
   maxZ: fightingStage.combatBounds.maxZ
 };
 
-export const fightingRouteReadiness = {
+export interface FightingRouteReadinessOptions {
+  readonly missingFighterAssets: readonly FighterAssetKey[];
+}
+
+export function createFightingRouteReadiness(options: FightingRouteReadinessOptions) {
+  const placeholderMode = options.missingFighterAssets.length > 0;
+  return {
   kind: "aura3d-fighting-game-route-readiness",
-  sourceOnly: true,
+  sourceOnly: placeholderMode,
+  placeholderMode,
+  proofMode: placeholderMode ? "source-placeholders" : "typed-assets",
   template: "fighting-game",
   route: "/",
   packageName: "aura3d-fighting-game",
@@ -50,6 +58,7 @@ export const fightingRouteReadiness = {
     "game.debug.overlay"
   ],
   requiredTypedAssets: REQUIRED_FIGHTER_ASSETS,
+  missingTypedAssets: options.missingFighterAssets,
   requiredAnimationClips: REQUIRED_FIGHTER_CLIPS,
   assetCommands: publicAssetInstructions,
   buildDeclarations: {
@@ -74,7 +83,12 @@ export const fightingRouteReadiness = {
       message: issue.message
     }))
   }
-} as const;
+  } as const;
+}
+
+export const fightingRouteReadiness = createFightingRouteReadiness({
+  missingFighterAssets: REQUIRED_FIGHTER_ASSETS
+});
 
 export function createFighterColliders(playerPosition: GameVec3, rivalPosition: GameVec3) {
   return [

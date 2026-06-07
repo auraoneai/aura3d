@@ -182,8 +182,8 @@ importers:
   packages/aura3d-cli:
     dependencies:
       '@aura3d/asset-index':
-        specifier: ^1.0.9
-        version: 1.0.9
+        specifier: workspace:^1.0.10
+        version: link:../asset-index
 
   packages/controls:
     dependencies:
@@ -394,9 +394,6 @@ importers:
         version: 3.114.17(@cloudflare/workers-types@4.20260602.1)
 
 packages:
-
-  '@aura3d/asset-index@1.0.9':
-    resolution: {integrity: sha512-JqnrJRR9e1FHaw9hCK4oL3roY9T9Si5xoE0dfoSJTbfWlrqpEO1TuSOoJAAwtFHmuLre+/6rHc4WpTkXERYMKQ==}
 
   '@babylonjs/core@7.16.1':
     resolution: {integrity: sha512-5YW7zayTM4z1LWxOTIPzzRqH43V15Y0Kz4XmK5N60IFeL8IV1dnOsqHPGhFhRxaAHBnu0xoi9hGSrtbnHapPsw==}
@@ -2177,8 +2174,6 @@ packages:
     resolution: {integrity: sha512-EjIevzuJRiRPbVH4mGc8nApb/lVLKVpmUhAaR5R5doKGfAnGJ6Gr3CViAVjP+4FWSxCsybeWQdcgCtbX+7oZug==}
 
 snapshots:
-
-  '@aura3d/asset-index@1.0.9': {}
 
   '@babylonjs/core@7.16.1': {}
 

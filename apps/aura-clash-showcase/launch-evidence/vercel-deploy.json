@@ -1,11 +1,11 @@
 {
   "ok": true,
-  "generatedAt": "2026-06-06T06:08:44.123Z",
-  "startedAt": "2026-06-06T06:08:32.606Z",
+  "generatedAt": "2026-06-06T22:52:05.391Z",
+  "startedAt": "2026-06-06T22:51:53.143Z",
   "repoRoot": "/Users/gurbakshchahal/aura3d",
   "deployCwd": "/Users/gurbakshchahal/aura3d/marketing",
   "claimedOrigin": "https://aura3d.auraone.ai",
-  "productionUrl": "https://marketing-pisrylljh-veerone.vercel.app",
+  "productionUrl": "https://marketing-wnjnbc58p-veerone.vercel.app",
   "command": "vercel",
   "args": [
     "--prebuilt",
@@ -14,12 +14,12 @@
     "--archive",
     "tgz"
   ],
-  "durationMs": 11516,
+  "durationMs": 12247,
   "code": 0,
   "signal": null,
   "deploymentUrls": [
-    "https://marketing-pisrylljh-veerone.vercel.app",
-    "https://vercel.com/veerone/marketing/Gb7yDAtsp15t9a4zqJLB4w5wxKDN"
+    "https://marketing-wnjnbc58p-veerone.vercel.app",
+    "https://vercel.com/veerone/marketing/8cUHmwebRWJyHDtB2UzzNcmjzZrX"
   ],
   "prdGateCoverage": [
     {
@@ -35,6 +35,6 @@
       "ok": true
     }
   ],
-  "stdout": "https://marketing-pisrylljh-veerone.vercel.app",
-  "stderr": "Vercel CLI 48.9.0\nRetrieving project…\nDeploying veerone/marketing\nUploading [--------------------] (0.0B/9.6MB)\nUploading [=====---------------] (2.4MB/9.6MB)\nUploading [==========----------] (4.8MB/9.6MB)\nUploading [===============-----] (7.3MB/9.6MB)\nUploading [====================] (9.6MB/9.6MB)\nInspect: https://vercel.com/veerone/marketing/Gb7yDAtsp15t9a4zqJLB4w5wxKDN [6s]\nProduction: https://marketing-pisrylljh-veerone.vercel.app [6s]\nBuilding\nBuilding\nCompleting\n"
+  "stdout": "https://marketing-wnjnbc58p-veerone.vercel.app",
+  "stderr": "Vercel CLI 48.9.0\nRetrieving project…\nDeploying veerone/marketing\nUploading [--------------------] (0.0B/16.2MB)\nUploading [=====---------------] (4.0MB/16.2MB)\nUploading [==========----------] (8.1MB/16.2MB)\nUploading [===============-----] (12.1MB/16.2MB)\nUploading [====================] (16.2MB/16.2MB)\nInspect: https://vercel.com/veerone/marketing/8cUHmwebRWJyHDtB2UzzNcmjzZrX [7s]\nProduction: https://marketing-wnjnbc58p-veerone.vercel.app [7s]\nBuilding\nBuilding\nCompleting\n"
 }

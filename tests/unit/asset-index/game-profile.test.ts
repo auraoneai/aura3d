@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateGameAssetProfile, normalizeLicense, type AuraCanonicalAsset } from "@aura3d/asset-index";
+import { evaluateGameAssetProfile, getGameAssetProfileDefinition, normalizeLicense, type AuraCanonicalAsset } from "@aura3d/asset-index";
 
 function asset(partial: Partial<AuraCanonicalAsset> & Pick<AuraCanonicalAsset, "id">): AuraCanonicalAsset {
   return {
@@ -21,6 +21,36 @@ describe("evaluateGameAssetProfile", () => {
     expect(evaluation.suitable).toBe(true);
     expect(evaluation.rejectionReasons).toEqual([]);
     expect(evaluation.scoreBonus).toBeGreaterThan(0);
+  });
+
+  it("derives fighting-character scoring from the exported profile definition", () => {
+    const definition = getGameAssetProfileDefinition("fighting-character");
+    const candidate = asset({
+      id: "test:scored-fighter",
+      sourcePage: "https://example.test/scored-fighter",
+      fileSizeBytes: 2_000_000,
+      bounds: { size: [0.8, 1.8, 0.8] },
+    });
+    const evaluation = evaluateGameAssetProfile(candidate, "fighting-character");
+
+    expect(definition).toBeDefined();
+    expect(definition?.scoring.bonuses).toMatchObject({
+      characterLike: 20,
+      fightingLike: 12,
+      animations: 20,
+      glbFormat: 8
+    });
+    expect(evaluation.scoreBonus).toBe(
+      definition!.scoring.bonuses.characterLike +
+      definition!.scoring.bonuses.fightingLike +
+      definition!.scoring.bonuses.animations +
+      definition!.scoring.bonuses.glbFormat +
+      definition!.scoring.bonuses.verifiedRedistributableLicense +
+      definition!.scoring.bonuses.directDownload +
+      definition!.scoring.bonuses.bounds +
+      definition!.scoring.bonuses.sourcePage +
+      definition!.scoring.bonuses.compactPayload
+    );
   });
 
   it("rejects static non-character candidates with concrete reasons", () => {

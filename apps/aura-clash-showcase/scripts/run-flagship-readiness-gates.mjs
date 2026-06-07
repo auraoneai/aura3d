@@ -18,6 +18,36 @@ const commands = [
     id: "flagship-playwright",
     command: "npm",
     args: ["run", "test:flagship"]
+  },
+  {
+    id: "asset-quality-playwright",
+    command: "npm",
+    args: ["run", "test:asset-quality"]
+  },
+  {
+    id: "audio-playwright",
+    command: "npm",
+    args: ["run", "test:audio"]
+  },
+  {
+    id: "performance-budget-playwright",
+    command: "npm",
+    args: ["run", "test:performance-budget"]
+  },
+  {
+    id: "visual-regression-playwright",
+    command: "npm",
+    args: ["run", "test:visual-regression"]
+  },
+  {
+    id: "deterministic-replay-playwright",
+    command: "npm",
+    args: ["run", "test:deterministic-replay"]
+  },
+  {
+    id: "deployed-playable-playwright",
+    command: "npm",
+    args: ["run", "test:deployed-playable"]
   }
 ];
 

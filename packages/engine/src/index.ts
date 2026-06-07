@@ -36,6 +36,8 @@ export {
   A3DAppLifecycle
 } from "./advanced-runtime/index.js";
 export * from "./agent-api/index.js";
+export * from "./runtime/index.js";
+export * from "./game/index.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";

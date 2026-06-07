@@ -80,10 +80,7 @@ const cliSource = [
 ].map(read).join("\n");
 
 for (const token of [
-  "app.input(",
   "app.evidence(",
-  "app.onFrame(",
-  "game.runtimeNode(",
   "game.kinematicBody(",
   "game.jumpAssist(",
   "game.combatWorld(",
@@ -101,6 +98,14 @@ for (const token of [
   });
 }
 
+for (const check of [
+  { id: "template-main-token:gameApp.input", ok: /gameApp\.input/.test(templateMain), detail: "fighting-game route should use runtime-owned gameApp.input" },
+  { id: "template-main-token:gameApp.onFrame(", ok: /gameApp\.onFrame\(/.test(templateMain), detail: "fighting-game route should use gameApp.onFrame(" },
+  { id: "template-source-token:game.runtimeNode(", ok: /game\.runtimeNode\(/.test(templateCodeSources), detail: "fighting-game template should create runtime nodes through game.runtimeNode(" }
+]) {
+  checks.push(check);
+}
+
 for (const token of [
   "src/game/fighters.ts",
   "src/game/moves.ts",
@@ -115,7 +120,8 @@ for (const token of [
   "game.touchControls(",
   "game.collider.capsule(",
   "fightingRouteReadiness",
-  "sourceOnly: true",
+  "createFightingRouteReadiness",
+  "proofMode",
   "routeHealthSpec",
   "gameplaySmokeSpec",
   "npx @aura3d/cli@latest assets validate-game",
@@ -171,7 +177,7 @@ checks.push({
 
 const hasStaticSceneMasquerade =
   /createAuraApp\([^)]*,\s*\{\s*scene\s*:/s.test(templateMain) &&
-  !/\.runtime\(game\.runtimeNode\(|app\.onFrame\(|input\.update\(|app\.evidence\(/s.test(templateMain);
+  !/game\.runtimeNode\(|gameApp\.onFrame\(|input\.update\(|app\.evidence\(/s.test(templateGameSources);
 
 checks.push({
   id: "blocking:no-static-scene-masquerade",
@@ -180,8 +186,8 @@ checks.push({
 });
 
 const gameplayRuntimeSignals = [
-  /\.runtime\(game\.runtimeNode\(/,
-  /app\.onFrame\(/,
+  /game\.runtimeNode\(/,
+  /gameApp\.onFrame\(/,
   /input\.update\(/,
   /game\.kinematicBody\(/,
   /game\.combatWorld\(/,

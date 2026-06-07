@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"
@@ -12,7 +12,9 @@
     "templates/mini-game",
     "templates/fighting-game",
     "templates/cartoon-channel",
-    "templates/prompt-cartoon-channel"
+    "templates/prompt-cartoon-channel",
+    "templates/cartoon-studio",
+    "templates/episode-builder"
   ],
   "publishConfig": {
     "access": "public"
@@ -25,7 +27,7 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "description": "Scaffold Aura3D browser 3D apps for product viewers, cinematic scenes, mini-games, fighting-game runtimes, and prompt-driven cartoon channels.",
+  "description": "Scaffold Aura3D browser 3D apps for product viewers, cinematic scenes, mini-games, fighting-game runtimes, prompt-driven cartoon channels, cartoon studios, and episode builders.",
   "keywords": [
     "create-aura3d",
     "vite",
@@ -34,6 +36,8 @@
     "product-viewer",
     "fighting-game",
     "prompt-cartoon-channel",
+    "cartoon-studio",
+    "episode-builder",
     "cartoon-animation",
     "prompt-to-video",
     "game-runtime",

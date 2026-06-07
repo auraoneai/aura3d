@@ -25,7 +25,7 @@ import { assets } from "./aura-assets";
 
 The examples in this page use the public root package. Prefer the `game` facade for runtime helpers: `game.input(...)`, `game.inputReplay(...)`, `game.touchControls(...)`, `game.jumpAssist(...)`, `game.collider.*`, `game.debug.*`, `game.hud.*`, `game.accessibility.*`, and `game.evidence(...)`. Use `game.fighting(...)` for the ready-made fighting runtime kit. Use `games.fighting.stage(...)` or `games.fighting.stagePreset(...)` for stage source builders.
 
-For 1.0.5 skeletal animation, animation events, and viseme/blendshape sync, read `docs/api/animation-runtime-events.md` after this page. The runtime node and frame-loop APIs here are the base layer; visible skinned GLB playback and morph target evidence are separate release gates.
+For current skeletal animation, animation events, and viseme/blendshape sync, read `docs/api/animation-runtime-events.md` after this page. The runtime node and frame-loop APIs here are the base layer; visible skinned GLB playback and morph target evidence are separate release gates.
 
 ## Minimal runtime route
 
@@ -1252,7 +1252,7 @@ npx @aura3d/cli@latest assets validate-game
 npx @aura3d/cli@latest check-deploy --dist dist
 ```
 
-Repository release gates for the Aura3D 1.0.5 game runtime track:
+Repository release gates for the current Aura3D game runtime track:
 
 ```bash
 pnpm game-runtime:docs

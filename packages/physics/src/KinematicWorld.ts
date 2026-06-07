@@ -247,10 +247,16 @@ function cloneWorldEvent(event: KinematicWorldEvent): KinematicWorldEvent {
         position: cloneVec3(event.position)
       };
     case "dash":
+    case "fast-fall":
       return {
         ...event,
         position: cloneVec3(event.position),
         velocity: cloneVec3(event.velocity)
+      };
+    case "crouch":
+      return {
+        ...event,
+        position: cloneVec3(event.position)
       };
     case "knockback":
       return {

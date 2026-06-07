@@ -259,7 +259,7 @@ export const rookAtlas = {
     },
     {
       rule: "typed-asset",
-      note: "Use assets.fighterRookAtlas through the generated typed asset manifest."
+      note: "Use fighter.asset.typedAssetMember, which resolves to a final Aura Clash release rig in the generated typed asset manifest."
     },
     {
       rule: "non-lethal-arcade",

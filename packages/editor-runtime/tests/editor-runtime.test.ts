@@ -4,21 +4,29 @@ import { Ray, Vector3 } from "@aura3d/math";
 import { Scene } from "@aura3d/scene";
 import {
   CommandHistory,
+  CartoonSceneEditor,
+  CurveEditor,
   CreateNodeCommand,
   DeleteNodeCommand,
   EditorRuntime,
   InspectorModel,
+  KeyframeEditor,
   PickingService,
+  PropertyPanel,
+  SceneOutliner,
   Selection,
   SetPropertyCommand,
   TimelineClip,
+  TimelineEditorController,
   TimelineModel,
   TimelineTrack,
   TransformCommand,
   TranslateGizmo,
   collectEditorProjectEvidence,
   createTimelineRuntimeBridge,
+  createTimelineTrackConfig,
   parseEditorProject,
+  readTimelineKeyframes,
   serializeEditorProject,
   type Command,
   type EditorProjectDocument,
@@ -594,4 +602,143 @@ test("ProjectSerializer round-trips editor timelines, runtime bindings, asset pr
     ...project,
     timelines: [{ ...timeline.toConfig(), bindings: [{ trackId: "character-animation", targetId: "" }] }]
   }), /targetId is required/);
+});
+
+test("TimelineEditorController edits clips with snapping, selection, undo, redo, copy, paste, and serialization", async () => {
+  const controller = new TimelineEditorController({
+    timeline: new TimelineModel({ id: "episode", duration: 6, frameRate: 24, loopMode: "none" }),
+    snapInterval: 0.5
+  });
+  const animationTrack = await controller.addTrack("animation", "Character");
+  assert.equal(animationTrack.type, "animation");
+  assert.equal(animationTrack.properties.auraTrackKind, "animation");
+
+  const clip = await controller.addClip(animationTrack.id, {
+    id: "wave",
+    name: "Wave",
+    startTime: 0.26,
+    duration: 1.25,
+    clipName: "Wave",
+    properties: { targetId: "toon" }
+  });
+  assert.equal(clip.startTime, 0.5);
+  assert.equal(controller.snapshot().evidence.clipEditing, true);
+  assert.equal(controller.snapshot().evidence.keyframeReadyTracks, true);
+
+  await controller.moveClip("wave", 1.26);
+  assert.equal(clip.startTime, 1.5);
+  await controller.resizeClip("wave", 2);
+  assert.equal(clip.duration, 2);
+  controller.selectClip("wave");
+  controller.copySelection();
+  const pasted = await controller.pasteClips(animationTrack.id, 4);
+  assert.equal(pasted.length, 1);
+  assert.equal(pasted[0].startTime, 4);
+  assert.deepEqual(controller.snapshot().selectedIds, [pasted[0].id]);
+
+  await controller.undo();
+  assert.equal(animationTrack.clips.length, 1);
+  await controller.redo();
+  assert.equal(animationTrack.clips.length, 2);
+
+  const split = await controller.splitClip("wave", 2);
+  assert.deepEqual(split.map((item) => item.id), ["wave-a", "wave-b"]);
+  assert.equal(animationTrack.clips.length, 3);
+  controller.scrubTo(2.49);
+  assert.equal(controller.timeline.currentTime, 2.5);
+  controller.handleKeyboardShortcut("ArrowLeft");
+  assert.equal(Number(controller.timeline.currentTime.toFixed(4)), 2.4583);
+
+  const serialized = controller.serializeTimeline();
+  assert.equal(serialized.tracks?.[0]?.properties?.auraTrackKind, "animation");
+  assert.equal(serialized.tracks?.[0]?.clips?.length, 3);
+});
+
+test("KeyframeEditor and CurveEditor author deterministic bezier keyframes on timeline clips", async () => {
+  const clip = new TimelineClip({ id: "camera-move", name: "Camera Move", startTime: 0, duration: 2 });
+  const keyframes = new KeyframeEditor();
+  await keyframes.addKeyframe(clip, { id: "x0", propertyPath: "transform.position.x", time: 0, value: 0, interpolation: "bezier", outHandle: { time: 0.3, value: 4 } });
+  await keyframes.addKeyframe(clip, { id: "x1", propertyPath: "transform.position.x", time: 2, value: 10, interpolation: "linear", inHandle: { time: -0.3, value: -2 } });
+  assert.equal(readTimelineKeyframes(clip).length, 2);
+
+  const curve = new CurveEditor(keyframes.commandHistory);
+  assert.equal(curve.sample(clip, "transform.position.x", 0).value, 0);
+  assert.equal(curve.sample(clip, "transform.position.x", 2).value, 10);
+  assert.equal(typeof curve.sample(clip, "transform.position.x", 1).value, "number");
+
+  await curve.setBezierHandles(clip, "x1", { inHandle: { time: -0.25, value: -1 }, outHandle: { time: 0.25, value: 1 } });
+  assert.equal(readTimelineKeyframes(clip).find((keyframe) => keyframe.id === "x1")?.interpolation, "bezier");
+  const moved = await keyframes.moveKeyframes(clip, ["x0", "x1"], 0.5);
+  assert.deepEqual(moved.map((keyframe) => keyframe.time), [0.5, 2.5]);
+  const copy = keyframes.copyKeyframes(clip, ["x0"]);
+  const pasted = await keyframes.pasteKeyframes(clip, copy, { timeOffset: 1, idPrefix: "copy" });
+  assert.equal(pasted[0].id, "copy-x0-0");
+  assert.equal(readTimelineKeyframes(clip).length, 3);
+
+  await keyframes.commandHistory.undo();
+  assert.equal(readTimelineKeyframes(clip).length, 2);
+  assert.equal(curve.evidence(clip, "transform.position.x").evidence.deterministicSampling, true);
+});
+
+test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compose and edit cartoon scene nodes", async () => {
+  const editor = new CartoonSceneEditor();
+  const node = await editor.placeAsset(
+    {
+      id: "typed-toon",
+      name: "Typed Toon",
+      type: "glb",
+      source: "typed-catalog",
+      license: "CC0",
+      category: "character",
+      clips: ["Idle", "Wave"],
+      lipSyncReady: true
+    },
+    { position: { x: 1, y: 0, z: 2 } }
+  );
+
+  assert.equal(node.kind, "character");
+  assert.equal(node.transform.position.x, 1);
+  assert.deepEqual(editor.runtime.currentSelection(), [node.id]);
+  assert.equal(editor.snapshot().placedAssetCount, 1);
+
+  await editor.setTransform(node.id, { scale: { x: 2, y: 2, z: 2 } });
+  assert.equal(node.transform.scale.x, 2);
+  await editor.runtime.history.undo();
+  assert.equal(node.transform.scale.x, 1);
+  await editor.runtime.history.redo();
+  assert.equal(node.transform.scale.x, 2);
+
+  const outliner = new SceneOutliner();
+  const outlinerItems = outliner.describe(editor.root, new Set(editor.runtime.currentSelection()));
+  assert.equal(outlinerItems.find((item) => item.id === node.id)?.icon, "[CHAR]");
+  assert.equal(outlinerItems.find((item) => item.id === node.id)?.selected, true);
+
+  const panel = new PropertyPanel({ history: editor.runtime.history });
+  const fields = panel.describe(node);
+  assert.equal(fields.some((field) => field.label === "transform.position.x" && field.editable), true);
+  await panel.edit(node, ["transform", "position", "x"], 3);
+  assert.equal(node.transform.position.x, 3);
+  await editor.runtime.history.undo();
+  assert.equal(node.transform.position.x, 1);
+
+  const serialized = editor.serializeScene();
+  const restored = new CartoonSceneEditor();
+  restored.loadScene(serialized);
+  assert.equal(restored.snapshot().nodeCount, 2);
+});
+
+test("Timeline track type helpers create cartoon timeline lanes compatible with TimelineModel", () => {
+  const dialogue = createTimelineTrackConfig("dialogue", "Dialogue");
+  const captions = createTimelineTrackConfig("caption", "Captions");
+  const timeline = new TimelineModel({
+    duration: 3,
+    tracks: [
+      { ...dialogue, clips: [{ id: "line", name: "Line", startTime: 0, duration: 1, properties: { speaker: "Narrator" } }] },
+      { ...captions, clips: [{ id: "caption", name: "Caption", startTime: 0, duration: 1, properties: { text: "Hello" } }] }
+    ]
+  });
+  assert.equal(timeline.tracks[0].type, "audio");
+  assert.equal(timeline.tracks[0].properties.auraTrackKind, "dialogue");
+  assert.equal(timeline.tracks[1].type, "generic");
+  assert.equal(timeline.snapshot().trackCount, 2);
 });

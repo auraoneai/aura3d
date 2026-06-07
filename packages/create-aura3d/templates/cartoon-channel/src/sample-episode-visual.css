@@ -1,0 +1,457 @@
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(125, 226, 255, 0.2), transparent 34%),
+    linear-gradient(180deg, #06101f 0%, #0b1f32 58%, #07131d 100%);
+  color: #f8fff2;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+#app {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  opacity: 0.96;
+  pointer-events: none;
+}
+
+#app canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#caption-overlay,
+.aura-diagnostics-overlay {
+  display: none !important;
+}
+
+.sample-episode {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(64, 255, 191, 0.12), transparent 26%),
+    linear-gradient(180deg, rgba(8, 27, 42, 0.2), rgba(2, 8, 14, 0.76));
+}
+
+.sample-episode__frame {
+  position: relative;
+  width: min(1280px, calc(100vw - 48px));
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgba(125, 226, 255, 0.28);
+  border-radius: 24px;
+  background:
+    linear-gradient(rgba(125, 226, 255, 0.05) 1px, transparent 1px) 0 0 / 100% 10px,
+    radial-gradient(circle at 50% 42%, rgba(125, 226, 255, 0.2), transparent 24%),
+    linear-gradient(180deg, rgba(11, 36, 53, 0.9) 0%, rgba(19, 58, 73, 0.76) 57%, rgba(21, 47, 48, 0.72) 58%, rgba(13, 29, 34, 0.82) 100%);
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.55),
+    0 0 80px rgba(64, 255, 191, 0.12);
+}
+
+.sample-episode__moon {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 10%;
+  width: 30%;
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border: 2px solid rgba(125, 226, 255, 0.22);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 42% 36%, rgba(248, 255, 242, 0.18), transparent 12%),
+    radial-gradient(circle at 64% 56%, rgba(64, 255, 191, 0.08), transparent 18%);
+  opacity: 0.82;
+}
+
+.sample-episode__skyline {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 28% 0;
+  height: 24%;
+  background:
+    linear-gradient(90deg, transparent 3%, rgba(6, 18, 26, 0.72) 3% 9%, transparent 9% 14%, rgba(6, 18, 26, 0.58) 14% 26%, transparent 26% 34%, rgba(6, 18, 26, 0.62) 34% 43%, transparent 43% 52%, rgba(6, 18, 26, 0.58) 52% 61%, transparent 61% 72%, rgba(6, 18, 26, 0.66) 72% 83%, transparent 83% 91%, rgba(6, 18, 26, 0.52) 91% 96%, transparent 96%);
+}
+
+.sample-episode__garden {
+  position: absolute;
+  z-index: 3;
+  left: 10%;
+  right: 10%;
+  bottom: 18%;
+  height: 19%;
+  border-radius: 50% 50% 12px 12px / 46% 46% 12px 12px;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(64, 255, 191, 0.36), transparent 44%),
+    linear-gradient(180deg, #173e3a 0%, #10282c 100%);
+  border-bottom: 8px solid rgba(64, 255, 191, 0.72);
+  box-shadow: 0 -4px 34px rgba(64, 255, 191, 0.18);
+}
+
+.sample-episode__path {
+  position: absolute;
+  z-index: 4;
+  left: 22%;
+  right: 22%;
+  bottom: 19%;
+  height: 6%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 225, 142, 0.16), rgba(255, 225, 142, 0.74), rgba(255, 225, 142, 0.16));
+}
+
+.sample-episode__stones,
+.sample-episode__flowers {
+  position: absolute;
+  z-index: 5;
+  inset: auto 17% 25% 17%;
+  height: 8%;
+}
+
+.sample-episode__stones::before,
+.sample-episode__stones::after,
+.sample-episode__flowers::before,
+.sample-episode__flowers::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 26px;
+  height: 18px;
+  border-radius: 999px;
+  background: #ffe18e;
+  box-shadow:
+    0 0 18px rgba(255, 225, 142, 0.8),
+    86px -10px 0 -5px #40ffbf,
+    86px -10px 22px -6px rgba(64, 255, 191, 0.74),
+    472px -4px 0 -4px #ffe18e,
+    472px -4px 20px -6px rgba(255, 225, 142, 0.8);
+}
+
+.sample-episode__stones::before {
+  left: 6%;
+}
+
+.sample-episode__stones::after {
+  right: 8%;
+}
+
+.sample-episode__flowers::before,
+.sample-episode__flowers::after {
+  width: 14px;
+  height: 50px;
+  border-radius: 999px 999px 12px 12px;
+  background: #f8fff2;
+  box-shadow:
+    0 0 18px rgba(248, 255, 242, 0.55),
+    20px -6px 0 -4px #7de2ff,
+    130px 4px 0 -3px #f8fff2,
+    150px -5px 0 -5px #40ffbf;
+}
+
+.sample-episode__flowers::before {
+  left: 16%;
+}
+
+.sample-episode__flowers::after {
+  right: 18%;
+}
+
+.cartoon-robot {
+  --accent: #7de2ff;
+  --shadow: rgba(125, 226, 255, 0.28);
+  position: absolute;
+  bottom: 25%;
+  width: 15%;
+  min-width: 128px;
+  aspect-ratio: 0.62;
+  filter: drop-shadow(0 22px 26px rgba(0, 0, 0, 0.38)) drop-shadow(0 0 26px var(--shadow));
+  transition:
+    transform 420ms ease,
+    left 420ms ease,
+    right 420ms ease;
+}
+
+.sample-episode[data-uses-typed-assets="true"] .cartoon-robot {
+  display: none;
+}
+
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__moon,
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__skyline,
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__garden,
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__path,
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__stones,
+.sample-episode[data-uses-typed-assets="true"] .sample-episode__flowers,
+.sample-episode[data-uses-typed-assets="true"] .cartoon-broom {
+  display: none;
+}
+
+.cartoon-robot--miko {
+  left: 26%;
+}
+
+.cartoon-robot--luma {
+  --accent: #ffe18e;
+  --shadow: rgba(255, 225, 142, 0.32);
+  right: 26%;
+}
+
+.sample-episode[data-shot-id="shot-glow-stone-teamwork"] .cartoon-robot--miko {
+  transform: translateX(8%) rotate(-6deg);
+}
+
+.sample-episode[data-shot-id="shot-glow-stone-teamwork"] .cartoon-robot--luma {
+  transform: translateX(-8%) rotate(5deg);
+}
+
+.sample-episode[data-shot-id="shot-moon-garden-finish"] .cartoon-robot--miko {
+  transform: translateX(14%) scale(1.05);
+}
+
+.sample-episode[data-shot-id="shot-moon-garden-finish"] .cartoon-robot--luma {
+  transform: translateX(-14%) scale(1.05);
+}
+
+.cartoon-robot__antenna,
+.cartoon-robot__head,
+.cartoon-robot__body,
+.cartoon-robot__arm,
+.cartoon-robot__leg {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.72), transparent 14%),
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 94%, white 22%), color-mix(in srgb, var(--accent) 82%, black 12%));
+  border: 2px solid rgba(255, 255, 255, 0.38);
+}
+
+.cartoon-robot__antenna {
+  top: 0;
+  width: 8%;
+  height: 10%;
+  border-radius: 999px;
+  box-shadow: 0 -10px 0 -2px var(--accent);
+}
+
+.cartoon-robot__head {
+  top: 9%;
+  width: 58%;
+  height: 26%;
+  border-radius: 42% 42% 36% 36%;
+}
+
+.cartoon-robot__eye {
+  position: absolute;
+  top: 40%;
+  width: 10%;
+  height: 9%;
+  border-radius: 999px;
+  background: #06101f;
+  box-shadow: 0 0 10px rgba(6, 16, 31, 0.45);
+}
+
+.cartoon-robot__eye--left {
+  left: 34%;
+}
+
+.cartoon-robot__eye--right {
+  right: 34%;
+}
+
+.cartoon-robot__mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 21%;
+  width: 30%;
+  height: 6%;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: #f8fff2;
+}
+
+.sample-episode[data-speaker="miko"] .cartoon-robot--miko .cartoon-robot__mouth,
+.sample-episode[data-speaker="luma"] .cartoon-robot--luma .cartoon-robot__mouth {
+  height: 14%;
+  bottom: 17%;
+}
+
+.cartoon-robot__body {
+  top: 38%;
+  width: 70%;
+  height: 33%;
+  border-radius: 28% 28% 34% 34%;
+}
+
+.cartoon-robot__arm {
+  top: 42%;
+  width: 15%;
+  height: 34%;
+  border-radius: 999px;
+}
+
+.cartoon-robot__arm--left {
+  left: 12%;
+  transform: rotate(22deg);
+}
+
+.cartoon-robot__arm--right {
+  left: auto;
+  right: 12%;
+  transform: rotate(-22deg);
+}
+
+.sample-episode[data-shot-id="shot-glow-stone-teamwork"] .cartoon-robot__arm--right {
+  transform: rotate(-54deg);
+}
+
+.cartoon-robot__leg {
+  top: 70%;
+  width: 17%;
+  height: 28%;
+  border-radius: 999px;
+}
+
+.cartoon-robot__leg--left {
+  left: 36%;
+}
+
+.cartoon-robot__leg--right {
+  left: 62%;
+}
+
+.cartoon-broom {
+  position: absolute;
+  z-index: 6;
+  left: 42%;
+  bottom: 36%;
+  width: 16%;
+  height: 2.8%;
+  transform: rotate(-24deg);
+  border-radius: 999px;
+  background: #7de2ff;
+  box-shadow: 0 0 18px rgba(125, 226, 255, 0.48);
+}
+
+.cartoon-broom::after {
+  content: "";
+  position: absolute;
+  right: -8%;
+  top: 50%;
+  width: 22%;
+  height: 260%;
+  transform: translateY(-50%) rotate(18deg);
+  border-radius: 999px 999px 18px 18px;
+  background: #ffe18e;
+}
+
+.sample-episode[data-shot-id="shot-moon-garden-open"] .cartoon-broom {
+  opacity: 0.35;
+}
+
+.sample-episode__title {
+  position: absolute;
+  z-index: 7;
+  left: 34px;
+  top: 28px;
+  max-width: 380px;
+  margin: 0;
+  font-size: clamp(24px, 3vw, 48px);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.sample-episode__shot {
+  position: absolute;
+  z-index: 7;
+  right: 34px;
+  top: 32px;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 255, 242, 0.18);
+  border-radius: 999px;
+  background: rgba(3, 12, 20, 0.68);
+  color: rgba(248, 255, 242, 0.84);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sample-episode__caption {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: 38px;
+  width: min(820px, calc(100% - 70px));
+  transform: translateX(-50%);
+  padding: 14px 20px;
+  border: 1px solid rgba(248, 255, 242, 0.2);
+  border-radius: 18px;
+  background: rgba(2, 8, 14, 0.82);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.32);
+  font-size: clamp(18px, 2.1vw, 26px);
+  font-weight: 850;
+  line-height: 1.22;
+  text-align: center;
+}
+
+.sample-episode__timeline {
+  position: absolute;
+  z-index: 8;
+  left: 34px;
+  right: 34px;
+  bottom: 14px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(248, 255, 242, 0.12);
+}
+
+.sample-episode__timeline-fill {
+  display: block;
+  width: var(--progress, 0%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7de2ff, #40ffbf, #ffe18e);
+}
+
+.sample-episode__proof {
+  position: absolute;
+  z-index: 7;
+  left: 34px;
+  top: 102px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(3, 12, 20, 0.72);
+  color: rgba(248, 255, 242, 0.78);
+  font: 800 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (max-width: 760px) {
+  .sample-episode__frame {
+    width: calc(100vw - 24px);
+    border-radius: 18px;
+  }
+
+  .sample-episode__title {
+    left: 18px;
+    top: 18px;
+    max-width: 260px;
+  }
+
+  .sample-episode__shot {
+    right: 18px;
+    top: 18px;
+    font-size: 10px;
+  }
+
+  .cartoon-robot {
+    min-width: 88px;
+  }
+}

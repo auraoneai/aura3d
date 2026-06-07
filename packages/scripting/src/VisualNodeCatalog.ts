@@ -1,4 +1,5 @@
 import { type VisualNode, type VisualPort } from "./VisualNode";
+import { cartoonVisualNodeDefinitions } from "./CartoonVisualNodes";
 
 export type VisualNodeCategory =
   | "value"
@@ -11,6 +12,11 @@ export type VisualNodeCategory =
   | "animation"
   | "physics"
   | "combat"
+  | "scene"
+  | "dialogue"
+  | "audio"
+  | "timing"
+  | "publishing"
   | "camera"
   | "evidence";
 
@@ -107,7 +113,8 @@ const definitions: readonly VisualNodeDefinition[] = [
 
   define("captureSnapshot", "evidence", "Capture Snapshot", "Create an evidence snapshot command from deterministic graph context.", [flowInput(), stringInput("label", true)], [{ id: "out", direction: "output", type: "flow" }, { id: "snapshot", direction: "output", type: "object" }], ["src/scripting/nodes/EvidenceNodes.ts"]),
   define("markProof", "evidence", "Mark Proof", "Create a deterministic proof marker command.", [flowInput(), stringInput("proofId"), objectInput("details", true)], commandOutputs(), ["src/scripting/nodes/EvidenceNodes.ts"]),
-  define("assertState", "evidence", "Assert State", "Compare actual and expected values for deterministic evidence.", [{ id: "actual", direction: "input", type: "any", optional: true }, { id: "expected", direction: "input", type: "any", optional: true }, stringInput("operator", true)], [{ id: "out", direction: "output", type: "flow" }, { id: "passed", direction: "output", type: "boolean" }, { id: "assertion", direction: "output", type: "object" }], ["src/scripting/nodes/EvidenceNodes.ts"])
+  define("assertState", "evidence", "Assert State", "Compare actual and expected values for deterministic evidence.", [{ id: "actual", direction: "input", type: "any", optional: true }, { id: "expected", direction: "input", type: "any", optional: true }, stringInput("operator", true)], [{ id: "out", direction: "output", type: "flow" }, { id: "passed", direction: "output", type: "boolean" }, { id: "assertion", direction: "output", type: "object" }], ["src/scripting/nodes/EvidenceNodes.ts"]),
+  ...cartoonVisualNodeDefinitions
 ];
 
 export function listVisualNodeDefinitions(): readonly VisualNodeDefinition[] {

@@ -1,6 +1,6 @@
 # Physics Runtime
 
-Version: 1.0.5
+Version: 1.0.10
 
 `@aura3d/physics` is the first-party deterministic physics package created for rigid bodies, colliders, constraints, raycasts, scene sync, debug draw, and workflow evidence. The package is exported from `@aura3d/engine/physics`.
 
@@ -37,6 +37,63 @@ The physics runtime supports evidence for:
 - broadphase profiling counters;
 - debug-line extraction;
 - scene/ECS synchronization.
+
+## Fighting Movement And Combat Helpers
+
+For 2.5D fighting routes, keep movement and combat deterministic and evidence
+driven. A route should expose the tuning constants it uses for jump height,
+fast-fall/down input, dash distance, guard state, hitstun, knockback, bounds,
+and KO/reset behavior.
+
+Minimum expected behavior:
+
+| Input/state | Runtime expectation |
+| --- | --- |
+| Jump | Applies a vertical impulse high enough to read visually and emits a landing/recovery state when grounded again. |
+| Down | While grounded, enters crouch or low-profile state; while airborne, increases downward velocity for fast-fall. |
+| Dash | Applies bounded horizontal velocity with startup/recovery and cannot tunnel through arena bounds. |
+| Guard | Marks the combatant as guarding; incoming hit resolution should reduce/block damage and apply blockstun instead of normal hitstun. |
+| Hitstun | Temporarily disables new actions, applies knockback, and clears or delays recovery by move data. |
+| KO | Locks combat, clears active hitboxes, and prevents further damage until reset/rematch. |
+
+Source-level example:
+
+```ts
+const body = game.kinematicBody({
+  id: "player",
+  position: { x: -1.2, y: 0, z: 0 },
+  bounds: { minX: -3, maxX: 3, minY: 0, maxY: 3 },
+  gravity: -18
+});
+
+if (input.pressed("jump") && body.grounded) {
+  body.velocity.y = 8.5;
+}
+
+if (input.held("down") && !body.grounded) {
+  body.velocity.y -= 18 * dt;
+}
+
+if (input.pressed("dash")) {
+  body.velocity.x = body.facing * 7;
+}
+
+const combat = game.combatWorld({
+  actors: [
+    { id: "player", health: 100 },
+    { id: "rival", health: 100 }
+  ],
+  lockOnKnockout: true
+});
+
+if (input.held("guard")) {
+  combat.setGuard("player", true);
+}
+```
+
+Release proof should show every listed input changing state and should verify
+that reset clears HP, velocity, guard, hitstun, active hitboxes, KO lock, and
+recorded proof counters.
 
 ## Verification
 

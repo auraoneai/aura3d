@@ -8,10 +8,11 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts --workers=1"
+    "test": "playwright test tests/route-health.spec.ts tests/storyboard-playback.spec.ts tests/sample-episode-visual.spec.ts tests/concept-2-5d.spec.ts --workers=1",
+    "record:2.5d": "playwright test tests/concept-2-5d-animation.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "1.0.9"
+    "@aura3d/engine": "1.0.10"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

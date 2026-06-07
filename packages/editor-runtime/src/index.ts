@@ -1,5 +1,11 @@
 export type { Command, CommandContext } from "./Command";
 export { CommandHistory, CommandTransactionError } from "./CommandHistory";
+export { AssetDropZone, readAssetFromDataTransfer, serializeAssetForDrag } from "./AssetDropZone";
+export type { AssetDropPlacement, AssetDropResult, AssetDropZoneOptions, CartoonAssetCategory, CartoonEditorAssetReference } from "./AssetDropZone";
+export { CartoonSceneEditor, createCartoonSceneNode } from "./CartoonSceneEditor";
+export type { CartoonSceneEditorOptions, CartoonSceneEditorSnapshot, CartoonSceneNode, CartoonSceneTransform } from "./CartoonSceneEditor";
+export { CurveEditor } from "./CurveEditor";
+export type { TimelineCurveEvidence, TimelineCurvePoint, TimelineCurveSample } from "./CurveEditor";
 export { DiagnosticsOverlayModel } from "./DiagnosticsOverlayModel";
 export type { EditorDiagnosticsInput, EditorDiagnosticsResource, EditorDiagnosticsSnapshot } from "./DiagnosticsOverlayModel";
 export { EditorRuntime } from "./EditorRuntime";
@@ -22,6 +28,15 @@ export { HierarchyModel } from "./HierarchyModel";
 export type { HierarchyLikeNode, HierarchyNodeDescriptor } from "./HierarchyModel";
 export { InspectorModel } from "./InspectorModel";
 export type { InspectorEditableValue, InspectorProperty } from "./InspectorModel";
+export { KeyframeEditor, encodeTimelineKeyframes, readTimelineKeyframes, timelineKeyframesByProperty } from "./KeyframeEditor";
+export type {
+  CreateTimelineKeyframeOptions,
+  PasteTimelineKeyframesOptions,
+  TimelineBezierHandle,
+  TimelineKeyframe,
+  TimelineKeyframeInterpolation,
+  TimelineKeyframeValue
+} from "./KeyframeEditor";
 export { sampleLocalizationAccessibilityFixture } from "./LocalizationAccessibilityFixtures";
 export type {
   EditorAccessibilityElementSample,
@@ -40,8 +55,12 @@ export { PlayModeBridge } from "./PlayModeBridge";
 export type { SnapshotAdapter } from "./PlayModeBridge";
 export { PrefabRegistry, validatePrefab } from "./PrefabRegistry";
 export type { CreatePrefabOptions, EditorPrefab, EditorPrefabNodeBase, EditorPrefabSchemaVersion, InstantiatePrefabOptions } from "./PrefabRegistry";
+export { PropertyPanel } from "./PropertyPanel";
+export type { PropertyPanelField, PropertyPanelOptions } from "./PropertyPanel";
 export { RotateGizmo } from "./RotateGizmo";
 export { ScaleGizmo } from "./ScaleGizmo";
+export { SceneOutliner } from "./SceneOutliner";
+export type { SceneOutlinerItem, SceneOutlinerOptions } from "./SceneOutliner";
 export { Selection } from "./Selection";
 export type { SelectionChange, SelectionId, SelectionListener } from "./Selection";
 export { createOldBranchShaderGraphFixture } from "./ShaderGraphModel";
@@ -63,6 +82,8 @@ export type {
   TimelineRuntimeTargetSnapshot
 } from "./TimelineRuntimeBridge";
 export { TranslateGizmo } from "./TranslateGizmo";
+export { TimelineEditorController } from "./TimelineEditorController";
+export type { TimelineEditorClipboard, TimelineEditorControllerOptions, TimelineEditorSnapshot } from "./TimelineEditorController";
 export { TimelineClip, TimelineModel, TimelineTrack } from "./TimelineModel";
 export type {
   TimelineActiveClipSnapshot,
@@ -76,6 +97,10 @@ export type {
   TimelineTrackConfig,
   TimelineTrackSnapshot
 } from "./TimelineModel";
+export { TIMELINE_TRACK_TYPES, createTimelineTrackConfig, timelineTrackKindFromConfig, timelineTrackTypeDefinition } from "./TimelineTrackTypes";
+export type { CreateTimelineTrackConfigOptions, TimelineEditorTrackKind, TimelineTrackTypeDefinition } from "./TimelineTrackTypes";
+export { TimelineUI, renderTimelineUI } from "./TimelineUI";
+export type { TimelineUIOptions, TimelineUIRenderResult } from "./TimelineUI";
 export { CreateNodeCommand } from "./commands/CreateNodeCommand";
 export type { NodeContainer } from "./commands/CreateNodeCommand";
 export { DeleteNodeCommand } from "./commands/DeleteNodeCommand";

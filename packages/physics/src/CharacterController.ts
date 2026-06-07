@@ -1,4 +1,5 @@
 import type { Collider } from "./Collider.js";
+import { KinematicBody, type KinematicBodyDescriptor, type KinematicBodyEvent, type KinematicBodySnapshot, type KinematicStepOptions } from "./KinematicBody.js";
 import type { PhysicsWorld } from "./PhysicsWorld.js";
 import type { RigidBody } from "./RigidBody.js";
 import { Shape, normalizeVec3, type Vec3 } from "./Shape.js";
@@ -29,6 +30,125 @@ export type CharacterControllerState = {
   readonly speed: number;
   readonly jumpedThisFrame: boolean;
 };
+
+export type FightingCharacterControllerState =
+  | "idle"
+  | "walk"
+  | "dash"
+  | "jump"
+  | "fast-fall"
+  | "crouch"
+  | "landing";
+
+export type FightingCharacterControllerDescriptor = KinematicBodyDescriptor & {
+  readonly walkSpeed?: number;
+  readonly crouchSpeed?: number;
+  readonly fastFallSpeed?: number;
+};
+
+export type FightingCharacterControllerSnapshot = KinematicBodySnapshot & {
+  readonly state: FightingCharacterControllerState;
+  readonly walkSpeed: number;
+  readonly crouchSpeed: number;
+  readonly fastFallSpeed: number;
+};
+
+export class FightingCharacterController {
+  readonly body: KinematicBody;
+  readonly walkSpeed: number;
+  readonly crouchSpeed: number;
+  readonly fastFallSpeed: number;
+  private state: FightingCharacterControllerState = "idle";
+
+  constructor(descriptor: FightingCharacterControllerDescriptor = {}) {
+    this.walkSpeed = positiveFinite(descriptor.walkSpeed ?? descriptor.maxSpeed ?? 4.5, "fighting controller walkSpeed");
+    this.crouchSpeed = positiveFinite(descriptor.crouchSpeed ?? this.walkSpeed * 0.45, "fighting controller crouchSpeed");
+    this.fastFallSpeed = positiveFinite(descriptor.fastFallSpeed ?? descriptor.maxFallSpeed ?? 20, "fighting controller fastFallSpeed");
+    this.body = new KinematicBody({
+      ...descriptor,
+      id: descriptor.id ?? "fighter",
+      halfExtents: descriptor.halfExtents ?? [0.32, 0.9, 0.25],
+      maxSpeed: descriptor.maxSpeed ?? this.walkSpeed,
+      acceleration: descriptor.acceleration ?? 54,
+      airAcceleration: descriptor.airAcceleration ?? 24,
+      groundFriction: descriptor.groundFriction ?? 56,
+      airFriction: descriptor.airFriction ?? 4,
+      gravity: descriptor.gravity ?? 26,
+      jumpSpeed: descriptor.jumpSpeed ?? 9.4,
+      maxFallSpeed: descriptor.maxFallSpeed ?? Math.max(this.fastFallSpeed, 20),
+      dashSpeed: descriptor.dashSpeed ?? 8.6,
+      dashDuration: descriptor.dashDuration ?? 0.12,
+      dashCooldown: descriptor.dashCooldown ?? 0.18,
+      groundSnapDistance: descriptor.groundSnapDistance ?? 0.06,
+      lockDepth: descriptor.lockDepth ?? true
+    });
+  }
+
+  walk(direction: number, speed?: number): void {
+    const magnitude = Math.min(1, Math.abs(finiteOrZero(direction)));
+    const facing = direction < 0 ? -1 : 1;
+    const targetSpeed = speed ?? (this.body.snapshot().crouching ? this.crouchSpeed : this.walkSpeed);
+    const normalizedSpeed = this.body.maxSpeed > 0 ? Math.min(1, positiveFinite(targetSpeed, "fighting controller walk speed") / this.body.maxSpeed) : 0;
+    this.body.move(facing * magnitude * normalizedSpeed);
+    this.state = magnitude > 0 ? "walk" : this.deriveState([]);
+  }
+
+  stop(): void {
+    this.body.move(0);
+    this.state = this.deriveState([]);
+  }
+
+  jump(): void {
+    this.body.jump();
+    this.state = "jump";
+  }
+
+  dash(direction?: number): void {
+    this.body.dash(direction);
+    this.state = "dash";
+  }
+
+  fastFall(speed = this.fastFallSpeed): void {
+    this.body.fastFall(speed);
+    if (!this.body.grounded) {
+      this.state = "fast-fall";
+    }
+  }
+
+  crouch(active = true): void {
+    this.body.crouch(active);
+    this.state = active ? "crouch" : this.deriveState([]);
+  }
+
+  step(dt: number, options: KinematicStepOptions = {}): readonly KinematicBodyEvent[] {
+    const events = this.body.step(dt, options);
+    this.state = this.deriveState(events);
+    return events;
+  }
+
+  snapshot(): FightingCharacterControllerSnapshot {
+    return {
+      ...this.body.snapshot(),
+      state: this.state,
+      walkSpeed: this.walkSpeed,
+      crouchSpeed: this.crouchSpeed,
+      fastFallSpeed: this.fastFallSpeed
+    };
+  }
+
+  private deriveState(events: readonly KinematicBodyEvent[]): FightingCharacterControllerState {
+    if (events.some((event) => event.type === "land")) return "landing";
+    const snapshot = this.body.snapshot();
+    if (snapshot.crouching) return "crouch";
+    if (snapshot.dashFramesRemaining > 0) return "dash";
+    if (!snapshot.grounded) return snapshot.velocity[1] < -this.fastFallSpeed * 0.5 ? "fast-fall" : "jump";
+    return Math.abs(snapshot.velocity[0]) > 0.05 ? "walk" : "idle";
+  }
+}
+
+export function createFightingCharacterController(descriptor: FightingCharacterControllerDescriptor = {}): FightingCharacterController {
+  return new FightingCharacterController(descriptor);
+}
 
 export class CharacterController {
   readonly body: RigidBody;

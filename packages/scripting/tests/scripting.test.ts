@@ -109,6 +109,30 @@ test("Visual node catalog exposes Aura3D 1.0.5 runtime-facing node families", ()
   }
 });
 
+test("Cartoon visual scripting nodes are cataloged and execute deterministic commands", () => {
+  const definitions = listVisualNodeDefinitions();
+  const byKind = new Map(definitions.map((definition) => [definition.kind, definition]));
+
+  for (const kind of ["setScene", "sayLine", "frameCharacter", "playMusic", "waitForBeat", "captureThumbnail"]) {
+    assert.ok(byKind.has(kind), `missing cartoon visual node ${kind}`);
+  }
+
+  const graph = {
+    nodes: [
+      createVisualNode("setScene", "scene", { sceneId: "garden" }),
+      createVisualNode("sayLine", "line", { speakerId: "hero", text: "Hello moon.", emotion: "happy" }),
+      createVisualNode("captureThumbnail", "thumb", { time: 1, path: "thumb.png" })
+    ],
+    edges: []
+  };
+  const result = new VisualGraphExecutor().execute(graph);
+
+  assert.equal((result.values.get("scene.command") as { kind?: string }).kind, "cartoon.scene.setScene");
+  assert.equal((result.values.get("line.command") as { kind?: string }).kind, "cartoon.dialogue.sayLine");
+  assert.equal((result.values.get("thumb.command") as { kind?: string }).kind, "cartoon.publishing.captureThumbnail");
+  assert.equal(result.sideEffects.length, 3);
+});
+
 test("Visual graph validation catches missing inputs and invalid deterministic context references", () => {
   const context: VisualGraphExecutionContext = {
     runtimeNodes: [{ id: "player" }],

@@ -8,7 +8,9 @@ export const CREATE_AURA3D_TEMPLATES = [
   "mini-game",
   "fighting-game",
   "cartoon-channel",
-  "prompt-cartoon-channel"
+  "prompt-cartoon-channel",
+  "cartoon-studio",
+  "episode-builder"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 
@@ -46,7 +48,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   };
   packageJson.dependencies = {
     ...(packageJson.dependencies ?? {}),
-    "@aura3d/engine": options.packageVersion ?? "1.0.9"
+    "@aura3d/engine": options.packageVersion ?? "1.0.10"
   };
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
   return {

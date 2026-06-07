@@ -339,7 +339,7 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
   display: grid;
   grid-template-columns: minmax(0, 0.94fr) minmax(420px, 1.06fr);
   gap: 34px;
-  align-items: stretch;
+  align-items: center;
   padding: clamp(22px, 3vw, 34px);
   border: 1px solid rgba(245,180,84,0.24);
   border-radius: 28px;
@@ -417,7 +417,11 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
 
 .wwx-stage {
   position: relative;
-  min-height: 540px;
+  min-width: 0;
+  width: 100%;
+  align-self: center;
+  aspect-ratio: 16 / 9;
+  min-height: 0;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 24px;
   overflow: hidden;
@@ -431,7 +435,7 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
 .wwx-static-preview {
   width: 100%;
   height: 100%;
-  min-height: 540px;
+  min-height: 0;
 }
 
 .wwx-canvas {
@@ -488,15 +492,15 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
 
 .wwx-static-link:hover .wwx-static-preview,
 .wwx-static-link:focus-visible .wwx-static-preview {
-  transform: scale(1.025);
+  transform: none;
 }
 
 .wwx-static-preview {
   display: block;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  object-position: center;
   background: #050608;
-  transform: scale(1.01);
+  transform: none;
   transition: transform .22s ease;
 }
 
@@ -569,7 +573,7 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
   .wwx-canvas,
   .wwx-static-link,
   .wwx-static-preview {
-    min-height: 420px;
+    min-height: 0;
   }
 }
 
@@ -595,7 +599,7 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
   .wwx-canvas,
   .wwx-static-link,
   .wwx-static-preview {
-    min-height: 340px;
+    min-height: 0;
   }
 }
 .btn-ghost { background: transparent; border-color: var(--line-strong); }

@@ -80,7 +80,7 @@ async function main(): Promise<void> {
       console.log(`Serve ${manifest.outputDir} at ${manifest.assetBasePath}`);
     } else if (action === "search") {
       const query = args[2];
-      if (!query || query.startsWith("--")) throw new Error("Usage: aura3d assets search <query> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]");
+      if (!query || query.startsWith("--")) throw new Error(`Usage: aura3d assets search <query> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]`);
       const report = await runSearch({ query, constraints: readResolveConstraints() });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
@@ -90,7 +90,7 @@ async function main(): Promise<void> {
     } else if (action === "resolve") {
       const query = args[2];
       const name = readOption("--name");
-      if (!query || query.startsWith("--") || !name) throw new Error("Usage: aura3d assets resolve <query> --name <name> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated]");
+      if (!query || query.startsWith("--") || !name) throw new Error(`Usage: aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]`);
       const report = await runResolve({ query, name, constraints: readResolveConstraints() });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
@@ -124,8 +124,8 @@ Commands:
   aura3d assets list
   aura3d assets typegen
   aura3d assets thumbnail
-  aura3d assets search <query> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
-  aura3d assets resolve <query> --name <name> [--profile fighting-character] [--license cc0|cc-by] [--max-tris N] [--animated]
+  aura3d assets search <query> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
+  aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]
   aura3d doctor
   aura3d check-deploy --dist dist
   aura3d init --agent all`);
@@ -232,8 +232,22 @@ function readResolveConstraints(): CliResolveConstraints {
 function readCliAssetProfile(): CliAssetSearchProfile {
   const value = readOption("--profile");
   if (!value) return "general";
-  if (value === "fighting-character") return value;
-  throw new Error(`Unsupported --profile value "${value}". Use fighting-character.`);
+  if (isSupportedAssetProfile(value)) return value;
+  throw new Error(`Unsupported --profile value "${value}". Use ${profileUsage()}.`);
+}
+
+function isSupportedAssetProfile(value: string): value is Exclude<CliAssetSearchProfile, "general"> {
+  return (
+    value === "fighting-character" ||
+    value === "cartoon-character" ||
+    value === "cartoon-prop" ||
+    value === "cartoon-set" ||
+    value === "cartoon-environment"
+  );
+}
+
+function profileUsage(): string {
+  return "fighting-character|cartoon-character|cartoon-prop|cartoon-set|cartoon-environment";
 }
 
 function printSearchReport(report: { readonly query: string; readonly profile: CliAssetSearchProfile; readonly candidates: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly rejectedCandidates?: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly deepLinks: readonly { readonly id: string; readonly title: string; readonly sourcePage?: string }[]; readonly warnings: readonly string[]; readonly messages: readonly string[] }): void {

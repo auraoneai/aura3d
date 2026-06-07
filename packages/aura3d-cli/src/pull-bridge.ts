@@ -21,6 +21,7 @@ import { join } from "node:path";
 import * as assetIndex from "@aura3d/asset-index";
 import type {
   AuraCanonicalAsset,
+  CartoonAssetProfile,
   FederatedResolver as FederatedResolverType,
   ResolveCandidate,
   ResolveConstraints,
@@ -31,9 +32,11 @@ import { addAsset } from "./index.js";
 import type { AssetCliResult } from "./index.js";
 
 const {
+  evaluateCartoonAssetProfile,
   evaluateGameAssetProfile,
   FederatedResolver,
   defaultAdapters,
+  isCartoonAssetProfile,
   isAutoPullable,
 } = assetIndex;
 
@@ -65,15 +68,18 @@ function hasEnv(name: string): boolean {
 export function buildSearchAdapters(
   env: NodeJS.ProcessEnv = process.env,
 ): SourceAdapter[] {
+  const starterPack = optionalFactory("createCartoonStarterPackAdapter");
+  const starterAdapters = starterPack ? [starterPack()] : [];
+
   // Primary: the hosted ~850k Aura3D catalog via its `/search` endpoint (hybrid
   // keyword + semantic + quality ranking). It already aggregates Objaverse,
   // Sketchfab, Poly Pizza, Poly Haven, OS3A, Khronos and the CC0 mirror, so it
   // supersedes per-source live federation. Fall back to live sources only if the
   // hosted-catalog adapter isn't available in this build.
   const auraIndex = optionalFactory("createAuraIndexAdapter");
-  if (auraIndex) return [auraIndex()];
+  if (auraIndex) return [...starterAdapters, auraIndex()];
 
-  const adapters: SourceAdapter[] = [...defaultAdapters()];
+  const adapters: SourceAdapter[] = [...starterAdapters, ...defaultAdapters()];
 
   const polyHaven = optionalFactory("createPolyHavenAdapter");
   if (polyHaven && !adapters.some((a) => a.id === "polyhaven")) {
@@ -101,7 +107,7 @@ export function buildDeepLinkAdapter(): SourceAdapter | undefined {
   return factory ? factory() : undefined;
 }
 
-export type CliAssetSearchProfile = "general" | "fighting-character";
+export type CliAssetSearchProfile = "general" | "fighting-character" | CartoonAssetProfile;
 
 export interface CliResolveConstraints {
   readonly license?: readonly ("CC0" | "CC-BY")[];
@@ -127,6 +133,12 @@ export function toResolveConstraints(
     constraints.animated = true;
     constraints.format = "glb";
     constraints.maxTriangles = cli.maxTriangles ?? 200_000;
+  } else if (isCartoonCliProfile(cli.profile)) {
+    constraints.license = cli.license && cli.license.length > 0 ? cli.license : ["CC0", "CC-BY"];
+    constraints.format = "glb";
+    constraints.maxTriangles = cli.maxTriangles ?? cartoonProfileMaxTriangles(cli.profile);
+    if (cli.profile === "cartoon-character") constraints.animated = true;
+    else if (typeof cli.animated === "boolean") constraints.animated = cli.animated;
   } else {
     if (cli.license && cli.license.length > 0) constraints.license = cli.license;
     if (typeof cli.maxTriangles === "number") constraints.maxTriangles = cli.maxTriangles;
@@ -160,8 +172,8 @@ export function selectPullable(
   const profile = options.profile ?? "general";
   const pullable = candidates.find((c) => {
     if (!isAutoPullable(c.asset)) return false;
-    if (profile !== "fighting-character") return true;
-    return evaluateGameAssetProfile(c.asset, "fighting-character").suitable;
+    if (profile === "general") return true;
+    return evaluateAssetProfile(c.asset, profile).suitable;
   });
   if (pullable) return { ok: true, candidate: pullable };
 
@@ -172,15 +184,15 @@ export function selectPullable(
         "No candidates matched the query. Try a broader query or relax constraints.",
     };
   }
-  if (profile === "fighting-character") {
+  if (profile !== "general") {
     const rejectedPullable = candidates.filter((c) => isAutoPullable(c.asset));
     if (rejectedPullable.length > 0) {
       return {
         ok: false,
         reason:
-          "No auto-pullable candidate passed the fighting-character profile. " +
+          `No auto-pullable candidate passed the ${profile} profile. ` +
           rejectedPullable.slice(0, 5).map((candidate) => {
-            const evaluation = evaluateGameAssetProfile(candidate.asset, "fighting-character");
+            const evaluation = evaluateAssetProfile(candidate.asset, profile);
             const reasons = evaluation.rejectionReasons.length > 0
               ? evaluation.rejectionReasons.join("; ")
               : "profile did not report a concrete reason";
@@ -242,7 +254,7 @@ export interface SearchCandidateLine {
   readonly access: AuraCanonicalAsset["access"];
   readonly sourcePage?: string;
   readonly profile?: {
-    readonly name: "fighting-character";
+    readonly name: Exclude<CliAssetSearchProfile, "general">;
     readonly suitable: boolean;
     readonly rejectionReasons: readonly string[];
     readonly warnings: readonly string[];
@@ -281,10 +293,10 @@ function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfile = "g
     access: asset.access,
   };
   if (asset.sourcePage) line.sourcePage = asset.sourcePage;
-  if (profile === "fighting-character") {
-    const evaluation = evaluateGameAssetProfile(asset, "fighting-character");
+  if (profile !== "general") {
+    const evaluation = evaluateAssetProfile(asset, profile);
     line.profile = {
-      name: "fighting-character",
+      name: profile,
       suitable: evaluation.suitable,
       rejectionReasons: evaluation.rejectionReasons,
       warnings: evaluation.warnings,
@@ -318,17 +330,17 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
 
   const rankedCandidates = rankForProfile(result.candidates, profile);
   const candidateLines = rankedCandidates.map((candidate) => toLine(candidate, profile));
-  const candidates = profile === "fighting-character"
+  const candidates = profile !== "general"
     ? candidateLines.filter((candidate) => candidate.profile?.suitable === true)
     : candidateLines;
-  const rejectedCandidates = profile === "fighting-character"
+  const rejectedCandidates = profile !== "general"
     ? candidateLines.filter((candidate) => candidate.profile?.suitable !== true)
     : [];
   const anyPullable = candidates.some((c) => c.autoPullable);
   const anyProfileSuitable = profile === "general" || candidates.some((c) => c.profile?.suitable);
   const anyProfilePullable = profile === "general" || candidates.some((c) => c.autoPullable && c.profile?.suitable);
   const warnings = [...result.warnings];
-  if (profile === "fighting-character") {
+  if (profile !== "general") {
     for (const candidate of candidateLines) {
       for (const warning of candidate.profile?.warnings ?? []) {
         warnings.push(`${candidate.id}: ${warning}`);
@@ -365,13 +377,13 @@ export async function runSearch(options: SearchOptions): Promise<SearchReport> {
         "No auto-pullable candidate. Listed assets need a manual license check before use.",
       );
     }
-    if (profile === "fighting-character" && !anyProfileSuitable) {
+    if (profile !== "general" && !anyProfileSuitable) {
       messages.push(
-        "No fighting-character-ready candidate. Listed candidates were rejected by the game-asset profile; inspect rejectionReasons before resolving.",
+        `No ${profile}-ready candidate. Listed candidates were rejected by the asset profile; inspect rejectionReasons before resolving.`,
       );
-    } else if (profile === "fighting-character" && !anyProfilePullable) {
+    } else if (profile !== "general" && !anyProfilePullable) {
       messages.push(
-        "No auto-pullable fighting-character-ready candidate. Resolve will refuse until a downloadable licensed candidate also passes the profile.",
+        `No auto-pullable ${profile}-ready candidate. Resolve will refuse until a downloadable licensed candidate also passes the profile.`,
       );
     }
   }
@@ -492,14 +504,40 @@ function rankForProfile(
   candidates: readonly ResolveCandidate[],
   profile: CliAssetSearchProfile,
 ): readonly ResolveCandidate[] {
-  if (profile !== "fighting-character") return candidates;
+  if (profile === "general") return candidates;
   return [...candidates].sort((a, b) => {
-    const aEval = evaluateGameAssetProfile(a.asset, "fighting-character");
-    const bEval = evaluateGameAssetProfile(b.asset, "fighting-character");
+    const aEval = evaluateAssetProfile(a.asset, profile);
+    const bEval = evaluateAssetProfile(b.asset, profile);
     return (
       Number(bEval.suitable) - Number(aEval.suitable) ||
       (b.score + bEval.scoreBonus) - (a.score + aEval.scoreBonus) ||
       a.asset.id.localeCompare(b.asset.id)
     );
   });
+}
+
+function isCartoonCliProfile(profile: CliAssetSearchProfile | undefined): profile is CartoonAssetProfile {
+  return typeof profile === "string" && isCartoonAssetProfile(profile);
+}
+
+function evaluateAssetProfile(
+  asset: AuraCanonicalAsset,
+  profile: Exclude<CliAssetSearchProfile, "general">,
+): { readonly suitable: boolean; readonly scoreBonus: number; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } {
+  return profile === "fighting-character"
+    ? evaluateGameAssetProfile(asset, "fighting-character")
+    : evaluateCartoonAssetProfile(asset, profile);
+}
+
+function cartoonProfileMaxTriangles(profile: CartoonAssetProfile): number {
+  switch (profile) {
+    case "cartoon-character":
+      return 160_000;
+    case "cartoon-prop":
+      return 100_000;
+    case "cartoon-set":
+      return 350_000;
+    case "cartoon-environment":
+      return 250_000;
+  }
 }

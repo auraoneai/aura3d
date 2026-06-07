@@ -1,6 +1,6 @@
 # Aura3D Animation Runtime, Events, And Viseme Sync
 
-Status: 1.0.5 release guidance draft.
+Status: 1.0.10 scoped runtime-foundation guidance.
 
 This page documents the safe agent pattern for skeletal animation, animation
 events, and viseme/blendshape sync. It is intentionally stricter than the
@@ -13,11 +13,11 @@ Use this page with:
 - `docs/api/game-runtime.md`
 - `docs/api/assets.md`
 - `docs/api/prompt-animation.md`
-- `docs/project/aura3d-105-release-gates.md`
+- `docs/project/aura3d-110-release-gates.md`
 
 ## Current Boundary
 
-The 1.0.5 source baseline already has:
+The 1.0.10 source baseline already has:
 
 - `createAuraApp(...)`, `app.onFrame(...)`, `app.step(dt)`, and runtime nodes.
 - `AnimationController` / `createAnimationController(...)` with named clips,
@@ -28,7 +28,7 @@ The 1.0.5 source baseline already has:
 - Prompt animation helpers for captions, AuraVoice bridge packages, viseme
   tracks, and deterministic evidence metadata.
 
-Aura3D 1.0.5 must prove:
+Aura3D 1.0.10 release claims must prove:
 
 - Named GLB clips visibly deform skinned characters in a browser route.
 - Restarting an attack clip visibly resets the clip to frame zero.
@@ -98,7 +98,7 @@ const app = createAuraApp("#app", {
 const player = app.nodes.require("player");
 ```
 
-`RuntimeNodeHandle` is the safe mutation surface. For 1.0.5 animation work,
+`RuntimeNodeHandle` is the safe mutation surface. For current animation work,
 these methods matter most:
 
 - `play(clip, options)`
@@ -151,7 +151,7 @@ app.onFrame(({ dt }) => {
 ```
 
 Current controller binding mirrors active clip, local time, speed, loop state,
-layer metadata, event source, and binding metadata onto the runtime node. 1.0.5
+layer metadata, event source, and binding metadata onto the runtime node. 1.0.10
 renderer work must prove that the bound state also drives visible skinned GLB
 pose output and morph target output in browser evidence.
 
@@ -318,7 +318,7 @@ const visemes = createAuraVoiceVisemeTrack({
 ```
 
 At runtime, sample the bridge or viseme track and apply weights through the
-runtime node handle. This is the safe route-level pattern for 1.0.5 evidence.
+runtime node handle. This is the safe route-level pattern for current release evidence.
 
 ```ts
 app.onFrame(({ time }) => {
@@ -372,7 +372,7 @@ const proof = {
 };
 ```
 
-The deterministic proof is necessary but not sufficient. 1.0.5 release gates
+The deterministic proof is necessary but not sufficient. 1.0.10 release gates
 also require browser screenshots proving visible character deformation, event
 effects, overlays, captions, and morph target changes.
 
@@ -398,6 +398,6 @@ Minimum proof ids:
 - `deterministic-animation-step`
 - `typed-animation-asset-provenance`
 
-An animation route is not 1.0.5 release-ready until source diagnostics, package
+An animation route is not release-ready until source diagnostics, package
 smoke, browser rendering, screenshots, JSON evidence, typed asset provenance,
 and visual review all pass.

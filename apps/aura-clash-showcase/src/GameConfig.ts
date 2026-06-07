@@ -204,8 +204,8 @@ export const AURA_CLASH_ACTION_TUNING = {
   },
   jump: {
     action: "jump",
-    label: "Space · Jump",
-    keyboard: "Space",
+    label: "W · Jump",
+    keyboard: "W",
     animationState: "jump",
     damage: 0,
     guardDamage: 0,
@@ -264,8 +264,8 @@ export const AURA_CLASH_ACTION_TUNING = {
   },
   guard: {
     action: "guard",
-    label: "Q · Guard",
-    keyboard: "Q",
+    label: "Shift · Block",
+    keyboard: "Shift",
     animationState: "guard",
     damage: 0,
     guardDamage: -16,
@@ -279,8 +279,8 @@ export const AURA_CLASH_ACTION_TUNING = {
   },
   dash: {
     action: "dash",
-    label: "Shift · Dash",
-    keyboard: "Shift",
+    label: "Space · Dash",
+    keyboard: "Space",
     animationState: "dash",
     damage: 0,
     guardDamage: 0,

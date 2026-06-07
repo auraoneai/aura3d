@@ -11,7 +11,23 @@ export type CollisionVolumeDescriptor = {
   readonly halfExtents: Vec3;
   readonly enabled?: boolean;
   readonly tags?: readonly string[];
+  readonly debug?: boolean | CollisionVolumeDebugOptions;
   readonly metadata?: Readonly<Record<string, unknown>>;
+};
+
+export type CollisionVolumeDebugOptions = {
+  readonly enabled?: boolean;
+  readonly color?: string;
+  readonly opacity?: number;
+  readonly label?: string;
+};
+
+export type CollisionVolumeDebugMetadata = {
+  readonly enabled: boolean;
+  readonly visibleInNormalPass: false;
+  readonly color: string;
+  readonly opacity: number;
+  readonly label?: string;
 };
 
 export type CollisionVolume = {
@@ -21,6 +37,7 @@ export type CollisionVolume = {
   readonly halfExtents: Vec3;
   readonly enabled: boolean;
   readonly tags: readonly string[];
+  readonly debug: CollisionVolumeDebugMetadata;
   readonly ownerId?: CollisionOwnerId;
   readonly metadata?: Readonly<Record<string, unknown>>;
 };
@@ -38,6 +55,20 @@ export type CollisionPenetration = {
   readonly overlap: Vec3;
 };
 
+export type CollisionVolumeDebugDrawOptions = {
+  readonly enabled?: boolean;
+};
+
+export type CollisionVolumeDebugDrawDescriptor = {
+  readonly id: string;
+  readonly kind: CollisionVolumeKind;
+  readonly center: Vec3;
+  readonly halfExtents: Vec3;
+  readonly color: string;
+  readonly opacity: number;
+  readonly label: string;
+};
+
 export function collisionVolume(kind: CollisionVolumeKind, descriptor: CollisionVolumeDescriptor): CollisionVolume {
   validateHalfExtents(descriptor.halfExtents, `${kind} halfExtents`);
   const volume = {
@@ -47,6 +78,7 @@ export function collisionVolume(kind: CollisionVolumeKind, descriptor: Collision
     halfExtents: cloneVec3(descriptor.halfExtents),
     enabled: descriptor.enabled ?? true,
     tags: [...(descriptor.tags ?? [])],
+    debug: normalizeCollisionVolumeDebug(kind, descriptor.id ?? kind, descriptor.debug),
     ...(descriptor.ownerId === undefined ? {} : { ownerId: descriptor.ownerId }),
     ...(descriptor.metadata === undefined ? {} : { metadata: { ...descriptor.metadata } })
   };
@@ -84,6 +116,7 @@ export function cloneCollisionVolume(volume: CollisionVolume): CollisionVolume {
     halfExtents: cloneVec3(volume.halfExtents),
     enabled: volume.enabled,
     tags: [...volume.tags],
+    debug: { ...volume.debug },
     ...(volume.ownerId === undefined ? {} : { ownerId: volume.ownerId }),
     ...(volume.metadata === undefined ? {} : { metadata: { ...volume.metadata } })
   };
@@ -110,6 +143,30 @@ export function resolveCollisionVolume(volume: CollisionVolume, ownerPosition: V
     facing: resolvedFacing,
     bounds: aabbFromCenter(center, volume.halfExtents)
   };
+}
+
+export function collisionVolumeDebugDrawDescriptors(
+  volumes: readonly ResolvedCollisionVolume[],
+  options: CollisionVolumeDebugDrawOptions = {}
+): readonly CollisionVolumeDebugDrawDescriptor[] {
+  if (options.enabled !== true) {
+    return [];
+  }
+  return volumes
+    .filter((volume) => volume.enabled && volume.debug.enabled)
+    .map((volume) => ({
+      id: volume.id,
+      kind: volume.kind,
+      center: cloneVec3(volume.center),
+      halfExtents: cloneVec3(volume.halfExtents),
+      color: volume.debug.color,
+      opacity: volume.debug.opacity,
+      label: volume.debug.label ?? `${volume.kind}:${volume.id}`
+    }));
+}
+
+export function collisionVolumeVisibleInNormalPass(volume: CollisionVolume): false {
+  return volume.debug.visibleInNormalPass;
 }
 
 export function aabbFromCenter(center: Vec3, halfExtents: Vec3): Bounds {
@@ -209,6 +266,34 @@ function validateHalfExtents(value: Vec3, name: string): void {
   validateFiniteVec3(value, name);
   if (value[0] <= 0 || value[1] <= 0 || value[2] <= 0) {
     throw new Error(`${name} must contain finite positive values.`);
+  }
+}
+
+function normalizeCollisionVolumeDebug(
+  kind: CollisionVolumeKind,
+  id: string,
+  debug: boolean | CollisionVolumeDebugOptions | undefined
+): CollisionVolumeDebugMetadata {
+  const options: CollisionVolumeDebugOptions = typeof debug === "object" && debug !== null ? debug : {};
+  return {
+    enabled: typeof debug === "boolean" ? debug : options.enabled ?? false,
+    visibleInNormalPass: false,
+    color: options.color ?? defaultDebugColor(kind),
+    opacity: options.opacity ?? 0.28,
+    label: options.label ?? `${kind}:${id}`
+  };
+}
+
+function defaultDebugColor(kind: CollisionVolumeKind): string {
+  switch (kind) {
+    case "hitbox":
+      return "#ef4444";
+    case "hurtbox":
+      return "#22c55e";
+    case "guardbox":
+      return "#38bdf8";
+    case "pushbox":
+      return "#facc15";
   }
 }
 

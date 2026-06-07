@@ -171,5 +171,8 @@ export type {
 } from "./VisualGraphContext";
 export { createVisualNode, getVisualNodeDefinition, listVisualNodeDefinitions } from "./VisualNodeCatalog";
 export type { VisualNodeCategory, VisualNodeDefinition } from "./VisualNodeCatalog";
+export { cartoonNodeCategories } from "./CartoonNodeCategories";
+export type { CartoonNodeCategory } from "./CartoonNodeCategories";
+export { cartoonVisualNodeDefinitions } from "./CartoonVisualNodes";
 export { validateNode } from "./VisualNode";
 export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from "./VisualNode";

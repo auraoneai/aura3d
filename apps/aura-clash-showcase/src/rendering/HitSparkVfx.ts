@@ -11,6 +11,23 @@ export interface HitSparkFrame {
   reducedMotionShake: number;
 }
 
+export interface HitboxDebugVolumeStyle {
+  readonly id: "active-hitbox" | "hurtbox" | "guardbox" | "pushbox";
+  readonly label: string;
+  readonly visibleInNormalPlay: false;
+  readonly visibleWhenDebugEnabled: true;
+  readonly color: string;
+  readonly outline: string;
+}
+
+export interface HitboxDebugOverlayContract {
+  readonly kind: "aura-clash-hitbox-debug-overlay";
+  readonly engineOverlay: "game.fighting().debugHitboxOverlay";
+  readonly normalPlayVisible: false;
+  readonly debugPlayVisible: true;
+  readonly volumes: readonly HitboxDebugVolumeStyle[];
+}
+
 export const hitSparkFrames: Record<HitSparkKind, HitSparkFrame> = {
   light: {
     kind: "light",
@@ -63,6 +80,59 @@ export const hitSparkFrames: Record<HitSparkKind, HitSparkFrame> = {
     reducedMotionShake: 2,
   },
 };
+
+export const auraClashHitboxDebugOverlay: HitboxDebugOverlayContract = {
+  kind: "aura-clash-hitbox-debug-overlay",
+  engineOverlay: "game.fighting().debugHitboxOverlay",
+  normalPlayVisible: false,
+  debugPlayVisible: true,
+  volumes: [
+    {
+      id: "active-hitbox",
+      label: "Active attack hitbox",
+      visibleInNormalPlay: false,
+      visibleWhenDebugEnabled: true,
+      color: "#ff6b40",
+      outline: "#fff4b8"
+    },
+    {
+      id: "hurtbox",
+      label: "Fighter hurtbox",
+      visibleInNormalPlay: false,
+      visibleWhenDebugEnabled: true,
+      color: "#62d8ff",
+      outline: "#d9fbff"
+    },
+    {
+      id: "guardbox",
+      label: "Guard volume",
+      visibleInNormalPlay: false,
+      visibleWhenDebugEnabled: true,
+      color: "#7de2ff",
+      outline: "#c7fff0"
+    },
+    {
+      id: "pushbox",
+      label: "Body pushbox",
+      visibleInNormalPlay: false,
+      visibleWhenDebugEnabled: true,
+      color: "#a16eff",
+      outline: "#f0dbff"
+    }
+  ]
+};
+
+export function getAuraClashHitboxDebugOverlay(options?: { enabled?: boolean }): HitboxDebugOverlayContract & {
+  readonly enabled: boolean;
+  readonly visibleVolumes: readonly HitboxDebugVolumeStyle[];
+} {
+  const enabled = Boolean(options?.enabled);
+  return {
+    ...auraClashHitboxDebugOverlay,
+    enabled,
+    visibleVolumes: enabled ? auraClashHitboxDebugOverlay.volumes : []
+  };
+}
 
 export function getHitSparkFrame(kind: HitSparkKind, options?: { reducedMotion?: boolean; reducedFlash?: boolean }): HitSparkFrame {
   const frame = hitSparkFrames[kind];

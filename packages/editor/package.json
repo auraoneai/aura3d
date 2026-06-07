@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/editor",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "type": "module",
   "exports": {
     ".": {

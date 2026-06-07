@@ -12,9 +12,12 @@ const outPath = resolve(
 );
 
 const evidencePaths = {
-  localGates: resolve(appRoot, "launch-evidence/local-gates.json"),
+  localGates: resolve(appRoot, "tests/reports/flagship-gates.json"),
+  readiness: resolve(appRoot, "launch-evidence/aura-clash-106-readiness.json"),
   screenshotMeta: resolve(appRoot, "launch-evidence/first-frame.json"),
-  screenshotPng: resolve(appRoot, "launch-evidence/first-frame.png"),
+  screenshotPng: resolve(appRoot, "launch-evidence/playable-106-first-frame.png"),
+  combatScreenshotPng: resolve(appRoot, "launch-evidence/playable-106-combat-frame.png"),
+  koResetScreenshotPng: resolve(appRoot, "launch-evidence/playable-106-ko-reset.png"),
   vercelDeploy: resolve(appRoot, "launch-evidence/vercel-deploy.json"),
   deployedRoutes: resolve(appRoot, "launch-evidence/deployed-routes.json"),
   workflow: resolve(appRoot, "launch-evidence/workflow.json"),
@@ -32,8 +35,11 @@ const visualReviewEvidence = evidence.screenshotMeta?.visualReviewEvidence ?? nu
 const compositionEvidence = evidence.screenshotMeta?.compositionEvidence ?? null;
 const summary = [
   ["Local gates", gateStatus(evidence.localGates?.ok === true)],
-  ["First-frame screenshot metadata", gateStatus(evidence.screenshotMeta?.ok === true)],
+  ["1.0.6 readiness evidence", gateStatus(evidence.readiness?.ok === true)],
+  ["First-frame screenshot metadata", evidence.screenshotMeta ? gateStatus(evidence.screenshotMeta?.ok === true) : "NOT USED BY CURRENT 1.0.6 FLOW"],
   ["First-frame screenshot file", gateStatus(existsSync(evidencePaths.screenshotPng))],
+  ["Combat screenshot file", gateStatus(existsSync(evidencePaths.combatScreenshotPng))],
+  ["KO/reset screenshot file", gateStatus(existsSync(evidencePaths.koResetScreenshotPng))],
   [
     "Visual review evidence contract",
     visualReviewEvidence
@@ -65,7 +71,7 @@ const lines = [
   "",
   `Generated: ${generatedAt}`,
   "",
-  "This package is for release review. It summarizes generated launch evidence, but it does not approve the visual gate automatically. The `Visual screenshot approved by user` PRD checkbox still requires explicit user approval.",
+  "This package is for release review. It summarizes generated launch evidence, but it does not approve the visual gate automatically. The visual approval gate still requires explicit human approval.",
   "",
   "## Evidence summary",
   "",
@@ -83,8 +89,14 @@ const lines = [
   "## Screenshot review",
   "",
   existsSync(evidencePaths.screenshotPng)
-    ? `- Screenshot: ${relative(repoRoot, evidencePaths.screenshotPng)}`
-    : "- Screenshot: missing",
+    ? `- First-frame screenshot: ${relative(repoRoot, evidencePaths.screenshotPng)}`
+    : "- First-frame screenshot: missing",
+  existsSync(evidencePaths.combatScreenshotPng)
+    ? `- Combat screenshot: ${relative(repoRoot, evidencePaths.combatScreenshotPng)}`
+    : "- Combat screenshot: missing",
+  existsSync(evidencePaths.koResetScreenshotPng)
+    ? `- KO/reset screenshot: ${relative(repoRoot, evidencePaths.koResetScreenshotPng)}`
+    : "- KO/reset screenshot: missing",
   evidence.screenshotMeta?.targetUrl ? `- Captured target: ${evidence.screenshotMeta.targetUrl}` : "- Captured target: missing",
   evidence.screenshotMeta?.finalUrl ? `- Final URL: ${evidence.screenshotMeta.finalUrl}` : "- Final URL: missing",
   evidence.screenshotMeta?.title ? `- Page title: ${evidence.screenshotMeta.title}` : "- Page title: missing",
@@ -100,7 +112,7 @@ const lines = [
   "",
   "## Source-only visual evidence contract",
   "",
-  "This section reports machine-readable screenshot evidence for review. It does not replace human visual approval, and it should not be used to mark the PRD visual checkbox complete by itself.",
+  "This section reports machine-readable screenshot evidence for review. It does not replace human visual approval, and it should not be used to mark the visual gate complete by itself.",
   "",
   renderVisualReviewSummary(visualReviewEvidence),
   "",
@@ -133,6 +145,10 @@ const lines = [
   "## Local gate details",
   "",
   renderJsonSummary(evidence.localGates, ["ok", "commandCount", "completedCount", "failedCount", "generatedAt"]),
+  "",
+  "## 1.0.6 readiness details",
+  "",
+  renderJsonSummary(evidence.readiness, ["ok", "generatedAt", "route", "release", "contextualRoute", "gates"]),
   "",
   "## Deployment details",
   "",

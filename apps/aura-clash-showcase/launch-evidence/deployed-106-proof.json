@@ -1,0 +1,42 @@
+{
+  "schema": "aura-clash-106-deployed-proof",
+  "generatedAt": "2026-06-06T22:52:36.267Z",
+  "route": "/playable/",
+  "source": "collect-launch-evidence-probes",
+  "ok": true,
+  "deployedEvidence": {
+    "origin": "https://aura3d.auraone.ai",
+    "canonicalBasePath": "/showcase/aura-clash",
+    "appBasePath": "/apps/aura-clash-showcase",
+    "targetCount": 32,
+    "failedCount": 0,
+    "kindStatus": {
+      "route": {
+        "ok": true,
+        "total": 6,
+        "failed": 0
+      },
+      "metadata": {
+        "ok": true,
+        "total": 4,
+        "failed": 0
+      },
+      "glb": {
+        "ok": true,
+        "total": 11,
+        "failed": 0
+      },
+      "audio": {
+        "ok": true,
+        "total": 11,
+        "failed": 0
+      }
+    }
+  },
+  "gate": {
+    "id": "deployed-playable-playwright",
+    "ok": true,
+    "command": "npm run test:deployed-playable",
+    "durationMs": 6177
+  }
+}

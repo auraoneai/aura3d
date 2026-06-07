@@ -2,7 +2,7 @@
   "schema": "aura-clash-flagship-readiness",
   "ok": true,
   "status": "flagship-ready",
-  "generatedAt": "2026-06-06T06:12:22.662Z",
+  "generatedAt": "2026-06-06T13:48:02.865Z",
   "appRoot": "apps/aura-clash-showcase",
   "gates": [
     {
@@ -98,13 +98,69 @@
       "status": "pass"
     },
     {
+      "id": "dedicated-visual-regression-spec",
+      "title": "Dedicated visual-regression spec captures the required Aura Clash states",
+      "ok": true,
+      "summary": "The PRD-required visual states must live in a dedicated Playwright spec and write contextual screenshot artifacts.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/visual-regression.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-performance-budget-spec",
+      "title": "Dedicated performance-budget spec enforces frame, draw, JS, CSS, and GLB budgets",
+      "ok": true,
+      "summary": "Performance proof must be a dedicated Playwright gate instead of only route text.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/performance-budget.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-asset-quality-spec",
+      "title": "Dedicated asset-quality spec validates final fighter assets",
+      "ok": true,
+      "summary": "Final fighter assets must be validated independently from the broad flagship suite.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/asset-quality.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-audio-spec",
+      "title": "Dedicated audio spec validates unlock and gameplay cue proof",
+      "ok": true,
+      "summary": "Audio readiness must prove user-gesture unlock and gameplay cue publication.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/audio.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
+      "id": "dedicated-deployed-playable-spec",
+      "title": "Dedicated deployed-playable spec probes route, assets, console, and controls",
+      "ok": true,
+      "summary": "Deployment parity must be represented by a dedicated Playwright spec that can target local or deployed origins.",
+      "evidencePaths": [
+        "apps/aura-clash-showcase/tests/deployed-playable.spec.ts"
+      ],
+      "blockers": [],
+      "status": "pass"
+    },
+    {
       "id": "script-wiring",
       "title": "Flagship gates are runnable from app and root package scripts",
       "ok": true,
-      "summary": "The new readiness tool and Playwright suite must be reachable through stable package scripts.",
+      "summary": "The readiness tool, dedicated Playwright specs, and flagship gate runner must be reachable through stable package scripts.",
       "evidencePaths": [
         "apps/aura-clash-showcase/package.json",
-        "package.json"
+        "package.json",
+        "apps/aura-clash-showcase/scripts/run-flagship-readiness-gates.mjs"
       ],
       "blockers": [],
       "status": "pass"

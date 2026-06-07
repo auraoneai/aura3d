@@ -1,6 +1,7 @@
-import { createGameApp, game, scene, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import {
+  createSideViewGameRenderPreset,
   createTypedGLBActor,
   type TypedGLBActor
 } from "@aura3d/engine/production-runtime";
@@ -14,20 +15,54 @@ import {
 } from "@aura3d/engine/rendering";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
 import { assets } from "../aura-assets";
+import {
+  assertAuraClashClipReadiness,
+  auraClashPlayerClips as playerClips,
+  auraClashRivalClips as rivalClips,
+  validateAuraClashClipReadiness,
+  type AuraClashClipName as ClipName,
+  type AuraClashClipReadiness,
+  type AuraClashFighterClipMap as FighterClipMap
+} from "./animation/auraClashClipMaps";
+import {
+  AURA_CLASH_ATTACK_COOLDOWN as ATTACK_COOLDOWN,
+  AURA_CLASH_SPECIAL_COOLDOWN as SPECIAL_COOLDOWN,
+  AURA_CLASH_SPECIAL_METER_COST as SPECIAL_METER_COST,
+  AURA_CLASH_START_METER as START_METER,
+  AURA_CLASH_START_HEALTH as START_HEALTH,
+  AURA_CLASH_WALK_SPEED as WALK_SPEED,
+  auraClashMovementMoveTable as movementMoves,
+  auraClashMoveTable as moves,
+  type AuraClashMoveId as MoveId
+} from "./combat/auraClashMoveData";
+import {
+  annotateAuraClashArenaStage,
+  collectAuraClashArenaStageEvidence
+} from "./arena/AuraClashArenaStage";
+import { createArenaTweaksEvidence } from "./arena/ArenaTweaksPanel";
+import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
+import { auraClashAudioAssets, auraClashAudioManifest } from "./audio/auraClashAudioManifest";
+import type {
+  AuraClashArenaProof,
+  AuraClashAudioProof as AudioProof,
+  AuraClashDeterministicReplayProof as DeterministicReplayProof,
+  AuraClashFighterAction as FighterAction,
+  AuraClashPerformanceProof as PerformanceProof,
+  AuraClashProofFighter as ProofFighter
+} from "./evidence/auraClashArenaProof";
+import { createAuraClashArenaProof } from "./evidence/auraClashArenaProof";
+import { createAuraClashLightingEvidence } from "../rendering/GameLighting";
+import { createAuraClashPostProcessEvidence } from "../rendering/GamePostProcess";
 import "./playable.css";
 
 type FighterId = "player" | "rival";
-type FighterAction = "idle" | "walk" | "run" | "jump" | "down" | "guard" | "light" | "heavy" | "special" | "hurt" | "ko";
-type MoveId = "light" | "heavy" | "special";
-type ClipName = string;
-type FighterClipKey = "idle" | "walk" | "run" | "air" | "guard" | "light" | "heavy" | "special" | "hurt" | "ko";
-type FighterClipMap = Record<FighterClipKey, ClipName>;
 
 type AuraClashWindow = Window & {
   __AURA_CLASH_ARENA_PROOF__?: AuraClashArenaProof;
   __AURA3D_GAME_EVIDENCE__?: unknown;
   __AURA3D_GAME_RUNTIME__?: unknown;
   __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+    setPlayerHealth(health: number): void;
     setRivalHealth(health: number): void;
     setPlayerMeter(meter: number): void;
     setPositions(playerX: number, rivalX: number): void;
@@ -42,6 +77,8 @@ interface FighterState {
   x: number;
   y: number;
   vy: number;
+  airTime: number;
+  airStartedAtMs: number;
   facing: 1 | -1;
   health: number;
   meter: number;
@@ -56,6 +93,7 @@ interface FighterState {
   moveCooldown: number;
   specialCooldown: number;
   jumpGrace: number;
+  dashGrace: number;
   guardGrace: number;
   downGrace: number;
   queuedAttack: MoveId | null;
@@ -89,6 +127,7 @@ interface RuntimeFighter {
   actor: TypedGLBActor;
   scale: number;
   yOffset: number;
+  visualFacingMultiplier: 1 | -1;
   tint: readonly [number, number, number, number];
   accent: readonly [number, number, number, number];
 }
@@ -103,156 +142,25 @@ interface Spark {
   kind: MoveId | "block";
 }
 
-interface PerformanceProof {
-  frameTimeMs: number;
-  fps: number;
-  drawCalls: number;
-  budgetOk: boolean;
-}
-
-interface AudioProof {
-  enabled: boolean;
-  muted: boolean;
-  musicReady: boolean;
-  sfxReady: boolean;
-  lastCue: string | null;
-}
-
 interface AudioRuntime {
   cue(name: string): void;
   proof(): AudioProof;
 }
 
-interface AuraClashArenaProof {
-  route: string;
-  app: "Aura Clash Arena";
-  release: "1.0.9";
-  version: string;
-  status: "loading" | "running" | "paused" | "error";
-  error: string | null;
-  frame: number;
-  roundTime: number;
-  totalHits: number;
-  lastHitFrame: number;
-  callout: string;
-  visibleFighterAsset: string;
-  fighterAssets: {
-    player: { id: string; url: string; hash: string };
-    rival: { id: string; url: string; hash: string };
-    distinct: boolean;
-    releaseReady: boolean;
-  };
-  noPrimitiveFighters: true;
-  renderer: {
-    surface: "aura3d-production-gltf-animation";
-    backend: string;
-    drawCalls: number;
-  };
-  player: ProofFighter;
-  rival: ProofFighter;
-  animation: {
-    visibleSkinnedGlb: true;
-    skinnedDrawItems: number;
-    playerSkinningBindings: number;
-    rivalSkinningBindings: number;
-    playerLastTracks: number;
-    rivalLastTracks: number;
-    playerLastSkinningPalettes: number;
-    rivalLastSkinningPalettes: number;
-    clips: readonly string[];
-  };
-  runtime: {
-    frameLoop: boolean;
-    input: boolean;
-    deterministicCombat: boolean;
-    hitWindows: boolean;
-    hud: boolean;
-    evidence: boolean;
-  };
-  controls: {
-    lastInput: string;
-    downSupported: boolean;
-    specialRequiresMeter: boolean;
-    koLocked: boolean;
-    resetCount: number;
-  };
-  performance: PerformanceProof;
-  audio: AudioProof;
-  engineCombat: {
-    frame: number;
-    activeAttacks: number;
-    events: readonly string[];
-    playerHealth: number;
-    rivalHealth: number;
-    playerGuarding: boolean;
-    rivalGuarding: boolean;
-  };
-}
-
-interface ProofFighter {
-  name: string;
-  health: number;
-  meter: number;
-  x: number;
-  y: number;
-  grounded: boolean;
-  action: FighterAction;
-  activeClip: ClipName;
-  attacking: MoveId | null;
-}
-
-const playerClips = {
-  idle: "Idle_Loop",
-  walk: "Walk_Loop",
-  run: "Sprint_Loop",
-  air: "Jump_Loop",
-  guard: "Crouch_Idle_Loop",
-  light: "Punch_Jab",
-  heavy: "Punch_Cross",
-  special: "Sword_Attack",
-  hurt: "Hit_Chest",
-  ko: "Death01"
-} as const satisfies FighterClipMap;
-
-const rivalClips = {
-  idle: "Idle_FoldArms_Loop",
-  walk: "Zombie_Walk_Fwd_Loop",
-  run: "Shield_Dash_RM",
-  air: "NinjaJump_Idle_Loop",
-  guard: "Sword_Block",
-  light: "Melee_Hook",
-  heavy: "Sword_Regular_A",
-  special: "Sword_Regular_Combo",
-  hurt: "Hit_Knockback",
-  ko: "LayToIdle"
-} as const satisfies FighterClipMap;
-
 const stage = {
   minX: -2.85,
   maxX: 2.85,
   floorY: 0,
-  gravity: -13.5,
-  jumpVelocity: 7.35,
-  maxJumpY: 1.75,
-  fastFallVelocity: -18,
+  gravity: -12.25,
+  jumpVelocity: movementMoves.jump.jumpVelocity ?? 8.65,
+  maxJumpY: movementMoves.jump.maxJumpY ?? 2.18,
+  fastFallVelocity: movementMoves.down.fastFallVelocity ?? -21,
   fighterScale: 0.82,
   fighterYOffset: 0,
   z: 0
 };
 
 const KO_FREEZE_TIME = 1.18;
-const ROUND_RESTART_DELAY = 2.6;
-const START_HEALTH = 240;
-const FINISH_HEALTH_THRESHOLD = 0;
-const SPECIAL_METER_COST = 45;
-const SPECIAL_COOLDOWN = 1.15;
-const ATTACK_COOLDOWN = 0.06;
-
-const moves: Record<MoveId, Omit<ActiveAttack, "id" | "clip" | "elapsed" | "hit" | "engineQueued" | "startedAtMs">> = {
-  light: { duration: 0.34, activeStart: 0.07, activeEnd: 0.27, range: 1.38, damage: 7, knockback: 0.58 },
-  heavy: { duration: 0.46, activeStart: 0.1, activeEnd: 0.38, range: 1.62, damage: 13, knockback: 0.74 },
-  special: { duration: 0.58, activeStart: 0.12, activeEnd: 0.5, range: 1.86, damage: 22, knockback: 0.94 }
-};
 
 const engineCombatMoves: Record<MoveId, GameCombatMove> = {
   light: toEngineCombatMove("light"),
@@ -271,14 +179,14 @@ function toEngineCombatMove(id: MoveId): GameCombatMove {
     damage: move.damage,
     guardDamage: Math.max(2, Math.round(move.damage * 0.28)),
     meterGain: id === "special" ? 8 : 12,
-    hitStop: id === "special" ? 0.1 : id === "heavy" ? 0.075 : 0.052,
-    hitStun: id === "special" ? 24 : id === "heavy" ? 18 : 12,
-    blockStun: id === "special" ? 16 : id === "heavy" ? 12 : 8,
-    knockback: [move.knockback * 0.22, id === "special" ? 0.04 : 0, 0],
+    hitStop: id === "special" ? 0.13 : id === "heavy" ? 0.075 : 0.052,
+    hitStun: id === "special" ? 32 : id === "heavy" ? 18 : 12,
+    blockStun: id === "special" ? 20 : id === "heavy" ? 12 : 8,
+    knockback: [move.knockback * 0.28, id === "special" ? 0.1 : 0, 0],
     hitbox: {
       id: `${id}-active-hitbox`,
       offset: [move.range * 0.5, 0.9, 0],
-      size: [move.range, id === "special" ? 1.35 : 1.06, 0.58]
+      size: [move.range, id === "special" ? 1.55 : 1.06, 0.58]
     },
     blockable: id !== "special"
   };
@@ -288,9 +196,9 @@ const actionKeys = {
   left: ["KeyA", "ArrowLeft"],
   right: ["KeyD", "ArrowRight"],
   down: ["KeyS", "ArrowDown"],
-  jump: ["Space"],
-  dash: ["ShiftLeft", "ShiftRight"],
-  guard: ["KeyQ"],
+  jump: ["KeyW", "ArrowUp"],
+  dash: ["Space"],
+  guard: ["ShiftLeft", "ShiftRight", "KeyQ"],
   light: ["KeyJ"],
   heavy: ["KeyK"],
   special: ["KeyL"],
@@ -441,9 +349,9 @@ export function mountAuraClashArenaApp(): void {
         <button type="button" data-hold="left">A / Left</button>
         <button type="button" data-hold="right">D / Right</button>
         <button type="button" data-hold="down">S / Down</button>
-        <button type="button" data-press="jump">Space Jump</button>
-        <button type="button" data-press="dash">Shift Dash</button>
-        <button type="button" data-hold="guard">Q Guard</button>
+        <button type="button" data-press="jump">W Jump</button>
+        <button type="button" data-press="dash">Space Dash</button>
+        <button type="button" data-hold="guard">Shift Block</button>
         <button type="button" data-press="light">J Light</button>
         <button type="button" data-press="heavy">K Heavy</button>
         <button type="button" data-press="special">L Special</button>
@@ -499,15 +407,12 @@ export function mountAuraClashArenaApp(): void {
   `;
 
   installArenaPresentation(root);
+  annotateAuraClashArenaStage(root);
   const shell = root.querySelector<HTMLElement>(".aca");
   shell?.focus();
   void bootAuraClashArena(root).catch((error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
-    gameWindow.__AURA_CLASH_ARENA_PROOF__ = {
-      route: "/playable/",
-      app: "Aura Clash Arena",
-      release: "1.0.9",
-      version: "aura-clash-arena-production-gltf-animation",
+    gameWindow.__AURA_CLASH_ARENA_PROOF__ = createAuraClashArenaProof({
       status: "error",
       error: message,
       frame: 0,
@@ -517,7 +422,6 @@ export function mountAuraClashArenaApp(): void {
       callout: "ERROR",
       visibleFighterAsset: assets.auraClashPlayerRig.url,
       fighterAssets: activeFighterAssetsProof(),
-      noPrimitiveFighters: true,
       renderer: { surface: "aura3d-production-gltf-animation", backend: "none", drawCalls: 0 },
       player: fallbackProofFighter("Flux Vanta"),
       rival: fallbackProofFighter("Nyx Circuit"),
@@ -530,7 +434,8 @@ export function mountAuraClashArenaApp(): void {
         rivalLastTracks: 0,
         playerLastSkinningPalettes: 0,
         rivalLastSkinningPalettes: 0,
-        clips: []
+        clips: [],
+        clipReadiness: validateAuraClashClipReadiness()
       },
       runtime: {
         frameLoop: false,
@@ -547,10 +452,16 @@ export function mountAuraClashArenaApp(): void {
         koLocked: true,
         resetCount: 0
       },
+      stage: collectAuraClashArenaStageEvidence(root),
+      tweaks: createArenaTweaksEvidence(root),
+      fighterController: assertAuraClashFighterControllerBoundary(),
+      lighting: createAuraClashLightingEvidence(),
+      postProcess: createAuraClashPostProcessEvidence({ performanceBudgetOk: false }),
       performance: { frameTimeMs: 0, fps: 0, drawCalls: 0, budgetOk: false },
-      audio: { enabled: false, muted: true, musicReady: false, sfxReady: false, lastCue: null },
+      audio: fallbackAudioProof(false),
+      deterministicReplay: createDeterministicReplayProof(),
       engineCombat: fallbackEngineCombatProof()
-    };
+    });
     setText(root, "#callout", "ERROR");
     setText(root, "#toast", `Aura Clash Arena failed: ${message}`);
   });
@@ -627,12 +538,17 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       tint: { baseColor: [1, 0.34, 0.06, 1], emissiveColor: [0.95, 0.24, 0.04] }
     })
   ]);
+  const clipReadiness = assertAuraClashClipReadiness({
+    playerAvailableClips: playerActor.evidence.clips,
+    rivalAvailableClips: rivalActor.evidence.clips
+  });
 
   const playerRuntime: RuntimeFighter = {
     state: playerState,
     actor: playerActor,
     scale: stage.fighterScale,
     yOffset: stage.fighterYOffset,
+    visualFacingMultiplier: 1,
     tint: [0.08, 0.74, 1, 1],
     accent: [0.35, 1, 0.9, 1]
   };
@@ -641,6 +557,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     actor: rivalActor,
     scale: stage.fighterScale,
     yOffset: stage.fighterYOffset,
+    visualFacingMultiplier: 1,
     tint: [1, 0.34, 0.06, 1],
     accent: [1, 0.78, 0.2, 1]
   };
@@ -661,6 +578,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   });
 
   const stageItems = createStageItems();
+  const renderPreset = createSideViewGameRenderPreset({
+    debugVolumesEnabled: false,
+    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  });
   const audio = createAudioRuntime();
   const sparks: Spark[] = [];
   let paused = false;
@@ -670,8 +591,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let roundTime = 99;
   let lastTimeMs = 0;
   let roundOver = false;
-  let roundRestartTimer = 0;
   let resetCount = 0;
+  let postResetInputLock = 0;
   let lastInput = "none";
   let callout = "FIGHT";
   let toast = "Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.";
@@ -688,35 +609,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       ...createFighterEffectItems(rivalRuntime),
       ...createSparkItems(sparks)
     ],
-    cameraPolicy: "auto-frame",
+    cameraPolicy: renderPreset.cameraPolicy,
     cameraFrameBounds: { min: [-2.8, -0.08, -0.82], max: [2.8, 2.05, 0.82] },
-    cameraFrameOptions: {
-      yawRadians: 0,
-      pitchRadians: -0.06,
-      paddingRatio: 0.1,
-      nearPadding: 0.24,
-      farPadding: 1.8
-    },
-    environmentLighting: {
-      color: [0.58, 0.7, 0.82],
-      intensity: 0.42,
-      proceduralMap: {
-        skyColor: [0.05, 0.12, 0.18],
-        horizonColor: [0.1, 0.22, 0.28],
-        groundColor: [0.015, 0.018, 0.022],
-        specularColor: [0.72, 0.95, 1],
-        intensity: 0.34,
-        specularIntensity: 0.92
-      }
-    },
-    environmentFog: {
-      mode: "exponential-squared",
-      color: [0.015, 0.035, 0.04],
-      near: 3,
-      far: 12,
-      density: 0.022,
-      maxOpacity: 0.52
-    }
+    cameraFrameOptions: renderPreset.cameraFrameOptions,
+    environmentLighting: renderPreset.environmentLighting,
+    environmentFog: renderPreset.environmentFog
   };
 
   function tickFrame(timeMs: number): void {
@@ -742,9 +639,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
       lastHitFrame = 0;
+      postResetInputLock = reason === "continue" ? 0.32 : 0.14;
       roundTime = 99;
       roundOver = false;
-      roundRestartTimer = 0;
       callout = "FIGHT";
       toast = reason === "auto" ? "Next round." : "Round reset.";
       sparks.length = 0;
@@ -757,11 +654,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
     if (testDriverEnabled) {
       gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__ = {
+        setPlayerHealth(health: number) {
+          playerState.health = clamp(health, 0, START_HEALTH);
+          playerState.action = playerState.health <= 0 ? "ko" : playerState.action === "ko" ? "idle" : playerState.action;
+          roundOver = false;
+          callout = "FIGHT";
+        },
         setRivalHealth(health: number) {
           rivalState.health = clamp(health, 0, START_HEALTH);
           rivalState.action = rivalState.health <= 0 ? "ko" : rivalState.action === "ko" ? "idle" : rivalState.action;
           roundOver = false;
-          roundRestartTimer = 0;
           callout = "FIGHT";
         },
         setPlayerMeter(meter: number) {
@@ -776,6 +678,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           rivalState.y = 0;
           playerState.vy = 0;
           rivalState.vy = 0;
+          playerState.airTime = 0;
+          rivalState.airTime = 0;
+          playerState.airStartedAtMs = 0;
+          rivalState.airStartedAtMs = 0;
           playerState.grounded = true;
           rivalState.grounded = true;
           playerState.hitstun = 0;
@@ -805,8 +711,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       delete gameWindow.__AURA_CLASH_ARENA_TEST_DRIVER__;
     }
 
+    let skipGameplayThisFrame = false;
     if (!paused && roundOver) {
-      roundRestartTimer = Math.max(0, roundRestartTimer - dt);
       const continuePressed =
         isPressed(runtimeInput, controls, "light") ||
         isPressed(runtimeInput, controls, "heavy") ||
@@ -817,18 +723,41 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         isPressed(runtimeInput, controls, "right") ||
         isPressed(runtimeInput, controls, "down") ||
         isPressed(runtimeInput, controls, "guard");
-      if (continuePressed || roundRestartTimer <= 0) {
-        resetRound(continuePressed ? "continue" : "auto");
+      if (continuePressed) {
+        resetRound("continue");
+        skipGameplayThisFrame = true;
       } else {
-        toast = `${playerState.health >= rivalState.health ? playerState.name : rivalState.name} wins. Next round in ${Math.ceil(roundRestartTimer)}.`;
+        const winner = playerState.health >= rivalState.health ? playerState.name : rivalState.name;
+        toast = `${winner} wins. Press Reset or any control for another round.`;
       }
     }
 
-    if (!paused && !roundOver) {
+    if (postResetInputLock > 0) {
+      postResetInputLock = Math.max(0, postResetInputLock - dt);
+      skipGameplayThisFrame = true;
+    }
+
+    if (!paused && !roundOver && !skipGameplayThisFrame) {
       roundTime = Math.max(0, roundTime - dt);
       const specialPressed = isPressed(runtimeInput, controls, "special");
+      const guardPressed = isPressed(runtimeInput, controls, "guard");
+      const jumpPressed = isPressed(runtimeInput, controls, "jump");
+      const dashPressed = isPressed(runtimeInput, controls, "dash");
+      const jumpAccepted = jumpPressed && playerState.grounded;
       const wasSpecial = playerState.attack?.id === "special";
       lastInput = updatePlayer(playerState, runtimeInput, controls, dt, lastInput);
+      if (jumpAccepted && playerState.action === "jump") {
+        audio.cue("jump");
+      }
+      if (dashPressed) {
+        audio.cue("dash");
+      }
+      if (guardPressed && playerState.guard) {
+        audio.cue("guard");
+      }
+      if (specialPressed && !wasSpecial && playerState.attack?.id === "special") {
+        audio.cue("special");
+      }
       if (specialPressed && !wasSpecial && playerState.attack?.id !== "special") {
         toast = playerState.meter < SPECIAL_METER_COST
           ? `Special requires ${SPECIAL_METER_COST} meter.`
@@ -843,8 +772,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       resolvePushback(playerState, rivalState);
       const playerMove = playerState.attack?.id ?? "strike";
       const rivalMove = rivalState.attack?.id ?? "strike";
-      const combatResult = applyReadableCombat(playerState, rivalState, sparks);
       combatSnapshot = resolveEngineCombat(combatWorld, playerState, rivalState, sparks, dt);
+      const combatResult = applyEngineCombatEvents(combatSnapshot.events, playerState, rivalState);
       if (combatResult.playerDamage || combatResult.rivalDamage) {
         totalHits += Number(combatResult.rivalDamage > 0) + Number(combatResult.playerDamage > 0);
         lastHitFrame = frame;
@@ -862,13 +791,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       }
       if (playerState.health <= 0 || rivalState.health <= 0 || roundTime <= 0) {
         roundOver = true;
-        roundRestartTimer = ROUND_RESTART_DELAY;
         callout = finishRound(playerState, rivalState, roundTime);
         toast = callout === "WIN"
-          ? `${playerState.name} wins. Press any control or wait for the next round.`
+          ? `${playerState.name} wins. Press Reset or any control for another round.`
           : callout === "KO"
-            ? `${rivalState.name} wins. Press any control or wait for the next round.`
-            : "Round draw. Press any control or wait for the next round.";
+            ? `${rivalState.name} wins. Press Reset or any control for another round.`
+            : "Round draw. Press Reset or any control for another round.";
         sparks.length = 0;
         audio.cue(callout.toLowerCase());
       }
@@ -904,7 +832,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       backend: renderer.device.kind,
       combatSnapshot,
       player: playerRuntime,
-      rival: rivalRuntime
+      rival: rivalRuntime,
+      clipReadiness
     });
     controls.endFrame();
   }
@@ -926,11 +855,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       }
       callout = "ERROR";
       toast = `Frame failed: ${message}`;
-      gameWindow.__AURA_CLASH_ARENA_PROOF__ = {
-        route: "/playable/",
-        app: "Aura Clash Arena",
-        release: "1.0.9",
-        version: "aura-clash-arena-production-gltf-animation",
+      gameWindow.__AURA_CLASH_ARENA_PROOF__ = createAuraClashArenaProof({
         status: "error",
         error: message,
         frame,
@@ -940,7 +865,6 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         callout,
         visibleFighterAsset: assets.auraClashPlayerRig.url,
         fighterAssets: activeFighterAssetsProof(),
-        noPrimitiveFighters: true,
         renderer: { surface: "aura3d-production-gltf-animation", backend: renderer.device.kind, drawCalls: diagnostics.drawCalls },
         player: proofFighter(playerState),
         rival: proofFighter(rivalState),
@@ -953,7 +877,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           rivalLastTracks: rivalState.lastApply?.tracksApplied ?? 0,
           playerLastSkinningPalettes: playerState.lastApply?.skinningPalettesUpdated ?? 0,
           rivalLastSkinningPalettes: rivalState.lastApply?.skinningPalettesUpdated ?? 0,
-          clips: playerRuntime.actor.evidence.clips
+          clips: playerRuntime.actor.evidence.clips,
+          clipReadiness
         },
         runtime: {
           frameLoop: true,
@@ -970,10 +895,16 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           koLocked: roundOver,
           resetCount
         },
+        stage: collectAuraClashArenaStageEvidence(root),
+        tweaks: createArenaTweaksEvidence(root),
+        fighterController: assertAuraClashFighterControllerBoundary(),
+        lighting: createAuraClashLightingEvidence(),
+        postProcess: createAuraClashPostProcessEvidence({ performanceBudgetOk: false }),
         performance: { ...performanceProof, budgetOk: false },
         audio: audio.proof(),
+        deterministicReplay: createDeterministicReplayProof(),
         engineCombat: engineCombatProof(combatSnapshot)
-      };
+      });
       gameWindow.__AURA3D_GAME_RUNTIME__ = gameApp.evidence;
       updateHud(root, playerState, rivalState, roundTime, callout, toast);
     }
@@ -1148,9 +1079,11 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     x,
     y: 0,
     vy: 0,
+    airTime: 0,
+    airStartedAtMs: 0,
     facing,
     health: START_HEALTH,
-    meter: 0,
+    meter: START_METER,
     action: "idle",
     clips,
     clip: clips.idle,
@@ -1158,10 +1091,11 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     grounded: true,
     guard: false,
     hitstun: 0,
-    aiCooldown: 0.72,
+    aiCooldown: id === "rival" ? 1.18 : 0.72,
     moveCooldown: 0,
     specialCooldown: 0,
     jumpGrace: 0,
+    dashGrace: 0,
     guardGrace: 0,
     downGrace: 0,
     queuedAttack: null,
@@ -1173,19 +1107,22 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.x = x;
   fighter.y = 0;
   fighter.vy = 0;
+  fighter.airTime = 0;
+  fighter.airStartedAtMs = 0;
   fighter.facing = facing;
   fighter.health = START_HEALTH;
-  fighter.meter = 0;
+  fighter.meter = START_METER;
   fighter.action = "idle";
   fighter.clip = fighter.clips.idle;
   fighter.clipTime = 0;
   fighter.grounded = true;
   fighter.guard = false;
   fighter.hitstun = 0;
-  fighter.aiCooldown = 0.72;
+  fighter.aiCooldown = fighter.id === "rival" ? 1.18 : 0.72;
   fighter.moveCooldown = 0;
   fighter.specialCooldown = 0;
   fighter.jumpGrace = 0;
+  fighter.dashGrace = 0;
   fighter.guardGrace = 0;
   fighter.downGrace = 0;
   fighter.queuedAttack = null;
@@ -1230,6 +1167,10 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   rival.vy = 0;
   player.y = 0;
   rival.y = 0;
+  player.airTime = 0;
+  rival.airTime = 0;
+  player.airStartedAtMs = 0;
+  rival.airStartedAtMs = 0;
   player.grounded = true;
   rival.grounded = true;
   if (player.health === rival.health || (roundTime <= 0 && Math.round(player.health) === Math.round(rival.health))) {
@@ -1292,7 +1233,7 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number): v
     guard: shouldGuard && rival.aiCooldown > 0.56,
     light: canStrike && rival.aiCooldown <= 0 && distance < 1.04,
     heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82,
-    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= SPECIAL_METER_COST
+    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -1316,24 +1257,25 @@ function updateFighterIntents(
   fighter.moveCooldown = Math.max(0, fighter.moveCooldown - dt);
   fighter.specialCooldown = Math.max(0, fighter.specialCooldown - dt);
   fighter.jumpGrace = Math.max(0, fighter.jumpGrace - dt);
-  fighter.downGrace = intents.down ? 0.18 : Math.max(0, fighter.downGrace - dt);
+  fighter.dashGrace = intents.dash ? Math.max(0.34, movementMoves.dash.recovery ?? 0) : Math.max(0, fighter.dashGrace - dt);
+  fighter.downGrace = intents.down ? movementMoves.down.downGrace ?? 0.18 : Math.max(0, fighter.downGrace - dt);
   const requestedAttack = resolveRequestedAttack(fighter, intents);
-  fighter.guardGrace = requestedAttack ? 0 : intents.guard ? 0.06 : Math.max(0, fighter.guardGrace - dt);
+  fighter.guardGrace = requestedAttack ? 0 : intents.guard ? movementMoves.guard.guardGrace ?? 0.06 : Math.max(0, fighter.guardGrace - dt);
   fighter.guard = !requestedAttack && (intents.guard || fighter.guardGrace > 0) && !fighter.attack && fighter.grounded;
-  if (!requestedAttack) fighter.queuedAttack = null;
+  fighter.queuedAttack = requestedAttack;
   if (intents.down && !fighter.grounded && fighter.action !== "ko") {
     fighter.vy = Math.min(fighter.vy, stage.fastFallVelocity);
     fighter.y = Math.max(0, fighter.y - 0.18);
-    fighter.action = "down";
-    fighter.clip = fighter.clips.guard;
+    if (!fighter.attack) {
+      fighter.action = "down";
+      fighter.clip = downClipFor(fighter);
+    }
   }
   if (fighter.attack) {
     fighter.attack.elapsed += dt;
     if (fighter.attack.elapsed >= fighter.attack.duration) {
       fighter.attack = null;
-      fighter.action = "idle";
-    } else {
-      return;
+      fighter.action = fighter.grounded ? "idle" : "jump";
     }
   }
   if (fighter.hitstun > 0 || fighter.action === "ko") {
@@ -1341,39 +1283,64 @@ function updateFighterIntents(
   }
   if (intents.jump && fighter.grounded) {
     fighter.vy = stage.jumpVelocity;
+    fighter.airTime = 0;
+    fighter.airStartedAtMs = performance.now();
     fighter.grounded = false;
     fighter.action = "jump";
     fighter.clip = fighter.clips.air;
     fighter.clipTime = 0;
-    fighter.jumpGrace = 0.2;
+    fighter.jumpGrace = movementMoves.jump.jumpGrace ?? 0.2;
+    if (Math.abs(moveX) > 0.02) {
+      fighter.x = clamp(fighter.x + Math.sign(moveX) * 0.22, stage.minX, stage.maxX);
+      fighter.facing = moveX > 0 ? 1 : -1;
+    }
   }
-  const speed = intents.dash ? 3.9 : 1.9;
-  const downActive = fighter.grounded && !fighter.guard && fighter.downGrace > 0;
+  const dashActive = fighter.grounded && !fighter.attack && !fighter.guard && fighter.dashGrace > 0;
+  const baseSpeed = dashActive ? movementMoves.dash.runSpeed ?? 3.9 : WALK_SPEED;
+  const speed = fighter.grounded ? baseSpeed : baseSpeed * 1.32;
+  const downActive = fighter.grounded && !fighter.attack && !requestedAttack && !fighter.guard && fighter.downGrace > 0;
   if (Math.abs(moveX) > 0.02 && !fighter.guard && !downActive) {
     fighter.x = clamp(fighter.x + moveX * speed * dt, stage.minX, stage.maxX);
     fighter.facing = moveX > 0 ? 1 : -1;
-    if (fighter.grounded) fighter.action = intents.dash ? "run" : "walk";
+    if (!fighter.attack) fighter.action = fighter.grounded ? dashActive ? "run" : "walk" : "jump";
+  } else if (dashActive && !downActive) {
+    fighter.x = clamp(fighter.x + fighter.facing * speed * dt, stage.minX, stage.maxX);
+    fighter.action = "run";
+    fighter.clip = fighter.clips.run;
   } else if (downActive) {
     fighter.action = "down";
-  } else if (fighter.grounded && !fighter.guard) {
+    fighter.clip = downClipFor(fighter);
+  } else if (fighter.grounded && !fighter.guard && !fighter.attack) {
     fighter.action = "idle";
   }
-  if (fighter.guard) fighter.action = "guard";
-  if (requestedAttack && startAttack(fighter, requestedAttack)) fighter.queuedAttack = null;
+  if (fighter.guard) {
+    if (fighter.action !== "guard" || fighter.clip !== fighter.clips.guard) {
+      fighter.clip = fighter.clips.guard;
+      fighter.clipTime = 0;
+    }
+    fighter.action = "guard";
+  }
+  const attackToStart = fighter.queuedAttack;
+  if (!fighter.attack && attackToStart && startAttack(fighter, attackToStart)) fighter.queuedAttack = null;
 }
 
 function resolveRequestedAttack(
   fighter: FighterState,
-  intents: { readonly light: boolean; readonly heavy: boolean; readonly special: boolean }
+  intents: { readonly down: boolean; readonly light: boolean; readonly heavy: boolean; readonly special: boolean }
 ): MoveId | null {
   if (intents.special && fighter.meter >= SPECIAL_METER_COST && fighter.specialCooldown <= 0) return "special";
+  if ((intents.down || fighter.downGrace > 0 || fighter.action === "down") && (intents.light || intents.heavy)) return "heavy";
   if (intents.heavy) return "heavy";
   if (intents.light) return "light";
   return null;
 }
 
+function downClipFor(fighter: FighterState): ClipName {
+  return fighter.clips.down;
+}
+
 function startAttack(fighter: FighterState, id: MoveId): boolean {
-  if (fighter.moveCooldown > 0 || fighter.action === "ko" || !fighter.grounded || fighter.guard || fighter.hitstun > 0) return false;
+  if (fighter.moveCooldown > 0 || fighter.action === "ko" || fighter.guard || fighter.hitstun > 0) return false;
   const spec = moves[id];
   if (id === "special") {
     if (fighter.meter < SPECIAL_METER_COST || fighter.specialCooldown > 0) return false;
@@ -1408,11 +1375,15 @@ function resolveEngineCombat(
   combatWorld.setActor(player.id, {
     position: [player.x, player.y, stage.z],
     facing: player.facing,
+    health: player.health,
+    meter: player.meter,
     guarding: player.guard
   });
   combatWorld.setActor(rival.id, {
     position: [rival.x, rival.y, stage.z],
     facing: rival.facing,
+    health: rival.health,
+    meter: rival.meter,
     guarding: rival.guard
   });
   queueEngineAttack(combatWorld, player);
@@ -1447,6 +1418,8 @@ function syncFighterFromCombatSnapshot(fighter: FighterState, snapshot: GameComb
   const actor = snapshot.actors.find((candidate) => candidate.id === fighter.id);
   if (!actor) return;
   fighter.x = clamp(actor.position[0], stage.minX, stage.maxX);
+  fighter.health = clamp(actor.health, 0, START_HEALTH);
+  fighter.meter = clamp(actor.meter, 0, 100);
 }
 
 function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: FighterState, rival: FighterState): {
@@ -1478,7 +1451,6 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     const damage = Math.max(0, Math.round(event.damage ?? 0));
     if (event.targetId === player.id) playerDamage += damage;
     if (event.targetId === rival.id) rivalDamage += damage;
-    defender.health = Math.max(0, defender.health);
     if (defender.health <= 12) defender.health = 0;
     defender.attack = null;
     defender.hitstun = Math.max(defender.hitstun, 0.34);
@@ -1490,81 +1462,31 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
   return { playerDamage, rivalDamage, blocked, blockedBy };
 }
 
-function applyReadableCombat(player: FighterState, rival: FighterState, sparks: Spark[]): {
-  playerDamage: number;
-  rivalDamage: number;
-  blocked: boolean;
-  blockedBy: FighterId | null;
-} {
-  const playerResult = resolveReadableStrike(player, rival, sparks);
-  const rivalResult = resolveReadableStrike(rival, player, sparks);
-  return {
-    playerDamage: rivalResult.damage,
-    rivalDamage: playerResult.damage,
-    blocked: playerResult.blocked || rivalResult.blocked,
-    blockedBy: playerResult.blocked ? rival.id : rivalResult.blocked ? player.id : null
-  };
-}
-
-function resolveReadableStrike(attacker: FighterState, defender: FighterState, sparks: Spark[]): { damage: number; blocked: boolean } {
-  const attack = attacker.attack;
-  if (!attack || attack.hit || attacker.health <= 0 || defender.health <= 0 || attacker.action === "ko" || defender.action === "ko") {
-    return { damage: 0, blocked: false };
-  }
-  if (attack.elapsed < attack.activeStart || attack.elapsed > attack.activeEnd) return { damage: 0, blocked: false };
-  if (!attacker.grounded || !defender.grounded) return { damage: 0, blocked: false };
-
-  const phase = clamp(attack.elapsed / attack.duration, 0, 1);
-  const effectiveAttackerX = attacker.x + attacker.facing * attackLunge(attack.id, phase);
-  const delta = defender.x - effectiveAttackerX;
-  const distance = Math.abs(delta);
-  const facingTarget = delta === 0 || Math.sign(delta) === attacker.facing;
-  const readableSpacing = distance >= 0.72 && distance <= attack.range + 0.38;
-  if (!facingTarget || !readableSpacing) return { damage: 0, blocked: false };
-
-  attack.hit = true;
-  const blocked = defender.guard && attack.id !== "special";
-  const damage = blocked ? Math.max(2, Math.round(attack.damage * 0.25)) : attack.damage;
-  defender.health = clamp(defender.health - damage, 0, START_HEALTH);
-  if (defender.health <= FINISH_HEALTH_THRESHOLD) defender.health = 0;
-  defender.attack = null;
-  defender.hitstun = Math.max(defender.hitstun, blocked ? 0.18 : attack.id === "special" ? 0.48 : attack.id === "heavy" ? 0.4 : 0.3);
-  defender.action = defender.health <= 0 ? "ko" : blocked ? "guard" : "hurt";
-  defender.clip = defender.health <= 0 ? defender.clips.ko : blocked ? defender.clips.guard : defender.clips.hurt;
-  defender.clipTime = 0;
-  defender.x = clamp(defender.x + attacker.facing * attack.knockback * (blocked ? 0.09 : 0.2), stage.minX, stage.maxX);
-  attacker.meter = clamp(attacker.meter + (blocked ? 6 : 16), 0, 100);
-  attacker.moveCooldown = Math.max(attacker.moveCooldown, blocked ? 0.14 : 0.22);
-  sparks.push({
-    x: effectiveAttackerX + attacker.facing * Math.min(attack.range, Math.max(0.72, distance)) * 0.72,
-    y: 0.92,
-    z: stage.z + 0.03,
-    age: 0,
-    life: 0.16,
-    facing: attacker.facing,
-    kind: blocked ? "block" : attack.id
-  });
-  return { damage, blocked };
-}
-
 function updateFighterPhysics(fighter: FighterState, dt: number): void {
   if (fighter.hitstun > 0) {
     fighter.hitstun = Math.max(0, fighter.hitstun - dt);
     if (fighter.hitstun === 0 && fighter.action === "hurt") fighter.action = "idle";
   }
   if (!fighter.grounded) {
+    fighter.airTime += dt;
     fighter.vy += stage.gravity * dt;
     fighter.y += fighter.vy * dt;
     if (fighter.y > stage.maxJumpY) {
       fighter.y = stage.maxJumpY;
       fighter.vy = Math.min(fighter.vy, 0);
     }
-    if (fighter.y <= 0) {
+    const airborneWallSeconds = fighter.airStartedAtMs > 0 ? (performance.now() - fighter.airStartedAtMs) / 1000 : 0;
+    if (fighter.y <= 0 || fighter.airTime > 2.35 || airborneWallSeconds > 2.85) {
       fighter.y = 0;
       fighter.vy = 0;
+      fighter.airTime = 0;
+      fighter.airStartedAtMs = 0;
       fighter.grounded = true;
       if (fighter.action === "jump") fighter.action = "idle";
     }
+  } else {
+    fighter.airTime = 0;
+    fighter.airStartedAtMs = 0;
   }
 }
 
@@ -1589,7 +1511,7 @@ function updateClips(fighter: FighterState, dt: number): void {
   } else if (fighter.action === "walk") {
     fighter.clip = fighter.clips.walk;
   } else if (fighter.action === "down") {
-    fighter.clip = fighter.clips.guard;
+    fighter.clip = fighter.clips.down;
   } else if (fighter.action === "guard") {
     fighter.clip = fighter.clips.guard;
   } else if (fighter.action === "hurt") {
@@ -1620,13 +1542,14 @@ function applyFighterAnimation(fighter: RuntimeFighter): void {
 }
 
 function syncFighterRoot(fighter: RuntimeFighter): void {
-  const yaw = fighter.state.facing === 1 ? Math.PI / 2 : -Math.PI / 2;
+  const visualFacing = fighter.state.facing * fighter.visualFacingMultiplier;
+  const yaw = visualFacing === 1 ? Math.PI / 2 : -Math.PI / 2;
   const bob = fighter.state.grounded ? 0 : fighter.state.y;
   const attack = fighter.state.attack;
   const phase = attack ? clamp(attack.elapsed / attack.duration, 0, 1) : 0;
   const lunge = attack ? attackLunge(attack.id, phase) * fighter.state.facing : 0;
   const recoil = fighter.state.action === "hurt" ? -0.14 * fighter.state.facing : 0;
-  const downPose = fighter.state.action === "guard" || fighter.state.action === "down";
+  const downPose = fighter.state.action === "down";
   const guardSink = downPose ? -0.12 : 0;
   const specialLift = attack?.id === "special" ? Math.sin(Math.PI * phase) * 0.1 : 0;
   const roll = attack?.id === "heavy" ? -fighter.state.facing * Math.sin(Math.PI * phase) * 0.12 : 0;
@@ -1680,19 +1603,8 @@ function createStageItems(): RenderItem[] {
 }
 
 function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
-  const state = fighter.state;
-  const cube = Geometry.litCube(1);
-  const items: RenderItem[] = [];
-  const accent = fighter.accent;
-  const base = new UnlitMaterial({
-    name: `${state.id}-floor-aura`,
-    color: [accent[0], accent[1], accent[2], 0.72],
-    renderState: { blend: true, depthWrite: false, cullMode: "none" }
-  });
-  const rootX = state.x + (state.attack ? attackLunge(state.attack.id, clamp(state.attack.elapsed / state.attack.duration, 0, 1)) * state.facing : 0);
-  items.push(item(`${state.id}-floor-aura`, cube, base, [rootX, 0.018, 0.03], [0.72, 0.024, 0.18]));
-
-  return items;
+  void fighter;
+  return [];
 }
 
 function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
@@ -1738,40 +1650,95 @@ function createPerformanceProof(dt: number, renderMs: number, drawCalls: number)
 function createAudioRuntime(): AudioRuntime {
   const AudioCtor = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   const context = AudioCtor ? new AudioCtor() : null;
-  let muted = false;
-  let lastCue: string | null = null;
+  const recentCues: string[] = [];
+  const buffers = new Map<string, Promise<AudioBuffer>>();
+  const assetUrls = Object.values(auraClashAudioAssets).map((asset) => asset.url);
+  const loadBuffer = async (audioContext: AudioContext, url: string): Promise<AudioBuffer> => {
+    let pending = buffers.get(url);
+    if (!pending) {
+      pending = fetch(url)
+        .then((response) => {
+          if (!response.ok) throw new Error(`Audio asset ${url} returned ${response.status}`);
+          return response.arrayBuffer();
+        })
+        .then((bytes) => audioContext.decodeAudioData(bytes.slice(0)));
+      buffers.set(url, pending);
+    }
+    return pending;
+  };
+  const cueEntries = Object.fromEntries(
+    Object.values(auraClashAudioManifest).map((definition) => [
+      definition.cue,
+      {
+        id: definition.cue,
+        bus: definition.bus,
+        volume: definition.volume,
+        play: async (audioContext, destination) => {
+          const concreteContext = audioContext as AudioContext;
+          const buffer = await loadBuffer(concreteContext, definition.asset.url);
+          const source = concreteContext.createBufferSource();
+          const gain = concreteContext.createGain();
+          source.buffer = buffer;
+          gain.gain.value = definition.volume;
+          source.connect(gain);
+          gain.connect(destination);
+          source.start();
+        }
+      }
+    ])
+  ) as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
+  const audio: GameAudio<keyof typeof auraClashAudioManifest> = createGameAudio({
+    context,
+    buses: [
+      { id: "ui", volume: 0.8 },
+      { id: "combat", volume: 1 },
+      { id: "round", volume: 0.9 }
+    ],
+    cues: cueEntries
+  });
 
   function cue(name: string): void {
-    lastCue = name;
-    if (!context || muted) return;
-    void context.resume().then(() => {
-      const now = context.currentTime;
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = name.includes("hit") ? "triangle" : "sine";
-      oscillator.frequency.setValueAtTime(name.includes("denied") ? 110 : name.includes("win") ? 220 : 176, now);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(name.includes("hit") ? 0.045 : 0.025, now + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.14);
-    }).catch(() => {
-      muted = true;
-    });
+    const definition = auraClashAudioManifest[name as keyof typeof auraClashAudioManifest];
+    if (!definition) return;
+    recentCues.push(definition.cue);
+    if (recentCues.length > 16) recentCues.shift();
+    void audio.cue(definition.cue);
   }
 
   return {
     cue,
     proof() {
+      const evidence = audio.evidence;
       return {
-        enabled: context !== null && !muted,
-        muted,
+        enabled: evidence.enabled && !evidence.muted,
+        muted: evidence.muted,
         musicReady: context !== null,
-        sfxReady: context !== null,
-        lastCue
+        sfxReady: context !== null && Object.keys(auraClashAudioManifest).length >= 10 && assetUrls.length >= 10,
+        lastCue: evidence.lastCue,
+        recentCues,
+        cueCount: Object.keys(auraClashAudioManifest).length,
+        typedAssetCount: assetUrls.length,
+        assetUrls,
+        oscillatorFallback: false,
+        audioErrors: evidence.errors
       };
     }
+  };
+}
+
+function fallbackAudioProof(enabled: boolean): AudioProof {
+  return {
+    enabled,
+    muted: !enabled,
+    musicReady: false,
+    sfxReady: false,
+    lastCue: null,
+    recentCues: [],
+    cueCount: Object.keys(auraClashAudioManifest).length,
+    typedAssetCount: Object.keys(auraClashAudioAssets).length,
+    assetUrls: Object.values(auraClashAudioAssets).map((asset) => asset.url),
+    oscillatorFallback: false,
+    audioErrors: []
   };
 }
 
@@ -1806,14 +1773,11 @@ function writeProof(input: {
   combatSnapshot: GameCombatWorldSnapshot;
   player: RuntimeFighter;
   rival: RuntimeFighter;
+  clipReadiness: AuraClashClipReadiness;
 }): void {
   const playerSnapshot = input.player.actor.evidence;
   const rivalSnapshot = input.rival.actor.evidence;
-  const proof: AuraClashArenaProof = {
-    route: "/playable/",
-    app: "Aura Clash Arena",
-    release: "1.0.9",
-    version: "aura-clash-arena-production-gltf-animation",
+  const proof = createAuraClashArenaProof({
     status: input.paused ? "paused" : "running",
     error: null,
     frame: input.frame,
@@ -1823,7 +1787,6 @@ function writeProof(input: {
     callout: input.callout,
     visibleFighterAsset: assets.auraClashPlayerRig.url,
     fighterAssets: activeFighterAssetsProof(),
-    noPrimitiveFighters: true,
     renderer: {
       surface: "aura3d-production-gltf-animation",
       backend: input.backend,
@@ -1840,7 +1803,8 @@ function writeProof(input: {
       rivalLastTracks: input.rival.state.lastApply?.tracksApplied ?? 0,
       playerLastSkinningPalettes: input.player.state.lastApply?.skinningPalettesUpdated ?? 0,
       rivalLastSkinningPalettes: input.rival.state.lastApply?.skinningPalettesUpdated ?? 0,
-      clips: playerSnapshot.clips
+      clips: playerSnapshot.clips,
+      clipReadiness: input.clipReadiness
     },
     runtime: {
       frameLoop: true,
@@ -1857,10 +1821,16 @@ function writeProof(input: {
       koLocked: input.roundOver,
       resetCount: input.resetCount
     },
+    stage: collectAuraClashArenaStageEvidence(input.root),
+    tweaks: createArenaTweaksEvidence(input.root),
+    fighterController: assertAuraClashFighterControllerBoundary(),
+    lighting: createAuraClashLightingEvidence(),
+    postProcess: createAuraClashPostProcessEvidence({ performanceBudgetOk: input.performanceProof.budgetOk }),
     performance: input.performanceProof,
     audio: input.audioProof,
+    deterministicReplay: createDeterministicReplayProof(),
     engineCombat: engineCombatProof(input.combatSnapshot)
-  };
+  });
   gameWindow.__AURA_CLASH_ARENA_PROOF__ = proof;
   gameWindow.__AURA3D_GAME_EVIDENCE__ = {
     route: proof.route,
@@ -1869,8 +1839,11 @@ function writeProof(input: {
     assets: [proof.fighterAssets.player.url, proof.fighterAssets.rival.url],
     animation: proof.animation,
     renderer: proof.renderer,
+    lighting: proof.lighting,
+    postProcess: proof.postProcess,
     performance: proof.performance,
     audio: proof.audio,
+    deterministicReplay: proof.deterministicReplay,
     combat: {
       engine: proof.engineCombat,
       totalHits: proof.totalHits,
@@ -1925,6 +1898,70 @@ function fallbackProofFighter(name: string): ProofFighter {
     action: "idle",
     activeClip: playerClips.idle,
     attacking: null
+  };
+}
+
+function createDeterministicReplayProof(): DeterministicReplayProof {
+  type ReplayState = DeterministicReplayProof["finalSnapshot"];
+  const heavy = moves.heavy;
+  const replayEvents = Array.from({ length: Math.ceil(START_HEALTH / heavy.damage) }, (_, index) => {
+    const frame = 12 + index * 10;
+    return { frame, time: frame / 60, type: "press" as const, binding: "KeyK" };
+  });
+  const replay = game.inputReplay(replayEvents, { fps: 60, seed: 106, label: "aura-clash-full-round-ko-proof" });
+  const exportedReplay = game.exportReplay(replay, { simulation: { label: "aura-clash-full-round-ko-proof" } });
+
+  const run = () =>
+    game.runSimulation<ReplayState, ReplayState>({
+      label: "aura-clash-full-round-ko-proof",
+      fps: replay.fps,
+      frames: replay.frameCount + 30,
+      initialState: {
+        playerX: -0.74,
+        rivalHp: START_HEALTH,
+        hits: 0,
+        ko: false,
+        roundTime: 99
+      },
+      update: ({ frame, dt, state }) => {
+        const events = game.inputReplayEventsAt(replay, frame);
+        const heavyPressed = events.some((event) => event.binding === "KeyK" && event.type === "press");
+        const playerX = state.playerX;
+        const inRange = Math.abs(0.62 - playerX) <= heavy.range;
+        const hit = heavyPressed && inRange && !state.ko;
+        const rivalHp = Math.max(0, state.rivalHp - (hit ? heavy.damage : 0));
+        return {
+          state: {
+            playerX,
+            rivalHp,
+            hits: state.hits + (hit ? 1 : 0),
+            ko: rivalHp <= 0,
+            roundTime: Number(Math.max(0, state.roundTime - dt).toFixed(3))
+          },
+          events: hit ? [{ type: "hit", frame, move: "heavy" }] : []
+        };
+      },
+      snapshot: (state) => state
+    });
+
+  const first = run();
+  const second = run();
+  return {
+    kind: "aura-clash-deterministic-replay-proof",
+    runner: "game.runSimulation",
+    inputReplay: "game.inputReplay",
+    frameCount: first.frameCount,
+    eventCount: first.eventCount,
+    finalHash: first.finalHash,
+    repeatedFinalHash: second.finalHash,
+    stable: first.finalHash === second.finalHash,
+    exportedReplay: {
+      schemaVersion: exportedReplay.schemaVersion,
+      checksum: exportedReplay.replay.checksum,
+      frameCount: exportedReplay.replay.frameCount,
+      duration: Number(exportedReplay.replay.duration.toFixed(3))
+    },
+    finalSnapshot: first.finalSnapshot
   };
 }
 

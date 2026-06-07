@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import { CREATE_AURA3D_TEMPLATES, createA3DProject } from "../../../packages/create-aura3d/src";
+import { createFightingRouteReadiness } from "../../../packages/create-aura3d/templates/fighting-game/src/game/stage";
 
 describe("create-aura3d templates", () => {
   test("scaffolds every starter template with scripts and copy-paste tests", () => {
@@ -15,6 +16,21 @@ describe("create-aura3d templates", () => {
       expect(hasTemplateSmokeSpec(targetDir)).toBe(true);
       expect(existsSync(join(targetDir, "src", "main.ts"))).toBe(true);
     }
+  });
+
+  test("fighting-game readiness distinguishes placeholders from typed asset proof", () => {
+    const placeholder = createFightingRouteReadiness({ missingFighterAssets: ["playerFighter", "rivalFighter"] });
+    const typedAssets = createFightingRouteReadiness({ missingFighterAssets: [] });
+
+    expect(placeholder.sourceOnly).toBe(true);
+    expect(placeholder.placeholderMode).toBe(true);
+    expect(placeholder.proofMode).toBe("source-placeholders");
+    expect(placeholder.missingTypedAssets).toEqual(["playerFighter", "rivalFighter"]);
+    expect(typedAssets.sourceOnly).toBe(false);
+    expect(typedAssets.placeholderMode).toBe(false);
+    expect(typedAssets.proofMode).toBe("typed-assets");
+    expect(typedAssets.requiredTypedAssets).toEqual(["playerFighter", "rivalFighter"]);
+    expect(typedAssets.publicEngineApis).toEqual(expect.arrayContaining(["createGameApp", "game.combatWorld", "games.fighting.stagePreset"]));
   });
 });
 

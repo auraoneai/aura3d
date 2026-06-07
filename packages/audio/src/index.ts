@@ -1,6 +1,37 @@
 export { AudioBus } from "./AudioBus";
 export { AudioClip } from "./AudioClip";
 export type { AudioClipOptions } from "./AudioClip";
+export { AudioFileManager } from "./AudioFileManager";
+export type {
+  AudioDecodeContextLike,
+  AudioFileAssetLike,
+  AudioFileFetchResponseLike,
+  AudioFileInput,
+  AudioFileManagerOptions,
+  AudioFileRequest,
+  ResolvedAudioFileRequest
+} from "./AudioFileManager";
+export { createAudioTimelineMixSnapshot, defaultAudioTimelineBusForRole, AudioTimelineTrack } from "./AudioTimelineTrack";
+export type {
+  AudioTimelineBusMix,
+  AudioTimelineClip,
+  AudioTimelineClipOptions,
+  AudioTimelineEnvelopePoint,
+  AudioTimelineMixOptions,
+  AudioTimelineMixSnapshot,
+  AudioTimelineSample,
+  AudioTimelineTrackOptions,
+  AudioTimelineTrackRole
+} from "./AudioTimelineTrack";
+export { audioWaveformPeakRange, createAudioWaveform, createAudioWaveformPath, sampleAudioWaveformAtTime } from "./AudioWaveform";
+export type {
+  AudioWaveformData,
+  AudioWaveformInput,
+  AudioWaveformOptions,
+  AudioWaveformPathOptions,
+  AudioWaveformPathPoint,
+  AudioWaveformPeak
+} from "./AudioWaveform";
 export { sampleAudioEffectsAnalysisFixture } from "./AudioEffectsAnalysisFixtures";
 export type {
   AudioChorusPreset,

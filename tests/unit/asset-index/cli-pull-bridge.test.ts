@@ -2,8 +2,9 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { normalizeLicense, type AuraCanonicalAsset, type ResolveCandidate } from "@aura3d/asset-index";
+import { FederatedResolver, normalizeLicense, type AuraCanonicalAsset, type ResolveCandidate } from "@aura3d/asset-index";
 import {
+  buildSearchAdapters,
   runResolve,
   runSearch,
   selectPullable,
@@ -112,6 +113,34 @@ describe("toResolveConstraints", () => {
       license: ["CC0", "CC-BY"],
       maxTriangles: 200_000,
       animated: true,
+      format: "glb",
+      redistributableOnly: true,
+    });
+  });
+
+  it("maps cartoon profiles to redistributable GLB constraints", () => {
+    expect(toResolveConstraints({ profile: "cartoon-character" }, true)).toEqual({
+      license: ["CC0", "CC-BY"],
+      maxTriangles: 160_000,
+      animated: true,
+      format: "glb",
+      redistributableOnly: true,
+    });
+    expect(toResolveConstraints({ profile: "cartoon-prop" }, true)).toEqual({
+      license: ["CC0", "CC-BY"],
+      maxTriangles: 100_000,
+      format: "glb",
+      redistributableOnly: true,
+    });
+    expect(toResolveConstraints({ profile: "cartoon-set", animated: true }, false)).toEqual({
+      license: ["CC0", "CC-BY"],
+      maxTriangles: 350_000,
+      animated: true,
+      format: "glb",
+    });
+    expect(toResolveConstraints({ profile: "cartoon-environment" }, true)).toEqual({
+      license: ["CC0", "CC-BY"],
+      maxTriangles: 250_000,
       format: "glb",
       redistributableOnly: true,
     });
@@ -311,6 +340,75 @@ describe("runSearch", () => {
       makeResolver: () => stubResolver([candidate(unverified)]) as never,
     });
     expect(report.messages.some((m) => m.includes("manual license check"))).toBe(true);
+  });
+
+  it("filters and annotates cartoon-character search results by profile suitability", async () => {
+    const hero = asset({
+      id: "src:hero",
+      title: "Stylized Cartoon Humanoid Hero With Mouth Shapes",
+      tags: ["cartoon", "character", "humanoid", "rigged", "animated", "mouth", "expression"],
+      hasAnimations: true,
+    });
+    const staticChair = asset({
+      id: "src:chair",
+      title: "Cute Cartoon Chair Prop",
+      tags: ["cartoon", "prop", "chair"],
+      hasAnimations: false,
+    });
+
+    const report = await runSearch({
+      query: "cartoon character",
+      constraints: { profile: "cartoon-character" },
+      makeResolver: () => stubResolver([candidate(staticChair, 100), candidate(hero, 10)]) as never,
+    });
+
+    expect(report.profile).toBe("cartoon-character");
+    expect(report.candidates.map((c) => c.id)).toEqual(["src:hero"]);
+    expect(report.candidates[0]?.profile).toMatchObject({ name: "cartoon-character", suitable: true });
+    const rejected = report.rejectedCandidates.find((c) => c.id === "src:chair");
+    expect(rejected?.profile?.suitable).toBe(false);
+    expect(rejected?.profile?.rejectionReasons.join("\n")).toContain("not character-like");
+  });
+
+  it("returns curated starter-pack cartoon-character results through the CLI search adapter path", async () => {
+    const adapters = buildSearchAdapters({}).filter((adapter) => adapter.id === "cartoon-starter-pack");
+    expect(adapters).toHaveLength(1);
+
+    const report = await runSearch({
+      query: "cartoon character",
+      constraints: { profile: "cartoon-character" },
+      makeResolver: () => new FederatedResolver({ adapters, limit: 10 }) as never,
+    });
+
+    expect(report.profile).toBe("cartoon-character");
+    expect(report.candidates.length).toBeGreaterThanOrEqual(5);
+    expect(report.candidates.slice(0, 5).every((candidate) => candidate.id.startsWith("cartoon-starter:"))).toBe(true);
+    expect(report.candidates.slice(0, 5).every((candidate) => candidate.autoPullable && candidate.profile?.suitable)).toBe(true);
+  });
+
+  it("refuses cartoon-profile resolve when the top pullable candidate is unsuitable", async () => {
+    const projectDir = makeProject();
+    const staticChair = asset({
+      id: "src:chair",
+      title: "Cute Cartoon Chair Prop",
+      tags: ["cartoon", "prop", "chair"],
+      hasAnimations: false,
+    });
+    let downloads = 0;
+
+    await expect(
+      runResolve({
+        query: "cartoon character",
+        name: "hero",
+        projectDir,
+        constraints: { profile: "cartoon-character" },
+        makeResolver: () => stubResolver([candidate(staticChair)]) as never,
+        download: async () => {
+          downloads += 1;
+        },
+      }),
+    ).rejects.toThrow(/cartoon-character profile/i);
+    expect(downloads).toBe(0);
   });
 });
 

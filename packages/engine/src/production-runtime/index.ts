@@ -15,10 +15,13 @@ import {
   type ProductionRuntimeRendererOptions
 } from "@aura3d/rendering";
 import {
+  createGLTFSceneAnimationMixer,
   createGLTFSceneAnimationRuntime,
   createProductionGLTFRenderMetadata,
   loadProductionGLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult,
+  type GLTFSceneAnimationMixerBinding,
+  type GLTFSceneAnimationMixerOptions,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
   type ProductionGLTFRenderMetadata,
@@ -70,6 +73,12 @@ export {
   createTypedGLBActor,
   createTypedGLBActorEvidence
 } from "./TypedGLBActor.js";
+export {
+  createGameAppRuntime
+} from "./GameAppRuntime.js";
+export {
+  createSideViewGameRenderPreset
+} from "./GameRenderPreset.js";
 export type {
   TypedGLBActor,
   TypedGLBActorAsset,
@@ -78,6 +87,18 @@ export type {
   TypedGLBActorTintOptions,
   TypedGLBActorTransformOptions
 } from "./TypedGLBActor.js";
+export type {
+  GameAppRuntime,
+  GameAppRuntimeEvidence,
+  GameAppRuntimeLoopOptions,
+  GameAppRuntimeOptions,
+  GameAppRuntimeResize,
+  GameAppRuntimeStatus
+} from "./GameAppRuntime.js";
+export type {
+  SideViewGameRenderPreset,
+  SideViewGameRenderPresetOptions
+} from "./GameRenderPreset.js";
 
 export * as productionRendering from "@aura3d/rendering";
 
@@ -558,6 +579,11 @@ export interface A3DImportedAnimationRuntime {
   readonly runtime: GLTFSceneAnimationRuntime;
   applyClip(name: string, time: number): GLTFSceneAnimationApplyResult;
   blendClips(samples: readonly { readonly clipName: string; readonly time: number; readonly weight?: number; readonly additive?: boolean }[]): GLTFSceneAnimationApplyResult;
+  restartClip(name: string): GLTFSceneAnimationApplyResult;
+  playOneShot(name: string, options?: { readonly time?: number | undefined }): GLTFSceneAnimationApplyResult & { readonly oneShot: true; readonly complete: boolean };
+  setMorphWeights(target: string, weights: readonly number[], options?: { readonly labels?: readonly string[] | undefined; readonly time?: number | undefined }): GLTFSceneAnimationApplyResult;
+  inspectClipBindings(name?: string): ReturnType<GLTFSceneAnimationRuntime["inspectClipBindings"]>;
+  createMixer(options?: Omit<GLTFSceneAnimationMixerOptions, "scene" | "clips" | "asset">): GLTFSceneAnimationMixerBinding;
   solveTwoBoneIK(options: Parameters<GLTFSceneAnimationRuntime["solveImportedSkeletonTwoBoneIK"]>[0]): ReturnType<GLTFSceneAnimationRuntime["solveImportedSkeletonTwoBoneIK"]>;
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
 }
@@ -576,6 +602,38 @@ export function createImportedAnimationRuntime(scene: A3DGltfScene): A3DImported
     },
     blendClips(samples) {
       return runtime.applyClips(samples);
+    },
+    restartClip(name) {
+      return runtime.applyClipByName(name, 0);
+    },
+    playOneShot(name, options = {}) {
+      const clip = scene.asset.animations.find((candidate) => candidate.name === name);
+      const time = Math.max(0, options.time ?? 0);
+      const result = runtime.applyClipByName(name, time);
+      return {
+        ...result,
+        oneShot: true,
+        complete: clip ? time >= clip.duration : false
+      };
+    },
+    setMorphWeights(target, weights, options = {}) {
+      const controller = runtime.createMorphTargetController({
+        target,
+        ...(options.labels ? { labels: options.labels } : {})
+      });
+      controller.setWeights(weights);
+      return controller.apply(options.time ?? 0);
+    },
+    inspectClipBindings(name) {
+      return runtime.inspectClipBindings(name);
+    },
+    createMixer(options = {}) {
+      return createGLTFSceneAnimationMixer({
+        ...options,
+        scene: scene.resources.scene,
+        clips: scene.asset.animations,
+        asset: scene.asset
+      });
     },
     solveTwoBoneIK(options) {
       return runtime.solveImportedSkeletonTwoBoneIK(options);

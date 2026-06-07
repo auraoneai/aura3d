@@ -14,12 +14,12 @@ export const auraClashFighterIds = [
 export type AuraClashFighterId = (typeof auraClashFighterIds)[number];
 
 export const auraClashFighterAssetKeys = {
-  mara: "fighterMaraVolt",
-  rook: "fighterRookAtlas",
-  nyx: "fighterNyxVale",
-  kade: "fighterKadeEmber",
-  sable: "fighterSableIron",
-  jin: "fighterJinFlux"
+  mara: "auraClashPlayerRig",
+  rook: "auraClashRivalRig",
+  nyx: "auraClashRivalRig",
+  kade: "auraClashPlayerRig",
+  sable: "auraClashPlayerRig",
+  jin: "auraClashRivalRig"
 } as const satisfies Record<AuraClashFighterId, string>;
 
 export type AuraClashFighterAssetKey =
@@ -40,9 +40,9 @@ export type FighterAssetReference = Readonly<{
   fighter: AuraClashFighterAssetKey;
   cliAssetName: AuraClashFighterAssetKey;
   typedAssetMember: `assets.${AuraClashFighterAssetKey}`;
-  sourcePath: `apps/aura-clash-showcase/assets/source/fighters/${string}.glb`;
-  publicPath: `apps/aura-clash-showcase/public/aura-assets/${string}.glb`;
-  provenanceStatus: "generated-registered" | "cli-imported" | "license-approved";
+  sourcePath: `apps/aura-clash-showcase/assets/quaternius-source/selected/animations/${"UAL1_Standard" | "UAL2_Standard"}.glb`;
+  publicPath: `apps/aura-clash-showcase/public/aura-assets/${AuraClashFighterAssetKey}.${string}.glb`;
+  provenanceStatus: "final-registered";
   url: null;
   safeUsage: string;
 }>;
@@ -80,16 +80,17 @@ export type AuraClashFighterDefinition = Readonly<{
 
 export function fighterAssetReference(
   id: AuraClashFighterId,
-  fileSlug: string
+  _fileSlug: string
 ): FighterAssetReference {
   const assetKey = auraClashFighterAssetKeys[id];
+  const isPlayerRig = assetKey === "auraClashPlayerRig";
   return {
     fighter: assetKey,
     cliAssetName: assetKey,
     typedAssetMember: `assets.${assetKey}`,
-    sourcePath: `apps/aura-clash-showcase/assets/source/fighters/${fileSlug}.glb`,
-    publicPath: `apps/aura-clash-showcase/public/aura-assets/${fileSlug}.glb`,
-    provenanceStatus: "generated-registered",
+    sourcePath: `apps/aura-clash-showcase/assets/quaternius-source/selected/animations/${isPlayerRig ? "UAL1_Standard" : "UAL2_Standard"}.glb`,
+    publicPath: `apps/aura-clash-showcase/public/aura-assets/${isPlayerRig ? "auraClashPlayerRig.d8672924" : "auraClashRivalRig.9a0ffda4"}.glb`,
+    provenanceStatus: "final-registered",
     url: null,
     safeUsage:
       `Resolve through generated aura-assets.ts and pass ${`assets.${assetKey}`} to model() through the typed Aura3D asset manifest.`

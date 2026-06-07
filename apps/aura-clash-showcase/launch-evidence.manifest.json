@@ -84,7 +84,7 @@
         "packages/engine/src/agent-api/GameRuntime.ts",
         "packages/engine/src/agent-api/RuntimeNodeHandle.ts",
         "apps/aura-clash-showcase/src/main.ts",
-        "apps/aura-clash-showcase/src/game/AuraClashGame.ts"
+        "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts"
       ],
       "proves": [
         "collectGameRuntimeEvidence reports loop, runtime nodes, input, kinematic bodies, collision, animation, effects, camera, assets, stage, HUD, accessibility, and subsystem ownership.",
@@ -99,9 +99,9 @@
     "stageSafeZone": {
       "files": [
         "packages/engine/src/agent-api/game-kits/fighting.ts",
-        "apps/aura-clash-showcase/src/game/StageDirector.ts",
+        "apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage.ts",
         "apps/aura-clash-showcase/src/scenes/createStageScene.ts",
-        "apps/aura-clash-showcase/src/data/stages.ts"
+        "apps/aura-clash-showcase/src/playable/combat/auraClashMoveData.ts"
       ],
       "proves": [
         "Fighting stage source exposes foreground, combat-lane, midground, skyline, and parallax layers with nonblocking rules.",
@@ -189,6 +189,26 @@
         "Deployed route proof: `/showcase/aura-clash/`, `/showcase/aura-clash/playable/`, `/showcase/aura-clash/evidence/`, `/showcase/aura-clash/accessibility/`, `/showcase/aura-clash/deploy-check/`, and `/showcase/aura-clash/poster/` must return successful responses.",
         "Deployed GLB proof: every manifest-referenced GLB under `/showcase/aura-clash/aura-assets/` or `/apps/aura-clash-showcase/aura-assets/` must return a successful response with a nonzero content length.",
         "`apps/aura-clash-showcase/launch-evidence/deployed-routes.json` reports `ok: true`."
+      ]
+    },
+    "auraClash106Evidence": {
+      "command": "AURA_CLASH_CONTEXTUAL_EVIDENCE_ONLY=1 npm run launch:evidence",
+      "cwd": "apps/aura-clash-showcase",
+      "outputs": [
+        "apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json",
+        "apps/aura-clash-showcase/launch-evidence/deployed-106-proof.json",
+        "apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/playable-106-combat-frame.png",
+        "apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png"
+      ],
+      "proves": [
+        "Current 1.0.6 contextual launch artifacts exist and are generated from Aura Clash Arena Playwright output.",
+        "`aura-clash-106-readiness.json` reports `ok: true` and references current flagship gates plus deployed-compatible route proof.",
+        "PRD-named compatibility screenshots map to current contextual Aura Clash Arena screenshots, not stale attempt artifacts."
+      ],
+      "notes": [
+        "This command does not replace human visual approval.",
+        "Use the full deployed route evidence command with AURA_CLASH_ORIGIN when public production status must be proven."
       ]
     },
     "reviewPackage": {
@@ -552,6 +572,26 @@
         "PRD updater marks only evidence-backed checkboxes."
       ]
     }
+  },
+  "auraClash106CurrentEvidence": {
+    "requiredArtifacts": [
+      "apps/aura-clash-showcase/launch-evidence/aura-clash-106-readiness.json",
+      "apps/aura-clash-showcase/launch-evidence/deployed-106-proof.json",
+      "apps/aura-clash-showcase/launch-evidence/playable-106-first-frame.png",
+      "apps/aura-clash-showcase/launch-evidence/playable-106-combat-frame.png",
+      "apps/aura-clash-showcase/launch-evidence/playable-106-ko-reset.png"
+    ],
+    "sourceArtifacts": [
+      "apps/aura-clash-showcase/launch-evidence/aura-clash-arena-first-frame.png",
+      "apps/aura-clash-showcase/launch-evidence/aura-clash-arena-combat-frame.png",
+      "apps/aura-clash-showcase/launch-evidence/aura-clash-visual-ko-reset.png",
+      "apps/aura-clash-showcase/tests/reports/flagship-gates.json",
+      "apps/aura-clash-showcase/tests/reports/flagship-readiness.json"
+    ],
+    "staleArtifactPolicy": [
+      "Manifest entries must not reference stale attempt-prefixed launch artifacts.",
+      "Manifest entries must not reference superseded playable-smoke screenshot names."
+    ]
   },
   "remainingHumanGate": {
     "checkbox": "Visual screenshot approved by user.",

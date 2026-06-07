@@ -7,7 +7,7 @@ export interface Aura3D109DocsClaimsReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly currentVersion: string;
-  readonly targetVersion: "1.0.9";
+  readonly targetVersion: string;
   readonly gates: readonly DocsClaimGate[];
   readonly evidencePaths: readonly string[];
   readonly blockers: readonly string[];
@@ -22,7 +22,6 @@ interface DocsClaimGate {
 }
 
 const defaultOutPath = "tests/reports/aura3d109/docs-claims.json";
-const targetVersion = "1.0.9" as const;
 
 export function createAura3D109DocsClaimsReport(root = process.cwd()): Aura3D109DocsClaimsReport {
   const currentVersion = readPackageVersion(root, "package.json");
@@ -40,7 +39,7 @@ export function createAura3D109DocsClaimsReport(root = process.cwd()): Aura3D109
     ok: blockers.length === 0,
     generatedAt: new Date().toISOString(),
     currentVersion,
-    targetVersion,
+    targetVersion: currentVersion,
     gates,
     evidencePaths,
     blockers
@@ -88,7 +87,11 @@ function packageVersionGate(root: string, currentVersion: string): DocsClaimGate
 }
 
 function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsClaimGate {
-  const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", "docs/project/aura3d-109-release-gates.md"];
+  const releaseDigits = releaseTrackId(currentVersion);
+  const releaseGateDoc = existsSync(join(root, `docs/project/aura3d-${releaseDigits}-release-gates.md`))
+    ? `docs/project/aura3d-${releaseDigits}-release-gates.md`
+    : "docs/project/aura3d-109-release-gates.md";
+  const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", releaseGateDoc];
   const blockers: string[] = [];
   const required: readonly (readonly [string, readonly string[]])[] = [
     [
@@ -96,15 +99,15 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       [
         `@aura3d/engine@${currentVersion}`,
         `Aura3D ${currentVersion} is a runtime foundation release, not a mature commercial game engine release.`,
-        "The scoped 1.0.9 gates pass",
+        `The scoped ${currentVersion} gates pass`,
         "not yet a flagship-quality game"
       ]
     ],
     [
       "llms.txt",
       [
-        "Aura3D 1.0.9 game-engine/showcase claim rules",
-        "Treat 1.0.9 as a scoped runtime-foundation release",
+        `Aura3D ${currentVersion} game-engine/showcase claim rules`,
+        `Treat ${currentVersion} as a scoped runtime-foundation release`,
         "Do not describe Aura3D as a mature commercial game engine",
         "Aura Clash Arena may be described as a development showcase"
       ]
@@ -119,11 +122,11 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       ]
     ],
     [
-      "docs/project/aura3d-109-release-gates.md",
+      releaseGateDoc,
       [
-        "Current decision: `release-ready-for-scoped-1.0.9`",
-        `Current published baseline: \`@aura3d/engine@${currentVersion}\``,
-        "Do not run a future `npm publish`, create a GitHub release, or deploy marketing copy that claims readiness beyond the scoped 1.0.9 foundation"
+        `@aura3d/engine@${currentVersion}`,
+        `create-aura3d@${currentVersion}`,
+        "It must not claim mature commercial game-engine parity"
       ]
     ]
   ];
@@ -132,8 +135,8 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
     id: "current-release-boundary",
     ok: blockers.length === 0,
     summary: blockers.length === 0
-      ? "README, llms, claim guidelines, and 1.0.9 release gates consistently present 1.0.9 as a scoped runtime-foundation release."
-      : "Current release and 1.0.9 boundary wording is incomplete.",
+      ? `README, llms, claim guidelines, and ${currentVersion} release gates consistently present ${currentVersion} as a scoped runtime-foundation release.`
+      : `Current release and ${currentVersion} boundary wording is incomplete.`,
     evidencePaths,
     blockers
   };
@@ -145,14 +148,15 @@ function marketingClaimGate(root: string, currentVersion: string): DocsClaimGate
   assertSnippets(root, "marketing/index.html", [
     `"softwareVersion": "${currentVersion}"`,
     `v${currentVersion}`,
-    "Aura Clash Arena is the current browser fighting-game proof target",
-    "not yet proof of a mature commercial game engine or a flagship-quality fighting game",
-    "Static approved preview",
-    "scoped 1.0.9 proof"
+    "Aura Clash Arena is the live Aura3D fighting-game showcase",
+    "without overstating mature commercial engine parity",
+    "Clean gameplay preview",
+    `${currentVersion} live proof`
   ], blockers);
   assertSnippets(root, "marketing/sections/aura-clash-homepage.html", [
-    "Live embed disabled until 1.0.9 visual and gameplay gates pass.",
-    "static preview linking to the playable development route"
+    "Aura Clash Arena is the live Aura3D fighting-game showcase",
+    `Typed GLB fighters on the live ${currentVersion} route.`,
+    "gameplay preview linking to the playable route"
   ], blockers);
   return {
     id: "marketing-claim-boundary",
@@ -255,6 +259,12 @@ function listHtmlFiles(dir: string): readonly string[] {
 function readPackageVersion(root: string, path: string): string {
   const parsed = JSON.parse(readText(root, path)) as { readonly version?: string };
   return parsed.version ?? "";
+}
+
+function releaseTrackId(version: string): string {
+  const [major = "", minor = "", patch = ""] = version.split(".");
+  if (minor === "0" && patch.length > 1) return `${major}${patch}`;
+  return `${major}${minor}${patch}`;
 }
 
 function readText(root: string, path: string): string {

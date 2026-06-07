@@ -56,7 +56,20 @@ describe("ThreejsParity threejsParity public runtime", () => {
     expect(frame.height).toBe(6);
     expect(frame.pixels).toHaveLength(10 * 6 * 4);
     expect(renderer.getDiagnostics().drawCalls).toBe(1);
+    const evidence = renderer.evidence({ assetFailures: ["missing:texture:arena-neon"] });
+    expect(evidence).toMatchObject({
+      backend: "mock",
+      drawCalls: 1,
+      renderSize: { width: 10, height: 6 },
+      assetFailures: ["missing:texture:arena-neon"],
+      contextLost: false,
+      disposed: false,
+      lastError: null
+    });
+    expect(evidence.frameTimeMs).toBeGreaterThanOrEqual(0);
     renderer.dispose();
+    expect(renderer.evidence().disposed).toBe(true);
+    expect(() => renderer.resize(12, 12)).toThrow(/disposed/i);
   });
 
   it("exposes the rendering threejsParity facade over the tested renderer implementation", async () => {

@@ -23,6 +23,58 @@ import {
   type ScenePhysicsNode,
   type SphereCastHit
 } from "@aura3d/physics";
+
+export * from "./FrameEncoder.js";
+export * from "./AudioMuxer.js";
+export {
+  GameInspector,
+  createGameInspector
+} from "./GameInspector.js";
+export type {
+  GameInspectorRuntimeInput,
+  GameInspectorSnapshot
+} from "./GameInspector.js";
+import {
+  createGameInspector
+} from "./GameInspector";
+export {
+  createGameAudio
+} from "../game/GameAudio.js";
+export type {
+  GameAudio,
+  GameAudioBusDefinition,
+  GameAudioBusId,
+  GameAudioContextLike,
+  GameAudioCueDefinition,
+  GameAudioCueEvent,
+  GameAudioEvidence,
+  GameAudioOptions
+} from "../game/GameAudio.js";
+export * from "./RenderProgressTracker.js";
+export * from "./VideoExportPipeline.js";
+export * from "./AudioVisemeAnalyzer.js";
+export * from "./WaveformVisualizer.js";
+export * from "./VisemeTimelineTrack.js";
+export * from "./EpisodeStructure.js";
+export * from "./ShotTransitionEngine.js";
+export * from "./SceneSequencer.js";
+export * from "./CameraPresetLibrary.js";
+export * from "./ShotCompositionRules.js";
+export * from "./CameraChoreographer.js";
+export * from "./CameraPathEditor.js";
+export * from "./CaptionExporter.js";
+export * from "./ThumbnailGenerator.js";
+export * from "./YouTubeMetadataGenerator.js";
+export * from "./PublishingPipeline.js";
+export * from "./CartoonAssetManifest.js";
+export * from "./AssetLibraryBrowser.js";
+export * from "./DialogueAlignment.js";
+export * from "./PerformancePoseEditor.js";
+export * from "./PerformanceBlender.js";
+export * from "./PerformanceScriptParser.js";
+export * from "./BodyLanguageLibrary.js";
+export * from "./EpisodeTemplates.js";
+
 import type {
   GLTFSceneAnimationRuntime,
   GLTFSceneAnimationRuntimeOptions
@@ -57,10 +109,13 @@ import {
   createGameDebugOverlayData,
   createGameDebugSceneNodes,
   createGameHitboxDebugGeometry,
+  createGameSimulation,
+  exportGameInputReplay,
   createGameFighting2DRules,
   createGameInput,
   createGameInputReplay,
   createGameInputReplayDriver,
+  importGameInputReplay,
   createGameJumpAssist,
   createGameKinematicBody,
   createGamePauseControlsSource,
@@ -77,6 +132,7 @@ import {
   gameHurtboxes,
   gameInputReplayEventsAt,
   gamePushboxes,
+  runGameSimulation,
   gameTriggerVolumes,
   type GameInputOptions
 } from "./GameRuntime";
@@ -92,6 +148,7 @@ import {
   type AuraRuntimeNodeAnimationBindingMetadata,
   type AuraRuntimeNodeBounds,
   type AuraRuntimeNodeEffectAttachment,
+  type RuntimeNodeBoundsInput,
   type RuntimeNodeMorphTargetWeights
 } from "./RuntimeNodeHandle";
 import { createRuntimeNodeSpec } from "./GameSceneBridge";
@@ -194,6 +251,7 @@ export {
   createGameDebugOverlayData,
   createGameDebugSceneNodes,
   createGameHitboxDebugGeometry,
+  createGameSimulation,
   createGameInput,
   createGameInputReplay,
   createGameInputReplayDriver,
@@ -209,6 +267,7 @@ export {
   gameColliders,
   gameInputReplayEventsAt,
   createGameLoopPlan,
+  runGameSimulation,
   type GameAccessibilityFocusOptions,
   type GameAccessibilityLabelOptions,
   type GameAccessibilityPauseControlsOptions,
@@ -298,6 +357,12 @@ export {
   type GameRectColliderOptions,
   type GameRuntimeSubsystemId,
   type GameRuntimeSubsystemOwnership,
+  type GameSimulation,
+  type GameSimulationFrame,
+  type GameSimulationOptions,
+  type GameSimulationResult,
+  type GameSimulationStepContext,
+  type GameSimulationStepResult,
   type GameSphereCollider,
   type GameSphereColliderOptions,
   type GameSubsystemOwner,
@@ -373,6 +438,8 @@ export * from "./PromptAnimationEvidence.js";
 export * from "./CartoonDirector.js";
 export * from "./CartoonPerformance.js";
 export * from "./CartoonRenderQueue.js";
+export * from "./CartoonAssetManifest.js";
+export * from "./AssetLibraryBrowser.js";
 
 export type AuraVec3 = readonly [number, number, number];
 export type AuraColor = `#${string}` | string;
@@ -4866,8 +4933,13 @@ export const game = {
   runtimeNode: createRuntimeNodeSpec,
   input: createGameInput,
   inputReplay: createGameInputReplay,
+  exportReplay: exportGameInputReplay,
+  importReplay: importGameInputReplay,
   inputReplayDriver: createGameInputReplayDriver,
   inputReplayEventsAt: gameInputReplayEventsAt,
+  simulation: createGameSimulation,
+  runSimulation: runGameSimulation,
+  inspector: createGameInspector,
   touchControls: createGameTouchControlLayout,
   kinematicBody: createGameKinematicBody,
   jumpAssist: createGameJumpAssist,
@@ -7061,6 +7133,7 @@ export interface AuraRuntimeNodeSnapshot {
   readonly animationBinding?: AuraRuntimeNodeAnimationBindingMetadata;
   readonly animationPose?: AnimationPose;
   readonly animationPoseBinding?: AuraRuntimeNodeAnimationPoseBindingMetadata;
+  readonly importedAssetEvidence?: AuraRuntimeNodeImportedAssetEvidence;
   readonly morphTargets?: RuntimeNodeMorphTargetWeights;
   readonly bounds?: AuraRuntimeNodeBounds;
   readonly effects?: readonly AuraRuntimeNodeEffectAttachment[];
@@ -7086,6 +7159,8 @@ export interface AuraRuntimeNodeHandle {
   setAnimationBinding(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined): this;
   setAnimationPose(pose: AnimationPose | undefined, metadata?: AuraRuntimeNodeAnimationPoseBindingMetadata): this;
   animationPose(): AnimationPose | undefined;
+  setImportedAssetEvidence(evidence: AuraRuntimeNodeImportedAssetEvidence | undefined): this;
+  importedAssetEvidence(): AuraRuntimeNodeImportedAssetEvidence | undefined;
   setMorphTarget(name: string, weight: number): this;
   setMorphTargets(weights: RuntimeNodeMorphTargetWeights): this;
   morphTargets(): RuntimeNodeMorphTargetWeights;
@@ -7093,6 +7168,104 @@ export interface AuraRuntimeNodeHandle {
   attachEffect(effect: AuraRuntimeNodeEffectAttachment): this;
   effects(): readonly AuraRuntimeNodeEffectAttachment[];
   snapshot(): AuraRuntimeNodeSnapshot;
+}
+
+export interface AuraRuntimeNodeImportedAssetEvidence {
+  readonly kind: "aura-runtime-node-imported-asset-evidence";
+  readonly assetId: string;
+  readonly nodeId?: string | undefined;
+  readonly skeleton?: {
+    readonly boneCount: number;
+    readonly boneNames: readonly string[];
+  } | undefined;
+  readonly clips: readonly string[];
+  readonly activeClip?: string | undefined;
+  readonly skinningPalette?: {
+    readonly jointCount: number;
+    readonly matrixCount: number;
+    readonly updated: boolean;
+  } | undefined;
+  readonly morphTargets: readonly string[];
+  readonly bounds?: AuraRuntimeNodeBounds | undefined;
+  readonly renderItemCount: number;
+  readonly skinnedRenderItemCount: number;
+  readonly morphRenderItemCount: number;
+  readonly diagnostics: readonly AuraRuntimeNodeImportedAssetDiagnostic[];
+}
+
+export interface AuraRuntimeNodeImportedAssetDiagnostic {
+  readonly severity: "info" | "warning" | "error";
+  readonly code:
+    | "missing-clip"
+    | "missing-bone"
+    | "missing-morph"
+    | "missing-skeleton"
+    | "missing-skinning-palette"
+    | "missing-render-items";
+  readonly message: string;
+}
+
+export interface AuraRuntimeNodeImportedAssetEvidenceInput {
+  readonly assetId: string;
+  readonly nodeId?: string | undefined;
+  readonly skeletonBones?: readonly string[] | undefined;
+  readonly clips?: readonly string[] | undefined;
+  readonly activeClip?: string | undefined;
+  readonly skinningPalette?: {
+    readonly jointCount: number;
+    readonly matrixCount?: number | undefined;
+    readonly updated?: boolean | undefined;
+  } | undefined;
+  readonly morphTargets?: readonly string[] | undefined;
+  readonly bounds?: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput | undefined;
+  readonly renderItemCount?: number | undefined;
+  readonly skinnedRenderItemCount?: number | undefined;
+  readonly morphRenderItemCount?: number | undefined;
+  readonly requiredClips?: readonly string[] | undefined;
+  readonly requiredBones?: readonly string[] | undefined;
+  readonly requiredMorphTargets?: readonly string[] | undefined;
+}
+
+export function createRuntimeNodeImportedAssetEvidence(
+  input: AuraRuntimeNodeImportedAssetEvidenceInput
+): AuraRuntimeNodeImportedAssetEvidence {
+  const clips = [...new Set(input.clips ?? [])];
+  const bones = [...new Set(input.skeletonBones ?? [])];
+  const morphTargets = [...new Set(input.morphTargets ?? [])];
+  const diagnostics: AuraRuntimeNodeImportedAssetDiagnostic[] = [];
+  for (const clip of input.requiredClips ?? []) {
+    if (!clips.includes(clip)) diagnostics.push({ severity: "error", code: "missing-clip", message: `Missing imported animation clip "${clip}".` });
+  }
+  for (const bone of input.requiredBones ?? []) {
+    if (!bones.includes(bone)) diagnostics.push({ severity: "error", code: "missing-bone", message: `Missing imported skeleton bone "${bone}".` });
+  }
+  for (const morph of input.requiredMorphTargets ?? []) {
+    if (!morphTargets.includes(morph)) diagnostics.push({ severity: "error", code: "missing-morph", message: `Missing imported morph target "${morph}".` });
+  }
+  if (bones.length === 0) diagnostics.push({ severity: "warning", code: "missing-skeleton", message: "Imported asset evidence has no skeleton bones." });
+  if (!input.skinningPalette) diagnostics.push({ severity: "warning", code: "missing-skinning-palette", message: "Imported asset evidence has no skinning palette." });
+  if ((input.renderItemCount ?? 0) < 1) diagnostics.push({ severity: "warning", code: "missing-render-items", message: "Imported asset evidence has no render items." });
+  return {
+    kind: "aura-runtime-node-imported-asset-evidence",
+    assetId: input.assetId,
+    ...(input.nodeId ? { nodeId: input.nodeId } : {}),
+    ...(bones.length > 0 ? { skeleton: { boneCount: bones.length, boneNames: bones } } : {}),
+    clips,
+    ...(input.activeClip ? { activeClip: input.activeClip } : {}),
+    ...(input.skinningPalette ? {
+      skinningPalette: {
+        jointCount: input.skinningPalette.jointCount,
+        matrixCount: input.skinningPalette.matrixCount ?? input.skinningPalette.jointCount,
+        updated: input.skinningPalette.updated ?? true
+      }
+    } : {}),
+    morphTargets,
+    ...(input.bounds ? { bounds: isRuntimeNodeEvidenceBounds(input.bounds) ? input.bounds : calculateRuntimeNodeBounds(input.bounds) } : {}),
+    renderItemCount: input.renderItemCount ?? 0,
+    skinnedRenderItemCount: input.skinnedRenderItemCount ?? 0,
+    morphRenderItemCount: input.morphRenderItemCount ?? 0,
+    diagnostics
+  };
 }
 
 export interface AuraRuntimeNodeRegistry {
@@ -7237,6 +7410,7 @@ function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: Aur
   let animationBinding: AuraRuntimeNodeAnimationBindingMetadata | undefined;
   let animationPose: AnimationPose | undefined;
   let animationPoseBinding: AuraRuntimeNodeAnimationPoseBindingMetadata | undefined;
+  let importedAssetEvidence: AuraRuntimeNodeImportedAssetEvidence | undefined;
   const getVisible = () => node.kind === "model" ? node.visible !== false : node.visible !== false;
   const getBounds = () =>
     calculateRuntimeNodeBounds({
@@ -7326,6 +7500,13 @@ function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: Aur
     animationPose() {
       return animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined;
     },
+    setImportedAssetEvidence(evidence) {
+      importedAssetEvidence = evidence ? cloneRuntimeImportedAssetEvidence(evidence) : undefined;
+      return this;
+    },
+    importedAssetEvidence() {
+      return importedAssetEvidence ? cloneRuntimeImportedAssetEvidence(importedAssetEvidence) : undefined;
+    },
     setMorphTarget(name, weight) {
       const normalizedName = name.trim();
       if (!normalizedName) {
@@ -7371,6 +7552,7 @@ function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: Aur
         animationBinding,
         animationPose: animationPose ? cloneRuntimeAnimationPose(animationPose) : undefined,
         animationPoseBinding,
+        importedAssetEvidence: importedAssetEvidence ? cloneRuntimeImportedAssetEvidence(importedAssetEvidence) : undefined,
         morphTargets: Object.fromEntries(morphTargetWeights.entries()),
         bounds: getBounds(),
         effects: [...attachedEffects]
@@ -7400,6 +7582,32 @@ function cloneRuntimeAnimationPose(pose: AnimationPose): AnimationPose {
       : undefined,
     metadata: pose.metadata ? { ...pose.metadata } : undefined
   };
+}
+
+function cloneRuntimeImportedAssetEvidence(evidence: AuraRuntimeNodeImportedAssetEvidence): AuraRuntimeNodeImportedAssetEvidence {
+  return {
+    ...evidence,
+    skeleton: evidence.skeleton
+      ? { boneCount: evidence.skeleton.boneCount, boneNames: [...evidence.skeleton.boneNames] }
+      : undefined,
+    clips: [...evidence.clips],
+    skinningPalette: evidence.skinningPalette ? { ...evidence.skinningPalette } : undefined,
+    morphTargets: [...evidence.morphTargets],
+    bounds: evidence.bounds
+      ? {
+          ...evidence.bounds,
+          center: [...evidence.bounds.center],
+          size: [...evidence.bounds.size],
+          min: [...evidence.bounds.min],
+          max: [...evidence.bounds.max]
+        }
+      : undefined,
+    diagnostics: evidence.diagnostics.map((diagnostic) => ({ ...diagnostic }))
+  };
+}
+
+function isRuntimeNodeEvidenceBounds(value: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput): value is AuraRuntimeNodeBounds {
+  return (value as AuraRuntimeNodeBounds).kind === "aura-runtime-node-bounds";
 }
 
 function sanitizeRuntimeMorphWeight(weight: number): number {

@@ -46,8 +46,14 @@ const commands = [
       "../../packages/aura3d-cli/dist/cli.js",
       "assets",
       "validate-game",
+      "--profile",
+      "fighting-character",
       "--asset",
-      "auraClashTrainingMannequin",
+      "auraClashPlayerRig",
+      "--asset",
+      "auraClashRivalRig",
+      "--no-placeholders",
+      "--require-license",
       "--output",
       "launch-evidence/assets-validate-game.json"
     ]

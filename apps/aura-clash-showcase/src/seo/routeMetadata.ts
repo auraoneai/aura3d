@@ -93,7 +93,7 @@ type AuraClashRouteMetadataSource = {
 export const AURA_CLASH_CANONICAL_ORIGIN = "https://aura3d.auraone.ai";
 export const AURA_CLASH_CANONICAL_BASE_PATH = "/showcase/aura-clash";
 export const AURA_CLASH_SITE_NAME = "Aura Clash";
-export const AURA_CLASH_SOCIAL_IMAGE_PATH = "/previews/aura-clash-poster.svg";
+export const AURA_CLASH_SOCIAL_IMAGE_PATH = "/aura-assets/auraClashPlayableScene.thumb.svg";
 export const AURA_CLASH_SITEMAP_PATH = `${AURA_CLASH_CANONICAL_BASE_PATH}/sitemap.xml`;
 
 const normalizeOrigin = (origin: string): string => origin.replace(/\/+$/, "");
@@ -123,7 +123,7 @@ const routeMetadataSource: readonly AuraClashRouteMetadataSource[] = [
       "Open the Aura Clash showcase hub for the playable browser fighting game, evidence route, accessibility notes, deploy-check source, and poster route.",
     socialTitle: "Aura Clash browser fighting game showcase",
     socialDescription:
-      "Explore Aura Clash, the Aura3D flagship game showcase with typed GLB fighters, playable combat, evidence routes, and source-backed launch surfaces.",
+      "Explore Aura Clash, an Aura3D scoped game-runtime showcase with typed GLB fighters, playable combat, evidence routes, and source-backed launch surfaces.",
     socialImageAlt:
       "Aura Clash showcase hub for a browser-based 3D fighting game built with Aura3D",
     sitemapChangefreq: "weekly",
@@ -137,7 +137,7 @@ const routeMetadataSource: readonly AuraClashRouteMetadataSource[] = [
       "Play the Aura Clash browser demo and inspect the real-time 3D combat loop, arena pacing, responsive controls, and Aura3D scene behavior.",
     socialTitle: "Play Aura Clash in the browser",
     socialDescription:
-      "Jump into Aura Clash's playable Aura3D showcase with fast arena action, visible controls, and a production-style 3D interaction loop.",
+      "Jump into Aura Clash's playable Aura3D showcase with fast arena action, visible controls, and a proof-backed 3D interaction loop.",
     socialImageAlt:
       "Aura Clash playable route showing a browser-based 3D arena combat demo",
     sitemapChangefreq: "weekly",
@@ -266,6 +266,33 @@ const hasRequiredRoutes = (
   return routes.every((route) => metadataRoutes.has(route));
 };
 
+const metadataText = (entry: AuraClashRouteMetadata): string =>
+  [
+    entry.title,
+    entry.description,
+    entry.openGraph.title,
+    entry.openGraph.description,
+    entry.openGraph.imageAlt,
+    entry.twitter.title,
+    entry.twitter.description,
+    entry.twitter.imageAlt,
+    entry.social.title,
+    entry.social.description,
+    entry.social.imageAlt
+  ].join("\n");
+
+const unsupportedMaturityClaimPatterns = [
+  /\bmature\b/i,
+  /\bflagship\b/i,
+  /\bproduction[- ]ready\b/i,
+  /\brelease[- ]ready\b/i,
+  /\bcomplete game\b/i,
+  /\bfinished game\b/i
+] as const;
+
+const hasUnsupportedMaturityClaim = (entry: AuraClashRouteMetadata): boolean =>
+  unsupportedMaturityClaimPatterns.some((pattern) => pattern.test(metadataText(entry)));
+
 export const checkAuraClashRouteMetadataSource = (
   metadata: readonly AuraClashRouteMetadata[] = auraClashRouteMetadata
 ): readonly AuraClashRouteMetadataCheck[] => [
@@ -336,6 +363,12 @@ export const checkAuraClashRouteMetadataSource = (
     ),
     message:
       "Every Aura Clash route has an allow-list robots path and sitemap reference."
+  },
+  {
+    id: "claims:scoped-runtime",
+    passed: metadata.every((entry) => !hasUnsupportedMaturityClaim(entry)),
+    message:
+      "Aura Clash route metadata stays scoped to current evidence and avoids mature, flagship, production-ready, release-ready, or complete-game claims."
   }
 ];
 

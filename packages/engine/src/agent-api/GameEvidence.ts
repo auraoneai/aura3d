@@ -34,6 +34,22 @@ export interface GameRuntimeEvidenceOptions {
     readonly activeClips?: readonly string[];
     readonly eventCount?: number;
   };
+  readonly renderer?: {
+    readonly backend?: string;
+    readonly drawCalls?: number;
+    readonly frameTimeMs?: number;
+    readonly renderSize?: readonly [number, number];
+    readonly assetFailures?: readonly string[];
+    readonly contextLost?: boolean;
+  };
+  readonly audio?: {
+    readonly unlocked?: boolean;
+    readonly muted?: boolean;
+    readonly cuesTriggered?: readonly string[];
+    readonly musicPlaying?: boolean;
+    readonly errors?: readonly string[];
+  };
+  readonly errors?: readonly GameRuntimeEvidenceError[];
   readonly assets?: {
     readonly typedAssets?: number;
     readonly missingAssets?: readonly string[];
@@ -52,6 +68,12 @@ export interface GameRuntimeEvidenceOptions {
     readonly expectsGame?: boolean;
     readonly label?: string;
   };
+}
+
+export interface GameRuntimeEvidenceError {
+  readonly severity: "warning" | "error";
+  readonly code: string;
+  readonly message: string;
 }
 
 export interface GameRuntimeSourceEvidence {
@@ -104,6 +126,12 @@ export interface GameRuntimeEvidence {
     readonly kinematicBodies: number;
     readonly groundedBodies: number;
   };
+  readonly movement: {
+    readonly bodies: number;
+    readonly groundedBodies: number;
+    readonly airborneBodies: number;
+    readonly movingBodies: number;
+  };
   readonly collision: {
     readonly combatWorld: boolean;
     readonly actors: number;
@@ -115,6 +143,22 @@ export interface GameRuntimeEvidence {
     readonly activeClips: readonly string[];
     readonly eventCount: number;
   };
+  readonly renderer: {
+    readonly backend?: string;
+    readonly drawCalls?: number;
+    readonly frameTimeMs?: number;
+    readonly renderSize?: readonly [number, number];
+    readonly assetFailures: readonly string[];
+    readonly contextLost: boolean;
+  };
+  readonly audio: {
+    readonly unlocked: boolean;
+    readonly muted: boolean;
+    readonly cuesTriggered: readonly string[];
+    readonly musicPlaying: boolean;
+    readonly errors: readonly string[];
+  };
+  readonly errors: readonly GameRuntimeEvidenceError[];
   readonly effects: {
     readonly active: number;
     readonly spawned: number;
@@ -196,6 +240,7 @@ export function collectGameRuntimeEvidence(
   const combatSnapshot = options.combat?.snapshot();
   const effectsSnapshot = options.effects?.snapshot();
   const cameraSnapshot = options.camera?.snapshot();
+  const errors = options.errors ?? [];
   const sourceMode = options.source?.mode ?? "mounted-runtime";
   const expectsGame = options.source?.expectsGame ?? true;
   const hudBindings = options.hud ?? [];
@@ -223,7 +268,10 @@ export function collectGameRuntimeEvidence(
     ...(options.stage?.warnings ?? []),
     ...hudWarnings,
     ...accessibilityWarnings,
-    ...((options.assets?.missingAssets ?? []).map((asset) => `Missing typed asset: ${asset}`))
+    ...((options.assets?.missingAssets ?? []).map((asset) => `Missing typed asset: ${asset}`)),
+    ...((options.renderer?.assetFailures ?? []).map((asset) => `Renderer asset failure: ${asset}`)),
+    ...((options.audio?.errors ?? []).map((error) => `Audio error: ${error}`)),
+    ...(errors.map((error) => `${error.severity.toUpperCase()} ${error.code}: ${error.message}`))
   ];
   return {
     kind: "aura-game-runtime-evidence",
@@ -273,6 +321,15 @@ export function collectGameRuntimeEvidence(
       kinematicBodies: bodies.length,
       groundedBodies: bodies.filter((body) => body.grounded).length
     },
+    movement: {
+      bodies: bodies.length,
+      groundedBodies: bodies.filter((body) => body.grounded).length,
+      airborneBodies: bodies.filter((body) => !body.grounded).length,
+      movingBodies: bodies.filter((body) => {
+        const velocity = body.velocity;
+        return Math.abs(velocity[0]) + Math.abs(velocity[1]) + Math.abs(velocity[2]) > 0.0001;
+      }).length
+    },
     collision: {
       combatWorld: Boolean(options.combat),
       actors: combatSnapshot?.actors.length ?? 0,
@@ -284,6 +341,22 @@ export function collectGameRuntimeEvidence(
       activeClips: options.animation?.activeClips ?? [],
       eventCount: options.animation?.eventCount ?? 0
     },
+    renderer: {
+      backend: options.renderer?.backend,
+      drawCalls: options.renderer?.drawCalls,
+      frameTimeMs: options.renderer?.frameTimeMs,
+      renderSize: options.renderer?.renderSize,
+      assetFailures: options.renderer?.assetFailures ?? [],
+      contextLost: options.renderer?.contextLost ?? false
+    },
+    audio: {
+      unlocked: options.audio?.unlocked ?? false,
+      muted: options.audio?.muted ?? false,
+      cuesTriggered: options.audio?.cuesTriggered ?? [],
+      musicPlaying: options.audio?.musicPlaying ?? false,
+      errors: options.audio?.errors ?? []
+    },
+    errors,
     effects: {
       active: effectsSnapshot?.active ?? 0,
       spawned: effectsSnapshot?.spawned ?? 0,

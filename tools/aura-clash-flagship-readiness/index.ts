@@ -30,11 +30,23 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
   const appRoot = join(root, "apps/aura-clash-showcase");
   const appSourcePath = join(appRoot, "src/playable/AuraClashArenaApp.ts");
   const testPath = join(appRoot, "tests/flagship-readiness.spec.ts");
+  const visualTestPath = join(appRoot, "tests/visual-regression.spec.ts");
+  const performanceTestPath = join(appRoot, "tests/performance-budget.spec.ts");
+  const assetQualityTestPath = join(appRoot, "tests/asset-quality.spec.ts");
+  const audioTestPath = join(appRoot, "tests/audio.spec.ts");
+  const deployedTestPath = join(appRoot, "tests/deployed-playable.spec.ts");
+  const gateRunnerPath = join(appRoot, "scripts/run-flagship-readiness-gates.mjs");
   const appPackagePath = join(appRoot, "package.json");
   const rootPackagePath = join(root, "package.json");
 
   const source = read(appSourcePath);
   const flagshipTest = read(testPath);
+  const visualTest = read(visualTestPath);
+  const performanceTest = read(performanceTestPath);
+  const assetQualityTest = read(assetQualityTestPath);
+  const audioTest = read(audioTestPath);
+  const deployedTest = read(deployedTestPath);
+  const gateRunner = read(gateRunnerPath);
   const appPackage = readJson(appPackagePath);
   const rootPackage = readJson(rootPackagePath);
   const writeProofBlock = block(source.text, /function writeProof\(input:/, /input\.root\.dataset\.arenaStatus = proof;/);
@@ -197,19 +209,137 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
       ]
     }),
     gate({
+      id: "dedicated-visual-regression-spec",
+      title: "Dedicated visual-regression spec captures the required Aura Clash states",
+      ok:
+        visualTest.exists &&
+        includesAll(visualTest.text, [
+          "aura-clash-visual-first-frame.png",
+          "aura-clash-visual-movement.png",
+          "aura-clash-visual-jump.png",
+          "aura-clash-visual-guard.png",
+          "aura-clash-visual-light.png",
+          "aura-clash-visual-heavy.png",
+          "aura-clash-visual-special.png",
+          "aura-clash-visual-hit.png",
+          "aura-clash-visual-ko-reset.png",
+          "aura-clash-visual-mobile.png"
+        ]),
+      summary: "The PRD-required visual states must live in a dedicated Playwright spec and write contextual screenshot artifacts.",
+      evidencePaths: [toRepo(root, visualTestPath)],
+      blockers: visualTest.exists
+        ? missingAll(visualTest.text, [
+            "aura-clash-visual-first-frame.png",
+            "aura-clash-visual-movement.png",
+            "aura-clash-visual-jump.png",
+            "aura-clash-visual-guard.png",
+            "aura-clash-visual-light.png",
+            "aura-clash-visual-heavy.png",
+            "aura-clash-visual-special.png",
+            "aura-clash-visual-hit.png",
+            "aura-clash-visual-ko-reset.png",
+            "aura-clash-visual-mobile.png"
+          ]).map((item) => `Missing visual screenshot artifact: ${item}`)
+        : ["Add apps/aura-clash-showcase/tests/visual-regression.spec.ts."]
+    }),
+    gate({
+      id: "dedicated-performance-budget-spec",
+      title: "Dedicated performance-budget spec enforces frame, draw, JS, CSS, and GLB budgets",
+      ok:
+        performanceTest.exists &&
+        includesAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "cssBytes", "glbBytes", "maxGlbBytes"]),
+      summary: "Performance proof must be a dedicated Playwright gate instead of only route text.",
+      evidencePaths: [toRepo(root, performanceTestPath)],
+      blockers: performanceTest.exists
+        ? missingAll(performanceTest.text, ["frameTimeMs", "fps", "drawCalls", "jsBytes", "cssBytes", "glbBytes", "maxGlbBytes"]).map(
+            (item) => `Missing performance assertion token: ${item}`
+          )
+        : ["Add apps/aura-clash-showcase/tests/performance-budget.spec.ts."]
+    }),
+    gate({
+      id: "dedicated-asset-quality-spec",
+      title: "Dedicated asset-quality spec validates final fighter assets",
+      ok:
+        assetQualityTest.exists &&
+        includesAll(assetQualityTest.text, ["auraClashPlayerRig", "auraClashRivalRig", "aura.assets.json", "releaseReady", "fetch"]),
+      summary: "Final fighter assets must be validated independently from the broad flagship suite.",
+      evidencePaths: [toRepo(root, assetQualityTestPath)],
+      blockers: assetQualityTest.exists
+        ? missingAll(assetQualityTest.text, ["auraClashPlayerRig", "auraClashRivalRig", "aura.assets.json", "releaseReady", "fetch"]).map(
+            (item) => `Missing asset-quality assertion token: ${item}`
+          )
+        : ["Add apps/aura-clash-showcase/tests/asset-quality.spec.ts."]
+    }),
+    gate({
+      id: "dedicated-audio-spec",
+      title: "Dedicated audio spec validates unlock and gameplay cue proof",
+      ok:
+        audioTest.exists &&
+        includesAll(audioTest.text, ["audio?.enabled", "musicReady", "sfxReady", "lastCue", "guard", "queuePlayerAttack"]),
+      summary: "Audio readiness must prove user-gesture unlock and gameplay cue publication.",
+      evidencePaths: [toRepo(root, audioTestPath)],
+      blockers: audioTest.exists
+        ? missingAll(audioTest.text, ["audio?.enabled", "musicReady", "sfxReady", "lastCue", "guard", "queuePlayerAttack"]).map(
+            (item) => `Missing audio assertion token: ${item}`
+          )
+        : ["Add apps/aura-clash-showcase/tests/audio.spec.ts."]
+    }),
+    gate({
+      id: "dedicated-deployed-playable-spec",
+      title: "Dedicated deployed-playable spec probes route, assets, console, and controls",
+      ok:
+        deployedTest.exists &&
+        includesAll(deployedTest.text, ["AURA_CLASH_DEPLOYED_ORIGIN", "requestfailed", "consoleErrors", "fighterAssets", "KeyD", "KeyJ"]),
+      summary: "Deployment parity must be represented by a dedicated Playwright spec that can target local or deployed origins.",
+      evidencePaths: [toRepo(root, deployedTestPath)],
+      blockers: deployedTest.exists
+        ? missingAll(deployedTest.text, ["AURA_CLASH_DEPLOYED_ORIGIN", "requestfailed", "consoleErrors", "fighterAssets", "KeyD", "KeyJ"]).map(
+            (item) => `Missing deployed-playable assertion token: ${item}`
+          )
+        : ["Add apps/aura-clash-showcase/tests/deployed-playable.spec.ts."]
+    }),
+    gate({
       id: "script-wiring",
       title: "Flagship gates are runnable from app and root package scripts",
       ok:
         appPackage.json?.scripts?.["test:flagship"] === "playwright test tests/flagship-readiness.spec.ts" &&
+        appPackage.json?.scripts?.["test:visual-regression"] === "playwright test tests/visual-regression.spec.ts" &&
+        appPackage.json?.scripts?.["test:performance-budget"] === "playwright test tests/performance-budget.spec.ts" &&
+        appPackage.json?.scripts?.["test:asset-quality"] === "playwright test tests/asset-quality.spec.ts" &&
+        appPackage.json?.scripts?.["test:audio"] === "playwright test tests/audio.spec.ts" &&
+        appPackage.json?.scripts?.["test:deployed-playable"] === "playwright test tests/deployed-playable.spec.ts" &&
         appPackage.json?.scripts?.["flagship:readiness"] === "node scripts/check-flagship-readiness-evidence.mjs" &&
         appPackage.json?.scripts?.["flagship:gates"] === "node scripts/run-flagship-readiness-gates.mjs" &&
-        rootPackage.json?.scripts?.["verify:aura-clash-flagship"] === "pnpm --dir apps/aura-clash-showcase flagship:gates",
-      summary: "The new readiness tool and Playwright suite must be reachable through stable package scripts.",
-      evidencePaths: [toRepo(root, appPackagePath), toRepo(root, rootPackagePath)],
+        rootPackage.json?.scripts?.["verify:aura-clash-flagship"] === "pnpm --dir apps/aura-clash-showcase flagship:gates" &&
+        includesAll(gateRunner.text, [
+          "test:flagship",
+          "test:visual-regression",
+          "test:performance-budget",
+          "test:asset-quality",
+          "test:audio",
+          "test:deployed-playable"
+        ]),
+      summary: "The readiness tool, dedicated Playwright specs, and flagship gate runner must be reachable through stable package scripts.",
+      evidencePaths: [toRepo(root, appPackagePath), toRepo(root, rootPackagePath), toRepo(root, gateRunnerPath)],
       blockers: [
         ...(appPackage.json?.scripts?.["test:flagship"] === "playwright test tests/flagship-readiness.spec.ts"
           ? []
           : ["apps/aura-clash-showcase package.json is missing test:flagship."]),
+        ...(appPackage.json?.scripts?.["test:visual-regression"] === "playwright test tests/visual-regression.spec.ts"
+          ? []
+          : ["apps/aura-clash-showcase package.json is missing test:visual-regression."]),
+        ...(appPackage.json?.scripts?.["test:performance-budget"] === "playwright test tests/performance-budget.spec.ts"
+          ? []
+          : ["apps/aura-clash-showcase package.json is missing test:performance-budget."]),
+        ...(appPackage.json?.scripts?.["test:asset-quality"] === "playwright test tests/asset-quality.spec.ts"
+          ? []
+          : ["apps/aura-clash-showcase package.json is missing test:asset-quality."]),
+        ...(appPackage.json?.scripts?.["test:audio"] === "playwright test tests/audio.spec.ts"
+          ? []
+          : ["apps/aura-clash-showcase package.json is missing test:audio."]),
+        ...(appPackage.json?.scripts?.["test:deployed-playable"] === "playwright test tests/deployed-playable.spec.ts"
+          ? []
+          : ["apps/aura-clash-showcase package.json is missing test:deployed-playable."]),
         ...(appPackage.json?.scripts?.["flagship:readiness"] === "node scripts/check-flagship-readiness-evidence.mjs"
           ? []
           : ["apps/aura-clash-showcase package.json is missing flagship:readiness."]),
@@ -218,7 +348,15 @@ export function createAuraClashFlagshipReadinessReport(root = process.cwd()): Au
           : ["apps/aura-clash-showcase package.json is missing flagship:gates."]),
         ...(rootPackage.json?.scripts?.["verify:aura-clash-flagship"] === "pnpm --dir apps/aura-clash-showcase flagship:gates"
           ? []
-          : ["root package.json is missing verify:aura-clash-flagship."])
+          : ["root package.json is missing verify:aura-clash-flagship."]),
+        ...missingAll(gateRunner.text, [
+          "test:flagship",
+          "test:visual-regression",
+          "test:performance-budget",
+          "test:asset-quality",
+          "test:audio",
+          "test:deployed-playable"
+        ]).map((script) => `run-flagship-readiness-gates.mjs does not execute ${script}.`)
       ]
     })
   ];

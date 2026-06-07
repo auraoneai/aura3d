@@ -43,7 +43,7 @@ const toolDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(toolDir, "../..");
 const packageJsonPath = path.join(repoRoot, "package.json");
 const reportPath = path.join(repoRoot, "tests/reports/game-runtime/package-smoke.json");
-const expectedPackageVersion = "1.0.4";
+const expectedPackageVersion = "1.0.9";
 const externalViteExecuteFlag = "--execute-external-vite";
 const executeExternalViteSmoke = process.argv.includes(externalViteExecuteFlag);
 const externalViteCommandTimeoutMs = 300_000;
@@ -659,7 +659,7 @@ async function runSmoke(): Promise<Record<string, unknown>> {
       actual: packageJson.type
     });
 
-    addCheck(checks, "package-version-is-aura3d-1-0-4", packageJson.version === expectedPackageVersion, {
+    addCheck(checks, "package-version-is-current-aura3d-release", packageJson.version === expectedPackageVersion, {
       expected: expectedPackageVersion,
       actual: packageJson.version
     });

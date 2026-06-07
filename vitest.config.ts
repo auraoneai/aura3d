@@ -38,6 +38,7 @@ export default defineConfig({
       "@aura3d/product-studio": new URL("./packages/product-studio/src/index.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
+      "@aura3d/assets/browser": new URL("./packages/assets/src/browser-index.ts", import.meta.url).pathname,
       "@aura3d/assets": new URL("./packages/assets/src/index.ts", import.meta.url).pathname,
       "@aura3d/input": new URL("./packages/input/src/index.ts", import.meta.url).pathname,
       "@aura3d/audio": new URL("./packages/audio/src/index.ts", import.meta.url).pathname,

@@ -2,6 +2,37 @@ import type { AuraCanonicalAsset } from "./CanonicalAsset.js";
 
 export type GameAssetProfile = "fighting-character";
 
+export interface GameAssetProfileScoringRules {
+  readonly characterTerms: readonly string[];
+  readonly fightingTerms: readonly string[];
+  readonly unsuitableTerms: readonly string[];
+  readonly ipRiskTerms: readonly string[];
+  readonly triangleBudget: number;
+  readonly fileSizeBudgetBytes: number;
+  readonly compactFileSizeBudgetBytes: number;
+  readonly bonuses: {
+    readonly characterLike: number;
+    readonly fightingLike: number;
+    readonly animations: number;
+    readonly glbFormat: number;
+    readonly verifiedRedistributableLicense: number;
+    readonly directDownload: number;
+    readonly bounds: number;
+    readonly sourcePage: number;
+    readonly compactPayload: number;
+  };
+  readonly rejectionPenalty: number;
+}
+
+export interface GameAssetProfileDefinition {
+  readonly id: GameAssetProfile;
+  readonly label: string;
+  readonly requiredMetadata: readonly string[];
+  readonly optionalMetadata: readonly string[];
+  readonly rejectionReasons: readonly string[];
+  readonly scoring: GameAssetProfileScoringRules;
+}
+
 export interface GameAssetProfileEvaluation {
   readonly profile: GameAssetProfile;
   readonly suitable: boolean;
@@ -122,11 +153,47 @@ const IP_RISK_TERMS = [
   "disney",
  ];
 
+export const gameAssetProfileDefinitions: readonly GameAssetProfileDefinition[] = [
+  {
+    id: "fighting-character",
+    label: "Fighting character",
+    requiredMetadata: ["verified redistributable license", "GLB/glTF model", "humanoid/skeleton evidence", "embedded animation clips", "bounds", "checksum"],
+    optionalMetadata: ["texture summary", "triangle budget", "morph targets", "orientation hints"],
+    rejectionReasons: ["static asset", "non-humanoid metadata", "unverified license", "IP-risk metadata", "oversized browser payload", "missing clips"],
+    scoring: {
+      characterTerms: CHARACTER_TERMS,
+      fightingTerms: FIGHTING_TERMS,
+      unsuitableTerms: UNSUITABLE_TERMS,
+      ipRiskTerms: IP_RISK_TERMS,
+      triangleBudget: 200_000,
+      fileSizeBudgetBytes: 50 * 1024 * 1024,
+      compactFileSizeBudgetBytes: 25 * 1024 * 1024,
+      bonuses: {
+        characterLike: 20,
+        fightingLike: 12,
+        animations: 20,
+        glbFormat: 8,
+        verifiedRedistributableLicense: 6,
+        directDownload: 4,
+        bounds: 2,
+        sourcePage: 2,
+        compactPayload: 2
+      },
+      rejectionPenalty: -100
+    }
+  }
+];
+
+export function getGameAssetProfileDefinition(profile: GameAssetProfile): GameAssetProfileDefinition | undefined {
+  return gameAssetProfileDefinitions.find((candidate) => candidate.id === profile);
+}
+
 export function evaluateGameAssetProfile(
   asset: AuraCanonicalAsset,
   profile: GameAssetProfile,
 ): GameAssetProfileEvaluation {
-  if (profile !== "fighting-character") {
+  const definition = getGameAssetProfileDefinition(profile);
+  if (!definition) {
     return {
       profile,
       suitable: false,
@@ -140,6 +207,7 @@ export function evaluateGameAssetProfile(
   const warnings: string[] = [];
   const text = searchableText(asset);
   const tags = asset.tags.map((tag) => tag.toLowerCase());
+  const rules = definition.scoring;
 
   if (asset.access !== "direct-download") {
     rejectionReasons.push("asset is marketplace/deep-link only; fighting-character auto-resolve requires direct-download access.");
@@ -161,26 +229,26 @@ export function evaluateGameAssetProfile(
     );
   }
 
-  if (!hasAny(text, tags, CHARACTER_TERMS)) {
+  if (!hasAny(text, tags, rules.characterTerms)) {
     rejectionReasons.push("catalog metadata is not character-like or humanoid enough for a fighter.");
   }
 
-  const unsuitable = firstUnsuitableTerm(text);
+  const unsuitable = firstUnsuitableTerm(text, rules.unsuitableTerms);
   if (unsuitable) {
     rejectionReasons.push(`catalog metadata looks like "${unsuitable}", not a complete playable fighter.`);
   }
 
-  const ipRisk = firstIpRiskTerm(text);
+  const ipRisk = firstIpRiskTerm(text, rules.ipRiskTerms);
   if (ipRisk) {
     rejectionReasons.push(`catalog metadata contains IP-risk term "${ipRisk}"; fighting-character profile only accepts license-safe original/generic assets.`);
   }
 
-  if (typeof asset.triangles === "number" && asset.triangles > 200_000) {
-    rejectionReasons.push(`triangle count ${asset.triangles} exceeds fighting-character budget of 200000.`);
+  if (typeof asset.triangles === "number" && asset.triangles > rules.triangleBudget) {
+    rejectionReasons.push(`triangle count ${asset.triangles} exceeds fighting-character budget of ${rules.triangleBudget}.`);
   }
 
-  if (typeof asset.fileSizeBytes === "number" && asset.fileSizeBytes > 50 * 1024 * 1024) {
-    rejectionReasons.push(`payload ${asset.fileSizeBytes} bytes exceeds fighting-character browser budget of 52428800.`);
+  if (typeof asset.fileSizeBytes === "number" && asset.fileSizeBytes > rules.fileSizeBudgetBytes) {
+    rejectionReasons.push(`payload ${asset.fileSizeBytes} bytes exceeds fighting-character browser budget of ${rules.fileSizeBudgetBytes}.`);
   }
 
   if (asset.bounds) {
@@ -197,16 +265,16 @@ export function evaluateGameAssetProfile(
   }
 
   let scoreBonus = 0;
-  if (hasAny(text, tags, CHARACTER_TERMS)) scoreBonus += 20;
-  if (hasAny(text, tags, FIGHTING_TERMS)) scoreBonus += 12;
-  if (asset.hasAnimations === true) scoreBonus += 20;
-  if (asset.format === "glb") scoreBonus += 8;
-  if (asset.license.verified && asset.license.redistributable) scoreBonus += 6;
-  if (asset.access === "direct-download") scoreBonus += 4;
-  if (asset.bounds) scoreBonus += 2;
-  if (asset.sourcePage || asset.license.sourcePage) scoreBonus += 2;
-  if (typeof asset.fileSizeBytes === "number" && asset.fileSizeBytes <= 25 * 1024 * 1024) scoreBonus += 2;
-  if (rejectionReasons.length > 0) scoreBonus -= 100;
+  if (hasAny(text, tags, rules.characterTerms)) scoreBonus += rules.bonuses.characterLike;
+  if (hasAny(text, tags, rules.fightingTerms)) scoreBonus += rules.bonuses.fightingLike;
+  if (asset.hasAnimations === true) scoreBonus += rules.bonuses.animations;
+  if (asset.format === "glb") scoreBonus += rules.bonuses.glbFormat;
+  if (asset.license.verified && asset.license.redistributable) scoreBonus += rules.bonuses.verifiedRedistributableLicense;
+  if (asset.access === "direct-download") scoreBonus += rules.bonuses.directDownload;
+  if (asset.bounds) scoreBonus += rules.bonuses.bounds;
+  if (asset.sourcePage || asset.license.sourcePage) scoreBonus += rules.bonuses.sourcePage;
+  if (typeof asset.fileSizeBytes === "number" && asset.fileSizeBytes <= rules.compactFileSizeBudgetBytes) scoreBonus += rules.bonuses.compactPayload;
+  if (rejectionReasons.length > 0) scoreBonus += rules.rejectionPenalty;
 
   return {
     profile,
@@ -231,8 +299,8 @@ function hasAny(text: string, tags: readonly string[], terms: readonly string[])
   return terms.some((term) => text.includes(term) || tags.includes(term));
 }
 
-function firstUnsuitableTerm(text: string): string | undefined {
-  return UNSUITABLE_TERMS.find((term) => {
+function firstUnsuitableTerm(text: string, terms: readonly string[]): string | undefined {
+  return terms.find((term) => {
     if (term === "weapon" || term === "hair") {
       return text.includes(term) && !/(character|humanoid|fighter|warrior|body|head|avatar)/i.test(text);
     }
@@ -240,8 +308,8 @@ function firstUnsuitableTerm(text: string): string | undefined {
   });
 }
 
-function firstIpRiskTerm(text: string): string | undefined {
-  return IP_RISK_TERMS.find((term) => text.includes(term));
+function firstIpRiskTerm(text: string, terms: readonly string[]): string | undefined {
+  return terms.find((term) => text.includes(term));
 }
 
 function formatNumber(value: number): string {

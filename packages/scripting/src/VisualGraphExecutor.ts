@@ -482,6 +482,52 @@ function executeVisualNode(
       pushSideEffect(sideEffects, "evidence.assertState", node, context, undefined, assertion);
       return outputs(assertion, { out: passed, passed, assertion });
     }
+    case "setScene":
+      return command("cartoon.scene.setScene", node, context, sideEffects, string("sceneId"), { sceneId: string("sceneId") });
+    case "transitionTo":
+      return command("cartoon.scene.transitionTo", node, context, sideEffects, string("sceneId"), { sceneId: string("sceneId"), transition: optionalString("transition") ?? "cut", duration: number("duration") });
+    case "loadSet":
+      return command("cartoon.scene.loadSet", node, context, sideEffects, string("setId"), { setId: string("setId") });
+    case "spawnCharacter":
+      return command("cartoon.scene.spawnCharacter", node, context, sideEffects, string("characterId"), { characterId: string("characterId"), position: stableClone(input("position") ?? null) });
+    case "sayLine":
+      return command("cartoon.dialogue.sayLine", node, context, sideEffects, string("speakerId"), { speakerId: string("speakerId"), text: string("text"), emotion: optionalString("emotion") });
+    case "waitForResponse":
+      return command("cartoon.dialogue.waitForResponse", node, context, sideEffects, optionalString("speakerId"), { speakerId: optionalString("speakerId"), timeout: number("timeout") });
+    case "setEmotion":
+      return command("cartoon.dialogue.setEmotion", node, context, sideEffects, string("characterId"), { characterId: string("characterId"), emotion: string("emotion") });
+    case "setGesture":
+      return command("cartoon.dialogue.setGesture", node, context, sideEffects, string("characterId"), { characterId: string("characterId"), gestureId: string("gestureId") });
+    case "cartoonCutTo":
+      return command("cartoon.camera.cutTo", node, context, sideEffects, optionalString("targetId"), { presetId: string("presetId"), targetId: optionalString("targetId") });
+    case "dollyTo":
+      return command("cartoon.camera.dollyTo", node, context, sideEffects, context.camera?.id, { position: stableClone(input("position") ?? null), duration: number("duration") });
+    case "frameCharacter":
+      return command("cartoon.camera.frameCharacter", node, context, sideEffects, string("characterId"), { characterId: string("characterId"), composition: optionalString("composition") ?? "rule-of-thirds" });
+    case "shakeCamera":
+      return command("cartoon.camera.shakeCamera", node, context, sideEffects, context.camera?.id, { intensity: number("intensity"), duration: number("duration") });
+    case "playMusic":
+      return command("cartoon.audio.playMusic", node, context, sideEffects, string("musicId"), { musicId: string("musicId"), volume: number("volume") });
+    case "stopMusic":
+      return command("cartoon.audio.stopMusic", node, context, sideEffects, optionalString("musicId"), { musicId: optionalString("musicId") });
+    case "playSfx":
+      return command("cartoon.audio.playSfx", node, context, sideEffects, string("sfxId"), { sfxId: string("sfxId"), volume: number("volume") });
+    case "setVolume":
+      return command("cartoon.audio.setVolume", node, context, sideEffects, string("busId"), { busId: string("busId"), volume: number("volume") });
+    case "waitForBeat":
+      return command("cartoon.timing.waitForBeat", node, context, sideEffects, string("beatId"), { beatId: string("beatId") });
+    case "syncToAudio":
+      return command("cartoon.timing.syncToAudio", node, context, sideEffects, string("audioId"), { audioId: string("audioId"), time: number("time") });
+    case "delay":
+      return command("cartoon.timing.delay", node, context, sideEffects, undefined, { duration: number("duration") });
+    case "schedule":
+      return command("cartoon.timing.schedule", node, context, sideEffects, optionalString("label"), { time: number("time"), label: optionalString("label") });
+    case "captureThumbnail":
+      return command("cartoon.publishing.captureThumbnail", node, context, sideEffects, optionalString("path"), { time: number("time"), path: optionalString("path") });
+    case "exportCaption":
+      return command("cartoon.publishing.exportCaption", node, context, sideEffects, optionalString("path"), { format: optionalString("format") ?? "vtt", path: optionalString("path") });
+    case "markChapter":
+      return command("cartoon.publishing.markChapter", node, context, sideEffects, string("title"), { title: string("title"), time: number("time") });
   }
 
   throw new Error(`Unsupported visual node kind: ${node.kind}`);

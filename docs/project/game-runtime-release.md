@@ -1,10 +1,10 @@
 # Game Runtime Release Contract
 
-Version: 1.0.5
+Version: 1.0.10
 Status: Maintained runtime contract
 Replaces: `Aura3D104GameRuntimePRD.md`
 
-This document records the durable game-runtime requirements that came from the 1.0.4 planning work and now serve as the 1.0.5 runtime baseline.
+This document records the durable game-runtime requirements that came from the 1.0.4 planning work and now serve as the current 1.0.10 runtime baseline.
 
 ## Objective
 
@@ -101,21 +101,21 @@ If command names change, the release report must still cover the same evidence c
 
 ## Current Status
 
-1.0.5 audit status:
+1.0.10 audit status:
 
 - Root `pnpm typecheck` passed.
 - Root `pnpm build` passed.
-- `pnpm aura3d105:release` passed.
-- Root package install smoke passed for `@aura3d/engine@1.0.5`.
+- `pnpm aura3d110:readiness` passed.
+- Published `@aura3d/engine@1.0.10` includes the required GameAppRuntime and TypedGLBActor runtime files.
 - CLI catalog search works from the published `@aura3d/cli@latest` package.
-- `create-aura3d@latest --template fighting-game` scaffolds a project pinned to `@aura3d/engine@1.0.5`.
+- `create-aura3d@latest --template fighting-game` scaffolds, installs, builds, and tests a project pinned to `@aura3d/engine@1.0.10`.
 
 Public npm publish status:
 
-- `@aura3d/engine@latest` points at `1.0.5`.
-- `@aura3d/asset-index@latest` points at `1.0.5`.
-- `@aura3d/cli@latest` points at `1.0.5`.
-- `create-aura3d@latest` points at `1.0.5`.
+- `@aura3d/engine@latest` points at `1.0.10`.
+- `@aura3d/asset-index@latest` points at `1.0.10`.
+- `@aura3d/cli@latest` points at `1.0.10`.
+- `create-aura3d@latest` points at `1.0.10`.
 - Aura Clash asset validation uses the shipping-asset profile for the active route instead of unrelated experimental assets.
 
 ## Definition Of Done

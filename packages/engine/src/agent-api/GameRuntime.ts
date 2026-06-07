@@ -23,6 +23,55 @@ export interface GameRuntimeSubsystemOwnership {
   readonly evidence: string;
 }
 
+export interface GameSimulationStepContext<TState> {
+  readonly frame: number;
+  readonly time: number;
+  readonly dt: number;
+  readonly state: TState;
+}
+
+export interface GameSimulationStepResult<TState> {
+  readonly state: TState;
+  readonly events?: readonly unknown[];
+}
+
+export interface GameSimulationOptions<TState, TSnapshot> {
+  readonly initialState: TState;
+  readonly frames?: number;
+  readonly fps?: number;
+  readonly dt?: number;
+  readonly label?: string;
+  readonly update: (context: GameSimulationStepContext<TState>) => TState | GameSimulationStepResult<TState>;
+  readonly snapshot: (state: TState, context: GameSimulationStepContext<TState>) => TSnapshot;
+  readonly hash?: (snapshot: TSnapshot) => string;
+}
+
+export interface GameSimulationFrame<TSnapshot> {
+  readonly kind: "aura-game-simulation-frame";
+  readonly frame: number;
+  readonly time: number;
+  readonly snapshot: TSnapshot;
+  readonly hash: string;
+}
+
+export interface GameSimulationResult<TSnapshot> {
+  readonly kind: "aura-game-simulation-result";
+  readonly label: string;
+  readonly fps: number;
+  readonly dt: number;
+  readonly frameCount: number;
+  readonly deterministic: boolean;
+  readonly frames: readonly GameSimulationFrame<TSnapshot>[];
+  readonly finalSnapshot: TSnapshot;
+  readonly finalHash: string;
+  readonly eventCount: number;
+}
+
+export interface GameSimulation<TSnapshot> {
+  readonly kind: "aura-game-simulation";
+  run(): GameSimulationResult<TSnapshot>;
+}
+
 export type GameHudBindingKind = "health" | "meter" | "timer" | "combo" | "round" | "debug-toggle";
 export type GameHudValueFormat = "number" | "percent" | "clock" | "text" | "boolean";
 export type GameHudSourceKind = "combat" | "round" | "input" | "runtime" | "debug" | "app-state";
@@ -313,6 +362,24 @@ export interface GameInputReplayPlan {
   readonly duration: number;
   readonly checksum: string;
   readonly events: readonly GameInputReplayEvent[];
+}
+
+export interface GameInputReplayExport {
+  readonly kind: "aura-game-input-replay-export";
+  readonly schemaVersion: "aura-game-input-replay/v1";
+  readonly exportedAt?: string;
+  readonly replay: GameInputReplayPlan;
+  readonly simulation?: {
+    readonly label?: string;
+    readonly finalHash?: string;
+    readonly frameCount?: number;
+    readonly eventCount?: number;
+  };
+}
+
+export interface GameInputReplayExportOptions {
+  readonly exportedAt?: string;
+  readonly simulation?: GameInputReplayExport["simulation"];
 }
 
 export interface GameInputReplayDriverSnapshot {
@@ -636,6 +703,7 @@ export interface GameCombatActorOptions {
   readonly health?: number;
   readonly guard?: number;
   readonly meter?: number;
+  readonly knockedOut?: boolean;
   readonly hurtboxes?: readonly GameCollisionBox[];
   readonly guardboxes?: readonly GameCollisionBox[];
   readonly pushboxes?: readonly GameCollisionBox[];
@@ -672,7 +740,7 @@ export interface GameCombatMove {
   readonly blockable?: boolean;
 }
 
-export type GameCombatEventType = "hit" | "blocked" | "whiff" | "push";
+export type GameCombatEventType = "hit" | "blocked" | "whiff" | "push" | "knockout" | "round-reset";
 
 export interface GameCombatEvent {
   readonly type: GameCombatEventType;
@@ -704,6 +772,7 @@ export interface GameCombatWorldSnapshot {
   readonly kind: "aura-game-combat-world";
   readonly frame: number;
   readonly time: number;
+  readonly roundLocked: boolean;
   readonly actors: readonly GameCombatActorSnapshot[];
   readonly activeAttacks: readonly GameCombatActiveAttackSnapshot[];
   readonly events: readonly GameCombatEvent[];
@@ -721,6 +790,7 @@ export interface GameCombatWorld {
   events(): readonly GameCombatEvent[];
   consumeEvents(): readonly GameCombatEvent[];
   snapshot(): GameCombatWorldSnapshot;
+  reset(actors?: readonly GameCombatActorOptions[]): GameCombatWorldSnapshot;
   clear(): void;
 }
 
@@ -1078,6 +1148,35 @@ export function gameInputReplayEventsAt(
   return replay.events.filter((event) => event.frame === frame);
 }
 
+export function exportGameInputReplay(
+  replay: GameInputReplayPlan,
+  options: GameInputReplayExportOptions = {}
+): GameInputReplayExport {
+  return {
+    kind: "aura-game-input-replay-export",
+    schemaVersion: "aura-game-input-replay/v1",
+    ...(options.exportedAt ? { exportedAt: options.exportedAt } : {}),
+    replay: createGameInputReplay(replay.events, {
+      fps: replay.fps,
+      seed: replay.seed,
+      label: replay.label
+    }),
+    ...(options.simulation ? { simulation: options.simulation } : {})
+  };
+}
+
+export function importGameInputReplay(input: GameInputReplayExport | string): GameInputReplayPlan {
+  const parsed = typeof input === "string" ? JSON.parse(input) as GameInputReplayExport : input;
+  if (parsed.kind !== "aura-game-input-replay-export" || parsed.schemaVersion !== "aura-game-input-replay/v1") {
+    throw new Error("Unsupported game input replay export.");
+  }
+  return createGameInputReplay(parsed.replay.events, {
+    fps: parsed.replay.fps,
+    seed: parsed.replay.seed,
+    label: parsed.replay.label
+  });
+}
+
 export function createGameInputReplayDriver(
   input: GameInputController,
   replay: GameInputReplayPlan
@@ -1111,6 +1210,107 @@ export function createGameInputReplayDriver(
         checksum: replay.checksum,
         complete: frame >= replay.frameCount
       };
+    }
+  };
+}
+
+function stableSimulationValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stableSimulationValue);
+  if (!value || typeof value !== "object") return value;
+  const record = value as Record<string, unknown>;
+  return Object.keys(record)
+    .sort()
+    .reduce<Record<string, unknown>>((sorted, key) => {
+      sorted[key] = stableSimulationValue(record[key]);
+      return sorted;
+    }, {});
+}
+
+function stableSimulationHash(value: unknown): string {
+  const json = JSON.stringify(stableSimulationValue(value));
+  let hash = 2166136261;
+  for (let index = 0; index < json.length; index += 1) {
+    hash ^= json.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function normalizeSimulationStepResult<TState>(
+  result: TState | GameSimulationStepResult<TState>
+): GameSimulationStepResult<TState> {
+  if (
+    result &&
+    typeof result === "object" &&
+    Object.prototype.hasOwnProperty.call(result, "state")
+  ) {
+    return result as GameSimulationStepResult<TState>;
+  }
+  return { state: result as TState };
+}
+
+export function runGameSimulation<TState, TSnapshot>(
+  options: GameSimulationOptions<TState, TSnapshot>
+): GameSimulationResult<TSnapshot> {
+  const fps = Math.max(1, options.fps ?? 60);
+  const dt = Math.max(0, options.dt ?? 1 / fps);
+  const frameCount = Math.max(0, Math.floor(options.frames ?? 60));
+  const label = options.label ?? "game-simulation";
+  const hash = options.hash ?? stableSimulationHash;
+  const frames: GameSimulationFrame<TSnapshot>[] = [];
+  let state = options.initialState;
+  let eventCount = 0;
+
+  for (let frame = 0; frame <= frameCount; frame += 1) {
+    const context: GameSimulationStepContext<TState> = {
+      frame,
+      time: frame * dt,
+      dt,
+      state
+    };
+    const snapshot = options.snapshot(state, context);
+    frames.push({
+      kind: "aura-game-simulation-frame",
+      frame,
+      time: context.time,
+      snapshot,
+      hash: hash(snapshot)
+    });
+
+    if (frame === frameCount) break;
+    const nextContext: GameSimulationStepContext<TState> = {
+      frame: frame + 1,
+      time: (frame + 1) * dt,
+      dt,
+      state
+    };
+    const next = normalizeSimulationStepResult(options.update(nextContext));
+    eventCount += next.events?.length ?? 0;
+    state = next.state;
+  }
+
+  const finalFrame = frames[frames.length - 1];
+  return {
+    kind: "aura-game-simulation-result",
+    label,
+    fps,
+    dt,
+    frameCount,
+    deterministic: true,
+    frames,
+    finalSnapshot: finalFrame.snapshot,
+    finalHash: finalFrame.hash,
+    eventCount
+  };
+}
+
+export function createGameSimulation<TState, TSnapshot>(
+  options: GameSimulationOptions<TState, TSnapshot>
+): GameSimulation<TSnapshot> {
+  return {
+    kind: "aura-game-simulation",
+    run() {
+      return runGameSimulation(options);
     }
   };
 }
@@ -1720,11 +1920,13 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
   let events: GameCombatEvent[] = [];
   let frame = 0;
   let time = 0;
+  let roundLocked = false;
 
   const snapshot = (): GameCombatWorldSnapshot => ({
     kind: "aura-game-combat-world",
     frame,
     time,
+    roundLocked,
     actors: [...actors.values()].map(actorSnapshot),
     activeAttacks: activeAttacks.map((attack) => {
       const activeFrames = moveActiveFrames(attack.move, rules.fps);
@@ -1760,9 +1962,12 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
       }
       const stun = actor.stun;
       const recovery = actor.recovery;
+      const knockedOut = actor.knockedOut || patch.knockedOut === true;
       Object.assign(actor, normalizeActor({ ...actorSnapshot(actor), ...patch, id }));
       actor.stun = stun;
       actor.recovery = recovery;
+      actor.knockedOut = knockedOut || actor.health <= 0;
+      if (actor.knockedOut) actor.guarding = false;
     },
     removeActor(id) {
       actors.delete(id);
@@ -1779,7 +1984,8 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
       if (resolvedMove) this.beginAttack(attackerId, resolvedMove);
     },
     beginAttack(attackerId, move) {
-      if (!actors.has(attackerId)) return;
+      const attacker = actors.get(attackerId);
+      if (roundLocked || !attacker || attacker.knockedOut) return;
       activeAttacks.push({ attackerId, move: normalizeCombatMove(move), frame: 0, hitTargets: new Set<string>() });
     },
     update(dt) {
@@ -1787,7 +1993,12 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
       time += Math.max(0, dt);
       events = [];
       syncActorsFromBodies(fighterBodies, actors);
+      if (roundLocked) {
+        syncBodiesFromActors(fighterBodies, actors);
+        return snapshot();
+      }
       for (const actor of actors.values()) {
+        if (actor.knockedOut) continue;
         actor.stun = Math.max(0, actor.stun - 1);
         actor.recovery = Math.max(0, actor.recovery - 1);
       }
@@ -1802,7 +2013,11 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
         }
         const [activeStart, activeEnd] = moveActiveFrames(attack.move, rules.fps);
         if (attack.frame >= activeStart && attack.frame <= activeEnd) {
-          resolveAttack(attacker, attack, actors, stageBounds, frame, time, events);
+          if (resolveAttack(attacker, attack, actors, stageBounds, frame, time, events)) {
+            roundLocked = true;
+            activeAttacks.length = 0;
+            break;
+          }
         }
         if (attack.frame >= moveDurationFrames(attack.move, [activeStart, activeEnd], rules.fps)) {
           if (attack.hitTargets.size === 0) {
@@ -1833,12 +2048,46 @@ export function createCombatWorld(options: GameCombatWorldOptions = {}): GameCom
       return consumed;
     },
     snapshot,
+    reset(nextActors) {
+      activeAttacks.length = 0;
+      events = [];
+      frame = 0;
+      time = 0;
+      roundLocked = false;
+      if (nextActors) {
+        actors.clear();
+        fighterBodies.clear();
+        moves.clear();
+        for (const actor of nextActors) this.addActor(actor);
+      } else {
+        for (const actor of actors.values()) {
+          actor.health = rules.maxHealth;
+          actor.guard = rules.maxGuard;
+          actor.meter = 0;
+          actor.guarding = false;
+          actor.stun = 0;
+          actor.recovery = 0;
+          actor.knockedOut = false;
+        }
+      }
+      events = [
+        {
+          type: "round-reset",
+          frame,
+          time,
+          attackerId: "system",
+          position: [0, 0, 0]
+        }
+      ];
+      return snapshot();
+    },
     clear() {
       actors.clear();
       activeAttacks.length = 0;
       events = [];
       frame = 0;
       time = 0;
+      roundLocked = false;
     }
   };
   for (const [index, fighter] of (options.fighters ?? []).entries()) {
@@ -2480,6 +2729,7 @@ interface MutableCombatActor {
   guarding: boolean;
   stun: number;
   recovery: number;
+  knockedOut: boolean;
 }
 
 interface MutableAttack {
@@ -2518,7 +2768,8 @@ function normalizeActor(actor: GameCombatActorOptions): MutableCombatActor {
     pushboxes: actor.pushboxes ?? [{ id: "push", offset: [0, 0.72, 0], size: [0.72, 1.2, 0.52] }],
     guarding: actor.guarding ?? false,
     stun: 0,
-    recovery: 0
+    recovery: 0,
+    knockedOut: actor.knockedOut ?? (actor.health ?? 100) <= 0
   };
 }
 
@@ -2582,7 +2833,7 @@ function resolvePushboxSeparation(
     for (let rightIndex = leftIndex + 1; rightIndex < actorList.length; rightIndex += 1) {
       const left = actorList[leftIndex];
       const right = actorList[rightIndex];
-      if (!left || !right || left.team === right.team) continue;
+      if (!left || !right || left.team === right.team || left.knockedOut || right.knockedOut) continue;
       const leftBox = left.pushboxes[0] ? worldBox(left, left.pushboxes[0], false) : undefined;
       const rightBox = right.pushboxes[0] ? worldBox(right, right.pushboxes[0], false) : undefined;
       if (!leftBox || !rightBox || !intersects(leftBox, rightBox)) continue;
@@ -2617,7 +2868,8 @@ function actorSnapshot(actor: MutableCombatActor): GameCombatActorSnapshot {
     pushboxes: actor.pushboxes,
     guarding: actor.guarding,
     stun: actor.stun,
-    recovery: actor.recovery
+    recovery: actor.recovery,
+    knockedOut: actor.knockedOut
   };
 }
 
@@ -2629,9 +2881,9 @@ function resolveAttack(
   frame: number,
   time: number,
   events: GameCombatEvent[]
-): void {
+): boolean {
   for (const target of actors.values()) {
-    if (target.id === attacker.id || target.team === attacker.team || attack.hitTargets.has(target.id)) continue;
+    if (target.id === attacker.id || target.team === attacker.team || attack.hitTargets.has(target.id) || target.knockedOut) continue;
     for (const hitbox of moveHitboxes(attack.move)) {
       const worldHitbox = worldBox(attacker, hitbox, true);
       const guarded =
@@ -2684,10 +2936,27 @@ function resolveAttack(
           knockback,
           position
         });
+        if (target.health <= 0) {
+          target.knockedOut = true;
+          target.guarding = false;
+          target.stun = 0;
+          target.recovery = 0;
+          events.push({
+            type: "knockout",
+            frame,
+            time,
+            attackerId: attacker.id,
+            targetId: target.id,
+            moveId: attack.move.id,
+            position
+          });
+          return true;
+        }
       }
-      return;
+      return false;
     }
   }
+  return false;
 }
 
 function worldBox(actor: MutableCombatActor, box: GameCollisionBox, mirrorX: boolean): GameAabb {

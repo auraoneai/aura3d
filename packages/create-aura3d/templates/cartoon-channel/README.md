@@ -13,6 +13,18 @@ It uses:
 - Child-safe, reduced-motion, and high-contrast accessibility proof defaults.
 - Primitive-mouth and typed-GLB viseme examples.
 - Phoneme/viseme/dub source proof metadata for stable shot, storyboard, caption, line, and word timing ids.
+- A deterministic sample episode visual layer at `/?sampleTime=24` so reviewers
+  can see a clean cartoon frame sourced from the same shot/caption contract.
+- An Aura3D-rendered cartoon scene graph for visual review: moon garden,
+  stylized robot characters, props, lights, camera, captions, and typed GLB
+  character asset evidence through `src/aura-assets.ts`.
+- A separate 2.5D concept route at `/?view=concept-2-5d&sampleTime=24`.
+  This route uses `public/aura-assets/moon-garden-feature-frame.png` as source
+  art, splits it into depth planes, and pans those planes at different rates.
+  It is useful for explaining a still-image-to-episode workflow, but it is not
+  true mesh reconstruction and cannot orbit behind the painted characters.
+  Use `/?view=concept-2-5d&sampleTime=24&animateParallax=1` to keep the same
+  shot/caption while the layered camera moves.
 
 Replace primitive characters with typed GLB assets by running:
 
@@ -34,6 +46,54 @@ model(assets.miko);
 ```
 
 Do not replace this with a string asset id or a raw loader.
+
+Run the sample episode visual test:
+
+```bash
+npm test
+```
+
+The visual test captures a review frame at:
+
+```text
+tests/reports/prompt-animation/cartoon-sample-episode.png
+```
+
+The 2.5D concept test captures three parallax positions at:
+
+```text
+tests/reports/prompt-animation/cartoon-2-5d-concept-left.png
+tests/reports/prompt-animation/cartoon-2-5d-concept-center.png
+tests/reports/prompt-animation/cartoon-2-5d-concept-right.png
+```
+
+The animated route for live review is:
+
+```text
+/?view=concept-2-5d&sampleTime=24&animateParallax=1
+```
+
+Record the moving proof with:
+
+```bash
+npm run record:2.5d
+```
+
+That writes:
+
+```text
+tests/reports/prompt-animation/cartoon-2-5d-concept-animation.webm
+```
+
+In that route, Aura3D's role is the episode contract, shot timing, caption
+timing, proof metadata, camera/parallax plan, and optional foreground 3D
+composition. The moon garden PNG is treated as concept source art. Production
+2.5D would need separated character/background/foreground masks or a depth map
+for cleaner parallax than rectangular layer crops.
+
+Inside the Aura3D monorepo, that path resolves to the repo-level report
+directory. In a generated standalone app, it resolves inside the generated
+project.
 
 This scaffold intentionally does not claim publish readiness from source alone.
 Before closing build, route, asset, screenshot, render, or visual-quality gates,

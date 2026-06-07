@@ -1,0 +1,62 @@
+{
+  "schema": "aura-clash-106-readiness",
+  "generatedAt": "2026-06-06T22:52:36.268Z",
+  "ok": true,
+  "route": "/playable/",
+  "release": "1.0.6",
+  "contextualRoute": "Aura Clash Arena",
+  "artifacts": {
+    "screenshots": [
+      {
+        "id": "first-frame",
+        "ok": true,
+        "source": "launch-evidence/aura-clash-arena-first-frame.png",
+        "output": "launch-evidence/playable-106-first-frame.png",
+        "sourceBytes": 712867,
+        "outputBytes": 712867
+      },
+      {
+        "id": "combat-frame",
+        "ok": true,
+        "source": "launch-evidence/aura-clash-arena-combat-frame.png",
+        "output": "launch-evidence/playable-106-combat-frame.png",
+        "sourceBytes": 714594,
+        "outputBytes": 714594
+      },
+      {
+        "id": "ko-reset",
+        "ok": true,
+        "source": "launch-evidence/aura-clash-visual-ko-reset.png",
+        "output": "launch-evidence/playable-106-ko-reset.png",
+        "sourceBytes": 710372,
+        "outputBytes": 710372
+      }
+    ],
+    "deployedProof": "launch-evidence/deployed-106-proof.json",
+    "flagshipGates": "tests/reports/flagship-gates.json",
+    "flagshipReadiness": "tests/reports/flagship-readiness.json"
+  },
+  "gates": {
+    "flagshipGates": {
+      "ok": true,
+      "status": "flagship-ready",
+      "generatedAt": "2026-06-06T13:50:06.504Z",
+      "commandCount": 8,
+      "failedCount": 0
+    },
+    "flagshipReadiness": {
+      "ok": true,
+      "status": "flagship-ready",
+      "generatedAt": "2026-06-06T13:48:02.865Z",
+      "gateCount": 14
+    },
+    "deployedProof": {
+      "ok": true,
+      "source": "collect-launch-evidence-probes"
+    }
+  },
+  "limitations": [
+    "Human visual approval remains separate and cannot be inferred from generated screenshots.",
+    "This readiness artifact summarizes current release evidence; it does not replace the separate published CLI and production-origin checks."
+  ]
+}

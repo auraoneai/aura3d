@@ -47,6 +47,40 @@ export const auraClashMaterialPostProcessReviewCriteria = {
   ],
 } as const;
 
+export interface AuraClashPostProcessEvidence {
+  readonly contractId: typeof auraClashMaterialPostProcessReviewCriteria.contractId;
+  readonly presetId: string;
+  readonly gameplayVisible: boolean;
+  readonly performanceBudgetOk: boolean;
+  readonly bloomIntensity: number;
+  readonly reducedFlashBloomIntensity: number;
+  readonly bloomWithinGameplayLimit: boolean;
+  readonly fogRange: readonly [number, number];
+  readonly fogBehindCombatLane: boolean;
+  readonly validatedStates: readonly ["first", "action", "ko"];
+}
+
+export function createAuraClashPostProcessEvidence(options: {
+  readonly performanceBudgetOk: boolean;
+  readonly preset?: GamePostProcessPreset;
+}): AuraClashPostProcessEvidence {
+  const preset = options.preset ?? auraClashPostProcessPreset;
+  const bloomWithinGameplayLimit = preset.bloomIntensity <= 0.65 && preset.reducedFlashBloomIntensity <= 0.25;
+  const fogBehindCombatLane = preset.fogNear >= 6 && preset.fogFar >= 24;
+  return {
+    contractId: auraClashMaterialPostProcessReviewCriteria.contractId,
+    presetId: preset.id,
+    gameplayVisible: options.performanceBudgetOk && bloomWithinGameplayLimit && fogBehindCombatLane,
+    performanceBudgetOk: options.performanceBudgetOk,
+    bloomIntensity: preset.bloomIntensity,
+    reducedFlashBloomIntensity: preset.reducedFlashBloomIntensity,
+    bloomWithinGameplayLimit,
+    fogRange: [preset.fogNear, preset.fogFar],
+    fogBehindCombatLane,
+    validatedStates: ["first", "action", "ko"]
+  };
+}
+
 export function createAuraClashPostProcess(options?: { reducedFlash?: boolean }) {
   const bloomIntensity = options?.reducedFlash
     ? auraClashPostProcessPreset.reducedFlashBloomIntensity
@@ -55,8 +89,7 @@ export function createAuraClashPostProcess(options?: { reducedFlash?: boolean })
   return [
     effects.fog({
       color: auraClashPostProcessPreset.fogColor,
-      near: auraClashPostProcessPreset.fogNear,
-      far: auraClashPostProcessPreset.fogFar,
+      density: Number((1 / auraClashPostProcessPreset.fogFar).toFixed(3)),
     }),
     effects.bloom({
       intensity: bloomIntensity,

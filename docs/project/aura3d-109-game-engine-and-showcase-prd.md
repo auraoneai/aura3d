@@ -3,7 +3,7 @@
 Version: 1.0.9
 Date: 2026-06-06
 Status: Corrective patch release for the 1.0.6 runtime-foundation track
-Parent PRD: `docs/project/aura3d-106-game-engine-and-showcase-prd.md`
+Historical parent: the 1.0.6 game-engine/showcase planning content has been folded into `docs/project/aura3d-110-release-gates.md`, `docs/project/game-runtime-release.md`, and `docs/project/aura-clash-showcase.md`.
 Release gates: `docs/project/aura3d-109-release-gates.md`
 
 Aura3D 1.0.9 is not a new attempt to claim mature game-engine parity. It is a corrective patch release created because the published `@aura3d/engine@1.0.6` tarball did not contain the new `dist/engine/production-runtime/TypedGLBActor.*` runtime files even though the local source and deployed Aura Clash route depended on that runtime path.
@@ -71,4 +71,4 @@ The release is successful only when:
 - Flagship-quality Aura Clash game.
 - Guaranteed production-ready game assets from every prompt.
 
-The full mature-engine and flagship-showcase gap remains tracked in `docs/project/aura3d-106-game-engine-and-showcase-prd.md`.
+The current package, game-runtime, showcase, and cartoon-production gates are tracked in `docs/project/aura3d-110-release-gates.md`.

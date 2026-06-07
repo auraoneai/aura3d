@@ -1,8 +1,33 @@
 # Changelog
 
-Version: 1.0.5
+Version: 1.0.9
 
-All notable changes for Aura3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents.
+
+## 1.0.9
+
+### 1.0.9 Highlights
+
+- Published `@aura3d/engine`, `@aura3d/cli`, `@aura3d/asset-index`, and `create-aura3d` at `1.0.9`.
+- Added the scoped Aura Clash Arena release path with contextual source names, typed fighter assets, deployed route proof, performance gates, and npm/package-readiness reports.
+- Added `TypedGLBActor` production-runtime support as the public source direction for typed, skinned GLB actor evidence.
+- Tightened the AI asset-catalog CLI profile flow for fighting-character search, resolve, and validation, including rejection diagnostics for unsuitable candidates.
+- Updated public docs, README, `llms.txt`, marketing copy, and deployed routes to use scoped 1.0.9 wording.
+- Deprecated older npm versions below 1.0.9 to reduce accidental installs of the broken earlier release line.
+
+### 1.0.9 Release Notes
+
+- Aura3D 1.0.9 is a scoped runtime-foundation release. It is not a Unity replacement, Unreal competitor, Babylon.js parity claim, or mature commercial game-engine claim.
+- Aura Clash Arena is a development showcase and browser runtime proof target. It is not yet a flagship-quality fighting game.
+- Current published artifact evidence is recorded in `docs/project/release-artifacts.json`.
+- Current scoped release gates are recorded in `docs/project/aura3d-109-release-gates.md`.
+
+## 1.0.6 - 1.0.8
+
+### Iteration Notes
+
+- These internal release lines covered the hard reset from failed Aura Clash route attempts to contextual `playable/` source, release-gate tooling, docs-claim scanning, versioned-source-name checks, CLI/catalog profile proof, and deployment proof.
+- The detailed gap analysis remains in `docs/project/aura3d-106-game-engine-and-showcase-prd.md` and `docs/project/aura3d-107-prd.md`; not every peer-grade game-engine task in those planning docs is complete.
 
 ## 1.0.5
 

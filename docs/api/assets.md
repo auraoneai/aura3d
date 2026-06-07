@@ -98,6 +98,29 @@ selected candidate's source URL, license, author/attribution, and source family
 in `aura.assets.json`, so release evidence can explain exactly where the typed
 asset came from.
 
+The fighting-character profile is allowed to return no usable candidate. That
+is the correct result when the catalog only finds static props, aircraft,
+spiders, IP-risk characters, unlicensed models, non-humanoid sculpts, or assets
+without animation metadata. In that case the CLI should emit rejected candidates
+and rejection reasons instead of fabricating a typed fighter. Treat this as a
+stop condition:
+
+```bash
+npx @aura3d/cli@latest assets search "animated humanoid fighting character" \
+  --profile fighting-character \
+  --json
+```
+
+Acceptable outcomes:
+
+- `candidates.length > 0` and each usable candidate is marked suitable for the
+  requested profile.
+- `candidates.length === 0` with non-empty `rejectedCandidates` and
+  `rejectionReasons` explaining why no production-ready fighter was selected.
+
+Do not work around a no-match result by resolving an unrelated object or by
+using primitives as release-facing fighter art.
+
 When a showcase keeps old candidate assets in the manifest for audit history,
 validate the actual shipping set explicitly:
 

@@ -1,6 +1,6 @@
 # Fighting Game Example
 
-This example shows the Aura3D 1.0.5 game runtime path for a small 2.5D fighting-game slice.
+This example shows the Aura3D 1.0.10 game runtime path for a small 2.5D fighting-game slice.
 
 Use the template when starting a real app:
 
@@ -71,9 +71,9 @@ const input = app.input({
   actions: {
     left: ["KeyA", "ArrowLeft"],
     right: ["KeyD", "ArrowRight"],
-    jump: ["KeyW", "Space"],
-    guard: ["KeyQ"],
-    dash: ["ShiftLeft", "ShiftRight"],
+    jump: ["KeyW", "ArrowUp"],
+    guard: ["ShiftLeft", "ShiftRight"],
+    dash: ["Space"],
     light: ["KeyJ"],
     heavy: ["KeyK"],
     special: ["KeyL"]
@@ -231,9 +231,9 @@ Do not use `model("stage")`, raw GLB URLs, or private loader code for playable s
 
 Do not claim a game route is launch-ready until build, browser tests, visual screenshots, asset validation, and route/GLB deployment proof have passed.
 
-## 1.0.5 animation-event upgrade path
+## 1.0.10 animation-event upgrade path
 
-For 1.0.5 release work, the fighting starter should drive visible named GLB
+For 1.0.10 release work, the fighting starter should drive visible named GLB
 clips through `AnimationController` and use clip-local animation events for
 combat timing. Keep movement authoritative in `game.kinematicBody(...)`; use
 animation events for attack windows, effects, and camera response.

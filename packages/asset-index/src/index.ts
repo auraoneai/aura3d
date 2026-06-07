@@ -33,8 +33,29 @@ export type {
 export { defaultFetchJson } from "./SourceAdapter.js";
 
 export { scoreAsset, matchesConstraints } from "./ranking.js";
-export { evaluateGameAssetProfile } from "./game-profile.js";
-export type { GameAssetProfile, GameAssetProfileEvaluation } from "./game-profile.js";
+export { evaluateGameAssetProfile, gameAssetProfileDefinitions, getGameAssetProfileDefinition } from "./game-profile.js";
+export type { GameAssetProfile, GameAssetProfileDefinition, GameAssetProfileEvaluation, GameAssetProfileScoringRules } from "./game-profile.js";
+export {
+  cartoonAssetProfiles,
+  evaluateCartoonAssetProfile,
+  isCartoonAssetProfile,
+} from "./cartoon-profile.js";
+export type {
+  CartoonAssetCategory,
+  CartoonAssetProfile,
+  CartoonAssetProfileEvaluation,
+} from "./cartoon-profile.js";
+export {
+  cartoonStarterPack,
+  cartoonStarterPackAssets,
+  cartoonStarterPackSummary,
+  createCartoonStarterPackAdapter,
+} from "./cartoon-starter-pack.js";
+export type {
+  CartoonStarterPackEntry,
+  CartoonStarterPackKind,
+  CartoonStarterPackRole,
+} from "./cartoon-starter-pack.js";
 
 export type {
   ResolveCandidate,
@@ -75,6 +96,7 @@ import { createKhronosAdapter } from "./adapters/khronos.js";
 import { createOS3AAdapter } from "./adapters/os3a.js";
 import { createPolyHavenAdapter } from "./adapters/poly-haven.js";
 import { createJsDelivrMirrorAdapter } from "./adapters/jsdelivr-mirror.js";
+import { createCartoonStarterPackAdapter } from "./cartoon-starter-pack.js";
 
 /**
  * The zero-auth, verified source adapters available today.
@@ -90,6 +112,7 @@ import { createJsDelivrMirrorAdapter } from "./adapters/jsdelivr-mirror.js";
  */
 export function defaultAdapters(): SourceAdapter[] {
   return [
+    createCartoonStarterPackAdapter(),
     createKhronosAdapter(),
     createOS3AAdapter(),
     createPolyHavenAdapter(),

@@ -78,6 +78,62 @@ export interface AuraRuntimeNodeAnimationPoseBindingMetadata {
   readonly metadata?: Record<string, unknown>;
 }
 
+export interface AuraRuntimeNodeImportedAssetEvidence {
+  readonly kind: "aura-runtime-node-imported-asset-evidence";
+  readonly assetId: string;
+  readonly nodeId?: string | undefined;
+  readonly skeleton?: {
+    readonly boneCount: number;
+    readonly boneNames: readonly string[];
+  } | undefined;
+  readonly clips: readonly string[];
+  readonly activeClip?: string | undefined;
+  readonly skinningPalette?: {
+    readonly jointCount: number;
+    readonly matrixCount: number;
+    readonly updated: boolean;
+  } | undefined;
+  readonly morphTargets: readonly string[];
+  readonly bounds?: AuraRuntimeNodeBounds | undefined;
+  readonly renderItemCount: number;
+  readonly skinnedRenderItemCount: number;
+  readonly morphRenderItemCount: number;
+  readonly diagnostics: readonly AuraRuntimeNodeImportedAssetDiagnostic[];
+}
+
+export interface AuraRuntimeNodeImportedAssetDiagnostic {
+  readonly severity: "info" | "warning" | "error";
+  readonly code:
+    | "missing-clip"
+    | "missing-bone"
+    | "missing-morph"
+    | "missing-skeleton"
+    | "missing-skinning-palette"
+    | "missing-render-items";
+  readonly message: string;
+}
+
+export interface AuraRuntimeNodeImportedAssetEvidenceInput {
+  readonly assetId: string;
+  readonly nodeId?: string | undefined;
+  readonly skeletonBones?: readonly string[] | undefined;
+  readonly clips?: readonly string[] | undefined;
+  readonly activeClip?: string | undefined;
+  readonly skinningPalette?: {
+    readonly jointCount: number;
+    readonly matrixCount?: number | undefined;
+    readonly updated?: boolean | undefined;
+  } | undefined;
+  readonly morphTargets?: readonly string[] | undefined;
+  readonly bounds?: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput | undefined;
+  readonly renderItemCount?: number | undefined;
+  readonly skinnedRenderItemCount?: number | undefined;
+  readonly morphRenderItemCount?: number | undefined;
+  readonly requiredClips?: readonly string[] | undefined;
+  readonly requiredBones?: readonly string[] | undefined;
+  readonly requiredMorphTargets?: readonly string[] | undefined;
+}
+
 export interface RuntimeNodeBoundsInput {
   readonly position?: RuntimeNodeVec3;
   readonly scale?: number | RuntimeNodeVec3;
@@ -103,10 +159,54 @@ export interface RuntimeNodeHandleLike {
   setAnimationBinding?(binding: AuraRuntimeNodeAnimationBindingMetadata | undefined): this;
   setAnimationPose?(pose: AnimationPose | undefined, metadata?: AuraRuntimeNodeAnimationPoseBindingMetadata): this;
   animationPose?(): AnimationPose | undefined;
+  setImportedAssetEvidence?(evidence: AuraRuntimeNodeImportedAssetEvidence | undefined): this;
+  importedAssetEvidence?(): AuraRuntimeNodeImportedAssetEvidence | undefined;
   setMorphTarget?(name: string, weight: number): this;
   setMorphTargets?(weights: RuntimeNodeMorphTargetWeights): this;
   morphTargets?(): RuntimeNodeMorphTargetWeights;
   snapshot(): unknown;
+}
+
+export function createRuntimeNodeImportedAssetEvidence(
+  input: AuraRuntimeNodeImportedAssetEvidenceInput
+): AuraRuntimeNodeImportedAssetEvidence {
+  const clips = [...new Set(input.clips ?? [])];
+  const bones = [...new Set(input.skeletonBones ?? [])];
+  const morphTargets = [...new Set(input.morphTargets ?? [])];
+  const diagnostics: AuraRuntimeNodeImportedAssetDiagnostic[] = [];
+  for (const clip of input.requiredClips ?? []) {
+    if (!clips.includes(clip)) diagnostics.push({ severity: "error", code: "missing-clip", message: `Missing imported animation clip "${clip}".` });
+  }
+  for (const bone of input.requiredBones ?? []) {
+    if (!bones.includes(bone)) diagnostics.push({ severity: "error", code: "missing-bone", message: `Missing imported skeleton bone "${bone}".` });
+  }
+  for (const morph of input.requiredMorphTargets ?? []) {
+    if (!morphTargets.includes(morph)) diagnostics.push({ severity: "error", code: "missing-morph", message: `Missing imported morph target "${morph}".` });
+  }
+  if (bones.length === 0) diagnostics.push({ severity: "warning", code: "missing-skeleton", message: "Imported asset evidence has no skeleton bones." });
+  if (!input.skinningPalette) diagnostics.push({ severity: "warning", code: "missing-skinning-palette", message: "Imported asset evidence has no skinning palette." });
+  if ((input.renderItemCount ?? 0) < 1) diagnostics.push({ severity: "warning", code: "missing-render-items", message: "Imported asset evidence has no render items." });
+  return {
+    kind: "aura-runtime-node-imported-asset-evidence",
+    assetId: input.assetId,
+    ...(input.nodeId ? { nodeId: input.nodeId } : {}),
+    ...(bones.length > 0 ? { skeleton: { boneCount: bones.length, boneNames: bones } } : {}),
+    clips,
+    ...(input.activeClip ? { activeClip: input.activeClip } : {}),
+    ...(input.skinningPalette ? {
+      skinningPalette: {
+        jointCount: input.skinningPalette.jointCount,
+        matrixCount: input.skinningPalette.matrixCount ?? input.skinningPalette.jointCount,
+        updated: input.skinningPalette.updated ?? true
+      }
+    } : {}),
+    morphTargets,
+    ...(input.bounds ? { bounds: isRuntimeNodeBounds(input.bounds) ? input.bounds : calculateRuntimeNodeBounds(input.bounds) } : {}),
+    renderItemCount: input.renderItemCount ?? 0,
+    skinnedRenderItemCount: input.skinnedRenderItemCount ?? 0,
+    morphRenderItemCount: input.morphRenderItemCount ?? 0,
+    diagnostics
+  };
 }
 
 export function calculateRuntimeNodeBounds(input: RuntimeNodeBoundsInput): AuraRuntimeNodeBounds {
@@ -152,4 +252,8 @@ function scaleToVec3(value: number | RuntimeNodeVec3 | undefined, fallback: Runt
 
 function multiplyVec3(a: RuntimeNodeVec3, b: RuntimeNodeVec3): RuntimeNodeVec3 {
   return [a[0] * b[0], a[1] * b[1], a[2] * b[2]];
+}
+
+function isRuntimeNodeBounds(value: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput): value is AuraRuntimeNodeBounds {
+  return (value as AuraRuntimeNodeBounds).kind === "aura-runtime-node-bounds";
 }

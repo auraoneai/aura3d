@@ -13,9 +13,9 @@ import {
 import { heavyMove, lightMove, specialMove } from "./game/moves";
 import {
   createFighterColliders,
+  createFightingRouteReadiness,
   createTouchLayout,
   fightingControls,
-  fightingRouteReadiness,
   fightingStage,
   fightingStageBounds,
   fightingStageIssues
@@ -41,6 +41,7 @@ const playerStart = [-0.9, 0, 0] as const;
 const rivalStart = [0.9, 0, 0] as const;
 const stageWarnings = fightingStageIssues.map((issue) => issue.message);
 const touchLayout = createTouchLayout(window.innerWidth, window.innerHeight);
+const routeReadiness = createFightingRouteReadiness({ missingFighterAssets });
 
 ui.html(
   "#hud",
@@ -210,7 +211,7 @@ gameWindow.__AURA3D_GAME_SOURCE__ = {
   missingAssets: missingFighterAssets,
   addAssets: publicAssetInstructions,
   touchControls: touchLayout,
-  readiness: fightingRouteReadiness
+  readiness: routeReadiness
 };
 
 let aiCooldown = 0;

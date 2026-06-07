@@ -175,6 +175,27 @@ export interface FightingGameSnapshot {
   };
 }
 
+export interface FightingDebugHitboxOverlayOptions {
+  readonly enabled?: boolean;
+}
+
+export interface FightingDebugHitboxOverlayVolume {
+  readonly id: string;
+  readonly ownerId: string;
+  readonly moveId: string;
+  readonly active: boolean;
+  readonly offset: readonly [number, number, number];
+  readonly size: readonly [number, number, number];
+  readonly color: string;
+}
+
+export interface FightingDebugHitboxOverlay {
+  readonly kind: "aura-fighting-debug-hitbox-overlay";
+  readonly enabled: boolean;
+  readonly normalPassVisible: false;
+  readonly volumes: readonly FightingDebugHitboxOverlayVolume[];
+}
+
 export interface FightingGameKit {
   readonly kind: "aura-fighting-game-kit";
   readonly controls: FightingControls;
@@ -187,6 +208,7 @@ export interface FightingGameKit {
   readonly combat: ReturnType<typeof createCombatWorld>;
   readonly camera: ReturnType<typeof createGameCameraDirector>;
   readonly effects: ReturnType<typeof createGameEffects>;
+  debugHitboxOverlay(options?: FightingDebugHitboxOverlayOptions): FightingDebugHitboxOverlay;
   update(dt: number): FightingGameSnapshot;
   snapshot(): FightingGameSnapshot;
 }
@@ -216,6 +238,31 @@ export function defaultFightingControls(): FightingControls {
     axes: {
       moveX: { negative: "moveLeft", positive: "moveRight", gamepadAxis: 0 }
     }
+  };
+}
+
+export function fightingDebugHitboxOverlay(
+  snapshot: FightingGameSnapshot,
+  options: FightingDebugHitboxOverlayOptions = {}
+): FightingDebugHitboxOverlay {
+  const enabled = options.enabled === true;
+  return {
+    kind: "aura-fighting-debug-hitbox-overlay",
+    enabled,
+    normalPassVisible: false,
+    volumes: enabled
+      ? snapshot.combat.activeAttacks.flatMap((attack) =>
+          attack.hitboxes.map((box, index) => ({
+            id: box.id ?? `${attack.moveId}-hitbox-${index}`,
+            ownerId: attack.attackerId,
+            moveId: attack.moveId,
+            active: attack.active,
+            offset: box.offset ?? [0, 0, 0],
+            size: box.size,
+            color: attack.active ? "#ef4444" : "#f97316"
+          }))
+        )
+      : []
   };
 }
 
@@ -583,6 +630,7 @@ export function createFightingGameKit(options: FightingGameKitOptions = {}): Fig
     combat,
     camera,
     effects,
+    debugHitboxOverlay: (debugOptions) => fightingDebugHitboxOverlay(snapshot(), debugOptions),
     update,
     snapshot
   };

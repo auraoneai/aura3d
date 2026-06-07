@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("cartoon channel storyboard caption renders", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByText(/Aura3D cartoon channel|moon|robot/i)).toBeVisible();
+  await expect(page.locator("#sample-episode-visual [data-sample-caption]")).toContainText(/moon|robot|lilies|stones/i);
 });
 
 test("storyboard playback, character performance, caption timing, cuts, and nonblank cartoon frames are sourced", async ({
