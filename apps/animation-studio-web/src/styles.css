@@ -69,7 +69,7 @@ input,textarea{font-family:inherit}
 /* ============================================================ shell */
 .app{
   height:100vh;display:grid;
-  grid-template-rows:var(--top) 1fr;
+  grid-template-rows:var(--top) auto 1fr;
   background:
     radial-gradient(1200px 600px at 16% -10%, rgba(123,123,255,.10), transparent 60%),
     radial-gradient(1000px 500px at 100% 110%, rgba(255,111,77,.06), transparent 55%),
@@ -380,7 +380,7 @@ input,textarea{font-family:inherit}
 .cmode .seg{padding:2px;flex:0 0 auto}
 .cmode .seg button{padding:3px 9px;font-size:11px}
 .cmode .hint{margin-left:auto;font-size:10px;color:var(--tx-faint);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:0 1 auto}
-.cinput{width:100%;background:none;border:none;color:var(--tx-hi);font-size:13.5px;padding:6px 12px 10px;resize:none;min-height:46px;max-height:140px;line-height:1.5}
+.cinput{width:100%;background:none;border:none;color:var(--tx-hi);font-size:14px;padding:10px 12px 12px;resize:none;min-height:76px;max-height:200px;line-height:1.55}
 .cinput.mono{font-family:var(--mono);font-size:12.5px}
 .cinput::placeholder{color:var(--tx-faint)}
 .cbar{display:flex;align-items:center;gap:8px;padding:8px 10px 9px;border-top:1px solid var(--line)}
@@ -493,3 +493,36 @@ input,textarea{font-family:inherit}
 .cmdk-foot span{display:flex;align-items:center;gap:6px}
 .cmdk-foot .kk{font-family:var(--mono);border:1px solid var(--line-2);border-radius:4px;padding:1px 5px;color:var(--tx-dim)}
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--tx-faint);text-align:center;padding:30px}
+
+/* ── New-scene generator bar (headline action under the topbar) ── */
+.newscene-bar{display:flex;align-items:center;gap:10px;padding:9px 16px;background:linear-gradient(180deg,var(--bg-1),var(--bg-0));border-bottom:1px solid var(--line);position:relative;z-index:25}
+.newscene-spark{font-size:14px;filter:drop-shadow(0 0 6px var(--acc-glow))}
+.newscene-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx-faint);white-space:nowrap}
+.newscene-input{flex:1;height:34px;padding:0 13px;border-radius:9px;background:var(--bg-2);border:1px solid var(--line-2);color:var(--tx-hi);font-size:13px;outline:none;transition:.15s}
+.newscene-input::placeholder{color:var(--tx-faint)}
+.newscene-input:focus{border-color:#8b7bff;box-shadow:0 0 0 2px rgba(123,123,255,.25)}
+.newscene-input:disabled{opacity:.5}
+.newscene-btn{height:34px;padding:0 16px;border-radius:9px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;background:linear-gradient(160deg,#8b7bff,#6b6bff);box-shadow:0 3px 12px -3px var(--acc-glow);border:none;cursor:pointer;transition:.14s}
+.newscene-btn:hover{filter:brightness(1.1)}
+.newscene-btn:disabled{opacity:.45;cursor:default;filter:none}
+
+/* New-scene generating state (clear feedback while the Director builds the scene) */
+.newscene-status{flex:1;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--tx-hi);font-weight:500}
+.newscene-spinner{width:15px;height:15px;border-radius:50%;border:2px solid var(--line-2);border-top-color:#8b7bff;animation:nsspin .7s linear infinite;flex:0 0 auto}
+@keyframes nsspin{to{transform:rotate(360deg)}}
+.newscene-btn.busy{opacity:1;cursor:default;animation:nspulse 1.1s ease-in-out infinite}
+@keyframes nspulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.28)}}
+
+/* New-scene: Continue-scene button (secondary, keeps same cast/set) */
+.newscene-div{width:1px;height:22px;background:var(--line-2);margin:0 2px;flex:0 0 auto}
+.newscene-continue{background:var(--bg-3);color:var(--tx-hi);box-shadow:none;border:1px solid var(--line-2)}
+.newscene-continue:hover:not(:disabled){background:var(--bg-4);filter:none}
+
+/* Command mode: persistent "top commands" cheat-sheet (click to insert) */
+.cmd-list{margin:2px 0 6px;padding:6px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;max-height:208px;overflow-y:auto}
+.cmd-list-h{padding:5px 8px 7px;font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--tx-faint)}
+.cmd-list-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:7px 9px;border-radius:7px;transition:.12s}
+.cmd-list-item:hover{background:var(--bg-3)}
+.cmd-list-item .verb{font-family:var(--mono);font-size:12px;color:var(--tx-hi);font-weight:600}
+.cmd-list-item .verb .fl{color:var(--luma);font-weight:500}
+.cmd-list-item .desc{font-size:11.5px;color:var(--tx-dim)}

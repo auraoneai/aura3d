@@ -238,10 +238,10 @@ export function Console({ transcript, setTranscript, selShot, onRender, onSceneC
           <Icon name="sparkles" size={15} style={{ color: "#fff" }} />
         </div>
         <div className="meta">
-          <div className="nm">Director Console</div>
+          <div className="nm">Edit this scene</div>
           <div className="sub">
             <span className="d" />
-            aura-agent · scene-tool v8 · live
+            ask the AI in plain English, or type an exact command
           </div>
         </div>
       </div>
@@ -298,21 +298,41 @@ export function Console({ transcript, setTranscript, selShot, onRender, onSceneC
               {(["Prompt", "Command"] as ComposerMode[]).map((m) => (
                 <button key={m} className={mode === m ? "on" : ""} onClick={() => setMode(m)}>
                   <Icon name={m === "Prompt" ? "wand" : "bolt"} size={12} />
-                  {m}
+                  {m === "Prompt" ? "Ask AI" : "Command"}
                 </button>
               ))}
             </div>
-            <span className="hint">{mode === "Prompt" ? "plain English" : "on working doc"}</span>
+            <span className="hint">{mode === "Prompt" ? "plain English · your AI agent runs it" : "exact command · runs now"}</span>
           </div>
+          {mode === "Command" && (
+            <div className="cmd-list">
+              <div className="cmd-list-h">Top commands — click one to use it</div>
+              {VERBS.map((v) => (
+                <button
+                  key={v.verb}
+                  className="cmd-list-item"
+                  onClick={() => {
+                    setVal(v.verb + " ");
+                    inputRef.current?.focus();
+                  }}
+                >
+                  <span className="verb">
+                    {v.verb} <span className="fl">{v.tail}</span>
+                  </span>
+                  <span className="desc">{v.desc}</span>
+                </button>
+              ))}
+            </div>
+          )}
           <textarea
             ref={inputRef}
             className={"cinput" + (mode === "Command" ? " mono" : "")}
-            rows={2}
+            rows={3}
             value={val}
             placeholder={
               mode === "Prompt"
-                ? "Direct the scene — e.g. “make Luma’s reply angrier and cut to a close-up”"
-                : "set space · cast add robot --name Pip · shot retime …"
+                ? "Tell your AI agent what to change — e.g. “make the second line angrier and cut to a close-up” (it writes this down; your agent does it)"
+                : "Type an exact command — e.g. set space · cast add robot --name Pip · shot retime …"
             }
             onChange={(e) => {
               setVal(e.target.value);

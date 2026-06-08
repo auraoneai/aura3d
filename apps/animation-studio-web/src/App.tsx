@@ -12,7 +12,7 @@
  * control surface; the user's coding agent remains the director.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { fetchDocument, fetchHistory, fetchExistingRender, runRender } from "./state/backend";
+import { fetchDocument, fetchHistory, fetchExistingRender, runRender, runSceneCommand } from "./state/backend";
 import { documentExists, mapDocument, mapHistory, type RuntimeDocument } from "./state/mapDocument";
 import { Topbar } from "./components/Topbar";
 import { Outliner } from "./components/Outliner";
@@ -67,6 +67,12 @@ export function App() {
   const [renderPoster, setRenderPoster] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // "Generate new scene from a prompt" — runs the real `new --prompt` Scene-Tool command
+  // (the same thing the CLI `scene new` does) and re-hydrates the whole UI. No commands,
+  // no AI key: the deterministic Director builds the cast/set/shots from the sentence.
+  const [newScenePrompt, setNewScenePrompt] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [continuing, setContinuing] = useState(false);
   const consoleApi = useRef<ConsoleApi>({});
   const raf = useRef(0);
 
@@ -199,6 +205,56 @@ export function App() {
     run(`cast add ${name}`, true);
   };
 
+  // Generate a brand-new scene from a plain-English sentence. This is the headline action:
+  // it runs `new --prompt "…" --full` (the deterministic Director — parses cast, keyword-routes
+  // the set, lays out shots/dialogue), replacing the working document, then re-hydrates the UI.
+  const generateScene = async () => {
+    const p = newScenePrompt.trim();
+    if (!p || generating) return;
+    setGenerating(true);
+    setPlaying(false);
+    // Strip quotes/backslashes so the prompt can't break the command tokenizer.
+    const safe = p.replace(/["\\]/g, "");
+    const res = await runSceneCommand(`new --prompt "${safe}" --full`);
+    if (!res.ok) {
+      setGenerating(false);
+      showToast("Couldn't generate that scene — try rewording it", "tip");
+      return;
+    }
+    await hydrate();        // panels (cast/set/props/shots/dialogue) now reflect the NEW scene
+    setNewScenePrompt("");
+    setTime(0);
+    setGenerating(false);
+    // CRITICAL: the render on disk is the OLD scene. Drop it (so the stale video can't masquerade
+    // as the new one) and auto-render the new document, so the big preview ACTUALLY changes — not
+    // just the captions. Without this, the Stage keeps showing the previous render.
+    setRenderVideo(null);
+    setRenderPoster(null);
+    showToast("New scene built — rendering a preview so you can see it…", "ok");
+    doRender("sequence");
+  };
+
+  // "Continue scene" — add another shot to the CURRENT scene (same cast & set) so you can
+  // build a longer video without regenerating. Appends a medium shot; the user directs it next.
+  const continueScene = async () => {
+    if (continuing || generating || !docExists) return;
+    setContinuing(true);
+    setPlaying(false);
+    const existing = new Set(data.shots.map((s) => s.id));
+    let n = data.shots.length + 1;
+    let id = `shot-${n}`;
+    while (existing.has(id)) id = `shot-${++n}`;
+    const res = await runSceneCommand(`shot add --id ${id} --preset medium --duration 8`);
+    setContinuing(false);
+    if (!res.ok) {
+      showToast("Couldn't add a shot — try again", "tip");
+      return;
+    }
+    await hydrate();
+    setSel({ type: "shot", id });
+    showToast("Shot added — same cast & set. Direct it, or tell the AI what happens next.", "ok");
+  };
+
   // Render hits the REAL pipeline via POST /api/render (dev middleware -> render-live /
   // warm render server). Progress easing runs while the request is in flight (renders are
   // not streamed); on success the rendered webm/poster is loaded into the Stage and a
@@ -268,6 +324,43 @@ export function App() {
         // committed/processed (not idle); it's "saved" only when no render is running.
         saved={!rendering}
       />
+      <div className={"newscene-bar" + (generating ? " busy" : "")}>
+        <span className="newscene-spark">✨</span>
+        <span className="newscene-label">New scene</span>
+        {generating ? (
+          <span className="newscene-status">
+            <span className="newscene-spinner" />
+            Building your scene — cast, set, shots &amp; dialogue… (a few seconds)
+          </span>
+        ) : (
+          <input
+            className="newscene-input"
+            type="text"
+            placeholder="Describe a scene in plain English — e.g. “a mechanic and a customer arguing about a broken car”"
+            value={newScenePrompt}
+            onChange={(e) => setNewScenePrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") void generateScene();
+            }}
+          />
+        )}
+        <button
+          className={"newscene-btn" + (generating ? " busy" : "")}
+          disabled={generating || !newScenePrompt.trim()}
+          onClick={() => void generateScene()}
+        >
+          {generating ? "Generating…" : "Generate scene"}
+        </button>
+        <span className="newscene-div" />
+        <button
+          className="newscene-btn newscene-continue"
+          disabled={generating || continuing || !docExists}
+          onClick={() => void continueScene()}
+          title="Add a shot to this scene — keeps the same characters & set"
+        >
+          {continuing ? "Adding…" : "＋ Continue scene"}
+        </button>
+      </div>
       <div className="body">
         <div className="col split">
           <Outliner
