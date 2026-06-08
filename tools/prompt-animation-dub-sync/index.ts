@@ -24,7 +24,7 @@ const checks = [
     "originalShotId",
     "dubbedShotId"
   ]),
-  checkFile("template-dub-map", "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts", [
+  checkFile("template-dub-map", "packages/create-aura3d/templates/animation-channel/src/render-plan.ts", [
     "spanishDubMap",
     "sourceLanguage: \"en\"",
     "targetLanguage: \"es\"",
@@ -37,7 +37,7 @@ const checks = [
     "stableStoryboardIds",
     "stableCaptionIds"
   ]),
-  checkFile("prompt-template-dub-map", "packages/create-aura3d/templates/prompt-cartoon-channel/src/render-plan.ts", [
+  checkFile("prompt-template-dub-map", "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts", [
     "spanishDubMap",
     "sourceLanguage: \"en\"",
     "targetLanguage: \"es\"",

@@ -2,8 +2,8 @@
 
 Version: 1.0.9
 Status: Scoped release gate, current evidence passing
-Current published baseline: `@aura3d/engine@1.0.9`
-Related PRD: `docs/project/aura3d-109-game-engine-and-showcase-prd.md`
+Current published baseline: `@aura3d/engine@1.3.0` and `create-aura3d@1.3.0`
+Related: `docs/project/current-state.md`
 
 Aura3D 1.0.9 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.
 
@@ -15,7 +15,7 @@ Current decision: `release-ready-for-scoped-1.0.9`
 
 Reason: the scoped 1.0.9 gates now pass for the public runtime foundation, typed GLB actor evidence, CLI/catalog profile behavior, Aura Clash development-showcase proof, docs/claims, performance, npm `@latest`, and deployed route parity.
 
-This decision does not promote Aura3D to a mature commercial game engine, and it does not promote Aura Clash Arena to a flagship-quality fighting game. Remaining peer-grade engine/showcase work stays tracked in `docs/project/aura3d-109-game-engine-and-showcase-prd.md` and future release tracks.
+This decision does not promote Aura3D to a mature commercial game engine, and it does not promote Aura Clash Arena to a flagship-quality fighting game.
 
 Allowed current public wording:
 

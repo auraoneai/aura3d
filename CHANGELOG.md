@@ -1,23 +1,78 @@
 # Changelog
 
-Version: 1.1.0
+Version: 1.3.0
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The repo's prepared package version is `1.3.0` (all packages bumped from `1.2.0`); the 1.3.0 work below is implemented and gate-verified in the worktree, pending explicit publish authorization (publish runs via the `release.yml` CI workflow on a `v1.3.0` tag push).
+
+## 1.3.0 (prepared — version bumped, pending publish)
+
+The 1.3.0 release bundles three feature waves on top of 1.1.x: the **Animation Studio** (prompt → rendered short), the **Animation Engine** (locomotion graph + layered playback + templates), and the **Believable-Motion Track** (critically-damped transitions, foot IK, spring bones, event tracks, morph targets, 96-joint WebGPU skinning). Every item is verified in the worktree (typecheck clean; per-feature gates green).
+
+### 1.3.0 Highlights — Animation Studio
+
+The Animation Studio turns a natural-language prompt into a deterministic, rendered animated short. Documented in `docs/animation-studio/` (README, quickstart, guide, studio-app, quality-and-limitations).
+
+- **Prompt → EpisodeDocument → render.** `animation-scene new --prompt "…" --full` (template `animation-studio`) compiles a data-driven `EpisodeDocument` (cast / set / props / dialogue / blocking / camera); a generic `scene-player.ts` (zero scene constants) renders it. The director is the user's own coding agent driving a validated Scene-Tool CLI — **no bundled LLM, no API key**.
+- **Prompt-specific scenes.** `parseCast` binds prompt nouns to curated graded-A humanoid rigs (neutral cast, never the moon-garden fixture); `pickSetForPrompt` keyword-routes distinct interiors (garage/office/kitchen), meadow, space-station, moon-garden, else a neutral studio — **no moon-garden default**.
+- **Motion.** A shared standard clip library (idle/talk/gesture/point/nod/walk/run/react) retargeted per character, **velocity-gated locomotion** (legs cycle only while actually translating), and director acting rules (questions→react/nod, emphasis→gesture, movement→walk). Procedural motion is the stable default; extracted catalog mocap is opt-in per rig (`AURA_EXTRACTED`).
+- **Dialogue & captions** timed by `estimateSpeechDuration` (≈165 wpm + punctuation pauses) — not fixed windows. Renders are **silent by design**; the pipeline emits the timed dialogue/caption/viseme track for **AuraVoice** to voice.
+- **Rendering.** `AURA_QUALITY=preview|final`, `AURA_RENDER_STYLE=toon|pbr`, cel + HDRI/IBL + contact shadows; deterministic (same document → byte-identical frame).
+- **Web studio app** (`apps/animation-studio-web`): a three-pane NLE (Outliner / Stage / Inspector / Timeline / Director Console) whose dev backend runs real validated Scene-Tool commands and real renders against the same working document the CLI writes.
+- **10-gate quality suite** (`pnpm animation-studio:gate-suite`): no-fake-proof, rig-validity, body-motion (excl. mouth/caption/camera), motion-quality, lip-sync-timing, subtitle-timing, prompt-specificity, visual-quality, performance-budget, no-fake-proof-chain — fails on stiff/lip-only motion, lingering captions, moon fallback, mock UI, and hard-coded proof. Plus a determinism gate and a clean-room packaging check (verified from local tarballs).
+- **Higher fidelity** is a `cast add --file <glb>` away — bring a real rigged character and the pipeline grades, render-probes, and drives it.
+
+### 1.3.0 Highlights — Believable-Motion Track
+
+- **T1.1 Inertialization (`@aura3d/animation`):** new `Inertialization.ts` — a pure, deterministic critically-damped decay of the pose offset captured at a transition (`createInertializer`/`recordTransition`/`sampleInertialized`, plus scalar/vec3/quaternion primitives and `inertializedTransitionWeight`). `fighterInertializedWeights` is the default fighter transition (linear `fighterCrossfadeWeights` retained as fallback); `AnimationMixer.inertialCrossFade`, `AnimationStateMachine.stateBlend`, and `LocomotionKit` `stateTransition` route transitions through it. Aura Clash move-swaps use it (`__AURA_CLASH_INERTIALIZATION_PROOF__`) with the deterministic replay checksum unchanged. Gate: `animation-engine:inertialization`.
+- **T1.2 Foot IK + foot-lock (`@aura3d/animation`):** new `FootIk.ts` (`createFootIkRig` on `solveTwoBoneIk` + an injected `GroundRaycaster`; foot-lock holds a planted foot in world space and releases on lift; `kneePoleHint` helper). `FootIkSample` unified with the fixture (fixture `claimBoundary` now points at the real runtime); `@aura3d/physics` adds a `groundHeightRaycaster` adapter; `LocomotionKit`/`LocomotionController` expose an optional `footIk` hook. Browser proof: no foot sliding on uneven ground. Gate: `animation-engine:foot-ik`.
+- **T1.3 Spring bones (`@aura3d/animation`):** new `SpringBones.ts` (`createSpringChain`, semi-implicit Euler + distance constraint + sphere/capsule push-out, deterministic with fixed `dt`); `Bone.springChain` tagging + `Skeleton.springChainIndices`/`writeSpringChainBack`; the fixture `springSample()` oracle is retained. Browser proof: a chain reacts to character motion and settles. Gate: `animation-engine:spring-bones`.
+- **T2.2 Animation-event tracks (`@aura3d/animation` + `@aura3d/editor-runtime`):** `AnimationEventTrackContainer` (named lanes of typed markers + active-frame windows) on the existing dispatcher/sampler; `EventTrackEditor` authoring controller (add/move/delete + serialize to `animation-event-tracks/v1`). Aura Clash move data carries hitbox/footstep/vfx tracks and the arena derives the hitbox active window from authored clip events (`__AURA_CLASH_EVENT_TRACKS_PROOF__`) — replay checksum unchanged. Browser proof in the studio editor. Gate: `animation-engine:event-tracks`.
+- **T2.3 Morph-target hardening (`@aura3d/rendering` + `@aura3d/assets` + `@aura3d/engine`):** new `MorphTargetPlan.ts` (`createMorphTargetPlan`/`planMorphTargets`: uniform fast path ≤4/64, texture-backed plan for larger facial rigs sized to device limits, CPU fallback beyond) — the 4/64 GPU cap is lifted (over-cap now falls back to the CPU morph instead of throwing) and the morph shader gains a texture-sampling branch. The CPU morph morphs normals/tangents (lighting follows the deformation); the glTF loader exposes all morph targets + `mesh.extras.targetNames`; `node.morphInfluence(name, weight)` API; viseme-driven blendshape lip-sync (`applyVisemeMorphInfluences`). Browser proof: a >4-blendshape face with lighting following the morph + viseme lip-sync. Gate: `animation-engine:morph-targets`.
+- **T2.1 WebGPU 96-joint skinning parity (`@aura3d/rendering`):** the WebGPU path now carries a 96-joint palette (`MAX_WEBGPU_SKINNING_JOINTS = 96`, matching WebGL2 `u_jointMatrices[96]`) — the WGSL `DrawUniforms` carries `joints: array<mat4x4<f32>, 96>`, the draw uniform packing uploads the full palette, and the emulation rasterizer now skins the full palette (previously capped at 2 and not skinned in the rasterizer). Parity proof: a vertex bound to joint #80/#95 drives the render. Gate: `rendering:webgpu-skinning-parity`. Real-device WGSL execution stays evidence-bound.
+- **Aggregate gate:** `pnpm animation-engine:believable-motion` runs all six per-feature gates.
+
+Honest scope: Tier 3 stays a documented non-goal — no motion matching, no production ragdoll, no general full-body IK (FABRIK/CCD), no Mecanim/Control-Rig editor parity. `known-limits.md` is updated only for the items genuinely proven (morph cap + WebGPU 96-joint skinning).
+
+## 1.2.0 (prepared — pending publish)
+
+Implements the Animation Engine track. Every item below is verified in the worktree: `pnpm animation-engine:readiness` + `pnpm animation-studio:readiness` are green, typecheck is clean, ~80 new tests pass, and browser proofs cover the editor, skinned preview, template routes, and the Aura Clash motion. This section is staged for the 1.2.0 publish; the external published-package scaffold smoke only runs after publish.
+
+### 1.2.0 Highlights — Animation Engine
+
+- **`@aura3d/animation` additions:** `createLocomotionAnimationStateGraph` (idle/walk/run preset), `createLocomotionKit` (speed → blended idle/walk/run clip weights via `BlendTree1D` + the locomotion state graph), a generic `validateAnimationClipMap`, a `createAnimationClipRegistry` export, a path-follow `LocomotionController` usage example, and a shared fighter-animation adapter (`resolveFighterClip` / `fighterCrossfadeWeights`).
+- **Per-clip bone-mask blending:** `GLTFSceneAnimationClipSample.mask` (include/exclude) in `applyClips`, enabling layered playback such as an upper-body attack over a lower-body locomotion base.
+- **CLI:** `aura3d assets validate-animation` validates a character's required action→clip map against its available clips.
+- **Templates:** new `animation-studio` (typed character → `anim:plan/preview/profile/package/verify` pipeline, locomotion preview route, kit-driven skinned-character preview render) and `character-controller` (input → kinematic speed → locomotion kit) starters. Both routes boot in-browser; the published-package scaffold smoke runs after the 1.2.0 publish.
+- **Visual editor:** a browser authoring UI wired to the headless `editor-runtime` controllers (DOM timeline scrub, deterministic curve editing, state-graph view, serialization round-trip).
+- **Gates:** `pnpm animation-engine:readiness` (plus `animation-engine:dead-code` and `animation-engine:docs-claims`) and `pnpm animation-studio:readiness`.
+
+### 1.2.0 — Aura Clash motion upgrade
+
+- The deployed arena now **crossfades** between locomotion/guard states (no hard clip snaps), **varies hit reactions** by attack weight (light/heavy) **and** grounded/airborne state, and **layers attacks on an upper-body bone mask over a walking lower body** while moving — all browser-verified, with deterministic combat replay still stable. The arena proof version records the motion upgrade.
+
+### 1.2.0 — Removed / housekeeping
+
+- Removed the dead `apps/aura-clash-showcase/src/fighters/{FighterController,FighterAI}.ts` and the legacy `packages/animation/src/Retargeting.ts` stub (its public export dropped; superseded by `HumanoidRetargeting`). A dead-code gate enforces no production import resolves to them.
+- Documented animation non-goals (motion matching, ragdoll, full-body IK, inertialization, Unity Mecanim / Unreal Control Rig parity, cloth/hair) in `docs/project/known-limits.md`, enforced by `animation-engine-docs-claims`.
+
+### 1.2.0 — Honest scope
+
+- Aura3D 1.2 is an animation-engine + tooling release. It is not Unity/Unreal/Babylon parity, not motion matching, not full-body IK or ragdoll, and not finished authored game art. The motion-matching and secondary-animation paths remain explicitly-labeled deterministic fixtures. Aura Clash gained a real motion upgrade (transitions, reactions, layering) but no new fighter art.
 
 ## 1.1.0
 
 ### 1.1.0 Highlights
 
-- Shipped the Aura3D 1.1 **Cartoon Studio** vertical slice: typed cartoon assets, episode plan/show-bible, shot timeline, captions (VTT/SRT), amplitude-based visemes, render queue, WebM episode export, episode package folder, motion-quality and visual-quality gates, and a human review package. Implements `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
-- Added cartoon production stretch adapters as honest, capability-probed contracts: optional external phoneme analyzer, cloud render adapter, YouTube upload adapter, webcam/mocap performance-capture session, and a manifest-backed asset-library browser. Missing credentials/providers produce diagnostics rather than fake success.
+- Shipped the Aura3D 1.1 **Animation Studio** vertical slice: typed animation assets, episode plan/show-bible, shot timeline, captions (VTT/SRT), amplitude-based visemes, render queue, WebM episode export, episode package folder, motion-quality and visual-quality gates, and a human review package.
+- Added animation production stretch adapters as honest, capability-probed contracts: optional external phoneme analyzer, cloud render adapter, YouTube upload adapter, webcam/mocap performance-capture session, and a manifest-backed asset-library browser. Missing credentials/providers produce diagnostics rather than fake success.
 - Added editor-runtime review tooling: episode review panel, visual review dashboard, multi-user review/quorum workflow, camera path editor, and a source-level nonlinear animation editor.
 - Bumped all 28 published workspace packages to `1.1.0`.
 
 ### 1.1.0 Release Notes — scope and honest limits
 
-- **Cartoon Studio is a structured vertical slice, not Pixar.** The Moon Garden sample renders a real WebM and package, but the bundled character assets are **placeholder-grade**: `miko` and `luma` share a base GLB, `luma` uses a generic `humanoid-fixture.glb`, and the motion-gate frames are a 2D stylized representation. These are starter/CI assets, not finished authored characters.
+- **Animation Studio is a structured vertical slice, not Pixar.** The Moon Garden sample renders a real WebM and package, but the bundled character assets are **placeholder-grade**: `miko` and `luma` share a base GLB, `luma` uses a generic `humanoid-fixture.glb`, and the motion-gate frames are a 2D stylized representation. These are starter/CI assets, not finished authored characters.
 - **Aura Clash was NOT newly authored in 1.1.** The showcase was rebuilt against the 1.1 animation engine and re-deployed, but it has **no new fighter assets and no gameplay redesign** this cycle; the gameplay/feel pass remains outstanding. It is still a development showcase and browser-runtime proof target, not a flagship-quality fighting game.
-- Aura3D 1.1 is a scoped runtime + cartoon-production release. It is not a Unity/Unreal/Babylon parity claim, not a magic image-to-video engine, and not a full animation studio.
+- Aura3D 1.1 is a scoped runtime + animation-production release. It is not a Unity/Unreal/Babylon parity claim, not a magic image-to-video engine, and not a full animation studio.
 
 ## 1.0.9
 
@@ -52,7 +107,7 @@ All notable changes for Aura3D are tracked here. Public release claims must stay
 - Added editor-runtime timeline, inspector, project serialization, and visual graph bridge evidence for the first 1.0.5 authoring-tools release lane.
 - Added visual scripting runtime bridge evidence for deterministic frame, animation-event, combat, camera, and snapshot graph hooks.
 - Added strict Aura Clash asset provenance evidence with typed asset names, source paths, CC0 license evidence, sha256 checksums, and no-placeholder validation.
-- Added fighting-game, cartoon-channel, and prompt-cartoon-channel starter smoke evidence with browser-generated first-frame screenshots.
+- Added fighting-game, animation-channel, and prompt-animation-channel starter smoke evidence with browser-generated first-frame screenshots.
 
 ### 1.0.5 Release Candidate Notes
 

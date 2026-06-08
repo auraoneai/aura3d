@@ -7,6 +7,8 @@ export type BoneDescriptor = {
   readonly rotation?: Quat;
   readonly scale?: Vec3;
   readonly inverseBindMatrix?: Mat4;
+  /** Tag this bone as the start (or a member) of a spring-bone chain (secondary dynamics). */
+  readonly springChain?: boolean;
 };
 
 export class Bone {
@@ -16,6 +18,8 @@ export class Bone {
   rotation: Quat;
   scale: Vec3;
   inverseBindMatrix: Mat4;
+  /** True when this bone participates in a spring-bone chain solved by `createSpringChain`. */
+  springChain: boolean;
 
   constructor(descriptor: BoneDescriptor) {
     if (descriptor.name.trim().length === 0) {
@@ -27,6 +31,7 @@ export class Bone {
     this.rotation = descriptor.rotation ?? [0, 0, 0, 1];
     this.scale = descriptor.scale ?? [1, 1, 1];
     this.inverseBindMatrix = descriptor.inverseBindMatrix ?? identityMat4();
+    this.springChain = descriptor.springChain ?? false;
   }
 
   localMatrix(): Mat4 {

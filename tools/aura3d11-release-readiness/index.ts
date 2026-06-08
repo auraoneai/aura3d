@@ -1,25 +1,25 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import {
-  createCartoonStudioDocsClaimsReport,
-  writeCartoonStudioDocsClaimsReport
-} from "../cartoon-studio-docs-claims/index.js";
+  createAnimationStudioDocsClaimsReport,
+  writeAnimationStudioDocsClaimsReport
+} from "../animation-studio-docs-claims/index.js";
 import {
-  createCartoonStudioMotionQualityReport,
-  writeCartoonStudioMotionQualityReport
-} from "../cartoon-studio-motion-quality-gate/index.js";
+  createAnimationStudioMotionQualityReport,
+  writeAnimationStudioMotionQualityReport
+} from "../animation-studio-motion-quality-gate/index.js";
 import {
-  createCartoonStudioPackageProofReport,
-  writeCartoonStudioPackageProofReport
-} from "../cartoon-studio-package-proof/index.js";
+  createAnimationStudioPackageProofReport,
+  writeAnimationStudioPackageProofReport
+} from "../animation-studio-package-proof/index.js";
 import {
-  createCartoonStudioTemplateSmokeReport,
-  writeCartoonStudioTemplateSmokeReport
-} from "../cartoon-studio-template-smoke/index.js";
+  createAnimationStudioTemplateSmokeReport,
+  writeAnimationStudioTemplateSmokeReport
+} from "../animation-studio-template-smoke/index.js";
 import {
-  createCartoonStudioVisualQualityReport,
-  writeCartoonStudioVisualQualityReport
-} from "../cartoon-studio-visual-quality-gate/index.js";
+  createAnimationStudioVisualQualityReport,
+  writeAnimationStudioVisualQualityReport
+} from "../animation-studio-visual-quality-gate/index.js";
 
 export interface Aura3D11GateResult {
   readonly id: string;
@@ -50,30 +50,30 @@ const defaultOut = "tests/reports/aura3d11/readiness.json";
 
 export function createAura3D11ReleaseReadinessReport(root = process.cwd(), options: Aura3D11ReleaseReadinessOptions = {}): Aura3D11ReleaseReadinessReport {
   const packageDir = options.packageDir ?? "dist/episodes/moon-garden-001";
-  const packageReportPath = "tests/reports/aura3d11/cartoon-package.json";
-  const visualReportPath = "tests/reports/aura3d11/cartoon-visual-quality.json";
-  const motionReportPath = "tests/reports/aura3d11/cartoon-motion-quality.json";
-  const docsReportPath = "tests/reports/aura3d11/cartoon-docs-claims.json";
-  const templateReportPath = "tests/reports/aura3d11/cartoon-template-smoke.json";
+  const packageReportPath = "tests/reports/aura3d11/animation-package.json";
+  const visualReportPath = "tests/reports/aura3d11/animation-visual-quality.json";
+  const motionReportPath = "tests/reports/aura3d11/animation-motion-quality.json";
+  const docsReportPath = "tests/reports/aura3d11/animation-docs-claims.json";
+  const templateReportPath = "tests/reports/aura3d11/animation-template-smoke.json";
 
-  const packageReport = createCartoonStudioPackageProofReport(root, { packageDir, generatedAt: options.generatedAt });
-  const visualReport = createCartoonStudioVisualQualityReport(root, { packageDir, generatedAt: options.generatedAt });
-  const motionReport = createCartoonStudioMotionQualityReport(root, { packageDir, generatedAt: options.generatedAt });
-  const docsReport = createCartoonStudioDocsClaimsReport(root, { generatedAt: options.generatedAt });
-  const templateReport = createCartoonStudioTemplateSmokeReport(root, {
+  const packageReport = createAnimationStudioPackageProofReport(root, { packageDir, generatedAt: options.generatedAt });
+  const visualReport = createAnimationStudioVisualQualityReport(root, { packageDir, generatedAt: options.generatedAt });
+  const motionReport = createAnimationStudioMotionQualityReport(root, { packageDir, generatedAt: options.generatedAt });
+  const docsReport = createAnimationStudioDocsClaimsReport(root, { generatedAt: options.generatedAt });
+  const templateReport = createAnimationStudioTemplateSmokeReport(root, {
     generatedAt: options.generatedAt,
     executeExternal: options.executeTemplateSmoke
   });
 
-  writeCartoonStudioPackageProofReport(root, packageReport, packageReportPath);
-  writeCartoonStudioVisualQualityReport(root, visualReport, visualReportPath);
-  writeCartoonStudioMotionQualityReport(root, motionReport, motionReportPath);
-  writeCartoonStudioDocsClaimsReport(root, docsReport, docsReportPath);
-  writeCartoonStudioTemplateSmokeReport(root, templateReport, templateReportPath);
+  writeAnimationStudioPackageProofReport(root, packageReport, packageReportPath);
+  writeAnimationStudioVisualQualityReport(root, visualReport, visualReportPath);
+  writeAnimationStudioMotionQualityReport(root, motionReport, motionReportPath);
+  writeAnimationStudioDocsClaimsReport(root, docsReport, docsReportPath);
+  writeAnimationStudioTemplateSmokeReport(root, templateReport, templateReportPath);
 
   const gates: Aura3D11GateResult[] = [
     {
-      id: "cartoon-package",
+      id: "animation-package",
       ok: packageReport.ok,
       reportPath: packageReportPath,
       summary: packageReport.ok ? "Episode package contains required publish artifacts." : "Episode package proof is incomplete.",
@@ -97,14 +97,14 @@ export function createAura3D11ReleaseReadinessReport(root = process.cwd(), optio
       id: "docs-claims",
       ok: docsReport.ok,
       reportPath: docsReportPath,
-      summary: docsReport.ok ? "Docs and marketing avoid 1.1 cartoon overclaims." : "Docs or marketing contain cartoon overclaims.",
+      summary: docsReport.ok ? "Docs and marketing avoid 1.1 animation overclaims." : "Docs or marketing contain animation overclaims.",
       blockers: docsReport.blockers
     },
     {
       id: "template-smoke",
       ok: templateReport.ok,
       reportPath: templateReportPath,
-      summary: templateReport.ok ? "Cartoon Studio template scripts/source gates pass." : "Cartoon Studio template smoke/source gates are incomplete.",
+      summary: templateReport.ok ? "Animation Studio template scripts/source gates pass." : "Animation Studio template smoke/source gates are incomplete.",
       blockers: templateReport.blockers
     }
   ];

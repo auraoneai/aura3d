@@ -13,7 +13,6 @@ Use this page with:
 - `docs/api/game-runtime.md`
 - `docs/api/assets.md`
 - `docs/api/prompt-animation.md`
-- `docs/project/aura3d-110-release-gates.md`
 
 ## Current Boundary
 
@@ -43,7 +42,7 @@ end of this page.
 
 ## Safe Imports
 
-Gameplay and cartoon routes should import from the public root package and use
+Gameplay and animation routes should import from the public root package and use
 typed assets from `./aura-assets`.
 
 ```ts
@@ -300,7 +299,7 @@ const primitiveCues = createPrimitiveMouthVisemeCues({
 });
 
 const visemes = createAuraVoiceVisemeTrack({
-  episodeId: "cartoon-host-demo",
+  episodeId: "animation-host-demo",
   language: "en",
   frameRate: 30,
   cues: primitiveCues.map((cue) =>

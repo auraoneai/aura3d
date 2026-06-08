@@ -452,7 +452,7 @@ function writeSketchfabMarkdown(download: SketchfabDownloadInfo | undefined, cur
     ""
   ];
   mkdirSync("docs/project", { recursive: true });
-  writeFileSync("docs/project/sketchfab-asset-corpus-results.md", `${lines.join("\n")}\n`);
+  writeFileSync("tests/reports/sketchfab-asset-corpus-results.md", `${lines.join("\n")}\n`);
 }
 
 function repoRelative(path: string): string {

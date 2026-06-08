@@ -228,6 +228,9 @@ importers:
 
   packages/editor-runtime:
     dependencies:
+      '@aura3d/animation':
+        specifier: workspace:*
+        version: link:../animation
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math

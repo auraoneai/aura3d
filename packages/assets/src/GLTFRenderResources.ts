@@ -80,6 +80,13 @@ export interface GLTFRenderResourceOptions {
   readonly sceneIndex?: GLTFSceneCreateOptions["sceneIndex"];
   readonly sceneName?: GLTFSceneCreateOptions["sceneName"];
   readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
+  /**
+   * When `true`, a texture that fails to fetch/decode aborts the whole asset load
+   * (legacy behavior). When omitted/`false` (default), the loader logs a warning
+   * and substitutes a neutral 1x1 texture so the material falls back to its
+   * `baseColorFactor` and the rest of the asset still loads.
+   */
+  readonly failOnMissingTexture?: boolean;
 }
 
 export interface GLTFMaterialRenderStateOverride {
@@ -392,7 +399,16 @@ export async function createGLTFRenderResources(
       return texture;
     } catch (error) {
       textureByImage.delete(cacheKey);
-      throw error;
+      if (options.failOnMissingTexture) {
+        throw error;
+      }
+      const reason = error instanceof Error ? error.message : String(error);
+      warnMissingGLTFTexture(textureAsset.name, image.uri, reason);
+      const fallback = createFallbackTexture(textureAsset.name, colorSpace);
+      const fallbackPromise = Promise.resolve(fallback);
+      textureByImage.set(cacheKey, fallbackPromise);
+      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, fallback);
+      return fallback;
     }
   };
 
@@ -1534,7 +1550,15 @@ function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly inst
   return new PBRMaterial(defaults);
 }
 
-function renderStateForGLTFMaterial(
+/**
+ * baseColorFactor alpha at or above this value is treated as fully opaque when
+ * deciding whether a `BLEND` material is a spurious-blend (ghost) case. 8-bit
+ * authoring rounds 255/255 to 1.0 but tools occasionally emit 0.996 (254/255),
+ * so we allow a small epsilon while still catching genuine fades.
+ */
+const BLEND_OPAQUE_ALPHA_THRESHOLD = 0.996;
+
+export function renderStateForGLTFMaterial(
   material: GLTFMaterialAsset,
   overrides: readonly GLTFMaterialRenderStateOverride[] = []
 ): Partial<RenderState> {
@@ -1550,9 +1574,40 @@ function renderStateForGLTFMaterial(
 }
 
 function requiresTransparentRenderState(material: GLTFMaterialAsset): boolean {
-  if (material.alphaMode === "BLEND") return true;
+  if (material.alphaMode === "BLEND") return !isEffectivelyOpaqueBlendMaterial(material);
   if (material.alphaMode !== "OPAQUE") return false;
   if (usesUnbackedScalarTransmission(material)) return false;
+  return materialHasTransmissionOrVolume(material);
+}
+
+/**
+ * Many catalog GLBs (notably Sketchfab exports) spuriously tag fully opaque
+ * materials with `alphaMode: "BLEND"`. The standard glTF blend equation over a
+ * fully opaque surface (baseColorFactor alpha == 1, no texel alpha in use) is a
+ * no-op, but enabling blend disables depth writes — so those characters render
+ * as translucent "ghosts" with broken depth sorting.
+ *
+ * When a BLEND material is provably opaque we treat it as OPAQUE (blend off,
+ * depthWrite on). The check is deliberately conservative: anything that could
+ * carry real transparency — alpha factor < 1, transmission/volume, or a
+ * meaningful alphaCutoff — keeps blending.
+ *
+ * Known edge case: a baseColorTexture's own alpha channel cannot be inspected
+ * here (images are decoded asynchronously and channel-usage is not tracked on
+ * the material), so a BLEND material that relies purely on per-texel texture
+ * alpha while keeping baseColorFactor alpha == 1 would be flattened to opaque.
+ * That pattern is rare in the wild (such assets normally use MASK or set the
+ * factor alpha < 1), and the override path (renderStateOverrides /
+ * GLTFMaterialRenderStateOverride) remains available to force blend back on.
+ */
+function isEffectivelyOpaqueBlendMaterial(material: GLTFMaterialAsset): boolean {
+  if (material.alphaMode !== "BLEND") return false;
+  if (material.baseColorFactor[3] < BLEND_OPAQUE_ALPHA_THRESHOLD) return false;
+  if (materialHasTransmissionOrVolume(material)) return false;
+  return true;
+}
+
+function materialHasTransmissionOrVolume(material: GLTFMaterialAsset): boolean {
   return (material.transmission?.factor ?? 0) > 0.001
     || (material.diffuseTransmission?.factor ?? 0) > 0.001
     || (material.volume?.thicknessFactor ?? 0) > 0.001
@@ -2096,10 +2151,54 @@ function isKTX2BasisImage(image: GLTFImageAsset): boolean {
   return image.mimeType === "image/ktx2" || /\.ktx2(?:[?#]|$)/i.test(image.uri ?? "");
 }
 
+function createFallbackTexture(label: string, colorSpace: GLTFTextureColorSpace): Texture {
+  return new Texture({
+    width: 1,
+    height: 1,
+    colorSpace,
+    label: `${label} (missing-texture-fallback)`,
+    data: new Uint8Array([255, 255, 255, 255])
+  });
+}
+
+function warnMissingGLTFTexture(textureName: string, imageUri: string | undefined, reason: string): void {
+  if (typeof console === "undefined" || typeof console.warn !== "function") return;
+  const source = imageUri ? ` (${imageUri})` : "";
+  console.warn(
+    `glTF texture "${textureName}"${source} could not be loaded; falling back to baseColorFactor. Reason: ${reason}`
+  );
+}
+
 function resolveImageUrl(assetUrl: string, imageUri: string): string {
   if (/^(?:data:|blob:|https?:|file:)/i.test(imageUri)) return imageUri;
   if (assetUrl.startsWith("data:")) {
     throw new Error(`Relative glTF image uri ${imageUri} cannot be resolved from a data URL asset`);
   }
-  return new URL(imageUri, assetUrl).toString();
+  return new URL(imageUri, resolveAbsoluteAssetBase(assetUrl)).toString();
+}
+
+/**
+ * Derive an absolute base URL for resolving relative texture URIs.
+ *
+ * Catalog assets are often loaded from root-relative paths (e.g.
+ * `/aura-assets/x.glb`). `new URL(uri, base)` requires `base` to be absolute, so
+ * a bare relative `assetUrl` throws `Failed to construct 'URL': Invalid base URL`.
+ * If the asset URL is already absolute we use it directly; otherwise we resolve it
+ * against the document/origin base when running in a browser, falling back to a
+ * synthetic `file:///` origin so resolution never throws in non-browser contexts.
+ */
+function resolveAbsoluteAssetBase(assetUrl: string): string {
+  if (/^[a-z][a-z0-9+.-]*:/i.test(assetUrl)) return assetUrl;
+  const documentBase =
+    (typeof document !== "undefined" && document.baseURI) ||
+    (typeof location !== "undefined" && location.href) ||
+    undefined;
+  if (documentBase) {
+    try {
+      return new URL(assetUrl, documentBase).toString();
+    } catch {
+      // fall through to synthetic base below
+    }
+  }
+  return new URL(assetUrl, "file:///").toString();
 }

@@ -1,5 +1,6 @@
 import { AnimationClip } from "./AnimationClip.js";
 import { AnimationTrack } from "./AnimationTrack.js";
+import type { FootIkRig } from "./FootIk.js";
 import { applyRootMotion, extractRootMotion } from "./RootMotion.js";
 
 export interface LocomotionControllerState {
@@ -28,6 +29,8 @@ export interface LocomotionControllerOptions {
   readonly pathRadius?: number;
   readonly strideAmplitude?: number;
   readonly rootMotionScale?: number;
+  /** Optional foot-IK rig so locomotion can ground feet on uneven terrain (no foot sliding). */
+  readonly footIkRig?: FootIkRig;
 }
 
 export interface ProceduralWalkClipOptions {
@@ -43,6 +46,8 @@ export class LocomotionController {
   readonly strideAmplitude: number;
   readonly rootMotionScale: number;
   readonly state: LocomotionControllerState;
+  /** Optional foot-IK rig hook; call `footIk.solveFootPlacement(...)` to ground feet. */
+  readonly footIk: FootIkRig | undefined;
 
   constructor(options: LocomotionControllerOptions) {
     if (!Number.isFinite(options.clip.duration) || options.clip.duration <= 0) {
@@ -52,6 +57,7 @@ export class LocomotionController {
     this.rootMotionTrack = options.rootMotionTrack ?? "root.position";
     this.strideAmplitude = options.strideAmplitude ?? 1;
     this.rootMotionScale = options.rootMotionScale ?? 1;
+    this.footIk = options.footIkRig;
     this.state = {
       speed: options.speed ?? 1,
       inPlace: options.inPlace ?? false,

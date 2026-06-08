@@ -2,9 +2,19 @@
 
 Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.1.0 carries it as the active typed asset baseline.
 
+## The federated asset index
+
+Aura3D resolves real models from a **hosted, federated index of 800,000+ GLB/glTF assets** (a ~850K
+catalog aggregating the free GLB/glTF universe, with license + provenance preserved). The CLI's
+`assets search` / `assets resolve` run **live federated search** against this index. The primary
+adapter is **`createAuraIndexAdapter`** (from `@aura3d/asset-index` — "live federated search over the
+free GLB/glTF universe"), wired into the CLI's pull bridge alongside fallback source adapters. So when
+a prompt needs a model, an agent **generates it from the federated index** instead of modelling
+primitives or inventing a URL.
+
 ## Catalog-first rule
 
-If a prompt names a real object, do not approximate it with primitives and do not invent a GLB URL. Search the Aura3D asset catalog first:
+If a prompt names a real object, do not approximate it with primitives and do not invent a GLB URL. Search the Aura3D federated index first:
 
 ```bash
 npx @aura3d/cli@latest assets search "battle-worn knight helmet"

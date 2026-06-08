@@ -27,9 +27,9 @@ Scaffold:
 ```bash
 npx create-aura3d@latest my-scene --template product-viewer
 npx create-aura3d@latest my-fighter --template fighting-game
-npx create-aura3d@latest my-studio --template cartoon-studio
-npx create-aura3d@latest my-cartoon --template cartoon-channel
-npx create-aura3d@latest my-episode --template prompt-cartoon-channel
+npx create-aura3d@latest my-studio --template animation-studio
+npx create-aura3d@latest my-animation --template animation-channel
+npx create-aura3d@latest my-episode --template prompt-animation-channel
 cd my-scene
 npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
 npm run dev
@@ -88,7 +88,7 @@ import {
   createAuraVoiceBridgePackage,
   createAuraVoiceVisemeTrack,
   createCaptionTimingProof,
-  createCartoonRenderOutputPackageMetadata,
+  createAnimationRenderOutputPackageMetadata,
   createGlbBlendshapeVisemeCue,
   createPrimitiveMouthVisemeCues,
   createPromptAnimationDeterministicScreenshotFixtureMetadata,
@@ -225,7 +225,7 @@ Aura3D 1.1.0 animation/editor/visual scripting rules:
 - Use `AnimationController` / `createAnimationController(...)` for named clips, restart, crossfade, layers, events, diagnostics, and deterministic pose snapshots.
 - Use `animation.onEvent(...)` for clip-local gameplay events such as `hitbox.open`, `hitbox.close`, `sfx`, `vfx`, `camera.impulse`, `caption`, and `viseme`.
 - Use runtime node `setAnimationPose(...)`, `setMorphTarget(...)`, and `setMorphTargets(...)` for pose/morph state. Do not reach into renderer internals from app code.
-- For AuraVoice/cartoon sync, sample bridge or viseme timing and apply typed morph weights to the runtime node:
+- For AuraVoice/animation sync, sample bridge or viseme timing and apply typed morph weights to the runtime node:
 
 ```ts
 app.onFrame(({ time }) => {
@@ -238,10 +238,16 @@ app.onFrame(({ time }) => {
 - Visual graphs can validate and emit deterministic side effects. A graph is not proven to drive a browser scene until those side effects are applied to a mounted Aura app and captured in browser evidence.
 - Source metadata, deterministic snapshots, and nonblank screenshots are not enough for 1.1.0 release claims. Animation/editor/visual scripting tasks need typed asset provenance, unit evidence, browser evidence, screenshots with hashes, package smoke reports, and explicit release reports under the relevant `tests/reports/*` directory.
 
-Aura3D 1.1 Cartoon Studio rules:
-- Use `create-aura3d --template cartoon-studio` for the planned 1.1 cartoon episode workflow. `cartoon-channel` and `prompt-cartoon-channel` remain source-level examples unless their render/package gates pass.
-- Resolve typed cartoon assets before writing episode code. Use `assets resolve ... --profile cartoon-character` for characters and `--profile cartoon-set` for sets when those profiles are available; otherwise add local licensed GLB/glTF assets with `assets add` and keep provenance in `aura.assets.json`.
-- A publish-ready cartoon episode needs real route playback, independently moving characters, visible mouth motion during dialogue, exported captions, render/package evidence, and review artifacts.
+Aura3D Animation Studio rules (prompt → document → render pipeline):
+- Use `create-aura3d --template animation-studio` for the agent-driven episode workflow. YOU (the coding agent / harness) are the director — there is NO separate LLM and NO API key. You drive the validated Scene-Tool CLI (`animation-scene`, a.k.a. `aura3d animation scene`); each command edits one `EpisodeDocument` (`dist/scene/working.document.json`) and is rejected if it would break the scene. `animation-channel` and `prompt-animation-channel` remain source-level examples unless their render/package gates pass.
+- Generate a complete scene from a prompt: `animation-scene new --prompt "..." --full` (cast + dialogue + camera + per-beat actions). Omit `--full` for an empty-cast skeleton you populate. There is NO default scene — `animation-scene new` with no prompt is an error.
+- Cast: prompt nouns bind to the curated render-ready A-grade humanoid cast (neutral cast-a/cast-b — NEVER the moon-garden miko/luma). Override a slot with `animation-scene cast add --id <id> --query "..."` (catalog) or `--file <glb>` (local rig).
+- Set: `pickSetForPrompt` routes by keyword — garage/office/kitchen → distinct interiors, forest/meadow → meadow, space/station → space-station, moon/garden/night → moon-garden, everything else → a neutral studio. Moon Garden is NEVER the default.
+- Motion: a shared standard clip library (idle/talk/gesture/point/nod/walk/run/react) is retargeted per character. Extracted catalog mocap drives the UPPER body; legs stay procedural for stability; locomotion is velocity-gated (a walk/run cycle plays only while the character is actually translating).
+- Dialogue: write the timed track yourself with `animation-scene dialogue --line <id> --speaker <id> --text "..." --start <s>` (`--end` optional — computed from the line's speech duration). This single track IS the subtitles AND the AuraVoice lip-sync contract.
+- Render: `animation-scene render` (or `npm run episode:render-3d`) with `AURA_QUALITY=preview|final` and `AURA_RENDER_STYLE=toon|pbr`. The render is SILENT by design — Aura3D NEVER runs TTS; it emits the timed dialogue/caption/viseme track that AuraVoice consumes to generate the voice and mux audio afterward.
+- Resolve typed animation assets when pre-staging a manifest: `assets resolve ... --profile animation-character` for characters and `--profile animation-set` for sets when those profiles are available; otherwise add local licensed GLB/glTF assets with `assets add` and keep provenance in `aura.assets.json`.
+- A publish-ready animation episode needs real route playback, independently moving characters, visible mouth motion during dialogue, exported captions, render/package evidence, and review artifacts.
 - Do not claim a generated still image with CSS pan/zoom/shake/wobble, fake parallax, or subtitles is real Aura3D animation. Routes or reports marked `notTrue3D: true`, `sourceOnly: true`, or `image-puppet` are negative or experimental evidence only.
 - Do not claim Pixar quality, magic image-to-video, full animation-studio replacement, Unity/Unreal parity, or automated YouTube production unless the 1.1 PRD gates and human review evidence prove the narrower claim.
 - Use generated images as concept art, thumbnails, textures, background plates, or style references. The episode itself must be driven by typed assets, rigs or explicitly segmented puppet parts, timelines, visemes, captions, and render evidence.
@@ -312,19 +318,19 @@ Typed asset rule:
 - Do not use `model("model")`, string asset ids, invented URLs, unrelated copied GLBs, or `unsafeModelUrl(...)` for benchmark product proof.
 - `unsafeModelUrl(...)` is only an explicit temporary escape hatch outside safe benchmark code.
 
-Game and cartoon asset readiness:
+Game and animation asset readiness:
 - Before claiming a playable game route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-game --profile fighting-character` for fighter-heavy routes.
-- Before claiming a prompt-to-cartoon or AuraVoice episode route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-cartoon`.
+- Before claiming a prompt-to-animation or AuraVoice episode route is asset-ready, run or document `npx @aura3d/cli@latest assets validate-animation`.
 - Use `npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair` for repeatable character plans. Add every body, hair, prop, outfit, and stage part through `assets add` first.
 - A readiness report is not visual proof. Do not mark visual-quality, animation-quality, or launch-quality gates complete without screenshot/runtime evidence.
-- Use `create-aura3d --template prompt-cartoon-channel` for prompt-driven episode scaffolds that need AuraVoice manifests, shot timelines, dialogue beats, visemes, captions, and render plans. The shorter `cartoon-channel` template name remains supported.
+- Use `create-aura3d --template prompt-animation-channel` for prompt-driven episode scaffolds that need AuraVoice manifests, shot timelines, dialogue beats, visemes, captions, and render plans. The shorter `animation-channel` template name remains supported.
 
 Aura3D 1.1.0 package/readiness declarations:
 ```bash
 npx create-aura3d@latest my-fighter --template fighting-game
-npx create-aura3d@latest my-episode --template prompt-cartoon-channel
+npx create-aura3d@latest my-episode --template prompt-animation-channel
 npx @aura3d/cli@latest assets validate-game --profile fighting-character
-npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest assets validate-animation
 npx @aura3d/cli@latest check-deploy --dist dist
 pnpm game-runtime:docs
 pnpm game-runtime:template
@@ -336,16 +342,18 @@ pnpm prompt-animation:package
 pnpm prompt-animation:release
 ```
 
-Do not claim game, prompt-cartoon, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
+Do not claim game, prompt-animation, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.1.0 game-engine/showcase claim rules:
-- Treat 1.1.0 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
+Aura3D 1.3.0 game-engine/showcase claim rules:
+- Treat 1.3.0 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.
 - Use a static approved poster/link in marketing previews unless the live playable embed passes the same visual and gameplay gates as the route itself.
 
-Prompt-cartoon and AuraVoice pattern:
+Prompt-animation and AuraVoice pattern (the explicit JSON-contract API used by the
+`prompt-animation-channel` template; you pass the cast/locations yourself, so "moon-garden"/miko/luma
+below is just this example's payload — it is NOT a default cast or set):
 ```ts
 const plan = compilePromptEpisodePlan({
   episodeId: "moon-garden",
@@ -400,7 +408,7 @@ const audioStems = createAudioStemManifest({
   }))
 });
 
-const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   renderQueue: plan.renderQueue

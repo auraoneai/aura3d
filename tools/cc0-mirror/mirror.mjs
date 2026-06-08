@@ -17,7 +17,7 @@
 // Usage: node tools/cc0-mirror/mirror.mjs
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -129,6 +129,18 @@ function extractKenney(limit) {
       try {
         sh("unzip", ["-o", "-j", zip, "Models/GLB format/*.glb", "-d", out], { stdio: "pipe" });
       } catch { /* pack may use a different GLB path */ }
+      // ALSO mirror the sibling Textures/ folder so the GLBs' EXTERNAL texture refs
+      // (e.g. "Textures/texture-a.png") resolve next to the GLB on the CDN. Without
+      // this, Kenney GLBs that aren't self-contained mirror down FACELESS/broken.
+      // (Quaternius keeps its whole glTF/ folder for the same reason — see below.)
+      try {
+        const texTmp = join(tmpdir(), `kenney-tex-${slug}`);
+        rmSync(texTmp, { recursive: true, force: true });
+        sh("unzip", ["-o", zip, "Models/GLB format/Textures/*", "-d", texTmp], { stdio: "pipe" });
+        const texSrc = join(texTmp, "Models", "GLB format", "Textures");
+        if (existsSync(texSrc)) cpSync(texSrc, join(out, "Textures"), { recursive: true });
+        rmSync(texTmp, { recursive: true, force: true });
+      } catch { /* pack may be self-contained (embedded textures) — fine */ }
       rmSync(zip, { force: true });
       const count = existsSync(out) ? readdirSync(out).filter((f) => f.endsWith(".glb")).length : 0;
       if (count === 0) { rmSync(out, { recursive: true, force: true }); continue; }

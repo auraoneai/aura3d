@@ -3,6 +3,7 @@ import type { AnimationClip } from "./AnimationClip.js";
 import type { AnimationEvent } from "./AnimationEvents.js";
 import type { AnimationLayer, AnimationLayerSnapshot } from "./AnimationLayer.js";
 import { cloneAnimationValue, normalizeQuat, slerpQuat, type AnimationValue } from "./Keyframe.js";
+import { DEFAULT_INERTIALIZATION_HALF_LIFE, inertializedTransitionWeight } from "./Inertialization.js";
 import { applyRootMotion, extractRootMotion, type RootMotionSample, type RootMotionTarget } from "./RootMotion.js";
 
 export type AnimationTarget = {
@@ -44,6 +45,7 @@ export class AnimationMixer {
   private applyErrors: AnimationApplyError[] = [];
   private readonly eventListeners = new Set<(event: AnimationEvent) => void>();
   private disposed = false;
+  private inertialTransition: { from: AnimationAction; to: AnimationAction; elapsed: number; halfLife: number } | undefined;
 
   constructor(target?: AnimationTarget, private readonly options: AnimationMixerOptions = {}) {
     this.target = target;
@@ -84,11 +86,28 @@ export class AnimationMixer {
     this.addAction(to);
   }
 
+  /**
+   * Inertialized transition between two actions: instead of the linear weight ramp of
+   * {@link crossFade}, the source action's weight follows a critically-damped decay (zero initial
+   * slope, momentum-preserving) so the blend carries through instead of dissolving. The transition
+   * is advanced deterministically inside {@link update}; weights always sum to 1 and the source is
+   * stopped once it has effectively faded. Pass a `halfLife` (seconds) to tune snappiness.
+   */
+  inertialCrossFade(from: AnimationAction, to: AnimationAction, halfLife = DEFAULT_INERTIALIZATION_HALF_LIFE): void {
+    this.assertAlive();
+    to.play();
+    from.weight = 1;
+    to.weight = 0;
+    this.addAction(to);
+    this.inertialTransition = { from, to, elapsed: 0, halfLife };
+  }
+
   update(delta: number): readonly AnimationEvent[] {
     this.assertAlive();
     if (!Number.isFinite(delta) || delta < 0) {
       throw new Error("AnimationMixer delta must be finite and non-negative.");
     }
+    this.advanceInertialTransition(delta * this.timeScale);
     const events: AnimationEvent[] = [];
     const accumulators = new Map<string, TargetAccumulator>();
     for (const action of this.actions) {
@@ -164,12 +183,29 @@ export class AnimationMixer {
     this.values.clear();
     this.applyErrors = [];
     this.eventListeners.clear();
+    this.inertialTransition = undefined;
     this.disposed = true;
   }
 
   private assertAlive(): void {
     if (this.disposed) {
       throw new Error("AnimationMixer has been disposed.");
+    }
+  }
+
+  private advanceInertialTransition(scaledDelta: number): void {
+    const transition = this.inertialTransition;
+    if (!transition) return;
+    transition.elapsed += scaledDelta;
+    const fromWeight = inertializedTransitionWeight(transition.elapsed, transition.halfLife);
+    transition.from.weight = fromWeight;
+    transition.to.weight = 1 - fromWeight;
+    // Retire the transition once the source has effectively faded (offset within 1e-3).
+    if (fromWeight <= 1e-3) {
+      transition.from.weight = 0;
+      transition.to.weight = 1;
+      transition.from.stop();
+      this.inertialTransition = undefined;
     }
   }
 

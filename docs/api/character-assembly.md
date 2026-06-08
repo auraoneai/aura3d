@@ -1,6 +1,6 @@
 # Aura3D character assembly
 
-Character assembly converts typed asset manifest entries into a repeatable plan for a game or cartoon actor. It does not invent assets and it does not accept raw string URLs.
+Character assembly converts typed asset manifest entries into a repeatable plan for a game or animation actor. It does not invent assets and it does not accept raw string URLs.
 
 Register the body and parts first:
 
@@ -72,9 +72,9 @@ createAuraApp("#app", {
 
 ## Production boundary
 
-The assembly plan proves that assets exist and that attachment intent is explicit. It does not automatically solve skeletal retargeting, skinning, cloth simulation, facial animation, or visual polish. For a 10/10 game or cartoon route, pair the plan with:
+The assembly plan proves that assets exist and that attachment intent is explicit. It does not automatically solve skeletal retargeting, skinning, cloth simulation, facial animation, or visual polish. For a 10/10 game or animation route, pair the plan with:
 
-- `assets validate-game` or `assets validate-cartoon`.
+- `assets validate-game` or `assets validate-animation`.
 - Animation clip readiness evidence.
 - First-frame screenshots.
 - Runtime scene evidence.

@@ -360,6 +360,9 @@ class WebGPURenderTarget implements RenderTarget {
   }
 }
 
+/** Joint-palette capacity of the WebGPU skinning path — parity with the WebGL2 `u_jointMatrices[96]`. */
+export const MAX_WEBGPU_SKINNING_JOINTS = 96;
+
 export class WebGPUDevice implements RenderDevice {
   public readonly kind = "webgpu";
   public readonly info: RenderDeviceInfo;
@@ -1162,6 +1165,17 @@ export class WebGPUDevice implements RenderDevice {
     const modelMatrices = uniformRasterModelMatrices(command.uniforms, command.instanceCount ?? 1);
     const depthTest = command.renderState?.depthTest !== false && this.activeRenderTarget.depthPixels !== null;
     const depthWrite = command.renderState?.depthWrite !== false;
+    // Full joint-palette skinning (up to 96 joints, WebGL2 parity). readLocal applies morph then skin.
+    const jointPalette = jointPaletteFor(command.uniforms);
+    const format = command.vertexFormat;
+    const readLocal = (index: number): readonly [number, number, number] =>
+      skinLocalPosition(
+        readMorphedPosition(vertexBuffer.bytes, format.stride, position.offset, index, command.uniforms),
+        vertexBuffer.bytes,
+        format,
+        index,
+        jointPalette
+      );
     for (let instanceIndex = 0; instanceIndex < instanceMatrices.length; instanceIndex += 1) {
       const matrix = instanceMatrices[instanceIndex] ?? identityMatrix();
       const modelMatrix = modelMatrices[instanceIndex] ?? identityMatrix();
@@ -1170,9 +1184,9 @@ export class WebGPUDevice implements RenderDevice {
           const indexA = indices[offset]!;
           const indexB = indices[offset + 1]!;
           const indexC = indices[offset + 2]!;
-          const localA = readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, indexA, command.uniforms);
-          const localB = readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, indexB, command.uniforms);
-          const localC = readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, indexC, command.uniforms);
+          const localA = readLocal(indexA);
+          const localB = readLocal(indexB);
+          const localC = readLocal(indexC);
           const a = transformPosition(localA, matrix);
           const b = transformPosition(localB, matrix);
           const c = transformPosition(localC, matrix);
@@ -1191,15 +1205,15 @@ export class WebGPUDevice implements RenderDevice {
         for (let offset = 0; offset + 1 < indices.length; offset += 2) {
           const indexA = indices[offset]!;
           const indexB = indices[offset + 1]!;
-          const a = transformPosition(readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, indexA, command.uniforms), matrix);
-          const b = transformPosition(readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, indexB, command.uniforms), matrix);
+          const a = transformPosition(readLocal(indexA), matrix);
+          const b = transformPosition(readLocal(indexB), matrix);
           const colorA = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexA);
           const colorB = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, indexB);
           rasterizeLine(this.activeRenderTarget, a, b, color, colorA, colorB, depthTest, depthWrite);
         }
       } else {
         for (const index of indices) {
-          const point = transformPosition(readMorphedPosition(vertexBuffer.bytes, command.vertexFormat.stride, position.offset, index, command.uniforms), matrix);
+          const point = transformPosition(readLocal(index), matrix);
           const vertexColor = readVertexColor(vertexBuffer.bytes, command.vertexFormat.stride, colorAttribute?.offset, index);
           rasterizePoint(this.activeRenderTarget, point, multiplyColor(color, vertexColor), depthTest, depthWrite);
         }
@@ -1531,7 +1545,8 @@ export class WebGPUDevice implements RenderDevice {
 
   private createNativeDrawUniformBuffer(command: DrawCommand): WebGPUBufferLike | null {
     if (!this.device.createBindGroup) return null;
-    const data = new Float32Array(188);
+    // 188 floats for the scalar/matrix fields + 96 joint matrices (16 floats each) appended at 188.
+    const data = new Float32Array(188 + MAX_WEBGPU_SKINNING_JOINTS * 16);
     const baseColorBinding = uniformBaseColorTextureBinding(command.uniforms);
     const environmentBinding = uniformTextureBinding(command.uniforms, "u_environmentMapTexture");
     const normalBinding = uniformTextureBinding(command.uniforms, "u_normalTexture");
@@ -1573,9 +1588,13 @@ export class WebGPUDevice implements RenderDevice {
     for (let index = 0; index < 4; index += 1) {
       data.set(instanceMatrices[index] ?? (index === 0 ? modelMatrix : identityMatrix()), 32 + index * 16);
     }
-    const jointMatrices = uniformMat4Array(command.uniforms?.get("u_jointMatrices"), 2);
-    for (let index = 0; index < 2; index += 1) {
-      data.set(jointMatrices[index] ?? identityMatrix(), 96 + index * 16);
+    // Legacy 2-slot joint fields (offsets 96/112) kept as identity for layout stability.
+    data.set(identityMatrix(), 96);
+    data.set(identityMatrix(), 112);
+    // Full 96-joint palette (WebGL2 parity), appended after normalMatrix at offset 188.
+    const jointMatrices = uniformMat4Array(command.uniforms?.get("u_jointMatrices"), MAX_WEBGPU_SKINNING_JOINTS);
+    for (let index = 0; index < MAX_WEBGPU_SKINNING_JOINTS; index += 1) {
+      data.set(jointMatrices[index] ?? identityMatrix(), 188 + index * 16);
     }
     const morphDeltas = command.uniforms?.get("u_morphPositionDeltas");
     const morphNumbers = morphDeltas instanceof Float32Array || Array.isArray(morphDeltas) ? Array.from(morphDeltas).slice(0, 32) : [];
@@ -2097,6 +2116,54 @@ function identityMatrix(): readonly number[] {
   return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 }
 
+function readVec4Attribute(bytes: Uint8Array, stride: number, offset: number, vertexIndex: number): readonly [number, number, number, number] {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const base = vertexIndex * stride + offset;
+  return [
+    view.getFloat32(base, true),
+    view.getFloat32(base + 4, true),
+    view.getFloat32(base + 8, true),
+    view.getFloat32(base + 12, true)
+  ];
+}
+
+// CPU skinning for the WebGPU emulation rasterizer: blend the joint palette (up to the full
+// WebGL2-parity 96-joint count) by the vertex's 4 joint indices + weights, then transform the local
+// position by the blended matrix. Mirrors the WebGL2 skinning path so a skinned character deforms
+// identically on both backends. `palette` may hold up to 96 matrices (parity with WebGL2).
+function skinLocalPosition(
+  local: readonly [number, number, number],
+  bytes: Uint8Array,
+  format: VertexFormat,
+  vertexIndex: number,
+  palette: readonly (readonly number[])[]
+): readonly [number, number, number] {
+  if (palette.length === 0 || !format.hasAttribute("joints") || !format.hasAttribute("weights")) {
+    return local;
+  }
+  const joints = readVec4Attribute(bytes, format.stride, format.getAttribute("joints").offset, vertexIndex);
+  const weights = readVec4Attribute(bytes, format.stride, format.getAttribute("weights").offset, vertexIndex);
+  const weightSum = weights[0] + weights[1] + weights[2] + weights[3];
+  if (weightSum <= 1e-4) return local;
+  const blended = new Array<number>(16).fill(0);
+  const maxJoint = palette.length - 1;
+  for (let influence = 0; influence < 4; influence += 1) {
+    const weight = weights[influence] ?? 0;
+    if (weight === 0) continue;
+    const jointIndex = Math.max(0, Math.min(maxJoint, Math.round(joints[influence] ?? 0)));
+    const jointMatrix = palette[jointIndex] ?? identityMatrix();
+    for (let k = 0; k < 16; k += 1) blended[k] += (jointMatrix[k] ?? 0) * weight;
+  }
+  return transformPosition(local, blended);
+}
+
+function jointPaletteFor(uniforms: DrawCommand["uniforms"]): readonly (readonly number[])[] {
+  const value = uniforms?.get("u_jointMatrices");
+  const length = value instanceof Float32Array || Array.isArray(value) ? (value as ArrayLike<number>).length : 0;
+  const count = Math.min(MAX_WEBGPU_SKINNING_JOINTS, Math.floor(length / 16));
+  return count > 0 ? uniformMat4Array(value, count) : [];
+}
+
 function readVertexColor(bytes: Uint8Array, stride: number, offset: number | undefined, vertexIndex: number): readonly [number, number, number, number] {
   if (offset === undefined) return [1, 1, 1, 1];
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -2385,6 +2452,7 @@ function nativeUniformStruct(): string {
   joint0: mat4x4<f32>,
   joint1: mat4x4<f32>,
   morph0: vec4<f32>,
+  // (joint palette appended at struct end below as \`joints\` for 96-joint WebGL2 parity)
   morph1: vec4<f32>,
   morph2: vec4<f32>,
   morph3: vec4<f32>,
@@ -2396,6 +2464,9 @@ function nativeUniformStruct(): string {
   camera: vec4<f32>,
   materialFlags: vec4<f32>,
   normalMatrix: mat4x4<f32>,
+  // 96-joint skinning palette (WebGL2 \`u_jointMatrices[96]\` parity). Appended at the struct end so
+  // the existing field offsets are unchanged.
+  joints: array<mat4x4<f32>, 96>,
 };
 
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;
@@ -2717,8 +2788,8 @@ struct VertexOutput {
 };
 
 fn jointMatrix(index: f32) -> mat4x4<f32> {
-  if (index > 0.5) { return u_draw.joint1; }
-  return u_draw.joint0;
+  let i = clamp(i32(index + 0.5), 0, 95);
+  return u_draw.joints[i];
 }
 
 @vertex

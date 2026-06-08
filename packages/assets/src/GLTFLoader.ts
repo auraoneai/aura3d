@@ -387,6 +387,8 @@ export interface GLTFRuntimeMaterialKey {
 }
 
 export interface GLTFMorphTargetAsset {
+  /** Morph target / blendshape name (from `mesh.extras.targetNames`), when authored. */
+  readonly name?: string;
   readonly positions: readonly (readonly [number, number, number])[];
   readonly normals: readonly (readonly [number, number, number])[];
   readonly tangents: readonly (readonly [number, number, number])[];
@@ -842,13 +844,15 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         const typedTangents = tangents.map((tangent) => [tangent[0] ?? 0, tangent[1] ?? 0, tangent[2] ?? 0, tangent[3] ?? 1] as const);
         const typedColors = colors.map((color) => [color[0] ?? 1, color[1] ?? 1, color[2] ?? 1, color[3] ?? 1] as const);
         const typedJoints = joints.map((joint) => [joint[0] ?? 0, joint[1] ?? 0, joint[2] ?? 0, joint[3] ?? 0] as const);
+        const weightNormalization: SkinWeightNormalizationStats = { degenerate: 0, rescaled: 0 };
         const typedWeights = weights.map((weight) => normalizeSkinWeights([
           weight[0] ?? 0,
           weight[1] ?? 0,
           weight[2] ?? 0,
           weight[3] ?? 0
-        ], meshIndex, primitiveIndex));
-        const morphTargets = readMorphTargets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, accessorCache);
+        ], weightNormalization));
+        reportSkinWeightNormalization(meshIndex, primitiveIndex, weightNormalization);
+        const morphTargets = readMorphTargets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, accessorCache, readMorphTargetNames(mesh));
         const resolvedPrimitive = resolvePrimitiveMode(primitive, indices?.map((index) => index[0] ?? 0), positions.length, meshIndex, primitiveIndex);
         const geometry = createGeometryAsset(typedPositions, resolvedPrimitive.indices);
         return {
@@ -1459,7 +1463,8 @@ function readMorphTargets(
   vertexCount: number,
   meshIndex: number,
   primitiveIndex: number,
-  accessorCache: GLTFAccessorReadCache
+  accessorCache: GLTFAccessorReadCache,
+  targetNames: readonly string[] = []
 ): readonly GLTFMorphTargetAsset[] {
   if (primitive.targets === undefined) {
     return [];
@@ -1481,12 +1486,25 @@ function readMorphTargets(
     if (tangents.length > 0 && tangents.length !== vertexCount) {
       throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} morph target ${targetIndex} TANGENT count mismatch`);
     }
+    const name = targetNames[targetIndex];
     return {
+      ...(typeof name === "string" && name.length > 0 ? { name } : {}),
       positions: positions.map((position) => [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0] as const),
       normals: normals.map((normal) => [normal[0] ?? 0, normal[1] ?? 0, normal[2] ?? 0] as const),
       tangents: tangents.map((tangent) => [tangent[0] ?? 0, tangent[1] ?? 0, tangent[2] ?? 0] as const)
     };
   });
+}
+
+// glTF stores morph-target names in `mesh.extras.targetNames` (a parallel array). Read them so the
+// runtime can expose named morph influences instead of bare indices.
+function readMorphTargetNames(mesh: GLTFMesh): readonly string[] {
+  const extras = (mesh as { extras?: Record<string, unknown> }).extras;
+  const names = extras?.targetNames;
+  if (Array.isArray(names) && names.every((n) => typeof n === "string")) {
+    return names as readonly string[];
+  }
+  return [];
 }
 
 function validateMorphTargetDescriptor(
@@ -1866,25 +1884,65 @@ function validateQuantizedAttributeComponentType(
   );
 }
 
-function normalizeSkinWeights(
+export interface SkinWeightNormalizationStats {
+  degenerate: number;
+  rescaled: number;
+}
+
+const SKIN_WEIGHT_DEGENERATE_EPSILON = 1e-6;
+
+/**
+ * Normalize a single vertex's 4 skin weights so they sum to 1.
+ *
+ * Real-world catalog GLBs (Objaverse/Sketchfab) frequently ship denormalized,
+ * negative, or all-zero WEIGHTS_0 values. Rather than hard-failing the whole
+ * asset, sanitize per vertex: negative/non-finite components are clamped to 0,
+ * a degenerate (near-zero) sum collapses to a rigid binding `[1, 0, 0, 0]`, and
+ * any other sum is rescaled to 1. The optional `stats` accumulator lets callers
+ * surface a single diagnostic per primitive instead of one per vertex.
+ *
+ * Component proportions are preserved regardless of the source accessor
+ * componentType (FLOAT 5126, or normalized UNSIGNED_BYTE 5121 / UNSIGNED_SHORT
+ * 5123), so integer-encoded weights normalize correctly without extra handling.
+ */
+export function normalizeSkinWeights(
   weights: readonly [number, number, number, number],
-  meshIndex: number,
-  primitiveIndex: number
+  stats?: SkinWeightNormalizationStats
 ): readonly [number, number, number, number] {
-  if (weights.some((weight) => !Number.isFinite(weight) || weight < 0)) {
-    throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 must contain finite non-negative values`);
+  const sanitized: [number, number, number, number] = [
+    Number.isFinite(weights[0]) && weights[0] > 0 ? weights[0] : 0,
+    Number.isFinite(weights[1]) && weights[1] > 0 ? weights[1] : 0,
+    Number.isFinite(weights[2]) && weights[2] > 0 ? weights[2] : 0,
+    Number.isFinite(weights[3]) && weights[3] > 0 ? weights[3] : 0
+  ];
+  const sum = sanitized[0] + sanitized[1] + sanitized[2] + sanitized[3];
+  if (sum < SKIN_WEIGHT_DEGENERATE_EPSILON) {
+    if (stats) stats.degenerate += 1;
+    return [1, 0, 0, 0] as const;
   }
-  const sum = weights[0] + weights[1] + weights[2] + weights[3];
-  if (sum <= 0) {
-    throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 must sum to a positive value`);
+  if (Math.abs(sum - 1) <= 1e-5) {
+    return sanitized as readonly [number, number, number, number];
   }
-  if (Math.abs(sum - 1) <= 1e-5) return weights;
+  if (stats) stats.rescaled += 1;
   return [
-    weights[0] / sum,
-    weights[1] / sum,
-    weights[2] / sum,
-    weights[3] / sum
+    sanitized[0] / sum,
+    sanitized[1] / sum,
+    sanitized[2] / sum,
+    sanitized[3] / sum
   ] as const;
+}
+
+function reportSkinWeightNormalization(
+  meshIndex: number,
+  primitiveIndex: number,
+  stats: SkinWeightNormalizationStats
+): void {
+  if (stats.degenerate === 0 && stats.rescaled === 0) return;
+  if (typeof console === "undefined" || typeof console.warn !== "function") return;
+  console.warn(
+    `glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 normalized: ` +
+      `${stats.degenerate} degenerate vertex(es) set to [1,0,0,0], ${stats.rescaled} rescaled to sum 1`
+  );
 }
 
 function createCameraAssets(json: GLTFJson): readonly GLTFCameraAsset[] {

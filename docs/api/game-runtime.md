@@ -2,9 +2,14 @@
 
 Status: public runtime API for Aura3D game and interactive showcase routes.
 
+> New to building a game with Aura3D? Start with the end-to-end walkthrough —
+> [docs/guides/build-a-browser-game.md](../guides/build-a-browser-game.md) — which ties this API
+> together with assets, the 1.3 animation stack, camera/HUD/audio, evidence, and deploy. This page
+> is the per-API reference.
+
 Aura3D game runtime APIs let an app keep one Aura app mounted while mutating typed scene nodes frame by frame. This is the foundation for gameplay systems such as input, kinematic bodies, hitboxes, animation controllers, runtime effects, combat cameras, reduced-motion variants, and launch evidence.
 
-Create one Aura app per route. Do not recreate the app every frame, hand-wire a renderer, import from `three`, or load models by string id. Add real assets with the Aura3D CLI, import typed `assets` from `./aura-assets`, and pass typed assets to `model(assets.name)`.
+Create one Aura app per route. Do not recreate the app every frame, hand-wire a renderer, import from `three`, or load models by string id. Resolve real models from the **federated asset index** — a hosted catalog of 800,000+ GLB/glTF assets the CLI searches (`assets search`/`resolve`, primary adapter `createAuraIndexAdapter`) — or `assets add` a file you have; either way import typed `assets` from `./aura-assets` and pass them to `model(assets.name)`. See `docs/agents/asset-workflow.md`.
 
 ## Import
 

@@ -164,6 +164,8 @@ export interface RuntimeNodeHandleLike {
   setMorphTarget?(name: string, weight: number): this;
   setMorphTargets?(weights: RuntimeNodeMorphTargetWeights): this;
   morphTargets?(): RuntimeNodeMorphTargetWeights;
+  /** First-class named morph-influence API: read a target's weight, or set it. */
+  morphInfluence?(name: string, weight?: number): this | number;
   snapshot(): unknown;
 }
 

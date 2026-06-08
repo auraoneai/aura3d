@@ -17,8 +17,8 @@ export interface AnimationMotionQualityReport {
   readonly healthy: boolean;
 }
 
-export interface CartoonAnimationMotionQualityReport extends AnimationMotionQualityReport {
-  readonly kind: "cartoon-animation-motion-quality";
+export interface AnimationAnimationMotionQualityReport extends AnimationMotionQualityReport {
+  readonly kind: "animation-animation-motion-quality";
   readonly staticPoseRejected: boolean;
   readonly issues: readonly string[];
 }
@@ -103,10 +103,10 @@ export function summarizeAnimationMotion(
   };
 }
 
-export function summarizeCartoonAnimationMotion(
+export function summarizeAnimationAnimationMotion(
   samples: readonly AnimationMotionSample[],
   options: Pick<AnimationMotionQualityOptions, "minimumSamples" | "minimumTimeRangeSeconds" | "minimumPoseDiversityScore"> = {}
-): CartoonAnimationMotionQualityReport {
+): AnimationAnimationMotionQualityReport {
   const base = summarizeAnimationMotion(samples, options);
   const issues = [
     base.sampleCount < (options.minimumSamples ?? 8) ? "not enough motion samples" : undefined,
@@ -116,7 +116,7 @@ export function summarizeCartoonAnimationMotion(
   ].filter((issue): issue is string => Boolean(issue));
   return {
     ...base,
-    kind: "cartoon-animation-motion-quality",
+    kind: "animation-animation-motion-quality",
     staticPoseRejected: issues.length > 0,
     issues,
     healthy: issues.length === 0

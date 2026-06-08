@@ -50,6 +50,7 @@
     "launch:manifest-check": "node scripts/check-launch-evidence-manifest.mjs"
   },
   "dependencies": {
+    "@aura3d/animation": "workspace:*",
     "@aura3d/engine": "workspace:*"
   },
   "devDependencies": {

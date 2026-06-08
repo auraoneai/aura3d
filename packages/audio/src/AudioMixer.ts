@@ -61,7 +61,7 @@ export interface AudioMixerEvidence {
   readonly errors: readonly string[];
 }
 
-export interface CartoonAudioMixer {
+export interface AnimationAudioMixer {
   readonly mixer: AudioMixer;
   readonly buses: {
     readonly voice: AudioBus;
@@ -72,7 +72,7 @@ export interface CartoonAudioMixer {
   evidence(options?: { readonly unlocked?: boolean; readonly errors?: readonly string[] }): AudioMixerEvidence;
 }
 
-export interface CartoonAudioMixerOptions {
+export interface AnimationAudioMixerOptions {
   readonly voiceVolume?: number;
   readonly musicVolume?: number;
   readonly sfxVolume?: number;
@@ -80,10 +80,10 @@ export interface CartoonAudioMixerOptions {
   readonly muted?: boolean;
 }
 
-export function createCartoonAudioMixer(
+export function createAnimationAudioMixer(
   context: AudioContextLike,
-  options: CartoonAudioMixerOptions = {}
-): CartoonAudioMixer {
+  options: AnimationAudioMixerOptions = {}
+): AnimationAudioMixer {
   const mixer = new AudioMixer(context);
   const voice = mixer.createBus("voice");
   const music = mixer.createBus("music");

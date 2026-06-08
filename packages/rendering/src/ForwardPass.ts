@@ -1430,21 +1430,15 @@ function applyGpuMorphUniforms(
       weightCount: item.morphWeights.length
     });
   }
-  if (item.morphTargets.length > MAX_GPU_MORPH_TARGETS) {
-    throw new RenderDeviceError("GPU morph shader path exceeds the supported uniform morph target count", "GPU_MORPH_TARGET_LIMIT", {
-      label: item.label,
-      targetCount: item.morphTargets.length,
-      maxTargets: MAX_GPU_MORPH_TARGETS
-    });
-  }
-  if (item.geometry.vertexBuffer.vertexCount > MAX_GPU_MORPH_VERTICES) {
-    throw new RenderDeviceError("GPU morph shader path exceeds the supported uniform morph vertex count", "GPU_MORPH_VERTEX_LIMIT", {
-      label: item.label,
-      vertexCount: item.geometry.vertexBuffer.vertexCount,
-      maxVertices: MAX_GPU_MORPH_VERTICES
-    });
+  // Counts beyond the uniform fast-path capacity are not an error: fall back to the CPU morph
+  // (resolveRenderGeometry -> applyMorphTargets), which is unlimited and morphs normals + tangents
+  // so lighting follows the deformation. The texture-backed GPU plan (createMorphTargetPlan) packs
+  // the same data for the texture path; see MorphTargetPlan.ts.
+  if (item.morphTargets.length > MAX_GPU_MORPH_TARGETS || item.geometry.vertexBuffer.vertexCount > MAX_GPU_MORPH_VERTICES) {
+    return false;
   }
   const packed = new Float32Array(MAX_GPU_MORPH_TARGETS * MAX_GPU_MORPH_VERTICES * 4);
+  const packedNormals = new Float32Array(MAX_GPU_MORPH_TARGETS * MAX_GPU_MORPH_VERTICES * 4);
   const weights = new Float32Array(MAX_GPU_MORPH_TARGETS);
   for (let targetIndex = 0; targetIndex < item.morphTargets.length; targetIndex += 1) {
     const target = item.morphTargets[targetIndex]!;
@@ -1478,11 +1472,22 @@ function applyGpuMorphUniforms(
       packed[offset] = delta[0];
       packed[offset + 1] = delta[1];
       packed[offset + 2] = delta[2];
+      const normal = target.normals?.[vertex];
+      if (normal && normal.length === 3) {
+        packedNormals[offset] = normal[0];
+        packedNormals[offset + 1] = normal[1];
+        packedNormals[offset + 2] = normal[2];
+      }
     }
   }
   uniforms.set("u_morphPositionDeltas", packed);
   uniforms.set("u_morphWeights", weights);
   uniforms.set("u_morphTargetCount", item.morphTargets.length);
+  // Normal deltas are uploaded only when the bound shader declares the uniform (lit morph variants);
+  // the default unlit morph shader ignores them.
+  if (shader.reflection.uniforms.has("u_morphNormalDeltas")) {
+    uniforms.set("u_morphNormalDeltas", packedNormals);
+  }
   return true;
 }
 

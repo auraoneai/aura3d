@@ -13,7 +13,10 @@ export type AuraClashFighterClipKey =
   | "hurt"
   | "ko";
 
-export type AuraClashFighterClipMap = Record<AuraClashFighterClipKey, AuraClashClipName>;
+export type AuraClashFighterClipMap = Record<AuraClashFighterClipKey, AuraClashClipName> & {
+  /** Optional heavier hit-reaction clip, used for heavy/special hits (light hits use `hurt`). */
+  readonly hurtHeavy?: AuraClashClipName;
+};
 
 export const AURA_CLASH_REQUIRED_CLIP_KEYS = [
   "idle",
@@ -70,6 +73,7 @@ export const auraClashPlayerClips = {
   heavy: "Punch_Cross",
   special: "Sword_Attack",
   hurt: "Hit_Chest",
+  hurtHeavy: "Hit_Head",
   ko: "Death01"
 } as const satisfies AuraClashFighterClipMap;
 
@@ -84,8 +88,31 @@ export const auraClashRivalClips = {
   heavy: "Sword_Regular_A",
   special: "Sword_Regular_Combo",
   hurt: "Hit_Knockback",
+  hurtHeavy: "Hit_Knockback_RM",
   ko: "LayToIdle"
 } as const satisfies AuraClashFighterClipMap;
+
+/**
+ * Choose the hit-reaction severity from BOTH the attack weight and the defender's grounded state:
+ * heavy/special hits (damage >= 10) OR airborne hits play the stronger reaction; grounded light hits
+ * play the base reaction. Pure + deterministic.
+ */
+export function selectAuraClashHurtVariant(damage: number, grounded: boolean): "light" | "heavy" {
+  return damage >= 10 || !grounded ? "heavy" : "light";
+}
+
+/**
+ * Resolve the reaction clip for a hit: KO when dead, the heavier `hurtHeavy` clip for heavy/special
+ * hits when the rig provides one, otherwise the base `hurt` clip. Pure + deterministic.
+ */
+export function resolveAuraClashHurtClip(
+  clips: AuraClashFighterClipMap,
+  variant: "light" | "heavy",
+  dead: boolean
+): AuraClashClipName {
+  if (dead) return clips.ko;
+  return variant === "heavy" && clips.hurtHeavy ? clips.hurtHeavy : clips.hurt;
+}
 
 export function validateAuraClashClipMapReadiness(input: AuraClashClipMapReadinessInput): AuraClashClipMapReadiness {
   const available = input.availableClips ? new Set(input.availableClips) : null;

@@ -25,15 +25,15 @@ import {
   type DubMapArtifact
 } from "./DialoguePerformance.js";
 import {
-  createCartoonRenderQueue,
-  createCartoonRenderOutputPackageMetadata,
-  validateCartoonRenderQueue,
-  validateCartoonRenderOutputPackageMetadata,
-  type CartoonRenderOutput,
-  type CartoonRenderOutputPackageMetadata,
-  type CartoonRenderQueueArtifact,
-  type CartoonViewport
-} from "./CartoonRenderQueue.js";
+  createAnimationRenderQueue,
+  createAnimationRenderOutputPackageMetadata,
+  validateAnimationRenderQueue,
+  validateAnimationRenderOutputPackageMetadata,
+  type AnimationRenderOutput,
+  type AnimationRenderOutputPackageMetadata,
+  type AnimationRenderQueueArtifact,
+  type AnimationViewport
+} from "./AnimationRenderQueue.js";
 import { getShotAtTime, validateShotTimeline, type ShotTimelineArtifact, type ShotTimelineShot } from "./ShotTimeline.js";
 import {
   sampleVisemeTrack,
@@ -51,16 +51,16 @@ export interface AuraVoiceBridgeArtifacts {
   readonly visemes?: AuraVoiceVisemeTrack | undefined;
   readonly audioStems?: AudioStemManifestArtifact | undefined;
   readonly dubMap?: DubMapArtifact | undefined;
-  readonly renderQueue?: CartoonRenderQueueArtifact | undefined;
-  readonly renderOutputPackage?: CartoonRenderOutputPackageMetadata | undefined;
+  readonly renderQueue?: AnimationRenderQueueArtifact | undefined;
+  readonly renderOutputPackage?: AnimationRenderOutputPackageMetadata | undefined;
 }
 
 export interface AuraVoiceBridgeOptions {
   readonly frameRate?: PromptAnimationFrameRate | undefined;
   readonly maxTimingDriftFrames?: number | undefined;
   readonly route?: string | undefined;
-  readonly viewport?: CartoonViewport | undefined;
-  readonly outputs?: readonly CartoonRenderOutput[] | undefined;
+  readonly viewport?: AnimationViewport | undefined;
+  readonly outputs?: readonly AnimationRenderOutput[] | undefined;
   readonly youtube?: PromptAnimationYouTubeDraftMetadata | undefined;
   readonly renderPackageId?: PromptAnimationId | undefined;
 }
@@ -78,8 +78,8 @@ export interface AuraVoiceBridgePackage {
   readonly episodeId: PromptAnimationId;
   readonly masterClock: AuraVoiceMasterClock;
   readonly artifacts: AuraVoiceBridgeArtifacts;
-  readonly renderQueue: CartoonRenderQueueArtifact;
-  readonly renderOutputPackage: CartoonRenderOutputPackageMetadata;
+  readonly renderQueue: AnimationRenderQueueArtifact;
+  readonly renderOutputPackage: AnimationRenderOutputPackageMetadata;
   readonly issues: readonly PromptAnimationValidationIssue[];
   readonly publishReady: boolean;
 }
@@ -132,7 +132,7 @@ export function createAuraVoiceBridgePackage(
   });
   const renderQueue =
     artifacts.renderQueue ??
-    createCartoonRenderQueue({
+    createAnimationRenderQueue({
       episodePlan: artifacts.episodePlan,
       shotTimeline: artifacts.shotTimeline,
       route: options.route ?? "/prompt-animation",
@@ -141,7 +141,7 @@ export function createAuraVoiceBridgePackage(
     });
   const renderOutputPackage =
     artifacts.renderOutputPackage ??
-    createCartoonRenderOutputPackageMetadata({
+    createAnimationRenderOutputPackageMetadata({
       episodePlan: artifacts.episodePlan,
       shotTimeline: artifacts.shotTimeline,
       renderQueue,
@@ -206,8 +206,8 @@ export function validateAuraVoiceBridgePackage(
       bridgePackage.masterClock.frameRate,
       bridgePackage.masterClock.maxTimingDriftFrames
     ).issues,
-    ...validateCartoonRenderQueue(bridgePackage.renderQueue),
-    ...validateCartoonRenderOutputPackageMetadata(bridgePackage.renderOutputPackage),
+    ...validateAnimationRenderQueue(bridgePackage.renderQueue),
+    ...validateAnimationRenderOutputPackageMetadata(bridgePackage.renderOutputPackage),
     ...validateAuraVoiceAssetCoverage(bridgePackage.artifacts.episodePlan)
   ];
 

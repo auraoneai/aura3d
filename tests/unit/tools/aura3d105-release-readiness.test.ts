@@ -36,8 +36,8 @@ const visualReports = [
 
 const templateReports = [
   "tests/reports/templates/fighting-game-smoke.json",
-  "tests/reports/templates/cartoon-channel-smoke.json",
-  "tests/reports/templates/prompt-cartoon-channel-smoke.json"
+  "tests/reports/templates/animation-channel-smoke.json",
+  "tests/reports/templates/prompt-animation-channel-smoke.json"
 ] as const;
 
 const requiredScreenshots = [
@@ -52,8 +52,8 @@ const requiredScreenshots = [
   "tests/reports/visual-scripting/runtime-node-motion.png",
   "tests/reports/visual-scripting/animation-event-graph.png",
   "tests/reports/templates/fighting-game-first-frame.png",
-  "tests/reports/templates/cartoon-channel-first-frame.png",
-  "tests/reports/templates/prompt-cartoon-channel-first-frame.png"
+  "tests/reports/templates/animation-channel-first-frame.png",
+  "tests/reports/templates/prompt-animation-channel-first-frame.png"
 ] as const;
 
 describe("Aura3D 1.0.5 release readiness verifier", () => {

@@ -1,6 +1,6 @@
 # Aura3D Claim Guidelines
 
-Version: 1.1.0
+Version: 1.2.0
 Planning alignment: 1.1.0 release gates
 
 Every public claim must map to a shipped API, CLI command, template, example,
@@ -14,7 +14,7 @@ published.
 
 ## Aura3D advantage
 
-The current `1.1.0` Aura3D SDK release may claim:
+The current `1.3.0` Aura3D SDK release may claim:
 
 - Aura3D is an agent-friendly browser 3D SDK.
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
@@ -93,31 +93,31 @@ Do not use these as proof for broad public claims:
 
 Do not market future roadmap items as shipped.
 
-## Aura3D 1.1 Cartoon Studio Claims
+## Aura3D 1.1 Animation Studio Claims
 
-The 1.1 cartoon-studio track is a planned major release, not a shipped claim surface until the release gates in `docs/project/aura3d-1.1-cartoon-studio-prd.md` pass.
+The 1.1 animation-studio track is a planned major release, not a shipped claim surface until the animation-studio release gates pass.
 
 Allowed planning wording:
 
-- Aura3D 1.1 is planned as a browser-native cartoon episode production pipeline.
+- Aura3D 1.1 is planned as a browser-native animation episode production pipeline.
 - Aura3D 1.1 is intended to connect typed assets, show-bible metadata, shot timelines, dialogue/captions, visemes, render queues, video export, package evidence, and review artifacts.
 - Generated images can be used as concept art, thumbnails, textures, background plates, or style references.
 - The 1.1 gate is intended to reject still-image puppet output and source-only render plans as publish-ready animation proof.
 
 Allowed wording after the 1.1 gates pass, only if the evidence exists:
 
-- Aura3D can package a short browser-rendered cartoon episode from typed assets and a structured episode plan.
-- Aura3D can export captions, thumbnail, route proof, asset provenance, render manifest, and review artifacts for a scoped cartoon episode.
+- Aura3D can package a short browser-rendered animation episode from typed assets and a structured episode plan.
+- Aura3D can export captions, thumbnail, route proof, asset provenance, render manifest, and review artifacts for a scoped animation episode.
 - Aura3D can detect and reject global-only still-image motion for the scoped release gate.
 
 Blocked wording:
 
 - Aura3D produces Pixar-quality or final film-quality animation.
 - Aura3D is a magic image-to-video engine.
-- Aura3D turns any single generated image into a believable 3D cartoon episode.
+- Aura3D turns any single generated image into a believable 3D animation episode.
 - Aura3D replaces Blender, Maya, Toon Boom, After Effects, Unity, Unreal, or a full animation studio.
-- A CSS-transformed still image, fake parallax plate, subtitle-over-still output, or global image shake is real Aura3D cartoon animation.
-- `tests/reports/prompt-animation/cartoon-image-puppet-animation.webm` proves successful 1.1 animation.
+- A CSS-transformed still image, fake parallax plate, subtitle-over-still output, or global image shake is real Aura3D animation animation.
+- `tests/reports/prompt-animation/animation-image-puppet-animation.webm` proves successful 1.1 animation.
 
 The failed still-image puppet output may be cited only as negative evidence or a regression fixture that the 1.1 motion gate must reject.
 

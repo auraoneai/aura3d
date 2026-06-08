@@ -1,15 +1,62 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { deflateRawSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { FederatedResolver, normalizeLicense, type AuraCanonicalAsset, type ResolveCandidate } from "@aura3d/asset-index";
+import {
+  FederatedResolver,
+  createAuraIndexAdapter,
+  evaluateAnimationAssetProfile,
+  normalizeLicense,
+  type AuraCanonicalAsset,
+  type FetchJson,
+  type ResolveCandidate,
+} from "@aura3d/asset-index";
 import {
   buildSearchAdapters,
+  defaultDownloadFile,
   runResolve,
   runSearch,
   selectPullable,
   toResolveConstraints,
 } from "../../../packages/aura3d-cli/src/pull-bridge";
+
+/**
+ * The exact shape the hosted catalog worker returns (verified against
+ * GET https://aura3d-asset-index-cron.newsroom.workers.dev/search). Used to mock
+ * `fetchJson` so these tests stay offline-deterministic.
+ */
+const WORKER_RESPONSE = {
+  query: "cute robot mascot character",
+  count: 3,
+  results: [
+    {
+      id: "objaverse:07a6bdfcfde44565a259be970000d2a3",
+      title: "Cute Little Robot",
+      source: "objaverse",
+      url: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/07a6bdfcfde44565a259be970000d2a3.glb",
+      license: "CC-BY-4.0",
+      thumbnail: "https://media.sketchfab.com/x/thumb.jpeg",
+      attribution: "Paleo Modelist",
+      score: 0.84,
+    },
+    {
+      id: "sketchfab:6aadb75f596742ada2814ad4593f0032",
+      title: "cute robot",
+      source: "sketchfab",
+      url: "https://api.sketchfab.com/v3/models/6aadb75f596742ada2814ad4593f0032/download",
+      license: "CC-BY-4.0",
+      thumbnail: "https://media.sketchfab.com/y/thumb.jpeg",
+      attribution: "Doink",
+      score: 0.82,
+    },
+  ],
+} as const;
+
+function workerFetch(): FetchJson {
+  return async (_url: string) => WORKER_RESPONSE;
+}
 
 /**
  * These tests pin the license-safety contract of the CLI pull bridge without a
@@ -118,27 +165,27 @@ describe("toResolveConstraints", () => {
     });
   });
 
-  it("maps cartoon profiles to redistributable GLB constraints", () => {
-    expect(toResolveConstraints({ profile: "cartoon-character" }, true)).toEqual({
+  it("maps animation profiles to redistributable GLB constraints", () => {
+    expect(toResolveConstraints({ profile: "animation-character" }, true)).toEqual({
       license: ["CC0", "CC-BY"],
       maxTriangles: 160_000,
       animated: true,
       format: "glb",
       redistributableOnly: true,
     });
-    expect(toResolveConstraints({ profile: "cartoon-prop" }, true)).toEqual({
+    expect(toResolveConstraints({ profile: "animation-prop" }, true)).toEqual({
       license: ["CC0", "CC-BY"],
       maxTriangles: 100_000,
       format: "glb",
       redistributableOnly: true,
     });
-    expect(toResolveConstraints({ profile: "cartoon-set", animated: true }, false)).toEqual({
+    expect(toResolveConstraints({ profile: "animation-set", animated: true }, false)).toEqual({
       license: ["CC0", "CC-BY"],
       maxTriangles: 350_000,
       animated: true,
       format: "glb",
     });
-    expect(toResolveConstraints({ profile: "cartoon-environment" }, true)).toEqual({
+    expect(toResolveConstraints({ profile: "animation-environment" }, true)).toEqual({
       license: ["CC0", "CC-BY"],
       maxTriangles: 250_000,
       format: "glb",
@@ -342,75 +389,364 @@ describe("runSearch", () => {
     expect(report.messages.some((m) => m.includes("manual license check"))).toBe(true);
   });
 
-  it("filters and annotates cartoon-character search results by profile suitability", async () => {
+  it("filters and annotates animation-character search results by profile suitability", async () => {
     const hero = asset({
       id: "src:hero",
-      title: "Stylized Cartoon Humanoid Hero With Mouth Shapes",
-      tags: ["cartoon", "character", "humanoid", "rigged", "animated", "mouth", "expression"],
+      title: "Stylized Animation Humanoid Hero With Mouth Shapes",
+      tags: ["animation", "character", "humanoid", "rigged", "animated", "mouth", "expression"],
       hasAnimations: true,
     });
     const staticChair = asset({
       id: "src:chair",
-      title: "Cute Cartoon Chair Prop",
-      tags: ["cartoon", "prop", "chair"],
+      title: "Cute Animation Chair Prop",
+      tags: ["animation", "prop", "chair"],
       hasAnimations: false,
     });
 
     const report = await runSearch({
-      query: "cartoon character",
-      constraints: { profile: "cartoon-character" },
+      query: "animation character",
+      constraints: { profile: "animation-character" },
       makeResolver: () => stubResolver([candidate(staticChair, 100), candidate(hero, 10)]) as never,
     });
 
-    expect(report.profile).toBe("cartoon-character");
+    expect(report.profile).toBe("animation-character");
     expect(report.candidates.map((c) => c.id)).toEqual(["src:hero"]);
-    expect(report.candidates[0]?.profile).toMatchObject({ name: "cartoon-character", suitable: true });
+    expect(report.candidates[0]?.profile).toMatchObject({ name: "animation-character", suitable: true });
     const rejected = report.rejectedCandidates.find((c) => c.id === "src:chair");
     expect(rejected?.profile?.suitable).toBe(false);
     expect(rejected?.profile?.rejectionReasons.join("\n")).toContain("not character-like");
   });
 
-  it("returns curated starter-pack cartoon-character results through the CLI search adapter path", async () => {
-    const adapters = buildSearchAdapters({}).filter((adapter) => adapter.id === "cartoon-starter-pack");
+  it("returns curated starter-pack animation-character results through the CLI search adapter path", async () => {
+    const adapters = buildSearchAdapters({}).filter((adapter) => adapter.id === "animation-starter-pack");
     expect(adapters).toHaveLength(1);
 
     const report = await runSearch({
-      query: "cartoon character",
-      constraints: { profile: "cartoon-character" },
+      query: "animation character",
+      constraints: { profile: "animation-character" },
       makeResolver: () => new FederatedResolver({ adapters, limit: 10 }) as never,
     });
 
-    expect(report.profile).toBe("cartoon-character");
+    expect(report.profile).toBe("animation-character");
     expect(report.candidates.length).toBeGreaterThanOrEqual(5);
-    expect(report.candidates.slice(0, 5).every((candidate) => candidate.id.startsWith("cartoon-starter:"))).toBe(true);
+    expect(report.candidates.slice(0, 5).every((candidate) => candidate.id.startsWith("animation-starter:"))).toBe(true);
     expect(report.candidates.slice(0, 5).every((candidate) => candidate.autoPullable && candidate.profile?.suitable)).toBe(true);
   });
 
-  it("refuses cartoon-profile resolve when the top pullable candidate is unsuitable", async () => {
+  it("refuses animation-profile resolve when the top pullable candidate is unsuitable", async () => {
     const projectDir = makeProject();
     const staticChair = asset({
       id: "src:chair",
-      title: "Cute Cartoon Chair Prop",
-      tags: ["cartoon", "prop", "chair"],
+      title: "Cute Animation Chair Prop",
+      tags: ["animation", "prop", "chair"],
       hasAnimations: false,
     });
     let downloads = 0;
 
     await expect(
       runResolve({
-        query: "cartoon character",
+        query: "animation character",
         name: "hero",
         projectDir,
-        constraints: { profile: "cartoon-character" },
+        constraints: { profile: "animation-character" },
         makeResolver: () => stubResolver([candidate(staticChair)]) as never,
         download: async () => {
           downloads += 1;
         },
       }),
-    ).rejects.toThrow(/cartoon-character profile/i);
+    ).rejects.toThrow(/animation-character profile/i);
     expect(downloads).toBe(0);
   });
 });
+
+describe("hosted catalog surfacing (#24/#18)", () => {
+  it("buildSearchAdapters wires the hosted aura-index adapter", () => {
+    const adapters = buildSearchAdapters({});
+    expect(adapters.some((adapter) => adapter.id === "aura-index")).toBe(true);
+  });
+
+  it("default (no --license) search surfaces the worker's CC-BY characters", async () => {
+    const adapter = createAuraIndexAdapter();
+    const report = await runSearch({
+      query: "cute robot mascot character",
+      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
+    });
+    expect(report.candidates.length).toBeGreaterThanOrEqual(2);
+    expect(report.candidates.every((c) => c.license === "CC-BY-4.0")).toBe(true);
+    expect(report.candidates.some((c) => c.id === "objaverse:07a6bdfcfde44565a259be970000d2a3")).toBe(true);
+  });
+
+  it("--license cc0 deliberately excludes the worker's CC-BY catalog hits", async () => {
+    const adapter = createAuraIndexAdapter();
+    const report = await runSearch({
+      query: "cute robot mascot character",
+      constraints: { license: ["CC0"] },
+      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
+    });
+    expect(report.candidates).toHaveLength(0);
+  });
+
+  it("animation-character search keeps catalog CC-BY characters via pre-download leniency (#20/#23)", async () => {
+    const adapter = createAuraIndexAdapter();
+    const report = await runSearch({
+      query: "cute robot mascot character",
+      constraints: { profile: "animation-character" },
+      makeResolver: () => new FederatedResolver({ adapters: [adapter], fetchJson: workerFetch(), limit: 10 }) as never,
+    });
+    // "robot" is a character term; rig/animation metadata is absent but deferred,
+    // so the catalog hit stays suitable instead of being hard-rejected.
+    const hit = report.candidates.find((c) => c.id === "objaverse:07a6bdfcfde44565a259be970000d2a3");
+    expect(hit?.profile?.suitable).toBe(true);
+    expect(hit?.profile?.validationHooks).toContain("animation-clips");
+    expect(hit?.profile?.validationHooks).toContain("humanoid-rig");
+  });
+});
+
+describe("animation profile pre-download leniency (#20/#23)", () => {
+  const catalogRobot = (): AuraCanonicalAsset =>
+    asset({
+      id: "objaverse:robot",
+      title: "Cute Little Robot",
+      tags: ["cute", "little", "robot"],
+      license: normalizeLicense("CC-BY-4.0"),
+    });
+
+  it("strict mode (post-download) still hard-rejects absent rig/animation metadata", () => {
+    const evaluation = evaluateAnimationAssetProfile(catalogRobot(), "animation-character");
+    expect(evaluation.suitable).toBe(false);
+    expect(evaluation.validationHooks).toHaveLength(0);
+  });
+
+  it("pre-download mode defers unknown metadata to validation hooks instead of rejecting", () => {
+    const evaluation = evaluateAnimationAssetProfile(catalogRobot(), "animation-character", { preDownload: true });
+    expect(evaluation.suitable).toBe(true);
+    expect(evaluation.validationHooks).toEqual(
+      expect.arrayContaining(["humanoid-rig", "animation-clips", "facial-blendshapes"]),
+    );
+  });
+
+  it("pre-download mode still rejects a PROVEN-static asset (hasAnimations === false)", () => {
+    const evaluation = evaluateAnimationAssetProfile(
+      asset({ id: "x:static", title: "Robot Statue", tags: ["robot"], hasAnimations: false }),
+      "animation-character",
+      { preDownload: true },
+    );
+    expect(evaluation.suitable).toBe(false);
+    expect(evaluation.rejectionReasons.join("\n")).toContain("marked static");
+  });
+
+  it("rejects an insanely-scaled asset even pre-download", () => {
+    const evaluation = evaluateAnimationAssetProfile(
+      asset({ id: "x:huge", title: "Robot Hero", tags: ["robot"], bounds: { size: [80, 2, 2] }, hasAnimations: true }),
+      "animation-character",
+      { preDownload: true },
+    );
+    expect(evaluation.suitable).toBe(false);
+    expect(evaluation.rejectionReasons.join("\n")).toContain("implausible");
+  });
+
+  it("rejects a known-oversized payload even pre-download", () => {
+    const evaluation = evaluateAnimationAssetProfile(
+      asset({ id: "x:big", title: "Robot Hero", tags: ["robot"], fileSizeBytes: 200 * 1024 * 1024, hasAnimations: true }),
+      "animation-character",
+      { preDownload: true },
+    );
+    expect(evaluation.suitable).toBe(false);
+    expect(evaluation.rejectionReasons.join("\n")).toContain("exceeds");
+  });
+});
+
+describe("download flow: ZIP unpack + provenance (#21/#19/#26)", () => {
+  it("captures sha256 + injected retrievedAt into provenance", async () => {
+    const projectDir = makeProject();
+    const cc0 = asset({ id: "os3a:bench", title: "Park Bench", url: "https://example.test/Bench.glb", license: normalizeLicense("CC0") });
+    const bytes = minimalGlb();
+    const expectedSha = `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+
+    await runResolve({
+      query: "park bench",
+      name: "bench",
+      projectDir,
+      retrievedAt: "2026-06-07T00:00:00.000Z",
+      makeResolver: () => stubResolver([candidate(cc0)]) as never,
+      download: async (_url, dest) => {
+        writeFileSync(dest, bytes);
+      },
+    });
+
+    const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+      assets: Array<{ id: string; provenance?: { sha256?: string; retrievedAt?: string; attribution?: string } }>;
+    };
+    const prov = manifest.assets.find((entry) => entry.id === "bench")?.provenance;
+    expect(prov?.sha256).toBe(expectedSha);
+    expect(prov?.retrievedAt).toBe("2026-06-07T00:00:00.000Z");
+  });
+
+  it("resolve uses the downloader's unpacked-path result for the add pipeline", async () => {
+    const projectDir = makeProject();
+    const cc0 = asset({ id: "pizza:car", title: "Toy Car", url: "https://poly.pizza/download/car.zip", license: normalizeLicense("CC0") });
+
+    const report = await runResolve({
+      query: "toy car",
+      name: "car",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(cc0)]) as never,
+      // Simulate a ZIP downloader that unpacks and returns the assembled .glb path.
+      download: async (_url, dest) => {
+        const assembled = join(dirname(dest), "unpacked.glb");
+        writeFileSync(assembled, minimalGlb());
+        return { path: assembled };
+      },
+    });
+    expect(report.ok).toBe(true);
+    expect(report.typedRef).toBe("model(assets.car)");
+  });
+
+  it("defaultDownloadFile unpacks a fetched ZIP to its .glb", async () => {
+    const projectDir = makeProject();
+    const dest = join(projectDir, "model.glb");
+    const zip = makeZip([
+      { name: "scene.bin", data: Buffer.from("bindata") },
+      { name: "model.glb", data: minimalGlb() },
+    ]);
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(new Uint8Array(zip), { status: 200, headers: { "content-type": "application/zip" } })) as typeof fetch;
+    try {
+      const result = await defaultDownloadFile("https://poly.pizza/download/x.zip", dest);
+      expect(result?.path?.endsWith("model.glb")).toBe(true);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it("defaultDownloadFile surfaces a clear error for an auth-gated JSON envelope", async () => {
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({ detail: "Authentication required" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })) as typeof fetch;
+    try {
+      await expect(
+        defaultDownloadFile("https://api.sketchfab.com/v3/models/abc/download", join(tmpdir(), "x.glb")),
+      ).rejects.toThrow(/JSON envelope|auth/i);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it("re-resolving an asset preserves prior hand-authored provenance (#26)", async () => {
+    const projectDir = makeProject();
+    // Seed an entry with a hand-authored attribution the resolver won't re-supply.
+    const seeded = asset({ id: "src:hero", title: "Hero", url: "https://example.test/hero.glb", license: normalizeLicense("CC-BY-4.0"), attribution: "Original Author" });
+    await runResolve({
+      query: "hero",
+      name: "hero",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(seeded)]) as never,
+      download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+    });
+
+    // Re-resolve the SAME name from a source with NO attribution; the prior one
+    // must survive the merge.
+    const reseed = asset({ id: "src:hero2", title: "Hero", url: "https://example.test/hero2.glb", license: normalizeLicense("CC0") });
+    await runResolve({
+      query: "hero",
+      name: "hero",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(reseed)]) as never,
+      download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+    });
+
+    const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+      assets: Array<{ id: string; provenance?: { attribution?: string; license?: string } }>;
+    };
+    const prov = manifest.assets.find((entry) => entry.id === "hero")?.provenance;
+    // license is explicitly re-supplied by resolve (CC0-1.0), attribution is not -> preserved.
+    expect(prov?.attribution).toBe("Original Author");
+  });
+});
+
+describe("aura-index adapter (#24)", () => {
+  it("normalizes worker results into auto-pullable CC-BY canonical assets", async () => {
+    const adapter = createAuraIndexAdapter();
+    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
+    expect(records).toHaveLength(2);
+    expect(records[0]).toMatchObject({
+      source: "objaverse",
+      access: "direct-download",
+      format: "glb",
+      attribution: "Paleo Modelist",
+    });
+    expect(records[0]?.license.spdx).toBe("CC-BY-4.0");
+  });
+
+  it("returns [] for an empty query without fetching", async () => {
+    let fetched = false;
+    const adapter = createAuraIndexAdapter();
+    const records = await adapter.search({ text: "  " }, { fetchJson: async () => { fetched = true; return {}; } });
+    expect(records).toEqual([]);
+    expect(fetched).toBe(false);
+  });
+});
+
+/** Build a tiny ZIP (deflate or stored) the dependency-free reader can parse. */
+function makeZip(files: readonly { name: string; data: Buffer }[]): Buffer {
+  const locals: Buffer[] = [];
+  const centrals: Buffer[] = [];
+  let offset = 0;
+  for (const file of files) {
+    const nameBuf = Buffer.from(file.name, "utf8");
+    const compressed = deflateRawSync(file.data);
+    const crc = crc32(file.data);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(8, 8); // method: deflate
+    local.writeUInt16LE(0, 10);
+    local.writeUInt16LE(0, 12);
+    local.writeUInt32LE(crc, 14);
+    local.writeUInt32LE(compressed.length, 18);
+    local.writeUInt32LE(file.data.length, 22);
+    local.writeUInt16LE(nameBuf.length, 26);
+    local.writeUInt16LE(0, 28);
+    locals.push(local, nameBuf, compressed);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0, 8);
+    central.writeUInt16LE(8, 10);
+    central.writeUInt32LE(crc, 16);
+    central.writeUInt32LE(compressed.length, 20);
+    central.writeUInt32LE(file.data.length, 24);
+    central.writeUInt16LE(nameBuf.length, 28);
+    central.writeUInt32LE(offset, 42);
+    centrals.push(central, nameBuf);
+    offset += local.length + nameBuf.length + compressed.length;
+  }
+  const localBlock = Buffer.concat(locals);
+  const centralBlock = Buffer.concat(centrals);
+  const eocd = Buffer.alloc(22);
+  eocd.writeUInt32LE(0x06054b50, 0);
+  eocd.writeUInt16LE(files.length, 8);
+  eocd.writeUInt16LE(files.length, 10);
+  eocd.writeUInt32LE(centralBlock.length, 12);
+  eocd.writeUInt32LE(localBlock.length, 16);
+  return Buffer.concat([localBlock, centralBlock, eocd]);
+}
+
+function crc32(buf: Buffer): number {
+  let crc = ~0;
+  for (let i = 0; i < buf.length; i += 1) {
+    crc ^= buf[i]!;
+    for (let j = 0; j < 8; j += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  return (~crc) >>> 0;
+}
 
 function makeProject(): string {
   const dir = join(tmpdir(), `aura3d-pull-${Date.now()}-${Math.random().toString(16).slice(2)}`);

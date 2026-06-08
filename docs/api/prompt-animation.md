@@ -10,8 +10,8 @@ Use the public root package:
 import {
   animationStudio,
   captionCueAtTime,
-  cartoon,
-  cartoonDirector,
+  animation,
+  animationDirector,
   collectPromptAnimationEvidence,
   compilePromptEpisodePlan,
   createAudioStemManifest,
@@ -19,8 +19,8 @@ import {
   createAuraVoiceBridgePackage,
   createAuraVoiceVisemeTrack,
   createCaptionTimingProof,
-  createCartoonRenderOutputPackageMetadata,
-  createCartoonRenderQueue,
+  createAnimationRenderOutputPackageMetadata,
+  createAnimationRenderQueue,
   createGlbBlendshapeVisemeCue,
   createPrimitiveMouthVisemeCues,
   createPromptAnimationDeterministicScreenshotFixtureMetadata,
@@ -63,11 +63,60 @@ Required files:
 
 These files are data contracts. Aura3D scenes are still authored as TypeScript against `@aura3d/engine`.
 
-## 1.1 cartoon-studio boundary
+## animation-studio: the working prompt → document → render pipeline
 
-Aura3D 1.1 plans to promote `cartoon-studio` from source-level prompt-animation scaffolding into a real episode-production workflow. The target output is not only JSON contracts; it is a package folder containing a playable WebM, optional MP4, thumbnail, captions, metadata, route proof, asset provenance, render manifest, visual acceptance report, and review notes.
+The `compilePromptEpisodePlan(...)` flow documented in this file produces the JSON **contract**
+artifacts (used by the `prompt-animation-channel` template and the AuraVoice bridge). The
+`animation-studio` template wraps these contracts in a working, agent-driven production pipeline —
+prompt → `EpisodeDocument` → rendered video — that does not need a separate LLM or API key.
 
-Until those render/package gates exist and pass, prompt-animation examples are source-complete examples. They can prove planning, timing, typed asset references, shot playback intent, and evidence schemas. They do not prove final animation quality by themselves.
+**You** (the coding agent / AI harness) are the director. You drive the Scene-Tool CLI
+(`animation-scene`, exposed as `aura3d animation scene` in an installed project); each command edits
+one validated `EpisodeDocument` (`dist/scene/working.document.json`) and is rejected if it would
+break the scene. The loop:
+
+```bash
+# 1. Generate a complete scene from a prompt (cast + dialogue + camera + per-beat actions):
+animation-scene new --prompt "two robots argue on a space station" --full
+#    (omit --full for an EMPTY-cast skeleton you populate yourself)
+
+# 2. Override cast slots from the live catalog or a local rig (optional — --full binds a
+#    curated A-grade cast so the scene already renders):
+animation-scene cast add --id rusty --query "rusty industrial robot"
+animation-scene cast add --id sleek --file ./assets/android.glb
+
+# 3. Author the timed dialogue track (the subtitles AND the AuraVoice lip-sync contract).
+#    --end is optional; when omitted it is computed from the line's speech duration:
+animation-scene dialogue --line l1 --speaker rusty --text "You rerouted the coolant." --start 1
+
+# 4. Direct distinct per-beat performance (blocking, facing, gestures, camera):
+animation-scene block --character rusty --shot shot-1 --to -1.2,0 --yaw 1.2 --clip walk
+
+# 5. Render to a silent video (AURA_QUALITY=preview|final, AURA_RENDER_STYLE=toon|pbr):
+animation-scene render          # or: AURA_QUALITY=final npm run episode:render-3d
+```
+
+Pipeline facts an authoring agent must get right:
+
+- **Cast.** Prompt nouns become characters bound to the curated, render-ready **A-grade humanoid
+  cast** (neutral `cast-a` / `cast-b`). It is **never** the moon-garden `miko`/`luma` fixture and
+  there is no fixed default scene — `animation-scene new` with no prompt is an error.
+- **Set.** `pickSetForPrompt` routes by keyword: garage/workshop/office/kitchen each get a distinct
+  interior; forest/meadow/field → meadow; space/station → space-station; moon/garden/night →
+  moon-garden; everything else → a neutral studio. **Moon Garden is never the default.**
+- **Motion.** A shared standard clip library (`idle / talk / gesture / point / nod / walk / run /
+  react`) is retargeted per character. Extracted catalog mocap drives the **upper body**; legs stay
+  procedural for stability; locomotion is **velocity-gated** (a walk/run cycle plays only while the
+  character is actually translating).
+- **Dialogue timing** comes from a speech-duration estimate per line (no fixed subtitle windows).
+- **Audio.** The render is **silent by design**. Aura3D **never runs TTS** — it emits the timed
+  dialogue/caption/viseme track as the synchronization contract AuraVoice consumes later to generate
+  the voice and mux it onto the video.
+
+The render output target is a package folder containing a playable WebM, optional MP4, thumbnail,
+captions, metadata, route proof, asset provenance, render manifest, visual acceptance report, and
+review notes. The tools guarantee a *valid* document, not a *good* one — story quality is the
+directing agent's job.
 
 Rejected as publish-ready animation proof:
 
@@ -81,7 +130,7 @@ Generated images are still useful as concept art, thumbnails, textures, backgrou
 
 ## Minimum flow
 
-`compilePromptEpisodePlan(...)` is the shortest public path from prompt-level intent to the source artifacts needed by a prompt-cartoon route.
+`compilePromptEpisodePlan(...)` is the shortest public path from prompt-level intent to the source artifacts needed by a prompt-animation route.
 
 ```ts
 const plan = compilePromptEpisodePlan({
@@ -154,14 +203,14 @@ const plan = compilePromptEpisodePlan({
   route: "/episodes/moon-garden"
 });
 
-const renderQueue = createCartoonRenderQueue({
+const renderQueue = createAnimationRenderQueue({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   route: "/episodes/moon-garden",
   captureTimes: plan.shotTimeline.shots.flatMap((shot) => shot.captureTimes)
 });
 
-const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   renderQueue
@@ -175,11 +224,11 @@ const captionTimingProof = createCaptionTimingProof(plan.dialogueTrack, plan.cap
 console.log(plan.storyboard.scenes.length, renderOutputPackage.reviewPackagePaths, captionTimingProof.status);
 ```
 
-AuraVoice integration uses the same contract package. AuraVoice supplies narration, dialogue, captions, visemes, beat markers, dubbing maps, and audio stems; Aura3D turns those timing artifacts into cartoon performance, camera motion, scene assembly, screenshots, and evidence.
+AuraVoice integration uses the same contract package. AuraVoice supplies narration, dialogue, captions, visemes, beat markers, dubbing maps, and audio stems; Aura3D turns those timing artifacts into animation performance, camera motion, scene assembly, screenshots, and evidence.
 
-## Prompt-cartoon playback route
+## Prompt-animation playback route
 
-Prompt-cartoon playback keeps one Aura app mounted and mutates runtime nodes from the sampled shot timeline. Characters use typed GLB refs. Primitive mouth-card nodes are an explicit fallback for rigs that do not expose blendshape names.
+Prompt-animation playback keeps one Aura app mounted and mutates runtime nodes from the sampled shot timeline. Characters use typed GLB refs. Primitive mouth-card nodes are an explicit fallback for rigs that do not expose blendshape names.
 
 ```ts
 const visemeTrack = createAuraVoiceVisemeTrack({
@@ -246,7 +295,7 @@ const captionAtThreeSeconds = captionCueAtTime(plan.captionTrack, 3);
 console.log(captionTimingProof.status, captionAtThreeSeconds?.text);
 ```
 
-Episode plans created through `compilePromptEpisodePlan(...)`, `cartoon.episodePlan(...)`, or `cartoonDirector.createPlan(...)` include accessibility proof metadata for:
+Episode plans created through `compilePromptEpisodePlan(...)`, `animation.episodePlan(...)`, or `animationDirector.createPlan(...)` include accessibility proof metadata for:
 
 - Captions: required/enabled state, line-safe character target, minimum cue duration, and max timing drift.
 - Reduced motion: default state, runtime-toggle requirement, max camera shake, and max flash frequency.
@@ -366,12 +415,12 @@ The helper picks distinct shot IDs from the render queue and records time, frame
 
 ## Package and readiness commands
 
-These commands are the declared public readiness path for prompt-cartoon and AuraVoice-backed routes. They are not evidence until they have actually been run and their reports are archived with the episode package.
+These commands are the declared public readiness path for prompt-animation and AuraVoice-backed routes. They are not evidence until they have actually been run and their reports are archived with the episode package.
 
-Scaffold a prompt-cartoon channel:
+Scaffold a prompt-animation channel:
 
 ```bash
-npx create-aura3d@latest my-episode --template prompt-cartoon-channel
+npx create-aura3d@latest my-episode --template prompt-animation-channel
 cd my-episode
 ```
 
@@ -379,7 +428,7 @@ Add typed assets for every character, outfit, prop, and set part before using `m
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/character.glb --name character
-npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest assets validate-animation
 ```
 
 Repository release gates for the Aura3D 1.0.5 prompt-animation track:
@@ -391,7 +440,7 @@ pnpm prompt-animation:package
 pnpm prompt-animation:release
 ```
 
-Do not mark a prompt-cartoon or AuraVoice route publish-ready until contract validation, caption timing, viseme timing, audio-stem coverage, typed asset readiness, deterministic screenshot hashes, route health, accessibility proof, visual review, and package smoke gates have all passed.
+Do not mark a prompt-animation or AuraVoice route publish-ready until contract validation, caption timing, viseme timing, audio-stem coverage, typed asset readiness, deterministic screenshot hashes, route health, accessibility proof, visual review, and package smoke gates have all passed.
 
 ## Evidence rules
 
@@ -445,14 +494,14 @@ Treat these as separate gates:
 | Episode plan | `compilePromptEpisodePlan(...)` with characters, beats, timing, captions, and route | Typecheck/package smoke from a packed public install |
 | AuraVoice bridge | `createAuraVoiceBridgePackage(...)`, `validateAuraVoiceBridgePackage(...)`, `sampleAuraVoiceBridgeAtTime(...)` | AuraVoice/Aura3D package JSON with validation output and timing samples |
 | Shot playback | `createShotPlaybackPlan(...)` and `installShotPlayback(app, playback)` | Browser route report showing camera cuts, character state changes, captions, and visemes |
-| Render queue | `createCartoonRenderQueue(...)` and deterministic capture metadata | Render queue execution with screenshot/video artifacts, byte sizes, hashes, and stable ids |
+| Render queue | `createAnimationRenderQueue(...)` and deterministic capture metadata | Render queue execution with screenshot/video artifacts, byte sizes, hashes, and stable ids |
 | Captions and audio | Caption timing proof, audio stems, dub map, viseme track | Caption files, audio-stem manifests, timing drift report, and playback proof |
 | Publish readiness | `collectPromptAnimationEvidence(...)` and `evaluatePromptAnimationPublishReadiness(...)` | Archived evidence JSON, screenshot/video hashes, accessibility/visual review, and deploy proof |
 
-Do not publish placeholder screenshot hashes or mark a prompt-cartoon route
+Do not publish placeholder screenshot hashes or mark a prompt-animation route
 publish-ready from source declarations alone.
 
-## 1.1 engine cartoon, render, and publishing APIs
+## 1.1 engine animation, render, and publishing APIs
 
 Aura3D 1.1 adds public `@aura3d/engine` exports that turn the prompt-animation
 contracts into rendered episode packages with honest, capability-probed
@@ -465,9 +514,9 @@ and packaging evidence.
 
 ```ts
 import {
-  createCartoonEpisodePackageManifest,
-  createCartoonMotionQualityReport,
-  createCartoonRouteProof,
+  createAnimationEpisodePackageManifest,
+  createAnimationMotionQualityReport,
+  createAnimationRouteProof,
   createCloudRenderAdapter,
   createExternalPhonemeAnalyzerAdapter,
   createFrameEncoder,
@@ -477,23 +526,23 @@ import {
   createWebCodecsFrameEncoderAdapter,
   createYouTubeUploadAdapter,
   AssetLibraryBrowser,
-  validateCartoonEpisodePackage,
-  validateCartoonMotionQuality,
-  validateCartoonRouteProof
+  validateAnimationEpisodePackage,
+  validateAnimationMotionQuality,
+  validateAnimationRouteProof
 } from "@aura3d/engine";
 ```
 
-### Cartoon episode package writer and validator
+### Animation episode package writer and validator
 
-`createCartoonEpisodePackageManifest(...)` builds an
-`CartoonEpisodePackageManifest` (`aura3d-cartoon-episode-package/v1`) describing
-the on-disk package folder, and `validateCartoonEpisodePackage(manifest)` returns
-a `CartoonEpisodePackageValidationReport` with `status: "pass" | "fail"`.
+`createAnimationEpisodePackageManifest(...)` builds an
+`AnimationEpisodePackageManifest` (`aura3d-animation-episode-package/v1`) describing
+the on-disk package folder, and `validateAnimationEpisodePackage(manifest)` returns
+a `AnimationEpisodePackageValidationReport` with `status: "pass" | "fail"`.
 
 Key fields: `rootPath`, `publishTarget` (`"review" | "publish"`), and a `files`
-list of `CartoonEpisodePackageFile` records (each with `role`, `path`, `present`,
+list of `AnimationEpisodePackageFile` records (each with `role`, `path`, `present`,
 optional `byteLength`/`sha256`/`mimeType`). The required roles come from
-`requiredCartoonEpisodePackageRoles` (thumbnail, captions VTT + SRT,
+`requiredAnimationEpisodePackageRoles` (thumbnail, captions VTT + SRT,
 metadata JSON, prompt-animation evidence JSON, route-proof JSON, asset-provenance
 JSON, render-manifest JSON, visual-acceptance JSON, motion-quality JSON, and the
 review-package markdown) plus a video role: `video-webm` is required, with
@@ -502,7 +551,7 @@ review-package markdown) plus a video role: `video-webm` is required, with
 all checked, and a manifest flagged `sourceOnly: true` or `notTrue3D: true` fails.
 
 ```ts
-const packageManifest = createCartoonEpisodePackageManifest({
+const packageManifest = createAnimationEpisodePackageManifest({
   episodeId: plan.episodePlan.episodeId,
   packageId: `${plan.episodePlan.episodeId}:package`,
   rootPath: "dist/episodes/moon-garden",
@@ -527,62 +576,62 @@ const packageManifest = createCartoonEpisodePackageManifest({
   ]
 });
 
-const packageReport = validateCartoonEpisodePackage(packageManifest);
+const packageReport = validateAnimationEpisodePackage(packageManifest);
 console.log(packageReport.status, packageReport.missingRoles, packageReport.emptyRoles);
 ```
 
-### Cartoon motion-quality analysis
+### Animation motion-quality analysis
 
-`createCartoonMotionQualityReport(...)` analyzes sampled rendered frames and
+`createAnimationMotionQualityReport(...)` analyzes sampled rendered frames and
 timeline segments to reject still-image / global-only motion, and
-`validateCartoonMotionQuality(report)` re-checks a stored report. The schema is
-`aura3d-cartoon-motion-quality/v1`.
+`validateAnimationMotionQuality(report)` re-checks a stored report. The schema is
+`aura3d-animation-motion-quality/v1`.
 
-Input frames are `CartoonMotionFrameSample` records (`frame`, `time`,
+Input frames are `AnimationMotionFrameSample` records (`frame`, `time`,
 `frameHash`, `globalDelta`, optional `cameraMoveExpected`, and per-`regions`
-`CartoonMotionFrameRegionSample` deltas keyed by `kind`: head, torso, arm, hand,
-leg, mouth, prop, background). Segments (`CartoonMotionSegmentInput`) carry a
+`AnimationMotionFrameRegionSample` deltas keyed by `kind`: head, torso, arm, hand,
+leg, mouth, prop, background). Segments (`AnimationMotionSegmentInput`) carry a
 `kind` (establishing, dialogue, action, camera, transition) and a frame range.
-Thresholds default from `defaultCartoonMotionQualityThresholds` (min frame-hash
+Thresholds default from `defaultAnimationMotionQualityThresholds` (min frame-hash
 changes, min global/region/mouth deltas, min independent moving region kinds, and
 max global-only frame ratio). The report fails when motion is global-only, when
 dialogue/action segments lack enough independently moving region kinds, or when a
 dialogue segment has no mouth motion.
 
 ```ts
-const motionQuality = createCartoonMotionQualityReport({
+const motionQuality = createAnimationMotionQualityReport({
   episodeId: plan.episodePlan.episodeId,
   frameRate: 30,
-  frames: sampledFrames, // CartoonMotionFrameSample[] captured from the render
+  frames: sampledFrames, // AnimationMotionFrameSample[] captured from the render
   segments: [
     { id: "seg-dialogue-1", shotId: "shot-001", kind: "dialogue", startFrame: 0, endFrame: 240 }
   ]
 });
 
 console.log(motionQuality.status, motionQuality.globalOnlyMotion);
-const motionIssues = validateCartoonMotionQuality(motionQuality);
+const motionIssues = validateAnimationMotionQuality(motionQuality);
 ```
 
-### Cartoon route proof
+### Animation route proof
 
-`createCartoonRouteProof(...)` builds a `CartoonRouteProof`
-(`aura3d-cartoon-route-proof/v1`) that proves a playback route actually rendered
-characters, captions, visemes, gestures, and controls; `validateCartoonRouteProof`
+`createAnimationRouteProof(...)` builds a `AnimationRouteProof`
+(`aura3d-animation-route-proof/v1`) that proves a playback route actually rendered
+characters, captions, visemes, gestures, and controls; `validateAnimationRouteProof`
 re-checks a stored proof.
 
 Key inputs: `route`, `duration`, `frameRate`, `assets`
-(`CartoonRouteProofAsset` with `role`, `typedAsset`, `source` and `ready` flags),
-`shots` (`CartoonRouteProofShot` with expected vs. visible character ids,
+(`AnimationRouteProofAsset` with `role`, `typedAsset`, `source` and `ready` flags),
+`shots` (`AnimationRouteProofShot` with expected vs. visible character ids,
 `nonblank`, `frameCount`, `frameHashes`), `captions`, `visemes`
 (`mode` includes `"missing-mouth-motion"`, which fails), `gestures`, a `render`
-state (`CartoonRouteProofRenderState` with `nonblank`, `sourceOnly`, `notTrue3D`,
+state (`AnimationRouteProofRenderState` with `nonblank`, `sourceOnly`, `notTrue3D`,
 overlay/chrome flags), and a `playback` state
-(`CartoonRouteProofPlaybackState` requiring play/pause/scrub/jump). The output
-carries `checks` (`CartoonRouteReadinessCheck[]`), `issues`, and
+(`AnimationRouteProofPlaybackState` requiring play/pause/scrub/jump). The output
+carries `checks` (`AnimationRouteReadinessCheck[]`), `issues`, and
 `status`. Source-only / not-true-3D routes and visible debug overlays fail.
 
 ```ts
-const routeProof = createCartoonRouteProof({
+const routeProof = createAnimationRouteProof({
   episodeId: plan.episodePlan.episodeId,
   route: "/episodes/moon-garden",
   duration: 60,
@@ -592,7 +641,7 @@ const routeProof = createCartoonRouteProof({
     { id: "luma", role: "character", typedAsset: true, source: "aura-assets", ready: true },
     { id: "moon-garden", role: "set", typedAsset: true, source: "aura-assets", ready: true }
   ],
-  shots: renderedShots,       // CartoonRouteProofShot[]
+  shots: renderedShots,       // AnimationRouteProofShot[]
   captions: renderedCaptions, // rendered: true
   visemes: renderedVisemes,   // rendered: true, mode: "blendshape-lip-sync"
   gestures: renderedGestures, // rendered: true
@@ -608,24 +657,24 @@ console.log(routeProof.status, routeProof.checks.filter((check) => !check.passed
 
 ### Render queue
 
-`createCartoonRenderQueue(...)` (covered in the minimum-flow example above)
-returns a `CartoonRenderQueueArtifact` (`render-queue`) of per-frame
-`CartoonRenderQueueItem` capture targets, each bound to a deterministic
-`CartoonRenderSceneStateSource` (stable `sceneStateId`, `deterministicSeed`, and
-matching AuraVoice timestamp). `validateCartoonRenderQueue(queue)` enforces the
+`createAnimationRenderQueue(...)` (covered in the minimum-flow example above)
+returns a `AnimationRenderQueueArtifact` (`render-queue`) of per-frame
+`AnimationRenderQueueItem` capture targets, each bound to a deterministic
+`AnimationRenderSceneStateSource` (stable `sceneStateId`, `deterministicSeed`, and
+matching AuraVoice timestamp). `validateAnimationRenderQueue(queue)` enforces the
 route, frame rate, capture times, outputs, frame-list/thumbnail/evidence frame
 integrity, and scene-state binding. Default outputs and evidence targets come
-from `defaultCartoonRenderOutputs` and `defaultCartoonEvidenceTargets`.
+from `defaultAnimationRenderOutputs` and `defaultAnimationEvidenceTargets`.
 
 ```ts
-const renderQueue = createCartoonRenderQueue({
+const renderQueue = createAnimationRenderQueue({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   route: "/episodes/moon-garden",
   viewport: { width: 1920, height: 1080 }
 });
 
-const queueIssues = validateCartoonRenderQueue(renderQueue);
+const queueIssues = validateAnimationRenderQueue(renderQueue);
 console.log(renderQueue.items.length, renderQueue.frameRate, queueIssues);
 ```
 
@@ -748,7 +797,7 @@ Performance capture: `createPerformanceCaptureSession(options)` returns a
 `PerformanceCaptureRecordingSession`. Sources are `manual | webcam |
 motion-capture`; non-manual sources require an available capability with granted
 runtime permission, and `start()` throws otherwise. Recorded
-`PerformanceCaptureRecordingSample`s convert to a `CartoonPerformanceArtifact`
+`PerformanceCaptureRecordingSample`s convert to a `AnimationPerformanceArtifact`
 via `toPerformanceArtifact()`. The snapshot always reports
 `externalServiceIntegrated: false`. Capabilities can be checked with
 `validatePerformanceCaptureCapability(capability)`.
@@ -766,14 +815,14 @@ const performance = capture.toPerformanceArtifact();
 ```
 
 Asset-library browser: `new AssetLibraryBrowser(manifest)` filters and inspects a
-`CartoonAssetManifest`. `setFilter`, `select`, `snapshot`, `detail`,
+`AnimationAssetManifest`. `setFilter`, `select`, `snapshot`, `detail`,
 `editorReference`, and `marketplaceSnapshot` enforce typed `assets.*` references
 and license metadata (`editorReference` throws for non-typed or unlicensed
 entries). Snapshots report `externalServicesIntegrated: false`; there is no live
 marketplace, only the offline typed manifest.
 
 ```ts
-const browser = new AssetLibraryBrowser(cartoonAssetManifest);
+const browser = new AssetLibraryBrowser(animationAssetManifest);
 const visible = browser.setFilter({ kind: "character", lipSyncReady: true });
 console.log(visible.visible, visible.evidence.typedAssetReferencesOnly);
 ```

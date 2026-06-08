@@ -1,5 +1,5 @@
 export {
-  validateCartoonAssets,
+  validateAnimationAssets,
   validateGameAssets
 } from "./index.js";
 
@@ -13,10 +13,10 @@ export type {
   AssetReadinessAssetReport,
   AssetReadinessValidationContract,
   AuraGameAssetReadinessProfile,
-  CartoonEpisodeAssetReadiness,
-  CartoonEpisodeAssetRole,
-  CartoonEpisodeMouthReadinessMode,
-  CartoonEpisodeReadinessReport
+  AnimationEpisodeAssetReadiness,
+  AnimationEpisodeAssetRole,
+  AnimationEpisodeMouthReadinessMode,
+  AnimationEpisodeReadinessReport
 } from "./index.js";
 
 export type {
@@ -30,9 +30,9 @@ export {
 } from "./game-asset-profiles.js";
 
 export {
-  cartoonCliAssetProfiles,
-  getCartoonAssetProfileDefinition
-} from "./cartoon-asset-profiles.js";
+  animationCliAssetProfiles,
+  getAnimationAssetProfileDefinition
+} from "./animation-asset-profiles.js";
 
 export type {
   AuraCliGameAssetProfile,
@@ -40,6 +40,6 @@ export type {
 } from "./game-asset-profiles.js";
 
 export type {
-  AuraCliCartoonAssetProfile,
-  AuraCliCartoonAssetProfileDefinition
-} from "./cartoon-asset-profiles.js";
+  AuraCliAnimationAssetProfile,
+  AuraCliAnimationAssetProfileDefinition
+} from "./animation-asset-profiles.js";

@@ -1,0 +1,295 @@
+{
+  "generatedAt": "2026-06-08T09:51:25.329Z",
+  "source": "KhronosGroup/glTF-Sample-Assets",
+  "models": [
+    {
+      "name": "CesiumMan",
+      "path": "public/hifi-cast/CesiumMan.glb",
+      "fileBytes": 438044,
+      "binBytes": 409680,
+      "skinCount": 1,
+      "joints": 19,
+      "boneNames": [
+        "Skeleton_torso_joint_1",
+        "Skeleton_torso_joint_2",
+        "torso_joint_3",
+        "Skeleton_neck_joint_1",
+        "Skeleton_neck_joint_2",
+        "Skeleton_arm_joint_L__4_",
+        "Skeleton_arm_joint_R",
+        "Skeleton_arm_joint_L__3_",
+        "Skeleton_arm_joint_R__2_",
+        "Skeleton_arm_joint_L__2_",
+        "Skeleton_arm_joint_R__3_",
+        "leg_joint_L_1",
+        "leg_joint_R_1",
+        "leg_joint_L_2",
+        "leg_joint_R_2",
+        "leg_joint_L_3",
+        "leg_joint_R_3",
+        "leg_joint_L_5",
+        "leg_joint_R_5"
+      ],
+      "mesh": {
+        "vertices": 3273,
+        "triangles": 4672
+      },
+      "hasTexture": true,
+      "imageCount": 1,
+      "textureCount": 1,
+      "hasBaseColorTexture": true,
+      "animations": [
+        "animation_0"
+      ],
+      "grade": "C",
+      "mappedBoneCount": 6,
+      "mappedBones": [
+        {
+          "bone": "neck",
+          "node": "Skeleton_neck_joint_1"
+        },
+        {
+          "bone": "leftUpperArm",
+          "node": "Skeleton_arm_joint_L__4_"
+        },
+        {
+          "bone": "rightUpperArm",
+          "node": "Skeleton_arm_joint_R"
+        },
+        {
+          "bone": "leftLowerLeg",
+          "node": "leg_joint_L_1"
+        },
+        {
+          "bone": "rightLowerLeg",
+          "node": "leg_joint_R_1"
+        },
+        {
+          "bone": "spine",
+          "node": "torso_joint_3"
+        }
+      ],
+      "missingRequired": [
+        "hips",
+        "head",
+        "leftLowerArm",
+        "leftHand",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftFoot",
+        "rightUpperLeg",
+        "rightFoot"
+      ],
+      "rigQuality": {
+        "grade": "C",
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false,
+        "mappedBoneCount": 6,
+        "reasons": [
+          "6 of 22 canonical humanoid bones mapped",
+          "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+          "no usable forearm chain on both arms"
+        ]
+      }
+    },
+    {
+      "name": "RiggedFigure",
+      "path": "public/hifi-cast/RiggedFigure.glb",
+      "fileBytes": 50116,
+      "binBytes": 22184,
+      "skinCount": 1,
+      "joints": 19,
+      "boneNames": [
+        "torso_joint_1",
+        "torso_joint_2",
+        "torso_joint_3",
+        "neck_joint_1",
+        "neck_joint_2",
+        "arm_joint_L_1",
+        "arm_joint_R_1",
+        "arm_joint_L_2",
+        "arm_joint_R_2",
+        "arm_joint_L_3",
+        "arm_joint_R_3",
+        "leg_joint_L_1",
+        "leg_joint_R_1",
+        "leg_joint_L_2",
+        "leg_joint_R_2",
+        "leg_joint_L_3",
+        "leg_joint_R_3",
+        "leg_joint_L_5",
+        "leg_joint_R_5"
+      ],
+      "mesh": {
+        "vertices": 370,
+        "triangles": 256
+      },
+      "hasTexture": false,
+      "imageCount": 0,
+      "textureCount": 0,
+      "hasBaseColorTexture": false,
+      "animations": [
+        "animation_0"
+      ],
+      "grade": "C",
+      "mappedBoneCount": 6,
+      "mappedBones": [
+        {
+          "bone": "neck",
+          "node": "neck_joint_1"
+        },
+        {
+          "bone": "leftUpperArm",
+          "node": "arm_joint_L_1"
+        },
+        {
+          "bone": "rightUpperArm",
+          "node": "arm_joint_R_1"
+        },
+        {
+          "bone": "leftLowerLeg",
+          "node": "leg_joint_L_1"
+        },
+        {
+          "bone": "rightLowerLeg",
+          "node": "leg_joint_R_1"
+        },
+        {
+          "bone": "spine",
+          "node": "torso_joint_1"
+        }
+      ],
+      "missingRequired": [
+        "hips",
+        "head",
+        "leftLowerArm",
+        "leftHand",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftFoot",
+        "rightUpperLeg",
+        "rightFoot"
+      ],
+      "rigQuality": {
+        "grade": "C",
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false,
+        "mappedBoneCount": 6,
+        "reasons": [
+          "6 of 22 canonical humanoid bones mapped",
+          "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+          "no usable forearm chain on both arms"
+        ]
+      }
+    },
+    {
+      "name": "BrainStem",
+      "path": "public/hifi-cast/BrainStem.glb",
+      "fileBytes": 3194848,
+      "binBytes": 3105104,
+      "skinCount": 1,
+      "joints": 18,
+      "boneNames": [
+        "node_3",
+        "node_12",
+        "node_20",
+        "node_18",
+        "node_19",
+        "node_13",
+        "node_14",
+        "node_17",
+        "node_16",
+        "node_15",
+        "node_8",
+        "node_9",
+        "node_10",
+        "node_11",
+        "node_4",
+        "node_5",
+        "node_6",
+        "node_7"
+      ],
+      "mesh": {
+        "vertices": 34159,
+        "triangles": 61666
+      },
+      "hasTexture": false,
+      "imageCount": 0,
+      "textureCount": 0,
+      "hasBaseColorTexture": false,
+      "animations": [
+        "animation_0"
+      ],
+      "grade": "D",
+      "mappedBoneCount": 0,
+      "mappedBones": [],
+      "missingRequired": [
+        "hips",
+        "spine",
+        "head",
+        "leftUpperArm",
+        "leftLowerArm",
+        "leftHand",
+        "rightUpperArm",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftLowerLeg",
+        "leftFoot",
+        "rightUpperLeg",
+        "rightLowerLeg",
+        "rightFoot"
+      ],
+      "rigQuality": {
+        "grade": "D",
+        "hasLegs": false,
+        "hasKnees": false,
+        "hasAnkles": false,
+        "hasFeet": false,
+        "mappedBoneCount": 0,
+        "reasons": [
+          "0 of 22 canonical humanoid bones mapped",
+          "not enough body structure to drive body acting (D)",
+          "missing spine/head axis",
+          "missing a pair of upper arms",
+          "missing a usable pair of legs"
+        ]
+      }
+    }
+  ],
+  "recommendation": {
+    "best": "CesiumMan",
+    "ranking": [
+      {
+        "name": "CesiumMan",
+        "grade": "C",
+        "hasLegs": true,
+        "hasTexture": true,
+        "mappedBoneCount": 6,
+        "joints": 19
+      },
+      {
+        "name": "RiggedFigure",
+        "grade": "C",
+        "hasLegs": true,
+        "hasTexture": false,
+        "mappedBoneCount": 6,
+        "joints": 19
+      },
+      {
+        "name": "BrainStem",
+        "grade": "D",
+        "hasLegs": false,
+        "hasTexture": false,
+        "mappedBoneCount": 0,
+        "joints": 18
+      }
+    ]
+  }
+}

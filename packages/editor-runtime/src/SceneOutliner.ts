@@ -1,6 +1,6 @@
 import { HierarchyModel, type HierarchyNodeDescriptor } from "./HierarchyModel";
 import type { SelectionId } from "./Selection";
-import type { CartoonSceneNode } from "./CartoonSceneEditor";
+import type { AnimationSceneNode } from "./AnimationSceneEditor";
 
 export interface SceneOutlinerItem extends HierarchyNodeDescriptor {
   readonly icon: string;
@@ -16,7 +16,7 @@ export class SceneOutliner {
   private readonly hierarchy = new HierarchyModel();
   private disposers: (() => void)[] = [];
 
-  describe(root: CartoonSceneNode, selectedIds: ReadonlySet<SelectionId> = new Set()): readonly SceneOutlinerItem[] {
+  describe(root: AnimationSceneNode, selectedIds: ReadonlySet<SelectionId> = new Set()): readonly SceneOutlinerItem[] {
     return this.hierarchy.flatten(root, selectedIds).map((item) => {
       const node = findNode(root, String(item.id));
       const kind = node?.kind ?? "unknown";
@@ -28,7 +28,7 @@ export class SceneOutliner {
     });
   }
 
-  render(root: CartoonSceneNode, container: HTMLElement, options: SceneOutlinerOptions = {}): readonly SceneOutlinerItem[] {
+  render(root: AnimationSceneNode, container: HTMLElement, options: SceneOutlinerOptions = {}): readonly SceneOutlinerItem[] {
     this.dispose();
     const items = this.describe(root, options.selectedIds);
     container.replaceChildren();
@@ -68,7 +68,7 @@ function iconForKind(kind: string): string {
   }
 }
 
-function findNode(root: CartoonSceneNode, id: string): CartoonSceneNode | undefined {
+function findNode(root: AnimationSceneNode, id: string): AnimationSceneNode | undefined {
   if (root.id === id) return root;
   for (const child of root.children) {
     const found = findNode(child, id);

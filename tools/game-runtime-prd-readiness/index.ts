@@ -214,15 +214,15 @@ const sourceBackedCheckboxes: readonly SourceBackedCheckbox[] = [
   },
   {
     text: "Include test route proving storyboard playback and caption timing.",
-    rationale: "The cartoon-channel template includes a storyboard playback browser spec source file and prompt-animation readiness tracks it as a required file.",
+    rationale: "The animation-channel template includes a storyboard playback browser spec source file and prompt-animation readiness tracks it as a required file.",
     source: [
       {
-        file: "packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts",
+        file: "packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts",
         tokens: ["caption", "shot"]
       },
       {
         file: "tools/prompt-animation-readiness/index.ts",
-        tokens: ["packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts"]
+        tokens: ["packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts"]
       }
     ]
   },
@@ -382,9 +382,9 @@ const evidenceGates: readonly EvidenceGate[] = [
     requiredEvidence: ["Passing browser test report and retained rendered-output evidence."]
   },
   {
-    text: "Browser tests verify storyboard shot playback, character performance state changes, caption timing, camera cuts, and visually nonblank cartoon frames.",
+    text: "Browser tests verify storyboard shot playback, character performance state changes, caption timing, camera cuts, and visually nonblank animation frames.",
     gate: "browser",
-    requiredEvidence: ["Passing browser test report and retained cartoon frame evidence."]
+    requiredEvidence: ["Passing browser test report and retained animation frame evidence."]
   },
   {
     text: "Confirm generated `dist/engine/agent-api/index.d.ts` exposes the new public types.",

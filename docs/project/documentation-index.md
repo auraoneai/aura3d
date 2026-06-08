@@ -2,6 +2,10 @@
 
 Version: 1.1.0 planning alignment
 
+## Guides
+
+- Build a browser game (end-to-end): `docs/guides/build-a-browser-game.md`
+
 ## Agent Docs
 
 - Agent manual: `docs/agents/README.md`
@@ -21,17 +25,8 @@ Version: 1.1.0 planning alignment
 - Current state: `docs/project/current-state.md`
 - Product boundaries: `docs/project/product-boundaries.md`
 - Release tracks: `docs/project/release-tracks.md`
-- Aura3D 1.1 Cartoon Studio PRD: `docs/project/aura3d-1.1-cartoon-studio-prd.md`
-- Aura3D Animation Engine PRD: `docs/project/aura3d-animation-engine-prd.md`
-- Aura3D Animation Engine progress: `docs/project/aura3d-animation-engine-progress.md`
-- Aura3D 1.1.0 release gates: `docs/project/aura3d-110-release-gates.md`
-- Aura3D 1.0.6 superseded release gates: `docs/project/aura3d-106-release-gates.md`
-- Aura3D 1.0.5 release gates: `docs/project/aura3d-105-release-gates.md`
 - Game runtime release contract: `docs/project/game-runtime-release.md`
 - Aura Clash showcase: `docs/project/aura-clash-showcase.md`
-- Asset catalog 1.0.4 release: `docs/project/asset-catalog-1.0.4-release.md`
-- External proof readiness: `docs/project/external-proof-readiness.md`
-- Three.js runtime removal PRD: `docs/project/three-runtime-removal-prd.md`
 - Release process: `docs/project/release-process.md`
 - Release checklist: `docs/project/release-checklist.md`
 - Claim guidelines: `docs/project/claim-guidelines.md`
@@ -46,14 +41,14 @@ Version: 1.1.0 planning alignment
 - Animation runtime/events API: `docs/api/animation-runtime-events.md`
 - Editor and visual scripting API: `docs/api/editor-visual-scripting.md`
 - Editor review tooling API (1.1): `docs/api/editor-review-tooling.md`
-- Cartoon audio API (1.1): `docs/audio/cartoon-audio.md`
-- Cartoon animation helpers (1.1): `docs/animation/runtime-support.md`
-- Cartoon render preset/quality (1.1): `docs/rendering/cartoon-render-preset.md`
+- Animation audio API (1.1): `docs/audio/animation-audio.md`
+- Animation animation helpers (1.1): `docs/animation/runtime-support.md`
+- Animation render preset/quality (1.1): `docs/rendering/animation-render-preset.md`
 - Asset evidence API: `docs/api/assets.md`
 - Fighting-game example: `docs/examples/fighting-game.md`
 - Prompt animation API: `docs/api/prompt-animation.md`
 - AuraVoice bridge API: `docs/api/auravoice-bridge.md`
-- Cartoon-channel example: `docs/examples/cartoon-channel.md`
+- Animation-channel example: `docs/examples/animation-channel.md`
 - Prompt-to-episode example: `docs/examples/prompt-to-episode.md`
 - Aura Clash boundary: Aura Clash Arena is a development showcase until the 1.1.0 gameplay, visual, asset, audio, performance, deployment, and docs claim gates pass.
 - Concepts: `docs/concepts/`

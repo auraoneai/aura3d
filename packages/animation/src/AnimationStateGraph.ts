@@ -2,6 +2,7 @@ export {
   AnimationStateMachine as AnimationStateGraph,
   AnimationStateMachine,
   type AnimationState,
+  type AnimationStateBlend,
   type AnimationStateMachineGraphSnapshot,
   type AnimationStateMachineGraphState,
   type AnimationStateMachineGraphTransition,
@@ -10,16 +11,16 @@ export {
 
 import { AnimationStateMachine, type AnimationState } from "./AnimationStateMachine.js";
 
-export interface CartoonAnimationStateGraphOptions {
+export interface AnimationAnimationStateGraphOptions {
   readonly idleState?: string;
 }
 
-export interface CartoonAnimationStateGraphSample {
+export interface AnimationAnimationStateGraphSample {
   readonly frame: number;
   readonly state: string;
 }
 
-export function createCartoonAnimationStateGraph(options: CartoonAnimationStateGraphOptions = {}): AnimationStateMachine {
+export function createAnimationAnimationStateGraph(options: AnimationAnimationStateGraphOptions = {}): AnimationStateMachine {
   const idle = options.idleState ?? "idle";
   const states: readonly AnimationState[] = [
     {
@@ -41,11 +42,11 @@ export function createCartoonAnimationStateGraph(options: CartoonAnimationStateG
   return new AnimationStateMachine(states, idle);
 }
 
-export function sampleCartoonAnimationStateGraph(
+export function sampleAnimationAnimationStateGraph(
   graph: AnimationStateMachine,
   inputs: readonly Readonly<Record<string, number | boolean | string>>[],
   delta = 1 / 30
-): readonly CartoonAnimationStateGraphSample[] {
+): readonly AnimationAnimationStateGraphSample[] {
   return inputs.map((parameters, frame) => {
     for (const [key, value] of Object.entries(parameters)) graph.setParameter(key, value);
     return { frame, state: graph.update(delta) };
@@ -59,7 +60,7 @@ export interface LocomotionAnimationStateGraphOptions {
 /**
  * Reusable locomotion state graph (idle <-> walk <-> run) for character-controller and
  * Animation Studio templates. Parameters: `isMoving` (walk), `isRunning` (run). Mirrors
- * {@link createCartoonAnimationStateGraph} so both share the deterministic state-machine core.
+ * {@link createAnimationAnimationStateGraph} so both share the deterministic state-machine core.
  */
 export function createLocomotionAnimationStateGraph(options: LocomotionAnimationStateGraphOptions = {}): AnimationStateMachine {
   const idle = options.idleState ?? "idle";

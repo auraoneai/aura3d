@@ -78,7 +78,7 @@ interface KernelCheck {
 
 const strict = process.argv.includes("--strict");
 const reportPath = "tests/reports/effects-vfx-visual-audit.json";
-const markdownPath = "docs/project/effects-vfx-visual-audit.md";
+const markdownPath = "tests/reports/effects-vfx-visual-audit.md";
 const agentApiPath = "packages/engine/src/agent-api/index.ts";
 const contactSheetPath = "tests/reports/effects-vfx-visual-audit-contact-sheet.png";
 const findings: AuditFinding[] = [];

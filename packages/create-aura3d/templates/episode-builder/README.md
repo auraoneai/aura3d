@@ -1,7 +1,7 @@
 # Aura3D Episode Builder Template
 
-> **Status: example / experimental.** The flagship cartoon pipeline is the
-> [`cartoon-studio`](../cartoon-studio) template. This template is a
+> **Status: example / experimental.** The flagship animation pipeline is the
+> [`animation-studio`](../animation-studio) template. This template is a
 > contract/example only.
 
 This template demonstrates a guided prompt-to-episode builder on top of the
@@ -27,7 +27,7 @@ Replace primitive characters with typed GLB assets by running:
 ```bash
 npx @aura3d/cli@latest assets add ./assets/miko.glb --name miko
 npx @aura3d/cli@latest assets add ./assets/luma.glb --name luma
-npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest assets validate-animation
 ```
 
 Then import `assets.miko` and `assets.luma` from `src/aura-assets.ts` and pass them to `model(assets.miko)` and `model(assets.luma)`.
@@ -45,6 +45,6 @@ Do not replace this with a string asset id or a raw loader.
 
 This scaffold intentionally does not claim publish readiness from source alone.
 Before closing build, route, asset, screenshot, render, or visual-quality gates,
-archive the matching `npm run build`, `assets validate-cartoon`, browser
+archive the matching `npm run build`, `assets validate-animation`, browser
 evidence, screenshot hashes, render outputs, and human or automated review
 artifacts.

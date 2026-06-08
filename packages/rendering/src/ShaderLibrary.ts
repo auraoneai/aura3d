@@ -1,7 +1,7 @@
 import { ShaderPreprocessor, type ShaderPreprocessOptions } from "./ShaderPreprocessor";
 import { DEFAULT_PBR_SHADER_MARKER, DEFAULT_PBR_SHADER_NAME } from "./PBRMaterial";
 import { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
-import { registerCartoonToonShader } from "./cartoon/CartoonToonMaterial.js";
+import { registerAnimationToonShader } from "./animation/AnimationToonMaterial.js";
 
 export interface ShaderSourcePair {
   readonly name: string;
@@ -1323,7 +1323,7 @@ void main() {
   float metallic = mix(u_metallic, clamp(u_metallic * metallicRoughnessSample.b, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
   float roughness = mix(u_roughness, clamp(u_roughness * metallicRoughnessSample.g, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
   float occlusion = mix(1.0, mix(1.0, texture(u_occlusionTexture, v_uv).r, clamp(u_occlusionStrength, 0.0, 1.0)), step(0.5, u_occlusionTextureEnabled));
-  vec3 emissive = u_emissiveColor * u_emissiveStrength + a3dPbrDecodeEnvironmentSrgb(texture(u_emissiveTexture, v_uv).rgb) * step(0.5, u_emissiveTextureEnabled);
+  vec3 emissive = u_emissiveColor * u_emissiveStrength * mix(vec3(1.0), a3dPbrDecodeEnvironmentSrgb(texture(u_emissiveTexture, v_uv).rgb), step(0.5, u_emissiveTextureEnabled));
   vec3 materialBase = a3dApplyAdvancedPbrLobes(
     baseColor.rgb,
     u_clearcoatFactor,
@@ -1443,16 +1443,39 @@ void main() {
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_modelViewProjection;
+// Uniform fast path (<= 4 targets / 64 verts):
 uniform vec4 u_morphPositionDeltas[256];
 uniform vec4 u_morphWeights;
 uniform float u_morphTargetCount;
+// Texture-backed path (lifts the 4/64 cap; see MorphTargetPlan.ts createMorphTargetPlan):
+uniform sampler2D u_morphDeltaTexture;
+uniform float u_morphUsesTexture;     // > 0.5 => sample deltas from the texture
+uniform float u_morphTextureWidth;    // = vertexCount
+uniform float u_morphRowsPerTarget;   // 1 = positions only, 2 = positions + normals
+uniform float u_morphWeightArray[64]; // per-target weights for the texture path
+vec3 sampleMorphTexel(float row, float vertex) {
+  // Fetch RGBA float texel at (x=vertex, y=row) using normalized coords + nearest filtering.
+  float u = (vertex + 0.5) / max(1.0, u_morphTextureWidth);
+  float height = u_morphTargetCount * u_morphRowsPerTarget;
+  float v = (row + 0.5) / max(1.0, height);
+  return texture(u_morphDeltaTexture, vec2(u, v)).xyz;
+}
 void main() {
-  int morphVertexIndex = clamp(gl_VertexID, 0, 63);
   vec3 morphDelta = vec3(0.0);
-  for (int target = 0; target < 4; ++target) {
-    if (float(target) < u_morphTargetCount) {
-      int morphIndex = target * 64 + morphVertexIndex;
-      morphDelta += u_morphPositionDeltas[morphIndex].xyz * u_morphWeights[target];
+  if (u_morphUsesTexture > 0.5) {
+    float vertex = float(gl_VertexID);
+    for (int target = 0; target < 64; ++target) {
+      if (float(target) >= u_morphTargetCount) break;
+      float row = float(target) * u_morphRowsPerTarget;
+      morphDelta += sampleMorphTexel(row, vertex) * u_morphWeightArray[target];
+    }
+  } else {
+    int morphVertexIndex = clamp(gl_VertexID, 0, 63);
+    for (int target = 0; target < 4; ++target) {
+      if (float(target) < u_morphTargetCount) {
+        int morphIndex = target * 64 + morphVertexIndex;
+        morphDelta += u_morphPositionDeltas[morphIndex].xyz * u_morphWeights[target];
+      }
     }
   }
   vec3 morphedPosition = a_position + morphDelta;
@@ -2735,9 +2758,9 @@ void main() {
 }
 `
   });
-  // Register the cartoon/cel toon program (banded N·L ramp + Fresnel rim).
+  // Register the animation/cel toon program (banded N·L ramp + Fresnel rim).
   // This is a real GLSL program compiled through the same library path as the
-  // built-in shaders; CartoonToonMaterial targets it via CARTOON_TOON_SHADER_NAME.
-  registerCartoonToonShader(library);
+  // built-in shaders; AnimationToonMaterial targets it via ANIMATION_TOON_SHADER_NAME.
+  registerAnimationToonShader(library);
   return library;
 }

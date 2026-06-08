@@ -1,5 +1,5 @@
-import type { CartoonEpisodePackageManifest } from "./CartoonEpisodePackage.js";
-import type { CartoonRenderQueueArtifact } from "./CartoonRenderQueue.js";
+import type { AnimationEpisodePackageManifest } from "./AnimationEpisodePackage.js";
+import type { AnimationRenderQueueArtifact } from "./AnimationRenderQueue.js";
 import {
   createPromptAnimationIssue,
   type PromptAnimationId,
@@ -57,8 +57,8 @@ export interface CreateCloudRenderAdapterOptions {
 
 export function createCloudRenderJobRequest(input: {
   readonly provider?: CloudRenderProvider | undefined;
-  readonly packageManifest: CartoonEpisodePackageManifest;
-  readonly renderQueue: CartoonRenderQueueArtifact;
+  readonly packageManifest: AnimationEpisodePackageManifest;
+  readonly renderQueue: AnimationRenderQueueArtifact;
   readonly outputDirectory?: string | undefined;
 }): CloudRenderJobRequest {
   return {

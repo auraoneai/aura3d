@@ -9,6 +9,7 @@ export * from "./Bone.js";
 export * from "./Skeleton.js";
 export * from "./Skinning.js";
 export * from "./BlendTree.js";
+export * from "./Inertialization.js";
 export * from "./AnimationStateMachine.js";
 export * from "./RootMotion.js";
 export * from "./MotionQuality.js";
@@ -16,13 +17,16 @@ export * from "./LocomotionController.js";
 export * from "./SceneAnimationBridge.js";
 export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
+export * from "./FootIk.js";
+export * from "./SpringBones.js";
 export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./AnimationClipEvents.js";
-export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateCartoonClipMap } from "./AnimationClipRegistry.js";
-export { createCartoonAnimationStateGraph, createLocomotionAnimationStateGraph, sampleCartoonAnimationStateGraph } from "./AnimationStateGraph.js";
+export { AnimationClipRegistry, createAnimationClipRegistry, validateAnimationClipMap, validateAnimationStudioClipMap } from "./AnimationClipRegistry.js";
+export { createAnimationAnimationStateGraph, createLocomotionAnimationStateGraph, sampleAnimationAnimationStateGraph } from "./AnimationStateGraph.js";
 export * from "./LocomotionKit.js";
+export * from "./FighterAnimationAdapter.js";
 export type {
   AnimationClipDefinition,
   AnimationClipId,
@@ -35,12 +39,16 @@ export type {
   AnimationKeyframe,
   AnimationTrack as AnimationClipTrack,
   AnimationTrackTarget,
-  CartoonClipMapReadiness,
-  CartoonClipMapReadinessOptions,
+  AnimationClipMapReadiness,
+  AnimationClipMapReadinessOptions,
   RegisteredAnimationClip
 } from "./AnimationClipRegistry.js";
 export * from "./AnimationController.js";
 export * from "./HumanoidRetargeting.js";
+export * from "./HumanoidBoneInference.js";
+export * from "./RigQuality.js";
+export * from "./library/standardHumanoidClips.js";
+export * from "./library/performanceStateGraph.js";
 export { AnimationClipThreeCompat } from "./threejs-compatibility/AnimationClip.js";
 export type { ThreeCompatKeyframeTrack, ThreeCompatLoopMode } from "./threejs-compatibility/AnimationClip.js";
 export { AnimationActionThreeCompat } from "./threejs-compatibility/AnimationAction.js";

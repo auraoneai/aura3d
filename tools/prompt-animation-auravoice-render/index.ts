@@ -6,23 +6,23 @@ const reportPath = resolve(root, "tests/reports/prompt-animation/auravoice-sampl
 const contractId = "auravoice-aura3d-prompt-animation/v1";
 
 const checks = [
-  checkFile("cartoon-route", "packages/create-aura3d/templates/cartoon-channel/src/main.ts", [
-    "__AURA3D_CARTOON_TEMPLATE__",
+  checkFile("animation-route", "packages/create-aura3d/templates/animation-channel/src/main.ts", [
+    "__AURA3D_ANIMATION_TEMPLATE__",
     "sampleShotPlaybackPlan",
     "playbackProbeTimes",
     "storyBible",
     "captionCueAtTime",
     "renderPlan.items.length"
   ]),
-  checkFile("prompt-cartoon-route", "packages/create-aura3d/templates/prompt-cartoon-channel/src/main.ts", [
-    "__AURA3D_CARTOON_TEMPLATE__",
+  checkFile("prompt-animation-route", "packages/create-aura3d/templates/prompt-animation-channel/src/main.ts", [
+    "__AURA3D_ANIMATION_TEMPLATE__",
     "sampleShotPlaybackPlan",
     "playbackProbeTimes",
     "storyBible",
     "captionCueAtTime",
     "renderPlan.items.length"
   ]),
-  checkFile("render-plan", "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts", [
+  checkFile("render-plan", "packages/create-aura3d/templates/animation-channel/src/render-plan.ts", [
     "createAuraVoiceBridgePackage",
     "createPromptAnimationDeterministicScreenshotFixtureMetadata",
     "plannedDeterministicCaptureSources",
@@ -38,7 +38,7 @@ const checks = [
     "artifactMetadata",
     "evidence-render-artifact-metadata-missing"
   ]),
-  checkFile("sample-render-source-workflow", "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts", [
+  checkFile("sample-render-source-workflow", "packages/create-aura3d/templates/animation-channel/src/render-plan.ts", [
     "sampleRenderSourceWorkflow",
     "promptToAudioToAura3DAnimation",
     "runtimeSeconds",
@@ -52,7 +52,7 @@ const checks = [
     "doesNotClaimRenderedArtifacts",
     "humanReviewRequired"
   ]),
-  checkFile("prompt-sample-render-source-workflow", "packages/create-aura3d/templates/prompt-cartoon-channel/src/render-plan.ts", [
+  checkFile("prompt-sample-render-source-workflow", "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts", [
     "sampleRenderSourceWorkflow",
     "promptToAudioToAura3DAnimation",
     "runtimeSeconds",
@@ -72,11 +72,11 @@ const checks = [
     "affectedRenderQueueItemIds",
     "fullEpisodeRebuildRequired"
   ]),
-  checkFile("browser-source", "packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts", [
+  checkFile("browser-source", "packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts", [
     "page.screenshot()",
     "sampleAt(time)",
     "caption timing",
-    "nonblank cartoon frames"
+    "nonblank animation frames"
   ])
 ];
 

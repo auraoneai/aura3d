@@ -24,7 +24,7 @@
     <div id="hud" role="region" aria-label="Template runtime status" aria-live="polite"></div>
     <script type="module">
       const template = new URLSearchParams(window.location.search).get("template");
-      const allowed = new Set(["fighting-game", "cartoon-channel", "prompt-cartoon-channel"]);
+      const allowed = new Set(["fighting-game", "animation-channel", "prompt-animation-channel"]);
       if (!allowed.has(template)) {
         throw new Error(`Unsupported Aura3D template harness target: ${template}`);
       }

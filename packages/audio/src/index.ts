@@ -61,8 +61,8 @@ export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } 
 export type { AudioEffect } from "./AudioEffect";
 export { AudioListener } from "./AudioListener";
 export type { Vec3Like } from "./AudioListener";
-export { AudioMixer, createAudioMixerEvidence, createCartoonAudioMixer } from "./AudioMixer";
-export type { AudioMixerBusEvidence, AudioMixerEvidence, CartoonAudioMixer, CartoonAudioMixerOptions } from "./AudioMixer";
+export { AudioMixer, createAudioMixerEvidence, createAnimationAudioMixer } from "./AudioMixer";
+export type { AudioMixerBusEvidence, AudioMixerEvidence, AnimationAudioMixer, AnimationAudioMixerOptions } from "./AudioMixer";
 export { AudioSource } from "./AudioSource";
 export type { AudioSourceOptions, AudioSourceState } from "./AudioSource";
 export { AudioSystem } from "./AudioSystem";

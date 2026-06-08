@@ -88,12 +88,10 @@ export function sampleSecondaryAnimationFixture(options: SecondaryAnimationFixtu
       deterministicReplay: true
     },
     hash: "",
-    claimBoundary: "Secondary animation fixture adapts old foot-IK ground placement and spring-bone secondary motion into deterministic telemetry; it does not claim production foot locking, retargeting, full-body IK, cloth/hair simulation, Unity Animation Rigging parity, or Unreal Control Rig parity.",
+    claimBoundary: "Secondary animation fixture provides the deterministic FootIkSample/SpringBoneSample telemetry shapes and oracle values; the real runtimes now live in FootIk.ts (two-bone foot IK + foot-lock on solveTwoBoneIk + a ground query) and SpringBones.ts (integrated spring chain). The fixture still does not claim retargeting, general full-body IK, cloth/hair simulation, Unity Animation Rigging parity, or Unreal Control Rig parity.",
     blockedClaims: [
-      "production foot locking parity",
       "full-body IK solver parity",
       "runtime retargeting parity",
-      "production spring-bone collision parity",
       "Unity Animation Rigging parity",
       "Unreal Control Rig parity"
     ] as const

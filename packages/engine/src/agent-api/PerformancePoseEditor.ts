@@ -1,37 +1,37 @@
 import type {
-  CartoonEmotionPose,
-  CartoonPerformanceBodyState,
-  CartoonPerformanceFacialState,
-  CartoonPerformanceGazeState
-} from "./CartoonPerformance.js";
+  AnimationEmotionPose,
+  AnimationPerformanceBodyState,
+  AnimationPerformanceFacialState,
+  AnimationPerformanceGazeState
+} from "./AnimationPerformance.js";
 
 export interface PerformancePoseEditorSnapshot {
   readonly kind: "performance-pose-editor";
   readonly poseCount: number;
-  readonly poses: readonly CartoonEmotionPose[];
+  readonly poses: readonly AnimationEmotionPose[];
 }
 
 export class PerformancePoseEditor {
-  private readonly poses = new Map<string, CartoonEmotionPose>();
+  private readonly poses = new Map<string, AnimationEmotionPose>();
 
-  constructor(poses: readonly CartoonEmotionPose[] = []) {
+  constructor(poses: readonly AnimationEmotionPose[] = []) {
     for (const pose of poses) this.poses.set(pose.id, pose);
   }
 
   definePose(input: {
     readonly id: string;
     readonly emotion: string;
-    readonly body: CartoonPerformanceBodyState;
-    readonly facial: CartoonPerformanceFacialState;
-    readonly gaze?: CartoonPerformanceGazeState | undefined;
+    readonly body: AnimationPerformanceBodyState;
+    readonly facial: AnimationPerformanceFacialState;
+    readonly gaze?: AnimationPerformanceGazeState | undefined;
     readonly notes?: readonly string[] | undefined;
-  }): CartoonEmotionPose {
-    const pose: CartoonEmotionPose = { ...input };
+  }): AnimationEmotionPose {
+    const pose: AnimationEmotionPose = { ...input };
     this.poses.set(pose.id, pose);
     return pose;
   }
 
-  getPose(id: string): CartoonEmotionPose | undefined {
+  getPose(id: string): AnimationEmotionPose | undefined {
     return this.poses.get(id);
   }
 

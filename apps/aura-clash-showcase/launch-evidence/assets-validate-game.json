@@ -4092,7 +4092,7 @@
         "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
       },
       "gameReady": true,
-      "cartoonReady": true,
+      "animationReady": true,
       "profileTarget": true,
       "profileReady": true,
       "warnings": [
@@ -7946,7 +7946,7 @@
         "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
       },
       "gameReady": true,
-      "cartoonReady": true,
+      "animationReady": true,
       "profileTarget": true,
       "profileReady": true,
       "warnings": [

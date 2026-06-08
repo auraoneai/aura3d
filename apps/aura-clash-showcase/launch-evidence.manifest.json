@@ -265,7 +265,7 @@
         "Run unit/browser/build validation for the new APIs and CLI commands.",
         "Confirm generated `dist/engine/agent-api/index.d.ts` exposes the new public types.",
         "`pnpm typecheck`, `pnpm build`, game-runtime command gates, and prompt-animation command gates.",
-        "Run `aura3d assets validate-cartoon` against an AuraVoice-backed cartoon sample.",
+        "Run `aura3d assets validate-animation` against an AuraVoice-backed animation sample.",
         "AuraVoice sample episode renders from prompt to audio to Aura3D animation with synchronized captions and visemes.",
         "AuraVoice sample episode render package includes video, thumbnail, captions, timeline, audio stems, and evidence JSON.",
         "Character mouth movement stays within one frame at 30 fps of AuraVoice viseme timing.",
@@ -277,7 +277,7 @@
         "It only aggregates existing durable reports and gives the PRD updater one evidence file to inspect.",
         "The default validation-suite input is `tests/reports/aura3d104/validation-suite.json`.",
         "Individual command-proof defaults include `tests/reports/aura3d104/typecheck.json`, `tests/reports/aura3d104/build.json`, `tests/reports/aura3d104/dist-agent-api-types.json`, `tests/reports/game-runtime/*.json`, and `tests/reports/prompt-animation/*.json`.",
-        "The default validate-cartoon input is `tests/reports/prompt-animation/validate-cartoon.json`.",
+        "The default validate-animation input is `tests/reports/prompt-animation/validate-animation.json`.",
         "Set AURA_CLASH_CROSS_RUNTIME_REQUIRED=1 when the command should fail on missing cross-runtime evidence."
       ]
     },

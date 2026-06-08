@@ -123,18 +123,18 @@ export interface AnimationControllerSnapshot<TClipId extends string = string> {
   readonly clips: readonly AnimationClipPlaybackState<TClipId>[];
 }
 
-export type CartoonAnimationAction = "speak" | "listen" | "gesture" | "walk" | "action";
+export type AnimationAnimationAction = "speak" | "listen" | "gesture" | "walk" | "action";
 
-export interface CartoonAnimationTimelineBinding<TClipId extends string = string> {
-  readonly action: CartoonAnimationAction;
+export interface AnimationAnimationTimelineBinding<TClipId extends string = string> {
+  readonly action: AnimationAnimationAction;
   readonly clipId: TClipId;
   readonly loop: AnimationLoopMode | boolean;
   readonly restartOnEnter: boolean;
 }
 
-export interface CartoonAnimationTimelineSample<TClipId extends string = string> {
+export interface AnimationAnimationTimelineSample<TClipId extends string = string> {
   readonly time: number;
-  readonly action: CartoonAnimationAction;
+  readonly action: AnimationAnimationAction;
   readonly clipId: TClipId;
   readonly playback: AnimationClipPlaybackState<TClipId>;
 }
@@ -270,21 +270,21 @@ export class AnimationController<
     });
   }
 
-  bindCartoonTimelineAction(
-    action: CartoonAnimationAction,
-    bindings: readonly CartoonAnimationTimelineBinding<TClipId>[],
+  bindAnimationTimelineAction(
+    action: AnimationAnimationAction,
+    bindings: readonly AnimationAnimationTimelineBinding<TClipId>[],
     time: number,
     options: Omit<AnimationPlayOptions<TClipId>, "loop" | "restart"> = {}
-  ): CartoonAnimationTimelineSample<TClipId> {
+  ): AnimationAnimationTimelineSample<TClipId> {
     const binding = bindings.find((candidate) => candidate.action === action);
-    if (!binding) throw new Error(`No cartoon animation binding registered for action "${action}".`);
+    if (!binding) throw new Error(`No animation animation binding registered for action "${action}".`);
     const playback = this.play(binding.clipId, {
       ...options,
       loop: binding.loop,
       restart: binding.restartOnEnter,
       metadata: {
         ...(options.metadata ?? {}),
-        cartoonAction: action,
+        animationAction: action,
         timelineTime: time
       }
     });

@@ -9,6 +9,7 @@ import {
   type PromptAnimationSeconds,
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
+import type { RuntimeNodeHandleLike, RuntimeNodeMorphTargetWeights } from "./RuntimeNodeHandle.js";
 
 export type AuraVoiceVisemeFormat = "auravoice-visemes-v2";
 
@@ -283,6 +284,33 @@ export function sampleVisemeTrack(
     weights,
     blendshapeWeights
   };
+}
+
+/**
+ * Map a sampled viseme to named morph-target (blendshape) influences for a real GPU face. Returns
+ * the blendshape weights from the sample (e.g. `{ "jawOpen": 0.7, "mouthSmile": 0.2 }`), ready to
+ * feed `node.setMorphTargets(...)` / `node.morphInfluence(...)`.
+ */
+export function visemeSampleToMorphInfluences(sample: VisemeSample): RuntimeNodeMorphTargetWeights {
+  return { ...sample.blendshapeWeights };
+}
+
+/**
+ * Drive a runtime node's GPU-face morph influences from a sampled viseme — real blendshape lip-sync.
+ * Clears unset targets via `setMorphTargets` when available, else applies each via `morphInfluence`.
+ */
+export function applyVisemeMorphInfluences(
+  node: Pick<RuntimeNodeHandleLike, "setMorphTargets" | "morphInfluence">,
+  sample: VisemeSample
+): void {
+  const influences = visemeSampleToMorphInfluences(sample);
+  if (node.setMorphTargets) {
+    node.setMorphTargets(influences);
+    return;
+  }
+  if (node.morphInfluence) {
+    for (const [name, weight] of Object.entries(influences)) node.morphInfluence(name, weight);
+  }
 }
 
 export function createVisemeController(track: AuraVoiceVisemeTrack): VisemeController {

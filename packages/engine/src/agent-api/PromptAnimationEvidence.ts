@@ -11,7 +11,7 @@ import {
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
 import type { AuraVoiceBridgePackage } from "./AuraVoiceBridge.js";
-import type { CartoonPerformanceCoverage } from "./CartoonPerformance.js";
+import type { AnimationPerformanceCoverage } from "./AnimationPerformance.js";
 
 export type PromptAnimationEvidenceStatus = "pass" | "warn" | "fail" | "missing";
 
@@ -201,7 +201,7 @@ export interface CollectPromptAnimationEvidenceInput {
   readonly renderedArtifacts?: readonly PromptAnimationRenderedArtifactMetadata[] | undefined;
   readonly deterministicCaptures?: readonly PromptAnimationDeterministicCaptureEvidence[] | undefined;
   readonly screenshotFixtures?: readonly PromptAnimationScreenshotFixtureMetadata[] | undefined;
-  readonly performanceCoverage?: CartoonPerformanceCoverage | undefined;
+  readonly performanceCoverage?: AnimationPerformanceCoverage | undefined;
   readonly routeHealth?: PromptAnimationRouteHealthEvidence | undefined;
   readonly generatedAt?: string | undefined;
 }

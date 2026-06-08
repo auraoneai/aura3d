@@ -1,0 +1,669 @@
+{
+  "schema": "aura3d.assets/1.0",
+  "assetBasePath": "/aura-assets/",
+  "outputDir": "public/aura-assets",
+  "typegen": "src/aura-assets.ts",
+  "assets": [
+    {
+      "id": "luma",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/luma2.catalog.glb",
+      "outputPath": "public/aura-assets/luma2.catalog.glb",
+      "url": "/aura-assets/luma2.catalog.glb",
+      "hash": "sha256-911c60a074f6d89d0eaeefc1f1eecf4188873880b62aa11b3d02ec2c18a4e036",
+      "sizeBytes": 1980724,
+      "bounds": [
+        0.99,
+        1.95,
+        0.333
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.495,
+          -0.065,
+          -0.162
+        ],
+        "max": [
+          0.495,
+          1.885,
+          0.171
+        ],
+        "size": [
+          0.99,
+          1.95,
+          0.333
+        ],
+        "center": [
+          0,
+          0.91,
+          0.004
+        ],
+        "maxDimension": 1.95,
+        "grounded": true
+      },
+      "materials": [
+        "luma_body_mat",
+        "luma_dark_mat",
+        "luma_glow_mat",
+        "luma_skin_mat",
+        "luma_accent_mat"
+      ],
+      "materialMetadata": [
+        {
+          "name": "luma_body_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "luma_dark_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "luma_glow_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "luma_skin_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "luma_accent_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Wave",
+        "Walk",
+        "Talk"
+      ],
+      "animationMetadata": {
+        "clipCount": 4,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 2,
+            "samplerCount": 2,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "spine",
+              "head"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "Wave",
+            "channelCount": 3,
+            "samplerCount": 3,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "rightUpperArm",
+              "spine",
+              "rightLowerArm"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "Walk",
+            "channelCount": 5,
+            "samplerCount": 5,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "leftUpperLeg",
+              "rightUpperLeg",
+              "leftUpperArm",
+              "rightUpperArm",
+              "hips"
+            ]
+          },
+          {
+            "index": 3,
+            "name": "Talk",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "head",
+              "spine",
+              "leftLowerArm",
+              "rightLowerArm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 4 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 21,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 21,
+        "skins": [
+          {
+            "index": 0,
+            "name": "luma_skin",
+            "jointCount": 21,
+            "joints": [
+              "hips",
+              "spine",
+              "chest",
+              "neck",
+              "head",
+              "leftShoulder",
+              "leftUpperArm",
+              "leftLowerArm",
+              "leftHand",
+              "rightShoulder",
+              "rightUpperArm",
+              "rightLowerArm",
+              "rightHand",
+              "leftUpperLeg",
+              "leftLowerLeg",
+              "leftFoot",
+              "leftToes",
+              "rightUpperLeg",
+              "rightLowerLeg",
+              "rightFoot",
+              "rightToes"
+            ],
+            "skeleton": "hips"
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 21 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 1,
+        "targetNames": [
+          "mouthOpen"
+        ],
+        "meshes": [
+          {
+            "index": 0,
+            "name": "luma_body",
+            "targetNames": [
+              "mouthOpen"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 morph target."
+        ]
+      },
+      "textures": [
+        "luma_atlas"
+      ],
+      "dependencies": [],
+      "nodeNames": [
+        "luma_mesh",
+        "hips",
+        "spine",
+        "chest",
+        "neck",
+        "head",
+        "leftShoulder",
+        "leftUpperArm",
+        "leftLowerArm",
+        "leftHand",
+        "rightShoulder",
+        "rightUpperArm",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftLowerLeg",
+        "leftFoot",
+        "leftToes",
+        "rightUpperLeg",
+        "rightLowerLeg",
+        "rightFoot",
+        "rightToes"
+      ],
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D authored cast (build-characters.ts, CC0 procedural mascot)",
+        "sourcePath": "public/aura-assets/luma2.catalog.glb",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/luma2.catalog.glb",
+        "attribution": "Aura3D-authored procedural rigged mascot \"Luma\" (CC0). Skinned 21-joint rig; embedded clips Idle, Wave, Walk, Talk. Lip-sync is driven by the facial mouth blendshape morph target (mouthOpen).",
+        "evidence": [
+          "animation-character",
+          "rigged",
+          "animated",
+          "mouth blendshape morph",
+          "facial morph target",
+          "authored",
+          "cc0"
+        ],
+        "sha256": "sha256-911c60a074f6d89d0eaeefc1f1eecf4188873880b62aa11b3d02ec2c18a4e036",
+        "retrievedAt": "2026-06-07"
+      },
+      "thumbnailUrl": "/aura-assets/luma.thumb.svg",
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "miko",
+      "type": "model",
+      "format": "glb",
+      "source": "public/aura-assets/miko.catalog.glb",
+      "outputPath": "public/aura-assets/miko.catalog.glb",
+      "url": "/aura-assets/miko.catalog.glb",
+      "hash": "sha256-fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65",
+      "sizeBytes": 1997240,
+      "bounds": [
+        1.015,
+        1.95,
+        0.369
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.508,
+          -0.06,
+          -0.175
+        ],
+        "max": [
+          0.508,
+          1.89,
+          0.194
+        ],
+        "size": [
+          1.015,
+          1.95,
+          0.369
+        ],
+        "center": [
+          0,
+          0.915,
+          0.01
+        ],
+        "maxDimension": 1.95,
+        "grounded": true
+      },
+      "materials": [
+        "miko_body_mat",
+        "miko_dark_mat",
+        "miko_glow_mat",
+        "miko_skin_mat",
+        "miko_accent_mat"
+      ],
+      "materialMetadata": [
+        {
+          "name": "miko_body_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "miko_dark_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "miko_glow_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "miko_skin_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "miko_accent_mat",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "Idle",
+        "Wave",
+        "Walk",
+        "Talk"
+      ],
+      "animationMetadata": {
+        "clipCount": 4,
+        "clips": [
+          {
+            "index": 0,
+            "name": "Idle",
+            "channelCount": 2,
+            "samplerCount": 2,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "spine",
+              "head"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "Wave",
+            "channelCount": 3,
+            "samplerCount": 3,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "rightUpperArm",
+              "spine",
+              "rightLowerArm"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "Walk",
+            "channelCount": 5,
+            "samplerCount": 5,
+            "targetPaths": [
+              "rotation",
+              "translation"
+            ],
+            "targetNodes": [
+              "leftUpperLeg",
+              "rightUpperLeg",
+              "leftUpperArm",
+              "rightUpperArm",
+              "hips"
+            ]
+          },
+          {
+            "index": 3,
+            "name": "Talk",
+            "channelCount": 4,
+            "samplerCount": 4,
+            "targetPaths": [
+              "rotation"
+            ],
+            "targetNodes": [
+              "head",
+              "spine",
+              "leftLowerArm",
+              "rightLowerArm"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 4 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": true,
+        "status": "humanoid",
+        "confidence": "high",
+        "skinCount": 1,
+        "jointCount": 21,
+        "matchedBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [],
+        "messages": [
+          "Humanoid signals detected from skinned joints."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 21,
+        "skins": [
+          {
+            "index": 0,
+            "name": "miko_skin",
+            "jointCount": 21,
+            "joints": [
+              "hips",
+              "spine",
+              "chest",
+              "neck",
+              "head",
+              "leftShoulder",
+              "leftUpperArm",
+              "leftLowerArm",
+              "leftHand",
+              "rightShoulder",
+              "rightUpperArm",
+              "rightLowerArm",
+              "rightHand",
+              "leftUpperLeg",
+              "leftLowerLeg",
+              "leftFoot",
+              "leftToes",
+              "rightUpperLeg",
+              "rightLowerLeg",
+              "rightFoot",
+              "rightToes"
+            ],
+            "skeleton": "hips"
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 21 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 1,
+        "targetNames": [
+          "mouthOpen"
+        ],
+        "meshes": [
+          {
+            "index": 0,
+            "name": "miko_body",
+            "targetNames": [
+              "mouthOpen"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 morph target."
+        ]
+      },
+      "textures": [
+        "miko_atlas"
+      ],
+      "dependencies": [],
+      "nodeNames": [
+        "miko_mesh",
+        "hips",
+        "spine",
+        "chest",
+        "neck",
+        "head",
+        "leftShoulder",
+        "leftUpperArm",
+        "leftLowerArm",
+        "leftHand",
+        "rightShoulder",
+        "rightUpperArm",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftLowerLeg",
+        "leftFoot",
+        "leftToes",
+        "rightUpperLeg",
+        "rightLowerLeg",
+        "rightFoot",
+        "rightToes"
+      ],
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D authored cast (build-characters.ts, CC0 procedural mascot)",
+        "sourcePath": "public/aura-assets/miko.catalog.glb",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/miko.catalog.glb",
+        "attribution": "Aura3D-authored procedural rigged mascot \"Miko\" (CC0). Skinned 21-joint rig; embedded clips Idle, Wave, Walk, Talk. Lip-sync is driven by the facial mouth blendshape morph target (mouthOpen).",
+        "evidence": [
+          "animation-character",
+          "rigged",
+          "animated",
+          "mouth blendshape morph",
+          "facial morph target",
+          "authored",
+          "cc0"
+        ],
+        "sha256": "sha256-fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65",
+        "retrievedAt": "2026-06-07"
+      },
+      "thumbnailUrl": "/aura-assets/miko.thumb.svg",
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "moonGarden",
+      "type": "model",
+      "format": "gltf",
+      "source": "public/aura-assets/moonGarden.gltf",
+      "outputPath": "public/aura-assets/moonGarden.gltf",
+      "url": "/aura-assets/moonGarden.gltf",
+      "hash": "sha256-b7b50e37cc4319df21fa2a598aab9e055d54eeb3f5511a3b3f0d4f6c5101c456",
+      "sizeBytes": 3746,
+      "bounds": [
+        3.2,
+        0.6,
+        1.2
+      ],
+      "boundsMetadata": {
+        "min": [
+          -1.6,
+          0,
+          -0.6
+        ],
+        "max": [
+          1.6,
+          0.6,
+          0.6
+        ],
+        "size": [
+          3.2,
+          0.6,
+          1.2
+        ],
+        "center": [
+          0,
+          0.3,
+          0
+        ],
+        "maxDimension": 3.2,
+        "grounded": true
+      },
+      "materials": [
+        "soft blue moon path",
+        "warm glow stone",
+        "distant teal skyline"
+      ],
+      "materialMetadata": [
+        {
+          "name": "soft blue moon path",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        },
+        {
+          "name": "warm glow stone",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        },
+        {
+          "name": "distant teal skyline",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "alphaMode": "OPAQUE",
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "textures": [],
+      "dependencies": [],
+      "nodeNames": [
+        "moon garden floor anchor",
+        "moon garden glow stone anchor",
+        "moon garden skyline anchor"
+      ],
+      "provenance": {
+        "license": "MIT",
+        "author": "Aura3D",
+        "sourceFamily": "Aura3D curated starter pack",
+        "sourcePath": "public/aura-assets/moonGarden.gltf",
+        "sourceUrl": "https://aura3d.auraone.ai/aura-assets/moonGarden.gltf",
+        "attribution": "Bundled Aura3D Moon Garden starter set for local animation-studio validation.",
+        "evidence": [
+          "animation-set",
+          "moon garden",
+          "walkable set",
+          "framing ready"
+        ],
+        "sha256": "sha256-b7b50e37cc4319df21fa2a598aab9e055d54eeb3f5511a3b3f0d4f6c5101c456"
+      },
+      "thumbnailUrl": "/aura-assets/moonGarden.thumb.svg",
+      "warnings": []
+    }
+  ]
+}

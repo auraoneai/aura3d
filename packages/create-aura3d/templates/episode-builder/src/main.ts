@@ -20,11 +20,11 @@ import { assets } from "./aura-assets";
 import {
   episode,
   episodeContractId,
-  missingCartoonCharacterAssets,
-  publicCartoonAssetInstructions,
-  requiredCartoonCharacterAssets,
-  typedCartoonAssetSummary,
-  type CartoonAssetKey
+  missingAnimationCharacterAssets,
+  publicAnimationAssetInstructions,
+  requiredAnimationCharacterAssets,
+  typedAnimationAssetSummary,
+  type AnimationAssetKey
 } from "./episode";
 import {
   accessibilityProofMetadata,
@@ -49,7 +49,7 @@ import { episodeBuilderSupport, installEpisodeBuilderPanel } from "./builder";
 
 declare global {
   interface Window {
-    __AURA3D_CARTOON_TEMPLATE__?: {
+    __AURA3D_ANIMATION_TEMPLATE__?: {
       readonly contractId: string;
       readonly template: string;
       readonly storyBible: unknown;
@@ -78,7 +78,7 @@ const firstCaption = episode.captionTrack.cues[0];
 const thumbnailCapture = renderOutputPackage.thumbnailCapture;
 const thumbnailCaption = captionCueAtTime(episode.captionTrack, thumbnailCapture.time);
 const storyBible = episode.storyBible;
-const typedCartoonAssets = assets as Partial<Record<CartoonAssetKey, AuraAssetRef<"model">>>;
+const typedAnimationAssets = assets as Partial<Record<AnimationAssetKey, AuraAssetRef<"model">>>;
 
 const captionOverlay = document.createElement("div");
 captionOverlay.id = "caption-overlay";
@@ -114,12 +114,12 @@ const shotPlaybackPlan = createShotPlaybackPlan({
 });
 
 const playbackProbeTimes = [1, 21, 43] as const;
-const playbackProbeSamples = playbackProbeTimes.map((time) => sampleCartoonRouteAt(time));
+const playbackProbeSamples = playbackProbeTimes.map((time) => sampleAnimationRouteAt(time));
 captionOverlay.dataset.shotId = playbackProbeSamples[0]?.shotId ?? "";
 captionOverlay.dataset.captionId = playbackProbeSamples[0]?.captionId ?? firstCaption?.captionId ?? "";
-document.body.dataset.cartoonShotCount = String(episode.shotTimeline.shots.length);
-document.body.dataset.cartoonCaptionCount = String(episode.captionTrack.cues.length);
-document.body.dataset.cartoonStoryBibleProps = String(storyBible.props.length);
+document.body.dataset.animationShotCount = String(episode.shotTimeline.shots.length);
+document.body.dataset.animationCaptionCount = String(episode.captionTrack.cues.length);
+document.body.dataset.animationStoryBibleProps = String(storyBible.props.length);
 document.body.dataset.episodeBuilderFormats = episodeBuilderSupport.formats.map((format) => format.id).join(",");
 installEpisodeBuilderPanel(document.body);
 
@@ -155,7 +155,7 @@ const app = createAuraApp("#app", {
   diagnostics: true
 });
 
-window.__AURA3D_CARTOON_TEMPLATE__ = {
+window.__AURA3D_ANIMATION_TEMPLATE__ = {
   contractId: episodeContractId,
   template: "episode-builder",
   storyBible,
@@ -164,10 +164,10 @@ window.__AURA3D_CARTOON_TEMPLATE__ = {
   playbackProbeTimes,
   playbackProbeSamples,
   renderQueueItems: renderPlan.items.length,
-  typedAssets: typedCartoonAssetSummary,
-  requiredTypedAssets: requiredCartoonCharacterAssets,
-  missingTypedAssets: missingCartoonCharacterAssets,
-  assetCommands: publicCartoonAssetInstructions,
+  typedAssets: typedAnimationAssetSummary,
+  requiredTypedAssets: requiredAnimationCharacterAssets,
+  missingTypedAssets: missingAnimationCharacterAssets,
+  assetCommands: publicAnimationAssetInstructions,
   bridgeIssues,
   promptAnimationEvidence,
   publishReadiness,
@@ -179,7 +179,7 @@ window.__AURA3D_CARTOON_TEMPLATE__ = {
   },
   sampleRenderSourceWorkflow,
   sampleAt(time: number) {
-    return sampleCartoonRouteAt(time);
+    return sampleAnimationRouteAt(time);
   }
 };
 
@@ -198,13 +198,13 @@ installShotPlayback(app, shotPlaybackPlan, {
 function createCharacterBody(
   id: "miko" | "luma",
   name: string,
-  assetKey: CartoonAssetKey,
+  assetKey: AnimationAssetKey,
   position: readonly [number, number, number],
   fallbackScale: readonly [number, number, number],
   modelScale: number,
   color: string
 ) {
-  const asset = typedCartoonAssets[assetKey];
+  const asset = typedAnimationAssets[assetKey];
   const runtime = game.runtimeNode(id, { tags: ["character", id, asset ? "typed-asset" : "primitive-fallback"] });
   if (asset) {
     return model(asset, { name: `${name} typed character asset` })
@@ -233,7 +233,7 @@ function createMouthCard(id: "miko:mouth" | "luma:mouth", name: string, position
     .runtime(game.runtimeNode(id, { tags: ["mouth", "primitive", name.toLowerCase()] }));
 }
 
-function sampleCartoonRouteAt(time: number) {
+function sampleAnimationRouteAt(time: number) {
   const bridgeSample = sampleAuraVoiceBridgeAtTime(auraVoicePackage, time);
   const playbackSample = sampleShotPlaybackPlan(shotPlaybackPlan, time);
   const caption = captionCueAtTime(episode.captionTrack, time);

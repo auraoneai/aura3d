@@ -4,37 +4,37 @@ import { AURAVOICE_AURA3D_PROMPT_ANIMATION_CONTRACT_ID } from "./contract";
 
 export const episodeContractId = AURAVOICE_AURA3D_PROMPT_ANIMATION_CONTRACT_ID;
 
-export type CartoonAssetKey = "miko" | "luma" | "glowBroom" | "glowStones" | "moonLilies";
+export type AnimationAssetKey = "miko" | "luma" | "glowBroom" | "glowStones" | "moonLilies";
 
-type TypedCartoonAssets = Partial<Record<CartoonAssetKey, AuraAssetRef<"model">>>;
+type TypedAnimationAssets = Partial<Record<AnimationAssetKey, AuraAssetRef<"model">>>;
 
-const typedCartoonAssets = assets as TypedCartoonAssets;
+const typedAnimationAssets = assets as TypedAnimationAssets;
 
-export const requiredCartoonCharacterAssets = ["miko", "luma"] as const;
-export const optionalCartoonPropAssets = ["glowBroom", "glowStones", "moonLilies"] as const;
-export const publicCartoonAssetInstructions = [
+export const requiredAnimationCharacterAssets = ["miko", "luma"] as const;
+export const optionalAnimationPropAssets = ["glowBroom", "glowStones", "moonLilies"] as const;
+export const publicAnimationAssetInstructions = [
   "npx @aura3d/cli@latest assets add ./assets/miko.glb --name miko",
   "npx @aura3d/cli@latest assets add ./assets/luma.glb --name luma",
-  "npx @aura3d/cli@latest assets validate-cartoon"
+  "npx @aura3d/cli@latest assets validate-animation"
 ] as const;
 
-export const missingCartoonCharacterAssets = requiredCartoonCharacterAssets.filter((key) => !typedCartoonAssets[key]);
-export const typedCartoonAssetSummary = {
-  requiredCharacterAssets: requiredCartoonCharacterAssets,
-  optionalPropAssets: optionalCartoonPropAssets,
-  typedCharacterAssetCount: requiredCartoonCharacterAssets.length - missingCartoonCharacterAssets.length,
-  missingCharacterAssets: missingCartoonCharacterAssets
+export const missingAnimationCharacterAssets = requiredAnimationCharacterAssets.filter((key) => !typedAnimationAssets[key]);
+export const typedAnimationAssetSummary = {
+  requiredCharacterAssets: requiredAnimationCharacterAssets,
+  optionalPropAssets: optionalAnimationPropAssets,
+  typedCharacterAssetCount: requiredAnimationCharacterAssets.length - missingAnimationCharacterAssets.length,
+  missingCharacterAssets: missingAnimationCharacterAssets
 } as const;
 
-function typedAsset(key: CartoonAssetKey): AuraAssetRef<"model"> | undefined {
-  return typedCartoonAssets[key];
+function typedAsset(key: AnimationAssetKey): AuraAssetRef<"model"> | undefined {
+  return typedAnimationAssets[key];
 }
 
 export const youtubeDraftMetadata = {
   contractId: episodeContractId,
   title: "Moon Garden Cleanup | Aura3D Episode Builder",
   description: "Two tiny robots clean a glowing moon garden with soft captions and reduced-flash visuals.",
-  tags: ["Aura3D", "kids cartoon", "moon garden", "robots"],
+  tags: ["Aura3D", "kids animation", "moon garden", "robots"],
   madeForKids: true,
   thumbnailCaptureTime: 10,
   defaultLanguage: "en",
@@ -77,15 +77,15 @@ export const episodeSampleDescription = {
   shotCount: 3,
   speakingCharacters: ["miko", "luma"],
   captionSource: "captions are derived one-to-one from the AuraVoice dialogue track",
-  performanceSource: "body, facial, gesture, blocking, and gaze cues are generated from the cartoon director",
+  performanceSource: "body, facial, gesture, blocking, and gaze cues are generated from the animation director",
   musicAmbience: ["music:moon-garden-lullaby", "ambience:moon-garden-night"],
   sfxCue: "sfx:glow-stone-chime",
   thumbnailCaptureTime: youtubeDraftMetadata.thumbnailCaptureTime,
   thumbnailSource: "same Aura3D scene state and AuraVoice timestamp as the render queue capture",
   typedAssetSource: "./src/aura-assets",
-  requiredTypedAssets: requiredCartoonCharacterAssets,
-  missingTypedAssets: missingCartoonCharacterAssets,
-  assetCommands: publicCartoonAssetInstructions,
+  requiredTypedAssets: requiredAnimationCharacterAssets,
+  missingTypedAssets: missingAnimationCharacterAssets,
+  assetCommands: publicAnimationAssetInstructions,
   reviewPackageRequiredPaths: ["video", "captions", "thumbnail", "timeline", "audio-stems", "evidence-json", "youtube-draft-metadata"],
   accessibilityProof: ["captions", "reduced motion", "high contrast"]
 } as const;
@@ -167,7 +167,7 @@ export const episode = compilePromptEpisodePlan({
     }
   ],
   styleGuide: {
-    visualStyle: "rounded bedtime sci-fi cartoon with toy-like robot silhouettes",
+    visualStyle: "rounded bedtime sci-fi animation with toy-like robot silhouettes",
     palette: ["#081b2a", "#7de2ff", "#ffe18e", "#40ffbf", "#f8fff2"],
     shapeLanguage: "circles, capsules, crescent props, and chunky moon-garden forms",
     lighting: "soft blue night key, warm prop glows, no hard flashes",

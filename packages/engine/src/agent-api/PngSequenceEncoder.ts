@@ -1,4 +1,4 @@
-import type { CartoonViewport } from "./CartoonRenderQueue.js";
+import type { AnimationViewport } from "./AnimationRenderQueue.js";
 import type { FrameEncoderAdapter, FrameEncoderFrame } from "./FrameEncoder.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate } from "./PromptAnimationContract.js";
 
@@ -15,14 +15,14 @@ export interface PngSequenceManifest {
   readonly proofOnly: boolean;
   readonly publishScopedFallback: boolean;
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly frameCount: number;
   readonly frames: readonly PngSequenceFrameArtifact[];
 }
 
 export interface CreatePngSequenceEncoderAdapterOptions {
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly directory?: string | undefined;
   readonly publishScopedFallback?: boolean | undefined;
   readonly writeFrame?: ((path: string, frame: FrameEncoderFrame) => void | Promise<void>) | undefined;
@@ -76,7 +76,7 @@ export function createPngSequenceEncoderAdapter(options: CreatePngSequenceEncode
 
 export function createPngSequenceManifest(input: {
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly frames: readonly PngSequenceFrameArtifact[];
   readonly publishScopedFallback?: boolean | undefined;
 }): PngSequenceManifest {

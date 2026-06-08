@@ -42,20 +42,20 @@ const requiredFiles = [
   "packages/engine/src/agent-api/DialoguePerformance.ts",
   "packages/engine/src/agent-api/VisemeController.ts",
   "packages/engine/src/agent-api/PromptAnimationEvidence.ts",
-  "packages/engine/src/agent-api/CartoonDirector.ts",
-  "packages/engine/src/agent-api/CartoonPerformance.ts",
-  "packages/engine/src/agent-api/CartoonRenderQueue.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/main.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/episode.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts",
-  "packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/src/main.ts",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/src/episode.ts",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/tests/storyboard-playback.spec.ts",
+  "packages/engine/src/agent-api/AnimationDirector.ts",
+  "packages/engine/src/agent-api/AnimationPerformance.ts",
+  "packages/engine/src/agent-api/AnimationRenderQueue.ts",
+  "packages/create-aura3d/templates/animation-channel/src/main.ts",
+  "packages/create-aura3d/templates/animation-channel/src/episode.ts",
+  "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+  "packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/src/main.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/src/episode.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/tests/storyboard-playback.spec.ts",
   "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
   "docs/api/prompt-animation.md",
   "docs/api/auravoice-bridge.md",
-  "docs/examples/cartoon-channel.md",
+  "docs/examples/animation-channel.md",
   "docs/examples/prompt-to-episode.md",
   "tools/prompt-animation-auravoice-contract/index.ts",
   "tools/prompt-animation-auravoice-render/index.ts",
@@ -79,12 +79,12 @@ const source = [
   "packages/engine/src/agent-api/DialoguePerformance.ts",
   "packages/engine/src/agent-api/VisemeController.ts",
   "packages/engine/src/agent-api/PromptAnimationEvidence.ts",
-  "packages/engine/src/agent-api/CartoonDirector.ts",
-  "packages/engine/src/agent-api/CartoonPerformance.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/main.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/src/main.ts",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/src/render-plan.ts",
+  "packages/engine/src/agent-api/AnimationDirector.ts",
+  "packages/engine/src/agent-api/AnimationPerformance.ts",
+  "packages/create-aura3d/templates/animation-channel/src/main.ts",
+  "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/src/main.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts",
   "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
   "docs/api/prompt-animation.md",
   "docs/api/auravoice-bridge.md",
@@ -106,7 +106,7 @@ const auraVoiceSource = [
 ].map((file) => readFrom(auraVoiceRoot, file)).join("\n");
 
 for (const token of [
-  "cartoon",
+  "animation",
   "animationStudio",
   "createPromptAnimationStoryBible",
   "PromptAnimationStoryBible",
@@ -138,8 +138,8 @@ for (const token of [
   "mouthMovementWithinOneFrame",
   "sampleRenderSourceWorkflow",
   "promptToAudioToAura3DAnimation",
-  "createCartoonRenderQueue",
-  "createCartoonRenderOutputPackageMetadata",
+  "createAnimationRenderQueue",
+  "createAnimationRenderOutputPackageMetadata",
   "AuraVoice v2",
   "caption",
   "viseme",
@@ -203,9 +203,9 @@ if (auraVoiceSource) {
 }
 
 checks.push({
-  id: "cartoon-template-no-three-imports",
-  ok: !/\bfrom\s+["']three["']|GLTFLoader|three\/examples/.test(read("packages/create-aura3d/templates/cartoon-channel/src/main.ts")),
-  detail: "cartoon-channel template must not import three or GLTFLoader"
+  id: "animation-template-no-three-imports",
+  ok: !/\bfrom\s+["']three["']|GLTFLoader|three\/examples/.test(read("packages/create-aura3d/templates/animation-channel/src/main.ts")),
+  detail: "animation-channel template must not import three or GLTFLoader"
 });
 
 const sourceGates = read("tests/unit/agent-api/prompt-animation-source-gates.test.ts");
@@ -242,7 +242,7 @@ for (const token of [
   "\"prompt-animation:unit\"",
   "tests/unit/agent-api",
   "\"prompt-animation:browser\"",
-  "packages/create-aura3d/templates/prompt-cartoon-channel/tests/storyboard-playback.spec.ts",
+  "packages/create-aura3d/templates/prompt-animation-channel/tests/storyboard-playback.spec.ts",
   "\"prompt-animation:package\"",
   "tools/prompt-animation-package-smoke/index.ts",
   "\"prompt-animation:auravoice-contract\"",
@@ -271,7 +271,7 @@ const requiredReleaseSteps = [
   "pnpm prompt-animation:browser",
   "pnpm prompt-animation:template",
   "pnpm prompt-animation:docs",
-  "pnpm prompt-animation:validate-cartoon",
+  "pnpm prompt-animation:validate-animation",
   "pnpm prompt-animation:package",
   "pnpm prompt-animation:auravoice-contract",
   "pnpm prompt-animation:auravoice-render",
@@ -289,7 +289,7 @@ for (const step of requiredReleaseSteps) {
 checks.push({
   id: "package-release-step-order",
   ok: isOrdered(promptAnimationReleaseRaw, requiredReleaseSteps),
-  detail: "prompt-animation release should run unit, browser, template, docs, cartoon validation, package, AuraVoice, viseme, dub, and evidence gates in order"
+  detail: "prompt-animation release should run unit, browser, template, docs, animation validation, package, AuraVoice, viseme, dub, and evidence gates in order"
 });
 
 const auraVoiceSampleRenderGates = createAuraVoiceSampleRenderGateEvidence();
@@ -301,20 +301,20 @@ for (const gate of auraVoiceSampleRenderGates.gates) {
   });
 }
 
-const cartoonStudioReadinessPath = "tests/reports/aura3d11/readiness.json";
-const cartoonStudioReadiness = readJsonFrom(root, cartoonStudioReadinessPath) as
+const animationStudioReadinessPath = "tests/reports/aura3d11/readiness.json";
+const animationStudioReadiness = readJsonFrom(root, animationStudioReadinessPath) as
   | { ok?: boolean; status?: string; gates?: readonly { id?: string; ok?: boolean }[]; blockers?: readonly string[] }
   | null;
 checks.push({
-  id: "cartoon-studio-1.1-rendered-package-readiness",
-  ok: cartoonStudioReadiness?.ok === true && cartoonStudioReadiness.status === "release-ready",
-  detail: `${cartoonStudioReadinessPath} must be ok:true/release-ready so old source-only prompt-animation readiness cannot mask missing rendered output.`
+  id: "animation-studio-1.1-rendered-package-readiness",
+  ok: animationStudioReadiness?.ok === true && animationStudioReadiness.status === "release-ready",
+  detail: `${animationStudioReadinessPath} must be ok:true/release-ready so old source-only prompt-animation readiness cannot mask missing rendered output.`
 });
-for (const gateId of ["cartoon-package", "visual-quality", "motion-quality", "template-smoke"]) {
+for (const gateId of ["animation-package", "visual-quality", "motion-quality", "template-smoke"]) {
   checks.push({
-    id: `cartoon-studio-1.1-gate:${gateId}`,
-    ok: cartoonStudioReadiness?.gates?.some((gate) => gate.id === gateId && gate.ok === true) === true,
-    detail: `${cartoonStudioReadinessPath} must include passing ${gateId} evidence.`
+    id: `animation-studio-1.1-gate:${gateId}`,
+    ok: animationStudioReadiness?.gates?.some((gate) => gate.id === gateId && gate.ok === true) === true,
+    detail: `${animationStudioReadinessPath} must include passing ${gateId} evidence.`
   });
 }
 
@@ -322,14 +322,14 @@ const failures = checks.filter((check) => !check.ok);
 const report = {
   kind: "aura-prompt-animation-readiness",
   ok: failures.length === 0,
-  scope: "source-plus-rendered-cartoon-package-readiness",
+  scope: "source-plus-rendered-animation-package-readiness",
   reportPath: "tests/reports/prompt-animation/auravoice-sample-render-gates.json",
   auraVoiceSampleRenderGates,
-  cartoonStudioReadiness: {
-    path: cartoonStudioReadinessPath,
-    ok: cartoonStudioReadiness?.ok === true,
-    status: cartoonStudioReadiness?.status ?? "missing",
-    blockers: cartoonStudioReadiness?.blockers ?? []
+  animationStudioReadiness: {
+    path: animationStudioReadinessPath,
+    ok: animationStudioReadiness?.ok === true,
+    status: animationStudioReadiness?.status ?? "missing",
+    blockers: animationStudioReadiness?.blockers ?? []
   },
   checks,
   failures
@@ -460,8 +460,8 @@ function createAuraVoiceSampleRenderGateEvidence(): {
       title: "Video, thumbnail, captions, timeline, audio stems, and evidence JSON package",
       requirement: "Future sample render evidence must enumerate the deterministic render package artifacts needed for review and YouTube/channel handoff.",
       sourceSignals: [
-        sourceSignal("prompt-animation source/docs", source, "createCartoonRenderOutputPackageMetadata"),
-        sourceSignal("prompt-animation source/docs", source, "createCartoonRenderQueue"),
+        sourceSignal("prompt-animation source/docs", source, "createAnimationRenderOutputPackageMetadata"),
+        sourceSignal("prompt-animation source/docs", source, "createAnimationRenderQueue"),
         sourceSignal("prompt-animation source/docs", source, "createAudioStemManifest"),
         sourceSignal("prompt-animation source/docs", source, "renderOutputPackage"),
         sourceSignal("prompt-animation source/docs", source, "reviewPackagePaths"),

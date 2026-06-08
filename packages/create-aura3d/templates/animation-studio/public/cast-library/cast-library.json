@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d.cast-library/1.0",
+  "generatedAt": "2026-06-08T08:30:04.912Z",
+  "note": "Default high-fidelity cast for the animation studio. These are Aura3D-authored CC0 procedural humanoids with full limb chains (graded-A rigs), shipped as the DEFAULT so a fresh scene starts from a properly-rigged character rather than an 8-bone mascot. Users can override with `animation-scene cast add --query` (catalog) or `--file <path.glb>` (their own rigged GLB). The legacy 7-node mascots remain only behind build-characters.ts --low-fi.",
+  "members": [
+    {
+      "id": "miko",
+      "name": "Miko",
+      "description": "Cyan-suited helper humanoid; full 21-joint rig, hair-cap + glowing crest.",
+      "url": "/aura-assets/miko.catalog.glb",
+      "sizeBytes": 1997240,
+      "hash": "sha256-fcdc2b7502031e556259dfe942fdfbd7abe41963433f2046ed2522d27bce9d65",
+      "fidelity": "A",
+      "rigGrade": "A",
+      "meshGrade": "A",
+      "jointCount": 21,
+      "humanoid": true,
+      "tris": 37080,
+      "verts": 20480,
+      "textureMaxDim": 1024,
+      "materials": 5,
+      "clips": [
+        "Idle",
+        "Wave",
+        "Walk",
+        "Talk"
+      ],
+      "mouthMorph": true,
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "origin": "authored-procedural",
+        "generator": "scripts/build-characters.ts (default high-fidelity humanoid mode)",
+        "note": "Aura3D-authored, procedurally rigged + textured humanoid (CC0). NOT a downloaded external asset — generated from code so the default cast is guaranteed present + graded-A regardless of network/catalog availability.",
+        "retrievedAt": "2026-06-07"
+      }
+    },
+    {
+      "id": "luma",
+      "name": "Luma",
+      "description": "Warm-gold helper humanoid, slimmer build; full 21-joint rig.",
+      "url": "/aura-assets/luma2.catalog.glb",
+      "sizeBytes": 1980724,
+      "hash": "sha256-911c60a074f6d89d0eaeefc1f1eecf4188873880b62aa11b3d02ec2c18a4e036",
+      "fidelity": "A",
+      "rigGrade": "A",
+      "meshGrade": "A",
+      "jointCount": 21,
+      "humanoid": true,
+      "tris": 36744,
+      "verts": 20285,
+      "textureMaxDim": 1024,
+      "materials": 5,
+      "clips": [
+        "Idle",
+        "Wave",
+        "Walk",
+        "Talk"
+      ],
+      "mouthMorph": true,
+      "provenance": {
+        "license": "CC0-1.0",
+        "author": "Aura3D",
+        "origin": "authored-procedural",
+        "generator": "scripts/build-characters.ts (default high-fidelity humanoid mode)",
+        "note": "Aura3D-authored, procedurally rigged + textured humanoid (CC0). NOT a downloaded external asset — generated from code so the default cast is guaranteed present + graded-A regardless of network/catalog availability.",
+        "retrievedAt": "2026-06-07"
+      }
+    }
+  ]
+}

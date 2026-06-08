@@ -2,12 +2,12 @@ import type { Command } from "./Command";
 import { CommandHistory } from "./CommandHistory";
 import type { EditorProjectAssetDocument } from "./ProjectSerializer";
 
-export type CartoonAssetCategory = "character" | "set" | "prop" | "camera" | "light" | "audio" | "material" | "unknown";
+export type AnimationAssetCategory = "character" | "set" | "prop" | "camera" | "light" | "audio" | "material" | "unknown";
 
-export interface CartoonEditorAssetReference extends EditorProjectAssetDocument {
+export interface AnimationEditorAssetReference extends EditorProjectAssetDocument {
   readonly kind?: "aura-asset-ref" | "editor-asset-ref";
-  readonly category?: CartoonAssetCategory;
-  readonly profile?: "cartoon-character" | "cartoon-set" | "cartoon-prop" | "cartoon-audio" | string;
+  readonly category?: AnimationAssetCategory;
+  readonly profile?: "animation-character" | "animation-set" | "animation-prop" | "animation-audio" | string;
   readonly style?: string;
   readonly rigType?: "humanoid" | "creature" | "prop" | "none";
   readonly lipSyncReady?: boolean;
@@ -21,14 +21,14 @@ export interface AssetDropPlacement {
 }
 
 export interface AssetDropResult<TNode> {
-  readonly asset: CartoonEditorAssetReference;
+  readonly asset: AnimationEditorAssetReference;
   readonly node: TNode;
   readonly placement: AssetDropPlacement;
 }
 
 export interface AssetDropZoneOptions<TNode> {
   readonly history?: CommandHistory;
-  readonly createNode: (asset: CartoonEditorAssetReference, placement: AssetDropPlacement) => TNode;
+  readonly createNode: (asset: AnimationEditorAssetReference, placement: AssetDropPlacement) => TNode;
   readonly addNode: (node: TNode, placement: AssetDropPlacement) => void;
   readonly removeNode: (node: TNode) => void;
   readonly onDrop?: (result: AssetDropResult<TNode>) => void;
@@ -41,7 +41,7 @@ export class AssetDropZone<TNode = unknown> {
     this.history = options.history ?? new CommandHistory();
   }
 
-  async dropAsset(asset: CartoonEditorAssetReference, placement: AssetDropPlacement = {}): Promise<AssetDropResult<TNode>> {
+  async dropAsset(asset: AnimationEditorAssetReference, placement: AssetDropPlacement = {}): Promise<AssetDropResult<TNode>> {
     validateAssetReference(asset);
     validatePlacement(placement);
     const node = this.options.createNode(asset, placement);
@@ -82,7 +82,7 @@ class DropAssetCommand<TNode> implements Command {
 
   constructor(
     private readonly options: Pick<AssetDropZoneOptions<TNode>, "addNode" | "removeNode">,
-    private readonly asset: CartoonEditorAssetReference,
+    private readonly asset: AnimationEditorAssetReference,
     private readonly node: TNode,
     private readonly placement: AssetDropPlacement
   ) {
@@ -98,21 +98,21 @@ class DropAssetCommand<TNode> implements Command {
   }
 }
 
-export function serializeAssetForDrag(asset: CartoonEditorAssetReference): string {
+export function serializeAssetForDrag(asset: AnimationEditorAssetReference): string {
   validateAssetReference(asset);
   return JSON.stringify(asset);
 }
 
-export function readAssetFromDataTransfer(dataTransfer: DataTransfer | null): CartoonEditorAssetReference | undefined {
+export function readAssetFromDataTransfer(dataTransfer: DataTransfer | null): AnimationEditorAssetReference | undefined {
   if (!dataTransfer) return undefined;
   const encoded = dataTransfer.getData("application/x-aura3d-asset") || dataTransfer.getData("text/plain");
   if (!encoded.trim()) return undefined;
-  const parsed = JSON.parse(encoded) as CartoonEditorAssetReference;
+  const parsed = JSON.parse(encoded) as AnimationEditorAssetReference;
   validateAssetReference(parsed);
   return parsed;
 }
 
-function validateAssetReference(asset: CartoonEditorAssetReference): void {
+function validateAssetReference(asset: AnimationEditorAssetReference): void {
   if (!asset.id?.trim()) throw new Error("Dropped Aura3D asset id is required.");
   if (!asset.name?.trim()) throw new Error(`Dropped Aura3D asset name is required: ${asset.id}`);
   if ((asset.uri && /^https?:\/\//i.test(asset.uri) || asset.source && /^https?:\/\//i.test(asset.source)) && asset.kind !== "aura-asset-ref") {
@@ -121,12 +121,12 @@ function validateAssetReference(asset: CartoonEditorAssetReference): void {
   if (asset.source !== undefined && !asset.source.trim()) throw new Error(`Dropped Aura3D asset source cannot be empty: ${asset.id}`);
   if (asset.license !== undefined && !asset.license.trim()) throw new Error(`Dropped Aura3D asset license cannot be empty: ${asset.id}`);
   if (asset.category === "character") {
-    if (asset.rigType === "none") throw new Error(`Cartoon character asset "${asset.id}" must be rigged.`);
-    if ((asset.clips?.length ?? 0) === 0) throw new Error(`Cartoon character asset "${asset.id}" requires animation clip metadata.`);
-    if (!asset.lipSyncReady) throw new Error(`Cartoon character asset "${asset.id}" requires lip-sync readiness metadata.`);
+    if (asset.rigType === "none") throw new Error(`Animation character asset "${asset.id}" must be rigged.`);
+    if ((asset.clips?.length ?? 0) === 0) throw new Error(`Animation character asset "${asset.id}" requires animation clip metadata.`);
+    if (!asset.lipSyncReady) throw new Error(`Animation character asset "${asset.id}" requires lip-sync readiness metadata.`);
   }
   if ((asset.category === "set" || asset.category === "audio") && !asset.license) {
-    throw new Error(`Cartoon ${asset.category} asset "${asset.id}" requires license metadata.`);
+    throw new Error(`Animation ${asset.category} asset "${asset.id}" requires license metadata.`);
   }
 }
 

@@ -108,6 +108,14 @@ export interface HumanoidBoneRetargetBinding {
   readonly source: HumanoidBoneBinding;
   readonly target: HumanoidBoneBinding;
   readonly scale: number;
+  /**
+   * Source rig rest-pose local rotation for this bone (identity when unknown). Captured at
+   * map-build time from `source.restPose[bone].rotation` or the binding's own `rotation` so the
+   * pose retargeter can reconcile differing bind orientations without re-reading the rigs.
+   */
+  readonly sourceRest?: AnimationQuaternion;
+  /** Target rig rest-pose local rotation for this bone (identity when unknown). */
+  readonly targetRest?: AnimationQuaternion;
 }
 
 export interface HumanoidRetargetingMap {
@@ -118,6 +126,10 @@ export interface HumanoidRetargetingMap {
   readonly requiredCoverage: number;
   readonly bindings: Partial<Record<HumanoidBoneName, HumanoidBoneRetargetBinding>>;
   readonly diagnostics: readonly HumanoidRetargetingDiagnostic[];
+  /** Source rig facing axis (defaults to `"z"`) used for hip/root facing reconciliation. */
+  readonly sourceFacingAxis?: HumanoidAxis;
+  /** Target rig facing axis (defaults to `"z"`) used for hip/root facing reconciliation. */
+  readonly targetFacingAxis?: HumanoidAxis;
 }
 
 export interface RetargetHumanoidPoseOptions {
@@ -126,15 +138,15 @@ export interface RetargetHumanoidPoseOptions {
   readonly scaleRootMotion?: boolean;
 }
 
-export interface CartoonHumanoidRetargetingOptions extends HumanoidRetargetingOptions {
+export interface AnimationHumanoidRetargetingOptions extends HumanoidRetargetingOptions {
   readonly requiredClips?: readonly string[];
   readonly availableClips?: readonly string[];
   readonly mouthBlendshapeNames?: readonly string[];
   readonly retargetMapProvided?: boolean;
 }
 
-export interface CartoonHumanoidRetargetingDiagnostics extends HumanoidRigDiagnostics {
-  readonly kind: "cartoon-humanoid-retargeting-diagnostics";
+export interface AnimationHumanoidRetargetingDiagnostics extends HumanoidRigDiagnostics {
+  readonly kind: "animation-humanoid-retargeting-diagnostics";
   readonly mouthReady: boolean;
   readonly clipReady: boolean;
   readonly retargetMapProvided: boolean;
@@ -327,7 +339,9 @@ export function createHumanoidRetargetingMap(
       bone,
       source: sourceBinding,
       target: targetBinding,
-      scale: estimateBoneScale(sourceBinding, targetBinding, source.scale, target.scale)
+      scale: estimateBoneScale(sourceBinding, targetBinding, source.scale, target.scale),
+      sourceRest: restRotationFor(source, bone, sourceBinding),
+      targetRest: restRotationFor(target, bone, targetBinding)
     };
   }
 
@@ -351,10 +365,44 @@ export function createHumanoidRetargetingMap(
     coverage,
     requiredCoverage,
     bindings,
-    diagnostics
+    diagnostics,
+    sourceFacingAxis: source.facingAxis ?? "z",
+    targetFacingAxis: target.facingAxis ?? "z"
   };
 }
 
+/**
+ * Retarget a source-rig {@link AnimationPose} onto the target rig described by `map`.
+ *
+ * This is NOT a 1:1 rotation copy. For each bone we reconcile differing rest/bind orientations and
+ * a differing facing axis, and scale translations by the per-bone length ratio:
+ *
+ *   1. Rest-pose reconciliation (per bone, local space). Let `Rs0` be the source rest local
+ *      rotation and `Rt0` the target rest local rotation (both from the rigs' `restPose`/binding
+ *      `rotation`, identity when unknown). An animation expresses a source local rotation `Ra`.
+ *      The motion *away from rest* in the source's local frame is the delta `D = Rs0⁻¹ · Ra`. We
+ *      re-anchor that delta onto the target rest: `Rt = Rt0 · D = Rt0 · Rs0⁻¹ · Ra`.
+ *      When both rests are identity (or equal) this collapses to a straight copy, and an identity
+ *      map (source rig === target rig) is therefore a no-op.
+ *
+ *   2. Facing-axis / coordinate-frame conversion. If the source faces a different cardinal axis
+ *      than the target, the hips (root) rotation is pre-multiplied by the frame-alignment rotation
+ *      `F` that carries the source facing axis onto the target facing axis: `Rt_hips = F · Rt_hips`.
+ *      This only touches the root so child bones inherit the reframe through the hierarchy.
+ *
+ *   3. Position / hip-height scaling (unchanged from before): translations are scaled by the
+ *      bone's length ratio (`binding.scale`), and optional root motion by the average bone scale.
+ *
+ * The signature and return type are unchanged.
+ *
+ * Honesty note: step 1 is the well-known "rest-delta" reconciliation. It is exact when the source
+ * and target rest orientations are the bones' true local bind rotations and the bones are mapped
+ * one-to-one (the common case for humanoid GLBs). It does NOT model differing bone *roll* beyond
+ * what the rest rotations capture, nor parent-chain reparametrization when intermediate bones
+ * (e.g. chest/upperChest) are present on one rig and absent on the other — those remain
+ * approximate. Step 2 corrects whole-body facing only via the root; per-limb axis remaps that
+ * aren't expressible as a single root rotation are not handled.
+ */
 export function retargetHumanoidPose(
   sourcePose: AnimationPose,
   map: HumanoidRetargetingMap,
@@ -368,6 +416,8 @@ export function retargetHumanoidPose(
     }
   }
 
+  const facing = facingAlignmentQuat(map.sourceFacingAxis ?? "z", map.targetFacingAxis ?? "z");
+
   for (const bone of HUMANOID_BONES) {
     const binding = map.bindings[bone];
     if (!binding) continue;
@@ -375,7 +425,7 @@ export function retargetHumanoidPose(
     const sourceTransform = sourcePose.bones[binding.source.name] ?? sourcePose.bones[bone];
     if (!sourceTransform) continue;
 
-    const retargeted = scaleTransform(sourceTransform, binding.scale);
+    const retargeted = retargetBoneTransform(sourceTransform, binding, bone === "hips" ? facing : undefined);
     bones[binding.target.name] = retargeted;
 
     if (options.includeSemanticBoneNames) {
@@ -411,10 +461,10 @@ export function humanoidRetargetingDiagnostics(
   return createHumanoidRetargetingMap(source, target, options).diagnostics;
 }
 
-export function analyzeCartoonHumanoidRetargeting(
+export function analyzeAnimationHumanoidRetargeting(
   rig: HumanoidRigDefinition,
-  options: CartoonHumanoidRetargetingOptions = {}
-): CartoonHumanoidRetargetingDiagnostics {
+  options: AnimationHumanoidRetargetingOptions = {}
+): AnimationHumanoidRetargetingDiagnostics {
   const base = analyzeHumanoidRig(rig, { minRequiredCoverage: 0.9, requireRestPose: true, ...options });
   const diagnostics: HumanoidRetargetingDiagnostic[] = [...base.diagnostics];
   const requiredClips = options.requiredClips ?? ["Idle", "Talk", "Gesture", "Walk"];
@@ -427,30 +477,30 @@ export function analyzeCartoonHumanoidRetargeting(
   if (!mouthReady) {
     diagnostics.push({
       severity: "error",
-      code: "CARTOON_MOUTH_METADATA_MISSING",
-      message: "Cartoon retargeting requires mouth blendshape or mouth-card metadata.",
+      code: "ANIMATION_MOUTH_METADATA_MISSING",
+      message: "Animation retargeting requires mouth blendshape or mouth-card metadata.",
       rigId: rig.id
     });
   }
   for (const clip of missingClips) {
     diagnostics.push({
       severity: "error",
-      code: "CARTOON_REQUIRED_CLIP_MISSING",
-      message: `Cartoon retargeting requires clip "${clip}".`,
+      code: "ANIMATION_REQUIRED_CLIP_MISSING",
+      message: `Animation retargeting requires clip "${clip}".`,
       rigId: rig.id
     });
   }
   if (!retargetMapProvided) {
     diagnostics.push({
       severity: "error",
-      code: "CARTOON_RETARGET_MAP_MISSING",
-      message: "Cartoon retargeting requires external bone-map/retarget metadata.",
+      code: "ANIMATION_RETARGET_MAP_MISSING",
+      message: "Animation retargeting requires external bone-map/retarget metadata.",
       rigId: rig.id
     });
   }
 
   return {
-    kind: "cartoon-humanoid-retargeting-diagnostics",
+    kind: "animation-humanoid-retargeting-diagnostics",
     ...base,
     ok: !diagnostics.some((diagnostic) => diagnostic.severity === "error"),
     diagnostics,
@@ -510,12 +560,123 @@ function averageBindingScale(map: HumanoidRetargetingMap): number {
   return scales.reduce((sum, scale) => sum + scale, 0) / scales.length;
 }
 
-function scaleTransform(transform: AnimationPoseTransform, scale: number): AnimationPoseTransform {
+const IDENTITY_QUAT: AnimationQuaternion = { x: 0, y: 0, z: 0, w: 1 };
+
+/**
+ * Extract the rest local rotation for a bone, preferring the rig's explicit `restPose` entry and
+ * falling back to the binding's own `rotation`. Returns identity when neither is present.
+ */
+function restRotationFor(
+  rig: HumanoidRigDefinition,
+  bone: HumanoidBoneName,
+  binding: HumanoidBoneBinding
+): AnimationQuaternion {
+  const fromRestPose = rig.restPose?.[bone]?.rotation;
+  if (fromRestPose) return normalizeQuatObj(fromRestPose);
+  if (binding.rotation) return normalizeQuatObj(binding.rotation);
+  return IDENTITY_QUAT;
+}
+
+/**
+ * Apply rest-pose reconciliation + (root-only) facing alignment + length scaling to one bone.
+ * See {@link retargetHumanoidPose} for the math derivation.
+ */
+function retargetBoneTransform(
+  transform: AnimationPoseTransform,
+  binding: HumanoidBoneRetargetBinding,
+  facing?: AnimationQuaternion
+): AnimationPoseTransform {
+  const sourceRest = binding.sourceRest ?? IDENTITY_QUAT;
+  const targetRest = binding.targetRest ?? IDENTITY_QUAT;
+
+  let rotation = transform.rotation;
+  if (rotation) {
+    // Rt = Rt0 · Rs0⁻¹ · Ra
+    const delta = multiplyQuat(invertQuat(sourceRest), normalizeQuatObj(rotation));
+    rotation = multiplyQuat(targetRest, delta);
+    if (facing) {
+      // Whole-body facing correction, applied on the root before its local rotation.
+      rotation = multiplyQuat(facing, rotation);
+    }
+    rotation = normalizeQuatObj(rotation);
+  } else if (facing) {
+    // No animated rotation but a facing delta still needs to reframe the root.
+    rotation = normalizeQuatObj(multiplyQuat(facing, targetRest));
+  }
+
   return {
-    position: transform.position ? scaleVector(transform.position, scale) : undefined,
-    rotation: transform.rotation,
+    position: transform.position ? scaleVector(transform.position, binding.scale) : undefined,
+    rotation,
     scale: transform.scale
   };
+}
+
+/**
+ * Rotation that carries `from` cardinal axis onto `to` cardinal axis (shortest arc). Used to
+ * reconcile rigs that face different world axes (e.g. +Z forward vs -Z forward, or +X vs +Z).
+ */
+function facingAlignmentQuat(from: HumanoidAxis, to: HumanoidAxis): AnimationQuaternion | undefined {
+  if (from === to) return undefined;
+  const a = axisVector(from);
+  const b = axisVector(to);
+  return shortestArcQuat(a, b);
+}
+
+function axisVector(axis: HumanoidAxis): AnimationVector3 {
+  switch (axis) {
+    case "x": return { x: 1, y: 0, z: 0 };
+    case "-x": return { x: -1, y: 0, z: 0 };
+    case "y": return { x: 0, y: 1, z: 0 };
+    case "-y": return { x: 0, y: -1, z: 0 };
+    case "z": return { x: 0, y: 0, z: 1 };
+    case "-z": return { x: 0, y: 0, z: -1 };
+    default: return { x: 0, y: 0, z: 1 };
+  }
+}
+
+/** Quaternion of the shortest rotation from unit vector `a` to unit vector `b`. */
+function shortestArcQuat(a: AnimationVector3, b: AnimationVector3): AnimationQuaternion {
+  const dot = a.x * b.x + a.y * b.y + a.z * b.z;
+  if (dot >= 1 - 1e-8) return IDENTITY_QUAT;
+  if (dot <= -1 + 1e-8) {
+    // Opposite vectors: rotate 180° about any axis orthogonal to a.
+    let ortho: AnimationVector3 = Math.abs(a.x) < 0.9 ? { x: 1, y: 0, z: 0 } : { x: 0, y: 1, z: 0 };
+    ortho = crossVec(a, ortho);
+    const len = Math.hypot(ortho.x, ortho.y, ortho.z) || 1;
+    return normalizeQuatObj({ x: ortho.x / len, y: ortho.y / len, z: ortho.z / len, w: 0 });
+  }
+  const c = crossVec(a, b);
+  const w = 1 + dot;
+  return normalizeQuatObj({ x: c.x, y: c.y, z: c.z, w });
+}
+
+function crossVec(a: AnimationVector3, b: AnimationVector3): AnimationVector3 {
+  return {
+    x: a.y * b.z - a.z * b.y,
+    y: a.z * b.x - a.x * b.z,
+    z: a.x * b.y - a.y * b.x
+  };
+}
+
+function multiplyQuat(a: AnimationQuaternion, b: AnimationQuaternion): AnimationQuaternion {
+  return {
+    x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+    y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+    z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+    w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+  };
+}
+
+function invertQuat(q: AnimationQuaternion): AnimationQuaternion {
+  // Unit quaternion inverse is its conjugate; normalize defensively first.
+  const n = normalizeQuatObj(q);
+  return { x: -n.x, y: -n.y, z: -n.z, w: n.w };
+}
+
+function normalizeQuatObj(q: AnimationQuaternion): AnimationQuaternion {
+  const len = Math.hypot(q.x, q.y, q.z, q.w);
+  if (len <= 1e-9) return IDENTITY_QUAT;
+  return { x: q.x / len, y: q.y / len, z: q.z / len, w: q.w / len };
 }
 
 function cloneTransform(transform: AnimationPoseTransform): AnimationPoseTransform {

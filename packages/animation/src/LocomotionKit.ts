@@ -1,6 +1,7 @@
 import { BlendTree1D, type BlendTreeWeight } from "./BlendTree.js";
 import { createLocomotionAnimationStateGraph } from "./AnimationStateGraph.js";
-import type { AnimationStateMachine } from "./AnimationStateMachine.js";
+import type { AnimationStateBlend, AnimationStateMachine } from "./AnimationStateMachine.js";
+import type { FootIkRig } from "./FootIk.js";
 
 /**
  * Composable locomotion kit: maps a scalar movement speed into a discrete locomotion state
@@ -19,8 +20,10 @@ export interface LocomotionKitOptions<TClipId extends string = string> {
   readonly runSpeed?: number;
   /** Speed above which the character is considered moving (default 0.05). */
   readonly movingThreshold?: number;
-  /** Speed at/above which the character is considered running (default = walkSpeed). */
+  /** Speed at/above which the character is considered running (default = runSpeed, so state stays coherent with the blend). */
   readonly runningThreshold?: number;
+  /** Optional foot-IK rig so locomotion can ground feet on uneven terrain (no foot sliding). */
+  readonly footIkRig?: FootIkRig;
 }
 
 export interface LocomotionKitSample<TClipId extends string = string> {
@@ -29,10 +32,18 @@ export interface LocomotionKitSample<TClipId extends string = string> {
   readonly moving: boolean;
   readonly running: boolean;
   readonly clipWeights: ReadonlyArray<{ readonly clip: TClipId; readonly weight: number }>;
+  /**
+   * Inertialized blend between the previously-active discrete state and the current one. When the
+   * state graph switches (e.g. walk→run), the previous state's clip fades out on a critically-damped
+   * curve instead of snapping — momentum-preserving idle↔walk↔run transitions.
+   */
+  readonly stateTransition: AnimationStateBlend;
 }
 
 export interface LocomotionKit<TClipId extends string = string> {
   readonly graph: AnimationStateMachine;
+  /** Optional foot-IK rig hook; call `footIk.solveFootPlacement(...)` to ground feet. */
+  readonly footIk: FootIkRig | undefined;
   /** Blend clip weights for a speed (sum ~= 1), independent of the discrete state graph. */
   blendWeights(speed: number): ReadonlyArray<BlendTreeWeight<TClipId>>;
   /** Advance the state graph and produce the full locomotion sample for a speed. */
@@ -43,7 +54,7 @@ export function createLocomotionKit<TClipId extends string = string>(options: Lo
   const walkSpeed = options.walkSpeed ?? 1;
   const runSpeed = options.runSpeed ?? 4;
   const movingThreshold = options.movingThreshold ?? 0.05;
-  const runningThreshold = options.runningThreshold ?? walkSpeed;
+  const runningThreshold = options.runningThreshold ?? runSpeed;
 
   const tree = new BlendTree1D<TClipId>([
     { value: options.idleClip, threshold: 0 },
@@ -54,6 +65,7 @@ export function createLocomotionKit<TClipId extends string = string>(options: Lo
 
   return {
     graph,
+    footIk: options.footIkRig,
     blendWeights(speed: number) {
       return tree.weights(Math.max(0, speed));
     },
@@ -69,7 +81,8 @@ export function createLocomotionKit<TClipId extends string = string>(options: Lo
         state,
         moving,
         running,
-        clipWeights: tree.weights(clamped).map((weight) => ({ clip: weight.value, weight: weight.weight }))
+        clipWeights: tree.weights(clamped).map((weight) => ({ clip: weight.value, weight: weight.weight })),
+        stateTransition: graph.stateBlend()
       };
     }
   };

@@ -68,3 +68,19 @@ The source-level readiness declaration in `src/game/stage.ts` is not launch
 evidence. Before claiming build, package, visual, accessibility, or launch
 readiness, archive the matching command output, runtime evidence JSON,
 browser screenshot, and review result.
+
+## Real-asset crossfade path
+
+The fighter `AnimationController` in `src/game/fighters.ts` is already configured for real,
+crossfaded animation once typed GLB fighters are supplied:
+
+- Required clips per fighter (`REQUIRED_FIGHTER_CLIPS`): `idle`, `walk`, `run`, `air`, `down`,
+  `guard`, `light`, `heavy`, `special`, `hurt`, `hitstun`. Resolve a fighter whose embedded GLB
+  clips cover these (`assets resolve ... --profile fighting-character`), then map them in
+  `src/aura-assets.ts`.
+- The controller uses two layers — `base` (full-body locomotion) and `upper-body` (attacks,
+  `restartFromFrameZero`) — so locomotion state changes can crossfade instead of snapping. With
+  real assets the controller drives those clips; with no asset it falls back to labeled capsule
+  placeholders and the route proof reports `proofMode: "source-placeholders"` (vs `"typed-assets"`).
+- For the deployed reference of crossfade-on-state-change driven from the engine combat world, see
+  `apps/aura-clash-showcase` (`AuraClashArenaApp` `applyFighterAnimation`).

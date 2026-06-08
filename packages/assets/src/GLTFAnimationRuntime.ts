@@ -8,11 +8,114 @@ export interface GLTFSceneAnimationRuntimeOptions {
   readonly asset?: Pick<GLTFAsset, "meshes" | "skins">;
 }
 
+/**
+ * Synonym groups for fuzzy clip-name matching. Real catalog assets label the same
+ * motion wildly differently ("Loops" vs "Idle", "Take 001" vs "Run", "sprint" vs
+ * "run"). Each inner array is a set of interchangeable canonical tokens.
+ */
+const GLTF_CLIP_SYNONYM_GROUPS: readonly (readonly string[])[] = [
+  ["idle", "static", "rest", "loops", "loop", "tpose", "t-pose", "bind"],
+  ["walk", "walking", "stroll"],
+  ["run", "running", "sprint", "jog"],
+  ["wave", "emote-yes", "emoteyes", "greet", "hello"],
+  ["jump", "jumping", "hop"],
+  ["attack", "punch", "hit", "strike"],
+  ["death", "die", "dead"]
+];
+
+function normalizeClipToken(name: string): string {
+  return name.toLowerCase().replace(/[\s_.\-]+/g, "");
+}
+
+/**
+ * Resolve a requested clip name to the best available clip name.
+ *
+ * Matching order:
+ *   1. Exact case-insensitive (ignoring whitespace/underscores/dots/dashes).
+ *   2. Synonym-group match: the requested name and an available name belong to
+ *      the same synonym group (e.g. "run" resolves to "Sprint").
+ *   3. Substring match in either direction (e.g. "walk" -> "WalkCycle").
+ *   4. Fallback to the first available clip.
+ *
+ * Returns `undefined` only when there are no available clips.
+ */
+export function resolveGLTFClipName(
+  requested: string,
+  available: readonly string[]
+): string | undefined {
+  if (available.length === 0) return undefined;
+  const requestedToken = normalizeClipToken(requested);
+
+  for (const name of available) {
+    if (normalizeClipToken(name) === requestedToken) return name;
+  }
+
+  const requestedGroup = GLTF_CLIP_SYNONYM_GROUPS.find((group) => group.includes(requestedToken));
+  if (requestedGroup) {
+    for (const name of available) {
+      if (requestedGroup.includes(normalizeClipToken(name))) return name;
+    }
+  }
+
+  for (const name of available) {
+    const token = normalizeClipToken(name);
+    if (requestedToken.length > 0 && (token.includes(requestedToken) || requestedToken.includes(token))) {
+      return name;
+    }
+  }
+
+  return available[0];
+}
+
+export interface GLTFSceneAnimationClipBoneMask {
+  /** Only apply tracks whose node name matches one of these (substring match), if present. */
+  readonly include?: readonly string[];
+  /** Never apply tracks whose node name matches one of these (substring match). */
+  readonly exclude?: readonly string[];
+}
+
 export interface GLTFSceneAnimationClipSample {
   readonly clipName: string;
   readonly time: number;
   readonly weight?: number;
   readonly additive?: boolean;
+  /**
+   * Optional per-clip bone mask for layered playback (e.g. an upper-body attack over a full-body
+   * locomotion base). When set, only matching node tracks from this clip are blended in. Default
+   * (undefined) applies the whole clip, preserving existing behavior.
+   */
+  readonly mask?: GLTFSceneAnimationClipBoneMask;
+}
+
+function clipMaskAllowsNode(mask: GLTFSceneAnimationClipBoneMask | undefined, nodeName: string): boolean {
+  if (!mask) return true;
+  if (mask.exclude && mask.exclude.some((entry) => nodeName.includes(entry))) return false;
+  if (mask.include && mask.include.length > 0) return mask.include.some((entry) => nodeName.includes(entry));
+  return true;
+}
+
+/**
+ * A single bone's local transform inside a {@link GLTFScenePose}. Components are plain tuples in
+ * glTF/scene convention (translation/scale as `[x,y,z]`, rotation as a quaternion `[x,y,z,w]`). For
+ * convenience the bridge also accepts the object form (`{x,y,z}` / `{x,y,z,w}`) emitted directly by
+ * `@aura3d/animation`'s `retargetHumanoidPose`, so a retargeted `AnimationPose` can be handed in
+ * without re-shaping.
+ */
+export interface GLTFScenePoseBoneTransform {
+  readonly position?: readonly [number, number, number] | { readonly x: number; readonly y: number; readonly z: number };
+  readonly rotation?: readonly [number, number, number, number] | { readonly x: number; readonly y: number; readonly z: number; readonly w: number };
+  readonly scale?: readonly [number, number, number] | { readonly x: number; readonly y: number; readonly z: number };
+}
+
+/**
+ * An externally-computed pose keyed directly by GLB **node names** (not semantic humanoid slots).
+ * This is the render-time bridge target for a retargeted `AnimationPose`: the keys of `bones` are
+ * the target rig's node names — exactly what `retargetHumanoidPose(...).bones` produces for a
+ * humanoid map (`binding.target.name`). `morphTargets` maps a node name to a single morph weight.
+ */
+export interface GLTFScenePose {
+  readonly bones: Record<string, GLTFScenePoseBoneTransform>;
+  readonly morphTargets?: Record<string, number>;
 }
 
 export interface GLTFSceneAnimationApplyResult {
@@ -403,6 +506,33 @@ export class GLTFSceneAnimationRuntime {
     return this.applyClip(clip, time);
   }
 
+  /** Names of every clip registered on this runtime, in declaration order. */
+  clipNames(): readonly string[] {
+    return [...this.clipsByName.keys()];
+  }
+
+  /**
+   * Resolve a requested clip name to the best available registered clip name
+   * using fuzzy matching (exact -> synonym group -> substring -> first clip).
+   * Returns `undefined` when the runtime has no clips.
+   */
+  resolveClipName(name: string): string | undefined {
+    return resolveGLTFClipName(name, this.clipNames());
+  }
+
+  /**
+   * Apply a clip selected by fuzzy name resolution. Unlike {@link applyClipByName}
+   * this tolerates differing source clip names (e.g. requesting "idle" when the
+   * asset only ships "Loops"). Throws only when no clips exist at all.
+   */
+  applyClipByNameFuzzy(name: string, time: number): GLTFSceneAnimationApplyResult {
+    const resolved = this.resolveClipName(name);
+    if (resolved === undefined) {
+      throw new Error("glTF animation runtime has no clips to resolve.");
+    }
+    return this.applyClipByName(resolved, time);
+  }
+
   applyClip(clip: AnimationClip, time: number): GLTFSceneAnimationApplyResult {
     if (!Number.isFinite(time) || time < 0) {
       throw new Error("glTF animation runtime time must be finite and non-negative.");
@@ -443,6 +573,7 @@ export class GLTFSceneAnimationRuntime {
           unsupportedTracks.push(track.target);
           continue;
         }
+        if (!clipMaskAllowsNode(sample.mask, target.nodeName)) continue;
         blendInto(accumulators, track.target, track.valueType, track.sample(wrappedTime), weight, sample.additive === true);
       }
     }
@@ -478,6 +609,44 @@ export class GLTFSceneAnimationRuntime {
       unsupportedTracks
     });
     return this.lastApply;
+  }
+
+  /**
+   * Render-time bridge: drive the loaded GLB from an externally-computed pose whose keys are GLB
+   * **node names** (e.g. the output of `@aura3d/animation`'s `retargetHumanoidPose`, whose
+   * `bones` keys are the target rig node names). Each bone transform's `position`/`rotation`/`scale`
+   * is written onto the matching scene node's local transform, and each `morphTargets` entry sets
+   * that node's morph weight. This reuses the same {@link applyAnimationValues} / track-binding path
+   * as embedded clips (targets are emitted as `"<node>.translation|rotation|scale|weights"`), so
+   * skinning palettes and missing-target reporting behave identically. Additive to `applyClip*` —
+   * it does not touch the mixer or clip registry.
+   */
+  applyPose(pose: GLTFScenePose, label = "retargeted-pose", time = 0): GLTFSceneAnimationApplyResult {
+    if (!pose || typeof pose !== "object" || typeof pose.bones !== "object" || pose.bones === null) {
+      throw new Error("glTF animation runtime applyPose requires a pose with a bones record.");
+    }
+    const values = new Map<string, AnimationValue>();
+    for (const [nodeName, transform] of Object.entries(pose.bones)) {
+      if (!transform) continue;
+      if (transform.position !== undefined) {
+        values.set(`${nodeName}.translation`, toVec3Tuple(transform.position, `${nodeName}.translation`));
+      }
+      if (transform.rotation !== undefined) {
+        values.set(`${nodeName}.rotation`, toQuatTuple(transform.rotation, `${nodeName}.rotation`));
+      }
+      if (transform.scale !== undefined) {
+        values.set(`${nodeName}.scale`, toVec3Tuple(transform.scale, `${nodeName}.scale`));
+      }
+    }
+    if (pose.morphTargets) {
+      for (const [nodeName, weight] of Object.entries(pose.morphTargets)) {
+        if (!Number.isFinite(weight)) {
+          throw new Error(`glTF animation runtime applyPose morph weight for "${nodeName}" must be finite.`);
+        }
+        values.set(`${nodeName}.weights`, [weight]);
+      }
+    }
+    return this.applyAnimationValues(label, time, values);
   }
 
   solveImportedSkeletonTwoBoneIK(options: GLTFImportedSkeletonIKOptions): GLTFImportedSkeletonIKResult {
@@ -1050,6 +1219,32 @@ function asQuat(value: AnimationValue, target: string): [number, number, number,
     throw new Error(`glTF animation track "${target}" sampled an invalid quaternion.`);
   }
   return [value[0], value[1], value[2], value[3]];
+}
+
+function toVec3Tuple(
+  value: readonly [number, number, number] | { readonly x: number; readonly y: number; readonly z: number },
+  target: string
+): [number, number, number] {
+  const tuple = Array.isArray(value)
+    ? value
+    : [(value as { x: number }).x, (value as { y: number }).y, (value as { z: number }).z];
+  if (tuple.length !== 3 || tuple.some((component) => typeof component !== "number" || !Number.isFinite(component))) {
+    throw new Error(`glTF pose "${target}" requires a finite vec3.`);
+  }
+  return [tuple[0]!, tuple[1]!, tuple[2]!];
+}
+
+function toQuatTuple(
+  value: readonly [number, number, number, number] | { readonly x: number; readonly y: number; readonly z: number; readonly w: number },
+  target: string
+): [number, number, number, number] {
+  const tuple = Array.isArray(value)
+    ? value
+    : [(value as { x: number }).x, (value as { y: number }).y, (value as { z: number }).z, (value as { w: number }).w];
+  if (tuple.length !== 4 || tuple.some((component) => typeof component !== "number" || !Number.isFinite(component))) {
+    throw new Error(`glTF pose "${target}" requires a finite quaternion.`);
+  }
+  return [tuple[0]!, tuple[1]!, tuple[2]!, tuple[3]!];
 }
 
 function asNumberArray(value: AnimationValue): number[] {

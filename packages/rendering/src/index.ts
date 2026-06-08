@@ -25,7 +25,7 @@ export { WebGL2Device } from "./WebGL2Device";
 export type { WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
-export { WebGPUDevice } from "./WebGPUDevice";
+export { WebGPUDevice, MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUDevice";
 export type {
   WebGPUAdapterLike,
   WebGPUBufferDescriptorLike,
@@ -549,6 +549,14 @@ export type {
 } from "./RendererTiming";
 export { ForwardPass } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES } from "./ForwardPass";
+export {
+  createMorphTargetPlan,
+  planMorphTargets,
+  DEFAULT_MORPH_DEVICE_LIMITS,
+  MORPH_UNIFORM_MAX_TARGETS,
+  MORPH_UNIFORM_MAX_VERTICES
+} from "./MorphTargetPlan";
+export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan } from "./MorphTargetPlan";
 export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding } from "./ForwardPass";
 export { batchStaticRenderItems, buildStaticBoundsBvh, queryStaticBoundsBvh, raycastStaticBoundsBvh, selectLodLevel, updateStaticBoundsBvh } from "./SceneOptimization";
 export type {
@@ -914,4 +922,4 @@ export * from "./effects/GPUParticleBackend.js";
 export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
-export * from "./cartoon/index.js";
+export * from "./animation/index.js";

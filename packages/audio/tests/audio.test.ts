@@ -11,7 +11,7 @@ import {
   SceneAudioBridge,
   createAudioTimelineMixSnapshot,
   createAudioWaveformReviewData,
-  createCartoonAudioMixer,
+  createAnimationAudioMixer,
   createAudioWaveform,
   createAudioWaveformPath,
   sampleAudioWaveformAtTime,
@@ -268,7 +268,7 @@ test("AudioTimelineTrack edits clips, routes buses, and ducks music under dialog
   assert.deepEqual(snapshot.activeSamples.map((sample) => sample.clipId).sort(), ["bed", "line1b"]);
 });
 
-test("cartoon episode audio readiness reports missing typed audio assets", () => {
+test("animation episode audio readiness reports missing typed audio assets", () => {
   const readiness = validateEpisodeAudioAssets([
     {
       kind: "aura-asset-ref",
@@ -302,7 +302,7 @@ test("cartoon episode audio readiness reports missing typed audio assets", () =>
   ]);
 });
 
-test("cartoon dialogue audio stems stay aligned with captions within one frame", () => {
+test("animation dialogue audio stems stay aligned with captions within one frame", () => {
   const dialogue = new AudioTimelineTrack({ id: "dialogue", role: "dialogue" });
   dialogue.addClip({ id: "miko-line-1", startTime: 1, duration: 1.5 });
   dialogue.addClip({ id: "luma-line-1", startTime: 3, duration: 1 });
@@ -321,7 +321,7 @@ test("cartoon dialogue audio stems stay aligned with captions within one frame",
   assert.equal(broken.issues[0]?.code, "caption-audio-start-out-of-sync");
 });
 
-test("cartoon audio waveform review data and mixer defaults expose route evidence", () => {
+test("animation audio waveform review data and mixer defaults expose route evidence", () => {
   const waveform = createAudioWaveform(createMockAudioBuffer([new Float32Array([-1, 1, 0.5, -0.5])], 4), {
     samplesPerPeak: 2
   });
@@ -341,8 +341,8 @@ test("cartoon audio waveform review data and mixer defaults expose route evidenc
     createBiquadFilter: () => new MockNode() as unknown as BiquadFilterNode,
     createConvolver: () => new MockNode() as unknown as ConvolverNode
   };
-  const cartoonMixer = createCartoonAudioMixer(context, { musicVolume: 0.4 });
-  const evidence = cartoonMixer.evidence({ unlocked: true });
+  const animationMixer = createAnimationAudioMixer(context, { musicVolume: 0.4 });
+  const evidence = animationMixer.evidence({ unlocked: true });
 
   assert.equal(reviewData.kind, "audio-waveform-review-data");
   assert.equal(reviewData.stemCount, 1);

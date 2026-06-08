@@ -8,7 +8,7 @@ import {
   type SceneBounds
 } from "../../../packages/engine/src";
 
-// Real bounds taken from the cartoon-studio generated typed assets
+// Real bounds taken from the animation-studio generated typed assets
 // (aura.assets.json -> boundsMetadata). Miko is a tiny center-origin robot,
 // Luma a full-height foot-origin humanoid.
 const mikoBounds: SceneBounds = { min: [-0.033, -0.013, -0.009], max: [0.033, 0.013, 0.008] };

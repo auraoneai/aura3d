@@ -11,6 +11,7 @@ export type AuraClashAudioCue =
   | "player-hit"
   | "rival-hit"
   | "guard"
+  | "footstep"
   | "win"
   | "ko"
   | "draw";
@@ -57,6 +58,7 @@ export const auraClashAudioCueAssetKeys: Record<AuraClashAudioCue, AuraClashAudi
   "player-hit": "auraClashHitSfx",
   "rival-hit": "auraClashHitSfx",
   guard: "auraClashGuardSfx",
+  footstep: "auraClashDashSfx",
   win: "auraClashWinSfx",
   ko: "auraClashKoSfx",
   draw: "auraClashDrawSfx"
@@ -86,6 +88,7 @@ export const auraClashAudioManifest: Record<AuraClashAudioCue, AuraClashAudioCue
   "player-hit": cue("player-hit", "combat", "Player hit confirm.", 0.8),
   "rival-hit": cue("rival-hit", "combat", "Rival hit confirm.", 0.8),
   guard: cue("guard", "combat", "Blocked strike feedback.", 0.85),
+  footstep: cue("footstep", "combat", "Foot-plant footstep (driven by foot-IK foot-lock + authored clip events).", 0.35),
   win: cue("win", "round", "Player round victory.", 0.8),
   ko: cue("ko", "round", "Rival round victory.", 0.9),
   draw: cue("draw", "round", "Draw round.", 0.75)

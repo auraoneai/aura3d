@@ -8,9 +8,9 @@ type PackageJson = {
 
 describe("prompt animation source gates", () => {
   it("keeps storyboard and caption timing on the same episode contract", () => {
-    const episode = readSource("packages/create-aura3d/templates/cartoon-channel/src/episode.ts");
-    const renderPlan = readSource("packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts");
-    const storyboardSpec = readSource("packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts");
+    const episode = readSource("packages/create-aura3d/templates/animation-channel/src/episode.ts");
+    const renderPlan = readSource("packages/create-aura3d/templates/animation-channel/src/render-plan.ts");
+    const storyboardSpec = readSource("packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts");
 
     expect(episode).toMatch(/runtime:\s*{[\s\S]*duration:\s*60[\s\S]*maxTimingDriftFrames:\s*1/);
     expectIncludesAll(episode, [
@@ -29,8 +29,8 @@ describe("prompt animation source gates", () => {
     expect(renderPlan).toContain('dubbedCaptionId: `${line.lineId}:caption`');
     expect(storyboardSpec).toContain("storyboard caption renders");
     expectIncludesAll(storyboardSpec, [
-      "storyboard playback, character performance, caption timing, cuts, and nonblank cartoon frames are sourced",
-      "__AURA3D_CARTOON_TEMPLATE__",
+      "storyboard playback, character performance, caption timing, cuts, and nonblank animation frames are sourced",
+      "__AURA3D_ANIMATION_TEMPLATE__",
       "sampleAt(time)",
       "page.screenshot()",
       "storyBible?.shotList"
@@ -39,7 +39,7 @@ describe("prompt animation source gates", () => {
 
   it("keeps story bible, props, style guide, and shot list APIs in the public contract", () => {
     const contract = readSource("packages/engine/src/agent-api/PromptAnimationContract.ts");
-    const director = readSource("packages/engine/src/agent-api/CartoonDirector.ts");
+    const director = readSource("packages/engine/src/agent-api/AnimationDirector.ts");
     const agentApi = readSource("packages/engine/src/agent-api/index.ts");
 
     expectIncludesAll(contract, [
@@ -52,7 +52,7 @@ describe("prompt animation source gates", () => {
     ]);
     expectIncludesAll(director, [
       "readonly storyBible: PromptAnimationStoryBible",
-      "props?: readonly CartoonDirectorPropInput[]",
+      "props?: readonly AnimationDirectorPropInput[]",
       "styleGuide?: Partial<PromptAnimationStyleGuide>",
       "createPromptAnimationStoryBible",
       "shotList: shots.map"
@@ -83,7 +83,7 @@ describe("prompt animation source gates", () => {
       "createAuraVoiceRerenderPlan",
       "createAuraVoiceDubRerenderProof",
       "collectPromptAnimationEvidence",
-      "createCartoonRenderQueue"
+      "createAnimationRenderQueue"
     ]);
   });
 
@@ -169,9 +169,9 @@ describe("prompt animation source gates", () => {
     ]);
   });
 
-  it("keeps cartoon-channel template playback, caption, and viseme source wired", () => {
-    const main = readSource("packages/create-aura3d/templates/cartoon-channel/src/main.ts");
-    const renderPlan = readSource("packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts");
+  it("keeps animation-channel template playback, caption, and viseme source wired", () => {
+    const main = readSource("packages/create-aura3d/templates/animation-channel/src/main.ts");
+    const renderPlan = readSource("packages/create-aura3d/templates/animation-channel/src/render-plan.ts");
 
     expectIncludesAll(main, [
       "createShotPlaybackPlan",
@@ -181,7 +181,7 @@ describe("prompt animation source gates", () => {
       "primitiveMouthNodeByCharacterId",
       "onCaption(caption, framePlan)",
       "captionOverlay.dataset.captionId",
-      "__AURA3D_CARTOON_TEMPLATE__",
+      "__AURA3D_ANIMATION_TEMPLATE__",
       "playbackProbeTimes",
       "sampleShotPlaybackPlan",
       "storyBible.props.length"
@@ -201,9 +201,9 @@ describe("prompt animation source gates", () => {
     ]);
   });
 
-  it("keeps prompt-cartoon-channel source parity for captions, phonemes, visemes, dubs, and render packages", () => {
-    const promptRenderPlan = readSource("packages/create-aura3d/templates/prompt-cartoon-channel/src/render-plan.ts");
-    const promptMain = readSource("packages/create-aura3d/templates/prompt-cartoon-channel/src/main.ts");
+  it("keeps prompt-animation-channel source parity for captions, phonemes, visemes, dubs, and render packages", () => {
+    const promptRenderPlan = readSource("packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts");
+    const promptMain = readSource("packages/create-aura3d/templates/prompt-animation-channel/src/main.ts");
 
     expectIncludesAll(promptRenderPlan, [
       "createAuraVoiceBridgePackage",
@@ -218,7 +218,7 @@ describe("prompt animation source gates", () => {
       "stableCaptionIds"
     ]);
     expectIncludesAll(promptMain, [
-      "__AURA3D_CARTOON_TEMPLATE__",
+      "__AURA3D_ANIMATION_TEMPLATE__",
       "createShotPlaybackPlan",
       "installShotPlayback",
       "phonemeVisemeDubSyncSourceProof",
@@ -232,9 +232,9 @@ describe("prompt animation source gates", () => {
     const release = scripts["prompt-animation:release:raw"] ?? "";
 
     expect(scripts["prompt-animation:unit:raw"]).toContain("tests/unit/agent-api");
-    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/cartoon-channel/tests/storyboard-playback.spec.ts");
-    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/cartoon-channel/tests/sample-episode-visual.spec.ts");
-    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/prompt-cartoon-channel/tests/storyboard-playback.spec.ts");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/animation-channel/tests/storyboard-playback.spec.ts");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/animation-channel/tests/sample-episode-visual.spec.ts");
+    expect(scripts["prompt-animation:browser:raw"]).toContain("packages/create-aura3d/templates/prompt-animation-channel/tests/storyboard-playback.spec.ts");
     expect(packageSmoke).toContain("prompt-animation:template");
     expect(packageSmoke).toContain("prompt-animation:docs");
     expect(packageSmoke).toContain("tools/prompt-animation-package-smoke/index.ts");

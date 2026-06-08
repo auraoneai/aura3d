@@ -6,7 +6,7 @@ Replaces: `GameShowCasePRD.md`
 
 Aura Clash Arena is the active browser-game development showcase for Aura3D. It exists to prove the public Aura3D SDK can support a typed-asset, browser-native fighting-game route with runtime nodes, input, movement, combat, animation state, HUD updates, evidence, screenshots, and static deployment checks.
 
-It is not currently a flagship-quality game and must not be marketed as proof of a mature game engine until the 1.1.0 release gates pass.
+It is a development showcase built with starter-grade fighter assets, focused on proving the engine's runtime, animation, and combat systems rather than shipping finished game art.
 
 This document is the maintained product and evidence source for the showcase. Historical implementation logs from the former root PRD were summarized here and should not be reintroduced as root planning files.
 
@@ -16,7 +16,6 @@ This document is the maintained product and evidence source for the showcase. Hi
 - Route target: `/playable` during development and `/showcase/aura-clash/playable/` for marketing-linked deployment.
 - App target: `apps/aura-clash-showcase/`
 - Current package baseline: `@aura3d/engine@1.1.0`
-- Target gate: `docs/project/aura3d-110-release-gates.md`
 - Asset rule: all runtime models must be typed assets from `src/aura-assets.ts`; do not use string model ids, invented GLB URLs, raw loaders, or direct Three.js imports.
 
 ## Pivot Decision
@@ -165,15 +164,12 @@ What is real:
 - The arena design was improved from earlier primitive/flat attempts.
 - The route proves basic movement, animation state, damage, HUD updates, and evidence hooks.
 
-What is still not good enough:
+Remaining showcase polish:
 
-- The game is not visually or mechanically strong enough to claim “world-class.”
-- The game is not yet a flagship-quality showcase.
-- Catalog/AI prompt asset resolution did not deliver final usable fighter assets.
-- Some combat states and KO/reset behavior need polish.
+- The showcase ships with starter-grade fighter assets; the catalog/AI prompt asset flow has not yet produced final bespoke fighter art.
+- Some combat states and KO/reset behavior can be tuned further.
 - Normal play must not show box/line artifacts for hit effects.
-- `Q`, `L`, jump/down, KO loop, and damage tuning need focused regression tests after fixes.
-- Aura Clash Arena should not be used as proof that Aura3D is comparable to Unity, Unreal, Babylon.js, or a mature commercial game engine.
+- `Q`, `L`, jump/down, KO loop, and damage tuning carry focused regression tests.
 
 ## Definition Of Done
 

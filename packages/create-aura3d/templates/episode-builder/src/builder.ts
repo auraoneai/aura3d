@@ -1,4 +1,4 @@
-import { episode, publicCartoonAssetInstructions, typedCartoonAssetSummary } from "./episode";
+import { episode, publicAnimationAssetInstructions, typedAnimationAssetSummary } from "./episode";
 import { publishReadiness } from "./render-plan";
 
 export const episodeBuilderSupport = {
@@ -26,9 +26,9 @@ export const episodeBuilderSupport = {
     renderQueueItems: episode.renderQueue.items.length
   },
   typedAssets: {
-    requiredCharacters: typedCartoonAssetSummary.requiredCharacterAssets,
-    missingCharacters: typedCartoonAssetSummary.missingCharacterAssets,
-    commands: publicCartoonAssetInstructions
+    requiredCharacters: typedAnimationAssetSummary.requiredCharacterAssets,
+    missingCharacters: typedAnimationAssetSummary.missingCharacterAssets,
+    commands: publicAnimationAssetInstructions
   }
 } as const;
 

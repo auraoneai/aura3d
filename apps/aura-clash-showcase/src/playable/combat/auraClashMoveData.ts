@@ -1,3 +1,5 @@
+import { createAnimationEventTracks, type AnimationEventTrackContainer } from "@aura3d/animation";
+
 export type AuraClashMoveId = "light" | "heavy" | "special";
 export type AuraClashMovementMoveId = "guard" | "jump" | "down" | "dash";
 export type AuraClashActionMoveId = AuraClashMoveId | AuraClashMovementMoveId;
@@ -111,6 +113,37 @@ export const auraClashActionFrameData: Record<AuraClashActionMoveId, AuraClashAc
   jump: toMovementFrameData("jump"),
   down: toMovementFrameData("down"),
   dash: toMovementFrameData("dash")
+};
+
+// Authored animation event tracks per attack move. The "hitbox" lane carries an active-frame
+// window (marker time + duration) that is the single source of truth for when the attack's hitbox
+// is live; footstep and VFX lanes carry trigger markers. Authored to match each move's active
+// window exactly, so deriving the engine hit window from these events leaves combat — and the
+// deterministic replay checksum — byte-identical.
+export function createAuraClashMoveEventTracks(id: AuraClashMoveId): AnimationEventTrackContainer {
+  const move = auraClashMoveTable[id];
+  const tracks = createAnimationEventTracks(id, move.duration);
+  tracks.addMarker("hitbox", move.activeStart, {
+    type: "hitbox",
+    duration: move.activeEnd - move.activeStart,
+    payload: { damage: move.damage, range: move.range }
+  });
+  tracks.addMarker("footstep", Number((move.activeStart * 0.5).toFixed(4)), { type: "footstep" });
+  tracks.addMarker("vfx", move.activeStart, { type: "vfx", payload: { effect: `${id}-spark` } });
+  return tracks;
+}
+
+/** Active-frame hitbox window derived from a move's authored event tracks. */
+export function auraClashHitWindowFromTracks(tracks: AnimationEventTrackContainer): { activeStart: number; activeEnd: number } {
+  const window = tracks.activeWindows("hitbox")[0];
+  return window ? { activeStart: window.start, activeEnd: window.end } : { activeStart: 0, activeEnd: 0 };
+}
+
+/** Cached per-move event tracks (built once; pure/deterministic). */
+export const auraClashMoveEventTracks: Record<AuraClashMoveId, AnimationEventTrackContainer> = {
+  light: createAuraClashMoveEventTracks("light"),
+  heavy: createAuraClashMoveEventTracks("heavy"),
+  special: createAuraClashMoveEventTracks("special")
 };
 
 function toAttackFrameData(id: AuraClashMoveId): AuraClashActionFrameData {

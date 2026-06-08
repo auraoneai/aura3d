@@ -119,7 +119,7 @@ pnpm advanced-gallery:pipeline
 
 ## Current Limits
 
-- The built-in broadphase is deterministic and inspectable, not a mature native physics backend replacement.
+- The built-in broadphase is deterministic and inspectable.
 - Continuous collision detection is bounded; fast bodies use fixed-step discrete checks where the current tests cover them.
 - The advanced gallery does not claim mesh-derived colliders or full articulated robot dynamics.
 - Vehicle, cloth, soft-body, fluid, fracture, fire/smoke, and crowd modules are fixture/evidence surfaces unless a specific test or route proves production behavior.

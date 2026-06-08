@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D Animation Studio Editor Harness</title>
+    <style>
+      body { font: 13px monospace; background: #0c0f16; color: #dfe6f0; margin: 0; padding: 16px; }
+      #timeline { position: relative; height: 48px; background: #161b26; border: 1px solid #2a3242; margin: 8px 0; }
+      .clip { position: absolute; top: 6px; height: 36px; background: #2d6cdf; border-radius: 4px; opacity: 0.9; }
+      #playhead { position: absolute; top: 0; width: 2px; height: 48px; background: #ff5f6d; }
+      .graph-state { display: inline-block; padding: 2px 8px; margin: 2px; background: #1d2738; border-radius: 3px; }
+      .graph-state.active { background: #2d6cdf; }
+      .event-lane { position: relative; height: 24px; background: #131826; border: 1px solid #2a3242; margin: 4px 0; }
+      .event-lane-label { position: absolute; left: 4px; top: 4px; font-size: 11px; color: #8aa0c0; z-index: 2; }
+      .event-marker { position: absolute; top: 4px; height: 16px; width: 4px; background: #ffd166; border-radius: 2px; }
+      .event-marker.window { background: rgba(255, 95, 109, 0.45); border: 1px solid #ff5f6d; }
+      .event-marker.selected { outline: 2px solid #fff; }
+    </style>
+  </head>
+  <body>
+    <h1>Aura3D Animation Studio — editor</h1>
+    <div id="state-graph"></div>
+    <div id="timeline"><div id="playhead"></div></div>
+    <h2 style="font-size:13px">Event tracks</h2>
+    <div id="event-tracks"></div>
+    <pre id="curve-readout"></pre>
+    <script type="module" src="./animation-studio-editor-harness.ts"></script>
+  </body>
+</html>

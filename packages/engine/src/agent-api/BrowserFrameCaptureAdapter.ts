@@ -1,4 +1,4 @@
-import type { CartoonRenderQueueItem, CartoonViewport } from "./CartoonRenderQueue.js";
+import type { AnimationRenderQueueItem, AnimationViewport } from "./AnimationRenderQueue.js";
 import type { PromptAnimationSeconds } from "./PromptAnimationContract.js";
 
 export interface BrowserFrameCapturePageLike {
@@ -12,8 +12,8 @@ export interface BrowserFrameCapturePageLike {
 
 export interface BrowserFrameCaptureRequest {
   readonly route: string;
-  readonly item: CartoonRenderQueueItem;
-  readonly viewport: CartoonViewport;
+  readonly item: AnimationRenderQueueItem;
+  readonly viewport: AnimationViewport;
   readonly selector?: string | undefined;
   readonly outputPath?: string | undefined;
   readonly waitUntil?: "load" | "domcontentloaded" | "networkidle" | undefined;
@@ -26,7 +26,7 @@ export interface BrowserFrameCaptureResult {
   readonly route: string;
   readonly frame: number;
   readonly time: PromptAnimationSeconds;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly selector: string;
   readonly deviceScaleFactor: number;
   readonly deterministic: boolean;
@@ -62,11 +62,11 @@ export function createBrowserFrameCaptureAdapter(options: CreateBrowserFrameCapt
       await options.page.waitForSelector?.(selector, { timeout: timeoutMs });
       await options.page.evaluate?.((time) => {
         const global = globalThis as unknown as {
-          __AURA3D_CARTOON_EPISODE_SEEK__?: (time: number) => void;
-          __AURA3D_CARTOON_TEMPLATE__?: { sampleAt?(time: number): unknown };
+          __AURA3D_ANIMATION_EPISODE_SEEK__?: (time: number) => void;
+          __AURA3D_ANIMATION_TEMPLATE__?: { sampleAt?(time: number): unknown };
         };
-        global.__AURA3D_CARTOON_EPISODE_SEEK__?.(time as number);
-        global.__AURA3D_CARTOON_TEMPLATE__?.sampleAt?.(time as number);
+        global.__AURA3D_ANIMATION_EPISODE_SEEK__?.(time as number);
+        global.__AURA3D_ANIMATION_TEMPLATE__?.sampleAt?.(time as number);
       }, request.item.time);
       const image = options.page.locator
         ? await options.page.locator(selector).first().screenshot({ path: request.outputPath, type: "png" })

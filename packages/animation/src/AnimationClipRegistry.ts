@@ -88,14 +88,14 @@ export interface AnimationClipRegistryDiagnostic<TClipId extends string = string
   readonly clipId?: TClipId;
 }
 
-export interface CartoonClipMapReadinessOptions<TClipId extends string = string> {
+export interface AnimationClipMapReadinessOptions<TClipId extends string = string> {
   readonly requiredActions?: readonly string[] | undefined;
   readonly clipMap: Readonly<Record<string, TClipId | readonly TClipId[] | undefined>>;
   readonly aliases?: Readonly<Record<string, string>> | undefined;
   readonly segmentedFallbackDeclared?: boolean | undefined;
 }
 
-export interface CartoonClipMapReadiness<TClipId extends string = string> {
+export interface AnimationClipMapReadiness<TClipId extends string = string> {
   readonly ok: boolean;
   readonly segmentedFallbackDeclared: boolean;
   readonly requiredActions: readonly string[];
@@ -281,14 +281,14 @@ export function createAnimationClipRegistry<
   return new AnimationClipRegistry(clips, options);
 }
 
-export function validateCartoonClipMap<
+export function validateAnimationClipMap<
   TClipId extends string = string,
   TEvent extends AnimationClipEvent = AnimationClipEvent,
   TPose = unknown
 >(
   registry: AnimationClipRegistry<TClipId, TEvent, TPose>,
-  options: CartoonClipMapReadinessOptions<TClipId>
-): CartoonClipMapReadiness<TClipId> {
+  options: AnimationClipMapReadinessOptions<TClipId>
+): AnimationClipMapReadiness<TClipId> {
   const requiredActions = options.requiredActions ?? ["speak", "listen", "gesture", "walk", "action"];
   const missingActions: string[] = [];
   const missingClipIds: TClipId[] = [];
@@ -303,8 +303,8 @@ export function validateCartoonClipMap<
       missingActions.push(action);
       diagnostics.push({
         severity: options.segmentedFallbackDeclared ? "warning" : "error",
-        code: "CARTOON_CLIP_ACTION_MISSING",
-        message: `Cartoon action "${action}" is missing a clip map entry.`
+        code: "ANIMATION_CLIP_ACTION_MISSING",
+        message: `Animation action "${action}" is missing a clip map entry.`
       });
       continue;
     }
@@ -313,8 +313,8 @@ export function validateCartoonClipMap<
         missingClipIds.push(clipId);
         diagnostics.push({
           severity: options.segmentedFallbackDeclared ? "warning" : "error",
-          code: "CARTOON_CLIP_ID_MISSING",
-          message: `Cartoon action "${action}" references missing clip "${clipId}".`,
+          code: "ANIMATION_CLIP_ID_MISSING",
+          message: `Animation action "${action}" references missing clip "${clipId}".`,
           clipId
         });
       }
@@ -333,18 +333,18 @@ export function validateCartoonClipMap<
 }
 
 /**
- * Generic (non-cartoon) clip-map readiness validator for locomotion / fighter / Animation Studio
- * clip sets. Same readiness shape as {@link validateCartoonClipMap} but with neutral diagnostic
+ * Generic (non-animation) clip-map readiness validator for locomotion / fighter / Animation Studio
+ * clip sets. Same readiness shape as {@link validateAnimationClipMap} but with neutral diagnostic
  * codes and a configurable required-action set (defaults to a locomotion set).
  */
-export function validateAnimationClipMap<
+export function validateAnimationStudioClipMap<
   TClipId extends string = string,
   TEvent extends AnimationClipEvent = AnimationClipEvent,
   TPose = unknown
 >(
   registry: AnimationClipRegistry<TClipId, TEvent, TPose>,
-  options: CartoonClipMapReadinessOptions<TClipId>
-): CartoonClipMapReadiness<TClipId> {
+  options: AnimationClipMapReadinessOptions<TClipId>
+): AnimationClipMapReadiness<TClipId> {
   const requiredActions = options.requiredActions ?? ["idle", "walk", "run"];
   const missingActions: string[] = [];
   const missingClipIds: TClipId[] = [];

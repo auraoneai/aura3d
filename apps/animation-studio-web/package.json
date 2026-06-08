@@ -1,0 +1,24 @@
+{
+  "name": "@aura3d/animation-studio-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D Animation Studio — the 3-pane NLE web shell (PRD §7). Vite + React + TypeScript. A real production studio shell whose dev backend (vite.config.ts middleware) loads the working EpisodeDocument via /api/document, applies Scene-Tool CLI commands as validated mutations, and triggers real renders served under /preview.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.0",
+    "vite": "^5.4.0"
+  }
+}

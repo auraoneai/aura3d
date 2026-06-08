@@ -4,7 +4,7 @@ import {
   createAnimationClipRegistry,
   createLocomotionAnimationStateGraph,
   createLocomotionKit,
-  validateAnimationClipMap
+  validateAnimationStudioClipMap
 } from "../../../packages/animation/src";
 
 function clipDef(id: string) {
@@ -84,14 +84,14 @@ describe("createLocomotionKit", () => {
   });
 });
 
-describe("validateAnimationClipMap", () => {
+describe("validateAnimationStudioClipMap", () => {
   it("passes when all required locomotion clips are present", () => {
     const registry = createAnimationClipRegistry([
       clipDef("Idle"),
       clipDef("Walk"),
       clipDef("Run")
     ]);
-    const readiness = validateAnimationClipMap(registry, {
+    const readiness = validateAnimationStudioClipMap(registry, {
       clipMap: { idle: "Idle", walk: "Walk", run: "Run" }
     });
     expect(readiness.ok).toBe(true);
@@ -104,7 +104,7 @@ describe("validateAnimationClipMap", () => {
       clipDef("Idle"),
       clipDef("Walk")
     ]);
-    const readiness = validateAnimationClipMap(registry, {
+    const readiness = validateAnimationStudioClipMap(registry, {
       clipMap: { idle: "Idle", walk: "Walk" }
     });
     expect(readiness.ok).toBe(false);
@@ -114,7 +114,7 @@ describe("validateAnimationClipMap", () => {
 
   it("fails when a mapped clip is not registered", () => {
     const registry = createAnimationClipRegistry([clipDef("Idle")]);
-    const readiness = validateAnimationClipMap(registry, {
+    const readiness = validateAnimationStudioClipMap(registry, {
       requiredActions: ["idle", "walk"],
       clipMap: { idle: "Idle", walk: "Walk" }
     });
@@ -125,7 +125,7 @@ describe("validateAnimationClipMap", () => {
 
   it("downgrades to warnings (ok) when segmented fallback is declared and clips are mapped", () => {
     const registry = createAnimationClipRegistry([clipDef("Idle")]);
-    const readiness = validateAnimationClipMap(registry, {
+    const readiness = validateAnimationStudioClipMap(registry, {
       requiredActions: ["idle", "walk"],
       clipMap: { idle: "Idle", walk: "Walk" },
       segmentedFallbackDeclared: true

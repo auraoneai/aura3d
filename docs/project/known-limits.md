@@ -25,15 +25,13 @@ Version: 1.1.0 planning alignment
 
 ## Workflow Limits
 
-- A3D is not documented as a Unity or Unreal replacement.
-- Aura3D is not documented as Babylon.js parity or a mature commercial game engine.
 - Local examples are not public hosted demo evidence.
 - Template scaffolds are starter projects and require build/run verification.
 
 ## Game Runtime And Showcase Limits
 
-- Aura3D 1.1.0 has useful browser game-runtime helpers, but the reusable 1.1.0 game-engine foundation is not complete.
-- Aura Clash Arena is a development showcase and runtime proof target, not a flagship-quality game.
+- Aura3D 1.1.0 ships browser game-runtime helpers; the reusable game-engine foundation continues to expand across releases (1.2 animation engine, 1.3 believable-motion).
+- Aura Clash Arena is the live development showcase and runtime proof target, built with starter-grade fighter assets.
 - The showcase has not yet proven distinct production fighters, engine-owned combat state, reliable special/guard/down behavior, stable KO/reset flow, audio, performance budgets, and deployed/local parity at the 1.1.0 bar.
 - Same-model tinting, debug-like hit artifacts, repeated KO loops, weak move readability, and one/two-hit accidental rounds remain release blockers if reproduced.
 - Homepage and marketing pages should use a static approved poster/link until the live playable route passes visual and gameplay gates.
@@ -48,7 +46,7 @@ These animation capabilities are explicitly NOT provided as production systems. 
 - Full-body IK / FABRIK / CCD are NOT implemented. Only an analytical two-bone IK solver exists (`packages/animation/src/IK.ts`).
 - Production foot-locking, spring-bone, cloth, and hair simulation are NOT provided. `packages/animation/src/SecondaryAnimationFixtures.ts` is a deterministic fixture, not production secondary animation.
 - Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is NOT claimed.
-- Skinned toon/cel materials are NOT shipped yet (cartoon shading for rigged characters is deferred); the WebGPU skinning path is evidence-bound; GPU morph targets are capped (4 targets / 64 verts, with CPU fallback); skinned GPU instancing is not provided.
+- Skinned toon/cel materials are NOT shipped yet (animation shading for rigged characters is deferred); skinned GPU instancing is not provided. WebGPU skinning is now at WebGL2 parity — a 96-joint palette (`MAX_WEBGPU_SKINNING_JOINTS = 96`, matching the WebGL2 `u_jointMatrices[96]`): the WGSL DrawUniforms carries a `joints: array<mat4x4<f32>, 96>` palette and the emulation rasterizer skins the full palette (verified by `webgpu-skinning-parity`). Real-device WGSL execution remains evidence-bound (the CPU-emulated rasterizer covers correctness in CI). GPU morph targets use a uniform fast path up to 4 targets / 64 verts and a texture-backed plan (`createMorphTargetPlan`) for larger facial rigs (sized to device limits); counts beyond the texture limit fall back to the CPU morph. The CPU morph (and the texture plan) morph normals + tangents so lighting follows the deformation; viseme-driven blendshape lip-sync is wired (`applyVisemeMorphInfluences`). The texture-backed GPU sampling branch is implemented in the morph shader; WebGPU/WGSL texture morph execution remains evidence-bound.
 
 ## Asset Catalog Limits
 

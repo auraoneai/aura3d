@@ -92,8 +92,8 @@ export interface CharacterAssemblyPart<TAsset extends AuraAssetRef<"model"> = Au
 
 export interface CharacterAssemblyGameplayIntent {
   readonly runtimeNodeId?: string | undefined;
-  readonly collisionPreset?: "fighter" | "npc" | "cartoon-character" | "none" | undefined;
-  readonly animationProfile?: "fighter" | "cartoon" | "ambient" | undefined;
+  readonly collisionPreset?: "fighter" | "npc" | "animation-character" | "none" | undefined;
+  readonly animationProfile?: "fighter" | "animation" | "ambient" | undefined;
   readonly routeUsage?: readonly string[] | undefined;
 }
 

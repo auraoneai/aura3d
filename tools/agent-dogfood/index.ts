@@ -106,7 +106,7 @@ const workspace = resolve("tests/reports/agent-context/codex-self-test-workspace
 const fiveTaskWorkspace = resolve("tests/reports/agent-context/codex-five-task-workspace");
 const repairWorkspace = resolve("tests/reports/agent-context/codex-repair-workspace");
 const reportPath = "tests/reports/agent-context/codex-self-test.json";
-const markdownPath = "docs/project/agent-dogfood-results.md";
+const markdownPath = "tests/reports/agent-dogfood-results.md";
 const tsconfig = JSON.parse(readFileSync("tsconfig.base.json", "utf8")) as {
   compilerOptions?: { paths?: Record<string, readonly string[]> };
 };

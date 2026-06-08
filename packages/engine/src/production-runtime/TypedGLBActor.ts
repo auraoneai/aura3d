@@ -4,6 +4,7 @@ import {
   type GLTFSceneAnimationApplyResult,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
+  type GLTFScenePose,
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/browser";
 import { type Material, type RenderItem } from "@aura3d/rendering";
@@ -66,6 +67,18 @@ export interface TypedGLBActor {
   readonly animation: GLTFSceneAnimationRuntime;
   readonly evidence: TypedGLBActorEvidence;
   playClip(name: string, time: number): GLTFSceneAnimationApplyResult;
+  /**
+   * Drive the GLB from an externally-computed retargeted pose (e.g. the output of
+   * `@aura3d/animation`'s `retargetHumanoidPose`, whose `bones` keys are the target rig's GLB node
+   * names). This is the Phase 2.3 pose→runtime bridge: instead of sampling an embedded clip, the
+   * caller hands in a per-frame pose and the runtime writes it onto the matching scene nodes.
+   */
+  applyRetargetedPose(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
+  /**
+   * Convenience alias for {@link applyRetargetedPose} with a clip-style label, mirroring `playClip`
+   * for callers that drive the actor frame-by-frame from a retargeted clip pose.
+   */
+  playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   setTint(options: TypedGLBActorTintOptions): void;
@@ -101,6 +114,14 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     },
     playClip(name, time) {
       lastApply = animation.applyClipByName(name, time);
+      return lastApply;
+    },
+    applyRetargetedPose(pose, time = 0) {
+      lastApply = animation.applyPose(pose, "retargeted-pose", time);
+      return lastApply;
+    },
+    playRetargetedClip(pose, time = 0) {
+      lastApply = animation.applyPose(pose, "retargeted-clip", time);
       return lastApply;
     },
     collectRenderItems(transformOptions = {}) {

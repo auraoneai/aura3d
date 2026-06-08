@@ -93,8 +93,8 @@
           "Run unit/browser/build validation",
           "Run `aura3d assets validate-game`",
           "validate-game",
-          "Run `aura3d assets validate-cartoon`",
-          "validate-cartoon"
+          "Run `aura3d assets validate-animation`",
+          "validate-animation"
         ]
       },
       "notes": "These gates may only close from durable JSON command evidence, not from source files or prior console memory."
@@ -240,7 +240,7 @@
         "tests/reports/prompt-animation/viseme-sync-proof.json",
         "tests/reports/prompt-animation/dub-sync-proof.json",
         "tests/reports/prompt-animation/prompt-animation-evidence.json",
-        "tests/reports/prompt-animation/validate-cartoon.json",
+        "tests/reports/prompt-animation/validate-animation.json",
         "tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png",
         "tests/reports/prompt-animation/render-package/episode.mp4",
         "tests/reports/prompt-animation/render-package/thumbnail.png",
@@ -255,7 +255,7 @@
           "voiceover",
           "viseme",
           "caption",
-          "cartoon",
+          "animation",
           "YouTube",
           "episode",
           "render package",

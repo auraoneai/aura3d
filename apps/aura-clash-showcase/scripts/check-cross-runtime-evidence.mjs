@@ -112,10 +112,10 @@ const required = {
     process.env.AURA3D_PROMPT_ANIMATION_EVIDENCE_OUT ??
       "tests/reports/prompt-animation/prompt-animation-evidence.json"
   ),
-  cartoonAssetValidation: resolve(
+  animationAssetValidation: resolve(
     repoRoot,
-    process.env.AURA3D_PROMPT_ANIMATION_VALIDATE_CARTOON_OUT ??
-      "tests/reports/prompt-animation/validate-cartoon.json"
+    process.env.AURA3D_PROMPT_ANIMATION_VALIDATE_ANIMATION_OUT ??
+      "tests/reports/prompt-animation/validate-animation.json"
   ),
   visemeSync: resolve(
     repoRoot,
@@ -188,7 +188,7 @@ const auraClashLaunchOk =
   jsonOk(artifacts.auraClashDeployedRoutes) &&
   jsonOk(artifacts.auraClashVisualApproval);
 const auraVoiceContractOk = jsonOk(artifacts.auraVoiceContract);
-const cartoonAssetValidationOk = jsonOk(artifacts.cartoonAssetValidation);
+const animationAssetValidationOk = jsonOk(artifacts.animationAssetValidation);
 const promptAnimationUnitOk = jsonOk(artifacts.promptAnimationUnit);
 const promptAnimationBrowserOk = jsonOk(artifacts.promptAnimationBrowser);
 const promptAnimationTemplateOk = jsonOk(artifacts.promptAnimationTemplate);
@@ -199,7 +199,7 @@ const auraVoiceSampleRenderOk =
   executedJsonOk(artifacts.auraVoiceSampleRender) &&
   executedJsonOk(artifacts.promptAnimationEvidence) &&
   executedJsonOk(artifacts.visemeSync) &&
-  cartoonAssetValidationOk;
+  animationAssetValidationOk;
 const auraVoiceSamplePackageOk =
   executedJsonOk(artifacts.auraVoiceSamplePackage) &&
   executedJsonOk(artifacts.promptAnimationEvidence) &&
@@ -263,7 +263,7 @@ const evidence = {
     auraClashVercelDeployOk,
     auraClashLaunchOk,
     auraVoiceContractOk,
-    cartoonAssetValidationOk,
+    animationAssetValidationOk,
     promptAnimationUnitOk,
     promptAnimationBrowserOk,
     promptAnimationTemplateOk,

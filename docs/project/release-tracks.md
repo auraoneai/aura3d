@@ -1,7 +1,7 @@
 # Release Tracks
 
-Version: 1.1.0
-Date: 2026-06-06
+Version: 1.2.0
+Date: 2026-06-07
 
 Aura3D v1.1.0 is the runtime-foundation, typed GLB actor evidence, asset-catalog profile, CLI, template, docs, npm package, GitHub repository, marketing-site, and Aura Clash development-showcase release track.
 
@@ -25,28 +25,57 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 `@aura3d/engine@1.1.0` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
 
-Publication status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`. Public launch claims must remain scoped: Aura3D is a runtime foundation release, and Aura Clash Arena is a development showcase/runtime proof target, not proof of a mature commercial game engine.
+Publication status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
 
-## 1.1 Cartoon Studio Track
+## 1.2 Animation Engine Track
 
-Aura3D 1.1 is the proposed cartoon-studio and animation-engine release track. It builds on 1.1.0 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
+Aura3D 1.2 is the prepared animation-engine release track on top of 1.1.0. It is implemented and verified in the repo; the `1.2.0` packages are publish-pending while npm `latest` continues to serve the `1.1.x` line.
 
-The 1.1 track is complete only when a clean external project can scaffold `cartoon-studio`, validate two typed character assets and one typed set, preview a real episode route, render a playable episode file, export captions and metadata, write a package folder, and produce motion/visual/review evidence.
+What 1.2 adds:
+
+- `@aura3d/animation`: locomotion state-graph + kit (`createLocomotionAnimationStateGraph`, `createLocomotionKit`), generic `validateAnimationClipMap`, a shared fighter-animation adapter (`resolveFighterClip`, `fighterCrossfadeWeights`).
+- `@aura3d/assets`: per-clip bone-mask blending in `applyClips` for layered playback (`GLTFSceneAnimationClipBoneMask`, `mask?` on the clip sample).
+- `@aura3d/cli`: `aura3d assets validate-animation`.
+- `create-aura3d`: `animation-studio` and `character-controller` starter templates.
+- Aura Clash Arena: a browser-verified motion upgrade — crossfaded transitions, weight/airborne-varied hit reactions, and upper-body attack layering — with deterministic combat replay stable.
+
+Capability boundaries: foot IK is per-limb two-bone; spring bones are secondary dynamics; precise technical limits live in `docs/project/known-limits.md`. Aura Clash reuses its starter fighter art, so it remains a development showcase of the engine.
+
+Primary reference: `docs/animation/believable-motion.md`.
+
+## 1.3 Believable-Motion Track
+
+Aura3D 1.3 is the believable-motion release track on top of 1.2. It is implemented and gate-verified in the repo; the version bump to `1.3.0` / publish is pending authorization.
+
+What 1.3 adds:
+
+- `@aura3d/animation`: critically-damped, momentum-preserving state transitions (`Inertialization` module + `fighterInertializedWeights`, the new default fighter transition with the linear crossfade kept as a fallback), runtime two-bone foot IK with a foot-lock (`FootIk.ts`), spring-bone secondary dynamics (`SpringBones.ts`), and animation event tracks (`AnimationEventTrackContainer`) with an `EventTrackEditor` browser authoring lane.
+- `@aura3d/rendering`: a texture-backed morph-target path (`createMorphTargetPlan`) that lifts the 4-target/64-vertex GPU cap for facial blendshape rigs, normal morphing so lighting follows the deformation, and WebGPU character skinning at 96-joint WebGL2 parity.
+- `@aura3d/engine`: a first-class `node.morphInfluence(name, weight)` API and viseme-driven blendshape lip-sync (`applyVisemeMorphInfluences`).
+- Aura Clash Arena: now runs the foot IK + foot-lock (with footsteps), spring body-sway, critically-damped move transitions, and authored clip-event hit/footstep/VFX frames live, with deterministic combat replay still stable.
+
+Capability boundaries: foot IK is per-limb two-bone; spring bones are secondary dynamics; precise limits live in `docs/project/known-limits.md`. The Aura Clash fighter rigs carry no facial blendshapes, so the morph/viseme work is exercised by Animation Studio and the morph proofs. Aggregate gate: `pnpm animation-engine:believable-motion`.
+
+## 1.1 Animation Studio Track
+
+Aura3D 1.1 is the proposed animation-studio and animation-engine release track. It builds on 1.1.0 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
+
+The 1.1 track is complete only when a clean external project can scaffold `animation-studio`, validate two typed character assets and one typed set, preview a real episode route, render a playable episode file, export captions and metadata, write a package folder, and produce motion/visual/review evidence.
 
 Allowed planning language:
 
-- "Aura3D 1.1 is planned to provide a browser-native cartoon episode pipeline."
+- "Aura3D 1.1 is planned to provide a browser-native animation episode pipeline."
 - "The target workflow turns typed assets, show-bible metadata, shot timelines, dialogue/captions, visemes, and render queues into an episode package."
 - "The release gate will reject still-image puppet output as animation proof."
 
 Blocked language until the 1.1 gates pass:
 
-- "Aura3D generates Pixar-quality cartoons."
+- "Aura3D generates Pixar-quality animations."
 - "Aura3D turns any still image into a production animated episode."
 - "Aura3D replaces Blender, Maya, Toon Boom, Unity, Unreal, or a production animation studio."
-- "A still image with CSS transforms, shake, pan, zoom, fake parallax, or subtitles is real cartoon animation."
+- "A still image with CSS transforms, shake, pan, zoom, fake parallax, or subtitles is real animation animation."
 
-Primary planning doc: `docs/project/aura3d-1.1-cartoon-studio-prd.md`.
+Primary reference: `docs/examples/animation-studio.md`.
 
 ## 1.0.5 Release Note
 

@@ -1,6 +1,6 @@
 # Release Checklist
 
-Version: 1.1.0
+Version: 1.2.0
 
 Use this checklist before publishing package, docs, demo, scoped product, or
 to `docs/project/launch-positioning.md`, `docs/project/release-tracks.md`, and
@@ -38,12 +38,12 @@ to `docs/project/launch-positioning.md`, `docs/project/release-tracks.md`, and
 ## Docs Checks
 
 - [ ] No docs reference deleted milestone or planning files as current standards.
-- [ ] Versioned governance docs reference `Version: 1.1.0`.
+- [ ] Versioned governance docs reference `Version: 1.2.0`.
 - [ ] Links in `docs/project/site-map.md` resolve.
 
 ## Go-Live Checks
 
-- [ ] `docs/project/external-proof-readiness.md` has been followed for the selected track.
+- [ ] the external proof steps have been followed for the selected track.
 - [ ] `docs/project/release-artifacts.json` references the final package artifact path or URL, SHA-256, and creation time when applicable.
 - [ ] Hosted demo claims are backed by the deployment checks in `docs/project/release-process.md`.
 - [ ] Public copy links to the correct release evidence and does not cite internal verification as competitive proof.

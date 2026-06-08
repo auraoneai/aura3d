@@ -116,7 +116,7 @@ const gameRuntimeDocsOk = crossRuntimeGates.gameRuntimeDocsOk === true;
 const aura3dPackageSmokeOk = crossRuntimeGates.aura3dPackageSmokeOk === true;
 const gameRuntimeReleaseOk = crossRuntimeGates.gameRuntimeReleaseOk === true;
 const auraVoiceContractOk = crossRuntimeGates.auraVoiceContractOk === true;
-const cartoonAssetValidationOk = crossRuntimeGates.cartoonAssetValidationOk === true;
+const animationAssetValidationOk = crossRuntimeGates.animationAssetValidationOk === true;
 const promptAnimationUnitOk = crossRuntimeGates.promptAnimationUnitOk === true;
 const promptAnimationBrowserOk = crossRuntimeGates.promptAnimationBrowserOk === true;
 const promptAnimationTemplateOk = crossRuntimeGates.promptAnimationTemplateOk === true;
@@ -459,10 +459,10 @@ if (gameRuntimeReleaseOk) {
   mark("`pnpm game-runtime:release`", "cross-runtime evidence reports game-runtime release success");
 }
 
-if (cartoonAssetValidationOk) {
+if (animationAssetValidationOk) {
   mark(
-    "Run `aura3d assets validate-cartoon` against an AuraVoice-backed cartoon sample.",
-    "cross-runtime evidence reports validate-cartoon success"
+    "Run `aura3d assets validate-animation` against an AuraVoice-backed animation sample.",
+    "cross-runtime evidence reports validate-animation success"
   );
 }
 
@@ -480,7 +480,7 @@ if (promptAnimationUnitOk) {
 if (promptAnimationBrowserOk) {
   mark("`pnpm prompt-animation:browser`", "cross-runtime evidence reports prompt-animation browser success");
   mark(
-    "Browser tests verify storyboard shot playback, character performance state changes, caption timing, camera cuts, and visually nonblank cartoon frames; required artifacts are `pnpm prompt-animation:browser` output plus `tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png` and three storyboard frame screenshots.",
+    "Browser tests verify storyboard shot playback, character performance state changes, caption timing, camera cuts, and visually nonblank animation frames; required artifacts are `pnpm prompt-animation:browser` output plus `tests/reports/prompt-animation/storyboard-gallery/title-safe-thumbnail.png` and three storyboard frame screenshots.",
     "cross-runtime evidence reports prompt-animation browser success"
   );
   mark(
@@ -546,7 +546,7 @@ if (auraVoiceSampleRenderOk) {
     "cross-runtime evidence reports AuraVoice sample render success"
   );
   mark(
-    "Run an AuraVoice/cartoon-channel sample render or equivalent deterministic render package.",
+    "Run an AuraVoice/animation-channel sample render or equivalent deterministic render package.",
     "cross-runtime evidence reports AuraVoice sample render success"
   );
   mark(
@@ -695,7 +695,7 @@ const report = {
     aura3dPackageSmokeOk,
     gameRuntimeReleaseOk,
     auraVoiceContractOk,
-    cartoonAssetValidationOk,
+    animationAssetValidationOk,
     promptAnimationUnitOk,
     promptAnimationBrowserOk,
     promptAnimationTemplateOk,

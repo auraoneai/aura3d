@@ -2,7 +2,7 @@
   "schema": "aura-clash-flagship-readiness",
   "ok": true,
   "status": "flagship-ready",
-  "generatedAt": "2026-06-06T13:48:02.865Z",
+  "generatedAt": "2026-06-07T20:09:20.786Z",
   "appRoot": "apps/aura-clash-showcase",
   "gates": [
     {

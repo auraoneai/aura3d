@@ -5,14 +5,14 @@ test("episode builder storyboard caption renders", async ({ page }) => {
   await expect(page.getByText(/Aura3D episode builder|moon|robot/i)).toBeVisible();
 });
 
-test("storyboard playback, character performance, caption timing, cuts, and nonblank cartoon frames are sourced", async ({
+test("storyboard playback, character performance, caption timing, cuts, and nonblank animation frames are sourced", async ({
   page
 }) => {
   await page.goto("/");
 
   const routeProof = (await page.evaluate(() => {
     const template = (window as unknown as {
-      __AURA3D_CARTOON_TEMPLATE__?: {
+      __AURA3D_ANIMATION_TEMPLATE__?: {
         shotIds: readonly string[];
         captionIds: readonly string[];
         storyBible?: unknown;
@@ -20,7 +20,7 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
         playbackProbeSamples: readonly unknown[];
         sampleAt(time: number): unknown;
       };
-    }).__AURA3D_CARTOON_TEMPLATE__;
+    }).__AURA3D_ANIMATION_TEMPLATE__;
     return {
       shotIds: template?.shotIds ?? [],
       captionIds: template?.captionIds ?? [],
@@ -28,8 +28,8 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
       builder: template?.builder,
       samples: [1, 21, 43].map((time) => template?.sampleAt(time)),
       playbackProbeSamples: template?.playbackProbeSamples ?? [],
-      bodyShotCount: document.body.dataset.cartoonShotCount,
-      bodyCaptionCount: document.body.dataset.cartoonCaptionCount,
+      bodyShotCount: document.body.dataset.animationShotCount,
+      bodyCaptionCount: document.body.dataset.animationCaptionCount,
       bodyFormats: document.body.dataset.episodeBuilderFormats
     };
   })) as {
@@ -73,7 +73,7 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
   expect(routeProof.samples.flatMap((sample) => sample.nodeUpdates ?? []).some((update) => update.characterId === "miko")).toBe(true);
   expect(routeProof.samples.flatMap((sample) => sample.nodeUpdates ?? []).some((update) => update.characterId === "luma")).toBe(true);
   expect(routeProof.storyBible?.props?.length).toBeGreaterThanOrEqual(3);
-  expect(routeProof.storyBible?.styleGuide?.visualStyle).toMatch(/cartoon/i);
+  expect(routeProof.storyBible?.styleGuide?.visualStyle).toMatch(/animation/i);
   expect(routeProof.storyBible?.shotList).toHaveLength(3);
   expect(routeProof.playbackProbeSamples).toHaveLength(3);
   expect(routeProof.bodyShotCount).toBe("3");
@@ -89,7 +89,7 @@ test("storyboard playback, character performance, caption timing, cuts, and nonb
   expect(routeProof.builder?.compiledEpisode?.shotCount).toBe(3);
   expect(routeProof.builder?.compiledEpisode?.captionCount).toBe(6);
   expect(routeProof.builder?.compiledEpisode?.renderQueueItems).toBeGreaterThan(0);
-  expect(routeProof.builder?.typedAssets?.commands?.some((command) => command.includes("assets validate-cartoon"))).toBe(true);
+  expect(routeProof.builder?.typedAssets?.commands?.some((command) => command.includes("assets validate-animation"))).toBe(true);
   expect(routeProof.bodyFormats).toBe("short-form,standard,series-pilot,educational,music-video");
   await expect(page.locator("#episode-builder-panel")).toBeVisible();
 

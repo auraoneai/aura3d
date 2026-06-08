@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   AnimationStateGraph,
-  analyzeCartoonHumanoidRetargeting,
-  createCartoonAnimationStateGraph,
-  sampleCartoonAnimationStateGraph
+  analyzeAnimationHumanoidRetargeting,
+  createAnimationAnimationStateGraph,
+  sampleAnimationAnimationStateGraph
 } from "../../../packages/animation/src";
 
 describe("AnimationStateGraph one-shot and terminal states", () => {
@@ -75,9 +75,9 @@ describe("AnimationStateGraph one-shot and terminal states", () => {
     ).toThrow(/completion target missing does not exist/);
   });
 
-  it("provides a deterministic reusable cartoon state graph", () => {
-    const graph = createCartoonAnimationStateGraph();
-    const samples = sampleCartoonAnimationStateGraph(graph, [
+  it("provides a deterministic reusable animation state graph", () => {
+    const graph = createAnimationAnimationStateGraph();
+    const samples = sampleAnimationAnimationStateGraph(graph, [
       { isListening: true },
       { isSpeaking: true },
       { gesture: "wave" },
@@ -101,8 +101,8 @@ describe("AnimationStateGraph one-shot and terminal states", () => {
     expect(graph.graphSnapshot().transitions.length).toBeGreaterThanOrEqual(8);
   });
 
-  it("reports unsupported cartoon humanoid retargeting rigs with useful diagnostics", () => {
-    const diagnostics = analyzeCartoonHumanoidRetargeting({
+  it("reports unsupported animation humanoid retargeting rigs with useful diagnostics", () => {
+    const diagnostics = analyzeAnimationHumanoidRetargeting({
       id: "unsupported-rig",
       bones: {
         hips: { name: "hips" },
@@ -121,9 +121,9 @@ describe("AnimationStateGraph one-shot and terminal states", () => {
     expect(diagnostics.retargetMapProvided).toBe(false);
     expect(diagnostics.diagnostics.map((issue) => issue.code)).toEqual(expect.arrayContaining([
       "HUMANOID_REQUIRED_BONE_MISSING",
-      "CARTOON_MOUTH_METADATA_MISSING",
-      "CARTOON_REQUIRED_CLIP_MISSING",
-      "CARTOON_RETARGET_MAP_MISSING"
+      "ANIMATION_MOUTH_METADATA_MISSING",
+      "ANIMATION_REQUIRED_CLIP_MISSING",
+      "ANIMATION_RETARGET_MAP_MISSING"
     ]));
   });
 });

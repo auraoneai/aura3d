@@ -138,13 +138,13 @@ const areaSpecs: readonly AreaSpec[] = [
     title: "1.0.5 starter template smoke evidence",
     requiredReports: [
       "tests/reports/templates/fighting-game-smoke.json",
-      "tests/reports/templates/cartoon-channel-smoke.json",
-      "tests/reports/templates/prompt-cartoon-channel-smoke.json"
+      "tests/reports/templates/animation-channel-smoke.json",
+      "tests/reports/templates/prompt-animation-channel-smoke.json"
     ],
     requiredScreenshots: [
       "tests/reports/templates/fighting-game-first-frame.png",
-      "tests/reports/templates/cartoon-channel-first-frame.png",
-      "tests/reports/templates/prompt-cartoon-channel-first-frame.png"
+      "tests/reports/templates/animation-channel-first-frame.png",
+      "tests/reports/templates/prompt-animation-channel-first-frame.png"
     ]
   }
 ] as const;

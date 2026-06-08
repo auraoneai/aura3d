@@ -1,4 +1,4 @@
-import { createGameApp, createGameAudio, game, scene, type GameAudio, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
+import { createGameApp, createGameAudio, game, scene, type GameAudio, type GameAudioContextLike, type GameCombatEvent, type GameCombatMove, type GameCombatWorldSnapshot } from "@aura3d/engine";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import {
   createSideViewGameRenderPreset,
@@ -14,11 +14,21 @@ import {
   type RenderSource
 } from "@aura3d/engine/rendering";
 import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
+import { fighterInertializedWeights, sampleClipEvents } from "@aura3d/animation";
+import {
+  createFighterSecondaryMotion,
+  resetFighterSecondaryMotion,
+  updateFighterSecondaryMotion,
+  type FighterSecondaryMotionState,
+  type SecondaryMotionResult
+} from "./animation/fighterSecondaryMotion";
 import { assets } from "../aura-assets";
 import {
   assertAuraClashClipReadiness,
   auraClashPlayerClips as playerClips,
   auraClashRivalClips as rivalClips,
+  resolveAuraClashHurtClip,
+  selectAuraClashHurtVariant,
   validateAuraClashClipReadiness,
   type AuraClashClipName as ClipName,
   type AuraClashClipReadiness,
@@ -33,6 +43,8 @@ import {
   AURA_CLASH_WALK_SPEED as WALK_SPEED,
   auraClashMovementMoveTable as movementMoves,
   auraClashMoveTable as moves,
+  auraClashMoveEventTracks as moveEventTracks,
+  auraClashHitWindowFromTracks,
   type AuraClashMoveId as MoveId
 } from "./combat/auraClashMoveData";
 import {
@@ -83,12 +95,23 @@ interface FighterState {
   health: number;
   meter: number;
   action: FighterAction;
+  hurtVariant: "light" | "heavy";
+  moving: boolean;
+  locomotionTime: number;
   clips: FighterClipMap;
   clip: ClipName;
   clipTime: number;
+  prevClip: ClipName | null;
+  prevClipTime: number;
+  blendElapsed: number;
+  blendDuration: number;
   grounded: boolean;
   guard: boolean;
   hitstun: number;
+  /** Visual-only hit-stop freeze remaining (seconds). Does not touch the combat sim / replay. */
+  hitStopRemaining: number;
+  /** One-shot impact impulse (land/hit) consumed by the secondary-motion vertical squash spring. */
+  pendingImpulse: number;
   aiCooldown: number;
   moveCooldown: number;
   specialCooldown: number;
@@ -130,6 +153,7 @@ interface RuntimeFighter {
   visualFacingMultiplier: 1 | -1;
   tint: readonly [number, number, number, number];
   accent: readonly [number, number, number, number];
+  secondary: FighterSecondaryMotionState;
 }
 
 interface Spark {
@@ -161,6 +185,93 @@ const stage = {
 };
 
 const KO_FREEZE_TIME = 1.18;
+const CLIP_BLEND_DURATION = 0.12;
+// Upper-body bone-name substrings for the Unreal-mannequin fighter rigs (spine/arms/hands/head).
+// Used to layer an attack on the upper body while locomotion continues on the lower body.
+const UPPER_BODY_BONES = ["spine", "neck", "Head", "clavicle", "upperarm", "lowerarm", "hand", "thumb"] as const;
+
+interface FighterBlendProof {
+  from: string | null;
+  to: string;
+  fromWeight: number;
+  toWeight: number;
+  blending: boolean;
+}
+
+interface ArenaBlendProof {
+  player?: FighterBlendProof;
+  rival?: FighterBlendProof;
+}
+
+function recordFighterBlendProof(fighter: RuntimeFighter, from: string | null, to: string, fromWeight: number, toWeight: number): void {
+  const proofHost = globalThis as unknown as { __AURA_CLASH_BLEND_PROOF__?: ArenaBlendProof };
+  const proof: ArenaBlendProof = proofHost.__AURA_CLASH_BLEND_PROOF__ ?? {};
+  const entry: FighterBlendProof = { from, to, fromWeight: Number(fromWeight.toFixed(3)), toWeight: Number(toWeight.toFixed(3)), blending: from !== null };
+  if (fighter.state.id === "rival") proof.rival = entry;
+  else proof.player = entry;
+  proofHost.__AURA_CLASH_BLEND_PROOF__ = proof;
+}
+
+interface ArenaEventTrackProof {
+  source: "authored-clip-events";
+  windows: Record<string, { activeStart: number; activeEnd: number }>;
+  /** Count of authored cosmetic markers (footstep/vfx) fired from clip events during play. */
+  firedEvents: Record<string, number>;
+}
+
+// Records an authored clip-event marker (footstep/vfx) firing during attack playback.
+function recordClipEventFired(type: string): void {
+  const host = globalThis as unknown as { __AURA_CLASH_EVENT_TRACKS_PROOF__?: ArenaEventTrackProof };
+  const proof: ArenaEventTrackProof = host.__AURA_CLASH_EVENT_TRACKS_PROOF__ ?? { source: "authored-clip-events", windows: {}, firedEvents: {} };
+  if (!proof.firedEvents) proof.firedEvents = {};
+  proof.firedEvents[type] = (proof.firedEvents[type] ?? 0) + 1;
+  host.__AURA_CLASH_EVENT_TRACKS_PROOF__ = proof;
+}
+
+// Records that each attack's hitbox active window was derived from its authored clip-event track
+// (not a hard-coded threshold). Exposed on the window so the readiness gate / smoke proof can assert
+// hitbox activation is event-driven. Deterministic: derived purely from authored event data.
+function recordEventTrackHitWindow(id: string, activeStart: number, activeEnd: number): void {
+  const host = globalThis as unknown as { __AURA_CLASH_EVENT_TRACKS_PROOF__?: ArenaEventTrackProof };
+  const proof: ArenaEventTrackProof = host.__AURA_CLASH_EVENT_TRACKS_PROOF__ ?? { source: "authored-clip-events", windows: {}, firedEvents: {} };
+  proof.windows[id] = { activeStart: Number(activeStart.toFixed(4)), activeEnd: Number(activeEnd.toFixed(4)) };
+  host.__AURA_CLASH_EVENT_TRACKS_PROOF__ = proof;
+}
+
+interface FighterInertializationEntry {
+  from: string;
+  to: string;
+  /** Inertialized (critically-damped) source weight at the current transition time. */
+  inertializedFromWeight: number;
+  /** Linear `1 − t/duration` source weight at the same time (reference for comparison). */
+  linearFromWeight: number;
+  /** True when the inertialized curve differs from the linear ramp (proof it is non-linear). */
+  nonLinear: boolean;
+}
+
+interface ArenaInertializationProof {
+  mode: "inertialized";
+  player?: FighterInertializationEntry;
+  rival?: FighterInertializationEntry;
+}
+
+// Records that fighter move-swaps use the inertialized (not linear) transition. Exposed on the
+// window so the playable smoke proof can assert the engine's critically-damped path is live and
+// genuinely diverges from a linear crossfade. Deterministic: derived purely from blend timing.
+function recordInertializationProof(fighter: RuntimeFighter, from: string, to: string, inertializedFromWeight: number, linearFromWeight: number): void {
+  const proofHost = globalThis as unknown as { __AURA_CLASH_INERTIALIZATION_PROOF__?: ArenaInertializationProof };
+  const proof: ArenaInertializationProof = proofHost.__AURA_CLASH_INERTIALIZATION_PROOF__ ?? { mode: "inertialized" };
+  const entry: FighterInertializationEntry = {
+    from,
+    to,
+    inertializedFromWeight: Number(inertializedFromWeight.toFixed(4)),
+    linearFromWeight: Number(linearFromWeight.toFixed(4)),
+    nonLinear: Math.abs(inertializedFromWeight - linearFromWeight) > 1e-4
+  };
+  if (fighter.state.id === "rival") proof.rival = entry;
+  else proof.player = entry;
+  proofHost.__AURA_CLASH_INERTIALIZATION_PROOF__ = proof;
+}
 
 const engineCombatMoves: Record<MoveId, GameCombatMove> = {
   light: toEngineCombatMove("light"),
@@ -170,12 +281,17 @@ const engineCombatMoves: Record<MoveId, GameCombatMove> = {
 
 function toEngineCombatMove(id: MoveId): GameCombatMove {
   const move = moves[id];
+  // Hitbox active window is driven by the authored clip events (the "hitbox" event-track lane),
+  // not a separate guessed threshold. The window is authored to match the move's frame data, so the
+  // engine combat — and the deterministic replay checksum — are unchanged.
+  const { activeStart, activeEnd } = auraClashHitWindowFromTracks(moveEventTracks[id]);
+  recordEventTrackHitWindow(id, activeStart, activeEnd);
   return {
     id,
     name: id,
-    startup: move.activeStart,
-    active: Math.max(1 / 60, move.activeEnd - move.activeStart),
-    recovery: Math.max(0.04, move.duration - move.activeEnd),
+    startup: activeStart,
+    active: Math.max(1 / 60, activeEnd - activeStart),
+    recovery: Math.max(0.04, move.duration - activeEnd),
     damage: move.damage,
     guardDamage: Math.max(2, Math.round(move.damage * 0.28)),
     meterGain: id === "special" ? 8 : 12,
@@ -362,8 +478,8 @@ export function mountAuraClashArenaApp(): void {
       <section id="evidence" class="aca-proof" aria-label="Aura3D evidence">
         <div><b>Renderer</b><span>Production GLB render resources plus advanced-runtime A3DRenderer.</span></div>
         <div><b>Fighters</b><span>Two distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.</span></div>
-        <div><b>Animation</b><span>Jab, cross, sword, guard, hit, jump, walk, and sprint clips are applied every frame.</span></div>
-        <div><b>Proof</b><span>window.__AURA_CLASH_ARENA_PROOF__ reports clip tracks, skinning bindings, hits, HP, and draw calls.</span></div>
+        <div><b>Animation</b><span>Jab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.</span></div>
+        <div><b>Proof</b><span>Deterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls.</span></div>
       </section>
 
       <aside id="arena-tweaks" class="aca-tweaks" aria-label="Arena visual tweaks" hidden>
@@ -550,7 +666,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     yOffset: stage.fighterYOffset,
     visualFacingMultiplier: 1,
     tint: [0.08, 0.74, 1, 1],
-    accent: [0.35, 1, 0.9, 1]
+    accent: [0.35, 1, 0.9, 1],
+    secondary: createFighterSecondaryMotion(playerActor)
   };
   const rivalRuntime: RuntimeFighter = {
     state: rivalState,
@@ -559,7 +676,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     yOffset: stage.fighterYOffset,
     visualFacingMultiplier: 1,
     tint: [1, 0.34, 0.06, 1],
-    accent: [1, 0.78, 0.2, 1]
+    accent: [1, 0.78, 0.2, 1],
+    secondary: createFighterSecondaryMotion(rivalActor)
   };
 
   const playerBinding = playerRuntime.actor.snapshot();
@@ -635,6 +753,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       lastInput = reason === "manual" ? "reset" : reason === "continue" ? "continue" : "auto-reset";
       resetFighter(playerState, -1.25, 1);
       resetFighter(rivalState, 1.25, -1);
+      resetFighterSecondaryMotion(playerRuntime.secondary);
+      resetFighterSecondaryMotion(rivalRuntime.secondary);
       resetCombatWorld(combatWorld, playerState, rivalState);
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
@@ -782,6 +902,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           ? `${playerState.name} lands ${playerMove} for ${combatResult.rivalDamage} damage.`
           : `${rivalState.name} catches ${playerState.name} with ${rivalMove}.`;
         audio.cue(combatResult.rivalDamage ? "player-hit" : "rival-hit");
+        // Hit-stop + impact impulse + spark burst on a confirmed hit (juice; presentation-only).
+        const attacker = combatResult.rivalDamage ? playerState : rivalState;
+        const defender = combatResult.rivalDamage ? rivalState : playerState;
+        const moveId = (attacker.attack?.id ?? "light") as MoveId;
+        applyHitStopAndImpact(attacker, defender, moveId, sparks);
       } else if (combatResult.blocked) {
         callout = "BLOCK";
         toast = `${combatResult.blockedBy === "player" ? playerState.name : rivalState.name} guards the strike.`;
@@ -810,6 +935,8 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     applyFighterAnimation(rivalRuntime);
     syncFighterRoot(playerRuntime);
     syncFighterRoot(rivalRuntime);
+    applyFighterSecondaryMotion(playerRuntime, dt, audio, sparks);
+    applyFighterSecondaryMotion(rivalRuntime, dt, audio, sparks);
     updateSparks(sparks, dt);
     const renderStartedAt = performance.now();
     diagnostics = renderer.render(source);
@@ -1085,12 +1212,21 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     health: START_HEALTH,
     meter: START_METER,
     action: "idle",
+    hurtVariant: "light",
+    moving: false,
+    locomotionTime: 0,
     clips,
     clip: clips.idle,
     clipTime: 0,
+    prevClip: null,
+    prevClipTime: 0,
+    blendElapsed: 0,
+    blendDuration: 0,
     grounded: true,
     guard: false,
     hitstun: 0,
+    hitStopRemaining: 0,
+    pendingImpulse: 0,
     aiCooldown: id === "rival" ? 1.18 : 0.72,
     moveCooldown: 0,
     specialCooldown: 0,
@@ -1118,6 +1254,8 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.grounded = true;
   fighter.guard = false;
   fighter.hitstun = 0;
+  fighter.hitStopRemaining = 0;
+  fighter.pendingImpulse = 0;
   fighter.aiCooldown = fighter.id === "rival" ? 1.18 : 0.72;
   fighter.moveCooldown = 0;
   fighter.specialCooldown = 0;
@@ -1299,6 +1437,7 @@ function updateFighterIntents(
   const baseSpeed = dashActive ? movementMoves.dash.runSpeed ?? 3.9 : WALK_SPEED;
   const speed = fighter.grounded ? baseSpeed : baseSpeed * 1.32;
   const downActive = fighter.grounded && !fighter.attack && !requestedAttack && !fighter.guard && fighter.downGrace > 0;
+  fighter.moving = fighter.grounded && Math.abs(moveX) > 0.02 && !fighter.guard && !downActive;
   if (Math.abs(moveX) > 0.02 && !fighter.guard && !downActive) {
     fighter.x = clamp(fighter.x + moveX * speed * dt, stage.minX, stage.maxX);
     fighter.facing = moveX > 0 ? 1 : -1;
@@ -1453,9 +1592,12 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     if (event.targetId === rival.id) rivalDamage += damage;
     if (defender.health <= 12) defender.health = 0;
     defender.attack = null;
-    defender.hitstun = Math.max(defender.hitstun, 0.34);
+    // Heavier hits (heavy/special, damage >= 10) play a stronger reaction clip when the rig has one.
+    // reaction varies by BOTH attack weight and grounded/airborne state
+    defender.hurtVariant = selectAuraClashHurtVariant(damage, defender.grounded);
+    defender.hitstun = Math.max(defender.hitstun, defender.hurtVariant === "heavy" ? 0.42 : 0.34);
     defender.action = defender.health <= 0 ? "ko" : "hurt";
-    defender.clip = defender.health <= 0 ? defender.clips.ko : defender.clips.hurt;
+    defender.clip = resolveAuraClashHurtClip(defender.clips, defender.hurtVariant, defender.health <= 0);
     defender.clipTime = 0;
     attacker.meter = clamp(attacker.meter + 18, 0, 100);
   }
@@ -1477,6 +1619,9 @@ function updateFighterPhysics(fighter: FighterState, dt: number): void {
     }
     const airborneWallSeconds = fighter.airStartedAtMs > 0 ? (performance.now() - fighter.airStartedAtMs) / 1000 : 0;
     if (fighter.y <= 0 || fighter.airTime > 2.35 || airborneWallSeconds > 2.85) {
+      // Landing impulse -> the secondary-motion squash spring compresses + rebounds (weight).
+      const landingSpeed = Math.abs(fighter.vy);
+      if (landingSpeed > 0.5) fighter.pendingImpulse = Math.max(fighter.pendingImpulse, Math.min(0.8, landingSpeed * 0.085));
       fighter.y = 0;
       fighter.vy = 0;
       fighter.airTime = 0;
@@ -1515,25 +1660,96 @@ function updateClips(fighter: FighterState, dt: number): void {
   } else if (fighter.action === "guard") {
     fighter.clip = fighter.clips.guard;
   } else if (fighter.action === "hurt") {
-    fighter.clip = fighter.clips.hurt;
+    fighter.clip = resolveAuraClashHurtClip(fighter.clips, fighter.hurtVariant, false);
   } else if (fighter.action === "ko") {
     fighter.clip = fighter.clips.ko;
   } else {
     fighter.clip = fighter.clips.idle;
   }
-  if (previous !== fighter.clip) fighter.clipTime = 0;
+  if (previous !== fighter.clip) {
+    // Crossfade only between smooth locomotion/guard states; attacks, hurt, and KO snap for readability.
+    const blendable = new Set<ClipName>([
+      fighter.clips.idle,
+      fighter.clips.walk,
+      fighter.clips.run,
+      fighter.clips.air,
+      fighter.clips.down,
+      fighter.clips.guard
+    ]);
+    if (blendable.has(previous) && blendable.has(fighter.clip) && fighter.action !== "ko") {
+      fighter.prevClip = previous;
+      fighter.prevClipTime = fighter.clipTime; // freeze the outgoing pose
+      fighter.blendElapsed = 0;
+      fighter.blendDuration = CLIP_BLEND_DURATION;
+    } else {
+      fighter.prevClip = null;
+      fighter.blendElapsed = 0;
+      fighter.blendDuration = 0;
+    }
+    fighter.clipTime = 0;
+  }
   if (fighter.action === "ko") {
+    fighter.prevClip = null;
+    fighter.blendDuration = 0;
     fighter.clipTime = Math.min(KO_FREEZE_TIME, fighter.clipTime + dt);
+    return;
+  }
+  // Hit-stop: freeze the VISUAL animation clock for a few frames on impact (the classic fighting-game
+  // "hit" feel). Presentation-only — the combat sim advances independently, so deterministic replay is
+  // unaffected. The hitbox active window is the authored clip-event lane (T2.2).
+  if (fighter.hitStopRemaining > 0) {
+    fighter.hitStopRemaining = Math.max(0, fighter.hitStopRemaining - dt);
     return;
   }
   const speed = fighter.action === "light" ? 1.45 : fighter.action === "heavy" ? 1.06 : fighter.action === "special" ? 0.94 : fighter.action === "run" ? 1.18 : 1;
   fighter.clipTime += dt * speed;
+  fighter.locomotionTime += dt; // continuous base clock for upper-body-layered attacks
+  if (fighter.blendDuration > 0) fighter.blendElapsed += dt;
 }
 
 function applyFighterAnimation(fighter: RuntimeFighter): void {
-  const result = fighter.actor.playClip(fighter.state.clip, fighter.state.clipTime);
-  fighter.state.lastApply = {
-    clipName: result.clipName,
+  const s = fighter.state;
+  // Upper-body layering: while attacking AND moving on the ground, play the attack on the upper-body
+  // bone mask over a walk base on the lower body, so the legs keep moving while the arms attack.
+  if (s.attack && s.grounded && s.moving) {
+    const baseClip = s.clips.walk;
+    const result = fighter.actor.animation.applyClips([
+      { clipName: baseClip, time: s.locomotionTime, weight: 1, mask: { exclude: [...UPPER_BODY_BONES] } },
+      { clipName: s.clip, time: s.clipTime, weight: 1, mask: { include: [...UPPER_BODY_BONES] } }
+    ]);
+    recordFighterBlendProof(fighter, baseClip, s.clip, 1, 1);
+    s.lastApply = {
+      clipName: result.clipName ?? s.clip,
+      tracksApplied: result.tracksApplied,
+      transformTracksApplied: result.transformTracksApplied,
+      skinningPalettesUpdated: result.skinningPalettesUpdated,
+      missingTargets: result.missingTargets
+    };
+    return;
+  }
+  const blending = s.prevClip !== null && s.blendDuration > 0 && s.blendElapsed < s.blendDuration;
+  let result;
+  if (blending && s.prevClip) {
+    // Deterministic inertialized (critically-damped) transition weights via the shared
+    // @aura3d/animation fighter adapter — momentum-preserving move swaps, not linear dissolves.
+    // Per-transition tuning (T1.1): snappier into fast states (run/air), smoother into idle/walk/guard.
+    const fast = s.clip === s.clips.run || s.clip === s.clips.air;
+    const transitionHalfLife = s.blendDuration * (fast ? 0.28 : 0.46);
+    const cf = fighterInertializedWeights(s.prevClip, s.clip, s.blendElapsed, s.blendDuration, transitionHalfLife);
+    result = fighter.actor.animation.applyClips([
+      { clipName: cf.from, time: s.prevClipTime, weight: cf.weights[0] },
+      { clipName: cf.to, time: s.clipTime, weight: cf.weights[1] }
+    ]);
+    recordFighterBlendProof(fighter, cf.from, cf.to, cf.weights[0], cf.weights[1]);
+    const linearFromWeight = Math.max(0, Math.min(1, 1 - s.blendElapsed / s.blendDuration));
+    recordInertializationProof(fighter, s.prevClip, s.clip, cf.weights[0], linearFromWeight);
+  } else {
+    s.prevClip = null;
+    result = fighter.actor.playClip(s.clip, s.clipTime);
+    recordFighterBlendProof(fighter, null, s.clip, 0, 1);
+  }
+  s.lastApply = {
+    clipName: result.clipName ?? s.clip,
     tracksApplied: result.tracksApplied,
     transformTracksApplied: result.transformTracksApplied,
     skinningPalettesUpdated: result.skinningPalettesUpdated,
@@ -1567,6 +1783,145 @@ function syncFighterRoot(fighter: RuntimeFighter): void {
     .setPosition(fighter.state.x + lunge + recoil, fighter.yOffset + bob + guardSink + specialLift, stage.z)
     .setRotation(rotation[0], rotation[1], rotation[2], rotation[3])
     .setScale(fighter.scale * squash, fighter.scale * (2 - squash), fighter.scale);
+}
+
+// Runs the 1.3 believable-motion runtimes on a fighter each frame (after clip + root sync):
+// foot IK / foot-lock (T1.2) grounds and pins planted feet, and a deterministic spring (T1.3) leans
+// the body into acceleration. Footsteps fire on foot-plant. Presentation-only — the combat sim and
+// deterministic replay checksum are untouched.
+function applyFighterSecondaryMotion(fighter: RuntimeFighter, dt: number, audio: AudioRuntime, sparks: Spark[]): void {
+  const s = fighter.state;
+  const root = fighter.actor.pipeline.resources.scene.root;
+  const locomoting = s.grounded && !s.attack && (s.action === "walk" || s.action === "run");
+  const facingSign: 1 | -1 = (s.facing * fighter.visualFacingMultiplier) >= 0 ? 1 : -1;
+  const impulse = s.pendingImpulse;
+  s.pendingImpulse = 0; // consumed by the secondary-motion vertical squash spring
+  const result = updateFighterSecondaryMotion(
+    fighter.secondary,
+    {
+      x: s.x,
+      grounded: s.grounded,
+      locomoting,
+      facingSign,
+      rootRotation: [root.transform.rotation[0], root.transform.rotation[1], root.transform.rotation[2], root.transform.rotation[3]],
+      impulse
+    },
+    dt
+  );
+  // Apply the spring body-lean on top of the synced root rotation (rigid; no skinning refresh needed).
+  root.transform.setRotation(result.leanRotation[0], result.leanRotation[1], result.leanRotation[2], result.leanRotation[3]);
+  // Apply the vertical impact-squash on top of the synced root scale (volume-preserving).
+  if (Math.abs(result.squashScale - 1) > 1e-4) {
+    const sc = result.squashScale;
+    const lateral = 1 / Math.sqrt(sc);
+    root.transform.setScale(
+      root.transform.scale[0] * lateral,
+      root.transform.scale[1] * sc,
+      root.transform.scale[2] * lateral
+    );
+  }
+  // Footstep: a foot just planted while moving on the ground.
+  if (result.footstep && (s.action === "walk" || s.action === "run")) {
+    audio.cue("footstep");
+    sparks.push({ x: s.x, y: 0.04, z: stage.z, age: 0, life: 0.16, facing: s.facing, kind: "block" });
+  }
+  fireAttackClipEvents(fighter, audio, sparks);
+  recordSecondaryMotionProof(fighter, result);
+}
+
+// Fires the authored footstep/VFX markers (T2.2 event tracks) as an attack plays. The hitbox lane
+// already drives combat active-frames; this drives the cosmetic footstep + VFX-spark lanes from the
+// same authored clip events. Deterministic (a pure function of the attack's elapsed time).
+const attackEventCursors = new Map<string, { attack: unknown; cursor: number }>();
+function fireAttackClipEvents(fighter: RuntimeFighter, audio: AudioRuntime, sparks: Spark[]): void {
+  const attack = fighter.state.attack;
+  const key = fighter.state.id;
+  if (!attack) {
+    attackEventCursors.delete(key);
+    return;
+  }
+  const tracks = moveEventTracks[attack.id as MoveId];
+  if (!tracks) return;
+  let entry = attackEventCursors.get(key);
+  if (!entry || entry.attack !== attack) {
+    entry = { attack, cursor: 0 };
+    attackEventCursors.set(key, entry);
+  }
+  const from = entry.cursor;
+  const to = attack.elapsed;
+  if (to <= from) {
+    entry.cursor = to;
+    return;
+  }
+  const fired = sampleClipEvents({ ...tracks.toEventSource(), id: attack.id }, { from, to, includeStart: false, includeEnd: true });
+  for (const invocation of fired) {
+    const type = invocation.event.type;
+    if (type === "footstep") {
+      audio.cue("footstep");
+      recordClipEventFired("footstep");
+    } else if (type === "vfx") {
+      // Telegraph spark in front of the attacker on the authored VFX frame.
+      sparks.push({ x: fighter.state.x + fighter.state.facing * 0.5, y: 0.95, z: stage.z, age: 0, life: 0.18, facing: fighter.state.facing, kind: attack.id });
+      recordClipEventFired("vfx");
+    }
+  }
+  entry.cursor = to;
+}
+
+function moveHitStop(id: MoveId): number {
+  return id === "special" ? 0.13 : id === "heavy" ? 0.075 : 0.052;
+}
+
+// Hit-stop + impact impulse + spark burst on a confirmed hit. Both fighters freeze their visual pose
+// for the move's hit-stop window; the defender recoils (and the attacker follows through) via the
+// secondary-motion squash spring. Deterministic + presentation-only (combat sim/replay untouched).
+function applyHitStopAndImpact(attacker: FighterState, defender: FighterState, moveId: MoveId, sparks: Spark[]): void {
+  const hs = moveHitStop(moveId);
+  attacker.hitStopRemaining = Math.max(attacker.hitStopRemaining, hs);
+  defender.hitStopRemaining = Math.max(defender.hitStopRemaining, hs);
+  const recoil = moveId === "special" ? 0.9 : moveId === "heavy" ? 0.62 : 0.4;
+  defender.pendingImpulse = Math.max(defender.pendingImpulse, recoil);
+  attacker.pendingImpulse = Math.max(attacker.pendingImpulse, recoil * 0.35);
+  const burst = moveId === "special" ? 7 : moveId === "heavy" ? 5 : 3;
+  const midX = (attacker.x + defender.x) / 2;
+  for (let i = 0; i < burst; i += 1) {
+    sparks.push({ x: midX + (i - burst / 2) * 0.06, y: 0.9 + (i % 3) * 0.18, z: stage.z, age: 0, life: 0.22, facing: attacker.facing, kind: moveId });
+  }
+}
+
+interface FighterSecondaryProof {
+  groundedFeet: number;
+  footIkApplied: number;
+  maxFootSlideCorrected: number;
+  springLag: number;
+  footIkActive: boolean;
+}
+interface ArenaSecondaryMotionProof {
+  source: "aura3d-1.3-believable-motion";
+  footIk: boolean;
+  springBones: boolean;
+  player?: FighterSecondaryProof;
+  rival?: FighterSecondaryProof;
+}
+
+// Exposes that the live arena runs the 1.3 foot-IK + spring runtimes, for the smoke proof.
+function recordSecondaryMotionProof(fighter: RuntimeFighter, result: SecondaryMotionResult): void {
+  const host = globalThis as unknown as { __AURA_CLASH_SECONDARY_MOTION_PROOF__?: ArenaSecondaryMotionProof };
+  const proof: ArenaSecondaryMotionProof = host.__AURA_CLASH_SECONDARY_MOTION_PROOF__ ?? {
+    source: "aura3d-1.3-believable-motion",
+    footIk: true,
+    springBones: true
+  };
+  const entry: FighterSecondaryProof = {
+    groundedFeet: result.groundedFeet,
+    footIkApplied: result.footIkApplied,
+    maxFootSlideCorrected: result.maxFootSlideCorrected,
+    springLag: result.springLag,
+    footIkActive: result.footIkApplied > 0
+  };
+  if (fighter.state.id === "rival") proof.rival = entry;
+  else proof.player = entry;
+  host.__AURA_CLASH_SECONDARY_MOTION_PROOF__ = proof;
 }
 
 function attackLunge(id: MoveId, phase: number): number {
@@ -1673,7 +2028,7 @@ function createAudioRuntime(): AudioRuntime {
         id: definition.cue,
         bus: definition.bus,
         volume: definition.volume,
-        play: async (audioContext, destination) => {
+        play: async (audioContext: GameAudioContextLike, destination: AudioNode) => {
           const concreteContext = audioContext as AudioContext;
           const buffer = await loadBuffer(concreteContext, definition.asset.url);
           const source = concreteContext.createBufferSource();
@@ -1686,7 +2041,7 @@ function createAudioRuntime(): AudioRuntime {
         }
       }
     ])
-  ) as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
+  ) as unknown as Record<keyof typeof auraClashAudioManifest, Parameters<typeof createGameAudio<keyof typeof auraClashAudioManifest>>[0]["cues"][keyof typeof auraClashAudioManifest]>;
   const audio: GameAudio<keyof typeof auraClashAudioManifest> = createGameAudio({
     context,
     buses: [

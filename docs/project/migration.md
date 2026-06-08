@@ -1,6 +1,6 @@
 # Migration From low-level renderer code
 
-Version: 1.1.0
+Version: 1.2.0
 
 ## Current Migration Surface
 

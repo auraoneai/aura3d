@@ -36,26 +36,26 @@ export { scoreAsset, matchesConstraints } from "./ranking.js";
 export { evaluateGameAssetProfile, gameAssetProfileDefinitions, getGameAssetProfileDefinition } from "./game-profile.js";
 export type { GameAssetProfile, GameAssetProfileDefinition, GameAssetProfileEvaluation, GameAssetProfileScoringRules } from "./game-profile.js";
 export {
-  cartoonAssetProfiles,
-  evaluateCartoonAssetProfile,
-  isCartoonAssetProfile,
-} from "./cartoon-profile.js";
+  animationAssetProfiles,
+  evaluateAnimationAssetProfile,
+  isAnimationAssetProfile,
+} from "./animation-profile.js";
 export type {
-  CartoonAssetCategory,
-  CartoonAssetProfile,
-  CartoonAssetProfileEvaluation,
-} from "./cartoon-profile.js";
+  AnimationAssetCategory,
+  AnimationAssetProfile,
+  AnimationAssetProfileEvaluation,
+} from "./animation-profile.js";
 export {
-  cartoonStarterPack,
-  cartoonStarterPackAssets,
-  cartoonStarterPackSummary,
-  createCartoonStarterPackAdapter,
-} from "./cartoon-starter-pack.js";
+  animationStarterPack,
+  animationStarterPackAssets,
+  animationStarterPackSummary,
+  createAnimationStarterPackAdapter,
+} from "./animation-starter-pack.js";
 export type {
-  CartoonStarterPackEntry,
-  CartoonStarterPackKind,
-  CartoonStarterPackRole,
-} from "./cartoon-starter-pack.js";
+  AnimationStarterPackEntry,
+  AnimationStarterPackKind,
+  AnimationStarterPackRole,
+} from "./animation-starter-pack.js";
 
 export type {
   ResolveCandidate,
@@ -96,7 +96,7 @@ import { createKhronosAdapter } from "./adapters/khronos.js";
 import { createOS3AAdapter } from "./adapters/os3a.js";
 import { createPolyHavenAdapter } from "./adapters/poly-haven.js";
 import { createJsDelivrMirrorAdapter } from "./adapters/jsdelivr-mirror.js";
-import { createCartoonStarterPackAdapter } from "./cartoon-starter-pack.js";
+import { createAnimationStarterPackAdapter } from "./animation-starter-pack.js";
 
 /**
  * The zero-auth, verified source adapters available today.
@@ -112,7 +112,7 @@ import { createCartoonStarterPackAdapter } from "./cartoon-starter-pack.js";
  */
 export function defaultAdapters(): SourceAdapter[] {
   return [
-    createCartoonStarterPackAdapter(),
+    createAnimationStarterPackAdapter(),
     createKhronosAdapter(),
     createOS3AAdapter(),
     createPolyHavenAdapter(),

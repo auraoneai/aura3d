@@ -1,15 +1,15 @@
-import type { CartoonRenderQueueArtifact } from "./CartoonRenderQueue.js";
+import type { AnimationRenderQueueArtifact } from "./AnimationRenderQueue.js";
 import type { PromptAnimationId } from "./PromptAnimationContract.js";
 
 export interface BatchEpisodeDefinition {
   readonly episodeId: PromptAnimationId;
   readonly title: string;
-  readonly renderQueue: CartoonRenderQueueArtifact;
+  readonly renderQueue: AnimationRenderQueueArtifact;
   readonly outputDirectory: string;
 }
 
-export interface CartoonShowBibleBatch {
-  readonly kind: "cartoon-show-bible-batch";
+export interface AnimationShowBibleBatch {
+  readonly kind: "animation-show-bible-batch";
   readonly showId: PromptAnimationId;
   readonly title: string;
   readonly episodes: readonly BatchEpisodeDefinition[];
@@ -32,7 +32,7 @@ export interface BatchEpisodeRenderJob {
   readonly requiredOutputIds: readonly PromptAnimationId[];
 }
 
-export function createBatchEpisodeRenderPlan(batch: CartoonShowBibleBatch): BatchEpisodeRenderPlan {
+export function createBatchEpisodeRenderPlan(batch: AnimationShowBibleBatch): BatchEpisodeRenderPlan {
   const jobs = batch.episodes.map((episode): BatchEpisodeRenderJob => ({
     episodeId: episode.episodeId,
     title: episode.title,

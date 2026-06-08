@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine-runtime",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,6 +11,10 @@
     "./advanced-runtime": {
       "types": "./dist/advanced-runtime/index.d.ts",
       "import": "./dist/advanced-runtime/index.js"
+    },
+    "./animation-studio": {
+      "types": "./dist/animation-studio/index.d.ts",
+      "import": "./dist/animation-studio/index.js"
     }
   },
   "main": "./dist/index.js",

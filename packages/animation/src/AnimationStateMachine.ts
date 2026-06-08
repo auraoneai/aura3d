@@ -1,3 +1,5 @@
+import { DEFAULT_INERTIALIZATION_HALF_LIFE, inertializedTransitionWeight } from "./Inertialization.js";
+
 export type StateTransition = {
   readonly to: string;
   readonly label?: string;
@@ -47,11 +49,31 @@ export type AnimationStateMachineGraphSnapshot = {
   readonly transitions: readonly AnimationStateMachineGraphTransition[];
 };
 
+/** Inertialized blend between the previously-active state and the current state. */
+export type AnimationStateBlend = {
+  /** State exited at the last transition (equals `to` when no transition is in flight). */
+  readonly from: string;
+  /** Currently-active state. */
+  readonly to: string;
+  /** [fromWeight, toWeight], summing to 1; fromWeight decays critically-damped after a switch. */
+  readonly weights: readonly [number, number];
+  /** Seconds since the last state change. */
+  readonly elapsed: number;
+  /** True once the previous state has effectively faded out. */
+  readonly done: boolean;
+};
+
 export class AnimationStateMachine {
   readonly states = new Map<string, AnimationState>();
   readonly parameters: Record<string, number | boolean | string> = {};
   currentState: string;
   stateTime = 0;
+  /** State active immediately before the most recent transition (for inertialized blending). */
+  previousState: string;
+  /** Seconds since the most recent state change. */
+  transitionElapsed = Number.POSITIVE_INFINITY;
+  /** Half-life (seconds) of the inertialized state-transition blend. */
+  transitionHalfLife = DEFAULT_INERTIALIZATION_HALF_LIFE;
 
   constructor(states: readonly AnimationState[], initialState: string) {
     for (const state of states) {
@@ -74,6 +96,7 @@ export class AnimationStateMachine {
       }
     }
     this.currentState = initialState;
+    this.previousState = initialState;
     this.resetParametersForState(this.requireState(initialState));
   }
 
@@ -81,11 +104,34 @@ export class AnimationStateMachine {
     this.parameters[name] = value;
   }
 
+  /**
+   * Inertialized blend between {@link previousState} and {@link currentState}. The previous
+   * state's weight decays critically-damped (zero initial slope, momentum-preserving) over
+   * {@link transitionHalfLife}; consumers crossfade the two states' clips by these weights instead
+   * of snapping or linearly ramping. Deterministic given the elapsed transition time.
+   */
+  stateBlend(halfLife = this.transitionHalfLife): AnimationStateBlend {
+    const elapsed = this.transitionElapsed;
+    if (this.previousState === this.currentState || !Number.isFinite(elapsed)) {
+      return { from: this.currentState, to: this.currentState, weights: [0, 1], elapsed: Number.isFinite(elapsed) ? elapsed : 0, done: true };
+    }
+    const fromWeight = inertializedTransitionWeight(elapsed, halfLife);
+    const done = fromWeight <= 1e-3;
+    return {
+      from: this.previousState,
+      to: this.currentState,
+      weights: [done ? 0 : fromWeight, done ? 1 : 1 - fromWeight],
+      elapsed,
+      done
+    };
+  }
+
   update(delta = 0): string {
     if (!Number.isFinite(delta) || delta < 0) {
       throw new Error("AnimationStateMachine delta must be finite and non-negative.");
     }
     this.stateTime += delta;
+    this.transitionElapsed += delta;
     const state = this.requireState(this.currentState);
 
     if (isStateComplete(state, this.stateTime)) {
@@ -182,8 +228,10 @@ export class AnimationStateMachine {
 
   private transitionTo(name: string): void {
     const state = this.requireState(name);
+    this.previousState = this.currentState;
     this.currentState = name;
     this.stateTime = 0;
+    this.transitionElapsed = this.previousState === name ? Number.POSITIVE_INFINITY : 0;
     this.resetParametersForState(state);
   }
 

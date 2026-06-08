@@ -1,7 +1,7 @@
-import type { CartoonAssetManifest, CartoonAssetManifestEntry, CartoonAssetManifestKind } from "./CartoonAssetManifest.js";
+import type { AnimationAssetManifest, AnimationAssetManifestEntry, AnimationAssetManifestKind } from "./AnimationAssetManifest.js";
 
 export interface AssetLibraryBrowserFilter {
-  readonly kind?: CartoonAssetManifestKind;
+  readonly kind?: AnimationAssetManifestKind;
   readonly profile?: string;
   readonly style?: string;
   readonly license?: string;
@@ -20,7 +20,7 @@ export interface AssetLibraryBrowserSnapshot {
   readonly total: number;
   readonly visible: number;
   readonly selectedId?: string;
-  readonly assets: readonly CartoonAssetManifestEntry[];
+  readonly assets: readonly AnimationAssetManifestEntry[];
   readonly evidence: {
     readonly typedAssetReferencesOnly: boolean;
     readonly licenseMetadata: boolean;
@@ -31,7 +31,7 @@ export interface AssetLibraryBrowserSnapshot {
 
 export interface AssetLibraryAssetDetail {
   readonly kind: "asset-library-detail";
-  readonly asset: CartoonAssetManifestEntry;
+  readonly asset: AnimationAssetManifestEntry;
   readonly animationPreview: {
     readonly clips: readonly string[];
     readonly previewable: boolean;
@@ -51,7 +51,7 @@ export interface AssetLibraryEditorReference {
   readonly type: "glb" | "audio" | "unknown";
   readonly source: string;
   readonly license: string;
-  readonly category: CartoonAssetManifestKind;
+  readonly category: AnimationAssetManifestKind;
   readonly profile?: string | undefined;
   readonly style: string;
   readonly clips?: readonly string[] | undefined;
@@ -73,7 +73,7 @@ export class AssetLibraryBrowser {
   private filter: AssetLibraryBrowserFilter = {};
   private selectedId?: string;
 
-  constructor(private readonly manifest: CartoonAssetManifest) {}
+  constructor(private readonly manifest: AnimationAssetManifest) {}
 
   setFilter(filter: AssetLibraryBrowserFilter): AssetLibraryBrowserSnapshot {
     this.filter = filter;
@@ -81,14 +81,14 @@ export class AssetLibraryBrowser {
   }
 
   select(id: string): AssetLibraryBrowserSnapshot {
-    if (!this.manifest.entries.some((entry) => entry.id === id)) throw new Error(`Unknown cartoon asset: ${id}`);
+    if (!this.manifest.entries.some((entry) => entry.id === id)) throw new Error(`Unknown animation asset: ${id}`);
     this.selectedId = id;
     return this.snapshot();
   }
 
   detail(id: string = this.selectedId ?? ""): AssetLibraryAssetDetail {
     const asset = this.manifest.entries.find((entry) => entry.id === id);
-    if (!asset) throw new Error(`Unknown cartoon asset: ${id}`);
+    if (!asset) throw new Error(`Unknown animation asset: ${id}`);
     const clips = asset.preview?.animationPreviewClips ?? asset.animationClips ?? [];
     return {
       kind: "asset-library-detail",
@@ -100,7 +100,7 @@ export class AssetLibraryBrowser {
       materialPreview: {
         materialCount: asset.materialPreview?.materialCount ?? 0,
         swatches: asset.materialPreview?.swatches ?? [],
-        celShadingReady: asset.materialPreview?.celShadingReady ?? asset.style.toLowerCase().includes("cartoon")
+        celShadingReady: asset.materialPreview?.celShadingReady ?? asset.style.toLowerCase().includes("animation")
       },
       metadata: {
         ...(asset.sourcePage ? { sourcePage: asset.sourcePage } : {}),
@@ -116,12 +116,12 @@ export class AssetLibraryBrowser {
 
   editorReference(id: string = this.selectedId ?? ""): AssetLibraryEditorReference {
     const asset = this.manifest.entries.find((entry) => entry.id === id);
-    if (!asset) throw new Error(`Unknown cartoon asset: ${id}`);
+    if (!asset) throw new Error(`Unknown animation asset: ${id}`);
     if (!asset.assetId.startsWith("assets.")) {
-      throw new Error(`Cartoon asset "${id}" is not a typed Aura3D asset reference.`);
+      throw new Error(`Animation asset "${id}" is not a typed Aura3D asset reference.`);
     }
     if (!asset.license.trim()) {
-      throw new Error(`Cartoon asset "${id}" is missing license metadata.`);
+      throw new Error(`Animation asset "${id}" is missing license metadata.`);
     }
     return {
       kind: "aura-asset-ref",

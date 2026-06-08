@@ -1,4 +1,4 @@
-import type { CartoonRenderOutputPackageMetadata } from "./CartoonRenderQueue.js";
+import type { AnimationRenderOutputPackageMetadata } from "./AnimationRenderQueue.js";
 import type { PromptAnimationEpisodePlan, PromptAnimationYouTubeDraftMetadata } from "./PromptAnimationContract.js";
 
 export interface YouTubeMetadataArtifact {
@@ -16,7 +16,7 @@ export interface YouTubeMetadataArtifact {
 
 export function generateYouTubeMetadata(input: {
   readonly episodePlan?: PromptAnimationEpisodePlan | undefined;
-  readonly packageMetadata: CartoonRenderOutputPackageMetadata;
+  readonly packageMetadata: AnimationRenderOutputPackageMetadata;
   readonly overrides?: Partial<PromptAnimationYouTubeDraftMetadata> | undefined;
 }): YouTubeMetadataArtifact {
   const draft = {
@@ -25,7 +25,7 @@ export function generateYouTubeMetadata(input: {
     ...input.overrides
   };
   const title = trimForYouTube(draft.title || input.episodePlan?.title || input.packageMetadata.episodeId, 100);
-  const tags = uniqueTags([...(draft.tags ?? []), "Aura3D", "cartoon"]);
+  const tags = uniqueTags([...(draft.tags ?? []), "Aura3D", "animation"]);
   return {
     kind: "youtube-metadata",
     title,

@@ -252,6 +252,49 @@ describe("GLTFSceneAnimationRuntime", () => {
     expect(runtime.snapshot().lastApply?.clipName).toMatch(/^blend:/);
   });
 
+  it("applies a per-clip bone mask so a layered clip only drives matching nodes", () => {
+    const scene = new Scene();
+    const upper = scene.createNode("UpperArm");
+    const lower = scene.createNode("LowerLeg");
+    scene.root.addChild(upper);
+    scene.root.addChild(lower);
+
+    // base clip moves the leg; upper-body clip moves the arm. Layer the upper clip with a mask.
+    const base = new AnimationClip({
+      name: "base",
+      duration: 1,
+      tracks: [new AnimationTrack({ target: "LowerLeg.translation", valueType: "vector3", keyframes: [
+        { time: 0, value: [0, 0, 0] },
+        { time: 1, value: [0, 5, 0] }
+      ] })]
+    });
+    const attack = new AnimationClip({
+      name: "attack",
+      duration: 1,
+      tracks: [
+        new AnimationTrack({ target: "UpperArm.translation", valueType: "vector3", keyframes: [
+          { time: 0, value: [0, 0, 0] },
+          { time: 1, value: [3, 0, 0] }
+        ] }),
+        // attack ALSO has a leg track that the mask must exclude so the base leg motion wins
+        new AnimationTrack({ target: "LowerLeg.translation", valueType: "vector3", keyframes: [
+          { time: 0, value: [0, 0, 0] },
+          { time: 1, value: [0, -9, 0] }
+        ] })
+      ]
+    });
+
+    const runtime = createGLTFSceneAnimationRuntime({ scene, clips: [base, attack] });
+    runtime.applyClips([
+      { clipName: "base", time: 1, weight: 1 },
+      { clipName: "attack", time: 1, weight: 1, mask: { include: ["Upper"] } }
+    ]);
+
+    // Upper arm gets the masked attack track; lower leg keeps the base motion (attack's leg track masked out).
+    expect(upper.transform.position[0]).toBeCloseTo(3);
+    expect(lower.transform.position[1]).toBeCloseTo(5);
+  });
+
   it("drives imported GLTF scene animation through reusable mixer actions and crossfades", () => {
     const scene = new Scene();
     const node = scene.createNode("CharacterRoot");

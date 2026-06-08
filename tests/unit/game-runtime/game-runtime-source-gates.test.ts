@@ -311,21 +311,21 @@ describe("game runtime source gates", () => {
       "output: readEvidenceOutput()",
       "...readAssetValidationOptions()",
       'gameProfile: profile',
-      'action === "validate-cartoon"',
-      "print(validateCartoonAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }))",
+      'action === "validate-animation"',
+      "print(validateAnimationAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }))",
       'action === "assemble-character"',
       'createCharacterAssemblyPlan({ name, body, parts: readParts("--part")',
       "aura3d assets inspect ./model.glb",
       "aura3d assets validate-game",
-      "aura3d assets validate-cartoon",
+      "aura3d assets validate-animation",
       "aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset"
     ]);
     expectIncludesAll(cliApi, [
-      'export type AuraAssetReadinessProfile = "game" | "cartoon"',
+      'export type AuraAssetReadinessProfile = "game" | "animation"',
       "export interface AssetReadinessReport",
       "export function inspectAsset",
       "export function validateGameAssets",
-      "export function validateCartoonAssets",
+      "export function validateAnimationAssets",
       "export function createCharacterAssemblyPlan"
     ]);
   });

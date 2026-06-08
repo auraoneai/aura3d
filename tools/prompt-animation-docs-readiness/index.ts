@@ -5,7 +5,7 @@ const root = process.cwd();
 const docs = [
   "docs/api/prompt-animation.md",
   "docs/api/auravoice-bridge.md",
-  "docs/examples/cartoon-channel.md",
+  "docs/examples/animation-channel.md",
   "docs/examples/prompt-to-episode.md",
   "llms.txt"
 ];
@@ -20,7 +20,7 @@ const requiredTokens = [
   "render queue",
   "audio stem",
   "render/export",
-  "cartoon-channel",
+  "animation-channel",
   "typed assets",
   "do not invent"
 ];
@@ -29,7 +29,7 @@ const sourceCompleteGates = [
   {
     id: "public-api-examples",
     title: "Prompt animation public API examples",
-    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/cartoon-channel.md", "llms.txt"],
+    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/animation-channel.md", "llms.txt"],
     tokens: [
       "from \"@aura3d/engine\"",
       "import { assets } from \"./aura-assets\"",
@@ -42,7 +42,7 @@ const sourceCompleteGates = [
   {
     id: "auravoice-contract-source",
     title: "AuraVoice bridge source contract",
-    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/cartoon-channel.md"],
+    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/animation-channel.md"],
     tokens: [
       "createAuraVoiceVisemeTrack",
       "createAudioStemManifest",
@@ -55,7 +55,7 @@ const sourceCompleteGates = [
   {
     id: "render-readiness-boundary",
     title: "Render and publish readiness boundary",
-    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/cartoon-channel.md", "llms.txt"],
+    files: ["docs/api/prompt-animation.md", "docs/api/auravoice-bridge.md", "docs/examples/animation-channel.md", "llms.txt"],
     tokens: [
       "Source-complete",
       "Execution-required",

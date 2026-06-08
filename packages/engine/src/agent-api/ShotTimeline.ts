@@ -10,7 +10,7 @@ import {
   type PromptAnimationSeconds,
   type PromptAnimationValidationIssue
 } from "./PromptAnimationContract.js";
-import type { CartoonPerformanceArtifact, CartoonPerformanceCue } from "./CartoonPerformance.js";
+import type { AnimationPerformanceArtifact, AnimationPerformanceCue } from "./AnimationPerformance.js";
 import type { CaptionCue, CaptionTrackArtifact } from "./DialoguePerformance.js";
 import { sampleVisemeTrack, type AuraVoiceVisemeId, type AuraVoiceVisemeTrack, type PrimitiveMouthCard } from "./VisemeController.js";
 
@@ -131,7 +131,7 @@ export interface ShotPlaybackRuntimeApp {
 
 export interface ShotPlaybackPlanInput {
   readonly timeline: ShotTimelineArtifact;
-  readonly performance?: CartoonPerformanceArtifact | undefined;
+  readonly performance?: AnimationPerformanceArtifact | undefined;
   readonly captions?: CaptionTrackArtifact | undefined;
   readonly visemes?: AuraVoiceVisemeTrack | undefined;
   readonly runtimeNodeByCharacterId?: Record<string, PromptAnimationId> | undefined;
@@ -173,7 +173,7 @@ export interface ShotPlaybackFramePlan {
 export interface ShotPlaybackPlan {
   readonly kind: "shot-playback-plan";
   readonly timeline: ShotTimelineArtifact;
-  readonly performance?: CartoonPerformanceArtifact | undefined;
+  readonly performance?: AnimationPerformanceArtifact | undefined;
   readonly captions?: CaptionTrackArtifact | undefined;
   readonly visemes?: AuraVoiceVisemeTrack | undefined;
   readonly runtimeNodeByCharacterId: Record<string, PromptAnimationId>;
@@ -456,11 +456,11 @@ export function createShotTimelineDiagnostics(timeline: ShotTimelineArtifact): S
 }
 
 function activePerformanceCues(
-  performance: CartoonPerformanceArtifact | undefined,
+  performance: AnimationPerformanceArtifact | undefined,
   time: PromptAnimationSeconds,
   characterId: PromptAnimationId,
   shotId: PromptAnimationId
-): readonly CartoonPerformanceCue[] {
+): readonly AnimationPerformanceCue[] {
   if (!performance) return [];
   return performance.cues.filter((cue) => {
     if (cue.characterId !== characterId) return false;

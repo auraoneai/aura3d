@@ -1,4 +1,4 @@
-import type { CartoonRenderOutputPackageMetadata, CartoonRenderQueueArtifact, CartoonRenderQueueItem } from "./CartoonRenderQueue.js";
+import type { AnimationRenderOutputPackageMetadata, AnimationRenderQueueArtifact, AnimationRenderQueueItem } from "./AnimationRenderQueue.js";
 import { createFrameEncoder, type EncodedVideoArtifact, type FrameEncoder, type FrameEncoderAdapter, type FrameEncoderCodec } from "./FrameEncoder.js";
 import { audioStemsFromManifest, createAudioMuxer, type AudioMuxer, type AudioMuxerInputStem, type MuxedVideoArtifact } from "./AudioMuxer.js";
 import { createRenderProgressTracker, type RenderProgressSnapshot, type RenderProgressTracker } from "./RenderProgressTracker.js";
@@ -6,14 +6,14 @@ import type { AudioStemManifestArtifact } from "./DialoguePerformance.js";
 import { normalizePromptAnimationTime, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 
 export interface VideoExportFrameCapture {
-  readonly item: CartoonRenderQueueItem;
+  readonly item: AnimationRenderQueueItem;
   readonly image?: ImageBitmap | HTMLCanvasElement | OffscreenCanvas | Blob | Uint8Array | string | undefined;
 }
 
 export interface VideoExportRuntime {
-  seek?(time: PromptAnimationSeconds, item: CartoonRenderQueueItem): Promise<void> | void;
-  step?(dt: PromptAnimationSeconds, item: CartoonRenderQueueItem): Promise<void> | void;
-  captureFrame(item: CartoonRenderQueueItem): Promise<VideoExportFrameCapture> | VideoExportFrameCapture;
+  seek?(time: PromptAnimationSeconds, item: AnimationRenderQueueItem): Promise<void> | void;
+  step?(dt: PromptAnimationSeconds, item: AnimationRenderQueueItem): Promise<void> | void;
+  captureFrame(item: AnimationRenderQueueItem): Promise<VideoExportFrameCapture> | VideoExportFrameCapture;
 }
 
 export interface VideoExportPlan {
@@ -58,8 +58,8 @@ export interface VideoExportOutputSummary {
 export type VideoExportReadinessMode = "proof" | "publish";
 
 export interface CreateVideoExportPipelineOptions {
-  readonly renderQueue: CartoonRenderQueueArtifact;
-  readonly outputPackage: CartoonRenderOutputPackageMetadata;
+  readonly renderQueue: AnimationRenderQueueArtifact;
+  readonly outputPackage: AnimationRenderOutputPackageMetadata;
   readonly runtime: VideoExportRuntime;
   readonly audioStems?: readonly AudioMuxerInputStem[] | AudioStemManifestArtifact | undefined;
   readonly codec?: FrameEncoderCodec | undefined;
@@ -79,8 +79,8 @@ export interface VideoExportPipeline {
 }
 
 export function createVideoExportPlan(input: {
-  readonly renderQueue: CartoonRenderQueueArtifact;
-  readonly outputPackage: CartoonRenderOutputPackageMetadata;
+  readonly renderQueue: AnimationRenderQueueArtifact;
+  readonly outputPackage: AnimationRenderOutputPackageMetadata;
   readonly audioStems?: readonly AudioMuxerInputStem[] | AudioStemManifestArtifact | undefined;
   readonly codec?: FrameEncoderCodec | undefined;
 }): VideoExportPlan {
@@ -105,9 +105,9 @@ export function createVideoExportPlan(input: {
 }
 
 function selectVideoOutput(
-  outputPackage: CartoonRenderOutputPackageMetadata,
+  outputPackage: AnimationRenderOutputPackageMetadata,
   codec?: FrameEncoderCodec | undefined
-): CartoonRenderOutputPackageMetadata["outputs"]["webm"] | CartoonRenderOutputPackageMetadata["outputs"]["mp4"] | undefined {
+): AnimationRenderOutputPackageMetadata["outputs"]["webm"] | AnimationRenderOutputPackageMetadata["outputs"]["mp4"] | undefined {
   if (codec === "h264") return outputPackage.outputs.mp4 ?? outputPackage.outputs.webm;
   if (codec === "png-sequence") return outputPackage.outputs.webm ?? outputPackage.outputs.mp4;
   return outputPackage.outputs.webm ?? outputPackage.outputs.mp4;

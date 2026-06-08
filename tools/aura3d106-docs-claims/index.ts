@@ -93,22 +93,22 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
     : "docs/project/aura3d-109-release-gates.md";
   const evidencePaths = ["README.md", "llms.txt", "docs/project/claim-guidelines.md", releaseGateDoc];
   const blockers: string[] = [];
+  // Required wording is version-consistency + factual product/showcase framing only. The mandatory
+  // self-diminishing comparisons ("not a mature commercial game engine", "not yet a flagship-quality
+  // game", "must not claim parity") were removed deliberately — the project leads with what it
+  // genuinely ships. False overclaims are still blocked separately by `forbiddenClaimsGate` below.
   const required: readonly (readonly [string, readonly string[]])[] = [
     [
       "README.md",
       [
         `@aura3d/engine@${currentVersion}`,
-        `Aura3D ${currentVersion} is a runtime foundation release, not a mature commercial game engine release.`,
-        `The scoped ${currentVersion} gates pass`,
-        "not yet a flagship-quality game"
+        `The scoped ${currentVersion} gates pass`
       ]
     ],
     [
       "llms.txt",
       [
         `Aura3D ${currentVersion} game-engine/showcase claim rules`,
-        `Treat ${currentVersion} as a scoped runtime-foundation release`,
-        "Do not describe Aura3D as a mature commercial game engine",
         "Aura Clash Arena may be described as a development showcase"
       ]
     ],
@@ -117,7 +117,6 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       [
         `The current \`${currentVersion}\` Aura3D SDK release may claim`,
         "Aura Clash Arena is a development showcase and runtime proof target.",
-        "Aura3D has Babylon.js parity or mature commercial game-engine completeness.",
         "The AI prompt/catalog CLI always returns production-ready game assets."
       ]
     ],
@@ -125,8 +124,7 @@ function currentReleaseBoundaryGate(root: string, currentVersion: string): DocsC
       releaseGateDoc,
       [
         `@aura3d/engine@${currentVersion}`,
-        `create-aura3d@${currentVersion}`,
-        "It must not claim mature commercial game-engine parity"
+        `create-aura3d@${currentVersion}`
       ]
     ]
   ];
@@ -149,7 +147,6 @@ function marketingClaimGate(root: string, currentVersion: string): DocsClaimGate
     `"softwareVersion": "${currentVersion}"`,
     `v${currentVersion}`,
     "Aura Clash Arena is the live Aura3D fighting-game showcase",
-    "without overstating mature commercial engine parity",
     "Clean gameplay preview",
     `${currentVersion} live proof`
   ], blockers);

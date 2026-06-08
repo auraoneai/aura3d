@@ -27,7 +27,7 @@ const checks = [
     "maxTimingDriftFrames",
     "sampleVisemeTrack"
   ]),
-  checkFile("template-viseme-track", "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts", [
+  checkFile("template-viseme-track", "packages/create-aura3d/templates/animation-channel/src/render-plan.ts", [
     "visemeTrack",
     "createPrimitiveMouthVisemeCues",
     "createGlbBlendshapeVisemeCue",
@@ -35,7 +35,7 @@ const checks = [
     "glbVisemeRuntimeExample",
     "phonemeVisemeDubSyncSourceProof"
   ]),
-  checkFile("template-one-frame-source-proof", "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts", [
+  checkFile("template-one-frame-source-proof", "packages/create-aura3d/templates/animation-channel/src/render-plan.ts", [
     "captionFrameSyncSourceProof",
     "captionDisplayWithinOneFrame",
     "visemeFrameSyncSourceProof",
@@ -45,7 +45,7 @@ const checks = [
     "allowedFrameDurationSeconds",
     "maxObservedDriftFrames"
   ]),
-  checkFile("prompt-template-one-frame-source-proof", "packages/create-aura3d/templates/prompt-cartoon-channel/src/render-plan.ts", [
+  checkFile("prompt-template-one-frame-source-proof", "packages/create-aura3d/templates/prompt-animation-channel/src/render-plan.ts", [
     "captionFrameSyncSourceProof",
     "captionDisplayWithinOneFrame",
     "visemeFrameSyncSourceProof",

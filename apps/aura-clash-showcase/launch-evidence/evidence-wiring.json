@@ -238,7 +238,7 @@
     {
       "ruleId": "aura-voice-prompt-animation-youtube",
       "kind": "cross-runtime-evidence",
-      "artifact": "tests/reports/prompt-animation/validate-cartoon.json",
+      "artifact": "tests/reports/prompt-animation/validate-animation.json",
       "known": true,
       "reason": "declared by command plan, launch manifest, or sourceEvidence"
     },

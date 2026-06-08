@@ -22,6 +22,36 @@ export type SphereCastHit = RaycastHit & {
   readonly castRadius: number;
 };
 
+/** Ground query result consumed by the animation foot-IK rig (matches its `GroundSample` shape). */
+export type GroundHeightSample = {
+  readonly point: Vec3;
+  readonly normal: Vec3;
+  readonly distance: number;
+};
+
+/** Structural downward-ground query the `@aura3d/animation` foot-IK rig accepts. */
+export type GroundHeightRaycaster = {
+  raycastDown(origin: Vec3, maxDistance: number): GroundHeightSample | undefined;
+};
+
+/**
+ * Adapt any downward raycast into the ground query the foot-IK rig needs. `cast` should perform a
+ * straight-down ray (typically a `PhysicsWorld.raycast` bound to a ground layer mask) and return
+ * the first hit. This is a thin adapter, not a new solver — it just casts `[0,-1,0]` from the
+ * given origin and reports the hit point/normal/distance.
+ */
+export function groundHeightRaycaster(
+  cast: (origin: Vec3, direction: Vec3, maxDistance: number) => RaycastHit | undefined
+): GroundHeightRaycaster {
+  return {
+    raycastDown(origin: Vec3, maxDistance: number): GroundHeightSample | undefined {
+      const hit = cast(origin, [0, -1, 0], maxDistance);
+      if (!hit) return undefined;
+      return { point: hit.point, normal: hit.normal, distance: hit.distance };
+    }
+  };
+}
+
 export function raycastCollider(origin: Vec3, direction: Vec3, collider: Collider, body: RigidBody, options: RaycastOptions = {}): RaycastHit | undefined {
   const maxDistance = options.maxDistance ?? Number.POSITIVE_INFINITY;
   if (collider.sensor && options.includeSensors !== true) {

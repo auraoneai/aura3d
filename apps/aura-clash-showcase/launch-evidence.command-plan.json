@@ -222,14 +222,14 @@
       ]
     },
     {
-      "id": "prompt-animation-validate-cartoon",
-      "command": "pnpm evidence:command --id prompt-animation-validate-cartoon --out tests/reports/prompt-animation/validate-cartoon.json --cwd . -- pnpm prompt-animation:validate-cartoon",
+      "id": "prompt-animation-validate-animation",
+      "command": "pnpm evidence:command --id prompt-animation-validate-animation --out tests/reports/prompt-animation/validate-animation.json --cwd . -- pnpm prompt-animation:validate-animation",
       "outputs": [
-        "tests/reports/prompt-animation/validate-cartoon.json",
-        "tests/reports/prompt-animation/validate-cartoon.log"
+        "tests/reports/prompt-animation/validate-animation.json",
+        "tests/reports/prompt-animation/validate-animation.log"
       ],
       "requires": [
-        "Prompt-cartoon template assets are generated and registered through the Aura3D typed asset pipeline."
+        "Prompt-animation template assets are generated and registered through the Aura3D typed asset pipeline."
       ]
     },
     {

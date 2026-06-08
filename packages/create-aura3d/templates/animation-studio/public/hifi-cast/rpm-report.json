@@ -1,0 +1,301 @@
+{
+  "generatedAt": "2026-06-08T09:52:48.389Z",
+  "task": "Download real rigged, textured humanoid GLBs and grade their rigs via inferHumanoidRig + gradeRig.",
+  "readyPlayerMe": {
+    "requested": true,
+    "reachable": false,
+    "status": "UNREACHABLE from this environment",
+    "detail": "DNS lookup for models.readyplayer.me and api.readyplayer.me returns NXDOMAIN (host could not be resolved); curl exits with code 6 / HTTP 000. General internet works (example.com resolves; raw.githubusercontent.com downloads succeed), so this is RPM-host-specific egress blocking, not a total outage. No RPM avatar GLB was downloaded.",
+    "triedUrls": [
+      "https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb (and ?quality=high)",
+      "https://models.readyplayer.me/638df693d72bffc6fa17943c.glb (and ?meshLod=0&textureAtlas=1024)"
+    ],
+    "note": "Because RPM never resolved, the avatar IDs were never reached — cannot confirm whether they are valid or 404. No RPM viseme/blendshape data could be inspected.",
+    "license": "Ready Player Me avatars are governed by the RPM Terms of Use / Developer Terms. They are NOT public-domain: usage is tied to an app/subdomain, attribution/branding rules apply, and redistribution of avatar GLBs outside the RPM platform is restricted. Any RPM avatar used in the product would need a compliant RPM integration + license review. Flagged."
+  },
+  "fallbacksDownloaded": [
+    {
+      "file": "public/hifi-cast/rpm/cesiumman.glb",
+      "absPath": "/Users/gurbakshchahal/aura3d/packages/create-aura3d/templates/animation-studio/public/hifi-cast/rpm/cesiumman.glb",
+      "bytes": 438044,
+      "glbVersion": 2,
+      "rigged": true,
+      "textured": true,
+      "triangles": 4672,
+      "vertices": 3273,
+      "skins": 1,
+      "jointCount": 19,
+      "images": 1,
+      "textures": 1,
+      "materials": [
+        "Cesium_Man-effect"
+      ],
+      "morphTargetCount": 0,
+      "morphTargets": [],
+      "visemeOrMouthMorphs": [],
+      "animations": [
+        {
+          "name": "(anim 0)",
+          "channels": 57,
+          "samplers": 57
+        }
+      ],
+      "jointNames": [
+        "Skeleton_torso_joint_1",
+        "Skeleton_torso_joint_2",
+        "torso_joint_3",
+        "Skeleton_neck_joint_1",
+        "Skeleton_neck_joint_2",
+        "Skeleton_arm_joint_L__4_",
+        "Skeleton_arm_joint_R",
+        "Skeleton_arm_joint_L__3_",
+        "Skeleton_arm_joint_R__2_",
+        "Skeleton_arm_joint_L__2_",
+        "Skeleton_arm_joint_R__3_",
+        "leg_joint_L_1",
+        "leg_joint_R_1",
+        "leg_joint_L_2",
+        "leg_joint_R_2",
+        "leg_joint_L_3",
+        "leg_joint_R_3",
+        "leg_joint_L_5",
+        "leg_joint_R_5"
+      ],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "mappedBones": {
+        "neck": "Skeleton_neck_joint_1",
+        "leftUpperArm": "Skeleton_arm_joint_L__4_",
+        "rightUpperArm": "Skeleton_arm_joint_R",
+        "leftLowerLeg": "leg_joint_L_1",
+        "rightLowerLeg": "leg_joint_R_1",
+        "spine": "torso_joint_3"
+      },
+      "missingRequiredBones": [
+        "hips",
+        "head",
+        "leftLowerArm",
+        "leftHand",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftFoot",
+        "rightUpperLeg",
+        "rightFoot"
+      ],
+      "bonesMapToStandardRig": true
+    },
+    {
+      "file": "public/hifi-cast/rpm/fox.glb",
+      "absPath": "/Users/gurbakshchahal/aura3d/packages/create-aura3d/templates/animation-studio/public/hifi-cast/rpm/fox.glb",
+      "bytes": 162852,
+      "glbVersion": 2,
+      "rigged": true,
+      "textured": true,
+      "triangles": 576,
+      "vertices": 1728,
+      "skins": 1,
+      "jointCount": 24,
+      "images": 1,
+      "textures": 1,
+      "materials": [
+        "fox_material"
+      ],
+      "morphTargetCount": 0,
+      "morphTargets": [],
+      "visemeOrMouthMorphs": [],
+      "animations": [
+        {
+          "name": "Survey",
+          "channels": 21,
+          "samplers": 21
+        },
+        {
+          "name": "Walk",
+          "channels": 21,
+          "samplers": 21
+        },
+        {
+          "name": "Run",
+          "channels": 21,
+          "samplers": 21
+        }
+      ],
+      "jointNames": [
+        "_rootJoint",
+        "b_Root_00",
+        "b_Hip_01",
+        "b_Spine01_02",
+        "b_Spine02_03",
+        "b_Neck_04",
+        "b_Head_05",
+        "b_RightUpperArm_06",
+        "b_RightForeArm_07",
+        "b_RightHand_08",
+        "b_LeftUpperArm_09",
+        "b_LeftForeArm_010",
+        "b_LeftHand_011",
+        "b_Tail01_012",
+        "b_Tail02_013",
+        "b_Tail03_014",
+        "b_LeftLeg01_015",
+        "b_LeftLeg02_016",
+        "b_LeftFoot01_017",
+        "b_LeftFoot02_018",
+        "b_RightLeg01_019",
+        "b_RightLeg02_020",
+        "b_RightFoot01_021",
+        "b_RightFoot02_022"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 15,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "15 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)"
+      ],
+      "mappedBones": {
+        "hips": "_rootJoint",
+        "head": "b_Head_05",
+        "chest": "b_Spine02_03",
+        "neck": "b_Neck_04",
+        "leftHand": "b_LeftHand_011",
+        "rightHand": "b_RightHand_08",
+        "leftFoot": "b_LeftFoot01_017",
+        "rightFoot": "b_RightFoot01_021",
+        "leftLowerArm": "b_LeftForeArm_010",
+        "rightLowerArm": "b_RightForeArm_07",
+        "leftUpperArm": "b_LeftUpperArm_09",
+        "rightUpperArm": "b_RightUpperArm_06",
+        "leftLowerLeg": "b_LeftLeg01_015",
+        "rightLowerLeg": "b_RightLeg01_019",
+        "spine": "b_Spine01_02"
+      },
+      "missingRequiredBones": [
+        "leftUpperLeg",
+        "rightUpperLeg"
+      ],
+      "bonesMapToStandardRig": true
+    },
+    {
+      "file": "public/hifi-cast/rpm/riggedfigure.glb",
+      "absPath": "/Users/gurbakshchahal/aura3d/packages/create-aura3d/templates/animation-studio/public/hifi-cast/rpm/riggedfigure.glb",
+      "bytes": 50116,
+      "glbVersion": 2,
+      "rigged": true,
+      "textured": false,
+      "triangles": 256,
+      "vertices": 370,
+      "skins": 1,
+      "jointCount": 19,
+      "images": 0,
+      "textures": 0,
+      "materials": [
+        "Default-effect"
+      ],
+      "morphTargetCount": 0,
+      "morphTargets": [],
+      "visemeOrMouthMorphs": [],
+      "animations": [
+        {
+          "name": "(anim 0)",
+          "channels": 57,
+          "samplers": 57
+        }
+      ],
+      "jointNames": [
+        "torso_joint_1",
+        "torso_joint_2",
+        "torso_joint_3",
+        "neck_joint_1",
+        "neck_joint_2",
+        "arm_joint_L_1",
+        "arm_joint_R_1",
+        "arm_joint_L_2",
+        "arm_joint_R_2",
+        "arm_joint_L_3",
+        "arm_joint_R_3",
+        "leg_joint_L_1",
+        "leg_joint_R_1",
+        "leg_joint_L_2",
+        "leg_joint_R_2",
+        "leg_joint_L_3",
+        "leg_joint_R_3",
+        "leg_joint_L_5",
+        "leg_joint_R_5"
+      ],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "mappedBones": {
+        "neck": "neck_joint_1",
+        "leftUpperArm": "arm_joint_L_1",
+        "rightUpperArm": "arm_joint_R_1",
+        "leftLowerLeg": "leg_joint_L_1",
+        "rightLowerLeg": "leg_joint_R_1",
+        "spine": "torso_joint_1"
+      },
+      "missingRequiredBones": [
+        "hips",
+        "head",
+        "leftLowerArm",
+        "leftHand",
+        "rightLowerArm",
+        "rightHand",
+        "leftUpperLeg",
+        "leftFoot",
+        "rightUpperLeg",
+        "rightFoot"
+      ],
+      "bonesMapToStandardRig": true
+    }
+  ],
+  "sources": {
+    "fox.glb": {
+      "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/Fox/glTF-Binary/Fox.glb",
+      "origin": "Khronos glTF-Sample-Assets",
+      "license": "CC-BY 4.0 (Khronos Group / PixelMannen + tomkranis). Attribution required. Rigged + textured quadruped (non-human fallback character)."
+    },
+    "cesiumman.glb": {
+      "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+      "origin": "Khronos glTF-Sample-Assets",
+      "license": "Public-domain-style sample (Cesium / Khronos). Rigged + textured full-body humanoid with one walk animation."
+    },
+    "riggedfigure.glb": {
+      "url": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/RiggedFigure/glTF-Binary/RiggedFigure.glb",
+      "origin": "Khronos glTF-Sample-Assets",
+      "license": "Khronos sample asset. Rigged humanoid, untextured (no images/material maps)."
+    }
+  },
+  "rigMappingHonesty": {
+    "summary": "None of the downloaded humanoid samples use Mixamo/RPM-style bone names (Hips, Spine, LeftArm, LeftUpLeg). CesiumMan and RiggedFigure use generic Collada-export joint names (torso_joint_*, arm_joint_L_*, leg_joint_L_*), which inferHumanoidRig only partially maps (6/22 -> grade C). The Fox uses descriptive names (b_Hip_01, b_Spine01_02, b_LeftUpperArm_09, b_LeftForeArm_010) which map well (15/22 -> grade B), but it is a quadruped, not a human, so its legs are really arms/hindlegs.",
+    "rpmExpectation": "Had RPM been reachable, its avatars use Mixamo-ish names (Hips, Spine, Spine1/2, LeftArm, LeftForeArm, LeftHand, LeftUpLeg, LeftLeg, LeftFoot) which inferHumanoidRig is explicitly designed to map (Mixamo convention is in its alias table) and would be expected to grade A. That could NOT be verified here because RPM did not download.",
+    "criticalForRetargeting": true
+  }
+}

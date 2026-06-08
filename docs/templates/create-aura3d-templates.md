@@ -8,16 +8,16 @@
 - `cinematic-scene`: A cinematic browser scene with camera motion, lighting, atmosphere, imported assets, and presentation-ready visual composition. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
 - `mini-game`: An interactive browser game starter for input, HUD state, primitives, follow-camera behavior, scoring, route health, screenshot tests, and deployable output.
 - `fighting-game`: A playable browser fighting-game starter with runtime nodes, input, combat state, HUD evidence, and route health checks.
-- `cartoon-channel`: A prompt-driven cartoon episode scaffold with AuraVoice bridge metadata, shot playback, captions, visemes, render queue evidence, and typed cartoon asset placeholders.
-- `prompt-cartoon-channel`: Alias-style prompt cartoon scaffold for episode plans, dialogue/caption timing, viseme tracks, and cartoon render metadata.
-- `cartoon-studio`: A cartoon production scaffold with shot/dialogue/render timeline data, asset slot metadata, render pipeline evidence, and the same typed asset rules as the cartoon-channel template.
+- `animation-channel`: A prompt-driven animation episode scaffold with AuraVoice bridge metadata, shot playback, captions, visemes, render queue evidence, and typed animation asset placeholders.
+- `prompt-animation-channel`: Alias-style prompt animation scaffold for episode plans, dialogue/caption timing, viseme tracks, and animation render metadata.
+- `animation-studio`: A animation production scaffold with shot/dialogue/render timeline data, asset slot metadata, render pipeline evidence, and the same typed asset rules as the animation-channel template.
 - `episode-builder`: A guided prompt-to-episode scaffold with format choices, wizard state, compiled episode proof, typed asset placeholders, and route tests.
 
 ## Scaffold
 
 ```bash
 npx create-aura3d@latest my-app --template product-viewer
-npx create-aura3d@latest my-studio --template cartoon-studio
+npx create-aura3d@latest my-studio --template animation-studio
 npx create-aura3d@latest my-episode --template episode-builder
 ```
 

@@ -1,6 +1,27 @@
 # Aura3D typed asset readiness
 
-Aura3D projects should register every GLB, glTF, texture, environment, and audio file before code references it. The safe path is:
+> **Catalog reality (read first).** The federated index is large, but "large" is not
+> "high quality." For props and set pieces the catalog is reliable. For *acting characters*
+> it is not: most catalog "characters" are static props, T-pose meshes with no skeleton,
+> non-humanoid sculpts, or rigs whose only embedded clip is a 2 cm idle sway or a jaw-only
+> lip-flap. **Arbitrary prompt characters are NOT guaranteed to be production-quality.** The
+> `animation-studio` cast resolver therefore grades and probes every character candidate and
+> rejects the unusable ones rather than fabricating a typed cast member. See
+> [Character catalog reality](#character-catalog-reality) below for exactly what it can and
+> cannot reliably provide.
+
+Aura3D projects should register every GLB, glTF, texture, environment, and audio file before code references it. There are two paths, both producing the same typed manifest:
+
+**Resolve from the federated index** (when a prompt names a real object) — the CLI runs live search
+against a hosted, federated index of **800,000+ GLB/glTF assets** (a ~850K catalog aggregating the
+free GLB/glTF universe; primary adapter `createAuraIndexAdapter` from `@aura3d/asset-index`):
+
+```bash
+npx @aura3d/cli@latest assets search "battle-worn knight helmet"
+npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
+```
+
+**Add a file you already have:**
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/fighter.glb --name fighter
@@ -153,12 +174,12 @@ The report checks the typed manifest and flags:
 
 `validate-game` is a source and packaging gate. It does not replace visual QA, animation playback review, browser screenshots, or controller feel testing.
 
-## Cartoon readiness
+## Animation readiness
 
-Use the cartoon readiness report for prompt-to-episode and AuraVoice workflows:
+Use the animation readiness report for prompt-to-episode and AuraVoice workflows:
 
 ```bash
-npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest assets validate-animation
 ```
 
 The report checks that the project has typed models, set/prop readiness, animation clip availability, and audio registration signals. It warns when the episode can only be transform-animated instead of acted with skeletal or pose clips.
@@ -174,32 +195,36 @@ The animation timeline should still reference AuraVoice manifests by id, timecod
 Use the same strict flags for release proofs:
 
 ```bash
-npx @aura3d/cli@latest assets validate-cartoon \
+npx @aura3d/cli@latest assets validate-animation \
   --no-placeholders \
   --require-license
 ```
 
-For the planned 1.1 `cartoon-studio` flow, production-ready evidence requires at least two distinct typed character assets and one typed set:
+In the working `animation-studio` flow, the cast is normally resolved per-scene through
+`animation-scene cast add` (see below), not as a fixed manifest. When you do pre-stage assets for a
+production-ready validation, the report still expects at least two **distinct** typed character
+assets and one typed set. The names and queries are arbitrary — they follow the prompt, not a fixed
+moon-garden cast:
 
 ```bash
-npx @aura3d/cli@latest assets resolve "stylized rigged cartoon child robot" \
-  --name miko \
-  --profile cartoon-character
+npx @aura3d/cli@latest assets resolve "rusty industrial robot" \
+  --name rusty \
+  --profile animation-character
 
-npx @aura3d/cli@latest assets resolve "stylized rigged cartoon helper robot" \
-  --name luma \
-  --profile cartoon-character
+npx @aura3d/cli@latest assets resolve "sleek white android robot" \
+  --name sleek \
+  --profile animation-character
 
-npx @aura3d/cli@latest assets resolve "stylized moon garden set" \
-  --name moonGarden \
-  --profile cartoon-set
+npx @aura3d/cli@latest assets resolve "metal space station interior" \
+  --name stationSet \
+  --profile animation-set
 
-npx @aura3d/cli@latest assets validate-cartoon \
+npx @aura3d/cli@latest assets validate-animation \
   --require-license \
   --no-placeholders
 ```
 
-The 1.1 readiness expectation is stricter than "the manifest has assets." The report must be able to explain:
+The readiness expectation is stricter than "the manifest has assets." The report must be able to explain:
 
 - character distinctness, source, license, author, checksum, and deploy path;
 - whether each character has skeletal animation clips, retargetable humanoid metadata, or an explicitly declared segmented-puppet fallback;
@@ -207,14 +232,87 @@ The 1.1 readiness expectation is stricter than "the manifest has assets." The re
 - whether the set has usable scale, bounds, framing, walkability, and material/texture evidence;
 - whether dialogue, SFX, and music assets are typed audio files or explicitly missing from the publish scope.
 
-Do not work around failed cartoon asset validation with a generated still image, raw URL, primitive-only character, or unlicensed placeholder. Still-image puppet output may be kept only as negative evidence for a motion gate, not as a publish-ready asset path.
+Do not work around failed animation asset validation with a generated still image, raw URL, primitive-only character, or unlicensed placeholder. Still-image puppet output may be kept only as negative evidence for a motion gate, not as a publish-ready asset path.
+
+## Character catalog reality
+
+A generated `animation-studio` scene (`animation-scene new --prompt "..." --full`) binds each
+prompt-derived character to the curated, render-ready **A-grade humanoid cast** that ships with the
+template (neutral `cast-a` / `cast-b` rigs — **not** the moon-garden `miko`/`luma` fixture), so the
+document renders immediately. You then *override* any cast slot from the live catalog with
+`animation-scene cast add --id <id> --query "..."`, or from a local rig with
+`animation-scene cast add --id <id> --file <path.glb>` (both backed by `scripts/resolve-asset.ts`).
+Because catalog metadata routinely lies — a GLB can advertise embedded textures and five
+animations and still be a white-ghost T-pose whose clips only twitch the root and jaw — the
+resolver does **not** trust metadata. After downloading + inspecting each candidate it runs
+three independent gates and writes a **CHARACTER RESOLVER REPORT** to
+`dist/scene/<id>.resolver-report.json`.
+
+### The three gates
+
+1. **Rig grade (A / B / C / D)** — derived from the humanoid bone mapping
+   (`inferHumanoidRigDetailed` from `@aura3d/animation`), joint count, and the presence of the
+   arm/leg chains. Uses the engine's `gradeRig` (RigQuality) when that symbol is available at
+   runtime, otherwise an inline bone-count/humanoid heuristic with the same signals.
+   - **A** — full humanoid (spine + arms + legs + head, ~20+ joints): body acting retargets cleanly.
+   - **B** — humanoid torso + arms, sparse/partial legs: upper-body acting good, locomotion iffy.
+   - **C** — minimal/partial rig: crude motion only; body acting unreliable.
+   - **D** — no skeleton or no humanoid mapping: **rejected** (cannot retarget body acting).
+2. **Render probe** (`scripts/asset-render-probe.ts`) — actually renders the candidate against a
+   neutral grey stage and measures body chroma/detail. Malformed exports that come out as a flat
+   white silhouette are **rejected** (this is the real "does it look right" check; broken/missing
+   textures and bad bindings fail here).
+3. **Motion probe** (`scripts/asset-motion-probe.ts`) — reads each embedded clip's sampler data
+   straight off the GLB BIN chunk (no synthesis), measures real per-channel **amplitude**, and
+   works out which humanoid bones each clip drives. Clips that only animate the root, the
+   mouth/jaw, or a tiny idle sway are scored as **not useful**. Each useful clip is mapped onto
+   the standard performance vocabulary (`idle / talk / gesture / point / nod / walk / run / react`)
+   and given a 0–100 quality score (kept on `ResolvedAsset.clipScores`).
+
+### Reject criteria (a candidate is rejected when any holds)
+
+- no skeleton, or no humanoid bone mapping (rig grade **D**);
+- the render probe fails (white ghost / broken or missing textures / unusable bind);
+- a dialogue scene is requested but the rig animates no mouth/face;
+- (upstream, before grading) not self-contained (external textures), bad scale/bounds, or over the
+  triangle budget.
+
+Unusable license is surfaced per row (the catalog search already filters to
+commercially-usable results; the row keeps the license string so a non-redistributable model is
+visible and can be excluded).
+
+### Minimum viable acting pack and library fallback
+
+A character is only "self-acting" if its **own** embedded clips cover the minimum viable acting
+pack: **idle**, **talk-or-gesture**, **walk**, and **react**. When that pack is incomplete the
+character is still accepted (assuming it passed the rig + render gates) but marked
+**`libraryFallback: true`** — the shared retargeted clip library (`public/clip-library/*`,
+built by `scripts/build-clip-library.ts`) supplies its motion. This is recorded honestly in the
+resolver report rather than hidden. In practice **most** catalog rigs land here: a clean humanoid
+mesh is common; a clean humanoid mesh that *also* ships idle + talk + walk + react clips is rare.
+
+### What the catalog can and cannot reliably provide
+
+| Want | Reliable from catalog? |
+| --- | --- |
+| Static props / set pieces | **Yes** — self-contained textured GLBs are common. |
+| A rigged humanoid mesh (grade A/B) | **Sometimes** — depends entirely on the prompt; many queries return only props. |
+| Embedded, body-moving acting clips (idle/talk/walk/react) | **Rarely** — this is why motion almost always comes from the shared library. |
+| A jaw/viseme-capable face for lip-sync | **Rarely** — free catalog characters seldom rig the mouth; dialogue mouth motion usually relies on morph/amplitude fallback. |
+| A guaranteed high-quality cast for an *arbitrary* prompt | **No.** Quality is prompt-dependent and not guaranteed. Prefer a curated/uploaded rig for A-grade output. |
+
+The resolver report (`dist/scene/<id>.resolver-report.json`) records, per candidate: `source`,
+`title`, `license`, `url`, `rigGrade`, `clipCount`, `usefulClips`, `renderPass`, `motionPass`,
+`hasMouth`, `accepted`, `libraryFallback`, and `rejectReason`. Treat it as the honest, auditable
+answer to "where did this cast member come from and how good is it" — and never present a
+catalog-resolved arbitrary-prompt character as guaranteed-good without reading it.
 
 ## Asset evidence
 
 The readiness commands emit JSON with:
 
 - `schema`: report schema.
-- `profile`: `game` or `cartoon`.
+- `profile`: `game` or `animation`.
 - `summary`: model, texture, audio, and animation counts.
 - `assets`: per-asset readiness records.
 - `provenance`: per-asset source/license evidence when available.
@@ -229,7 +327,7 @@ Use this JSON in launch evidence, PRD checklists, and deploy gates. Only mark a 
 ## 1.0.5 animation and editor evidence
 
 Aura3D 1.0.5 animation, editor, and visual scripting work needs stronger asset
-evidence than a static model route. Character, animation, cartoon, and editor
+evidence than a static model route. Character, animation, animation, and editor
 assets must carry enough metadata for agents to choose real clips and morph
 targets without guessing.
 

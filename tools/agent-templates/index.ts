@@ -173,7 +173,7 @@ function templateSmokeSpecCheck(template: string): ReleaseCheck {
 
 function templateSmokeSpecs(template: string): readonly string[] {
   if (template === "fighting-game") return ["route-health.spec.ts", "gameplay-smoke.spec.ts"];
-  if (template === "cartoon-channel" || template === "prompt-cartoon-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
+  if (template === "animation-channel" || template === "prompt-animation-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
   return ["route-health.spec.ts", "screenshot.spec.ts"];
 }
 

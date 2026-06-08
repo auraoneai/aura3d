@@ -34,7 +34,7 @@
   "url": "https://aura3d.auraone.ai",
   "downloadUrl": "https://www.npmjs.com/package/@aura3d/engine",
   "codeRepository": "https://github.com/auraoneai/aura3d",
-  "softwareVersion": "1.1.0",
+  "softwareVersion": "1.3.0",
   "programmingLanguage": "TypeScript",
   "description": "AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deployment checks."
 }
@@ -74,7 +74,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v1.1.0</span>
+      <span class="nav-version">v1.3.0</span>
       <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
       <a class="btn btn-primary nav-start" href="#templates">Get&nbsp;started <span class="arr"></span></a>
     </div>
@@ -97,7 +97,7 @@
       </h1>
 
       <p class="hero-lede">
-        Aura3D turns a sentence into an editable browser 3D scene your team can actually own. Primitives, particles, physics, data worlds, cities, characters, materials, and real GLB assets all flow into clean TypeScript with visible checks before release.
+        Aura3D turns a sentence into an editable browser 3D scene your team can actually own — and its CLI gives your AI agent searchable, license-aware access to a catalog of <b>800,000+ real GLB/glTF assets</b>, so prompts resolve to real models instead of generic grey-box cubes. Primitives, particles, physics, data worlds, cities, characters, materials, and those assets all flow into clean TypeScript with visible checks before release.
       </p>
 
       <div class="hero-cta">
@@ -117,12 +117,12 @@
 
       <div class="hero-meta">
         <div class="hero-meta-item">
-          <span class="v"><b>v1.1.0</b></span>
-          <span class="k">latest engine</span>
+          <span class="v"><b>800K+ assets</b></span>
+          <span class="k">agent-resolved catalog</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>Scene kits</b></span>
-          <span class="k">primitives + systems</span>
+          <span class="v"><b>v1.3.0</b></span>
+          <span class="k">latest engine</span>
         </div>
         <div class="hero-meta-item">
           <span class="v"><b>Verify</b></span>
@@ -166,12 +166,13 @@
       <a class="tape-item" href="#gallery">Live examples</a>
       <a class="tape-item" href="#gallery">Polished scenes</a>
       <a class="tape-item" href="#deployment">Static deploys</a>
+      <a class="tape-item" href="#animation-studio">Animation Studio</a>
     </div>
   </div>
 </section>
 
 <!-- ─── AURA CLASH DEVELOPMENT SHOWCASE ────────────────────── -->
-<section class="section wwx-feature" id="aura-clash" data-search-index="aura clash browser fighting game development showcase typed glb assets poster playable evidence accessibility deploy check deployment gates">
+<section class="section wwx-feature" id="aura-clash" data-search-index="aura clash browser fighting game development showcase typed glb assets poster playable evidence accessibility deploy check deployment gates believable motion foot ik foot-lock spring bones critically damped transitions animation event tracks footsteps vfx">
   <div class="wrap">
     <div class="wwx-shell">
       <div class="wwx-copy">
@@ -181,6 +182,18 @@
           Jump into a browser-native fighting showcase powered by typed GLB fighters, responsive combat, a cinematic
           neon arena, audio cues, accessibility controls, screenshot capture, and deploy evidence. Aura Clash shows
           how Aura3D turns real 3D game code into something shippable, inspectable, and fast to iterate.
+        </p>
+        <p class="lede">
+          The 1.2 animation upgrade adds crossfaded state transitions, hit reactions that vary by attack weight and
+          grounded/airborne state, and attacks layered on an upper-body bone mask over a walking lower body &mdash; all
+          driven by the engine animation runtime and proven by browser tests with deterministic combat replay.
+        </p>
+        <p class="lede">
+          1.3 runs the believable-motion engine live in the arena: critically-damped, momentum-preserving move
+          transitions that carry through instead of dissolving, two-bone foot IK with a foot-lock so planted feet stop
+          sliding (driving real footsteps), spring-bone secondary dynamics that lean the body into dashes and knockback,
+          and authored animation event tracks driving hit active-frames, footsteps, and VFX &mdash; all presentation-layer,
+          so the deterministic combat replay stays byte-stable.
         </p>
         <div class="wwx-actions">
           <a class="btn btn-ghost" href="/showcase/aura-clash/">Open showcase hub</a>
@@ -193,7 +206,12 @@
           <span>playable route metadata</span>
           <span>accessibility controls</span>
           <span>static poster preview</span>
-          <span>1.1.0 live proof</span>
+          <span>crossfade + layered attacks</span>
+          <span>critically-damped transitions</span>
+          <span>foot IK + foot-lock</span>
+          <span>spring body-sway</span>
+          <span>authored event tracks</span>
+          <span>1.3.0 live proof</span>
         </div>
         <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
           <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
@@ -211,6 +229,72 @@
         <div class="wwx-stage-badge">
           <span class="dot"></span>
           <span>Clean gameplay preview · click through to the live route</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── ANIMATION STUDIO ────────────────────────────────────── -->
+<section class="section wwx-feature" id="animation-studio" data-search-index="animation studio prompt to animated short episode document director scene-tool cli silent render auravoice timeline nle previz">
+  <div class="wrap">
+    <div class="wwx-shell">
+      <div class="wwx-copy">
+        <span class="eyebrow">Animation Studio</span>
+        <h2 class="h2">Describe a scene. <em style="font-family:var(--serif);font-style:italic">Watch it perform.</em></h2>
+        <p class="lede">
+          Type a prompt &mdash; get a rendered animated short. The same prompt, every time. Scene intelligence isn't code
+          you write; it's a generated <strong>EpisodeDocument</strong> played by one generic renderer with zero
+          scene-specific constants. And the director isn't a model we bundle &mdash; it's <em>your own</em> coding agent,
+          driving a validated Scene-Tool CLI. No bundled LLM. No API key.
+        </p>
+        <p class="lede">
+          The cast is parsed straight from your words and bound to graded humanoid rigs. Sets are keyword-routed &mdash;
+          an office becomes an office, a forest a meadow &mdash; never a moon-garden default. A shared retargeted motion
+          library drives everyone, with velocity-gated locomotion so planted feet stay planted and captions timed to the
+          length of the line. A ten-gate quality suite stands guard: it rejects stiff bodies, lip-only motion, and
+          fabricated proof. Every gate measures a real signal &mdash; nothing hard-codes a pass.
+        </p>
+        <p class="lede">
+          The web studio is a three-pane NLE &mdash; a Director Console, live previews, and real validated commands, not a
+          mockup. Renders are <strong>silent by design</strong>; AuraVoice owns the voice. A clean, stylized look you can
+          watch in minutes &mdash; and when you want photoreal characters, drop in your own rigged GLB and it renders them
+          too. Describe the next shot, and the scene changes. It just renders.
+        </p>
+        <div class="wwx-actions">
+          <a class="btn btn-primary" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio/guide.md">Read the guide <span class="arr"></span></a>
+          <a class="btn btn-ghost" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio/README.md">See the quickstart</a>
+          <a class="btn btn-ghost" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio">Open the docs</a>
+        </div>
+        <div class="wwx-proof-grid" aria-label="Animation Studio proof points">
+          <span>prompt → EpisodeDocument</span>
+          <span>generic player, zero scene code</span>
+          <span>agent is the director</span>
+          <span>no bundled LLM / API key</span>
+          <span>retargeted motion library</span>
+          <span>velocity-gated locomotion</span>
+          <span>speech-duration captions</span>
+          <span>10-gate quality suite</span>
+          <span>deterministic renders</span>
+          <span>silent · AuraVoice owns voice</span>
+          <span>web NLE studio</span>
+        </div>
+        <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
+          <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
+          <a href="https://www.npmjs.com/package/@aura3d/engine" target="_blank" rel="noopener">@aura3d/engine on npm</a>
+        </div>
+      </div>
+      <div class="wwx-stage">
+        <a class="wwx-static-link" href="https://github.com/auraoneai/aura3d/tree/main/docs/animation-studio" aria-label="Open the Animation Studio docs">
+          <img
+            class="wwx-static-preview"
+            src="/previews/animation-studio.png"
+            alt="Animation Studio web NLE with a Director Console and a prompt-generated office scene rendered in stylized toon shading"
+            loading="lazy" />
+        </a>
+        <div class="wwx-stage-badge">
+          <span class="dot"></span>
+          <span>Live studio · prompt-generated office scene</span>
         </div>
       </div>
     </div>
@@ -547,7 +631,7 @@
         <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">@aura3d/engine@1.1.0</span>
+        <span class="eyebrow-num">@aura3d/engine@1.3.0</span>
         <span class="mute-2 mono" style="font-size:11px">latest root runtime</span>
       </div>
     </div>
@@ -559,9 +643,9 @@
           <span class="pass">● latest</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.1.0</span></div>
-          <div class="diag-row"><span class="k">root runtime</span> <span class="v ok">Aura-owned WebGL2 path</span></div>
-          <div class="diag-row"><span class="k">default install</span> <span class="v ok">no Three.js dependency</span></div>
+          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.3.0</span></div>
+          <div class="diag-row"><span class="k">renderers</span> <span class="v ok">WebGL2 + WebGPU, 96-joint skinning</span></div>
+          <div class="diag-row"><span class="k">animation</span> <span class="v ok">believable-motion engine</span></div>
         </div>
       </div>
       <div class="diag-card">
@@ -770,10 +854,10 @@
       <div class="backend-card" style="background:linear-gradient(180deg, rgba(74,222,157,0.04), var(--bg-1));">
         <span class="label" style="color:var(--accent)">● Browser capability</span>
         <h3>WebGPU</h3>
-        <p class="desc">WebGPU examples depend on browser support. If the browser exposes <span class="mono" style="color:var(--accent)">navigator.gpu</span>, routes can use it. If not, Aura3D keeps the route on the supported browser path.</p>
+        <p class="desc">WebGPU examples depend on browser support. If the browser exposes <span class="mono" style="color:var(--accent)">navigator.gpu</span>, routes can use it &mdash; with character skinning at 96-joint parity with the WebGL2 path. If not, Aura3D keeps the route on the supported browser path.</p>
         <div class="stats">
           <div class="stat"><div class="v"><b>opt-in</b></div><div class="k">backend</div></div>
-          <div class="stat"><div class="v"><b>named</b></div><div class="k">fallback reason</div></div>
+          <div class="stat"><div class="v"><b>96-joint</b></div><div class="k">skinning parity</div></div>
           <div class="stat"><div class="v"><b>path</b></div><div class="k">documented</div></div>
         </div>
       </div>
@@ -904,7 +988,7 @@ scene()
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D · @aura3d/engine v1.1.0 · MIT licensed</span>
+      <span>© 2026 Aura3D · @aura3d/engine v1.3.0 · MIT licensed</span>
       <span>Prompt-to-3D · typed assets · production browser scenes</span>
     </div>
   </div>

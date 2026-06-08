@@ -76,8 +76,6 @@ Do not describe the current product as:
 - a server-side OpenAI, Anthropic, Gemini, or local-model proxy;
 - a master cinematic asset universe;
 - a consumer prompt-only 3D app.
-- not as a mature commercial game engine.
-- not as a Unity, Unreal, or Babylon.js replacement.
 
 Allowed replacement concepts:
 

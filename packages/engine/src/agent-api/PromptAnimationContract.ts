@@ -27,7 +27,7 @@ export type PromptAnimationArtifactKind =
   | "visemes"
   | "audio-stems"
   | "dub-map"
-  | "cartoon-performance"
+  | "animation-performance"
   | "render-queue"
   | "render-output-package"
   | "prompt-animation-evidence";
@@ -160,7 +160,7 @@ export interface PromptAnimationAccessibilityProofMetadata {
 export interface PromptAnimationSafetyMetadata {
   readonly childSafe: boolean;
   readonly flashing: "none" | "reduced" | "review-required";
-  readonly violence: "none" | "cartoon" | "review-required";
+  readonly violence: "none" | "animation" | "review-required";
   readonly weapons: "none" | "stylized" | "review-required";
   readonly adultThemes: "none" | "review-required";
   readonly gore: "none";

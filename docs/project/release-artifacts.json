@@ -55,6 +55,6 @@
   "notes": [
     "This file records published npm artifacts for the scoped 1.0.10 runtime/showcase release.",
     "It is package publication evidence, not proof that Aura3D has reached Unity, Unreal, Babylon.js, or mature game-engine parity.",
-    "Use docs/project/aura3d-110-release-gates.md, docs/project/game-runtime-release.md, docs/project/aura-clash-showcase.md, and docs/examples/cartoon-channel.md for current engine, showcase, and cartoon-production gates."
+    "Use docs/project/game-runtime-release.md, docs/project/aura-clash-showcase.md, and docs/examples/animation-channel.md for current engine, showcase, and animation-production gates."
   ]
 }

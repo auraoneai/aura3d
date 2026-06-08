@@ -444,7 +444,7 @@ function writeMarkdown(currentReport: typeof report): void {
     deploymentNextAction(currentReport),
     ""
   ];
-  writeFileSync("docs/project/external-deployment-results.md", `${lines.join("\n")}\n`);
+  writeFileSync("tests/reports/external-deployment-results.md", `${lines.join("\n")}\n`);
 }
 
 function deploymentVerdict(currentReport: typeof report): string {

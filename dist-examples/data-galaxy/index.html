@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G3D Data Galaxy</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #030712;
+      color: #e5eefb;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      height: 100vh;
+      min-height: 620px;
+    }
+
+    canvas {
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+
+    aside {
+      background: #07111f;
+      border-left: 1px solid #18314f;
+      display: grid;
+      grid-template-rows: auto auto auto 1fr auto;
+      min-width: 0;
+      padding: 20px;
+      row-gap: 20px;
+    }
+
+    h1 {
+      color: #f8fbff;
+      font-size: 24px;
+      letter-spacing: 0;
+      line-height: 1.1;
+    }
+
+    .subhead {
+      color: #8fb4d8;
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+
+    .panel-title {
+      color: #7fb8dc;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .segment {
+      background: #0b1828;
+      border: 1px solid #1d3855;
+      border-radius: 7px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      overflow: hidden;
+    }
+
+    button {
+      background: transparent;
+      border: 0;
+      color: #9ebbd6;
+      cursor: pointer;
+      font: inherit;
+      padding: 10px 8px;
+    }
+
+    button.active {
+      background: #1d9bd7;
+      color: #04111c;
+      font-weight: 800;
+    }
+
+    .range-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    input[type="range"] {
+      accent-color: #38bdf8;
+      width: 100%;
+    }
+
+    .metrics {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .metric {
+      background: #0b1828;
+      border: 1px solid #1d3855;
+      border-radius: 7px;
+      padding: 10px;
+    }
+
+    .metric strong {
+      color: #eff8ff;
+      display: block;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .metric span {
+      color: #8fb4d8;
+      display: block;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+
+    .legend {
+      display: grid;
+      gap: 7px;
+    }
+
+    .legend div {
+      align-items: center;
+      color: #c8d9ec;
+      display: flex;
+      font-size: 13px;
+      gap: 8px;
+    }
+
+    .dot {
+      border-radius: 50%;
+      display: inline-block;
+      height: 10px;
+      width: 10px;
+    }
+
+    .status {
+      border-top: 1px solid #18314f;
+      color: #8fb4d8;
+      font-size: 12px;
+      line-height: 1.45;
+      padding-top: 14px;
+    }
+
+    @media (max-width: 860px) {
+      #app {
+        grid-template-columns: 1fr;
+        grid-template-rows: minmax(420px, 1fr) auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      aside {
+        border-left: 0;
+        border-top: 1px solid #18314f;
+      }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-CWp0rmQA.js"></script>
+</head>
+<body>
+  <main id="app">
+    <canvas id="galaxy-canvas"></canvas>
+    <aside>
+      <header>
+        <h1>Data Galaxy</h1>
+        <p class="subhead">Reusable focal system with a luminous core, analytic rings, directed streams, and sparse depth anchors.</p>
+      </header>
+
+      <section>
+        <div class="panel-title">Mode</div>
+        <div class="segment" id="mode-segment">
+          <button type="button" data-mode="overview" class="active">Overview</button>
+          <button type="button" data-mode="flow">Flow</button>
+          <button type="button" data-mode="depth">Depth</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="panel-title">Density</div>
+        <label class="range-row">
+          <input id="density" type="range" min="0.55" max="1.4" step="0.05" value="0.95">
+        </label>
+      </section>
+
+      <section>
+        <div class="panel-title">Runtime Evidence</div>
+        <div class="metrics" id="metrics"></div>
+      </section>
+
+      <section>
+        <div class="panel-title">Layers</div>
+        <div class="legend">
+          <div><span class="dot" style="background:#f8fdff"></span>luminous core</div>
+          <div><span class="dot" style="background:#38bdf8"></span>orbital rings</div>
+          <div><span class="dot" style="background:#60e6ff"></span>data streams</div>
+          <div><span class="dot" style="background:#2d86bc"></span>depth anchors</div>
+        </div>
+      </section>
+
+      <footer class="status" id="status"></footer>
+    </aside>
+  </main>
+</body>
+</html>

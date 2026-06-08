@@ -22,8 +22,14 @@ export class MorphUnlitMaterial extends Material {
         { name: "u_baseColor", kind: "vec4" },
         { name: "u_modelViewProjection", kind: "mat4" },
         { name: "u_morphPositionDeltas", kind: "any", required: false },
+        { name: "u_morphNormalDeltas", kind: "any", required: false },
         { name: "u_morphWeights", kind: "vec4", required: false },
-        { name: "u_morphTargetCount", kind: "float", required: false }
+        { name: "u_morphTargetCount", kind: "float", required: false },
+        { name: "u_morphDeltaTexture", kind: "any", required: false },
+        { name: "u_morphUsesTexture", kind: "float", required: false },
+        { name: "u_morphTextureWidth", kind: "float", required: false },
+        { name: "u_morphRowsPerTarget", kind: "float", required: false },
+        { name: "u_morphWeightArray", kind: "any", required: false }
       ]
     });
   }

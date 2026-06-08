@@ -1,0 +1,938 @@
+{
+  "generatedAt": "2026-06-08T09:57:30.057Z",
+  "note": "FK PRE-FILTER ONLY — NOT A RENDER. A PASS means the rig survived a canonical forward-kinematics sanity pass (no collapsed legs / sagging arms / exploded or NaN bones). It does NOT skin the real mesh and cannot see texture/weight/bind-pose problems. Final acceptance requires a real GPU render + visual review.",
+  "poorCoverageThreshold": 0.6,
+  "fkClips": [
+    "talk",
+    "walk"
+  ],
+  "sampleTimes": [
+    0,
+    0.3,
+    0.6,
+    0.9,
+    1.2,
+    1.6
+  ],
+  "count": 13,
+  "passCount": 8,
+  "failCount": 5,
+  "verdicts": [
+    {
+      "file": "public/hifi-cast/BrainStem.glb",
+      "bytes": 3194848,
+      "parsed": true,
+      "jointCount": 0,
+      "clips": [],
+      "rigGrade": "D",
+      "mappedBoneCount": 0,
+      "capabilities": {
+        "hasLegs": false,
+        "hasKnees": false,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "0 of 22 canonical humanoid bones mapped",
+        "not enough body structure to drive body acting (D)",
+        "missing spine/head axis",
+        "missing a pair of upper arms",
+        "missing a usable pair of legs"
+      ],
+      "retargetCoverage": 0,
+      "retargetRequiredCoverage": 0,
+      "retargetingPoor": true,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "FAIL",
+      "notes": [
+        "rig graded D — not suitable for body acting (refuse).",
+        "retargeting will be poor — body acting won't transfer (coverage 0% < 60%).",
+        "no feet mapped — locomotion / standing pose can't be validated by FK."
+      ]
+    },
+    {
+      "file": "public/hifi-cast/CesiumMan.glb",
+      "bytes": 438044,
+      "parsed": true,
+      "jointCount": 19,
+      "clips": [],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "retargetCoverage": 0.273,
+      "retargetRequiredCoverage": 0.333,
+      "retargetingPoor": true,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "FAIL",
+      "notes": [
+        "retargeting will be poor — body acting won't transfer (coverage 27% < 60%).",
+        "no feet mapped — locomotion / standing pose can't be validated by FK."
+      ]
+    },
+    {
+      "file": "public/hifi-cast/RiggedFigure.glb",
+      "bytes": 50116,
+      "parsed": true,
+      "jointCount": 19,
+      "clips": [],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "retargetCoverage": 0.273,
+      "retargetRequiredCoverage": 0.333,
+      "retargetingPoor": true,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "FAIL",
+      "notes": [
+        "retargeting will be poor — body acting won't transfer (coverage 27% < 60%).",
+        "no feet mapped — locomotion / standing pose can't be validated by FK."
+      ]
+    },
+    {
+      "file": "public/hifi-cast/kaykit/Barbarian.glb",
+      "bytes": 3613268,
+      "parsed": true,
+      "jointCount": 41,
+      "clips": [
+        "1H_Melee_Attack_Chop",
+        "1H_Melee_Attack_Slice_Diagonal",
+        "1H_Melee_Attack_Slice_Horizontal",
+        "1H_Melee_Attack_Stab",
+        "1H_Ranged_Aiming",
+        "1H_Ranged_Reload",
+        "1H_Ranged_Shoot",
+        "1H_Ranged_Shooting",
+        "2H_Melee_Attack_Chop",
+        "2H_Melee_Attack_Slice",
+        "2H_Melee_Attack_Spin",
+        "2H_Melee_Attack_Spinning",
+        "2H_Melee_Attack_Stab",
+        "2H_Melee_Idle",
+        "2H_Ranged_Aiming",
+        "2H_Ranged_Reload",
+        "2H_Ranged_Shoot",
+        "2H_Ranged_Shooting",
+        "Block",
+        "Block_Attack",
+        "Block_Hit",
+        "Blocking",
+        "Cheer",
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Dodge_Backward",
+        "Dodge_Forward",
+        "Dodge_Left",
+        "Dodge_Right",
+        "Dualwield_Melee_Attack_Chop",
+        "Dualwield_Melee_Attack_Slice",
+        "Dualwield_Melee_Attack_Stab",
+        "Hit_A",
+        "Hit_B",
+        "Idle",
+        "Interact",
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Lie_Down",
+        "Lie_Idle",
+        "Lie_Pose",
+        "Lie_StandUp",
+        "PickUp",
+        "Running_A",
+        "Running_B",
+        "Running_Strafe_Left",
+        "Running_Strafe_Right",
+        "Sit_Chair_Down",
+        "Sit_Chair_Idle",
+        "Sit_Chair_Pose",
+        "Sit_Chair_StandUp",
+        "Sit_Floor_Down",
+        "Sit_Floor_Idle",
+        "Sit_Floor_Pose",
+        "Sit_Floor_StandUp",
+        "Spellcast_Long",
+        "Spellcast_Raise",
+        "Spellcast_Shoot",
+        "Spellcasting",
+        "T-Pose",
+        "Throw",
+        "Unarmed_Idle",
+        "Unarmed_Melee_Attack_Kick",
+        "Unarmed_Melee_Attack_Punch_A",
+        "Unarmed_Melee_Attack_Punch_B",
+        "Unarmed_Pose",
+        "Use_Item",
+        "Walking_A",
+        "Walking_B",
+        "Walking_Backwards",
+        "Walking_C"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 18,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "18 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.818,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/kaykit/Knight.glb",
+      "bytes": 3659532,
+      "parsed": true,
+      "jointCount": 41,
+      "clips": [
+        "1H_Melee_Attack_Chop",
+        "1H_Melee_Attack_Slice_Diagonal",
+        "1H_Melee_Attack_Slice_Horizontal",
+        "1H_Melee_Attack_Stab",
+        "1H_Ranged_Aiming",
+        "1H_Ranged_Reload",
+        "1H_Ranged_Shoot",
+        "1H_Ranged_Shooting",
+        "2H_Melee_Attack_Chop",
+        "2H_Melee_Attack_Slice",
+        "2H_Melee_Attack_Spin",
+        "2H_Melee_Attack_Spinning",
+        "2H_Melee_Attack_Stab",
+        "2H_Melee_Idle",
+        "2H_Ranged_Aiming",
+        "2H_Ranged_Reload",
+        "2H_Ranged_Shoot",
+        "2H_Ranged_Shooting",
+        "Block",
+        "Block_Attack",
+        "Block_Hit",
+        "Blocking",
+        "Cheer",
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Dodge_Backward",
+        "Dodge_Forward",
+        "Dodge_Left",
+        "Dodge_Right",
+        "Dualwield_Melee_Attack_Chop",
+        "Dualwield_Melee_Attack_Slice",
+        "Dualwield_Melee_Attack_Stab",
+        "Hit_A",
+        "Hit_B",
+        "Idle",
+        "Interact",
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Lie_Down",
+        "Lie_Idle",
+        "Lie_Pose",
+        "Lie_StandUp",
+        "PickUp",
+        "Running_A",
+        "Running_B",
+        "Running_Strafe_Left",
+        "Running_Strafe_Right",
+        "Sit_Chair_Down",
+        "Sit_Chair_Idle",
+        "Sit_Chair_Pose",
+        "Sit_Chair_StandUp",
+        "Sit_Floor_Down",
+        "Sit_Floor_Idle",
+        "Sit_Floor_Pose",
+        "Sit_Floor_StandUp",
+        "Spellcast_Long",
+        "Spellcast_Raise",
+        "Spellcast_Shoot",
+        "Spellcasting",
+        "T-Pose",
+        "Throw",
+        "Unarmed_Idle",
+        "Unarmed_Melee_Attack_Kick",
+        "Unarmed_Melee_Attack_Punch_A",
+        "Unarmed_Melee_Attack_Punch_B",
+        "Unarmed_Pose",
+        "Use_Item",
+        "Walking_A",
+        "Walking_B",
+        "Walking_Backwards",
+        "Walking_C"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 18,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "18 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.818,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/kaykit/Mage.glb",
+      "bytes": 3589240,
+      "parsed": true,
+      "jointCount": 41,
+      "clips": [
+        "1H_Melee_Attack_Chop",
+        "1H_Melee_Attack_Slice_Diagonal",
+        "1H_Melee_Attack_Slice_Horizontal",
+        "1H_Melee_Attack_Stab",
+        "1H_Ranged_Aiming",
+        "1H_Ranged_Reload",
+        "1H_Ranged_Shoot",
+        "1H_Ranged_Shooting",
+        "2H_Melee_Attack_Chop",
+        "2H_Melee_Attack_Slice",
+        "2H_Melee_Attack_Spin",
+        "2H_Melee_Attack_Spinning",
+        "2H_Melee_Attack_Stab",
+        "2H_Melee_Idle",
+        "2H_Ranged_Aiming",
+        "2H_Ranged_Reload",
+        "2H_Ranged_Shoot",
+        "2H_Ranged_Shooting",
+        "Block",
+        "Block_Attack",
+        "Block_Hit",
+        "Blocking",
+        "Cheer",
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Dodge_Backward",
+        "Dodge_Forward",
+        "Dodge_Left",
+        "Dodge_Right",
+        "Dualwield_Melee_Attack_Chop",
+        "Dualwield_Melee_Attack_Slice",
+        "Dualwield_Melee_Attack_Stab",
+        "Hit_A",
+        "Hit_B",
+        "Idle",
+        "Interact",
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Lie_Down",
+        "Lie_Idle",
+        "Lie_Pose",
+        "Lie_StandUp",
+        "PickUp",
+        "Running_A",
+        "Running_B",
+        "Running_Strafe_Left",
+        "Running_Strafe_Right",
+        "Sit_Chair_Down",
+        "Sit_Chair_Idle",
+        "Sit_Chair_Pose",
+        "Sit_Chair_StandUp",
+        "Sit_Floor_Down",
+        "Sit_Floor_Idle",
+        "Sit_Floor_Pose",
+        "Sit_Floor_StandUp",
+        "Spellcast_Long",
+        "Spellcast_Raise",
+        "Spellcast_Shoot",
+        "Spellcasting",
+        "T-Pose",
+        "Throw",
+        "Unarmed_Idle",
+        "Unarmed_Melee_Attack_Kick",
+        "Unarmed_Melee_Attack_Punch_A",
+        "Unarmed_Melee_Attack_Punch_B",
+        "Unarmed_Pose",
+        "Use_Item",
+        "Walking_A",
+        "Walking_B",
+        "Walking_Backwards",
+        "Walking_C"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 18,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "18 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.818,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/kaykit/Rogue.glb",
+      "bytes": 3616284,
+      "parsed": true,
+      "jointCount": 41,
+      "clips": [
+        "1H_Melee_Attack_Chop",
+        "1H_Melee_Attack_Slice_Diagonal",
+        "1H_Melee_Attack_Slice_Horizontal",
+        "1H_Melee_Attack_Stab",
+        "1H_Ranged_Aiming",
+        "1H_Ranged_Reload",
+        "1H_Ranged_Shoot",
+        "1H_Ranged_Shooting",
+        "2H_Melee_Attack_Chop",
+        "2H_Melee_Attack_Slice",
+        "2H_Melee_Attack_Spin",
+        "2H_Melee_Attack_Spinning",
+        "2H_Melee_Attack_Stab",
+        "2H_Melee_Idle",
+        "2H_Ranged_Aiming",
+        "2H_Ranged_Reload",
+        "2H_Ranged_Shoot",
+        "2H_Ranged_Shooting",
+        "Block",
+        "Block_Attack",
+        "Block_Hit",
+        "Blocking",
+        "Cheer",
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Dodge_Backward",
+        "Dodge_Forward",
+        "Dodge_Left",
+        "Dodge_Right",
+        "Dualwield_Melee_Attack_Chop",
+        "Dualwield_Melee_Attack_Slice",
+        "Dualwield_Melee_Attack_Stab",
+        "Hit_A",
+        "Hit_B",
+        "Idle",
+        "Interact",
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Lie_Down",
+        "Lie_Idle",
+        "Lie_Pose",
+        "Lie_StandUp",
+        "PickUp",
+        "Running_A",
+        "Running_B",
+        "Running_Strafe_Left",
+        "Running_Strafe_Right",
+        "Sit_Chair_Down",
+        "Sit_Chair_Idle",
+        "Sit_Chair_Pose",
+        "Sit_Chair_StandUp",
+        "Sit_Floor_Down",
+        "Sit_Floor_Idle",
+        "Sit_Floor_Pose",
+        "Sit_Floor_StandUp",
+        "Spellcast_Long",
+        "Spellcast_Raise",
+        "Spellcast_Shoot",
+        "Spellcasting",
+        "T-Pose",
+        "Throw",
+        "Unarmed_Idle",
+        "Unarmed_Melee_Attack_Kick",
+        "Unarmed_Melee_Attack_Punch_A",
+        "Unarmed_Melee_Attack_Punch_B",
+        "Unarmed_Pose",
+        "Use_Item",
+        "Walking_A",
+        "Walking_B",
+        "Walking_Backwards",
+        "Walking_C"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 18,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "18 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.818,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/kaykit/Rogue_Hooded.glb",
+      "bytes": 3597652,
+      "parsed": true,
+      "jointCount": 41,
+      "clips": [
+        "1H_Melee_Attack_Chop",
+        "1H_Melee_Attack_Slice_Diagonal",
+        "1H_Melee_Attack_Slice_Horizontal",
+        "1H_Melee_Attack_Stab",
+        "1H_Ranged_Aiming",
+        "1H_Ranged_Reload",
+        "1H_Ranged_Shoot",
+        "1H_Ranged_Shooting",
+        "2H_Melee_Attack_Chop",
+        "2H_Melee_Attack_Slice",
+        "2H_Melee_Attack_Spin",
+        "2H_Melee_Attack_Spinning",
+        "2H_Melee_Attack_Stab",
+        "2H_Melee_Idle",
+        "2H_Ranged_Aiming",
+        "2H_Ranged_Reload",
+        "2H_Ranged_Shoot",
+        "2H_Ranged_Shooting",
+        "Block",
+        "Block_Attack",
+        "Block_Hit",
+        "Blocking",
+        "Cheer",
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Dodge_Backward",
+        "Dodge_Forward",
+        "Dodge_Left",
+        "Dodge_Right",
+        "Dualwield_Melee_Attack_Chop",
+        "Dualwield_Melee_Attack_Slice",
+        "Dualwield_Melee_Attack_Stab",
+        "Hit_A",
+        "Hit_B",
+        "Idle",
+        "Interact",
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Lie_Down",
+        "Lie_Idle",
+        "Lie_Pose",
+        "Lie_StandUp",
+        "PickUp",
+        "Running_A",
+        "Running_B",
+        "Running_Strafe_Left",
+        "Running_Strafe_Right",
+        "Sit_Chair_Down",
+        "Sit_Chair_Idle",
+        "Sit_Chair_Pose",
+        "Sit_Chair_StandUp",
+        "Sit_Floor_Down",
+        "Sit_Floor_Idle",
+        "Sit_Floor_Pose",
+        "Sit_Floor_StandUp",
+        "Spellcast_Long",
+        "Spellcast_Raise",
+        "Spellcast_Shoot",
+        "Spellcasting",
+        "T-Pose",
+        "Throw",
+        "Unarmed_Idle",
+        "Unarmed_Melee_Attack_Kick",
+        "Unarmed_Melee_Attack_Punch_A",
+        "Unarmed_Melee_Attack_Punch_B",
+        "Unarmed_Pose",
+        "Use_Item",
+        "Walking_A",
+        "Walking_B",
+        "Walking_Backwards",
+        "Walking_C"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 18,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "18 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.818,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/rpm/cesiumman.glb",
+      "bytes": 438044,
+      "parsed": true,
+      "jointCount": 19,
+      "clips": [],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "retargetCoverage": 0.273,
+      "retargetRequiredCoverage": 0.333,
+      "retargetingPoor": true,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "FAIL",
+      "notes": [
+        "retargeting will be poor — body acting won't transfer (coverage 27% < 60%).",
+        "no feet mapped — locomotion / standing pose can't be validated by FK."
+      ]
+    },
+    {
+      "file": "public/hifi-cast/rpm/fox.glb",
+      "bytes": 162852,
+      "parsed": true,
+      "jointCount": 24,
+      "clips": [
+        "Survey",
+        "Walk",
+        "Run"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 15,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "15 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)"
+      ],
+      "retargetCoverage": 0.682,
+      "retargetRequiredCoverage": 0.867,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/hifi-cast/rpm/riggedfigure.glb",
+      "bytes": 50116,
+      "parsed": true,
+      "jointCount": 19,
+      "clips": [],
+      "rigGrade": "C",
+      "mappedBoneCount": 6,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": false,
+        "hasFeet": false
+      },
+      "gradeReasons": [
+        "6 of 22 canonical humanoid bones mapped",
+        "mascot/sparse rig: head + torso acting only, no real limb chains (C)",
+        "no usable forearm chain on both arms"
+      ],
+      "retargetCoverage": 0.273,
+      "retargetRequiredCoverage": 0.333,
+      "retargetingPoor": true,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "FAIL",
+      "notes": [
+        "retargeting will be poor — body acting won't transfer (coverage 27% < 60%).",
+        "no feet mapped — locomotion / standing pose can't be validated by FK."
+      ]
+    },
+    {
+      "file": "public/aura-assets/rusty.catalog.glb",
+      "bytes": 681820,
+      "parsed": true,
+      "jointCount": 28,
+      "clips": [
+        "Take 001"
+      ],
+      "rigGrade": "B",
+      "mappedBoneCount": 17,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "17 of 22 canonical humanoid bones mapped",
+        "partial humanoid: body acting possible but a limb chain or extremities are missing (B)",
+        "incomplete upper body (forearms/hands/neck)"
+      ],
+      "retargetCoverage": 0.773,
+      "retargetRequiredCoverage": 0.733,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    },
+    {
+      "file": "public/aura-assets/luma.catalog.glb",
+      "bytes": 2856452,
+      "parsed": true,
+      "jointCount": 63,
+      "clips": [
+        "Idle"
+      ],
+      "rigGrade": "A",
+      "mappedBoneCount": 22,
+      "capabilities": {
+        "hasLegs": true,
+        "hasKnees": true,
+        "hasAnkles": true,
+        "hasFeet": true
+      },
+      "gradeReasons": [
+        "22 of 22 canonical humanoid bones mapped",
+        "full humanoid: spine/neck/head + both arms (forearms+hands) + both legs (lower legs+feet) (A)"
+      ],
+      "retargetCoverage": 1,
+      "retargetRequiredCoverage": 1,
+      "retargetingPoor": false,
+      "fkPass": true,
+      "fkClips": [
+        {
+          "clip": "talk",
+          "pass": true,
+          "failures": []
+        },
+        {
+          "clip": "walk",
+          "pass": true,
+          "failures": []
+        }
+      ],
+      "fkSignatures": [],
+      "verdict": "PASS",
+      "notes": []
+    }
+  ]
+}

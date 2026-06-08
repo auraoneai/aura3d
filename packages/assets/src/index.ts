@@ -49,13 +49,15 @@ export type {
   GLTFExtensionSupportFamily,
   GLTFExtensionSupportStatus
 } from "./GLTFExtensionSupport";
-export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController } from "./GLTFAnimationRuntime";
+export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController, resolveGLTFClipName } from "./GLTFAnimationRuntime";
 export type {
   GLTFImportedSkeletonIKControllerOptions,
   GLTFImportedSkeletonIKControllerSnapshot,
   GLTFImportedSkeletonIKOptions,
   GLTFImportedSkeletonIKResult,
   GLTFSceneAnimationApplyResult,
+  GLTFSceneAnimationClipSample,
+  GLTFSceneAnimationClipBoneMask,
   GLTFSceneAnimationActionSnapshot,
   GLTFSceneAnimationCloneSample,
   GLTFSceneAnimationCloneSampleResult,
@@ -68,7 +70,9 @@ export type {
   GLTFSceneAnimationRuntimeOptions,
   GLTFSceneAnimationRuntimeSnapshot,
   GLTFSceneMorphTargetControllerOptions,
-  GLTFSceneMorphTargetControllerSnapshot
+  GLTFSceneMorphTargetControllerSnapshot,
+  GLTFScenePose,
+  GLTFScenePoseBoneTransform
 } from "./GLTFAnimationRuntime";
 export { AssetHandle } from "./AssetHandle";
 export type { AssetHandleOptions, AssetHandleStatus } from "./AssetHandle";
@@ -225,7 +229,9 @@ export type {
 } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
-export { GLTFLoader } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
+export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
+export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type {
   GLTFAsset,
   GLTFCameraAsset,
@@ -238,6 +244,7 @@ export type {
   GLTFLightAsset,
   GLTFLoaderOptions,
   GLTFLoaderDiagnostics,
+  SkinWeightNormalizationStats,
   GLTFMaterialAsset,
   GLTFMaterialVariantAsset,
   GLTFMaterialVariantMappingAsset,
@@ -267,7 +274,8 @@ export {
   createDefaultGLTFHdrStudioPreviewEnvironmentLighting,
   createGLTFRenderResourceDiagnostics,
   createGLTFRenderResources,
-  createGLTFRenderSource
+  createGLTFRenderSource,
+  renderStateForGLTFMaterial
 } from "./GLTFRenderResources";
 export type {
   DecodedGLTFImage,

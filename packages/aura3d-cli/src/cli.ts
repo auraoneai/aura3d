@@ -10,9 +10,11 @@ import {
   inspectAsset,
   listAssets,
   scanAssets,
-  validateCartoonAssets,
+  validateAnimationAssets,
   validateGameAssets,
   validateAssets,
+  validateAnimationStudioAssets,
+  parseAnimationClipMap,
   writeTypedAssets,
   readAssetManifest
 } from "./index.js";
@@ -62,8 +64,20 @@ async function main(): Promise<void> {
         ...readAssetValidationOptions(),
         ...(profile === "fighting-character" ? { gameProfile: profile } : {})
       }));
-    } else if (action === "validate-cartoon") {
-      print(validateCartoonAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
+    } else if (action === "validate-animation-studio") {
+      print(validateAnimationStudioAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }));
+    } else if (action === "validate-animation") {
+      const clipsFlag = readOption("--clips");
+      const clipMap = parseAnimationClipMap(readOption("--map"));
+      const requireFlag = readOption("--require");
+      const availableClips = clipsFlag ? clipsFlag.split(",").map((c) => c.trim()).filter(Boolean) : Object.values(clipMap);
+      const report = validateAnimationAssets({
+        availableClips,
+        clipMap,
+        requiredActions: requireFlag ? requireFlag.split(",").map((a) => a.trim()).filter(Boolean) : undefined,
+        requireRig: hasFlag("--require-rig")
+      });
+      print(report);
     } else if (action === "assemble-character") {
       const name = readOption("--name");
       const body = readOption("--body");
@@ -105,8 +119,8 @@ async function main(): Promise<void> {
     }
   } else if (command === "doctor") {
     print(doctor());
-  } else if (command === "cartoon") {
-    runCartoonCommand(args[1]);
+  } else if (command === "animation") {
+    runAnimationCommand(args[1]);
   } else if (command === "check-deploy") {
     print(checkDeploy({ distDir: readOption("--dist") }));
   } else if (command === "init") {
@@ -122,42 +136,52 @@ Commands:
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId] [--no-placeholders] [--require-license] [--provenance evidence.json]
   aura3d assets validate-game [--profile fighting-character] [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-cartoon [--episode] [--asset character] [--output artifacts/aura3d/cartoon-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-animation-studio [--episode] [--asset character] [--output artifacts/aura3d/animation-studio-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
+  aura3d assets validate-animation --clips Idle_Loop,Walk_Loop,Sprint_Loop --map idle=Idle_Loop,walk=Walk_Loop,run=Sprint_Loop [--require idle,walk,run] [--require-rig]
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
   aura3d assets thumbnail
   aura3d assets search <query> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
   aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]
-  aura3d cartoon plan|preview|render|package|review|verify [--dry-run]
+  aura3d animation plan|preview|render|package|review|verify [--dry-run]
+  aura3d animation scene <new|show|cast add|prop add|set|block|camera|shot|dialogue|render|...>  (agent-native Scene-Tool CLI)
   aura3d doctor
   aura3d check-deploy --dist dist
   aura3d init --agent all`);
   }
 }
 
-function runCartoonCommand(action: string | undefined): void {
+function runAnimationCommand(action: string | undefined): void {
   const scriptByAction: Record<string, string> = {
     plan: "episode:plan",
     preview: "episode:preview",
     render: "episode:render",
     package: "episode:package",
     review: "episode:review",
-    verify: "episode:verify"
+    verify: "episode:verify",
+    // The agent-native Scene-Tool CLI (#10 promotion): the user's own coding agent drives
+    // `aura3d animation scene <new|cast add|prop add|set|block|shot|dialogue|render|...>`.
+    scene: "scene"
   };
   const script = action ? scriptByAction[action] : undefined;
   if (!script) {
-    throw new Error("Usage: aura3d cartoon plan|preview|render|package|review|verify [--dry-run]");
+    throw new Error("Usage: aura3d animation plan|preview|render|package|review|verify|scene [--dry-run]");
   }
   const command = process.env.npm_execpath && process.env.npm_execpath.includes("pnpm")
     ? "pnpm"
     : "npm";
-  const commandArgs = command === "pnpm" ? ["run", script] : ["run", script];
+  // Forward everything AFTER the action to the delegated script (so `aura3d animation scene
+  // cast add --query robot` reaches animation-scene.ts intact). npm/pnpm both use `--` to
+  // pass through args to the script.
+  const forwarded = args.slice(2).filter((a) => a !== "--dry-run");
+  const commandArgs = [...(command === "pnpm" ? ["run", script] : ["run", script]), ...(forwarded.length ? ["--", ...forwarded] : [])];
   const report = {
     ok: true,
-    command: "cartoon",
+    command: "animation",
     action,
     delegatedScript: script,
+    forwardedArgs: forwarded,
     runner: command,
     cwd: process.cwd(),
     dryRun: hasFlag("--dry-run")
@@ -283,15 +307,15 @@ function readCliAssetProfile(): CliAssetSearchProfile {
 function isSupportedAssetProfile(value: string): value is Exclude<CliAssetSearchProfile, "general"> {
   return (
     value === "fighting-character" ||
-    value === "cartoon-character" ||
-    value === "cartoon-prop" ||
-    value === "cartoon-set" ||
-    value === "cartoon-environment"
+    value === "animation-character" ||
+    value === "animation-prop" ||
+    value === "animation-set" ||
+    value === "animation-environment"
   );
 }
 
 function profileUsage(): string {
-  return "fighting-character|cartoon-character|cartoon-prop|cartoon-set|cartoon-environment";
+  return "fighting-character|animation-character|animation-prop|animation-set|animation-environment";
 }
 
 function printSearchReport(report: { readonly query: string; readonly profile: CliAssetSearchProfile; readonly candidates: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly rejectedCandidates?: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly deepLinks: readonly { readonly id: string; readonly title: string; readonly sourcePage?: string }[]; readonly warnings: readonly string[]; readonly messages: readonly string[] }): void {

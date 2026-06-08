@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, test } from "vitest";
-import { addAsset, initAgentFiles, inspectAsset, listAssets, validateAssets, validateCartoonAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
+import { addAsset, initAgentFiles, inspectAsset, listAssets, validateAssets, validateAnimationStudioAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli assets", () => {
   test("adds a glTF asset, writes manifest, and generates typed imports", () => {
@@ -361,7 +361,7 @@ describe("@aura3d/cli assets", () => {
     expect(report.assets[0]?.gameReady).toBe(false);
   });
 
-  test("cartoon episode validation accepts two distinct characters plus one set with mouth and provenance readiness", () => {
+  test("animation episode validation accepts two distinct characters plus one set with mouth and provenance readiness", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "miko.gltf"), JSON.stringify(createAnimatedCharacterGltf({
       clips: ["Idle", "Talk", "Wave"]
@@ -371,7 +371,7 @@ describe("@aura3d/cli assets", () => {
     });
     (lumaGltf.materials as { name: string }[])[0] = { name: "luma-body" };
     writeFileSync(join(projectDir, "assets", "luma.gltf"), JSON.stringify(lumaGltf));
-    writeFileSync(join(projectDir, "assets", "moon-garden-set.gltf"), JSON.stringify(createCartoonSetGltf()));
+    writeFileSync(join(projectDir, "assets", "moon-garden-set.gltf"), JSON.stringify(createAnimationSetGltf()));
 
     addAsset({
       projectDir,
@@ -379,7 +379,7 @@ describe("@aura3d/cli assets", () => {
       name: "miko",
       license: "CC0-1.0",
       author: "Fixture Author",
-      sourceUrl: "https://example.test/miko-cartoon-character",
+      sourceUrl: "https://example.test/miko-animation-character",
       sourceFamily: "test-fixture"
     });
     addAsset({
@@ -388,7 +388,7 @@ describe("@aura3d/cli assets", () => {
       name: "luma",
       license: "CC0-1.0",
       author: "Fixture Author",
-      sourceUrl: "https://example.test/luma-cartoon-character",
+      sourceUrl: "https://example.test/luma-animation-character",
       sourceFamily: "test-fixture"
     });
     addAsset({
@@ -401,40 +401,40 @@ describe("@aura3d/cli assets", () => {
       sourceFamily: "test-fixture"
     });
 
-    const report = validateCartoonAssets({
+    const report = validateAnimationStudioAssets({
       projectDir,
       episode: true,
       noPlaceholders: true,
       requireLicense: true,
-      output: "artifacts/aura3d/cartoon-assets.json"
+      output: "artifacts/aura3d/animation-assets.json"
     });
 
     expect(report.ok).toBe(true);
-    expect(report.cartoonEpisode).toMatchObject({
+    expect(report.animationEpisode).toMatchObject({
       enabled: true,
       ok: true,
       selectedSets: ["moonGarden"],
       assetProvenanceArtifact: "artifacts/aura3d/asset-provenance.json"
     });
-    expect(report.cartoonEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
+    expect(report.animationEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
     expect(report.summary).toMatchObject({
-      cartoonCharacters: 2,
-      cartoonSets: 1,
+      animationCharacters: 2,
+      animationSets: 1,
       episodeReadyCharacters: 2,
       mouthReadyCharacters: 2,
       animationReadyCharacters: 2
     });
-    expect(report.cartoonEpisode?.readiness.find((entry) => entry.id === "miko")).toMatchObject({
+    expect(report.animationEpisode?.readiness.find((entry) => entry.id === "miko")).toMatchObject({
       role: "character",
       episodeReady: true,
       mouthMode: "blendshape-lip-sync"
     });
   });
 
-  test("cartoon-studio template manifest passes strict episode asset validation", () => {
-    const projectDir = join(process.cwd(), "packages/create-aura3d/templates/cartoon-studio");
+  test("animation-studio template manifest passes strict episode asset validation", () => {
+    const projectDir = join(process.cwd(), "packages/create-aura3d/templates/animation-studio");
 
-    const report = validateCartoonAssets({
+    const report = validateAnimationStudioAssets({
       projectDir,
       episode: true,
       noPlaceholders: true,
@@ -442,15 +442,15 @@ describe("@aura3d/cli assets", () => {
     });
 
     expect(report.ok).toBe(true);
-    expect(report.cartoonEpisode).toMatchObject({
+    expect(report.animationEpisode).toMatchObject({
       enabled: true,
       ok: true,
       selectedSets: ["moonGarden"]
     });
-    expect(report.cartoonEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
+    expect(report.animationEpisode?.selectedCharacters).toEqual(expect.arrayContaining(["miko", "luma"]));
     expect(report.summary).toMatchObject({
-      cartoonCharacters: 2,
-      cartoonSets: 1,
+      animationCharacters: 2,
+      animationSets: 1,
       episodeReadyCharacters: 2,
       mouthReadyCharacters: 2,
       animationReadyCharacters: 2
@@ -458,7 +458,7 @@ describe("@aura3d/cli assets", () => {
     expect(report.warnings.join("\n")).toContain("no typed audio assets");
   });
 
-  test("cartoon episode validation rejects missing set, duplicate characters, and missing mouth readiness", () => {
+  test("animation episode validation rejects missing set, duplicate characters, and missing mouth readiness", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "static-body.gltf"), JSON.stringify(createAnimatedCharacterGltf({
       clips: ["Idle"]
@@ -470,7 +470,7 @@ describe("@aura3d/cli assets", () => {
       name: "miko",
       license: "CC0-1.0",
       author: "Fixture Author",
-      sourceUrl: "https://example.test/miko-cartoon-character",
+      sourceUrl: "https://example.test/miko-animation-character",
       sourceFamily: "test-fixture"
     });
     addAsset({
@@ -479,11 +479,11 @@ describe("@aura3d/cli assets", () => {
       name: "luma",
       license: "CC0-1.0",
       author: "Fixture Author",
-      sourceUrl: "https://example.test/luma-cartoon-character",
+      sourceUrl: "https://example.test/luma-animation-character",
       sourceFamily: "test-fixture"
     });
 
-    const report = validateCartoonAssets({
+    const report = validateAnimationStudioAssets({
       projectDir,
       episode: true,
       noPlaceholders: true,
@@ -491,13 +491,13 @@ describe("@aura3d/cli assets", () => {
     });
 
     expect(report.ok).toBe(false);
-    expect(report.cartoonEpisode?.ok).toBe(false);
+    expect(report.animationEpisode?.ok).toBe(false);
     expect(report.failures.join("\n")).toContain("requires distinct character files/hashes");
-    expect(report.failures.join("\n")).toContain("requires at least 1 typed cartoon set/location asset");
+    expect(report.failures.join("\n")).toContain("requires at least 1 typed animation set/location asset");
     expect(report.failures.join("\n")).toContain("requires blendshape, mouth-card, viseme, talk, face, or primitive mouth fallback metadata");
     expect(report.summary).toMatchObject({
-      cartoonCharacters: 2,
-      cartoonSets: 0,
+      animationCharacters: 2,
+      animationSets: 0,
       mouthReadyCharacters: 0
     });
   });
@@ -578,7 +578,7 @@ function createAnimatedCharacterGltf(
   };
 }
 
-function createCartoonSetGltf(): Record<string, unknown> {
+function createAnimationSetGltf(): Record<string, unknown> {
   return {
     asset: {
       version: "2.0",

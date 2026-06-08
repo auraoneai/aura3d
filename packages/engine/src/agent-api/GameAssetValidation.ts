@@ -9,7 +9,7 @@ export type GameAssetModelFormat = "glb" | "gltf";
 export type GameAssetAxis = "x" | "y" | "z" | "-x" | "-y" | "-z";
 export type GameAssetBoundsSource = "asset-metadata" | "inspector" | "manual" | "runtime";
 export type GameAssetApprovalStatus = "draft" | "needs-review" | "approved" | "rejected";
-export type GameAssetUsageKind = "fighter" | "npc" | "arena" | "prop" | "weapon" | "cartoon-character" | "product" | "environment";
+export type GameAssetUsageKind = "fighter" | "npc" | "arena" | "prop" | "weapon" | "animation-character" | "product" | "environment";
 export type GameAssetAnimationRole =
   | "idle"
   | "walk"

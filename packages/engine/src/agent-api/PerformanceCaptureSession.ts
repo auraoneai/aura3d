@@ -1,10 +1,10 @@
 import {
-  createCartoonPerformance,
-  type CartoonPerformanceArtifact,
-  type CartoonPerformanceBodyState,
-  type CartoonPerformanceFacialState,
-  type CartoonPerformanceGazeState
-} from "./CartoonPerformance.js";
+  createAnimationPerformance,
+  type AnimationPerformanceArtifact,
+  type AnimationPerformanceBodyState,
+  type AnimationPerformanceFacialState,
+  type AnimationPerformanceGazeState
+} from "./AnimationPerformance.js";
 import { createPromptAnimationIssue, type PromptAnimationId, type PromptAnimationValidationIssue } from "./PromptAnimationContract.js";
 
 export type PerformanceCaptureSourceKind = "manual" | "webcam" | "motion-capture";
@@ -25,9 +25,9 @@ export interface PerformanceCaptureRecordingSample {
   readonly id: string;
   readonly time: number;
   readonly characterId: PromptAnimationId;
-  readonly body?: CartoonPerformanceBodyState | undefined;
-  readonly facial?: CartoonPerformanceFacialState | undefined;
-  readonly gaze?: CartoonPerformanceGazeState | undefined;
+  readonly body?: AnimationPerformanceBodyState | undefined;
+  readonly facial?: AnimationPerformanceFacialState | undefined;
+  readonly gaze?: AnimationPerformanceGazeState | undefined;
   readonly confidence?: number | undefined;
   readonly sourceFrameId?: string | undefined;
 }
@@ -90,7 +90,7 @@ export class PerformanceCaptureRecordingSession {
     return this.snapshot();
   }
 
-  toPerformanceArtifact(): CartoonPerformanceArtifact {
+  toPerformanceArtifact(): AnimationPerformanceArtifact {
     const cues = this.samples.map((sample, index) => {
       const next = this.samples[index + 1];
       const frameDuration = 1 / this.options.frameRate;
@@ -110,7 +110,7 @@ export class PerformanceCaptureRecordingSession {
         ]
       };
     });
-    return createCartoonPerformance({
+    return createAnimationPerformance({
       episodeId: this.options.episodeId,
       frameRate: this.options.frameRate,
       cues

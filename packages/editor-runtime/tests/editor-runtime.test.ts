@@ -4,7 +4,7 @@ import { Ray, Vector3 } from "@aura3d/math";
 import { Scene } from "@aura3d/scene";
 import {
   CommandHistory,
-  CartoonSceneEditor,
+  AnimationSceneEditor,
   CameraPathEditor,
   CurveEditor,
   CreateNodeCommand,
@@ -692,8 +692,8 @@ test("KeyframeEditor and CurveEditor author deterministic bezier keyframes on ti
   assert.equal(curve.evidence(clip, "transform.position.x").evidence.deterministicSampling, true);
 });
 
-test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compose and edit cartoon scene nodes", async () => {
-  const editor = new CartoonSceneEditor();
+test("AnimationSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compose and edit animation scene nodes", async () => {
+  const editor = new AnimationSceneEditor();
   const reviewPanel = new EpisodeReviewPanel({
     packageId: "moon-garden-001",
     packageHash: "sha256-review",
@@ -757,7 +757,7 @@ test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compos
   assert.equal(node.transform.position.x, 1);
 
   const serialized = editor.serializeScene();
-  const restored = new CartoonSceneEditor();
+  const restored = new AnimationSceneEditor();
   restored.loadScene(serialized);
   assert.equal(restored.snapshot().nodeCount, 2);
 
@@ -772,7 +772,7 @@ test("CartoonSceneEditor, AssetDropZone, SceneOutliner, and PropertyPanel compos
   }), /typed Aura3D asset reference/);
 });
 
-test("Timeline track type helpers create cartoon timeline lanes compatible with route playback", () => {
+test("Timeline track type helpers create animation timeline lanes compatible with route playback", () => {
   const dialogue = createTimelineTrackConfig("dialogue", "Dialogue");
   const captions = createTimelineTrackConfig("caption", "Captions");
   const shots = createTimelineTrackConfig("shot", "Shots");

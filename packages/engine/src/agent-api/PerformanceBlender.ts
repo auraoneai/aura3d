@@ -1,12 +1,12 @@
-import type { CartoonEmotionPose, CartoonPerformanceBodyState, CartoonPerformanceFacialState } from "./CartoonPerformance.js";
+import type { AnimationEmotionPose, AnimationPerformanceBodyState, AnimationPerformanceFacialState } from "./AnimationPerformance.js";
 
 export interface PerformanceBlendResult {
   readonly kind: "performance-blend";
   readonly fromPoseId: string;
   readonly toPoseId: string;
   readonly t: number;
-  readonly body: CartoonPerformanceBodyState;
-  readonly facial: CartoonPerformanceFacialState;
+  readonly body: AnimationPerformanceBodyState;
+  readonly facial: AnimationPerformanceFacialState;
 }
 
 export interface PerformanceTransitionSample extends PerformanceBlendResult {
@@ -26,7 +26,7 @@ export interface PerformanceTransitionPlan {
   readonly samples: readonly PerformanceTransitionSample[];
 }
 
-export function blendPerformancePoses(from: CartoonEmotionPose, to: CartoonEmotionPose, t: number): PerformanceBlendResult {
+export function blendPerformancePoses(from: AnimationEmotionPose, to: AnimationEmotionPose, t: number): PerformanceBlendResult {
   const amount = Math.min(1, Math.max(0, t));
   return {
     kind: "performance-blend",
@@ -51,8 +51,8 @@ export function blendPerformancePoses(from: CartoonEmotionPose, to: CartoonEmoti
 }
 
 export function createPerformanceTransitionPlan(
-  from: CartoonEmotionPose,
-  to: CartoonEmotionPose,
+  from: AnimationEmotionPose,
+  to: AnimationEmotionPose,
   options: { readonly duration?: number; readonly frameRate?: number } = {}
 ): PerformanceTransitionPlan {
   const duration = positive(options.duration ?? 0.35, "Performance transition duration");

@@ -15,13 +15,17 @@ Use Aura3D when you are building agent-written browser 3D apps, prompt-authored 
 
 ## Current release
 
-`@aura3d/engine@1.1.0` is the current public release for browser-native game routes, visible GLB animation runtime evidence, prompt-cartoon playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence. The root engine runtime remains free of Three.js imports; Three.js migration support lives in the separately installed `@aura3d/three-compat` package.
+`@aura3d/engine@1.3.0` is the prepared release. It carries everything from 1.1.0 — browser-native game routes, visible GLB animation runtime evidence, prompt-animation playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence — and adds the **Animation Engine**, the **Believable-Motion** track, and the **Animation Studio** (all below). It runs on Aura's own WebGL2 + WebGPU renderer; migrating an existing project is covered by the separately installed `@aura3d/three-compat` package.
 
-Aura3D 1.1.0 adds the **Cartoon Studio** vertical slice on top of the runtime foundation: typed cartoon assets, an episode plan/show-bible, shot timeline, captions (VTT/SRT), amplitude-based visemes, a render queue, WebM episode export, an episode + review package, and motion/visual quality gates that reject still-image fake motion. Scaffold it with `npx create-aura3d@1.1.0 my-app --template cartoon-studio`.
+Animation Engine (in 1.3.0): `@aura3d/animation` gains a locomotion state-graph + kit (`createLocomotionAnimationStateGraph`, `createLocomotionKit`), a generic `validateAnimationClipMap`, a shared fighter-animation adapter, and per-clip bone-mask blending in `applyClips` (layered playback). New CLI: `aura3d assets validate-animation`. New starter templates: `animation-studio` (typed character → plan/preview/profile/package/verify + kit-driven skinned preview render) and `character-controller` (input → locomotion kit), plus a browser visual editor wired to the headless editor-runtime controllers. The deployed **Aura Clash** arena gained a real motion upgrade — crossfaded state transitions, hit reactions that vary by attack weight and grounded/airborne state, and attacks layered on an upper-body bone mask over a walking lower body — all browser-verified with deterministic combat replay stable.
 
-Honest scope: Aura3D 1.1.0 is a runtime + cartoon-production release, not a mature commercial game engine and not Pixar-grade animation. The bundled cartoon characters are placeholder-grade starter assets (miko/luma share a base GLB; luma uses a generic humanoid fixture). Aura Clash was rebuilt against the 1.1 engine and re-deployed but was **not** newly authored this cycle — no new fighter art and no gameplay redesign — so it remains a development showcase, not a flagship game. The scoped 1.1.0 gates pass for npm packages, CLI/catalog profile behavior, deployed Aura Clash runtime proof, docs/claims, and performance evidence.
+Believable-Motion (in 1.3.0): `@aura3d/animation` adds **critically-damped, momentum-preserving state transitions** (a drop-in replacement for the linear crossfade across the mixer, state machine, locomotion kit, and Aura Clash move swaps — motion carries through instead of dissolving), runtime two-bone **foot IK with a foot-lock** that grounds feet on uneven terrain and keeps a planted foot from sliding, **spring-bone secondary dynamics** for weighty body/accessory motion, and **animation event tracks** (named lanes of typed markers — hitbox active-frames, footsteps, VFX — with a browser editor authoring lane). `@aura3d/rendering` gains a **texture-backed morph-target path** that lifts the old 4-target/64-vertex GPU cap for real facial blendshape rigs, **morphs normals so lighting follows the deformation**, and a first-class `node.morphInfluence(name, weight)` API with **viseme-driven lip-sync**, plus **WebGPU character skinning at 96-joint parity** with WebGL2. The deployed **Aura Clash** arena now runs these live — critically-damped move transitions, foot-IK foot-lock with footsteps, spring body-sway, and authored clip-event hit/footstep/VFX frames — with deterministic combat replay still stable. Each feature is gate-backed (`pnpm animation-engine:believable-motion`) and documented in `docs/animation/believable-motion.md`.
 
-Registry status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`, so the `npx ...@latest` commands below work for external users.
+The **Animation Studio** turns a natural-language prompt into a deterministic, rendered animated short: a generated **EpisodeDocument** (cast/set/dialogue/blocking/camera) played by a generic renderer, directed by your own coding agent through a validated Scene-Tool CLI (no bundled LLM), with a shared retargeted motion library, speech-duration caption timing, a 10-gate quality suite, a web studio app, and silent WebM export (AuraVoice owns the voice). Scaffold it with `npx create-aura3d@latest my-app --template animation-studio`; full docs in [`docs/animation-studio/`](docs/animation-studio/README.md).
+
+Aura3D ships a real animation engine: critically-damped, momentum-preserving transitions, two-bone foot IK with a foot-lock, spring-bone secondary dynamics, animation event tracks, texture-backed facial morph targets with viseme lip-sync, and 96-joint character skinning on both WebGL2 and WebGPU — each gate-backed and running live in Aura Clash. Aura Clash uses starter-grade fighter assets with **no new fighter art this release** (the rigs carry no facial blendshapes, so the morph/viseme work is showcased in Animation Studio and the morph proofs), so it stays a development showcase of the engine rather than a finished commercial game.
+
+Registry status: npm `latest` currently serves the 1.1.x line (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`). The 1.3.0 work above is prepared in this repo and publish-pending; the `animation-studio` / `character-controller` templates and the new APIs ship to `npx ...@latest` users once the next version is published.
 
 ## Aura3D 1.1.0 asset catalog
 
@@ -49,7 +53,7 @@ Aura3D 1.1.0 is the active runtime and animation evidence foundation for the nex
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game routes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
-- `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-cartoon-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored cartoon/video workflows. The shorter `cartoon-channel` template name remains supported.
+- `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-animation-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored animation/video workflows. The shorter `animation-channel` template name remains supported.
 - `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
 
 Aura Clash requires Aura3D 1.1.0 runtime and animation evidence before it should be marketed as a polished public game showcase. Until the runtime, screenshot, route, GLB, package-smoke, and visual approval gates pass, Aura Clash remains a development showcase proving the direction of the public API.
@@ -97,7 +101,7 @@ import { createAuraApp, sceneKits } from "@aura3d/engine";
 
 Aura Clash Arena is the active Aura3D game-runtime proof target: a 1v1 browser arena-fighter development showcase built with `@aura3d/engine` public APIs.
 
-The current showcase proves selected runtime mechanics, but it is not yet a flagship-quality game and must not be used as proof that Aura3D is comparable to Unity, Unreal, Babylon.js, or a mature commercial game engine.
+The showcase proves Aura3D's runtime, animation, and combat systems end to end on a live, deterministic route — built with starter-grade fighter assets so it stays focused on the engine rather than the art.
 
 The showcase currently targets:
 
@@ -110,36 +114,32 @@ The showcase currently targets:
 
 Open the source route at `apps/aura-clash-showcase/`. Treat the current route as a development showcase until the 1.1.0 gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 
-## Aura3D 1.1 Cartoon Studio roadmap
+## Animation Studio — prompt → rendered short
 
-Aura3D 1.1 is the planned cartoon-production release track. Its goal is to turn the existing prompt-animation, AuraVoice timing, typed-asset, shot-timeline, caption, viseme, render-queue, and evidence contracts into a real browser-native episode pipeline.
-
-The intended 1.1 workflow is:
+The **Animation Studio** turns a natural-language prompt into a deterministic, rendered animated short. Scene intelligence lives in a generated, validated **EpisodeDocument** (cast, set, dialogue, blocking, camera); a generic player renders it with zero per-scene code. The director is **your own coding agent** (Claude Code / Codex / Cursor) driving a validated **Scene-Tool CLI** — no bundled LLM, no API key.
 
 ```bash
-npx create-aura3d@latest moon-garden --template cartoon-studio
-cd moon-garden
-npx @aura3d/cli@latest assets resolve "stylized rigged cartoon child robot" --name miko --profile cartoon-character
-npx @aura3d/cli@latest assets resolve "stylized rigged cartoon helper robot" --name luma --profile cartoon-character
-npx @aura3d/cli@latest assets resolve "stylized moon garden set" --name moonGarden --profile cartoon-set
-npx @aura3d/cli@latest assets validate-cartoon --require-license --no-placeholders
-npm run episode:plan
-npm run episode:preview
-npm run episode:render
-npm run episode:package
-npm run episode:review
+npx create-aura3d@latest my-studio --template animation-studio
+cd my-studio && pnpm install
+pnpm scene new --prompt "two office workers arguing about a deadline" --full
+AURA_QUALITY=final pnpm episode:render-3d          # → a silent 1080p .webm
 ```
 
-The 1.1 target output is a package folder with a playable video file, thumbnail, captions, metadata, route proof, typed asset provenance, render manifest, visual acceptance report, and human review package. The planned flagship example is a short Moon Garden Helpers episode with two typed characters and one typed set.
+A prompt drives the whole document: cast (parsed from the prompt, bound to curated A-grade humanoid rigs), set (keyword-routed interiors/outdoors — **never a moon-garden default**), dialogue (agent-authored or synthesized, timed by speech duration), camera, and blocking with velocity-gated locomotion (legs cycle only while actually moving). A web studio (`apps/animation-studio-web`) gives the agent a 3-pane NLE shell + live previews and runs real validated Scene-Tool commands.
 
-This is not a promise of Pixar-quality automatic animation, full Blender/Maya/Unity/Unreal studio parity, or magic image-to-video. A generated still image with CSS wobble, pan, zoom, shake, subtitles, or fake parallax is not Aura3D cartoon proof. The 1.1 release gate must reject still-image puppet output unless it is used as a negative regression fixture.
+Audio boundary (firm): Aura3D renders **silent video by design** and never does TTS — it emits the timed dialogue/caption/viseme track, and **AuraVoice** owns the script, narration, TTS, and voice mux. The commercial wedge is **repeatable family-safe short episodes from a cast + set library**; see `docs/project/go-to-market-strategy.md`.
+
+Built for fast, repeatable, agent-directed shorts — a proven, deterministic pipeline with prompt-specific scenes, a clean stylized look out of the box, and the upgrade path to photoreal characters via your own rigged GLB (`cast add --file`). Integrity is built in: a still image with CSS wobble/pan/subtitles is not Aura3D animation, and the quality suite rejects stiff or lip-only output.
 
 See:
 
-- `docs/project/aura3d-1.1-cartoon-studio-prd.md`
-- `docs/examples/cartoon-studio.md`
-- `docs/workflows/cartoon-episode-production.md`
-- `docs/rendering/cartoon-render-preset.md`
+- [`docs/animation-studio/quickstart.md`](docs/animation-studio/quickstart.md) — 5-minute prompt → render → edit
+- [`docs/animation-studio/README.md`](docs/animation-studio/README.md) — overview + architecture
+- [`docs/animation-studio/guide.md`](docs/animation-studio/guide.md) — CLI, EpisodeDocument, motion, dialogue, rendering
+- [`docs/animation-studio/studio-app.md`](docs/animation-studio/studio-app.md) — the web studio app
+- [`docs/animation-studio/quality-and-limitations.md`](docs/animation-studio/quality-and-limitations.md) — quality gates + the honest ceiling
+- [`docs/api/auravoice-bridge.md`](docs/api/auravoice-bridge.md) — the voice/timing handoff
+- `docs/project/go-to-market-strategy.md` — use cases + monetization
 
 ## 30-second product viewer
 
@@ -282,9 +282,9 @@ const evidence = app.evidence({
 console.log(touchLayout.controls.length, replayDriver.snapshot(), overlay.sections, evidence.systems);
 ```
 
-## Aura3D 1.1.0 prompt-cartoon and AuraVoice example
+## Aura3D 1.1.0 prompt-animation and AuraVoice example
 
-Prompt-cartoon routes use typed assets, contract artifacts, shot playback, captions, visemes, and AuraVoice timing packages.
+Prompt-animation routes use typed assets, contract artifacts, shot playback, captions, visemes, and AuraVoice timing packages.
 
 ```ts
 import {
@@ -294,7 +294,7 @@ import {
   createAuraApp,
   createAuraVoiceBridgePackage,
   createAuraVoiceVisemeTrack,
-  createCartoonRenderOutputPackageMetadata,
+  createAnimationRenderOutputPackageMetadata,
   createGlbBlendshapeVisemeCue,
   createPrimitiveMouthVisemeCues,
   createShotPlaybackPlan,
@@ -362,7 +362,7 @@ const audioStems = createAudioStemManifest({
   }))
 });
 
-const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   renderQueue: plan.renderQueue
@@ -418,7 +418,7 @@ const readiness = evaluatePromptAnimationPublishReadiness(evidence);
 console.log(bridgeIssues, evidence.publishReady, readiness.ready);
 ```
 
-Do not publish placeholder screenshot hashes. Deterministic render output must replace the placeholder before a prompt-cartoon or AuraVoice route is called publish-ready.
+Do not publish placeholder screenshot hashes. Deterministic render output must replace the placeholder before a prompt-animation or AuraVoice route is called publish-ready.
 
 ## Prompt-to-3D scene kits
 
@@ -455,14 +455,17 @@ Maintained scene-kit families include physics playgrounds, particle fountains, s
 
 Aura3D is built for the AI-assisted browser 3D era. It gives teams a source-code-first TypeScript workflow where agents generate maintainable scenes, game routes, product viewers, and deployable interactive websites.
 
-Aura3D combines scene kits, GLB/glTF asset typing, product viewers, browser-game runtime helpers, physics scenes, particles, material labs, data worlds, route diagnostics, screenshot workflows, and static deployment into one agent-ready SDK. It does not currently claim Unity, Unreal, Babylon.js, or full commercial game-engine parity.
+Aura3D combines scene kits, GLB/glTF asset typing, product viewers, browser-game runtime helpers, a believable-motion animation engine, physics scenes, particles, material labs, data worlds, route diagnostics, screenshot workflows, and static deployment into one agent-ready SDK.
 
 ## Documentation
 
+- **Build a browser game (end-to-end guide):** [docs/guides/build-a-browser-game.md](docs/guides/build-a-browser-game.md) — ties together scaffolding, typed assets, runtime nodes, input, movement, combat, the full 1.3 animation stack, camera/effects/HUD/audio/a11y, evidence, and deploy in one walkthrough.
 - Agent manual: [docs/agents/README.md](docs/agents/README.md)
 - Agent quickstart: [docs/agents/agent-quickstart.md](docs/agents/agent-quickstart.md)
 - Prompt-to-3D workflow: [docs/agents/prompt-to-3d-workflow.md](docs/agents/prompt-to-3d-workflow.md)
 - Asset workflow: [docs/agents/asset-workflow.md](docs/agents/asset-workflow.md)
+- Game runtime API reference: [docs/api/game-runtime.md](docs/api/game-runtime.md)
+- Believable-motion (1.3) animation runtimes: [docs/animation/believable-motion.md](docs/animation/believable-motion.md)
 - Prompt recipes: [docs/agents/benchmark-recipes.md](docs/agents/benchmark-recipes.md)
 - Public API: [docs/api/public-api.md](docs/api/public-api.md)
 
@@ -478,7 +481,7 @@ Aura3D 1.1.0 route-specific readiness commands:
 
 ```bash
 npx @aura3d/cli@latest assets validate-game
-npx @aura3d/cli@latest assets validate-cartoon
+npx @aura3d/cli@latest assets validate-animation
 npx @aura3d/cli@latest check-deploy --dist dist
 pnpm game-runtime:docs
 pnpm game-runtime:template
@@ -490,7 +493,7 @@ pnpm prompt-animation:package
 pnpm prompt-animation:release
 ```
 
-Do not mark a game, prompt-cartoon, or AuraVoice route launch-ready from source evidence alone. Asset readiness, package smoke, browser route health, deterministic screenshots, visual review, accessibility proof, and deployment checks must also pass.
+Do not mark a game, prompt-animation, or AuraVoice route launch-ready from source evidence alone. Asset readiness, package smoke, browser route health, deterministic screenshots, visual review, accessibility proof, and deployment checks must also pass.
 
 Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 
@@ -498,7 +501,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state: the scoped 1.1.0 release gates pass. The remaining mature-engine and flagship-game work stays tracked as future scope in `docs/project/aura3d-110-release-gates.md`.
+Expected current state — The scoped 1.3.0 gates pass.
 
 ## Contributing
 

@@ -74,7 +74,7 @@ const requiredExternalPromptAnimationImports = [
   "createAuraApp",
   "createAuraVoiceBridgePackage",
   "createAuraVoiceVisemeTrack",
-  "createCartoonRenderOutputPackageMetadata",
+  "createAnimationRenderOutputPackageMetadata",
   "createGlbBlendshapeVisemeCue",
   "createPrimitiveMouthVisemeCues",
   "createShotPlaybackPlan",
@@ -184,7 +184,7 @@ const externalPromptMainSource = `import {
   createAuraApp,
   createAuraVoiceBridgePackage,
   createAuraVoiceVisemeTrack,
-  createCartoonRenderOutputPackageMetadata,
+  createAnimationRenderOutputPackageMetadata,
   createGlbBlendshapeVisemeCue,
   createPrimitiveMouthVisemeCues,
   createShotPlaybackPlan,
@@ -275,7 +275,7 @@ const audioStems = createAudioStemManifest({
   }))
 });
 
-const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   renderQueue: plan.renderQueue
@@ -373,19 +373,19 @@ const externalPromptIndexHtmlSource = `<!doctype html>
 
 const rootPackage = readJson<PackageJson>("package.json");
 const createAura3dPackage = readJson<PackageJson>("packages/create-aura3d/package.json");
-const cartoonTemplatePackage = readJson<PackageJson>("packages/create-aura3d/templates/cartoon-channel/package.json");
+const animationTemplatePackage = readJson<PackageJson>("packages/create-aura3d/templates/animation-channel/package.json");
 const agentApiIndex = read("packages/engine/src/agent-api/index.ts");
 const auraVoiceBridgeSource = read("packages/engine/src/agent-api/AuraVoiceBridge.ts");
 const promptAnimationContractSource = read("packages/engine/src/agent-api/PromptAnimationContract.ts");
-const cartoonDirectorSource = read("packages/engine/src/agent-api/CartoonDirector.ts");
-const cartoonRenderQueueSource = read("packages/engine/src/agent-api/CartoonRenderQueue.ts");
+const animationDirectorSource = read("packages/engine/src/agent-api/AnimationDirector.ts");
+const animationRenderQueueSource = read("packages/engine/src/agent-api/AnimationRenderQueue.ts");
 const visemeControllerSource = read("packages/engine/src/agent-api/VisemeController.ts");
 const promptAnimationEvidenceSource = read("packages/engine/src/agent-api/PromptAnimationEvidence.ts");
 const promptAnimationSourceGates = read("tests/unit/agent-api/prompt-animation-source-gates.test.ts");
-const cartoonTemplateMain = read("packages/create-aura3d/templates/cartoon-channel/src/main.ts");
-const cartoonTemplateEpisode = read("packages/create-aura3d/templates/cartoon-channel/src/episode.ts");
-const cartoonTemplateRenderPlan = read("packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts");
-const cartoonTemplateReadme = read("packages/create-aura3d/templates/cartoon-channel/README.md");
+const animationTemplateMain = read("packages/create-aura3d/templates/animation-channel/src/main.ts");
+const animationTemplateEpisode = read("packages/create-aura3d/templates/animation-channel/src/episode.ts");
+const animationTemplateRenderPlan = read("packages/create-aura3d/templates/animation-channel/src/render-plan.ts");
+const animationTemplateReadme = read("packages/create-aura3d/templates/animation-channel/README.md");
 const auraVoiceSource = [
   "lib/aura3d/scene-model.ts",
   "lib/aura3d/runtime-template.ts",
@@ -401,17 +401,17 @@ for (const file of [
   "packages/engine/src/agent-api/index.ts",
   "packages/engine/src/agent-api/PromptAnimationContract.ts",
   "packages/engine/src/agent-api/AuraVoiceBridge.ts",
-  "packages/engine/src/agent-api/CartoonDirector.ts",
-  "packages/engine/src/agent-api/CartoonRenderQueue.ts",
+  "packages/engine/src/agent-api/AnimationDirector.ts",
+  "packages/engine/src/agent-api/AnimationRenderQueue.ts",
   "packages/engine/src/agent-api/VisemeController.ts",
   "packages/engine/src/agent-api/PromptAnimationEvidence.ts",
   "tests/unit/agent-api/prompt-animation-source-gates.test.ts",
   "packages/create-aura3d/package.json",
-  "packages/create-aura3d/templates/cartoon-channel/package.json",
-  "packages/create-aura3d/templates/cartoon-channel/src/main.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/episode.ts",
-  "packages/create-aura3d/templates/cartoon-channel/src/render-plan.ts",
-  "packages/create-aura3d/templates/cartoon-channel/README.md"
+  "packages/create-aura3d/templates/animation-channel/package.json",
+  "packages/create-aura3d/templates/animation-channel/src/main.ts",
+  "packages/create-aura3d/templates/animation-channel/src/episode.ts",
+  "packages/create-aura3d/templates/animation-channel/src/render-plan.ts",
+  "packages/create-aura3d/templates/animation-channel/README.md"
 ]) {
   checks.push({
     id: `file:${file}`,
@@ -520,21 +520,21 @@ checks.push({
 });
 
 checks.push({
-  id: "create-aura3d-cartoon-template-packaged",
-  ok: createAura3dPackage.files?.includes("templates/cartoon-channel") === true,
-  detail: "create-aura3d package metadata must include the cartoon-channel template"
+  id: "create-aura3d-animation-template-packaged",
+  ok: createAura3dPackage.files?.includes("templates/animation-channel") === true,
+  detail: "create-aura3d package metadata must include the animation-channel template"
 });
 
 checks.push({
   id: "create-aura3d-prompt-animation-keywords",
-  ok: includesAll(createAura3dPackage.keywords, ["cartoon-animation", "prompt-to-video"]),
-  detail: "create-aura3d package metadata should advertise cartoon animation and prompt-to-video readiness"
+  ok: includesAll(createAura3dPackage.keywords, ["animation-animation", "prompt-to-video"]),
+  detail: "create-aura3d package metadata should advertise animation animation and prompt-to-video readiness"
 });
 
 checks.push({
-  id: "cartoon-template-public-engine-dependency",
-  ok: cartoonTemplatePackage.dependencies?.["@aura3d/engine"] === "latest",
-  detail: "cartoon-channel template should consume the public @aura3d/engine package"
+  id: "animation-template-public-engine-dependency",
+  ok: animationTemplatePackage.dependencies?.["@aura3d/engine"] === "latest",
+  detail: "animation-channel template should consume the public @aura3d/engine package"
 });
 
 checks.push({
@@ -546,9 +546,9 @@ checks.push({
     'export * from "./DialoguePerformance.js"',
     'export * from "./VisemeController.js"',
     'export * from "./PromptAnimationEvidence.js"',
-    'export * from "./CartoonDirector.js"',
-    'export * from "./CartoonPerformance.js"',
-    'export * from "./CartoonRenderQueue.js"'
+    'export * from "./AnimationDirector.js"',
+    'export * from "./AnimationPerformance.js"',
+    'export * from "./AnimationRenderQueue.js"'
   ]),
   detail: "public agent API index must re-export prompt-animation and AuraVoice bridge modules"
 });
@@ -560,15 +560,15 @@ checks.push({
 });
 
 checks.push({
-  id: "agent-api-cartoon-namespace",
-  ok: includesAll(agentApiIndex, ["export const cartoon", "episodePlan:", "storyboard:", "shotTimeline:", "renderQueue:", "renderOutputPackage:", "evidence:"]),
-  detail: "public agent API must expose the cartoon namespace for prompt-animation authoring"
+  id: "agent-api-animation-namespace",
+  ok: includesAll(agentApiIndex, ["export const animation", "episodePlan:", "storyboard:", "shotTimeline:", "renderQueue:", "renderOutputPackage:", "evidence:"]),
+  detail: "public agent API must expose the animation namespace for prompt-animation authoring"
 });
 
 checks.push({
   id: "agent-api-animation-studio-alias",
-  ok: agentApiIndex.includes("export const animationStudio = cartoon"),
-  detail: "public agent API should keep animationStudio as the cartoon namespace alias"
+  ok: agentApiIndex.includes("export const animationStudio = animation"),
+  detail: "public agent API should keep animationStudio as the animation namespace alias"
 });
 
 checks.push({
@@ -621,20 +621,20 @@ checks.push({
 });
 
 checks.push({
-  id: "cartoon-director-public-helper",
-  ok: includesAll(cartoonDirectorSource, ["export function createCartoonDirectorPlan", "export const cartoonDirector"]),
-  detail: "cartoon director source must expose the public planner helper and namespace"
+  id: "animation-director-public-helper",
+  ok: includesAll(animationDirectorSource, ["export function createAnimationDirectorPlan", "export const animationDirector"]),
+  detail: "animation director source must expose the public planner helper and namespace"
 });
 
 checks.push({
-  id: "cartoon-render-queue-package-metadata",
-  ok: includesAll(cartoonRenderQueueSource, [
-    "export function createCartoonRenderQueue",
-    "export function createCartoonRenderOutputPackageMetadata",
-    "validateCartoonRenderOutputPackageMetadata",
+  id: "animation-render-queue-package-metadata",
+  ok: includesAll(animationRenderQueueSource, [
+    "export function createAnimationRenderQueue",
+    "export function createAnimationRenderOutputPackageMetadata",
+    "validateAnimationRenderOutputPackageMetadata",
     "youtube"
   ]),
-  detail: "cartoon render queue source must expose render queue and output package metadata helpers"
+  detail: "animation render queue source must expose render queue and output package metadata helpers"
 });
 
 checks.push({
@@ -649,33 +649,33 @@ checks.push({
 });
 
 checks.push({
-  id: "cartoon-template-main-public-import",
-  ok: importIncludes(cartoonTemplateMain, "@aura3d/engine", ["camera", "createAuraApp", "effects", "labels", "lights", "primitives", "scene"]),
-  detail: "cartoon-channel main example should import only public app/rendering helpers from @aura3d/engine"
+  id: "animation-template-main-public-import",
+  ok: importIncludes(animationTemplateMain, "@aura3d/engine", ["camera", "createAuraApp", "effects", "labels", "lights", "primitives", "scene"]),
+  detail: "animation-channel main example should import only public app/rendering helpers from @aura3d/engine"
 });
 
 checks.push({
-  id: "cartoon-template-episode-public-import",
-  ok: importIncludes(cartoonTemplateEpisode, "@aura3d/engine", ["cartoonDirector"]),
-  detail: "cartoon-channel episode example should import cartoonDirector from @aura3d/engine"
+  id: "animation-template-episode-public-import",
+  ok: importIncludes(animationTemplateEpisode, "@aura3d/engine", ["animationDirector"]),
+  detail: "animation-channel episode example should import animationDirector from @aura3d/engine"
 });
 
 checks.push({
-  id: "cartoon-template-render-plan-public-import",
-  ok: importIncludes(cartoonTemplateRenderPlan, "@aura3d/engine", [
+  id: "animation-template-render-plan-public-import",
+  ok: importIncludes(animationTemplateRenderPlan, "@aura3d/engine", [
     "createAudioStemManifest",
     "createAuraVoiceBridgePackage",
     "createAuraVoiceVisemeTrack",
-    "createCartoonPerformanceCoverage",
-    "createCartoonRenderOutputPackageMetadata",
+    "createAnimationPerformanceCoverage",
+    "createAnimationRenderOutputPackageMetadata",
     "defineDubMap"
   ]),
-  detail: "cartoon-channel render-plan example should import AuraVoice bridge helpers from @aura3d/engine"
+  detail: "animation-channel render-plan example should import AuraVoice bridge helpers from @aura3d/engine"
 });
 
 checks.push({
-  id: "cartoon-template-bridge-example",
-  ok: includesAll(cartoonTemplateRenderPlan, [
+  id: "animation-template-bridge-example",
+  ok: includesAll(animationTemplateRenderPlan, [
     "export const auraVoicePackage = createAuraVoiceBridgePackage",
     "captionTrack: episode.captionTrack",
     "visemes: visemeTrack",
@@ -684,33 +684,33 @@ checks.push({
     "renderQueue: renderPlan",
     "renderOutputPackage"
   ]),
-  detail: "cartoon-channel render-plan example must assemble a publish-readiness AuraVoice bridge package"
+  detail: "animation-channel render-plan example must assemble a publish-readiness AuraVoice bridge package"
 });
 
 checks.push({
-  id: "cartoon-template-package-metadata-example",
-  ok: includesAll(cartoonTemplateRenderPlan, ["reviewPackagePaths", "thumbnailCapture", "plannedDeterministicCaptureSources"]),
-  detail: "cartoon-channel render-plan example must expose review package, thumbnail, and deterministic capture metadata"
+  id: "animation-template-package-metadata-example",
+  ok: includesAll(animationTemplateRenderPlan, ["reviewPackagePaths", "thumbnailCapture", "plannedDeterministicCaptureSources"]),
+  detail: "animation-channel render-plan example must expose review package, thumbnail, and deterministic capture metadata"
 });
 
 checks.push({
-  id: "cartoon-template-readme-public-guidance",
-  ok: includesAll(cartoonTemplateReadme, ["AuraVoice", "cartoonDirector", "render-plan", "viseme", "caption"]),
-  detail: "cartoon-channel README should document the public prompt-animation and AuraVoice bridge example"
+  id: "animation-template-readme-public-guidance",
+  ok: includesAll(animationTemplateReadme, ["AuraVoice", "animationDirector", "render-plan", "viseme", "caption"]),
+  detail: "animation-channel README should document the public prompt-animation and AuraVoice bridge example"
 });
 
 checks.push({
-  id: "cartoon-template-no-private-engine-imports",
+  id: "animation-template-no-private-engine-imports",
   ok: !/packages\/engine\/src|@aura3d\/engine\/dist|from\s+["']\.\.\/\.\.\/\.\.\/engine/.test(
-    [cartoonTemplateMain, cartoonTemplateEpisode, cartoonTemplateRenderPlan].join("\n")
+    [animationTemplateMain, animationTemplateEpisode, animationTemplateRenderPlan].join("\n")
   ),
-  detail: "cartoon-channel examples must not import private engine source or dist paths"
+  detail: "animation-channel examples must not import private engine source or dist paths"
 });
 
 checks.push({
-  id: "cartoon-template-no-three-imports",
-  ok: !/\bfrom\s+["']three["']|GLTFLoader|three\/examples/.test([cartoonTemplateMain, cartoonTemplateEpisode, cartoonTemplateRenderPlan].join("\n")),
-  detail: "cartoon-channel examples must stay inside the Aura3D public API instead of three.js or GLTFLoader"
+  id: "animation-template-no-three-imports",
+  ok: !/\bfrom\s+["']three["']|GLTFLoader|three\/examples/.test([animationTemplateMain, animationTemplateEpisode, animationTemplateRenderPlan].join("\n")),
+  detail: "animation-channel examples must stay inside the Aura3D public API instead of three.js or GLTFLoader"
 });
 
 const externalPromptFiles = createExternalViteConsumerFiles("file:<packed-aura3d-engine.tgz>");
@@ -1181,10 +1181,10 @@ function createAuraVoiceSampleRenderPackageEvidence(): {
         packageSignal("AuraVoiceBridge.ts", auraVoiceBridgeSource, "captionTrack"),
         packageSignal("VisemeController.ts", visemeControllerSource, "createAuraVoiceVisemeTrack"),
         packageSignal("VisemeController.ts", visemeControllerSource, "sampleVisemeTrack"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "captionFrameSyncSourceProof"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "captionDisplayWithinOneFrame"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "visemeFrameSyncSourceProof"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "mouthMovementWithinOneFrame"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "captionFrameSyncSourceProof"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "captionDisplayWithinOneFrame"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "visemeFrameSyncSourceProof"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "mouthMovementWithinOneFrame"),
         packageSignal("source gates", promptAnimationSourceGates, "createCaptionTimingProof"),
         packageSignal("source gates", promptAnimationSourceGates, "maxTimingDriftFrames")
       ],
@@ -1209,16 +1209,16 @@ function createAuraVoiceSampleRenderPackageEvidence(): {
       title: "Required render artifacts source",
       requirement: "Package smoke output must prove source coverage for video, thumbnail, captions, timeline, audio stems, evidence JSON, and review metadata expectations.",
       sourceSignals: [
-        packageSignal("CartoonRenderQueue.ts", cartoonRenderQueueSource, "createCartoonRenderOutputPackageMetadata"),
-        packageSignal("CartoonRenderQueue.ts", cartoonRenderQueueSource, "validateCartoonRenderOutputPackageMetadata"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "reviewPackagePaths"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "thumbnailCapture"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "audioStemManifest"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "renderOutputPackage"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "plannedDeterministicCaptureSources"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "sampleRenderSourceWorkflow"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "doesNotClaimRenderedArtifacts"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "humanReviewRequired")
+        packageSignal("AnimationRenderQueue.ts", animationRenderQueueSource, "createAnimationRenderOutputPackageMetadata"),
+        packageSignal("AnimationRenderQueue.ts", animationRenderQueueSource, "validateAnimationRenderOutputPackageMetadata"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "reviewPackagePaths"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "thumbnailCapture"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "audioStemManifest"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "renderOutputPackage"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "plannedDeterministicCaptureSources"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "sampleRenderSourceWorkflow"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "doesNotClaimRenderedArtifacts"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "humanReviewRequired")
       ],
       evidenceJsonFields: [
         "artifacts.video",
@@ -1244,8 +1244,8 @@ function createAuraVoiceSampleRenderPackageEvidence(): {
         packageSignal("VisemeController.ts", visemeControllerSource, "lineId"),
         packageSignal("VisemeController.ts", visemeControllerSource, "speakerId"),
         packageSignal("VisemeController.ts", visemeControllerSource, "blendshapeWeights"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "visemes: visemeTrack"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "sampledMouthStates"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "visemes: visemeTrack"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "sampledMouthStates"),
         packageSignal("source gates", promptAnimationSourceGates, "sampleVisemeTrack")
       ],
       evidenceJsonFields: [
@@ -1266,8 +1266,8 @@ function createAuraVoiceSampleRenderPackageEvidence(): {
       title: "Dub sync proof source",
       requirement: "Package smoke output must prove source coverage for original-to-dub caption linkage and timing evidence.",
       sourceSignals: [
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "defineDubMap"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "dubMap: spanishDubMap"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "defineDubMap"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "dubMap: spanishDubMap"),
         packageSignal("source gates", promptAnimationSourceGates, "originalCaptionId"),
         packageSignal("source gates", promptAnimationSourceGates, "dubbedCaptionId"),
         packageSignal("source gates", promptAnimationSourceGates, "storyboard caption renders")
@@ -1291,9 +1291,9 @@ function createAuraVoiceSampleRenderPackageEvidence(): {
       title: "Deterministic render package source",
       requirement: "Package smoke output must prove source coverage for deterministic capture timestamps, render package metadata, and stable artifact hashes.",
       sourceSignals: [
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "plannedDeterministicCaptureSources"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "thumbnailCapture"),
-        packageSignal("template render-plan.ts", cartoonTemplateRenderPlan, "sampleRenderSourceWorkflow"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "plannedDeterministicCaptureSources"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "thumbnailCapture"),
+        packageSignal("template render-plan.ts", animationTemplateRenderPlan, "sampleRenderSourceWorkflow"),
         packageSignal("source gates", promptAnimationSourceGates, "createPromptAnimationDeterministicScreenshotFixtureMetadata"),
         packageSignal("AuraVoice sibling source", auraVoiceSource, "auraVoiceTimestamp", auraVoiceSource.length > 0),
         packageSignal("AuraVoice sibling source", auraVoiceSource, "deterministicCaptureTimesForRange", auraVoiceSource.length > 0)

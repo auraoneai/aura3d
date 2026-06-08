@@ -39,24 +39,24 @@ for example:
 This evidence proves selected playback, restart, blend, event, skinning, and
 viseme paths. It does not prove every external rig or DCC export convention.
 
-## Cartoon animation (1.1)
+## Animation animation (1.1)
 
-Aura3D 1.1 adds focused helpers for the cartoon-character workflow (talk, listen,
+Aura3D 1.1 adds focused helpers for the animation-character workflow (talk, listen,
 gesture, walk, action). They are all exported from the public `@aura3d/animation`
 entrypoint. These helpers do not replace the general runtime; they validate inputs
-and bind named cartoon actions to existing clips, state graphs, and diagnostics.
+and bind named animation actions to existing clips, state graphs, and diagnostics.
 
-### `bindCartoonTimelineAction`
+### `bindAnimationTimelineAction`
 
-Method on `AnimationController`. Resolves a named cartoon action to its bound clip
+Method on `AnimationController`. Resolves a named animation action to its bound clip
 and starts playback at a timeline time, returning the resulting sample.
 
-- Signature: `controller.bindCartoonTimelineAction(action, bindings, time, options?)`
-  - `action: CartoonAnimationAction` — one of `"speak" | "listen" | "gesture" | "walk" | "action"`.
-  - `bindings: readonly CartoonAnimationTimelineBinding<TClipId>[]` — each binding has `action`, `clipId`, `loop`, and `restartOnEnter`.
+- Signature: `controller.bindAnimationTimelineAction(action, bindings, time, options?)`
+  - `action: AnimationAnimationAction` — one of `"speak" | "listen" | "gesture" | "walk" | "action"`.
+  - `bindings: readonly AnimationAnimationTimelineBinding<TClipId>[]` — each binding has `action`, `clipId`, `loop`, and `restartOnEnter`.
   - `time: number` — timeline time recorded on the playback metadata.
   - `options?` — `AnimationPlayOptions` minus `loop`/`restart` (those come from the binding).
-- Returns `CartoonAnimationTimelineSample<TClipId>`: `{ time, action, clipId, playback }`.
+- Returns `AnimationAnimationTimelineSample<TClipId>`: `{ time, action, clipId, playback }`.
 - Throws if no binding is registered for the requested action.
 
 ```ts
@@ -69,90 +69,90 @@ const bindings = [
   { action: "speak", clipId: "talk_clip", loop: true, restartOnEnter: false }
 ] as const;
 
-const sample = controller.bindCartoonTimelineAction("speak", bindings, 0.5);
+const sample = controller.bindAnimationTimelineAction("speak", bindings, 0.5);
 // sample.clipId === "talk_clip", sample.playback is the active playback state
 ```
 
-### `createCartoonAnimationStateGraph`
+### `createAnimationAnimationStateGraph`
 
-Builds a ready-made `AnimationStateMachine` wired for the cartoon action set
+Builds a ready-made `AnimationStateMachine` wired for the animation action set
 (idle, listen, speak, gesture, walk, action) with sensible priorities and one-shot
 gesture/action states.
 
-- Signature: `createCartoonAnimationStateGraph(options?): AnimationStateMachine`
-  - `options?: CartoonAnimationStateGraphOptions` — `{ idleState?: string }` (defaults to `"idle"`).
+- Signature: `createAnimationAnimationStateGraph(options?): AnimationStateMachine`
+  - `options?: AnimationAnimationStateGraphOptions` — `{ idleState?: string }` (defaults to `"idle"`).
 - Drive it with the standard state-machine API: `setParameter(name, value)` then `update(delta)`.
 - Recognized parameters: `isSpeaking`, `isListening`, `isWalking`, `gesture`, `action`.
 
 ```ts
-import { createCartoonAnimationStateGraph } from "@aura3d/animation";
+import { createAnimationAnimationStateGraph } from "@aura3d/animation";
 
-const graph = createCartoonAnimationStateGraph();
+const graph = createAnimationAnimationStateGraph();
 graph.setParameter("isSpeaking", true);
 const state = graph.update(1 / 30); // -> "speak"
 ```
 
-### `validateCartoonClipMap`
+### `validateAnimationClipMap`
 
-Checks that a clip map covers every required cartoon action and that each mapped
+Checks that a clip map covers every required animation action and that each mapped
 clip id is actually registered.
 
-- Signature: `validateCartoonClipMap(registry, options): CartoonClipMapReadiness<TClipId>`
+- Signature: `validateAnimationClipMap(registry, options): AnimationClipMapReadiness<TClipId>`
   - `registry: AnimationClipRegistry` — used to confirm clip ids exist.
-  - `options: CartoonClipMapReadinessOptions` — `clipMap` (action -> clip id or ids), optional `requiredActions` (defaults to `["speak","listen","gesture","walk","action"]`), optional `aliases`, and optional `segmentedFallbackDeclared`.
-- Returns `CartoonClipMapReadiness`: `{ ok, segmentedFallbackDeclared, requiredActions, missingActions, missingClipIds, aliasActions, diagnostics }`.
+  - `options: AnimationClipMapReadinessOptions` — `clipMap` (action -> clip id or ids), optional `requiredActions` (defaults to `["speak","listen","gesture","walk","action"]`), optional `aliases`, and optional `segmentedFallbackDeclared`.
+- Returns `AnimationClipMapReadiness`: `{ ok, segmentedFallbackDeclared, requiredActions, missingActions, missingClipIds, aliasActions, diagnostics }`.
 - Missing actions and missing clip ids are reported as `error` diagnostics and set `ok: false`. If `segmentedFallbackDeclared: true` is passed, those gaps are downgraded to `warning` diagnostics, and `ok` then only depends on whether any required action is still completely unmapped. In other words, validation fails when required clips are missing unless you explicitly declare a segmented fallback.
 
 ```ts
-import { AnimationClipRegistry, validateCartoonClipMap } from "@aura3d/animation";
+import { AnimationClipRegistry, validateAnimationClipMap } from "@aura3d/animation";
 
 const registry = new AnimationClipRegistry();
 registry.register({ id: "talk_clip", duration: 1.2, tracks: [], events: [] });
 
-const readiness = validateCartoonClipMap(registry, {
+const readiness = validateAnimationClipMap(registry, {
   clipMap: { speak: "talk_clip" },        // listen/gesture/walk/action missing
   segmentedFallbackDeclared: true          // gaps become warnings instead of errors
 });
 // readiness.missingActions includes "listen", "gesture", "walk", "action"
 ```
 
-### `summarizeCartoonAnimationMotion`
+### `summarizeAnimationAnimationMotion`
 
 Wraps `summarizeAnimationMotion` and flags a static pose that is being presented as
 animation.
 
-- Signature: `summarizeCartoonAnimationMotion(samples, options?): CartoonAnimationMotionQualityReport`
+- Signature: `summarizeAnimationAnimationMotion(samples, options?): AnimationAnimationMotionQualityReport`
   - `samples: readonly AnimationMotionSample[]` — each `{ timeSeconds, tracksApplied?, skinningPalettesUpdated?, stride?, animatedSubjects? }`.
   - `options?` — `minimumSamples` (8), `minimumTimeRangeSeconds` (0.18), `minimumPoseDiversityScore` (0.08).
-- Returns `CartoonAnimationMotionQualityReport` (the base report plus `kind: "cartoon-animation-motion-quality"`, `staticPoseRejected`, and a human-readable `issues` list).
+- Returns `AnimationAnimationMotionQualityReport` (the base report plus `kind: "animation-animation-motion-quality"`, `staticPoseRejected`, and a human-readable `issues` list).
 - `staticPoseRejected` is `true` (and `healthy` is `false`) when there are too few samples, too short a time range, too little pose diversity, or no active track/skinning/subject motion. This catches a frozen pose that reports no real frame-to-frame change.
 
 ```ts
-import { summarizeCartoonAnimationMotion } from "@aura3d/animation";
+import { summarizeAnimationAnimationMotion } from "@aura3d/animation";
 
 // A static pose: time advances but nothing deforms.
-const report = summarizeCartoonAnimationMotion([
+const report = summarizeAnimationAnimationMotion([
   { timeSeconds: 0, tracksApplied: 0 },
   { timeSeconds: 0.5, tracksApplied: 0 }
 ]);
 // report.staticPoseRejected === true, report.healthy === false
 ```
 
-### `analyzeCartoonHumanoidRetargeting`
+### `analyzeAnimationHumanoidRetargeting`
 
-Runs the humanoid rig analysis with cartoon-specific gates: required mouth metadata,
+Runs the humanoid rig analysis with animation-specific gates: required mouth metadata,
 required clips, and an external retarget map.
 
-- Signature: `analyzeCartoonHumanoidRetargeting(rig, options?): CartoonHumanoidRetargetingDiagnostics`
+- Signature: `analyzeAnimationHumanoidRetargeting(rig, options?): AnimationHumanoidRetargetingDiagnostics`
   - `rig: HumanoidRigDefinition`.
-  - `options?: CartoonHumanoidRetargetingOptions` — extends `HumanoidRetargetingOptions` with `requiredClips` (defaults to `["Idle","Talk","Gesture","Walk"]`), `availableClips`, `mouthBlendshapeNames`, and `retargetMapProvided`.
-- Returns `CartoonHumanoidRetargetingDiagnostics`: the base rig diagnostics plus `kind: "cartoon-humanoid-retargeting-diagnostics"`, `mouthReady`, `clipReady`, and `retargetMapProvided`.
+  - `options?: AnimationHumanoidRetargetingOptions` — extends `HumanoidRetargetingOptions` with `requiredClips` (defaults to `["Idle","Talk","Gesture","Walk"]`), `availableClips`, `mouthBlendshapeNames`, and `retargetMapProvided`.
+- Returns `AnimationHumanoidRetargetingDiagnostics`: the base rig diagnostics plus `kind: "animation-humanoid-retargeting-diagnostics"`, `mouthReady`, `clipReady`, and `retargetMapProvided`.
 - Adds `error` diagnostics (and sets `ok: false`) when mouth blendshape/card metadata is missing, when any required clip is absent, or when no external bone-map/retarget metadata is provided. It defaults to a strict `minRequiredCoverage` of `0.9` and requires a rest pose.
 
 ```ts
-import { analyzeCartoonHumanoidRetargeting } from "@aura3d/animation";
+import { analyzeAnimationHumanoidRetargeting } from "@aura3d/animation";
 
-const diagnostics = analyzeCartoonHumanoidRetargeting(rig, {
+const diagnostics = analyzeAnimationHumanoidRetargeting(rig, {
   availableClips: ["Idle", "Talk", "Gesture", "Walk"],
   mouthBlendshapeNames: ["mouthOpen", "mouthSmile"],
   retargetMapProvided: true

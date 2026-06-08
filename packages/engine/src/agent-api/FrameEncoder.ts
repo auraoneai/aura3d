@@ -1,4 +1,4 @@
-import type { CartoonViewport } from "./CartoonRenderQueue.js";
+import type { AnimationViewport } from "./AnimationRenderQueue.js";
 import { normalizePromptAnimationTime, type PromptAnimationFrameRate, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 
 export type FrameEncoderCodec = "vp9" | "vp8" | "h264" | "av1" | "png-sequence";
@@ -18,7 +18,7 @@ export interface FrameEncoderCapability {
 export interface FrameEncoderFrame {
   readonly frame: number;
   readonly time: PromptAnimationSeconds;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly image?: ImageBitmap | HTMLCanvasElement | OffscreenCanvas | Blob | Uint8Array | string | undefined;
   readonly durationMs?: number | undefined;
 }
@@ -37,7 +37,7 @@ export interface EncodedVideoArtifact {
   readonly container: FrameEncoderContainer;
   readonly mimeType: string;
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly frameCount: number;
   readonly duration: PromptAnimationSeconds;
   readonly byteLength: number;
@@ -64,7 +64,7 @@ export interface FrameEncoder {
   readonly container: FrameEncoderContainer;
   readonly mimeType: string;
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   encodeFrame(frame: FrameEncoderFrame): Promise<EncodedVideoChunk>;
   finalize(): Promise<EncodedVideoArtifact>;
   reset(): void;
@@ -76,7 +76,7 @@ export interface CreateFrameEncoderOptions {
   readonly container?: FrameEncoderContainer | undefined;
   readonly mimeType?: string | undefined;
   readonly frameRate: PromptAnimationFrameRate;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly adapter?: FrameEncoderAdapter | undefined;
 }
 

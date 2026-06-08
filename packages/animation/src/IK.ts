@@ -62,6 +62,16 @@ export function solveTwoBoneIk(input: TwoBoneIkInput): TwoBoneIkResult {
   };
 }
 
+/**
+ * Convenience knee/elbow pole hint: a point offset from the mid-joint along a forward direction,
+ * giving {@link solveTwoBoneIk} a stable bend plane (knees point forward, elbows back). Pure.
+ */
+export function kneePoleHint(root: Vec3, mid: Vec3, forward: Vec3, distance = 1): Vec3 {
+  const dir = normalize(forward);
+  const center: Vec3 = [(root[0] + mid[0]) / 2, (root[1] + mid[1]) / 2, (root[2] + mid[2]) / 2];
+  return [center[0] + dir[0] * distance, center[1] + dir[1] * distance, center[2] + dir[2] * distance];
+}
+
 function projectedPoleDirection(root: Vec3, axis: Vec3, pole: Vec3): Vec3 {
   const poleDelta = subtract(pole, root);
   const projected = subtract(poleDelta, scale(axis, dot(poleDelta, axis)));

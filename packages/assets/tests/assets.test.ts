@@ -1,6 +1,88 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AssetManager, GLTFLoader, OBJLoader, type AssetLoader } from "../src/index";
+import {
+  AssetManager,
+  computeAutoFitTransform,
+  GLTFLoader,
+  normalizeSkinWeights,
+  OBJLoader,
+  resolveGLTFClipName,
+  type AssetLoader
+} from "../src/index";
+
+test("normalizeSkinWeights collapses degenerate (zero-sum) weights to a rigid binding", () => {
+  const stats = { degenerate: 0, rescaled: 0 };
+  assert.deepEqual(normalizeSkinWeights([0, 0, 0, 0], stats), [1, 0, 0, 0]);
+  assert.equal(stats.degenerate, 1);
+  assert.equal(stats.rescaled, 0);
+});
+
+test("normalizeSkinWeights rescales denormalized weights to sum 1 (FLOAT)", () => {
+  const stats = { degenerate: 0, rescaled: 0 };
+  const result = normalizeSkinWeights([2, 2, 0, 0], stats);
+  assert.deepEqual(result, [0.5, 0.5, 0, 0]);
+  assert.equal(stats.rescaled, 1);
+});
+
+test("normalizeSkinWeights rescales integer-encoded weights regardless of componentType scale", () => {
+  // UNSIGNED_BYTE-style raw values (sum 255) and UNSIGNED_SHORT-style (sum 65535)
+  // both normalize by proportion to the same result.
+  assert.deepEqual(normalizeSkinWeights([255, 0, 0, 0]), [1, 0, 0, 0]);
+  assert.deepEqual(normalizeSkinWeights([32767, 32768, 0, 0]).map((value) => Math.round(value * 100) / 100), [0.5, 0.5, 0, 0]);
+});
+
+test("normalizeSkinWeights clamps negative and non-finite components to zero", () => {
+  assert.deepEqual(normalizeSkinWeights([1, -1, Number.NaN, Number.POSITIVE_INFINITY]), [1, 0, 0, 0]);
+});
+
+test("normalizeSkinWeights leaves already-normalized weights untouched", () => {
+  const stats = { degenerate: 0, rescaled: 0 };
+  assert.deepEqual(normalizeSkinWeights([0.6, 0.4, 0, 0], stats), [0.6, 0.4, 0, 0]);
+  assert.equal(stats.degenerate, 0);
+  assert.equal(stats.rescaled, 0);
+});
+
+test("resolveGLTFClipName matches exact (case/format-insensitive) first", () => {
+  assert.equal(resolveGLTFClipName("Idle", ["Walk", "idle", "Run"]), "idle");
+  assert.equal(resolveGLTFClipName("walk-cycle", ["Run", "Walk_Cycle"]), "Walk_Cycle");
+});
+
+test("resolveGLTFClipName resolves via synonym groups", () => {
+  assert.equal(resolveGLTFClipName("idle", ["Loops", "Sprint"]), "Loops");
+  assert.equal(resolveGLTFClipName("run", ["Loops", "Sprint"]), "Sprint");
+  assert.equal(resolveGLTFClipName("wave", ["Greet", "Static"]), "Greet");
+});
+
+test("resolveGLTFClipName falls back to substring then first clip", () => {
+  assert.equal(resolveGLTFClipName("walk", ["WalkForward", "Run"]), "WalkForward");
+  assert.equal(resolveGLTFClipName("nonexistent", ["Take 001", "Other"]), "Take 001");
+  assert.equal(resolveGLTFClipName("anything", []), undefined);
+});
+
+test("computeAutoFitTransform scales tall and tiny models to the target height", () => {
+  const big = computeAutoFitTransform({ min: [-900, 0, -900], max: [900, 1821, 900] }, { targetHeight: 1.6 });
+  assert.ok(Math.abs(big.fittedHeight - 1.6) < 1e-6);
+  assert.ok(big.scale < 0.01);
+
+  const tiny = computeAutoFitTransform({ min: [-0.5, 0, -0.5], max: [0.5, 1, 0.5] });
+  assert.ok(Math.abs(tiny.fittedHeight - 1.6) < 1e-6);
+  assert.ok(tiny.scale > 1);
+});
+
+test("computeAutoFitTransform recenters feet to y=0 and centers x/z", () => {
+  const fit = computeAutoFitTransform({ min: [2, 4, 6], max: [4, 6, 8] }, { targetHeight: 2 });
+  // height 2 -> scale 1; center (3,5,7), floor y=4
+  assert.equal(fit.scale, 1);
+  assert.deepEqual(fit.translation, [-3, -4, -7]);
+});
+
+test("computeAutoFitTransform applies z-up correction", () => {
+  const fit = computeAutoFitTransform({ min: [-1, -1, 0], max: [1, 1, 4] }, { upAxis: "z", targetHeight: 4 });
+  assert.equal(fit.upAxisCorrection, "z-to-y");
+  // after z->y rotation the source z-extent (4) becomes height -> scale 1
+  assert.ok(Math.abs(fit.fittedHeight - 4) < 1e-6);
+  assert.notDeepEqual(fit.rotation, [0, 0, 0, 1]);
+});
 
 test("AssetManager shares duplicate in-flight loads and releases cached handles", async () => {
   let loads = 0;

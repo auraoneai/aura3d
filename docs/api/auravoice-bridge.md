@@ -5,14 +5,23 @@ Aura3D owns typed 3D scene assembly, character performance, camera choreography,
 render queues, screenshots, and visual evidence. The bridge between them is a
 source contract built from public `@aura3d/engine` exports.
 
+Boundary (firm): **Aura3D never does TTS and never authors or emits dialogue.** The animation
+render is **silent by design** — the exported video carries video only, no audio stream. Aura3D
+supplies the lip-sync mechanism (the `mouthOpen` viseme morph driver and a burned-in caption
+track) so AuraVoice's viseme/caption timeline can drive performance, but AuraVoice supplies the
+content (speech, narration, audio mix). Aura3D is the back-half rendering engine; AuraVoice is the
+front half.
+
 Use this page for AuraVoice/Aura3D package handoff examples. Do not import
 private engine files, `three`, `three/examples`, or loader internals. Do not
 invent GLB URLs or string model ids. Add real character and prop files through
 the Aura3D CLI, then use generated typed assets.
 
-AuraVoice/Aura3D timing evidence is necessary but not sufficient for a cartoon episode claim. A bridge package proves that dialogue, captions, audio stems, viseme cues, and shots share timing ids. It does not prove that characters visibly acted, mouths moved in rendered frames, audio was muxed into a video, or a publish-ready package was produced.
+AuraVoice/Aura3D timing evidence is necessary but not sufficient for a animation episode claim. A bridge package proves that dialogue, captions, audio stems, viseme cues, and shots share timing ids. It does not prove that characters visibly acted, mouths moved in rendered frames, audio was muxed into a video, or a publish-ready package was produced.
 
-For the 1.1 Cartoon Studio track, label lip-sync modes honestly:
+Label lip-sync modes honestly (the `miko`/`luma`/`moon-garden` names used throughout this page are
+just the example payload for the explicit-contract API — they are not a required or default cast/set;
+the `animation-studio` template binds prompt-derived characters to a neutral curated cast instead):
 
 - `phoneme-aligned`: AuraVoice or another timing source supplied phoneme/word alignment.
 - `blendshape-lip-sync`: typed GLB morph targets were inspected and driven at runtime.
@@ -36,7 +45,7 @@ import {
   createAuraVoiceBridgePackage,
   createAuraVoiceVisemeTrack,
   createCaptionTimingProof,
-  createCartoonRenderOutputPackageMetadata,
+  createAnimationRenderOutputPackageMetadata,
   createGlbBlendshapeVisemeCue,
   createPrimitiveMouthVisemeCues,
   createShotPlaybackPlan,
@@ -137,7 +146,7 @@ const captionTimingProof = createCaptionTimingProof(plan.dialogueTrack, plan.cap
   maxAllowedDriftFrames: plan.episodePlan.runtime.maxTimingDriftFrames
 });
 
-const renderOutputPackage = createCartoonRenderOutputPackageMetadata({
+const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
   episodePlan: plan.episodePlan,
   shotTimeline: plan.shotTimeline,
   renderQueue: plan.renderQueue

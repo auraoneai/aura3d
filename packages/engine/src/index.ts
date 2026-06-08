@@ -15,23 +15,23 @@ export { Engine } from "@aura3d/core";
 export {
   Renderer,
   analyzeRgbaFrameMotionRegions,
-  createCartoonMaterialStyle,
-  createCartoonRenderPreset,
-  createCartoonVisualQualityReport,
+  createAnimationMaterialStyle,
+  createAnimationRenderPreset,
+  createAnimationVisualQualityReport,
   createExternalParityEnvironmentPipeline,
   listExternalParityEnvironmentTargets
 } from "@aura3d/rendering";
 export type {
-  CartoonFrameVisualInput,
-  CartoonFrameVisualQuality,
-  CartoonMaterialStyle,
-  CartoonMaterialStyleOptions,
+  AnimationFrameVisualInput,
+  AnimationFrameVisualQuality,
+  AnimationMaterialStyle,
+  AnimationMaterialStyleOptions,
   FrameMotionRegion,
   FrameMotionRegionMetrics,
-  CartoonRenderPresetEvidence,
-  CartoonRenderPresetOptions,
-  CartoonVisualQualityOptions,
-  CartoonVisualQualityReport
+  AnimationRenderPresetEvidence,
+  AnimationRenderPresetOptions,
+  AnimationVisualQualityOptions,
+  AnimationVisualQualityReport
 } from "@aura3d/rendering";
 export {
   GLTFLoader,

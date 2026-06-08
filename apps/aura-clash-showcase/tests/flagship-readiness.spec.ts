@@ -143,6 +143,12 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(afterGuard.player.activeClip, "Shift Guard should use the standing guard clip, not the crouch/down clip").toMatch(/Sword_Idle|Guard|Block/i);
     expect(afterGuard.player.activeClip, "Shift Guard must not reuse the down/crouch clip").not.toMatch(/Crouch/i);
 
+    // KeyQ is an alternate guard binding (arena controls); it must guard like Shift.
+    await hold(page, "KeyQ", 240);
+    const afterQGuard = await readProof(page);
+    expect(afterQGuard.status, "KeyQ Guard must not pause or crash the route").toBe("running");
+    expect(afterQGuard.player.action, "KeyQ should also expose guard state").toBe("guard");
+
     await expectAttackClip(page, "KeyJ", "light", /Punch_Jab|Jab/i);
     await waitForAttackRecovery(page);
     await expectAttackClip(page, "KeyK", "heavy", /Punch_Cross|Cross|Heavy/i);

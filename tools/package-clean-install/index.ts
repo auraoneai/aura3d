@@ -515,7 +515,7 @@ function writeCleanInstallMarkdown(checks: readonly ReleaseCheck[], results: rea
     ""
   ];
   mkdirSync("docs/project", { recursive: true });
-  writeFileSync("docs/project/clean-install-results.md", lines.join("\n"));
+  writeFileSync("tests/reports/clean-install-results.md", lines.join("\n"));
 }
 
 function yes(value: boolean): string {

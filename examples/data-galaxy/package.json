@@ -1,0 +1,20 @@
+{
+  "name": "@g3d/example-data-galaxy",
+  "version": "1.0.0",
+  "description": "G3D Data Galaxy example",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "g3d": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  }
+}

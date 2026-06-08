@@ -10,7 +10,7 @@ type TemplateSmokeReport = {
   readonly status: "pass";
   readonly schema: "aura3d105-template-smoke";
   readonly generatedAt: string;
-  readonly template: "fighting-game" | "cartoon-channel" | "prompt-cartoon-channel";
+  readonly template: "fighting-game" | "animation-channel" | "prompt-animation-channel";
   readonly route: string;
   readonly screenshot: string;
   readonly evidence: unknown;
@@ -92,7 +92,7 @@ test.describe("Aura3D 1.0.5 starter template smoke evidence", () => {
     });
   });
 
-  for (const template of ["cartoon-channel", "prompt-cartoon-channel"] as const) {
+  for (const template of ["animation-channel", "prompt-animation-channel"] as const) {
     test(`${template} starter renders sourced storyboard, captions, shot playback, and prompt evidence`, async ({ page }) => {
       await mkdir(reportDir, { recursive: true });
       const errors = capturePageErrors(page);
@@ -100,15 +100,15 @@ test.describe("Aura3D 1.0.5 starter template smoke evidence", () => {
       await page.goto(`${server.origin}/tests/browser/templates-105-harness.html?template=${template}`, {
         waitUntil: "domcontentloaded"
       });
-      await page.waitForFunction(() => Boolean((window as any).__AURA3D_CARTOON_TEMPLATE__), undefined, {
+      await page.waitForFunction(() => Boolean((window as any).__AURA3D_ANIMATION_TEMPLATE__), undefined, {
         timeout: 60_000
       });
-      await page.waitForFunction(() => document.body.dataset.cartoonShotCount === "3", undefined, {
+      await page.waitForFunction(() => document.body.dataset.animationShotCount === "3", undefined, {
         timeout: 10_000
       });
 
       const evidence = await page.evaluate(() => {
-        const templateEvidence = (window as any).__AURA3D_CARTOON_TEMPLATE__;
+        const templateEvidence = (window as any).__AURA3D_ANIMATION_TEMPLATE__;
         return {
           contractId: templateEvidence?.contractId,
           template: templateEvidence?.template,
@@ -123,8 +123,8 @@ test.describe("Aura3D 1.0.5 starter template smoke evidence", () => {
           assetCommands: templateEvidence?.assetCommands,
           publishReadiness: templateEvidence?.publishReadiness,
           sourceProofs: templateEvidence?.sourceProofs,
-          bodyShotCount: document.body.dataset.cartoonShotCount,
-          bodyCaptionCount: document.body.dataset.cartoonCaptionCount,
+          bodyShotCount: document.body.dataset.animationShotCount,
+          bodyCaptionCount: document.body.dataset.animationCaptionCount,
           captionText: document.querySelector("#caption-overlay")?.textContent
         };
       });

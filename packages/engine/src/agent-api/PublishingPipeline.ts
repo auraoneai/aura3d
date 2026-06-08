@@ -1,4 +1,4 @@
-import type { CartoonRenderOutputPackageMetadata } from "./CartoonRenderQueue.js";
+import type { AnimationRenderOutputPackageMetadata } from "./AnimationRenderQueue.js";
 import type { CaptionTrackArtifact } from "./DialoguePerformance.js";
 import { exportCaptionTrack, type CaptionExportArtifact } from "./CaptionExporter.js";
 import { createThumbnailArtifact, createThumbnailGenerationPlan, generateThumbnailArtifact, type ThumbnailArtifact, type ThumbnailCaptureRuntime, type ThumbnailGenerationPlan } from "./ThumbnailGenerator.js";
@@ -37,7 +37,7 @@ export interface PublishingReadinessCheck {
 
 export interface CreatePublishingPackageOptions {
   readonly episodePlan?: PromptAnimationEpisodePlan | undefined;
-  readonly outputPackage: CartoonRenderOutputPackageMetadata;
+  readonly outputPackage: AnimationRenderOutputPackageMetadata;
   readonly captions?: CaptionTrackArtifact | undefined;
   readonly videoResult?: VideoExportResult | undefined;
   readonly thumbnailRuntime?: ThumbnailCaptureRuntime | undefined;
@@ -93,7 +93,7 @@ export interface PublishPackageArtifact {
 export function createPublishPackage(input: {
   readonly video: MuxedVideoArtifact;
   readonly captions: CaptionTrackArtifact;
-  readonly outputPackage: CartoonRenderOutputPackageMetadata;
+  readonly outputPackage: AnimationRenderOutputPackageMetadata;
 }): PublishPackageArtifact {
   const captionExports = [exportCaptionTrack(input.captions, "vtt"), exportCaptionTrack(input.captions, "srt")];
   const thumbnail = createThumbnailArtifact({

@@ -75,7 +75,7 @@ export * from "./YouTubeUploadAdapter.js";
 export * from "./PublishingPipeline.js";
 export * from "./CloudRenderAdapter.js";
 export * from "./BatchEpisodeRenderer.js";
-export * from "./CartoonAssetManifest.js";
+export * from "./AnimationAssetManifest.js";
 export * from "./SceneGroundingUtils.js";
 export * from "./AssetLibraryBrowser.js";
 export * from "./DialogueAlignment.js";
@@ -85,9 +85,9 @@ export * from "./PerformanceBlender.js";
 export * from "./PerformanceScriptParser.js";
 export * from "./BodyLanguageLibrary.js";
 export * from "./EpisodeTemplates.js";
-export * from "./CartoonMotionQuality.js";
-export * from "./CartoonRouteProof.js";
-export * from "./CartoonEpisodePackage.js";
+export * from "./AnimationMotionQuality.js";
+export * from "./AnimationRouteProof.js";
+export * from "./AnimationEpisodePackage.js";
 
 import type {
   GLTFSceneAnimationRuntime,
@@ -199,25 +199,25 @@ import {
   createAuraVoiceRerenderPlan,
   sampleAuraVoiceBridgeAtTime
 } from "./AuraVoiceBridge";
-import { createCartoonDirectorPlan } from "./CartoonDirector";
-import { createCartoonPerformance } from "./CartoonPerformance";
+import { createAnimationDirectorPlan } from "./AnimationDirector";
+import { createAnimationPerformance } from "./AnimationPerformance";
 import {
-  createCartoonRenderOutputPackageMetadata,
-  createCartoonRenderQueue
-} from "./CartoonRenderQueue";
+  createAnimationRenderOutputPackageMetadata,
+  createAnimationRenderQueue
+} from "./AnimationRenderQueue";
 import { collectPromptAnimationEvidence } from "./PromptAnimationEvidence";
 import {
-  createCartoonMotionQualityReport,
-  validateCartoonMotionQuality
-} from "./CartoonMotionQuality";
+  createAnimationMotionQualityReport,
+  validateAnimationMotionQuality
+} from "./AnimationMotionQuality";
 import {
-  createCartoonRouteProof,
-  validateCartoonRouteProof
-} from "./CartoonRouteProof";
+  createAnimationRouteProof,
+  validateAnimationRouteProof
+} from "./AnimationRouteProof";
 import {
-  createCartoonEpisodePackageManifest,
-  validateCartoonEpisodePackage
-} from "./CartoonEpisodePackage";
+  createAnimationEpisodePackageManifest,
+  validateAnimationEpisodePackage
+} from "./AnimationEpisodePackage";
 import {
   createGameAppRuntime,
   type GameAppRuntime,
@@ -227,19 +227,19 @@ import {
 export { Engine } from "@aura3d/core";
 export {
   analyzeRgbaFrameMotionRegions,
-  createCartoonMaterialStyle,
-  createCartoonRenderPreset,
-  createCartoonVisualQualityReport
+  createAnimationMaterialStyle,
+  createAnimationRenderPreset,
+  createAnimationVisualQualityReport
 } from "@aura3d/rendering";
 export type {
-  CartoonFrameVisualInput,
-  CartoonFrameVisualQuality,
-  CartoonMaterialStyle,
-  CartoonMaterialStyleOptions,
-  CartoonRenderPresetEvidence,
-  CartoonRenderPresetOptions,
-  CartoonVisualQualityOptions,
-  CartoonVisualQualityReport,
+  AnimationFrameVisualInput,
+  AnimationFrameVisualQuality,
+  AnimationMaterialStyle,
+  AnimationMaterialStyleOptions,
+  AnimationRenderPresetEvidence,
+  AnimationRenderPresetOptions,
+  AnimationVisualQualityOptions,
+  AnimationVisualQualityReport,
   FrameMotionRegion,
   FrameMotionRegionMetrics
 } from "@aura3d/rendering";
@@ -479,10 +479,10 @@ export * from "./ShotTimeline.js";
 export * from "./DialoguePerformance.js";
 export * from "./VisemeController.js";
 export * from "./PromptAnimationEvidence.js";
-export * from "./CartoonDirector.js";
-export * from "./CartoonPerformance.js";
-export * from "./CartoonRenderQueue.js";
-export * from "./CartoonAssetManifest.js";
+export * from "./AnimationDirector.js";
+export * from "./AnimationPerformance.js";
+export * from "./AnimationRenderQueue.js";
+export * from "./AnimationAssetManifest.js";
 export * from "./SceneGroundingUtils.js";
 export * from "./AssetLibraryBrowser.js";
 
@@ -5036,7 +5036,7 @@ export const game = {
   evidence: collectGameRuntimeEvidence
 } as const;
 
-export const cartoon = {
+export const animation = {
   episodePlan: createPromptAnimationEpisodePlan,
   storyBible: createPromptAnimationStoryBible,
   storyboard: definePromptAnimationStoryboard,
@@ -5056,20 +5056,20 @@ export const cartoon = {
   sampleAuraVoiceBridgeAtTime,
   auraVoiceRerenderPlan: createAuraVoiceRerenderPlan,
   auraVoiceDubRerenderProof: createAuraVoiceDubRerenderProof,
-  director: createCartoonDirectorPlan,
-  performance: createCartoonPerformance,
-  renderQueue: createCartoonRenderQueue,
-  renderOutputPackage: createCartoonRenderOutputPackageMetadata,
-  motionQuality: createCartoonMotionQualityReport,
-  validateMotionQuality: validateCartoonMotionQuality,
-  routeProof: createCartoonRouteProof,
-  validateRouteProof: validateCartoonRouteProof,
-  episodePackage: createCartoonEpisodePackageManifest,
-  validateEpisodePackage: validateCartoonEpisodePackage,
+  director: createAnimationDirectorPlan,
+  performance: createAnimationPerformance,
+  renderQueue: createAnimationRenderQueue,
+  renderOutputPackage: createAnimationRenderOutputPackageMetadata,
+  motionQuality: createAnimationMotionQualityReport,
+  validateMotionQuality: validateAnimationMotionQuality,
+  routeProof: createAnimationRouteProof,
+  validateRouteProof: validateAnimationRouteProof,
+  episodePackage: createAnimationEpisodePackageManifest,
+  validateEpisodePackage: validateAnimationEpisodePackage,
   evidence: collectPromptAnimationEvidence
 } as const;
 
-export const animationStudio = cartoon;
+export const animationStudio = animation;
 
 function collectParticleBudgetDiagnostics(nodes: readonly AuraSceneNode[]): AuraParticleBudgetDiagnostics {
   const flattened = groups.flatten(nodes);
@@ -5734,7 +5734,7 @@ export const character = {
   lowPolyHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createLowPolyHumanoid(options),
   authoredHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createAuthoredLowPolyHumanoid(options),
   primitiveHumanoid: (options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] => createHierarchicalPrimitiveHumanoid(options),
-  performance: createCartoonPerformance,
+  performance: createAnimationPerformance,
   importedRigRuntime: async (options: GLTFSceneAnimationRuntimeOptions): Promise<GLTFSceneAnimationRuntime> => {
     markAuraLazySystemRequested("character-rig", "character.importedRigRuntime");
     const started = performanceNow();
@@ -7215,6 +7215,8 @@ export interface AuraRuntimeNodeHandle {
   setMorphTarget(name: string, weight: number): this;
   setMorphTargets(weights: RuntimeNodeMorphTargetWeights): this;
   morphTargets(): RuntimeNodeMorphTargetWeights;
+  /** First-class named morph-influence API: read a target's weight (omit `weight`), or set it (e.g. `node.morphInfluence("smile", 0.8)`). */
+  morphInfluence(name: string, weight?: number): this | number;
   bounds(): AuraRuntimeNodeBounds;
   attachEffect(effect: AuraRuntimeNodeEffectAttachment): this;
   effects(): readonly AuraRuntimeNodeEffectAttachment[];
@@ -7578,6 +7580,17 @@ function createRuntimeNodeHandle(node: MutableAuraRuntimeSceneNode, runtime: Aur
     },
     morphTargets() {
       return Object.fromEntries(morphTargetWeights.entries());
+    },
+    morphInfluence(name: string, weight?: number) {
+      const normalizedName = name.trim();
+      if (!normalizedName) {
+        throw new AuraRuntimeError("missing-asset", "Aura3D morph target name is required.");
+      }
+      if (weight === undefined) {
+        return morphTargetWeights.get(normalizedName) ?? 0;
+      }
+      morphTargetWeights.set(normalizedName, sanitizeRuntimeMorphWeight(weight));
+      return this;
     },
     bounds() {
       return getBounds();

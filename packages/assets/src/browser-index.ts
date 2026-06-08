@@ -25,7 +25,9 @@ export type {
   GLTFSceneAnalysisEvidence,
   GLTFSceneAnalysisOptions
 } from "./SceneAnalysisFixtures";
-export { GLTFLoader } from "./GLTFLoader";
+export { GLTFLoader, normalizeSkinWeights } from "./GLTFLoader";
+export { autoFitGLTFScene, computeAutoFitTransform } from "./GLTFAutoFit";
+export type { AutoFitOptions, AutoFitTransform, GLTFUpAxis } from "./GLTFAutoFit";
 export type {
   GLTFAsset,
   GLTFCameraAsset,
@@ -57,7 +59,8 @@ export type {
   GLTFTextureAsset,
   GLTFTransmissionMaterialExtension,
   GLTFVolumeMaterialExtension,
-  SerializedGLTFAsset
+  SerializedGLTFAsset,
+  SkinWeightNormalizationStats
 } from "./GLTFLoader";
 export { inspectGLTFAsset } from "./AssetInspection";
 export type {
@@ -89,7 +92,7 @@ export type {
   GLTFExtensionSupportFamily,
   GLTFExtensionSupportStatus
 } from "./GLTFExtensionSupport";
-export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController } from "./GLTFAnimationRuntime";
+export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController, resolveGLTFClipName } from "./GLTFAnimationRuntime";
 export type {
   GLTFImportedSkeletonIKControllerOptions,
   GLTFImportedSkeletonIKControllerSnapshot,
@@ -108,7 +111,9 @@ export type {
   GLTFSceneAnimationRuntimeOptions,
   GLTFSceneAnimationRuntimeSnapshot,
   GLTFSceneMorphTargetControllerOptions,
-  GLTFSceneMorphTargetControllerSnapshot
+  GLTFSceneMorphTargetControllerSnapshot,
+  GLTFScenePose,
+  GLTFScenePoseBoneTransform
 } from "./GLTFAnimationRuntime";
 export {
   DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING,

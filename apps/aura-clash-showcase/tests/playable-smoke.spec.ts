@@ -94,8 +94,8 @@ test("AuraClash boots Aura3D runtime", async ({ page }) => {
   const proof = await loadPlayable(page);
   expect(proof.route).toBe("/playable/");
   expect(proof.app).toBe("Aura Clash Arena");
-  expect(proof.release).toBe("1.0.10");
-  expect(proof.version).toBe("aura-clash-arena-production-gltf-animation");
+  expect(proof.release).toBe("1.1.0");
+  expect(proof.version).toBe("aura-clash-arena-production-gltf-animation-crossfade-reactions");
   expect(proof.status).toBe("running");
   expect(proof.runtime.frameLoop).toBe(true);
   expect(proof.runtime.evidence).toBe(true);
@@ -149,6 +149,131 @@ test("AuraClash responds to movement input", async ({ page }) => {
   const after = await readProof(page);
   expect(after.player.x).toBeGreaterThan(before.player.x + 0.08);
   expect(after.animation.playerLastTracks).toBeGreaterThan(0);
+});
+
+test("AuraClash crossfades between locomotion states (measurable blend window)", async ({ page }) => {
+  await loadPlayable(page);
+  await page.keyboard.down("KeyD");
+  const blendFrames = await page.evaluate(async () => {
+    const samples: Array<{ from: string | null; to: string; fromWeight: number; toWeight: number; blending: boolean }> = [];
+    await new Promise<void>((resolve) => {
+      const start = performance.now();
+      const tick = (): void => {
+        const player = (window as unknown as { __AURA_CLASH_BLEND_PROOF__?: { player?: { from: string | null; to: string; fromWeight: number; toWeight: number; blending: boolean } } }).__AURA_CLASH_BLEND_PROOF__?.player;
+        if (player) samples.push({ ...player });
+        if (performance.now() - start > 450) resolve();
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    });
+    return samples;
+  });
+  await page.keyboard.up("KeyD");
+  const realBlend = blendFrames.find(
+    (f) => f.blending && f.from !== null && f.from !== f.to && f.fromWeight > 0.01 && f.toWeight > 0.01 && Math.abs(f.fromWeight + f.toWeight - 1) < 0.02
+  );
+  expect(realBlend, "expected a two-clip crossfade window (idle->walk) with weights summing to ~1").toBeTruthy();
+});
+
+test("AuraClash transitions are inertialized (critically-damped, not linear)", async ({ page }) => {
+  await loadPlayable(page);
+  await page.keyboard.down("KeyD");
+  const result = await page.evaluate(async () => {
+    type Entry = { from: string; to: string; inertializedFromWeight: number; linearFromWeight: number; nonLinear: boolean };
+    let proof: { mode?: string; player?: Entry } | undefined;
+    const start = performance.now();
+    while (performance.now() - start < 600) {
+      proof = (window as unknown as { __AURA_CLASH_INERTIALIZATION_PROOF__?: { mode?: string; player?: Entry } }).__AURA_CLASH_INERTIALIZATION_PROOF__;
+      if (proof?.player?.nonLinear) break;
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return proof;
+  });
+  await page.keyboard.up("KeyD");
+  expect(result?.mode, "transition proof should report the inertialized mode").toBe("inertialized");
+  expect(result?.player, "expected a recorded inertialized transition for the player").toBeTruthy();
+  // The inertialized source weight must measurably diverge from the linear 1 - t/duration ramp.
+  expect(result!.player!.nonLinear).toBe(true);
+  expect(Math.abs(result!.player!.inertializedFromWeight - result!.player!.linearFromWeight)).toBeGreaterThan(1e-3);
+});
+
+test("AuraClash runs the 1.3 believable-motion runtimes (foot IK + spring body-sway)", async ({ page }) => {
+  await loadPlayable(page);
+  await page.keyboard.down("KeyD"); // walk -> feet plant (foot IK) + body accelerates (spring)
+  const observed = await page.evaluate(async () => {
+    type Entry = { groundedFeet: number; footIkApplied: number; maxFootSlideCorrected: number; springLag: number; footIkActive: boolean };
+    type Proof = { source?: string; footIk?: boolean; springBones?: boolean; player?: Entry };
+    let best: Proof | undefined;
+    let maxGrounded = 0;
+    let maxLag = 0;
+    let sawFootIk = false;
+    const start = performance.now();
+    while (performance.now() - start < 900) {
+      const proof = (window as unknown as { __AURA_CLASH_SECONDARY_MOTION_PROOF__?: Proof }).__AURA_CLASH_SECONDARY_MOTION_PROOF__;
+      if (proof?.player) {
+        best = proof;
+        maxGrounded = Math.max(maxGrounded, proof.player.groundedFeet);
+        maxLag = Math.max(maxLag, Math.abs(proof.player.springLag));
+        if (proof.player.footIkActive) sawFootIk = true;
+      }
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return { best, maxGrounded, maxLag, sawFootIk };
+  });
+  await page.keyboard.up("KeyD");
+  expect(observed.best?.source).toBe("aura3d-1.3-believable-motion");
+  expect(observed.best?.footIk, "arena should report foot IK wired").toBe(true);
+  expect(observed.best?.springBones, "arena should report spring bones wired").toBe(true);
+  // Foot IK actually solved planted feet while walking, and the body spring lagged under acceleration.
+  expect(observed.maxGrounded, "expected at least one planted/grounded foot while walking").toBeGreaterThanOrEqual(1);
+  expect(observed.sawFootIk, "expected foot IK to solve a planted leg chain").toBe(true);
+  expect(observed.maxLag, "expected the body spring to lag under acceleration").toBeGreaterThan(0);
+});
+
+test("AuraClash fires authored VFX clip-event markers during an attack (T2.2 event tracks)", async ({ page }) => {
+  await loadPlayable(page);
+  const fired = await page.evaluate(async () => {
+    type Proof = { source?: string; firedEvents?: Record<string, number> };
+    let proof: Proof | undefined;
+    const start = performance.now();
+    // throw several attacks so the authored vfx markers cross
+    while (performance.now() - start < 1400) {
+      window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyK" }));
+      await new Promise((r) => setTimeout(r, 60));
+      window.dispatchEvent(new KeyboardEvent("keyup", { code: "KeyK" }));
+      await new Promise((r) => setTimeout(r, 120));
+      proof = (window as unknown as { __AURA_CLASH_EVENT_TRACKS_PROOF__?: Proof }).__AURA_CLASH_EVENT_TRACKS_PROOF__;
+      if ((proof?.firedEvents?.vfx ?? 0) > 0) break;
+    }
+    return proof;
+  });
+  expect(fired?.source).toBe("authored-clip-events");
+  expect(fired?.firedEvents?.vfx ?? 0, "expected authored VFX markers to fire from attack clip events").toBeGreaterThan(0);
+});
+
+test("AuraClash layers an attack on the upper body while the lower body keeps moving", async ({ page }) => {
+  await loadPlayable(page);
+  await page.keyboard.down("KeyD"); // start moving
+  await page.waitForTimeout(120);
+  await page.keyboard.down("KeyJ"); // light attack while moving -> upper-body layer over walk base
+  const layered = await page.evaluate(async () => {
+    let found: { from: string | null; to: string } | null = null;
+    const start = performance.now();
+    while (performance.now() - start < 700) {
+      const p = (window as unknown as { __AURA_CLASH_BLEND_PROOF__?: { player?: { from: string | null; to: string } } }).__AURA_CLASH_BLEND_PROOF__?.player;
+      if (p && p.from === "Walk_Loop" && p.to !== "Walk_Loop" && p.to !== null) {
+        found = { from: p.from, to: p.to };
+        break;
+      }
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    return found;
+  });
+  await page.keyboard.up("KeyJ");
+  await page.keyboard.up("KeyD");
+  // base = Walk_Loop (lower body), to = an attack clip layered on the upper body
+  expect(layered, "expected attack layered over a Walk_Loop base while moving").toBeTruthy();
+  expect(layered!.to).not.toBe("Walk_Loop");
 });
 
 test("AuraClash makes Space dash visibly even without a direction key", async ({ page }) => {

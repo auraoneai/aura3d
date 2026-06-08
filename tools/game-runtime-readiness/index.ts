@@ -234,13 +234,13 @@ for (const token of [
 for (const token of [
   "action === \"inspect\"",
   "action === \"validate-game\"",
-  "action === \"validate-cartoon\"",
+  "action === \"validate-animation\"",
   "action === \"assemble-character\"",
   "validateGameAssets",
-  "validateCartoonAssets",
+  "validateAnimationAssets",
   "createCharacterAssemblyPlan",
   "aura3d assets validate-game",
-  "aura3d assets validate-cartoon"
+  "aura3d assets validate-animation"
 ]) {
   checks.push({
     id: `cli-source-token:${token}`,

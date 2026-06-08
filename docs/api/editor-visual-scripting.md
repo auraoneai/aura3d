@@ -14,7 +14,6 @@ Use this page with:
 - `docs/api/assets.md`
 - `docs/concepts/editor-runtime.md`
 - `docs/editor/browser-first-workflow.md`
-- `docs/project/aura3d-105-release-gates.md`
 
 ## Current Boundary
 

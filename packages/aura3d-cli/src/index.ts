@@ -3,13 +3,15 @@ import { createHash } from "node:crypto";
 import { dirname, extname, join, relative, resolve } from "node:path";
 
 export {
-  cartoonCliAssetProfiles,
-  getCartoonAssetProfileDefinition
-} from "./cartoon-asset-profiles.js";
+  animationCliAssetProfiles,
+  getAnimationAssetProfileDefinition
+} from "./animation-asset-profiles.js";
+export { validateAnimationAssets, parseAnimationClipMap, DEFAULT_ANIMATION_ACTIONS } from "./animation-asset-validator.js";
+export type { AnimationAssetValidationOptions, AnimationAssetValidationReport } from "./animation-asset-validator.js";
 export type {
-  AuraCliCartoonAssetProfile,
-  AuraCliCartoonAssetProfileDefinition
-} from "./cartoon-asset-profiles.js";
+  AuraCliAnimationAssetProfile,
+  AuraCliAnimationAssetProfileDefinition
+} from "./animation-asset-profiles.js";
 
 export type AuraCliAssetType = "model" | "texture" | "environment" | "audio";
 export type AuraCliHumanoidStatus = "humanoid" | "non-humanoid" | "unknown";
@@ -101,6 +103,10 @@ export interface AuraCliAssetProvenance {
   readonly author?: string;
   readonly sourceFamily?: string;
   readonly attribution?: string;
+  /** sha256 of the downloaded bytes (provenance for pulled catalog assets). */
+  readonly sha256?: string;
+  /** ISO timestamp the asset was retrieved from its source (injectable). */
+  readonly retrievedAt?: string;
   readonly evidence?: readonly string[];
   readonly checkedAt: string;
 }
@@ -154,6 +160,13 @@ export interface AddAssetOptions {
   readonly author?: string;
   readonly sourceFamily?: string;
   readonly attribution?: string;
+  /** sha256 of the retrieved bytes, captured by the pull/resolve flow. */
+  readonly sha256?: string;
+  /**
+   * ISO timestamp the asset was retrieved. Injectable so deterministic builds can
+   * pin it; when omitted, provenance falls back to wall-clock `checkedAt`.
+   */
+  readonly retrievedAt?: string;
 }
 
 export interface AssetCliResult {
@@ -176,7 +189,7 @@ export interface AssetValidationOptions {
   readonly assetIds?: readonly string[];
 }
 
-export type AuraAssetReadinessProfile = "game" | "cartoon";
+export type AuraAssetReadinessProfile = "game" | "animation";
 export type AuraGameAssetReadinessProfile = "fighting-character";
 export type AuraAssetReadinessStatus = "passed" | "failed";
 
@@ -202,7 +215,7 @@ export interface AssetReadinessReport {
   readonly manifestPath: string;
   readonly artifacts: AssetReadinessArtifacts;
   readonly contracts: readonly AssetReadinessValidationContract[];
-  readonly cartoonEpisode?: CartoonEpisodeReadinessReport;
+  readonly animationEpisode?: AnimationEpisodeReadinessReport;
   readonly summary: {
     readonly totalAssets: number;
     readonly modelAssets: number;
@@ -212,9 +225,9 @@ export interface AssetReadinessReport {
     readonly environmentAssets: number;
     readonly animationClips: number;
     readonly humanoidModels: number;
-    readonly cartoonCharacters?: number;
-    readonly cartoonSets?: number;
-    readonly cartoonProps?: number;
+    readonly animationCharacters?: number;
+    readonly animationSets?: number;
+    readonly animationProps?: number;
     readonly episodeReadyCharacters?: number;
     readonly mouthReadyCharacters?: number;
     readonly animationReadyCharacters?: number;
@@ -228,7 +241,7 @@ export interface AssetReadinessReport {
   readonly messages: readonly string[];
 }
 
-export type CartoonEpisodeAssetRole =
+export type AnimationEpisodeAssetRole =
   | "character"
   | "set"
   | "prop"
@@ -237,15 +250,15 @@ export type CartoonEpisodeAssetRole =
   | "texture"
   | "unknown";
 
-export type CartoonEpisodeMouthReadinessMode =
+export type AnimationEpisodeMouthReadinessMode =
   | "blendshape-lip-sync"
   | "primitive-mouth-card"
   | "amplitude-only"
   | "missing-mouth-motion";
 
-export interface CartoonEpisodeAssetReadiness {
+export interface AnimationEpisodeAssetReadiness {
   readonly id: string;
-  readonly role: CartoonEpisodeAssetRole;
+  readonly role: AnimationEpisodeAssetRole;
   readonly episodeReady: boolean;
   readonly distinctHash?: string;
   readonly licenseVerified: boolean;
@@ -253,13 +266,13 @@ export interface CartoonEpisodeAssetReadiness {
   readonly placeholderFree: boolean;
   readonly animationReady: boolean;
   readonly mouthReady: boolean;
-  readonly mouthMode?: CartoonEpisodeMouthReadinessMode;
+  readonly mouthMode?: AnimationEpisodeMouthReadinessMode;
   readonly setReady?: boolean;
   readonly warnings: readonly string[];
   readonly failures: readonly string[];
 }
 
-export interface CartoonEpisodeReadinessReport {
+export interface AnimationEpisodeReadinessReport {
   readonly enabled: boolean;
   readonly ok: boolean;
   readonly mode: "episode-ready";
@@ -276,15 +289,15 @@ export interface CartoonEpisodeReadinessReport {
   readonly selectedSets: readonly string[];
   readonly selectedProps: readonly string[];
   readonly selectedAudio: readonly string[];
-  readonly readiness: readonly CartoonEpisodeAssetReadiness[];
+  readonly readiness: readonly AnimationEpisodeAssetReadiness[];
   readonly assetProvenanceArtifact: string;
   readonly failures: readonly string[];
   readonly warnings: readonly string[];
 }
 
 export interface AssetReadinessValidatorEvidence {
-  readonly id: "aura-clash-game-assets" | "aura-voice-cartoon-assets";
-  readonly command: "assets validate-game" | "assets validate-cartoon";
+  readonly id: "aura-clash-game-assets" | "aura-voice-animation-assets";
+  readonly command: "assets validate-game" | "assets validate-animation";
   readonly label: string;
 }
 
@@ -293,7 +306,7 @@ export interface AssetReadinessValidationContract {
   readonly label: string;
   readonly profile: AuraAssetReadinessProfile;
   readonly sourceFamily?: "Quaternius" | "AuraVoice" | "custom";
-  readonly intendedUse?: "fighter" | "cartoon-character" | "set" | "prop";
+  readonly intendedUse?: "fighter" | "animation-character" | "set" | "prop";
   readonly sourceOnly: boolean;
   readonly requiredChecks: readonly string[];
   readonly requiredAnimationClips?: readonly string[];
@@ -356,7 +369,7 @@ export interface AssetReadinessAssetReport {
   readonly nodeNames?: readonly string[];
   readonly artifactPaths: AssetReadinessAssetArtifacts;
   readonly gameReady: boolean;
-  readonly cartoonReady: boolean;
+  readonly animationReady: boolean;
   readonly profileTarget?: boolean;
   readonly profileReady?: boolean;
   readonly profileSkippedReason?: string;
@@ -450,6 +463,9 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   }
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
   const current = readAssetManifest(projectDir);
+  // Re-adding (e.g. resolve overwriting) must not silently drop hand-authored
+  // provenance the new add does not re-supply (license/attribution/author/etc.).
+  const existing = current.assets.find((asset) => asset.id === options.name);
   const outputDir = normalizeRelativePath(options.outputDir ?? current.outputDir ?? DEFAULT_AURA_ASSET_OUTPUT_DIR);
   const publicPath = normalizePublicPath(options.publicPath ?? current.assetBasePath ?? DEFAULT_AURA_ASSET_PUBLIC_PATH);
   const typegen = normalizeRelativePath(options.typegen ?? current.typegen ?? DEFAULT_AURA_ASSET_TYPEGEN);
@@ -483,7 +499,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     humanoid: inspection.humanoid,
     skeleton: inspection.skeleton,
     morphTargets: inspection.morphTargets,
-    provenance: createAssetProvenance(projectDir, sourcePath, options, inspection.provenance),
+    provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance)),
     textures: inspection.textures,
     dependencies: inspection.dependencies,
     orientation: inspection.orientation,
@@ -742,8 +758,8 @@ export function validateGameAssets(options: AssetReadinessOptions = {}): AssetRe
   return validateAssetReadiness("game", options);
 }
 
-export function validateCartoonAssets(options: AssetReadinessOptions = {}): AssetReadinessReport {
-  return validateAssetReadiness("cartoon", options);
+export function validateAnimationStudioAssets(options: AssetReadinessOptions = {}): AssetReadinessReport {
+  return validateAssetReadiness("animation", options);
 }
 
 export function createCharacterAssemblyPlan(options: CharacterAssemblyPlanOptions): CharacterAssemblyPlanResult {
@@ -897,7 +913,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
     pushUnique(warnings, [...readinessIssues.warnings, ...profileIssues.warnings]);
     const gameReady = asset.type === "model" && Boolean(asset.bounds) && asset.materials.length > 0 && asset.sizeBytes <= 50 * 1024 * 1024 && readinessIssues.failures.length === 0 && profileIssues.failures.length === 0;
     const profileReady = profileTarget && gameReady;
-    const cartoonReady = asset.type === "model"
+    const animationReady = asset.type === "model"
       ? Boolean(asset.bounds) && (asset.animations.length > 0 || /prop|set|stage|background|environment/i.test(asset.id))
       : asset.type === "audio" || asset.type === "texture";
     const artifactPaths = artifacts.assetFiles.find((entry) => entry.id === asset.id) ?? createReadinessAssetArtifacts(projectDir, manifest, asset);
@@ -928,7 +944,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       nodeNames: asset.nodeNames,
       artifactPaths,
       gameReady,
-      cartoonReady,
+      animationReady,
       ...(gameProfile === "fighting-character" ? { profileTarget, profileReady, ...(profileSkippedReason ? { profileSkippedReason } : {}) } : {}),
       warnings: assetWarnings
     };
@@ -964,22 +980,22 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       }
     }
   } else {
-    if (modelAssets.length === 0) failures.push("Cartoon readiness requires at least one typed model/set/prop GLB or GLTF.");
+    if (modelAssets.length === 0) failures.push("Animation readiness requires at least one typed model/set/prop GLB or GLTF.");
     if (animatedModels.length === 0) warnings.push("No animated character clips detected. Prompt-to-episode output can use transform animation, but character acting needs skeletal or pose clips.");
-    if (animatedModels.length > 0 && humanoidModels === 0) warnings.push("No humanoid model metadata detected. Acting-heavy cartoon routes should confirm character rigs with assets inspect --humanoid.");
+    if (animatedModels.length > 0 && humanoidModels === 0) warnings.push("No humanoid model metadata detected. Acting-heavy animation routes should confirm character rigs with assets inspect --humanoid.");
     const audioAssets = manifest.assets.filter((asset) => asset.type === "audio");
     if (audioAssets.length === 0) warnings.push("No audio assets detected. AuraVoice bridge can still reference external narration manifests, but local episode proof is stronger with audio registered.");
   }
-  const cartoonEpisode = profile === "cartoon"
-    ? createCartoonEpisodeReadinessReport(manifest, assets, options)
+  const animationEpisode = profile === "animation"
+    ? createAnimationEpisodeReadinessReport(manifest, assets, options)
     : undefined;
-  if (cartoonEpisode && options.episode) {
-    pushUnique(failures, cartoonEpisode.failures);
-    pushUnique(warnings, cartoonEpisode.warnings);
+  if (animationEpisode && options.episode) {
+    pushUnique(failures, animationEpisode.failures);
+    pushUnique(warnings, animationEpisode.warnings);
   }
   const ok = failures.length === 0;
   const baseMessage = ok
-    ? `${profile === "game" ? "Game" : "Cartoon"} asset readiness report completed.`
+    ? `${profile === "game" ? "Game" : "Animation"} asset readiness report completed.`
     : failures;
   const messages = [
     ...(Array.isArray(baseMessage) ? baseMessage : [baseMessage]),
@@ -996,7 +1012,7 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
     manifestPath,
     artifacts,
     contracts: createReadinessValidationContracts(profile),
-    ...(cartoonEpisode ? { cartoonEpisode } : {}),
+    ...(animationEpisode ? { animationEpisode } : {}),
     summary: {
       totalAssets: manifest.assets.length,
       modelAssets: modelAssets.length,
@@ -1006,14 +1022,14 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
       environmentAssets: manifest.assets.filter((asset) => asset.type === "environment").length,
       animationClips,
       humanoidModels,
-      ...(cartoonEpisode
+      ...(animationEpisode
         ? {
-            cartoonCharacters: cartoonEpisode.selectedCharacters.length,
-            cartoonSets: cartoonEpisode.selectedSets.length,
-            cartoonProps: cartoonEpisode.selectedProps.length,
-            episodeReadyCharacters: cartoonEpisode.readiness.filter((entry) => entry.role === "character" && entry.episodeReady).length,
-            mouthReadyCharacters: cartoonEpisode.readiness.filter((entry) => entry.role === "character" && entry.mouthReady).length,
-            animationReadyCharacters: cartoonEpisode.readiness.filter((entry) => entry.role === "character" && entry.animationReady).length
+            animationCharacters: animationEpisode.selectedCharacters.length,
+            animationSets: animationEpisode.selectedSets.length,
+            animationProps: animationEpisode.selectedProps.length,
+            episodeReadyCharacters: animationEpisode.readiness.filter((entry) => entry.role === "character" && entry.episodeReady).length,
+            mouthReadyCharacters: animationEpisode.readiness.filter((entry) => entry.role === "character" && entry.mouthReady).length,
+            animationReadyCharacters: animationEpisode.readiness.filter((entry) => entry.role === "character" && entry.animationReady).length
           }
         : {}),
       ...(gameProfile === "fighting-character"
@@ -1080,9 +1096,9 @@ function createReadinessValidatorEvidence(profile: AuraAssetReadinessProfile): A
         label: "AuraClash game asset validator"
       }
     : {
-        id: "aura-voice-cartoon-assets",
-        command: "assets validate-cartoon",
-        label: "AuraVoice cartoon asset validator"
+        id: "aura-voice-animation-assets",
+        command: "assets validate-animation",
+        label: "AuraVoice animation asset validator"
       };
 }
 
@@ -1117,11 +1133,11 @@ function createReadinessValidationContracts(profile: AuraAssetReadinessProfile):
 
   return [
     {
-      id: "auravoice-cartoon-character-asset-validation-contract",
-      label: "AuraVoice cartoon asset validation contract",
-      profile: "cartoon",
+      id: "auravoice-animation-character-asset-validation-contract",
+      label: "AuraVoice animation asset validation contract",
+      profile: "animation",
       sourceFamily: "AuraVoice",
-      intendedUse: "cartoon-character",
+      intendedUse: "animation-character",
       sourceOnly: true,
       requiredChecks: [
         "typed Aura model, texture, audio, or environment asset entry",
@@ -1130,7 +1146,7 @@ function createReadinessValidationContracts(profile: AuraAssetReadinessProfile):
         "audio or external AuraVoice manifest references for stronger episode proof"
       ],
       evidenceBoundary:
-        "This CLI contract is source-only. It does not prove cartoon route readiness until validate-cartoon output, rendered frames, timing proof, and AuraVoice evidence are archived."
+        "This CLI contract is source-only. It does not prove animation route readiness until validate-animation output, rendered frames, timing proof, and AuraVoice evidence are archived."
     }
   ];
 }
@@ -1185,12 +1201,12 @@ function createReadinessAnimationMetadata(animations: readonly string[]): AssetR
   };
 }
 
-function createCartoonEpisodeReadinessReport(
+function createAnimationEpisodeReadinessReport(
   manifest: AuraCliAssetManifest,
   assets: readonly AssetReadinessAssetReport[],
   options: AssetReadinessOptions
-): CartoonEpisodeReadinessReport {
-  const readiness = assets.map(createCartoonEpisodeAssetReadiness);
+): AnimationEpisodeReadinessReport {
+  const readiness = assets.map(createAnimationEpisodeAssetReadiness);
   const characters = readiness.filter((entry) => entry.role === "character");
   const sets = readiness.filter((entry) => entry.role === "set");
   const props = readiness.filter((entry) => entry.role === "prop");
@@ -1202,19 +1218,19 @@ function createCartoonEpisodeReadinessReport(
   const readySets = sets.filter((entry) => entry.episodeReady);
 
   if (characters.length < 2) {
-    failures.push(`cartoon episode validation requires at least 2 typed cartoon character assets; found ${characters.length}${characters.length ? `: ${characters.map((entry) => entry.id).join(", ")}` : ""}.`);
+    failures.push(`animation episode validation requires at least 2 typed animation character assets; found ${characters.length}${characters.length ? `: ${characters.map((entry) => entry.id).join(", ")}` : ""}.`);
   }
   if (characters.length >= 2 && distinctCharacterHashes.size < characters.length) {
-    failures.push("cartoon episode validation requires distinct character files/hashes; duplicated character assets cannot prove a two-character episode cast.");
+    failures.push("animation episode validation requires distinct character files/hashes; duplicated character assets cannot prove a two-character episode cast.");
   }
   if (readyCharacters.length < 2) {
-    failures.push(`cartoon episode validation found only ${readyCharacters.length} episode-ready character asset${readyCharacters.length === 1 ? "" : "s"}; required 2 with license, provenance, animation, and mouth readiness.`);
+    failures.push(`animation episode validation found only ${readyCharacters.length} episode-ready character asset${readyCharacters.length === 1 ? "" : "s"}; required 2 with license, provenance, animation, and mouth readiness.`);
   }
   if (sets.length < 1) {
-    failures.push("cartoon episode validation requires at least 1 typed cartoon set/location asset.");
+    failures.push("animation episode validation requires at least 1 typed animation set/location asset.");
   }
   if (readySets.length < 1) {
-    failures.push("cartoon episode validation requires at least 1 episode-ready set with license, provenance, bounds, readable materials, and walkable scale.");
+    failures.push("animation episode validation requires at least 1 episode-ready set with license, provenance, bounds, readable materials, and walkable scale.");
   }
 
   for (const entry of readiness) {
@@ -1223,7 +1239,7 @@ function createCartoonEpisodeReadinessReport(
   }
 
   if (audio.length === 0) {
-    warnings.push("cartoon episode validation found no typed audio assets; publish-ready dialogue/audio proof will need registered dialogue, music, or SFX stems.");
+    warnings.push("animation episode validation found no typed audio assets; publish-ready dialogue/audio proof will need registered dialogue, music, or SFX stems.");
   }
 
   const evidenceDirectory = options.output ? dirname(normalizeRelativePath(options.output)) : "artifacts/aura3d";
@@ -1252,37 +1268,37 @@ function createCartoonEpisodeReadinessReport(
   };
 }
 
-function createCartoonEpisodeAssetReadiness(asset: AssetReadinessAssetReport): CartoonEpisodeAssetReadiness {
-  const role = inferCartoonEpisodeAssetRole(asset);
+function createAnimationEpisodeAssetReadiness(asset: AssetReadinessAssetReport): AnimationEpisodeAssetReadiness {
+  const role = inferAnimationEpisodeAssetRole(asset);
   const failures: string[] = [];
   const warnings: string[] = [];
   const provenanceReady = Boolean(asset.provenance?.sourceUrl || asset.provenance?.sourceFamily || asset.provenance?.sourcePath);
-  const animationReady = role === "character" ? isCartoonCharacterAnimationReady(asset) : asset.animations.length > 0;
-  const mouthMode = role === "character" ? inferCartoonMouthMode(asset) : undefined;
+  const animationReady = role === "character" ? isAnimationCharacterAnimationReady(asset) : asset.animations.length > 0;
+  const mouthMode = role === "character" ? inferAnimationMouthMode(asset) : undefined;
   const mouthReady = role === "character" ? mouthMode !== "missing-mouth-motion" : false;
-  const setReady = role === "set" ? isCartoonSetReady(asset) : undefined;
+  const setReady = role === "set" ? isAnimationSetReady(asset) : undefined;
 
   if (role === "character") {
-    if (asset.type !== "model") failures.push(`${asset.id}: cartoon character must be a typed model asset, found ${asset.type}.`);
-    if (!asset.licenseVerified) failures.push(`${asset.id}: cartoon character requires verified redistributable license evidence.`);
-    if (!provenanceReady) failures.push(`${asset.id}: cartoon character requires source provenance for episode packaging.`);
-    if (!asset.placeholderFree) failures.push(`${asset.id}: cartoon character is placeholder-tagged and cannot satisfy episode-ready validation.`);
-    if (!asset.boundsMetadata && !asset.bounds) failures.push(`${asset.id}: cartoon character requires bounds metadata for framing and motion analysis.`);
-    if (!animationReady) failures.push(`${asset.id}: cartoon character requires embedded animation clips or explicit segmented-rig metadata.`);
-    if (!mouthReady) failures.push(`${asset.id}: cartoon character requires blendshape, mouth-card, viseme, talk, face, or primitive mouth fallback metadata.`);
-    if (asset.materials.length === 0) failures.push(`${asset.id}: cartoon character requires at least one readable material.`);
-    if (asset.sizeBytes > 45 * 1024 * 1024) failures.push(`${asset.id}: cartoon character payload is ${asset.sizeBytes} bytes; expected <= 47185920 for browser episode playback.`);
+    if (asset.type !== "model") failures.push(`${asset.id}: animation character must be a typed model asset, found ${asset.type}.`);
+    if (!asset.licenseVerified) failures.push(`${asset.id}: animation character requires verified redistributable license evidence.`);
+    if (!provenanceReady) failures.push(`${asset.id}: animation character requires source provenance for episode packaging.`);
+    if (!asset.placeholderFree) failures.push(`${asset.id}: animation character is placeholder-tagged and cannot satisfy episode-ready validation.`);
+    if (!asset.boundsMetadata && !asset.bounds) failures.push(`${asset.id}: animation character requires bounds metadata for framing and motion analysis.`);
+    if (!animationReady) failures.push(`${asset.id}: animation character requires embedded animation clips or explicit segmented-rig metadata.`);
+    if (!mouthReady) failures.push(`${asset.id}: animation character requires blendshape, mouth-card, viseme, talk, face, or primitive mouth fallback metadata.`);
+    if (asset.materials.length === 0) failures.push(`${asset.id}: animation character requires at least one readable material.`);
+    if (asset.sizeBytes > 45 * 1024 * 1024) failures.push(`${asset.id}: animation character payload is ${asset.sizeBytes} bytes; expected <= 47185920 for browser episode playback.`);
     if (mouthMode === "amplitude-only") warnings.push(`${asset.id}: mouth readiness is amplitude-only; add blendshape or mouth-card metadata for stronger lip-sync proof.`);
   } else if (role === "set") {
-    if (asset.type !== "model") failures.push(`${asset.id}: cartoon set must be a typed model asset, found ${asset.type}.`);
-    if (!asset.licenseVerified) failures.push(`${asset.id}: cartoon set requires verified redistributable license evidence.`);
-    if (!provenanceReady) failures.push(`${asset.id}: cartoon set requires source provenance for episode packaging.`);
-    if (!asset.placeholderFree) failures.push(`${asset.id}: cartoon set is placeholder-tagged and cannot satisfy episode-ready validation.`);
-    if (!setReady) failures.push(`${asset.id}: cartoon set requires bounds, readable materials, and at least 1.5m walkable/framing scale.`);
-    if (asset.sizeBytes > 90 * 1024 * 1024) failures.push(`${asset.id}: cartoon set payload is ${asset.sizeBytes} bytes; expected <= 94371840 for browser episode playback.`);
+    if (asset.type !== "model") failures.push(`${asset.id}: animation set must be a typed model asset, found ${asset.type}.`);
+    if (!asset.licenseVerified) failures.push(`${asset.id}: animation set requires verified redistributable license evidence.`);
+    if (!provenanceReady) failures.push(`${asset.id}: animation set requires source provenance for episode packaging.`);
+    if (!asset.placeholderFree) failures.push(`${asset.id}: animation set is placeholder-tagged and cannot satisfy episode-ready validation.`);
+    if (!setReady) failures.push(`${asset.id}: animation set requires bounds, readable materials, and at least 1.5m walkable/framing scale.`);
+    if (asset.sizeBytes > 90 * 1024 * 1024) failures.push(`${asset.id}: animation set payload is ${asset.sizeBytes} bytes; expected <= 94371840 for browser episode playback.`);
   } else if (role === "prop" || role === "environment") {
-    if (!asset.licenseVerified) warnings.push(`${asset.id}: optional cartoon ${role} lacks verified license evidence; publish packages should include provenance for every visible asset.`);
-    if (!provenanceReady) warnings.push(`${asset.id}: optional cartoon ${role} lacks source provenance.`);
+    if (!asset.licenseVerified) warnings.push(`${asset.id}: optional animation ${role} lacks verified license evidence; publish packages should include provenance for every visible asset.`);
+    if (!provenanceReady) warnings.push(`${asset.id}: optional animation ${role} lacks source provenance.`);
   }
 
   return {
@@ -1306,10 +1322,10 @@ function createCartoonEpisodeAssetReadiness(asset: AssetReadinessAssetReport): C
   };
 }
 
-function inferCartoonEpisodeAssetRole(asset: AssetReadinessAssetReport): CartoonEpisodeAssetRole {
+function inferAnimationEpisodeAssetRole(asset: AssetReadinessAssetReport): AnimationEpisodeAssetRole {
   if (asset.type === "audio") return "audio";
   if (asset.type === "texture") return "texture";
-  const text = cartoonAssetText(asset);
+  const text = animationAssetText(asset);
   if (asset.type === "environment" || /\b(environment|skybox|backdrop|background|world|terrain|horizon)\b/i.test(text)) return "environment";
   if (/\b(set|stage|room|garden|park|school|street|house|classroom|moon garden|walkable|floor|location)\b/i.test(text)) return "set";
   if (/\b(character|humanoid|kid|child|hero|sidekick|villain|narrator|avatar|actor|miko|luma|robot|mascot|npc)\b/i.test(text)) return "character";
@@ -1320,17 +1336,17 @@ function inferCartoonEpisodeAssetRole(asset: AssetReadinessAssetReport): Cartoon
   return "unknown";
 }
 
-function isCartoonCharacterAnimationReady(asset: AssetReadinessAssetReport): boolean {
+function isAnimationCharacterAnimationReady(asset: AssetReadinessAssetReport): boolean {
   if (asset.animations.length > 0) return true;
-  return /\b(segmented rig|segmented-rig|puppet rig|body parts|armature|skinned|skeleton)\b/i.test(cartoonAssetText(asset));
+  return /\b(segmented rig|segmented-rig|puppet rig|body parts|armature|skinned|skeleton)\b/i.test(animationAssetText(asset));
 }
 
-function inferCartoonMouthMode(asset: AssetReadinessAssetReport): CartoonEpisodeMouthReadinessMode {
+function inferAnimationMouthMode(asset: AssetReadinessAssetReport): AnimationEpisodeMouthReadinessMode {
   const morphNames = asset.morphTargets?.targetNames ?? [];
   if (morphNames.some((name) => /\b(aa|oh|ee|mouth|lip|jaw|viseme|smile|frown|blink|expression)\b/i.test(name))) {
     return "blendshape-lip-sync";
   }
-  const text = cartoonAssetText(asset);
+  const text = animationAssetText(asset);
   if (/\b(primitive mouth|mouth card|mouth-card|mouth sprite|face card|viseme card|2d mouth)\b/i.test(text)) {
     return "primitive-mouth-card";
   }
@@ -1340,14 +1356,14 @@ function inferCartoonMouthMode(asset: AssetReadinessAssetReport): CartoonEpisode
   return "missing-mouth-motion";
 }
 
-function isCartoonSetReady(asset: AssetReadinessAssetReport): boolean {
+function isAnimationSetReady(asset: AssetReadinessAssetReport): boolean {
   const size = asset.boundsMetadata?.size ?? asset.bounds;
   if (!size) return false;
   const largest = Math.max(...size);
   return largest >= 1.5 && asset.materials.length > 0;
 }
 
-function cartoonAssetText(asset: AssetReadinessAssetReport): string {
+function animationAssetText(asset: AssetReadinessAssetReport): string {
   return [
     asset.id,
     asset.source,
@@ -2053,7 +2069,7 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
 function createAssetProvenance(
   projectDir: string,
   sourcePath: string,
-  options: Pick<AddAssetOptions, "sourceUrl" | "license" | "author" | "sourceFamily" | "attribution">,
+  options: Pick<AddAssetOptions, "sourceUrl" | "license" | "author" | "sourceFamily" | "attribution" | "sha256" | "retrievedAt">,
   detected?: Partial<AuraCliAssetProvenance>
 ): AuraCliAssetProvenance {
   return {
@@ -2063,8 +2079,36 @@ function createAssetProvenance(
     ...(options.author ?? detected?.author ? { author: options.author ?? detected?.author } : {}),
     ...(options.sourceFamily ?? detected?.sourceFamily ? { sourceFamily: options.sourceFamily ?? detected?.sourceFamily } : {}),
     ...(options.attribution ?? detected?.attribution ? { attribution: options.attribution ?? detected?.attribution } : {}),
+    ...(options.sha256 ?? detected?.sha256 ? { sha256: options.sha256 ?? detected?.sha256 } : {}),
+    ...(options.retrievedAt ?? detected?.retrievedAt ? { retrievedAt: options.retrievedAt ?? detected?.retrievedAt } : {}),
     ...(detected?.evidence && detected.evidence.length > 0 ? { evidence: detected.evidence } : {}),
     checkedAt: new Date().toISOString()
+  };
+}
+
+/**
+ * Merge a freshly inspected asset's auto-detected provenance over the entry that
+ * already exists in the manifest, so a re-add/re-resolve preserves hand-authored
+ * fields (license, attribution, author, sourceUrl, sourceFamily, evidence,
+ * sha256) that the new pass did not re-detect. Freshly detected values win over
+ * the prior entry; explicit `addAsset` options still win over both (applied in
+ * {@link createAssetProvenance}). (#26)
+ */
+function mergeDetectedProvenance(
+  existing: AuraCliAssetProvenance | undefined,
+  detected: Partial<AuraCliAssetProvenance> | undefined
+): Partial<AuraCliAssetProvenance> | undefined {
+  if (!existing) return detected;
+  const evidence = [...(detected?.evidence ?? []), ...(existing.evidence ?? [])];
+  return {
+    sourceUrl: detected?.sourceUrl ?? existing.sourceUrl,
+    license: detected?.license ?? existing.license,
+    author: detected?.author ?? existing.author,
+    sourceFamily: detected?.sourceFamily ?? existing.sourceFamily,
+    attribution: detected?.attribution ?? existing.attribution,
+    sha256: detected?.sha256 ?? existing.sha256,
+    retrievedAt: detected?.retrievedAt ?? existing.retrievedAt,
+    ...(evidence.length > 0 ? { evidence: [...new Set(evidence)] } : {})
   };
 }
 
@@ -2093,6 +2137,8 @@ function readExternalProvenance(projectDir: string, provenanceFile?: string): Re
     const sourceFamily = stringValue(record.sourceFamily ?? nestedProvenance?.sourceFamily ?? nestedProvenance?.sourcePack);
     const author = stringValue(record.author ?? nestedProvenance?.author);
     const attribution = stringValue(record.attribution ?? record.credit ?? nestedProvenance?.attribution);
+    const sha256 = stringValue(record.sha256 ?? nestedProvenance?.sha256);
+    const retrievedAt = stringValue(record.retrievedAt ?? nestedProvenance?.retrievedAt);
     const evidence = [
       ...stringArrayValue(record.evidence),
       ...stringArrayValue(record.intendedRouteUsage),
@@ -2105,6 +2151,8 @@ function readExternalProvenance(projectDir: string, provenanceFile?: string): Re
       ...(author ? { author } : {}),
       ...(sourceFamily ? { sourceFamily } : {}),
       ...(attribution ? { attribution } : {}),
+      ...(sha256 ? { sha256 } : {}),
+      ...(retrievedAt ? { retrievedAt } : {}),
       ...(evidence.length > 0 ? { evidence } : {}),
       checkedAt
     });

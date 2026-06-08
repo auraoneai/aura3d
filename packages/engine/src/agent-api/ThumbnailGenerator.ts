@@ -1,10 +1,10 @@
-import type { CartoonRenderOutputPackageMetadata, CartoonThumbnailSceneStateCapture, CartoonViewport } from "./CartoonRenderQueue.js";
+import type { AnimationRenderOutputPackageMetadata, AnimationThumbnailSceneStateCapture, AnimationViewport } from "./AnimationRenderQueue.js";
 import { normalizePromptAnimationTime, type PromptAnimationId, type PromptAnimationSeconds } from "./PromptAnimationContract.js";
 
 export interface ThumbnailGenerationPlan {
   readonly kind: "thumbnail-generation-plan";
   readonly episodeId: PromptAnimationId;
-  readonly capture: CartoonThumbnailSceneStateCapture;
+  readonly capture: AnimationThumbnailSceneStateCapture;
   readonly outputPath: string;
   readonly width: number;
   readonly height: number;
@@ -31,7 +31,7 @@ export interface ThumbnailCaptureRuntime {
 }
 
 export function createThumbnailGenerationPlan(input: {
-  readonly packageMetadata: CartoonRenderOutputPackageMetadata;
+  readonly packageMetadata: AnimationRenderOutputPackageMetadata;
   readonly width?: number | undefined;
   readonly height?: number | undefined;
   readonly mimeType?: "image/webp" | "image/png" | "image/jpeg" | undefined;
@@ -61,7 +61,7 @@ export async function generateThumbnailArtifact(
 
 export function createThumbnailArtifact(input: {
   readonly path: string;
-  readonly viewport: CartoonViewport;
+  readonly viewport: AnimationViewport;
   readonly time: number;
   readonly data?: Blob | Uint8Array | string | undefined;
   readonly mimeType?: "image/webp" | "image/png" | "image/jpeg" | undefined;
@@ -107,7 +107,7 @@ function createThumbnailArtifactFromPlan(plan: ThumbnailGenerationPlan, image: B
   };
 }
 
-function youtubeThumbnailViewport(source: CartoonViewport, width = 1280, height = 720): Pick<CartoonViewport, "width" | "height"> {
+function youtubeThumbnailViewport(source: AnimationViewport, width = 1280, height = 720): Pick<AnimationViewport, "width" | "height"> {
   if (width > 0 && height > 0) return { width, height };
   if (source.width / source.height >= 16 / 9) return { width: 1280, height: 720 };
   return { width: 720, height: 1280 };
