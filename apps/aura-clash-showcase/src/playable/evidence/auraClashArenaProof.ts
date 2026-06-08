@@ -7,7 +7,7 @@ import type { AuraClashLightingEvidence } from "../../rendering/GameLighting";
 import type { AuraClashPostProcessEvidence } from "../../rendering/GamePostProcess";
 
 export const AURA_CLASH_ARENA_PROOF_SCHEMA_VERSION = "aura-clash-arena-proof/v1";
-export const AURA_CLASH_ARENA_PROOF_RELEASE = "1.3.0";
+export const AURA_CLASH_ARENA_PROOF_RELEASE = "1.3.1";
 export const AURA_CLASH_ARENA_PROOF_VERSION = "aura-clash-arena-production-gltf-animation-crossfade-reactions";
 
 export type AuraClashFighterAction =

@@ -45,7 +45,7 @@ Primary reference: `docs/animation/believable-motion.md`.
 
 ## 1.3 Believable-Motion Track
 
-Aura3D 1.3 is the believable-motion release track on top of 1.2. It is implemented and gate-verified in the repo; the version bump to `1.3.0` / publish is pending authorization.
+Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.1` (all 26 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
 
 What 1.3 adds:
 

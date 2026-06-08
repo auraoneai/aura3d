@@ -14,7 +14,7 @@ published.
 
 ## Aura3D advantage
 
-The current `1.3.0` Aura3D SDK release may claim:
+The current `1.3.1` Aura3D SDK release may claim:
 
 - Aura3D is an agent-friendly browser 3D SDK.
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
