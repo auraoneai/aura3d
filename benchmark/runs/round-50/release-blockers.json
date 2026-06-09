@@ -1,0 +1,35 @@
+{
+  "round": 50,
+  "date": "2026-06-09",
+  "blockers": [
+    {
+      "id": "B01",
+      "summary": "Missing neutral-human visual review",
+      "status": "open",
+      "file": "benchmark/runs/round-50/human-review.json",
+      "note": "Owner-skipped for move-on workstream. Required before frozen benchmark can be claimed as passed."
+    },
+    {
+      "id": "B02",
+      "summary": "Missing external prompt score files",
+      "status": "open",
+      "file": "benchmark/scoring/round-50-scores/*.json",
+      "note": "Owner-skipped for move-on workstream. Required before frozen benchmark can be claimed as passed."
+    },
+    {
+      "id": "B03",
+      "summary": "Round 50 decision is pending, not ship",
+      "status": "open",
+      "file": "benchmark/results/round-50-decision.md",
+      "note": "Decision explicitly recorded as pending. Cannot ship broad superiority claims."
+    },
+    {
+      "id": "B04",
+      "summary": "Release-proof guard does not output success",
+      "status": "open",
+      "file": "tools/release-proof-guard.mjs",
+      "note": "Guard requires human-review.json, external scores, and a Decision: ship line."
+    }
+  ],
+  "userSignature": "gchahal1982"
+}

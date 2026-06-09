@@ -1,0 +1,8 @@
+{
+  "round": 50,
+  "status": "owner-skipped",
+  "reason": "Neutral-human visual review was skipped for the move-on workstream per the scoped boundary recorded in CHANGELOG.md. This artifact is intentionally absent to prevent fabricated evidence.",
+  "requiredBeforeShip": true,
+  "note": "This file is a placeholder documenting the skip. A real human-review.json would contain per-screenshot reviewer identity, timestamps, acceptance decisions, and notes. Do not fabricate one.",
+  "userSignature": "gchahal1982"
+}

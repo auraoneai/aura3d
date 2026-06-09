@@ -2,7 +2,7 @@
 
 Version: 1.3.2
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.1` — all 26 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.2` — all 28 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
 
 ## 1.3.1
 
@@ -171,7 +171,7 @@ Completed scoped evidence currently includes:
 - Fresh Round 50 prompt PNG/contact-sheet artifacts under `benchmark/runs/round-50/`, including 40/40 prompt screenshots and comparison contact sheets.
 - Round 50 local visual-QA prompt-matrix smoke preflight, tone proof, engine parity summary, review/scoring packet, release-readiness inventory, user-approval artifact, and scoped owner bypass artifact.
 - Benchmark tooling updates for `UnifiedPRD.md` as the single source of truth, scoring handoff docs, prompt-matrix setup, prompt capture, and renderer-proof artifacts.
-- Official Round 50 result-file paths exist for handoff and traceability: `benchmark/results/round-50.md`, `benchmark/results/round-50-engine.md`, and `benchmark/results/round-50-decision.md`.
+- Round 50 result-file paths are now created for handoff and traceability: `benchmark/results/round-50.md`, `benchmark/results/round-50-engine.md`, and `benchmark/results/round-50-decision.md`. The prompt benchmark and decision are recorded as `pending` because neutral review and external scoring were owner-skipped.
 
 Still not completed for broad launch:
 

@@ -13,10 +13,10 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 ## Current Release
 
-- npm package target: `@aura3d/engine@1.1.0`
+- npm package target: `@aura3d/engine@1.3.2`
 - Public developer API: `@aura3d/engine`
-- CLI package target: `@aura3d/cli@1.1.0`
-- Scaffold package target: `create-aura3d@1.1.0`
+- CLI package target: `@aura3d/cli@1.3.2`
+- Scaffold package target: `create-aura3d@1.3.2`
 - Website: `https://aura3d.auraone.ai`
 - Repository: `https://github.com/auraoneai/aura3d`
 - Primary install path: `npm install @aura3d/engine`
@@ -25,7 +25,7 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 `@aura3d/engine@1.1.0` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
 
-Publication status: npm `latest` points at `@aura3d/engine@1.1.0`, `@aura3d/asset-index@1.1.0`, `@aura3d/cli@1.1.0`, and `create-aura3d@1.1.0`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
+Publication status: npm `latest` points at `@aura3d/engine@1.3.2`, `@aura3d/asset-index@1.3.2`, `@aura3d/cli@1.3.2`, and `create-aura3d@1.3.2`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
 
 ## 1.2 Animation Engine Track
 

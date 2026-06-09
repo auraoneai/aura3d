@@ -33,15 +33,15 @@ artifact handoff.
 
 Open blockers:
 
-- Missing valid `benchmark/runs/round-50/human-review.json`.
-- Missing external `benchmark/scoring/round-50-scores/*.json` files.
-- `benchmark/results/round-50-decision.md` does not contain a valid standalone `Decision: ship` line.
-- `node tools/release-proof-guard.mjs 50` does not currently output release-proof success.
+- Missing valid `benchmark/runs/round-50/human-review.json` (owner-skipped; documented as absent).
+- Missing external `benchmark/scoring/round-50-scores/*.json` files (owner-skipped; documented as absent).
+- `benchmark/results/round-50-decision.md` explicitly records `Decision: pending`, not `Decision: ship`.
+- `node tools/release-proof-guard.mjs 50` is expected to fail pending because the decision is pending and human review is absent.
 
 Current blocker handoff:
 
-- `benchmark/runs/round-50/frozen-benchmark-blockers.md`
-- `benchmark/runs/round-50/release-blockers.json`
+- `benchmark/runs/round-50/release-blockers.json` (created 2026-06-09)
+- `benchmark/results/round-50-decision.md`
 
 ## Gate Result
 
