@@ -1,6 +1,6 @@
 # Changelog
 
-Version: 1.3.1
+Version: 1.3.2
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.1` — all 26 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
 
