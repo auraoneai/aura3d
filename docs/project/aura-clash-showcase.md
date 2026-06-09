@@ -167,9 +167,9 @@ What is real:
 Remaining showcase polish:
 
 - The showcase ships with starter-grade fighter assets; the catalog/AI prompt asset flow has not yet produced final bespoke fighter art.
-- Some combat states and KO/reset behavior can be tuned further.
-- Normal play must not show box/line artifacts for hit effects.
-- `Q`, `L`, jump/down, KO loop, and damage tuning carry focused regression tests.
+- Normal play must not show box/line artifacts for hit effects (debug volumes are gated behind `debugVolumesEnabled: false` in the render preset; no debug geometry is rendered in normal play).
+- `Q`, `L`, jump/down carry focused regression tests in `tests/playable-smoke.spec.ts`.
+- KO loop and damage tuning: the `health <= 12` accidental-KO mop-up rule has been removed, and the AI no longer attacks opponents that are already KO'd. Debug hitbox overlays remain disabled in normal play.
 
 ## Definition Of Done
 

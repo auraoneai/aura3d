@@ -1362,7 +1362,8 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number): v
       : distance < 0.88
         ? -direction
         : 0;
-  const canStrike = rival.grounded && player.grounded && distance >= 0.9 && distance <= 1.28;
+  const opponentAlive = player.health > 0 && player.action !== "ko";
+  const canStrike = opponentAlive && rival.grounded && player.grounded && distance >= 0.9 && distance <= 1.28;
   const shouldGuard = player.attack?.id === "special" && distance < 1.34 && rival.health > START_HEALTH * 0.35;
   updateFighterIntents(rival, desired, {
     down: false,
@@ -1590,7 +1591,8 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     const damage = Math.max(0, Math.round(event.damage ?? 0));
     if (event.targetId === player.id) playerDamage += damage;
     if (event.targetId === rival.id) rivalDamage += damage;
-    if (defender.health <= 12) defender.health = 0;
+    // The engine already floors health to 0 on knockout. Do not add a local mop-up threshold
+    // that causes accidental one-hit KOs at low health.
     defender.attack = null;
     // Heavier hits (heavy/special, damage >= 10) play a stronger reaction clip when the rig has one.
     // reaction varies by BOTH attack weight and grounded/airborne state
