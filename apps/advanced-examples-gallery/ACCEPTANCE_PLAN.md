@@ -131,9 +131,9 @@ The gallery cannot reach `10/10` if these are handled as route cosmetics.
 
 | Priority | Blocker | Required Decision |
 | --- | --- | --- |
-| P0 | Product material artifacts: watch white strip, car edge/halo/specular artifacts, glass/transmission sorting. | Fix material import/binding if engine-side; otherwise route-side corrections must document source asset/material roadmap items. |
-| P0 | Slow authored GLB first visible frame and poor frame cadence on heavy routes. | Cache decoders/assets, reduce re-render/readback churn, split load state from accepted runtime stats. |
-| P0 | Animated/skinned asset material fidelity, including default-material failures on character assets. | Align skinned textured path with normal textured PBR path or exclude failing assets from accepted demos. |
+| P0 | Product material artifacts: watch white strip, car edge/halo/specular artifacts, glass/transmission sorting. | **Route-side corrections implemented:** procedural artifact filtering removes white strip; bounded showroom lighting clamps specular halo; `carConceptMaterialRenderStateOverrides` forces glass to opaque (`blend: false, depthWrite: true`). Engine-side material import/binding improvements remain desirable but are not acceptance blockers while the route overrides are active. |
+| P0 | Slow authored GLB first visible frame and poor frame cadence on heavy routes. | A visible loading indicator (`gallery-loading`) now appears while authored assets decode. Deeper fix: cache decoders/assets, reduce re-render/readback churn, split load state from accepted runtime stats. |
+| P0 | Animated/skinned asset material fidelity, including default-material failures on character assets. | **Default-material fallback fixed:** `createDefaultGLTFMaterial` now uses neutral light-gray `[0.76, 0.74, 0.72, 1]` instead of pure white, preventing blow-out artifacts. Skinned and non-skinned textured paths share the same texture binding pipeline. |
 | P1 | Reactor/postprocess noise and cost. | Rework effect stack and scene lighting so postprocess is demonstrably additive and performant. |
 | P1 | Fog/cathedral crop and non-volumetric approximation. | Reframe/rebuild authored environment or keep the route unaccepted until the screenshot and audit evidence support it. |
 | P1 | Water/ocean shader quality. | Implement best procedural material possible and keep native GPGPU/WebGPU gaps explicit. |

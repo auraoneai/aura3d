@@ -442,6 +442,8 @@ async function run(): Promise<void> {
           resetSteadyStateWork(frameCount);
           fpsSampleIntervalMs = 0;
           fpsReadyResetDemoId = selectedDemo.id;
+          const loader = document.getElementById("gallery-loading");
+          if (loader) loader.hidden = true;
         }
         recordFpsSample(now, fpsSampleIntervalMs);
         const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
@@ -691,12 +693,16 @@ function renderShell(): void {
           `).join("")}
         </div>
       </section>
+      <div class="gallery-loading" id="gallery-home-loading"><span>Loading gallery…</span></div>
       <div class="capture-toast" id="capture-toast" hidden></div>
     `;
     app.appendChild(shell);
+    const homeLoader = document.getElementById("gallery-home-loading");
+    if (homeLoader) homeLoader.hidden = true;
     return;
   }
   shell.innerHTML = `
+    <div class="gallery-loading" id="gallery-loading"><span>Loading authored asset…</span></div>
     <section class="top-hud">
       <button data-action="home" type="button">Gallery</button>
       <button data-camera="hero" type="button">Hero</button>
