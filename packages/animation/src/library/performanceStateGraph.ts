@@ -20,9 +20,15 @@ export const PERFORMANCE_GRAPH_PARAMETERS = {
   gesture: "gesture",
   point: "point",
   nod: "nod",
+  wave: "wave",
   react: "react",
   walk: "isMoving",
-  run: "isRunning"
+  run: "isRunning",
+  sit: "sit",
+  shrug: "shrug",
+  cross_arms: "crossArms",
+  salute: "salute",
+  shake_head: "shakeHead"
 } as const satisfies Partial<Record<StandardClipId, string>>;
 
 function trigger(
@@ -53,15 +59,17 @@ function truthy(value: number | boolean | string | undefined): boolean {
 }
 
 /**
- * State graph over the 8 standard performance clip ids ({@link STANDARD_CLIP_IDS}) with `idle` as the
+ * State graph over the 14 standard performance clip ids ({@link STANDARD_CLIP_IDS}) with `idle` as the
  * default state. The studio requests a state per beat and the machine crossfades via the inertialized
  * {@link AnimationStateMachine.stateBlend}.
  *
  * Topology:
- *  - `idle` (default) can go to `talk`, `gesture`, `point`, `nod`, `react`, `walk`, `run`.
+ *  - `idle` (default) can go to any performance or locomotion state.
  *  - `talk` is a held loop (while `isSpeaking`) that returns to idle when the flag clears; from talk
  *    you can still fire one-shots and start moving.
- *  - `gesture` / `point` / `nod` / `react` are one-shots that auto-return to idle on completion.
+ *  - `gesture` / `point` / `nod` / `wave` / `react` / `shrug` / `salute` / `shake_head` are one-shots
+ *    that auto-return to idle on completion.
+ *  - `sit` and `cross_arms` are held loops that return to idle when their flag clears.
  *  - `walk` <-> `run` <-> `idle` form the locomotion blend (`isMoving` / `isRunning`).
  *
  * Priorities: locomotion-stop/one-shots take precedence so a requested beat wins over the held loop.
@@ -77,20 +85,30 @@ export function createPerformanceStateGraph(options: PerformanceStateGraphOption
   const toGesture = trigger("gesture", P.gesture, 80, true);
   const toPoint = trigger("point", P.point, 80, true);
   const toNod = trigger("nod", P.nod, 80, true);
+  const toWave = trigger("wave", P.wave, 80, true);
   const toReact = trigger("react", P.react, 90, true);
+  const toShrug = trigger("shrug", P.shrug, 80, true);
+  const toSalute = trigger("salute", P.salute, 80, true);
+  const toShakeHead = trigger("shake_head", P.shake_head, 80, true);
+  const toSit = trigger("sit", P.sit, 35);
+  const toCrossArms = trigger("cross_arms", P.cross_arms, 35);
 
   const states: readonly AnimationState[] = [
     {
       name: idle,
-      transitions: [toReact, toGesture, toPoint, toNod, toRun, toWalk, toTalk]
+      transitions: [toReact, toShakeHead, toSalute, toShrug, toGesture, toPoint, toNod, toWave, toCrossArms, toSit, toRun, toWalk, toTalk]
     },
     {
       name: "talk",
       transitions: [
         toReact,
+        toShakeHead,
+        toSalute,
+        toShrug,
         toGesture,
         toPoint,
         toNod,
+        toWave,
         toRun,
         toWalk,
         trigger(idle, P.talk, 0, false, false)
@@ -99,7 +117,13 @@ export function createPerformanceStateGraph(options: PerformanceStateGraphOption
     { name: "gesture", duration: oneShot, oneShot: true, onComplete: idle },
     { name: "point", duration: oneShot, oneShot: true, onComplete: idle },
     { name: "nod", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "wave", duration: oneShot, oneShot: true, onComplete: idle },
     { name: "react", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "shrug", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "salute", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "shake_head", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "sit", duration: oneShot, oneShot: true, onComplete: idle },
+    { name: "cross_arms", duration: oneShot, oneShot: true, onComplete: idle },
     {
       name: "walk",
       transitions: [toRun, trigger(idle, P.walk, 0, false, false)]

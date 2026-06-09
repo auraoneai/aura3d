@@ -211,9 +211,15 @@ const VOCAB_KEYWORDS: Readonly<Record<StandardClipId, readonly string[]>> = {
   gesture: ["wave", "waving", "gesture", "greet", "hello", "clap"],
   point: ["point", "pointing", "aim", "indicate"],
   nod: ["nod", "nodding", "yes", "agree"],
+  wave: ["wave", "waving", "greet", "hello", "goodbye", "farewell"],
   walk: ["walk", "walking", "stride"],
   run: ["run", "running", "sprint", "jog"],
-  react: ["react", "reaction", "surprised", "flinch", "recoil", "hit", "damage", "dodge"]
+  react: ["react", "reaction", "surprised", "flinch", "recoil", "hit", "damage", "dodge"],
+  sit: ["sit", "sitting", "seat", "seated"],
+  shrug: ["shrug", "shrugging", "dunno", "uncertain"],
+  cross_arms: ["cross", "arms", "armcross", "defiant", "impatient"],
+  salute: ["salute", "saluting", "respect", "military"],
+  shake_head: ["shake", "head", "no", "disagree", "deny"]
 };
 
 export interface ClipMotionScore {

@@ -7,10 +7,14 @@ import {
 import { HUMANOID_BONES, type HumanoidBoneName, type HumanoidRigDefinition } from "../HumanoidRetargeting.js";
 
 /**
- * The STANDARD performance vocabulary (Phase 2.4). These 8 ids are the contract the Animation
+ * The STANDARD performance vocabulary (Phase 2.4). These 14 ids are the contract the Animation
  * Studio drives — every shared library, retarget target, and state graph speaks exactly these.
  */
-export const STANDARD_CLIP_IDS = ["idle", "talk", "gesture", "point", "nod", "walk", "run", "react"] as const;
+export const STANDARD_CLIP_IDS = [
+  "idle", "talk", "gesture", "point", "nod", "wave",
+  "walk", "run", "react",
+  "sit", "shrug", "cross_arms", "salute", "shake_head"
+] as const;
 export type StandardClipId = typeof STANDARD_CLIP_IDS[number];
 
 /** Locomotion subset of the vocabulary (used by the locomotion blend / studio clip-map check). */
@@ -416,6 +420,208 @@ function runClip(): AnimationClipDefinition<StandardClipId> {
   return legCycle("run", 0.6, 0.9, 1.1, 0.07);
 }
 
+// --- wave: one-shot greeting wave (right arm) ---------------------------------------------------
+function waveClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 1.2;
+  return clip(
+    "wave",
+    d,
+    [
+      rotationTrack("rightUpperArm", d, [
+        { t: 0, e: [0, 0, -0.2] },
+        { t: 0.3, e: [0.5, -0.2, -1.4] },
+        { t: 0.5, e: [0.6, -0.1, -1.55] },
+        { t: 0.7, e: [0.5, -0.2, -1.4] },
+        { t: 0.9, e: [0.6, -0.1, -1.55] },
+        { t: 1.1, e: [0.4, -0.15, -1.3] }
+      ]),
+      rotationTrack("rightLowerArm", d, [
+        { t: 0, e: [0, 0, -0.3] },
+        { t: 0.3, e: [0, -0.3, -0.8] },
+        { t: 0.5, e: [0, -0.2, -0.9] },
+        { t: 0.7, e: [0, -0.3, -0.8] },
+        { t: 0.9, e: [0, -0.2, -0.9] },
+        { t: 1.1, e: [0, -0.25, -0.7] }
+      ]),
+      rotationTrack("head", d, [
+        { t: 0, e: [0, 0, 0] },
+        { t: 0.3, e: [0.05, 0.12, 0] },
+        { t: 1.1, e: [0, 0.08, 0] }
+      ])
+    ],
+    false,
+    ["wave", "performance", "one-shot", "upper-body"]
+  );
+}
+
+// --- sit: seated resting pose loop ---------------------------------------------------------------
+function sitClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 3;
+  return clip(
+    "sit",
+    d,
+    [
+      translationTrack("hips", d, [
+        { t: 0, p: [0, -0.45, 0] },
+        { t: 1.5, p: [0, -0.42, 0] },
+        { t: 3, p: [0, -0.45, 0] }
+      ]),
+      rotationTrack("hips", d, [
+        { t: 0, e: [0.35, 0, 0] },
+        { t: 1.5, e: [0.38, 0, 0] },
+        { t: 3, e: [0.35, 0, 0] }
+      ]),
+      rotationTrack("leftUpperLeg", d, [
+        { t: 0, e: [-1.1, 0, 0] },
+        { t: 1.5, e: [-1.05, 0, 0] },
+        { t: 3, e: [-1.1, 0, 0] }
+      ]),
+      rotationTrack("rightUpperLeg", d, [
+        { t: 0, e: [-1.1, 0, 0] },
+        { t: 1.5, e: [-1.15, 0, 0] },
+        { t: 3, e: [-1.1, 0, 0] }
+      ]),
+      rotationTrack("leftLowerLeg", d, [
+        { t: 0, e: [1.6, 0, 0] },
+        { t: 1.5, e: [1.55, 0, 0] },
+        { t: 3, e: [1.6, 0, 0] }
+      ]),
+      rotationTrack("rightLowerLeg", d, [
+        { t: 0, e: [1.6, 0, 0] },
+        { t: 1.5, e: [1.65, 0, 0] },
+        { t: 3, e: [1.6, 0, 0] }
+      ]),
+      rotationTrack("spine", d, [
+        { t: 0, e: [0.12, 0, 0] },
+        { t: 1.5, e: [0.1, 0, 0] },
+        { t: 3, e: [0.12, 0, 0] }
+      ])
+    ],
+    true,
+    ["sit", "performance", "loop", "full-body"]
+  );
+}
+
+// --- shrug: one-shot shoulder shrug -------------------------------------------------------------
+function shrugClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 0.9;
+  return clip(
+    "shrug",
+    d,
+    [
+      rotationTrack("leftUpperArm", d, [
+        { t: 0, e: [0, 0, 0.2] },
+        { t: 0.3, e: [0, 0, 0.9] },
+        { t: 0.6, e: [0, 0, 0.3] }
+      ]),
+      rotationTrack("rightUpperArm", d, [
+        { t: 0, e: [0, 0, -0.2] },
+        { t: 0.3, e: [0, 0, -0.9] },
+        { t: 0.6, e: [0, 0, -0.3] }
+      ]),
+      rotationTrack("spine", d, [
+        { t: 0, e: [0, 0, 0] },
+        { t: 0.3, e: [0.06, 0, 0] },
+        { t: 0.6, e: [0, 0, 0] }
+      ])
+    ],
+    false,
+    ["shrug", "performance", "one-shot", "upper-body"]
+  );
+}
+
+// --- cross_arms: standing arms-crossed pose loop ------------------------------------------------
+function crossArmsClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 3;
+  return clip(
+    "cross_arms",
+    d,
+    [
+      rotationTrack("leftUpperArm", d, [
+        { t: 0, e: [0, 0, 0.55] },
+        { t: 1.5, e: [0, 0, 0.6] },
+        { t: 3, e: [0, 0, 0.55] }
+      ]),
+      rotationTrack("leftLowerArm", d, [
+        { t: 0, e: [0, 0, 1.4] },
+        { t: 1.5, e: [0, 0, 1.5] },
+        { t: 3, e: [0, 0, 1.4] }
+      ]),
+      rotationTrack("rightUpperArm", d, [
+        { t: 0, e: [0, 0, -0.55] },
+        { t: 1.5, e: [0, 0, -0.6] },
+        { t: 3, e: [0, 0, -0.55] }
+      ]),
+      rotationTrack("rightLowerArm", d, [
+        { t: 0, e: [0, 0, -1.4] },
+        { t: 1.5, e: [0, 0, -1.5] },
+        { t: 3, e: [0, 0, -1.4] }
+      ])
+    ],
+    true,
+    ["cross_arms", "performance", "loop", "upper-body"]
+  );
+}
+
+// --- salute: one-shot hand-to-forehead ----------------------------------------------------------
+function saluteClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 1;
+  return clip(
+    "salute",
+    d,
+    [
+      rotationTrack("rightUpperArm", d, [
+        { t: 0, e: [0, 0, -0.2] },
+        { t: 0.35, e: [1.3, -0.5, -1.2] },
+        { t: 0.7, e: [1.3, -0.5, -1.2] },
+        { t: 1, e: [0.4, -0.2, -0.8] }
+      ]),
+      rotationTrack("rightLowerArm", d, [
+        { t: 0, e: [0, 0, -0.3] },
+        { t: 0.35, e: [0, -0.4, -1.3] },
+        { t: 0.7, e: [0, -0.4, -1.3] },
+        { t: 1, e: [0, -0.2, -0.7] }
+      ]),
+      rotationTrack("head", d, [
+        { t: 0, e: [0, 0, 0] },
+        { t: 0.35, e: [0.08, -0.1, 0] },
+        { t: 1, e: [0, 0, 0] }
+      ])
+    ],
+    false,
+    ["salute", "performance", "one-shot", "upper-body"]
+  );
+}
+
+// --- shake_head: one-shot side-to-side "no" -----------------------------------------------------
+function shakeHeadClip(): AnimationClipDefinition<StandardClipId> {
+  const d = 0.8;
+  return clip(
+    "shake_head",
+    d,
+    [
+      rotationTrack("head", d, [
+        { t: 0, e: [0, 0, 0] },
+        { t: 0.15, e: [0, -0.45, 0] },
+        { t: 0.3, e: [0, 0.45, 0] },
+        { t: 0.45, e: [0, -0.45, 0] },
+        { t: 0.6, e: [0, 0.45, 0] },
+        { t: 0.75, e: [0, 0, 0] }
+      ]),
+      rotationTrack("neck", d, [
+        { t: 0, e: [0, 0, 0] },
+        { t: 0.15, e: [0, -0.25, 0] },
+        { t: 0.3, e: [0, 0.25, 0] },
+        { t: 0.45, e: [0, -0.25, 0] },
+        { t: 0.6, e: [0, 0.25, 0] },
+        { t: 0.75, e: [0, 0, 0] }
+      ])
+    ],
+    false,
+    ["shake_head", "performance", "one-shot"]
+  );
+}
+
 /** Ordered list of all standard library clip definitions (idle first). */
 export function createStandardHumanoidClipDefinitions(): readonly AnimationClipDefinition<StandardClipId>[] {
   return [
@@ -424,14 +630,20 @@ export function createStandardHumanoidClipDefinitions(): readonly AnimationClipD
     gestureClip(),
     pointClip(),
     nodClip(),
+    waveClip(),
     walkClip(),
     runClip(),
-    reactClip()
+    reactClip(),
+    sitClip(),
+    shrugClip(),
+    crossArmsClip(),
+    saluteClip(),
+    shakeHeadClip()
   ];
 }
 
 /**
- * Shared, rig-neutral {@link AnimationClipRegistry} populated with the 8 standard performance clips
+ * Shared, rig-neutral {@link AnimationClipRegistry} populated with the 14 standard performance clips
  * authored on {@link STANDARD_LIBRARY_RIG} (canonical {@link HUMANOID_BONES}). The clips are COMPACT
  * procedural keyframe loops/one-shots — real, samplable {@link AnimationTrack} data, not mocap and
  * not placeholders. They give the studio a guaranteed, retargetable performance vocabulary even when
