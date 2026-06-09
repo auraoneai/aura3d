@@ -61,6 +61,12 @@ export interface RuntimeCharacter {
   rigGrade?: "A" | "B" | "C" | "D";
   /** M7 — dominant motion source the render played (mocap/extracted/procedural…), when recorded. */
   motionSource?: string;
+  /** Default performance clip id. */
+  defaultClip?: string;
+  /** Mouth morph target index for lip-sync. */
+  mouthMorphIndex?: number;
+  /** Foot IK configuration (truthy when enabled). */
+  footIk?: unknown;
 }
 
 export interface RuntimeShotBlocking {
@@ -254,6 +260,8 @@ export function mapDocument(doc: RuntimeDocument): EpisodeDocument {
 
   const cast: CastMember[] = rChars.map((c) => {
     const { source, sourceLabel } = castProvenance(c);
+    const fidelity =
+      fidelityById.get(c.id) ?? { id: c.id, grade: "C", previz: true, reason: "previz: ungraded" };
     return {
       id: c.id,
       name: cap(c.id),
@@ -263,8 +271,11 @@ export function mapDocument(doc: RuntimeDocument): EpisodeDocument {
       lines: linesPerSpeaker(c.id),
       source,
       sourceLabel,
-      fidelity:
-        fidelityById.get(c.id) ?? { id: c.id, grade: "C", previz: true, reason: "previz: ungraded" }
+      fidelity,
+      defaultClip: c.defaultClip,
+      mouthMorphIndex: c.mouthMorphIndex,
+      footIk: !!c.footIk,
+      gradeAwareIntent: `${fidelity.grade}-grade`
     };
   });
 

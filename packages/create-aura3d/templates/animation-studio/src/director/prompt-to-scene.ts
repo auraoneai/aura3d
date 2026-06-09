@@ -137,14 +137,82 @@ export function parseCast(prompt: string): string[] {
 }
 
 /** Object nouns the prompt explicitly names (e.g. "car", "table") → extra registered props. */
+const OBJECT_PROPS: Record<string, { kind: "prop"; defaultMesh: string }> = {
+  // furniture
+  table: { kind: "prop", defaultMesh: "table" },
+  chair: { kind: "prop", defaultMesh: "chair" },
+  desk: { kind: "prop", defaultMesh: "desk" },
+  bed: { kind: "prop", defaultMesh: "bed" },
+  sofa: { kind: "prop", defaultMesh: "sofa" },
+  bookshelf: { kind: "prop", defaultMesh: "bookshelf" },
+  cabinet: { kind: "prop", defaultMesh: "cabinet" },
+  stool: { kind: "prop", defaultMesh: "stool" },
+  bench: { kind: "prop", defaultMesh: "bench" },
+  wardrobe: { kind: "prop", defaultMesh: "wardrobe" },
+  // electronics
+  computer: { kind: "prop", defaultMesh: "computer" },
+  laptop: { kind: "prop", defaultMesh: "laptop" },
+  monitor: { kind: "prop", defaultMesh: "monitor" },
+  phone: { kind: "prop", defaultMesh: "phone" },
+  television: { kind: "prop", defaultMesh: "television" },
+  camera: { kind: "prop", defaultMesh: "camera" },
+  speaker: { kind: "prop", defaultMesh: "speaker" },
+  keyboard: { kind: "prop", defaultMesh: "keyboard" },
+  robot: { kind: "prop", defaultMesh: "robot" },
+  // vehicles
+  car: { kind: "prop", defaultMesh: "car" },
+  truck: { kind: "prop", defaultMesh: "truck" },
+  bike: { kind: "prop", defaultMesh: "bike" },
+  ship: { kind: "prop", defaultMesh: "ship" },
+  rocket: { kind: "prop", defaultMesh: "rocket" },
+  boat: { kind: "prop", defaultMesh: "boat" },
+  bus: { kind: "prop", defaultMesh: "bus" },
+  train: { kind: "prop", defaultMesh: "train" },
+  // nature
+  tree: { kind: "prop", defaultMesh: "tree" },
+  rock: { kind: "prop", defaultMesh: "rock" },
+  mushroom: { kind: "prop", defaultMesh: "mushroom" },
+  flower: { kind: "prop", defaultMesh: "flower" },
+  bush: { kind: "prop", defaultMesh: "bush" },
+  log: { kind: "prop", defaultMesh: "log" },
+  fern: { kind: "prop", defaultMesh: "fern" },
+  cactus: { kind: "prop", defaultMesh: "cactus" },
+  // tools
+  hammer: { kind: "prop", defaultMesh: "hammer" },
+  wrench: { kind: "prop", defaultMesh: "wrench" },
+  screwdriver: { kind: "prop", defaultMesh: "screwdriver" },
+  drill: { kind: "prop", defaultMesh: "drill" },
+  saw: { kind: "prop", defaultMesh: "saw" },
+  axe: { kind: "prop", defaultMesh: "axe" },
+  // containers
+  box: { kind: "prop", defaultMesh: "box" },
+  crate: { kind: "prop", defaultMesh: "crate" },
+  barrel: { kind: "prop", defaultMesh: "barrel" },
+  basket: { kind: "prop", defaultMesh: "basket" },
+  bucket: { kind: "prop", defaultMesh: "bucket" },
+  bottle: { kind: "prop", defaultMesh: "bottle" },
+  jar: { kind: "prop", defaultMesh: "jar" },
+  can: { kind: "prop", defaultMesh: "can" },
+  // decorations
+  lamp: { kind: "prop", defaultMesh: "lamp" },
+  picture: { kind: "prop", defaultMesh: "picture" },
+  vase: { kind: "prop", defaultMesh: "vase" },
+  statue: { kind: "prop", defaultMesh: "statue" },
+  sign: { kind: "prop", defaultMesh: "sign" },
+  trophy: { kind: "prop", defaultMesh: "trophy" },
+  mirror: { kind: "prop", defaultMesh: "mirror" },
+  candle: { kind: "prop", defaultMesh: "candle" },
+  // other
+  door: { kind: "prop", defaultMesh: "door" },
+  ball: { kind: "prop", defaultMesh: "ball" },
+  book: { kind: "prop", defaultMesh: "book" },
+  engine: { kind: "prop", defaultMesh: "engine" }
+};
+
 export function parseObjectProps(prompt: string, castIds: readonly string[]): string[] {
   const castWords = new Set(castIds.flatMap((id) => id.split("-")));
-  const OBJECTS = [
-    "car", "table", "chair", "desk", "door", "box", "ball", "book", "lamp", "tree",
-    "rock", "barrel", "crate", "engine", "computer", "robot", "ship", "rocket", "sign"
-  ];
   const present = new Set(words(prompt));
-  return OBJECTS.filter((o) => present.has(o) && !castWords.has(o));
+  return Object.keys(OBJECT_PROPS).filter((o) => present.has(o) && !castWords.has(o));
 }
 
 /** Infer the scene's dramatic intent from the prompt verbs. */

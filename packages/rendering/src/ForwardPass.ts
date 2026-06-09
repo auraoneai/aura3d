@@ -30,6 +30,7 @@ export interface RenderItem {
   readonly instanceTransforms?: Float32Array | readonly number[];
   readonly instanceColors?: Float32Array | readonly number[];
   readonly instanceAttributes?: readonly RenderItemInstanceAttribute[];
+  readonly boundingBoxCenter?: readonly [number, number, number];
 }
 
 export interface RenderItemDrawRange {
@@ -1225,7 +1226,7 @@ function sortForwardRenderItems(
 ): readonly RenderItem[] {
   return sortRenderQueueItems(items.map((item) => ({
     item,
-    bucket: isTransparentRenderItem(item) ? "transparent" : "opaque",
+    bucket: isTransparentRenderItem(item) ? "transparent" : isTransmissionRenderItem(item) ? "transmission" : "opaque",
     depth: cameraPosition ? distanceSquaredFromCamera(item, cameraPosition) : 0,
     pipelineKey: renderItemPipelineKey(item),
     batchKey: renderItemPipelineKey(item),
@@ -1238,11 +1239,29 @@ function isTransparentRenderItem(item: RenderItem): boolean {
   return getBaseMaterial(material).renderState.blend;
 }
 
+function materialNumericParameter(material: Material, name: string, fallback: number): number {
+  const value = material.getParameter(name);
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function isTransmissionRenderItem(item: RenderItem): boolean {
+  const material = item.material ?? new UnlitMaterial();
+  const baseMaterial = getBaseMaterial(material);
+  if (baseMaterial.renderState.blend) return false;
+  const transmissionFactor = materialNumericParameter(baseMaterial, "u_transmissionFactor", 0);
+  const diffuseTransmissionFactor = materialNumericParameter(baseMaterial, "u_diffuseTransmissionFactor", 0);
+  const volumeThicknessFactor = materialNumericParameter(baseMaterial, "u_volumeThicknessFactor", 0);
+  return transmissionFactor > 0.001 || diffuseTransmissionFactor > 0.001 || volumeThicknessFactor > 0.001;
+}
+
 function distanceSquaredFromCamera(item: RenderItem, cameraPosition: readonly [number, number, number]): number {
-  const transform = item.modelMatrix ?? identityMatrix();
-  const x = (transform[12] ?? 0) - cameraPosition[0];
-  const y = (transform[13] ?? 0) - cameraPosition[1];
-  const z = (transform[14] ?? 0) - cameraPosition[2];
+  const center = item.boundingBoxCenter;
+  const tx = center?.[0] ?? item.modelMatrix?.[12] ?? 0;
+  const ty = center?.[1] ?? item.modelMatrix?.[13] ?? 0;
+  const tz = center?.[2] ?? item.modelMatrix?.[14] ?? 0;
+  const x = tx - cameraPosition[0];
+  const y = ty - cameraPosition[1];
+  const z = tz - cameraPosition[2];
   return x * x + y * y + z * z;
 }
 

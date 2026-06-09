@@ -1388,7 +1388,16 @@ async function createMaterial(
       normalTexture,
       metallicRoughnessTexture,
       occlusionTexture,
-      emissiveTexture
+      emissiveTexture,
+      clearcoatTexture,
+      clearcoatNormalTexture,
+      sheenColorTexture,
+      sheenRoughnessTexture,
+      transmissionTexture,
+      iridescenceTexture,
+      iridescenceThicknessTexture,
+      anisotropyTexture,
+      volumeThicknessTexture
     ] = await Promise.all([
       material.baseColorTexture
         ? createTextureBinding(asset, material.baseColorTexture, "srgb", getTexture, "u_baseColorTexture")
@@ -1404,6 +1413,33 @@ async function createMaterial(
         : Promise.resolve(undefined),
       material.emissiveTexture
         ? createTextureBinding(asset, material.emissiveTexture, "srgb", getTexture, "u_emissiveTexture")
+        : Promise.resolve(undefined),
+      material.clearcoat?.texture
+        ? createTextureBinding(asset, material.clearcoat.texture, "linear", getTexture, "u_clearcoatTexture")
+        : Promise.resolve(undefined),
+      material.clearcoat?.normalTexture
+        ? createTextureBinding(asset, material.clearcoat.normalTexture, "linear", getTexture, "u_clearcoatNormalTexture", createNormalSamplerForInfo(asset, material.clearcoat.normalTexture))
+        : Promise.resolve(undefined),
+      material.sheen?.colorTexture
+        ? createTextureBinding(asset, material.sheen.colorTexture, "srgb", getTexture, "u_sheenColorTexture")
+        : Promise.resolve(undefined),
+      material.sheen?.roughnessTexture
+        ? createTextureBinding(asset, material.sheen.roughnessTexture, "linear", getTexture, "u_sheenRoughnessTexture")
+        : Promise.resolve(undefined),
+      material.transmission?.texture
+        ? createTextureBinding(asset, material.transmission.texture, "linear", getTexture, "u_transmissionTexture")
+        : Promise.resolve(undefined),
+      material.iridescence?.texture
+        ? createTextureBinding(asset, material.iridescence.texture, "linear", getTexture, "u_iridescenceTexture")
+        : Promise.resolve(undefined),
+      material.iridescence?.thicknessTexture
+        ? createTextureBinding(asset, material.iridescence.thicknessTexture, "linear", getTexture, "u_iridescenceThicknessTexture")
+        : Promise.resolve(undefined),
+      material.anisotropy?.texture
+        ? createTextureBinding(asset, material.anisotropy.texture, "linear", getTexture, "u_anisotropyTexture")
+        : Promise.resolve(undefined),
+      material.volume?.thicknessTexture
+        ? createTextureBinding(asset, material.volume.thicknessTexture, "linear", getTexture, "u_volumeThicknessTexture")
         : Promise.resolve(undefined)
     ]);
     const runtimeMaterial = new SkinnedLitMaterial({
@@ -1424,6 +1460,15 @@ async function createMaterial(
       roughness: material.roughnessFactor,
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
+      clearcoatTexture,
+      clearcoatNormalTexture,
+      sheenColorTexture,
+      sheenRoughnessTexture,
+      transmissionTexture,
+      iridescenceTexture,
+      iridescenceThicknessTexture,
+      anisotropyTexture,
+      volumeThicknessTexture,
       ...pbrExtensionScalarOptions(material)
     });
     applyAlphaCutoff(runtimeMaterial, material);

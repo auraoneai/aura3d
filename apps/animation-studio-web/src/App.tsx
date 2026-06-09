@@ -265,25 +265,15 @@ export function App() {
     const isShot = scope === "shot";
     if (isShot && !currentShot) return Promise.resolve();
     setRendering(true);
-    setRenderPct(0);
+    setRenderPct(-1);
     setPlaying(false);
-    // Ease the progress ring toward ~92% while we await the real render; snap to 100% on done.
-    const started = performance.now();
-    let live = true;
-    const ease = () => {
-      if (!live) return;
-      const t = (performance.now() - started) / 1000;
-      // Asymptotic approach so the ring never claims completion before the server returns.
-      setRenderPct(Math.min(92, 92 * (1 - Math.exp(-t / 9))));
-      requestAnimationFrame(ease);
-    };
-    requestAnimationFrame(ease);
+    // Real streaming progress requires server-sent events (SSE) from the render pipeline.
+    // Until then we show an honest indeterminate pulse (renderPct < 0) rather than a fake
+    // percentage that misleads the user about completion.
 
     // Render the current shot's time-range when scope is "shot", else the whole sequence.
     const range = isShot && currentShot ? `${Math.floor(currentShot.start)}-${Math.ceil(currentShot.start + currentShot.dur)}` : undefined;
     return runRender({ lowFi: true, range }).then((res) => {
-      live = false;
-      setRenderPct(100);
       setRendering(false);
       if (!res.ok) {
         showToast("Render failed — see console", "tip");

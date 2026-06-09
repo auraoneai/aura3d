@@ -76,7 +76,7 @@ async function parseTextureLevels(
   await installNodeLoadersGLFileHooks();
   const { parse, BasisLoader } = await loadLoadersGLModules();
   const parsed = await parse(source.slice(0), BasisLoader, {
-    worker: false,
+    worker: true,
     CDN: defaultLoadersGLCdn(),
     modules: defaultLoadersGLModules(),
     ...loaderOptions,

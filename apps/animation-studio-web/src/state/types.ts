@@ -39,6 +39,14 @@ export interface CastMember {
   sourceLabel: string;
   /** M7 — honest fidelity tier (A/B/C). C is "previz" — never presented as finished. */
   fidelity: CharacterFidelity;
+  /** Default performance clip id (e.g. "idle"). */
+  defaultClip?: string;
+  /** Mouth morph target index for lip-sync; -1 when absent. */
+  mouthMorphIndex?: number;
+  /** Whether foot IK is enabled for this cast member. */
+  footIk?: boolean;
+  /** Read-only grade-aware performance intent label. */
+  gradeAwareIntent?: string;
 }
 
 export interface SetEntity {

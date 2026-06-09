@@ -1,4 +1,4 @@
-export type RenderQueueBucket = "opaque" | "mask" | "transparent";
+export type RenderQueueBucket = "opaque" | "transmission" | "mask" | "transparent";
 
 export interface RenderQueueSortItem<T = unknown> {
   readonly item: T;
@@ -30,6 +30,7 @@ export interface RenderQueueSortDiagnostics {
   readonly largestBatch: number;
   readonly materialSwitches: number;
   readonly opaqueCount: number;
+  readonly transmissionCount: number;
   readonly maskedCount: number;
   readonly transparentCount: number;
   readonly pipelineTransitions: number;
@@ -106,8 +107,9 @@ export function sortRenderItems(items: readonly SortableRenderItem[]): SortableR
 
 function bucketRank(bucket: RenderQueueBucket): number {
   if (bucket === "opaque") return 0;
-  if (bucket === "mask") return 1;
-  return 2;
+  if (bucket === "transmission") return 1;
+  if (bucket === "mask") return 2;
+  return 3;
 }
 
 function validateRenderQueueItem(item: RenderQueueSortItem, index: number): void {
@@ -158,6 +160,7 @@ function buildDiagnostics(
     largestBatch,
     materialSwitches: pipelineTransitions,
     opaqueCount: items.filter((item) => item.bucket === "opaque").length,
+    transmissionCount: items.filter((item) => item.bucket === "transmission").length,
     maskedCount: items.filter((item) => item.bucket === "mask").length,
     transparentCount: items.filter((item) => item.bucket === "transparent").length,
     pipelineTransitions,

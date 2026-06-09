@@ -4,6 +4,12 @@ import { Icon } from "./Icon";
 import { cap, fmt, shade } from "../state/util";
 import type { EpisodeDocument, Selection } from "../state/types";
 
+const STANDARD_CLIP_IDS = [
+  "idle", "talk", "gesture", "point", "nod", "wave",
+  "walk", "run", "react",
+  "sit", "shrug", "cross_arms", "salute", "shake_head"
+];
+
 function Field({
   label,
   icon,
@@ -160,8 +166,58 @@ export function Inspector({ data, sel }: InspectorProps) {
             }
           />
         </div>
+        <div className="prop-grid one">
+          <Field
+            label="Default clip"
+            icon="film"
+            value={
+              <select
+                disabled
+                value={c.defaultClip ?? "idle"}
+                style={{
+                  width: "100%",
+                  background: "transparent",
+                  color: "inherit",
+                  border: "none",
+                  fontFamily: "var(--mono)",
+                  fontSize: 12,
+                  cursor: "not-allowed"
+                }}
+              >
+                {STANDARD_CLIP_IDS.map((id) => (
+                  <option key={id} value={id}>{id}</option>
+                ))}
+              </select>
+            }
+          />
+        </div>
+        <div className="prop-grid">
+          <Field label="Mouth morph" icon="mic" value={c.mouthMorphIndex ?? -1} mono />
+          <Field
+            label="Foot IK"
+            icon="zap"
+            value={
+              <input
+                type="checkbox"
+                disabled
+                checked={!!c.footIk}
+                style={{ cursor: "not-allowed" }}
+              />
+            }
+          />
+        </div>
+        <div className="prop-grid one">
+          <Field
+            label="Grade intent"
+            value={
+              <span className="beat-chip cam" style={{ fontSize: 10 }}>
+                {c.gradeAwareIntent ?? "—"}
+              </span>
+            }
+          />
+        </div>
         <div className="insp-note">
-          {c.name + " is rigged and assignable to any beat. Type “cast” commands in the console to re-pose or re-cast."}
+          {c.name + " is rigged and assignable to any beat. Type \"cast\" commands in the console to re-pose or re-cast."}
         </div>
       </Fragment>
     );
