@@ -1383,21 +1383,29 @@ async function createMaterial(
 ): Promise<Material> {
   const renderState = renderStateForGLTFMaterial(material, renderStateOverrides);
   if (options.skinned && !material.unlit) {
-    const baseColorTexture = material.baseColorTexture
-      ? await createTextureBinding(asset, material.baseColorTexture, "srgb", getTexture, "u_baseColorTexture")
-      : undefined;
-    const normalTexture = material.normalTexture
-      ? await createTextureBinding(asset, material.normalTexture, "linear", getTexture, "u_normalTexture", createNormalSampler(asset, material))
-      : undefined;
-    const metallicRoughnessTexture = material.metallicRoughnessTexture
-      ? await createTextureBinding(asset, material.metallicRoughnessTexture, "linear", getTexture, "u_metallicRoughnessTexture")
-      : undefined;
-    const occlusionTexture = material.occlusionTexture
-      ? await createTextureBinding(asset, material.occlusionTexture, "linear", getTexture, "u_occlusionTexture")
-      : undefined;
-    const emissiveTexture = material.emissiveTexture
-      ? await createTextureBinding(asset, material.emissiveTexture, "srgb", getTexture, "u_emissiveTexture")
-      : undefined;
+    const [
+      baseColorTexture,
+      normalTexture,
+      metallicRoughnessTexture,
+      occlusionTexture,
+      emissiveTexture
+    ] = await Promise.all([
+      material.baseColorTexture
+        ? createTextureBinding(asset, material.baseColorTexture, "srgb", getTexture, "u_baseColorTexture")
+        : Promise.resolve(undefined),
+      material.normalTexture
+        ? createTextureBinding(asset, material.normalTexture, "linear", getTexture, "u_normalTexture", createNormalSampler(asset, material))
+        : Promise.resolve(undefined),
+      material.metallicRoughnessTexture
+        ? createTextureBinding(asset, material.metallicRoughnessTexture, "linear", getTexture, "u_metallicRoughnessTexture")
+        : Promise.resolve(undefined),
+      material.occlusionTexture
+        ? createTextureBinding(asset, material.occlusionTexture, "linear", getTexture, "u_occlusionTexture")
+        : Promise.resolve(undefined),
+      material.emissiveTexture
+        ? createTextureBinding(asset, material.emissiveTexture, "srgb", getTexture, "u_emissiveTexture")
+        : Promise.resolve(undefined)
+    ]);
     const runtimeMaterial = new SkinnedLitMaterial({
       name: material.name,
       renderState,
@@ -1611,6 +1619,10 @@ function requiresTransparentRenderState(material: GLTFMaterialAsset): boolean {
 function isEffectivelyOpaqueBlendMaterial(material: GLTFMaterialAsset): boolean {
   if (material.alphaMode !== "BLEND") return false;
   if (material.baseColorFactor[3] < BLEND_OPAQUE_ALPHA_THRESHOLD) return false;
+  // Conservative: if a baseColorTexture is present, retain blending — the texture may
+  // carry per-texel alpha that we cannot inspect here. Flattening would depth-sort it
+  // as opaque and cause ghosting / overlay artifacts.
+  if (material.baseColorTexture) return false;
   if (materialHasTransmissionOrVolume(material)) return false;
   return true;
 }

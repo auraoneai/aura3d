@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
-  release: "1.0.10";
+  release: "1.3.2";
   version: string;
   status: "loading" | "running" | "paused" | "error";
   error: string | null;

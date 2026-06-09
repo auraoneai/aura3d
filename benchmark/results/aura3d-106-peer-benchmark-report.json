@@ -23,8 +23,8 @@
     },
     {
       "path": "tests/reports/current-route-health/screenshots/apps-camera-path.png",
-      "sha256": "31ee40ac0ed12bb505e37eb61e1b380b345bf00092a8478c18b99fc881bc04bd",
-      "byteSize": 63147,
+      "sha256": "2b0795ebfded3a5ae544059ac44439bdf5c9688bf3c9aaa099ff95b2acd6dcfa",
+      "byteSize": 63218,
       "role": "camera path route visual evidence"
     },
     {

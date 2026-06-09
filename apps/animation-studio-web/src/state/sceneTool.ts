@@ -18,14 +18,21 @@ export interface VerbSpec {
 
 export const VERBS: VerbSpec[] = [
   { verb: "set", tail: "<name> --hdr <mood>", desc: "Define / re-light the active set" },
-  { verb: "cast add", tail: "<name>", desc: "Cast a character into the scene" },
+  { verb: "cast add", tail: "<name> [--profile <rig>]", desc: "Cast a character into the scene" },
   { verb: "cast remove", tail: "<name>", desc: "Remove a character" },
+  { verb: "cast rename", tail: "<old> <new>", desc: "Rename a cast member" },
   { verb: "shot add", tail: "--after <id>", desc: "Block a new shot" },
+  { verb: "shot remove", tail: "--id <id>", desc: "Remove a shot" },
   { verb: "shot retime", tail: "--id <id> --duration <s>", desc: "Change a shot's duration" },
   { verb: "cam", tail: "<wide|medium|close|orbit>", desc: "Set the active shot camera" },
-  { verb: "light add", tail: "--type rim", desc: "Add a light to the set" },
+  { verb: "light add", tail: "--type <rim|key|fill>", desc: "Add a light to the set" },
   { verb: "fx add", tail: "<name>", desc: "Add an effect to the timeline" },
-  { verb: "render", tail: "[--shot <id>]", desc: "Render a low-fi preview" }
+  { verb: "prop add", tail: "<name> [--set-dressing]", desc: "Add a prop to the scene" },
+  { verb: "dialogue", tail: "<character> \"<line>\"", desc: "Add dialogue for a character" },
+  { verb: "block", tail: "<character> <action>", desc: "Block a character action" },
+  { verb: "gesture", tail: "<character> <clip-id>", desc: "Queue a gesture clip for a character" },
+  { verb: "show", tail: "<shots|cast|props|lights>", desc: "Inspect scene elements" },
+  { verb: "render", tail: "[--shot <id>] [--quality preview|final]", desc: "Render a preview or final" }
 ];
 
 export interface ParsedCommand {

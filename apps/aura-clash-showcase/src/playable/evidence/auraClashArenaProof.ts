@@ -21,6 +21,7 @@ export type AuraClashFighterAction =
   | "heavy"
   | "special"
   | "hurt"
+  | "recover"
   | "ko";
 
 export interface AuraClashPerformanceProof {

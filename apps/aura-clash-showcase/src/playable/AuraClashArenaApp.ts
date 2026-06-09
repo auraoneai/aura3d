@@ -1225,6 +1225,7 @@ function createFighter(id: FighterId, name: string, subtitle: string, x: number,
     grounded: true,
     guard: false,
     hitstun: 0,
+    recovery: 0,
     hitStopRemaining: 0,
     pendingImpulse: 0,
     aiCooldown: id === "rival" ? 1.18 : 0.72,
@@ -1254,6 +1255,7 @@ function resetFighter(fighter: FighterState, x: number, facing: 1 | -1): void {
   fighter.grounded = true;
   fighter.guard = false;
   fighter.hitstun = 0;
+  fighter.recovery = 0;
   fighter.hitStopRemaining = 0;
   fighter.pendingImpulse = 0;
   fighter.aiCooldown = fighter.id === "rival" ? 1.18 : 0.72;
@@ -1345,7 +1347,7 @@ function updatePlayer(fighter: FighterState, input: ReturnType<typeof game.input
 }
 
 function canUseHeldAttack(fighter: FighterState, controls: Controls, action: "light" | "heavy" | "special"): boolean {
-  return controls.held(action) && !fighter.attack && fighter.moveCooldown <= 0 && fighter.hitstun <= 0 && fighter.action !== "ko";
+  return controls.held(action) && !fighter.attack && fighter.moveCooldown <= 0 && fighter.hitstun <= 0 && fighter.recovery <= 0 && fighter.action !== "ko";
 }
 
 function updateRivalAi(rival: FighterState, player: FighterState, dt: number): void {
@@ -1353,26 +1355,32 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number): v
   const gap = player.x - rival.x;
   const distance = Math.abs(gap);
   const direction = gap === 0 ? rival.facing * -1 : Math.sign(gap);
-  const desired = player.attack && distance < 1.58
-    ? 0
-    : !player.grounded && distance < 1.35
-    ? -direction
-    : distance > 1.28
-      ? direction
-      : distance < 0.88
-        ? -direction
-        : 0;
   const opponentAlive = player.health > 0 && player.action !== "ko";
+  const desired = !opponentAlive
+    ? 0
+    : player.attack && distance < 1.58
+      ? 0
+      : !player.grounded && distance < 1.35
+        ? -direction
+        : distance > 1.28
+          ? direction
+          : distance < 0.88
+            ? -direction
+            : 0;
   const canStrike = opponentAlive && rival.grounded && player.grounded && distance >= 0.9 && distance <= 1.28;
-  const shouldGuard = player.attack?.id === "special" && distance < 1.34 && rival.health > START_HEALTH * 0.35;
+  const playerAttacking = player.attack !== null;
+  const incomingHeavy = playerAttacking && (player.attack.id === "heavy" || player.attack.id === "special");
+  const shouldGuard = opponentAlive && playerAttacking && distance < 1.4 && rival.grounded && !rival.attack;
+  const shouldBackdash = opponentAlive && incomingHeavy && distance < 1.1 && rival.grounded && rival.moveCooldown <= 0 && rival.dashGrace <= 0;
+  const aggression = rival.health < START_HEALTH * 0.35 ? 0.65 : 1.0;
   updateFighterIntents(rival, desired, {
     down: false,
-    jump: false,
-    dash: false,
-    guard: shouldGuard && rival.aiCooldown > 0.56,
-    light: canStrike && rival.aiCooldown <= 0 && distance < 1.04,
-    heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82,
-    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75
+    jump: !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
+    dash: shouldBackdash,
+    guard: shouldGuard,
+    light: canStrike && rival.aiCooldown <= 0 && distance < 1.04 && Math.random() < aggression,
+    heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && Math.random() < aggression * 0.5,
+    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && Math.random() < aggression * 0.3
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -1417,7 +1425,7 @@ function updateFighterIntents(
       fighter.action = fighter.grounded ? "idle" : "jump";
     }
   }
-  if (fighter.hitstun > 0 || fighter.action === "ko") {
+  if (fighter.hitstun > 0 || fighter.recovery > 0 || fighter.action === "ko") {
     return;
   }
   if (intents.jump && fighter.grounded) {
@@ -1450,7 +1458,7 @@ function updateFighterIntents(
   } else if (downActive) {
     fighter.action = "down";
     fighter.clip = downClipFor(fighter);
-  } else if (fighter.grounded && !fighter.guard && !fighter.attack) {
+  } else if (fighter.grounded && !fighter.guard && !fighter.attack && fighter.action !== "recover") {
     fighter.action = "idle";
   }
   if (fighter.guard) {
@@ -1480,7 +1488,7 @@ function downClipFor(fighter: FighterState): ClipName {
 }
 
 function startAttack(fighter: FighterState, id: MoveId): boolean {
-  if (fighter.moveCooldown > 0 || fighter.action === "ko" || fighter.guard || fighter.hitstun > 0) return false;
+  if (fighter.moveCooldown > 0 || fighter.action === "ko" || fighter.guard || fighter.hitstun > 0 || fighter.recovery > 0) return false;
   const spec = moves[id];
   if (id === "special") {
     if (fighter.meter < SPECIAL_METER_COST || fighter.specialCooldown > 0) return false;
@@ -1609,7 +1617,16 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
 function updateFighterPhysics(fighter: FighterState, dt: number): void {
   if (fighter.hitstun > 0) {
     fighter.hitstun = Math.max(0, fighter.hitstun - dt);
-    if (fighter.hitstun === 0 && fighter.action === "hurt") fighter.action = "idle";
+    if (fighter.hitstun === 0 && fighter.action === "hurt") {
+      fighter.action = "recover";
+      fighter.recovery = 0.18;
+    }
+  }
+  if (fighter.recovery > 0) {
+    fighter.recovery = Math.max(0, fighter.recovery - dt);
+    if (fighter.recovery === 0 && fighter.action === "recover" && !fighter.guard) {
+      fighter.action = "idle";
+    }
   }
   if (!fighter.grounded) {
     fighter.airTime += dt;
@@ -1663,6 +1680,8 @@ function updateClips(fighter: FighterState, dt: number): void {
     fighter.clip = fighter.clips.guard;
   } else if (fighter.action === "hurt") {
     fighter.clip = resolveAuraClashHurtClip(fighter.clips, fighter.hurtVariant, false);
+  } else if (fighter.action === "recover") {
+    fighter.clip = fighter.clips.idle;
   } else if (fighter.action === "ko") {
     fighter.clip = fighter.clips.ko;
   } else {
