@@ -1,6 +1,6 @@
 # Asset Workflow
 
-Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.1.0 carries it as the active typed asset baseline.
+Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.3.2 carries it as the active typed asset baseline.
 
 ## The federated asset index
 

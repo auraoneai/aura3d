@@ -1,7 +1,7 @@
 # Site Map
 
-Version: 1.2.0
-Planning alignment: 1.1.0 release gates
+Version: 1.3.2
+Planning alignment: 1.3.2 release gates
 
 ## Public Marketing Pages
 

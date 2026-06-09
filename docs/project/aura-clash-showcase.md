@@ -83,7 +83,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --outpu
 
 The CLI/catalog path is a release blocker. If `npx @aura3d/cli@latest` is not published and externally usable, the public agent instructions are broken.
 
-Current reality from the 1.1.0 audit:
+Current reality from the 1.3.2 audit:
 
 - Local workspace CLI catalog search works with `--profile fighting-character`.
 - Local workspace CLI resolve can pull an animated GLB candidate into a temp project and preserve source URL, license, author/attribution, and source family in `aura.assets.json`.
