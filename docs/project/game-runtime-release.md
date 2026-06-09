@@ -57,12 +57,13 @@ npx @aura3d/cli@latest assets inspect ./assets/fighter.glb --animation --humanoi
 npx @aura3d/cli@latest assets validate-game --output artifacts/aura3d/game-assets.json
 ```
 
-Release blockers:
+Release blockers (as of 1.3.2):
 
-- The CLI must be published and runnable with `npx @aura3d/cli@latest`.
-- `@aura3d/asset-index` must be published before `@aura3d/cli`, because catalog search depends on it.
-- Catalog search must return machine-readable candidates from outside the monorepo.
-- Resolve/add must write typed asset metadata, source/license evidence, and animation readiness data.
+- ✅ The CLI is published and runnable with `npx @aura3d/cli@latest`.
+- ✅ `@aura3d/asset-index` is published before `@aura3d/cli`; catalog search depends on it.
+- ✅ Catalog search returns machine-readable candidates from outside the monorepo.
+- ✅ Resolve/add writes typed asset metadata (`src/aura-assets.ts`), source/license evidence, and animation readiness data.
+- Catalog candidate quality, rig compatibility, bounds checks, clip checks, and route proof remain evidence-bound per asset.
 
 ## Runtime Evidence
 
