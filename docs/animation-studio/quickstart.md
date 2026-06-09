@@ -1,90 +1,110 @@
 # Animation Studio — 5-Minute Quickstart
 
-Turn a text prompt into a rendered animated short: your coding agent (Claude Code, Codex, …) is the director — **no separate LLM, no API key** — and renders are **silent by design** (AuraVoice owns the voice track).
+Turn a text prompt into a rendered animated short. **No separate LLM, no API key** — deterministic rules build the scene from your sentence. Renders are **silent by design** (AuraVoice owns the voice track).
 
 For the full reference, see [`guide.md`](./guide.md).
+
+---
 
 ## Setup (3 lines)
 
 ```sh
 npx create-aura3d@latest my-studio --template animation-studio
 cd my-studio
-pnpm install
+npm install        # or pnpm install
 ```
 
-All commands below run from the new `my-studio` directory.
+All commands below run from the `my-studio` directory.
 
 ---
 
-## Path A — the CLI (fastest)
+## Path A — the Studio web app (visual, no commands needed)
 
-**1. Generate** a complete scene (cast + dialogue + per-beat actions) from a prompt:
-
-```sh
-pnpm scene new --prompt "two robots fixing a car in a garage" --full
-```
-
-**2. Render** it. Preview is fast and low-fi; final is 1080p:
+**1. Launch**
 
 ```sh
-AURA_QUALITY=preview pnpm episode:render-3d      # fast iteration (480×270)
-# or
-AURA_QUALITY=final   pnpm episode:render-3d      # 1080p
+npm run studio
 ```
 
-Output video: `dist/episodes/scene/episode-3d.webm` (plus stills + `render-live-summary.json` in the same folder).
+Opens your browser at `http://localhost:5188` with a 3-pane NLE.
 
-**3. Make a small edit, then re-render.** Every command edits the same working document and is validated before it commits:
+**2. Generate a scene from a sentence**
 
-```sh
-pnpm scene shot retime --id shot-2 --duration 6                                  # change a shot's length
-pnpm scene dialogue --line l6 --speaker robot-1 --text "Hand me the wrench."     # add a line (--end auto-computed)
-pnpm scene cast add --id robot-1 --query "boxy robot"                            # swap a slot for a catalog rig
-pnpm scene render                                                                # re-render
+In the **✨ New scene** bar at the top, type a description and click **Generate scene**:
+
+> *"a mechanic and a customer arguing about a broken car"*
+
+What happens (takes ~25 seconds):
+- The Director parses the sentence and picks the Garage set
+- Two characters stage out across 3 shots
+- Six placeholder dialogue lines are placed on the timeline
+- A preview render starts automatically so the Stage shows the actual video
+
+The spinner stays active until the render is done — you'll see the video appear on the Stage.
+
+**3. Make it longer (same characters)**
+
+Click **+ Continue scene**. This appends another shot to the *same* scene — same garage, same mechanic and customer. Keep adding shots to build a longer sequence.
+
+**4. Hit Play**
+
+The transport bar under the Stage controls the video. Scrub the Timeline to jump between shots.
+
+**5. Render the final video**
+
+Click the **Render** button (top right). The silent `.webm` is written to:
 ```
-
-Useful: `pnpm scene show` (summary), `pnpm scene validate` (coherence check), `pnpm scene undo` (revert the last edit).
+dist/episodes/scene/episode-3d.webm
+```
 
 ---
 
-## Path B — the Studio app (visual)
+## Path B — the CLI (fastest for agents)
 
-**1. Launch** the web studio (from the monorepo root):
+**1. Generate**
 
 ```sh
-pnpm --filter @aura3d/animation-studio-web dev
+npx tsx scripts/animation-scene.ts new --prompt "two robots fixing a car in a garage" --full
 ```
 
-Open **http://127.0.0.1:5188**.
+**2. Render**
 
-**2.** It hydrates from the scene you generated in Path A. Hit **Render** to preview the clip on the Stage, and scrub the **Timeline**.
+```sh
+npx tsx scripts/animation-scene.ts render              # fast preview
+AURA_QUALITY=final npx tsx scripts/animation-scene.ts render    # 1080p
+```
 
-**3. Use the Director Console** at the bottom:
+Output: `dist/episodes/scene/episode-3d.webm`
 
-- **Command mode** runs a raw scene-tool command against the working document, e.g. `shot retime --id shot-2 --duration 6`. Committed edits bump the document; rejected edits surface as red cards.
-- **Prompt mode** records your intent as a note for your coding agent to execute.
-- The **Outliner "+"** adds a cast member (runs a real `cast add`).
+**3. Edit**
+
+```sh
+npx tsx scripts/animation-scene.ts dialogue --line l1 --speaker robot-1 --text "Hand me the wrench." --start 0 --end 2.5
+npx tsx scripts/animation-scene.ts render
+```
+
+Useful: `show`, `validate`, `undo`.
 
 ---
 
-## Editing your scene (both paths share one working document)
+## What the sets are
 
-- The Studio and the CLI edit the **same** `dist/scene/working.document.json`. A change in one shows up in the other — generate in the CLI, refine in the app, render from either.
-- For a **coherent story, YOU (or your coding agent) author the dialogue** — the `--full` generator writes functional placeholder lines, not watchable ones. Write real lines and the director stages the acting around them:
-
-  ```sh
-  pnpm scene dialogue --line l0 --speaker robot-1 --text "We are not shipping on Friday." --start 0.4
-  pnpm scene dialogue --line l1 --speaker robot-2 --text "Yes we are. The login feature is done."
-  pnpm scene retime          # re-sequence all lines back-to-back from t=0
-  pnpm scene render
-  ```
-
-  The worked example is [`scripts/author-office-scene.ts`](../../packages/create-aura3d/templates/animation-studio/scripts/author-office-scene.ts): it takes a generated base, **replaces** the dialogue with a hand-written argument, then **re-directs** so the acting matches. That is the pattern an agent follows.
+| Say one of these words in your prompt | You get |
+|---|---|
+| office, desk, cubicle, meeting, computer | Office |
+| garage, workshop, mechanic, tools, car | Garage |
+| kitchen, cook, dinner, chef, stove | Kitchen |
+| meadow, park, forest, sunny, grass | Meadow |
+| space, station, astronaut, planet, ship | Space station |
+| moon, garden, night, bedtime, glow | Moon garden |
+| (anything else) | Neutral studio |
 
 ---
 
 ## Tips
 
-- **Quality:** `AURA_QUALITY=preview` (fast) | `final` (1080p). **Style:** `AURA_RENDER_STYLE=toon` (default cel look) | `pbr` (realistic).
-- **Renders are silent on purpose** — Aura3D emits the timed dialogue/caption track and AuraVoice adds the voice afterward, locked to the same timeline.
-- **Be honest about scope:** this is stylized previz — great for storyboards and animatics, best at 1–2 characters of dialogue on a single set. Swap in a higher-fidelity rig anytime with `pnpm scene cast add --id <id> --file <model.glb>`.
+- **Quality:** preview (fast, 480p) | `AURA_QUALITY=final` (1080p). **Style:** `AURA_RENDER_STYLE=toon` (cel look) | `pbr` (realistic).
+- **Renders are silent** — AuraVoice adds the voice track afterward.
+- **Best scope:** 1–2 characters talking on a single set. Swap in your own rigged GLB anytime: `cast add --id <id> --file <model.glb>`.
+- The Studio and CLI edit the **same** `dist/scene/working.document.json`. Generate in one, refine in the other.
+- For real dialogue, replace the placeholder lines. The Director stages the acting around your words.

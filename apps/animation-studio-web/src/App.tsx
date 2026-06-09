@@ -207,7 +207,8 @@ export function App() {
 
   // Generate a brand-new scene from a plain-English sentence. This is the headline action:
   // it runs `new --prompt "…" --full` (the deterministic Director — parses cast, keyword-routes
-  // the set, lays out shots/dialogue), replacing the working document, then re-hydrates the UI.
+  // the set, lays out shots/dialogue), replacing the working document, then re-hydrates the UI
+  // and auto-renders a preview so the Stage shows the new scene — not stale captions.
   const generateScene = async () => {
     const p = newScenePrompt.trim();
     if (!p || generating) return;
@@ -224,14 +225,13 @@ export function App() {
     await hydrate();        // panels (cast/set/props/shots/dialogue) now reflect the NEW scene
     setNewScenePrompt("");
     setTime(0);
-    setGenerating(false);
-    // CRITICAL: the render on disk is the OLD scene. Drop it (so the stale video can't masquerade
-    // as the new one) and auto-render the new document, so the big preview ACTUALLY changes — not
-    // just the captions. Without this, the Stage keeps showing the previous render.
+    // CRITICAL: the render on disk is the OLD scene. Drop it so the stale video can't masquerade
+    // as the new one, then auto-render the new document.
     setRenderVideo(null);
     setRenderPoster(null);
-    showToast("New scene built — rendering a preview so you can see it…", "ok");
-    doRender("sequence");
+    await doRender("sequence");   // ← awaited so the spinner stays until the video is ready
+    setGenerating(false);
+    showToast("Scene ready — click Play on the transport to watch", "ok");
   };
 
   // "Continue scene" — add another shot to the CURRENT scene (same cast & set) so you can
@@ -259,10 +259,11 @@ export function App() {
   // warm render server). Progress easing runs while the request is in flight (renders are
   // not streamed); on success the rendered webm/poster is loaded into the Stage and a
   // render card is appended. Low-fi is the default for the fast studio iteration loop.
-  const doRender = (scope: "shot" | "sequence") => {
-    if (rendering) return;
+  // Returns a Promise so callers (e.g. generateScene) can await completion.
+  const doRender = (scope: "shot" | "sequence"): Promise<void> => {
+    if (rendering) return Promise.resolve();
     const isShot = scope === "shot";
-    if (isShot && !currentShot) return;
+    if (isShot && !currentShot) return Promise.resolve();
     setRendering(true);
     setRenderPct(0);
     setPlaying(false);
@@ -280,7 +281,7 @@ export function App() {
 
     // Render the current shot's time-range when scope is "shot", else the whole sequence.
     const range = isShot && currentShot ? `${Math.floor(currentShot.start)}-${Math.ceil(currentShot.start + currentShot.dur)}` : undefined;
-    void runRender({ lowFi: true, range }).then((res) => {
+    return runRender({ lowFi: true, range }).then((res) => {
       live = false;
       setRenderPct(100);
       setRendering(false);
@@ -330,7 +331,7 @@ export function App() {
         {generating ? (
           <span className="newscene-status">
             <span className="newscene-spinner" />
-            Building your scene — cast, set, shots &amp; dialogue… (a few seconds)
+            Building your scene — this takes ~25 seconds (generating cast, set, shots, then rendering a preview)
           </span>
         ) : (
           <input
