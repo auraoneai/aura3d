@@ -25,7 +25,7 @@ The **Animation Studio** turns a natural-language prompt into a deterministic, r
 
 Aura3D ships a real animation engine: critically-damped, momentum-preserving transitions, two-bone foot IK with a foot-lock, spring-bone secondary dynamics, animation event tracks, texture-backed facial morph targets with viseme lip-sync, and 96-joint character skinning on both WebGL2 and WebGPU — each gate-backed and running live in Aura Clash. Aura Clash uses starter-grade fighter assets with **no new fighter art this release** (the rigs carry no facial blendshapes, so the morph/viseme work is showcased in Animation Studio and the morph proofs), so it stays a development showcase of the engine rather than a finished commercial game.
 
-Registry status: npm `latest` serves `1.3.2` across all 26 packages (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`, …). The `animation-studio` / `character-controller` templates and the new APIs above are live for `npx ...@latest` users, and the showcase is deployed at https://aura3d.auraone.ai.
+Registry status: npm `latest` serves `1.3.2` across all 28 packages (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`, …). The `animation-studio` / `character-controller` templates and the new APIs above are live for `npx ...@latest` users, and the showcase is deployed at https://aura3d.auraone.ai.
 
 ## Aura3D 1.1.0 asset catalog
 
@@ -49,7 +49,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 is the active runtime and animation evidence foundation for the next public showcase wave:
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.3.2 is the current active release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game routes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
