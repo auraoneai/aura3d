@@ -1,7 +1,7 @@
 # Aura3D Claim Guidelines
 
-Version: 1.2.0
-Planning alignment: 1.1.0 release gates
+Version: 1.3.2
+Planning alignment: 1.3.2 release gates
 
 Every public claim must map to a shipped API, CLI command, template, example,
 diagnostic, docs artifact, report, or release artifact.
@@ -14,15 +14,15 @@ published.
 
 ## Aura3D advantage
 
-The current `1.3.1` Aura3D SDK release may claim:
+The current `1.3.2` Aura3D SDK release may claim:
 
 - Aura3D is an agent-friendly browser 3D SDK.
 - Agents write TypeScript or JavaScript against `@aura3d/engine`.
 - Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
 - Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
-- `@aura3d/engine@1.1.0` does not install Three.js as a root engine runtime dependency.
-- Aura Clash Arena is a development showcase and runtime proof target.
-- 1.1.0 is a scoped runtime-foundation release with current npm, docs, deployed-route, and readiness evidence.
+- `@aura3d/engine@1.3.2` does not install Three.js as a root engine runtime dependency.
+- Aura Clash Arena is a development showcase and runtime proof target with improved KO behavior, tuned damage values, and guarded AI.
+- 1.3.2 is a scoped believable-motion + animation-studio release with current npm, docs, deployed-route, and readiness evidence.
 
 The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
 scoped release artifacts when used in release notes or operator handoff docs.
