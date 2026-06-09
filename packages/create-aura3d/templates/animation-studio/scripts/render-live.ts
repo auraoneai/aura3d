@@ -507,6 +507,12 @@ async function main(): Promise<void> {
       `rendering frames ${FIRST_FRAME}..${LAST_FRAME} (${LAST_FRAME - FIRST_FRAME} frames) @ ${FRAME_RATE}fps` +
         `${PREVIEW_PARTS ? " [preview range]" : ` over ${EPISODE_DURATION}s`} ...`
     );
+    const PROGRESS_PATH = resolve(OUTPUT_DIR, "progress.json");
+    function writeProgress(current: number, total: number, label: string): void {
+      try { writeFileSync(PROGRESS_PATH, JSON.stringify({ current, total, label, pct: Math.round((current / total) * 100), ts: Date.now() })); } catch {}
+    }
+    writeProgress(0, LAST_FRAME - FIRST_FRAME, "seeking");
+
     for (let i = FIRST_FRAME; i < LAST_FRAME; i += 1) {
       const t = i / FRAME_RATE;
       const result = await seekAndReadPixels(page, t, { burnCaption: false });
@@ -560,6 +566,7 @@ async function main(): Promise<void> {
       const basePng = await rawRgbaToPng(treated.pixels, WIDTH, HEIGHT);
       const png = await compositeCaptionPng(basePng, capText, WIDTH, HEIGHT);
       captured.push({ time: t, png });
+      writeProgress(i - FIRST_FRAME + 1, LAST_FRAME - FIRST_FRAME, "capturing");
 
       const fidelityId = fidelityFrameIndex.get(i);
       if (fidelityId) writeFileSync(resolve(FRAMES_DIR, `${fidelityId}.png`), png);
@@ -574,6 +581,7 @@ async function main(): Promise<void> {
       }
     }
 
+    writeProgress(LAST_FRAME - FIRST_FRAME, LAST_FRAME - FIRST_FRAME, "finishing");
     console.log("\n--- staged performance (per beat) ---");
     for (const beat of stagingByBeat.values()) {
       const m = beat.characters.find((c) => c.id === "miko");
