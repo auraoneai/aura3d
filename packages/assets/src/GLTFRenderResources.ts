@@ -1540,7 +1540,15 @@ async function createMaterial(
 }
 
 function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly instanced?: boolean; readonly skinned?: boolean } = {}): Material {
-  const defaults = { name: mesh.material, metallic: 0, roughness: 1, environmentIntensity: DEFAULT_PBR_ENVIRONMENT_INTENSITY } as const;
+  // Use a neutral light-gray base color instead of glTF-spec white ([1,1,1,1])
+  // so missing-material fallbacks do not blow out as bright white artifacts.
+  const defaults = {
+    name: mesh.material,
+    baseColor: [0.76, 0.74, 0.72, 1] as const,
+    metallic: 0,
+    roughness: 0.85,
+    environmentIntensity: DEFAULT_PBR_ENVIRONMENT_INTENSITY
+  } as const;
   if (options.skinned) {
     return new SkinnedLitMaterial(defaults);
   }
