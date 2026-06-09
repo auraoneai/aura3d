@@ -101,7 +101,8 @@ createAuraApp("#app", {});
       promptDir,
       sourceDir,
       promptFile: "benchmark/prompts/10-product-viewer-sneaker.md",
-      publicRootExports: [...publicRootExports, "unsafeModelUrl"]
+      publicRootExports: [...publicRootExports, "unsafeModelUrl"],
+      library: "Aura3D"
     });
 
     expect(audit.pass).toBe(false);

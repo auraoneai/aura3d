@@ -22,6 +22,10 @@ and app disposal. Lower-level packages such as `@aura3d/rendering`,
 contracts; application code should enter through `createAuraApp` unless it is
 intentionally using those lower-level packages directly.
 
+## Boundary
+
+The lifecycle boundary is `@aura3d/engine`. Claims about startup, disposal, or route health must cite the specific package API and test that backs them.
+
 ## Current Limits
 
 Aura3D does not run a provider proxy, prompt compiler, or hidden scene-IR

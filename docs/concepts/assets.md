@@ -21,6 +21,10 @@ copies local files, writes the manifest, and generates typed asset references.
 The runtime consumes those references; it does not invent asset URLs, fetch from
 an Aura-hosted catalog, or silently replace missing production assets.
 
+## Boundary
+
+The asset boundary is `@aura3d/engine/assets` for runtime loading and `@aura3d/cli` for project asset validation. Claims about format support or loader behavior must cite the specific package API and test that backs them.
+
 ## Current Limits
 
 Asset support is scoped to declared project assets and the metadata the CLI

@@ -10,6 +10,7 @@ describe("public API docs", () => {
     expect(packageNames).toEqual([
       "@aura3d/animation",
       "@aura3d/apps",
+      "@aura3d/asset-index",
       "@aura3d/assets",
       "@aura3d/audio",
       "@aura3d/cli",
@@ -51,9 +52,9 @@ describe("public API docs", () => {
 
     expect(docs).toContain("## @aura3d/rendering");
     expect(docs).toContain("export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from \"./Renderer\";");
-    expect(docs).toContain("export { WebGPUDevice } from \"./WebGPUDevice\";");
+    expect(docs).toContain("export { WebGPUDevice, MAX_WEBGPU_SKINNING_JOINTS } from \"./WebGPUDevice\";");
     expect(docs).toContain("## @aura3d/assets");
-    expect(docs).toContain("export { GLTFLoader } from \"./GLTFLoader\";");
+    expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights } from \"./GLTFLoader\";");
     expect(docs).toContain("createGLTFRenderResources");
     expect(docs).toContain("from \"./GLTFRenderResources\";");
     expect(docs).toContain("## @aura3d/editor-runtime");

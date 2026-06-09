@@ -22,6 +22,10 @@ Editor-runtime code provides reusable browser authoring primitives. It is separa
 
 The editor runtime is a package surface, not a complete product guarantee for a Unity/Unreal-style editor. UI behavior must be verified against browser tests before being documented as supported.
 
+## Boundary
+
+The editor-runtime boundary is `@aura3d/engine/editor-runtime`. Claims about selection, gizmos, or timeline helpers must cite the specific package API and browser test that backs them.
+
 ## Current Limits
 
 Editor-runtime docs cover reusable primitives and known app integration points. Full editor-product claims, authoring UX guarantees, and broad export/import workflows require app-level browser tests and generated evidence.

@@ -27,6 +27,10 @@ Aura3D physics code lives in `packages/physics` and is used by routes and workfl
 
 The physics package is not documented as a full replacement for a mature dedicated physics engine. Claims should name the exact simulation feature, route, unit test, or report that backs them.
 
+## Boundary
+
+The physics boundary is `@aura3d/engine/physics`. Claims about collision, solver, or character-controller behavior must cite the specific package API and route evidence that backs them.
+
 ## Current Limits
 
 Physics support is scoped to the implemented runtime primitives and route evidence. Complex solver behavior, large-world stability, and engine-replacement claims remain out of scope until covered by focused tests and reports.

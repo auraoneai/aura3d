@@ -20,7 +20,7 @@ describe("WebGPU public fallback docs", () => {
     expect(docs).toContain("tests/browser/webgpu-real-device.spec.ts");
     expect(docs).toContain("tests/reports/webgpu-hardware-matrix.json");
     expect(docs).toContain("uses `navigator.gpu` directly");
-    expect(docs).toContain("They do not prove hardware support");
+    expect(docs).toContain("they are not real hardware evidence");
     expect(docs).toContain("Public claims must not say \"full WebGPU support\"");
     expect(docs).toContain("browser user agent");
     expect(docs).toContain("operating system platform and release");

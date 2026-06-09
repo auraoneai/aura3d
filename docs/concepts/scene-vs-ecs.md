@@ -28,6 +28,10 @@ Important code:
 
 Renderer-facing examples mostly use scene graph structures. ECS is available for runtime organization, but docs should not imply every scene feature has an ECS-first authoring path unless that path exists in code and tests.
 
+## Boundary
+
+The scene graph boundary is `@aura3d/engine/scene`; the ECS boundary is `@aura3d/engine/ecs`. Each package exposes its own primitives and claims should stay scoped to the APIs and tests in that package.
+
 ## Current Limits
 
 Scene graph and ECS APIs are both available, but not every scene feature has a mirrored ECS authoring workflow. Claims should stay tied to package APIs, examples, and tests that exercise the specific path.

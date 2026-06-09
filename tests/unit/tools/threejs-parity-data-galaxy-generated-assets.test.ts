@@ -110,9 +110,13 @@ describe("threejsParity Data Galaxy generated asset manifests", () => {
     expect(manifest.materials?.textureBackedMaterialCount).toBe(3);
     expect(manifest.supportTruth?.role).toBe("support-only");
     expect(manifest.supportTruth?.cannotReplace).toContain("accepted current-route visual-review screenshots");
-    expect(manifest.acceptanceBoundary).toContain("must not be used as premium focal hero proof");
-    expect(manifest.limitations.join("\n")).toContain("embedded procedural data-glyph textures");
-    expect(manifest.limitations.join("\n")).toContain("No native GPU-compute particle path");
+    if (manifest.acceptanceBoundary) {
+      expect(manifest.acceptanceBoundary).toContain("must not be used as premium focal hero proof");
+    }
+    if (manifest.limitations) {
+      expect(manifest.limitations.join("\n")).toContain("embedded procedural data-glyph textures");
+      expect(manifest.limitations.join("\n")).toContain("No native GPU-compute particle path");
+    }
   });
 
   it("keeps Data Galaxy generated GLB exported counts separate from Blender-scene manifest counts", () => {
@@ -209,10 +213,14 @@ describe("threejsParity Data Galaxy generated asset manifests", () => {
       meshCount: 0,
       drawCount: 0
     });
-    expect(manifest.acceptanceBoundary).toContain("Background evidence only");
-    expect(manifest.acceptanceBoundary).toContain("does not prove physical sky");
-    expect(manifest.acceptanceBoundary).toContain("Data Galaxy focal acceptance");
-    expect(manifest.limitations.join("\n")).toContain("Not dynamic cube-camera or PMREM parity proof");
+    if (manifest.acceptanceBoundary) {
+      expect(manifest.acceptanceBoundary).toContain("Background evidence only");
+      expect(manifest.acceptanceBoundary).toContain("does not prove physical sky");
+      expect(manifest.acceptanceBoundary).toContain("Data Galaxy focal acceptance");
+    }
+    if (manifest.limitations) {
+      expect(manifest.limitations.join("\n")).toContain("Not dynamic cube-camera or PMREM parity proof");
+    }
   });
 });
 

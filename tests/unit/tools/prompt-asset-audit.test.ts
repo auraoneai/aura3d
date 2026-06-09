@@ -299,7 +299,7 @@ createAuraApp("#app", { scene: scene().add(model(assets.sneaker)) });
     expect(audit.invented).toEqual([]);
     expect(audit.allowed).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ kind: "public-file", normalized: "benchmark/assets/sneaker.glb" })
+        expect.objectContaining({ kind: "source-reference", normalized: "benchmark/assets/sneaker.glb" })
       ])
     );
   });

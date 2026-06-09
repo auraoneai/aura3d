@@ -39,6 +39,10 @@ export interface AuditPromptSourceOptions {
   readonly promptFile?: string;
   readonly publicRootExports?: readonly string[];
   readonly writeReport?: boolean;
+  readonly library?: string;
+  readonly metadata?: {
+    readonly library?: string;
+  };
 }
 
 export function auditPromptSource(options: AuditPromptSourceOptions): PromptSourceAudit;

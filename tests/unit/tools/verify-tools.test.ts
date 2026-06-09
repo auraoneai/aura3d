@@ -701,7 +701,7 @@ describe("verification tools", () => {
       });
       expect(report.demos).toEqual([]);
       expect(report.violations).toEqual(expect.arrayContaining([
-        expect.stringContaining("Missing source HTML for product-configurator")
+        expect.stringContaining("Missing source entry for product-configurator")
       ]));
       const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
       expect(deploymentCommandPlan).toMatchObject({

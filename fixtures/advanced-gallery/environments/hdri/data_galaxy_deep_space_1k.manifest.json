@@ -1,0 +1,56 @@
+{
+  "id": "data-galaxy-deep-space-hdr",
+  "routeUse": "data-galaxy",
+  "routeLinkage": {
+    "routeId": "data-galaxy",
+    "app": "apps/advanced-examples-gallery",
+    "runtimeRole": "deep-space background only"
+  },
+  "source": {
+    "sourceScript": "tools/advanced-gallery-assets/generate-data-galaxy-deep-space-hdr.mjs",
+    "generator": "deterministic procedural Radiance RGBE writer",
+    "seed": 1194542137,
+    "dimensions": {
+      "width": 1024,
+      "height": 512
+    },
+    "inputAssets": [],
+    "derivativeOfExternalAsset": false
+  },
+  "outputs": {
+    "hdr": {
+      "path": "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr",
+      "exists": true,
+      "byteSize": 1714047,
+      "sha256": "abbab6e3a136126aa88932440b4242d53def7b1b0ca83b0701f547f085fbeab2"
+    },
+    "manifest": {
+      "path": "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.manifest.json"
+    }
+  },
+  "status": {
+    "generated": true,
+    "stub": false,
+    "derivative": false,
+    "supportOnly": true,
+    "acceptableAsFocalHero": false,
+    "acceptedAsPhysicalSkyProof": false,
+    "acceptedAsVolumetricEnvironmentProof": false,
+    "acceptedAsExrPipelineProof": false,
+    "acceptedAsPmremParityProof": false
+  },
+  "intendedRole": "Route-correct deterministic backdrop for Data Galaxy deep-space staging.",
+  "counts": {
+    "materialCount": 0,
+    "textureCount": 0,
+    "meshCount": 0,
+    "drawCount": 0
+  },
+  "roadmap items": [
+    "Generated procedural Radiance/RGBE background only.",
+    "Not an EXR fixture.",
+    "Not a physical sky model.",
+    "Not a volumetric environment.",
+    "Not dynamic cube-camera or PMREM parity proof."
+  ]
+}

@@ -17,6 +17,10 @@ The authoring boundary is `@aura3d/engine` for normal app code and
 remain available when a package consumer intentionally needs framegraph,
 material, render-target, postprocess, or backend-level control.
 
+## Boundary
+
+The rendering boundary is `@aura3d/engine` for high-level authoring and `@aura3d/rendering` for low-level control. Claims about backends, materials, or postprocess must cite the specific package API and test that backs them.
+
 ## Current Limits
 
 Rendering docs must only claim features that are backed by package exports,

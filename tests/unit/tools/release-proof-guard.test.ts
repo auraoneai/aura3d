@@ -60,6 +60,21 @@ describe("release proof guard", () => {
 function createReleaseRepo() {
   const repo = mkdtempSync(join(tmpdir(), "aura3d-release-proof-"));
   mkdirSync(join(repo, "benchmark", "results"), { recursive: true });
+  writeFileSync(
+    join(repo, "UnifiedPRD.md"),
+    `# Unified PRD
+
+- [x] Obtain explicit user approval of the clean validation benchmark.
+- [x] Record the approval artifact or note next to the benchmark run.
+- [x] Engine parity benchmark passes the frozen thresholds.
+- [x] Official benchmark report records a pass.
+- [x] No pass relies on PRD edits made during the benchmark.
+- [x] No pass relies on self-authored structural QA as final scoring.
+- [x] Write release notes after the benchmark passes.
+- [x] Ensure release notes claim only what the evidence supports.
+- [x] Run required package/release checks.
+`
+  );
   return repo;
 }
 
