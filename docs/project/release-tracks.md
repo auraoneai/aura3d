@@ -29,7 +29,7 @@ Publication status: npm `latest` points at `@aura3d/engine@1.3.2`, `@aura3d/asse
 
 ## 1.2 Animation Engine Track
 
-Aura3D 1.2 is the prepared animation-engine release track on top of 1.1.0. It is implemented and verified in the repo; the `1.2.0` packages are publish-pending while npm `latest` continues to serve the `1.1.x` line.
+Aura3D 1.2 is the prepared animation-engine release track on top of 1.1.0. It shipped as part of the 1.3.0 release; npm `latest` now serves the `1.3.x` line.
 
 What 1.2 adds:
 
@@ -45,7 +45,7 @@ Primary reference: `docs/animation/believable-motion.md`.
 
 ## 1.3 Believable-Motion Track
 
-Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.1` (all 26 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
+Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.2` (all 28 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
 
 What 1.3 adds:
 
@@ -81,7 +81,7 @@ Primary reference: `docs/examples/animation-studio.md`.
 
 `@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
 
-Publication status: historical. The current npm `latest` release is 1.1.0.
+Publication status: historical. The current npm `latest` release is 1.3.2.
 
 ## 1.0.4 Release Note
 

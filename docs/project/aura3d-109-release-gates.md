@@ -2,7 +2,7 @@
 
 Version: 1.0.9
 Status: Scoped release gate, current evidence passing
-Current published baseline: `@aura3d/engine@1.3.1` and `create-aura3d@1.3.1`
+Current published baseline: `@aura3d/engine@1.3.2` and `create-aura3d@1.3.2`
 Related: `docs/project/current-state.md`
 
 Aura3D 1.0.9 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.

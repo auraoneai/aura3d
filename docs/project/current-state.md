@@ -1,6 +1,6 @@
 # Current State
 
-Version: 1.2.0
+Version: 1.3.2
 
 Aura3D is a developer library, asset deployment pipeline, template system,
 diagnostics surface, and agent-readable documentation set for AI coding agents
@@ -20,18 +20,17 @@ Active product pillars:
 
 Current published package version (npm `latest`):
 
-- `@aura3d/engine@1.1.0`
-- `@aura3d/cli@1.1.0`
-- `@aura3d/asset-index@1.1.0`
-- `create-aura3d@1.1.0`
+- `@aura3d/engine@1.3.2`
+- `@aura3d/cli@1.3.2`
+- `@aura3d/asset-index@1.3.2`
+- `create-aura3d@1.3.2`
 
-Prepared-but-unpublished version: the repo is at `1.2.0` (Animation Engine). The
-`1.2.0` packages are publish-pending; npm `latest` continues to serve the `1.1.x`
-line until the publish runs.
+All 28 packages (`@aura3d/*` + `create-aura3d`) are published and installable. The
+repo is at `1.3.2` (Believable-Motion + Animation Studio).
 
 Current release tracks:
 
-- Aura3D SDK npm/deployed artifact: complete for the scoped 1.1.0 runtime-foundation release. See `docs/project/release-tracks.md`.
+- Aura3D SDK npm/deployed artifact: complete for the scoped 1.3.2 believable-motion + animation-studio release. See `docs/project/release-tracks.md`.
 - Aura3D 1.2 Animation Engine: prepared release track. `@aura3d/animation` adds a locomotion state-graph + kit, generic clip-map validation, a shared fighter-animation adapter, and per-clip bone-mask blending in `applyClips` (layered playback); the CLI adds `assets validate-animation`; `create-aura3d` adds `animation-studio` and `character-controller` templates. The deployed Aura Clash arena gained a browser-verified motion upgrade (crossfaded transitions, weight/airborne-varied hit reactions, upper-body attack layering) with deterministic combat replay stable. Documented in `docs/animation/believable-motion.md`.
 - Aura3D 1.3 Believable-Motion: implemented release track on top of 1.2 (version bump publish-pending). `@aura3d/animation` adds critically-damped momentum-preserving state transitions, runtime two-bone foot IK with a foot-lock, spring-bone secondary dynamics, and animation event tracks (hitbox active-frames + footstep/VFX, with a browser editor authoring lane). `@aura3d/rendering` adds a texture-backed morph-target path (lifts the 4-target/64-vertex cap), normal morphing, a `node.morphInfluence` API with viseme lip-sync, and WebGPU character skinning at 96-joint parity. Every feature is gate-backed via `pnpm animation-engine:believable-motion`. The Aura Clash arena now runs the foot IK, spring body-sway, critically-damped transitions, and authored clip-event hit/footstep/VFX frames live. Documented in `docs/animation/believable-motion.md`.
 - Aura3D animation engine: the 1.2/1.3 work ships critically-damped transitions, two-bone foot IK with a foot-lock, spring-bone secondary dynamics, animation event tracks, texture-backed facial morph targets with viseme lip-sync, and 96-joint character skinning on WebGL2 and WebGPU — each gate-backed via `pnpm animation-engine:believable-motion`. Capability boundaries (per-limb two-bone foot IK; spring-bone secondary dynamics) are documented precisely in `docs/project/known-limits.md`.

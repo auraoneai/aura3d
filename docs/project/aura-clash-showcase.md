@@ -15,7 +15,7 @@ This document is the maintained product and evidence source for the showcase. Hi
 - Working title: `Aura Clash Arena`
 - Route target: `/playable` during development and `/showcase/aura-clash/playable/` for marketing-linked deployment.
 - App target: `apps/aura-clash-showcase/`
-- Current package baseline: `@aura3d/engine@1.1.0`
+- Current package baseline: `@aura3d/engine@1.3.2`
 - Asset rule: all runtime models must be typed assets from `src/aura-assets.ts`; do not use string model ids, invented GLB URLs, raw loaders, or direct Three.js imports.
 
 ## Pivot Decision
