@@ -39,3 +39,14 @@ Scene graph and ECS APIs are both available, but not every scene feature has a m
 ## Current Limits
 
 - Scene and ECS APIs coexist, but not every scene feature has a complete ECS authoring workflow.
+- ECS parity gaps (as of 1.3.2):
+  - ✅ Transform, Hierarchy, Name, Tag, Active components
+  - ❌ CameraComponent — no ECS camera system; use `@aura3d/engine/scene` Camera
+  - ❌ LightComponent — no ECS light system; use `@aura3d/engine/scene` Light
+  - ❌ RenderableComponent / MeshComponent — ECS entities cannot directly carry renderable geometry
+  - ❌ MaterialComponent — no ECS material binding
+  - ❌ AnimationComponent — no ECS animation state machine integration
+  - ❌ PhysicsComponent / RigidBodyComponent — ECS does not expose physics primitives
+  - ❌ InstancingComponent — no ECS instancing path
+
+These are architectural gaps, not bugs. Claims about ECS-first authoring should only mention the components and systems that actually exist in `packages/ecs/src/` and are exercised by tests.
