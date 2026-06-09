@@ -190,6 +190,34 @@ function auraBackend(): Plugin {
         })();
       });
 
+      // GET /api/render-progress → SSE stream of render pipeline progress JSON.
+      server.middlewares.use("/api/render-progress", (req, res, next) => {
+        if (req.method !== "GET") return next();
+        const progressPath = resolve(RENDER_OUT_DIR, "progress.json");
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.flushHeaders?.();
+        const interval = setInterval(() => {
+          try {
+            if (!existsSync(progressPath)) {
+              res.write(`data: ${JSON.stringify({ current: 0, total: 1, label: "waiting", pct: 0 })}\n\n`);
+              return;
+            }
+            const raw = readFileSync(progressPath, "utf8");
+            const data = JSON.parse(raw) as { current: number; total: number; label: string; pct: number };
+            res.write(`data: ${JSON.stringify(data)}\n\n`);
+            if (data.label === "finishing" || data.pct >= 100) {
+              clearInterval(interval);
+              res.end();
+            }
+          } catch {
+            res.write(`data: ${JSON.stringify({ current: 0, total: 1, label: "unknown", pct: 0 })}\n\n`);
+          }
+        }, 200);
+        req.on("close", () => clearInterval(interval));
+      });
+
       // GET /preview/* → serve the rendered frames/webm out of the template render dir.
       server.middlewares.use("/preview", (req, res, next) => {
         const rel = decodeURIComponent((req.url ?? "/").split("?")[0]!).replace(/^\/+/, "");

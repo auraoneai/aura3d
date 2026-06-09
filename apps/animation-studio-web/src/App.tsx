@@ -267,13 +267,20 @@ export function App() {
     setRendering(true);
     setRenderPct(-1);
     setPlaying(false);
-    // Real streaming progress requires server-sent events (SSE) from the render pipeline.
-    // Until then we show an honest indeterminate pulse (renderPct < 0) rather than a fake
-    // percentage that misleads the user about completion.
+    // Subscribe to real render-progress SSE from the render pipeline.
+    const es = new EventSource("/api/render-progress");
+    es.onmessage = (e) => {
+      try {
+        const d = JSON.parse(e.data) as { current: number; total: number; label: string; pct: number };
+        setRenderPct(d.pct);
+      } catch {}
+    };
+    es.onerror = () => { /* normal on close */ };
 
     // Render the current shot's time-range when scope is "shot", else the whole sequence.
     const range = isShot && currentShot ? `${Math.floor(currentShot.start)}-${Math.ceil(currentShot.start + currentShot.dur)}` : undefined;
     return runRender({ lowFi: true, range }).then((res) => {
+      es.close();
       setRendering(false);
       if (!res.ok) {
         showToast("Render failed — see console", "tip");
