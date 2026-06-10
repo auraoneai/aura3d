@@ -32,7 +32,9 @@ const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
 const EXPECTED_PUBLIC_COUNT = 26;
 
 function sh(command, options = {}) {
-  return execSync(command, { stdio: "pipe", encoding: "utf8", cwd: ROOT, ...options }).trim();
+  // 64MB buffer: `pnpm pack` of the engine prints thousands of npm-notice lines,
+  // which overflows execSync's 1MB default and kills the publish mid-pack.
+  return execSync(command, { stdio: "pipe", encoding: "utf8", cwd: ROOT, maxBuffer: 64 * 1024 * 1024, ...options }).trim();
 }
 
 function readManifest(dir) {
