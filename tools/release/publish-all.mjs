@@ -94,8 +94,15 @@ try {
         console.log(`published ${label}`);
       }
     } catch (error) {
-      failures.push({ label, error: String(error?.message ?? error) });
-      console.error(`FAILED ${label}: ${error?.message ?? error}`);
+      const message = String(error?.message ?? error);
+      // Re-runs after a partial publish hit "cannot publish over" conflicts for
+      // packages that already made it — that is success, not failure.
+      if (/cannot publish over|previously published/i.test(message)) {
+        console.log(`already published ${label} (skipping)`);
+      } else {
+        failures.push({ label, error: message });
+        console.error(`FAILED ${label}: ${message}`);
+      }
     }
   }
 } finally {

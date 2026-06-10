@@ -291,12 +291,12 @@ This phase releases everything that landed since 1.3.2 — the ECS components/sy
 - [x] Use a transient `.npmrc` OUTSIDE the repo via `NPM_CONFIG_USERCONFIG` — the repo `.npmrc` is NOT gitignored; never write the token into it.
 - [x] **create-aura3d trap:** move `packages/create-aura3d/templates/animation-studio/node_modules` aside before publishing create-aura3d (pnpm symlinks dereference under `npm pack` → 722 MB tarball that fails upload); restore it after.
 - [x] **Publish-loop trap:** if iterating a package list file with `while read`, `printf '\n' >>` the file first — a missing trailing newline silently skips the last package (this is how `@aura3d/workflows` went unpublished in 1.3.0 and made the engine uninstallable).
-- [ ] **Verify against the registry afterward:** all **26** packages (25 `@aura3d/*` + `create-aura3d`) show `latest = 1.3.3`. The count must be 26, not 25.
-- [ ] **Lockstep proof:** run the published-create proof — scaffold from the *published* `create-aura3d@1.3.3` and assert the project's `@aura3d/engine` === `1.3.3`, then `npm install && npm run build` in the scaffold (catches the three-compat/template pin class of bug for good).
+- [x] **Verify against the registry afterward:** all **26** packages (25 `@aura3d/*` + `create-aura3d`) show `latest = 1.3.3`. The count must be 26, not 25.
+- [x] **Lockstep proof:** run the published-create proof — scaffold from the *published* `create-aura3d@1.3.3` and assert the project's `@aura3d/engine` === `1.3.3`, then `npm install && npm run build` in the scaffold (catches the three-compat/template pin class of bug for good).
 
 ### Step 6 — Deploy + close the loop
 
 - [x] Deploy the showcase so the deployed-visual-proof gate can pass: build `apps/aura-clash-showcase` → build `marketing` (its closeBundle copies the showcase dist in) → copy `dist` into `marketing/.vercel/output/static` → `vercel deploy --prebuilt --prod` on the **"marketing"** Vercel project (NOT the root "aura3d" project). TLS gotcha: `NODE_OPTIONS=--tls-max-v1.2` and retry in a loop (Vercel dedups blobs across attempts).
 - [x] The custom domain never auto-reassigns: `vercel alias set <deployment-url> aura3d.auraone.ai`.
 - [x] Run `tools/aura3d106-deployed-visual-proof/index.ts` (it compares the live showcase's embedded release to 1.3.3), then `pnpm aura3d110:prepublish-readiness` end-to-end — all green.
-- [ ] Final smoke from a clean machine/dir: `npx create-aura3d@latest` with one classic and one three-compat template; both install, build, and run.
+- [x] Final smoke from a clean machine/dir: `npx create-aura3d@latest` with one classic and one three-compat template; both install, build, and run.
