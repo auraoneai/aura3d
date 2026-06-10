@@ -273,30 +273,30 @@ This phase releases everything that landed since 1.3.2 — the ECS components/sy
 
 ### Step 3 — Readiness gates (evidence proofs)
 
-- [ ] `pnpm aura3d110:prepublish-readiness` derives the report dir from the version: 1.3.3 → `tests/reports/aura3d133/`. Regenerate all 4 evidence proofs into it (reports are gitignored; use `pnpm exec tsx`, NOT global tsx):
+- [x] `pnpm aura3d110:prepublish-readiness` derives the report dir from the version: 1.3.3 → `tests/reports/aura3d133/`. Regenerate all 4 evidence proofs into it (reports are gitignored; use `pnpm exec tsx`, NOT global tsx):
   - [x] `tools/aura3d106-docs-claims/index.ts` → `docs-claims.json` (enforces exact 1.3.3 wording in README, llms.txt, claim-guidelines.md, aura3d-109-release-gates.md, marketing/package.json)
   - [x] `tools/aura3d106-performance-budget/index.ts` → `performance-budget.json`
   - [x] `tools/aura3d106-local-cli-pack-proof/index.ts` → `local-cli-catalog-pack-proof.json`
-  - [ ] `tools/aura3d106-deployed-visual-proof/index.ts` → `deployed-visual-proof.json` — passes only AFTER the live deploy (Step 6); run it last.
-- [ ] Re-run the full gate suite one final time on the release commit: `pnpm typecheck`, `pnpm test`, `cd apps/aura-clash-showcase && pnpm exec tsc --noEmit`.
+  - [x] `tools/aura3d106-deployed-visual-proof/index.ts` → `deployed-visual-proof.json` — passes only AFTER the live deploy (Step 6); run it last.
+- [x] Re-run the full gate suite one final time on the release commit: `pnpm typecheck`, `pnpm test`, `cd apps/aura-clash-showcase && pnpm exec tsc --noEmit`.
 
 ### Step 4 — Git: commit, tag, push to GitHub
 
-- [ ] Commit the release on branch `main` (tracks `origin/main`, even though `origin/HEAD` is `master`): `release: Aura3D 1.3.3 — <one-line summary>`.
-- [ ] Tag `v1.3.3` on that commit.
-- [ ] Push branch + tag: `git push origin main --follow-tags`. (Network gotcha in this env: if the push stalls, use `GIT_SSH_COMMAND="ssh -o ServerAliveInterval=10 ..."`.)
+- [x] Commit the release on branch `main` (tracks `origin/main`, even though `origin/HEAD` is `master`): `release: Aura3D 1.3.3 — <one-line summary>`.
+- [x] Tag `v1.3.3` on that commit.
+- [x] Push branch + tag: `git push origin main --follow-tags`. (Network gotcha in this env: if the push stalls, use `GIT_SSH_COMMAND="ssh -o ServerAliveInterval=10 ..."`.)
 
 ### Step 5 — npm publish (26 packages)
 
-- [ ] Use a transient `.npmrc` OUTSIDE the repo via `NPM_CONFIG_USERCONFIG` — the repo `.npmrc` is NOT gitignored; never write the token into it.
-- [ ] **create-aura3d trap:** move `packages/create-aura3d/templates/animation-studio/node_modules` aside before publishing create-aura3d (pnpm symlinks dereference under `npm pack` → 722 MB tarball that fails upload); restore it after.
-- [ ] **Publish-loop trap:** if iterating a package list file with `while read`, `printf '\n' >>` the file first — a missing trailing newline silently skips the last package (this is how `@aura3d/workflows` went unpublished in 1.3.0 and made the engine uninstallable).
+- [x] Use a transient `.npmrc` OUTSIDE the repo via `NPM_CONFIG_USERCONFIG` — the repo `.npmrc` is NOT gitignored; never write the token into it.
+- [x] **create-aura3d trap:** move `packages/create-aura3d/templates/animation-studio/node_modules` aside before publishing create-aura3d (pnpm symlinks dereference under `npm pack` → 722 MB tarball that fails upload); restore it after.
+- [x] **Publish-loop trap:** if iterating a package list file with `while read`, `printf '\n' >>` the file first — a missing trailing newline silently skips the last package (this is how `@aura3d/workflows` went unpublished in 1.3.0 and made the engine uninstallable).
 - [ ] **Verify against the registry afterward:** all **26** packages (25 `@aura3d/*` + `create-aura3d`) show `latest = 1.3.3`. The count must be 26, not 25.
 - [ ] **Lockstep proof:** run the published-create proof — scaffold from the *published* `create-aura3d@1.3.3` and assert the project's `@aura3d/engine` === `1.3.3`, then `npm install && npm run build` in the scaffold (catches the three-compat/template pin class of bug for good).
 
 ### Step 6 — Deploy + close the loop
 
-- [ ] Deploy the showcase so the deployed-visual-proof gate can pass: build `apps/aura-clash-showcase` → build `marketing` (its closeBundle copies the showcase dist in) → copy `dist` into `marketing/.vercel/output/static` → `vercel deploy --prebuilt --prod` on the **"marketing"** Vercel project (NOT the root "aura3d" project). TLS gotcha: `NODE_OPTIONS=--tls-max-v1.2` and retry in a loop (Vercel dedups blobs across attempts).
-- [ ] The custom domain never auto-reassigns: `vercel alias set <deployment-url> aura3d.auraone.ai`.
-- [ ] Run `tools/aura3d106-deployed-visual-proof/index.ts` (it compares the live showcase's embedded release to 1.3.3), then `pnpm aura3d110:prepublish-readiness` end-to-end — all green.
+- [x] Deploy the showcase so the deployed-visual-proof gate can pass: build `apps/aura-clash-showcase` → build `marketing` (its closeBundle copies the showcase dist in) → copy `dist` into `marketing/.vercel/output/static` → `vercel deploy --prebuilt --prod` on the **"marketing"** Vercel project (NOT the root "aura3d" project). TLS gotcha: `NODE_OPTIONS=--tls-max-v1.2` and retry in a loop (Vercel dedups blobs across attempts).
+- [x] The custom domain never auto-reassigns: `vercel alias set <deployment-url> aura3d.auraone.ai`.
+- [x] Run `tools/aura3d106-deployed-visual-proof/index.ts` (it compares the live showcase's embedded release to 1.3.3), then `pnpm aura3d110:prepublish-readiness` end-to-end — all green.
 - [ ] Final smoke from a clean machine/dir: `npx create-aura3d@latest` with one classic and one three-compat template; both install, build, and run.
