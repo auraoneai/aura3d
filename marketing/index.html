@@ -171,6 +171,63 @@
   </div>
 </section>
 
+<!-- ─── NEW IN 1.3.3 ───────────────────────────────────────── -->
+<section class="section-tight" id="release-133" data-search-index="release 1.3.3 ecs render bridge entity component system humanoid animation clips wave sit shrug cross arms salute shake head performance state graph three-compat migration templates create-aura3d">
+  <div class="wrap">
+    <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
+      <div class="sec-head-left">
+        <span class="eyebrow">New in 1.3.3</span>
+        <h2 class="h2">ECS rendering, a bigger motion vocabulary, <em style="font-family:var(--serif);font-style:italic">and a migration on-ramp.</em></h2>
+        <p class="lede">The 1.3.3 release connects the <code>@aura3d/ecs</code> world to the renderer, grows the standard humanoid clip library to 14 performances, and adds eight three.js-migration starter templates to <code>create-aura3d</code> — published across all 26 packages.</p>
+      </div>
+    </div>
+
+    <div class="diag">
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">ECS render bridge</span>
+          <span class="pass">● new</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">entry</span> <span class="v ok">createECSRenderSource(world)</span></div>
+          <div class="diag-row"><span class="k">components</span> <span class="v ok">camera · mesh · light · transform</span></div>
+          <div class="diag-row"><span class="k">systems</span> <span class="v ok">hierarchy transforms · camera matrices</span></div>
+          <div class="diag-row"><span class="k">lighting</span> <span class="v ok">inverse-transpose normal matrices</span></div>
+          <div class="diag-row"><span class="k">scope</span> <span class="v">bridge path — Scene API stays primary</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">humanoid motion vocabulary</span>
+          <span class="pass">● 14 clips</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">new clips</span> <span class="v ok">wave · sit · shrug · cross-arms · salute · shake-head</span></div>
+          <div class="diag-row"><span class="k">core set</span> <span class="v ok">idle · talk · gesture · point · nod · react · walk · run</span></div>
+          <div class="diag-row"><span class="k">state graph</span> <span class="v ok">one-shots auto-return to idle</span></div>
+          <div class="diag-row"><span class="k">held loops</span> <span class="v ok">sit / cross-arms hold while flagged</span></div>
+          <div class="diag-row"><span class="k">drives</span> <span class="v">Animation Studio performances</span></div>
+        </div>
+      </div>
+
+      <div class="diag-card">
+        <div class="diag-head">
+          <span class="title">three-compat starters</span>
+          <span class="pass">● 8 templates</span>
+        </div>
+        <div class="diag-body">
+          <div class="diag-row"><span class="k">scaffold</span> <span class="v ok">npx create-aura3d --template three-compat-…</span></div>
+          <div class="diag-row"><span class="k">viewers</span> <span class="v ok">character · asset inspector · product</span></div>
+          <div class="diag-row"><span class="k">scenes</span> <span class="v ok">interior · large scene · postprocess</span></div>
+          <div class="diag-row"><span class="k">authoring</span> <span class="v ok">materials · custom migration</span></div>
+          <div class="diag-row"><span class="k">each ships</span> <span class="v">public-API scene + route-health spec</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ─── AURA CLASH DEVELOPMENT SHOWCASE ────────────────────── -->
 <section class="section wwx-feature" id="aura-clash" data-search-index="aura clash browser fighting game development showcase typed glb assets poster playable evidence accessibility deploy check deployment gates believable motion foot ik foot-lock spring bones critically damped transitions animation event tracks footsteps vfx">
   <div class="wrap">
