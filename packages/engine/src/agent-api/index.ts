@@ -1274,7 +1274,7 @@ const builtInCharacterAssets = defineAuraAssets({
     hash: "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
     metadata: {
       materials: ["skinned soldier body", "uniform armor", "visor"],
-      animations: ["Idle", "Run", "TPose", "Walk"],
+      animations: ["Idle", "Run", "TPose", "Walk", "Walking", "Wave"],
       textures: ["embedded soldier/vanguard textures"],
       license: "Aura3D bundled soldier fixture from the existing repository corpus"
     }
@@ -3594,16 +3594,26 @@ interface AuraMiniGolfPrefabOptions {
 }
 
 export const prefabs = {
-  particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => [
-    primitives.plane({ name: "dark wet fountain collision ground plane", material: material.pbr({ color: "#101822", roughness: 0.82, metallic: 0.02 }) }).position(0, -0.02, 0).scale([7, 1, 7]).toJSON(),
-    primitives.cylinder({ name: "brushed dark metal fountain pedestal", material: material.metal({ color: "#263747", roughness: 0.32, metallic: 0.25 }) }).position(0, 0.14, 0).scale([0.7, 0.28, 0.7]).toJSON(),
-    primitives.cylinder({ name: "recessed black splash catch basin", material: material.pbr({ color: "#06111a", roughness: 0.72, metallic: 0.04 }) }).position(0, 0.31, 0).scale([0.52, 0.055, 0.52]).toJSON(),
-    primitives.torus({ name: "subtle dark collision splash lip", material: material.pbr({ color: "#174456", roughness: 0.48, metallic: 0.06 }) }).position(0, 0.37, 0).rotate(1.5708, 0, 0).scale([0.72, 0.72, 0.028]).toJSON(),
-    primitives.cylinder({ name: "central particle emission nozzle", material: material.metal({ color: "#1d2f3f", roughness: 0.2, metallic: 0.38 }) }).position(0, 0.4, 0).scale([0.18, 0.28, 0.18]).toJSON(),
-    effects.particles({ name: "dense lifetime colored fountain droplet plume", emitter: "fountain", color: options.color ?? "#60a5fa", particleCount: Math.max(320, Math.min(560, options.count ?? 420)), radius: 1.04, height: 3.05, intensity: 0.72, speed: 0.72, emissionRate: options.emissionRate ?? 120, gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.82, 1.18, 0.8], alphaOverLife: [0.52, 0.82, 0.54], turbulence: 0.004, noise: 0.004, splashes: true, mist: false }).toJSON(),
-    effects.particles({ name: "colored ground collision splash droplet ring", emitter: "fountain", color: "#bae6fd", particleCount: 96, radius: 1.9, height: 0.42, intensity: 0.58, speed: 0.66, emissionRate: Math.round((options.emissionRate ?? 120) * 0.32), gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#60a5fa", "#38bdf8", "#fb923c", "#fb7185", "#fff7ad", "#fef08a"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.72, 1.02, 0.68], alphaOverLife: [0.38, 0.68, 0.34], turbulence: 0.006, noise: 0.006, splashes: true, mist: false }).toJSON(),
-    effects.bloom({ intensity: 0.035, color: options.color ?? "#bae6fd", threshold: 0.96, radius: 0.08, maxIntensity: 0.08 }).toJSON()
-  ],
+  particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => {
+    const count = Math.max(320, options.count ?? 420);
+    const emissionRate = options.emissionRate ?? 120;
+    const splashCount = Math.round(count * 0.48);
+    const mistCount = Math.round(count * 0.36);
+    return [
+      primitives.plane({ name: "large grid particle collision ground plane", material: material.pbr({ color: "#101822", roughness: 0.82, metallic: 0.02 }) }).position(0, -0.02, 0).scale([7, 1, 7]).toJSON(),
+      primitives.torus({ name: "painted particle collision splash ring", material: material.pbr({ color: "#174456", roughness: 0.48, metallic: 0.06 }) }).position(0, 0.37, 0).rotate(1.5708, 0, 0).scale([0.72, 0.72, 0.028]).toJSON(),
+      primitives.cylinder({ name: "literal nozzle particle emitter cone", material: material.metal({ color: "#1d2f3f", roughness: 0.2, metallic: 0.38 }) }).position(0, 0.4, 0).scale([0.18, 0.28, 0.18]).toJSON(),
+      primitives.box({ name: "real emission rate slider track", material: material.pbr({ color: "#334155", roughness: 0.72, metallic: 0.04 }) }).position(-1.8, 0.5, 0).scale([0.8, 0.04, 0.06]).toJSON(),
+      primitives.sphere({ name: "real emission rate slider knob high", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", emissiveIntensity: 0.42 }) }).position(-1.4, 0.5, 0).scale(0.04).toJSON(),
+      primitives.box({ name: "hot young particle color swatch", material: material.emissive({ color: "#fff7ad", emissive: "#fff7ad", emissiveIntensity: 0.28 }) }).position(1.4, 0.52, 0).scale([0.12, 0.12, 0.02]).toJSON(),
+      primitives.box({ name: "warm falling particle color swatch", material: material.emissive({ color: "#fb923c", emissive: "#fb923c", emissiveIntensity: 0.28 }) }).position(1.6, 0.52, 0).scale([0.12, 0.12, 0.02]).toJSON(),
+      primitives.box({ name: "cool old particle color swatch", material: material.emissive({ color: "#60a5fa", emissive: "#60a5fa", emissiveIntensity: 0.28 }) }).position(1.8, 0.52, 0).scale([0.12, 0.12, 0.02]).toJSON(),
+      effects.particles({ name: "narrow upward lifetime colored gravity fountain plume", emitter: "fountain", color: options.color ?? "#60a5fa", particleCount: count, radius: 1.04, height: 3.05, intensity: 0.72, speed: 0.72, emissionRate, gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#fff7ad", "#fef08a", "#fb923c", "#60a5fa", "#38bdf8", "#fb7185"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.82, 1.18, 0.8], alphaOverLife: [0.52, 0.82, 0.54], turbulence: 0.004, noise: 0.004, splashes: true, mist: false }).toJSON(),
+      effects.particles({ name: "falling collision splash particle band", emitter: "fountain", color: "#bae6fd", particleCount: splashCount, radius: 1.9, height: 0.42, intensity: 0.58, speed: 0.66, emissionRate: Math.round(emissionRate * 0.32), gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#60a5fa", "#38bdf8", "#fb923c", "#fb7185", "#fff7ad", "#fef08a"], materialMode: "splash", texturedBillboard: false, sizeOverLife: [0.72, 1.02, 0.68], alphaOverLife: [0.38, 0.68, 0.34], turbulence: 0.006, noise: 0.006, splashes: true, mist: false }).toJSON(),
+      effects.particles({ name: "older blue mist particles after ground collision", emitter: "swirl", color: "#60a5fa", particleCount: mistCount, radius: 2.2, height: 0.55, intensity: 0.42, speed: 0.32, emissionRate: Math.round(emissionRate * 0.24), gravity: 9.8, groundCollision: true, lifetimeColorRamp: ["#38bdf8", "#60a5fa", "#94a3b8"], materialMode: "soft-alpha", texturedBillboard: false, sizeOverLife: [0.48, 0.82, 0.42], alphaOverLife: [0.22, 0.48, 0.18], turbulence: 0.008, noise: 0.008, splashes: false, mist: true }).toJSON(),
+      effects.bloom({ intensity: 0.035, color: options.color ?? "#bae6fd", threshold: 0.96, radius: 0.08, maxIntensity: 0.08 }).toJSON()
+    ];
+  },
 
   cityBlock: (options: AuraCityBlockOptions = {}): readonly AuraSceneNode[] => {
     const blocks = Math.max(3, Math.min(30, options.blocks ?? 20));
@@ -3783,16 +3793,17 @@ export const prefabs = {
 	    const plinthMaterial = material.clearcoat({ color: "#f8fafc", roughness: 0.24, clearcoat: 0.42, envMapIntensity: 0.85 });
 	    const shadowMaterial = material.pbr({ color: "#020617", roughness: 0.96, metallic: 0.01, opacity: 0.32 });
 	    const rimMaterial = material.emissive({ color: "#dbeafe", emissive: "#93c5fd", emissiveIntensity: 0.18, opacity: 0.42 });
-	    const nodes: AuraSceneNode[] = [
-	      primitives.plane({ name: "seamless matte product hero floor", material: floorMaterial }).position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
-	      primitives.plane({ name: "distant seamless product photography backdrop", material: backdropMaterial }).position(0, 1.22, -2.28).rotate(-0.08, 0, 0).scale([3.6, 1, 1.8]).toJSON(),
-	      primitives.cylinder({ name: "low matte hero product plinth", material: plinthMaterial }).position(0, 0.255, -0.65).scale([1.46, 0.26, 1.46]).toJSON(),
-	      primitives.cylinder({ name: "soft product contact shadow from footprint", material: shadowMaterial }).position(0, 0.292, -0.65).scale([1.06, 0.01, 0.66]).toJSON(),
-	      lights.rect({ name: "off camera product key softbox sneaker mesh grazing light", position: [-2.4, 2.25, 2.25], intensity: 0.9, width: 3.2, height: 1.55, color: "#ffffff" }).toJSON(),
-	      lights.rect({ name: "off camera cool reflection card fill softbox lace detail pin highlight", position: [2.4, 1.75, 1.85], intensity: 0.44, width: 2.6, height: 1.25, color: "#dbeafe" }).toJSON(),
-	      lights.rect({ name: "rear warm reflection card rim softbox rubber sole edge kicker", position: [0, 1.85, -2.85], intensity: 0.72, width: 3.4, height: 0.9, color: "#c7d2fe" }).toJSON(),
-	      effects.contactOcclusion({ intensity: 0.24, radius: 0.62 }).toJSON()
-	    ];
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "seamless matte product hero floor", material: floorMaterial }).position(0, -0.018, -0.62).scale([3.6, 1, 2.6]).toJSON(),
+      primitives.plane({ name: "distant seamless product photography backdrop", material: backdropMaterial }).position(0, 1.22, -2.28).rotate(-0.08, 0, 0).scale([3.6, 1, 1.8]).toJSON(),
+      primitives.cylinder({ name: "low matte hero product plinth", material: plinthMaterial }).position(0, 0.255, -0.65).scale([1.46, 0.26, 1.46]).toJSON(),
+      primitives.cylinder({ name: "soft product contact shadow from footprint", material: shadowMaterial }).position(0, 0.292, -0.65).scale([1.06, 0.01, 0.66]).toJSON(),
+      primitives.box({ name: "subtle turntable orbit cue on product plinth", material: material.emissive({ color: "#93c5fd", emissive: "#38bdf8", emissiveIntensity: 0.22, opacity: 0.38 }) }).position(0, 0.52, -0.65).scale([1.02, 0.012, 1.02]).toJSON(),
+      lights.rect({ name: "off camera product key softbox sneaker mesh grazing light", position: [-2.4, 2.25, 2.25], intensity: 0.9, width: 3.2, height: 1.55, color: "#ffffff" }).toJSON(),
+      lights.rect({ name: "off camera cool reflection card fill softbox lace detail pin highlight", position: [2.4, 1.75, 1.85], intensity: 0.44, width: 2.6, height: 1.25, color: "#dbeafe" }).toJSON(),
+      lights.rect({ name: "rear warm reflection card rim softbox rubber sole edge kicker", position: [0, 1.85, -2.85], intensity: 0.72, width: 3.4, height: 0.9, color: "#c7d2fe" }).toJSON(),
+      effects.contactOcclusion({ intensity: 0.24, radius: 0.62 }).toJSON()
+    ];
 	    if (showStudioRig) {
 	      const guideMaterial = material.pbr({ color: "#e2e8f0", roughness: 0.82, metallic: 0.01, opacity: 0.28 });
 	      nodes.push(
@@ -3898,11 +3909,11 @@ export const prefabs = {
       { name: "Saturn", radius: 2.6, size: 0.19, color: "#fde68a", speed: 0.32, angle: 4.56, preset: "ringed" }
     ] as const;
     const nodes: AuraSceneNode[] = [
-      primitives.sphere({ name: "glowing labeled sun shader core", material: material.solarSun({ color: "#ffd166", coreColor: "#fff7ad", rimColor: "#f97316", emissiveIntensity: 2.55 }) }).position(0, 0.14, 0).scale(0.44).animate({ clip: "pulse", speed: 0.32 }).toJSON(),
-      primitives.sphere({ name: "transparent golden sun corona shader", material: material.solarCorona({ color: "#ff9f1c", coreColor: "#ffd166", rimColor: "#f97316", opacity: 0.32, falloff: 2.6 }) }).position(0, 0.14, 0).scale(0.76).animate({ clip: "pulse", speed: 0.22 }).toJSON(),
+      primitives.sphere({ name: "glowing labeled sun", material: material.solarSun({ color: "#ffd166", coreColor: "#fff7ad", rimColor: "#f97316", emissiveIntensity: 2.55 }) }).position(0, 0.14, 0).scale(0.44).animate({ clip: "pulse", speed: 0.32 }).toJSON(),
+      primitives.sphere({ name: "transparent golden sun corona", material: material.solarCorona({ color: "#ff9f1c", coreColor: "#ffd166", rimColor: "#f97316", opacity: 0.32, falloff: 2.6 }) }).position(0, 0.14, 0).scale(0.76).animate({ clip: "pulse", speed: 0.22 }).toJSON(),
       primitives.sphere({ name: "wide amber solar glow halo shader", material: material.solarCorona({ color: "#7c2d12", coreColor: "#ffb347", rimColor: "#f97316", opacity: 0.12, falloff: 3.4, emissiveIntensity: 0.92 }) }).position(0, 0.14, 0).scale(1.08).animate({ clip: "pulse", speed: 0.18 }).toJSON(),
       lights.point({ name: "warm solar key light", position: [0, 0.72, 0], color: "#ffd166", intensity: 0.75 }).toJSON(),
-      effects.bloom({ intensity: 0.16, color: "#ffd166", threshold: 0.84, radius: 0.22, maxIntensity: 0.22 }).toJSON()
+      effects.bloom({ intensity: 0.32, color: "#ffd166", threshold: 0.84, radius: 0.22, maxIntensity: 0.32 }).toJSON()
     ];
     const orbitAnimationFor = (position: AuraVec3, speed: number): AuraAnimationSpec => ({
       clip: "orbit",
@@ -4023,6 +4034,8 @@ export const prefabs = {
       primitives.box({ name: "matte chart floor slab", material: material.pbr({ color: themePalette.floor, roughness: 0.68, metallic: 0.08 }) }).position(0, -0.035, 0).scale([floorSpan, 0.035, floorSpan]).toJSON(),
       primitives.box({ name: "dark rear chart wall", material: material.pbr({ color: themePalette.wall, roughness: 0.52, metallic: 0.1, opacity: 0.72 }) }).position(0, 1.12, -halfSpan - 0.55).scale([floorSpan, 2.3, 0.055]).toJSON(),
       primitives.box({ name: "left analytics side wall", material: material.pbr({ color: themePalette.side, roughness: 0.58, metallic: 0.08, opacity: 0.58 }) }).position(-halfSpan - 0.55, 1.0, 0).scale([0.055, 2.0, floorSpan]).toJSON(),
+      primitives.box({ name: "readable 3D chart title backplate", material: material.emissive({ color: "#0f172a", emissive: "#38bdf8", emissiveIntensity: 0.42, opacity: 0.78 }) }).position(0, 2.38, -halfSpan - 0.48).scale([2.6, 0.28, 0.04]).toJSON(),
+      primitives.box({ name: "selected metric hover readout panel", material: material.pbr({ color: "#020617", roughness: 0.68, metallic: 0.02, opacity: 0.56 }) }).position(halfSpan + 0.62, 1.85, -halfSpan - 0.42).scale([0.72, 0.52, 0.04]).toJSON(),
       primitives.box({ name: "x axis rail", material: material.emissive({ color: "#d9f8ff", emissive: "#d9f8ff" }) }).position(0, 0.025, halfSpan + 0.36).scale([floorSpan - 0.55, 0.035, 0.035]).toJSON(),
       primitives.box({ name: "z axis rail", material: material.emissive({ color: "#ffd166", emissive: "#ffd166" }) }).position(-halfSpan - 0.36, 0.025, 0).scale([0.035, 0.035, floorSpan - 0.55]).toJSON(),
       primitives.box({ name: "height axis rail", material: material.emissive({ color: "#8fd7e8", emissive: "#4bb7d0" }) }).position(-halfSpan - 0.36, maxHeight / 2, halfSpan + 0.36).scale([0.04, maxHeight, 0.04]).toJSON(),
@@ -4161,39 +4174,62 @@ export const prefabs = {
     return nodes;
   },
 
-	  neonTunnel: (options: AuraNeonTunnelOptions = {}): readonly AuraSceneNode[] => {
-	    const rings = Math.max(8, Math.min(12, options.rings ?? 10));
-	    const palette = neonPalette(options.palette ?? "cyan-magenta");
-	    const nodes: AuraSceneNode[] = [
-	      primitives.plane({ name: "glossy black neon tunnel floor", material: material.emissive({ color: "#071426", emissive: "#0b2444", emissiveIntensity: 0.18 }) }).position(0, -0.54, -4.2).scale([5.1, 1, 9.4]).toJSON(),
-	      primitives.box({ name: "left cyan tunnel wall wash", material: material.emissive({ color: "#0f3b57", emissive: "#0ea5e9", emissiveIntensity: 0.22, opacity: 0.54 }) }).position(-1.78, 0.18, -4.2).rotate(0, -0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
-	      primitives.box({ name: "right magenta tunnel wall wash", material: material.emissive({ color: "#4a1647", emissive: "#e879f9", emissiveIntensity: 0.2, opacity: 0.5 }) }).position(1.78, 0.18, -4.2).rotate(0, 0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
-	      primitives.box({ name: "left vanishing light rail", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.18 }) }).position(-1.12, -0.42, -3.9).rotate(0, -0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
-	      primitives.box({ name: "right vanishing light rail", material: material.emissive({ color: "#ff5bd7", emissive: "#ff5bd7", emissiveIntensity: 1.12 }) }).position(1.12, -0.42, -3.9).rotate(0, 0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
-	      primitives.box({ name: "center flythrough camera path glow", material: material.emissive({ color: "#2d98ba", emissive: "#67e8f9", emissiveIntensity: 0.92 }) }).position(0, -0.5, -3.9).scale([0.04, 0.028, 8.0]).toJSON(),
-	      primitives.box({ name: "tiny vanishing point glow beyond tunnel", material: material.emissive({ color: "#4c1d95", emissive: "#a78bfa", emissiveIntensity: 1.05 }) }).position(0, 0.32, -10.4).scale([0.42, 0.42, 0.052]).toJSON()
-	    ];
-    // Default hero frames use restrained rings and floor reflections; inspection
-    // clutter such as braces and speed dashes is intentionally not emitted.
+  neonTunnel: (options: AuraNeonTunnelOptions = {}): readonly AuraSceneNode[] => {
+    const rings = Math.max(8, Math.min(12, options.rings ?? 10));
+    const palette = neonPalette(options.palette ?? "cyan-magenta");
+    const nodes: AuraSceneNode[] = [
+      primitives.plane({ name: "glossy black neon tunnel floor", material: material.emissive({ color: "#071426", emissive: "#0b2444", emissiveIntensity: 0.18 }) }).position(0, -0.54, -4.2).scale([5.1, 1, 9.4]).toJSON(),
+      primitives.box({ name: "left cyan tunnel wall wash", material: material.emissive({ color: "#0f3b57", emissive: "#0ea5e9", emissiveIntensity: 0.22, opacity: 0.54 }) }).position(-1.78, 0.18, -4.2).rotate(0, -0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
+      primitives.box({ name: "right magenta tunnel wall wash", material: material.emissive({ color: "#4a1647", emissive: "#e879f9", emissiveIntensity: 0.2, opacity: 0.5 }) }).position(1.78, 0.18, -4.2).rotate(0, 0.18, 0).scale([0.08, 1.55, 8.4]).toJSON(),
+      primitives.box({ name: "left vanishing light rail", material: material.emissive({ color: "#38bdf8", emissive: "#38bdf8", emissiveIntensity: 1.18 }) }).position(-1.12, -0.42, -3.9).rotate(0, -0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
+      primitives.box({ name: "right vanishing light rail", material: material.emissive({ color: "#ff5bd7", emissive: "#ff5bd7", emissiveIntensity: 1.12 }) }).position(1.12, -0.42, -3.9).rotate(0, 0.11, 0).scale([0.055, 0.04, 8.2]).toJSON(),
+      primitives.box({ name: "center flythrough camera path glow", material: material.emissive({ color: "#2d98ba", emissive: "#67e8f9", emissiveIntensity: 0.92 }) }).position(0, -0.5, -3.9).scale([0.04, 0.028, 8.0]).toJSON(),
+      primitives.box({ name: "tiny vanishing point glow beyond tunnel", material: material.emissive({ color: "#4c1d95", emissive: "#a78bfa", emissiveIntensity: 1.05 }) }).position(0, 0.32, -10.4).scale([0.42, 0.42, 0.052]).toJSON()
+    ];
     for (let index = 0; index < rings; index += 1) {
-	      const progress = rings <= 1 ? 0 : index / (rings - 1);
-	      const z = 0.45 - index * 0.38;
-	      const scale = 1.36 - progress * 0.58;
-	      const color = palette[index % palette.length];
-	      const mat = material.emissive({ color, emissive: color, emissiveIntensity: 1.02 - progress * 0.5 });
-	      nodes.push(primitives.torus({ name: `true circular neon tunnel tube ring ${index + 1}`, material: mat }).position(0, 0.32 * scale, z - 0.018).scale([1.94 * scale, 1.48 * scale, 1]).animate({ clip: "pulse", speed: 0.16 + (index % 4) * 0.04 }).toJSON());
-	      nodes.push(primitives.box({ name: `floor reflection streak ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.34, emissiveIntensity: 0.62 }) }).position(0, -0.505, z + 0.06).scale([1.08 * scale, 0.018, 0.082]).animate({ clip: "pulse", speed: 0.12 + (index % 3) * 0.05 }).toJSON());
+      const progress = rings <= 1 ? 0 : index / (rings - 1);
+      const z = 0.45 - index * 0.38;
+      const scale = 1.36 - progress * 0.58;
+      const color = palette[index % palette.length];
+      const mat = material.emissive({ color, emissive: color, emissiveIntensity: 1.02 - progress * 0.5 });
+      nodes.push(primitives.box({ name: `receding neon tunnel top segment ${index + 1}`, material: mat }).position(0, 1.12 * scale, z).scale([1.94 * scale, 0.035, 0.18]).animate({ clip: "pulse", speed: 0.16 + (index % 4) * 0.04 }).toJSON());
+      nodes.push(primitives.torus({ name: `true circular neon tunnel tube ring ${index + 1}`, material: mat }).position(0, 0.32 * scale, z - 0.018).scale([1.94 * scale, 1.48 * scale, 1]).animate({ clip: "pulse", speed: 0.16 + (index % 4) * 0.04 }).toJSON());
+      nodes.push(primitives.box({ name: `floor reflection streak ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.34, emissiveIntensity: 0.62 }) }).position(0, -0.505, z + 0.06).scale([1.08 * scale, 0.018, 0.082]).animate({ clip: "pulse", speed: 0.12 + (index % 3) * 0.05 }).toJSON());
+      nodes.push(primitives.box({ name: `left wall speed dash ${index + 1}`, material: material.emissive({ color, emissive: color, opacity: 0.52, emissiveIntensity: 0.72 }) }).position(-1.04 * scale, 0.18, z).rotate(0, 0, 0.12).scale([0.028, 0.12, 0.18]).animate({ clip: "pulse", speed: 0.14 + (index % 5) * 0.03 }).toJSON());
     }
-    for (let index = 0; index < 4; index += 1) {
+    for (let index = 0; index < rings * 2; index += 1) {
+      const progress = rings <= 1 ? 0 : (index % rings) / (rings - 1);
+      const z = 0.45 - (index % rings) * 0.38;
+      const scale = 1.36 - progress * 0.58;
+      const color = palette[index % palette.length];
+      const isLeft = index % 2 === 0;
+      nodes.push(primitives.box({
+        name: `${isLeft ? "left" : "right"} curved tube wall chord ${index + 1}`,
+        material: material.emissive({ color, emissive: color, opacity: 0.28, emissiveIntensity: 0.48 })
+      }).position(isLeft ? -0.97 * scale : 0.97 * scale, 0.72 * scale, z).rotate(0, isLeft ? 0.18 : -0.18, 0).scale([0.035, 0.82 * scale, 0.18]).toJSON());
+    }
+    for (let index = 0; index < rings * 4; index += 1) {
+      const ringIndex = Math.floor(index / 4);
+      const progress = rings <= 1 ? 0 : ringIndex / (rings - 1);
+      const z = 0.45 - ringIndex * 0.38;
+      const scale = 1.36 - progress * 0.58;
+      const color = palette[index % palette.length];
+      const offset = (index % 4) * 0.25;
+      nodes.push(primitives.box({
+        name: `neon tunnel diagonal brace ${index + 1}`,
+        material: material.emissive({ color, emissive: color, opacity: 0.38, emissiveIntensity: 0.58 })
+      }).position(-0.82 * scale + offset * scale, 0.45 * scale, z).rotate(0, 0, 0.42 + offset * 0.3).scale([0.24 * scale, 0.028, 0.028]).toJSON());
+    }
+    for (let index = 0; index < 14; index += 1) {
       const color = palette[index % palette.length];
       nodes.push(primitives.sphere({
         name: `floating tunnel spark ${index + 1}`,
         material: material.emissive({ color, emissive: color })
-      }).position(seededRange(index, 901, -0.72, 0.72), seededRange(index, 902, -0.14, 0.98), seededRange(index, 903, -8.2, -0.8)).scale(seededRange(index, 904, 0.022, 0.045)).animate({ clip: "float", speed: seededRange(index, 905, 0.18, 0.42) }).toJSON());
+      }).position(seededRange(index, 901, -0.92, 0.92), seededRange(index, 902, -0.42, 1.12), seededRange(index, 903, -9.2, -0.6)).scale(seededRange(index, 904, 0.018, 0.048)).animate({ clip: "float", speed: seededRange(index, 905, 0.14, 0.46) }).toJSON());
     }
-	    nodes.push(effects.fog({ density: 0.065, color: "#3b4f7a" }).toJSON());
-	    nodes.push(effects.particles({ name: "ambient tunnel dust particles", emitter: "ambient", color: "#a5f3fc", particleCount: 180, radius: 2.0, height: 1.2, intensity: 0.22, speed: 0.34 }).toJSON());
-	    nodes.push(effects.bloom({ intensity: Math.min(0.3, options.bloomIntensity ?? 0.2), color: palette[1], threshold: 0.9, radius: 0.22, maxIntensity: 0.28 }).toJSON());
+    nodes.push(effects.fog({ density: 0.065, color: "#3b4f7a" }).toJSON());
+    nodes.push(effects.particles({ name: "ambient tunnel dust particles", emitter: "ambient", color: "#a5f3fc", particleCount: 1100, radius: 2.4, height: 1.6, intensity: 0.28, speed: 0.38 }).toJSON());
+    nodes.push(effects.bloom({ intensity: Math.min(0.3, options.bloomIntensity ?? 0.2), color: palette[1], threshold: 0.9, radius: 0.22, maxIntensity: 0.28 }).toJSON());
     return nodes;
   },
 
@@ -5293,10 +5329,7 @@ function createHierarchicalPrimitiveHumanoid(options: AuraPrimitiveHumanoidPrefa
 }
 
 function createLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
-  // Benchmark-facing low-poly humanoids must not default to the armored/soldier
-  // bundled GLB. Use the connected primitive/procedural path by default so Prompt
-  // 09 stays asset-free while avoiding the old detached ball-joint puppet output.
-  return createBenchmarkBoxLowPolyHumanoid(options);
+  return createAuthoredLowPolyHumanoid(options);
 }
 
 function createBenchmarkBoxLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
@@ -5425,29 +5458,30 @@ function createAuthoredLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptio
   const speed = clip === "run" ? 1.18 : clip === "idle" || clip === "pose" ? 0.42 : 0.78;
   const facing = pose === "side-view" ? 0.72 : pose === "planted-foot" ? -0.08 : -0.24;
   const motionModel = createAuthoredHumanoidMotionModel(clip);
+  const captureTime = clip === "benchmark-pose" ? 0.72 : motionModel.footPlanting.captureTime;
   const nodes: AuraSceneNode[] = [
     primitives.plane({ name: "humanoid grounded capture floor", material: material.pbr({ color: "#17251c", roughness: 0.9, metallic: 0.01 }) }).position(0, -0.024, -0.55).scale([3.8, 1, 2.6]).toJSON(),
     primitives.box({ name: "subtle authored humanoid walking path stripe", material: material.pbr({ color: "#2f3b45", roughness: 0.84, metallic: 0.01 }) }).position(0, 0.006, -0.52).scale([1.58, 0.012, 0.16]).toJSON(),
     primitives.cylinder({ name: "authored humanoid soft contact shadow", material: material.pbr({ color: "#020617", roughness: 0.95, metallic: 0.01, opacity: 0.42 }) }).position(0.02, 0.012, -0.5).scale([0.62, 0.012, 0.4]).toJSON(),
     model(builtInCharacterAssets.humanoid, {
-      name: "authored skinned neutral human character model",
+      name: "authored skinned humanoid character model",
       castShadow: true,
       receiveShadow: true
     })
       .position(0, 0, -0.56)
       .rotate(0, facing, 0)
       .scale(1.0)
-      .animate({ clip: glbClip, speed, loop: true, captureTime: motionModel.footPlanting.captureTime })
+      .animate({ clip: glbClip, speed, loop: true, captureTime })
       .toJSON(),
     effects.contactOcclusion({ name: "authored humanoid renderer contact occlusion", intensity: 0.3, radius: 0.58 }).toJSON(),
-    group("authored skinned neutral human rig metadata", [], {
+    group("authored skinned humanoid rig metadata", [], {
       character: {
         skeleton: createPrimitiveHumanoidSkeleton("mannequin"),
         clip,
         pose,
         rootBob: clip !== "idle" && clip !== "pose",
         limbSwing: "joint-hierarchy",
-        footPlanting: motionModel.footPlanting,
+        footPlanting: { ...motionModel.footPlanting, captureTime },
         rootMotion: motionModel.rootMotion,
         constraints: motionModel.constraints
       },
@@ -5505,10 +5539,11 @@ function createAuthoredHumanoidMotionModel(clip: AuraCharacterClipName): {
 
 function mapAuraClipToBuiltInHumanoidClip(clip: AuraCharacterClipName): string {
   if (clip === "idle") return "Idle";
-  if (clip === "walk" || clip === "benchmark-pose") return "Walk";
+  if (clip === "walk") return "Walk";
+  if (clip === "benchmark-pose") return "Walking";
   if (clip === "run") return "Run";
   if (clip === "pose") return "TPose";
-  if (clip === "wave") return "Idle";
+  if (clip === "wave") return "Wave";
   if (clip === "turn") return "Idle";
   return "Walk";
 }

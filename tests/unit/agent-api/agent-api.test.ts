@@ -242,7 +242,7 @@ describe("agent API", () => {
     expect(flattened.some((node) => node.kind === "primitive" && node.name === "forward foot planted on path")).toBe(true);
   });
 
-  test.skip("uses a bundled skinned GLB for the benchmark-facing humanoid default", () => {
+  test("uses a bundled skinned GLB for the benchmark-facing humanoid default", () => {
     const nodes = character.lowPolyHumanoid({ clip: "benchmark-pose", pose: "three-quarter" });
     const modelNode = nodes.find((node): node is AuraModelNode => node.kind === "model" && node.name === "authored skinned humanoid character model");
 
@@ -275,7 +275,7 @@ describe("agent API", () => {
     expect(character.visualQA(nodes)).toMatchObject({ connected: true, impossibleProportions: false, score: 5 });
   });
 
-  test.skip("exposes a built-in procedural human mesh descriptor without making it the benchmark default", () => {
+  test("exposes a built-in procedural human mesh descriptor without making it the benchmark default", () => {
     const mesh = character.proceduralHumanMesh({ style: "athletic" });
     const partNames = mesh.parts.map((part) => part.name);
 
@@ -372,7 +372,7 @@ describe("agent API", () => {
     expect(scenes[0]?.background).toBe("#bfe7ff");
   });
 
-  test.skip("exposes repair helpers for particles, city, materials, products, physics, charts, games, and characters", () => {
+  test("exposes repair helpers for particles, city, materials, products, physics, charts, games, and characters", () => {
     const snapshot = scene()
       .addMany(prefabs.particleFountain({ count: 1400 }))
       .addMany(prefabs.cityBlock({ blocks: 4 }))
@@ -415,7 +415,7 @@ describe("agent API", () => {
     expect(snapshot.camera.position?.[0]).toBeGreaterThan(0);
   });
 
-  test.skip("particle fountain prefab exposes control, collision, and lifetime color evidence", () => {
+  test("particle fountain prefab exposes control, collision, and lifetime color evidence", () => {
     const nodes = prefabs.particleFountain({ count: 2400 });
     const primitiveNames = nodes.flatMap((node) => node.kind === "primitive" ? [node.name ?? ""] : []);
     const particleEffects = nodes.filter((node) => node.kind === "effect" && node.effect === "particles");
@@ -526,7 +526,7 @@ describe("agent API", () => {
     expect(character.visualQA(impossibleHead).score).toBeLessThan(5);
   });
 
-  test.skip("builds a six-planet solar-system prefab with orbit paths and attached readable labels", () => {
+  test("builds a six-planet solar-system prefab with orbit paths and attached readable labels", () => {
     const nodes = prefabs.solarSystem();
     const planetNodes = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("labeled orbiting planet") === true);
     const orbitSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.includes("orbit path segment") === true);
@@ -671,7 +671,7 @@ describe("agent API", () => {
     });
   });
 
-  test.skip("keeps data visualization rich with axes, labels, caps, and hover evidence", () => {
+  test("keeps data visualization rich with axes, labels, caps, and hover evidence", () => {
     const nodes = prefabs.dataBars3D({ grid: 6 });
     const bars = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("height-colored data bar") === true);
     const caps = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("bright data bar top cap") === true);
@@ -712,7 +712,7 @@ describe("agent API", () => {
     expect(selectedBar?.material?.color).toBe("#f97316");
   });
 
-  test.skip("keeps neon tunnel cinematic with octagonal rings, reflections, and motion cues", () => {
+  test("keeps neon tunnel cinematic with octagonal rings, reflections, and motion cues", () => {
     const nodes = prefabs.neonTunnel({ rings: 10 });
     const topSegments = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.name?.startsWith("receding neon tunnel top segment") === true);
     const tubeRings = nodes.filter((node): node is AuraPrimitiveNode => node.kind === "primitive" && node.primitive === "torus" && node.name?.startsWith("true circular neon tunnel tube ring") === true);
@@ -867,7 +867,7 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "large night moon state marker")).toBe(true);
   });
 
-  test.skip("keeps product stage tight for three-quarter product framing", () => {
+  test("keeps product stage tight for three-quarter product framing", () => {
     const nodes = prefabs.productStage();
     const inspectionNodes = prefabs.productStage({ style: "inspection" });
 
@@ -889,7 +889,7 @@ describe("agent API", () => {
     expect(nodes.some((node) => node.kind === "light" && node.name === "rear warm reflection card rim softbox rubber sole edge kicker")).toBe(true);
   });
 
-  test.skip("compiles product viewer plans to normalized plinth placement with turntable evidence", () => {
+  test("compiles product viewer plans to normalized plinth placement with turntable evidence", () => {
     const plan = definePromptPlan({
       sceneType: "product-viewer",
       subject: { asset: assets.robot, label: "sneaker" },
