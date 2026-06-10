@@ -1,4 +1,4 @@
-import { addVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Vec3 } from "./Shape.js";
+import { addVec3, dotVec3, normalizeVec3, rotateVec3ByQuat, scaleVec3, subVec3, validateFiniteVec3, type Vec3 } from "./Shape.js";
 import type { RigidBody } from "./RigidBody.js";
 
 export type ConstraintType = "fixed" | "hinge" | "slider" | "spring";
@@ -83,11 +83,11 @@ export class Constraint {
   }
 
   private anchorAWorld(): Vec3 {
-    return addVec3(this.bodyA.position, this.localAnchorA);
+    return addVec3(this.bodyA.position, rotateVec3ByQuat(this.localAnchorA, this.bodyA.rotation));
   }
 
   private anchorBWorld(): Vec3 {
-    return addVec3(this.bodyB.position, this.localAnchorB);
+    return addVec3(this.bodyB.position, rotateVec3ByQuat(this.localAnchorB, this.bodyB.rotation));
   }
 
   private applyError(error: Vec3): void {

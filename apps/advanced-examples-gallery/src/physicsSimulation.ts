@@ -276,7 +276,8 @@ function createWorld(): PhysicsWorld {
     solverIterations: 5,
     enableSleeping: true,
     sleepVelocityThreshold: 0.018,
-    sleepDelay: 0.55
+    sleepDelay: 0.55,
+    backend: "aura-js"
   });
 }
 

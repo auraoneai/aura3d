@@ -3,7 +3,7 @@ import { test } from "vitest";
 import { PhysicsWorld } from "../../../packages/physics/src/index.js";
 
 test("fixed constraint chain remains bounded under repeated solver steps", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8 });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 8, backend: "aura-js" });
   const anchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   let previous = anchor;
   const bodies = [];
@@ -31,7 +31,7 @@ test("fixed constraint chain remains bounded under repeated solver steps", () =>
 });
 
 test("hinge, slider, and spring constraints stay finite and axis-bounded under stress", () => {
-  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6 });
+  const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, backend: "aura-js" });
   const hingeAnchor = world.createRigidBody({ type: "static", position: [0, 0, 0] });
   const hingeBody = world.createRigidBody({ position: [2, 3, -1], velocity: [1, 8, -3] });
   world.createConstraint({

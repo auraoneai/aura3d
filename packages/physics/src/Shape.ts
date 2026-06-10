@@ -177,6 +177,19 @@ export class Shape {
         }
         return { min, max };
       }
-    }
   }
+}
+}
+
+export function rotateVec3ByQuat(v: Vec3, q: readonly [number, number, number, number]): [number, number, number] {
+  // q * v * q^-1 for rotating a vector by a unit quaternion
+  const x = q[0], y = q[1], z = q[2], w = q[3];
+  const tx = 2 * (y * v[2] - z * v[1]);
+  const ty = 2 * (z * v[0] - x * v[2]);
+  const tz = 2 * (x * v[1] - y * v[0]);
+  return [
+    v[0] + w * tx + (y * tz - z * ty),
+    v[1] + w * ty + (z * tx - x * tz),
+    v[2] + w * tz + (x * ty - y * tx)
+  ];
 }

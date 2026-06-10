@@ -492,9 +492,14 @@ function sitClip(): AnimationClipDefinition<StandardClipId> {
         { t: 3, e: [1.6, 0, 0] }
       ]),
       rotationTrack("spine", d, [
-        { t: 0, e: [0.12, 0, 0] },
-        { t: 1.5, e: [0.1, 0, 0] },
-        { t: 3, e: [0.12, 0, 0] }
+        { t: 0, e: [0.18, 0, 0] },
+        { t: 1.5, e: [0.0, 0, 0] },
+        { t: 3, e: [0.18, 0, 0] }
+      ]),
+      rotationTrack("leftUpperArm", d, [
+        { t: 0, e: [0.15, 0, 0.1] },
+        { t: 1.5, e: [0.12, 0, 0.08] },
+        { t: 3, e: [0.15, 0, 0.1] }
       ])
     ],
     true,
@@ -538,24 +543,24 @@ function crossArmsClip(): AnimationClipDefinition<StandardClipId> {
     d,
     [
       rotationTrack("leftUpperArm", d, [
-        { t: 0, e: [0, 0, 0.55] },
-        { t: 1.5, e: [0, 0, 0.6] },
-        { t: 3, e: [0, 0, 0.55] }
+        { t: 0, e: [0, 0, 0.5] },
+        { t: 1.5, e: [0, 0, 0.7] },
+        { t: 3, e: [0, 0, 0.5] }
       ]),
       rotationTrack("leftLowerArm", d, [
-        { t: 0, e: [0, 0, 1.4] },
-        { t: 1.5, e: [0, 0, 1.5] },
-        { t: 3, e: [0, 0, 1.4] }
+        { t: 0, e: [0, 0, 1.35] },
+        { t: 1.5, e: [0, 0, 1.6] },
+        { t: 3, e: [0, 0, 1.35] }
       ]),
       rotationTrack("rightUpperArm", d, [
-        { t: 0, e: [0, 0, -0.55] },
-        { t: 1.5, e: [0, 0, -0.6] },
-        { t: 3, e: [0, 0, -0.55] }
+        { t: 0, e: [0, 0, -0.5] },
+        { t: 1.5, e: [0, 0, -0.7] },
+        { t: 3, e: [0, 0, -0.5] }
       ]),
       rotationTrack("rightLowerArm", d, [
-        { t: 0, e: [0, 0, -1.4] },
-        { t: 1.5, e: [0, 0, -1.5] },
-        { t: 3, e: [0, 0, -1.4] }
+        { t: 0, e: [0, 0, -1.35] },
+        { t: 1.5, e: [0, 0, -1.6] },
+        { t: 3, e: [0, 0, -1.35] }
       ])
     ],
     true,

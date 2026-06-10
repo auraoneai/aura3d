@@ -1,4 +1,4 @@
-import { Material, type RenderState } from "./Material";
+import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibrary";
@@ -123,6 +123,32 @@ export class SkinnedLitMaterial extends Material {
     if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 96) {
       throw new Error("SkinnedLitMaterial maxJoints must be an integer in [1, 96]");
     }
+
+    // Build conditional extension texture parameters only when textures are provided.
+    // The default skinned-lit shader does not include uniforms for advanced extension
+    // textures (clearcoat, sheen, transmission, iridescence, anisotropy, volume).
+    const extParams: Record<string, unknown> = {};
+    const extSchema: MaterialUniformDescriptor[] = [];
+
+    function addTex(name: string, tex?: TextureBinding) {
+      if (tex) {
+        extParams[`u_${name}Texture`] = tex;
+        extParams[`u_${name}TextureEnabled`] = 1;
+        extSchema.push({ name: `u_${name}Texture`, kind: "texture2d" as const, required: false as const });
+        extSchema.push({ name: `u_${name}TextureEnabled`, kind: "float" as const });
+      }
+    }
+
+    addTex("clearcoat", options.clearcoatTexture);
+    addTex("clearcoatNormal", options.clearcoatNormalTexture);
+    addTex("sheenColor", options.sheenColorTexture);
+    addTex("sheenRoughness", options.sheenRoughnessTexture);
+    addTex("transmission", options.transmissionTexture);
+    addTex("iridescence", options.iridescenceTexture);
+    addTex("iridescenceThickness", options.iridescenceThicknessTexture);
+    addTex("anisotropy", options.anisotropyTexture);
+    addTex("volumeThickness", options.volumeThicknessTexture);
+
     super({
       name: options.name ?? "skinned-lit",
       shaderKey: DEFAULT_SKINNED_LIT_SHADER_NAME,
@@ -144,24 +170,6 @@ export class SkinnedLitMaterial extends Material {
         u_occlusionStrength: options.occlusionStrength ?? 1,
         u_emissiveTexture: options.emissiveTexture ?? new TextureBinding({ name: "u_emissiveTexture", required: false }),
         u_emissiveTextureEnabled: options.emissiveTexture ? 1 : 0,
-        u_clearcoatTexture: options.clearcoatTexture ?? new TextureBinding({ name: "u_clearcoatTexture", required: false }),
-        u_clearcoatTextureEnabled: options.clearcoatTexture ? 1 : 0,
-        u_clearcoatNormalTexture: options.clearcoatNormalTexture ?? new TextureBinding({ name: "u_clearcoatNormalTexture", required: false }),
-        u_clearcoatNormalTextureEnabled: options.clearcoatNormalTexture ? 1 : 0,
-        u_sheenColorTexture: options.sheenColorTexture ?? new TextureBinding({ name: "u_sheenColorTexture", required: false }),
-        u_sheenColorTextureEnabled: options.sheenColorTexture ? 1 : 0,
-        u_sheenRoughnessTexture: options.sheenRoughnessTexture ?? new TextureBinding({ name: "u_sheenRoughnessTexture", required: false }),
-        u_sheenRoughnessTextureEnabled: options.sheenRoughnessTexture ? 1 : 0,
-        u_transmissionTexture: options.transmissionTexture ?? new TextureBinding({ name: "u_transmissionTexture", required: false }),
-        u_transmissionTextureEnabled: options.transmissionTexture ? 1 : 0,
-        u_iridescenceTexture: options.iridescenceTexture ?? new TextureBinding({ name: "u_iridescenceTexture", required: false }),
-        u_iridescenceTextureEnabled: options.iridescenceTexture ? 1 : 0,
-        u_iridescenceThicknessTexture: options.iridescenceThicknessTexture ?? new TextureBinding({ name: "u_iridescenceThicknessTexture", required: false }),
-        u_iridescenceThicknessTextureEnabled: options.iridescenceThicknessTexture ? 1 : 0,
-        u_anisotropyTexture: options.anisotropyTexture ?? new TextureBinding({ name: "u_anisotropyTexture", required: false }),
-        u_anisotropyTextureEnabled: options.anisotropyTexture ? 1 : 0,
-        u_volumeThicknessTexture: options.volumeThicknessTexture ?? new TextureBinding({ name: "u_volumeThicknessTexture", required: false }),
-        u_volumeThicknessTextureEnabled: options.volumeThicknessTexture ? 1 : 0,
         u_alphaCutoff: 0,
         u_metallic: options.metallic ?? 0,
         u_roughness: options.roughness ?? 0.5,
@@ -222,7 +230,8 @@ export class SkinnedLitMaterial extends Material {
         u_normalMatrix: identityMatrix(),
         u_modelViewProjection: identityMatrix(),
         u_jointCount: 1,
-        u_jointMatrices: identityMatrix()
+        u_jointMatrices: identityMatrix(),
+        ...extParams
       },
       requiredAttributes: [
         "a_position",
@@ -249,24 +258,6 @@ export class SkinnedLitMaterial extends Material {
         { name: "u_occlusionStrength", kind: "float" },
         { name: "u_emissiveTexture", kind: "texture2d", required: false },
         { name: "u_emissiveTextureEnabled", kind: "float" },
-        { name: "u_clearcoatTexture", kind: "texture2d", required: false },
-        { name: "u_clearcoatTextureEnabled", kind: "float" },
-        { name: "u_clearcoatNormalTexture", kind: "texture2d", required: false },
-        { name: "u_clearcoatNormalTextureEnabled", kind: "float" },
-        { name: "u_sheenColorTexture", kind: "texture2d", required: false },
-        { name: "u_sheenColorTextureEnabled", kind: "float" },
-        { name: "u_sheenRoughnessTexture", kind: "texture2d", required: false },
-        { name: "u_sheenRoughnessTextureEnabled", kind: "float" },
-        { name: "u_transmissionTexture", kind: "texture2d", required: false },
-        { name: "u_transmissionTextureEnabled", kind: "float" },
-        { name: "u_iridescenceTexture", kind: "texture2d", required: false },
-        { name: "u_iridescenceTextureEnabled", kind: "float" },
-        { name: "u_iridescenceThicknessTexture", kind: "texture2d", required: false },
-        { name: "u_iridescenceThicknessTextureEnabled", kind: "float" },
-        { name: "u_anisotropyTexture", kind: "texture2d", required: false },
-        { name: "u_anisotropyTextureEnabled", kind: "float" },
-        { name: "u_volumeThicknessTexture", kind: "texture2d", required: false },
-        { name: "u_volumeThicknessTextureEnabled", kind: "float" },
         { name: "u_alphaCutoff", kind: "float" },
         { name: "u_metallic", kind: "float" },
         { name: "u_roughness", kind: "float" },
@@ -327,7 +318,8 @@ export class SkinnedLitMaterial extends Material {
         { name: "u_normalMatrix", kind: "mat4" },
         { name: "u_modelViewProjection", kind: "mat4" },
         { name: "u_jointCount", kind: "float" },
-        { name: "u_jointMatrices", kind: "any" }
+        { name: "u_jointMatrices", kind: "any" },
+        ...extSchema
       ]
     });
     this.maxJoints = maxJoints;

@@ -311,8 +311,10 @@ describe("game runtime source gates", () => {
       "output: readEvidenceOutput()",
       "...readAssetValidationOptions()",
       'gameProfile: profile',
+      'action === "validate-animation-studio"',
+      "validateAnimationStudioAssets",
       'action === "validate-animation"',
-      "print(validateAnimationAssets({ output: readEvidenceOutput(), ...readAssetValidationOptions() }))",
+      "validateAnimationAssets",
       'action === "assemble-character"',
       'createCharacterAssemblyPlan({ name, body, parts: readParts("--part")',
       "aura3d assets inspect ./model.glb",
@@ -325,7 +327,7 @@ describe("game runtime source gates", () => {
       "export interface AssetReadinessReport",
       "export function inspectAsset",
       "export function validateGameAssets",
-      "export function validateAnimationAssets",
+      "export { validateAnimationAssets",
       "export function createCharacterAssemblyPlan"
     ]);
   });

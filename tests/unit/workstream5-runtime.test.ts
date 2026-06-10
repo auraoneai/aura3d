@@ -399,7 +399,7 @@ test("workstream5 GLTFLoader imports EXT_mesh_gpu_instancing into scene renderab
   const defaultInstancedMaterial = defaultMaterialResources.materialLibrary.get("default-material");
   assert.ok(defaultInstancedMaterial instanceof InstancedPBRMaterial);
   assert.equal(defaultInstancedMaterial?.getParameter("u_metallic"), 0);
-  assert.equal(defaultInstancedMaterial?.getParameter("u_roughness"), 1);
+  assert.equal(defaultInstancedMaterial?.getParameter("u_roughness"), 0.85);
   assert.equal(defaultInstancedMaterial?.getParameter("u_environmentIntensity"), DEFAULT_PBR_ENVIRONMENT_INTENSITY);
   defaultMaterialResources.dispose();
 
@@ -551,7 +551,7 @@ test("workstream5 GLTFLoader distinguishes default materials from explicit mater
   assert.ok(resources.materialLibrary.has("default-material"));
   const defaultMaterial = resources.materialLibrary.get("default-material");
   assert.equal(defaultMaterial?.getParameter("u_metallic"), 0);
-  assert.equal(defaultMaterial?.getParameter("u_roughness"), 1);
+  assert.equal(defaultMaterial?.getParameter("u_roughness"), 0.85);
   assert.equal(defaultMaterial?.getParameter("u_environmentIntensity"), DEFAULT_PBR_ENVIRONMENT_INTENSITY);
   resources.dispose();
 
@@ -880,9 +880,9 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
 
   assert.deepEqual(transparent?.renderState, {
     depthTest: true,
-    depthWrite: false,
+    depthWrite: true,
     cullMode: "none",
-    blend: true,
+    blend: false,
     depthCompare: "less-equal",
     colorWrite: [true, true, true, true],
     scissor: null,

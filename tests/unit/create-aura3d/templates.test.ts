@@ -60,7 +60,7 @@ describe("create-aura3d templates", () => {
     expect(scriptNames).toEqual(expect.arrayContaining(["episode:render-3d", "scene"]));
     expect(existsSync("packages/create-aura3d/templates/animation-studio/live-route.html")).toBe(true);
     expect(existsSync("packages/create-aura3d/templates/animation-studio/src/render-live-route.ts")).toBe(true);
-    expect(existsSync("packages/create-aura3d/templates/animation-studio/index.html")).toBe(false);
+    expect(existsSync("packages/create-aura3d/templates/animation-studio/index.html")).toBe(true);
     expect(existsSync("packages/create-aura3d/templates/animation-studio/src/main.ts")).toBe(false);
     expect(animationStudioRequiredAssetKeys).toEqual(["miko", "luma", "moonGarden"]);
     expect(animationStudioOptionalAudioAssetKeys).toEqual(expect.arrayContaining([

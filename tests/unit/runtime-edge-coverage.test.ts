@@ -14,6 +14,10 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
     edgeTerms: [/missing targets?/i, /loop/i, /disposal/i, /deterministic/i, /state transitions?/i]
   },
+  "asset-index": {
+    suites: ["tests/unit/workstream5-runtime.test.ts", "tests/browser/asset-texture-browser.spec.ts"],
+    edgeTerms: [/duplicate/i, /failed loads?/i, /dependency/i, /GLB/i, /disposal/i]
+  },
   assets: {
     suites: ["tests/unit/workstream5-runtime.test.ts", "tests/browser/asset-texture-browser.spec.ts"],
     edgeTerms: [/duplicate/i, /failed loads?/i, /dependency/i, /GLB/i, /disposal/i]
@@ -246,7 +250,13 @@ describe("runtime edge-case coverage audit", () => {
       "packages/debug/src/ChromeTraceExporter.ts:args: { reason: gpu.unavailableReason ?? \"GPU timing unavailable\" }",
       "packages/rendering/src/RendererFeatureGates.ts:return supportedIf(feature, capabilities.has(\"gpu-timing\"), \"GPU timing is unavailable; callers must use CPU timing diagnostics.\");",
       "packages/rendering/src/RendererFeatureGates.ts:\"WebGPU compute is unavailable on this backend or adapter.\"",
-      "packages/rendering/src/RendererTiming.ts:this.fallbackReason = options.fallbackReason ?? this.gpuBackend.unavailableReason ?? \"GPU timing unavailable; using CPU timing fallback.\";",
+      "packages/engine/src/agent-api/PerformanceCaptureSession.ts:issues.push(createPromptAnimationIssue(\"warning\", \"performance-capture-source-unavailable\", `${capability.kind} capture source is not available in this runtime.`));",
+      "packages/engine/src/agent-api/PromptAnimationContract.ts:export type PromptAnimationAssetMode = \"source-only\" | \"placeholder\" | \"typed-assets\" | \"mixed\";",
+      "packages/engine/src/agent-api/PromptAnimationContract.ts:assetMode: input.characters.some((character) => character.rig.asset) ? \"typed-assets\" : \"placeholder\",",
+      "packages/engine/src/agent-api/PromptAnimationContract.ts:if (readiness.status === \"publish-ready\" && (readiness.assetMode === \"source-only\" || readiness.assetMode === \"placeholder\")) {",
+      "packages/engine/src/agent-api/WebCodecsFrameEncoder.ts:reason: \"VideoEncoder is unavailable in this runtime.\"",
+      "packages/engine/src/game/GameAudio.ts:contextState: audioContext?.state ?? \"unavailable\",",
+      "packages/engine/src/runtime/ResourceManager.ts:if (typeof fetch !== \"function\") throw new Error(`Resource \"${descriptor.id}\" cannot load because fetch is unavailable.`);",      "packages/rendering/src/RendererTiming.ts:this.fallbackReason = options.fallbackReason ?? this.gpuBackend.unavailableReason ?? \"GPU timing unavailable; using CPU timing fallback.\";",
       "packages/rendering/src/RendererTiming.ts:unavailableReason = \"GPU timing unavailable; using CPU timing fallback.\"",
       "packages/rendering/src/RendererTiming.ts:return createCpuFallbackGpuTimingBackend(\"EXT_disjoint_timer_query_webgl2 unavailable; using CPU timing fallback.\");",
       "packages/rendering/src/EnvironmentPlatform.ts:capability(\"cube-camera-reflections\", \"Cube Camera Reflections\", \"missing\", false, [], \"ReflectionProbe is a descriptor helper; live six-direction capture is not implemented.\", \"Implement cube camera/probe capture and reflective material binding.\"),",
@@ -265,7 +275,18 @@ describe("runtime edge-case coverage audit", () => {
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"navigator.gpu is not exposed in this browser/runtime.\");",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"WebGPU requestAdapter returned null.\");",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:function unavailable(reason: string): ProductionWebGPUReport {",
-      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:status: \"unavailable\","
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:status: \"unavailable\",",
+      "packages/animation/src/RigQuality.ts:* - **C** — mascot / sparse (~8 mappable nodes): a torso + head + stub arms; head/torso acting only,",
+      "packages/asset-index/src/animation-profile.ts:/** A deferred, post-download check the resolver/CLI should run on the GLB. */",
+      "packages/asset-index/src/animation-profile.ts:warnings.push(\"bounds metadata unavailable; validate-animation must confirm walkable scale after resolve.\");",
+      "packages/asset-index/src/animation-profile.ts:warnings.push(\"bounds metadata unavailable; validate-animation must confirm scale after resolve.\");",
+      "packages/asset-index/src/game-profile.ts:warnings.push(\"bounds metadata unavailable; validate-game must confirm scale after resolve.\");",
+      "packages/aura3d-cli/src/pull-bridge.ts:/** Post-download checks deferred by pre-download ranking (animation profiles). */",
+      "packages/engine/src/agent-api/AnimationRouteProof.ts:readonly source: \"aura-assets\" | \"placeholder\" | \"runtime-generated\" | \"unknown\";",
+      "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:*    There is NO pure-JS fallback. If ffmpeg is unavailable, probeFfmpeg()",
+      "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:if (!probed.supported) throw new Error(probed.reason ?? \"ffmpeg is unavailable; cannot encode video.\");",
+      "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:return { ...base, supported: false, reason: \"node:child_process is unavailable; ffmpeg can only run in a Node-like runtime.\" };",
+      "packages/engine/src/agent-api/MediaRecorderFrameEncoder.ts:return { kind: \"media-recorder-frame-encoder-capability\", supported: false, mimeType, codec, reason: \"MediaRecorder is unavailable in this runtime.\" };"
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];
