@@ -41,10 +41,11 @@ Scene graph and ECS APIs are both available, but not every scene feature has a m
 - Scene and ECS APIs coexist, but not every scene feature has a complete ECS authoring workflow.
 - ECS parity gaps (as of 1.3.2):
   - ✅ Transform, Hierarchy, Name, Tag, Active components
-  - ❌ CameraComponent — no ECS camera system; use `@aura3d/engine/scene` Camera
-  - ❌ LightComponent — no ECS light system; use `@aura3d/engine/scene` Light
-  - ❌ RenderableComponent / MeshComponent — ECS entities cannot directly carry renderable geometry
-  - ❌ MaterialComponent — no ECS material binding
+  - ✅ **WorldTransformComponent** — computed by `TransformSystem` (world matrix + normal matrix)
+  - ✅ **CameraComponent** — perspective/orthographic params; computed by `CameraSystem`
+  - ✅ **LightComponent** — directional/point/spot/ambient; collected by ECS render bridge
+  - ✅ **MeshComponent** — geometry/material handles; rendered via `createECSRenderSource` bridge
+  - ❌ MaterialComponent — no ECS material binding (use MeshComponent material handle)
   - ❌ AnimationComponent — no ECS animation state machine integration
   - ❌ PhysicsComponent / RigidBodyComponent — ECS does not expose physics primitives
   - ❌ InstancingComponent — no ECS instancing path

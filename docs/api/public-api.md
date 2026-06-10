@@ -23,10 +23,10 @@ pnpm verify:api-docs
 | `@aura3d/core` | `1.3.2` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `1.3.2` | `packages/create-aura3d/src/index.ts` | 6 |
 | `@aura3d/debug` | `1.3.2` | `packages/debug/src/index.ts` | 30 |
-| `@aura3d/ecs` | `1.3.2` | `packages/ecs/src/index.ts` | 21 |
+| `@aura3d/ecs` | `1.3.2` | `packages/ecs/src/index.ts` | 25 |
 | `@aura3d/editor` | `1.3.2` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `1.3.2` | `packages/editor-runtime/src/index.ts` | 80 |
-| `@aura3d/engine` | `1.3.2` | `packages/engine/src/index.ts` | 38 |
+| `@aura3d/engine` | `1.3.2` | `packages/engine/src/index.ts` | 39 |
 | `@aura3d/environments` | `1.3.2` | `packages/environments/src/index.ts` | 10 |
 | `@aura3d/input` | `1.3.2` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.3.2` | `packages/materials/src/index.ts` | 10 |
@@ -513,6 +513,10 @@ export * from "./World.js";
 export * from "./ECSSerializer.js";
 export * from "./ECSProfiler.js";
 export * from "./components/TransformComponent.js";
+export * from "./components/WorldTransformComponent.js";
+export * from "./components/CameraComponent.js";
+export * from "./components/LightComponent.js";
+export * from "./components/MeshComponent.js";
 export * from "./components/NameComponent.js";
 export * from "./components/TagComponent.js";
 export * from "./components/ActiveComponent.js";
@@ -644,6 +648,7 @@ export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index
 export * from "./agent-api/index.js";
 export * from "./runtime/index.js";
 export * from "./game/index.js";
+export * from "./ecs/ECSRenderSource.js";
 export * from "./devtools/AuraDiagnosticsOverlay.js";
 export * from "./devtools/AuraAssetPanel.js";
 export * from "./devtools/AuraPerformancePanel.js";

@@ -1,6 +1,6 @@
 # WebGPU Hardware Matrix
 
-Version: 1.0.5
+Version: 1.0.6
 
 This page records how WebGPU hardware evidence should be interpreted. Route and report coverage is documented separately in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 
@@ -52,10 +52,22 @@ pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts --reporter=li
 pnpm webgpu:hardware-matrix
 ```
 
+## Mobile / iOS & Android
+
+WebGPU is supported in production by Chrome for Android (121+, ARM/Qualcomm/Intel; Android 12+) and Safari iOS/iPadOS (26+), as well as Samsung Internet (24+) and Opera Mobile (80+). Firefox Android currently requires a flag.
+
+Aura3D does **not** currently claim first-class mobile WebGPU support because:
+
+- Playwright mobile emulation uses desktop browser binaries and desktop GPU backends; it cannot produce valid mobile hardware evidence.
+- There is no CI integration with physical device labs (BrowserStack, Sauce Labs, etc.).
+- Mobile-specific adapter limits, shader compilation behavior, and tile-based GPU behavior have not been validated on real hardware.
+
+Before making first-class mobile claims, run `tests/browser/webgpu-real-device.spec.ts` on real hardware and verify root route health.
+
 ## Not Supported
 
 - Full WebGPU browser/device matrix coverage.
-- Mobile GPU support.
+- **Real mobile WebGPU hardware evidence** (no physical device or cloud lab integration is present in CI).
 - Driver-level performance claims.
 - A claim that WebGPU behavior matches WebGL2 or low-level renderer code in every route.
 - Public claims must not say "full WebGPU support" without a complete hardware matrix.
