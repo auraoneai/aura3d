@@ -77,7 +77,7 @@ describe("public package API contracts", () => {
           expect(allowedPublicSpecifiers.has(specifier), `${file} imports ${specifier}`).toBe(true);
           continue;
         }
-        if (["vite", "path", "fs", "url", "os", "crypto"].includes(specifier)) continue; // dev-only config imports are allowed
+        if (file.endsWith(".config.ts") && ["vite", "path", "fs", "url", "os", "crypto"].includes(specifier)) continue; // dev-only imports are allowed in build config files only
         expect(isLocalExampleImport(file, specifier), `${file} imports ${specifier}`).toBe(true);
       }
     }
@@ -267,7 +267,7 @@ function isLocalExampleImport(file: string, specifier: string): boolean {
   if (!specifier.startsWith(".")) return false;
   const resolved = resolve(dirname(file), specifier);
   const relativeToRoot = relative(process.cwd(), resolved).replaceAll("\\", "/");
-  return relativeToRoot === "examples" || relativeToRoot.startsWith("examples/") || relativeToRoot === "apps" || relativeToRoot.startsWith("apps/");
+  return relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
 }
 
 function collectSourceFiles(dir: string, out: string[] = []): string[] {

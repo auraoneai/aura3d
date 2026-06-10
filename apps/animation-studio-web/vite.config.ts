@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
+import { createReadStream, existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { dirname, extname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
@@ -167,6 +167,12 @@ function auraBackend(): Plugin {
           const started = Date.now();
           try {
             const body = JSON.parse((await readBody(req)) || "{}") as { lowFi?: boolean; range?: string };
+            // Clear the previous render's progress.json BEFORE spawning: a stale
+            // {label:"finishing", pct:100} would make the SSE stream report 100% and
+            // end instantly on every re-render (see /api/render-progress below).
+            try {
+              rmSync(resolve(RENDER_OUT_DIR, "progress.json"), { force: true });
+            } catch {}
             const args = ["render"];
             if (body.range) args.push("--range", body.range);
             // Low-fi by default for the fast studio iteration loop.

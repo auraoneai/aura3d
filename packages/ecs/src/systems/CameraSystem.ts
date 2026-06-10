@@ -15,6 +15,8 @@ export class CameraSystem implements System {
   readonly name = "CameraSystem";
   readonly phase = "update";
   readonly priority = -70;
+  // Soft ordering constraint: the scheduler skips this edge when
+  // TransformSystem is not registered, so CameraSystem can run standalone.
   readonly after = ["TransformSystem"];
 
   update(world: World, _context: SystemContext): void {

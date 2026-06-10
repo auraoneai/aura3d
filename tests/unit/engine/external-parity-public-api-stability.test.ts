@@ -97,6 +97,7 @@ test("ExternalParity package manifest exposes installable product paths", () => 
       import: "./dist/engine/agent-api/index.js"
     },
     "./apps": "./dist/apps/index.js",
+    "./engine": "./dist/engine/index.js",
     "./create-aura3d": "./dist/create-aura3d/index.js"
   });
   expect(manifest.files).toEqual(expect.arrayContaining([

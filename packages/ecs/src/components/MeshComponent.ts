@@ -9,7 +9,6 @@ import type { SkinningPaletteBinding } from "@aura3d/rendering";
 export class MeshComponent {
   geometry: string;
   material: string;
-  layerMask = 1;
   castShadow = true;
   receiveShadow = true;
   skinning?: SkinningPaletteBinding;

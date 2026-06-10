@@ -74,6 +74,9 @@
       "@aura3d/engine/rendering": [
         "packages/rendering/src/index.ts"
       ],
+      "@aura3d/engine/scene": [
+        "packages/scene/src/index.ts"
+      ],
       "@aura3d/engine/rendering/production-runtime": [
         "packages/rendering/src/production-runtime/index.ts"
       ],

@@ -46,10 +46,10 @@ const checks: ReleaseCheck[] = [
   ...templates.flatMap((template) => [
     existsCheck(`packages/create-aura3d/templates/${template}/package.json`, `${template} package`),
     existsCheck(`packages/create-aura3d/templates/${template}/playwright.config.ts`, `${template} Playwright config`),
-    existsCheck(`packages/create-aura3d/templates/${template}/src/main.ts`, `${template} main`),
+    existsCheck(`packages/create-aura3d/templates/${template}/${templateEntry(template)}`, `${template} main`),
     existsCheck(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, `${template} route health test`),
     templateSmokeSpecCheck(template),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["@aura3d/engine"], `${template} public Aura3D api`)
+    fileIncludes(`packages/create-aura3d/templates/${template}/${templateApiFile(template)}`, ["@aura3d/engine"], `${template} public Aura3D api`)
   ]),
   ...rootPackagedTemplates.flatMap((template) => [
     existsCheck(`templates/${template}/package.json`, `${template} packaged root template package`),
@@ -175,6 +175,19 @@ function templateSmokeSpecs(template: string): readonly string[] {
   if (template === "fighting-game") return ["route-health.spec.ts", "gameplay-smoke.spec.ts"];
   if (template === "animation-channel" || template === "prompt-animation-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
   return ["route-health.spec.ts", "screenshot.spec.ts"];
+}
+
+// animation-studio is the one template whose entry is the render-live route
+// (its interactive UI is the bundled studio/), so it has no src/main.ts.
+function templateEntry(template: string): string {
+  return template === "animation-studio" ? "src/render-live-route.ts" : "src/main.ts";
+}
+
+// The file whose public @aura3d/engine usage proves the template builds on the
+// public API. For animation-studio that is the generic scene player the entry
+// mounts (the entry itself is a thin bootstrap with no direct engine import).
+function templateApiFile(template: string): string {
+  return template === "animation-studio" ? "src/scene-player.ts" : "src/main.ts";
 }
 
 function writeWorkspacePlaywrightConfig(targetDir: string): void {

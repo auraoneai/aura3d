@@ -76,7 +76,8 @@ async function parseTextureLevels(
   await installNodeLoadersGLFileHooks();
   const { parse, BasisLoader } = await loadLoadersGLModules();
   const parsed = await parse(source.slice(0), BasisLoader, {
-    worker: true,
+    // worker:false is required: worker mode resolves transcoder module URLs to dev-only /node_modules paths and the Node file hooks on globalThis.loaders only exist on the main thread.
+    worker: false,
     CDN: defaultLoadersGLCdn(),
     modules: defaultLoadersGLModules(),
     ...loaderOptions,

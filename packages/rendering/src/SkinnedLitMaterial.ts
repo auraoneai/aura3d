@@ -1,4 +1,4 @@
-import { Material, type MaterialUniformDescriptor, type RenderState } from "./Material";
+import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibrary";
@@ -124,31 +124,12 @@ export class SkinnedLitMaterial extends Material {
       throw new Error("SkinnedLitMaterial maxJoints must be an integer in [1, 96]");
     }
 
-    // Build conditional extension texture parameters only when textures are provided.
-    // The default skinned-lit shader does not include uniforms for advanced extension
-    // textures (clearcoat, sheen, transmission, iridescence, anisotropy, volume).
-    const extParams: Record<string, unknown> = {};
-    const extSchema: MaterialUniformDescriptor[] = [];
-
-    function addTex(name: string, tex?: TextureBinding) {
-      if (tex) {
-        extParams[`u_${name}Texture`] = tex;
-        extParams[`u_${name}TextureEnabled`] = 1;
-        extSchema.push({ name: `u_${name}Texture`, kind: "texture2d" as const, required: false as const });
-        extSchema.push({ name: `u_${name}TextureEnabled`, kind: "float" as const });
-      }
-    }
-
-    addTex("clearcoat", options.clearcoatTexture);
-    addTex("clearcoatNormal", options.clearcoatNormalTexture);
-    addTex("sheenColor", options.sheenColorTexture);
-    addTex("sheenRoughness", options.sheenRoughnessTexture);
-    addTex("transmission", options.transmissionTexture);
-    addTex("iridescence", options.iridescenceTexture);
-    addTex("iridescenceThickness", options.iridescenceThicknessTexture);
-    addTex("anisotropy", options.anisotropyTexture);
-    addTex("volumeThickness", options.volumeThicknessTexture);
-
+    // The skinned-lit shader supports glTF extension scalar factors only
+    // (u_clearcoatFactor, u_sheenColorFactor, ...); it declares no extension
+    // texture uniforms. Extension texture options (clearcoatTexture,
+    // sheenColorTexture, ...) are therefore accepted for glTF compatibility but
+    // intentionally NOT declared as uniforms — declaring them would make
+    // MaterialBinding fail validation against the shader.
     super({
       name: options.name ?? "skinned-lit",
       shaderKey: DEFAULT_SKINNED_LIT_SHADER_NAME,
@@ -230,8 +211,7 @@ export class SkinnedLitMaterial extends Material {
         u_normalMatrix: identityMatrix(),
         u_modelViewProjection: identityMatrix(),
         u_jointCount: 1,
-        u_jointMatrices: identityMatrix(),
-        ...extParams
+        u_jointMatrices: identityMatrix()
       },
       requiredAttributes: [
         "a_position",
@@ -318,8 +298,7 @@ export class SkinnedLitMaterial extends Material {
         { name: "u_normalMatrix", kind: "mat4" },
         { name: "u_modelViewProjection", kind: "mat4" },
         { name: "u_jointCount", kind: "float" },
-        { name: "u_jointMatrices", kind: "any" },
-        ...extSchema
+        { name: "u_jointMatrices", kind: "any" }
       ]
     });
     this.maxJoints = maxJoints;

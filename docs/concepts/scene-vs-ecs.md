@@ -39,7 +39,7 @@ Scene graph and ECS APIs are both available, but not every scene feature has a m
 ## Current Limits
 
 - Scene and ECS APIs coexist, but not every scene feature has a complete ECS authoring workflow.
-- ECS parity gaps (as of 1.3.2):
+- ECS parity gaps (as of 1.3.3):
   - ✅ Transform, Hierarchy, Name, Tag, Active components
   - ✅ **WorldTransformComponent** — computed by `TransformSystem` (world matrix + normal matrix)
   - ✅ **CameraComponent** — perspective/orthographic params; computed by `CameraSystem`

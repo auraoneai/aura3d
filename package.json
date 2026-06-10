@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/engine",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "packageManager": "pnpm@11.1.3",
   "private": false,
   "type": "module",

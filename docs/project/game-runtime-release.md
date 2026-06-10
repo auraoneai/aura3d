@@ -57,7 +57,7 @@ npx @aura3d/cli@latest assets inspect ./assets/fighter.glb --animation --humanoi
 npx @aura3d/cli@latest assets validate-game --output artifacts/aura3d/game-assets.json
 ```
 
-Release blockers (as of 1.3.2):
+Release blockers (as of 1.3.3):
 
 - ✅ The CLI is published and runnable with `npx @aura3d/cli@latest`.
 - ✅ `@aura3d/asset-index` is published before `@aura3d/cli`; catalog search depends on it.

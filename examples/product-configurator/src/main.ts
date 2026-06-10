@@ -1,5 +1,5 @@
-import { buildProductConfiguratorScene, ProductMaterialRole } from '../../../apps/v9-advanced-examples-gallery/src/productConfiguratorScene';
-import { productConfiguratorPolicy } from '../../../apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy';
+import { buildProductConfiguratorScene, ProductMaterialRole } from './productConfiguratorScene';
+import { productConfiguratorPolicy } from './productConfiguratorPolicy';
 
 type Paint = {
   name: string;

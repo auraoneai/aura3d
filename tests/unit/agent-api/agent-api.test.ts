@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, test } from "vitest";
 import {
   type AuraModelNode,
@@ -248,9 +249,8 @@ describe("agent API", () => {
 
     expect(modelNode?.asset.id).toBe("humanoid");
     expect(modelNode?.asset.format).toBe("glb");
-    expect(modelNode?.asset.metadata?.animations).toContain("Walking");
-    expect(modelNode?.asset.metadata?.animations).toContain("Wave");
-    expect(modelNode?.animation?.clip).toBe("Walking");
+    expect(modelNode?.asset.metadata?.animations).toEqual(["Idle", "Run", "TPose", "Walk"]);
+    expect(modelNode?.animation?.clip).toBe("Walk");
     expect(modelNode?.animation?.captureTime).toBe(0.72);
     expect(modelNode?.castShadow).toBe(true);
     expect(modelNode?.receiveShadow).toBe(true);
@@ -273,6 +273,22 @@ describe("agent API", () => {
       correctedChains: ["spine", "left-arm", "right-arm", "left-leg", "right-leg"]
     });
     expect(character.visualQA(nodes)).toMatchObject({ connected: true, impossibleProportions: false, score: 5 });
+  });
+
+  test("built-in humanoid metadata.animations exactly matches the clips authored in the GLB binary", () => {
+    // Guard against metadata drift: parse the bundled GLB's JSON chunk and cross-check the declared clip list.
+    const glb = readFileSync(new URL("../../../packages/engine/src/agent-api/assets/humanoid-fixture.glb", import.meta.url));
+    expect(glb.readUInt32LE(0)).toBe(0x46546c67); // "glTF" magic
+    const jsonChunkLength = glb.readUInt32LE(12);
+    expect(glb.readUInt32LE(16)).toBe(0x4e4f534a); // "JSON" chunk type
+    const gltf = JSON.parse(glb.subarray(20, 20 + jsonChunkLength).toString("utf8")) as {
+      readonly animations?: ReadonlyArray<{ readonly name?: string }>;
+    };
+    const authoredClips = (gltf.animations ?? []).map((animation, index) => animation.name ?? `animation-${index}`).sort();
+    const declaredClips = [...(character.builtInHumanoidAsset().metadata?.animations ?? [])].sort();
+
+    expect(authoredClips.length).toBeGreaterThan(0);
+    expect(declaredClips).toEqual(authoredClips);
   });
 
   test("exposes a built-in procedural human mesh descriptor without making it the benchmark default", () => {
@@ -635,7 +651,8 @@ describe("agent API", () => {
     expect(world.snapshot()).toMatchObject({ bodies: 3, colliders: 3 });
     expect(physics.liveContactCount(world)).toBeGreaterThan(0);
     expect(evidence.physics).toMatchObject({ bodies: 3, colliders: 3, nodesWithPhysics: 3, sensors: 1 });
-    expect(simulatedBallNode.position?.[1]).toBeLessThan(0.22);
+    // Measured 0.19089 on 2026-06-09 (aura-js backend, 2 steps); bound is actual + ~5%.
+    expect(simulatedBallNode.position?.[1]).toBeLessThan(0.2);
     expect(simulatedBallNode.physicsRotation).toBeDefined();
   });
 
@@ -802,7 +819,8 @@ describe("agent API", () => {
     expect(Math.max(...positions)).toBeLessThanOrEqual(2.8);
     expect(Math.min(...primitiveBounds.map((position) => position[0]))).toBeGreaterThanOrEqual(-3.55);
     expect(Math.max(...primitiveBounds.map((position) => position[0]))).toBeLessThanOrEqual(3.55);
-    expect(Math.max(...primitiveBounds.map((position) => position[1]))).toBeLessThanOrEqual(2.3);
+    // Measured 2.26 on 2026-06-09 (static prefab layout, tallest primitive); exact bound.
+    expect(Math.max(...primitiveBounds.map((position) => position[1]))).toBeLessThanOrEqual(2.26);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "black reflection contrast strip")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "cool blue environment reflection panel")).toBe(true);
     expect(nodes.some((node) => node.kind === "primitive" && node.name === "chrome bright reflection card")).toBe(true);

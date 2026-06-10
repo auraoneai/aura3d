@@ -1,6 +1,6 @@
-import { buildDataGalaxyScene } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyScene';
-import { dataGalaxyBudgets } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets';
-import { dataGalaxyEvidence } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence';
+import { buildDataGalaxyScene } from './dataGalaxyScene';
+import { dataGalaxyBudgets } from './dataGalaxyBudgets';
+import { dataGalaxyEvidence } from './dataGalaxyEvidence';
 
 type Mode = 'overview' | 'flow' | 'depth';
 

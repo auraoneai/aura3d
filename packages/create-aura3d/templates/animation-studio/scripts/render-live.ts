@@ -59,6 +59,26 @@ const OUTPUT_DIR = resolve(TEMPLATE_ROOT, process.env.AURA_OUTPUT_DIR ?? "dist/e
 const FRAMES_DIR = resolve(OUTPUT_DIR, "frames");
 const VIDEO_PATH = resolve(OUTPUT_DIR, "episode-3d.webm");
 
+// SSE render-progress contract (read by the studio dev server's /api/render-progress).
+const PROGRESS_PATH = resolve(OUTPUT_DIR, "progress.json");
+/**
+ * Atomic progress write: temp file + rename so the 200 ms SSE reader can never observe a
+ * partially written JSON (which it would surface as a bogus {label:"unknown", pct:0}).
+ * Guards total <= 0 so a zero-frame range can't produce Infinity/NaN pct.
+ */
+function writeProgress(current: number, total: number, label: string): void {
+  try {
+    const pct = total <= 0 ? 100 : Math.round((current / total) * 100);
+    const tmp = `${PROGRESS_PATH}.tmp`;
+    writeFileSync(tmp, JSON.stringify({ current, total, label, pct, ts: Date.now() }));
+    renameSync(tmp, PROGRESS_PATH);
+  } catch {}
+}
+// FIRST action of the script: publish an initial 0% entry so the SSE reader never replays a
+// previous render's final 100% (and the stale-file window shrinks to the tsx startup time).
+mkdirSync(OUTPUT_DIR, { recursive: true });
+writeProgress(0, 1, "starting");
+
 // M5 — RESOLUTION / OUTPUT TIERS via AURA_QUALITY:
 //   preview  (DEFAULT) = low-fi 480x270 @ 8fps, cheaper post — fast studio iteration.
 //   final               = 1080p (1920x1080) @ 24fps with the full post pass and no preview
@@ -507,10 +527,6 @@ async function main(): Promise<void> {
       `rendering frames ${FIRST_FRAME}..${LAST_FRAME} (${LAST_FRAME - FIRST_FRAME} frames) @ ${FRAME_RATE}fps` +
         `${PREVIEW_PARTS ? " [preview range]" : ` over ${EPISODE_DURATION}s`} ...`
     );
-    const PROGRESS_PATH = resolve(OUTPUT_DIR, "progress.json");
-    function writeProgress(current: number, total: number, label: string): void {
-      try { writeFileSync(PROGRESS_PATH, JSON.stringify({ current, total, label, pct: Math.round((current / total) * 100), ts: Date.now() })); } catch {}
-    }
     writeProgress(0, LAST_FRAME - FIRST_FRAME, "seeking");
 
     for (let i = FIRST_FRAME; i < LAST_FRAME; i += 1) {

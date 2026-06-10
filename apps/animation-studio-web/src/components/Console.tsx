@@ -12,7 +12,13 @@ export interface ConsoleApi {
   run?: (text: string, forceCommand?: boolean) => void;
 }
 
-const CHIPS = ["cast add Pip", "shot retime --id shot-2 --duration 30", "cam orbit", "fx add rim light"];
+// Quick-insert examples — each one is the REAL CLI grammar (animation-scene.ts) and runs as-is.
+const CHIPS = [
+  'cast add --id pip --query "robot kid"',
+  "shot retime --id shot-2 --duration 30",
+  "camera --shot shot-1 --preset close-up",
+  "gesture --character pip --shot shot-1 --clip wave"
+];
 
 /** The portion of a command after its (possibly two-word) verb — the card's args line. */
 function argTail(raw: string, verb: string): string {
@@ -332,7 +338,7 @@ export function Console({ transcript, setTranscript, selShot, onRender, onSceneC
             placeholder={
               mode === "Prompt"
                 ? "Tell your AI agent what to change — e.g. “make the second line angrier and cut to a close-up” (it writes this down; your agent does it)"
-                : "Type an exact command — e.g. set space · cast add robot --name Pip · shot retime …"
+                : 'Type an exact command — e.g. set garage · cast add --id pip --query "robot kid" · shot retime …'
             }
             onChange={(e) => {
               setVal(e.target.value);

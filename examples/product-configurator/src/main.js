@@ -1,5 +1,5 @@
-import { buildProductConfiguratorScene } from '../../../apps/v9-advanced-examples-gallery/src/productConfiguratorScene';
-import { productConfiguratorPolicy } from '../../../apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy';
+import { buildProductConfiguratorScene } from './productConfiguratorScene';
+import { productConfiguratorPolicy } from './productConfiguratorPolicy';
 const scene = buildProductConfiguratorScene();
 const canvas = document.getElementById('product-canvas');
 const ctx = canvas.getContext('2d');

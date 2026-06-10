@@ -11,6 +11,16 @@ export interface SerializedHierarchyComponent {
 }
 
 export class HierarchyComponent {
+  /**
+   * Parent entity, or `null` for root entities.
+   *
+   * Must be set via `HierarchySystem.setParent` (or `addChild`), which
+   * maintains {@link depth}, sibling links, and the parent's child list.
+   * Setting this field directly (including via the constructor argument)
+   * leaves `depth` stale at 0 — `TransformSystem` recomputes depth
+   * defensively for its parents-before-children ordering, but child/sibling
+   * bookkeeping will remain out of sync until `setParent` is used.
+   */
   parent: Entity | null;
   previousSibling: Entity | null = null;
   nextSibling: Entity | null = null;

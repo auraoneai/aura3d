@@ -7,6 +7,7 @@ import type { EpisodeDocument, Shot, ViewMode } from "../state/types";
 function RenderOverlay({ pct }: { pct: number }) {
   const r = 32;
   const c = 2 * Math.PI * r;
+  const indeterminate = pct < 0;
   return (
     <div className="render-ov">
       <div className="render-ring">
@@ -20,17 +21,21 @@ function RenderOverlay({ pct }: { pct: number }) {
             stroke="var(--warm)"
             strokeWidth={5}
             strokeLinecap="round"
-            strokeDasharray={c}
-            strokeDashoffset={c * (1 - pct / 100)}
-            style={{ transition: "stroke-dashoffset .25s" }}
+            strokeDasharray={indeterminate ? `${c * 0.25} ${c * 0.75}` : c}
+            strokeDashoffset={indeterminate ? undefined : c * (1 - pct / 100)}
+            style={
+              indeterminate
+                ? { animation: "sp 1.2s linear infinite", transformOrigin: "37px 37px" }
+                : { transition: "stroke-dashoffset .25s" }
+            }
           />
         </svg>
-        <div className="render-pct">{Math.round(pct) + "%"}</div>
+        <div className="render-pct">{indeterminate ? "···" : Math.round(pct) + "%"}</div>
       </div>
       <div style={{ textAlign: "center" }}>
         <div className="ttl">Rendering preview</div>
         <div className="sub">
-          {pct < 40 ? "aura · rigging cast…" : pct < 75 ? "aura · simulating lighting…" : "aura · compositing frames…"}
+          {indeterminate ? "aura · working…" : pct < 40 ? "aura · rigging cast…" : pct < 75 ? "aura · simulating lighting…" : "aura · compositing frames…"}
         </div>
       </div>
     </div>

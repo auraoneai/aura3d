@@ -164,7 +164,6 @@ describe("ECS render components and systems", () => {
       const mesh = new MeshComponent("cube_geo", "red_mat");
       expect(mesh.geometry).toBe("cube_geo");
       expect(mesh.material).toBe("red_mat");
-      expect(mesh.layerMask).toBe(1);
     });
 
     it("defaults castShadow and receiveShadow to true", () => {

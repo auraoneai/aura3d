@@ -1274,7 +1274,8 @@ const builtInCharacterAssets = defineAuraAssets({
     hash: "sha256-dfb230fc1f942f259dd00281a1186953ad602fc5d69067ce63e24b2aa439736b",
     metadata: {
       materials: ["skinned soldier body", "uniform armor", "visor"],
-      animations: ["Idle", "Run", "TPose", "Walk", "Walking", "Wave"],
+      // Exactly the clips authored in humanoid-fixture.glb (guarded by a GLB-parsing test); do not add names that are not in the binary.
+      animations: ["Idle", "Run", "TPose", "Walk"],
       textures: ["embedded soldier/vanguard textures"],
       license: "Aura3D bundled soldier fixture from the existing repository corpus"
     }
@@ -3595,7 +3596,8 @@ interface AuraMiniGolfPrefabOptions {
 
 export const prefabs = {
   particleFountain: (options: { readonly color?: AuraColor; readonly count?: number; readonly emissionRate?: number } = {}): readonly AuraSceneNode[] => {
-    const count = Math.max(320, options.count ?? 420);
+    // Cap at 2400 (the advertised fountain maximum); the WebGL and 2D fallback renderers clamp fountain layers to the same 2400 so the scene JSON never claims more particles than render.
+    const count = Math.min(2400, Math.max(320, options.count ?? 420));
     const emissionRate = options.emissionRate ?? 120;
     const splashCount = Math.round(count * 0.48);
     const mistCount = Math.round(count * 0.36);
@@ -5329,6 +5331,9 @@ function createHierarchicalPrimitiveHumanoid(options: AuraPrimitiveHumanoidPrefa
 }
 
 function createLowPolyHumanoid(options: AuraPrimitiveHumanoidPrefabOptions = {}): readonly AuraSceneNode[] {
+  // Deliberate decision (1ca640ed, confirmed 2026-06): the benchmark humanoid defaults to the
+  // bundled soldier GLB, superseding the earlier "Prompt 09 stays asset-free" constraint.
+  // Asset-free primitive rigs remain available via character.primitiveHumanoid / prefabs.primitiveHumanoid.
   return createAuthoredLowPolyHumanoid(options);
 }
 
@@ -5538,12 +5543,13 @@ function createAuthoredHumanoidMotionModel(clip: AuraCharacterClipName): {
 }
 
 function mapAuraClipToBuiltInHumanoidClip(clip: AuraCharacterClipName): string {
+  // Only Idle/Run/TPose/Walk exist in humanoid-fixture.glb; aura clips without an
+  // authored equivalent (wave, turn) fall back to the nearest stationary clip.
   if (clip === "idle") return "Idle";
-  if (clip === "walk") return "Walk";
-  if (clip === "benchmark-pose") return "Walking";
+  if (clip === "walk" || clip === "benchmark-pose") return "Walk";
   if (clip === "run") return "Run";
   if (clip === "pose") return "TPose";
-  if (clip === "wave") return "Wave";
+  if (clip === "wave") return "Idle";
   if (clip === "turn") return "Idle";
   return "Walk";
 }
@@ -8781,7 +8787,8 @@ function createWebGLParticleModel(gl: WebGL2RenderingContext, effect: AuraEffect
         ? 90
         : 240
     : 120;
-  const maxCount = isFountain ? 1200 : 1800;
+  // Fountain cap matches prefabs.particleFountain's 2400 maximum so rendered counts never undercut the scene JSON.
+  const maxCount = isFountain ? 2400 : 1800;
   const count = Math.max(minCount, Math.min(maxCount, requestedCount));
   const radius = effect.radius ?? 1.15;
   const height = effect.height ?? 2.4;
@@ -10066,7 +10073,8 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
   }
   if (node.effect === "particles") {
     const isFountain = node.emitter === "fountain";
-    const count = Math.max(120, Math.min(isFountain ? 2200 : 1600, node.particleCount ?? 900));
+    // Fountain cap matches prefabs.particleFountain's 2400 maximum so rendered counts never undercut the scene JSON.
+    const count = Math.max(120, Math.min(isFountain ? 2400 : 1600, node.particleCount ?? 900));
     const radius = Math.max(0.1, node.radius ?? 1.15);
     const height3d = Math.max(0.2, node.height ?? 2.4);
     const color = String(node.color ?? "#7dfcff");

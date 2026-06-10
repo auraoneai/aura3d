@@ -1,6 +1,6 @@
 # Aura3D Known Limits
 
-Version: 1.3.2 planning alignment
+Version: 1.3.3 planning alignment
 
 ## Current Report Limits
 
@@ -30,9 +30,9 @@ Version: 1.3.2 planning alignment
 
 ## Game Runtime And Showcase Limits
 
-- Aura3D 1.3.2 ships browser game-runtime helpers, animation engine, and believable-motion systems. The reusable game-engine foundation continues to expand.
+- Aura3D 1.3.3 ships browser game-runtime helpers, animation engine, and believable-motion systems. The reusable game-engine foundation continues to expand.
 - Aura Clash Arena is the live development showcase and runtime proof target, built with starter-grade fighter assets.
-- The showcase has not yet proven distinct production fighters, engine-owned combat state, audio, performance budgets, and deployed/local parity at the 1.3.2 bar.
+- The showcase has not yet proven distinct production fighters, engine-owned combat state, audio, performance budgets, and deployed/local parity at the 1.3.3 bar.
 - Same-model tinting, debug-like hit artifacts, and weak move readability remain release blockers if reproduced.
 - Repeated KO loops and one/two-hit accidental rounds: the `health <= 12` accidental-KO mop-up rule has been removed, and the AI no longer attacks KO'd opponents. These specific blockers are addressed, but overall combat feel remains a showcase tuning target.
 - Homepage and marketing pages should use a static approved poster/link until the live playable route passes visual and gameplay gates.

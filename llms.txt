@@ -344,8 +344,8 @@ pnpm prompt-animation:release
 
 Do not claim game, prompt-animation, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.3.1 game-engine/showcase claim rules:
-- Treat 1.3.1 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
+Aura3D 1.3.3 game-engine/showcase claim rules:
+- Treat 1.3.3 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.

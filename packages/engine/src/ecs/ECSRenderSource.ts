@@ -18,6 +18,7 @@ import type {
   RenderMaterial,
   RenderSource,
 } from "@aura3d/rendering";
+import { DirectionalLight, PointLight, SpotLight, type Light, type Mat4 } from "@aura3d/scene";
 
 export interface ECSRenderLibraries {
   geometry: Map<string, Geometry>;
@@ -42,8 +43,9 @@ export interface ECSRenderSourceOptions {
  * Lighting is collected from entities with {@link LightComponent} +
  * {@link WorldTransformComponent}.
  *
- * The camera entity (if provided) supplies `cameraPosition` and
- * `viewProjectionMatrix` to the renderer.
+ * The camera entity (if provided) supplies `cameraPosition` to the renderer.
+ * View/projection matrices are not wired through this bridge; pass a camera
+ * to the renderer separately.
  */
 export function createECSRenderSource(options: ECSRenderSourceOptions): RenderSource {
   return {
@@ -56,6 +58,7 @@ export function createECSRenderSource(options: ECSRenderSourceOptions): RenderSo
     get cameraPosition() {
       return getECSCameraPosition(options);
     },
+    ...(options.frustumCulling !== undefined ? { frustumCulling: options.frustumCulling } : {}),
   };
 }
 
@@ -66,6 +69,10 @@ function safeQueryComponents(world: World, ctors: Parameters<World["query"]>[0][
 function collectECSRenderItems(options: ECSRenderSourceOptions): RenderItem[] {
   const { world, libraries } = options;
   const items: RenderItem[] = [];
+
+  // Querying unregistered components throws UNREGISTERED_COMPONENT; a fresh
+  // world that never added a mesh simply has nothing to render.
+  if (!safeQueryComponents(world, [MeshComponent, WorldTransformComponent])) return items;
 
   const entities = world
     .query({ include: [MeshComponent, WorldTransformComponent] })
@@ -112,6 +119,8 @@ function collectECSRenderItems(options: ECSRenderSourceOptions): RenderItem[] {
   return items;
 }
 
+let warnedAmbientLightsUnsupported = false;
+
 function collectECSLights(options: ECSRenderSourceOptions): CollectedLight[] {
   const { world } = options;
   const lights: CollectedLight[] = [];
@@ -121,6 +130,18 @@ function collectECSLights(options: ECSRenderSourceOptions): CollectedLight[] {
     .toArray()) {
     const light = world.get(entity, LightComponent)!;
     const wt = world.get(entity, WorldTransformComponent)!;
+
+    if (light.kind === "ambient") {
+      // CollectedLight has no ambient kind; converting to directional would
+      // render the scene wrong, so skip until an environment-lighting bridge exists.
+      if (!warnedAmbientLightsUnsupported) {
+        warnedAmbientLightsUnsupported = true;
+        console.warn(
+          "[aura3d] Ambient ECS lights are not yet bridged to the renderer's environment lighting; skipping ambient LightComponent entities."
+        );
+      }
+      continue;
+    }
 
     // Extract world position from the 4th column of worldMatrix
     const position: [number, number, number] = [
@@ -136,10 +157,8 @@ function collectECSLights(options: ECSRenderSourceOptions): CollectedLight[] {
       -wt.worldMatrix[10]!,
     ];
 
-    const kind = light.kind === "ambient" ? "directional" : light.kind;
-
     lights.push({
-      kind,
+      kind: light.kind,
       color: light.color,
       intensity: light.intensity,
       position,
@@ -149,21 +168,66 @@ function collectECSLights(options: ECSRenderSourceOptions): CollectedLight[] {
       penumbra: light.penumbra,
       castsShadow: light.castsShadow,
       layerMask: light.layerMask,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      source: null as any, // not consumed by renderer; ECS lights have no SceneNode source
+      source: createLightSource(light, wt.worldMatrix),
     });
   }
 
   return lights;
 }
 
+/**
+ * Builds a real scene {@link Light} node for {@link CollectedLight.source}.
+ *
+ * The renderer dereferences `light.source.visible` when selecting the shadow
+ * caster and reads the source's transform for the shadow direction, so the
+ * non-nullable contract must be satisfied with a live node.
+ */
+function createLightSource(light: LightComponent, worldMatrix: Float32Array): Light {
+  const source =
+    light.kind === "point"
+      ? new PointLight("ECSPointLight")
+      : light.kind === "spot"
+        ? new SpotLight("ECSSpotLight")
+        : new DirectionalLight("ECSDirectionalLight");
+
+  source.visible = true;
+  source.color = [...light.color];
+  source.castsShadow = light.castsShadow;
+  source.layerMask = light.layerMask;
+  // Scene light setters validate their inputs; the ECS component does not,
+  // so only forward values the setters accept (otherwise keep scene defaults).
+  if (Number.isFinite(light.intensity) && light.intensity >= 0) source.intensity = light.intensity;
+  if (source instanceof PointLight || source instanceof SpotLight) {
+    if (Number.isFinite(light.range) && light.range > 0) source.range = light.range;
+  }
+  if (source instanceof SpotLight) {
+    if (light.angle > 0 && light.angle < Math.PI / 2) source.angle = light.angle;
+    if (light.penumbra >= 0 && light.penumbra <= 1) source.penumbra = light.penumbra;
+  }
+
+  try {
+    source.transform.setFromLocalMatrix([...worldMatrix] as Mat4);
+    source.updateWorldTransform();
+  } catch {
+    // Degenerate (zero-scale) world matrix — leave the source at identity;
+    // position/direction on the CollectedLight itself are still correct.
+  }
+
+  return source;
+}
+
 function getECSCameraPosition(options: ECSRenderSourceOptions): [number, number, number] | undefined {
   const { world, cameraEntity } = options;
   if (!cameraEntity) return undefined;
+  if (!safeQueryComponents(world, [CameraComponent, WorldTransformComponent])) return undefined;
 
-  const cam = world.get(cameraEntity, CameraComponent);
-  const wt = world.get(cameraEntity, WorldTransformComponent);
-  if (!cam || !wt) return undefined;
-
-  return [wt.worldMatrix[12]!, wt.worldMatrix[13]!, wt.worldMatrix[14]!];
+  try {
+    const cam = world.get(cameraEntity, CameraComponent);
+    const wt = world.get(cameraEntity, WorldTransformComponent);
+    if (!cam || !wt) return undefined;
+    return [wt.worldMatrix[12]!, wt.worldMatrix[13]!, wt.worldMatrix[14]!];
+  } catch {
+    // Destroyed camera entity (World.get asserts liveness) — no camera position.
+    return undefined;
+  }
 }

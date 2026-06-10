@@ -16,23 +16,27 @@ export interface VerbSpec {
   desc: string;
 }
 
+// The REAL CLI grammar (animation-scene.ts) — every entry here, inserted verbatim with its
+// placeholders filled, is accepted by the CLI's switch/flag parser. These strings are also
+// surfaced verbatim to LLMs, so they must never advertise a syntax the validator rejects.
 export const VERBS: VerbSpec[] = [
-  { verb: "set", tail: "<name> --hdr <mood>", desc: "Define / re-light the active set" },
-  { verb: "cast add", tail: "<name> [--profile <rig>]", desc: "Cast a character into the scene" },
-  { verb: "cast remove", tail: "<name>", desc: "Remove a character" },
-  { verb: "cast rename", tail: "<old> <new>", desc: "Rename a cast member" },
-  { verb: "shot add", tail: "--after <id>", desc: "Block a new shot" },
+  { verb: "new", tail: '--prompt "<scene>" [--full]', desc: "Start a new working scene from a prompt" },
+  { verb: "set", tail: '<studio|garage|office|kitchen|moon-garden|space-station|meadow> | --query "<setting>"', desc: "Choose the active set template" },
+  { verb: "cast add", tail: '--id <id> --query "<look>" [--scale <s>]', desc: "Cast a character (catalog resolve)" },
+  { verb: "prop add", tail: '--id <id> --query "<look>"', desc: "Register a prop from the catalog" },
+  { verb: "shot add", tail: "--id <id> --preset <preset> --duration <s>", desc: "Block a new shot" },
   { verb: "shot remove", tail: "--id <id>", desc: "Remove a shot" },
   { verb: "shot retime", tail: "--id <id> --duration <s>", desc: "Change a shot's duration" },
-  { verb: "cam", tail: "<wide|medium|close|orbit>", desc: "Set the active shot camera" },
-  { verb: "light add", tail: "--type <rim|key|fill>", desc: "Add a light to the set" },
-  { verb: "fx add", tail: "<name>", desc: "Add an effect to the timeline" },
-  { verb: "prop add", tail: "<name> [--set-dressing]", desc: "Add a prop to the scene" },
-  { verb: "dialogue", tail: "<character> \"<line>\"", desc: "Add dialogue for a character" },
-  { verb: "block", tail: "<character> <action>", desc: "Block a character action" },
-  { verb: "gesture", tail: "<character> <clip-id>", desc: "Queue a gesture clip for a character" },
-  { verb: "show", tail: "<shots|cast|props|lights>", desc: "Inspect scene elements" },
-  { verb: "render", tail: "[--shot <id>] [--quality preview|final]", desc: "Render a preview or final" }
+  { verb: "camera", tail: "--shot <id> --preset <establishing|medium|two-shot|close-up>", desc: "Set a shot's camera" },
+  { verb: "dialogue", tail: '--line <id> --speaker <id> --text "<line>" --start <s>', desc: "Write a dialogue line" },
+  { verb: "block", tail: "--character <id> --shot <id> --to <x,z> [--clip <clip>]", desc: "Move a character in a shot" },
+  { verb: "gesture", tail: "--character <id> --shot <id> --clip <clip>", desc: "Queue a gesture clip for a character" },
+  { verb: "dress", tail: "--prop <id> --at <x,z> [--scale <s>]", desc: "Place a registered prop on the set" },
+  { verb: "scale", tail: "--character <id> --to <s>", desc: "Rescale a character" },
+  { verb: "show", tail: "", desc: "Print the scene summary" },
+  { verb: "validate", tail: "", desc: "Check scene coherence" },
+  { verb: "undo", tail: "", desc: "Undo the last committed edit" },
+  { verb: "render", tail: "[--shot <id>]", desc: "Render a low-fi preview (shot or full sequence)" }
 ];
 
 export interface ParsedCommand {
@@ -54,7 +58,7 @@ export function parse(raw: string): ParsedCommand {
   const toks = head.split(/\s+/).filter(Boolean);
   let verb = toks[0] || "";
   let rest = toks.slice(1);
-  if (["cast", "shot", "light", "fx"].includes(verb) && rest[0]) {
+  if (["cast", "shot", "prop"].includes(verb) && rest[0]) {
     verb += " " + rest[0];
     rest = rest.slice(1);
   }

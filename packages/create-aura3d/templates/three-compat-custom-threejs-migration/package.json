@@ -1,9 +1,21 @@
 {
+  "name": "aura3d-three-compat-custom-threejs-migration",
+  "version": "1.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build"
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/engine": "^0.1.0-alpha.0"
+    "@aura3d/engine": "1.3.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
   }
 }

@@ -1,7 +1,7 @@
 # Release Tracks
 
-Version: 1.2.0
-Date: 2026-06-07
+Version: 1.3.3
+Date: 2026-06-10
 
 Aura3D v1.1.0 is the runtime-foundation, typed GLB actor evidence, asset-catalog profile, CLI, template, docs, npm package, GitHub repository, marketing-site, and Aura Clash development-showcase release track.
 
@@ -13,10 +13,10 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 ## Current Release
 
-- npm package target: `@aura3d/engine@1.3.2`
+- npm package target: `@aura3d/engine@1.3.3`
 - Public developer API: `@aura3d/engine`
-- CLI package target: `@aura3d/cli@1.3.2`
-- Scaffold package target: `create-aura3d@1.3.2`
+- CLI package target: `@aura3d/cli@1.3.3`
+- Scaffold package target: `create-aura3d@1.3.3`
 - Website: `https://aura3d.auraone.ai`
 - Repository: `https://github.com/auraoneai/aura3d`
 - Primary install path: `npm install @aura3d/engine`
@@ -25,7 +25,7 @@ Aura3D is positioned for teams searching for a modern Three.js alternative, Baby
 
 `@aura3d/engine@1.1.0` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
 
-Publication status: npm `latest` points at `@aura3d/engine@1.3.2`, `@aura3d/asset-index@1.3.2`, `@aura3d/cli@1.3.2`, and `create-aura3d@1.3.2`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
+Publication status: npm `latest` points at `@aura3d/engine@1.3.3`, `@aura3d/asset-index@1.3.3`, `@aura3d/cli@1.3.3`, and `create-aura3d@1.3.3`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
 
 ## 1.2 Animation Engine Track
 
@@ -45,7 +45,7 @@ Primary reference: `docs/animation/believable-motion.md`.
 
 ## 1.3 Believable-Motion Track
 
-Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.2` (all 28 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
+Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.3` (all 26 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
 
 What 1.3 adds:
 
@@ -81,7 +81,7 @@ Primary reference: `docs/examples/animation-studio.md`.
 
 `@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
 
-Publication status: historical. The current npm `latest` release is 1.3.2.
+Publication status: historical. The current npm `latest` release is 1.3.3.
 
 ## 1.0.4 Release Note
 

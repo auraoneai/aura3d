@@ -23,15 +23,43 @@ function Clip({
   clip,
   DUR,
   sel,
-  onClick
+  onClick,
+  trackRef,
+  zoom,
+  onRetime
 }: {
   clip: ClipModel;
   DUR: number;
   sel: boolean;
   onClick: (e: React.MouseEvent) => void;
+  trackRef: React.RefObject<HTMLDivElement>;
+  zoom: number;
+  onRetime?: (clipId: string, newDuration: number) => void;
 }) {
   const left = (clip.start / DUR) * 100;
   const width = (clip.dur / DUR) * 100;
+
+  const handleDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onRetime || !trackRef.current) return;
+    const initialDur = clip.dur;
+    const startX = e.clientX;
+    const trackWidth = trackRef.current.getBoundingClientRect().width;
+    const pxPerSecond = (trackWidth * zoom) / DUR;
+
+    const onMove = (ev: MouseEvent) => {
+      const delta = ev.clientX - startX;
+      const newDur = Math.max(1, initialDur + delta / pxPerSecond);
+      onRetime(clip.id, newDur);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
   return (
     <div
       className={"clip" + (sel ? " sel" : "")}
@@ -43,6 +71,21 @@ function Clip({
       }}
     >
       <span className="clab">{clip.label}</span>
+      {onRetime && (
+        <div
+          onMouseDown={handleDown}
+          title="Drag to retime"
+          style={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 6,
+            cursor: "e-resize",
+            zIndex: 2
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -53,9 +96,10 @@ export interface TimelineProps {
   onScrub: (t: number) => void;
   selShot: string | null;
   onSelShot: (id: string) => void;
+  onRetime?: (clipId: string, newDuration: number) => void;
 }
 
-export function Timeline({ data, time, onScrub, selShot, onSelShot }: TimelineProps) {
+export function Timeline({ data, time, onScrub, selShot, onSelShot, onRetime }: TimelineProps) {
   const DUR = data.DUR;
   const [zoom, setZoom] = useState(1);
   const ref = useRef<HTMLDivElement>(null);
@@ -170,6 +214,9 @@ export function Timeline({ data, time, onScrub, selShot, onSelShot }: TimelinePr
                       onScrub(r.start);
                       if (t.name === "Shots") onSelShot(r.id);
                     }}
+                    trackRef={ref}
+                    zoom={zoom}
+                    onRetime={t.name === "Shots" ? onRetime : undefined}
                   />
                 ))}
               </div>

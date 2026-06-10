@@ -1,9 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+import { AURA_CLASH_ARENA_PROOF_RELEASE } from "../src/playable/evidence/auraClashArenaProof";
 
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
-  release: "1.3.2";
+  release: typeof AURA_CLASH_ARENA_PROOF_RELEASE;
   version: string;
   status: "loading" | "running" | "paused" | "error";
   error: string | null;
@@ -94,7 +95,7 @@ test("AuraClash boots Aura3D runtime", async ({ page }) => {
   const proof = await loadPlayable(page);
   expect(proof.route).toBe("/playable/");
   expect(proof.app).toBe("Aura Clash Arena");
-  expect(proof.release).toBe("1.1.0");
+  expect(proof.release).toBe(AURA_CLASH_ARENA_PROOF_RELEASE);
   expect(proof.version).toBe("aura-clash-arena-production-gltf-animation-crossfade-reactions");
   expect(proof.status).toBe("running");
   expect(proof.runtime.frameLoop).toBe(true);

@@ -318,6 +318,14 @@ interface RendererEnvironmentBackgroundLoadState {
   promise?: Promise<void>;
 }
 
+/**
+ * Authored-asset loader lifecycle per demo route. `renderShell()` re-creates the
+ * `.gallery-loading` overlay on every re-render (camera presets, hotspots, reset), so the
+ * loader's visibility must be derived from this explicit state — never from "did some earlier
+ * frame happen to hide the element" (that resurrects the loader permanently after any re-render).
+ */
+type AuthoredLoaderStatus = "loading" | "ready" | "error";
+
 const canvasElement = document.querySelector<HTMLCanvasElement>("#viewport");
 const appElement = document.querySelector<HTMLElement>("#app");
 if (!canvasElement || !appElement) {
@@ -378,6 +386,7 @@ let lastTimings: AdvancedGalleryRuntime["timings"] = createEmptyTimings();
 let dragging = false;
 let lastPointer: { x: number; y: number } | null = null;
 let productHotspotTargets: readonly ProductConfiguratorHotspotTarget[] = [];
+const authoredLayerStatus = new Map<string, AuthoredLoaderStatus>();
 let runtime: AdvancedGalleryRuntime = createRuntime("loading", selectedDemo, undefined, undefined, []);
 
 publish(runtime);
@@ -442,9 +451,8 @@ async function run(): Promise<void> {
           resetSteadyStateWork(frameCount);
           fpsSampleIntervalMs = 0;
           fpsReadyResetDemoId = selectedDemo.id;
-          const loader = document.getElementById("gallery-loading");
-          if (loader) loader.hidden = true;
         }
+        updateAuthoredLoaderState(selectedDemo.id, authored.runtime.status);
         recordFpsSample(now, fpsSampleIntervalMs);
         const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
         const renderItems = composeGalleryRouteRenderItems(selectedDemo.id, proceduralItems, authored.items);
@@ -693,16 +701,16 @@ function renderShell(): void {
           `).join("")}
         </div>
       </section>
-      <div class="gallery-loading" id="gallery-home-loading"><span>Loading gallery…</span></div>
       <div class="capture-toast" id="capture-toast" hidden></div>
     `;
+    // The home shell is fully synchronous (the grid above is rendered in this same call),
+    // so there is no loading phase and deliberately no loader element here.
     app.appendChild(shell);
-    const homeLoader = document.getElementById("gallery-home-loading");
-    if (homeLoader) homeLoader.hidden = true;
     return;
   }
+  const loaderStatus = authoredLayerStatus.get(selectedDemo.id) ?? "loading";
   shell.innerHTML = `
-    <div class="gallery-loading" id="gallery-loading"><span>Loading authored asset…</span></div>
+    <div class="gallery-loading${loaderStatus === "error" ? " is-error" : ""}" id="gallery-loading"${loaderStatus === "ready" ? " hidden" : ""}><span>${loaderStatus === "error" ? "Authored asset failed to load — showing procedural scene only." : "Loading authored asset…"}</span></div>
     <section class="top-hud">
       <button data-action="home" type="button">Gallery</button>
       <button data-camera="hero" type="button">Hero</button>
@@ -755,6 +763,30 @@ function renderShell(): void {
   `;
   app.appendChild(shell);
   updateControlReadouts();
+}
+
+/**
+ * Derive the loader state for a demo from the authored layer's runtime status and sync the
+ * `.gallery-loading` element. `"idle"` means the route has no authored asset to wait for, so it
+ * counts as ready. The state lives in `authoredLayerStatus` so `renderShell()` re-renders the
+ * loader correctly (hidden once ready, error text on failure) instead of resurrecting it.
+ */
+function updateAuthoredLoaderState(demoId: string, authoredStatus: AuthoredAssetRuntimeState["status"]): void {
+  const status: AuthoredLoaderStatus =
+    authoredStatus === "error" ? "error" : authoredStatus === "loading" ? "loading" : "ready";
+  if (authoredLayerStatus.get(demoId) === status) return;
+  authoredLayerStatus.set(demoId, status);
+  if (demoId !== selectedDemo.id) return;
+  const loader = document.getElementById("gallery-loading");
+  if (!loader) return;
+  loader.hidden = status === "ready";
+  loader.classList.toggle("is-error", status === "error");
+  const label = loader.querySelector("span");
+  if (label) {
+    label.textContent = status === "error"
+      ? "Authored asset failed to load — showing procedural scene only."
+      : "Loading authored asset…";
+  }
 }
 
 function reviewLabel(status: DemoDefinition["visualReview"]["status"]): string {

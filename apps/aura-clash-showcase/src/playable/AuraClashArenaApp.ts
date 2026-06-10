@@ -58,22 +58,9 @@ import {
   registerComboHit,
   canCancelCombo,
   type ComboState
-} from "./fighters/ComboSystem";
-import {
-  applyGuardDamage,
-  recoverGuard,
-  defaultGuardBreakRules
-} from "./fighters/GuardBreakSystem";
-import {
-  maybeApplyKnockdown,
-  recoverFromKnockdown,
-  defaultKnockdownRules
-} from "./fighters/KnockdownRecovery";
-import {
-  createRoundRuntimeState,
-  updateRoundWinner,
-  type RoundRuntimeState
-} from "./state/MatchState";
+} from "../fighters/ComboSystem";
+import { defaultGuardBreakRules } from "../fighters/GuardBreakSystem";
+import { defaultKnockdownRules } from "../fighters/KnockdownRecovery";
 import { auraClashAudioAssets, auraClashAudioManifest } from "./audio/auraClashAudioManifest";
 import type {
   AuraClashArenaProof,
@@ -213,6 +200,21 @@ const stage = {
 
 const KO_FREEZE_TIME = 1.18;
 const CLIP_BLEND_DURATION = 0.12;
+// Fixed seed for the rival-AI PRNG: every round starts from the same deterministic stream, so
+// identical inputs reproduce identical combat and the `deterministicCombat` proof claim holds.
+const RIVAL_AI_RNG_SEED = 0x41435241; // "ACRA"
+
+/** mulberry32 — small deterministic PRNG; same seed → same sequence in [0, 1). */
+function mulberry32(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 // Upper-body bone-name substrings for the Unreal-mannequin fighter rigs (spine/arms/hands/head).
 // Used to layer an attack on the upper body while locomotion continues on the lower body.
 const UPPER_BODY_BONES = ["spine", "neck", "Head", "clavicle", "upperarm", "lowerarm", "hand", "thumb"] as const;
@@ -745,6 +747,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let rivalScore = 0;
   let roundIndex = 1;
   let intermissionTimer = 0;
+  let rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
   let diagnostics: RenderDeviceDiagnostics = renderer.getDiagnostics();
   let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
   let combatSnapshot = combatWorld.snapshot();
@@ -787,6 +790,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       resetFighterSecondaryMotion(playerRuntime.secondary);
       resetFighterSecondaryMotion(rivalRuntime.secondary);
       resetCombatWorld(combatWorld, playerState, rivalState);
+      rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
       lastHitFrame = 0;
@@ -838,6 +842,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           rivalState.grounded = true;
           playerState.hitstun = 0;
           rivalState.hitstun = 0;
+          playerState.recovery = 0;
+          rivalState.recovery = 0;
+          playerState.knockdownTimer = 0;
+          rivalState.knockdownTimer = 0;
+          playerState.invulnerableTimer = 0;
+          rivalState.invulnerableTimer = 0;
           playerState.moveCooldown = 0;
           rivalState.moveCooldown = 0;
           playerState.specialCooldown = 0;
@@ -852,6 +862,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         queuePlayerAttack(move: MoveId) {
           playerState.moveCooldown = 0;
           playerState.hitstun = 0;
+          playerState.recovery = 0;
+          playerState.knockdownTimer = 0;
+          playerState.invulnerableTimer = 0;
           playerState.guard = false;
           playerState.grounded = true;
           if (startAttack(playerState, move) && playerState.attack) {
@@ -864,7 +877,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     }
 
     let skipGameplayThisFrame = false;
-    if (intermissionTimer > 0) {
+    if (!paused && intermissionTimer > 0) {
       intermissionTimer = Math.max(0, intermissionTimer - dt);
       if (intermissionTimer === 0 && roundOver) {
         resetRound("intermission");
@@ -924,7 +937,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           : "Special is cooling down.";
         audio.cue("special-denied");
       }
-      updateRivalAi(rivalState, playerState, dt);
+      updateRivalAi(rivalState, playerState, dt, rivalAiRng);
       clearExpiredAttack(playerState);
       clearExpiredAttack(rivalState);
       updateFighterPhysics(playerState, dt);
@@ -1386,9 +1399,20 @@ function finishRound(player: FighterState, rival: FighterState, roundTime: numbe
   return playerWon ? "WIN" : "KO";
 }
 
+// Buffer lifetime must outlive the longest non-actionable window (max hitstun 0.52 s + recovery
+// 0.18 s, knockdown stun) so a press during hitstun/an active attack still fires on wakeup.
+const INPUT_BUFFER_LIFETIME_MS = 800;
+
 function bufferInput(fighter: FighterState, move: MoveId): void {
-  if (fighter.hitstun > 0 || fighter.recovery > 0 || fighter.moveCooldown > 0 || fighter.action === "ko") {
-    fighter.inputBuffer = { move, expiresAt: performance.now() + 120 };
+  if (
+    fighter.attack !== null ||
+    fighter.hitstun > 0 ||
+    fighter.recovery > 0 ||
+    fighter.knockdownTimer > 0 ||
+    fighter.moveCooldown > 0 ||
+    fighter.action === "ko"
+  ) {
+    fighter.inputBuffer = { move, expiresAt: performance.now() + INPUT_BUFFER_LIFETIME_MS };
   }
 }
 
@@ -1417,7 +1441,7 @@ function canUseHeldAttack(fighter: FighterState, controls: Controls, action: "li
   return controls.held(action) && !fighter.attack && fighter.moveCooldown <= 0 && fighter.hitstun <= 0 && fighter.recovery <= 0 && fighter.action !== "ko";
 }
 
-function updateRivalAi(rival: FighterState, player: FighterState, dt: number): void {
+function updateRivalAi(rival: FighterState, player: FighterState, dt: number, rng: () => number): void {
   rival.aiCooldown = Math.max(0, rival.aiCooldown - dt);
   const gap = player.x - rival.x;
   const distance = Math.abs(gap);
@@ -1436,7 +1460,7 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number): v
             : 0;
   const canStrike = opponentAlive && rival.grounded && player.grounded && distance >= 0.9 && distance <= 1.28;
   const playerAttacking = player.attack !== null;
-  const incomingHeavy = playerAttacking && (player.attack.id === "heavy" || player.attack.id === "special");
+  const incomingHeavy = playerAttacking && (player.attack?.id === "heavy" || player.attack?.id === "special");
   const shouldGuard = opponentAlive && playerAttacking && distance < 1.4 && rival.grounded && !rival.attack;
   const shouldBackdash = opponentAlive && incomingHeavy && distance < 1.1 && rival.grounded && rival.moveCooldown <= 0 && rival.dashGrace <= 0;
   const aggression = rival.health < START_HEALTH * 0.35 ? 0.65 : 1.0;
@@ -1445,9 +1469,9 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number): v
     jump: !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
     dash: shouldBackdash,
     guard: shouldGuard,
-    light: canStrike && rival.aiCooldown <= 0 && distance < 1.04 && Math.random() < aggression,
-    heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && Math.random() < aggression * 0.5,
-    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && Math.random() < aggression * 0.3
+    light: canStrike && rival.aiCooldown <= 0 && distance < 1.04 && rng() < aggression,
+    heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && rng() < aggression * 0.5,
+    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * 0.3
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -1573,7 +1597,7 @@ function downClipFor(fighter: FighterState): ClipName {
 }
 
 function startAttack(fighter: FighterState, id: MoveId): boolean {
-  if (fighter.moveCooldown > 0 || fighter.action === "ko" || fighter.guard || fighter.hitstun > 0 || fighter.recovery > 0 || fighter.knockdownTimer > 0 || fighter.invulnerableTimer > 0) return false;
+  if (fighter.moveCooldown > 0 || fighter.action === "ko" || fighter.guard || fighter.hitstun > 0 || fighter.recovery > 0 || fighter.knockdownTimer > 0) return false;
   const spec = moves[id];
   if (id === "special") {
     if (fighter.meter < SPECIAL_METER_COST || fighter.specialCooldown > 0) return false;
@@ -1655,7 +1679,7 @@ function syncFighterFromCombatSnapshot(fighter: FighterState, snapshot: GameComb
   fighter.meter = clamp(actor.meter, 0, 100);
 }
 
-function moveIdToHitStrength(moveId: string): import("./state/HitRegistry").HitStrength {
+function moveIdToHitStrength(moveId: string): import("../state/HitRegistry").HitStrength {
   if (moveId === "special") return "special";
   if (moveId === "heavy") return "heavy";
   return "light";
@@ -1686,7 +1710,7 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
         // Guard break — extended stun
         defender.hitstun = Math.max(defender.hitstun, defaultGuardBreakRules.recoveryMs / 1000);
         defender.action = "hurt";
-        defender.clip = defender.clips.hurt_heavy ?? defender.clips.hurt;
+        defender.clip = defender.clips.hurtHeavy ?? defender.clips.hurt;
         defender.clipTime = 0;
       } else {
         defender.hitstun = Math.max(defender.hitstun, 0.16);
@@ -1700,25 +1724,28 @@ function applyEngineCombatEvents(events: readonly GameCombatEvent[], player: Fig
     if (event.type !== "hit" || !event.targetId) continue;
     const defender = event.targetId === player.id ? player : rival;
     const attacker = event.attackerId === player.id ? player : rival;
-    // Combo scaling
+    const rawDamage = Math.max(0, Math.round(event.damage ?? 0));
+    if (defender.invulnerableTimer > 0) {
+      // Wakeup invulnerability: refund the engine-applied damage and skip every hit reaction
+      // (no hitstun, no knockdown, no animation, no combo/meter credit).
+      defender.health = clamp(defender.health + rawDamage, 0, START_HEALTH);
+      continue;
+    }
+    // Combo bookkeeping (HUD display only — the engine's damage is the single source of truth).
     const strength = moveIdToHitStrength(event.moveId ?? "light");
     attacker.combo = registerComboHit(attacker.combo, strength, now);
-    const rawDamage = Math.max(0, Math.round(event.damage ?? 0));
-    const scaledDamage = Math.max(1, Math.round(rawDamage * attacker.combo.damageScaling));
-    if (event.targetId === player.id) playerDamage += scaledDamage;
-    if (event.targetId === rival.id) rivalDamage += scaledDamage;
+    if (event.targetId === player.id) playerDamage += rawDamage;
+    if (event.targetId === rival.id) rivalDamage += rawDamage;
     defender.attack = null;
-    // Knockdown check
-    if (scaledDamage >= defaultKnockdownRules.knockdownHealthThreshold || strength === "special") {
-      defender.health = Math.max(0, defender.health - scaledDamage);
+    // Knockdown check (health already reduced by the engine via syncFighterFromCombatSnapshot)
+    if (rawDamage >= defaultKnockdownRules.knockdownHealthThreshold || strength === "special") {
       defender.knockdownTimer = defaultKnockdownRules.knockdownStunMs / 1000;
       defender.invulnerableTimer = (defaultKnockdownRules.knockdownStunMs + defaultKnockdownRules.wakeupInvulnerabilityMs) / 1000;
       defender.action = "knockdown";
-      defender.clip = defender.clips.knockdown ?? defender.clips.hurt_heavy ?? defender.clips.hurt;
+      defender.clip = defender.clips.hurtHeavy ?? defender.clips.hurt;
       defender.clipTime = 0;
     } else {
-      defender.health = Math.max(0, defender.health - scaledDamage);
-      defender.hurtVariant = selectAuraClashHurtVariant(scaledDamage, defender.grounded);
+      defender.hurtVariant = selectAuraClashHurtVariant(rawDamage, defender.grounded);
       defender.hitstun = Math.max(defender.hitstun, defender.hurtVariant === "heavy" ? 0.42 : 0.34);
       defender.action = defender.health <= 0 ? "ko" : "hurt";
       defender.clip = resolveAuraClashHurtClip(defender.clips, defender.hurtVariant, defender.health <= 0);
@@ -1809,7 +1836,7 @@ function updateClips(fighter: FighterState, dt: number): void {
   } else if (fighter.action === "recover") {
     fighter.clip = fighter.clips.idle;
   } else if (fighter.action === "knockdown") {
-    fighter.clip = fighter.clips.knockdown ?? fighter.clips.hurt_heavy ?? fighter.clips.hurt;
+    fighter.clip = fighter.clips.hurtHeavy ?? fighter.clips.hurt;
   } else if (fighter.action === "ko") {
     fighter.clip = fighter.clips.ko;
   } else {

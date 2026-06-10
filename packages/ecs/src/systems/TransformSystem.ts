@@ -1,9 +1,13 @@
 import { Matrix4, Quaternion, Vector3 } from "@aura3d/math";
+import { type Entity } from "../Entity.js";
 import { type System, type SystemContext } from "../System.js";
 import { type World } from "../World.js";
 import { HierarchyComponent } from "../components/HierarchyComponent.js";
 import { TransformComponent } from "../components/TransformComponent.js";
 import { WorldTransformComponent } from "../components/WorldTransformComponent.js";
+
+/** Safety cap for defensive parent-chain walks (guards against cycles created by direct `parent` mutation). */
+const MAX_HIERARCHY_DEPTH = 4096;
 
 /**
  * Computes {@link WorldTransformComponent} for every entity that has both
@@ -21,11 +25,7 @@ export class TransformSystem implements System {
     const entities = world
       .query({ include: [TransformComponent, HierarchyComponent] })
       .toArray()
-      .sort((a, b) => {
-        const depthA = world.get(a, HierarchyComponent)?.depth ?? 0;
-        const depthB = world.get(b, HierarchyComponent)?.depth ?? 0;
-        return depthA - depthB;
-      });
+      .sort((a, b) => effectiveDepth(world, a) - effectiveDepth(world, b));
 
     for (const entity of entities) {
       const transform = world.get(entity, TransformComponent)!;
@@ -58,13 +58,39 @@ export class TransformSystem implements System {
   }
 }
 
+/**
+ * Returns the depth used for parents-before-children ordering.
+ *
+ * {@link HierarchyComponent.depth} is maintained by `HierarchySystem.setParent`.
+ * If `parent` was set directly (constructor argument or field mutation) the
+ * stored depth is stale at 0, so recompute it defensively by walking the
+ * parent chain.
+ */
+function effectiveDepth(world: World, entity: Entity): number {
+  const hierarchy = world.get(entity, HierarchyComponent);
+  if (!hierarchy) return 0;
+  if (hierarchy.depth > 0 || hierarchy.parent === null) return hierarchy.depth;
+
+  let depth = 0;
+  let current: Entity | null = hierarchy.parent;
+  while (current && depth < MAX_HIERARCHY_DEPTH) {
+    depth += 1;
+    const parentHierarchy: HierarchyComponent | undefined = world.entities.isAlive(current)
+      ? world.get(current, HierarchyComponent)
+      : undefined;
+    current = parentHierarchy?.parent ?? null;
+  }
+  return depth;
+}
+
 function computeNormalMatrix(worldMat: Matrix4): Float32Array {
-  // Normal matrix = inverse-transpose of the 3x3 upper-left block.
+  // Normal matrix = inverse-TRANSPOSE of the world matrix, matching the
+  // renderer's reference `normalMatrixFromModel` (Renderer.ts):
+  // transpose(invert(model)), then extract the upper-left 3x3 into a 4x4
+  // with identity in the 4th row/col (column-major layout).
   // Avoid crashing on singular matrices (zero scale) by falling back to identity.
   try {
-    const inv = worldMat.inverse();
-    const m = inv.elements;
-    // Transpose the 3x3 into a 4x4 with identity in the 4th row/col.
+    const m = worldMat.inverse().transpose().elements;
     return new Float32Array([
       m[0], m[1], m[2], 0,
       m[4], m[5], m[6], 0,

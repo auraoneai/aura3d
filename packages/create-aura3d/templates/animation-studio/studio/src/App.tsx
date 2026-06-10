@@ -75,6 +75,12 @@ export function App() {
   const [continuing, setContinuing] = useState(false);
   const consoleApi = useRef<ConsoleApi>({});
   const raf = useRef(0);
+  // The live render-progress EventSource — kept in a ref so unmount can close it
+  // (otherwise an in-flight render leaves a perpetually reconnecting connection).
+  const progressEs = useRef<EventSource | null>(null);
+  // The active toast-dismiss timer — cleared before each new toast so an earlier
+  // timer can't dismiss a later toast early.
+  const toastTimer = useRef(0);
 
   const DUR = data.DUR;
   const hasShots = data.shots.length > 0;
@@ -83,8 +89,10 @@ export function App() {
     : null;
 
   // Hydrate the UI from the REAL working document (and command history). Called on mount and
-  // after each /api/scene or /api/render so the panels reflect the live document.
-  const hydrate = useCallback(async () => {
+  // after each /api/scene or /api/render so the panels reflect the live document. Returns the
+  // freshly mapped document (or null when none exists) so callers can read post-hydrate values
+  // (e.g. the NEW scene's duration) without waiting for a React state round-trip.
+  const hydrate = useCallback(async (): Promise<EpisodeDocument | null> => {
     const [doc, hist, render] = await Promise.all([fetchDocument(), fetchHistory(), fetchExistingRender()]);
     const exists = documentExists(doc as RuntimeDocument & { exists?: boolean });
     setDocExists(exists);
@@ -98,7 +106,7 @@ export function App() {
     if (!exists) {
       setData(EMPTY_DOC);
       setSel(null);
-      return;
+      return null;
     }
     const mapped = mapDocument(doc as RuntimeDocument);
     setData(mapped);
@@ -106,11 +114,21 @@ export function App() {
       if (prev && mapped[selKey(prev.type)].some((e: { id: string }) => e.id === prev.id)) return prev;
       return mapped.shots[0] ? { type: "shot", id: mapped.shots[0].id } : null;
     });
+    return mapped;
   }, []);
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
+
+  // Close the render-progress EventSource on unmount (it is opened per-render in doRender).
+  useEffect(
+    () => () => {
+      progressEs.current?.close();
+      progressEs.current = null;
+    },
+    []
+  );
 
   useEffect(() => {
     localStorage.setItem("aura.time", time.toFixed(2));
@@ -159,7 +177,8 @@ export function App() {
 
   const showToast = (msg: string, kind: Toast["kind"]) => {
     setToast({ msg, kind });
-    window.setTimeout(() => setToast(null), 2600);
+    window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 2600);
   };
 
   const selectShot = (id: string) => {
@@ -190,54 +209,62 @@ export function App() {
 
   // Outliner Cast "+" — run a REAL `cast add` command through the same path the Console
   // uses (forceCommand bypasses Prompt mode), so it actually mutates the working document,
-  // appends a committed/rejected card, and re-hydrates. A unique default name avoids
-  // colliding with existing cast (the user renames via the Inspector / a follow-up command).
+  // appends a committed/rejected card, and re-hydrates. The CLI grammar is
+  // `cast add --id <id> --query "…"`; a unique default id avoids colliding with existing
+  // cast (the user swaps the look with a follow-up `cast add --id <id> --query "…"`).
   const addCast = () => {
     const run = consoleApi.current.run;
     if (!run) {
       showToast("Console not ready — try again", "tip");
       return;
     }
-    const taken = new Set(data.cast.map((c) => c.name.toLowerCase()));
+    const taken = new Set(data.cast.map((c) => c.id.toLowerCase()));
     let n = data.cast.length + 1;
-    let name = `Cast ${n}`;
-    while (taken.has(name.toLowerCase())) name = `Cast ${++n}`;
-    run(`cast add ${name}`, true);
+    let id = `cast-${n}`;
+    while (taken.has(id)) id = `cast-${++n}`;
+    run(`cast add --id ${id} --query "friendly cartoon character"`, true);
   };
 
   // Generate a brand-new scene from a plain-English sentence. This is the headline action:
   // it runs `new --prompt "…" --full` (the deterministic Director — parses cast, keyword-routes
-  // the set, lays out shots/dialogue), replacing the working document, then re-hydrates the UI.
+  // the set, lays out shots/dialogue), replacing the working document, then re-hydrates the UI
+  // and auto-renders a preview so the Stage shows the new scene — not stale captions.
   const generateScene = async () => {
     const p = newScenePrompt.trim();
-    if (!p || generating) return;
+    // No generate while a render is in flight: the in-flight render is of the OLD document
+    // and would put the old scene's video on the Stage (the buttons are disabled too).
+    if (!p || generating || rendering) return;
     setGenerating(true);
     setPlaying(false);
-    // Strip quotes/backslashes so the prompt can't break the command tokenizer.
-    const safe = p.replace(/["\\]/g, "");
-    const res = await runSceneCommand(`new --prompt "${safe}" --full`);
-    if (!res.ok) {
+    try {
+      // Strip quotes/backslashes so the prompt can't break the command tokenizer.
+      const safe = p.replace(/["\\]/g, "");
+      const res = await runSceneCommand(`new --prompt "${safe}" --full`);
+      if (!res.ok) {
+        showToast("Couldn't generate that scene — try rewording it", "tip");
+        return;
+      }
+      await hydrate();        // panels (cast/set/props/shots/dialogue) now reflect the NEW scene
+      setNewScenePrompt("");
+      setTime(0);
+      // CRITICAL: the render on disk is the OLD scene. Drop it so the stale video can't masquerade
+      // as the new one, then auto-render the new document.
+      setRenderVideo(null);
+      setRenderPoster(null);
+      const rendered = await doRender("sequence");   // ← awaited so the spinner stays until the video is ready
+      // doRender already toasts on failure — only celebrate when the render actually succeeded.
+      if (rendered) showToast("Scene ready — click Play on the transport to watch", "ok");
+    } catch (e) {
+      showToast(`Scene generation failed — ${e instanceof Error ? e.message : "try again"}`, "tip");
+    } finally {
       setGenerating(false);
-      showToast("Couldn't generate that scene — try rewording it", "tip");
-      return;
     }
-    await hydrate();        // panels (cast/set/props/shots/dialogue) now reflect the NEW scene
-    setNewScenePrompt("");
-    setTime(0);
-    setGenerating(false);
-    // CRITICAL: the render on disk is the OLD scene. Drop it (so the stale video can't masquerade
-    // as the new one) and auto-render the new document, so the big preview ACTUALLY changes — not
-    // just the captions. Without this, the Stage keeps showing the previous render.
-    setRenderVideo(null);
-    setRenderPoster(null);
-    showToast("New scene built — rendering a preview so you can see it…", "ok");
-    doRender("sequence");
   };
 
   // "Continue scene" — add another shot to the CURRENT scene (same cast & set) so you can
   // build a longer video without regenerating. Appends a medium shot; the user directs it next.
   const continueScene = async () => {
-    if (continuing || generating || !docExists) return;
+    if (continuing || generating || rendering || !docExists) return;
     setContinuing(true);
     setPlaying(false);
     const existing = new Set(data.shots.map((s) => s.id));
@@ -250,66 +277,105 @@ export function App() {
       showToast("Couldn't add a shot — try again", "tip");
       return;
     }
-    await hydrate();
+    try {
+      await hydrate();
+    } catch {
+      // The shot committed but the re-fetch failed — recover instead of an unhandled rejection.
+      showToast("Shot added, but refreshing the scene failed — reload to see it", "tip");
+      return;
+    }
     setSel({ type: "shot", id });
     showToast("Shot added — same cast & set. Direct it, or tell the AI what happens next.", "ok");
+  };
+
+  // Drag-retime from the Timeline's Shots track: issues the real `shot retime` CLI
+  // command and re-hydrates so every consumer (stage, inspector, totals) updates.
+  const retimeShot = async (shotId: string, newDuration: number) => {
+    if (generating || rendering) return;
+    const duration = Math.max(1, Math.round(newDuration));
+    const res = await runSceneCommand(`shot retime --id ${shotId} --duration ${duration}`);
+    if (!res.ok) {
+      showToast("Couldn't retime the shot — try again", "tip");
+      return;
+    }
+    try {
+      await hydrate();
+    } catch {
+      showToast("Shot retimed, but refreshing the scene failed — reload to see it", "tip");
+    }
   };
 
   // Render hits the REAL pipeline via POST /api/render (dev middleware -> render-live /
   // warm render server). Progress easing runs while the request is in flight (renders are
   // not streamed); on success the rendered webm/poster is loaded into the Stage and a
   // render card is appended. Low-fi is the default for the fast studio iteration loop.
-  const doRender = (scope: "shot" | "sequence") => {
-    if (rendering) return;
+  // Resolves true only when the render actually succeeded, so callers (e.g. generateScene)
+  // can branch their own toasts on the real outcome.
+  const doRender = async (scope: "shot" | "sequence"): Promise<boolean> => {
+    if (rendering) {
+      showToast("Render already in progress", "tip");
+      return false;
+    }
     const isShot = scope === "shot";
-    if (isShot && !currentShot) return;
+    if (isShot && !currentShot) return false;
     setRendering(true);
-    setRenderPct(0);
+    setRenderPct(-1);
     setPlaying(false);
-    // Ease the progress ring toward ~92% while we await the real render; snap to 100% on done.
-    const started = performance.now();
-    let live = true;
-    const ease = () => {
-      if (!live) return;
-      const t = (performance.now() - started) / 1000;
-      // Asymptotic approach so the ring never claims completion before the server returns.
-      setRenderPct(Math.min(92, 92 * (1 - Math.exp(-t / 9))));
-      requestAnimationFrame(ease);
+    // Subscribe to real render-progress SSE from the render pipeline. The EventSource lives
+    // in a ref so the unmount effect can close it if the user leaves mid-render.
+    progressEs.current?.close();
+    const es = new EventSource("/api/render-progress");
+    progressEs.current = es;
+    es.onmessage = (e) => {
+      try {
+        const d = JSON.parse(e.data) as { current: number; total: number; label: string; pct: number };
+        // "waiting" = the render process hasn't written progress yet — keep the intentional
+        // indeterminate state (-1) instead of snapping the bar to a determinate 0%.
+        if (d.label === "waiting") return;
+        setRenderPct(d.pct);
+      } catch {}
     };
-    requestAnimationFrame(ease);
+    es.onerror = () => { /* normal on close */ };
 
     // Render the current shot's time-range when scope is "shot", else the whole sequence.
     const range = isShot && currentShot ? `${Math.floor(currentShot.start)}-${Math.ceil(currentShot.start + currentShot.dur)}` : undefined;
-    void runRender({ lowFi: true, range }).then((res) => {
-      live = false;
-      setRenderPct(100);
-      setRendering(false);
-      if (!res.ok) {
-        showToast("Render failed — see console", "tip");
-        return;
+    const res = await runRender({ lowFi: true, range });
+    es.close();
+    if (progressEs.current === es) progressEs.current = null;
+    setRendering(false);
+    if (!res.ok) {
+      showToast("Render failed — see console", "tip");
+      return false;
+    }
+    // Re-sync the panels with the real document FIRST so the render card's duration reflects
+    // the document that was actually rendered (not a closure-captured pre-hydrate DUR).
+    let freshDur = DUR;
+    try {
+      const fresh = await hydrate();
+      if (fresh) freshDur = fresh.DUR;
+    } catch {
+      // Panels stay stale but the render itself succeeded — don't fail the whole render.
+    }
+    // Cache-bust so the Stage reloads the freshly rendered media.
+    const bust = "?t=" + Date.now();
+    if (res.video) setRenderVideo(res.video + bust);
+    if (res.poster) setRenderPoster(res.poster + bust);
+    setTranscript((tr) => [
+      ...tr,
+      {
+        type: "render",
+        id: "r" + Date.now(),
+        frame: res.poster ? res.poster + bust : "",
+        label: "low-fi preview · " + (isShot && currentShot ? fmt(currentShot.dur) : fmt(freshDur)),
+        shot: isShot && currentShot ? currentShot.name : "Full sequence",
+        meta: res.ms ? "rendered in " + (res.ms / 1000).toFixed(1) + "s" : "just now"
       }
-      // Cache-bust so the Stage reloads the freshly rendered media.
-      const bust = "?t=" + Date.now();
-      if (res.video) setRenderVideo(res.video + bust);
-      if (res.poster) setRenderPoster(res.poster + bust);
-      setTranscript((tr) => [
-        ...tr,
-        {
-          type: "render",
-          id: "r" + Date.now(),
-          frame: res.poster ? res.poster + bust : "",
-          label: "low-fi preview · " + (isShot && currentShot ? fmt(currentShot.dur) : fmt(DUR)),
-          shot: isShot && currentShot ? currentShot.name : "Full sequence",
-          meta: res.ms ? "rendered in " + (res.ms / 1000).toFixed(1) + "s" : "just now"
-        }
-      ]);
-      showToast(
-        isShot && currentShot ? "Shot render complete · " + currentShot.name : "Render complete · full sequence",
-        "ok"
-      );
-      // Re-sync the panels with the real document (shot frames may now exist).
-      void hydrate();
-    });
+    ]);
+    showToast(
+      isShot && currentShot ? "Shot render complete · " + currentShot.name : "Render complete · full sequence",
+      "ok"
+    );
+    return true;
   };
 
   return (
@@ -330,7 +396,7 @@ export function App() {
         {generating ? (
           <span className="newscene-status">
             <span className="newscene-spinner" />
-            Building your scene — cast, set, shots &amp; dialogue… (a few seconds)
+            Building your scene — this takes ~25 seconds (generating cast, set, shots, then rendering a preview)
           </span>
         ) : (
           <input
@@ -346,7 +412,9 @@ export function App() {
         )}
         <button
           className={"newscene-btn" + (generating ? " busy" : "")}
-          disabled={generating || !newScenePrompt.trim()}
+          // Also disabled while a render is in flight: generating then would race the
+          // in-flight render of the OLD document (stale video lands on the Stage).
+          disabled={generating || rendering || !newScenePrompt.trim()}
           onClick={() => void generateScene()}
         >
           {generating ? "Generating…" : "Generate scene"}
@@ -354,7 +422,7 @@ export function App() {
         <span className="newscene-div" />
         <button
           className="newscene-btn newscene-continue"
-          disabled={generating || continuing || !docExists}
+          disabled={generating || continuing || rendering || !docExists}
           onClick={() => void continueScene()}
           title="Add a shot to this scene — keeps the same characters & set"
         >
@@ -390,7 +458,7 @@ export function App() {
             renderPoster={renderPoster}
             empty={!docExists}
           />
-          <Timeline data={data} time={time} onScrub={setTime} selShot={currentShot?.id ?? null} onSelShot={selectShot} />
+          <Timeline data={data} time={time} onScrub={setTime} selShot={currentShot?.id ?? null} onSelShot={selectShot} onRetime={(shotId, newDuration) => void retimeShot(shotId, newDuration)} />
         </div>
         <div className="col">
           <Console

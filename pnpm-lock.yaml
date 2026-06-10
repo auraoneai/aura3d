@@ -182,7 +182,7 @@ importers:
   packages/aura3d-cli:
     dependencies:
       '@aura3d/asset-index':
-        specifier: workspace:^1.0.10
+        specifier: workspace:*
         version: link:../asset-index
 
   packages/controls:

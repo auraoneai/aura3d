@@ -155,8 +155,38 @@ html[data-review-capture="hero"] .top-hud,
 html[data-review-capture="hero"] .caption-strip,
 html[data-review-capture="hero"] .right-panel,
 html[data-review-capture="hero"] .capture-toast,
+html[data-review-capture="hero"] .gallery-loading,
 html[data-review-capture="hero"] .loading-state {
   display: none !important;
+}
+
+/* Authored-asset loader overlay for demo routes (mirrors the .capture-toast pill). */
+.gallery-loading {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  z-index: 4;
+  pointer-events: none;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: rgba(7, 12, 18, 0.76);
+  border: 1px solid rgba(160, 190, 225, 0.18);
+  box-shadow: 0 18px 56px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(16px);
+  color: #a9bfd8;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.gallery-loading[hidden] {
+  display: none;
+}
+
+.gallery-loading.is-error {
+  color: #ff8d96;
+  border-color: rgba(255, 141, 150, 0.4);
 }
 
 .gallery-home {

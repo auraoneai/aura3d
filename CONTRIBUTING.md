@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Version: 1.3.2
+Version: 1.3.3
 
 ## Scope
 

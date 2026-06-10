@@ -20,7 +20,12 @@ describe("create-aura3d templates", () => {
         expect(existsSync(join(result.targetDir, "index.html"))).toBe(true);
         const hasMainTs = existsSync(join(result.targetDir, "src", "main.ts"));
         const hasRenderRouteTs = existsSync(join(result.targetDir, "src", "render-live-route.ts"));
-        expect(hasMainTs || hasRenderRouteTs).toBe(true);
+        // Only animation-studio legitimately ships without src/main.ts (it uses render-live-route.ts).
+        if (template === "animation-studio") {
+          expect(hasMainTs || hasRenderRouteTs).toBe(true);
+        } else {
+          expect(hasMainTs).toBe(true);
+        }
         expect(existsSync(join(result.targetDir, "tests", "route-health.spec.ts"))).toBe(true);
         expect(existsSync(join(result.targetDir, "tests", "screenshot.spec.ts"))).toBe(true);
       }

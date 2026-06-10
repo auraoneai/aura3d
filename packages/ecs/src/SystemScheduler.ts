@@ -64,8 +64,10 @@ function sortSystems(systems: System[]): System[] {
   return result;
 
   function addEdge(from: string, to: string): void {
-    if (!byName.has(from)) throw new ValidationError("MISSING_ECS_SYSTEM_DEPENDENCY", `Missing ECS system dependency: ${from}`);
-    if (!byName.has(to)) throw new ValidationError("MISSING_ECS_SYSTEM_DEPENDENCY", `Missing ECS system dependency: ${to}`);
+    // `before`/`after` are soft ordering constraints: if the referenced
+    // system is not registered (or runs in a different phase), the edge is
+    // simply skipped instead of failing the whole schedule.
+    if (!byName.has(from) || !byName.has(to)) return;
     const edges = graph.get(from) as Set<string>;
     if (!edges.has(to)) {
       edges.add(to);

@@ -24,11 +24,12 @@ test("create-aura3d scaffolds every starter template from public package imports
       };
       expect(manifest.dependencies["@aura3d/engine"]).toBe("1.0.0");
       const mainPath = join(targetDir, "src/main.ts");
-      const renderRoutePath = join(targetDir, "src/render-live-route.ts");
-      const entryPoint = existsSync(mainPath) ? mainPath : renderRoutePath;
-      const source = readFileSync(entryPoint, "utf8");
-      const isThreeCompat = template.startsWith("three-compat-");
-      expect(source).toContain(isThreeCompat ? "import" : "from \"@aura3d/engine\"");
+      // animation-studio's entry is a thin bootstrap (render-live-route.ts); its
+      // genuine public-API usage lives in the generic scene player it mounts.
+      const scenePlayerPath = join(targetDir, "src/scene-player.ts");
+      const apiFile = existsSync(mainPath) ? mainPath : scenePlayerPath;
+      const source = readFileSync(apiFile, "utf8");
+      expect(source).toContain("from \"@aura3d/engine\"");
     }
     writeCreateA3DReport("tests/reports/create-aura3d.json", results[0]!);
     writeFileSync("tests/reports/create-aura3d-templates.json", `${JSON.stringify({ ok: true, templates: results }, null, 2)}\n`);

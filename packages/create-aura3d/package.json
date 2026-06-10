@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"
@@ -15,7 +15,15 @@
     "templates/prompt-animation-channel",
     "templates/animation-studio",
     "templates/episode-builder",
-    "templates/character-controller"
+    "templates/character-controller",
+    "templates/three-compat-premium-product-viewer",
+    "templates/three-compat-architecture-interior",
+    "templates/three-compat-material-authoring",
+    "templates/three-compat-asset-inspector",
+    "templates/three-compat-character-viewer",
+    "templates/three-compat-postprocess-scene",
+    "templates/three-compat-custom-threejs-migration",
+    "templates/three-compat-large-scene"
   ],
   "publishConfig": {
     "access": "public"

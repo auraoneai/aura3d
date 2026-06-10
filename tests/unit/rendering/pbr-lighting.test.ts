@@ -209,6 +209,59 @@ describe("PBR material and direct light contracts", () => {
     expect(binding.uniforms.get("u_environmentBrdfLutEnabled")).toBe(1);
   });
 
+  it("binds skinned lit materials carrying glTF extension textures without declaring unsupported texture uniforms", () => {
+    // Regression: the skinned-lit shader supports extension scalar factors only.
+    // A skinned glTF material with clearcoat/sheen/... textures used to declare
+    // u_*Texture/u_*TextureEnabled schema entries the shader never had, making
+    // MaterialBinding throw at first render.
+    const library = createDefaultShaderLibrary();
+    const device = new MockRenderDevice();
+    const shader = device.createShaderProgram(library.compileSource(DEFAULT_SKINNED_LIT_SHADER_NAME));
+    const makeExtensionTexture = (name: string): TextureBinding =>
+      new TextureBinding({
+        name,
+        texture: new Texture({ width: 1, height: 1, colorSpace: "linear", data: new Uint8Array([200, 200, 200, 255]) }),
+        expectedColorSpace: "linear",
+        required: true
+      });
+    const material = new SkinnedLitMaterial({
+      baseColor: [0.6, 0.55, 0.5, 1],
+      metallic: 0.9,
+      roughness: 0.2,
+      clearcoatFactor: 1,
+      clearcoatRoughnessFactor: 0.1,
+      clearcoatTexture: makeExtensionTexture("u_clearcoatTexture"),
+      sheenColorFactor: [0.3, 0.2, 0.1],
+      sheenColorTexture: makeExtensionTexture("u_sheenColorTexture"),
+      transmissionFactor: 0.4,
+      transmissionTexture: makeExtensionTexture("u_transmissionTexture"),
+      iridescenceFactor: 0.5,
+      iridescenceTexture: makeExtensionTexture("u_iridescenceTexture"),
+      anisotropyStrength: 0.7,
+      anisotropyTexture: makeExtensionTexture("u_anisotropyTexture"),
+      volumeThicknessFactor: 0.25,
+      volumeThicknessTexture: makeExtensionTexture("u_volumeThicknessTexture")
+    });
+
+    expect(() => new MaterialBinding().bind(material, shader)).not.toThrow();
+
+    const schemaNames = material.uniformSchema.map((uniform) => uniform.name);
+    for (const slot of ["clearcoat", "clearcoatNormal", "sheenColor", "sheenRoughness", "transmission", "iridescence", "iridescenceThickness", "anisotropy", "volumeThickness"]) {
+      expect(schemaNames).not.toContain(`u_${slot}Texture`);
+      expect(schemaNames).not.toContain(`u_${slot}TextureEnabled`);
+    }
+
+    // Extension scalar factors stay bound exactly as before.
+    const binding = new MaterialBinding().bind(material, shader);
+    expect(binding.uniforms.get("u_clearcoatFactor")).toBe(1);
+    expect(binding.uniforms.get("u_clearcoatRoughnessFactor")).toBe(0.1);
+    expect(binding.uniforms.get("u_sheenColorFactor")).toEqual([0.3, 0.2, 0.1]);
+    expect(binding.uniforms.get("u_transmissionFactor")).toBe(0.4);
+    expect(binding.uniforms.get("u_iridescenceFactor")).toBe(0.5);
+    expect(binding.uniforms.get("u_anisotropyStrength")).toBe(0.7);
+    expect(binding.uniforms.get("u_volumeThicknessFactor")).toBe(0.25);
+  });
+
   it("rejects invalid PBR ranges instead of silently clamping", () => {
     expect(() => new PBRMaterial({ metallic: 1.1 })).toThrow(/metallic/);
     expect(() => new PBRMaterial({ roughness: -0.1 })).toThrow(/roughness/);

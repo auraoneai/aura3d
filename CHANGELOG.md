@@ -1,8 +1,23 @@
 # Changelog
 
-Version: 1.3.2
+Version: 1.3.3
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.2` — all 28 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.3` — all 26 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
+
+## 1.3.3 (2026-06-10)
+
+ECS rendering bridge, expanded humanoid animation vocabulary, Aura Clash combat-system wiring, Animation Studio prompt/render pipeline fixes, agent-API demo features, and create-aura3d template repairs. All 26 packages (`@aura3d/*` + `create-aura3d`) publish in lockstep at `1.3.3`.
+
+- **ECS:** new camera/light/mesh/world-transform components plus `TransformSystem` and `CameraSystem`; `ECSRenderSource` render bridge with a corrected inverse-transpose normal matrix, shadow-light source objects, safe empty-world queries, and ambient-light handling.
+- **Animation:** 14-clip standard humanoid vocabulary (adds `wave`, `sit`, `shrug`, `cross_arms`, `salute`, `shake_head`); performance state graph with true held-loop `sit`/`cross_arms` states.
+- **Aura Clash showcase:** combo, guard-break, knockdown, and match systems wired into the arena with corrected single-source damage, working wakeup invulnerability, functional input buffering, and seeded deterministic rival AI.
+- **Animation Studio:** prompt-driven scene generation; SSE render progress (stale-progress fix, atomic writes, EventSource lifecycle); accurate console command vocabulary; drag-retime on the Shots track; bundled template Studio re-synced with a drift-guard test.
+- **Agent API:** 12 demo prefab/character features with GLB-accurate humanoid metadata and clamped particle counts.
+- **Physics:** fixed constraint anchor rotation in the custom solver; the gallery physics playground is pinned to the deterministic aura-js backend.
+- **Rendering/assets:** skinned-lit material no longer declares unsupported extension-texture uniforms (crash fix); KTX2 transcoding restored to the production-safe main-thread path; neutral-gray default material fallback.
+- **create-aura3d:** 8 functional three-compat templates (real scenes, runnable specs, correct engine pins); fixed the published `files` list; removed a duplicate template entry.
+- **Test gates restored:** template import assertions, benchmark sha256 verification, public-API contract audit (examples are now self-contained), and the `./engine` export assertion.
+- **Tooling:** checked-in `tools/release/publish-all.mjs` publish-flow guard.
 
 ## 1.3.2
 

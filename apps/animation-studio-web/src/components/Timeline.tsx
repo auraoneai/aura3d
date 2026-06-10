@@ -216,7 +216,7 @@ export function Timeline({ data, time, onScrub, selShot, onSelShot, onRetime }: 
                     }}
                     trackRef={ref}
                     zoom={zoom}
-                    onRetime={onRetime}
+                    onRetime={t.name === "Shots" ? onRetime : undefined}
                   />
                 ))}
               </div>

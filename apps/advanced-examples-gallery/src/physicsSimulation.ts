@@ -271,13 +271,16 @@ export function getPhysicsPlaygroundFrame(input: PhysicsPlaygroundInput): Physic
 
 function createWorld(): PhysicsWorld {
   return new PhysicsWorld({
+    // The gallery playground uses the deterministic in-house aura-js solver so the
+    // contact/broadphase stats surfaced in the HUD (and asserted by the parity test)
+    // are reproducible across runs and machines.
+    backend: "aura-js",
     gravity: [0, -9.81, 0],
     fixedDelta: 1 / 60,
     solverIterations: 5,
     enableSleeping: true,
     sleepVelocityThreshold: 0.018,
-    sleepDelay: 0.55,
-    backend: "aura-js"
+    sleepDelay: 0.55
   });
 }
 

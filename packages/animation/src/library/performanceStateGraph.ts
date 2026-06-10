@@ -122,8 +122,40 @@ export function createPerformanceStateGraph(options: PerformanceStateGraphOption
     { name: "shrug", duration: oneShot, oneShot: true, onComplete: idle },
     { name: "salute", duration: oneShot, oneShot: true, onComplete: idle },
     { name: "shake_head", duration: oneShot, oneShot: true, onComplete: idle },
-    { name: "sit", duration: oneShot, oneShot: true, onComplete: idle },
-    { name: "cross_arms", duration: oneShot, oneShot: true, onComplete: idle },
+    // Held loops: stay in the state while the flag is truthy, return to idle when it
+    // clears. One-shots/locomotion keep higher priority so a requested beat wins.
+    {
+      name: "sit",
+      transitions: [
+        toReact,
+        toShakeHead,
+        toSalute,
+        toShrug,
+        toGesture,
+        toPoint,
+        toNod,
+        toWave,
+        toRun,
+        toWalk,
+        trigger(idle, P.sit, 0, false, false)
+      ]
+    },
+    {
+      name: "cross_arms",
+      transitions: [
+        toReact,
+        toShakeHead,
+        toSalute,
+        toShrug,
+        toGesture,
+        toPoint,
+        toNod,
+        toWave,
+        toRun,
+        toWalk,
+        trigger(idle, P.cross_arms, 0, false, false)
+      ]
+    },
     {
       name: "walk",
       transitions: [toRun, trigger(idle, P.walk, 0, false, false)]

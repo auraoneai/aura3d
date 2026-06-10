@@ -1,6 +1,6 @@
-import { buildDataGalaxyScene } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyScene';
-import { dataGalaxyBudgets } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets';
-import { dataGalaxyEvidence } from '../../../apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence';
+import { buildDataGalaxyScene } from './dataGalaxyScene';
+import { dataGalaxyBudgets } from './dataGalaxyBudgets';
+import { dataGalaxyEvidence } from './dataGalaxyEvidence';
 const scene = buildDataGalaxyScene();
 const canvas = document.getElementById('galaxy-canvas');
 const ctx = canvas.getContext('2d');
@@ -10,7 +10,6 @@ const metrics = document.getElementById('metrics');
 const status = document.getElementById('status');
 let mode = 'overview';
 let density = Number(densityInput.value);
-let lastTime = 0;
 function resize() {
     const rect = canvas.getBoundingClientRect();
     const scale = window.devicePixelRatio || 1;
@@ -121,7 +120,6 @@ function drawGalaxy(width, height, time) {
 function render(time) {
     if (!ctx)
         return;
-    lastTime = time;
     const rect = canvas.getBoundingClientRect();
     ctx.clearRect(0, 0, rect.width, rect.height);
     drawBackground(rect.width, rect.height);

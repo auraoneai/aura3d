@@ -40,15 +40,8 @@ describe("Aura3D peer benchmark report", () => {
 
     for (const artifact of [report.metricsSource, ...report.screenshots]) {
       const bytes = readFileSync(resolve(artifact.path));
-      const actualSize = statSync(resolve(artifact.path)).size;
-      // Screenshots are generated artifacts; tolerate regeneration drift
-      const isScreenshot = ("role" in artifact && artifact.role?.includes("screenshot")) || artifact.path.endsWith(".png");
-      if (isScreenshot) {
-        expect(actualSize).toBeGreaterThan(0);
-      } else {
-        expect(actualSize).toBe(artifact.byteSize);
-        expect(createHash("sha256").update(bytes).digest("hex")).toBe(artifact.sha256);
-      }
+      expect(statSync(resolve(artifact.path)).size).toBe(artifact.byteSize);
+      expect(createHash("sha256").update(bytes).digest("hex")).toBe(artifact.sha256);
     }
 
     const serialized = JSON.stringify(report).toLowerCase();
