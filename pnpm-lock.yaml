@@ -252,6 +252,9 @@ importers:
       '@aura3d/core':
         specifier: workspace:*
         version: link:../core
+      '@aura3d/ecs':
+        specifier: workspace:*
+        version: link:../ecs
       '@aura3d/physics':
         specifier: workspace:*
         version: link:../physics

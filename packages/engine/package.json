@@ -24,6 +24,7 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/assets": "workspace:*",
     "@aura3d/core": "workspace:*",
+    "@aura3d/ecs": "workspace:*",
     "@aura3d/physics": "workspace:*",
     "@aura3d/product-studio": "workspace:*",
     "@aura3d/rendering": "workspace:*",
