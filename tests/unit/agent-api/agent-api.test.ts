@@ -1041,8 +1041,11 @@ describe("agent API", () => {
     expect(calls).toEqual([["beforeend", `<div id="scene"></div>`]]);
   });
 
-  test.skip("accepts nullable DOM query targets at the public type boundary", () => {
-    expect(() => createAuraApp(null, { scene: scene() })).toThrow(/target was null or undefined/);
+  test("accepts nullable DOM query targets at the public type boundary for headless runtime", () => {
+    const app = createAuraApp(null, { scene: scene() });
+    expect(app).toBeDefined();
+    expect(typeof app.dispose).toBe("function");
+    app.dispose();
   });
 
   test("compiles prompt plans into approved visual recipes", () => {

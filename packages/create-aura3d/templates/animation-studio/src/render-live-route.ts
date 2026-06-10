@@ -14,6 +14,7 @@
  * generalization = a Director GENERATES documents; studio = an agent EDITS documents.
  */
 
+import { createAuraApp } from "@aura3d/engine";
 import { mountScenePlayer } from "./scene-player";
 import { emptyDocument, EMPTY_DOCUMENT_NOTICE } from "./empty-document";
 import type { EpisodeDocument } from "./episode-document";

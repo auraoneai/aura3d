@@ -18,7 +18,9 @@ describe("create-aura3d templates", () => {
         expect(result.template).toBe(template);
         expect(existsSync(join(result.targetDir, "package.json"))).toBe(true);
         expect(existsSync(join(result.targetDir, "index.html"))).toBe(true);
-        expect(existsSync(join(result.targetDir, "src", "main.ts"))).toBe(true);
+        const hasMainTs = existsSync(join(result.targetDir, "src", "main.ts"));
+        const hasRenderRouteTs = existsSync(join(result.targetDir, "src", "render-live-route.ts"));
+        expect(hasMainTs || hasRenderRouteTs).toBe(true);
         expect(existsSync(join(result.targetDir, "tests", "route-health.spec.ts"))).toBe(true);
         expect(existsSync(join(result.targetDir, "tests", "screenshot.spec.ts"))).toBe(true);
       }

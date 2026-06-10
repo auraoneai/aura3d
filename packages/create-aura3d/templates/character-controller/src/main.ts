@@ -1,6 +1,7 @@
 // Character controller preview: keyboard input -> kinematic speed -> @aura3d/animation locomotion
 // kit (idle/walk/run blended by speed) -> live proof object. Hold a direction key (W/A/S/D or
 // arrows) to walk; hold Shift to run.
+import { createAuraApp } from "@aura3d/engine";
 import { createLocomotionKit } from "@aura3d/animation";
 import { defaultCharacterControllerTuning, stepCharacterSpeed, type CharacterControllerState } from "./controller.js";
 

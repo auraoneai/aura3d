@@ -11,8 +11,15 @@ export const CREATE_AURA3D_TEMPLATES = [
   "prompt-animation-channel",
   "animation-studio",
   "episode-builder",
-  "animation-studio",
   "character-controller",
+  "three-compat-premium-product-viewer",
+  "three-compat-architecture-interior",
+  "three-compat-material-authoring",
+  "three-compat-asset-inspector",
+  "three-compat-character-viewer",
+  "three-compat-postprocess-scene",
+  "three-compat-custom-threejs-migration",
+  "three-compat-large-scene"
 ] as const;
 export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 

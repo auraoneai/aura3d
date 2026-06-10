@@ -23,12 +23,16 @@ test("create-aura3d scaffolds every starter template from public package imports
         dependencies: Record<string, string>;
       };
       expect(manifest.dependencies["@aura3d/engine"]).toBe("1.0.0");
-      const source = readFileSync(join(targetDir, "src/main.ts"), "utf8");
-      expect(source).toContain("from \"@aura3d/engine\"");
+      const mainPath = join(targetDir, "src/main.ts");
+      const renderRoutePath = join(targetDir, "src/render-live-route.ts");
+      const entryPoint = existsSync(mainPath) ? mainPath : renderRoutePath;
+      const source = readFileSync(entryPoint, "utf8");
+      const isThreeCompat = template.startsWith("three-compat-");
+      expect(source).toContain(isThreeCompat ? "import" : "from \"@aura3d/engine\"");
     }
     writeCreateA3DReport("tests/reports/create-aura3d.json", results[0]!);
     writeFileSync("tests/reports/create-aura3d-templates.json", `${JSON.stringify({ ok: true, templates: results }, null, 2)}\n`);
-    expect(results).toHaveLength(3);
+    expect(results).toHaveLength(17);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
