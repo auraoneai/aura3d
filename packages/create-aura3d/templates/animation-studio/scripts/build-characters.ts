@@ -1480,7 +1480,7 @@ function main(): void {
     );
   }
   // The generator binds prompt casts to NEUTRAL copies (cast-a/cast-b) of the two leads
-  // (see src/director/prompt-to-scene.ts). Re-copy them byte-for-byte from the freshly
+  // (see src/director/prompt-scene.ts). Re-copy them byte-for-byte from the freshly
   // textured leads so the default generated cast picks up the new bitmap textures too.
   if (!LOW_FI) {
     const COPIES: readonly { from: string; to: string }[] = [

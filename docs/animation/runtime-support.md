@@ -1,183 +1,130 @@
 # Animation Runtime Support
 
-Version: 1.1.0
+Aura3D has animation runtime code in `packages/animation`, public
+engine-level controller exports in `@aura3d/engine`, glTF inspection and
+metadata paths in `packages/assets`, and renderer package code for skinning and
+morph data. These layers are related, but they are not the same proof.
 
-Aura3D has first-party animation runtime code in `packages/animation` and glTF animation binding code in `packages/assets`.
+## Public Root Pattern
 
-## Implemented Runtime Areas
-
-- Track values cover scalar, vector2, vector3, quaternion, object values, and numeric arrays.
-- Runtime actions expose play, pause, stop, scrubbing, playback speed, looping, weights, crossfades, and deterministic state transitions.
-- Keyframes, tracks, clips, events, actions, mixers, and layers.
-- Bone, skeleton, inverse-bind, skinning-palette, and GPU-skinning helpers.
-- Skinning output includes renderer-facing joint matrices.
-- Blend trees, state machines, locomotion, root-motion metadata, and motion-quality diagnostics exist as runtime/source capabilities. Broad automatic retargeting and crowd-character production workflows are not complete release claims.
-- IK helpers and imported glTF animation runtime utilities.
-- Scene/ECS bridge helpers for applying animation state to runtime objects.
-- The public runtime includes scene and ECS animation bridges.
-
-Primary entrypoints:
-
-- `packages/animation/src/index.ts`
-- `packages/assets/src/GLTFAnimationRuntime.ts`
-- `packages/rendering/src/ForwardPass.ts`
-- `packages/rendering/src/ShaderLibrary.ts`
-
-## Browser Evidence
-
-Current browser evidence is scoped to named local routes and selected typed GLB
-fixtures. Release-facing claims should cite generated reports and screenshots,
-for example:
-
-- `tests/reports/animation-runtime/evidence.json`
-- `tests/reports/animation-runtime/named-clip-playback.png`
-- `tests/reports/animation-runtime/clip-restart.png`
-- `tests/reports/animation-runtime/clip-blend.png`
-- `tests/reports/animation-runtime/animation-event-hitbox.png`
-- `tests/reports/animation-runtime/viseme-blendshape-sync.png`
-
-This evidence proves selected playback, restart, blend, event, skinning, and
-viseme paths. It does not prove every external rig or DCC export convention.
-
-## Animation animation (1.1)
-
-Aura3D 1.1 adds focused helpers for the animation-character workflow (talk, listen,
-gesture, walk, action). They are all exported from the public `@aura3d/animation`
-entrypoint. These helpers do not replace the general runtime; they validate inputs
-and bind named animation actions to existing clips, state graphs, and diagnostics.
-
-### `bindAnimationTimelineAction`
-
-Method on `AnimationController`. Resolves a named animation action to its bound clip
-and starts playback at a timeline time, returning the resulting sample.
-
-- Signature: `controller.bindAnimationTimelineAction(action, bindings, time, options?)`
-  - `action: AnimationAnimationAction` — one of `"speak" | "listen" | "gesture" | "walk" | "action"`.
-  - `bindings: readonly AnimationAnimationTimelineBinding<TClipId>[]` — each binding has `action`, `clipId`, `loop`, and `restartOnEnter`.
-  - `time: number` — timeline time recorded on the playback metadata.
-  - `options?` — `AnimationPlayOptions` minus `loop`/`restart` (those come from the binding).
-- Returns `AnimationAnimationTimelineSample<TClipId>`: `{ time, action, clipId, playback }`.
-- Throws if no binding is registered for the requested action.
+Agent-authored browser routes should use the public engine surface:
 
 ```ts
-import { AnimationController } from "@aura3d/animation";
+import {
+  createAnimationController,
+  createAuraApp,
+  game,
+  lights,
+  model,
+  scene
+} from "@aura3d/engine";
+import { assets } from "./aura-assets";
 
-const controller = new AnimationController<"idle_clip" | "talk_clip">();
-controller.registerClip({ id: "talk_clip", duration: 1.2, tracks: [/* ... */], events: [] });
-
-const bindings = [
-  { action: "speak", clipId: "talk_clip", loop: true, restartOnEnter: false }
-] as const;
-
-const sample = controller.bindAnimationTimelineAction("speak", bindings, 0.5);
-// sample.clipId === "talk_clip", sample.playback is the active playback state
-```
-
-### `createAnimationAnimationStateGraph`
-
-Builds a ready-made `AnimationStateMachine` wired for the animation action set
-(idle, listen, speak, gesture, walk, action) with sensible priorities and one-shot
-gesture/action states.
-
-- Signature: `createAnimationAnimationStateGraph(options?): AnimationStateMachine`
-  - `options?: AnimationAnimationStateGraphOptions` — `{ idleState?: string }` (defaults to `"idle"`).
-- Drive it with the standard state-machine API: `setParameter(name, value)` then `update(delta)`.
-- Recognized parameters: `isSpeaking`, `isListening`, `isWalking`, `gesture`, `action`.
-
-```ts
-import { createAnimationAnimationStateGraph } from "@aura3d/animation";
-
-const graph = createAnimationAnimationStateGraph();
-graph.setParameter("isSpeaking", true);
-const state = graph.update(1 / 30); // -> "speak"
-```
-
-### `validateAnimationClipMap`
-
-Checks that a clip map covers every required animation action and that each mapped
-clip id is actually registered.
-
-- Signature: `validateAnimationClipMap(registry, options): AnimationClipMapReadiness<TClipId>`
-  - `registry: AnimationClipRegistry` — used to confirm clip ids exist.
-  - `options: AnimationClipMapReadinessOptions` — `clipMap` (action -> clip id or ids), optional `requiredActions` (defaults to `["speak","listen","gesture","walk","action"]`), optional `aliases`, and optional `segmentedFallbackDeclared`.
-- Returns `AnimationClipMapReadiness`: `{ ok, segmentedFallbackDeclared, requiredActions, missingActions, missingClipIds, aliasActions, diagnostics }`.
-- Missing actions and missing clip ids are reported as `error` diagnostics and set `ok: false`. If `segmentedFallbackDeclared: true` is passed, those gaps are downgraded to `warning` diagnostics, and `ok` then only depends on whether any required action is still completely unmapped. In other words, validation fails when required clips are missing unless you explicitly declare a segmented fallback.
-
-```ts
-import { AnimationClipRegistry, validateAnimationClipMap } from "@aura3d/animation";
-
-const registry = new AnimationClipRegistry();
-registry.register({ id: "talk_clip", duration: 1.2, tracks: [], events: [] });
-
-const readiness = validateAnimationClipMap(registry, {
-  clipMap: { speak: "talk_clip" },        // listen/gesture/walk/action missing
-  segmentedFallbackDeclared: true          // gaps become warnings instead of errors
+const app = createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.character).runtime(game.runtimeNode("character")))
+    .add(lights.studio())
 });
-// readiness.missingActions includes "listen", "gesture", "walk", "action"
-```
 
-### `summarizeAnimationAnimationMotion`
+const node = app.nodes.require("character");
 
-Wraps `summarizeAnimationMotion` and flags a static pose that is being presented as
-animation.
-
-- Signature: `summarizeAnimationAnimationMotion(samples, options?): AnimationAnimationMotionQualityReport`
-  - `samples: readonly AnimationMotionSample[]` — each `{ timeSeconds, tracksApplied?, skinningPalettesUpdated?, stride?, animatedSubjects? }`.
-  - `options?` — `minimumSamples` (8), `minimumTimeRangeSeconds` (0.18), `minimumPoseDiversityScore` (0.08).
-- Returns `AnimationAnimationMotionQualityReport` (the base report plus `kind: "animation-animation-motion-quality"`, `staticPoseRejected`, and a human-readable `issues` list).
-- `staticPoseRejected` is `true` (and `healthy` is `false`) when there are too few samples, too short a time range, too little pose diversity, or no active track/skinning/subject motion. This catches a frozen pose that reports no real frame-to-frame change.
-
-```ts
-import { summarizeAnimationAnimationMotion } from "@aura3d/animation";
-
-// A static pose: time advances but nothing deforms.
-const report = summarizeAnimationAnimationMotion([
-  { timeSeconds: 0, tracksApplied: 0 },
-  { timeSeconds: 0.5, tracksApplied: 0 }
-]);
-// report.staticPoseRejected === true, report.healthy === false
-```
-
-### `analyzeAnimationHumanoidRetargeting`
-
-Runs the humanoid rig analysis with animation-specific gates: required mouth metadata,
-required clips, and an external retarget map.
-
-- Signature: `analyzeAnimationHumanoidRetargeting(rig, options?): AnimationHumanoidRetargetingDiagnostics`
-  - `rig: HumanoidRigDefinition`.
-  - `options?: AnimationHumanoidRetargetingOptions` — extends `HumanoidRetargetingOptions` with `requiredClips` (defaults to `["Idle","Talk","Gesture","Walk"]`), `availableClips`, `mouthBlendshapeNames`, and `retargetMapProvided`.
-- Returns `AnimationHumanoidRetargetingDiagnostics`: the base rig diagnostics plus `kind: "animation-humanoid-retargeting-diagnostics"`, `mouthReady`, `clipReady`, and `retargetMapProvided`.
-- Adds `error` diagnostics (and sets `ok: false`) when mouth blendshape/card metadata is missing, when any required clip is absent, or when no external bone-map/retarget metadata is provided. It defaults to a strict `minRequiredCoverage` of `0.9` and requires a rest pose.
-
-```ts
-import { analyzeAnimationHumanoidRetargeting } from "@aura3d/animation";
-
-const diagnostics = analyzeAnimationHumanoidRetargeting(rig, {
-  availableClips: ["Idle", "Talk", "Gesture", "Walk"],
-  mouthBlendshapeNames: ["mouthOpen", "mouthSmile"],
-  retargetMapProvided: true
+const animation = createAnimationController({
+  clipRegistry: assets.character,
+  requiredClips: ["Idle", "Run"],
+  suppressRootMotion: true
 });
-// diagnostics.ok, diagnostics.mouthReady, diagnostics.clipReady, diagnostics.retargetMapProvided
+
+animation.bindRuntimeNode(node, {
+  id: "character-animation",
+  defaultClipId: "Idle"
+});
+
+app.onFrame(({ dt }) => {
+  animation.update(dt);
+});
 ```
+
+Clip names, skeleton names, and morph target names must come from generated
+typed asset metadata, `aura.assets.json`, or an inspection report. Do not guess
+names in docs or examples.
+
+## Supported Source-Level Capabilities
+
+The public controller/source layer supports:
+
+- named clip registration and embedded GLB clip metadata registration;
+- play, stop, pause, resume, restart, scrub, speed, loop, weight, and crossfade;
+- layer metadata such as base/locomotion/upper-body/attack roles;
+- clip-local event sampling with `onEvent(...)`;
+- pose capture and diagnostics for missing clips, skeleton metadata, bones, and
+  tracks;
+- runtime-node binding metadata through `bindRuntimeNode(...)`;
+- runtime-node pose and morph source state through `setAnimationPose(...)`,
+  `setMorphTarget(...)`, and `setMorphTargets(...)`;
+- source-level retarget metadata and diagnostics.
+
+This is enough to drive deterministic gameplay state, hitbox events, source
+evidence, and tests.
+
+## Renderer-Backed Boundary
+
+Do not claim root `createAuraApp` visibly renders skinned GLB animation, morph
+targets, viseme blendshapes, broad retargeting, motion matching, IK locomotion,
+or production character control from metadata alone.
+
+Those claims require browser evidence:
+
+- a route importing only `@aura3d/engine`;
+- typed GLB provenance and inspection output;
+- controller snapshots that show the intended clip/morph state;
+- screenshot/video frame pairs at deterministic times;
+- pixel delta in the character/face region, not only camera movement, HUD
+  updates, whole-model translation, or full-frame shake;
+- route-health/evidence JSON that records renderer backend and fallback state.
+
+If a named clip exists only as metadata or a pose-baked fallback, label it as a
+source-level fallback until rendered pixels prove mesh deformation.
+
+## Package-Level Capabilities
+
+`@aura3d/animation` and `@aura3d/rendering` contain additional primitives and
+test helpers for tracks, clips, state machines, skeletons, skinning palettes,
+motion summaries, visual-quality metrics, and frame-motion analysis. Package
+exports can be documented as package-level capabilities, but they do not
+automatically prove the root app path.
+
+Examples:
+
+- `summarizeAnimationAnimationMotion(...)` can reject static source samples.
+- `analyzeAnimationHumanoidRetargeting(...)` can report rig metadata gaps.
+- `analyzeRgbaFrameMotionRegions(...)` can detect suspicious global-only motion
+  in captured frames.
+
+Use those helpers as evidence inputs, not as a substitute for route screenshots.
 
 ## Limits
 
-- Current skinning uses uniform-array palette paths with documented limits in renderer code and tests; data-texture skinning is not documented as a complete public feature.
-- Route evidence covers selected local assets and parity slices. It is not a blanket claim for every external character rig, retargeting convention, animation state graph, or DCC export style.
-- If a character appears in T-pose, bind pose, or a stuck first frame, treat it as an asset/runtime binding failure until the route evidence proves clip sampling, skeleton binding, palette updates, and visible mesh deformation.
-- If a named clip exists only as metadata but does not visibly deform the mesh in browser screenshots, do not claim that clip is release-ready.
-- If a route has to fake attack motion with whole-model translation only, document it as a fallback, not as skeletal animation proof.
-- Visual quality claims must be tied to generated route screenshots and visual review reports.
-- Retargeting is future work for broad DCC interoperability.
-- Timeline authoring is future work; this is not a production character-animation toolchain.
-- A rig profile format and Browser evidence using at least two real externally authored skinned glTF characters are required before claiming broad character-animation readiness.
+- Broad automatic humanoid retargeting is not a production root-path claim.
+- Whole-character inverse-kinematics rigs, production foot locking, spring
+  bones, cloth, hair, ragdoll blending, and motion matching are not public
+  reusable game-animation systems.
+- Timeline authoring and DCC interoperability are not complete production
+  toolchains.
+- A character stuck in T-pose, bind pose, or a first frame is a failed
+  asset/runtime binding until evidence proves clip sampling, skeleton binding,
+  palette updates, and visible mesh deformation.
+- Primitive mouth cards or transform-only animation can be valid fallbacks, but
+  they must not be labeled as GLB blendshape or skeletal animation proof.
 
-## Non-Goals (explicit)
+## Evidence Checklist
 
-The following are NOT provided as production systems and must not be claimed as parity (see `docs/project/known-limits.md`; enforced by the `animation-engine-docs-claims` gate):
+For release-facing animation claims, archive:
 
-- Motion matching is a deterministic fixture, NOT a real engine; inertialization is NOT implemented.
-- Ragdoll is a physics-sandbox preset only — there is no production ragdoll controller, joint limits, or animation-to-physics blend.
-- Full-body IK / FABRIK / CCD are NOT implemented; only analytical two-bone IK exists.
-- Production foot-locking, spring-bone, cloth, and hair simulation are fixtures/non-goals.
-- Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is NOT a goal.
+- asset add/resolve/inspect output with license and provenance;
+- generated typed asset metadata;
+- unit/source diagnostics for required clips, bones, events, and morph targets;
+- deterministic `app.step(dt)` proof;
+- browser screenshots or video frames with hashes;
+- pixel-delta or motion-region analysis;
+- route-health JSON naming backend/fallback state;
+- package smoke reports when lower-level package exports are part of the claim.

@@ -103,13 +103,13 @@ writeReport("tests/reports/package-clean-install.json", "aura3d-package-clean-in
 });
 
 function pack(dir: string, outDir: string): string {
-  const output = execFileSync("npm", ["pack", "--silent", "--pack-destination", outDir], {
+  const output = execFileSync("pnpm", ["pack", "--pack-destination", outDir], {
     cwd: resolve(dir),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"]
   }).trim();
-  const file = output.split(/\r?\n/).at(-1);
-  if (!file) throw new Error(`npm pack failed for ${dir}`);
+  const file = output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).at(-1);
+  if (!file) throw new Error(`pnpm pack failed for ${dir}`);
   return resolve(outDir, basename(file));
 }
 
@@ -210,9 +210,9 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   const assetId = template === "cinematic-scene" ? "hero" : template === "mini-game" ? "playerModel" : "product";
   const assetReplacement = install.ok ? replaceTemplateAsset(appDir, template, assetId) : install;
   const assetReplacementBuild = assetReplacement.ok ? run("npm", ["run", "build"], appDir) : assetReplacement;
-  const missingAssetOutput = runMissingAssetOutputCheck(appDir, assetId);
-  const inventedAssetId = runInventedAssetIdCheck(appDir, assetId);
-  const missingManifest = runMissingManifestCheck(appDir);
+  const missingAssetOutput = assetReplacement.ok ? runMissingAssetOutputCheck(appDir, assetId) : assetReplacement;
+  const inventedAssetId = install.ok ? runInventedAssetIdCheck(appDir, assetId) : install;
+  const missingManifest = assetReplacement.ok ? runMissingManifestCheck(appDir) : assetReplacement;
   return {
     template,
     install,
@@ -282,10 +282,17 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
 }
 
 function runMissingAssetOutputCheck(appDir: string, assetId: string): CommandResult {
+  const manifestPath = resolve(appDir, "aura.assets.json");
+  if (!existsSync(manifestPath)) {
+    return { ok: false, output: `Missing aura.assets.json before missing asset output check for ${assetId}`, seconds: 0 };
+  }
   const manifest = JSON.parse(readFileSync(resolve(appDir, "aura.assets.json"), "utf8")) as {
     assets?: readonly { id?: string; outputPath?: string }[];
   };
   const asset = manifest.assets?.find((entry) => entry.id === assetId);
+  if (!asset?.outputPath) {
+    return { ok: false, output: `Missing manifest outputPath for ${assetId}`, seconds: 0 };
+  }
   if (asset?.outputPath) rmSync(resolve(appDir, asset.outputPath), { force: true });
   return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
 }
@@ -400,12 +407,10 @@ function sceneProfilePass(template: string, profile: Record<string, unknown>): {
   const checks: readonly [string, number][] =
     template === "product-viewer"
       ? [
-          ["cabinetPixels", 120],
-          ["grillePixels", 60],
           ["metalPixels", 5],
-          ["softboxPixels", 180],
-          ["warmReflectionPixels", 20],
+          ["warmAccentPixels", 8],
           ["centerObjectPixels", 650],
+          ["saturatedStudioPixels", 800],
           ["uniqueBuckets", 18]
         ]
       : template === "cinematic-scene"
@@ -419,14 +424,10 @@ function sceneProfilePass(template: string, profile: Record<string, unknown>): {
             ["uniqueBuckets", 22]
           ]
         : [
-            ["robotArmorPixels", 90],
-            ["robotJointPixels", 18],
-            ["boostPixels", 8],
-            ["coinPixels", 35],
-            ["hazardPixels", 45],
-            ["portalPixels", 45],
-            ["cyanTrailPixels", 90],
-            ["arenaPixels", 600],
+            ["brightPixels", 900],
+            ["cyanPixels", 20],
+            ["warmPixels", 10],
+            ["redPixels", 5],
             ["uniqueBuckets", 22]
           ];
   const failures = checks.filter(([key, threshold]) => numberValue(profile[key]) <= threshold);

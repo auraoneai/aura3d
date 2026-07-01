@@ -1,24 +1,29 @@
 # Release Process
 
-Version: 1.3.3
+Date: 2026-07-01
+Status: release-candidate process
+
+The release process starts by choosing the release track. Package releases,
+showcase releases, marketing launches, and benchmark/superiority claims have
+different evidence requirements.
 
 ## Process
 
-Current scoped release state: Round 50 has a local/developer-ready scoped
-SDK/product-context artifact. See `docs/project/release-tracks.md`.
+1. Select a track in `docs/project/release-tracks.md`.
+2. Read `docs/project/current-state.md`, `docs/project/known-limits.md`, and
+   `docs/project/claim-guidelines.md`.
+3. Update `README.md`, package/template READMEs, route READMEs, and release
+   docs so public copy matches the selected track.
+4. Make the code or docs change.
+5. Regenerate any generated docs, route-health files, screenshots, reports, or
+   package artifacts affected by the change.
+6. Run focused tests for the touched packages/routes.
+7. Run the selected track's release gates from `docs/project/release-checklist.md`.
+8. Review public copy against `docs/project/launch-positioning.md`.
+9. Record evidence paths, command names, dates, and environment in release notes.
+10. Do not widen claims beyond the evidence that passed.
 
-`docs/project/frozen-benchmark-release-gates.md`.
-
-1. Make code and docs changes.
-2. Regenerate generated docs or reports that are affected by the change.
-3. Run focused tests for the affected packages/routes.
-4. Run broader gates before publishing public claims.
-5. Choose the intended release track from `docs/project/release-tracks.md`.
-6. For Aura3D SDK handoff, update release artifact evidence and keep public copy scoped.
-8. Update release notes to cite only the evidence for the selected track.
-10. Keep release notes and public copy narrower than the evidence.
-
-## Useful Commands
+## Package Track Commands
 
 ```sh
 pnpm typecheck
@@ -29,68 +34,76 @@ pnpm build
 pnpm verify:api-docs -- --write
 pnpm verify:package-install-smoke:fresh
 pnpm verify:package-provenance
-pnpm verify:release:quick
-pnpm verify:release
-pnpm check:release-proof <round-number>
+npm pack --dry-run --json
 ```
 
-The competitive proof commands are not ordinary package scripts. They are the
-`benchmark/protocol.md`, `benchmark/runner/README.md`,
-`benchmark/scoring/README.md`, and `benchmark/engine/README.md`.
+Run only the commands relevant to the selected package change for local
+iteration. Run the full package gate before publishing.
+
+For the current monorepo package release, use the repository publish helper
+instead of ad hoc package commands:
+
+```sh
+NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs --dry-run
+NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs
+```
+
+The npm token must live outside the repository. Do not commit `.npmrc` or print
+the token in release logs.
+
+## Showcase Track Commands
+
+The exact command names may evolve, but the release run must generate or verify:
+
+- source scan results for unsafe asset/rendering patterns;
+- asset validation with durable source/license/provenance;
+- route-health JSON for each promoted route;
+- desktop and mobile screenshots;
+- screenshot subject-readability checks;
+- interaction/state checks for non-game routes;
+- keyboard gameplay checks for game routes;
+- copy review against `docs/project/claim-guidelines.md`.
+
+Nonblank screenshots alone are not release evidence.
+Route-primary, deploy, and gameplay proof are also not enough for public game
+routes. Public racing and platformer examples require visual review and
+retained game-geometry evidence. Turbo Drift Circuit and Skyline Runner remain
+prototype-blocked until that layer exists.
 
 ## Hosted Demo Deployment
 
-The checked-in hosted demo path is the manual GitHub Pages workflow in
-`.github/workflows/public-demo-deploy.yml`. It builds the versioned external
-static demos with `pnpm build:external-demos`, smokes the static export with
-`pnpm verify:static-demo-server-smoke`, uploads the artifact from
-`release-artifacts/external-demos/<version>`, deploys it with GitHub Pages, and
-verifies the public URL with `pnpm verify:public-demo-deployment`.
+Hosted demo claims require a durable public HTTPS origin and deployment checks.
+Localhost, private URLs, reserved origins, and draft artifact URLs cannot be
+used as public deployment evidence.
 
-The public deployment verifier requires `A3D_PUBLIC_DEMO_URL` to be a durable
-public HTTPS URL. Localhost, private, reserved, or draft artifact origins are
-rejected.
+The release notes must record:
 
-No Docker, Docker Compose, Vercel, Netlify, Render, Fly.io, Railway,
-Cloudflare Workers/Wrangler, or env-example deployment path is checked in. The
-`marketing/` app is a separate local Vite app with `pnpm dev`, `pnpm build`,
-and `pnpm preview`, but it has no checked-in hosting workflow.
+- the deployed URL;
+- the build command;
+- the deploy/check command;
+- route/asset HTTP status checks;
+- screenshot or route-health evidence generated from the hosted origin.
 
-## CI Caveat
-
-Some older non-release GitHub workflows still contain stale commands or copy,
-including `pnpm test:coverage`, `pnpm lint`, and `pnpm test:bench`. Those do not
-match the current root package scripts. Treat the commands in this document and
-`docs/project/release-checklist.md` as the current release command set until
-those workflows are updated.
-
-The release workflow itself runs `tools/release-proof-guard.mjs` before publish.
-That guard intentionally blocks npm/GitHub release creation for
-decision result files, the decision file contains a standalone `Decision: ship`
-line with user signature, required external score and review artifacts exist,
-and `CHANGELOG.md` cites the passing result files without contradictory failed
-or no-ship wording for that round. Without an explicit round argument, the guard
-evaluates the latest decision round rather than falling back to an older passing
-round.
+Use `docs/project/deployment-rollback.md` for rollback steps.
 
 ## Report Storage
 
-Generated reports stay local under `tests/reports/`, which is ignored by git.
-The release source of truth is the documented command sequence, and CI or
-release operators must regenerate the reports during the release run. Release
-notes should record the command, date, and run context that produced the
-evidence instead of implying that JSON report artifacts are checked in.
+Generated reports under `tests/reports/` are local/CI artifacts and may be
+ignored by git. Public release notes must record how reports were regenerated and
+where immutable release artifacts are attached or committed.
 
-Small checked-in summaries can be added later if the release process needs
-immutable review artifacts, but the current policy is regenerated local/CI
-evidence plus release-run logs or attached artifacts outside the repository.
+Checked-in summaries are acceptable only when they are explicitly tied to the
+command that produced them and do not overstate the claim.
 
-## Rollback
+## Claim Review
 
-Use `docs/project/deployment-rollback.md` for hosted demos or package artifacts.
-A local build is not enough evidence for a public deployment claim.
+Before public release, every claim must answer:
 
-Release wording and public-release notes are governed by
-`docs/project/release-tracks.md`, `docs/project/frozen-benchmark-release-gates.md`,
-`docs/project/launch-positioning.md`, and
-`docs/project/product-studio-claim-registry.md`.
+- What path does this claim apply to?
+- Is it `proven`, `partial`, `prototype`, `internal`, `planned`, or `blocked`?
+- Which command/test/screenshot/report proves it?
+- Does the evidence import only public `@aura3d/engine` when the claim targets
+  the root API?
+- Does `docs/project/known-limits.md` list any limitation that narrows the claim?
+
+If any answer is missing, keep the claim internal or prototype-only.

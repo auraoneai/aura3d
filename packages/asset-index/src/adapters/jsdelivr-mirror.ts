@@ -57,6 +57,8 @@ function toCanonical(asset: MirrorAsset, cdnBase: string): AuraCanonicalAsset | 
   if (!asset.path || typeof asset.id !== "string") return null;
   const title = asset.title ?? asset.id;
   const provenance = asset.source ?? "mirror";
+  const downloadUrl = `${cdnBase}/${asset.path}`;
+  const sourcePage = `https://github.com/gchahal1982/aura3d-cc0-assets/blob/main/${asset.path}`;
   const tags = Array.from(
     new Set([
       ...tokenize(title),
@@ -68,13 +70,21 @@ function toCanonical(asset: MirrorAsset, cdnBase: string): AuraCanonicalAsset | 
     id: asset.id,
     source: `mirror:${provenance}`,
     title,
-    url: `${cdnBase}/${asset.path}`,
+    url: downloadUrl,
+    downloadUrl,
     access: "direct-download",
     format: "glb",
-    license: normalizeLicense(asset.license ?? "CC0"),
+    license: normalizeLicense(asset.license ?? "CC0", sourcePage),
+    licenseName: asset.license ?? "CC0",
     triangles: asset.triangles,
+    triangleCount: asset.triangles,
     hasAnimations: asset.animated,
     tags,
+    sourcePage,
+    sourceFamily: provenance,
+    author: provenance,
+    attribution: provenance,
+    rawCatalogMetadata: { ...asset },
   };
 }
 

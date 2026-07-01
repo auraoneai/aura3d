@@ -8,6 +8,12 @@ source API surface: agents may use the public APIs shown here, but release
 claims require browser-visible evidence, screenshots, JSON reports, and typed
 asset provenance.
 
+The examples below are public source/runtime API examples. They do not, by
+themselves, prove that root `createAuraApp` rendered skinned GLB deformation or
+GLB morph targets. Treat controller state, runtime-node pose snapshots, and
+morph weights as source evidence until a browser route importing only
+`@aura3d/engine` captures pixel-backed proof.
+
 Use this page with:
 
 - `docs/api/game-runtime.md`

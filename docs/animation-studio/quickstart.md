@@ -18,7 +18,7 @@ All commands below run from the `my-studio` directory.
 
 ---
 
-## Path A — the Studio web app (visual, no commands needed)
+## Studio web app (visual, no commands needed)
 
 **1. Launch**
 
@@ -59,7 +59,7 @@ dist/episodes/scene/episode-3d.webm
 
 ---
 
-## Path B — the CLI (fastest for agents)
+## CLI workflow (fastest for agents)
 
 **1. Generate**
 

@@ -1,9 +1,18 @@
 # Aura3D 1.0.9 Release Gates
 
 Version: 1.0.9
-Status: Scoped release gate, current evidence passing
-Current published baseline: `@aura3d/engine@1.3.3` and `create-aura3d@1.3.3`
-Related: `docs/project/current-state.md`
+Status: Historical scoped release gate; not a current showcase-quality waiver
+Current published baseline: `@aura3d/engine@1.4.0` and `create-aura3d@1.4.0`
+Related: `docs/project/current-state.md`, `docs/project/library-gap-roadmap.md`,
+`docs/project/showcase-quality-gates.md`
+
+This file records the scoped Aura Clash/runtime-foundation release posture for
+1.0.9. It must not be used to claim that current showcase apps, new templates,
+or root `createAuraApp` routes have production renderer parity, full game-engine
+quality, skinned animation, WebGPU compute, or Three.js/Babylon visual parity.
+Current public examples must also pass route-health, source validation, typed
+asset, screenshot, primitive-budget, and claim-boundary gates from
+`Fixed-Needed-PRD.md` and `docs/project/showcase-quality-gates.md`.
 
 Aura3D 1.0.9 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.
 
@@ -13,7 +22,10 @@ This document is intentionally stricter than the 1.0.9 release notes. Aura3D 1.0
 
 Current decision: `release-ready-for-scoped-1.0.9`
 
-Reason: the scoped 1.0.9 gates now pass for the public runtime foundation, typed GLB actor evidence, CLI/catalog profile behavior, Aura Clash development-showcase proof, docs/claims, performance, npm `@latest`, and deployed route parity.
+Reason: at the time this gate was written, the scoped 1.0.9 gates passed for
+the public runtime foundation, typed GLB actor evidence, CLI/catalog profile
+behavior, Aura Clash development-showcase proof, docs/claims, performance, npm
+`@latest`, and deployed route parity.
 
 This decision does not promote Aura3D to a mature commercial game engine, and it does not promote Aura Clash Arena to a flagship-quality fighting game.
 
@@ -51,7 +63,7 @@ Every P0 gate must pass before any 1.0.9 game-engine or flagship-showcase releas
 | Audio | Licensed/owned music/SFX, mute, autoplay-safe unlock, event-driven hit/jump/guard/special/KO cues, and proof that files return 200. | Yes |
 | Performance | Load, JS, GLB, texture, draw-call/frame-time, memory, and mobile budgets with current reports. | Yes |
 | Deployment parity | Local and deployed `/playable` proof for page 200, JS/CSS 200, GLB/texture/audio 200, no console errors, no blank canvas, controls work, screenshots match. | Yes |
-| Docs/claims | README, `llms.txt`, docs, marketing pages, npm/GitHub copy, and site metadata use scoped 1.0.9/1.0.9 wording and do not overclaim. | Yes |
+| Docs/claims | README, `llms.txt`, docs, marketing pages, npm/GitHub copy, and site metadata use scoped 1.0.9 wording and do not overclaim. Current showcase routes additionally need route-health, screenshot, source-validation, primitive-budget, and typed-asset evidence. | Yes |
 
 ## Current Known Blockers
 

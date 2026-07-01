@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "./index.js";
+import { compileShowcaseSpecFile } from "./showcase-spec-compiler.js";
 
 const args = process.argv.slice(2);
 if (args.includes("--help") || args.includes("-h")) {
@@ -7,6 +8,7 @@ if (args.includes("--help") || args.includes("-h")) {
 
 Usage:
   create-aura3d demo --template product-viewer
+  create-aura3d apps/showcase-demo --spec showcase-spec.json
 
 Templates:
   ${CREATE_AURA3D_TEMPLATES.join("\n  ")}
@@ -14,6 +16,13 @@ Templates:
   process.exit(0);
 }
 const targetDir = args.find((arg) => !arg.startsWith("-")) ?? "aura3d-app";
+const specPath = readOption("--spec");
+if (specPath) {
+  const result = compileShowcaseSpecFile({ outputDir: targetDir, specPath });
+  console.log(JSON.stringify(result, null, 2));
+  if (!result.ok) process.exitCode = 1;
+  process.exit();
+}
 const template = readOption("--template") ?? "product-viewer";
 if (!CREATE_AURA3D_TEMPLATES.includes(template as CreateA3DTemplate)) {
   console.error(`Unknown template "${template}". Available templates: ${CREATE_AURA3D_TEMPLATES.join(", ")}`);

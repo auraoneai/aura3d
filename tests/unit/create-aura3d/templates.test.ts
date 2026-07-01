@@ -83,6 +83,7 @@ function hasTemplateSmokeSpec(targetDir: string): boolean {
   return [
     "screenshot.spec.ts",
     "gameplay-smoke.spec.ts",
+    "playable.spec.ts",
     "storyboard-playback.spec.ts"
   ].some((file) => existsSync(join(targetDir, "tests", file)));
 }

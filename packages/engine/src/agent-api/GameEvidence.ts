@@ -1,8 +1,13 @@
 import type {
   GameCameraDirector,
+  GameCollisionWorld,
+  GameCollisionWorldSnapshot,
   GameCombatWorld,
   GameEffectsController,
   GameAccessibilitySource,
+  GameEventLog,
+  GameEventLogSnapshot,
+  GameEventRecord,
   GameHudBinding,
   GameInputController,
   GameKinematicBody,
@@ -26,7 +31,9 @@ export interface GameRuntimeEvidenceApp {
 export interface GameRuntimeEvidenceOptions {
   readonly input?: GameInputController;
   readonly bodies?: readonly GameKinematicBody[] | Record<string, GameKinematicBody>;
+  readonly collisionWorld?: GameCollisionWorld | GameCollisionWorldSnapshot;
   readonly combat?: GameCombatWorld;
+  readonly events?: GameEventLog | GameEventLogSnapshot | readonly GameEventRecord[];
   readonly effects?: GameEffectsController;
   readonly camera?: GameCameraDirector;
   readonly animation?: {
@@ -63,6 +70,7 @@ export interface GameRuntimeEvidenceOptions {
   readonly hud?: readonly GameHudBinding[];
   readonly accessibility?: readonly GameAccessibilitySource[];
   readonly ownership?: readonly GameRuntimeSubsystemOwnership[];
+  readonly appState?: Record<string, unknown>;
   readonly source?: {
     readonly mode?: "mounted-runtime" | "scene-source";
     readonly expectsGame?: boolean;
@@ -133,10 +141,20 @@ export interface GameRuntimeEvidence {
     readonly movingBodies: number;
   };
   readonly collision: {
+    readonly collisionWorld: boolean;
     readonly combatWorld: boolean;
+    readonly bodies: number;
+    readonly contacts: number;
+    readonly sensorContacts: number;
     readonly actors: number;
     readonly activeAttacks: number;
     readonly events: number;
+  };
+  readonly events: {
+    readonly configured: boolean;
+    readonly count: number;
+    readonly types: readonly string[];
+    readonly last?: GameEventRecord;
   };
   readonly animation: {
     readonly controllers: number;
@@ -202,6 +220,13 @@ export interface GameRuntimeEvidence {
   readonly warnings: readonly string[];
 }
 
+type NormalizedGameEventLog = {
+  readonly configured: boolean;
+  readonly events: readonly GameEventRecord[];
+  readonly types: readonly string[];
+  readonly last?: GameEventRecord;
+};
+
 function collectRuntimeNodeDebugLabels(
   ids: readonly string[],
   nodes: readonly unknown[] = []
@@ -237,7 +262,9 @@ export function collectGameRuntimeEvidence(
   const nodeDebugLabels = collectRuntimeNodeDebugLabels(ids, app.nodes?.all?.());
   const inputSnapshot = options.input?.snapshot();
   const bodies = normalizeBodies(options.bodies);
+  const collisionSnapshot = normalizeCollisionWorld(options.collisionWorld);
   const combatSnapshot = options.combat?.snapshot();
+  const eventLog = normalizeGameEvents(options.events);
   const effectsSnapshot = options.effects?.snapshot();
   const cameraSnapshot = options.camera?.snapshot();
   const errors = options.errors ?? [];
@@ -249,7 +276,9 @@ export function collectGameRuntimeEvidence(
     ids,
     inputConfigured: Boolean(options.input),
     bodiesConfigured: bodies.length > 0,
+    collisionConfigured: Boolean(options.collisionWorld),
     combatConfigured: Boolean(options.combat),
+    eventsConfigured: eventLog.configured,
     effectsConfigured: Boolean(options.effects),
     cameraConfigured: Boolean(options.camera),
     animationConfigured: Boolean(options.animation),
@@ -307,7 +336,7 @@ export function collectGameRuntimeEvidence(
       animationPlan: Boolean(options.animation),
       effectsPlan: Boolean(options.effects),
       cameraPlan: Boolean(options.camera),
-      collisionPlan: Boolean(options.combat),
+      collisionPlan: Boolean(options.combat) || Boolean(options.collisionWorld),
       stagePlan: Boolean(options.stage)
     },
     input: {
@@ -331,10 +360,20 @@ export function collectGameRuntimeEvidence(
       }).length
     },
     collision: {
+      collisionWorld: Boolean(options.collisionWorld),
       combatWorld: Boolean(options.combat),
+      bodies: collisionSnapshot?.bodies.length ?? 0,
+      contacts: collisionSnapshot?.contacts.length ?? 0,
+      sensorContacts: collisionSnapshot?.contacts.filter((contact) => contact.sensor).length ?? 0,
       actors: combatSnapshot?.actors.length ?? 0,
       activeAttacks: combatSnapshot?.activeAttacks.length ?? 0,
       events: combatSnapshot?.events.length ?? 0
+    },
+    events: {
+      configured: eventLog.configured,
+      count: eventLog.events.length,
+      types: eventLog.types,
+      last: eventLog.last
     },
     animation: {
       controllers: options.animation?.controllers ?? 0,
@@ -406,11 +445,51 @@ function normalizeBodies(bodies: GameRuntimeEvidenceOptions["bodies"]): readonly
   return Array.isArray(bodies) ? bodies : Object.values(bodies);
 }
 
+function normalizeCollisionWorld(world: GameRuntimeEvidenceOptions["collisionWorld"]): GameCollisionWorldSnapshot | undefined {
+  if (!world) return undefined;
+  if ("snapshot" in world) return world.snapshot();
+  return world;
+}
+
+function isGameEventRecordArray(events: NonNullable<GameRuntimeEvidenceOptions["events"]>): events is readonly GameEventRecord[] {
+  return Array.isArray(events);
+}
+
+function isGameEventLog(events: NonNullable<GameRuntimeEvidenceOptions["events"]>): events is GameEventLog {
+  return typeof (events as GameEventLog).snapshot === "function";
+}
+
+function normalizeGameEvents(events: GameRuntimeEvidenceOptions["events"]): NormalizedGameEventLog {
+  if (!events) {
+    return {
+      configured: false,
+      events: [],
+      types: []
+    };
+  }
+  let records: readonly GameEventRecord[];
+  if (isGameEventRecordArray(events)) {
+    records = events;
+  } else if (isGameEventLog(events)) {
+    records = events.snapshot().events;
+  } else {
+    records = events.events;
+  }
+  return {
+    configured: true,
+    events: [...records],
+    types: unique(records.map((event) => event.type)),
+    last: records[records.length - 1]
+  };
+}
+
 function collectSubsystemOwnership(options: {
   readonly ids: readonly string[];
   readonly inputConfigured: boolean;
   readonly bodiesConfigured: boolean;
+  readonly collisionConfigured: boolean;
   readonly combatConfigured: boolean;
+  readonly eventsConfigured: boolean;
   readonly effectsConfigured: boolean;
   readonly cameraConfigured: boolean;
   readonly animationConfigured: boolean;
@@ -447,10 +526,22 @@ function collectSubsystemOwnership(options: {
       evidence: "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
     },
     {
+      subsystem: "collision",
+      owner: "shared",
+      configured: options.collisionConfigured,
+      evidence: "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+    },
+    {
       subsystem: "combat",
       owner: "app",
       configured: options.combatConfigured,
       evidence: "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+    },
+    {
+      subsystem: "events",
+      owner: "app",
+      configured: options.eventsConfigured,
+      evidence: "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
     },
     {
       subsystem: "effects",
@@ -500,12 +591,18 @@ function collectSubsystemOwnership(options: {
 
 function collectHudWarnings(bindings: readonly GameHudBinding[], expectsGame: boolean): readonly string[] {
   if (!expectsGame) return [];
-  if (bindings.length === 0) return ["No HUD source bindings were supplied. Add game.hud helpers for health, meter, timer, combo, round, and debug toggles."];
-  const required: readonly GameHudBinding["binding"][] = ["health", "meter", "timer", "combo", "round", "debug-toggle"];
+  if (bindings.length === 0) return ["No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."];
   const present = new Set(bindings.map((binding) => binding.binding));
-  return required
-    .filter((binding) => !present.has(binding))
-    .map((binding) => `Missing HUD ${binding} binding source evidence.`);
+  const fightingRequired: readonly GameHudBinding["binding"][] = ["health", "meter", "timer", "combo", "round", "debug-toggle"];
+  const genericRequired: readonly GameHudBinding["binding"][] = ["score", "objective", "event-log"];
+  const hasFightingHud = fightingRequired.every((binding) => present.has(binding));
+  const hasGenericHud = genericRequired.every((binding) => present.has(binding));
+  if (hasFightingHud || hasGenericHud) return [];
+  const missingFighting = fightingRequired.filter((binding) => !present.has(binding)).join(", ");
+  const missingGeneric = genericRequired.filter((binding) => !present.has(binding)).join(", ");
+  return [
+    `HUD source evidence is incomplete. Provide either fighting bindings missing [${missingFighting}] or generic game bindings missing [${missingGeneric}].`
+  ];
 }
 
 function collectAccessibilityWarnings(sources: readonly GameAccessibilitySource[], expectsGame: boolean): readonly string[] {

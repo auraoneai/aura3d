@@ -1,123 +1,134 @@
 # Release Tracks
 
-Version: 1.3.3
-Date: 2026-06-10
+Date: 2026-07-01
+Status: release-candidate baseline
 
-Aura3D v1.1.0 is the runtime-foundation, typed GLB actor evidence, asset-catalog profile, CLI, template, docs, npm package, GitHub repository, marketing-site, and Aura Clash development-showcase release track.
+Aura3D releases are split into independent tracks. Passing one track does not
+grant claims for another.
 
-## Launch Positioning
+## Track 1: Package Runtime Release
 
-Aura3D is the AI-native TypeScript 3D SDK for browser software. It gives developers and AI coding agents a complete path from prompt to polished scene: primitives, scene kits, typed GLB/glTF assets, product viewers, physics, particles, materials, diagnostics, screenshot checks, templates, and static deployment workflows.
+Purpose: publish SDK packages, CLI packages, templates, and generated docs.
 
-Aura3D is positioned for teams searching for a modern Three.js alternative, Babylon.js alternative, Unity-to-web workflow, Unreal-to-web workflow, WebGL/WebGPU 3D library, TypeScript 3D engine, React 3D SDK, GLB viewer, glTF product configurator, prompt-to-3D SDK, and AI agent development toolkit.
+Allowed claims when this track passes:
 
-## Current Release
+- packages build and typecheck;
+- package entrypoints match generated API docs;
+- npm pack/install smoke checks pass;
+- CLI commands used by the release are runnable;
+- docs describe the public API contract for the shipped package version.
 
-- npm package target: `@aura3d/engine@1.3.3`
-- Public developer API: `@aura3d/engine`
-- CLI package target: `@aura3d/cli@1.3.3`
-- Scaffold package target: `create-aura3d@1.3.3`
-- Website: `https://aura3d.auraone.ai`
-- Repository: `https://github.com/auraoneai/aura3d`
-- Primary install path: `npm install @aura3d/engine`
+Not allowed from this track alone:
 
-## 1.1.0 Release Note
+- showcase routes are flagship quality;
+- root `createAuraApp` has production-renderer parity;
+- high-end material, lighting, postprocess, animation, or WebGPU behavior exists
+  in public examples unless route evidence proves it;
+- game routes are production playable.
 
-`@aura3d/engine@1.1.0` ships a scoped browser game-runtime foundation: typed GLB actor/runtime evidence, fighting-game template improvements, CLI `--profile fighting-character` search/resolve/validation behavior, Aura Clash Arena deployed-route proof, docs/claims gates, performance budgets, and npm `@latest` verification.
+Required gates:
 
-Publication status: npm `latest` points at `@aura3d/engine@1.3.3`, `@aura3d/asset-index@1.3.3`, `@aura3d/cli@1.3.3`, and `create-aura3d@1.3.3`. Aura Clash Arena is the live development showcase / runtime proof target, built with starter-grade fighter assets.
+- `pnpm typecheck`
+- `pnpm test:unit`
+- `pnpm test:integration` when relevant
+- `pnpm build`
+- `pnpm verify:api-docs -- --write` after export changes
+- `pnpm verify:package-install-smoke:fresh`
+- `pnpm verify:package-provenance`
+- `npm pack --dry-run --json`
+- `node tools/release/publish-all.mjs --dry-run` for the 26-package monorepo
+  release, with npm auth stored outside the repository
 
-## 1.2 Animation Engine Track
+## Track 2: Showcase Candidate Release
 
-Aura3D 1.2 is the prepared animation-engine release track on top of 1.1.0. It shipped as part of the 1.3.0 release; npm `latest` now serves the `1.3.x` line.
+Purpose: classify and test showcase routes as demos, diagnostics, prototypes, or
+public release candidates.
 
-What 1.2 adds:
+Allowed claims when this track passes for a route:
 
-- `@aura3d/animation`: locomotion state-graph + kit (`createLocomotionAnimationStateGraph`, `createLocomotionKit`), generic `validateAnimationClipMap`, a shared fighter-animation adapter (`resolveFighterClip`, `fighterCrossfadeWeights`).
-- `@aura3d/assets`: per-clip bone-mask blending in `applyClips` for layered playback (`GLTFSceneAnimationClipBoneMask`, `mask?` on the clip sample).
-- `@aura3d/cli`: `aura3d assets validate-animation`.
-- `create-aura3d`: `animation-studio` and `character-controller` starter templates.
-- Aura Clash Arena: a browser-verified motion upgrade — crossfaded transitions, weight/airborne-varied hit reactions, and upper-body attack layering — with deterministic combat replay stable.
+- the route loads and exposes route-health evidence;
+- the route uses typed primary assets or is explicitly abstract;
+- desktop and mobile screenshots show a readable main subject;
+- interaction changes scene state where interaction is claimed;
+- game input visibly changes gameplay state where a game claim is made.
+- visual review passes for public release candidates.
+- game routes have retained game-geometry evidence when they claim public
+  racing or platformer quality.
 
-Capability boundaries: foot IK is per-limb two-bone; spring bones are secondary dynamics; precise technical limits live in `docs/project/known-limits.md`. Aura Clash reuses its starter fighter art, so it remains a development showcase of the engine.
+Not allowed from this track alone:
 
-Primary reference: `docs/animation/believable-motion.md`.
+- public marketing launch without Track 3;
+- benchmark superiority;
+- broad claims about all Aura3D examples.
 
-## 1.3 Believable-Motion Track
+Required gates:
 
-Aura3D 1.3 is the believable-motion release track on top of 1.2. It is published as `1.3.3` (all 26 packages on npm; showcase live at https://aura3d.auraone.ai), gate-verified.
+- `docs/project/showcase-quality-gates.md`
+- source scan for unsafe asset/rendering patterns;
+- per-route primitive budget;
+- route-health JSON;
+- desktop and mobile screenshots;
+- game input tests for game routes;
+- copy review against `docs/project/claim-guidelines.md`.
+- `node tools/showcase-library/build-and-check.mjs`
 
-What 1.3 adds:
+Current status for this track: 6/6 public release candidates pass. Data Galaxy
+and WebGPU Particle Lab are internal diagnostics. Turbo Drift Circuit and
+Skyline Runner are prototype-blocked game diagnostics and are not public
+examples.
 
-- `@aura3d/animation`: critically-damped, momentum-preserving state transitions (`Inertialization` module + `fighterInertializedWeights`, the new default fighter transition with the linear crossfade kept as a fallback), runtime two-bone foot IK with a foot-lock (`FootIk.ts`), spring-bone secondary dynamics (`SpringBones.ts`), and animation event tracks (`AnimationEventTrackContainer`) with an `EventTrackEditor` browser authoring lane.
-- `@aura3d/rendering`: a texture-backed morph-target path (`createMorphTargetPlan`) that lifts the 4-target/64-vertex GPU cap for facial blendshape rigs, normal morphing so lighting follows the deformation, and WebGPU character skinning at 96-joint WebGL2 parity.
-- `@aura3d/engine`: a first-class `node.morphInfluence(name, weight)` API and viseme-driven blendshape lip-sync (`applyVisemeMorphInfluences`).
-- Aura Clash Arena: now runs the foot IK + foot-lock (with footsteps), spring body-sway, critically-damped move transitions, and authored clip-event hit/footstep/VFX frames live, with deterministic combat replay still stable.
+## Track 3: Marketing Launch Release
 
-Capability boundaries: foot IK is per-limb two-bone; spring bones are secondary dynamics; precise limits live in `docs/project/known-limits.md`. The Aura Clash fighter rigs carry no facial blendshapes, so the morph/viseme work is exercised by Animation Studio and the morph proofs. Aggregate gate: `pnpm animation-engine:believable-motion`.
+Purpose: publish website, README, examples, and public copy.
 
-## 1.1 Animation Studio Track
+Allowed claims:
 
-Aura3D 1.1 is the proposed animation-studio and animation-engine release track. It builds on 1.1.0 prompt-animation contracts, AuraVoice timing packages, typed assets, shot timelines, captions, visemes, render queues, templates, and release evidence.
+- only claims listed as allowed in `docs/project/launch-positioning.md`;
+- only route-specific showcase claims with current evidence;
+- package claims only if Track 1 passed for the selected version.
 
-The 1.1 track is complete only when a clean external project can scaffold `animation-studio`, validate two typed character assets and one typed set, preview a real episode route, render a playable episode file, export captions and metadata, write a package folder, and produce motion/visual/review evidence.
+Required gates:
 
-Allowed planning language:
+- Track 1 for package claims;
+- Track 2 for every promoted route;
+- marketing-site checks in `docs/project/marketing-site.md`;
+- claim review against `docs/project/claim-guidelines.md`;
+- public deployment checks for hosted route claims.
 
-- "Aura3D 1.1 is planned to provide a browser-native animation episode pipeline."
-- "The target workflow turns typed assets, show-bible metadata, shot timelines, dialogue/captions, visemes, and render queues into an episode package."
-- "The release gate will reject still-image puppet output as animation proof."
+## Track 4: Benchmark/Superiority Release
 
-Blocked language until the 1.1 gates pass:
+Purpose: compare Aura3D against external or low-level renderer baselines.
 
-- "Aura3D generates Pixar-quality animations."
-- "Aura3D turns any still image into a production animated episode."
-- "Aura3D replaces Blender, Maya, Toon Boom, Unity, Unreal, or a production animation studio."
-- "A still image with CSS transforms, shake, pan, zoom, fake parallax, or subtitles is real animation animation."
+Allowed claims:
 
-Primary reference: `docs/examples/animation-studio.md`.
+- only the exact comparison result from the frozen protocol;
+- only after neutral scoring and engine parity checks pass.
 
-## 1.0.5 Release Note
+Required gates:
 
-`@aura3d/engine@1.0.5` folds in the 1.0.4 game-runtime foundation plus animation/editor/visual-scripting source evidence, the federated asset catalog, CLI `assets search` and `assets resolve` flow, prompt-plan intent resolution, prompt-animation/AuraVoice source contracts, typed templates, and the previous no-Three.js runtime boundary.
+- `docs/project/frozen-benchmark-release-gates.md`;
+- `docs/project/superiority-evidence-workflow.md`;
+- committed benchmark results, scoring artifacts, and decision file;
+- no owner-only scoring bypass.
 
-Publication status: historical. The current npm `latest` release is 1.3.3.
+## Track 5: Roadmap/Internal Capability
 
-## 1.0.4 Release Note
+Purpose: document planned or internal work without marketing it as shipped.
 
-`@aura3d/engine@1.0.4` was the asset-catalog and game-runtime source track that led into 1.0.5. Treat it as historical planning context, not the active public package target.
+Allowed claims:
 
-## 1.0.3 Release Note
+- internal package contains a capability;
+- roadmap item is planned;
+- prototype demonstrates direction but is not a public contract.
 
-`@aura3d/engine@1.0.3` removed Three.js from the root engine runtime and npm dependency graph. That cleanup remains part of the 1.0.4 baseline.
+Required gates before promotion:
 
-## Launch Copy
+- library acceptance checks in `docs/project/library-gap-roadmap.md`;
+- public root API tests when the claim targets root `@aura3d/engine`;
+- docs updates that explain fallback behavior and limitations.
 
-Use direct product language:
+## Current Recommendation
 
-- Aura3D turns prompts into editable TypeScript 3D scenes.
-- Aura3D gives AI coding agents maintained scene systems instead of blank renderer glue.
-- Aura3D ships typed assets, scene kits, diagnostics, screenshots, templates, and deploy checks.
-- Aura3D helps teams build browser 3D product viewers, configurators, cinematic scenes, mini-games, data scenes, physics playgrounds, and AI-generated environments.
-- Aura3D is built for developers comparing modern browser 3D libraries, Three.js alternatives, Babylon.js alternatives, Unity web options, and Unreal web options.
-
-## Launch Assets
-
-Keep these surfaces aligned for each public release:
-
-- Root README and npm package metadata.
-- GitHub description, homepage, and topics.
-- Marketing website and generated HTML docs.
-- Published npm package README.
-- Agent docs under `docs/agents/`.
-- Examples and template README files.
-
-## Planning Document Cleanup
-
-The former root planning PRDs were decomposed into durable docs and launch-facing evidence artifacts. Current docs should use these files instead of a root planning PRD:
-
-- `docs/agents/prompt-to-3d-workflow.md`
-- `docs/project/release-tracks.md`
-- `docs/project/launch-positioning.md`
-- `docs/project/marketing-site.md`
-- `docs/examples/advanced-gallery.md`
+Treat package/runtime work and showcase/marketing work as separate. Do not
+promote current showcase routes as public examples until route-level gates and
+visual review pass. Do not use package stability as evidence for visual quality.

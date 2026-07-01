@@ -7,7 +7,7 @@
 import { writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateSceneFromPrompt } from "../src/director/prompt-to-scene.js";
+import { generateSceneFromPrompt } from "../src/director/prompt-scene.js";
 import { directScene } from "../src/director/director-heuristics.js";
 import { estimateSpeechDuration } from "../src/episode-document.js";
 

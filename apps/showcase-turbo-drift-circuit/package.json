@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/showcase-turbo-drift-circuit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D showcase racing time-trial with typed race car asset, deterministic ghost proof, runtime HUD, and drift/boost gameplay.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

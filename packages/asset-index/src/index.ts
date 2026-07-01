@@ -19,6 +19,7 @@ export type {
   AuraAssetFormat,
   AuraAssetAccess,
   AuraAssetBounds,
+  AuraAssetIntendedRole,
 } from "./CanonicalAsset.js";
 export { isAutoPullable, normalizeLicense } from "./CanonicalAsset.js";
 

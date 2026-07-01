@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#080909">
+    <meta
+      name="description"
+      content="Aura3D particle lab with typed emitter assets, Aura3D particle modes, density controls, and performance evidence."
+    >
+    <title>Aura3D Showcase - Aura3D Particle Lab</title>
+    <link rel="stylesheet" href="/apps/showcase-webgpu-particle-lab/src/styles.css">
+  </head>
+  <body>
+    <main class="shell" data-route="showcase-webgpu-particle-lab">
+      <section class="viewport" aria-label="Aura3D particle lab viewport">
+        <div id="lab-set" class="aura-lab-set" aria-label="Aura3D typed reactor core lab scene"></div>
+      </section>
+
+      <aside class="lab-panel" aria-label="Aura3D particle lab controls">
+        <div class="panel-heading">
+          <p class="eyebrow">Showcase 09</p>
+          <h1>Aura3D Particle Lab</h1>
+          <p class="summary">Typed reactor asset with Aura3D particle-library modes, density controls, and performance telemetry.</p>
+        </div>
+
+        <section class="control-section" aria-label="Particle mode controls">
+          <div class="section-label">Particle Mode</div>
+          <div class="segmented" data-control-group="mode">
+            <button type="button" data-mode="vortex" aria-pressed="true">Vortex</button>
+            <button type="button" data-mode="fountain" aria-pressed="false">Fountain</button>
+            <button type="button" data-mode="field" aria-pressed="false">Field</button>
+          </div>
+        </section>
+
+        <section class="control-section" aria-label="Density controls">
+          <label class="range-label" for="density-control">
+            <span>Density</span>
+            <output id="density-value" for="density-control">600</output>
+          </label>
+          <input id="density-control" type="range" min="300" max="1200" value="600" step="150">
+        </section>
+
+        <section class="status-panel" aria-label="Aura3D runtime status">
+          <div class="section-label">Runtime</div>
+          <dl>
+            <div><dt>Status</dt><dd id="status-value">checking</dd></div>
+            <div><dt>Backend</dt><dd id="backend-value">pending</dd></div>
+            <div><dt>Adapter</dt><dd id="adapter-value">pending</dd></div>
+            <div><dt>Reason</dt><dd id="reason-value">loading Aura3D particles</dd></div>
+          </dl>
+        </section>
+
+        <section class="performance-panel" aria-label="Performance panel">
+          <div class="section-label">Performance</div>
+          <dl>
+            <div><dt>Frames</dt><dd id="frames-value">0</dd></div>
+            <div><dt>FPS</dt><dd id="fps-value">0.0</dd></div>
+            <div><dt>Frame</dt><dd id="frame-ms-value">0.0 ms</dd></div>
+            <div><dt>Workgroups</dt><dd id="workgroups-value">n/a</dd></div>
+            <div><dt>Dispatches</dt><dd id="dispatches-value">n/a</dd></div>
+            <div><dt>Draw Calls</dt><dd id="drawcalls-value">0</dd></div>
+          </dl>
+          <p id="claim-boundary" class="claim-boundary">
+            The visible particle field is produced by Aura3D effects.particles.
+          </p>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="/apps/showcase-webgpu-particle-lab/src/main.ts"></script>
+  </body>
+</html>

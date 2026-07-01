@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   boundsFromSize,
+  boundsFromAsset,
+  boundsMaxDimension,
+  groundedRenderedAssetPlacement,
   boundsHeight,
+  groundedAssetPlacement,
   groundedPlacement,
+  normalizedRenderScaleForTargetHeight,
+  normalizedRenderScaleForTargetMaxDimension,
+  normalizedScaleForTargetMaxDimension,
   groundedYOffset,
   normalizedScaleForTargetHeight,
   type SceneBounds
@@ -44,6 +51,21 @@ describe("scene grounding utils", () => {
     expect(normalizedScaleForTargetHeight(mikoBounds, -3)).toBe(1);
   });
 
+  it("normalizes uniform scale so max dimension matches the target", () => {
+    const bounds: SceneBounds = { min: [-2, -0.5, -1], max: [3, 1.5, 2] };
+    expect(boundsMaxDimension(bounds)).toBe(5);
+    expect(normalizedScaleForTargetMaxDimension(bounds, 10)).toBeCloseTo(2, 6);
+    expect(normalizedScaleForTargetMaxDimension(bounds, 0)).toBe(1);
+  });
+
+  it("normalizes safe-renderer model scale against Aura3D's rendered fit size", () => {
+    const bounds: SceneBounds = { min: [-2, -0.5, -1], max: [3, 1.5, 2] };
+    expect(normalizedRenderScaleForTargetMaxDimension(3.1)).toBeCloseTo(2, 6);
+    expect(normalizedRenderScaleForTargetHeight(bounds, 1.24)).toBeCloseTo(2, 6);
+    expect(normalizedRenderScaleForTargetMaxDimension(0)).toBe(1);
+    expect(normalizedRenderScaleForTargetHeight(bounds, 0)).toBe(1);
+  });
+
   it("places scaled assets so their lowest point rests on the floor", () => {
     const floorY = 0.07;
     const targetHeight = 1.5;
@@ -76,5 +98,37 @@ describe("scene grounding utils", () => {
     expect(b.min[1]).toBeCloseTo(-0.013, 6);
     expect(b.max[1]).toBeCloseTo(0.013, 6);
     expect(boundsHeight(b)).toBeCloseTo(0.026, 6);
+  });
+
+  it("builds and grounds bounds from generated typed asset metadata", () => {
+    const asset = {
+      type: "model",
+      format: "glb",
+      url: "/aura-assets/example.glb",
+      bounds: [8, 9, 8],
+      metadata: {
+        boundsMetadata: {
+          min: [-4, -1, -4],
+          max: [4, 8, 4],
+          size: [8, 9, 8],
+          center: [0, 3.5, 0]
+        }
+      }
+    };
+
+    const b = boundsFromAsset(asset);
+    expect(b.min).toEqual([-4, -1, -4]);
+    expect(b.max).toEqual([4, 8, 4]);
+
+    const p = groundedAssetPlacement(asset, { targetHeight: 1.2, x: 0.5, z: -0.25, floorY: 0.1 });
+    expect(p.position[0]).toBe(0.5);
+    expect(p.position[2]).toBe(-0.25);
+    expect(p.height).toBeCloseTo(1.2, 6);
+    expect(p.position[1] + p.bounds.min[1] * p.scale).toBeCloseTo(0.1, 6);
+
+    const renderPlacement = groundedRenderedAssetPlacement(asset, { targetMaxDimension: 3.1, x: -0.5, z: 0.75, floorY: 0.2 });
+    expect(renderPlacement.position).toEqual([-0.5, 0.2, 0.75]);
+    expect(renderPlacement.scale).toBeCloseTo(2, 6);
+    expect(renderPlacement.maxDimension).toBeCloseTo(3.1, 6);
   });
 });

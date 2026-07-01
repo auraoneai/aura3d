@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura3D Showcase Material and Asset Inspector</title>
+    <meta
+      name="description"
+      content="Professional Aura3D material and asset inspector showcase with typed asset readiness, material cards, lighting modes, comparison grid, and route evidence."
+    >
+    <link rel="stylesheet" href="/apps/showcase-material-asset-inspector/src/styles.css">
+  </head>
+  <body>
+    <div id="aura-stage" aria-label="Aura3D material and asset inspector viewport"></div>
+    <main class="workspace" aria-label="Material and asset inspector">
+      <section class="title-panel" aria-label="Inspector title and route health">
+        <div>
+          <span class="eyebrow">Aura3D Showcase</span>
+          <h1>Material Inspector</h1>
+          <p>Typed asset, material presets, and texture evidence in one focused inspection view.</p>
+        </div>
+        <div class="health">
+          <span id="health-state">loading</span>
+          <strong id="health-draws">0 draws</strong>
+        </div>
+      </section>
+
+      <section class="asset-passport" aria-label="Asset readiness">
+        <div class="panel-heading">Asset Passport</div>
+        <div class="readiness" aria-label="Asset readiness">
+          <ul id="readiness-list"></ul>
+        </div>
+      </section>
+
+      <section class="inspector-dock" aria-label="Inspection controls and material evidence">
+        <div class="control-stack">
+          <div class="control-block">
+            <div class="control-heading">View</div>
+            <div class="segmented" role="group" aria-label="Preview mode">
+              <button type="button" data-view="compare">Compare</button>
+              <button type="button" data-view="asset">Asset</button>
+              <button type="button" data-view="grid">Grid</button>
+              <button type="button" data-view="exploded">Exploded</button>
+            </div>
+          </div>
+
+          <div class="control-block">
+            <div class="control-heading">Lighting</div>
+            <div class="segmented" role="group" aria-label="Lighting mode">
+              <button type="button" data-lighting="material">Lab</button>
+              <button type="button" data-lighting="studio">Studio</button>
+              <button type="button" data-lighting="metal">Metal</button>
+              <button type="button" data-lighting="glass">Glass</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="material-panel">
+          <div class="panel-heading">Material Cards</div>
+          <div id="material-cards" class="material-cards"></div>
+        </div>
+
+        <div class="insight-panel">
+          <div class="panel-heading">Inspection Evidence</div>
+          <dl id="extension-list" class="extension-list"></dl>
+          <div id="evidence-summary" class="evidence-summary"></div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/apps/showcase-material-asset-inspector/src/main.ts"></script>
+  </body>
+</html>

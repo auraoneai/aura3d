@@ -33,21 +33,28 @@ The CLI writes:
 - `public/aura-assets/*`: hashed deployable files.
 - `src/aura-assets.ts`: typed asset references for `model(assets.fighter)`.
 
-Do not use string model ids or invented URLs in agent-authored code.
+Do not use string model ids, raw `.glb`/`.gltf` URLs, invented URLs,
+`GLTFLoader`, or `three` imports in agent-authored public examples. Safe route
+code imports generated typed assets and passes them to `model(assets.name)`.
 
 For release assets, keep provenance attached at registration time:
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/fighter.glb --name fighter \
   --license CC0-1.0 \
+  --license-name "CC0 1.0 Universal" \
+  --license-url https://creativecommons.org/publicdomain/zero/1.0/ \
   --author Quaternius \
+  --source-page https://quaternius.com/packs/universalbasecharacters.html \
+  --download-url https://quaternius.com/files/universal-base-characters.zip \
   --source-url https://quaternius.com/packs/universalbasecharacters.html \
   --source-family Quaternius
 ```
 
 Generated typed asset metadata includes the local source path, hashed output,
-checksum, detected animation clips, skeleton diagnostics, morph targets, and
-provenance fields when they are available.
+checksum, source page, download URL, license id/name/URL/raw variant, author,
+acquisition timestamp, detected animation clips, skeleton diagnostics, morph
+targets, scene hierarchy counts, and provenance fields when they are available.
 
 ## Inspect before registering
 
@@ -63,20 +70,45 @@ and warnings without copying the asset into `public/aura-assets`.
 
 ## Strict release validation
 
-Use strict validation before claiming a template, showcase, or launch route uses
-real production assets:
+Use the strict validation command before claiming a template, showcase, or
+launch route uses real production assets:
 
 ```bash
-npx @aura3d/cli@latest assets validate --no-placeholders --require-license
+npx @aura3d/cli@latest assets validate --source --release
 ```
 
-The strict flags add blocking checks for:
+`--release` implies `--no-placeholders` and `--require-license`, promotes
+warnings to failures, and scans source by default. `--source` can also take an
+optional file or directory:
+
+```bash
+npx @aura3d/cli@latest assets validate --source apps/showcase-turbo-drift-circuit --release
+```
+
+The strict release gate blocks:
 
 - Placeholder asset ids, paths, or URLs such as `placeholder`, `dummy`, `mock`,
   `todo`, or `replace-me`.
 - Missing license/provenance evidence.
+- Missing durable release provenance: source page, download URL, license name or
+  id, license URL, author or attribution, and acquisition timestamp.
 - License text that is still marked unknown, unverified, candidate, or needing
   confirmation.
+- raw `model("string-id")` or string asset ids;
+- raw GLB/glTF URLs;
+- `unsafeModelUrl(...)` in release-facing examples;
+- `GLTFLoader` or `three` imports in public root examples;
+- primitive-only primary character, vehicle, world, product, or environment;
+- temp-path provenance such as `/var/folders/.../T/aura3d-resolve-*`;
+- duplicate asset hashes without an allowlist explaining intentional reuse.
+
+The source validation report includes `typedAssetUsages` and `filesByAsset`, so
+reviewers can see which source files use each generated `assets.x` entry. Keep
+that JSON output with release evidence when a route's README or route-health
+file claims specific primary assets.
+
+The showcase browser tests also enforce CSS/DOM particle stand-in guards and
+visible mode-change pixel deltas for routes claiming Aura particle rendering.
 
 Projects that keep provenance in a launch evidence sidecar can pass it to the
 same validator:
@@ -172,7 +204,9 @@ The report checks the typed manifest and flags:
 - Missing license/provenance evidence when `--require-license` is passed.
 - Placeholder assets when `--no-placeholders` is passed.
 
-`validate-game` is a source and packaging gate. It does not replace visual QA, animation playback review, browser screenshots, or controller feel testing.
+`validate-game` is an asset and packaging gate. It does not scan route source
+for unsafe model strings, prove browser input, replace visual QA, prove
+animation playback, replace screenshots, or judge controller feel.
 
 ## Animation readiness
 

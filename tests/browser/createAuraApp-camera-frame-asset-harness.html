@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D Camera Frame Asset Contract</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        background: #04070c;
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: 560px 560px;
+        gap: 18px;
+        padding: 18px;
+        box-sizing: border-box;
+      }
+
+      .stage {
+        width: 560px;
+        height: 400px;
+        background: #04070c;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="targetHeight-stage" class="stage"></div>
+    <div id="targetMaxDimension-stage" class="stage"></div>
+    <div id="targetLength-stage" class="stage"></div>
+    <div id="default-stage" class="stage"></div>
+    <script type="module" src="./createAuraApp-camera-frame-asset-harness.ts"></script>
+  </body>
+</html>

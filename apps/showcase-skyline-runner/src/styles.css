@@ -1,0 +1,274 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #071015;
+  color: #eff8fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+}
+
+.runner-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 332px;
+  width: 100vw;
+  height: 100vh;
+  background: #0f1a21;
+}
+
+.runner-viewport {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #0f1a21;
+}
+
+.runner-stage {
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.runner-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #0f1a21;
+}
+
+.objective,
+.runner-panel section {
+  border: 1px solid rgba(174, 211, 219, 0.22);
+  border-radius: 8px;
+  background: rgba(7, 16, 21, 0.74);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(12px);
+}
+
+.panel-metrics {
+  display: grid;
+  gap: 8px;
+}
+
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.metrics-row article {
+  min-width: 0;
+  padding: 7px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.metrics-row span,
+.runner-panel .label,
+.log time {
+  display: block;
+  color: #9eb8bf;
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metrics-row strong {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.1;
+}
+
+.objective {
+  padding: 8px 10px;
+  color: #d7edf2;
+  font-size: 12px;
+}
+
+.runner-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  padding: 18px;
+  border-left: 1px solid rgba(174, 211, 219, 0.18);
+  background: rgba(5, 12, 16, 0.94);
+  overflow: auto;
+}
+
+.runner-panel h1,
+.runner-panel h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.runner-panel h1 {
+  font-size: 20px;
+  line-height: 1.14;
+}
+
+.runner-panel h2 {
+  color: #e0f3f6;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.runner-panel section {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.button-grid button {
+  min-height: 36px;
+  border: 1px solid rgba(174, 211, 219, 0.28);
+  border-radius: 7px;
+  background: rgba(13, 28, 35, 0.86);
+  color: #eff8fb;
+  cursor: pointer;
+}
+
+.button-grid button:hover,
+.button-grid button[aria-pressed="true"] {
+  border-color: rgba(101, 232, 255, 0.74);
+  background: rgba(20, 67, 78, 0.84);
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.evidence-grid div {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.value {
+  display: block;
+  margin-top: 3px;
+  color: #ffffff;
+  font-weight: 760;
+  overflow-wrap: anywhere;
+}
+
+.controls-list,
+.log {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: #cce0e5;
+  font-size: 13px;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.055);
+  font-size: 12px;
+}
+
+.claim {
+  color: #aec4ca;
+  font-size: 12px;
+  line-height: 1.44;
+}
+
+@media (max-width: 960px) {
+  body {
+    overflow: auto;
+  }
+
+  .runner-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .runner-viewport {
+    height: 70vh;
+    min-height: 500px;
+  }
+
+  .runner-panel {
+    border-left: 0;
+    border-top: 1px solid rgba(174, 211, 219, 0.18);
+  }
+}
+
+@media (max-width: 620px) {
+  .runner-viewport {
+    height: 72vh;
+    min-height: 500px;
+  }
+
+  .metrics-row {
+    gap: 6px;
+  }
+
+  .metrics-row article {
+    padding: 7px;
+  }
+
+  .metrics-row span,
+  .runner-panel .label,
+  .log time {
+    font-size: 10px;
+  }
+
+  .metrics-row strong {
+    font-size: 18px;
+  }
+
+  .objective {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .runner-panel {
+    padding: 14px;
+  }
+
+  .metrics-row,
+  .evidence-grid,
+  .button-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

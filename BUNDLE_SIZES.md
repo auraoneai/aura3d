@@ -16,3 +16,13 @@ against the gzip artifact.
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
+
+## Production Renderer Bridge Watch
+
+The current bundle measurements predate the root `createAuraApp` production
+renderer bridge proposed in `Fixed-Needed-PRD.md` and
+`docs/project/library-gap-roadmap.md`. Any PR that routes the public safe API
+through production rendering, skinned animation, PBR material parity, shadows,
+postprocess, or WebGPU paths must regenerate this report and call out the
+bundle delta explicitly. Do not hide renderer-capability work inside showcase
+patches without a bundle-size review.

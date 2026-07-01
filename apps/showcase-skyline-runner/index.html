@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#071015">
+    <meta
+      name="description"
+      content="Aura3D Skyline Runner prototype, a deterministic side-scrolling proof route with typed runner/world assets and bounded movement, checkpoint, and completion evidence."
+    >
+    <title>Aura3D Prototype - Skyline Runner</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <main class="runner-shell" aria-label="Skyline Runner">
+      <section class="runner-viewport">
+        <div id="app" class="runner-stage" data-testid="skyline-runner-stage"></div>
+      </section>
+      <aside id="panel" class="runner-panel" aria-label="Skyline Runner controls and evidence"></aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

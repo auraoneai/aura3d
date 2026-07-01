@@ -1,16 +1,15 @@
 # Game Runtime Release Contract
 
-Version: 1.0.10
-Status: Maintained runtime contract
-Replaces: `Aura3D104GameRuntimePRD.md`
+Date: 2026-07-01
+Status: honest remediation contract
 
-This document records the durable game-runtime requirements that came from the 1.0.4 planning work and now serve as the current 1.0.10 runtime baseline.
+This document describes the current public game-runtime boundary and the gates
+required before Aura3D can claim reusable production-quality browser game kits.
 
-## Objective
+## Current Public Pattern
 
-Aura3D must support browser game routes without forcing agents or app authors to hand-roll Three.js render loops, raw GLB loaders, mutable scene registries, input systems, kinematic physics, hitbox systems, HUD wiring, or evidence plumbing.
-
-The public path is:
+The current public root path supports app lifecycle, runtime nodes, frame loops,
+input helpers, and game evidence patterns:
 
 ```ts
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
@@ -29,115 +28,93 @@ app.onFrame(({ dt }) => {
 });
 ```
 
-## Public Runtime Systems
+## Current Public Game Strengths
 
-The runtime contract includes:
+- `createAuraApp` returns an app handle.
+- Runtime nodes can be registered with `.runtime(game.runtimeNode("id"))`.
+- `app.nodes.require("id")` can mutate gameplay nodes.
+- `app.onFrame`, `app.offFrame`, `app.pause`, `app.resume`, and `app.step` are
+  available for runtime updates and deterministic tests where exported.
+- `game.input` and related helpers can support keyboard and replay-style tests.
+- `game.eventLog(...)` plus generic `game.hud.score(...)`,
+  `game.hud.objective(...)`, `game.hud.eventLog(...)`, and
+  `game.evidence(...)` support non-fighting event and HUD source evidence.
+- `game.platformer(...)`, `game.racing(...)`, and `game.fallingBlocks(...)`
+  provide deterministic source-level genre kits with unit tests for movement,
+  checkpoints, hazards, lap validation, line clears, hold, replay, and
+  checksums.
+- Fighting-game helper examples exist and can be documented only where the API
+  and tests are current.
 
-- `createAuraApp(...)` returning an app handle.
-- `app.onFrame(...)`, `app.offFrame(...)`, `app.pause()`, `app.resume()`, `app.step(dt)`, and `app.dispose()`.
-- `.runtime(game.runtimeNode("id"))` on nodes that gameplay code must mutate.
-- `app.nodes.require("id")` runtime node handles.
-- Runtime transform, visibility, material override, effect attachment, animation metadata, and snapshots.
-- `game.input(...)` and app-owned input for keyboard, pointer, touch, gamepad snapshots, buffering, combos, and replay.
-- Kinematic bodies with gravity, jump, dash, grounding, bounds, knockback, friction, and debug geometry.
-- Colliders, hitboxes, hurtboxes, pushboxes, guardboxes, triggers, hit stop, stun, recovery, and combat events.
-- Animation controller support for named clips, restart, crossfade, layers, events, diagnostics, and deterministic snapshots.
-- Runtime effects for hit sparks, block sparks, dash trails, slash trails, shockwaves, aura bursts, and reduced-motion/reduced-flash modes.
-- Camera director support for target framing, side-fighter mode, bounds, smoothing, impact shake, and reduced-motion mode.
-- HUD and accessibility helpers for health, meter, timer, combo, round state, debug toggles, labels, reduced motion, reduced flash, high contrast, and pause controls.
-- Evidence APIs proving active runtime systems.
+## Current Gaps
 
-## Required CLI Asset Flow
+Do not claim reusable production-quality browser starters until these exist as
+public routes with browser input and screenshot tests:
 
-Game routes must use typed assets:
+- browser-tested genre use of `game.collisionWorld(...)`; the generic collision
+  facade covers overlap, sweep, resolution, enter/stay/exit events, and
+  layer/tag filtering, and the genre kits are source-tested, but public
+  examples need browser proof;
+- platformer starter route using `game.platformer(...)` with keyboard tests for
+  move, jump, land, collect, hazard, respawn, checkpoint, and finish;
+- racing starter route using `game.racing(...)` with keyboard tests for
+  throttle, steering, checkpoint order, lap validation, reset, and off-track
+  behavior;
+- mesh-derived or overlay-validated racing topology bound to real track asset
+  hashes;
+- mesh-derived or overlay-validated platformer playable surfaces bound to real
+  world/stage asset hashes;
+- game-to-scene transform validation proving car-to-road and character-to-world
+  alignment in retained screenshots;
+- public visual review that confirms the route looks like a credible game, not
+  a proof harness.
+- falling-block starter route using `game.fallingBlocks(...)` with keyboard
+  tests for left/right, rotate, soft drop, hard drop, hold, lock, line clear,
+  replay, and checksum.
 
-```bash
-npx @aura3d/cli@latest assets add ./assets/fighter.glb --name fighter
-npx @aura3d/cli@latest assets inspect ./assets/fighter.glb --animation --humanoid --skeleton --morphs --license
-npx @aura3d/cli@latest assets validate-game --output artifacts/aura3d/game-assets.json
-```
+## Route-Local Logic Rule
 
-Release blockers (as of 1.3.3):
+Route-local game logic can support a prototype, but it is not proof of a
+reusable Aura3D game kit. Docs and READMEs must say "route-local prototype"
+unless the mechanic is implemented in a public package API and tested from root
+`@aura3d/engine`.
 
-- ✅ The CLI is published and runnable with `npx @aura3d/cli@latest`.
-- ✅ `@aura3d/asset-index` is published before `@aura3d/cli`; catalog search depends on it.
-- ✅ Catalog search returns machine-readable candidates from outside the monorepo.
-- ✅ Resolve/add writes typed asset metadata (`src/aura-assets.ts`), source/license evidence, and animation readiness data.
-- Catalog candidate quality, rig compatibility, bounds checks, clip checks, and route proof remain evidence-bound per asset.
+For public racing and platformer examples, route-local points, rectangles, or
+timers are not enough. The game geometry must be bound to the visible typed
+asset through retained topology or surface evidence.
 
-## Runtime Evidence
+## Release Evidence
 
-A game route is not release-ready from source code alone. It needs evidence that:
+A game route is not release-ready from source code alone. It needs:
 
-- the app mounted once and did not recreate the scene every frame;
-- the frame loop advances;
-- typed runtime nodes exist;
-- input changes state;
-- runtime nodes move;
-- kinematic bodies update;
-- collisions resolve;
-- hitboxes/hurtboxes produce events;
-- animation state changes;
-- effects/camera/HUD respond to combat events;
-- accessibility and pause controls work;
-- screenshots are nonblank and visually readable.
+- typed primary character/vehicle/world/track assets unless explicitly abstract;
+- route-health JSON with category, claims, assets, primitive count, renderer
+  backend, and fallback state;
+- keyboard input test;
+- visible state change after input;
+- objective, scoring/fail state, reset, and progression/loop;
+- genre-specific mechanic tests;
+- retained game-geometry evidence for racing/platformer categories;
+- desktop and mobile screenshots with readable gameplay;
+- HUD state matching gameplay state.
 
-## Release Commands
+## Current Game Example Status
 
-The runtime release gate should include:
+Turbo Drift Circuit and Skyline Runner are intentionally removed from public
+examples. The library is not being deleted. The game layer must be rebuilt
+before these categories can return.
 
-```bash
-pnpm typecheck
-pnpm build
-pnpm game-runtime:unit
-pnpm game-runtime:browser
-pnpm game-runtime:template
-pnpm game-runtime:docs
-pnpm game-runtime:package
-pnpm game-runtime:release
-pnpm verify:package-install-smoke:fresh
-```
+Current blockers:
 
-If command names change, the release report must still cover the same evidence classes.
+- Turbo Drift Circuit:
+  `asset-pair:racing-public-composition-bounds-missing`.
+- Skyline Runner:
+  `asset-pair:platformer-public-character-world-binding-missing`.
 
-## Current Status
+## Library Roadmap Link
 
-1.0.10 audit status:
-
-- Root `pnpm typecheck` passed.
-- Root `pnpm build` passed.
-- `pnpm aura3d110:readiness` passed.
-- Published `@aura3d/engine@1.0.10` includes the required GameAppRuntime and TypedGLBActor runtime files.
-- CLI catalog search works from the published `@aura3d/cli@latest` package.
-- `create-aura3d@latest --template fighting-game` scaffolds, installs, builds, and tests a project pinned to `@aura3d/engine@1.0.10`.
-
-Public npm publish status:
-
-- `@aura3d/engine@latest` points at `1.0.10`.
-- `@aura3d/asset-index@latest` points at `1.0.10`.
-- `@aura3d/cli@latest` points at `1.0.10`.
-- `create-aura3d@latest` points at `1.0.10`.
-- Aura Clash asset validation uses the shipping-asset profile for the active route instead of unrelated experimental assets.
-
-## Definition Of Done
-
-The runtime contract is ship-ready when an external developer can:
-
-```bash
-npx create-aura3d@latest aura-fighter --template fighting-game
-cd aura-fighter
-npm install
-npm run build
-npm run test
-```
-
-And the generated app visibly proves:
-
-- two typed GLB/runtime characters or documented validated placeholders;
-- real keyboard and touch input;
-- movement, jump, dash, guard, light, heavy, and special;
-- hit detection with damage, hit stop, stun, knockback, and HUD update;
-- animation state change or visible skeletal clip playback;
-- hit sparks/trails/camera response with reduced-motion fallback;
-- nonblocking stage with visible depth;
-- evidence panel proving Aura3D owns the claimed runtime systems.
+Reusable game-kit work is tracked in
+`docs/project/library-gap-roadmap.md` and
+`docs/project/aura3d-game-layer-rebuild-plan.md`. Until those tasks pass
+acceptance checks, platformer and racing showcase routes must be described as
+route-local prototypes or prototype-blocked evidence routes.

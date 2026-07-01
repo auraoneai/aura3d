@@ -2,7 +2,27 @@
 
 - `product-viewer`: product pages, asset viewers, configurators, hero objects.
 - `cinematic-scene`: dolly camera, stylized lighting, rain, fog, bloom, timeline.
-- `mini-game`: small interactive or game-like scenes with primitives and input.
+- `mini-game`: playable platformer-style starter on the public
+  `game.platformer(...)` kit. It proves typed asset import, keyboard movement,
+  jump, scoring, reset, HUD/event evidence, and screenshot gates for a starter.
+  Do not use it as proof of production art, skinned animation, racing,
+  falling-block, or commercial game quality.
+
+Template routes are not allowed to hide missing engine features behind primitive
+slop. Object-focused, character-focused, vehicle-focused, and world-focused
+templates must acquire real assets through the Aura3D CLI, import generated
+`assets` from `./src/aura-assets`, and render with `model(assets.x)`. Primitives
+are permitted for layout, collision helpers, gauges, debug panels, or minor set
+dressing only.
+
+Every public template needs:
+
+- route-health evidence with claimed renderer mode, fallback mode, primary
+  assets, primitive count, and claim boundary;
+- one desktop and one mobile screenshot checked by pixel analysis;
+- source validation for raw string assets, raw GLB/glTF URLs, `unsafeModelUrl`,
+  `GLTFLoader`, direct `three` imports, and CSS/DOM scene effects;
+- keyboard/input tests when the template is interactive or game-like.
 
 Prompt-family helpers are available from `prefabs` even when a full template is
 not a perfect fit:
@@ -31,5 +51,7 @@ not a perfect fit:
   perspective rails, reflections, fog, bloom, sparks, particles, and inside-tube
   dolly flythrough scenes.
 
-All MVP templates include `npm run dev`, `npm run build`, `npm run test`,
-`tests/route-health.spec.ts`, and `tests/screenshot.spec.ts`.
+All MVP templates should include `npm run dev`, `npm run build`,
+`npm run test`, `tests/route-health.spec.ts`, and `tests/screenshot.spec.ts`.
+If a template lacks those checks, classify it as `prototype` or `blocked`; do
+not market it as production-ready.

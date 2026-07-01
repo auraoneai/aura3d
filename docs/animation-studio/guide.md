@@ -32,7 +32,7 @@ Core source files:
 
 - `scripts/animation-scene.ts` — the agent-native scene-tool CLI.
 - `src/episode-document.ts` — the `EpisodeDocument` schema + deterministic sampling.
-- `src/director/prompt-to-scene.ts`, `src/director/director-heuristics.ts` — prompt → scene.
+- `src/director/prompt-scene.ts`, `src/director/director-heuristics.ts` — prompt → scene.
 - `src/animation-performance.ts` — the shared standard clip library + motion-source policy.
 - `scripts/render-live.ts`, `src/render-modes.ts` — the headless render pipeline.
 - `scripts/author-office-scene.ts` — the authored-dialogue pattern.

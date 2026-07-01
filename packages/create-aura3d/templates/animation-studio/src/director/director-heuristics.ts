@@ -409,7 +409,7 @@ const LOW_MOTION = new Set<PerformanceClip>(["idle", "talk"]);
  *     (as speaker OR listener) — unless that character is explicitly `staged` (e.g. a
  *     background extra the director deliberately froze).
  * It also flags the absence of any gesture or any listener reaction, which the
- * prompt-to-scene proof asserts must both be present.
+ * prompt-scene proof asserts must both be present.
  *
  * `stagedStatic` lists character ids that are *allowed* to be motionless on purpose.
  */
@@ -462,7 +462,7 @@ export function validateDirectedActing(
     }
   }
 
-  // (3) Variety asserts the prompt-to-scene proof depends on.
+  // (3) Variety asserts the prompt-scene proof depends on.
   const GESTURE_INTENTS = new Set<PerformanceClip>(["gesture", "point", "nod"]);
   if (!beats.some((b) => GESTURE_INTENTS.has(b.speakingIntent))) {
     issues.push({ code: "NO_GESTURE", message: "No speaker ever gestures/points/nods — acting is all talk." });

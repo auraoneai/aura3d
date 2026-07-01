@@ -1,6 +1,83 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, extname, join, relative, resolve } from "node:path";
+import { inflateSync } from "node:zlib";
+import {
+  DEFAULT_AURA_ASSET_MANIFEST,
+  DEFAULT_AURA_ASSET_OUTPUT_DIR,
+  DEFAULT_AURA_ASSET_PUBLIC_PATH,
+  DEFAULT_AURA_ASSET_TYPEGEN
+} from "./asset-constants.js";
+import {
+  shouldScanSource,
+  validateAssetSource
+} from "./asset-source-validation.js";
+import {
+  listAssets,
+  readAssetManifest,
+  writeAssetManifest,
+  writeTypedAssets
+} from "./asset-manifest.js";
+import type {
+  AddAssetOptions,
+  AssetCliResult,
+  AssetSourceTypedAssetUsage,
+  AssetSourceValidationReport,
+  AssetValidationOptions,
+  AssetValidationResult,
+  AuraAssetQuality,
+  AuraCliAssetEntry,
+  AuraCliAssetManifest,
+  AuraCliAssetProvenance,
+  AuraCliAssetRole,
+  AuraCliAssetType,
+  AuraCliRenderedProbe,
+  AuraCliRenderedProbeForegroundBounds,
+  AuraCliRenderedProbeKind,
+  AuraCliResolveCandidateProvenance,
+  CheckDeployOptions,
+  ReadRenderedProbeMetadataOptions
+} from "./asset-core-types.js";
+import type {
+  AssetInspectionReport,
+  AuraCliAnimationClipInspection,
+  AuraCliAnimationInspection,
+  AuraCliAssetBoundsInspection,
+  AuraCliHumanoidConfidence,
+  AuraCliHumanoidInspection,
+  AuraCliHumanoidStatus,
+  AuraCliMaterialInspection,
+  AuraCliMorphTargetInspection,
+  AuraCliMorphTargetMeshInspection,
+  AuraCliOrientationInspection,
+  AuraCliSceneHierarchyInspection,
+  AuraCliSkeletonInspection,
+  AuraCliSkeletonSkinInspection,
+  InspectAssetOptions
+} from "./asset-inspection-types.js";
+import type {
+  AnimationEpisodeAssetReadiness,
+  AnimationEpisodeAssetRole,
+  AnimationEpisodeMouthReadinessMode,
+  AnimationEpisodeReadinessReport,
+  AssetReadinessAnimationMetadata,
+  AssetReadinessAssetArtifacts,
+  AssetReadinessAssetReport,
+  AssetReadinessArtifacts,
+  AssetReadinessOptions,
+  AssetReadinessReport,
+  AssetReadinessValidationContract,
+  AssetReadinessValidatorEvidence,
+  AuraAssetReadinessProfile,
+  AuraAssetReadinessStatus,
+  AuraGameAssetReadinessProfile
+} from "./asset-readiness-types.js";
+import type {
+  CharacterAssemblyPartInput,
+  CharacterAssemblyPlanOptions,
+  CharacterAssemblyPlanResult,
+  CharacterAssemblyResolvedPart
+} from "./character-assembly-types.js";
 
 export {
   animationCliAssetProfiles,
@@ -12,448 +89,161 @@ export type {
   AuraCliAnimationAssetProfile,
   AuraCliAnimationAssetProfileDefinition
 } from "./animation-asset-profiles.js";
+export {
+  DEFAULT_AURA_ASSET_MANIFEST,
+  DEFAULT_AURA_ASSET_OUTPUT_DIR,
+  DEFAULT_AURA_ASSET_PUBLIC_PATH,
+  DEFAULT_AURA_ASSET_TYPEGEN
+} from "./asset-constants.js";
+export {
+  listAssets,
+  readAssetManifest,
+  writeAssetManifest,
+  writeTypedAssets
+} from "./asset-manifest.js";
+export type {
+  AddAssetOptions,
+  AssetCliResult,
+  AssetSourceTypedAssetUsage,
+  AssetSourceValidationReport,
+  AssetValidationOptions,
+  AssetValidationResult,
+  AuraAssetQuality,
+  AuraCliAssetEntry,
+  AuraCliAssetManifest,
+  AuraCliAssetProvenance,
+  AuraCliAssetRole,
+  AuraCliAssetType,
+  AuraCliRenderedProbe,
+  AuraCliRenderedProbeForegroundBounds,
+  AuraCliRenderedProbeKind,
+  AuraCliResolveCandidateProvenance,
+  CheckDeployOptions,
+  ReadRenderedProbeMetadataOptions
+} from "./asset-core-types.js";
+export type {
+  AssetInspectionReport,
+  AuraCliAnimationClipInspection,
+  AuraCliAnimationInspection,
+  AuraCliAssetBoundsInspection,
+  AuraCliHumanoidConfidence,
+  AuraCliHumanoidInspection,
+  AuraCliHumanoidStatus,
+  AuraCliMaterialInspection,
+  AuraCliMorphTargetInspection,
+  AuraCliMorphTargetMeshInspection,
+  AuraCliOrientationInspection,
+  AuraCliSceneHierarchyInspection,
+  AuraCliSkeletonInspection,
+  AuraCliSkeletonSkinInspection,
+  InspectAssetOptions
+} from "./asset-inspection-types.js";
+export type {
+  AnimationEpisodeAssetReadiness,
+  AnimationEpisodeAssetRole,
+  AnimationEpisodeMouthReadinessMode,
+  AnimationEpisodeReadinessReport,
+  AssetReadinessAnimationClipMetadata,
+  AssetReadinessAnimationMetadata,
+  AssetReadinessAssetArtifacts,
+  AssetReadinessAssetReport,
+  AssetReadinessArtifacts,
+  AssetReadinessOptions,
+  AssetReadinessReport,
+  AssetReadinessValidationContract,
+  AssetReadinessValidatorEvidence,
+  AuraAssetReadinessProfile,
+  AuraAssetReadinessStatus,
+  AuraGameAssetReadinessProfile
+} from "./asset-readiness-types.js";
+export type {
+  CharacterAssemblyPartInput,
+  CharacterAssemblyPlanOptions,
+  CharacterAssemblyPlanResult,
+  CharacterAssemblyResolvedPart
+} from "./character-assembly-types.js";
 
-export type AuraCliAssetType = "model" | "texture" | "environment" | "audio";
-export type AuraCliHumanoidStatus = "humanoid" | "non-humanoid" | "unknown";
-export type AuraCliHumanoidConfidence = "high" | "medium" | "low";
+export function readRenderedProbeMetadata(options: ReadRenderedProbeMetadataOptions): AuraCliRenderedProbe {
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const metadataPath = resolve(projectDir, options.file);
+  if (!existsSync(metadataPath)) {
+    throw new Error(`Aura3D rendered probe metadata failed: "${options.file}" does not exist.`);
+  }
 
-export interface AuraCliAnimationInspection {
-  readonly clipCount: number;
-  readonly clips: readonly AuraCliAnimationClipInspection[];
-  readonly messages: readonly string[];
-}
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(metadataPath, "utf8"));
+  } catch (error) {
+    throw new Error(`Aura3D rendered probe metadata failed: "${options.file}" is not valid JSON (${error instanceof Error ? error.message : String(error)}).`);
+  }
 
-export interface AuraCliAnimationClipInspection {
-  readonly index: number;
-  readonly name: string;
-  readonly channelCount: number;
-  readonly samplerCount: number;
-  readonly targetPaths: readonly string[];
-  readonly targetNodes: readonly string[];
-}
+  const root = objectValue(parsed);
+  const record = objectValue(root?.renderedProbe) ?? root;
+  const failures: string[] = [];
+  if (!record) {
+    failures.push("metadata must be an object or contain a renderedProbe object");
+  }
 
-export interface AuraCliSkeletonInspection {
-  readonly skinCount: number;
-  readonly jointCount: number;
-  readonly skins: readonly AuraCliSkeletonSkinInspection[];
-  readonly messages: readonly string[];
-}
+  const url = stringValue(record?.url);
+  const kind = stringValue(record?.kind);
+  const renderer = stringValue(record?.renderer);
+  const route = stringValue(record?.route);
+  const sha = stringValue(record?.sha256);
+  const assetHash = stringValue(record?.assetHash);
+  const checkedAt = stringValue(record?.checkedAt);
+  const width = readPositiveInteger(record, "width", failures);
+  const height = readPositiveInteger(record, "height", failures);
+  const nonBlankPixels = readPositiveInteger(record, "nonBlankPixels", failures);
+  const colorBuckets = readPositiveInteger(record, "colorBuckets", failures);
+  const foregroundBounds = readOptionalForegroundBounds(record, failures);
 
-export interface AuraCliSkeletonSkinInspection {
-  readonly index: number;
-  readonly name: string;
-  readonly jointCount: number;
-  readonly joints: readonly string[];
-  readonly skeleton?: string;
-}
+  if (!url) failures.push("missing url");
+  if (!kind) {
+    failures.push("missing kind");
+  } else if (kind !== "browser-screenshot" && kind !== "aura-probe-render") {
+    failures.push(`kind "${kind}" is not browser-screenshot or aura-probe-render`);
+  }
+  if (!renderer) {
+    failures.push("missing renderer");
+  } else if (!/createAuraApp|@aura3d\/engine/i.test(renderer)) {
+    failures.push(`renderer "${renderer}" is not root @aura3d/engine/createAuraApp proof`);
+  }
+  if (!route) failures.push("missing route");
+  if (!sha) {
+    failures.push("missing image sha256");
+  } else if (!/^sha256-[a-f0-9]{64}$/i.test(sha)) {
+    failures.push("image sha256 must be sha256-<64 hex>");
+  }
+  if (!assetHash) {
+    failures.push("missing assetHash");
+  } else if (!/^sha256-[a-f0-9]{64}$/i.test(assetHash)) {
+    failures.push("assetHash must be sha256-<64 hex>");
+  }
+  if (!checkedAt) {
+    failures.push("missing checkedAt");
+  } else if (Number.isNaN(Date.parse(checkedAt))) {
+    failures.push("checkedAt must be a valid timestamp");
+  }
 
-export interface AuraCliMorphTargetInspection {
-  readonly targetCount: number;
-  readonly targetNames: readonly string[];
-  readonly meshes: readonly AuraCliMorphTargetMeshInspection[];
-  readonly messages: readonly string[];
-}
+  if (failures.length > 0) {
+    throw new Error(`Aura3D rendered probe metadata failed: ${failures.join("; ")}.`);
+  }
 
-export interface AuraCliMorphTargetMeshInspection {
-  readonly index: number;
-  readonly name: string;
-  readonly targetNames: readonly string[];
-}
-
-export interface AuraCliAssetBoundsInspection {
-  readonly min: readonly [number, number, number];
-  readonly max: readonly [number, number, number];
-  readonly size: readonly [number, number, number];
-  readonly center: readonly [number, number, number];
-  readonly maxDimension: number;
-  readonly grounded: boolean;
-}
-
-export interface AuraCliMaterialInspection {
-  readonly name: string;
-  readonly visible: boolean;
-  readonly readable: boolean;
-  readonly opacity: number;
-  readonly alphaMode?: string;
-  readonly reasons: readonly string[];
-}
-
-export interface AuraCliOrientationInspection {
-  readonly source: "gltf-extras" | "unknown";
-  readonly forwardAxis?: string;
-  readonly upAxis?: string;
-  readonly messages: readonly string[];
-}
-
-export interface AuraCliHumanoidInspection {
-  readonly humanoid: boolean;
-  readonly status: AuraCliHumanoidStatus;
-  readonly confidence: AuraCliHumanoidConfidence;
-  readonly skinCount: number;
-  readonly jointCount: number;
-  readonly matchedBones: readonly string[];
-  readonly missingBones: readonly string[];
-  readonly messages: readonly string[];
-}
-
-export interface AuraCliAssetProvenance {
-  readonly sourcePath: string;
-  readonly sourceUrl?: string;
-  readonly license?: string;
-  readonly author?: string;
-  readonly sourceFamily?: string;
-  readonly attribution?: string;
-  /** sha256 of the downloaded bytes (provenance for pulled catalog assets). */
-  readonly sha256?: string;
-  /** ISO timestamp the asset was retrieved from its source (injectable). */
-  readonly retrievedAt?: string;
-  readonly evidence?: readonly string[];
-  readonly checkedAt: string;
-}
-
-export interface AuraCliAssetManifest {
-  readonly schema: "aura3d.assets/1.0";
-  readonly assetBasePath: string;
-  readonly outputDir: string;
-  readonly typegen: string;
-  readonly assets: readonly AuraCliAssetEntry[];
-}
-
-export interface AuraCliAssetEntry {
-  readonly id: string;
-  readonly type: AuraCliAssetType;
-  readonly format: string;
-  readonly source: string;
-  readonly outputPath: string;
-  readonly url: string;
-  readonly hash: string;
-  readonly sizeBytes: number;
-  readonly bounds?: readonly [number, number, number];
-  readonly boundsMetadata?: AuraCliAssetBoundsInspection;
-  readonly materials: readonly string[];
-  readonly materialMetadata?: readonly AuraCliMaterialInspection[];
-  readonly animations: readonly string[];
-  readonly animationMetadata?: AuraCliAnimationInspection;
-  readonly humanoid?: AuraCliHumanoidInspection;
-  readonly skeleton?: AuraCliSkeletonInspection;
-  readonly morphTargets?: AuraCliMorphTargetInspection;
-  readonly provenance?: AuraCliAssetProvenance;
-  readonly textures: readonly string[];
-  readonly dependencies?: readonly string[];
-  readonly orientation?: AuraCliOrientationInspection;
-  readonly nodeNames?: readonly string[];
-  readonly thumbnailUrl?: string;
-  readonly warnings: readonly string[];
-}
-
-export interface AddAssetOptions {
-  readonly projectDir?: string;
-  readonly file: string;
-  readonly name: string;
-  readonly type?: AuraCliAssetType;
-  readonly publicPath?: string;
-  readonly outputDir?: string;
-  readonly typegen?: string;
-  readonly copy?: boolean;
-  readonly sourceUrl?: string;
-  readonly license?: string;
-  readonly author?: string;
-  readonly sourceFamily?: string;
-  readonly attribution?: string;
-  /** sha256 of the retrieved bytes, captured by the pull/resolve flow. */
-  readonly sha256?: string;
-  /**
-   * ISO timestamp the asset was retrieved. Injectable so deterministic builds can
-   * pin it; when omitted, provenance falls back to wall-clock `checkedAt`.
-   */
-  readonly retrievedAt?: string;
-}
-
-export interface AssetCliResult {
-  readonly ok: boolean;
-  readonly manifestPath: string;
-  readonly manifest: AuraCliAssetManifest;
-  readonly messages: readonly string[];
-}
-
-export interface AssetValidationResult extends AssetCliResult {
-  readonly failures: readonly string[];
-  readonly warnings: readonly string[];
-}
-
-export interface AssetValidationOptions {
-  readonly projectDir?: string;
-  readonly noPlaceholders?: boolean;
-  readonly requireLicense?: boolean;
-  readonly provenanceFile?: string;
-  readonly assetIds?: readonly string[];
-}
-
-export type AuraAssetReadinessProfile = "game" | "animation";
-export type AuraGameAssetReadinessProfile = "fighting-character";
-export type AuraAssetReadinessStatus = "passed" | "failed";
-
-export interface AssetReadinessOptions {
-  readonly projectDir?: string;
-  readonly output?: string;
-  readonly gameProfile?: AuraGameAssetReadinessProfile;
-  readonly episode?: boolean;
-  readonly noPlaceholders?: boolean;
-  readonly requireLicense?: boolean;
-  readonly provenanceFile?: string;
-  readonly assetIds?: readonly string[];
-}
-
-export interface AssetReadinessReport {
-  readonly schema: "aura3d.asset-readiness/1.0";
-  readonly profile: AuraAssetReadinessProfile;
-  readonly gameProfile?: AuraGameAssetReadinessProfile;
-  readonly ok: boolean;
-  readonly status: AuraAssetReadinessStatus;
-  readonly validator: AssetReadinessValidatorEvidence;
-  readonly checkedAt: string;
-  readonly manifestPath: string;
-  readonly artifacts: AssetReadinessArtifacts;
-  readonly contracts: readonly AssetReadinessValidationContract[];
-  readonly animationEpisode?: AnimationEpisodeReadinessReport;
-  readonly summary: {
-    readonly totalAssets: number;
-    readonly modelAssets: number;
-    readonly animatedModels: number;
-    readonly textureAssets: number;
-    readonly audioAssets: number;
-    readonly environmentAssets: number;
-    readonly animationClips: number;
-    readonly humanoidModels: number;
-    readonly animationCharacters?: number;
-    readonly animationSets?: number;
-    readonly animationProps?: number;
-    readonly episodeReadyCharacters?: number;
-    readonly mouthReadyCharacters?: number;
-    readonly animationReadyCharacters?: number;
-    readonly profileTargetAssets?: number;
-    readonly profileReadyAssets?: number;
-    readonly profileSkippedAssets?: number;
+  return {
+    url: url!,
+    kind: kind as "browser-screenshot" | "aura-probe-render",
+    renderer,
+    route,
+    sha256: sha,
+    assetHash,
+    width,
+    height,
+    nonBlankPixels,
+    colorBuckets,
+    checkedAt,
+    ...(foregroundBounds ? { foregroundBounds } : {})
   };
-  readonly assets: readonly AssetReadinessAssetReport[];
-  readonly failures: readonly string[];
-  readonly warnings: readonly string[];
-  readonly messages: readonly string[];
 }
-
-export type AnimationEpisodeAssetRole =
-  | "character"
-  | "set"
-  | "prop"
-  | "environment"
-  | "audio"
-  | "texture"
-  | "unknown";
-
-export type AnimationEpisodeMouthReadinessMode =
-  | "blendshape-lip-sync"
-  | "primitive-mouth-card"
-  | "amplitude-only"
-  | "missing-mouth-motion";
-
-export interface AnimationEpisodeAssetReadiness {
-  readonly id: string;
-  readonly role: AnimationEpisodeAssetRole;
-  readonly episodeReady: boolean;
-  readonly distinctHash?: string;
-  readonly licenseVerified: boolean;
-  readonly provenanceReady: boolean;
-  readonly placeholderFree: boolean;
-  readonly animationReady: boolean;
-  readonly mouthReady: boolean;
-  readonly mouthMode?: AnimationEpisodeMouthReadinessMode;
-  readonly setReady?: boolean;
-  readonly warnings: readonly string[];
-  readonly failures: readonly string[];
-}
-
-export interface AnimationEpisodeReadinessReport {
-  readonly enabled: boolean;
-  readonly ok: boolean;
-  readonly mode: "episode-ready";
-  readonly requirements: {
-    readonly minDistinctCharacters: number;
-    readonly minSets: number;
-    readonly requireLicense: boolean;
-    readonly noPlaceholders: boolean;
-    readonly requireAnimation: boolean;
-    readonly requireMouthMotion: boolean;
-    readonly requireSetScale: boolean;
-  };
-  readonly selectedCharacters: readonly string[];
-  readonly selectedSets: readonly string[];
-  readonly selectedProps: readonly string[];
-  readonly selectedAudio: readonly string[];
-  readonly readiness: readonly AnimationEpisodeAssetReadiness[];
-  readonly assetProvenanceArtifact: string;
-  readonly failures: readonly string[];
-  readonly warnings: readonly string[];
-}
-
-export interface AssetReadinessValidatorEvidence {
-  readonly id: "aura-clash-game-assets" | "aura-voice-animation-assets";
-  readonly command: "assets validate-game" | "assets validate-animation";
-  readonly label: string;
-}
-
-export interface AssetReadinessValidationContract {
-  readonly id: string;
-  readonly label: string;
-  readonly profile: AuraAssetReadinessProfile;
-  readonly sourceFamily?: "Quaternius" | "AuraVoice" | "custom";
-  readonly intendedUse?: "fighter" | "animation-character" | "set" | "prop";
-  readonly sourceOnly: boolean;
-  readonly requiredChecks: readonly string[];
-  readonly requiredAnimationClips?: readonly string[];
-  readonly evidenceBoundary: string;
-}
-
-export interface AssetReadinessArtifacts {
-  readonly evidencePath?: string;
-  readonly manifestPath: string;
-  readonly typedAssetsPath: string;
-  readonly outputDir: string;
-  readonly assetBasePath: string;
-  readonly assetFiles: readonly AssetReadinessAssetArtifacts[];
-}
-
-export interface AssetReadinessAssetArtifacts {
-  readonly id: string;
-  readonly sourcePath: string;
-  readonly outputPath: string;
-  readonly publicUrl: string;
-  readonly thumbnailPath?: string;
-  readonly thumbnailUrl?: string;
-  readonly dependencyPaths: readonly string[];
-}
-
-export interface AssetReadinessAnimationMetadata {
-  readonly clipCount: number;
-  readonly clips: readonly AssetReadinessAnimationClipMetadata[];
-}
-
-export interface AssetReadinessAnimationClipMetadata {
-  readonly index: number;
-  readonly name: string;
-}
-
-export interface AssetReadinessAssetReport {
-  readonly id: string;
-  readonly type: AuraCliAssetType;
-  readonly format: string;
-  readonly source: string;
-  readonly outputPath: string;
-  readonly url: string;
-  readonly hash: string;
-  readonly sizeBytes: number;
-  readonly bounds?: readonly [number, number, number];
-  readonly boundsMetadata?: AuraCliAssetBoundsInspection;
-  readonly animations: readonly string[];
-  readonly animation: AssetReadinessAnimationMetadata;
-  readonly animationMetadata?: AuraCliAnimationInspection;
-  readonly humanoid?: AuraCliHumanoidInspection;
-  readonly skeleton?: AuraCliSkeletonInspection;
-  readonly morphTargets?: AuraCliMorphTargetInspection;
-  readonly provenance?: AuraCliAssetProvenance;
-  readonly placeholderFree: boolean;
-  readonly licenseVerified: boolean;
-  readonly materials: readonly string[];
-  readonly materialMetadata?: readonly AuraCliMaterialInspection[];
-  readonly textures: readonly string[];
-  readonly orientation?: AuraCliOrientationInspection;
-  readonly nodeNames?: readonly string[];
-  readonly artifactPaths: AssetReadinessAssetArtifacts;
-  readonly gameReady: boolean;
-  readonly animationReady: boolean;
-  readonly profileTarget?: boolean;
-  readonly profileReady?: boolean;
-  readonly profileSkippedReason?: string;
-  readonly warnings: readonly string[];
-}
-
-export interface AssetInspectionReport {
-  readonly ok: boolean;
-  readonly schema: "aura3d.asset-inspection/1.0";
-  readonly file: string;
-  readonly format: string;
-  readonly sizeBytes: number;
-  readonly bounds?: readonly [number, number, number];
-  readonly boundsMetadata?: AuraCliAssetBoundsInspection;
-  readonly materials: readonly string[];
-  readonly materialMetadata?: readonly AuraCliMaterialInspection[];
-  readonly animations: readonly string[];
-  readonly animation?: AuraCliAnimationInspection;
-  readonly humanoid?: AuraCliHumanoidInspection;
-  readonly skeleton?: AuraCliSkeletonInspection;
-  readonly morphTargets?: AuraCliMorphTargetInspection;
-  readonly provenance?: Partial<AuraCliAssetProvenance>;
-  readonly textures: readonly string[];
-  readonly orientation?: AuraCliOrientationInspection;
-  readonly nodeNames?: readonly string[];
-  readonly dependencies: readonly string[];
-  readonly warnings: readonly string[];
-  readonly messages: readonly string[];
-}
-
-export interface InspectAssetOptions {
-  readonly projectDir?: string;
-  readonly file: string;
-  readonly animation?: boolean;
-  readonly humanoid?: boolean;
-  readonly skeleton?: boolean;
-  readonly morphs?: boolean;
-  readonly license?: boolean;
-}
-
-export interface CharacterAssemblyPlanOptions {
-  readonly projectDir?: string;
-  readonly name: string;
-  readonly body: string;
-  readonly parts?: readonly CharacterAssemblyPartInput[];
-  readonly scale?: number;
-  readonly output?: string;
-}
-
-export interface CharacterAssemblyPartInput {
-  readonly slot: string;
-  readonly asset: string;
-  readonly attachTo?: string;
-}
-
-export interface CharacterAssemblyPlanResult {
-  readonly ok: boolean;
-  readonly schema: "aura3d.character-assembly/1.0";
-  readonly name: string;
-  readonly output: string;
-  readonly body: CharacterAssemblyResolvedPart;
-  readonly parts: readonly CharacterAssemblyResolvedPart[];
-  readonly validation: {
-    readonly failures: readonly string[];
-    readonly warnings: readonly string[];
-  };
-  readonly messages: readonly string[];
-}
-
-export interface CharacterAssemblyResolvedPart {
-  readonly slot: string;
-  readonly asset: string;
-  readonly url: string;
-  readonly type: AuraCliAssetType;
-  readonly format: string;
-  readonly animations: readonly string[];
-  readonly humanoid?: AuraCliHumanoidInspection;
-  readonly attachTo: string;
-}
-
-export const DEFAULT_AURA_ASSET_MANIFEST = "aura.assets.json";
-export const DEFAULT_AURA_ASSET_OUTPUT_DIR = "public/aura-assets";
-export const DEFAULT_AURA_ASSET_PUBLIC_PATH = "/aura-assets/";
-export const DEFAULT_AURA_ASSET_TYPEGEN = "src/aura-assets.ts";
 
 export function addAsset(options: AddAssetOptions): AssetCliResult {
   const projectDir = resolve(options.projectDir ?? process.cwd());
@@ -499,12 +289,18 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     humanoid: inspection.humanoid,
     skeleton: inspection.skeleton,
     morphTargets: inspection.morphTargets,
+    hierarchy: inspection.hierarchy,
     provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance)),
     textures: inspection.textures,
     dependencies: inspection.dependencies,
     orientation: inspection.orientation,
     nodeNames: inspection.nodeNames,
     thumbnailUrl,
+    quality: options.quality ?? existing?.quality ?? "ungraded",
+    role: options.role ?? existing?.role ?? "unknown",
+    ...(options.suitabilityReason ?? existing?.suitabilityReason ? { suitabilityReason: options.suitabilityReason ?? existing?.suitabilityReason } : {}),
+    ...(options.renderedProbe ?? existing?.renderedProbe ? { renderedProbe: options.renderedProbe ?? existing?.renderedProbe } : {}),
+    ...(options.gameGeometry ?? existing?.gameGeometry ? { gameGeometry: options.gameGeometry ?? existing?.gameGeometry } : {}),
     warnings: createAssetWarnings(sourcePath, inspection)
   };
   const manifest = sortManifest({
@@ -593,6 +389,9 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
   const sourceManifest = readAssetManifest(projectDir);
   const manifest = filterAssetManifest(sourceManifest, options.assetIds);
   const externalProvenance = readExternalProvenance(projectDir, options.provenanceFile);
+  const release = options.release === true;
+  const noPlaceholders = options.noPlaceholders === true || release;
+  const requireLicense = options.requireLicense === true || release;
   const failures: string[] = manifestMissing
     ? [`Missing ${DEFAULT_AURA_ASSET_MANIFEST}. Suggested fix: run aura3d assets add ./asset.glb --name product or aura3d assets scan ./assets.`]
     : [];
@@ -602,6 +401,7 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     failures.push(`Missing asset provenance evidence file: ${options.provenanceFile}`);
   }
   const warnings: string[] = [];
+  warnings.push(...createDuplicateHashWarnings(manifest, externalProvenance));
   for (const asset of manifest.assets) {
     const outputPath = resolve(projectDir, asset.outputPath);
     if (!existsSync(outputPath)) {
@@ -611,13 +411,23 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
     const actualHash = `sha256-${hashFile(outputPath)}`;
     if (actualHash !== asset.hash) failures.push(`Hash mismatch for "${asset.id}": expected ${asset.hash}, found ${actualHash}`);
     const provenance = resolveAssetProvenance(asset, externalProvenance);
-    if (options.noPlaceholders && isPlaceholderAsset(asset, provenance)) {
+    if (noPlaceholders && isPlaceholderAsset(asset, provenance)) {
       failures.push(`Placeholder asset is not allowed in strict release validation: "${asset.id}". Replace it with a real typed asset and provenance.`);
     }
-    if (options.requireLicense && !hasUsableLicenseEvidence(provenance)) {
+    if (requireLicense && !hasUsableLicenseEvidence(provenance)) {
       failures.push(`Missing license/provenance evidence for "${asset.id}". Add it with assets add --license ... --source-url ... or pass --provenance <evidence.json>.`);
     }
-    warnings.push(...asset.warnings.map((warning) => `${asset.id}: ${warning}`));
+    if (release) warnings.push(...createDurableReleaseProvenanceWarnings(asset, provenance));
+    if (release) warnings.push(...createReleaseStructuredQualityWarnings(asset));
+    if (release) warnings.push(...createReleaseAssetQualityWarnings(asset));
+    if (release) warnings.push(...createReleaseRenderedProbeWarnings(projectDir, manifest, asset));
+    if (release) warnings.push(...createManifestOrientationOverrideWarnings(asset));
+    if (release) warnings.push(...createRoleAwareReleaseQualityWarnings(projectDir, manifest, asset));
+    if (release) warnings.push(...createReleaseThumbnailWarnings(projectDir, manifest, asset));
+    const tempProvenance = createTempProvenanceWarning(asset, provenance);
+    if (tempProvenance) warnings.push(tempProvenance);
+    const storedWarnings = release ? releaseStoredAssetWarnings(asset) : asset.warnings ?? [];
+    warnings.push(...storedWarnings.map((warning) => `${asset.id}: ${warning}`));
     if (asset.format === "gltf") {
       for (const dependency of asset.dependencies ?? asset.textures) {
         if (dependency.startsWith("data:")) continue;
@@ -631,69 +441,25 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
   }
   const typegenPath = resolve(projectDir, manifest.typegen);
   if (!existsSync(typegenPath)) failures.push(`Missing typed asset module: ${manifest.typegen}. Run assets typegen.`);
+  const source = shouldScanSource(options) ? validateAssetSource(projectDir, options.source, sourceManifest) : undefined;
+  if (source) {
+    failures.push(...source.failures);
+    warnings.push(...source.warnings);
+  }
+  if (release) {
+    for (const warning of warnings) {
+      failures.push(`Release validation warning is blocking: ${warning}`);
+    }
+  }
   return {
     ok: failures.length === 0,
     manifestPath,
     manifest,
+    ...(source ? { source } : {}),
     failures,
     warnings,
-    messages: failures.length === 0 ? ["Asset manifest is valid."] : failures
+    messages: failures.length === 0 ? [release ? "Asset manifest is release-valid." : "Asset manifest is valid."] : failures
   };
-}
-
-export function writeTypedAssets(projectDir: string, manifest = readAssetManifest(projectDir)): string {
-  const path = resolve(projectDir, manifest.typegen);
-  mkdirSync(dirname(path), { recursive: true });
-  const lines = [
-    `import { defineAuraAssets } from "@aura3d/engine";`,
-    "",
-    "export const assets = defineAuraAssets({",
-    ...manifest.assets.map((asset) => {
-      const metadata = {
-        materials: asset.materials,
-        animations: asset.animations,
-        animationClips: asset.animations,
-        animationMetadata: asset.animationMetadata ?? createReadinessAnimationMetadata(asset.animations),
-        humanoid: asset.humanoid?.humanoid ?? false,
-        humanoidStatus: asset.humanoid?.status ?? "unknown",
-        humanoidConfidence: asset.humanoid?.confidence ?? "low",
-        skeleton: asset.skeleton,
-        morphTargets: asset.morphTargets,
-        provenance: asset.provenance,
-        sourcePath: asset.source,
-        outputPath: asset.outputPath,
-        license: asset.provenance?.license,
-        author: asset.provenance?.author,
-        boundsMetadata: asset.boundsMetadata,
-        materialMetadata: asset.materialMetadata,
-        orientation: asset.orientation,
-        nodeNames: asset.nodeNames ?? [],
-        textures: asset.textures,
-        dependencies: asset.dependencies ?? [],
-        thumbnailUrl: asset.thumbnailUrl
-      };
-      const fields = [
-        `type: ${JSON.stringify(asset.type)}`,
-        `format: ${JSON.stringify(asset.format)}`,
-        `url: ${JSON.stringify(asset.url)}`,
-        `hash: ${JSON.stringify(asset.hash)}`,
-        `bounds: ${JSON.stringify(asset.bounds ?? [0, 0, 0])}`,
-        `sizeBytes: ${asset.sizeBytes}`,
-        `metadata: ${JSON.stringify(metadata)}`
-      ];
-      return `  ${JSON.stringify(asset.id)}: { ${fields.join(", ")} },`;
-    }),
-    "} as const);",
-    "",
-    "export type AuraGeneratedAssets = typeof assets;",
-    ""
-  ];
-  writeFileSync(path, lines.join("\n"));
-  return path;
-}
-
-export function listAssets(options: { readonly projectDir?: string } = {}): readonly AuraCliAssetEntry[] {
-  return readAssetManifest(resolve(options.projectDir ?? process.cwd())).assets;
 }
 
 export function createAssetThumbnails(options: { readonly projectDir?: string } = {}): AssetCliResult {
@@ -727,9 +493,10 @@ export function doctor(options: { readonly projectDir?: string } = {}): AssetVal
   };
 }
 
-export function checkDeploy(options: { readonly projectDir?: string; readonly distDir?: string } = {}): AssetValidationResult {
+export function checkDeploy(options: CheckDeployOptions = {}): AssetValidationResult {
   const projectDir = resolve(options.projectDir ?? process.cwd());
-  const manifest = readAssetManifest(projectDir);
+  const sourceManifest = readAssetManifest(projectDir);
+  const manifest = filterAssetManifest(sourceManifest, options.assetIds);
   const distDir = normalizeRelativePath(options.distDir ?? "dist");
   const failures: string[] = [];
   const warnings: string[] = [];
@@ -741,16 +508,27 @@ export function checkDeploy(options: { readonly projectDir?: string; readonly di
     }
     if (!/[a-f0-9]{8}\.[^.]+$/i.test(asset.url)) warnings.push(`${asset.id}: URL is not fingerprinted: ${asset.url}`);
   }
-  const validation = validateAssets({ projectDir });
+  const validation = validateAssets({
+    projectDir,
+    noPlaceholders: options.noPlaceholders,
+    requireLicense: options.requireLicense,
+    provenanceFile: options.provenanceFile,
+    assetIds: options.assetIds,
+    source: options.source,
+    release: options.release
+  });
   failures.push(...validation.failures);
   warnings.push(...validation.warnings);
   return {
     ok: failures.length === 0,
     manifestPath: resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST),
     manifest,
+    ...(validation.source ? { source: validation.source } : {}),
     failures,
     warnings,
-    messages: failures.length === 0 ? ["Deploy check passed."] : failures
+    messages: failures.length === 0
+      ? [options.release ? "Deploy check passed with release asset gates." : "Deploy check passed."]
+      : failures
   };
 }
 
@@ -1053,8 +831,8 @@ function validateAssetReadiness(profile: AuraAssetReadinessProfile, options: Ass
 }
 
 function filterAssetManifest(manifest: AuraCliAssetManifest, assetIds?: readonly string[]): AuraCliAssetManifest {
+  if (assetIds === undefined) return manifest;
   const normalized = normalizeAssetIdFilter(assetIds);
-  if (normalized.length === 0) return manifest;
   const allowed = new Set(normalized);
   return {
     ...manifest,
@@ -1063,6 +841,7 @@ function filterAssetManifest(manifest: AuraCliAssetManifest, assetIds?: readonly
 }
 
 function findMissingAssetIds(manifest: AuraCliAssetManifest, assetIds?: readonly string[]): readonly string[] {
+  if (assetIds === undefined) return [];
   const normalized = normalizeAssetIdFilter(assetIds);
   if (normalized.length === 0) return [];
   const existing = new Set(manifest.assets.map((asset) => asset.id));
@@ -1603,6 +1382,68 @@ function pushUnique(target: string[], values: readonly string[]): void {
   }
 }
 
+function createDuplicateHashWarnings(
+  manifest: AuraCliAssetManifest,
+  externalProvenance: ReadonlyMap<string, AuraCliAssetProvenance>
+): readonly string[] {
+  const byHash = new Map<string, AuraCliAssetEntry[]>();
+  for (const asset of manifest.assets) {
+    const existing = byHash.get(asset.hash) ?? [];
+    existing.push(asset);
+    byHash.set(asset.hash, existing);
+  }
+  const warnings: string[] = [];
+  for (const [hash, assets] of byHash) {
+    if (assets.length < 2) continue;
+    const unexplained = assets.filter((asset) => !hasDuplicateHashAllowlist(resolveAssetProvenance(asset, externalProvenance)));
+    if (unexplained.length > 0) {
+      warnings.push(`duplicate asset hash ${hash} used by ${assets.map((asset) => `"${asset.id}"`).join(", ")} without duplicate-ok provenance evidence.`);
+    }
+  }
+  return warnings;
+}
+
+function hasDuplicateHashAllowlist(provenance: AuraCliAssetProvenance | undefined): boolean {
+  const text = [
+    provenance?.sourceFamily,
+    provenance?.sourcePath,
+    provenance?.sourcePage,
+    provenance?.downloadUrl,
+    provenance?.sourceUrl,
+    provenance?.license,
+    provenance?.licenseName,
+    provenance?.licenseUrl,
+    provenance?.licenseRaw,
+    provenance?.author,
+    provenance?.attribution,
+    ...(provenance?.evidence ?? [])
+  ].filter(Boolean).join(" ");
+  return /\b(?:duplicate-ok|intentional-duplicate|duplicate allowed|shared source allowed)\b/i.test(text);
+}
+
+function createTempProvenanceWarning(asset: AuraCliAssetEntry, provenance: AuraCliAssetProvenance | undefined): string | undefined {
+  if (!provenance) return undefined;
+  if (hasLocalOnlyProvenanceMarker(provenance)) return undefined;
+  const values = [asset.source, provenance.sourcePath, provenance.sourcePage, provenance.downloadUrl, provenance.sourceUrl].filter((value): value is string => Boolean(value));
+  if (!values.some(isTempProvenancePath)) return undefined;
+  return `${asset.id}: temp-path provenance is not durable (${values.find(isTempProvenancePath)}). Re-add with durable source/license evidence or mark local-only explicitly.`;
+}
+
+function isTempProvenancePath(value: string): boolean {
+  return /(?:^|[/\\])(?:var[/\\]folders|tmp|temp|private[/\\]var[/\\]folders)(?:[/\\]|$)/i.test(value) ||
+    /(?:^|[/\\])T[/\\]aura3d-resolve-|aura3d-resolve-/i.test(value);
+}
+
+function hasLocalOnlyProvenanceMarker(provenance: AuraCliAssetProvenance): boolean {
+  const text = [
+    provenance.sourceFamily,
+    provenance.license,
+    provenance.attribution,
+    ...(provenance.evidence ?? [])
+  ].filter(Boolean).join(" ");
+  return /\blocal-only\b/i.test(text);
+}
+
 function resolvePublicArtifactPath(projectDir: string, manifest: AuraCliAssetManifest, url: string): string | undefined {
   if (/^https?:\/\//i.test(url)) return undefined;
   if (url.startsWith(manifest.assetBasePath)) {
@@ -1620,26 +1461,6 @@ function defaultAttachPoint(slot: string): string {
   return "root";
 }
 
-export function readAssetManifest(projectDir: string): AuraCliAssetManifest {
-  const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
-  if (!existsSync(manifestPath)) {
-    return {
-      schema: "aura3d.assets/1.0",
-      assetBasePath: DEFAULT_AURA_ASSET_PUBLIC_PATH,
-      outputDir: DEFAULT_AURA_ASSET_OUTPUT_DIR,
-      typegen: DEFAULT_AURA_ASSET_TYPEGEN,
-      assets: []
-    };
-  }
-  const parsed = JSON.parse(readFileSync(manifestPath, "utf8")) as AuraCliAssetManifest;
-  if (parsed.schema !== "aura3d.assets/1.0") throw new Error(`Unsupported Aura3D asset manifest schema: ${String(parsed.schema)}`);
-  return parsed;
-}
-
-export function writeAssetManifest(projectDir: string, manifest: AuraCliAssetManifest): void {
-  writeFileSync(resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
-}
-
 interface AssetInspection {
   readonly bounds?: readonly [number, number, number];
   readonly boundsMetadata?: AuraCliAssetBoundsInspection;
@@ -1650,6 +1471,7 @@ interface AssetInspection {
   readonly humanoid: AuraCliHumanoidInspection;
   readonly skeleton: AuraCliSkeletonInspection;
   readonly morphTargets: AuraCliMorphTargetInspection;
+  readonly hierarchy: AuraCliSceneHierarchyInspection;
   readonly provenance?: Partial<AuraCliAssetProvenance>;
   readonly textures: readonly string[];
   readonly orientation: AuraCliOrientationInspection;
@@ -1668,6 +1490,7 @@ function inspectAssetFile(path: string, format: string): AssetInspection {
     humanoid: unknownHumanoidInspection("Humanoid detection is only available for GLB/glTF model assets."),
     skeleton: emptySkeletonInspection("Skeleton detection is only available for GLB/glTF model assets."),
     morphTargets: emptyMorphTargetInspection("Morph target detection is only available for GLB/glTF model assets."),
+    hierarchy: emptyHierarchyInspection("Scene hierarchy inspection is only available for GLB/glTF model assets."),
     textures: [],
     orientation: unknownOrientationInspection(),
     nodeNames: [],
@@ -1699,6 +1522,8 @@ interface GltfJson {
   }[];
   readonly images?: readonly { readonly uri?: string; readonly name?: string }[];
   readonly buffers?: readonly { readonly uri?: string }[];
+  readonly scene?: number;
+  readonly scenes?: readonly { readonly name?: string; readonly nodes?: readonly number[] }[];
   readonly nodes?: readonly { readonly name?: string; readonly mesh?: number; readonly skin?: number; readonly children?: readonly number[]; readonly extras?: unknown }[];
   readonly skins?: readonly { readonly name?: string; readonly joints?: readonly number[]; readonly skeleton?: number }[];
   readonly meshes?: readonly {
@@ -1742,6 +1567,7 @@ function inspectGltf(json: GltfJson, baseDir?: string): AssetInspection {
     humanoid: inspectGltfHumanoid(json),
     skeleton: inspectGltfSkeleton(json),
     morphTargets: inspectGltfMorphTargets(json),
+    hierarchy: inspectGltfHierarchy(json),
     provenance: inspectGltfProvenance(json),
     textures: (json.images ?? []).map((image, index) => image.uri ?? image.name ?? `image-${index}`),
     orientation: inspectGltfOrientation(json),
@@ -1895,20 +1721,85 @@ function emptyMorphTargetInspection(message: string): AuraCliMorphTargetInspecti
   };
 }
 
+function emptyHierarchyInspection(message: string): AuraCliSceneHierarchyInspection {
+  return {
+    nodeCount: 0,
+    meshCount: 0,
+    materialCount: 0,
+    textureCount: 0,
+    animationClipCount: 0,
+    skinCount: 0,
+    morphTargetCount: 0,
+    rootNodeNames: [],
+    maxDepth: 0,
+    messages: [message]
+  };
+}
+
+function inspectGltfHierarchy(json: GltfJson): AuraCliSceneHierarchyInspection {
+  const nodes = json.nodes ?? [];
+  const childIndexes = new Set<number>();
+  for (const node of nodes) {
+    for (const child of node.children ?? []) {
+      if (child >= 0 && child < nodes.length) childIndexes.add(child);
+    }
+  }
+  const sceneRoots = json.scenes?.[json.scene ?? 0]?.nodes?.filter((nodeIndex) => nodeIndex >= 0 && nodeIndex < nodes.length);
+  const rootIndexes = sceneRoots && sceneRoots.length > 0
+    ? sceneRoots
+    : nodes.map((_, index) => index).filter((index) => !childIndexes.has(index));
+  const rootNodeNames = rootIndexes.map((nodeIndex) => nodes[nodeIndex]?.name ?? `node-${nodeIndex}`);
+  return {
+    nodeCount: nodes.length,
+    meshCount: json.meshes?.length ?? 0,
+    materialCount: json.materials?.length ?? 0,
+    textureCount: json.images?.length ?? 0,
+    animationClipCount: json.animations?.length ?? 0,
+    skinCount: json.skins?.length ?? 0,
+    morphTargetCount: inspectGltfMorphTargets(json).targetCount,
+    rootNodeNames,
+    maxDepth: rootIndexes.reduce((depth, nodeIndex) => Math.max(depth, measureGltfNodeDepth(nodes, nodeIndex, new Set<number>())), 0),
+    messages: nodes.length === 0
+      ? ["No glTF scene nodes detected."]
+      : [`Detected ${nodes.length} node${nodes.length === 1 ? "" : "s"} across ${rootIndexes.length} root${rootIndexes.length === 1 ? "" : "s"}.`]
+  };
+}
+
+function measureGltfNodeDepth(nodes: NonNullable<GltfJson["nodes"]>, nodeIndex: number, visited: Set<number>): number {
+  if (visited.has(nodeIndex)) return 0;
+  visited.add(nodeIndex);
+  const children = nodes[nodeIndex]?.children ?? [];
+  if (children.length === 0) return 1;
+  return 1 + children.reduce((depth, childIndex) => {
+    if (childIndex < 0 || childIndex >= nodes.length) return depth;
+    return Math.max(depth, measureGltfNodeDepth(nodes, childIndex, new Set(visited)));
+  }, 0);
+}
+
 function inspectGltfProvenance(json: GltfJson): Partial<AuraCliAssetProvenance> | undefined {
   const assetExtras = objectValue(json.asset?.extras);
   const auraExtras = objectValue(assetExtras?.aura3d) ?? assetExtras;
   const provenance = objectValue(auraExtras?.provenance ?? auraExtras?.license ?? auraExtras?.source);
+  const sourcePage = stringValue(provenance?.sourcePage ?? provenance?.page ?? auraExtras?.sourcePage);
+  const downloadUrl = stringValue(provenance?.downloadUrl ?? provenance?.download ?? auraExtras?.downloadUrl);
   const sourceUrl = stringValue(provenance?.sourceUrl ?? provenance?.url ?? auraExtras?.sourceUrl);
   const license = stringValue(provenance?.license ?? provenance?.spdx ?? auraExtras?.license);
+  const licenseName = stringValue(provenance?.licenseName ?? provenance?.licenseTitle ?? auraExtras?.licenseName);
+  const licenseUrl = stringValue(provenance?.licenseUrl ?? provenance?.licensePage ?? auraExtras?.licenseUrl);
+  const licenseRaw = stringValue(provenance?.licenseRaw ?? provenance?.rawLicense ?? auraExtras?.licenseRaw);
   const author = stringValue(provenance?.author ?? provenance?.creator ?? auraExtras?.author);
   const sourceFamily = stringValue(provenance?.sourceFamily ?? provenance?.source ?? auraExtras?.sourceFamily);
   const attribution = stringValue(provenance?.attribution ?? auraExtras?.attribution);
   const evidence = stringArrayValue(provenance?.evidence ?? auraExtras?.evidence);
-  if (!sourceUrl && !license && !author && !sourceFamily && !attribution && evidence.length === 0) return undefined;
+  if (!sourcePage && !downloadUrl && !sourceUrl && !license && !licenseName && !licenseUrl && !licenseRaw && !author && !sourceFamily && !attribution && evidence.length === 0) return undefined;
   return {
+    ...(sourcePage ? { sourcePage } : {}),
+    ...(downloadUrl ? { downloadUrl } : {}),
     ...(sourceUrl ? { sourceUrl } : {}),
     ...(license ? { license } : {}),
+    ...(licenseName ? { licenseName } : {}),
+    ...(licenseUrl ? { licenseUrl } : {}),
+    ...(licenseRaw ? { licenseRaw } : {}),
     ...(author ? { author } : {}),
     ...(sourceFamily ? { sourceFamily } : {}),
     ...(attribution ? { attribution } : {}),
@@ -2055,6 +1946,48 @@ function numberValue(value: unknown): number | undefined {
   return Number.isFinite(number) ? number : undefined;
 }
 
+function readPositiveInteger(record: Record<string, unknown> | undefined, field: string, failures: string[]): number {
+  const value = record?.[field];
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || Math.floor(value) !== value) {
+    failures.push(`missing or invalid ${field}`);
+    return 0;
+  }
+  return value;
+}
+
+function readNonNegativeInteger(record: Record<string, unknown> | undefined, field: string, failures: string[], prefix: string): number {
+  const value = record?.[field];
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0 || Math.floor(value) !== value) {
+    failures.push(`missing or invalid ${prefix}.${field}`);
+    return 0;
+  }
+  return value;
+}
+
+function readPositiveIntegerWithPrefix(record: Record<string, unknown> | undefined, field: string, failures: string[], prefix: string): number {
+  const value = record?.[field];
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || Math.floor(value) !== value) {
+    failures.push(`missing or invalid ${prefix}.${field}`);
+    return 0;
+  }
+  return value;
+}
+
+function readOptionalForegroundBounds(record: Record<string, unknown> | undefined, failures: string[]): AuraCliRenderedProbeForegroundBounds | undefined {
+  if (!record || !("foregroundBounds" in record)) return undefined;
+  const foregroundBounds = objectValue(record.foregroundBounds);
+  if (!foregroundBounds) {
+    failures.push("foregroundBounds must be an object when present");
+    return undefined;
+  }
+  const x = readNonNegativeInteger(foregroundBounds, "x", failures, "foregroundBounds");
+  const y = readNonNegativeInteger(foregroundBounds, "y", failures, "foregroundBounds");
+  const width = readPositiveIntegerWithPrefix(foregroundBounds, "width", failures, "foregroundBounds");
+  const height = readPositiveIntegerWithPrefix(foregroundBounds, "height", failures, "foregroundBounds");
+  if (failures.some((failure) => failure.includes("foregroundBounds"))) return undefined;
+  return { x, y, width, height };
+}
+
 function createAssetWarnings(path: string, inspection: AssetInspection): readonly string[] {
   const warnings: string[] = [];
   const size = statSync(path).size;
@@ -2069,18 +2002,24 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
 function createAssetProvenance(
   projectDir: string,
   sourcePath: string,
-  options: Pick<AddAssetOptions, "sourceUrl" | "license" | "author" | "sourceFamily" | "attribution" | "sha256" | "retrievedAt">,
+  options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "retrievedAt" | "resolveCandidate">,
   detected?: Partial<AuraCliAssetProvenance>
 ): AuraCliAssetProvenance {
   return {
     sourcePath: normalizeRelativePath(relative(projectDir, sourcePath)),
+    ...(options.sourcePage ?? detected?.sourcePage ? { sourcePage: options.sourcePage ?? detected?.sourcePage } : {}),
+    ...(options.downloadUrl ?? detected?.downloadUrl ? { downloadUrl: options.downloadUrl ?? detected?.downloadUrl } : {}),
     ...(options.sourceUrl ?? detected?.sourceUrl ? { sourceUrl: options.sourceUrl ?? detected?.sourceUrl } : {}),
     ...(options.license ?? detected?.license ? { license: options.license ?? detected?.license } : {}),
+    ...(options.licenseName ?? detected?.licenseName ? { licenseName: options.licenseName ?? detected?.licenseName } : {}),
+    ...(options.licenseUrl ?? detected?.licenseUrl ? { licenseUrl: options.licenseUrl ?? detected?.licenseUrl } : {}),
+    ...(options.licenseRaw ?? detected?.licenseRaw ? { licenseRaw: options.licenseRaw ?? detected?.licenseRaw } : {}),
     ...(options.author ?? detected?.author ? { author: options.author ?? detected?.author } : {}),
     ...(options.sourceFamily ?? detected?.sourceFamily ? { sourceFamily: options.sourceFamily ?? detected?.sourceFamily } : {}),
     ...(options.attribution ?? detected?.attribution ? { attribution: options.attribution ?? detected?.attribution } : {}),
     ...(options.sha256 ?? detected?.sha256 ? { sha256: options.sha256 ?? detected?.sha256 } : {}),
     ...(options.retrievedAt ?? detected?.retrievedAt ? { retrievedAt: options.retrievedAt ?? detected?.retrievedAt } : {}),
+    ...(options.resolveCandidate ?? detected?.resolveCandidate ? { resolveCandidate: options.resolveCandidate ?? detected?.resolveCandidate } : {}),
     ...(detected?.evidence && detected.evidence.length > 0 ? { evidence: detected.evidence } : {}),
     checkedAt: new Date().toISOString()
   };
@@ -2089,10 +2028,11 @@ function createAssetProvenance(
 /**
  * Merge a freshly inspected asset's auto-detected provenance over the entry that
  * already exists in the manifest, so a re-add/re-resolve preserves hand-authored
- * fields (license, attribution, author, sourceUrl, sourceFamily, evidence,
- * sha256) that the new pass did not re-detect. Freshly detected values win over
- * the prior entry; explicit `addAsset` options still win over both (applied in
- * {@link createAssetProvenance}). (#26)
+ * fields (license, license URL/name/raw, attribution, author, source page,
+ * download URL, sourceUrl, sourceFamily, evidence, sha256) that the new pass did
+ * not re-detect. Freshly detected values win over the prior entry; explicit
+ * `addAsset` options still win over both (applied in {@link
+ * createAssetProvenance}). (#26)
  */
 function mergeDetectedProvenance(
   existing: AuraCliAssetProvenance | undefined,
@@ -2101,13 +2041,19 @@ function mergeDetectedProvenance(
   if (!existing) return detected;
   const evidence = [...(detected?.evidence ?? []), ...(existing.evidence ?? [])];
   return {
+    sourcePage: detected?.sourcePage ?? existing.sourcePage,
+    downloadUrl: detected?.downloadUrl ?? existing.downloadUrl,
     sourceUrl: detected?.sourceUrl ?? existing.sourceUrl,
     license: detected?.license ?? existing.license,
+    licenseName: detected?.licenseName ?? existing.licenseName,
+    licenseUrl: detected?.licenseUrl ?? existing.licenseUrl,
+    licenseRaw: detected?.licenseRaw ?? existing.licenseRaw,
     author: detected?.author ?? existing.author,
     sourceFamily: detected?.sourceFamily ?? existing.sourceFamily,
     attribution: detected?.attribution ?? existing.attribution,
     sha256: detected?.sha256 ?? existing.sha256,
     retrievedAt: detected?.retrievedAt ?? existing.retrievedAt,
+    resolveCandidate: detected?.resolveCandidate ?? existing.resolveCandidate,
     ...(evidence.length > 0 ? { evidence: [...new Set(evidence)] } : {})
   };
 }
@@ -2116,7 +2062,7 @@ function readExternalProvenance(projectDir: string, provenanceFile?: string): Re
   if (!provenanceFile) return new Map();
   const path = resolve(projectDir, provenanceFile);
   if (!existsSync(path)) return new Map();
-  const parsed = JSON.parse(readFileSync(path, "utf8")) as unknown;
+  const parsed: unknown = JSON.parse(readFileSync(path, "utf8"));
   const root = objectValue(parsed);
   if (!root) return new Map();
   const checkedAt = stringValue(root.updatedAt ?? root.verifiedAt ?? root.checkedAt) ?? new Date().toISOString();
@@ -2133,6 +2079,11 @@ function readExternalProvenance(projectDir: string, provenanceFile?: string): Re
     const nestedProvenance = objectValue(record.provenance);
     const sourcePath = stringValue(record.sourcePath ?? record.source ?? nestedProvenance?.builderOutput) ?? id;
     const license = stringValue(record.license ?? record.licenseNote ?? nestedProvenance?.license);
+    const licenseName = stringValue(record.licenseName ?? record.licenseTitle ?? nestedProvenance?.licenseName);
+    const licenseUrl = stringValue(record.licenseUrl ?? record.licensePage ?? record.termsUrl ?? nestedProvenance?.licenseUrl);
+    const licenseRaw = stringValue(record.licenseRaw ?? record.rawLicense ?? nestedProvenance?.licenseRaw);
+    const sourcePage = stringValue(record.sourcePage ?? record.officialPage ?? nestedProvenance?.sourcePage);
+    const downloadUrl = stringValue(record.downloadUrl ?? record.publicUrl ?? nestedProvenance?.downloadUrl);
     const sourceUrl = stringValue(record.sourceUrl ?? record.publicUrl ?? record.officialPage ?? nestedProvenance?.sourceUrl);
     const sourceFamily = stringValue(record.sourceFamily ?? nestedProvenance?.sourceFamily ?? nestedProvenance?.sourcePack);
     const author = stringValue(record.author ?? nestedProvenance?.author);
@@ -2146,8 +2097,13 @@ function readExternalProvenance(projectDir: string, provenanceFile?: string): Re
     ];
     byId.set(id, {
       sourcePath,
+      ...(sourcePage ? { sourcePage } : {}),
+      ...(downloadUrl ? { downloadUrl } : {}),
       ...(sourceUrl ? { sourceUrl } : {}),
       ...(license ? { license } : {}),
+      ...(licenseName ? { licenseName } : {}),
+      ...(licenseUrl ? { licenseUrl } : {}),
+      ...(licenseRaw ? { licenseRaw } : {}),
       ...(author ? { author } : {}),
       ...(sourceFamily ? { sourceFamily } : {}),
       ...(attribution ? { attribution } : {}),
@@ -2173,6 +2129,577 @@ function hasUsableLicenseEvidence(provenance: AuraCliAssetProvenance | undefined
   const license = provenance?.license?.trim();
   if (!license) return false;
   return !/(unverified|unknown|candidate|needs[-\s]?confirmation|todo|placeholder)/i.test(license);
+}
+
+function createDurableReleaseProvenanceWarnings(asset: AuraCliAssetEntry, provenance: AuraCliAssetProvenance | undefined): readonly string[] {
+  if (!provenance) return [`${asset.id}: durable provenance is missing; add source page, download URL, license URL/name, author, and acquisition timestamp.`];
+  if (hasLocalOnlyProvenanceMarker(provenance)) return [];
+  const warnings: string[] = [];
+  if (!nonEmpty(provenance.sourcePage)) warnings.push(`${asset.id}: durable provenance missing sourcePage.`);
+  if (!nonEmpty(provenance.downloadUrl)) warnings.push(`${asset.id}: durable provenance missing downloadUrl.`);
+  if (!nonEmpty(provenance.licenseName) && !nonEmpty(provenance.license)) warnings.push(`${asset.id}: durable provenance missing licenseName.`);
+  if (!nonEmpty(provenance.licenseUrl)) warnings.push(`${asset.id}: durable provenance missing licenseUrl.`);
+  if (!nonEmpty(provenance.author) && !nonEmpty(provenance.attribution)) warnings.push(`${asset.id}: durable provenance missing author or attribution.`);
+  if (!nonEmpty(provenance.retrievedAt)) warnings.push(`${asset.id}: durable provenance missing acquisition timestamp (retrievedAt).`);
+  return warnings;
+}
+
+function createReleaseStructuredQualityWarnings(asset: AuraCliAssetEntry): readonly string[] {
+  if (asset.type !== "model") return [];
+  const warnings: string[] = [];
+  const quality = asset.quality ?? "ungraded";
+  const role = asset.role ?? "unknown";
+  if (quality === "ungraded") {
+    warnings.push(`${asset.id}: release primary model quality grade missing or ungraded.`);
+  } else if (quality !== "release") {
+    warnings.push(`${asset.id}: release primary model quality grade "${quality}" is not release-safe.`);
+  }
+  if (role === "unknown") {
+    warnings.push(`${asset.id}: release primary model missing intended role.`);
+  }
+  if (!nonEmpty(asset.suitabilityReason)) {
+    warnings.push(`${asset.id}: release primary model missing suitability reason.`);
+  }
+  return warnings;
+}
+
+function createReleaseAssetQualityWarnings(asset: AuraCliAssetEntry): readonly string[] {
+  if (asset.type !== "model") return [];
+  const warnings: string[] = [];
+  const size = asset.boundsMetadata?.size ?? asset.bounds;
+  if (!size) {
+    warnings.push(`${asset.id}: release primary model quality missing bounds metadata.`);
+  } else {
+    const maxDimension = Math.max(...size);
+    const minNonZeroDimension = Math.min(...size.filter((value) => value > 0));
+    if (maxDimension < 0.25) warnings.push(`${asset.id}: release primary model is too small to be a readable subject (max bounds ${maxDimension.toFixed(3)}).`);
+    if (maxDimension > 250 && !hasHashBoundNormalizationEvidence(asset)) {
+      warnings.push(`${asset.id}: release primary model has excessive scale mismatch (max bounds ${maxDimension.toFixed(3)}).`);
+    }
+    if (Number.isFinite(minNonZeroDimension) && maxDimension / minNonZeroDimension > 250) {
+      warnings.push(`${asset.id}: release primary model has extreme aspect/scale mismatch.`);
+    }
+  }
+  if (asset.materials.length === 0) warnings.push(`${asset.id}: release primary model has no material metadata.`);
+  if (asset.materialMetadata?.some((material) => !material.visible || !material.readable)) {
+    warnings.push(`${asset.id}: release primary model has invisible or unreadable material metadata.`);
+  }
+  if (["glb", "gltf"].includes(asset.format) && asset.textures.length === 0) {
+    warnings.push(`${asset.id}: release primary model has no texture references; use only with explicit material/readability evidence.`);
+  }
+  return warnings;
+}
+
+function createReleaseRenderedProbeWarnings(projectDir: string, manifest: AuraCliAssetManifest, asset: AuraCliAssetEntry): readonly string[] {
+  if (asset.type !== "model") return [];
+  const renderedProbe = asset.renderedProbe;
+  if (!renderedProbe?.url) return [`${asset.id}: release primary model missing renderedProbe evidence.`];
+  const allowedKinds: readonly AuraCliRenderedProbeKind[] = ["browser-screenshot", "aura-probe-render"];
+  const warnings: string[] = [];
+  if (!allowedKinds.includes(renderedProbe.kind)) {
+    warnings.push(`${asset.id}: release primary model renderedProbe kind "${renderedProbe.kind}" is not pixel-render proof.`);
+  }
+  if (!nonEmpty(renderedProbe.renderer)) {
+    warnings.push(`${asset.id}: release primary model renderedProbe missing renderer metadata.`);
+  } else if (!/createAuraApp|@aura3d\/engine/i.test(renderedProbe.renderer ?? "")) {
+    warnings.push(`${asset.id}: release primary model renderedProbe renderer "${renderedProbe.renderer}" is not root Aura3D render proof.`);
+  }
+  if (!nonEmpty(renderedProbe.route)) warnings.push(`${asset.id}: release primary model renderedProbe missing route metadata.`);
+  if (!nonEmpty(renderedProbe.checkedAt)) {
+    warnings.push(`${asset.id}: release primary model renderedProbe missing checkedAt timestamp.`);
+  } else if (Number.isNaN(Date.parse(renderedProbe.checkedAt ?? ""))) {
+    warnings.push(`${asset.id}: release primary model renderedProbe checkedAt timestamp is invalid.`);
+  }
+  if (!nonEmpty(renderedProbe.sha256)) warnings.push(`${asset.id}: release primary model renderedProbe missing image sha256.`);
+  if (!nonEmpty(renderedProbe.assetHash)) warnings.push(`${asset.id}: release primary model renderedProbe missing asset hash binding.`);
+  if (typeof renderedProbe.width !== "number" || typeof renderedProbe.height !== "number") {
+    warnings.push(`${asset.id}: release primary model renderedProbe missing declared dimensions.`);
+  }
+  if (typeof renderedProbe.nonBlankPixels !== "number") {
+    warnings.push(`${asset.id}: release primary model renderedProbe missing nonblank pixel count.`);
+  }
+  if (typeof renderedProbe.colorBuckets !== "number") {
+    warnings.push(`${asset.id}: release primary model renderedProbe missing color bucket count.`);
+  }
+  const probePath = resolvePublicArtifactPath(projectDir, manifest, renderedProbe.url);
+  if (!probePath || !existsSync(probePath)) {
+    warnings.push(`${asset.id}: release primary model renderedProbe artifact is missing on disk (${renderedProbe.url}).`);
+    return warnings;
+  }
+  const probeBytes = readFileSync(probePath);
+  const size = probeBytes.byteLength;
+  if (size < 200) warnings.push(`${asset.id}: release primary model renderedProbe artifact is too small (${size} bytes).`);
+  const actualSha256 = `sha256-${createHash("sha256").update(probeBytes).digest("hex")}`;
+  if (renderedProbe.sha256 && renderedProbe.sha256 !== actualSha256) {
+    warnings.push(`${asset.id}: release primary model renderedProbe image sha256 mismatch.`);
+  }
+  if (renderedProbe.assetHash && renderedProbe.assetHash !== asset.hash) {
+    warnings.push(`${asset.id}: release primary model renderedProbe asset hash binding is stale.`);
+  }
+  const probeMetrics = decodeRenderedProbePng(probeBytes);
+  if (!probeMetrics.ok) {
+    warnings.push(`${asset.id}: release primary model renderedProbe artifact is not PNG screenshot proof (${probeMetrics.reason}).`);
+    return warnings;
+  }
+  if (probeMetrics.width < 320 || probeMetrics.height < 180) {
+    warnings.push(`${asset.id}: release primary model renderedProbe dimensions are too small (${probeMetrics.width}x${probeMetrics.height}).`);
+  }
+  if (typeof renderedProbe.width === "number" && renderedProbe.width !== probeMetrics.width) {
+    warnings.push(`${asset.id}: release primary model renderedProbe declared width ${renderedProbe.width} does not match PNG width ${probeMetrics.width}.`);
+  }
+  if (typeof renderedProbe.height === "number" && renderedProbe.height !== probeMetrics.height) {
+    warnings.push(`${asset.id}: release primary model renderedProbe declared height ${renderedProbe.height} does not match PNG height ${probeMetrics.height}.`);
+  }
+  const minNonBlankPixels = Math.min(5000, Math.max(500, Math.floor(probeMetrics.width * probeMetrics.height * 0.005)));
+  if (probeMetrics.nonBlankPixels < minNonBlankPixels) {
+    warnings.push(`${asset.id}: release primary model renderedProbe appears blank (${probeMetrics.nonBlankPixels} nonblank pixels).`);
+  }
+  if (probeMetrics.colorBuckets < 3) {
+    warnings.push(`${asset.id}: release primary model renderedProbe lacks visible color variation (${probeMetrics.colorBuckets} color buckets).`);
+  }
+  if (typeof renderedProbe.nonBlankPixels === "number" && renderedProbe.nonBlankPixels !== probeMetrics.nonBlankPixels) {
+    warnings.push(`${asset.id}: release primary model renderedProbe nonblank pixel count is stale.`);
+  }
+  if (typeof renderedProbe.colorBuckets === "number" && renderedProbe.colorBuckets !== probeMetrics.colorBuckets) {
+    warnings.push(`${asset.id}: release primary model renderedProbe color bucket count is stale.`);
+  }
+  warnings.push(...createRenderedProbeForegroundWarnings(asset.id, renderedProbe.foregroundBounds, probeMetrics));
+  return warnings;
+}
+
+function createManifestOrientationOverrideWarnings(asset: AuraCliAssetEntry): readonly string[] {
+  const orientation = asset.orientation;
+  if (asset.type !== "model" || orientation?.source !== "manifest-override") return [];
+
+  const warnings: string[] = [];
+  if (!nonEmpty(orientation.assetHash)) {
+    warnings.push(`${asset.id}: manifest orientation override missing asset hash binding.`);
+  } else if (orientation.assetHash !== asset.hash) {
+    warnings.push(`${asset.id}: manifest orientation override asset hash binding is stale.`);
+  }
+  if (!nonEmpty(orientation.generatedBy)) {
+    warnings.push(`${asset.id}: manifest orientation override missing generatedBy provenance.`);
+  }
+  if (!nonEmpty(orientation.checkedAt)) {
+    warnings.push(`${asset.id}: manifest orientation override missing checkedAt timestamp.`);
+  } else if (Number.isNaN(Date.parse(orientation.checkedAt ?? ""))) {
+    warnings.push(`${asset.id}: manifest orientation override checkedAt timestamp is invalid.`);
+  }
+  if (!nonEmpty(orientation.route)) {
+    warnings.push(`${asset.id}: manifest orientation override missing route evidence.`);
+  }
+
+  const probe = orientation.renderedProbe;
+  if (!probe) {
+    warnings.push(`${asset.id}: manifest orientation override missing renderedProbe binding.`);
+  } else {
+    if (!nonEmpty(probe.url)) warnings.push(`${asset.id}: manifest orientation override renderedProbe missing url.`);
+    if (!nonEmpty(probe.sha256)) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe missing sha256.`);
+    } else if (asset.renderedProbe?.sha256 && probe.sha256 !== asset.renderedProbe.sha256) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe sha256 does not match release renderedProbe.`);
+    }
+    if (!nonEmpty(probe.assetHash)) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe missing asset hash binding.`);
+    } else if (probe.assetHash !== asset.hash) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe asset hash binding is stale.`);
+    }
+    if (!nonEmpty(probe.checkedAt)) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe missing checkedAt timestamp.`);
+    } else if (Number.isNaN(Date.parse(probe.checkedAt ?? ""))) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe checkedAt timestamp is invalid.`);
+    }
+    if (!nonEmpty(probe.route)) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe missing route evidence.`);
+    } else if (asset.renderedProbe?.route && probe.route !== asset.renderedProbe.route) {
+      warnings.push(`${asset.id}: manifest orientation override renderedProbe route does not match release renderedProbe.`);
+    }
+  }
+
+  const role = asset.role ?? "unknown";
+  const hasAxisEvidence = nonEmpty(orientation.forwardAxis) && nonEmpty(orientation.upAxis);
+  if (requiresForwardOrientation(role) && !hasAxisEvidence) {
+    warnings.push(`${asset.id}: manifest orientation override for ${role} must include forwardAxis and upAxis.`);
+  }
+  if (!requiresForwardOrientation(role) && !hasAxisEvidence && !nonEmpty(orientation.view)) {
+    warnings.push(`${asset.id}: manifest orientation override must include a role-specific view or forward/up axes.`);
+  }
+  return warnings;
+}
+
+function hasValidManifestOrientationOverride(asset: AuraCliAssetEntry): boolean {
+  return createManifestOrientationOverrideWarnings(asset).length === 0 &&
+    asset.orientation?.source === "manifest-override";
+}
+
+function releaseStoredAssetWarnings(asset: AuraCliAssetEntry): readonly string[] {
+  const warnings = asset.warnings ?? [];
+  if (!hasValidManifestOrientationOverride(asset)) return warnings;
+  return warnings.filter((warning) => !/orientation metadata missing; facing direction cannot be validated/i.test(warning));
+}
+
+function createRenderedProbeForegroundWarnings(
+  assetId: string,
+  foregroundBounds: AuraCliRenderedProbeForegroundBounds | undefined,
+  probeMetrics: { readonly width: number; readonly height: number }
+): readonly string[] {
+  if (!foregroundBounds) return [];
+  const warnings: string[] = [];
+  const x = Number(foregroundBounds.x);
+  const y = Number(foregroundBounds.y);
+  const width = Number(foregroundBounds.width);
+  const height = Number(foregroundBounds.height);
+  if (!Number.isFinite(x) || x < 0 || Math.floor(x) !== x) {
+    warnings.push(`${assetId}: release primary model renderedProbe foregroundBounds.x is invalid.`);
+  }
+  if (!Number.isFinite(y) || y < 0 || Math.floor(y) !== y) {
+    warnings.push(`${assetId}: release primary model renderedProbe foregroundBounds.y is invalid.`);
+  }
+  if (!Number.isFinite(width) || width <= 0 || Math.floor(width) !== width) {
+    warnings.push(`${assetId}: release primary model renderedProbe foregroundBounds.width is invalid.`);
+  }
+  if (!Number.isFinite(height) || height <= 0 || Math.floor(height) !== height) {
+    warnings.push(`${assetId}: release primary model renderedProbe foregroundBounds.height is invalid.`);
+  }
+  if (warnings.length > 0) return warnings;
+  if (x + width > probeMetrics.width || y + height > probeMetrics.height) {
+    warnings.push(`${assetId}: release primary model renderedProbe foregroundBounds exceed PNG dimensions.`);
+  }
+  return warnings;
+}
+
+function createRoleAwareReleaseQualityWarnings(projectDir: string, manifest: AuraCliAssetManifest, asset: AuraCliAssetEntry): readonly string[] {
+  void projectDir;
+  void manifest;
+  if (asset.type !== "model" || asset.quality !== "release") return [];
+  const role = asset.role ?? "unknown";
+  const warnings: string[] = [];
+  const suitabilityReason = asset.suitabilityReason?.trim() ?? "";
+  const size = asset.boundsMetadata?.size ?? asset.bounds;
+  const dimensions = createRoleAwareDimensions(size);
+  const hasMaterialEvidence = asset.materials.length > 0 && !(asset.materialMetadata?.every((material) => !material.visible || !material.readable) ?? false);
+  const hasTextureEvidence = asset.textures.length > 0 || (asset.hierarchy?.textureCount ?? 0) > 0;
+
+  if (role === "unknown") {
+    warnings.push(`${asset.id}: role-aware release validation requires a declared asset role.`);
+    return warnings;
+  }
+
+  if (!dimensions) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires valid bounds/inspection dimensions.`);
+  } else {
+    const maxDimension = Math.max(...dimensions);
+    const minDimension = Math.min(...dimensions);
+    if (minDimension <= 0) warnings.push(`${asset.id}: role-aware release ${role} validation found zero or invalid bounds dimensions.`);
+    if (isTinyForReleaseRole(role, dimensions)) {
+      warnings.push(`${asset.id}: role-aware release ${role} validation found bounds too tiny for readable ${role} use.`);
+    }
+    if (isHugeForReleaseRole(role, dimensions) && !hasHashBoundNormalizationEvidence(asset)) {
+      warnings.push(`${asset.id}: role-aware release ${role} validation found huge bounds without explicit normalization evidence.`);
+    }
+    if ((role === "track" || role === "world" || role === "environment") && !hasMeaningfulWorldExtent(dimensions)) {
+      warnings.push(`${asset.id}: role-aware release ${role} validation needs a gameplay-scale footprint/extent.`);
+    }
+  }
+
+  if (!hasRoleAwareSuitabilityReason(role, suitabilityReason)) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation needs a specific suitabilityReason explaining role readiness.`);
+  }
+  if (requiresMaterialEvidence(role) && !hasMaterialEvidence) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires readable material evidence.`);
+  }
+  if (requiresTextureEvidence(role, suitabilityReason) && !hasTextureEvidence) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires texture evidence or explicit stylized-material rationale.`);
+  }
+  if (requiresForwardOrientation(role) && !hasForwardOrientationEvidence(asset, suitabilityReason)) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires orientation/forward-axis evidence.`);
+  }
+  warnings.push(...createRoleAwareRenderedProbeWarnings(asset, role));
+
+  if (role === "character") {
+    if (claimsAnimatedOrSkinned(suitabilityReason) && asset.animations.length === 0 && (asset.skeleton?.jointCount ?? 0) === 0) {
+      warnings.push(`${asset.id}: role-aware release character validation cannot claim animated/skinned readiness without animation or skeleton evidence.`);
+    }
+  }
+  if (role === "debug" || role === "abstract" || role === "set-dressing") {
+    if (!/\b(non[-\s]?primary|diagnostic|debug|abstract|set[-\s]?dressing|background|decorative)\b/i.test(suitabilityReason)) {
+      warnings.push(`${asset.id}: release ${role} assets cannot satisfy primary asset gates without an explicit non-primary rationale.`);
+    }
+  }
+
+  return warnings;
+}
+
+function createRoleAwareDimensions(size: readonly [number, number, number] | undefined): readonly [number, number, number] | undefined {
+  if (!size || size.length !== 3) return undefined;
+  if (!size.every((value) => Number.isFinite(value))) return undefined;
+  return size;
+}
+
+function isTinyForReleaseRole(role: AuraCliAssetRole, size: readonly [number, number, number]): boolean {
+  const maxDimension = Math.max(...size);
+  if (role === "track" || role === "world" || role === "environment") {
+    const footprint = Math.max(size[0], size[2]);
+    return footprint < 5;
+  }
+  if (role === "vehicle") return maxDimension < 0.75;
+  if (role === "character") return maxDimension < 0.9;
+  if (role === "product" || role === "weapon") return maxDimension < 0.1;
+  return maxDimension < 0.25;
+}
+
+function isHugeForReleaseRole(role: AuraCliAssetRole, size: readonly [number, number, number]): boolean {
+  const maxDimension = Math.max(...size);
+  if (role === "track" || role === "world" || role === "environment") return maxDimension > 1000;
+  if (role === "vehicle") return maxDimension > 25;
+  if (role === "character") return maxDimension > 20;
+  if (role === "product" || role === "weapon") return maxDimension > 50;
+  return maxDimension > 250;
+}
+
+function hasMeaningfulWorldExtent(size: readonly [number, number, number]): boolean {
+  const horizontalArea = Math.abs(size[0] * size[2]);
+  return Math.max(size[0], size[2]) >= 10 && horizontalArea >= 100;
+}
+
+function hasHashBoundNormalizationEvidence(asset: AuraCliAssetEntry): boolean {
+  const probe = asset.renderedProbe;
+  const foregroundBounds = probe?.foregroundBounds;
+  if (!foregroundBounds) return false;
+  return hasExplicitNormalizationEvidence(asset.suitabilityReason ?? "") &&
+    probe?.assetHash === asset.hash &&
+    typeof foregroundBounds.width === "number" &&
+    typeof foregroundBounds.height === "number";
+}
+
+function hasExplicitNormalizationEvidence(suitabilityReason: string): boolean {
+  if (/\b(?:not|no|without|missing|lacks?|unproven|unverified|unsupported)\s+(?:explicit\s+)?(?:(?:route|render|asset|camera|bounds|unit|world|character|vehicle|track|model)[-\s]?)?(?:normaliz(?:ed|ation)|normalis(?:ed|ation)|rescal(?:ed|ing)|camera[-\s]?fit|bounds[-\s]?approved|unit[-\s]?scale)\b/i.test(suitabilityReason)) {
+    return false;
+  }
+  const explicitPatterns: readonly RegExp[] = [
+    /\b(?:normalized|normalised)\s+(?:camera[-\s]?fit|route|render|asset|bounds|scale|placement|model|world|character|vehicle|track)\b/i,
+    /\b(?:route|render|asset|camera|bounds)[-\s]?(?:normalized|normalised)\b/i,
+    /\bcamera[-\s]?fit\s+(?:placement|scale|evidence|normalization|normalisation|proof|route|render|bounds)\b/i,
+    /\bbounds[-\s]?approved\s+(?:placement|scale|evidence|normalization|normalisation|proof|route|render|bounds)\b/i,
+    /\b(?:rescaled|rescaling)\s+(?:for|to|against|with)\s+(?:route|camera|render|asset|bounds|gameplay|world|scene|placement)\b/i,
+    /\bunit[-\s]?scale\s+(?:normalization|normalisation|evidence|proof|approved)\b/i
+  ];
+  return explicitPatterns.some((pattern) => pattern.test(suitabilityReason));
+}
+
+function hasRoleAwareSuitabilityReason(role: AuraCliAssetRole, suitabilityReason: string): boolean {
+  if (suitabilityReason.length < 48) return false;
+  if (/\b(good|nice|usable|asset loaded|looks ok|works|test fixture)\b/i.test(suitabilityReason) && suitabilityReason.length < 96) return false;
+  if (role === "track" || role === "world" || role === "environment") {
+    return /\b(track|world|environment|gameplay|footprint|path|route|scene|scale|extent|normaliz|traversable)\b/i.test(suitabilityReason);
+  }
+  if (role === "vehicle") {
+    return /\b(vehicle|car|footprint|wheel|track|forward|orientation|racing|drivable)\b/i.test(suitabilityReason);
+  }
+  if (role === "character") {
+    return /\b(character|rig|humanoid|height|readable|orientation|animation|avatar|player)\b/i.test(suitabilityReason);
+  }
+  if (role === "product") {
+    return /\b(product|commerce|configurator|viewer|material|texture|readable|dimension)\b/i.test(suitabilityReason);
+  }
+  if (role === "weapon") {
+    return /\b(weapon|prop|held|orientation|readable|material|scale)\b/i.test(suitabilityReason);
+  }
+  return /\b(prop|set[-\s]?dressing|debug|abstract|decorative|supporting|non[-\s]?primary|readable)\b/i.test(suitabilityReason);
+}
+
+function requiresMaterialEvidence(role: AuraCliAssetRole): boolean {
+  return role !== "debug" && role !== "abstract";
+}
+
+function requiresTextureEvidence(role: AuraCliAssetRole, suitabilityReason: string): boolean {
+  if (role === "debug" || role === "abstract") return false;
+  if (/\b(stylized|stylised|flat[-\s]?color|flat[-\s]?colour|untextured|procedural material|clay render|solid material)\b/i.test(suitabilityReason)) {
+    return false;
+  }
+  return role === "character" || role === "vehicle" || role === "product" || role === "track" || role === "world" || role === "environment" || role === "weapon";
+}
+
+function requiresForwardOrientation(role: AuraCliAssetRole): boolean {
+  return role === "character" || role === "vehicle" || role === "weapon";
+}
+
+function hasForwardOrientationEvidence(asset: AuraCliAssetEntry, suitabilityReason: string): boolean {
+  void suitabilityReason;
+  if (asset.orientation?.source === "gltf-extras" && asset.orientation.forwardAxis && asset.orientation.upAxis) return true;
+  if (hasValidManifestOrientationOverride(asset) && asset.orientation?.forwardAxis && asset.orientation?.upAxis) return true;
+  return false;
+}
+
+function createRoleAwareRenderedProbeWarnings(asset: AuraCliAssetEntry, role: AuraCliAssetRole): readonly string[] {
+  const probe = asset.renderedProbe;
+  if (!probe?.url) return [`${asset.id}: role-aware release ${role} validation requires retained renderedProbe evidence.`];
+  const warnings: string[] = [];
+  if (!probe.foregroundBounds) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires renderedProbe foregroundBounds for readability proof.`);
+    return warnings;
+  }
+  if (typeof probe.width !== "number" || typeof probe.height !== "number" || probe.width <= 0 || probe.height <= 0) {
+    warnings.push(`${asset.id}: role-aware release ${role} validation requires renderedProbe dimensions before foreground readability can be checked.`);
+    return warnings;
+  }
+  const foregroundWarnings = createRenderedProbeForegroundWarnings(asset.id, probe.foregroundBounds, { width: probe.width, height: probe.height });
+  warnings.push(...foregroundWarnings);
+  if (foregroundWarnings.length > 0) return warnings;
+  const rule = readabilityRuleForRole(role);
+  const foreground = probe.foregroundBounds;
+  const widthRatio = foreground.width / probe.width;
+  const heightRatio = foreground.height / probe.height;
+  const areaRatio = (foreground.width * foreground.height) / (probe.width * probe.height);
+  if (
+    foreground.width < rule.minWidthPx ||
+    foreground.height < rule.minHeightPx ||
+    widthRatio < rule.minWidthRatio ||
+    heightRatio < rule.minHeightRatio ||
+    areaRatio < rule.minAreaRatio
+  ) {
+    warnings.push(`${asset.id}: role-aware release ${role} renderedProbe foreground is too small/readability-poor (${foreground.width}x${foreground.height} in ${probe.width}x${probe.height}).`);
+  }
+  return warnings;
+}
+
+function readabilityRuleForRole(role: AuraCliAssetRole): {
+  readonly minWidthPx: number;
+  readonly minHeightPx: number;
+  readonly minWidthRatio: number;
+  readonly minHeightRatio: number;
+  readonly minAreaRatio: number;
+} {
+  if (role === "character") return { minWidthPx: 32, minHeightPx: 120, minWidthRatio: 0.04, minHeightRatio: 0.25, minAreaRatio: 0.015 };
+  if (role === "vehicle") return { minWidthPx: 120, minHeightPx: 50, minWidthRatio: 0.18, minHeightRatio: 0.1, minAreaRatio: 0.025 };
+  if (role === "track" || role === "world" || role === "environment") return { minWidthPx: 224, minHeightPx: 120, minWidthRatio: 0.35, minHeightRatio: 0.25, minAreaRatio: 0.12 };
+  if (role === "product" || role === "weapon") return { minWidthPx: 96, minHeightPx: 96, minWidthRatio: 0.12, minHeightRatio: 0.16, minAreaRatio: 0.02 };
+  return { minWidthPx: 64, minHeightPx: 64, minWidthRatio: 0.1, minHeightRatio: 0.1, minAreaRatio: 0.01 };
+}
+
+function claimsAnimatedOrSkinned(suitabilityReason: string): boolean {
+  return /\b(animated|animation|rigged|skinned|skeleton|humanoid)\b/i.test(suitabilityReason);
+}
+
+function decodeRenderedProbePng(bytes: Buffer): { readonly ok: true; readonly width: number; readonly height: number; readonly nonBlankPixels: number; readonly colorBuckets: number } | { readonly ok: false; readonly reason: string } {
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  if (bytes.byteLength < signature.byteLength + 12 || !bytes.subarray(0, signature.byteLength).equals(signature)) {
+    return { ok: false, reason: "missing PNG signature" };
+  }
+  let offset = signature.byteLength;
+  let width = 0;
+  let height = 0;
+  let bitDepth = 0;
+  let colorType = 0;
+  let compression = 0;
+  let filterMethod = 0;
+  let interlace = 0;
+  const idatChunks: Buffer[] = [];
+  try {
+    while (offset + 12 <= bytes.byteLength) {
+      const length = bytes.readUInt32BE(offset);
+      offset += 4;
+      const type = bytes.subarray(offset, offset + 4).toString("ascii");
+      offset += 4;
+      if (offset + length + 4 > bytes.byteLength) return { ok: false, reason: `truncated ${type} chunk` };
+      const data = bytes.subarray(offset, offset + length);
+      offset += length + 4;
+      if (type === "IHDR") {
+        if (length !== 13) return { ok: false, reason: "invalid IHDR length" };
+        width = data.readUInt32BE(0);
+        height = data.readUInt32BE(4);
+        bitDepth = data[8] ?? 0;
+        colorType = data[9] ?? 0;
+        compression = data[10] ?? 0;
+        filterMethod = data[11] ?? 0;
+        interlace = data[12] ?? 0;
+      } else if (type === "IDAT") {
+        idatChunks.push(Buffer.from(data));
+      } else if (type === "IEND") {
+        break;
+      }
+    }
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : "invalid PNG chunks" };
+  }
+  if (width <= 0 || height <= 0) return { ok: false, reason: "missing IHDR dimensions" };
+  if (bitDepth !== 8) return { ok: false, reason: `unsupported bit depth ${bitDepth}` };
+  if (compression !== 0 || filterMethod !== 0 || interlace !== 0) return { ok: false, reason: "unsupported PNG encoding" };
+  const bytesPerPixel = colorType === 6 ? 4 : colorType === 2 ? 3 : colorType === 0 ? 1 : 0;
+  if (bytesPerPixel === 0) return { ok: false, reason: `unsupported color type ${colorType}` };
+  if (idatChunks.length === 0) return { ok: false, reason: "missing IDAT data" };
+  let inflated: Buffer;
+  try {
+    inflated = inflateSync(Buffer.concat(idatChunks));
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : "invalid compressed IDAT data" };
+  }
+  const rowLength = width * bytesPerPixel;
+  const expectedLength = (rowLength + 1) * height;
+  if (inflated.byteLength < expectedLength) return { ok: false, reason: "truncated decompressed pixel data" };
+  let previous = new Uint8Array(rowLength);
+  let nonBlankPixels = 0;
+  const buckets = new Set<string>();
+  for (let y = 0; y < height; y += 1) {
+    const rowOffset = y * (rowLength + 1);
+    const filter = inflated[rowOffset] ?? 0;
+    if (filter < 0 || filter > 4) return { ok: false, reason: `unsupported PNG filter ${filter}` };
+    const row = new Uint8Array(rowLength);
+    for (let x = 0; x < rowLength; x += 1) {
+      const raw = inflated[rowOffset + 1 + x] ?? 0;
+      const left = x >= bytesPerPixel ? row[x - bytesPerPixel] ?? 0 : 0;
+      const up = previous[x] ?? 0;
+      const upLeft = x >= bytesPerPixel ? previous[x - bytesPerPixel] ?? 0 : 0;
+      row[x] = (raw + pngFilterPredictor(filter, left, up, upLeft)) & 0xff;
+    }
+    for (let pixel = 0; pixel < width; pixel += 1) {
+      const pixelOffset = pixel * bytesPerPixel;
+      const red = row[pixelOffset] ?? 0;
+      const green = colorType === 0 ? red : row[pixelOffset + 1] ?? 0;
+      const blue = colorType === 0 ? red : row[pixelOffset + 2] ?? 0;
+      const alpha = colorType === 6 ? row[pixelOffset + 3] ?? 255 : 255;
+      if (alpha > 8 && (red > 8 || green > 8 || blue > 8)) {
+        nonBlankPixels += 1;
+        buckets.add(`${red >> 5}:${green >> 5}:${blue >> 5}`);
+      }
+    }
+    previous = row;
+  }
+  return { ok: true, width, height, nonBlankPixels, colorBuckets: buckets.size };
+}
+
+function pngFilterPredictor(filter: number, left: number, up: number, upLeft: number): number {
+  if (filter === 0) return 0;
+  if (filter === 1) return left;
+  if (filter === 2) return up;
+  if (filter === 3) return Math.floor((left + up) / 2);
+  if (filter === 4) return paethPredictor(left, up, upLeft);
+  throw new Error(`unsupported PNG filter ${filter}`);
+}
+
+function paethPredictor(left: number, up: number, upLeft: number): number {
+  const prediction = left + up - upLeft;
+  const leftDistance = Math.abs(prediction - left);
+  const upDistance = Math.abs(prediction - up);
+  const upLeftDistance = Math.abs(prediction - upLeft);
+  if (leftDistance <= upDistance && leftDistance <= upLeftDistance) return left;
+  return upDistance <= upLeftDistance ? up : upLeft;
+}
+
+function createReleaseThumbnailWarnings(projectDir: string, manifest: AuraCliAssetManifest, asset: AuraCliAssetEntry): readonly string[] {
+  if (asset.type !== "model") return [];
+  if (!asset.thumbnailUrl) return [`${asset.id}: release primary model missing thumbnail/probe artifact.`];
+  const thumbnailPath = resolvePublicArtifactPath(projectDir, manifest, asset.thumbnailUrl);
+  if (!thumbnailPath || !existsSync(thumbnailPath)) {
+    return [`${asset.id}: release primary model thumbnail/probe artifact is missing on disk (${asset.thumbnailUrl}).`];
+  }
+  const size = statSync(thumbnailPath).size;
+  if (size < 200) return [`${asset.id}: release primary model thumbnail/probe artifact is too small (${size} bytes).`];
+  return [];
+}
+
+function nonEmpty(value: string | undefined): boolean {
+  return Boolean(value?.trim());
 }
 
 function isPlaceholderAsset(asset: AuraCliAssetEntry, provenance?: AuraCliAssetProvenance): boolean {

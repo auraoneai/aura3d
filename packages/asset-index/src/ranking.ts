@@ -19,6 +19,13 @@ function queryTerms(text: string): string[] {
     .filter((t) => t.length > 1);
 }
 
+function scoreSignal(value: number | undefined, scale: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return 0;
+  if (value <= 1) return value * scale;
+  if (value <= 100) return (value / 100) * scale;
+  return scale;
+}
+
 export function scoreAsset(asset: AuraCanonicalAsset, text: string): number {
   const terms = queryTerms(text);
   if (terms.length === 0) return 0;
@@ -38,7 +45,11 @@ export function scoreAsset(asset: AuraCanonicalAsset, text: string): number {
   const covered = terms.filter(
     (t) => title.includes(t) || tagSet.has(t) || description.includes(t),
   ).length;
-  return score + covered * 2;
+  const catalogSignals =
+    scoreSignal(asset.semanticScore, 20) +
+    scoreSignal(asset.workerScore, 12) +
+    scoreSignal(asset.qualityScore, 8);
+  return score + covered * 2 + catalogSignals;
 }
 
 /** True when an asset satisfies every supplied constraint. */

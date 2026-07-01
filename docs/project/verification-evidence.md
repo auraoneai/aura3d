@@ -1,52 +1,69 @@
-# Aura3D Verification Evidence
+# Verification Evidence
 
-Version: 1.1.0
+Date: 2026-06-18
+Status: evidence policy
 
-This document summarizes current verification evidence and release boundaries.
-It does not replace `docs/project/release-tracks.md` or
-`docs/project/frozen-benchmark-release-gates.md`.
+This document defines what counts as evidence for release and showcase claims.
+It does not certify that all evidence currently exists.
 
-## Requirements Trace Gate
+## Evidence Classes
 
-- Total requirements: 48
-- Implemented and verified: 48
-- Implemented but unverified: 0
-- Partially implemented: 0
-- Not started: 0
-- Blocked: 0
-- Invalid statuses: 0
-- Weak evidence rows: 0
-- Complete: yes
+| Class | Proves | Does not prove |
+| --- | --- | --- |
+| Package checks | Build, typecheck, tests, packaging, install smoke for a package release. | Visual quality, showcase readiness, benchmark superiority. |
+| Public root browser tests | Behavior available through root `@aura3d/engine` imports. | Internal production-runtime capability unless the route actually uses the public bridge. |
+| Route-health JSON | Declared category, primary assets, primitive count, backend/fallback state, and claims for a route. | Pixel readability by itself. |
+| Desktop/mobile screenshots | First-load visual state and responsive framing. | Animation, input, or effects unless compared across interactions/frames. |
+| Screenshot deltas | Visible animation, particle, input, or material/effect changes. | The exact cause of the change unless tied to telemetry and source state. |
+| CLI asset validation | Typed asset presence, inspection metadata, license/provenance fields, and validation diagnostics. | Production art quality by itself. |
+| Hosted deploy checks | Public URL availability and static asset serving. | Local route quality unless screenshots and route-health come from the hosted origin. |
+| Frozen benchmark results | Scoped comparison outcome for a locked prompt/protocol. | General market superiority beyond the benchmark scope. |
 
-## Aura3D SDK Evidence
+## Required Route Evidence
 
-Round 50 Aura3D SDK evidence is complete for local/developer-ready
-artifact handoff.
+Every promoted showcase route must provide:
 
-- Decision: `benchmark/results/round-50-scoped-sdk-release-decision.md`
-- Evidence: `benchmark/releases/round-50-scoped-sdk-product-context/release-artifact-evidence.md`
-- SDK artifact: `/Users/gurbakshchahal/aura3d/benchmark/releases/round-50-scoped-sdk-product-context/aura3d-engine-1.0.0.tgz`
-- SDK SHA-256: `1d8bcacc692424fe4e52ed1d125fafb7de09994c7a7bce7ed6622fb116c4a4bf`
-- Marketing artifact: `/Users/gurbakshchahal/aura3d/benchmark/releases/round-50-scoped-sdk-product-context/aura3d-marketing-round-50-scoped.tar.gz`
-- Marketing SHA-256: `b5407a9da427da1bd61daa00e5d8792c57d643ac6efa776d3d0b6033551a6b3a`
+- route category and claim label;
+- primary asset list and whether each asset is typed;
+- primitive count and route-specific primitive budget;
+- renderer/backend/fallback state;
+- desktop screenshot;
+- mobile screenshot;
+- source scan result for unsafe asset/rendering patterns;
+- route claims and matching evidence paths.
 
+Game routes must additionally provide:
 
-Open blockers:
+- keyboard input test;
+- visible movement or state change after input;
+- objective, scoring/fail state, reset, and progression/loop evidence;
+- genre-specific mechanic evidence.
 
-- Missing valid `benchmark/runs/round-50/human-review.json` (owner-skipped; documented as absent).
-- Missing external `benchmark/scoring/round-50-scores/*.json` files (owner-skipped; documented as absent).
-- `benchmark/results/round-50-decision.md` explicitly records `Decision: pending`, not `Decision: ship`.
-- `node tools/release-proof-guard.mjs 50` is expected to fail pending because the decision is pending and human review is absent.
+Animation, particle, postprocess, material, WebGPU, and skinned/morph claims
+must include screenshot or video evidence that isolates the claimed behavior.
 
-Current blocker handoff:
+## Evidence Rejection Rules
 
-- `benchmark/runs/round-50/release-blockers.json` (created 2026-06-09)
-- `benchmark/results/round-50-decision.md`
+Reject evidence when:
 
-## Gate Result
+- the route imports `three`, `GLTFLoader`, renderer internals, or raw GLB URLs;
+- the root API claim depends on internal-only code;
+- the route uses `model("...")` rather than `model(assets.x)`;
+- the primary subject is primitive-only for a real-world or game claim;
+- screenshots are only checked for file size or nonblank pixels;
+- the main subject is tiny, clipped, hidden, or covered by UI;
+- route-local text claims a capability that tests do not detect;
+- report files are local/ignored and cannot be regenerated;
+- WebGPU claims lack adapter/backend/dispatch/render/fallback evidence.
 
-Aura3D SDK local/developer-ready artifact: PASS.
+## Current Evidence Status
 
-## Aura3D advantage
+The remediation PRD identifies current evidence gaps. Until the new gates are
+implemented, treat prior "complete" or "verified" language in older docs as
+historical and insufficient for public release claims.
 
-The scoped artifact proves only the scoped product-context release claim. It does
+Current minimum public-safe statement:
+
+"Aura3D has package, CLI, typed asset, basic browser route, and diagnostics
+surfaces. Showcase and advanced renderer/game claims remain route-specific and
+must pass the updated evidence gates before promotion."

@@ -1,4 +1,22 @@
-# QuickFixes — Required Fixes Before Next npm Push
+# QuickFixes -- Required Fixes Before Next npm Push
+
+Current governance note, added 2026-06-18:
+
+This file is historical release triage. Do not use any old quick-fix item as
+permission to bypass the current Aura3D integrity rules. Public examples still
+must use typed assets, public `@aura3d/engine` APIs, route-health evidence,
+browser screenshots, and honest claim labels. Do not patch around missing
+engine capability with primitive-only primary subjects, CSS/DOM particles,
+raw GLB URLs, `GLTFLoader`, direct `three` imports, or unsupported renderer
+claims.
+
+For current showcase/library remediation, use:
+
+- `Fixed-Needed-PRD.md`
+- `docs/agents/claims-and-boundaries.md`
+- `docs/project/showcase-quality-gates.md`
+- `docs/project/library-gap-roadmap.md`
+- `docs/project/claim-guidelines.md`
 
 Source: full review of all changes in the last 36 hours — the 22 commits since `v1.3.2` (last npm publish, tagged 2026-06-08 23:00) **plus** the 3 in-window commits before the tag (`d584fbe7` Studio prompt-driven scene generation, `199ec20d` 1.3.2 release, `f74ebe76` 1.3.1 release), whose code already shipped in 1.3.2.
 Review date: 2026-06-09. Repo gates were green at review time (typecheck pass; unit suite 307 files / 1,882 tests pass), but several gates were weakened to get there and the gates do not cover `apps/`.

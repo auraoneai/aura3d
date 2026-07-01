@@ -86,6 +86,8 @@ function authorsToAttribution(
 function toCanonical(id: string, asset: PolyHavenAsset): AuraCanonicalAsset {
   const sourcePage = `${PAGE_BASE}/${id}`;
   const title = asset.name ?? id;
+  const author = authorsToAttribution(asset.authors);
+  const bounds = toBounds(asset.dimensions);
   const tags = Array.from(
     new Set([
       ...(asset.tags ?? []).map((t) => t.toLowerCase()),
@@ -104,12 +106,20 @@ function toCanonical(id: string, asset: PolyHavenAsset): AuraCanonicalAsset {
     format: "gltf",
     // Entire Poly Haven library is CC0 — a verified, redistributable license.
     license: normalizeLicense("CC0", sourcePage),
+    licenseName: "CC0",
+    licenseUrl: sourcePage,
     thumbnailUrl: asset.thumbnail_url,
     triangles: typeof asset.polycount === "number" ? asset.polycount : undefined,
-    bounds: toBounds(asset.dimensions),
+    triangleCount: typeof asset.polycount === "number" ? asset.polycount : undefined,
+    bounds,
+    dimensions: bounds?.size,
     tags,
     sourcePage,
-    attribution: authorsToAttribution(asset.authors),
+    sourceFamily: "poly-haven",
+    retrievedAt: typeof asset.date_published === "number" ? new Date(asset.date_published * 1000).toISOString() : undefined,
+    author,
+    attribution: author,
+    rawCatalogMetadata: { ...asset },
   };
 }
 

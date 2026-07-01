@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D Production Bridge Contract</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #05070b;
+      }
+
+      #stage,
+      #safe-stage,
+      #production-stage {
+        width: 640px;
+        height: 360px;
+      }
+
+      #comparison {
+        display: grid;
+        grid-template-columns: 640px 640px;
+        gap: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="comparison" hidden>
+      <div id="safe-stage"></div>
+      <div id="production-stage"></div>
+    </div>
+    <script type="module" src="./createAuraApp-production-bridge-harness.ts"></script>
+  </body>
+</html>

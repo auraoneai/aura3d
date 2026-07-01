@@ -3,6 +3,7 @@ import { IndexBuffer } from "./IndexBuffer";
 import { VertexBuffer } from "./VertexBuffer";
 
 export interface MorphTargetDelta {
+  readonly name?: string;
   readonly positions?: readonly (readonly [number, number, number])[];
   readonly normals?: readonly (readonly [number, number, number])[];
   readonly tangents?: readonly (readonly [number, number, number])[];

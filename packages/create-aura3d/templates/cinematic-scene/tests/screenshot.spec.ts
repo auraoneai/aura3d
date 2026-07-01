@@ -31,8 +31,8 @@ test("Aura3D cinematic scene screenshot shows the rainy neon hero prompt", async
         const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
         if (luminance > 30) buckets.add(`${r >> 5}-${g >> 5}-${b >> 5}`);
         if (b > 110 && g > 90 && b > r * 1.22) cyanPixels += 1;
-        if (r > 160 && g > 105 && b < 125) amberPixels += 1;
-        if (r > 165 && g > 185 && b > 205) rainPixels += 1;
+        if (r > 145 && g > 105 && b < 180 && r >= g * 0.95 && g >= b * 0.65) amberPixels += 1;
+        if (r > 130 && g > 140 && b > 145 && Math.max(r, g, b) - Math.min(r, g, b) < 75) rainPixels += 1;
         if (y < target.height * 0.36 && ((b > 95 && g > 65 && b > r * 1.12) || (r > 105 && g > 62 && b < 95))) wetReflectionPixels += 1;
         if (x > target.width * 0.32 && x < target.width * 0.68 && y > target.height * 0.26 && y < target.height * 0.78 && luminance > 75) centerHeroPixels += 1;
         if (luminance > 8 && luminance < 36 && b >= r && x > target.width * 0.08 && x < target.width * 0.92) darkAlleyPixels += 1;
@@ -50,8 +50,6 @@ test("Aura3D cinematic scene screenshot shows the rainy neon hero prompt", async
   expect(profile.rainPixels).toBeGreaterThan(90);
   expect(profile.wetReflectionPixels).toBeGreaterThan(60);
   expect(profile.centerHeroPixels).toBeGreaterThan(600);
-  // Measured 174 on 2026-06-10 after engine lighting/material updates (neutral-gray
-  // default fallback, bloom retune) brightened the alley floor slightly.
   expect(profile.darkAlleyPixels).toBeGreaterThan(150);
   expect(profile.uniqueBuckets).toBeGreaterThan(22);
   expect(screenshot.byteLength).toBeGreaterThan(1000);

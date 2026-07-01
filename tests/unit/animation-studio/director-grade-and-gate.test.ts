@@ -46,7 +46,7 @@ describe("F1 gate is wired into generateSceneFromPrompt (throws on degenerate, p
       }
     );
     const { generateSceneFromPrompt } = await import(
-      "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-to-scene"
+      "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-scene"
     );
     expect(() => generateSceneFromPrompt("two office workers arguing about a deadline")).toThrow(
       /degenerate \(un-actable\) scene/
@@ -55,7 +55,7 @@ describe("F1 gate is wired into generateSceneFromPrompt (throws on degenerate, p
 
   it("the FOUR standard prompts still generate fine (real director passes the gate)", async () => {
     const { generateSceneFromPrompt } = await import(
-      "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-to-scene"
+      "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-scene"
     );
     const STANDARD_PROMPTS = [
       "two robots fixing a car in a garage",

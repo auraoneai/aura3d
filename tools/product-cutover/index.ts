@@ -69,11 +69,16 @@ function listActiveSourceFiles(): string[] {
     .filter(Boolean)
     .filter((path) => existsSync(resolve(path)))
     .filter((path) => !path.startsWith("archive/"))
+    .filter((path) => !path.startsWith(".omo/"))
+    .filter((path) => !path.startsWith("tests/reports/"))
+    .filter((path) => !path.startsWith("test-results/"))
+    .filter((path) => !path.startsWith("release-artifacts/"))
     .filter((path) => ![
       "RuntimeScenePRD.md",
       "CinematicPrevisPRD.md",
       "UnifiedPRD.md",
       "UnifiedPRD.md",
+      "QuickFixes.md",
       "tools/package-tarball-audit/index.ts"
     ].includes(path))
     .filter((path) => isTextSource(path));

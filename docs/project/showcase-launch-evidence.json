@@ -1,0 +1,2513 @@
+{
+  "schema": "aura3d-showcase-build-deploy/1.0",
+  "generatedAt": "2026-07-01T14:01:04.176Z",
+  "gateConfig": {
+    "path": "tools/showcase-library/route-gates.json",
+    "schema": "aura3d-showcase-route-gates/1.0",
+    "hash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2"
+  },
+  "visualReview": {
+    "path": "docs/project/showcase-visual-review.json",
+    "ok": true,
+    "allRoutesOk": false,
+    "fileOk": true,
+    "reviewer": "codex-browser-visual-review",
+    "reviewedAt": "2026-06-27T00:00:00Z",
+    "overallVerdict": "fail",
+    "failures": [
+      "visual-review-overall-verdict:fail"
+    ]
+  },
+  "ok": true,
+  "publicReleaseOk": true,
+  "publicVisualReviewOk": true,
+  "allRoutesOk": false,
+  "classificationOk": true,
+  "routeCount": 11,
+  "appCount": 10,
+  "releaseCandidateCount": 6,
+  "releaseCandidatePassed": 6,
+  "internalDiagnosticCount": 2,
+  "prototypeBlockedCount": 2,
+  "indexRouteCount": 1,
+  "removedFromPublicShowcaseCount": 0,
+  "diagnostics": [
+    {
+      "id": "showcase-data-galaxy",
+      "classification": "internal-diagnostic",
+      "publicReleaseCounted": false,
+      "ok": false,
+      "blockers": [
+        "route-primary:source-hash:sha256-f3e3f31b791d6c26036a09c5fe0ebea840801ac01bbab54413f326b77f5f0470",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-too-small:620",
+        "route-primary:route-primary-probe-failure:primary-foreground-width:51",
+        "route-primary:route-primary-probe-failure:primary-foreground-height:13",
+        "route-primary:route-primary-probe-failure:primary-readability-score:34",
+        "route-primary:probe-visible:showcaseParticleCore:false",
+        "route-primary:probe-readability:showcaseParticleCore:34",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-width:51",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-height:13",
+        "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
+        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
+        "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
+        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
+      ]
+    },
+    {
+      "id": "showcase-webgpu-particle-lab",
+      "classification": "internal-diagnostic",
+      "publicReleaseCounted": false,
+      "ok": false,
+      "blockers": [
+        "static:native-webgpu-overclaim",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-clipped",
+        "route-primary:probe-clipped:showcaseParticleCore:true",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-clipped",
+        "capability:native-webgpu-proof-absent"
+      ]
+    }
+  ],
+  "commands": {
+    "build": "A3D_SHOWCASE_APP=<route> pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+    "deployCheck": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/<route>/dist --release --source apps/<route>/src --asset <primary>"
+  },
+  "routes": [
+    {
+      "id": "showcase-index",
+      "label": "Showcase Index",
+      "path": "/apps/showcase-index/",
+      "globalName": "__AURA3D_SHOWCASE_INDEX__",
+      "releaseClass": "index-route",
+      "publicReleaseCounted": false,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "index-route",
+      "source": "apps/showcase-index/index.html",
+      "distDir": "apps/showcase-index/dist",
+      "gate": {
+        "releaseClass": "index-route",
+        "primaryAssets": [],
+        "primaryAssetRoles": {},
+        "routePrimaryHeroAsset": null,
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 0,
+        "requiresTypedPrimaryAssets": false,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": false,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "skipped",
+        "failures": []
+      },
+      "primaryAssetEvidence": [],
+      "routeHealth": {
+        "ok": true,
+        "path": null,
+        "failures": [],
+        "appId": "showcase-index",
+        "route": "/apps/showcase-index/",
+        "classification": "index-route",
+        "publicShowcase": false,
+        "primaryAssets": [],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_INDEX__"
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": false,
+        "path": null,
+        "screenshotPath": null,
+        "failures": [],
+        "evidence": null,
+        "reason": "showcase-index is an index route, not a deployable 3D showcase route."
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 168,
+        "totalBytes": 648683066,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "skipped:index-route",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-product-configurator",
+      "label": "Product Configurator Studio",
+      "path": "/apps/showcase-product-configurator/",
+      "globalName": "__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-product-configurator/index.html",
+      "distDir": "apps/showcase-product-configurator/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [
+          "showcaseHeadphones"
+        ],
+        "primaryAssetRoles": {
+          "showcaseHeadphones": "product"
+        },
+        "routePrimaryHeroAsset": "showcaseHeadphones",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 24,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseHeadphones",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "hash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
+          "source": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "sourceFamily": "objaverse",
+          "author": "Ankledot",
+          "attribution": "Ankledot",
+          "retrievedAt": "2026-06-17T12:16:20.895Z",
+          "thumbnailUrl": "/aura-assets/showcaseHeadphones.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-product-configurator/route-health.json",
+        "failures": [],
+        "appId": "showcase-product-configurator",
+        "route": "/apps/showcase-product-configurator/",
+        "classification": "candidate",
+        "publicShowcase": true,
+        "primaryAssets": [
+          "showcaseHeadphones"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-product-configurator",
+          "routePath": "/apps/showcase-product-configurator/",
+          "appId": "showcase-product-configurator",
+          "sourceHash": "sha256-dba0f07c491674f648e71cd67f73f381e4621d6d15a05a6404670e02a7ff3c15",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseHeadphones",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
+          "generatedAt": "2026-07-01T06:37:45.276Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "asset",
+              "auraSceneEvidence",
+              "claimBoundary",
+              "controls",
+              "diagnostics",
+              "interactionState",
+              "proceduralStatus",
+              "productDiagnostics",
+              "productVisualQA",
+              "routeHealth",
+              "scene",
+              "schema",
+              "state",
+              "status",
+              "systems",
+              "telemetry",
+              "updatedAt"
+            ],
+            "primaryAssets": [
+              "showcaseHeadphones"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "scene-plan",
+            "drawCalls": 6,
+            "renderSize": [
+              1440,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
+            "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 398,
+              "y": 218,
+              "width": 1032,
+              "height": 526
+            },
+            "nonBlankPixels": 54766,
+            "colorBuckets": 31,
+            "foregroundBounds": {
+              "x": 576,
+              "y": 293,
+              "width": 298,
+              "height": 344
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 100,
+            "failures": []
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseHeadphones",
+              "role": "product",
+              "expectedTypedRef": "assets.showcaseHeadphones",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
+                "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 398,
+                  "y": 218,
+                  "width": 1032,
+                  "height": 526
+                },
+                "nonBlankPixels": 54766,
+                "colorBuckets": 31,
+                "foregroundBounds": {
+                  "x": 576,
+                  "y": 293,
+                  "width": 298,
+                  "height": 344
+                },
+                "visible": true,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 100,
+                "failures": []
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 658842233,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-product-configurator/dist --release --source apps/showcase-product-configurator/src --asset showcaseHeadphones",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-material-asset-inspector",
+      "label": "Material and Asset Inspector",
+      "path": "/apps/showcase-material-asset-inspector/",
+      "globalName": "__AURA3D_SHOWCASE_MATERIAL_ASSET_INSPECTOR__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-material-asset-inspector/index.html",
+      "distDir": "apps/showcase-material-asset-inspector/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [
+          "showcaseHeadphones"
+        ],
+        "primaryAssetRoles": {
+          "showcaseHeadphones": "product"
+        },
+        "routePrimaryHeroAsset": "showcaseHeadphones",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 24,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseHeadphones",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "hash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
+          "source": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+          "sourceFamily": "objaverse",
+          "author": "Ankledot",
+          "attribution": "Ankledot",
+          "retrievedAt": "2026-06-17T12:16:20.895Z",
+          "thumbnailUrl": "/aura-assets/showcaseHeadphones.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-material-asset-inspector/route-health.json",
+        "failures": [],
+        "appId": "showcase-material-asset-inspector",
+        "route": "/apps/showcase-material-asset-inspector/",
+        "classification": "candidate",
+        "publicShowcase": true,
+        "primaryAssets": [
+          "showcaseHeadphones"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_MATERIAL_ASSET_INSPECTOR__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-material-asset-inspector",
+          "routePath": "/apps/showcase-material-asset-inspector/",
+          "appId": "showcase-material-asset-inspector",
+          "sourceHash": "sha256-a0fc78bc19877328fdd3706a3164d53c18fe5f6c4dea2d2a258ae06504c05e89",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseHeadphones",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-5153b7778337f97d87774fef800e75aa1edc7db23c4232d7532fabadd8ebb225",
+          "generatedAt": "2026-07-01T06:37:47.984Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "asset",
+              "auraSceneEvidence",
+              "claimBoundary",
+              "controls",
+              "diagnostics",
+              "extensionPanels",
+              "interactionState",
+              "materialInspectors",
+              "materialVisualQA",
+              "proceduralStatus",
+              "readiness",
+              "routeHealth",
+              "schema",
+              "state",
+              "status",
+              "systems",
+              "telemetry",
+              "updatedAt"
+            ],
+            "primaryAssets": [
+              "showcaseHeadphones"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "scene-plan",
+            "drawCalls": 3,
+            "renderSize": [
+              1440,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
+            "sha256": "sha256-4e9135379eb78e75e7f7ba071982e91dfe60993ba8f24facc51b1752228745b5",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 378,
+              "y": 10,
+              "width": 1052,
+              "height": 569
+            },
+            "nonBlankPixels": 41626,
+            "colorBuckets": 29,
+            "foregroundBounds": {
+              "x": 577,
+              "y": 114,
+              "width": 310,
+              "height": 324
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 100,
+            "failures": []
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseHeadphones",
+              "role": "product",
+              "expectedTypedRef": "assets.showcaseHeadphones",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
+                "sha256": "sha256-4e9135379eb78e75e7f7ba071982e91dfe60993ba8f24facc51b1752228745b5",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 378,
+                  "y": 10,
+                  "width": 1052,
+                  "height": 569
+                },
+                "nonBlankPixels": 41626,
+                "colorBuckets": 29,
+                "foregroundBounds": {
+                  "x": 577,
+                  "y": 114,
+                  "width": 310,
+                  "height": 324
+                },
+                "visible": true,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 100,
+                "failures": []
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 658826241,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-material-asset-inspector/dist --release --source apps/showcase-material-asset-inspector/src --asset showcaseHeadphones",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-data-galaxy",
+      "label": "Data Galaxy Explorer",
+      "path": "/apps/showcase-data-galaxy/",
+      "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
+      "releaseClass": "internal-diagnostic",
+      "publicReleaseCounted": false,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [
+        "route-primary:source-hash:sha256-f3e3f31b791d6c26036a09c5fe0ebea840801ac01bbab54413f326b77f5f0470",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-too-small:620",
+        "route-primary:route-primary-probe-failure:primary-foreground-width:51",
+        "route-primary:route-primary-probe-failure:primary-foreground-height:13",
+        "route-primary:route-primary-probe-failure:primary-readability-score:34",
+        "route-primary:probe-visible:showcaseParticleCore:false",
+        "route-primary:probe-readability:showcaseParticleCore:34",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-width:51",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-height:13",
+        "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
+        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
+        "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
+        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
+      ],
+      "finalStatus": "internal-diagnostic-retained",
+      "source": "apps/showcase-data-galaxy/index.html",
+      "distDir": "apps/showcase-data-galaxy/dist",
+      "gate": {
+        "releaseClass": "internal-diagnostic",
+        "primaryAssets": [
+          "showcaseParticleCore"
+        ],
+        "primaryAssetRoles": {
+          "showcaseParticleCore": "abstract"
+        },
+        "routePrimaryHeroAsset": "showcaseParticleCore",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 30,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": true,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": false,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": false,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "skipped",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseParticleCore",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+          "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "sourceFamily": "objaverse",
+          "author": "Yewon Kim",
+          "attribution": "Yewon Kim",
+          "retrievedAt": "2026-06-17T21:19:42.916Z",
+          "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-data-galaxy/route-health.json",
+        "failures": [],
+        "appId": "showcase-data-galaxy",
+        "route": "/apps/showcase-data-galaxy/",
+        "classification": "internal-diagnostic",
+        "publicShowcase": false,
+        "primaryAssets": [
+          "showcaseParticleCore"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_DATA_GALAXY__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": false,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
+        "failures": [
+          "source-hash:sha256-f3e3f31b791d6c26036a09c5fe0ebea840801ac01bbab54413f326b77f5f0470",
+          "route-primary-probe-pass:false",
+          "route-primary-probe-failure:primary-foreground-too-small:620",
+          "route-primary-probe-failure:primary-foreground-width:51",
+          "route-primary-probe-failure:primary-foreground-height:13",
+          "route-primary-probe-failure:primary-readability-score:34",
+          "probe-visible:showcaseParticleCore:false",
+          "probe-readability:showcaseParticleCore:34",
+          "probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+          "probe-failure:showcaseParticleCore:primary-foreground-width:51",
+          "probe-failure:showcaseParticleCore:primary-foreground-height:13",
+          "probe-failure:showcaseParticleCore:primary-readability-score:34",
+          "probe-primary-foreground-too-small:showcaseParticleCore:620",
+          "probe-primary-foreground-width:showcaseParticleCore:51",
+          "probe-primary-foreground-height:showcaseParticleCore:13"
+        ],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-data-galaxy",
+          "routePath": "/apps/showcase-data-galaxy/",
+          "appId": "showcase-data-galaxy",
+          "sourceHash": "sha256-f3e3f31b791d6c26036a09c5fe0ebea840801ac01bbab54413f326b77f5f0470",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseParticleCore",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-7f96f6965ec1106cab7e9411337d5552c5377ef08b7e6970c0aaffd3a946ff77",
+          "generatedAt": "2026-07-01T06:37:50.711Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "assets",
+              "claimBoundary",
+              "controls",
+              "diagnostics",
+              "frameCount",
+              "interactionState",
+              "status",
+              "systems",
+              "telemetry",
+              "updatedAt"
+            ],
+            "primaryAssets": [
+              "showcaseParticleCore"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 69,
+            "renderSize": [
+              1440,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
+            "sha256": "sha256-0403d4c02e3ee835c7512429f1a2f7edc1f0548206bf812bb9cb83c088290aee",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 106,
+              "width": 1420,
+              "height": 516
+            },
+            "nonBlankPixels": 620,
+            "colorBuckets": 18,
+            "foregroundBounds": {
+              "x": 770,
+              "y": 385,
+              "width": 51,
+              "height": 13
+            },
+            "visible": false,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 34,
+            "failures": [
+              "primary-foreground-too-small:620",
+              "primary-foreground-width:51",
+              "primary-foreground-height:13",
+              "primary-readability-score:34"
+            ]
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseParticleCore",
+              "role": "abstract",
+              "expectedTypedRef": "assets.showcaseParticleCore",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
+                "sha256": "sha256-0403d4c02e3ee835c7512429f1a2f7edc1f0548206bf812bb9cb83c088290aee",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 106,
+                  "width": 1420,
+                  "height": 516
+                },
+                "nonBlankPixels": 620,
+                "colorBuckets": 18,
+                "foregroundBounds": {
+                  "x": 770,
+                  "y": 385,
+                  "width": 51,
+                  "height": 13
+                },
+                "visible": false,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 34,
+                "failures": [
+                  "primary-foreground-too-small:620",
+                  "primary-foreground-width:51",
+                  "primary-foreground-height:13",
+                  "primary-readability-score:34"
+                ]
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": false,
+          "failures": [
+            "primary-foreground-too-small:620",
+            "primary-foreground-width:51",
+            "primary-foreground-height:13",
+            "primary-readability-score:34"
+          ]
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 659226004,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-data-galaxy/dist --release --source apps/showcase-data-galaxy/src --asset showcaseParticleCore",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-smart-city-control",
+      "label": "Smart City Control Room",
+      "path": "/apps/showcase-smart-city-control/",
+      "globalName": "__AURA3D_SHOWCASE_SMART_CITY_CONTROL__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-smart-city-control/index.html",
+      "distDir": "apps/showcase-smart-city-control/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [
+          "showcaseCityVehicle"
+        ],
+        "primaryAssetRoles": {
+          "showcaseCityVehicle": "vehicle"
+        },
+        "routePrimaryHeroAsset": "showcaseCityVehicle",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 14,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseCityVehicle",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseCityVehicle.15552b57.glb",
+          "hash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
+          "source": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
+          "outputPath": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
+          "sourceFamily": "objaverse",
+          "author": "Lee Alex Johansson",
+          "attribution": "Lee Alex Johansson",
+          "retrievedAt": "2026-06-17T19:03:07.418Z",
+          "thumbnailUrl": "/aura-assets/showcaseCityVehicle.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-smart-city-control/route-health.json",
+        "failures": [],
+        "appId": "showcase-smart-city-control",
+        "route": "/apps/showcase-smart-city-control/",
+        "classification": "candidate",
+        "publicShowcase": true,
+        "primaryAssets": [
+          "showcaseCityVehicle"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-smart-city-control",
+          "routePath": "/apps/showcase-smart-city-control/",
+          "appId": "showcase-smart-city-control",
+          "sourceHash": "sha256-d8f46929d79d5a0f25bd03124200d49d7f75554651e2ee9b53feb34e36555ff0",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseCityVehicle",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
+          "generatedAt": "2026-07-01T06:37:53.469Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "claimBoundary",
+              "controls",
+              "diagnostics",
+              "frameCount",
+              "interactionState",
+              "status",
+              "systems",
+              "telemetry",
+              "updatedAt"
+            ],
+            "primaryAssets": [
+              "showcaseCityVehicle"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 272,
+            "renderSize": [
+              1440,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
+            "sha256": "sha256-60fd72f22fb5b09775f5fe89bd3ae7ce77de6197b6c6a2bb18dfe5a4e6a4a6a5",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 114,
+              "width": 1042,
+              "height": 611
+            },
+            "nonBlankPixels": 9260,
+            "colorBuckets": 27,
+            "foregroundBounds": {
+              "x": 186,
+              "y": 323,
+              "width": 175,
+              "height": 137
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 69,
+            "failures": []
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseCityVehicle",
+              "role": "vehicle",
+              "expectedTypedRef": "assets.showcaseCityVehicle",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
+                "sha256": "sha256-60fd72f22fb5b09775f5fe89bd3ae7ce77de6197b6c6a2bb18dfe5a4e6a4a6a5",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 114,
+                  "width": 1042,
+                  "height": 611
+                },
+                "nonBlankPixels": 9260,
+                "colorBuckets": 27,
+                "foregroundBounds": {
+                  "x": 186,
+                  "y": 323,
+                  "width": 175,
+                  "height": 137
+                },
+                "visible": true,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 69,
+                "failures": []
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 177,
+        "totalBytes": 659969587,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-smart-city-control/dist --release --source apps/showcase-smart-city-control/src --asset showcaseCityVehicle",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-cinematic-architecture",
+      "label": "Architectural District Tour",
+      "path": "/apps/showcase-cinematic-architecture/",
+      "globalName": "__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-cinematic-architecture/index.html",
+      "distDir": "apps/showcase-cinematic-architecture/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [
+          "showcaseSkylineCity"
+        ],
+        "primaryAssetRoles": {
+          "showcaseSkylineCity": "environment"
+        },
+        "routePrimaryHeroAsset": "showcaseSkylineCity",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 10,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseSkylineCity",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseSkylineCity.2f6624cd.glb",
+          "hash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
+          "source": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
+          "outputPath": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
+          "sourceFamily": "objaverse",
+          "author": "Virginia Vidonis",
+          "attribution": "Virginia Vidonis",
+          "retrievedAt": "2026-06-18T01:12:46.047Z",
+          "thumbnailUrl": "/aura-assets/showcaseSkylineCity.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-cinematic-architecture/route-health.json",
+        "failures": [],
+        "appId": "showcase-cinematic-architecture",
+        "route": "/apps/showcase-cinematic-architecture/",
+        "classification": "candidate",
+        "publicShowcase": true,
+        "primaryAssets": [
+          "showcaseSkylineCity"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-cinematic-architecture",
+          "routePath": "/apps/showcase-cinematic-architecture/",
+          "appId": "showcase-cinematic-architecture",
+          "sourceHash": "sha256-6dd91b8e6c94afe26de52e04aa154d05bb60d67d6c8c2e6db1eee21c8f2b7e7b",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseSkylineCity",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-1ef2500bed17e0bf342f5fff98b8b3a0355b0f004a4c84f54ba259194ebfc14b",
+          "generatedAt": "2026-07-01T06:37:56.285Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "aura",
+              "claimBoundary",
+              "composition",
+              "controls",
+              "frameCount",
+              "interactionState",
+              "renderer",
+              "routeHealth",
+              "status",
+              "systems",
+              "telemetry"
+            ],
+            "primaryAssets": [
+              "showcaseSkylineCity"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "scene-plan",
+            "drawCalls": 773,
+            "renderSize": [
+              1080,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+            "sha256": "sha256-01dad5dec223946484269ba4eb5126bd2a1008c8cafdaccad1bcd2302e4ccb27",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 10,
+              "width": 1060,
+              "height": 880
+            },
+            "nonBlankPixels": 391510,
+            "colorBuckets": 451,
+            "foregroundBounds": {
+              "x": 147,
+              "y": 26,
+              "width": 853,
+              "height": 658
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 100,
+            "failures": []
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseSkylineCity",
+              "role": "environment",
+              "expectedTypedRef": "assets.showcaseSkylineCity",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+                "sha256": "sha256-01dad5dec223946484269ba4eb5126bd2a1008c8cafdaccad1bcd2302e4ccb27",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1060,
+                  "height": 880
+                },
+                "nonBlankPixels": 391510,
+                "colorBuckets": 451,
+                "foregroundBounds": {
+                  "x": 147,
+                  "y": 26,
+                  "width": 853,
+                  "height": 658
+                },
+                "visible": true,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 100,
+                "failures": []
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 658623992,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-cinematic-architecture/dist --release --source apps/showcase-cinematic-architecture/src --asset showcaseSkylineCity",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-digital-twin-ops",
+      "label": "Digital Twin Operations Center",
+      "path": "/apps/showcase-digital-twin-ops/",
+      "globalName": "__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-digital-twin-ops/index.html",
+      "distDir": "apps/showcase-digital-twin-ops/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [
+          "showcaseRoboticWeldingWorkcell"
+        ],
+        "primaryAssetRoles": {
+          "showcaseRoboticWeldingWorkcell": "prop"
+        },
+        "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 18,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseRoboticWeldingWorkcell",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
+          "hash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+          "source": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
+          "outputPath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
+          "sourceFamily": "objaverse",
+          "author": "bluoppVR",
+          "attribution": "bluoppVR",
+          "retrievedAt": "2026-06-19T18:39:41.010Z",
+          "thumbnailUrl": "/aura-assets/showcaseRoboticWeldingWorkcell.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-digital-twin-ops/route-health.json",
+        "failures": [],
+        "appId": "showcase-digital-twin-ops",
+        "route": "/apps/showcase-digital-twin-ops/",
+        "classification": "release-ready candidate",
+        "publicShowcase": true,
+        "primaryAssets": [
+          "showcaseRoboticWeldingWorkcell"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-digital-twin-ops",
+          "routePath": "/apps/showcase-digital-twin-ops/",
+          "appId": "showcase-digital-twin-ops",
+          "sourceHash": "sha256-a64755951ad6bf6967aa3c6c5aa47a95ef108e6d8b9dbe028f2447a9bd4c6278",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
+          "generatedAt": "2026-07-01T06:37:59.016Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "alerts",
+              "appId",
+              "claimBoundary",
+              "controls",
+              "diagnostics",
+              "energyMw",
+              "frameCount",
+              "mode",
+              "motionProof",
+              "runtimeNodeIds",
+              "selectedZone",
+              "status",
+              "systems",
+              "throughput",
+              "uptime",
+              "zones"
+            ],
+            "primaryAssets": [
+              "showcaseRoboticWeldingWorkcell"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 195,
+            "renderSize": [
+              1104,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+            "sha256": "sha256-dfcf158776217f3e7d51f69cb24082634a6053aed4cc2b971c2effb10c62cf02",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 104,
+              "width": 1084,
+              "height": 786
+            },
+            "nonBlankPixels": 289532,
+            "colorBuckets": 271,
+            "foregroundBounds": {
+              "x": 216,
+              "y": 121,
+              "width": 717,
+              "height": 574
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 100,
+            "failures": []
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseRoboticWeldingWorkcell",
+              "role": "prop",
+              "expectedTypedRef": "assets.showcaseRoboticWeldingWorkcell",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+                "sha256": "sha256-dfcf158776217f3e7d51f69cb24082634a6053aed4cc2b971c2effb10c62cf02",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 104,
+                  "width": 1084,
+                  "height": 786
+                },
+                "nonBlankPixels": 289532,
+                "colorBuckets": 271,
+                "foregroundBounds": {
+                  "x": 216,
+                  "y": 121,
+                  "width": 717,
+                  "height": 574
+                },
+                "visible": true,
+                "clipped": false,
+                "occludedByUi": false,
+                "readabilityScore": 100,
+                "failures": []
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 659052725,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-digital-twin-ops/dist --release --source apps/showcase-digital-twin-ops/src --asset showcaseRoboticWeldingWorkcell",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-webgpu-particle-lab",
+      "label": "WebGPU Particle Lab",
+      "path": "/apps/showcase-webgpu-particle-lab/",
+      "globalName": "__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
+      "releaseClass": "internal-diagnostic",
+      "publicReleaseCounted": false,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [
+        "static:native-webgpu-overclaim",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-clipped",
+        "route-primary:probe-clipped:showcaseParticleCore:true",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-clipped",
+        "capability:native-webgpu-proof-absent"
+      ],
+      "finalStatus": "internal-diagnostic-retained",
+      "source": "apps/showcase-webgpu-particle-lab/index.html",
+      "distDir": "apps/showcase-webgpu-particle-lab/dist",
+      "gate": {
+        "releaseClass": "internal-diagnostic",
+        "primaryAssets": [
+          "showcaseParticleCore"
+        ],
+        "primaryAssetRoles": {
+          "showcaseParticleCore": "effect-core"
+        },
+        "routePrimaryHeroAsset": "showcaseParticleCore",
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 14,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": false,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": true,
+        "nativeWebGpuAllowed": false
+      },
+      "ok": false,
+      "staticGateOk": false,
+      "staticGateFailures": [
+        "native-webgpu-overclaim"
+      ],
+      "visualReview": {
+        "required": false,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "skipped",
+        "failures": []
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseParticleCore",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+          "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
+          "sourceFamily": "objaverse",
+          "author": "Yewon Kim",
+          "attribution": "Yewon Kim",
+          "retrievedAt": "2026-06-17T21:19:42.916Z",
+          "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-webgpu-particle-lab/route-health.json",
+        "failures": [],
+        "appId": "showcase-webgpu-particle-lab",
+        "route": "/apps/showcase-webgpu-particle-lab/",
+        "classification": "internal-diagnostic",
+        "publicShowcase": false,
+        "primaryAssets": [
+          "showcaseParticleCore"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": false,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+        "failures": [
+          "route-primary-probe-pass:false",
+          "route-primary-probe-failure:primary-foreground-clipped",
+          "probe-clipped:showcaseParticleCore:true",
+          "probe-failure:showcaseParticleCore:primary-foreground-clipped"
+        ],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-webgpu-particle-lab",
+          "routePath": "/apps/showcase-webgpu-particle-lab/",
+          "appId": "showcase-webgpu-particle-lab",
+          "sourceHash": "sha256-5eb644e50b9381edcc96bc7a6c25995e060fa256dc5440a533be10b89b9c4fda",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseParticleCore",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-8f9462a81592bc747aa147af35408a5ae1c135ab23fa31de487dcade0c84bcaa",
+          "generatedAt": "2026-07-01T06:38:01.666Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "running",
+            "evidenceKeys": [
+              "appId",
+              "capabilityState",
+              "claimBoundary",
+              "controls",
+              "frameCount",
+              "labSet",
+              "performance",
+              "status",
+              "systems"
+            ],
+            "primaryAssets": [
+              "showcaseParticleCore"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 15,
+            "renderSize": [
+              1066,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+            "sha256": "sha256-d8cbdca058c2961aefe1b482e838576f72c41a0aca184a71b4d79f4d46f8e26e",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 10,
+              "width": 1045,
+              "height": 880
+            },
+            "nonBlankPixels": 636634,
+            "colorBuckets": 119,
+            "foregroundBounds": {
+              "x": 10,
+              "y": 10,
+              "width": 1045,
+              "height": 652
+            },
+            "visible": true,
+            "clipped": true,
+            "occludedByUi": false,
+            "readabilityScore": 85,
+            "failures": [
+              "primary-foreground-clipped"
+            ]
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseParticleCore",
+              "role": "effect-core",
+              "expectedTypedRef": "assets.showcaseParticleCore",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+                "sha256": "sha256-d8cbdca058c2961aefe1b482e838576f72c41a0aca184a71b4d79f4d46f8e26e",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1045,
+                  "height": 880
+                },
+                "nonBlankPixels": 636634,
+                "colorBuckets": 119,
+                "foregroundBounds": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1045,
+                  "height": 652
+                },
+                "visible": true,
+                "clipped": true,
+                "occludedByUi": false,
+                "readabilityScore": 85,
+                "failures": [
+                  "primary-foreground-clipped"
+                ]
+              }
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": false,
+          "failures": [
+            "primary-foreground-clipped"
+          ]
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 658658334,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "label": "Blockfall Reactor",
+      "path": "/apps/showcase-blockfall-reactor/",
+      "globalName": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
+      "releaseClass": "release-ready candidate",
+      "publicReleaseCounted": true,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [],
+      "finalStatus": "release-ready candidate",
+      "source": "apps/showcase-blockfall-reactor/index.html",
+      "distDir": "apps/showcase-blockfall-reactor/dist",
+      "gate": {
+        "releaseClass": "release-ready candidate",
+        "primaryAssets": [],
+        "primaryAssetRoles": {},
+        "routePrimaryHeroAsset": null,
+        "secondaryPrimaryAssets": [],
+        "primitiveBudget": 40,
+        "requiresTypedPrimaryAssets": false,
+        "requiresRoutePrimaryProbe": true,
+        "requiresKeyboardDelta": true,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": null,
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
+      "visualReview": {
+        "required": true,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "failures": []
+      },
+      "primaryAssetEvidence": [],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-blockfall-reactor/route-health.json",
+        "failures": [],
+        "appId": "showcase-blockfall-reactor",
+        "route": "/apps/showcase-blockfall-reactor/",
+        "classification": "candidate",
+        "publicShowcase": true,
+        "primaryAssets": [],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
+        "gameAssetPairEvidence": null
+      },
+      "routePrimaryProbe": {
+        "ok": true,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
+        "failures": [],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-blockfall-reactor",
+          "routePath": "/apps/showcase-blockfall-reactor/",
+          "appId": "showcase-blockfall-reactor",
+          "sourceHash": "sha256-5d71facebef7aca06d58e564e284e9f940dd74c63f9ff5129ce936eba21803c2",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "secondaryPrimaryAssets": [],
+          "routeHealthHash": "sha256-5da72dce15292dd9ccac278603865bff99fe3ee06ce688e4412052ee8ee367c0",
+          "generatedAt": "2026-07-01T06:38:04.192Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "running",
+            "evidenceKeys": [
+              "appId",
+              "assets",
+              "claimBoundary",
+              "controls",
+              "current",
+              "diagnostics",
+              "frameCount",
+              "hudSnapshot",
+              "kind",
+              "kitContractProof",
+              "lineClearProof",
+              "live",
+              "prohibitedApiAvoided",
+              "publicEngineApi",
+              "replay",
+              "route",
+              "rules",
+              "runtimeEvidence",
+              "startState",
+              "status",
+              "systems"
+            ],
+            "primaryAssets": [],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 279,
+            "renderSize": [
+              1440,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
+            "sha256": "sha256-f098aba904ebd5636c30672850771492aa9e4c1b17be8091150f5c2fd3f4eaca",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 346,
+              "y": 10,
+              "width": 768,
+              "height": 880
+            },
+            "nonBlankPixels": 241661,
+            "colorBuckets": 51,
+            "foregroundBounds": {
+              "x": 451,
+              "y": 54,
+              "width": 539,
+              "height": 738
+            },
+            "visible": true,
+            "clipped": false,
+            "occludedByUi": false,
+            "readabilityScore": 100,
+            "failures": []
+          },
+          "primaryAssets": [],
+          "primitivePrimaryCandidates": [],
+          "pass": true,
+          "failures": []
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 657162667,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --source apps/showcase-blockfall-reactor/src --no-assets",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "label": "Skyline Runner",
+      "path": "/apps/showcase-skyline-runner/",
+      "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+      "releaseClass": "prototype-blocked",
+      "publicReleaseCounted": false,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [
+        "asset-pair:platformer-public-character-world-binding-missing",
+        "static:missing-evidence-global",
+        "static:missing-controls",
+        "static:missing-systems",
+        "static:missing-claim-boundary",
+        "static:route-health:missing-route-health-blocker:evidence:platformer-asset-pair:blocker:route-primary:primary-foreground-too-small",
+        "route-primary:source-hash:sha256-dee4bd914229df228a67c77866cd7e8e6825e1f9afdef385d4fe58949d9ca98b",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-clipped",
+        "route-primary:probe-clipped:showcaseWalkAnimatedGirl:true",
+        "route-primary:probe-failure:showcaseWalkAnimatedGirl:primary-foreground-clipped",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:asset-extraction:platformer-playable-surface-columns-ambiguous:showcaseSideScrollerWorld",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:asset-pair:platformer-public-character-world-binding-missing",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:route-primary:primary-foreground-too-small",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:asset-pair:character-world-scale-and-art-direction-not-public-quality"
+      ],
+      "finalStatus": "prototype-blocked",
+      "source": "apps/showcase-skyline-runner/index.html",
+      "distDir": "apps/showcase-skyline-runner/dist",
+      "gate": {
+        "releaseClass": "prototype-blocked",
+        "primaryAssets": [
+          "showcaseWalkAnimatedGirl",
+          "showcaseSideScrollerWorld"
+        ],
+        "primaryAssetRoles": {
+          "showcaseWalkAnimatedGirl": "character",
+          "showcaseSideScrollerWorld": "world"
+        },
+        "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+        "secondaryPrimaryAssets": [
+          "showcaseSideScrollerWorld"
+        ],
+        "primitiveBudget": 24,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": true,
+        "requiresAnimationSubjectDelta": true,
+        "gameTemplateStatus": {
+          "category": "platformer",
+          "publicTemplateReady": false,
+          "blocker": "asset-pair:platformer-public-character-world-binding-missing",
+          "requiredBeforePublic": [
+            "select or certify a platformer world asset with mesh-derived playable surfaces",
+            "prove character foot contact is visibly bound to retained platform surface evidence",
+            "prove character/world scale and camera framing from the current retained screenshot",
+            "pass public platformer visual review from the current retained screenshot"
+          ],
+          "evidence": [
+            "aura3d-game-examples-stop-decision.md records the NO decision for current engine APIs and asset catalog",
+            "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json retains hash-bound but non-public-quality playable-surface evidence",
+            "tests/fixtures/showcase-spec/skyline-runner.json records failing platformer asset-pair evidence for the current screenshot",
+            "docs/project/showcase-visual-review.json blocks public platformer visual approval"
+          ]
+        },
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": false,
+      "staticGateOk": false,
+      "staticGateFailures": [
+        "missing-evidence-global",
+        "missing-controls",
+        "missing-systems",
+        "missing-claim-boundary",
+        "route-health:missing-route-health-blocker:evidence:platformer-asset-pair:blocker:route-primary:primary-foreground-too-small"
+      ],
+      "visualReview": {
+        "required": false,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "fail",
+        "failures": [
+          "route-visual-review-blocker:showcase-skyline-runner:asset-extraction:platformer-playable-surface-columns-ambiguous:showcaseSideScrollerWorld",
+          "route-visual-review-blocker:showcase-skyline-runner:asset-pair:platformer-public-character-world-binding-missing",
+          "route-visual-review-blocker:showcase-skyline-runner:route-primary:primary-foreground-too-small",
+          "route-visual-review-blocker:showcase-skyline-runner:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+          "route-visual-review-blocker:showcase-skyline-runner:asset-pair:character-world-scale-and-art-direction-not-public-quality"
+        ]
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseWalkAnimatedGirl",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+          "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+          "source": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+          "outputPath": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
+          "sourceFamily": "objaverse",
+          "author": "Unity  (shehab house)",
+          "attribution": "Unity  (shehab house)",
+          "retrievedAt": "2026-06-20T05:52:50.321Z",
+          "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg"
+        },
+        {
+          "id": "showcaseSideScrollerWorld",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
+          "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "source": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
+          "outputPath": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
+          "sourceFamily": "objaverse",
+          "author": "Lowpolyprincipal",
+          "attribution": "Lowpolyprincipal",
+          "retrievedAt": "2026-06-20T05:38:40.968Z",
+          "thumbnailUrl": "/aura-assets/showcaseSideScrollerWorld.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": false,
+        "path": "apps/showcase-skyline-runner/route-health.json",
+        "failures": [
+          "missing-route-health-blocker:evidence:platformer-asset-pair:blocker:route-primary:primary-foreground-too-small"
+        ],
+        "appId": "showcase-skyline-runner",
+        "route": "/apps/showcase-skyline-runner/",
+        "classification": "prototype-blocked",
+        "publicShowcase": false,
+        "primaryAssets": [
+          "showcaseWalkAnimatedGirl",
+          "showcaseSideScrollerWorld"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+        "gameAssetPairEvidence": {
+          "category": "platformer",
+          "assets": [
+            "showcaseWalkAnimatedGirl",
+            "showcaseSideScrollerWorld"
+          ],
+          "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          "verdict": "fail",
+          "notes": "Current retained screenshots prove the typed character and side-scroller world render, but they still do not visually prove a public-quality character-to-world game presentation. Public status stays blocked until primary foreground size, character scale, foot contact, camera framing, and level flow visibly bind to the world geometry.",
+          "blockers": [
+            "asset-pair:platformer-public-character-world-binding-missing",
+            "route-primary:primary-foreground-too-small",
+            "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+            "asset-pair:character-world-scale-and-art-direction-not-public-quality"
+          ]
+        }
+      },
+      "routePrimaryProbe": {
+        "ok": false,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        "failures": [
+          "source-hash:sha256-dee4bd914229df228a67c77866cd7e8e6825e1f9afdef385d4fe58949d9ca98b",
+          "route-primary-probe-pass:false",
+          "route-primary-probe-failure:primary-foreground-clipped",
+          "probe-clipped:showcaseWalkAnimatedGirl:true",
+          "probe-failure:showcaseWalkAnimatedGirl:primary-foreground-clipped"
+        ],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-skyline-runner",
+          "routePath": "/apps/showcase-skyline-runner/",
+          "appId": "showcase-skyline-runner",
+          "sourceHash": "sha256-dee4bd914229df228a67c77866cd7e8e6825e1f9afdef385d4fe58949d9ca98b",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+          "secondaryPrimaryAssets": [
+            "showcaseSideScrollerWorld"
+          ],
+          "routeHealthHash": "sha256-bfa825fdf3ba3b16fca933c9251dd4be4bff17df65b28348853f964527e7f4d7",
+          "generatedAt": "2026-07-01T06:38:06.823Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "animation",
+              "appId",
+              "checkpointId",
+              "coins",
+              "deaths",
+              "diagnostics",
+              "frameCount",
+              "gameplay",
+              "kitContractProof",
+              "levelDesign",
+              "platformer",
+              "primaryAssets",
+              "schema",
+              "score",
+              "status"
+            ],
+            "primaryAssets": [
+              "showcaseWalkAnimatedGirl",
+              "showcaseSideScrollerWorld"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 33,
+            "renderSize": [
+              1108,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+            "sha256": "sha256-29a30d28b0721199784634348e05ddac21adb172428874a0b1b67349f6f23d2f",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 10,
+              "width": 1088,
+              "height": 880
+            },
+            "nonBlankPixels": 516642,
+            "colorBuckets": 84,
+            "foregroundBounds": {
+              "x": 15,
+              "y": 67,
+              "width": 1083,
+              "height": 610
+            },
+            "visible": true,
+            "clipped": true,
+            "occludedByUi": false,
+            "readabilityScore": 85,
+            "failures": [
+              "primary-foreground-clipped"
+            ]
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseWalkAnimatedGirl",
+              "role": "character",
+              "expectedTypedRef": "assets.showcaseWalkAnimatedGirl",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+                "sha256": "sha256-29a30d28b0721199784634348e05ddac21adb172428874a0b1b67349f6f23d2f",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1088,
+                  "height": 880
+                },
+                "nonBlankPixels": 516642,
+                "colorBuckets": 84,
+                "foregroundBounds": {
+                  "x": 15,
+                  "y": 67,
+                  "width": 1083,
+                  "height": 610
+                },
+                "visible": true,
+                "clipped": true,
+                "occludedByUi": false,
+                "readabilityScore": 85,
+                "failures": [
+                  "primary-foreground-clipped"
+                ]
+              }
+            },
+            {
+              "id": "showcaseSideScrollerWorld",
+              "role": "world",
+              "expectedTypedRef": "assets.showcaseSideScrollerWorld",
+              "routePrimaryEvidenceTarget": false,
+              "evidenceMode": "secondary-present",
+              "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": false,
+          "failures": [
+            "primary-foreground-clipped"
+          ]
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 659044862,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
+      "deployWarnings": [],
+      "deployFailures": []
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "label": "Turbo Drift Circuit",
+      "path": "/apps/showcase-turbo-drift-circuit/",
+      "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+      "releaseClass": "prototype-blocked",
+      "publicReleaseCounted": false,
+      "publicReleaseOk": true,
+      "classificationOk": true,
+      "classificationFailures": [],
+      "diagnosticBlockers": [
+        "asset-pair:racing-public-composition-bounds-missing",
+        "static:missing-evidence-global",
+        "static:missing-controls",
+        "static:missing-systems",
+        "static:missing-claim-boundary",
+        "route-primary:source-hash:sha256-a16b0c27d3bc674bd2a1f14c138cee915c774332d40a1b4cc6a17bf5424ec77a",
+        "route-primary:route-primary-probe-pass:false",
+        "route-primary:route-primary-probe-failure:primary-foreground-clipped",
+        "route-primary:probe-clipped:showcaseTexturedSportsCar:true",
+        "route-primary:probe-failure:showcaseTexturedSportsCar:primary-foreground-clipped",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:racing-public-composition-bounds-missing",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:car-route-not-visibly-bound-to-road-surface",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:track-camera-composition-reads-as-proof-harness"
+      ],
+      "finalStatus": "prototype-blocked",
+      "source": "apps/showcase-turbo-drift-circuit/index.html",
+      "distDir": "apps/showcase-turbo-drift-circuit/dist",
+      "gate": {
+        "releaseClass": "prototype-blocked",
+        "primaryAssets": [
+          "showcaseTexturedSportsCar",
+          "showcaseTsukubaCircuit"
+        ],
+        "primaryAssetRoles": {
+          "showcaseTexturedSportsCar": "vehicle",
+          "showcaseTsukubaCircuit": "track"
+        },
+        "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+        "secondaryPrimaryAssets": [
+          "showcaseTsukubaCircuit"
+        ],
+        "primitiveBudget": 10,
+        "requiresTypedPrimaryAssets": true,
+        "requiresRoutePrimaryProbe": false,
+        "requiresKeyboardDelta": true,
+        "requiresAnimationSubjectDelta": false,
+        "gameTemplateStatus": {
+          "category": "racing",
+          "publicTemplateReady": false,
+          "blocker": "asset-pair:racing-public-composition-bounds-missing",
+          "requiredBeforePublic": [
+            "prove the car route is visibly bound to the retained road-surface topology",
+            "prove car/track/camera composition bounds from the current retained screenshot",
+            "replace the current generated presentation with a visually acceptable public racing scene",
+            "pass public racing visual review from the current retained screenshot"
+          ],
+          "evidence": [
+            "aura3d-game-examples-stop-decision.md records the NO decision for current engine APIs and asset catalog",
+            "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json retains hash-bound racing topology evidence",
+            "tests/fixtures/showcase-spec/turbo-drift-circuit.json records failing racing asset-pair evidence for the current screenshot",
+            "docs/project/showcase-visual-review.json blocks public racing visual approval"
+          ]
+        },
+        "requiresAuraParticles": false,
+        "nativeWebGpuAllowed": null
+      },
+      "ok": false,
+      "staticGateOk": false,
+      "staticGateFailures": [
+        "missing-evidence-global",
+        "missing-controls",
+        "missing-systems",
+        "missing-claim-boundary"
+      ],
+      "visualReview": {
+        "required": false,
+        "ok": true,
+        "path": "docs/project/showcase-visual-review.json",
+        "verdict": "fail",
+        "failures": [
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:racing-public-composition-bounds-missing",
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:car-route-not-visibly-bound-to-road-surface",
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:asset-pair:track-camera-composition-reads-as-proof-harness"
+        ]
+      },
+      "primaryAssetEvidence": [
+        {
+          "id": "showcaseTexturedSportsCar",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
+          "hash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
+          "source": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
+          "outputPath": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
+          "sourceFamily": "objaverse",
+          "author": "Samize",
+          "attribution": "Samize",
+          "retrievedAt": "2026-06-20T05:40:45.025Z",
+          "thumbnailUrl": "/aura-assets/showcaseTexturedSportsCar.thumb.svg"
+        },
+        {
+          "id": "showcaseTsukubaCircuit",
+          "presentInManifest": true,
+          "presentInTypegen": true,
+          "typedAssetUsedInSource": true,
+          "url": "/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "source": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "outputPath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "sourceFamily": "objaverse",
+          "author": "Linnaeus",
+          "attribution": "Linnaeus",
+          "retrievedAt": "2026-06-18T07:12:45.970Z",
+          "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg"
+        }
+      ],
+      "routeHealth": {
+        "ok": true,
+        "path": "apps/showcase-turbo-drift-circuit/route-health.json",
+        "failures": [],
+        "appId": "showcase-turbo-drift-circuit",
+        "route": "/apps/showcase-turbo-drift-circuit/",
+        "classification": "prototype-blocked",
+        "publicShowcase": false,
+        "primaryAssets": [
+          "showcaseTexturedSportsCar",
+          "showcaseTsukubaCircuit"
+        ],
+        "evidenceGlobal": "window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+        "gameAssetPairEvidence": {
+          "category": "racing",
+          "assets": [
+            "showcaseTexturedSportsCar",
+            "showcaseTsukubaCircuit"
+          ],
+          "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          "verdict": "fail",
+          "notes": "Current retained screenshots prove the typed car and Tsukuba track render, but the scene still does not visually prove a public-quality car-to-track racing presentation. Public status stays blocked until car placement, camera composition, and route overlay visibly bind the car to the road surface.",
+          "blockers": [
+            "asset-pair:racing-public-composition-bounds-missing",
+            "asset-pair:car-route-not-visibly-bound-to-road-surface",
+            "asset-pair:track-camera-composition-reads-as-proof-harness"
+          ]
+        }
+      },
+      "routePrimaryProbe": {
+        "ok": false,
+        "required": true,
+        "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        "failures": [
+          "source-hash:sha256-a16b0c27d3bc674bd2a1f14c138cee915c774332d40a1b4cc6a17bf5424ec77a",
+          "route-primary-probe-pass:false",
+          "route-primary-probe-failure:primary-foreground-clipped",
+          "probe-clipped:showcaseTexturedSportsCar:true",
+          "probe-failure:showcaseTexturedSportsCar:primary-foreground-clipped"
+        ],
+        "evidence": {
+          "schema": "aura3d-route-primary-probe/1.0",
+          "routeId": "showcase-turbo-drift-circuit",
+          "routePath": "/apps/showcase-turbo-drift-circuit/",
+          "appId": "showcase-turbo-drift-circuit",
+          "sourceHash": "sha256-a16b0c27d3bc674bd2a1f14c138cee915c774332d40a1b4cc6a17bf5424ec77a",
+          "routeGateHash": "89470ada94426d9a1048f44272d639bb64dfcad9ed4385c1761fda9c9a96c6d2",
+          "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+          "secondaryPrimaryAssets": [
+            "showcaseTsukubaCircuit"
+          ],
+          "routeHealthHash": "sha256-522f6d6239ec9a3ee8ad3782d57424f6d3e032702aadcb5a2f48fd77d3df8c71",
+          "generatedAt": "2026-07-01T06:38:09.536Z",
+          "viewport": {
+            "width": 1440,
+            "height": 900,
+            "deviceScaleFactor": 1
+          },
+          "mountedEvidence": {
+            "present": true,
+            "status": "ready",
+            "evidenceKeys": [
+              "appId",
+              "checkpoint",
+              "diagnostics",
+              "frameCount",
+              "gameplay",
+              "kitContractProof",
+              "lap",
+              "primaryAssets",
+              "raceDesign",
+              "raceState",
+              "racing",
+              "schema",
+              "speed",
+              "status"
+            ],
+            "primaryAssets": [
+              "showcaseTexturedSportsCar",
+              "showcaseTsukubaCircuit"
+            ],
+            "missingPrimaryAssets": [],
+            "hasRendererDiagnostics": true
+          },
+          "renderer": {
+            "backend": "webgl2",
+            "drawCalls": 88,
+            "renderSize": [
+              1122,
+              900
+            ]
+          },
+          "renderedProbe": {
+            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+            "sha256": "sha256-437aed56d5397cff40a403a295f76907cf349ad074c2f87554f17a0fc1807bd4",
+            "width": 1440,
+            "height": 900,
+            "analysisCrop": {
+              "x": 10,
+              "y": 10,
+              "width": 1102,
+              "height": 880
+            },
+            "nonBlankPixels": 959740,
+            "colorBuckets": 131,
+            "foregroundBounds": {
+              "x": 10,
+              "y": 10,
+              "width": 1102,
+              "height": 880
+            },
+            "visible": true,
+            "clipped": true,
+            "occludedByUi": false,
+            "readabilityScore": 85,
+            "failures": [
+              "primary-foreground-clipped"
+            ]
+          },
+          "primaryAssets": [
+            {
+              "id": "showcaseTexturedSportsCar",
+              "role": "vehicle",
+              "expectedTypedRef": "assets.showcaseTexturedSportsCar",
+              "routePrimaryEvidenceTarget": true,
+              "evidenceMode": "route-primary-foreground",
+              "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
+              "renderedProbe": {
+                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+                "sha256": "sha256-437aed56d5397cff40a403a295f76907cf349ad074c2f87554f17a0fc1807bd4",
+                "width": 1440,
+                "height": 900,
+                "analysisCrop": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1102,
+                  "height": 880
+                },
+                "nonBlankPixels": 959740,
+                "colorBuckets": 131,
+                "foregroundBounds": {
+                  "x": 10,
+                  "y": 10,
+                  "width": 1102,
+                  "height": 880
+                },
+                "visible": true,
+                "clipped": true,
+                "occludedByUi": false,
+                "readabilityScore": 85,
+                "failures": [
+                  "primary-foreground-clipped"
+                ]
+              }
+            },
+            {
+              "id": "showcaseTsukubaCircuit",
+              "role": "track",
+              "expectedTypedRef": "assets.showcaseTsukubaCircuit",
+              "routePrimaryEvidenceTarget": false,
+              "evidenceMode": "secondary-present",
+              "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+            }
+          ],
+          "primitivePrimaryCandidates": [],
+          "pass": false,
+          "failures": [
+            "primary-foreground-clipped"
+          ]
+        }
+      },
+      "buildOk": true,
+      "deployCheckOk": true,
+      "dist": {
+        "exists": true,
+        "fileCount": 175,
+        "totalBytes": 659041058,
+        "hasIndexHtml": false,
+        "hasAuraAssets": true
+      },
+      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseTexturedSportsCar --asset showcaseTsukubaCircuit",
+      "deployWarnings": [],
+      "deployFailures": []
+    }
+  ]
+}

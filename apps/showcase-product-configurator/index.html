@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headphones Configurator | Aura3D</title>
+    <meta
+      name="description"
+      content="Premium Aura3D product configurator showcase with typed GLB asset provenance, variants, material finishes, part focus, and route evidence."
+    >
+    <link rel="stylesheet" href="/apps/showcase-product-configurator/src/styles.css">
+  </head>
+  <body>
+    <div id="aura-stage" aria-label="Aura3D product configurator viewport"></div>
+    <main class="chrome" aria-label="Product configurator controls and evidence">
+      <section class="title-panel" aria-label="Route summary">
+        <div class="route-kicker">Aura3D product studio</div>
+        <h1>Configure headphones.</h1>
+        <p>Change finish, focus the product, and keep the typed GLB evidence attached without turning the demo into a debug screen.</p>
+        <div class="hero-meta" aria-label="Product proof summary">
+          <span>Typed product asset</span>
+          <span>Release probe retained</span>
+          <span>Public root API</span>
+        </div>
+      </section>
+
+      <section class="controls-panel" aria-label="Configurator controls">
+        <div class="control-block feature-control">
+          <div class="control-heading">Variant</div>
+          <div class="segmented" role="group" aria-label="Product variant">
+            <button type="button" data-variant="graphite">Graphite</button>
+            <button type="button" data-variant="ceramic">Ceramic</button>
+            <button type="button" data-variant="copper">Copper</button>
+          </div>
+        </div>
+
+        <div class="control-block feature-control">
+          <div class="control-heading">Finish</div>
+          <div class="swatches" role="group" aria-label="Material finish">
+            <button type="button" data-finish="satin" aria-label="Satin polymer finish"><span style="--swatch: #d7d2c4"></span>Satin</button>
+            <button type="button" data-finish="gloss" aria-label="Gloss clearcoat finish"><span style="--swatch: #f7f3ea"></span>Gloss</button>
+            <button type="button" data-finish="titanium" aria-label="Brushed titanium finish"><span style="--swatch: #a9b0b8"></span>Titanium</button>
+          </div>
+        </div>
+
+        <div class="control-block focus-control">
+          <div class="control-heading">Focus</div>
+          <div class="segmented compact" role="group" aria-label="Part focus">
+            <button type="button" data-focus="overview">All</button>
+            <button type="button" data-focus="earcups">Earcups</button>
+            <button type="button" data-focus="headband">Band</button>
+            <button type="button" data-focus="cushions">Cushions</button>
+          </div>
+        </div>
+
+        <div class="toggles" role="group" aria-label="Scene modes">
+          <button type="button" id="toggle-exploded">Exploded</button>
+          <button type="button" id="toggle-turntable">Turntable</button>
+        </div>
+      </section>
+
+      <section class="metrics-panel" aria-label="Route metrics">
+        <div>
+          <span>State</span>
+          <strong id="metric-status">loading</strong>
+        </div>
+        <div>
+          <span>Backend</span>
+          <strong id="metric-backend">pending</strong>
+        </div>
+        <div>
+          <span>Draws</span>
+          <strong id="metric-draw-calls">0</strong>
+        </div>
+        <div>
+          <span>FPS</span>
+          <strong id="metric-fps">0</strong>
+        </div>
+      </section>
+
+      <section class="asset-panel" aria-label="Typed asset provenance">
+        <div class="panel-heading">Certified asset</div>
+        <dl>
+          <div><dt>ID</dt><dd id="asset-id">showcaseHeadphones</dd></div>
+          <div><dt>License</dt><dd id="asset-license">pending</dd></div>
+          <div><dt>Author</dt><dd id="asset-author">pending</dd></div>
+          <div><dt>Textures</dt><dd id="asset-textures">0</dd></div>
+        </dl>
+      </section>
+
+      <section class="evidence-panel" aria-label="Evidence summary">
+        <div class="panel-heading">Release proof</div>
+        <div class="proof-grid">
+          <div>
+            <span>Status</span>
+            <strong id="proof-status">loading</strong>
+          </div>
+          <div>
+            <span>Asset</span>
+            <strong id="proof-asset">assets.showcaseHeadphones</strong>
+          </div>
+          <div>
+            <span>Renderer</span>
+            <strong id="proof-renderer">pending</strong>
+          </div>
+          <div>
+            <span>Config</span>
+            <strong id="proof-config">Copper Limited / Gloss clearcoat</strong>
+          </div>
+          <div>
+            <span>License</span>
+            <strong id="proof-license">CC-BY-4.0</strong>
+          </div>
+        </div>
+        <p class="evidence-note">Full JSON, screenshots, and deploy checks stay retained by the Aura3D evidence pipeline, not the public UI.</p>
+        <pre id="evidence-json" hidden>{}</pre>
+      </section>
+    </main>
+    <script type="module" src="/apps/showcase-product-configurator/src/main.ts"></script>
+  </body>
+</html>

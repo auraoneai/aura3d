@@ -1,0 +1,51 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-21",
+  "appId": "showcase-product-configurator",
+  "route": "/apps/showcase-product-configurator/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "release-ready-with-current-route-primary-and-deploy-evidence",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseHeadphones",
+      "role": "primary product",
+      "status": "typed-primary-asset"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 17,
+    "role": "showroom staging, focus halos, swatches, metric plinths, and exploded part proxy geometry",
+    "status": "within-stated-role"
+  },
+  "claimStatus": {
+    "status": "candidate",
+    "allowed": [
+      "public typed headphones GLB configurator candidate",
+      "procedural showroom controls",
+      "generated asset metadata",
+      "retained route-primary probe evidence",
+      "release/deploy asset validation for assets.showcaseHeadphones"
+    ],
+    "notAllowed": [
+      "full authored exploded product internals",
+      "claiming forwardAxis metadata embedded in the source GLB",
+      "real authored exploded internals",
+      "production commerce integration",
+      "launch-ready public marketing quality"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.json",
+    "sourceReview": "apps/showcase-product-configurator/src/main.ts"
+  }
+}

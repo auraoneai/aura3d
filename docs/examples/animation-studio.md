@@ -1,8 +1,18 @@
 # Animation Studio Example
 
-`animation-studio` is the planned Aura3D 1.1 production template for short browser-rendered animation episodes. It is different from `animation-channel` and `prompt-animation-channel`: those examples are useful for source-level prompt-animation contracts, while `animation-studio` is the release target for rendered episode packages.
+`animation-studio` is the planned Aura3D production template for short
+browser-rendered animation episodes. It is not currently a public release proof.
+The commands and APIs below are target-contract notes unless they are backed by
+current tests in this repository.
 
-The 1.1 goal is not Pixar-quality automatic animation and not a magic image-to-video workflow. The goal is a repeatable TypeScript pipeline where typed assets, a show bible, a shot timeline, captions, visemes, camera direction, render output, and evidence produce a scoped animation episode package.
+It is different from `animation-channel` and `prompt-animation-channel`: those
+examples are useful for source-level prompt-animation contracts, while
+`animation-studio` is the release target for rendered episode packages.
+
+The goal is not Pixar-quality automatic animation and not a magic image-to-video
+workflow. The goal is a repeatable TypeScript pipeline where typed assets, a
+show bible, a shot timeline, captions, visemes, camera direction, render output,
+and evidence produce a scoped animation episode package.
 
 ## Target Flow
 
@@ -48,29 +58,19 @@ Character assets should be rigged GLB/glTF models when possible. A segmented 2D 
 
 ## Runtime Pattern
 
-Episode routes still use normal Aura3D code:
+Target episode routes should still use normal Aura3D safe-API concepts, but the
+shot-playback helper itself is planned until the animation release gate lands:
 
-```ts
-import {
-  createAuraApp,
-  game,
-  installShotPlayback,
-  lights,
-  model,
-  scene
-} from "@aura3d/engine";
-import { assets } from "./aura-assets";
-import { episodePlayback } from "./episode";
-
-const app = createAuraApp("#app", {
+```text
+createAuraApp("#app", {
   scene: scene()
-    .add(model(assets.miko).runtime(game.runtimeNode("miko", { tags: ["animation-character"] })))
-    .add(model(assets.luma).runtime(game.runtimeNode("luma", { tags: ["animation-character"] })))
-    .add(model(assets.moonGarden).runtime(game.runtimeNode("moonGarden", { tags: ["animation-set"] })))
-    .add(lights.studio({ intensity: 1.2 }))
+    .add(model(assets.miko))
+    .add(model(assets.luma))
+    .add(model(assets.moonGarden))
+    .add(lights.studio())
 });
 
-installShotPlayback(app, episodePlayback);
+planned: installShotPlayback(app, episodePlayback)
 ```
 
 The route proof for 1.1 must show active shot, active caption, active viseme, active gesture, character asset ids, set asset id, frame count, route errors, nonblank status, and render-readiness state.

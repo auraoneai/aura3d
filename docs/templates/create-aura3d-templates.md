@@ -6,7 +6,7 @@
 
 - `product-viewer`: A GLB/glTF product viewer with typed asset references, orbit camera, studio lighting, diagnostics, route health, and screenshot tests.
 - `cinematic-scene`: A cinematic browser scene with camera motion, lighting, atmosphere, imported assets, and presentation-ready visual composition. Use `docs/agents/cinematic-scene-quality.md` before presenting a cinematic route as product proof.
-- `mini-game`: An interactive browser game starter for input, HUD state, primitives, follow-camera behavior, scoring, route health, screenshot tests, and deployable output.
+- `mini-game`: A playable platformer-style starter for input, HUD state, route health, screenshot tests, and deployable output. It uses `game.platformer(...)`, typed asset imports, keyboard movement, jump, scoring, reset, and visible browser state tests. It is not a production-quality game or art-direction claim.
 - `fighting-game`: A playable browser fighting-game starter with runtime nodes, input, combat state, HUD evidence, and route health checks.
 - `animation-channel`: A prompt-driven animation episode scaffold with AuraVoice bridge metadata, shot playback, captions, visemes, render queue evidence, and typed animation asset placeholders.
 - `prompt-animation-channel`: Alias-style prompt animation scaffold for episode plans, dialogue/caption timing, viseme tracks, and animation render metadata.
@@ -17,8 +17,8 @@
 
 ```bash
 npx create-aura3d@latest my-app --template product-viewer
-npx create-aura3d@latest my-studio --template animation-studio
-npx create-aura3d@latest my-episode --template episode-builder
+npx create-aura3d@latest my-scene --template cinematic-scene
+npx create-aura3d@latest my-starter --template mini-game
 ```
 
 Every active template includes:
@@ -32,21 +32,29 @@ Every active template includes:
 - public `@aura3d/engine` imports only;
 - a README for humans and AI coding agents.
 
-## Mini-game quality target
+## Mini-game status
 
-The World War X showcase is the production reference for the `mini-game` direction. It demonstrates how a browser-native Aura3D game can combine:
+The `mini-game` template is now a browser-tested playable starter. It is the
+smallest platformer-style reference for using a source-level game kit from the
+root safe API, wiring keyboard input into runtime nodes, publishing HUD/event
+evidence, and proving visible behavior with Playwright.
 
-- a 10-fighter roster;
-- generated GLB fighter assets;
-- typed asset members from `src/aura-assets.ts`;
-- `model(assets.x)` runtime usage;
-- primitives, materials, lighting, effects, and camera composition;
-- arcade physics, hitboxes, projectiles, guard state, meter, and results;
-- Summit Remix prompt presets;
-- route evidence, accessibility settings, poster capture, and Playwright contracts;
-- marketing integration through a poster-first homepage section.
+It is still not a production reference for commercial platformer, racing,
+falling-block, or action-game claims. Before calling a derived route
+production-quality, add:
 
-Use World War X as the documentation bar for future game templates: production copy, inspectable TypeScript, typed assets, evidence routes, screenshot states, and static-deploy readiness.
+- primary actor/world assets registered through the CLI and used as
+  `model(assets.x)` where the game claims real characters, vehicles, products,
+  or environments;
+- keyboard input tests for every claimed mechanic, not only movement and reset;
+- restart/reset tests;
+- scoring, fail, completion, or loop tests that match the route's actual
+  objective;
+- desktop and mobile screenshots with readable main subject;
+- route-health/evidence output naming renderer backend, fallback state, primary
+  assets, primitive count, and claims;
+- source checks that block raw asset strings, GLB URLs, `three`, `GLTFLoader`,
+  and primitive-only primary subjects.
 
 ## Held-back templates
 

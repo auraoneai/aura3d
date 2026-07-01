@@ -4,10 +4,12 @@ Status: public runtime API for Aura3D game and interactive showcase routes.
 
 > New to building a game with Aura3D? Start with the end-to-end walkthrough —
 > [docs/guides/build-a-browser-game.md](../guides/build-a-browser-game.md) — which ties this API
-> together with assets, the 1.3 animation stack, camera/HUD/audio, evidence, and deploy. This page
-> is the per-API reference.
+> together with typed assets, runtime nodes, input, source evidence, browser tests, and deploy.
+> This page is the per-API reference.
 
-Aura3D game runtime APIs let an app keep one Aura app mounted while mutating typed scene nodes frame by frame. This is the foundation for gameplay systems such as input, kinematic bodies, hitboxes, animation controllers, runtime effects, combat cameras, reduced-motion variants, and launch evidence.
+Aura3D game runtime APIs let an app keep one Aura app mounted while mutating typed scene nodes frame by frame. This is the current public foundation for input, kinematic bodies, generic collision queries/events, source-level platformer/racing/falling-block kits, hitboxes, animation controllers, runtime effects, combat cameras, reduced-motion variants, and launch evidence.
+
+Current boundary: the public root API includes generic helpers, `game.collisionWorld(...)`, source-level `game.platformer(...)`, `game.racing(...)`, `game.fallingBlocks(...)`, and a focused fighting kit. These are deterministic gameplay APIs, not automatic production game routes. Docs and examples should not claim production-ready platformer, racing, or falling-block starters until browser input tests, route-health evidence, and screenshots exist for those routes.
 
 Create one Aura app per route. Do not recreate the app every frame, hand-wire a renderer, import from `three`, or load models by string id. Resolve real models from the **federated asset index** — a hosted catalog of 800,000+ GLB/glTF assets the CLI searches (`assets search`/`resolve`, primary adapter `createAuraIndexAdapter`) — or `assets add` a file you have; either way import typed `assets` from `./aura-assets` and pass them to `model(assets.name)`. See `docs/agents/asset-workflow.md`.
 
@@ -28,7 +30,7 @@ import {
 import { assets } from "./aura-assets";
 ```
 
-The examples in this page use the public root package. Prefer the `game` facade for runtime helpers: `game.input(...)`, `game.inputReplay(...)`, `game.touchControls(...)`, `game.jumpAssist(...)`, `game.collider.*`, `game.debug.*`, `game.hud.*`, `game.accessibility.*`, and `game.evidence(...)`. Use `game.fighting(...)` for the ready-made fighting runtime kit. Use `games.fighting.stage(...)` or `games.fighting.stagePreset(...)` for stage source builders.
+The examples in this page use the public root package. Prefer the `game` facade for runtime helpers: `game.input(...)`, `game.inputReplay(...)`, `game.touchControls(...)`, `game.kinematicBody(...)`, `game.collisionWorld(...)`, `game.platformer(...)`, `game.racing(...)`, `game.fallingBlocks(...)`, `game.jumpAssist(...)`, `game.collider.*`, `game.combatWorld(...)`, `game.cameraDirector(...)`, `game.effects(...)`, `game.debug.*`, `game.hud.*`, `game.accessibility.*`, and `game.evidence(...)`. Use `game.fighting(...)` for the focused fighting runtime kit. Use `games.fighting.stage(...)` or `games.fighting.stagePreset(...)` for fighting stage source builders.
 
 For current skeletal animation, animation events, and viseme/blendshape sync, read `docs/api/animation-runtime-events.md` after this page. The runtime node and frame-loop APIs here are the base layer; visible skinned GLB playback and morph target evidence are separate release gates.
 
@@ -73,37 +75,48 @@ app.onFrame(({ dt }) => {
 
 ## Runtime facade
 
-Use `game.createRuntime(...)` when a route wants one object that owns input, bodies, combat, effects, camera direction, and evidence labels.
+Use `game.createRuntime(...)` when a route wants a convenience object with default rules, optional input, combat, camera direction, effects, and evidence-ready structures. It is not a hidden game engine stepper: it does not expose `runtime.update(dt)`, `runtime.events.emit(...)`, or mutable assignment to `runtime.input`. Step the returned helpers explicitly in `app.onFrame(...)`.
 
 ```ts
 const runtime = game.createRuntime({
-  id: "aura-clash-round",
-  rules: game.rules("arena-fighter", {
+  rules: {
     roundSeconds: 90,
-    inputBufferMs: 140,
-    hitStopSeconds: 0.08
-  }),
-  reducedMotion: false
+    stageBounds: { minX: -4.5, maxX: 4.5 }
+  },
+  input: {
+    actions: {
+      moveLeft: ["KeyA", "ArrowLeft"],
+      moveRight: ["KeyD", "ArrowRight"],
+      light: ["KeyJ"],
+      special: ["KeyL"]
+    },
+    axes: {
+      moveX: { negative: "moveLeft", positive: "moveRight" }
+    },
+    bufferMs: 140
+  }
 });
 
-runtime.input = app.input({
-  actions: {
-    moveLeft: ["KeyA", "ArrowLeft"],
-    moveRight: ["KeyD", "ArrowRight"],
-    light: ["KeyJ"],
-    special: ["KeyL"]
-  },
-  axes: {
-    moveX: { negative: "moveLeft", positive: "moveRight" }
-  }
+const input = runtime.input;
+const playerBody = game.kinematicBody({
+  id: "player",
+  position: [-1.2, 0, 0],
+  bounds: { minX: runtime.rules.stageBounds.minX, maxX: runtime.rules.stageBounds.maxX }
 });
 
 app.onFrame(({ dt }) => {
-  runtime.input.update(dt);
-  if (runtime.input.combo(["moveRight", "moveRight", "special"], 260)) {
-    runtime.events.emit({ type: "special", actorId: "player" });
+  input?.update(dt);
+
+  playerBody.move(input?.axis("moveX") ?? 0);
+  if (input?.pressed("special")) {
+    runtime.effects.spawn("impact-flash", playerBody.position, {
+      color: "#7ef8ff",
+      ownerId: "player"
+    });
   }
-  runtime.update(dt);
+
+  const body = playerBody.update(dt);
+  app.nodes.require("player").setPosition(body.position[0], body.position[1], body.position[2]);
 });
 ```
 
@@ -231,9 +244,9 @@ const arena = scene()
 
 The immutable scene-builder workflow still works for ordinary product viewers, material labs, and static scenes. Use runtime nodes only when the app needs frame-by-frame gameplay control.
 
-## `createAuraApp` returns `AuraAppHandle`
+## `createAuraApp` returns `AuraApp`
 
-`createAuraApp(target, options)` returns an `AuraAppHandle`. Keep that handle for the life of the route. It owns the canvas, renderer backend, current scene snapshot, runtime node registry, frame loop, diagnostics, screenshots, and teardown.
+`createAuraApp(target, options)` returns an `AuraApp`. Keep that handle for the life of the route. It owns the canvas, renderer backend, current scene snapshot, runtime node registry, frame loop, diagnostics, screenshots, and teardown.
 
 ```ts
 const app = createAuraApp("#app", {
@@ -260,15 +273,19 @@ Primary handle members:
 | `app.diagnostics()` | Return runtime diagnostics for the mounted app. |
 | `app.screenshot()` | Return a PNG data URL screenshot from the mounted app. |
 
-`onFrame` receives an `AuraAppFrame`:
+`onFrame` receives an `AuraFrameInfo`:
 
 ```ts
-type AuraAppFrame = {
+type AuraFrameInfo = {
   dt: number;
+  fixedDt: number;
   time: number;
   frame: number;
+  alpha: number;
   paused: boolean;
   source: "raf" | "manual" | "fixed";
+  substep: number;
+  substeps: number;
 };
 ```
 
@@ -767,7 +784,7 @@ const jumpAssist = game.jumpAssist({
 app.onFrame(({ dt }) => {
   jumpAssist.update(dt, {
     grounded: playerBody.grounded,
-    jumpPressed: input.pressed("jump")
+    jumpPressed: input.buffered("jump")
   });
 
   if (jumpAssist.consume()) {
@@ -777,6 +794,133 @@ app.onFrame(({ dt }) => {
 ```
 
 `jumpAssist.snapshot()` reports `coyoteAvailable`, `jumpBuffered`, `consumed`, and `canJump` for debug overlays.
+
+## `game.collisionWorld`
+
+`game.collisionWorld(options?)` is the public generic collision facade for app-owned gameplay. It wraps Aura3D physics and exposes game IDs, tags, layer masks, sensor events, overlap queries, sweeps, and explicit resolution without making a route invent its own collision engine.
+
+```ts
+const collisions = game.collisionWorld({
+  gravity: [0, 0, 0],
+  backend: "aura-js"
+});
+
+collisions.addBox("player", [0.45, 0.9, 0.35], {
+  position: [0, 1, 0],
+  tags: ["player"],
+  layer: 0b001,
+  mask: 0b110
+});
+
+collisions.addSphere("coin-01", 0.22, {
+  position: [1.2, 1.1, 0],
+  sensor: true,
+  tags: ["coin", "collectible"],
+  layer: 0b010,
+  mask: 0b001
+});
+
+app.onFrame(({ dt }) => {
+  const events = collisions.step(dt);
+  for (const event of events) {
+    if (event.type === "begin" && event.sensor && event.b.tags.includes("coin")) {
+      collisions.remove(event.b.id);
+    }
+  }
+
+  const wallAhead = collisions.sweep("player", [1, 0, 0], 0.7, {
+    radius: 0.35,
+    tags: ["solid"],
+    includeSensors: false
+  });
+  if (wallAhead.length === 0) {
+    collisions.require("player").translate([dt * 2.5, 0, 0]);
+  }
+
+  collisions.resolve("player", { tags: ["solid"] });
+});
+```
+
+Use `collisionWorld.step(dt)` once per frame before reading `events()` or `overlaps()`. Sensor contacts report `begin`, `stay`, and `end`; solid contacts can be resolved with `resolve(id, filter)`. This is the generic collision foundation; reusable source-level genre kits are exposed separately.
+
+## Source-Level Genre Kits
+
+Aura3D exposes deterministic source/runtime kits for common browser game loops. These kits own gameplay state, events, scoring, reset behavior, and snapshots. They do not create art direction, level visuals, DOM HUDs, or browser screenshot evidence by themselves.
+
+### `game.platformer(...)`
+
+`game.platformer(level)` provides gravity, movement, coyote time, jump buffering, dash, ledge-tolerant landings, moving platforms, checkpoints, hazards, collectibles, respawn, and finish state.
+
+```ts
+const platformer = game.platformer({
+  id: "rooftop-run",
+  start: { x: 0, y: 0.35 },
+  finish: { x: 18, y: 0.35 },
+  platforms: [{ id: "roof", x: -1, y: 0, width: 8, height: 0.35 }],
+  movingPlatforms: [{ id: "lift", x: 8.5, y: 0.8, width: 1.2, height: 0.2, axis: "y", amplitude: 0.5, period: 2.5 }],
+  collectibles: [{ id: "coin-01", x: 2.2, y: 1.1, value: 50 }],
+  hazards: [{ id: "spikes", x: 5.4, y: 0.35, width: 0.8, height: 0.25 }],
+  checkpoints: [{ id: "mid", x: 9.2, y: 1.2 }]
+});
+
+app.onFrame(({ dt }) => {
+  const state = platformer.step(dt, {
+    moveX: input.axis("moveX"),
+    jumpPressed: input.buffered("jump"),
+    jumpHeld: input.held("jump"),
+    dashPressed: input.pressed("dash"),
+    fastFall: input.held("down")
+  });
+  player.setPosition(state.player.x, state.player.y, 0);
+});
+```
+
+### `game.racing(...)`
+
+`game.racing(options)` provides a route spline/polyline, car controller, throttle/brake, steering, drift/boost, checkpoint order, lap validation, off-track behavior, reset, event snapshots, and a simple camera-follow state.
+
+```ts
+const racing = game.racing({
+  route: {
+    id: "kart-loop",
+    width: 2.2,
+    points: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 6 }, { x: 0, y: 6 }],
+    checkpoints: [0.2, 0.45, 0.7, 0.94]
+  },
+  lapsToWin: 3
+});
+
+app.onFrame(({ dt }) => {
+  const state = racing.step(dt, {
+    throttle: input.held("throttle"),
+    brake: input.held("brake"),
+    steer: input.axis("steer"),
+    drift: input.held("drift"),
+    boost: input.held("boost"),
+    reset: input.pressed("reset")
+  });
+  car.setPosition(state.position.x, 0.2, state.position.y).setRotation(0, -state.heading, 0);
+});
+```
+
+### `game.fallingBlocks(...)`
+
+`game.fallingBlocks(options)` provides board state, tetromino rotation and wall kicks, hold, seven-bag randomizer, soft/hard drop, lock delay, gravity levels, line clears, scoring, replay records, and deterministic checksums.
+
+```ts
+const blocks = game.fallingBlocks({ seed: 42 });
+
+if (input.pressed("left")) blocks.move(-1);
+if (input.pressed("right")) blocks.move(1);
+if (input.pressed("rotate")) blocks.rotate(1);
+if (input.pressed("hold")) blocks.hold();
+if (input.pressed("drop")) blocks.hardDrop();
+blocks.tick();
+
+const state = blocks.snapshot();
+```
+
+Browser-game claims still need input tests and screenshots that prove the route renders readable game state and that keyboard input changes the visible subject.
 
 ## Collider helpers and debug geometry
 
@@ -1017,13 +1161,49 @@ const hud = game.hud.bindings([
 ]);
 ```
 
-HUD bindings are source descriptors. They do not create HTML by themselves. A route should still render DOM with `ui.html`, `ui.setText`, framework state, or its own markup, then keep the text in sync with input, combat, round, and debug state.
+For non-fighting games, use the generic bindings instead of forcing a
+health/meter/combo shape onto the route:
+
+```ts
+const events = game.eventLog({ label: "platformer events", maxEvents: 24 });
+const hud = game.hud.bindings([
+  game.hud.score({ valuePath: "appState.score" }),
+  game.hud.lives({ valuePath: "appState.lives" }),
+  game.hud.objective({ valuePath: "appState.objective" }),
+  game.hud.checkpoint({ valuePath: "appState.checkpoint" }),
+  game.hud.eventLog({ valuePath: "appState.events" })
+]);
+
+events.push({
+  type: "checkpoint",
+  label: "Market roof reached",
+  targetId: "checkpoint-market",
+  severity: "success",
+  time: 12.4
+});
+
+const evidence = game.evidence(app, {
+  input,
+  bodies: [playerBody],
+  events,
+  hud,
+  appState: {
+    score,
+    lives,
+    objective: "Reach the exit",
+    checkpoint: "market",
+    events: events.events().map((event) => event.label)
+  }
+});
+```
+
+HUD bindings are source descriptors. They do not create HTML by themselves. A route should still render DOM with `ui.html`, `ui.setText`, framework state, or its own markup, then keep the text in sync with input, combat, round, debug state, and app-owned game state.
 
 Each binding records:
 
-- `binding`: `"health"`, `"meter"`, `"timer"`, `"combo"`, `"round"`, or `"debug-toggle"`
+- `binding`: fighting-specific values such as `"health"`, `"meter"`, `"timer"`, `"combo"`, `"round"`, and `"debug-toggle"` or generic values such as `"score"`, `"lives"`, `"objective"`, `"checkpoint"`, `"event-log"`, and `"value"`
 - `owner: "app"` because app code owns DOM, text updates, CSS, and click/key handlers
-- `source`: combat, round, input, runtime, debug, or app state
+- `source`: combat, round, input, runtime, debug, events, or app state
 - `valuePath` and optional `maxPath` for evidence and diagnostics
 - `a11yLabel` so HUD evidence can be paired with accessibility labels
 
@@ -1040,7 +1220,7 @@ const evidence = app.evidence({
 });
 ```
 
-If a game route omits health, meter, timer, combo, round, or debug-toggle source bindings, `game.evidence(...)` reports the missing HUD source evidence in `evidence.hud.warnings`.
+`game.evidence(...)` validates HUD coverage against the shape of the route. Fighting routes should provide health, meter, timer, combo, round, and debug-toggle source bindings. Generic game routes should provide score, objective, and event-log source bindings when those concepts exist. Missing source coverage is reported in `evidence.hud.warnings`.
 
 ## Accessibility source helpers
 

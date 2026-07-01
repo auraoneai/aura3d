@@ -1,56 +1,84 @@
-# Aura3D Known Limits
+# Known Limits
 
-Version: 1.3.3 planning alignment
+Date: 2026-07-01
+Status: canonical limitations doc
 
-## Current Report Limits
+This file is the public limitations source for project docs, release copy, and
+showcase review. If a guide or README makes a claim narrowed by this file, the
+guide or README must include the narrower wording.
 
-- `tests/reports/` is ignored by git, so report state is local and must be regenerated in clean checkouts, release jobs, and any workspace used for public claim evidence.
-- Passing local reports support only the exact measured categories and routes named by those reports.
+## Root `createAuraApp` Renderer Limits
 
-## Rendering Limits
+- The public root path does not yet default to the full production-runtime
+  renderer.
+- Root screenshots currently prove basic GLB rendering, base-color material and
+  texture paths, scene composition, simple effects, runtime transforms, and
+  non-skinned node animation on tested routes.
+- Full PBR parity, HDR/IBL lighting, PMREM-style filtering, production tone
+  mapping, high-quality shadows, and broad postprocess are not root-wide public
+  claims.
+- Bloom, SSAO, DOF, FXAA/TAA, color grading, cinematic fog, and similar effects
+  require exact route screenshot proof before public use.
+- Internal renderer or production-runtime evidence does not prove root
+  `createAuraApp` behavior until the bridge and public tests exist.
 
-- Renderer scene frustum culling is implemented, but it is not a broad large-scene performance claim.
-- WebGPU behavior depends on browser and hardware support.
-- PBR/IBL/material claims are feature-specific and route/report-specific. HDR environment map input is supported on named paths, but it is not physically complete image-based lighting.
-- Postprocess support covers named passes and routes, not every low-level renderer code or game-engine post stack.
-- Material coverage includes one primary UV path for glTF render resources, bounded KTX2/Basis transcoding coverage, GPU capability-driven format selection, and no product-studio material-matrix visual coverage.
-- Shadow coverage includes unit-level moving-camera cascade split stress and point/spot shadow maps, but browser visual stress for long moving-camera paths remains evidence-bound.
-- Skinning palette strategy and external character breadth remain evidence-bound.
+## Animation Limits
+
+- Non-skinned glTF node animation can be claimed only for routes that prove it.
+- Skinned GLB animation is not a root-public screenshot claim until a browser
+  route imports only `@aura3d/engine`, plays a real skinned asset, and produces
+  meaningful pixel deltas in the character region.
+- Morph target rendering and viseme/lip-sync claims require route-specific
+  pixel evidence.
+- Counters, metadata, or camera movement are not enough to prove animated
+  character motion.
+
+## Game Runtime Limits
+
+- The current public game story includes useful input, runtime node, frame loop,
+  replay, HUD, and fighting-game helper surfaces.
+- Platformer and racing reusable kits are not public-quality game-generation
+  APIs until the library roadmap work lands.
+- Route-local game logic can be a prototype or showcase candidate, but it is not
+  a reusable game runtime claim.
+- A game route is not public-ready unless input visibly changes state and tests
+  prove objective/scoring/fail/reset/progression.
+- Public racing routes require retained topology evidence that binds the car,
+  route, checkpoints, camera, and visible road surface.
+- Public platformer routes require retained playable-surface evidence that
+  binds the character, contact point, collision, checkpoint path, hazards,
+  finish, camera, and visible world geometry.
+- Turbo Drift Circuit and Skyline Runner are prototype-blocked until the current
+  asset catalog and game layer can satisfy those contracts.
 
 ## Asset Limits
 
-- glTF/GLB support is strongest for checked fixtures and tested extension paths.
-- Compression depends on decoder/transcoder availability and browser/device texture support.
-- External marketplace and DCC export coverage requires explicit fixture and report evidence.
+- The CLI asset workflow provides typed references and metadata; it does not
+  create new production art.
+- Catalog search can find candidates, but search success is not proof of visual
+  quality, rig quality, scale suitability, license readiness, or gameplay
+  readiness.
+- Primary showcase assets require durable source/license/provenance metadata,
+  bounds/material/texture/animation inspection where relevant, screenshots, and
+  visual review.
+- Temp-path provenance, duplicate hashes without explanation, placeholder-like
+  assets, unreadable materials, and primitive substitutions are release blockers
+  for public showcases.
 
-## Workflow Limits
+## WebGPU Limits
 
-- Local examples are not public hosted demo evidence.
-- Template scaffolds are starter projects and require build/run verification.
+- WebGPU behavior depends on browser and hardware support.
+- Native WebGPU claims require adapter/backend state, dispatch/render evidence,
+  fallback state, telemetry, and pixels.
+- A route named "WebGPU" must demote itself when running in WebGL or simulated
+  fallback mode.
 
-## Game Runtime And Showcase Limits
+## Evidence Limits
 
-- Aura3D 1.3.3 ships browser game-runtime helpers, animation engine, and believable-motion systems. The reusable game-engine foundation continues to expand.
-- Aura Clash Arena is the live development showcase and runtime proof target, built with starter-grade fighter assets.
-- The showcase has not yet proven distinct production fighters, engine-owned combat state, audio, performance budgets, and deployed/local parity at the 1.3.3 bar.
-- Same-model tinting, debug-like hit artifacts, and weak move readability remain release blockers if reproduced.
-- Repeated KO loops and one/two-hit accidental rounds: the `health <= 12` accidental-KO mop-up rule has been removed, and the AI no longer attacks KO'd opponents. These specific blockers are addressed, but overall combat feel remains a showcase tuning target.
-- Homepage and marketing pages should use a static approved poster/link until the live playable route passes visual and gameplay gates.
-
-## Animation Engine Non-Goals And Fixtures
-
-These animation capabilities are explicitly NOT provided as production systems. They must never be claimed as parity or production-ready (the `tools/animation-engine-docs-claims` gate enforces this):
-
-- Motion matching is NOT a real engine. `packages/animation/src/MotionMatchingFixtures.ts` is a deterministic fixture (it carries a `claimBoundary` saying it is not a full animation database, inertialization, pose application, foot locking, or Unity/Unreal middleware parity).
-- Inertialization is implemented for critically-damped move transitions (T1.1), but it is not Unity/Unreal middleware parity.
-- Ragdoll is NOT a production system. `packages/physics/src/PhysicsSandboxFixtures.ts` only spawns a hinge-constrained sandbox preset; there is no `RagdollController`, no joint limits, and no animation-to-physics blend.
-- Full-body IK / FABRIK / CCD are NOT implemented. Only an analytical two-bone IK solver exists (`packages/animation/src/IK.ts`).
-- Foot-locking and spring-bone secondary dynamics are implemented (T1.2, T1.3) but not production cloth/hair simulation. `packages/animation/src/SecondaryAnimationFixtures.ts` remains a deterministic fixture for unsupported secondary-animation claims.
-- Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is NOT claimed.
-- Skinned toon/cel materials are NOT shipped yet (animation shading for rigged characters is deferred); skinned GPU instancing is not provided. WebGPU skinning is now at WebGL2 parity — a 96-joint palette (`MAX_WEBGPU_SKINNING_JOINTS = 96`, matching the WebGL2 `u_jointMatrices[96]`): the WGSL DrawUniforms carries a `joints: array<mat4x4<f32>, 96>` palette and the emulation rasterizer skins the full palette (verified by `webgpu-skinning-parity`). Real-device WGSL execution remains evidence-bound (the CPU-emulated rasterizer covers correctness in CI). GPU morph targets use a uniform fast path up to 4 targets / 64 verts and a texture-backed plan (`createMorphTargetPlan`) for larger facial rigs (sized to device limits); counts beyond the texture limit fall back to the CPU morph. The CPU morph (and the texture plan) morph normals + tangents so lighting follows the deformation; viseme-driven blendshape lip-sync is wired (`applyVisemeMorphInfluences`). The texture-backed GPU sampling branch is implemented in the morph shader; WebGPU/WGSL texture morph execution remains evidence-bound.
-
-## Asset Catalog Limits
-
-- `npx @aura3d/cli@latest assets search` can discover catalog candidates, but search success is not proof that an asset is production-ready.
-- Game-character prompts require `--profile fighting-character` plus validation, visual review, license/provenance evidence, bounds checks, clip checks, and route proof.
-- The catalog does not generate new production art, guarantee matching rigs, guarantee animation quality, or replace artist direction.
+- `tests/reports/` artifacts may be local or ignored; they must be regenerated
+  in release runs or attached as immutable artifacts.
+- Nonblank screenshots prove only that something rendered.
+- Browser route boot success does not prove readability, interaction quality,
+  animation, material correctness, or game playability.
+- A deployed URL proves hosting only when route/asset checks and hosted
+  screenshots are generated from that origin.

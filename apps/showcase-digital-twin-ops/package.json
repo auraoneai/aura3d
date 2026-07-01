@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/showcase-digital-twin-ops",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D enterprise digital twin operations showcase with procedural factory systems, telemetry, modes, event log, and deterministic state proof.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-18",
+  "appId": "showcase-orbital-defense",
+  "route": "/apps/showcase-orbital-defense/",
+  "classification": "blocked",
+  "publicShowcase": false,
+  "promotionStatus": "remove-from-public-showcase-until-rebuilt-with-typed-assets",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [],
+  "primitiveStatus": {
+    "sourceOccurrences": 11,
+    "role": "planet, stations, player, enemies, projectiles, and shields",
+    "status": "blocked-primitive-primary"
+  },
+  "claimStatus": {
+    "status": "blocked",
+    "allowed": [
+      "internal primitive-only gameplay sketch",
+      "route-local runtime-node experiment"
+    ],
+    "notAllowed": [
+      "public showcase",
+      "public release candidate",
+      "asset-backed defense game",
+      "launch-ready game claim"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_ORBITAL_DEFENSE__",
+    "desktopScreenshot": null,
+    "mobileScreenshot": null,
+    "sourceReview": "apps/showcase-orbital-defense/src/main.ts",
+    "notes": "Route is not included in the showcase index or launch evidence slate."
+  }
+}

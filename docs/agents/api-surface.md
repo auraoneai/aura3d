@@ -1,6 +1,15 @@
 # API Surface
 
-Public package:
+Read `llms.txt` and `docs/agents/claims-and-boundaries.md` first. Importable
+names are not the same as public proof of every rendering or gameplay claim.
+Capability wording must identify whether it is root safe API,
+production-runtime, rendering internals, CLI asset pipeline, template-only
+scaffold, prototype, or roadmap.
+
+## Public Root Package
+
+Agent-authored browser apps should import public APIs from root
+`@aura3d/engine`:
 
 ```ts
 import {
@@ -41,9 +50,59 @@ import {
 } from "@aura3d/engine";
 ```
 
-Scene kits are the preferred benchmark-facing API. Each kit returns scene nodes,
-camera, lights, effects, interactions, UI, diagnostics, acceptance evidence,
-`customize(...)`, and `toAppOptions()`.
+`unsafeModelUrl` is listed because it may exist for explicit diagnostics or
+temporary local work. It is not allowed in public safe examples, benchmark
+routes, showcase routes, or release-facing docs. Use generated typed assets and
+`model(assets.name)`.
+
+Do not import `three`, `three/examples/...`, `GLTFLoader`, renderer internals,
+or production-runtime internals to make a public example look stronger. If a
+feature needs internals, the correct output is a library task or roadmap item,
+not route-local workaround code.
+
+## Root `createAuraApp` Boundary
+
+Root `createAuraApp` proves only what a browser test can prove while importing
+from `@aura3d/engine`. Do not claim these from this API surface without
+root-only browser screenshots and runtime evidence:
+
+- production renderer parity;
+- full PBR material parity;
+- HDR/IBL/environment lighting parity;
+- postprocess such as bloom, SSAO, DOF, FXAA/TAA, or color grading;
+- native WebGPU or compute rendering;
+- skinned GLB animation;
+- morph target rendering;
+- production platformer, racing, falling-block, character controller, or
+  generic collision kits.
+
+When evidence is missing, label the example `prototype`, `template-only
+scaffold`, `production-runtime`, `rendering` internals, or `roadmap`.
+
+## Asset-Safe Pattern
+
+```ts
+import { createAuraApp, lights, model, scene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(model(assets.product)).add(lights.studio())
+});
+```
+
+Never use raw model strings or URLs in public safe examples:
+
+```ts
+model("product");
+model("/assets/product.glb");
+model("https://example.com/product.glb");
+unsafeModelUrl("https://example.com/product.glb");
+```
+
+Scene kits are the preferred benchmark-facing API when they are exported from
+root `@aura3d/engine`. Do not assume every kit proves every visual feature in
+its name. Verify the returned nodes, app options, browser pixels, and route
+evidence before using the kit in a public claim.
 
 ```ts
 import { createAuraApp, sceneKits } from "@aura3d/engine";
@@ -66,6 +125,11 @@ createAuraApp("#app", sceneKits.cityBlock({ timeOfDay: "night" }).toAppOptions()
 createAuraApp("#app", sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).toAppOptions());
 createAuraApp("#app", sceneKits.productViewer(assets.product).toAppOptions());
 ```
+
+Scene kits still follow the claim boundary. If a kit or prefab uses primitives,
+declarative effects, non-skinned placeholders, route-local logic, or simulated
+behavior, public copy must say so. Do not use a kit name to imply production
+renderer, WebGPU, skinned animation, morph target, or reusable game-kit support.
 
 Prompt-plan apps should import `compilePromptPlan` wherever they use
 `definePromptPlan` or `promptPlanToScene`, then inspect
@@ -96,6 +160,9 @@ console.log(product.visualQA(sceneKits.productViewer(assets.product).nodes));
 console.log(solar.visualQA(sceneKits.solarSystem().nodes));
 ```
 
+Visual QA helpers are repair signals. They are not final proof for renderer,
+animation, material, WebGPU, or gameplay claims.
+
 Lower-level repair helpers remain available when a prompt requires custom
 composition:
 
@@ -118,6 +185,13 @@ scene()
   .add(primitives.sphere({ material: material.glass() }).animate({ clip: "float" }));
 ```
 
+Primitive helpers are not a substitute for a real primary asset. Use them for
+set dressing, debug and collision guides, HUD anchors, and explicitly abstract
+visualization. Do not build the main character, vehicle, product, world, weapon,
+creature, or hero environment from primitives for a named object prompt.
+Material helper names are not PBR proof; material claims require an explicit
+support matrix and screenshots for the claimed root or internal path.
+
 Camera presets and route evidence:
 
 ```ts
@@ -129,7 +203,11 @@ console.log(evidence.camera.orbitEnabled, evidence.animation.turntableEnabled, e
 Use `camera.physics()`, `camera.charts()`, `camera.materials()`,
 `camera.city()`, `camera.product()`, `camera.solar()`, `camera.humanoid()`,
 `camera.miniGolf()`, and `camera.neon()` before hand-tuning prompt cameras. Use
-`camera.autoFrame({ bounds })` for procedural scenes with known bounds.
+`camera.autoFrame({ bounds })` for procedural scenes with known bounds. Use
+`camera.frameAsset(assets.name, { targetHeight })` for a typed GLB that needs a
+first-load framing camera. `camera.frameAsset(...)` has public-root typed-GLB
+browser proof, but it is not a semantic grounding API; do not claim tire, foot,
+road, or contact-point grounding from it.
 
 Small HUDs and toggles:
 
@@ -155,3 +233,7 @@ ui.resetButton("#reset", () => {
 `ui.html("#app", markup)` inserts inside the target by default. Use it for
 mounting HUDs and nested scene containers; pass an explicit `InsertPosition`
 only when you intentionally need sibling markup.
+
+UI APIs are for UI. Do not use DOM or CSS markup as fake particles, fake 3D
+labels, fake lighting, fake trails, fake renderer output, or evidence for a
+rendered Aura3D capability.

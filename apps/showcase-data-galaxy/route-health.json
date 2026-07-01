@@ -1,0 +1,61 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-18",
+  "appId": "showcase-data-galaxy",
+  "route": "/apps/showcase-data-galaxy/",
+  "classification": "internal-diagnostic",
+  "publicShowcase": false,
+  "promotionStatus": "internal-diagnostic-route-primary-anchor-too-small",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseParticleCore",
+      "role": "abstract",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 21,
+    "role": "abstract data field, attractors, KPI markers, arcs, streams, and labels",
+    "status": "heavy-abstract-set-dressing"
+  },
+  "claimStatus": {
+    "status": "demoted",
+    "allowed": [
+      "abstract Aura3D data visualization prototype",
+      "compiler-selected typed diagnostic anchor",
+      "Aura3D particle/effects requests"
+    ],
+    "notAllowed": [
+      "native GPU compute particles",
+      "meaningful real data exploration",
+      "flagship public showcase",
+      "release-ready route-primary evidence until the ParticleCore anchor is readable"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_DATA_GALAXY__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-data-galaxy-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-data-galaxy-mobile.png",
+    "sourceReview": "apps/showcase-data-galaxy/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-data-galaxy/dist --release --source apps/showcase-data-galaxy/src --asset showcaseParticleCore",
+    "releaseAssetProbes": {
+      "showcaseParticleCore": "tests/reports/showcase-release-asset-probes/showcaseParticleCore.json"
+    }
+  },
+  "rejectedAssets": {
+    "showcaseDataStation": {
+      "reason": "route-primary-unreadable",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json",
+      "status": "removed-from-live-primary-path"
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-26",
+  "appId": "showcase-digital-twin-ops",
+  "route": "/apps/showcase-digital-twin-ops/",
+  "classification": "release-ready candidate",
+  "publicShowcase": true,
+  "promotionStatus": "route-primary-and-deploy-evidence-passing",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseRoboticWeldingWorkcell",
+      "role": "prop",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 37,
+    "role": "bounded factory workcell, raised robot island, connected conveyor lane, HMI wall, safety glass, scanner, workpieces, and restrained telemetry cues",
+    "status": "supporting-workcell-set-dressing"
+  },
+  "claimStatus": {
+    "status": "release-ready candidate",
+    "allowed": [
+      "bounded visual operations dashboard",
+      "compiler-selected typed robotic welding workcell asset",
+      "browser-side sample telemetry"
+    ],
+    "notAllowed": [
+      "real facility data",
+      "PLC connectivity",
+      "validated safety logic",
+      "production digital twin integration"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+    "sourceReview": "apps/showcase-digital-twin-ops/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-digital-twin-ops/dist --release --source apps/showcase-digital-twin-ops/src --asset showcaseRoboticWeldingWorkcell",
+    "releaseAssetProbes": {
+      "showcaseRoboticWeldingWorkcell": "tests/reports/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.json"
+    }
+  },
+  "rejectedAssets": {
+    "showcaseOrangeIndustrialRobot": {
+      "reason": "visual-review-rejected-two-robots-on-primitive-slab-composition",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+      "status": "removed-from-live-primary-path"
+    },
+    "showcaseAssemblyLine": {
+      "reason": "route-primary-clipped",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+      "status": "removed-from-live-primary-path"
+    }
+  }
+}

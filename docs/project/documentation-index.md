@@ -1,61 +1,76 @@
 # Documentation Index
 
-Version: 1.1.0 planning alignment
+Date: 2026-07-01
+Status: project documentation index
 
-## Guides
-
-- Build a browser game (end-to-end): `docs/guides/build-a-browser-game.md`
-
-## Agent Docs
-
-- Agent manual: `docs/agents/README.md`
-- Prompt-to-3D workflow: `docs/agents/prompt-to-3d-workflow.md`
-- Agent quickstart: `docs/agents/agent-quickstart.md`
-- API surface: `docs/agents/api-surface.md`
-- Asset workflow: `docs/agents/asset-workflow.md`
-- Cinematic scene quality: `docs/agents/cinematic-scene-quality.md`
-- Benchmark recipes: `docs/agents/benchmark-recipes.md`
-- Templates: `docs/agents/templates.md`
-- Deployment: `docs/agents/deployment.md`
-- Troubleshooting: `docs/agents/troubleshooting.md`
-- Anti-hallucination rules: `docs/agents/anti-hallucination-rules.md`
-
-## Project And Release Docs
+## Canonical Project Docs
 
 - Current state: `docs/project/current-state.md`
 - Product boundaries: `docs/project/product-boundaries.md`
-- Release tracks: `docs/project/release-tracks.md`
-- Game runtime release contract: `docs/project/game-runtime-release.md`
-- Aura Clash showcase: `docs/project/aura-clash-showcase.md`
-- Release process: `docs/project/release-process.md`
-- Release checklist: `docs/project/release-checklist.md`
+- Known limits: `docs/project/known-limits.md`
 - Claim guidelines: `docs/project/claim-guidelines.md`
+- Launch positioning: `docs/project/launch-positioning.md`
+- Library gap roadmap: `docs/project/library-gap-roadmap.md`
+- `createAuraApp` production bridge architecture: `docs/project/createAuraApp-production-bridge-architecture.md`
+- Showcase quality gates: `docs/project/showcase-quality-gates.md`
+- Docs matrix tracking: `docs/project/docs-matrix-tracking.md`
+- Frozen benchmark release gates: `docs/project/frozen-benchmark-release-gates.md`
+- Superiority evidence workflow: `docs/project/superiority-evidence-workflow.md`
+- Marketing site: `docs/project/marketing-site.md`
+- Game layer rebuild plan: `docs/project/aura3d-game-layer-rebuild-plan.md`
+
+## Release Docs
+
+- Release tracks: `docs/project/release-tracks.md`
+- Release checklist: `docs/project/release-checklist.md`
+- Release process: `docs/project/release-process.md`
+- Aura3D 1.4.0 release candidate: `docs/project/aura3d-140-release-candidate.md`
+- Aura3D 1.4.0 release notes draft: `docs/project/aura3d-140-release-notes.md`
 - Verification evidence: `docs/project/verification-evidence.md`
-- Product studio claim registry: `docs/project/product-studio-claim-registry.md`
+- Requirements trace: `docs/project/requirements-trace.md`
+- Completion audit: `docs/project/completion-audit.md`
+- Site map: `docs/project/site-map.md`
+- Deployment rollback: `docs/project/deployment-rollback.md`
+- Support policy: `docs/project/support-policy.md`
+- Security policy: `docs/project/security-policy.md`
 
-## API, Concepts, Comparisons, And Examples
+## Showcase Docs
 
-- Public API: `docs/api/public-api.md`
-- API readme: `docs/api/readme.md`
-- Game runtime API: `docs/api/game-runtime.md`
-- Animation runtime/events API: `docs/api/animation-runtime-events.md`
-- Editor and visual scripting API: `docs/api/editor-visual-scripting.md`
-- Editor review tooling API (1.1): `docs/api/editor-review-tooling.md`
-- Animation audio API (1.1): `docs/audio/animation-audio.md`
-- Animation animation helpers (1.1): `docs/animation/runtime-support.md`
-- Animation render preset/quality (1.1): `docs/rendering/animation-render-preset.md`
-- Asset evidence API: `docs/api/assets.md`
-- Fighting-game example: `docs/examples/fighting-game.md`
-- Prompt animation API: `docs/api/prompt-animation.md`
-- AuraVoice bridge API: `docs/api/auravoice-bridge.md`
-- Animation-channel example: `docs/examples/animation-channel.md`
-- Prompt-to-episode example: `docs/examples/prompt-to-episode.md`
-- Aura Clash boundary: Aura Clash Arena is a development showcase until the 1.1.0 gameplay, visual, asset, audio, performance, deployment, and docs claim gates pass.
-- Concepts: `docs/concepts/`
-- Rendering: `docs/rendering/`
-- Physics: `docs/physics/`
-- Controls: `docs/controls/`
-- Examples: `docs/examples/`
-- Workflows: `docs/workflows/`
-- Comparisons: `docs/comparisons/`
-- Benchmarks: `docs/benchmarks/`
+- Showcase app plan: `docs/project/showcase-application-plan.md`
+- App classification: `docs/project/apps-classification.md`
+- Showcase copy review: `docs/project/showcase-copy-review.md`
+- Showcase launch evidence JSON: `docs/project/showcase-launch-evidence.json`
+- Showcase visual review JSON: `docs/project/showcase-visual-review.json`
+- Aura Clash showcase: `docs/project/aura-clash-showcase.md`
+
+## API And Agent Docs Covered By The Claim-Boundary Pass
+
+These docs must stay aligned with the canonical project docs before public
+release:
+
+- `llms.txt`
+- `AGENTS.md`
+- `.github/copilot-instructions.md`
+- `README.md`
+- `docs/agents/claims-and-boundaries.md`
+- `docs/agents/no-hackjob-rules.md`
+- `docs/agents/asset-selection.md`
+- `docs/agents/game-example-standards.md`
+- `docs/agents/rendering-proof-required.md`
+- `docs/agents/prompt-to-3d-workflow.md`
+- `docs/agents/asset-workflow.md`
+- `docs/api/assets.md`
+- `docs/api/game-runtime.md`
+- `docs/guides/build-a-browser-game.md`
+- `docs/concepts/rendering.md`
+- `docs/rendering/material-matrix.md`
+- `docs/rendering/postprocess.md`
+- `docs/rendering/skinning-and-morphs.md`
+- `docs/animation/runtime-support.md`
+- `docs/templates/create-aura3d-templates.md`
+
+## Index Policy
+
+Do not add a file to a public index unless it exists and its claims match
+`docs/project/claim-guidelines.md`. Deleted PRDs and historical planning files
+should not be used as current release standards.

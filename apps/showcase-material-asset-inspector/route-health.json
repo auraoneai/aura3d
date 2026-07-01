@@ -1,0 +1,49 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-21",
+  "appId": "showcase-material-asset-inspector",
+  "route": "/apps/showcase-material-asset-inspector/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "release-ready-with-current-route-primary-and-deploy-evidence",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseHeadphones",
+      "role": "inspected model",
+      "status": "typed-primary-asset"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 16,
+    "role": "inspection rails, comparison geometry, material samples, and exploded proxy layers",
+    "status": "diagnostic-set-dressing"
+  },
+  "claimStatus": {
+    "status": "bounded",
+    "allowed": [
+      "bounded public typed asset metadata inspection candidate",
+      "material visual QA panels",
+      "generated material/texture/animation metadata",
+      "release-validated assets.showcaseHeadphones product proof"
+    ],
+    "notAllowed": [
+      "external asset editing",
+      "complete DCC replacement",
+      "production PBR parity without pixel-backed material tests"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_MATERIAL_ASSET_INSPECTOR__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-material-asset-inspector-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-material-asset-inspector-mobile.png",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.json",
+    "launchEvidence": "docs/project/showcase-launch-evidence.json",
+    "sourceReview": "apps/showcase-material-asset-inspector/src/main.ts"
+  }
+}

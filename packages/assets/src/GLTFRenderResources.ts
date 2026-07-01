@@ -417,6 +417,7 @@ export async function createGLTFRenderResources(
       geometryLibrary.set(mesh.name, createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant)));
       if (mesh.morphTargets.length > 0) {
         morphTargetLibrary.set(mesh.name, mesh.morphTargets.map((target) => ({
+          ...(target.name ? { name: target.name } : {}),
           positions: target.positions,
           normals: target.normals,
           tangents: target.tangents

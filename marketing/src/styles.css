@@ -1206,7 +1206,9 @@ pre.code {
 
 /* Trimmed bento — 1 feature + 3 thirds */
 .gallery--trim { grid-auto-rows: 200px; }
+.gallery--showcase { grid-auto-rows: 220px; }
 .t-feature { grid-column: span 6; grid-row: span 2; }
+.t-showcase { grid-column: span 2; grid-row: span 2; }
 .t-third   { grid-column: span 2; grid-row: span 2; }
 /* legacy class names — kept for safety, unused in trimmed gallery */
 .t-water, .t-tokyo, .t-physics, .t-car { grid-column: span 3; grid-row: span 2; }
@@ -1268,6 +1270,11 @@ pre.code {
 .example-card:nth-child(2n) { border-right: 0; }
 .example-card:nth-last-child(-n+2) { border-bottom: 0; }
 .example-card:hover { background: rgba(255,255,255,0.025); }
+.example-card--note {
+  background: rgba(245,180,84,0.045);
+  cursor: default;
+}
+.example-card--note:hover { background: rgba(245,180,84,0.045); }
 .example-card span {
   color: var(--ink);
   font-size: 15px;
@@ -1869,7 +1876,7 @@ footer {
     grid-template-columns: repeat(2, 1fr);
     grid-auto-rows: 240px;
   }
-  .t-feature, .t-third,
+  .t-feature, .t-showcase, .t-third,
   .t-water, .t-helmet, .t-tokyo, .t-physics, .t-car, .t-gpu {
     grid-column: span 2; grid-row: span 1;
   }

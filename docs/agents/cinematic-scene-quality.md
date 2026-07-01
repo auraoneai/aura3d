@@ -94,7 +94,7 @@ Blocked unless separate evidence gates explicitly prove the exact claim:
 
 - final film quality;
 - Pixar-quality output;
-- provider-backed prompt-to-scene runtime;
+- provider-backed scene-generation runtime;
 - generated production-ready 3D assets from scratch;
 - replacement for Maya, Houdini, Blender, Unreal, Unity, or RenderMan.
 

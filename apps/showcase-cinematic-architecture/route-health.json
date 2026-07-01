@@ -1,0 +1,70 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-18",
+  "appId": "showcase-cinematic-architecture",
+  "route": "/apps/showcase-cinematic-architecture/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "visual-review-accepted",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseSkylineCity",
+      "role": "environment",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 0,
+    "role": "none",
+    "status": "removed-from-primary-composition"
+  },
+  "claimStatus": {
+    "status": "bounded-public-candidate",
+    "allowed": [
+      "typed architectural district route",
+      "camera choreography",
+      "bounded public createAuraApp lighting"
+    ],
+    "notAllowed": [
+      "final architectural photography quality",
+      "pixel-backed postprocess proof",
+      "HDR/IBL/shadow/postprocess parity"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+    "sourceReview": "apps/showcase-cinematic-architecture/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-cinematic-architecture/dist --release --source apps/showcase-cinematic-architecture/src --asset showcaseSkylineCity",
+    "releaseAssetProbes": {
+      "showcaseSkylineCity": "tests/reports/showcase-release-asset-probes/showcaseSkylineCity.json"
+    }
+  },
+  "rejectedAssets": {
+    "showcaseTeaHouse": {
+      "reason": "route-primary-clipped",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+      "status": "removed-from-live-primary-path"
+    },
+    "showcaseVoxelBuilding": {
+      "reason": "human-visual-review-blockout-quality",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+      "status": "removed-from-live-primary-path"
+    },
+    "showcaseSkylineCity": {
+      "reason": "accepted-after-route-primary-framing-repair",
+      "evidence": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+      "status": "active-public-primary"
+    }
+  }
+}

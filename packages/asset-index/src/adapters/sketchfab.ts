@@ -175,6 +175,7 @@ function toCanonical(
   const url = canResolve
     ? `${API_BASE}/models/${model.uid}/download`
     : sourcePage;
+  const author = model.user?.displayName ?? model.user?.username;
 
   const title = model.name ?? model.uid;
   const tagNames = (model.tags ?? [])
@@ -189,17 +190,24 @@ function toCanonical(
     title,
     description: model.description,
     url,
+    ...(canResolve ? { downloadUrl: url } : {}),
     access,
     // glTF-archive downloads default to .glb when resolved by the bridge.
     format: "glb",
     license,
+    licenseName: model.license?.label,
+    licenseUrl: sourcePage,
     thumbnailUrl: bestThumbnail(model.thumbnails),
     likeCount: typeof model.likeCount === "number" ? model.likeCount : undefined,
     viewCount: typeof model.viewCount === "number" ? model.viewCount : undefined,
     triangles: typeof model.faceCount === "number" ? model.faceCount : undefined,
+    triangleCount: typeof model.faceCount === "number" ? model.faceCount : undefined,
     tags,
     sourcePage,
-    attribution: model.user?.displayName ?? model.user?.username,
+    sourceFamily: "sketchfab",
+    author,
+    attribution: author,
+    rawCatalogMetadata: { ...model },
   };
 }
 

@@ -1,26 +1,45 @@
 # Renderer Skinning And Morphs
 
-Version: 1.0.5
+Skinning and morph support spans animation, assets, engine runtime nodes, and
+renderer packages. Keep those layers separate when writing public claims.
 
-Skinning and morph support spans animation, assets, and rendering packages.
+## What Exists Today
 
-## Current Code
+- `packages/animation` contains skeleton, bone, clip, pose, event, layer, and
+  controller primitives.
+- `packages/assets` can inspect glTF animation, skeleton, skin, and morph
+  metadata for asset readiness.
+- `@aura3d/engine` runtime node handles expose `setAnimationPose(...)`,
+  `setMorphTarget(...)`, `setMorphTargets(...)`, `morphTargets()`, and imported
+  asset evidence snapshots.
+- `packages/rendering` contains renderer and bounds code paths for skinned and
+  morph-target data.
 
-- `packages/animation/src/Bone.ts`
-- `packages/animation/src/Skeleton.ts`
-- `packages/animation/src/Skinning.ts`
-- `packages/assets/src/GLTFAnimationRuntime.ts`
-- `packages/assets/src/GLTFLoader.ts`
-- `packages/rendering/src/ForwardPass.ts`
-- `packages/rendering/src/SkinningBounds.ts`
-- `packages/rendering/src/ShaderLibrary.ts`
+## Public Root Boundary
 
-## Current Behavior
+The root `createAuraApp` safe path must not be described as release-ready
+skinned GLB animation or morph-target rendering unless a browser test imports
+only `@aura3d/engine`, mounts a typed GLB route, captures before/after pixels,
+and verifies meaningful character-region change.
 
-- Imported glTF `JOINTS_0` and `WEIGHTS_0` attributes can feed skinned vertex formats.
-- Skinning palettes are uploaded for skinned renderables.
-- Morph targets are composed with skinning in renderer and bounds paths.
-- Current animation/skinning routes exercise keyframes, blending, additive blending, IK, morphs, multiple agents, and walking.
+Source metadata is not enough. The following are source-level evidence until
+pixel-backed tests prove otherwise:
 
-## Boundaries
+- typed asset lists of clips, bones, skins, or morph names;
+- `AnimationController` active clip state;
+- runtime-node `animationPose()` or `morphTargets()` snapshots;
+- imported asset evidence with `skinnedRenderItemCount` or
+  `morphRenderItemCount`.
 
+## Acceptance Criteria For Public Claims
+
+To claim visible root-path skinning or morph support, provide:
+
+- typed asset provenance and inspection output for the GLB;
+- named clip, skeleton, skin, and morph metadata from that asset;
+- a route importing only `@aura3d/engine`;
+- screenshot or video frame pairs at deterministic times;
+- pixel delta measured in the character or face region, not only camera, HUD, or
+  whole-frame movement;
+- route-health or evidence JSON that names the renderer backend and fallback
+  state.

@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-18",
+  "appId": "showcase-webgpu-particle-lab",
+  "route": "/apps/showcase-webgpu-particle-lab/",
+  "classification": "internal-diagnostic",
+  "publicShowcase": false,
+  "promotionStatus": "route-primary-clipped-and-native-webgpu-unproven",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false,
+    "reportedCapability": "aura3d-running"
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseParticleCore",
+      "role": "particle lab reactor prop",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 10,
+    "role": "lab floor, containment rings, field columns, gantry, and Aura3D particle emitters",
+    "status": "within-stated-role"
+  },
+  "claimStatus": {
+    "status": "demoted",
+    "allowed": [
+      "Aura3D effects.particles route",
+      "typed reactor core",
+      "bounded density controls"
+    ],
+    "notAllowed": [
+      "native WebGPU rendering",
+      "WebGPU compute dispatch",
+      "adapter/backend proof",
+      "custom secondary renderer"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-webgpu-particle-lab-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-webgpu-particle-lab-mobile.png",
+    "sourceReview": "apps/showcase-webgpu-particle-lab/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
+    "releaseAssetProbes": {
+      "showcaseParticleCore": "tests/reports/showcase-release-asset-probes/showcaseParticleCore.json"
+    }
+  }
+}

@@ -84,22 +84,31 @@ function toCanonical(model: PolyPizzaModel): AuraCanonicalAsset | null {
   const triangles =
     typeof tri === "number" && Number.isFinite(tri) ? tri : undefined;
   const description = model.Description?.trim();
+  const licenseName = (model.Licence ?? "").replace(/\s+/g, "-");
+  const author = model.Creator?.Username ?? model.Attribution;
   return {
     id: `poly-pizza:${model.ID}`,
     source: "poly-pizza",
     title,
     description: description ? description : undefined,
     url: model.Download,
+    downloadUrl: model.Download,
     access: "direct-download",
     format: "glb",
     // "CC-BY 3.0" -> "CC-BY-3.0" so it resolves in the license table.
-    license: normalizeLicense((model.Licence ?? "").replace(/\s+/g, "-"), sourcePage),
+    license: normalizeLicense(licenseName, sourcePage),
+    licenseName,
+    licenseUrl: sourcePage,
     thumbnailUrl: model.Thumbnail,
     triangles,
+    triangleCount: triangles,
     hasAnimations: model.Animated,
     tags,
     sourcePage,
-    attribution: model.Creator?.Username ?? model.Attribution,
+    sourceFamily: "poly-pizza",
+    author,
+    attribution: author,
+    rawCatalogMetadata: { ...model },
   };
 }
 

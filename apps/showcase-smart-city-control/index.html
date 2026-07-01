@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura3D Showcase - Smart City Control</title>
+    <meta
+      name="description"
+      content="Aura3D Smart City Control showcase app with procedural city blocks, district overlays, traffic pulses, telemetry, camera modes, and route evidence."
+    >
+    <link rel="stylesheet" href="/apps/showcase-smart-city-control/src/styles.css">
+  </head>
+  <body>
+    <main class="shell" aria-label="Smart City Control">
+      <section id="aura-stage" class="stage" aria-label="Aura3D smart city viewport"></section>
+
+      <aside class="commandbar" aria-label="Smart City command bar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">Showcase 07</p>
+            <h1>Smart City Control</h1>
+          </div>
+        </div>
+
+        <div class="command-groups">
+          <div class="command-group">
+            <span class="cluster-label">District focus</span>
+            <div class="control-cluster" aria-label="District">
+              <button type="button" data-district="all">All</button>
+              <button type="button" data-district="core">Core</button>
+              <button type="button" data-district="north">North</button>
+              <button type="button" data-district="harbor">Harbor</button>
+              <button type="button" data-district="industrial">Industrial</button>
+            </div>
+          </div>
+
+          <div class="command-group">
+            <span class="cluster-label">Camera intent</span>
+            <div class="control-cluster compact" aria-label="Camera">
+              <button type="button" data-camera="command">Command</button>
+              <button type="button" data-camera="overview">Overview</button>
+              <button type="button" data-camera="street">Street</button>
+              <button type="button" data-camera="flythrough">Flythrough</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <aside class="panel controls" aria-label="Runtime controls">
+        <div class="panel-head">
+          <span>Live command</span>
+          <strong>route-local demo</strong>
+        </div>
+        <div class="quick-actions">
+          <button id="city-day-night" type="button">Night Ops</button>
+          <button id="city-traffic" type="button">Traffic Live</button>
+        </div>
+        <label>
+          <span>Alert Level</span>
+          <output id="city-alert-value">42</output>
+          <input id="city-alert" type="range" min="0" max="100" value="42">
+        </label>
+      </aside>
+
+      <aside class="panel telemetry" aria-label="Telemetry">
+        <div class="panel-head">
+          <span>Telemetry snapshot</span>
+          <strong>bounded evidence</strong>
+        </div>
+        <div class="metric wide">
+          <span>Operational State</span>
+          <output id="city-status">booting</output>
+        </div>
+        <div class="metric">
+          <span>Frame</span>
+          <output id="city-frame">0</output>
+        </div>
+        <div class="metric">
+          <span>District</span>
+          <output id="city-district">all</output>
+        </div>
+        <div class="metric">
+          <span>Mobility</span>
+          <output id="city-mobility">0%</output>
+        </div>
+        <div class="metric">
+          <span>Energy</span>
+          <output id="city-energy">0 MW</output>
+        </div>
+        <div class="metric">
+          <span>Incidents</span>
+          <output id="city-incidents">0</output>
+        </div>
+        <div class="metric">
+          <span>Nodes</span>
+          <output id="city-nodes">0</output>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="/apps/showcase-smart-city-control/src/main.ts"></script>
+  </body>
+</html>

@@ -4022,6 +4022,7 @@ function serializeGLTFAsset(
       joints: mesh.joints.map((joint) => [...joint] as const),
       weights: mesh.weights.map((weight) => [...weight] as const),
       morphTargets: mesh.morphTargets.map((target) => ({
+        ...(target.name ? { name: target.name } : {}),
         positions: target.positions.map((position) => [...position] as const),
         normals: target.normals.map((normal) => [...normal] as const),
         tangents: target.tangents.map((tangent) => [...tangent] as const)

@@ -68,7 +68,7 @@ Each route exposes a `data-wwx-route` marker. The deploy route mirrors the evide
 
 ## Summit Remix
 
-Summit Remix is the prompt-to-scene proof for the game route. Current remix presets:
+Summit Remix is the prompt-authored scene proof for the game route. Current remix presets:
 
 - `Currency Storm`: volatile tickers, currency particles, market lighting, and readable guard flashes.
 - `Orbital Debate`: orbital glass floor, star parallax, low-gravity camera language, and cyan bloom.

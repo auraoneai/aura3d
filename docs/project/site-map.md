@@ -1,46 +1,60 @@
 # Site Map
 
-Version: 1.3.3
-Planning alignment: 1.3.3 release gates
+Date: 2026-06-18
+Status: remediation site map
 
 ## Public Marketing Pages
 
-| Path | Public purpose | Target title | Meta focus |
-| --- | --- | --- | --- |
-| `/marketing/index.html` | Human-facing product page | Aura3D: TypeScript 3D SDK for AI Agents | prompt-to-code browser 3D, scene kits, typed GLB/glTF assets, diagnostics, screenshots, deploy checks |
-| `/marketing/docs/index.html` | Website docs landing page | Aura3D Docs: AI Agents, Typed Assets, Browser 3D | agent workflows, typed assets, browser 3D docs |
-| `/marketing/docs/agent-quickstart.html` | Public quickstart | Aura3D Agent Quickstart: Prompt to Browser 3D | scaffold, scene kits, GLB/glTF assets, Vite, screenshots |
-| `/marketing/docs/prompt-recipes.html` | Prompt recipes | Aura3D Prompt Recipes: AI-Generated 3D Scene Kits | physics, particles, data, material labs, mini golf, product viewer |
-| `/marketing/docs/assets.html` | Typed asset workflow | Aura3D Typed Assets: GLB/glTF Workflow for Agents | CLI assets add, TypeScript refs, prevent invented paths |
-| `/marketing/docs/templates.html` | Template docs | Aura3D Templates: Vite 3D Product Viewer and Mini Game | Vite 3D templates, product viewer, cinematic scene, mini-game |
-| `/marketing/docs/deployment.html` | Deploy docs | Aura3D Deployment: Static Checks for Browser 3D Apps | route health, screenshots, Vercel, Netlify, Cloudflare Pages, S3, R2 |
-| `/marketing/docs/api.html` | API overview | Aura3D Public API: TypeScript Browser 3D Imports | public imports, scenes, models, cameras, lights, effects, physics, UI |
-| `/marketing/docs/claims.html` | Release notes | Aura3D Aura3D Evidence and Release Notes | truthful claims, scoped release, benchmark boundaries |
-| `/marketing/docs/evidence.html` | Evidence summary | Aura3D Evidence: Diagnostics, Screenshots, Release Checks | diagnostics, route health, screenshots, release checks |
+Public marketing pages must use `docs/project/launch-positioning.md` as their
+copy boundary and must not present prototypes as public release examples.
 
-## Repo Documentation
+| Path | Public purpose | Claim boundary |
+| --- | --- | --- |
+| `/marketing/index.html` | Product overview | Agent-friendly TypeScript browser 3D SDK with typed assets and diagnostics. |
+| `/marketing/docs/index.html` | Docs landing page | Link to current root API, asset workflow, limitations, and release evidence. |
+| `/marketing/docs/agent-quickstart.html` | Agent quickstart | Start with `llms.txt`, typed assets, and public `@aura3d/engine`. |
+| `/marketing/docs/assets.html` | Typed asset workflow | CLI asset add/resolve, generated `aura-assets.ts`, no string IDs. |
+| `/marketing/docs/templates.html` | Template docs | Templates are starters; game templates need playability evidence before game claims. |
+| `/marketing/docs/api.html` | API overview | Public root API only; mark internal/experimental surfaces clearly. |
+| `/marketing/docs/claims.html` | Claims and release notes | Link claim labels, release tracks, and known limits. |
+| `/marketing/docs/evidence.html` | Evidence summary | Route-health, screenshots, asset validation, package checks, benchmark gates. |
 
-- `/llms.txt`: compact agent reference
-- `/marketing/docs/agent-quickstart.html`: agent quickstart
-- `/marketing/docs/prompt-recipes.html`: prompt-to-3D workflow and prompt recipes
-- `/marketing/docs/templates.html`: template list
-- [Public API reference](../api/public-api.md)
-- [Getting started tutorial](tutorials-getting-started-real-scene.md)
-- [Changelog](../../CHANGELOG.md)
+## Canonical Repo Docs
+
+- [Current state](current-state.md)
+- [Product boundaries](product-boundaries.md)
+- [Known limits](known-limits.md)
+- [Claim guidelines](claim-guidelines.md)
+- [Launch positioning](launch-positioning.md)
+- [Release tracks](release-tracks.md)
 - [Release checklist](release-checklist.md)
 - [Release process](release-process.md)
-- [Game runtime release contract](game-runtime-release.md)
-- [Aura Clash showcase](aura-clash-showcase.md)
+- [Aura3D 1.4.0 release candidate](aura3d-140-release-candidate.md)
+- [Aura3D 1.4.0 release notes draft](aura3d-140-release-notes.md)
+- [Verification evidence](verification-evidence.md)
+- [Showcase quality gates](showcase-quality-gates.md)
+- [Showcase application plan](showcase-application-plan.md)
+- [Apps classification](apps-classification.md)
+- [Library gap roadmap](library-gap-roadmap.md)
+- [`createAuraApp` production bridge architecture](createAuraApp-production-bridge-architecture.md)
+- [Docs matrix tracking](docs-matrix-tracking.md)
+- [Frozen benchmark release gates](frozen-benchmark-release-gates.md)
+- [Superiority evidence workflow](superiority-evidence-workflow.md)
+- [Marketing site](marketing-site.md)
 
 ## Local Example Routes
 
-- `/apps/hello-world-typed-asset/`: typed asset example
-- `/apps/material-lighting/`: material and light example
-- `/apps/camera-path/`: camera path example
-- `/apps/advanced-examples-gallery/`: advanced gallery route with prompt and product examples
+- `/apps/hello-world-typed-asset/`: starter typed asset route.
+- `/apps/material-lighting/`: starter material/light route with scoped claims.
+- `/apps/camera-path/`: starter camera/timeline route.
+- `/apps/advanced-examples-gallery/`: retained evidence/gallery route; not a
+  starter template or broad public root proof by default.
 
-## Agent Setup Website Pages
+## Showcase Routes
 
-- `/marketing/docs/agent-rules.html`: public Aura3D rules for AI coding agents
-- `/marketing/docs/claude.html`: Claude setup page
-- `/marketing/docs/cursor.html`: Cursor setup page
+Showcase routes must be linked only with their classification from
+`docs/project/apps-classification.md` and their evidence status from
+`docs/project/showcase-quality-gates.md`.
+
+Blocked, prototype-blocked, and internal-diagnostic routes should not appear as
+public release cards.

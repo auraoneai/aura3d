@@ -5,17 +5,126 @@
 [![license: MIT](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-browser%203D-3178c6.svg)](https://www.typescriptlang.org/)
 
-Aura3D is an AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, GLB/glTF product viewers, browser-native game routes, Vite templates, typed asset workflows, diagnostics, screenshots, and static deployment checks.
+Aura3D is an AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, GLB/glTF product viewers, browser-native game prototypes, Vite templates, typed asset workflows, diagnostics, screenshots, and static deployment checks.
 
 Describe the scene. Keep the TypeScript. Ship the browser app.
 
-Aura3D is built for developers and AI coding agents that need real 3D software, not a blank canvas and renderer glue. It gives agents maintained scene kits, typed GLB/glTF assets, product-viewer workflows, browser-game workflows, route-health diagnostics, screenshot evidence, and deployment checks through a public TypeScript API.
+Aura3D is built for developers and AI coding agents that need real 3D software, not a blank canvas and renderer glue. It gives agents maintained scene kits, typed GLB/glTF assets, product-viewer workflows, source-level game prototype workflows, route-health diagnostics, screenshot evidence, and deployment checks through a public TypeScript API.
 
-Use Aura3D when you are building agent-written browser 3D apps, prompt-authored scenes, product configurators, GLB viewers, browser-native game-route proofs, static-deployed interactive websites, or AI-generated 3D scene tooling.
+Use Aura3D when you are building agent-written browser 3D apps, prompt-authored scenes, product configurators, GLB viewers, browser-native game-route prototypes, static-deployed interactive websites, or AI-generated 3D scene tooling.
 
-## Current release
+## Public claim boundary
 
-`@aura3d/engine@1.3.3` is the published release, live on npm `latest`. It carries everything from 1.1.0 — browser-native game routes, visible GLB animation runtime evidence, prompt-animation playback, AuraVoice timing packages, typed assets, diagnostics, screenshots, and readiness evidence — and adds the **Animation Engine**, the **Believable-Motion** track, and the **Animation Studio** (all below). It runs on Aura's own WebGL2 + WebGPU renderer; migrating an existing project is covered by the separately installed `@aura3d/three-compat` package.
+Aura3D has multiple capability paths. Public claims must name the path they are
+proving:
+
+- root safe API: `@aura3d/engine` through `createAuraApp`;
+- production runtime: `@aura3d/engine/production-runtime`;
+- rendering internals: `@aura3d/rendering` and explicit renderer packages;
+- CLI asset pipeline: `@aura3d/cli` typed asset acquisition and validation;
+- templates and showcase routes.
+
+The root `createAuraApp` path is the API that AI coding agents should use for
+browser examples. A feature is not public-route proof just because a lower-level
+package exports it. For release-facing docs, screenshots, or marketing pages,
+claim only what the mounted route proves with typed assets, browser evidence,
+and route-health output. Unsupported capabilities must be labeled as
+`production-runtime`, `internal`, `prototype`, or `planned`.
+
+Do not use primitives as the primary subject for named real-world objects,
+characters, vehicles, worlds, products, or game environments. Resolve real
+GLB/glTF assets through the Aura3D CLI, import generated `assets` from
+`src/aura-assets.ts`, and render with `model(assets.x)`. Do not use raw string
+asset ids, invented URLs, `GLTFLoader`, direct `three` imports, CSS particles,
+DOM scene effects, or route-local hacks to make a public example appear more
+capable than the Aura3D API path actually is.
+
+## Showcase integrity
+
+The showcase routes must use Aura3D for scene content. CSS and DOM are allowed
+for layout, HUDs, buttons, panels, responsive sizing, and accessibility text
+only. They must not be used as a substitute for 3D content, particles, motion,
+track scenery, city scenery, data visuals, robots, vehicles, beams, scanlines,
+vignettes, or other effects that are claimed as part of the 3D scene.
+
+The current release-candidate showcase classification is:
+
+- Public release candidates: `apps/showcase-product-configurator/`,
+  `apps/showcase-material-asset-inspector/`,
+  `apps/showcase-smart-city-control/`,
+  `apps/showcase-cinematic-architecture/`,
+  `apps/showcase-digital-twin-ops/`, and
+  `apps/showcase-blockfall-reactor/`.
+- Internal diagnostics retained for evidence only:
+  `apps/showcase-data-galaxy/` and
+  `apps/showcase-webgpu-particle-lab/`.
+- Prototype-blocked game diagnostics, intentionally removed from public
+  examples: `apps/showcase-turbo-drift-circuit/` and
+  `apps/showcase-skyline-runner/`.
+
+`node tools/showcase-library/build-and-check.mjs` is the release gate for this
+classification. The current public release status is 6/6 public candidates
+passing, with two internal diagnostics and two prototype-blocked game routes
+retained outside the public showcase path.
+
+For those routes, the implementation boundary is:
+
+- Use public `@aura3d/engine` APIs such as `createAuraApp`,
+  `createGameApp`, `scene`, `sceneKits`, `model`, `camera`, `lights`,
+  `material`, `primitives`, `effects`, `particles`, `labels`, `charts`,
+  `game`, `interactions`, and `timeline`.
+- Use typed assets from `src/aura-assets.ts` with `model(assets.x)`.
+  Do not write string asset ids such as `model("asset")`, invented URLs, raw
+  GLB URLs, or direct loader code.
+- Use Aura3D particles through `effects.particles(...)`,
+  `particles.fountain(...)`, or the explicit WebGPU rendering path when it is
+  actually supported. Do not create particle clouds with DOM nodes, CSS
+  animations, pseudo-elements, or background gradients.
+- Use Aura3D runtime movement through `app.onFrame(...)`,
+  `.runtime(game.runtimeNode("id"))`, and runtime node mutation. Do not fake
+  scene motion with CSS keyframes or DOM transforms.
+- Use CSS only for UI chrome and layout. A screenshot should still show the
+  3D scene, particles, motion targets, and typed assets when CSS decorative
+  backgrounds are removed.
+- Keep claims honest: native WebGPU, typed asset usage, game runtime,
+  animation, particles, screenshots, and deployment readiness must each map to
+  a named API, route evidence global, test, screenshot, or report.
+
+Current renderer boundary: the `createAuraApp` WebGL2 agent runtime used by the
+showcase routes renders typed GLB meshes, glTF base-color textures, non-skinned
+glTF node animation clips, Aura primitives, Aura particle effects,
+runtime-node transforms, and basic scene effects. It is still not the full
+production renderer path: it does not yet render skinned GLB animation mixer
+playback, full PBR material stacks, image-based lighting, shadow maps, or
+postprocess passes in pixels on that route. Do not claim visible skinned
+character animation or Three.js-grade production material parity from a
+`createAuraApp` screenshot until the agent renderer adapter is wired to the
+production animation/skinning and material runtime; publish unsupported
+capabilities as metadata only.
+
+Release-facing showcase PRs must pass `assets validate --source --release`,
+route-health collection, browser screenshots, visual review, and game input
+tests where applicable. If any route uses primitive-only primary subjects, fake
+CSS/DOM particles, unsupported WebGPU/PBR/skinning claims, or screenshots where
+the primary subject is hidden, tiny, clipped, or unreadable, the route must be
+classified as prototype, internal diagnostic, or blocked instead of public.
+
+## Current Release
+
+`@aura3d/engine@1.4.0` is the published release, live on npm `latest` across the
+26 public Aura3D packages. It carries the 1.1.0-1.3.3 runtime, animation,
+typed-asset, and template foundations forward, then hardens the release path:
+role-aware asset validation, rendered-probe rejection for fake/stale proof, AST
+source validation, package/dist parity checks, resolver-backed showcase-spec
+repair, route-primary probes, release asset probes, gameplay proof where
+appropriate, and visual review as a hard public-release gate.
+
+The public showcase now contains six bounded, visually accepted examples:
+Product Configurator, Material Asset Inspector, Smart City Control, Cinematic
+Architecture, Digital Twin Operations, and Blockfall Reactor. Data Galaxy and
+WebGPU Particle Lab stay internal diagnostics. Turbo Drift Circuit and Skyline
+Runner stay prototype-blocked until the game layer has certified racing
+topology and platformer playable-surface support.
 
 Animation Engine (in 1.3.3): `@aura3d/animation` gains a locomotion state-graph + kit (`createLocomotionAnimationStateGraph`, `createLocomotionKit`), a generic `validateAnimationClipMap`, a shared fighter-animation adapter, and per-clip bone-mask blending in `applyClips` (layered playback). New CLI: `aura3d assets validate-animation`. New starter templates: `animation-studio` (typed character → plan/preview/profile/package/verify + kit-driven skinned preview render) and `character-controller` (input → locomotion kit), plus a browser visual editor wired to the headless editor-runtime controllers. The deployed **Aura Clash** arena gained a real motion upgrade — crossfaded state transitions, hit reactions that vary by attack weight and grounded/airborne state, and attacks layered on an upper-body bone mask over a walking lower body — all browser-verified with deterministic combat replay stable.
 
@@ -25,7 +134,12 @@ The **Animation Studio** turns a natural-language prompt into a deterministic, r
 
 Aura3D ships a real animation engine: critically-damped, momentum-preserving transitions, two-bone foot IK with a foot-lock, spring-bone secondary dynamics, animation event tracks, texture-backed facial morph targets with viseme lip-sync, and 96-joint character skinning on both WebGL2 and WebGPU — each gate-backed and running live in Aura Clash. Aura Clash uses starter-grade fighter assets with **no new fighter art this release** (the rigs carry no facial blendshapes, so the morph/viseme work is showcased in Animation Studio and the morph proofs), so it stays a development showcase of the engine rather than a finished commercial game.
 
-Registry status: npm `latest` serves `1.3.3` across all 26 packages (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`, …). The `animation-studio` / `character-controller` templates and the new APIs above are live for `npx ...@latest` users, and the showcase is deployed at https://aura3d.auraone.ai.
+Registry status: npm `latest` serves `1.4.0` across all 26 public packages
+(`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`,
+and the rest of the package family). The `animation-studio`,
+`character-controller`, typed asset, showcase-spec, and release evidence APIs
+above are live for `npx ...@latest` users, and the showcase is deployed at
+https://aura3d.auraone.ai.
 
 ## Aura3D 1.1.0 asset catalog
 
@@ -49,9 +163,9 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.3.3 is the current active release that carries it forward:
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.0 is the current published release that carries it forward:
 
-- `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game routes.
+- `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
 - `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-animation-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored animation/video workflows. The shorter `animation-channel` template name remains supported.
 - `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
@@ -91,7 +205,7 @@ import { createAuraApp, sceneKits } from "@aura3d/engine";
 - AI-generated 3D scenes that remain editable TypeScript.
 - Browser 3D apps built with a stable SDK instead of improvised renderer glue.
 - Typed GLB/glTF product viewers, product configurators, and model showcases.
-- Browser-native games with playable routes, HUDs, input, evidence, tests, and deploy-ready output.
+- Browser-native game prototypes with playable routes, HUDs, input, evidence, tests, and deploy-ready output. Public racing/platformer examples require the certified game-geometry layer described in `docs/project/aura3d-game-layer-rebuild-plan.md`.
 - Prompt-to-3D workflows for AI coding agents, Cursor, Claude, Codex, and other assistants.
 - WebGL/WebGPU-ready examples with maintained scene kits and diagnostics.
 - Vite 3D starter apps with route health, screenshot tests, and deploy checks.
@@ -453,9 +567,9 @@ Maintained scene-kit families include physics playgrounds, particle fountains, s
 
 ## Production browser 3D workflow
 
-Aura3D is built for the AI-assisted browser 3D era. It gives teams a source-code-first TypeScript workflow where agents generate maintainable scenes, game routes, product viewers, and deployable interactive websites.
+Aura3D is built for the AI-assisted browser 3D era. It gives teams a source-code-first TypeScript workflow where agents generate maintainable scenes, game prototypes, product viewers, and deployable interactive websites.
 
-Aura3D combines scene kits, GLB/glTF asset typing, product viewers, browser-game runtime helpers, a believable-motion animation engine, physics scenes, particles, material labs, data worlds, route diagnostics, screenshot workflows, and static deployment into one agent-ready SDK.
+Aura3D combines scene kits, GLB/glTF asset typing, product viewers, browser-game runtime helpers, a believable-motion animation engine, physics scenes, particles, material labs, data worlds, route diagnostics, screenshot workflows, and static deployment into one agent-ready SDK. Route-level game proofs are not public-quality game examples until visual review and game-geometry evidence pass.
 
 ## Documentation
 
@@ -501,7 +615,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped 1.3.3 gates pass.
+Expected current state — The scoped package gates pass for the published 1.4.0 baseline, and the release-candidate showcase gate passes for six public examples while retaining two internal diagnostics and two prototype-blocked game routes outside the public path.
 
 ## Contributing
 

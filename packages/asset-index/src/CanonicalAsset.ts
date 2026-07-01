@@ -45,6 +45,20 @@ export interface AuraAssetBounds {
   readonly size: readonly [number, number, number];
 }
 
+export type AuraAssetIntendedRole =
+  | "character"
+  | "vehicle"
+  | "world"
+  | "environment"
+  | "track"
+  | "product"
+  | "weapon"
+  | "prop"
+  | "set-dressing"
+  | "debug"
+  | "abstract"
+  | "unknown";
+
 export interface AuraCanonicalAsset {
   /** Globally unique, namespaced id: `${source}:${sourceLocalId}`. */
   readonly id: string;
@@ -54,25 +68,53 @@ export interface AuraCanonicalAsset {
   readonly description?: string;
   /** Direct file URL, or the deep-link page when access is `deep-link-only`. */
   readonly url: string;
+  /** Direct model download URL, preserved separately from the source page. */
+  readonly downloadUrl?: string;
   readonly access: AuraAssetAccess;
   readonly format: AuraAssetFormat;
   readonly license: AuraAssetLicense;
+  readonly licenseName?: string;
+  readonly licenseUrl?: string;
   readonly thumbnailUrl?: string;
   readonly fileSizeBytes?: number;
   /** Triangle count when the source exposes it; otherwise undefined (enriched later). */
   readonly triangles?: number;
+  readonly triangleCount?: number;
+  readonly meshCount?: number;
+  readonly materialCount?: number;
+  readonly textureCount?: number;
+  readonly animationClipCount?: number;
+  readonly animationClips?: readonly string[];
+  readonly skinCount?: number;
+  readonly morphTargetCount?: number;
   readonly hasAnimations?: boolean;
   readonly bounds?: AuraAssetBounds;
+  readonly dimensions?: readonly [number, number, number];
   /** Source popularity signal (e.g. Sketchfab likes) — feeds quality ranking. */
   readonly likeCount?: number;
   /** Source popularity signal (e.g. Sketchfab views) — feeds quality ranking. */
   readonly viewCount?: number;
+  /** Hosted catalog semantic score, when a source exposes one. */
+  readonly semanticScore?: number;
+  /** Source worker rank/score before Aura federation, when available. */
+  readonly workerScore?: number;
+  /** Source quality score before Aura federation, when available. */
+  readonly qualityScore?: number;
   /** Lowercased keywords used for relevance ranking. */
   readonly tags: readonly string[];
   /** Authoritative human page for the asset (license, author, terms). */
   readonly sourcePage?: string;
+  readonly sourceFamily?: string;
+  readonly retrievedAt?: string;
+  readonly author?: string;
   /** Free-form attribution credit captured at index time (author/creator). */
   readonly attribution?: string;
+  readonly intendedRole?: AuraAssetIntendedRole;
+  readonly roleSuitability?: string;
+  readonly qualityWarnings?: readonly string[];
+  readonly duplicateHash?: string;
+  readonly duplicateOkReason?: string;
+  readonly rawCatalogMetadata?: Readonly<Record<string, unknown>>;
 }
 
 /**

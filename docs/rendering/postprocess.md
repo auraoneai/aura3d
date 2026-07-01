@@ -1,34 +1,38 @@
 # Renderer Postprocess
 
-Version: 1.0.5
+Postprocess support exists in lower-level rendering packages and selected
+runtime paths, but public root examples must distinguish requested effects from
+pixel-backed passes.
 
-Postprocess support exists in the renderer package and current app routes.
+## Public Root Boundary
 
-## Current Code
+`effects.bloom(...)`, ambient/contact occlusion nodes, fog, and renderer
+diagnostics can describe postprocess intent in a root `createAuraApp` scene.
+That is not enough to claim a pixel-backed postprocess stack. A root route can
+claim a rendered postprocess effect only when:
 
-- `packages/rendering/src/postprocess/EffectComposer.ts`
-- `packages/rendering/src/PostProcessPass.ts`
-- `packages/rendering/src/production-runtime/resources/RenderTarget.ts`
-- `packages/rendering/src/Renderer.ts`
-- `/apps/advanced-examples-gallery/#reactor-post`
-- `/apps/advanced-examples-gallery/#fog-cathedral`
-- `apps/wow-clearcoat-material-sample/`
+- the route imports only `@aura3d/engine`;
+- `createAuraApp(...).diagnostics()` after mount reports a pixel-backed pass
+  status for the requested effect;
+- before/after screenshots or mode-change screenshots show pixel differences
+  caused by the pass;
+- evidence records the backend and any fallback state.
 
-## Implemented Areas
+## Lower-Level Package Surface
 
-- Renderer-owned render-target chains.
-- Reusable ping-pong composer targets.
-- Bloom, tone mapping, FXAA-facing paths, depth-of-field, SSAO, and outline route coverage.
-- Render-target resize/disposal accounting and diagnostics.
+`@aura3d/rendering` contains postprocess/composer classes and production-runtime
+passes such as bloom, FXAA-facing paths, SSAO, depth of field, color grading,
+and related render-target helpers. Those are package-level capabilities until
+they are proven through the public root app path.
 
 ## Verification
 
-Useful focused checks:
+Useful focused package checks:
 
 ```sh
 pnpm exec vitest run tests/unit/rendering/postprocess-composer.test.ts tests/unit/rendering/renderer-postprocess-plan.test.ts
 ```
 
-## Boundaries
-
-The current docs should not claim complete low-level renderer code examples/postprocessing parity or Unity/Unreal-style render-stack parity. Each postprocess claim needs a named pass, route, test, and generated report.
+Package tests do not replace browser screenshots for public showcase claims.
+Each postprocess claim needs a named pass, route, test/report, and generated
+image evidence.

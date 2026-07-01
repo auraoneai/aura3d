@@ -18,15 +18,40 @@ import {
   writeTypedAssets,
   readAssetManifest
 } from "./index.js";
-import { runResolve, runSearch, type CliAssetSearchProfile, type CliResolveConstraints } from "./pull-bridge.js";
+import {
+  createCliOptionReaders,
+  printSearchReport,
+  profileUsage,
+} from "./cli-options.js";
+import { assetsAddHelp, mainHelp } from "./cli-help.js";
+import { runResolve, runSearch } from "./pull-bridge.js";
 
 const args = process.argv.slice(2);
+const {
+  hasFlag,
+  readAssetQuality,
+  readAssetRole,
+  readAssetType,
+  readAssetValidationOptions,
+  readCliAssetProfile,
+  readEvidenceOutput,
+  readInspectFile,
+  readOption,
+  readParts,
+  readRenderedProbe,
+  readResolveConstraints,
+} = createCliOptionReaders(args);
+const helpRequested = hasFlag("--help") || hasFlag("-h");
 
 async function main(): Promise<void> {
   const command = args[0];
   if (command === "assets") {
     const action = args[1];
     if (action === "add") {
+      if (helpRequested) {
+        console.log(assetsAddHelp());
+        return;
+      }
       const file = args[2];
       const name = readOption("--name");
       if (!file || !name) throw new Error("Usage: aura3d assets add ./model.glb --name robot");
@@ -36,11 +61,20 @@ async function main(): Promise<void> {
         type: readAssetType(),
         publicPath: readOption("--public-path"),
         outputDir: readOption("--output"),
+        sourcePage: readOption("--source-page"),
+        downloadUrl: readOption("--download-url"),
         sourceUrl: readOption("--source-url"),
         license: readOption("--license"),
+        licenseName: readOption("--license-name"),
+        licenseUrl: readOption("--license-url"),
+        licenseRaw: readOption("--license-raw"),
         author: readOption("--author"),
         sourceFamily: readOption("--source-family"),
-        attribution: readOption("--attribution")
+        attribution: readOption("--attribution"),
+        quality: readAssetQuality(),
+        role: readAssetRole(),
+        suitabilityReason: readOption("--suitability"),
+        renderedProbe: readRenderedProbe()
       }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));
@@ -122,33 +156,13 @@ async function main(): Promise<void> {
   } else if (command === "animation") {
     runAnimationCommand(args[1]);
   } else if (command === "check-deploy") {
-    print(checkDeploy({ distDir: readOption("--dist") }));
+    print(checkDeploy({ distDir: readOption("--dist"), ...readAssetValidationOptions() }));
   } else if (command === "init") {
     const agent = readOption("--agent") ?? "generic";
     if (!["claude", "cursor", "copilot", "generic", "all"].includes(agent)) throw new Error(`Unsupported agent target: ${agent}`);
     console.log(JSON.stringify({ written: initAgentFiles({ agent: agent as "claude" | "cursor" | "copilot" | "generic" | "all" }) }, null, 2));
   } else {
-    console.log(`Aura3D CLI
-
-Commands:
-  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio] [--license CC0-1.0] [--source-url URL] [--author NAME]
-  aura3d assets scan ./assets
-  aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
-  aura3d assets validate [--asset assetId] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-game [--profile fighting-character] [--asset fighter] [--output artifacts/aura3d/game-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-animation-studio [--episode] [--asset character] [--output artifacts/aura3d/animation-studio-assets.json] [--no-placeholders] [--require-license] [--provenance evidence.json]
-  aura3d assets validate-animation --clips Idle_Loop,Walk_Loop,Sprint_Loop --map idle=Idle_Loop,walk=Walk_Loop,run=Sprint_Loop [--require idle,walk,run] [--require-rig]
-  aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
-  aura3d assets list
-  aura3d assets typegen
-  aura3d assets thumbnail
-  aura3d assets search <query> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
-  aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]
-  aura3d animation plan|preview|render|package|review|verify [--dry-run]
-  aura3d animation scene <new|show|cast add|prop add|set|block|camera|shot|dialogue|render|...>  (agent-native Scene-Tool CLI)
-  aura3d doctor
-  aura3d check-deploy --dist dist
-  aura3d init --agent all`);
+    console.log(mainHelp(profileUsage()));
   }
 }
 
@@ -203,150 +217,6 @@ main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
-
-function readOption(name: string): string | undefined {
-  const index = args.indexOf(name);
-  return index >= 0 ? args[index + 1] : undefined;
-}
-
-function hasFlag(name: string): boolean {
-  return args.includes(name);
-}
-
-function readInspectFile(): string | undefined {
-  return args.slice(2).find((value) => !value.startsWith("--"));
-}
-
-function readEvidenceOutput(): string | undefined {
-  if (hasFlag("--output")) {
-    const output = readOption("--output");
-    if (!output || output.startsWith("--")) throw new Error("Expected --output <path>.");
-    return output;
-  }
-  if (hasFlag("--evidence")) {
-    const evidence = readOption("--evidence");
-    if (!evidence || evidence.startsWith("--")) throw new Error("Expected --evidence <path>.");
-    return evidence;
-  }
-  return undefined;
-}
-
-function readAssetValidationOptions(): { readonly episode?: boolean; readonly noPlaceholders?: boolean; readonly requireLicense?: boolean; readonly provenanceFile?: string; readonly assetIds?: readonly string[] } {
-  const options: { episode?: boolean; noPlaceholders?: boolean; requireLicense?: boolean; provenanceFile?: string; assetIds?: readonly string[] } = {};
-  if (hasFlag("--episode")) options.episode = true;
-  if (hasFlag("--no-placeholders")) options.noPlaceholders = true;
-  if (hasFlag("--require-license")) options.requireLicense = true;
-  const assetIds = readRepeatedOptions("--asset").flatMap((value) => value.split(",").map((entry) => entry.trim()).filter(Boolean));
-  if (assetIds.length > 0) options.assetIds = assetIds;
-  if (hasFlag("--provenance")) {
-    const provenanceFile = readOption("--provenance");
-    if (!provenanceFile || provenanceFile.startsWith("--")) throw new Error("Expected --provenance <path>.");
-    options.provenanceFile = provenanceFile;
-  }
-  return options;
-}
-
-function readRepeatedOptions(name: string): readonly string[] {
-  const values: string[] = [];
-  for (let index = 0; index < args.length; index += 1) {
-    if (args[index] !== name) continue;
-    const value = args[index + 1];
-    if (!value || value.startsWith("--")) throw new Error(`Expected ${name} <value>.`);
-    values.push(value);
-  }
-  return values;
-}
-
-function readParts(name: string): readonly { readonly slot: string; readonly asset: string }[] {
-  const parts: { slot: string; asset: string }[] = [];
-  for (let index = 0; index < args.length; index += 1) {
-    if (args[index] !== name) continue;
-    const value = args[index + 1];
-    if (!value || value.startsWith("--")) throw new Error(`Expected ${name} slot=asset`);
-    const [slot, asset] = value.split("=");
-    if (!slot || !asset) throw new Error(`Expected ${name} slot=asset, got "${value}"`);
-    parts.push({ slot, asset });
-  }
-  return parts;
-}
-
-function readAssetType(): "model" | "texture" | "environment" | "audio" | undefined {
-  const value = readOption("--type");
-  if (!value) return undefined;
-  if (value === "model" || value === "texture" || value === "environment" || value === "audio") return value;
-  throw new Error(`Unsupported --type value "${value}". Use model, texture, environment, or audio.`);
-}
-
-function readResolveConstraints(): CliResolveConstraints {
-  const constraints: { license?: readonly ("CC0" | "CC-BY")[]; maxTriangles?: number; animated?: boolean } = {};
-  const license = readOption("--license");
-  if (license) {
-    const normalized = license.toLowerCase();
-    if (normalized === "cc0") constraints.license = ["CC0"];
-    else if (normalized === "cc-by" || normalized === "ccby") constraints.license = ["CC-BY"];
-    else throw new Error(`Unsupported --license value "${license}". Use cc0 or cc-by.`);
-  }
-  const maxTris = readOption("--max-tris");
-  if (maxTris) {
-    const parsed = Number.parseInt(maxTris, 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) throw new Error(`--max-tris must be a positive integer (got "${maxTris}").`);
-    constraints.maxTriangles = parsed;
-  }
-  if (hasFlag("--animated")) constraints.animated = true;
-  const profile = readCliAssetProfile();
-  return profile === "general" ? constraints : { ...constraints, profile };
-}
-
-function readCliAssetProfile(): CliAssetSearchProfile {
-  const value = readOption("--profile");
-  if (!value) return "general";
-  if (isSupportedAssetProfile(value)) return value;
-  throw new Error(`Unsupported --profile value "${value}". Use ${profileUsage()}.`);
-}
-
-function isSupportedAssetProfile(value: string): value is Exclude<CliAssetSearchProfile, "general"> {
-  return (
-    value === "fighting-character" ||
-    value === "animation-character" ||
-    value === "animation-prop" ||
-    value === "animation-set" ||
-    value === "animation-environment"
-  );
-}
-
-function profileUsage(): string {
-  return "fighting-character|animation-character|animation-prop|animation-set|animation-environment";
-}
-
-function printSearchReport(report: { readonly query: string; readonly profile: CliAssetSearchProfile; readonly candidates: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly rejectedCandidates?: readonly { readonly id: string; readonly source: string; readonly title: string; readonly license: string; readonly autoPullable: boolean; readonly sourcePage?: string; readonly profile?: { readonly suitable: boolean; readonly rejectionReasons: readonly string[]; readonly warnings: readonly string[] } }[]; readonly deepLinks: readonly { readonly id: string; readonly title: string; readonly sourcePage?: string }[]; readonly warnings: readonly string[]; readonly messages: readonly string[] }): void {
-  for (const message of report.messages) console.log(message);
-  for (const candidate of report.candidates) {
-    const profileTag = candidate.profile
-      ? candidate.profile.suitable
-        ? ", profile-ready"
-        : ", profile-rejected"
-      : "";
-    const tag = candidate.autoPullable ? `auto-pullable${profileTag}` : `manual license check required${profileTag}`;
-    console.log(`  [${candidate.source}] ${candidate.id}  "${candidate.title}"  ${candidate.license}  (${tag})`);
-    if (candidate.profile && !candidate.profile.suitable) {
-      for (const reason of candidate.profile.rejectionReasons) console.log(`    rejects: ${reason}`);
-    }
-  }
-  if (report.rejectedCandidates && report.rejectedCandidates.length > 0) {
-    console.log("Rejected by profile:");
-    for (const candidate of report.rejectedCandidates) {
-      console.log(`  [${candidate.source}] ${candidate.id}  "${candidate.title}"  ${candidate.license}`);
-      for (const reason of candidate.profile?.rejectionReasons ?? []) console.log(`    rejects: ${reason}`);
-    }
-  }
-  if (report.deepLinks.length > 0) {
-    console.log("Marketplace deep-links (manual download, license check required):");
-    for (const link of report.deepLinks) {
-      console.log(`  ${link.id}  "${link.title}"  ${link.sourcePage ?? ""}`.trimEnd());
-    }
-  }
-  for (const warning of report.warnings) console.error(`warning: ${warning}`);
-}
 
 function print(value: { readonly ok: boolean; readonly messages: readonly string[]; readonly failures?: readonly string[]; readonly warnings?: readonly string[] }): void {
   console.log(JSON.stringify(value, null, 2));

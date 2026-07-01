@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "baseUrl": "../..",
+    "paths": {
+      "@aura3d/engine": ["dist/engine/agent-api/index.d.ts"],
+      "@aura3d/engine/rendering": ["dist/rendering/index.d.ts"],
+      "@aura3d/engine/scene": ["dist/scene/index.d.ts"]
+    },
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true
+  },
+  "include": ["src", "vite.config.ts"]
+}

@@ -94,6 +94,8 @@ export interface AuraRuntimeNodeImportedAssetEvidence {
     readonly updated: boolean;
   } | undefined;
   readonly morphTargets: readonly string[];
+  readonly activeMorphTargets: RuntimeNodeMorphTargetWeights;
+  readonly missingMorphTargets: readonly string[];
   readonly bounds?: AuraRuntimeNodeBounds | undefined;
   readonly renderItemCount: number;
   readonly skinnedRenderItemCount: number;
@@ -125,6 +127,8 @@ export interface AuraRuntimeNodeImportedAssetEvidenceInput {
     readonly updated?: boolean | undefined;
   } | undefined;
   readonly morphTargets?: readonly string[] | undefined;
+  readonly activeMorphTargets?: RuntimeNodeMorphTargetWeights | undefined;
+  readonly missingMorphTargets?: readonly string[] | undefined;
   readonly bounds?: AuraRuntimeNodeBounds | RuntimeNodeBoundsInput | undefined;
   readonly renderItemCount?: number | undefined;
   readonly skinnedRenderItemCount?: number | undefined;
@@ -203,6 +207,8 @@ export function createRuntimeNodeImportedAssetEvidence(
       }
     } : {}),
     morphTargets,
+    activeMorphTargets: { ...(input.activeMorphTargets ?? {}) },
+    missingMorphTargets: [...(input.missingMorphTargets ?? [])],
     ...(input.bounds ? { bounds: isRuntimeNodeBounds(input.bounds) ? input.bounds : calculateRuntimeNodeBounds(input.bounds) } : {}),
     renderItemCount: input.renderItemCount ?? 0,
     skinnedRenderItemCount: input.skinnedRenderItemCount ?? 0,

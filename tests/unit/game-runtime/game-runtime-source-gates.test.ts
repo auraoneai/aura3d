@@ -99,6 +99,824 @@ describe("game runtime source gates", () => {
     replay.dispose();
   });
 
+  it("exposes a generic collision world with sensor events, tags, and layer filters", () => {
+    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+
+    collision.addBox("player", [0.5, 0.5, 0.5], {
+      position: [0, 0, 0],
+      tags: ["player"],
+      layer: 0b001,
+      mask: 0b010
+    });
+    collision.addSphere("coin", 0.35, {
+      position: [0.75, 0, 0],
+      sensor: true,
+      tags: ["coin", "collectible"],
+      layer: 0b010,
+      mask: 0b001
+    });
+
+    const begin = collision.step(1 / 60);
+    expect(begin).toEqual([
+      expect.objectContaining({
+        kind: "aura-game-collision-contact",
+        type: "begin",
+        sensor: true,
+        a: expect.objectContaining({ id: "player", tags: ["player"], layer: 0b001 }),
+        b: expect.objectContaining({ id: "coin", tags: ["coin", "collectible"], layer: 0b010 })
+      })
+    ]);
+    expect(collision.overlaps({ tags: ["coin"] })).toHaveLength(1);
+    expect(collision.overlaps({ layerMask: 0b010 })).toHaveLength(1);
+    expect(collision.overlaps({ layerMask: 0b100 })).toHaveLength(0);
+    expect(collision.events({ includeSensors: false })).toHaveLength(0);
+
+    expect(collision.step(1 / 60).map((event) => event.type)).toEqual(["stay"]);
+
+    collision.require("coin").setPosition([4, 0, 0]);
+    expect(collision.step(1 / 60).map((event) => event.type)).toEqual(["end"]);
+  });
+
+  it("supports collision sweeps and explicit solid resolution through the public game facade", () => {
+    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+
+    collision.addBox("player", [0.5, 0.5, 0.5], {
+      position: [0, 0, 0],
+      tags: ["player"],
+      layer: 0b001,
+      mask: 0b010
+    });
+    collision.addBox("wall", [0.5, 0.5, 0.5], {
+      type: "static",
+      position: [2, 0, 0],
+      tags: ["wall", "solid"],
+      layer: 0b010,
+      mask: 0b001
+    });
+
+    expect(collision.sweep("player", [1, 0, 0], 4, { radius: 0.45, tags: ["solid"] })).toEqual([
+      expect.objectContaining({
+        kind: "aura-game-collision-sweep-hit",
+        source: expect.objectContaining({ id: "player" }),
+        target: expect.objectContaining({ id: "wall", tags: ["wall", "solid"] }),
+        distance: expect.any(Number)
+      })
+    ]);
+    expect(collision.sweep("player", [1, 0, 0], 4, { radius: 0.45, mask: 0b100 })).toHaveLength(0);
+
+    collision.require("wall").setPosition([0.75, 0, 0]);
+    collision.step(1 / 60);
+    expect(collision.overlaps({ includeSensors: false })).toHaveLength(1);
+
+    const before = collision.require("player").position;
+    const resolved = collision.resolve("player", { tags: ["solid"] });
+    expect(resolved.position[0]).toBeLessThan(before[0]);
+  });
+
+  it("publishes generic game HUD, event-log, and collision evidence without fighting-only warnings", () => {
+    const app = createAuraApp(null, {
+      autoStart: false,
+      scene: scene().add(
+        model(assets.fighter, { name: "generic player" })
+          .runtime(game.runtimeNode("player", { tags: ["player"] }))
+      )
+    });
+    const collision = game.collisionWorld({ backend: "aura-js", gravity: [0, 0, 0] });
+    const events = game.eventLog({ label: "platformer events" });
+    const player = collision.addBox("player", [0.5, 0.5, 0.5], { tags: ["player"], layer: 0b001, mask: 0b010 });
+    collision.addSphere("coin", 0.35, { position: [0.7, 0, 0], sensor: true, tags: ["coin"], layer: 0b010, mask: 0b001 });
+
+    collision.step(1 / 60);
+    events.push({ type: "coin", label: "Coin collected", targetId: "coin", value: 100, tags: ["score"], severity: "success", frame: 1, time: 1 / 60 });
+    player.translate([0.1, 0, 0]);
+    app.step(1 / 60);
+
+    const hud = game.hud.bindings([
+      game.hud.score(),
+      game.hud.objective(),
+      game.hud.eventLog()
+    ]);
+
+    const evidence = app.evidence({
+      collisionWorld: collision,
+      events,
+      hud,
+      appState: {
+        score: 100,
+        objective: "Collect all coins",
+        events: "Coin collected"
+      },
+      source: { expectsGame: true }
+    });
+
+    expect(evidence.systems.collisionPlan).toBe(true);
+    expect(evidence.collision).toMatchObject({
+      collisionWorld: true,
+      combatWorld: false,
+      bodies: 2,
+      contacts: 1,
+      sensorContacts: 1
+    });
+    expect(evidence.events).toMatchObject({
+      configured: true,
+      count: 1,
+      types: ["coin"],
+      last: expect.objectContaining({ type: "coin", label: "Coin collected", severity: "success" })
+    });
+    expect(evidence.hud).toMatchObject({
+      bindings: 3,
+      kinds: ["event-log", "objective", "score"],
+      warnings: []
+    });
+
+    app.dispose();
+  });
+
+  it("provides reusable platformer mechanics for jump, collect, checkpoint, hazard, and finish state", () => {
+    const platformer = game.platformer({
+      id: "unit-platformer",
+      start: { x: 0, y: 0.35 },
+      finish: { x: 1.25, y: 0.35 },
+      platforms: [{ id: "ground", x: -0.5, y: 0, width: 2.5, height: 0.35 }],
+      movingPlatforms: [{ id: "lift", x: 0.65, y: 0.75, width: 0.5, height: 0.16, axis: "y", amplitude: 0.08, period: 1.2 }],
+      collectibles: [{ id: "coin", x: 0.55, y: 0.9, value: 50, radius: 0.75 }],
+      checkpoints: [{ id: "mid", x: 0.75, y: 0.8, radius: 1.1 }],
+      moveSpeed: 4.6,
+      jumpVelocity: 7.2
+    });
+
+    expect(platformer.step(1 / 60).player.grounded).toBe(true);
+    expect(platformer.step(1 / 60, { jumpPressed: true }).events.map((event) => event.type)).toContain("jump");
+
+    let snapshot = platformer.snapshot();
+    for (let frame = 0; frame < 80 && snapshot.status !== "completed"; frame += 1) {
+      snapshot = platformer.step(1 / 60, { moveX: 1, jumpHeld: true });
+    }
+
+    expect(snapshot.collected).toContain("coin");
+    expect(snapshot.activatedCheckpoints).toContain("mid");
+    expect(snapshot.status).toBe("completed");
+    expect(snapshot.score).toBeGreaterThanOrEqual(50);
+
+    const hazard = game.platformer({
+      id: "unit-platformer-hazard",
+      start: { x: 0, y: 0.35 },
+      platforms: [{ id: "ground", x: -1, y: 0, width: 2, height: 0.35 }],
+      hazards: [{ id: "spikes", x: -0.3, y: 0.35, width: 0.6, height: 0.25 }]
+    }).step(1 / 60);
+
+    expect(hazard.deaths).toBe(1);
+    expect(hazard.events.map((event) => event.type)).toEqual(expect.arrayContaining(["hazard", "respawn"]));
+  });
+
+  it("requires public platformer examples to bind playable surfaces to typed world assets", () => {
+    const level = game.assetBoundPlatformerLevel({
+      characterAsset: "showcaseWalkAnimatedGirl",
+      worldAssetBindings: [
+        { worldAsset: "showcaseSideScrollerWorld", surfaceIds: ["start", "bridge", "mid", "upper", "far"] }
+      ],
+      minPlayableSeconds: 30,
+      minCheckpoints: 3,
+      minSurfaceCount: 5,
+      level: {
+        id: "asset-bound-platformer",
+        start: { x: 0, y: 0.35 },
+        finish: { x: 36, y: 0.35 },
+        moveSpeed: 1,
+        platforms: [
+          { id: "start", x: 0, y: 0, width: 8, height: 0.35 },
+          { id: "bridge", x: 8, y: 0.2, width: 8, height: 0.35 },
+          { id: "mid", x: 16, y: 0.35, width: 8, height: 0.35 },
+          { id: "upper", x: 24, y: 0.55, width: 5.5, height: 0.32 },
+          { id: "far", x: 31, y: 0.15, width: 7, height: 0.35 }
+        ],
+        checkpoints: [
+          { id: "first", x: 8, y: 0.7 },
+          { id: "second", x: 18, y: 0.85 },
+          { id: "finish", x: 34, y: 0.5 }
+        ]
+      }
+    });
+
+    expect(level.assetBinding).toMatchObject({
+      kind: "aura-game-asset-bound-platformer-level",
+      layoutContractVersion: "1.0",
+      characterAsset: "showcaseWalkAnimatedGirl",
+      worldAssets: ["showcaseSideScrollerWorld"],
+      authoredPlayableSeconds: 36,
+      surfaceCount: 5,
+      checkpointCount: 3
+    });
+    expect(() => game.assetBoundPlatformerLevel({
+      characterAsset: "showcaseWalkAnimatedGirl",
+      worldAssetBindings: [
+        { worldAsset: "showcaseSideScrollerWorld", surfaceIds: ["start"] }
+      ],
+      level
+    })).toThrow(/surface bridge is not bound to a world asset/);
+  });
+
+  it("rejects public platformer world offsets that detach playable surfaces from retained overlay evidence", () => {
+    const playableSurfaceMap = {
+      assetId: "showcaseSideScrollerWorld",
+      assetHash: "sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      source: "manifest-authored-overlay-validated",
+      surfaces: [
+        { id: "start", x: 3, y: 0, width: 6, height: 0.35, kind: "ground" },
+        { id: "bridge", x: 10, y: 0.2, width: 6, height: 0.35, kind: "platform" },
+        { id: "mid", x: 17, y: 0.35, width: 6, height: 0.35, kind: "platform" },
+        { id: "upper", x: 23, y: 0.55, width: 5.5, height: 0.32, kind: "platform" },
+        { id: "far", x: 29, y: 0.15, width: 7, height: 0.35, kind: "platform" },
+        { id: "finish", x: 28, y: 0.15, width: 10, height: 0.35, kind: "finish" }
+      ],
+      levelLength: 34,
+      estimatedCompletionSeconds: 34,
+      characterScaleRatio: 0.52,
+      confidence: 0.9,
+      modelAlignment: {
+        source: "manifest-authored-overlay-validated",
+        modelBounds: {
+          min: [-10, -1, -1],
+          max: [10, 3, 1]
+        },
+        modelPoint: [0, -1, 0],
+        gamePoint: { x: 17, y: 0 },
+        evidence: {
+          routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          notes: "Unit-test anchor binds the retained world model to the playable surface coordinate space."
+        }
+      },
+      evidence: {
+        sourceAsset: "assets.showcaseSideScrollerWorld",
+        routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        notes: "unit test overlay"
+      }
+    } as const;
+    const level = game.assetBoundPlatformerLevel({
+      characterAsset: "showcaseWalkAnimatedGirl",
+      worldAssetBindings: [
+        {
+          worldAsset: "showcaseSideScrollerWorld",
+          worldAssetHash: playableSurfaceMap.assetHash,
+          surfaceIds: ["start", "bridge", "mid", "upper", "far"]
+        }
+      ],
+      playableSurfaceMap,
+      minPlayableSeconds: 30,
+      minCheckpoints: 3,
+      minSurfaceCount: 5,
+      level: {
+        id: "asset-bound-platformer-offset",
+        start: { x: 0, y: 0.35 },
+        finish: { x: 34, y: 0.35 },
+        moveSpeed: 1,
+        platforms: [
+          { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+          { id: "bridge", x: 7, y: 0.2, width: 6, height: 0.35 },
+          { id: "mid", x: 14, y: 0.35, width: 6, height: 0.35 },
+          { id: "upper", x: 20.25, y: 0.55, width: 5.5, height: 0.32 },
+          { id: "far", x: 25.5, y: 0.15, width: 7, height: 0.35 }
+        ],
+        checkpoints: [
+          { id: "first", x: 8, y: 0.7 },
+          { id: "second", x: 18, y: 0.85 },
+          { id: "finish", x: 32, y: 0.5 }
+        ]
+      }
+    });
+    const base = game.platformerSceneBinding({
+      surfaceMap: playableSurfaceMap,
+      level,
+      worldAsset: "showcaseSideScrollerWorld",
+      targetSceneWidth: 4,
+      worldY: -0.8,
+      worldZ: -0.3,
+      playerZ: 0.4,
+      playerYOffset: 0.08
+    });
+
+    expect(base.evidence.modelSceneOffset).toEqual({ x: 0, y: 0, z: 0 });
+    expect(base.evidence.playerTargetHeight).toBeGreaterThan(0);
+    expect(base.worldModel.anchorFit).toMatchObject({
+      mode: "single-anchor",
+      anchorCount: 1,
+      averageError: null,
+      maxError: null
+    });
+    expect(() =>
+      game.platformerSceneBinding({
+        surfaceMap: playableSurfaceMap,
+        level,
+        worldAsset: "showcaseSideScrollerWorld",
+        targetSceneWidth: 4,
+        worldModelSceneOffset: { x: -0.35, y: 0.16, z: 0.5 },
+        worldY: -0.8,
+        worldZ: -0.3,
+        playerZ: 0.4,
+        playerYOffset: 0.08
+      })
+    ).toThrow(/worldModelSceneOffset/);
+    expect(() =>
+      game.platformerSceneBinding({
+        surfaceMap: playableSurfaceMap,
+        level,
+        worldAsset: "showcaseSideScrollerWorld",
+        targetSceneWidth: 4,
+        worldModelPresentationOffset: { x: 0.22, y: 0, z: -0.18 },
+        worldY: -0.8,
+        worldZ: -0.3,
+        playerZ: 0.4,
+        playerYOffset: 0.08
+      })
+    ).toThrow(/presentation offsets decouple/);
+  });
+
+  it("records multi-anchor platformer world fit evidence instead of relying on one surface anchor", () => {
+    const playableSurfaceMap = {
+      assetId: "showcaseSideScrollerWorld",
+      assetHash: "sha256-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      source: "manifest-authored-overlay-validated",
+      surfaces: [
+        { id: "start", x: 3, y: 0, width: 6, height: 0.35, kind: "ground" },
+        { id: "bridge", x: 11, y: 0.2, width: 6, height: 0.35, kind: "platform" },
+        { id: "mid", x: 19, y: 0.3, width: 6, height: 0.35, kind: "platform" },
+        { id: "upper", x: 25, y: 0.5, width: 5, height: 0.32, kind: "platform" },
+        { id: "far", x: 31, y: 0.1, width: 6, height: 0.35, kind: "platform" },
+        { id: "finish", x: 29, y: 0.1, width: 8, height: 0.35, kind: "finish" },
+        { id: "checkpoint-01", x: 16, y: 0.8, width: 1, height: 1, kind: "checkpoint" }
+      ],
+      levelLength: 34,
+      estimatedCompletionSeconds: 36,
+      characterScaleRatio: 0.52,
+      confidence: 0.9,
+      modelAlignment: {
+        source: "manifest-authored-overlay-validated",
+        modelBounds: { min: [-20, -1, -1], max: [20, 5, 1] },
+        modelPoint: [0, -1, 0],
+        gamePoint: { x: 16, y: 0 },
+        anchorPairs: [
+          { id: "start-left", modelPoint: [-20, -1, 0], gamePoint: { x: 0, y: 0 } },
+          { id: "finish-right", modelPoint: [20, -1, 0], gamePoint: { x: 33, y: 0 } }
+        ],
+        evidence: {
+          routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          notes: "Unit-test anchor pair binds both ends of the retained world model to the platformer route."
+        }
+      },
+      evidence: {
+        sourceAsset: "assets.showcaseSideScrollerWorld",
+        routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        notes: "unit test overlay"
+      }
+    } as const;
+    const level = game.assetBoundPlatformerLevel({
+      characterAsset: "showcaseWalkAnimatedGirl",
+      worldAssetBindings: [
+        {
+          worldAsset: "showcaseSideScrollerWorld",
+          worldAssetHash: playableSurfaceMap.assetHash,
+          surfaceIds: ["start", "bridge", "mid", "upper", "far"]
+        }
+      ],
+      playableSurfaceMap,
+      minPlayableSeconds: 30,
+      minCheckpoints: 1,
+      minSurfaceCount: 5,
+      level: {
+        id: "asset-bound-platformer-multi-anchor",
+        start: { x: 0, y: 0.35 },
+        finish: { x: 34, y: 0.35 },
+        moveSpeed: 1,
+        platforms: [
+          { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+          { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
+          { id: "mid", x: 16, y: 0.3, width: 6, height: 0.35 },
+          { id: "upper", x: 22.5, y: 0.5, width: 5, height: 0.32 },
+          { id: "far", x: 28, y: 0.1, width: 6, height: 0.35 }
+        ],
+        checkpoints: [{ id: "checkpoint-01", x: 16, y: 0.8 }]
+      }
+    });
+
+    const binding = game.platformerSceneBinding({ surfaceMap: playableSurfaceMap, level, worldAsset: "showcaseSideScrollerWorld", targetSceneWidth: 4 });
+
+    expect(binding.worldModel.anchorFit.mode).toBe("multi-anchor-plane-fit");
+    expect(binding.worldModel.anchorFit.anchorCount).toBe(2);
+    expect(binding.worldModel.anchorFit.averageError).toBeLessThan(0.1);
+    expect(binding.evidence.modelAlignment.rotation).toEqual(binding.worldModel.rotation);
+
+    const misalignedSurfaceMap = {
+      ...playableSurfaceMap,
+      modelAlignment: {
+        ...playableSurfaceMap.modelAlignment,
+        anchorPairs: [
+          ...playableSurfaceMap.modelAlignment.anchorPairs,
+          { id: "misaligned-far-roof", modelPoint: [0, 5, 0], gamePoint: { x: 120, y: 8 } }
+        ]
+      }
+    } as const;
+
+    expect(() =>
+      game.platformerSceneBinding({
+        surfaceMap: misalignedSurfaceMap,
+        level,
+        worldAsset: "showcaseSideScrollerWorld",
+        targetSceneWidth: 4
+      })
+    ).toThrow(/asset geometry is not scene-bound to game geometry/);
+  });
+
+  it("rejects synthetic platformer markers as public playable surfaces", () => {
+    const playableSurfaceMap = {
+      assetId: "showcaseSideScrollerWorld",
+      assetHash: "sha256-dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      source: "manifest-authored-overlay-validated",
+      surfaces: [
+        { id: "start", x: 3, y: 0, width: 6, height: 0.35, kind: "ground" },
+        { id: "bridge", x: 11, y: 0.2, width: 6, height: 0.35, kind: "platform" },
+        { id: "mid", x: 19, y: 0.3, width: 6, height: 0.35, kind: "platform" },
+        { id: "finish", x: 29, y: 0.1, width: 8, height: 0.35, kind: "finish" },
+        { id: "checkpoint-01", x: 16, y: 0.8, width: 1, height: 1, kind: "checkpoint" },
+        { id: "hazard-01", x: 21, y: 0.12, width: 1, height: 0.3, kind: "hazard" }
+      ],
+      levelLength: 34,
+      estimatedCompletionSeconds: 36,
+      characterScaleRatio: 0.52,
+      confidence: 0.9,
+      modelAlignment: {
+        source: "manifest-authored-overlay-validated",
+        modelBounds: { min: [-20, -1, -1], max: [20, 5, 1] },
+        modelPoint: [0, -1, 0],
+        gamePoint: { x: 16, y: 0 },
+        evidence: {
+          routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          notes: "Unit-test map has only three actual platform/ground surfaces; markers do not count."
+        }
+      },
+      evidence: {
+        sourceAsset: "assets.showcaseSideScrollerWorld",
+        routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        notes: "unit test overlay"
+      }
+    } as const;
+
+    expect(() =>
+      game.assetBoundPlatformerLevel({
+        characterAsset: "showcaseWalkAnimatedGirl",
+        worldAssetBindings: [
+          {
+            worldAsset: "showcaseSideScrollerWorld",
+            worldAssetHash: playableSurfaceMap.assetHash,
+            surfaceIds: ["start", "bridge", "mid", "finish", "checkpoint-01"]
+          }
+        ],
+        playableSurfaceMap,
+        minPlayableSeconds: 30,
+        minCheckpoints: 1,
+        minSurfaceCount: 5,
+        level: {
+          id: "asset-bound-platformer-synthetic-markers",
+          start: { x: 0, y: 0.35 },
+          finish: { x: 34, y: 0.35 },
+          moveSpeed: 1,
+          platforms: [
+            { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+            { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
+            { id: "mid", x: 16, y: 0.3, width: 6, height: 0.35 },
+            { id: "finish", x: 25, y: 0.1, width: 8, height: 0.35 },
+            { id: "checkpoint-01", x: 16, y: 0.8, width: 1, height: 1 }
+          ],
+          checkpoints: [{ id: "checkpoint-01", x: 16, y: 0.8 }]
+        }
+      })
+    ).toThrow(/requires at least five ground\/platform\/moving surfaces/);
+  });
+
+  it("provides reusable racing mechanics for throttle, steering, checkpoint order, lap validation, and camera follow", () => {
+    const racing = game.racing({
+      route: {
+        id: "unit-race",
+        width: 2,
+        points: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 0, y: 4 }
+        ],
+        checkpoints: [0.01]
+      },
+      startProgress: 0.98,
+      checkpointRadius: 0.08,
+      lapsToWin: 1
+    });
+
+    const initialHeading = racing.snapshot().heading;
+    const accelerated = racing.step(1 / 10, { throttle: true, steer: 1, drift: true });
+    expect(accelerated.speed).toBeGreaterThan(0);
+    expect(accelerated.heading).not.toBe(initialHeading);
+    expect(racing.camera()).toMatchObject({ kind: "aura-game-racing-camera", fov: 48 });
+
+    let snapshot = accelerated;
+    for (let frame = 0; frame < 180 && snapshot.status !== "finished"; frame += 1) {
+      snapshot = racing.step(1 / 30, { throttle: true });
+    }
+
+    expect(snapshot.events.map((event) => event.type)).toEqual(expect.arrayContaining(["checkpoint", "lap", "finish"]));
+    expect(snapshot.bestTime).toBeGreaterThan(0);
+    expect(snapshot.status).toBe("finished");
+
+    const wrongOrder = game.racing({
+      route: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 4, y: 0 },
+          { x: 4, y: 4 },
+          { x: 0, y: 4 }
+        ],
+        checkpoints: [0.5, 0.75]
+      },
+      checkpointRadius: 0.04
+    });
+    wrongOrder.placeAtProgress(0.75);
+    expect(wrongOrder.step(1 / 60).checkpoint).toBe(0);
+  });
+
+  it("requires public racing examples to bind a meaningful route to typed vehicle and track assets", () => {
+    const route = game.assetBoundRacingRoute({
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
+      authoredLapSeconds: 34,
+      minLapSeconds: 30,
+      minCheckpoints: 4,
+      minRouteLength: 6,
+      route: {
+        id: "asset-bound-race",
+        width: 1.2,
+        points: [
+          { x: -3, y: 0 },
+          { x: -2, y: 1.6 },
+          { x: -0.4, y: 2.2 },
+          { x: 1.8, y: 1.6 },
+          { x: 3, y: 0 },
+          { x: 1.8, y: -1.6 },
+          { x: -0.4, y: -2.2 },
+          { x: -2, y: -1.6 },
+          { x: -3, y: 0 }
+        ],
+        checkpoints: [0.16, 0.33, 0.5, 0.67, 0.84, 1]
+      }
+    });
+
+    expect(route.assetBinding).toMatchObject({
+      kind: "aura-game-asset-bound-racing-route",
+      layoutContractVersion: "1.0",
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
+      authoredLapSeconds: 34,
+      pointCount: 9,
+      checkpointCount: 6
+    });
+    expect(route.assetBinding.routeLength).toBeGreaterThan(6);
+    expect(() => game.assetBoundRacingRoute({
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
+      authoredLapSeconds: 5,
+      minLapSeconds: 30,
+      route
+    })).toThrow(/at least 30s authored lap duration/);
+  });
+
+  it("rejects public racing scene offsets that detach route topology from retained overlay evidence", () => {
+    const topology = {
+      assetId: "showcaseTsukubaCircuit",
+      assetHash: "sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      source: "manifest-authored-overlay-validated",
+      roadCenterline: [
+        { x: -3, z: 0, width: 1 },
+        { x: -2, z: 1.6, width: 1 },
+        { x: -0.4, z: 2.2, width: 1 },
+        { x: 1.8, z: 1.6, width: 1 },
+        { x: 3, z: 0, width: 1 },
+        { x: 1.8, z: -1.6, width: 1 },
+        { x: -0.4, z: -2.2, width: 1 },
+        { x: -2, z: -1.6, width: 1 },
+        { x: -3, z: 0, width: 1 }
+      ],
+      checkpoints: [
+        { id: "cp-01", progress: 0.16, width: 1 },
+        { id: "cp-02", progress: 0.33, width: 1 },
+        { id: "cp-03", progress: 0.5, width: 1 },
+        { id: "cp-04", progress: 0.67, width: 1 },
+        { id: "cp-05", progress: 0.84, width: 1 },
+        { id: "cp-06", progress: 1, width: 1 }
+      ],
+      lapLengthMeters: 14,
+      estimatedLapSeconds: 36,
+      confidence: 0.9,
+      modelAlignment: {
+        source: "manifest-authored-overlay-validated",
+        modelBounds: {
+          min: [-4, -1, -3],
+          max: [4, 1, 3]
+        },
+        modelPoint: [0, -1, 0],
+        gamePoint: { x: 0, z: 0 },
+        evidence: {
+          routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          notes: "Unit-test anchor binds the retained track model to the racing route coordinate space."
+        }
+      },
+      evidence: {
+        sourceAsset: "assets.showcaseTsukubaCircuit",
+        routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        notes: "unit test overlay"
+      }
+    } as const;
+    const route = game.assetBoundRacingRoute({
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
+      authoredLapSeconds: 36,
+      minLapSeconds: 30,
+      minCheckpoints: 6,
+      minRouteLength: 6,
+      topology,
+      route: {
+        id: "asset-bound-race-offset",
+        width: 1,
+        points: topology.roadCenterline.map((point) => ({ x: point.x, y: point.z })),
+        checkpoints: topology.checkpoints.map((checkpoint) => checkpoint.progress)
+      }
+    });
+    const base = game.racingSceneBinding({
+      topology,
+      route,
+      trackAsset: "showcaseTsukubaCircuit",
+      targetSceneSize: 3,
+      trackY: -0.2,
+      carY: 0.35
+    });
+
+    expect(base.evidence.modelSceneOffset).toEqual({ x: 0, y: 0, z: 0 });
+    expect(base.trackModel.anchorFit).toMatchObject({
+      mode: "single-anchor",
+      anchorCount: 1,
+      averageError: null,
+      maxError: null
+    });
+    expect(() =>
+      game.racingSceneBinding({
+        topology,
+        route,
+        trackAsset: "showcaseTsukubaCircuit",
+        targetSceneSize: 3,
+        trackModelSceneOffset: { x: 0.7, y: 0.12, z: -0.4 },
+        trackY: -0.2,
+        carY: 0.35
+      })
+    ).toThrow(/trackModelSceneOffset/);
+    expect(() =>
+      game.racingSceneBinding({
+        topology,
+        route,
+        trackAsset: "showcaseTsukubaCircuit",
+        targetSceneSize: 3,
+        trackModelPresentationOffset: { x: 0.32, y: 0, z: 0.48 },
+        trackY: -0.2,
+        carY: 0.35
+      })
+    ).toThrow(/presentation offsets decouple/);
+  });
+
+  it("records multi-anchor racing model fit evidence instead of relying on one topology anchor", () => {
+    const topology = {
+      assetId: "showcaseTsukubaCircuit",
+      assetHash: "sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      source: "manifest-authored-overlay-validated",
+      roadCenterline: [
+        { x: -3, z: 0, width: 1 },
+        { x: -1.5, z: 1.5, width: 1 },
+        { x: 0, z: 1.8, width: 1 },
+        { x: 1.5, z: 1.5, width: 1 },
+        { x: 3, z: 0, width: 1 },
+        { x: 1.5, z: -1.5, width: 1 },
+        { x: 0, z: -1.8, width: 1 },
+        { x: -1.5, z: -1.5, width: 1 },
+        { x: -3, z: 0, width: 1 }
+      ],
+      checkpoints: [
+        { progress: 0.16, width: 1 },
+        { progress: 0.33, width: 1 },
+        { progress: 0.5, width: 1 },
+        { progress: 0.67, width: 1 },
+        { progress: 0.84, width: 1 },
+        { progress: 1, width: 1 }
+      ],
+      lapLengthMeters: 14,
+      estimatedLapSeconds: 36,
+      confidence: 0.9,
+      modelAlignment: {
+        source: "manifest-authored-overlay-validated",
+        modelBounds: { min: [-4, -1, -3], max: [4, 1, 3] },
+        modelPoint: [0, -1, 0],
+        gamePoint: { x: 0, z: 0 },
+        anchorPairs: [
+          { id: "left-apex", modelPoint: [-4, -1, 0], gamePoint: { x: -3, z: 0 } },
+          { id: "right-apex", modelPoint: [4, -1, 0], gamePoint: { x: 3, z: 0 } }
+        ],
+        evidence: {
+          routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          notes: "Unit-test anchor pair binds the retained track model to both sides of the racing route."
+        }
+      },
+      evidence: {
+        sourceAsset: "assets.showcaseTsukubaCircuit",
+        routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        notes: "unit test overlay"
+      }
+    } as const;
+    const route = game.assetBoundRacingRoute({
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
+      authoredLapSeconds: 36,
+      minLapSeconds: 30,
+      minCheckpoints: 6,
+      minRouteLength: 6,
+      topology,
+      route: {
+        id: "asset-bound-race-multi-anchor",
+        width: 1,
+        points: topology.roadCenterline.map((point) => ({ x: point.x, y: point.z })),
+        checkpoints: topology.checkpoints.map((checkpoint) => checkpoint.progress)
+      }
+    });
+
+    const binding = game.racingSceneBinding({ topology, route, trackAsset: "showcaseTsukubaCircuit", targetSceneSize: 3 });
+
+    expect(binding.trackModel.anchorFit.mode).toBe("multi-anchor-yaw-fit");
+    expect(binding.trackModel.anchorFit.anchorCount).toBe(2);
+    expect(binding.trackModel.anchorFit.averageError).toBeLessThanOrEqual(0.001);
+    expect(binding.evidence.modelAlignment.rotation).toEqual(binding.trackModel.rotation);
+
+    const misalignedTopology = {
+      ...topology,
+      modelAlignment: {
+        ...topology.modelAlignment,
+        anchorPairs: [
+          ...topology.modelAlignment.anchorPairs,
+          { id: "misaligned-track-edge", modelPoint: [0, -1, 3], gamePoint: { x: 80, z: 80 } }
+        ]
+      }
+    } as const;
+
+    expect(() =>
+      game.racingSceneBinding({
+        topology: misalignedTopology,
+        route,
+        trackAsset: "showcaseTsukubaCircuit",
+        targetSceneSize: 3
+      })
+    ).toThrow(/asset geometry is not scene-bound to game geometry/);
+  });
+
+  it("provides reusable falling-block mechanics for movement, rotation, hold, line clears, and replay checksums", () => {
+    const falling = game.fallingBlocks({ seed: 7 });
+    const start = falling.snapshot();
+    const moved = falling.move(1);
+    expect(moved.active?.x).toBe((start.active?.x ?? 0) + 1);
+
+    const rotated = falling.rotate(1);
+    expect(rotated.active?.rotation).not.toBe(start.active?.rotation);
+
+    const held = falling.hold();
+    expect(held.hold).toBe(start.active?.kind);
+
+    const width = held.width;
+    const height = held.height;
+    const board = Array.from({ length: height }, () => Array.from({ length: width }, () => null as "O" | null));
+    board[height - 1] = board[height - 1].map((_, x) => (x >= 3 && x <= 6 ? null : "O"));
+    falling.setBoard(board);
+    falling.setActive({ kind: "I", x: 3, y: height - 2, rotation: 0 });
+    const cleared = falling.hardDrop();
+
+    expect(cleared.lines).toBe(1);
+    expect(cleared.events.map((event) => event.type)).toContain("line-clear");
+
+    const first = game.fallingBlocks({ seed: 11 });
+    const second = game.fallingBlocks({ seed: 11 });
+    const sequence = [
+      { type: "move", dx: 1 },
+      { type: "rotate", direction: 1 },
+      { type: "softDrop" },
+      { type: "hardDrop" }
+    ] as const;
+    for (const action of sequence) {
+      first.step(action);
+      second.step(action);
+    }
+    expect(first.checksum()).toBe(second.checksum());
+    expect(first.replay()).toHaveLength(sequence.length);
+  });
+
   it("keeps hitbox debug overlay source coverage in the fighting-game template", () => {
     const templateMain = readSource("packages/create-aura3d/templates/fighting-game/src/main.ts");
     const templateMoves = readSource("packages/create-aura3d/templates/fighting-game/src/game/moves.ts");
@@ -256,26 +1074,80 @@ describe("game runtime source gates", () => {
     app.dispose();
   });
 
+  it("provides reusable locomotion state for idle, run, jump, fall, land, and hit animation clips", () => {
+    const locomotion = game.locomotion({
+      clipMap: {
+        idle: "idle",
+        run: "sprint",
+        jump: "attack-kick-right",
+        fall: "die",
+        land: "pick-up",
+        hit: "die"
+      },
+      availableClips: ["idle", "sprint", "attack-kick-right", "die", "pick-up"],
+      runSpeedThreshold: 0.2,
+      jumpVelocityThreshold: 0.15,
+      fallVelocityThreshold: -0.15,
+      landDuration: 0.12,
+      hitDuration: 0.2
+    });
+
+    expect(locomotion.snapshot()).toMatchObject({ state: "idle", clip: "idle", missingClips: [] });
+    expect(locomotion.step(1 / 60, { grounded: true, vx: 2.4 })).toMatchObject({ state: "run", clip: "sprint", loop: true });
+    expect(locomotion.step(1 / 60, { grounded: false, vy: 5.5, events: [{ type: "jump" }] })).toMatchObject({
+      state: "jump",
+      clip: "attack-kick-right",
+      loop: false
+    });
+    expect(locomotion.step(1 / 60, { grounded: false, vy: -2.2 })).toMatchObject({ state: "fall", clip: "die", loop: true });
+    expect(locomotion.step(1 / 60, { grounded: true, vy: 0, events: [{ type: "land" }] })).toMatchObject({
+      state: "land",
+      clip: "pick-up",
+      oneShot: true,
+      restart: true
+    });
+    expect(locomotion.step(1 / 60, { grounded: true, hit: true, events: [{ type: "hit" }] })).toMatchObject({
+      state: "hit",
+      clip: "die",
+      oneShot: true,
+      eventTypes: ["hit"]
+    });
+    expect(locomotion.reset()).toMatchObject({ state: "idle", clip: "idle" });
+
+    const missing = game.locomotion({
+      clipMap: { idle: "Idle", run: "Run", jump: "Jump", fall: "Fall", land: "Land", hit: "Hit" },
+      availableClips: ["Idle", "Run"]
+    }).snapshot();
+    expect(missing.missingClips).toEqual(["Jump", "Fall", "Land", "Hit"]);
+  });
+
   it("keeps root game facade helper exports source-visible without private runtime imports", () => {
     const rootIndex = readSource("packages/engine/src/index.ts");
     const agentApi = readSource("packages/engine/src/agent-api/index.ts");
     const gameRuntime = readSource("packages/engine/src/agent-api/GameRuntime.ts");
+    const gameGenreKits = readSource("packages/engine/src/agent-api/GameGenreKits.ts");
+    const gameSceneBindings = readSource("packages/engine/src/agent-api/GameSceneGeometryBindings.ts");
     const gameKits = readSource("packages/engine/src/agent-api/game-kits/index.ts");
     const fightingKit = readSource("packages/engine/src/agent-api/game-kits/fighting.ts");
 
     expect(rootIndex).toContain('export * from "./agent-api/index.js";');
     expect(agentApi).toContain("export const games = {");
     expect(agentApi).toContain("export const game = {");
-    expect(agentApi).toMatch(/export const game = \{[\s\S]*runtimeNode:[\s\S]*input: createGameInput[\s\S]*kinematicBody: createGameKinematicBody[\s\S]*combatWorld: createCombatWorld[\s\S]*cameraDirector: createGameCameraDirector[\s\S]*effects: createGameEffects[\s\S]*hud: \{[\s\S]*accessibility: \{/);
+    expect(agentApi).toMatch(/export const game = \{[\s\S]*runtimeNode:[\s\S]*input: createGameInput[\s\S]*kinematicBody: createGameKinematicBody[\s\S]*collisionWorld: createGameCollisionWorld[\s\S]*combatWorld: createCombatWorld[\s\S]*cameraDirector: createGameCameraDirector[\s\S]*effects: createGameEffects[\s\S]*hud: \{[\s\S]*accessibility: \{/);
     expectIncludesAll(gameRuntime, [
       "export function createGameInput",
       "export function createGameKinematicBody",
+      "export function createGameCollisionWorld",
+      "export function createGameEventLog",
       "export function createCombatWorld",
       "export function createGameCameraDirector",
       "export function createGameEffects",
       "export function createGameHudHealthBinding",
       "export function createGameHudMeterBinding",
       "export function createGameHudTimerBinding",
+      "export function createGameHudScoreBinding",
+      "export function createGameHudObjectiveBinding",
+      "export function createGameHudEventLogBinding",
       "export function createGameHudComboBinding",
       "export function createGameAccessibilityLabel",
       "export function createGameReducedMotionSource",
@@ -283,6 +1155,29 @@ describe("game runtime source gates", () => {
       "export function createGameHighContrastSource",
       "export function createGamePauseControlsSource"
     ]);
+    expectIncludesAll(gameGenreKits, [
+      "export function createGameLocomotionKit",
+      "export function createGameAssetBoundPlatformerLevel",
+      "export function createGameAssetBoundRacingRoute",
+      "export function createGamePlatformerKit",
+      "export function createGameRacingKit",
+      "export function createGameFallingBlocksKit"
+    ]);
+    expectIncludesAll(gameSceneBindings, [
+      "export function createGameRacingSceneBinding",
+      "export function createGamePlatformerSceneBinding",
+      "export function createGameRacingPresentationCamera",
+      "export function createGamePlatformerPresentationCamera",
+      "readonly targetNode?: string",
+      "readonly targetOffset?: Vec3",
+      "readonly offsetMode?: \"scene\" | \"target-yaw\""
+    ]);
+    expect(agentApi).toContain("racingPresentationCamera: createGameRacingPresentationCamera");
+    expect(agentApi).toContain("platformerPresentationCamera: createGamePlatformerPresentationCamera");
+    expect(agentApi).toContain("readonly targetOffset?: AuraVec3");
+    expect(agentApi).toContain("readonly offsetMode?: \"scene\" | \"target-yaw\"");
+    expect(agentApi).toContain("function rotateVec3BySceneYaw");
+    expect(agentApi).toContain("applyCameraOffset(cameraSpec, cameraSpec.offset, runtimeTarget)");
     expect(gameKits).toContain("export const gameKits = {");
     expectIncludesAll(fightingKit, [
       "export const fighting = {",
@@ -317,14 +1212,11 @@ describe("game runtime source gates", () => {
       "validateAnimationAssets",
       'action === "assemble-character"',
       'createCharacterAssemblyPlan({ name, body, parts: readParts("--part")',
-      "aura3d assets inspect ./model.glb",
-      "aura3d assets validate-game",
-      "aura3d assets validate-animation",
-      "aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset"
+      "aura3d assets inspect ./model.glb"
     ]);
     expectIncludesAll(cliApi, [
-      'export type AuraAssetReadinessProfile = "game" | "animation"',
-      "export interface AssetReadinessReport",
+      "AuraAssetReadinessProfile",
+      "AssetReadinessReport",
       "export function inspectAsset",
       "export function validateGameAssets",
       "export { validateAnimationAssets",
@@ -375,6 +1267,66 @@ describe("game runtime source gates", () => {
       "effects.blockSpark(event.position",
       "camera.update(dt"
     ]);
+  });
+
+  it("keeps showcase game routes on public genre kits instead of route-local engines", () => {
+    const skylineMain = readSource("apps/showcase-skyline-runner/src/main.ts");
+    const skylineRules = readSource("apps/showcase-skyline-runner/src/runner-rules.ts");
+    const turboMain = readSource("apps/showcase-turbo-drift-circuit/src/main.ts");
+    const blockfallMain = readSource("apps/showcase-blockfall-reactor/src/main.ts");
+    const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
+
+    expect(skylineMain).toContain("const playableSurfaceMap =");
+    expect(skylineMain).toContain("const level = game.assetBoundPlatformerLevel(");
+    expect(skylineMain).toContain("const platformerScene = game.platformerSceneBinding({");
+    expect(skylineMain).toContain("const platformerState = game.platformer(level)");
+    expect(skylineMain).toContain('"source": "manifest-authored-overlay-validated"');
+    expect(skylineMain).toContain('"worldAssetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"');
+    expect(skylineMain).toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
+    expect(skylineMain).toContain("sceneBinding: platformerScene.evidence");
+    expect(skylineMain).toContain("surfaceContact: platformerScene.contactPointForPlayer(state.player)");
+    expect(skylineMain).toContain("surfaceContactAlignment: playerSurfaceAlignment()");
+    expect(skylineMain).toContain("playerTargetHeight: platformerScene.evidence.playerTargetHeight");
+    expect(skylineMain).toContain("platformerScene.toScenePlayer");
+    expect(skylineMain).toContain("game.platformerPresentationCamera({");
+    expect(skylineMain).not.toContain("camera.follow(");
+    expect(skylineMain).not.toContain("import { camera,");
+    expect(skylineMain).not.toContain("stepSkylineRunner(");
+    expect(skylineMain).not.toContain("createInitialSkylineState(");
+    expect(skylineMain).not.toContain("(state.player.x - 18) * 0.08");
+    expect(skylineRules).not.toContain("stepSkylineRunner");
+    expect(skylineRules).not.toContain("resolvePlatformLanding");
+    expect(skylineRules).not.toContain("advanceFrame");
+
+    expect(turboMain).toContain("const trackTopology =");
+    expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
+    expect(turboMain).toContain("const racingScene = game.racingSceneBinding({");
+    expect(turboMain).toContain("const racingState = game.racing(");
+    expect(turboMain).toContain('"source": "manifest-authored-overlay-validated"');
+    expect(turboMain).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+    expect(turboMain).toContain("sceneBinding: racingScene.evidence");
+    expect(turboMain).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
+    expect(turboMain).toContain("roadAlignment: roadAlignmentForSnapshot");
+    expect(turboMain).toContain("carTrackSceneBinding");
+    expect(turboMain).toContain("carAlignedToVisibleRoad");
+    expect(turboMain).toContain("racingScene.toScenePose");
+    expect(turboMain).toContain("game.racingPresentationCamera({");
+    expect(turboMain).not.toContain("trackModelSceneOffset");
+    expect(turboMain).not.toContain("camera.follow(");
+    expect(turboMain).not.toContain("import { camera,");
+    expect(turboMain).not.toMatch(/function\s+(updateCar|updateRaceProgress|projectToTrack|sampleTrackAt|createRacePathMetrics)\b/);
+    expect(turboMain).not.toContain("racePathMetrics");
+    expect(turboMain).not.toContain("playerCar.setPosition(raceSnapshot.position.x");
+
+    expect(blockfallMain).toContain("const fallingBlocks = game.fallingBlocks({");
+    expect(blockfallMain).toContain('deterministicModule: "game.fallingBlocks"');
+    expect(blockfallMain).toContain("createPublicReplayEvidence");
+    expect(blockfallMain).toContain("createPublicLineClearProof");
+    expect(blockfallMain).not.toContain("advanceFrame(");
+    expect(blockfallMain).not.toContain("createInitialState(");
+    expect(blockfallMain).not.toContain('deterministicModule: "src/rules.ts"');
+    expect(blockfallReadme).toContain("the public `game.fallingBlocks` kit");
+    expect(blockfallReadme).not.toContain("route-local deterministic rules");
   });
 
   it("keeps package-smoke and release-gate scripts wired into game runtime readiness", () => {

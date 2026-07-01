@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#090b0c">
+    <meta
+      name="description"
+      content="Aura3D architectural district tour with a CLI-resolved typed city asset, bounded camera choreography, deploy proof, and root-safe lighting claims."
+    >
+    <title>Aura3D Showcase - Cinematic Architecture</title>
+    <link rel="stylesheet" href="/apps/showcase-cinematic-architecture/src/styles.css">
+  </head>
+  <body>
+    <main class="shell" data-route="showcase-cinematic-architecture">
+      <section class="viewport" aria-label="Cinematic architecture viewport">
+        <div id="aura-scene" class="aura-scene" aria-label="Aura3D typed architecture scene"></div>
+      </section>
+
+      <aside class="control-panel" aria-label="Cinematic architecture controls">
+        <div class="panel-heading">
+          <p class="eyebrow">Showcase 08</p>
+          <h1>Architectural District Tour</h1>
+          <p class="summary">Typed city architecture staged as a bounded browser presentation with camera paths, restrained lighting, and retained route evidence.</p>
+        </div>
+
+        <section class="control-section" aria-label="Mood controls">
+          <div class="section-label">Mood</div>
+          <div class="segmented" data-control-group="mood">
+            <button type="button" data-mood="dawn" aria-pressed="false">Dawn</button>
+            <button type="button" data-mood="gallery" aria-pressed="true">Gallery</button>
+            <button type="button" data-mood="nocturne" aria-pressed="false">Nocturne</button>
+          </div>
+        </section>
+
+        <section class="control-section" aria-label="Camera path controls">
+          <div class="section-label">Camera Path</div>
+          <div class="segmented" data-control-group="path">
+            <button type="button" data-path="establish" aria-pressed="false">Establish</button>
+            <button type="button" data-path="glide" aria-pressed="true">Glide</button>
+            <button type="button" data-path="balcony" aria-pressed="false">Balcony</button>
+          </div>
+        </section>
+
+        <section class="control-section" aria-label="Atmosphere controls">
+          <label class="range-label" for="haze-control">
+            <span>Haze Density</span>
+            <output id="haze-value" for="haze-control">72%</output>
+          </label>
+          <input id="haze-control" type="range" min="34" max="100" value="72" step="1">
+        </section>
+
+        <section class="evidence-panel" aria-label="Route evidence">
+          <div class="section-label">Evidence</div>
+          <dl>
+            <div><dt>Status</dt><dd id="evidence-status">loading</dd></div>
+            <div><dt>Frames</dt><dd id="evidence-frames">0</dd></div>
+            <div><dt>Backend</dt><dd id="evidence-backend">pending</dd></div>
+            <div><dt>Systems</dt><dd id="evidence-systems">scene, camera, light shafts</dd></div>
+          </dl>
+          <p id="claim-boundary" class="claim-boundary">
+            CLI-resolved typed architecture route. It does not claim HDR, IBL, postprocess, or final architectural visualization fidelity.
+          </p>
+        </section>
+      </aside>
+    </main>
+
+    <script type="module" src="/apps/showcase-cinematic-architecture/src/main.ts"></script>
+  </body>
+</html>

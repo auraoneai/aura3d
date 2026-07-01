@@ -542,7 +542,12 @@ function multiplyMat4(left: Mat4, right: Mat4): Mat4 {
 }
 
 function normalMatrixFromModel(modelMatrix: Mat4): Mat4 {
-  const matrix = transposeMat4(invertMat4(modelMatrix));
+  let matrix: Mat4;
+  try {
+    matrix = transposeMat4(invertMat4(modelMatrix));
+  } catch {
+    matrix = [...identityMatrix()] as Mat4;
+  }
   return [
     matrix[0], matrix[1], matrix[2], 0,
     matrix[4], matrix[5], matrix[6], 0,

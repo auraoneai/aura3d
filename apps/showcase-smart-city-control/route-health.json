@@ -1,0 +1,52 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-06-22",
+  "appId": "showcase-smart-city-control",
+  "route": "/apps/showcase-smart-city-control/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "release-ready-candidate-bounded-to-procedural-city-control",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseCityVehicle",
+      "role": "primary command vehicle",
+      "status": "release-validated-typed-primary-asset"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 8,
+    "role": "procedural city scene kit, district masts, overlays, and telemetry cues behind the typed command vehicle",
+    "status": "procedural-supporting-world"
+  },
+  "claimStatus": {
+    "status": "bounded",
+    "allowed": [
+      "bounded procedural smart-city control candidate",
+      "release-validated typed command vehicle primary",
+      "sample telemetry controls"
+    ],
+    "notAllowed": [
+      "external GIS data",
+      "real traffic simulation fidelity",
+      "asset-backed city-scale flagship",
+      "production digital-twin or traffic-control system"
+    ]
+  },
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_SMART_CITY_CONTROL__",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+    "sourceReview": "apps/showcase-smart-city-control/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
+    "releaseAssetProbe": "tests/reports/showcase-release-asset-probes/showcaseCityVehicle.json",
+    "releaseAssetScreenshot": "tests/reports/showcase-release-asset-probes/showcaseCityVehicle.png",
+    "deployCheck": "node --import tsx -e \"checkDeploy({ distDir: 'apps/showcase-smart-city-control/dist', release: true, source: 'apps/showcase-smart-city-control/src', assetIds: ['showcaseCityVehicle'] })\""
+  }
+}

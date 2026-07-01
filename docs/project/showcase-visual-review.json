@@ -1,0 +1,121 @@
+{
+  "schema": "aura3d-showcase-visual-review/1.0",
+  "reviewer": "codex-browser-visual-review",
+  "reviewedAt": "2026-06-27T00:00:00Z",
+  "overallVerdict": "fail",
+  "summary": "Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, and Blockfall Reactor are accepted public-quality bounded showcase routes. Turbo Drift Circuit and Skyline Runner are intentionally removed from public examples and retained as prototype-blocked diagnostics. Turbo still lacks public racing composition bounds: the car/route is not visibly bound to the road and the track/camera composition reads as a proof harness. Skyline still lacks public character/world binding: the primary foreground is too small and character/world contact, scale, and framing are not public quality.",
+  "routes": [
+    {
+      "id": "showcase-product-configurator",
+      "verdict": "pass",
+      "subject": "Product Configurator public-quality candidate",
+      "compositionNotes": "The headphones are the clear product hero in a dark product-studio frame, with the title and certified asset card kept outside the evidence area and the configurator controls consolidated into a bottom dock.",
+      "notes": "Acceptable as a bounded public Aura3D product configurator demo. The route uses the typed headphones GLB, removes the previous debug/proof-wall presentation from the public UI, and keeps material/rendering claims limited to current root evidence.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-material-asset-inspector",
+      "verdict": "pass",
+      "subject": "Material and Asset Inspector public candidate",
+      "compositionNotes": "The inspected headphones are presented as the clear hero subject on a dark, uncluttered stage. View and lighting controls, material cards, inspection evidence, and the asset passport are contained in a bottom/right dock outside the evidence crop, with no raw JSON wall, text overflow, or clipped diagnostic primitives visible in the public view.",
+      "notes": "Acceptable as a bounded public Aura3D material/asset inspector demo. The route uses the typed headphones GLB, keeps material claims limited to root-safe material comparison, and treats release/deploy evidence as concise insight rather than the main visual.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-smart-city-control",
+      "verdict": "pass",
+      "subject": "Smart City Control public candidate",
+      "compositionNotes": "The typed city vehicle is the immediate hero subject inside a procedural city-control environment. District and camera controls are grouped in a restrained top command bar, live operations controls sit in the lower-left, and telemetry is contained in a lower-right card outside the vehicle evidence area.",
+      "notes": "Acceptable as a bounded public Aura3D smart-city/control demo. The route uses the release-validated typed vehicle asset, keeps the procedural city as supporting context, and limits claims to route-local visual operations controls and telemetry evidence.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-cinematic-architecture",
+      "verdict": "pass",
+      "subject": "Architectural District public candidate",
+      "compositionNotes": "The rejected blockout-style building and gallery primitives are no longer the public composition. The route now frames the typed SkylineCity architecture asset as a readable district model, keeps the whole subject inside the evidence crop, removes the giant contact-shadow blob, and places controls in a restrained right panel outside the asset foreground.",
+      "notes": "Acceptable as a bounded public Aura3D architecture/district demo. The route proves typed GLB staging, camera choreography, and route evidence while explicitly avoiding HDR, IBL, postprocess, shadow parity, PBR parity, or final architectural visualization fidelity claims.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-digital-twin-ops",
+      "verdict": "pass",
+      "subject": "Digital Twin Operations public candidate",
+      "compositionNotes": "The rejected OrangeIndustrialRobot composition is no longer the public scene. The route now frames the typed RoboticWeldingWorkcell asset as an enclosed industrial cell with visible safety panels, workcell equipment, HMI details, sensor posts, workpieces, and bounded ops dashboard UI outside the evidence area.",
+      "notes": "Acceptable as a bounded public Aura3D digital-twin/industrial demo. The route uses a release-validated optimized typed workcell asset, deterministic browser-side telemetry, and restrained support cues while explicitly avoiding real facility integration or production simulation claims.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-blockfall-reactor",
+      "verdict": "pass",
+      "subject": "Blockfall Reactor public candidate",
+      "compositionNotes": "Current screenshot is playfield-first: the falling-block board is centered, fully framed, and readable; the rejected cabinet, pinball-machine, and controller props are removed from the public composition.",
+      "notes": "Accepted as a bounded public falling-block demo only if regenerated evidence confirms the prop clutter remains absent and the board/gameplay stays readable.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-skyline-runner",
+      "verdict": "fail",
+      "subject": "Skyline Runner prototype platformer route",
+      "compositionNotes": "The retained screenshot still reads as a route-local platformer proof harness rather than a public-quality game. The typed runner and typed world render, but the current primary foreground is too small and the generated composition does not visibly prove character/world binding, grounded contact, scale compatibility, or public platformer framing.",
+      "notes": "Removed from public examples. Keep this route only as a prototype diagnostic until the asset pipeline selects or certifies a world asset with mesh-derived playable surfaces, then the platformer compiler/game template proves character foot contact, scale, camera composition, and current human visual review against retained evidence.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png"
+      ],
+      "blockingIssues": [
+        "asset-extraction:platformer-playable-surface-columns-ambiguous:showcaseSideScrollerWorld",
+        "asset-pair:platformer-public-character-world-binding-missing",
+        "route-primary:primary-foreground-too-small",
+        "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+        "asset-pair:character-world-scale-and-art-direction-not-public-quality"
+      ]
+    },
+    {
+      "id": "showcase-turbo-drift-circuit",
+      "verdict": "fail",
+      "subject": "Turbo Drift Circuit prototype racing route",
+      "compositionNotes": "The retained screenshot still reads as a route-local racing proof harness rather than a public-quality racing game. The typed car and typed Tsukuba circuit render, and the compiler now carries hash-bound racing topology evidence, but the current generated composition still does not read as a production-quality racing example.",
+      "notes": "Removed from public examples. Keep this route only as a prototype diagnostic until the racing compiler/game template proves car-to-road binding, route scale, and camera composition against the retained track topology and passes current human visual review. The missing structured-topology blocker is closed; the remaining blocker is asset-pair/racing composition evidence.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+      ],
+      "blockingIssues": [
+        "asset-pair:racing-public-composition-bounds-missing",
+        "asset-pair:car-route-not-visibly-bound-to-road-surface",
+        "asset-pair:track-camera-composition-reads-as-proof-harness"
+      ]
+    }
+  ],
+  "internalDiagnostics": [
+    {
+      "id": "showcase-data-galaxy",
+      "classification": "internal-diagnostic",
+      "reason": "Retained route-primary evidence remains too small/low-readability for public visual release.",
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png"
+    },
+    {
+      "id": "showcase-webgpu-particle-lab",
+      "classification": "internal-diagnostic",
+      "reason": "Retained route-primary evidence remains clipped and native WebGPU proof is absent.",
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png"
+    }
+  ]
+}

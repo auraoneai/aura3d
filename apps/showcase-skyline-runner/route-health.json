@@ -1,0 +1,296 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "showcase-skyline-runner",
+  "route": "/apps/showcase-skyline-runner/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "blocked-by-showcase-spec-compiler",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseWalkAnimatedGirl",
+      "role": "character",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
+    {
+      "typedRef": "assets.showcaseSideScrollerWorld",
+      "role": "world",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 0,
+    "primitiveBudget": 0,
+    "role": "none",
+    "status": "no-primitive-primary-subjects-generated"
+  },
+  "claimStatus": {
+    "status": "prototype-blocked",
+    "label": "createAuraApp",
+    "allowed": [
+      "typed-platformer-character: tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+      "route-local-platformer-gameplay: tests/reports/showcase-gameplay/showcase-skyline-runner.json"
+    ],
+    "notAllowed": [
+      "evidence:route-primary-probe:not-passing",
+      "evidence:gameplay-proof:platformer:visual-review-missing",
+      "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:fail",
+      "evidence:platformer-asset-pair:verdict-not-pass:fail",
+      "evidence:platformer-asset-pair:blocker:asset-pair:platformer-public-character-world-binding-missing",
+      "evidence:route-primary-probe:primary-foreground-too-small",
+      "evidence:platformer-asset-pair:blocker:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+      "evidence:platformer-asset-pair:blocker:asset-pair:character-world-scale-and-art-direction-not-public-quality"
+    ]
+  },
+  "blockers": [
+    "evidence:route-primary-probe:not-passing",
+    "evidence:gameplay-proof:platformer:visual-review-missing",
+    "evidence:gameplay-proof:platformer:visual-review-verdict-not-pass:fail",
+    "evidence:platformer-asset-pair:verdict-not-pass:fail",
+    "evidence:platformer-asset-pair:blocker:asset-pair:platformer-public-character-world-binding-missing",
+    "evidence:route-primary-probe:primary-foreground-too-small",
+    "evidence:platformer-asset-pair:blocker:asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+    "evidence:platformer-asset-pair:blocker:asset-pair:character-world-scale-and-art-direction-not-public-quality"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+    "sourceReview": "apps/showcase-skyline-runner/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "desktopScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "mobileScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-skyline-runner/dist --release --source apps/showcase-skyline-runner/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
+    "deployPassed": true,
+    "routePrimaryPassed": false,
+    "gameplayProof": "tests/reports/showcase-gameplay/showcase-skyline-runner.json",
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseWalkAnimatedGirl": "tests/reports/showcase-release-asset-probes/showcaseWalkAnimatedGirl.json",
+      "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
+    }
+  },
+  "gameAssetPairEvidence": {
+    "category": "platformer",
+    "assets": [
+      "showcaseWalkAnimatedGirl",
+      "showcaseSideScrollerWorld"
+    ],
+    "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "verdict": "fail",
+    "notes": "Current retained screenshots prove the typed character and side-scroller world render, but they still do not visually prove a public-quality character-to-world game presentation. Public status stays blocked until primary foreground size, character scale, foot contact, camera framing, and level flow visibly bind to the world geometry.",
+    "blockers": [
+      "asset-pair:platformer-public-character-world-binding-missing",
+      "route-primary:primary-foreground-too-small",
+      "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+      "asset-pair:character-world-scale-and-art-direction-not-public-quality"
+    ]
+  },
+  "platformer": {
+    "characterAsset": "showcaseWalkAnimatedGirl",
+    "worldAssets": [
+      "showcaseSideScrollerWorld"
+    ],
+    "cameraIntent": "side-scroller",
+    "layoutConstraints": {
+      "keepCharacterReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "gameplayRequirements": [
+      "movement",
+      "jump",
+      "checkpoint",
+      "progression"
+    ],
+    "levelDesign": {
+      "minPlayableSeconds": 30,
+      "minCheckpoints": 6,
+      "requiresHazardRespawn": true,
+      "requiresFinish": true,
+      "authoredLevelFlow": true,
+      "playableSurfaceSource": "asset-bound-playable-surfaces",
+      "playableSurfaceLayoutValidated": true,
+      "playableSurfaceMap": {
+        "assetId": "showcaseSideScrollerWorld",
+        "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+        "source": "manifest-authored-overlay-validated",
+        "surfaces": [
+          {
+            "id": "skyline-main-runway",
+            "x": 2.4,
+            "y": 0,
+            "width": 7.4,
+            "height": 0.34,
+            "kind": "ground"
+          },
+          {
+            "id": "skyline-lower-bridge",
+            "x": 9.6,
+            "y": 0.12,
+            "width": 6.4,
+            "height": 0.34,
+            "kind": "platform"
+          },
+          {
+            "id": "skyline-mid-span",
+            "x": 16.2,
+            "y": 0.28,
+            "width": 6.6,
+            "height": 0.34,
+            "kind": "platform"
+          },
+          {
+            "id": "skyline-gap-run",
+            "x": 22.8,
+            "y": 0.18,
+            "width": 5.8,
+            "height": 0.34,
+            "kind": "platform"
+          },
+          {
+            "id": "skyline-upper-run",
+            "x": 29.6,
+            "y": 0.34,
+            "width": 7.8,
+            "height": 0.34,
+            "kind": "platform"
+          },
+          {
+            "id": "skyline-finish-ledges",
+            "x": 35.2,
+            "y": 0.7,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "finish"
+          },
+          {
+            "id": "hazard-gap-01",
+            "x": 19.2,
+            "y": 0.52,
+            "width": 0.42,
+            "height": 0.24,
+            "kind": "hazard"
+          },
+          {
+            "id": "hazard-gap-02",
+            "x": 27.2,
+            "y": 0.58,
+            "width": 0.42,
+            "height": 0.24,
+            "kind": "hazard"
+          },
+          {
+            "id": "checkpoint-start-run",
+            "x": 6,
+            "y": 0.72,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          },
+          {
+            "id": "checkpoint-bridge",
+            "x": 11.2,
+            "y": 0.84,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          },
+          {
+            "id": "checkpoint-mid-run",
+            "x": 16.8,
+            "y": 1,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          },
+          {
+            "id": "checkpoint-hazard",
+            "x": 23.4,
+            "y": 0.92,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          },
+          {
+            "id": "checkpoint-final",
+            "x": 30.6,
+            "y": 1.08,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          },
+          {
+            "id": "checkpoint-finish",
+            "x": 35.2,
+            "y": 1.08,
+            "width": 1.1,
+            "height": 1.1,
+            "kind": "checkpoint"
+          }
+        ],
+        "levelLength": 37.2,
+        "estimatedCompletionSeconds": 36,
+        "characterScaleRatio": 0.42,
+        "confidence": 0.72,
+        "modelAlignment": {
+          "source": "manifest-authored-overlay-validated",
+          "modelBounds": {
+            "min": [-192.317, -102.591, -85.575],
+            "max": [188.919, 206.984, 238.905]
+          },
+          "modelPoint": [-1.699, -102.591, 76.665],
+          "gamePoint": { "x": 16.1, "y": 0 },
+          "evidence": {
+            "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+            "notes": "Hash-bound bottom-center anchor aligns the playable surface map to the retained side-scroller world footprint."
+          }
+        },
+        "evidence": {
+          "sourceAsset": "assets.showcaseSideScrollerWorld",
+          "renderedProbe": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
+          "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          "notes": "Manifest-authored side-scroller surface map bound to the selected world hash and retained release/route screenshots. The platformer generator uses this map for player surfaces, hazards, checkpoints, finish progression, and scale validation."
+        }
+      },
+      "characterWorldScaleCompatible": true,
+      "styleCompatible": true,
+      "primitivePrimaryWorldRejected": true,
+      "playableSurfaceEvidence": "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+      "assetPairEvidence": {
+        "category": "platformer",
+        "assets": [
+          "showcaseWalkAnimatedGirl",
+          "showcaseSideScrollerWorld"
+        ],
+        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        "verdict": "fail",
+        "notes": "Current retained screenshots prove the typed character and side-scroller world render, but they still do not visually prove a public-quality character-to-world game presentation. Public status stays blocked until primary foreground size, character scale, foot contact, camera framing, and level flow visibly bind to the world geometry.",
+        "blockers": [
+          "asset-pair:platformer-public-character-world-binding-missing",
+          "route-primary:primary-foreground-too-small",
+          "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
+          "asset-pair:character-world-scale-and-art-direction-not-public-quality"
+        ]
+      }
+    },
+    "releaseAssetRequirements": {
+      "characterRole": "character",
+      "worldRoles": [
+        "level",
+        "world",
+        "stage"
+      ],
+      "requiresOrientationEvidence": true,
+      "requiresScaleNormalizationEvidence": true,
+      "requiresRenderedProbe": true,
+      "requiresDurableProvenance": true,
+      "requiresSuitabilityReason": true
+    }
+  }
+}

@@ -1,136 +1,122 @@
 # Aura3D Claim Guidelines
 
-Version: 1.3.3
-Planning alignment: 1.3.3 release gates
+Date: 2026-06-18
+Status: canonical project claim policy
 
-Every public claim must map to a shipped API, CLI command, template, example,
-diagnostic, docs artifact, report, or release artifact.
+Every public claim must identify the exact Aura3D path it applies to and the
+evidence that proves it. A package, internal renderer, prototype route, or future
+roadmap item cannot be used as proof for the public root `createAuraApp` path.
 
-Claim wording is governed by `docs/project/product-studio-claim-registry.md`,
-`docs/project/release-tracks.md`, and
-`docs/project/frozen-benchmark-release-gates.md`. New public claims must either
-map to the registry or add a reviewed registry entry before release copy is
-published.
+## Claim Labels
 
-## Aura3D advantage
+Use one of these labels in release notes, showcase READMEs, launch copy, and
+internal handoff docs:
 
-The current `1.3.3` Aura3D SDK release may claim:
+| Label | Meaning | Evidence required |
+| --- | --- | --- |
+| `proven` | The claim is implemented on the named path and passes current tests. | Browser or CLI evidence generated from the named path, with screenshots or logs available to reviewers. |
+| `partial` | Some behavior exists, but coverage, quality, device support, or route scope is limited. | Exact supported subset plus remaining limitations. |
+| `prototype` | A route or API exists for exploration, but it is not a durable product promise. | Source path, evidence status, and explicit non-launch wording. |
+| `internal` | The behavior exists only in package internals or production-runtime code not exposed to public examples. | Internal package path and warning that public root examples cannot claim it. |
+| `planned` | The behavior is on the roadmap and not shipped. | Roadmap item, owner area, and acceptance checks. |
+| `blocked` | The behavior must not be promoted until named blockers close. | Blocking gate and next required evidence. |
 
-- Aura3D is an agent-friendly browser 3D SDK.
-- Agents write TypeScript or JavaScript against `@aura3d/engine`.
-- Aura3D supports typed GLB/glTF asset workflows through `@aura3d/cli`.
-- Aura3D includes prompt-plan guidance, scene kits, diagnostics, screenshots, and deployment checks.
-- `@aura3d/engine@1.3.3` does not install Three.js as a root engine runtime dependency.
-- Aura Clash Arena is a development showcase and runtime proof target. The current build adds combo/guard-break/knockdown/match systems, improved KO behavior, tuned damage values, and guarded AI.
-- 1.3.3 is a scoped believable-motion + animation-studio release with current npm, docs, deployed-route, and readiness evidence.
+## Required Claim Scope
 
-The scoped claim must cite `docs/project/release-tracks.md` or the Round 50
-scoped release artifacts when used in release notes or operator handoff docs.
+Every public claim must name one of these scopes:
 
-Do not claim the following until the neutral benchmark, claim-defense, and
-release gates have been satisfied for a committed round:
+- `root createAuraApp safe API`;
+- `production-runtime`;
+- `rendering package internals`;
+- `CLI asset pipeline`;
+- `template scaffold`;
+- `showcase route`;
+- `benchmark comparison`;
+- `roadmap`.
 
-- Aura3D beats low-level renderer code.
-- Aura3D passed the frozen external AI-agent benchmark.
-- Aura3D is visually superior to low-level renderer code on the locked benchmark.
+Examples:
 
-## Blocked Prompt-Runtime And Cinematic Claims
+- Allowed: "The root `createAuraApp` path can render typed static GLB assets
+  with base-color materials when the route imports `model(assets.x)`."
+- Allowed: "The production-runtime package contains stronger renderer concepts,
+  but they are not the default public root path until the bridge lands."
+- Blocked: "Aura3D has production renderer quality" without naming the path,
+  route, tests, screenshots, and fallback behavior.
 
-- Aura3D is an LLM.
-- Aura3D is a provider-backed prompt-to-scene runtime.
-- Aura3D has a server-side OpenAI, Anthropic, Gemini, or local-model proxy as a shipped public product surface.
-- Aura3D uses `AuraSceneIR` as the primary public authoring contract.
-- Aura3D generates production-ready 3D assets from scratch.
-- Aura3D produces final film quality or Pixar-quality frames.
-- Aura3D replaces Maya, Houdini, Blender, Unreal, Unity, RenderMan, low-level renderer code, or framework-specific renderer layers.
-- Aura3D has Babylon.js parity or mature commercial game-engine completeness.
-- Aura Clash is flagship-quality, production-ready, world-class, or proof of a mature game engine.
-- Aura Clash proves final game art, final combat feel, or final animation quality before the 1.1.0 showcase gates pass.
-- The AI prompt/catalog CLI always returns production-ready game assets.
-- Aura3D bundles Three.js in the default `@aura3d/engine` runtime.
+## Evidence Rules
 
-Three.js migration, parity, and compatibility claims must explicitly name the
-separate `@aura3d/three-compat` package or comparison tooling. Do not describe
-optional compatibility tooling as part of the default root engine install.
+Valid evidence for public claims includes:
 
-Allowed cinematic wording must stay within `docs/agents/cinematic-scene-quality.md`: agent-written TypeScript, realtime previs-style scenes, camera motion, lighting, materials, atmosphere, typed assets, and browser deployment.
+- browser tests that import only public `@aura3d/engine` for root API claims;
+- desktop and mobile screenshots with subject visibility checks;
+- screenshot comparisons that prove animation, input, particles, or effect
+  changes in the claimed region;
+- route-health JSON declaring primary assets, primitive count, renderer backend,
+  fallback state, route category, and claims;
+- CLI asset validation with durable source/license/provenance metadata;
+- source scans that reject `model("...")`, raw GLB/GLTF URLs, `unsafeModelUrl`,
+  `GLTFLoader`, `three` imports, and direct renderer hacks;
+- package tests, build logs, npm pack/install smoke checks, and generated API
+  docs for package-track claims.
 
-## Allowed Claim Evidence
+Invalid evidence for broad public claims includes:
 
-Allowed scoped evidence includes:
+- nonblank screenshot checks by themselves;
+- screenshots where the main subject is tiny, clipped, hidden, or covered by UI;
+- route-local evidence text not verified by tests;
+- ignored local reports without regeneration context;
+- source-only demos;
+- primitive-only primary subjects for real-world or game examples;
+- CSS or DOM effects standing in for scene particles, labels, or 3D rendering;
+- internal renderer tests used as proof of root `createAuraApp` behavior;
+- roadmap docs, deleted PRDs, or historical release notes.
 
-- `pnpm run check:agent-api`
-- `pnpm run check:assets-cli`
-- `pnpm run check:agent-docs`
-- `pnpm run check:templates`
-- `pnpm run check:examples`
-- `pnpm run check:devtools`
-- `pnpm run check:deployment`
-- `pnpm run check:docs-site`
-- `pnpm run check:bundle-size`
-- `pnpm run check:marketing-truth`
-- `pnpm run check:marketing-links`
-- `pnpm run verify:docs-consistency`
-- `npm pack --dry-run --json`
-- `npm pack --pack-destination <release-dir> --json`
-- `benchmark/releases/round-50-scoped-sdk-product-context/release-artifact-evidence.md`
+## Blocked Claims
 
-`docs/project/frozen-benchmark-release-gates.md`.
+Do not claim these until the named gates pass:
 
-## Invalid Claim Evidence
+- "Aura3D is a Three.js/Babylon/Unity/Unreal replacement." Use scoped
+  comparison language only after
+  `docs/project/superiority-evidence-workflow.md` passes.
+- "Root `createAuraApp` uses the production renderer by default." Blocked by
+  `docs/project/library-gap-roadmap.md`.
+- "Public examples have full PBR, HDR/IBL, production shadows, or cinematic
+  postprocess." Blocked unless exact route screenshots prove those pixels.
+- "Root examples support skinned GLB animation or morph targets." Blocked until
+  screenshot pairs prove pose/morph changes through public root imports.
+- "Native WebGPU particles/rendering." Blocked unless adapter/backend,
+  dispatch/render, fallback state, telemetry, and pixels are all verified.
+- "A showcase route is flagship quality." Blocked until
+  `docs/project/showcase-quality-gates.md` passes for that route.
+- "A game route is production playable." Blocked unless keyboard input changes
+  visible state and tests prove movement, objective/scoring/fail state, reset,
+  and genre mechanics.
+- "The asset catalog returns production-ready game art." Blocked. Catalog search
+  finds candidates; release readiness requires validation, license review,
+  visual review, and route evidence.
 
-Do not use these as proof for broad public claims:
+## Allowed Product Wording Today
 
-- future roadmap items;
-- local smoke screenshots by themselves;
-- nonblank screenshot checks;
-- self-authored visual QA scores;
-- report names or node names without accepted pixels;
-- generated reports under ignored `tests/reports/` without regeneration context;
-- owner-scoped bypasses for neutral review or external scoring;
-- deleted planning PRDs;
-- historical provider-runtime PRDs or archived prompt-to-IR plans.
+Use wording like:
 
-Do not market future roadmap items as shipped.
+- "Aura3D is an agent-friendly TypeScript browser 3D SDK."
+- "Agents write normal TypeScript or JavaScript against public
+  `@aura3d/engine` APIs."
+- "Aura3D supports typed GLB/glTF asset workflows through the CLI and generated
+  `src/aura-assets.ts`."
+- "The public root API currently proves typed assets, basic GLB rendering,
+  scene composition, runtime nodes, frame updates, and diagnostics on tested
+  routes."
+- "Advanced rendering, animation, and game-kit claims are path-specific and
+  remain gated by current browser evidence."
 
-## Aura3D 1.1 Animation Studio Claims
+## Review Checklist
 
-The 1.1 animation-studio track is a planned major release, not a shipped claim surface until the animation-studio release gates pass.
-
-Allowed planning wording:
-
-- Aura3D 1.1 is planned as a browser-native animation episode production pipeline.
-- Aura3D 1.1 is intended to connect typed assets, show-bible metadata, shot timelines, dialogue/captions, visemes, render queues, video export, package evidence, and review artifacts.
-- Generated images can be used as concept art, thumbnails, textures, background plates, or style references.
-- The 1.1 gate is intended to reject still-image puppet output and source-only render plans as publish-ready animation proof.
-
-Allowed wording after the 1.1 gates pass, only if the evidence exists:
-
-- Aura3D can package a short browser-rendered animation episode from typed assets and a structured episode plan.
-- Aura3D can export captions, thumbnail, route proof, asset provenance, render manifest, and review artifacts for a scoped animation episode.
-- Aura3D can detect and reject global-only still-image motion for the scoped release gate.
-
-Blocked wording:
-
-- Aura3D produces Pixar-quality or final film-quality animation.
-- Aura3D is a magic image-to-video engine.
-- Aura3D turns any single generated image into a believable 3D animation episode.
-- Aura3D replaces Blender, Maya, Toon Boom, After Effects, Unity, Unreal, or a full animation studio.
-- A CSS-transformed still image, fake parallax plate, subtitle-over-still output, or global image shake is real Aura3D animation animation.
-- `tests/reports/prompt-animation/animation-image-puppet-animation.webm` proves successful 1.1 animation.
-
-The failed still-image puppet output may be cited only as negative evidence or a regression fixture that the 1.1 motion gate must reject.
-
-## Aura Clash Allowed Wording
-
-Allowed before the 1.1.0 gates pass:
-
-- Aura Clash Arena is a browser fighting-game development showcase.
-- Aura Clash Arena proves selected runtime mechanics: boot, frame advancement, typed GLB load, input, state changes, hit resolution, HUD updates, screenshots, and evidence.
-- Aura Clash Arena still has open visual, gameplay, audio, asset-quality, performance, and deployment-parity blockers.
-
-Not allowed before the 1.1.0 gates pass:
-
-- Aura Clash is a polished flagship game.
-- Aura Clash proves Aura3D is a mature game engine.
-- Aura Clash is comparable to Unity, Unreal, Babylon.js, or commercial fighting games.
+- [ ] The claim names its scope.
+- [ ] The claim uses a label: `proven`, `partial`, `prototype`, `internal`,
+  `planned`, or `blocked`.
+- [ ] The cited evidence exists, is current, and matches the scope.
+- [ ] The claim does not rely on nonblank screenshots or local-only report names.
+- [ ] The claim does not imply root API support from internal renderer evidence.
+- [ ] The claim is consistent with `docs/project/known-limits.md` and
+  `docs/project/launch-positioning.md`.

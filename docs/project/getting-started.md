@@ -24,15 +24,14 @@ http://127.0.0.1:5181/
 
 Use the root registry at `http://127.0.0.1:5181/`. It is the single allowlist for local browser examples.
 
-Current route groups:
+Current route groups are classified by evidence, not by how impressive the
+title sounds:
 
-- ten advanced gallery demos under `/apps/advanced-examples-gallery/#...`;
-- four focused Aura3D library examples under `/apps/wow-*`;
-- three standard Aura3D examples under `/apps/wow-*`;
-- four simple graphics examples under `/apps/wow-*`;
-- three additional Aura3D examples under `/apps/wow-*`;
-- six WebGPU examples under `/apps/wow-webgpu-*`;
-- eight authored showcase apps under `/apps/wow-*`.
+- public root API examples that import from `@aura3d/engine`;
+- showcase candidates that have route-health, typed asset, screenshot, and
+  source-validation evidence;
+- prototypes and diagnostics that must stay labeled as such;
+- blocked or hidden routes that must not be used as public proof.
 
 The legacy `examples/` tree and older standalone app route folders are pruned from the current checkout.
 
@@ -47,27 +46,36 @@ npm run dev
 
 Marketing route embeds use `data-route`, `data-demo`, and `data-quality="marketing"` attributes. The loader only starts the hero eagerly, lazy-loads below-fold stages, and limits concurrent iframe startup so heavy GLB/HDR routes do not compete with every other embedded route. See [Marketing Site](marketing-site.md).
 
-## Minimal SDK Example
+## Minimal Public SDK Example
 
-```ts
-import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
-import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+Acquire a real asset first:
 
-const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
-const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
-const scene = await createRenderableScene(asset, {
-  camera: "auto-frame",
-  lighting: "studio-product",
-  shadows: true,
-  postprocess: "product-default"
-});
-
-renderer.render(scene.source);
-scene.dispose();
-renderer.dispose();
+```bash
+npx @aura3d/cli@latest assets add ./assets/model.glb --name model
 ```
 
-WebGL2 remains the default quick-start backend. WebGPU examples are available from the root registry on browsers/devices that expose WebGPU; unsupported browsers should show an explicit unsupported panel instead of a blank route.
+Then render the generated typed asset through the public root API:
+
+```ts
+import { camera, createAuraApp, lights, model, scene } from "@aura3d/engine";
+import { assets } from "./src/aura-assets";
+
+createAuraApp("#app", {
+  scene: scene()
+    .add(model(assets.model).position(0, 0, 0))
+    .add(lights.studio())
+    .camera(camera.perspective({ position: [2.5, 1.8, 3], target: [0, 0.8, 0] }))
+});
+```
+
+Do not import `@aura3d/engine/advanced-runtime`, rendering internals,
+`GLTFLoader`, or `three` in public examples. Those paths can be useful for
+library development, but they are not proof that the public root API supports a
+feature.
+
+WebGL2 remains the default root quick-start backend. Native WebGPU can only be
+claimed when adapter, backend, dispatch, render, telemetry, and screenshot
+evidence all pass; otherwise the route must label its fallback honestly.
 
 ## Verify
 

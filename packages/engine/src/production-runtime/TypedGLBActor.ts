@@ -8,7 +8,7 @@ import {
   type ProductionGLTFRenderPipeline
 } from "@aura3d/assets/browser";
 import { type Material, type RenderItem } from "@aura3d/rendering";
-import type { Mat4 } from "@aura3d/scene";
+import { multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 export interface TypedGLBActorAsset {
   readonly url: string;
@@ -48,14 +48,26 @@ export interface TypedGLBActorEvidence {
   readonly bounds?: readonly number[];
   readonly clips: readonly string[];
   readonly skinningBindingCount: number;
+  readonly morphTargetCount: number;
   readonly renderItemCount: number;
   readonly skinnedRenderItemCount: number;
+  readonly morphRenderItemCount: number;
   readonly lastClip: string | null;
   readonly lastTracksApplied: number;
   readonly lastTransformTracksApplied: number;
   readonly lastSkinningPalettesUpdated: number;
+  readonly lastMorphApply?: TypedGLBActorMorphApplyResult;
   readonly missingTargets: readonly string[];
   readonly warnings: readonly string[];
+}
+
+export interface TypedGLBActorMorphApplyResult {
+  readonly requestedTargets: readonly string[];
+  readonly appliedTargets: readonly string[];
+  readonly missingTargets: readonly string[];
+  readonly activeWeights: Readonly<Record<string, number>>;
+  readonly affectedRenderableCount: number;
+  readonly appliedWeightCount: number;
 }
 
 export interface TypedGLBActor {
@@ -79,6 +91,7 @@ export interface TypedGLBActor {
    * for callers that drive the actor frame-by-frame from a retargeted clip pose.
    */
   playRetargetedClip(pose: GLTFScenePose, time?: number): GLTFSceneAnimationApplyResult;
+  applyMorphTargets(weights: Readonly<Record<string, number>>): TypedGLBActorMorphApplyResult;
   collectRenderItems(options?: TypedGLBActorTransformOptions): RenderItem[];
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
   setTint(options: TypedGLBActorTintOptions): void;
@@ -99,6 +112,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     asset: pipeline.asset
   });
   let lastApply: GLTFSceneAnimationApplyResult | null = null;
+  let lastMorphApply: TypedGLBActorMorphApplyResult | undefined;
   const setTint = (tint: TypedGLBActorTintOptions): void => tintTypedGLBActorMaterials(pipeline, tint);
   if (options.tint) setTint(options.tint);
 
@@ -110,7 +124,7 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     pipeline,
     animation,
     get evidence() {
-      return createTypedGLBActorEvidence(actor, lastApply);
+      return createTypedGLBActorEvidence(actor, lastApply, lastMorphApply);
     },
     playClip(name, time) {
       lastApply = animation.applyClipByName(name, time);
@@ -123,6 +137,10 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     playRetargetedClip(pose, time = 0) {
       lastApply = animation.applyPose(pose, "retargeted-clip", time);
       return lastApply;
+    },
+    applyMorphTargets(weights) {
+      lastMorphApply = applyTypedGLBActorMorphTargets(actor, weights);
+      return lastMorphApply;
     },
     collectRenderItems(transformOptions = {}) {
       return collectTypedGLBActorRenderItems(actor, transformOptions);
@@ -149,7 +167,7 @@ export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: T
       label: `${actor.id}:${node.name}:${renderable.geometry}`,
       geometry,
       material,
-      modelMatrix: (options.modelMatrix ?? node.transform.worldMatrix) as Mat4,
+      modelMatrix: resolveTypedGLBActorModelMatrix(node.transform.worldMatrix, options.modelMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
       ...(morphTargets && renderable.morphWeights.length > 0 ? { morphTargets, morphWeights: renderable.morphWeights } : {})
     });
@@ -157,9 +175,26 @@ export function collectTypedGLBActorRenderItems(actor: TypedGLBActor, options: T
   return items;
 }
 
-export function createTypedGLBActorEvidence(actor: TypedGLBActor, lastApply: GLTFSceneAnimationApplyResult | null = null): TypedGLBActorEvidence {
+function resolveTypedGLBActorModelMatrix(nodeMatrix: Mat4, rootMatrix?: Mat4 | readonly number[]): Mat4 {
+  if (!rootMatrix) return nodeMatrix;
+  return multiplyMat4(toTypedGLBActorMat4(rootMatrix), nodeMatrix);
+}
+
+function toTypedGLBActorMat4(value: Mat4 | readonly number[]): Mat4 {
+  if (value.length !== 16) {
+    throw new Error(`TypedGLBActor modelMatrix must contain 16 numbers, got ${value.length}.`);
+  }
+  return [...value] as Mat4;
+}
+
+export function createTypedGLBActorEvidence(
+  actor: TypedGLBActor,
+  lastApply: GLTFSceneAnimationApplyResult | null = null,
+  lastMorphApply?: TypedGLBActorMorphApplyResult
+): TypedGLBActorEvidence {
   const snapshot = actor.animation.snapshot();
   const renderItems = actor.collectRenderItems();
+  const morphTargetCount = actor.pipeline.asset.meshes.reduce((total, mesh) => total + mesh.morphTargets.length, 0);
   return {
     kind: "aura-typed-glb-actor-evidence",
     id: actor.id,
@@ -170,18 +205,101 @@ export function createTypedGLBActorEvidence(actor: TypedGLBActor, lastApply: GLT
     ...(actor.asset.bounds ? { bounds: actor.asset.bounds } : {}),
     clips: snapshot.clips,
     skinningBindingCount: snapshot.skinningBindingCount,
+    morphTargetCount,
     renderItemCount: renderItems.length,
     skinnedRenderItemCount: renderItems.filter((item) => item.skinning).length,
+    morphRenderItemCount: renderItems.filter((item) => item.morphTargets && item.morphTargets.length > 0).length,
     lastClip: lastApply?.clipName ?? null,
     lastTracksApplied: lastApply?.tracksApplied ?? 0,
     lastTransformTracksApplied: lastApply?.transformTracksApplied ?? 0,
     lastSkinningPalettesUpdated: lastApply?.skinningPalettesUpdated ?? 0,
+    ...(lastMorphApply ? { lastMorphApply } : {}),
     missingTargets: lastApply?.missingTargets ?? [],
     warnings: [
       ...(snapshot.skinningBindingCount < 1 ? ["No skinning bindings were detected for this typed GLB actor."] : []),
-      ...(snapshot.clips.length < 1 ? ["No animation clips were detected for this typed GLB actor."] : [])
+      ...(snapshot.clips.length < 1 ? ["No animation clips were detected for this typed GLB actor."] : []),
+      ...(morphTargetCount < 1 ? ["No morph targets were detected for this typed GLB actor."] : [])
     ]
   };
+}
+
+function applyTypedGLBActorMorphTargets(
+  actor: TypedGLBActor,
+  weights: Readonly<Record<string, number>>
+): TypedGLBActorMorphApplyResult {
+  const requested = normalizeTypedGLBActorMorphWeights(weights);
+  const requestedTargets = [...requested.keys()];
+  const appliedTargets = new Set<string>();
+  const activeWeights: Record<string, number> = {};
+  const missingTargets = new Set<string>();
+  let affectedRenderableCount = 0;
+  let appliedWeightCount = 0;
+
+  const meshesByName = new Map(actor.pipeline.asset.meshes.map((mesh) => [mesh.name, mesh]));
+  for (const { renderable } of actor.pipeline.resources.scene.collectRenderables()) {
+    const mesh = meshesByName.get(renderable.geometry);
+    if (!mesh || mesh.morphTargets.length === 0) continue;
+    const nextWeights = mesh.morphTargets.map((target, index) => {
+      const aliases = typedGLBActorMorphTargetAliases(mesh.name, target.name, index);
+      for (const alias of aliases) {
+        const weight = requested.get(alias);
+        if (weight !== undefined) {
+          appliedTargets.add(alias);
+          activeWeights[alias] = weight;
+          return weight;
+        }
+      }
+      return 0;
+    });
+    renderable.morphWeights = nextWeights;
+    affectedRenderableCount += 1;
+    appliedWeightCount += nextWeights.filter((weight) => Math.abs(weight) > 0.000001).length;
+  }
+
+  for (const target of requestedTargets) {
+    if (!appliedTargets.has(target)) missingTargets.add(target);
+  }
+
+  return {
+    requestedTargets,
+    appliedTargets: [...appliedTargets],
+    missingTargets: [...missingTargets],
+    activeWeights,
+    affectedRenderableCount,
+    appliedWeightCount
+  };
+}
+
+function normalizeTypedGLBActorMorphWeights(weights: Readonly<Record<string, number>>): Map<string, number> {
+  const normalized = new Map<string, number>();
+  for (const [name, weight] of Object.entries(weights)) {
+    const target = name.trim();
+    if (!target) continue;
+    normalized.set(target, clampTypedGLBActorMorphWeight(weight));
+  }
+  return normalized;
+}
+
+function clampTypedGLBActorMorphWeight(weight: number): number {
+  if (!Number.isFinite(weight)) return 0;
+  return Math.min(1, Math.max(0, weight));
+}
+
+function typedGLBActorMorphTargetAliases(
+  meshName: string,
+  targetName: string | undefined,
+  targetIndex: number
+): readonly string[] {
+  const fallback = `target-${targetIndex}`;
+  const numberedFallback = `${meshName}-morph-${targetIndex + 1}`;
+  const aliases = new Set<string>([fallback, numberedFallback, `${meshName}.${fallback}`, `${meshName}:${fallback}`]);
+  if (targetName && targetName.trim().length > 0) {
+    const trimmed = targetName.trim();
+    aliases.add(trimmed);
+    aliases.add(`${meshName}.${trimmed}`);
+    aliases.add(`${meshName}:${trimmed}`);
+  }
+  return [...aliases];
 }
 
 function tintTypedGLBActorMaterials(pipeline: ProductionGLTFRenderPipeline, tint: TypedGLBActorTintOptions): void {

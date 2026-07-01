@@ -1,0 +1,282 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "appId": "showcase-turbo-drift-circuit",
+  "route": "/apps/showcase-turbo-drift-circuit/",
+  "classification": "prototype-blocked",
+  "publicShowcase": false,
+  "promotionStatus": "blocked-by-showcase-spec-compiler",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseTexturedSportsCar",
+      "role": "vehicle",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
+    {
+      "typedRef": "assets.showcaseTsukubaCircuit",
+      "role": "track",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 0,
+    "primitiveBudget": 0,
+    "role": "none",
+    "status": "no-primitive-primary-subjects-generated"
+  },
+  "claimStatus": {
+    "status": "prototype-blocked",
+    "label": "createAuraApp",
+    "allowed": [
+      "typed-racing-assets: tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+      "route-local-racing-gameplay: tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json"
+    ],
+    "notAllowed": [
+      "evidence:gameplay-proof:racing:visual-review-missing",
+      "evidence:gameplay-proof:racing:visual-review-verdict-not-pass:fail",
+      "evidence:racing-asset-pair:verdict-not-pass:fail",
+      "evidence:racing-asset-pair:blocker:asset-pair:racing-public-composition-bounds-missing",
+      "evidence:racing-asset-pair:blocker:asset-pair:car-route-not-visibly-bound-to-road-surface",
+      "evidence:racing-asset-pair:blocker:asset-pair:track-camera-composition-reads-as-proof-harness"
+    ]
+  },
+  "blockers": [
+    "evidence:gameplay-proof:racing:visual-review-missing",
+    "evidence:gameplay-proof:racing:visual-review-verdict-not-pass:fail",
+    "evidence:racing-asset-pair:verdict-not-pass:fail",
+    "evidence:racing-asset-pair:blocker:asset-pair:racing-public-composition-bounds-missing",
+    "evidence:racing-asset-pair:blocker:asset-pair:car-route-not-visibly-bound-to-road-surface",
+    "evidence:racing-asset-pair:blocker:asset-pair:track-camera-composition-reads-as-proof-harness"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+    "sourceReview": "apps/showcase-turbo-drift-circuit/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "desktopScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "mobileScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseTexturedSportsCar --asset showcaseTsukubaCircuit",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayProof": "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json",
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseTexturedSportsCar": "tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.json",
+      "showcaseTsukubaCircuit": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
+    }
+  },
+  "gameAssetPairEvidence": {
+    "category": "racing",
+    "assets": [
+      "showcaseTexturedSportsCar",
+      "showcaseTsukubaCircuit"
+    ],
+    "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "verdict": "fail",
+    "notes": "Current retained screenshots prove the typed car and Tsukuba track render, but the scene still does not visually prove a public-quality car-to-track racing presentation. Public status stays blocked until car placement, camera composition, and route overlay visibly bind the car to the road surface.",
+    "blockers": [
+      "asset-pair:racing-public-composition-bounds-missing",
+      "asset-pair:car-route-not-visibly-bound-to-road-surface",
+      "asset-pair:track-camera-composition-reads-as-proof-harness"
+    ]
+  },
+  "racing": {
+    "vehicleAsset": "showcaseTexturedSportsCar",
+    "trackAsset": "showcaseTsukubaCircuit",
+    "cameraIntent": "track-overview",
+    "layoutConstraints": {
+      "keepVehicleReadable": true,
+      "keepTrackReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "gameplayRequirements": [
+      "throttle",
+      "steering",
+      "reset",
+      "checkpoint",
+      "lap",
+      "multi-lap"
+    ],
+    "raceDesign": {
+      "minCheckpoints": 6,
+      "minLaps": 3,
+      "minLapSeconds": 30,
+      "routeAlignedToTrackAsset": true,
+      "visibleTrackTopology": "asset-bound-road-topology",
+      "trackTopology": {
+        "assetId": "showcaseTsukubaCircuit",
+        "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+        "source": "manifest-authored-overlay-validated",
+        "roadCenterline": [
+          {
+            "x": -1.72,
+            "z": 0.76,
+            "width": 0.18
+          },
+          {
+            "x": -1.28,
+            "z": 1.18,
+            "width": 0.18
+          },
+          {
+            "x": -0.42,
+            "z": 1.08,
+            "width": 0.18
+          },
+          {
+            "x": 0.14,
+            "z": 0.52,
+            "width": 0.18
+          },
+          {
+            "x": 0.02,
+            "z": -0.12,
+            "width": 0.18
+          },
+          {
+            "x": -0.72,
+            "z": -0.4,
+            "width": 0.18
+          },
+          {
+            "x": -1.12,
+            "z": -0.02,
+            "width": 0.18
+          },
+          {
+            "x": -0.68,
+            "z": 0.5,
+            "width": 0.18
+          },
+          {
+            "x": 0.18,
+            "z": 0.36,
+            "width": 0.18
+          },
+          {
+            "x": 0.92,
+            "z": 0.78,
+            "width": 0.18
+          },
+          {
+            "x": 1.54,
+            "z": 0.42,
+            "width": 0.18
+          },
+          {
+            "x": 1.32,
+            "z": -0.34,
+            "width": 0.18
+          },
+          {
+            "x": 0.58,
+            "z": -0.74,
+            "width": 0.18
+          },
+          {
+            "x": -0.26,
+            "z": -0.88,
+            "width": 0.18
+          },
+          {
+            "x": -1.18,
+            "z": -0.56,
+            "width": 0.18
+          },
+          {
+            "x": -1.74,
+            "z": 0.04,
+            "width": 0.18
+          },
+          {
+            "x": -1.72,
+            "z": 0.76,
+            "width": 0.18
+          }
+        ],
+        "checkpoints": [
+          {
+            "progress": 0.167,
+            "width": 0.18
+          },
+          {
+            "progress": 0.333,
+            "width": 0.18
+          },
+          {
+            "progress": 0.5,
+            "width": 0.18
+          },
+          {
+            "progress": 0.667,
+            "width": 0.18
+          },
+          {
+            "progress": 0.833,
+            "width": 0.18
+          },
+          {
+            "progress": 1,
+            "width": 0.18
+          }
+        ],
+        "lapLengthMeters": 8.742,
+        "estimatedLapSeconds": 36,
+        "confidence": 0.74,
+        "modelAlignment": {
+          "source": "manifest-authored-overlay-validated",
+          "modelBounds": {
+            "min": [-9.676, -1, -22.391],
+            "max": [25.773, 3.054, 11.481]
+          },
+          "modelPoint": [8.0485, -1, -5.455],
+          "gamePoint": { "x": -0.1, "z": 0.15 },
+          "evidence": {
+            "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+            "notes": "Hash-bound bottom-center anchor aligns the authored racing topology to the retained Tsukuba circuit footprint."
+          }
+        },
+        "evidence": {
+          "sourceAsset": "assets.showcaseTsukubaCircuit",
+          "renderedProbe": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+          "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          "notes": "Manifest-authored road centerline bound to the current Tsukuba circuit hash and retained release/route screenshots. The route generator uses this topology for checkpoints, lap duration, and car-track scale validation."
+        }
+      },
+      "carTrackScaleCompatible": true,
+      "noDebugLocatorDisk": true,
+      "trackTopologyEvidence": "game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+      "assetPairEvidence": {
+        "category": "racing",
+        "assets": [
+          "showcaseTexturedSportsCar",
+          "showcaseTsukubaCircuit"
+        ],
+        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        "verdict": "fail",
+        "notes": "Current retained screenshots prove the typed car and Tsukuba track render, but the scene still does not visually prove a public-quality car-to-track racing presentation. Public status stays blocked until car placement, camera composition, and route overlay visibly bind the car to the road surface.",
+        "blockers": [
+          "asset-pair:racing-public-composition-bounds-missing",
+          "asset-pair:car-route-not-visibly-bound-to-road-surface",
+          "asset-pair:track-camera-composition-reads-as-proof-harness"
+        ]
+      }
+    },
+    "releaseAssetRequirements": {
+      "vehicleRole": "vehicle",
+      "trackRole": "track",
+      "requiresOrientationEvidence": true,
+      "requiresScaleNormalizationEvidence": true,
+      "requiresRenderedProbe": true,
+      "requiresDurableProvenance": true,
+      "requiresSuitabilityReason": true
+    }
+  }
+}

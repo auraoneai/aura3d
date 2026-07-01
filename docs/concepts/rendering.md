@@ -1,29 +1,48 @@
 # Rendering
 
-Version: 1.0.5
+The public authoring layer is `createAuraApp` plus declarative scene helpers
+from `@aura3d/engine`. That is the path normal apps, templates, and
+agent-authored examples should use.
 
-The public authoring layer is `createAuraApp` plus declarative scene helpers.
-The runtime supplies defaults for canvas setup, pixel ratio, resize, render
-loop, camera, lights, diagnostics, screenshots, and disposal.
+## Current Root Boundary
 
-Advanced renderer packages remain available for lower-level engine work, but
-templates and agent docs should start with the small public agent API.
+Root `createAuraApp` can mount a browser route, load typed GLB/glTF assets,
+render static model meshes and primitives, apply root-proven base colors,
+limited metallic/roughness material contrast, emissive color/intensity, run
+frame callbacks, expose diagnostics, and capture screenshots. Typed texture
+metadata and textured asset rendering are partial until a controlled root
+texture on/off pixel test is retained.
 
-## Aura3D advantage
+Do not imply that the root path currently proves the full production renderer
+feature set by default. In particular, claims about full PBR parity, HDR/IBL
+prefiltering, production shadows, postprocess stacks, WebGPU rendering,
+skinned GLB deformation, morph-target rendering, normal maps, physically
+accurate clearcoat, or glass/transmission require browser evidence from a route
+that imports only `@aura3d/engine`.
 
-The authoring boundary is `@aura3d/engine` for normal app code and
-`@aura3d/rendering` for lower-level renderer work. Agent templates should use
-`createAuraApp`, scene helpers, and declared assets first. Direct renderer APIs
-remain available when a package consumer intentionally needs framegraph,
-material, render-target, postprocess, or backend-level control.
+The current root material contract evidence lives at
+`tests/reports/createAuraApp-material-pbr-contract/material-contract.json`.
+It proves only the features marked `pass` in that file. Features marked
+`partial` or `unsupported` must be described with those labels.
 
-## Boundary
+## Lower-Level Renderer Packages
 
-The rendering boundary is `@aura3d/engine` for high-level authoring and `@aura3d/rendering` for low-level control. Claims about backends, materials, or postprocess must cite the specific package API and test that backs them.
+`@aura3d/rendering` contains lower-level renderer, production-runtime,
+material, environment, WebGPU, postprocess, and visual-quality helpers. Those
+exports are real package surfaces, but a package-level proof is not the same as
+a root `createAuraApp` proof.
 
-## Current Limits
+Every rendering claim should name its path:
 
-Rendering docs must only claim features that are backed by package exports,
-routes, tests, or reports. Aura3D does not claim a hidden prompt renderer, automatic
-scene compiler, or universal asset substitution layer; unsupported backends,
-missing canvas state, and missing assets remain explicit diagnostics.
+- `root createAuraApp`: public safe API route and browser screenshot/test.
+- `@aura3d/rendering`: lower-level package API or production-runtime proof.
+- `source diagnostics`: scene plan or metadata only.
+- `roadmap/prototype`: planned or route-local work.
+
+## Unsupported Workarounds
+
+Public examples must not import `three`, use `GLTFLoader`, paste raw GLB URLs,
+fake scene effects with CSS/DOM overlays, or replace a named primary model with
+primitives. Primitives are acceptable for set dressing, debug markers, simple
+abstract visuals, and collision guides; they are not a substitute for a primary
+character, vehicle, product, creature, or environment.

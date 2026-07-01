@@ -42,5 +42,5 @@
   generated code. Aura3D is a public TypeScript/JavaScript engine API, asset CLI,
   template system, diagnostics surface, and deployment checker.
 
-- Do not revive legacy provider-runtime or `AuraSceneIR` plans in new examples. Agents should write source code against public Aura3D APIs. If an old runtime idea is useful, rename it around the current product purpose, such as route evidence, diagnostics snapshots, typed asset metadata, camera helpers, or scene kits.
+- Do not revive legacy provider runtime or legacy scene IR plans in new examples. Agents should write source code against public Aura3D APIs. If an old runtime idea is useful, rename it around the current product purpose, such as route evidence, diagnostics snapshots, typed asset metadata, camera helpers, or scene kits.
 - Do not name new files, docs, routes, packages, tests, tools, or APIs after legacy release numbers such as `v2`, `v3`, or `v4`. Name artifacts by what they do.

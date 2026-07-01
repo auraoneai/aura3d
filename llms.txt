@@ -1,5 +1,8 @@
 Aura3D quick patterns for AI coding agents.
 
+Read this file first, then read `docs/agents/claims-and-boundaries.md` before
+making public examples, docs, route claims, template claims, or release claims.
+
 You are NOT writing three.js:
 - Do not `import * as THREE` or import from `three` / `three/examples/...`. Write `@aura3d/engine` public APIs.
 - Do not `new GLTFLoader()`, `new GLTFLoader().load(...)`, or hand-wire a renderer/scene/camera loop. `createAuraApp(...)` owns the runtime.
@@ -22,6 +25,20 @@ Resolve real objects from the asset catalog FIRST:
 - Auto-pullable candidates (CC0 / CC-BY, verified, direct-download) are pulled to disk and typed for you; run `assets resolve "<object>" --name <name>` to pull the top match and get a typed `assets.<name>`. Then use it with `model(assets.<name>)`.
 - For playable fighter/character prompts, add the game-asset profile: `npx @aura3d/cli@latest assets search "animated humanoid fighting character" --profile fighting-character --json`, then `npx @aura3d/cli@latest assets resolve "animated humanoid fighting character" --name fighter --profile fighting-character`. The profile filters toward animated redistributable GLB candidates and keeps catalog provenance in `aura.assets.json`.
 - Primitives are only for set-dressing around a resolved real asset, or in the rare case no clean catalog asset matches. They are never a substitute for a named real object - with ~850k assets, a real match almost always exists.
+- CSS, DOM, and canvas overlays are UI only. They must not stand in for Aura3D particles, 3D scene effects, labels attached to models, renderer output, or screenshot evidence.
+
+Claim boundary:
+- Public examples prove only what the root `createAuraApp` safe API actually renders through `@aura3d/engine`.
+- Do not claim production renderer behavior, high-end PBR parity, HDR/IBL, postprocess, WebGPU, skinned animation, morph targets, production game kits, or collision systems unless a browser test imports only `@aura3d/engine`, mounts the route, captures screenshots, and verifies pixels or runtime state for that exact claim.
+- Label every capability as one of: `createAuraApp` root safe API, `production-runtime`, `rendering` package internals, CLI asset pipeline, template-only scaffold, prototype, or roadmap.
+- A compiling route is not proof. Evidence must include typed asset provenance, route-health or equivalent diagnostics, and screenshots where the primary subject is readable.
+
+Release blockers from `Fixed-Needed-PRD.md`:
+- no raw string asset IDs, raw GLB/glTF URLs, `unsafeModelUrl(...)`, `three` imports, or `GLTFLoader` in public examples;
+- no primary character, vehicle, product, weapon, creature, world, or hero environment made only from primitives unless the route is explicitly abstract visualization;
+- no CSS/DOM particle implementation for examples claiming Aura3D particle rendering;
+- no WebGPU, PBR, postprocess, skinned animation, morph, or game-runtime claim without matching browser evidence;
+- no public showcase or README claim that exceeds detected capability, route-health evidence, or screenshots.
 
 Scaffold:
 ```bash
@@ -163,6 +180,26 @@ const touchLayout = game.touchControls({
 });
 
 const jumpAssist = game.jumpAssist({ coyoteMs: 100, bufferMs: 120 });
+const collisionWorld = game.collisionWorld({ gravity: [0, 0, 0], backend: "aura-js" });
+collisionWorld.addBox("player", [0.42, 0.9, 0.32], { tags: ["player"], layer: 0b001, mask: 0b110 });
+collisionWorld.addSphere("coin-01", 0.2, { position: [1.2, 1, 0], sensor: true, tags: ["coin"], layer: 0b010, mask: 0b001 });
+const events = game.eventLog({ label: "starter events" });
+const genericHud = game.hud.bindings([
+  game.hud.score({ valuePath: "appState.score" }),
+  game.hud.objective({ valuePath: "appState.objective" }),
+  game.hud.eventLog({ valuePath: "appState.events" })
+]);
+const platformer = game.platformer({
+  platforms: [{ id: "ground", x: -1, y: 0, width: 14, height: 0.35 }],
+  collectibles: [{ id: "coin-01", x: 3, y: 1, value: 50 }],
+  checkpoints: [{ id: "mid", x: 6, y: 0.35 }],
+  hazards: [{ id: "spikes", x: 8, y: 0.35, width: 1, height: 0.2 }],
+  finish: { x: 12, y: 0.35 }
+});
+const racing = game.racing({
+  route: { points: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 6 }, { x: 0, y: 6 }], checkpoints: [0.2, 0.45, 0.7, 0.94] }
+});
+const fallingBlocks = game.fallingBlocks({ seed: 42 });
 const replayPlan = game.inputReplay(fighting.input.recorded(), { fps: 60, label: "round-1" });
 const replayDriver = game.inputReplayDriver(
   game.input({ actions: fighting.controls.actions, axes: fighting.controls.axes, autoListen: false }),
@@ -292,7 +329,7 @@ Scene-kit selection table:
 | Neon tunnel | `sceneKits.neonTunnel()` | inside-the-tube view, receding rings, rails, reflective floor/walls, fog depth, controlled bloom |
 | 3D data visualization | `sceneKits.dataViz({ dataset })` | bars, axes, numeric ticks, title, legend, selected value or hover readout, no orphan labels |
 | Mini golf | `sceneKits.miniGolf()` | ball, cup, aim/power state, score, obstacle, course boundaries, follow-camera target cue |
-| Material lab | `sceneKits.materialLab()` | mirror metal, transparent glass, matte rubber, emissive glow, clearcoat highlights, contact shadows |
+| Material lab | `sceneKits.materialLab()` | root-proven base color, limited metallic/roughness contrast, matte/emissive material differences; partial texture/alpha/glass intent; unsupported clearcoat, normal-map, transmission, and contact-shadow claims unless separate root pixels prove them |
 | City block | `sceneKits.cityBlock({ timeOfDay })` | many buildings, window grids, streets, crosswalks, props, traffic/street lights, visible day/night state |
 | Humanoid walk | `sceneKits.humanoidWalk({ animationState: "benchmark-pose" })` | one connected humanoid, planted feet, shoulder/hip sockets, face cues, motion/path evidence |
 | Product viewer | `sceneKits.productViewer(assets.product)` | typed model centered, scaled, seated on plinth, contact shadow, softboxes, orbit/turntable cues |
@@ -302,7 +339,7 @@ Do not submit examples:
 - Do not submit toy mini-golf with only a flat plane and a ball. Use `sceneKits.miniGolf()` or `games.createMiniGolfState()` so score, aim, obstacle, cup, boundaries, and physics evidence are visible.
 - Do not submit stray chart geometry, floating labels, detached ticks, or cobweb guide lines. Use `sceneKits.dataViz()` or `charts.visualQA(nodes)`.
 - Do not submit blown-out neon that becomes a white rectangle or flat portal. Use `sceneKits.neonTunnel()` and keep bloom/fog controlled.
-- Do not submit a washed material lab where metal, glass, rubber, emissive, and clearcoat look identical. Use `sceneKits.materialLab()` and preserve contrast/reflections/contact shadows.
+- Do not submit a washed material lab where root-proven metal/rubber/emissive differences look identical. Treat glass, clearcoat, transmission, normal maps, reflections, and contact shadows as partial or unsupported unless retained root pixels prove those exact features.
 
 Physics API boundary:
 - Prefer `sceneKits.physicsPlayground()`, `sceneKits.miniGolf()`, `prefabs.physicsPlayground(...)`, `prefabs.physicsRamp()`, and `prefabs.miniGolfHole()` for benchmark-visible physics evidence.
@@ -315,6 +352,7 @@ Typed asset rule:
 - Add assets with the CLI before writing model code: `npx @aura3d/cli@latest assets add ./assets/model.glb --name model`.
 - Read generated `src/aura-assets.ts` and import `assets` from `./aura-assets`.
 - Use `model(assets.model)` or `sceneKits.productViewer(assets.product)` with the exact generated key.
+- For normal public `model(assets.x)` scenes, use render-normalized placement helpers such as `groundedRenderedAssetPlacement(...)`, `normalizedRenderScaleForTargetHeight(...)`, and `normalizedRenderScaleForTargetMaxDimension(...)`. Do not use raw GLB `boundsMetadata` scale math directly in route code; the safe renderer already normalizes and grounds GLBs before user scale is applied.
 - Do not use `model("model")`, string asset ids, invented URLs, unrelated copied GLBs, or `unsafeModelUrl(...)` for benchmark product proof.
 - `unsafeModelUrl(...)` is only an explicit temporary escape hatch outside safe benchmark code.
 
@@ -344,8 +382,8 @@ pnpm prompt-animation:release
 
 Do not claim game, prompt-animation, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.3.3 game-engine/showcase claim rules:
-- Treat 1.3.3 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
+Aura3D 1.4.0 game-engine/showcase claim rules:
+- Treat 1.4.0 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.

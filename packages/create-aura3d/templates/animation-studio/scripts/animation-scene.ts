@@ -33,7 +33,7 @@ import { validateEpisodeDocument } from "../src/animation-episode-validator.js";
 import { addShot, clearProps, placeProp, removeDialogueLine, removeShot, retimeDialogue, retimeShot, setBlocking, setCamera, setCharacterScale, setDialogueLine, setGesture } from "../src/studio/scene-tools.js";
 import { compileEpisodeDocument } from "../src/director/compile-episode-document.js";
 import type { DirectorSceneInput } from "../src/director/director-heuristics.js";
-import { generateSceneFromPrompt } from "../src/director/prompt-to-scene.js";
+import { generateSceneFromPrompt } from "../src/director/prompt-scene.js";
 import { SET_TEMPLATES, getSetTemplate, pickSetForPrompt } from "../src/set-templates.js";
 import { resolveAsset, resolveLocalGlb, type ResolvedAsset } from "./resolve-asset.js";
 

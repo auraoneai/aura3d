@@ -15,7 +15,7 @@ import {
   generateSceneFromPrompt,
   inferIntent,
   parseCast
-} from "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-to-scene";
+} from "../../../packages/create-aura3d/templates/animation-studio/src/director/prompt-scene";
 import { validateEpisodeDocumentShape } from "../../../packages/create-aura3d/templates/animation-studio/src/episode-document";
 import { validateEpisodeDocument } from "../../../packages/create-aura3d/templates/animation-studio/src/animation-episode-validator";
 
@@ -23,7 +23,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATE_ROOT = resolve(__dirname, "../../../packages/create-aura3d/templates/animation-studio");
 
 /**
- * Phase F2 — prompt-to-scene proof. Given a prompt + cast + dialogue, the director's
+ * Phase F2 — prompt-scene proof. Given a prompt + cast + dialogue, the director's
  * per-beat acting plan must contain VISIBLE acting: at least one speaker gesture and at
  * least one listener reaction, NOT all idle/talk, and the validation gate must pass.
  * A degenerate all-talk scene must FAIL the gate (Phase F1 director validation).
@@ -31,7 +31,7 @@ const TEMPLATE_ROOT = resolve(__dirname, "../../../packages/create-aura3d/templa
  * The "prompt" here is the two-office-workers-arguing scenario from the PRD examples —
  * the cast/dialogue are prompt-derived, no Moon-Garden fixture involved.
  */
-describe("prompt-to-scene: director emits visible, validated acting (F1/F2/C2)", () => {
+describe("prompt-scene: director emits visible, validated acting (F1/F2/C2)", () => {
   const VOCAB = new Set<string>(PERFORMANCE_VOCABULARY);
   const GESTURES = new Set(["gesture", "point", "nod"]);
   const REACTIONS = new Set(["react", "nod"]);
@@ -198,13 +198,13 @@ describe("prompt-to-scene: director emits visible, validated acting (F1/F2/C2)",
 });
 
 /**
- * Phase F2 — prompt-to-scene GENERATION. A fresh EpisodeDocument is generated from a prompt
+ * Phase F2 — prompt-scene GENERATION. A fresh EpisodeDocument is generated from a prompt
  * with NO fallback: cast / set / props / dialogue / camera / actions are all derived FROM THE
  * PROMPT TERMS. The regression FAILS if the generator silently reuses the Moon Garden fixture
  * (its set, its miko/luma cast, its mushroom props, or any moon marker) for a non-moon prompt.
  * A sample document for a non-moon prompt is generated + saved as evidence.
  */
-describe("prompt-to-scene: full generation, no Moon-Garden fallback (F2)", () => {
+describe("prompt-scene: full generation, no Moon-Garden fallback (F2)", () => {
   const MOON_MARKERS = ["moon", "moon-garden", "glow-stone", "miko", "luma", "mushroom", "lily", "garden"];
 
   function allStrings(value: unknown, out: string[] = []): string[] {
@@ -315,7 +315,7 @@ describe("prompt-to-scene: full generation, no Moon-Garden fallback (F2)", () =>
 
   it("saves a sample generated document (non-moon prompt) as F2 evidence", () => {
     const { document } = generateSceneFromPrompt(PROMPT);
-    const outDir = resolve(TEMPLATE_ROOT, "dist", "episodes", "prompt-to-scene-proof");
+    const outDir = resolve(TEMPLATE_ROOT, "dist", "episodes", "prompt-scene-proof");
     mkdirSync(outDir, { recursive: true });
     const outPath = resolve(outDir, "two-robots-fixing-a-car.document.json");
     writeFileSync(outPath, `${JSON.stringify(document, null, 2)}\n`);

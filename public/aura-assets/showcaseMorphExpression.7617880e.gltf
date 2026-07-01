@@ -1,0 +1,166 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "A3D External parity generated local fixture"
+  },
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,zcwMvzMzs74AAAAAzcwMPzMzs74AAAAAAAAAAM3MDD8AAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADMzsz4AAIA+AAABAAIAAAAAAAAAgD8AAAAAAACAPw==",
+      "byteLength": 130
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 36
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 36,
+      "byteLength": 36
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 72,
+      "byteLength": 36
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 108,
+      "byteLength": 6
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 114,
+      "byteLength": 8
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 122,
+      "byteLength": 8
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "min": [
+        -0.55,
+        -0.35,
+        0
+      ],
+      "max": [
+        0.55,
+        0.9,
+        0.25
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 3,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 2,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 2,
+      "type": "SCALAR"
+    }
+  ],
+  "materials": [
+    {
+      "name": "morph-orange",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.95,
+          0.42,
+          0.1,
+          1
+        ],
+        "roughnessFactor": 0.44,
+        "metallicFactor": 0.02
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "morph-expression",
+      "weights": [
+        0.65
+      ],
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "targets": [
+            {
+              "POSITION": 2
+            }
+          ],
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "morph-node",
+      "mesh": 0
+    }
+  ],
+  "animations": [
+    {
+      "name": "morph-weight-smile",
+      "samplers": [
+        {
+          "input": 4,
+          "output": 5
+        }
+      ],
+      "channels": [
+        {
+          "sampler": 0,
+          "target": {
+            "node": 0,
+            "path": "weights"
+          }
+        }
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "name": "morph-scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0
+}

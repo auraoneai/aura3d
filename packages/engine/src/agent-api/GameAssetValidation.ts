@@ -10,6 +10,7 @@ export type GameAssetAxis = "x" | "y" | "z" | "-x" | "-y" | "-z";
 export type GameAssetBoundsSource = "asset-metadata" | "inspector" | "manual" | "runtime";
 export type GameAssetApprovalStatus = "draft" | "needs-review" | "approved" | "rejected";
 export type GameAssetUsageKind = "fighter" | "npc" | "arena" | "prop" | "weapon" | "animation-character" | "product" | "environment";
+export type GamePrimaryAssetRole = "hero-character" | "hero-vehicle" | "race-track" | "platformer-stage" | "playable-world" | "particle-emitter";
 export type GameAssetAnimationRole =
   | "idle"
   | "walk"
@@ -445,6 +446,118 @@ export function createQuaterniusGameReadyFighterValidationPolicy(
       minimumDuration: 1 / 30,
       requiredClips: fightingGameAnimationRoles,
       ...overrides.animation
+    }
+  };
+}
+
+export function createPrimaryGameAssetValidationPolicy(
+  role: GamePrimaryAssetRole,
+  overrides: GameAssetValidationPolicy = {}
+): GameAssetValidationPolicy {
+  const base: GameAssetValidationPolicy = {
+    maxFileSizeBytes: overrides.maxFileSizeBytes ?? 90 * 1024 * 1024,
+    requireFileSize: overrides.requireFileSize ?? true,
+    requireBounds: overrides.requireBounds ?? true,
+    requireOrientation: overrides.requireOrientation ?? false,
+    requireSkeleton: overrides.requireSkeleton ?? role === "hero-character",
+    requireThumbnail: overrides.requireThumbnail ?? false,
+    requireProvenance: overrides.requireProvenance ?? true,
+    requireIntendedUse: overrides.requireIntendedUse ?? false,
+    requireReadableMaterials: overrides.requireReadableMaterials ?? true,
+    maxTextureDimension: overrides.maxTextureDimension ?? 8192,
+    orientation: {
+      upAxis: "y",
+      forwardAxis: ["z", "-z", "x", "-x"],
+      pivot: ["feet", "grounded", "center"],
+      minUnitScale: 0.000001,
+      maxUnitScale: 1_000_000,
+      ...overrides.orientation
+    },
+    animation: {
+      requireNonEmptyClips: role === "hero-character",
+      minimumDuration: 1 / 30,
+      ...overrides.animation
+    }
+  };
+
+  const boundsByRole: Record<GamePrimaryAssetRole, GameAssetBoundsPolicy> = {
+    "hero-character": {
+      minWidth: 0.1,
+      minHeight: 0.4,
+      minDepth: 0.05,
+      maxDimension: 25,
+      maxOriginOffset: 12,
+      requireGroundedPivot: false
+    },
+    "hero-vehicle": {
+      minWidth: 0.25,
+      minHeight: 0.12,
+      minDepth: 0.25,
+      maxDimension: 750,
+      maxOriginOffset: 300,
+      requireGroundedPivot: false
+    },
+    "race-track": {
+      minWidth: 2,
+      minDepth: 2,
+      maxDimension: 250_000,
+      maxOriginOffset: 150_000,
+      requireGroundedPivot: false
+    },
+    "platformer-stage": {
+      minWidth: 2,
+      minHeight: 0.2,
+      minDepth: 0.4,
+      maxDimension: 5_000,
+      maxOriginOffset: 2_500,
+      requireGroundedPivot: false
+    },
+    "playable-world": {
+      minWidth: 2,
+      minHeight: 0.2,
+      minDepth: 1,
+      maxDimension: 250_000,
+      maxOriginOffset: 150_000,
+      requireGroundedPivot: false
+    },
+    "particle-emitter": {
+      minWidth: 0.05,
+      minHeight: 0.05,
+      minDepth: 0.05,
+      maxDimension: 250,
+      maxOriginOffset: 120,
+      requireGroundedPivot: false
+    }
+  };
+
+  return {
+    ...base,
+    bounds: {
+      ...boundsByRole[role],
+      ...overrides.bounds
+    }
+  };
+}
+
+export function validatePrimaryGameAsset<TAsset extends AuraAssetRef<"model">>(
+  manifest: GameAssetReadinessManifest<TAsset>,
+  role: GamePrimaryAssetRole,
+  policy: GameAssetValidationPolicy = {}
+): GameAssetValidationReport<TAsset> {
+  const base = validateGameAssetReadiness(manifest, createPrimaryGameAssetValidationPolicy(role, policy));
+  const roleCheck: GameAssetValidationCheck = {
+    id: "primary-asset.role",
+    status: "pass",
+    assetId: manifest.asset.id,
+    message: `Asset validated for primary game role "${role}".`,
+    metrics: { role }
+  };
+  return {
+    ...base,
+    checks: [roleCheck, ...base.checks],
+    summary: {
+      ...base.summary,
+      checks: base.summary.checks + 1
     }
   };
 }
@@ -1088,6 +1201,8 @@ export const gameAssetValidation = {
   createManifest: createGameAssetReadinessManifest,
   validate: validateGameAssetReadiness,
   quaterniusGameReadyFighter: quaterniusGameReadyFighterValidationContract,
+  createPrimaryGameAssetPolicy: createPrimaryGameAssetValidationPolicy,
+  validatePrimaryGameAsset,
   createQuaterniusGameReadyFighterPolicy: createQuaterniusGameReadyFighterValidationPolicy,
   validateQuaterniusGameReadyFighter: validateQuaterniusGameReadyFighterAsset,
   evaluateBounds: evaluateGameAssetBounds,

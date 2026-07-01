@@ -184,6 +184,9 @@ importers:
       '@aura3d/asset-index':
         specifier: workspace:*
         version: link:../asset-index
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
 
   packages/controls:
     dependencies:
@@ -197,7 +200,11 @@ importers:
         specifier: workspace:*
         version: link:../math
 
-  packages/create-aura3d: {}
+  packages/create-aura3d:
+    dependencies:
+      '@aura3d/asset-index':
+        specifier: workspace:*
+        version: link:../asset-index
 
   packages/debug:
     dependencies:

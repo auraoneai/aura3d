@@ -1,3 +1,20 @@
+import {
+  PhysicsWorld,
+  Shape as PhysicsShapeFactory,
+  type Collider,
+  type ColliderDescriptor,
+  type CollisionEvent,
+  type Contact,
+  type PhysicsShape,
+  type PhysicsSnapshot,
+  type PhysicsWorldDescriptor,
+  type RaycastOptions,
+  type RigidBody,
+  type RigidBodyDescriptor,
+  type RigidBodyType,
+  type SphereCastHit
+} from "@aura3d/physics";
+
 export type GameVec3 = readonly [number, number, number];
 
 export type GameSubsystemOwner = "aura3d" | "app" | "shared";
@@ -7,7 +24,9 @@ export type GameRuntimeSubsystemId =
   | "frame-loop"
   | "input"
   | "kinematic-bodies"
+  | "collision"
   | "combat"
+  | "events"
   | "effects"
   | "camera"
   | "animation"
@@ -72,9 +91,70 @@ export interface GameSimulation<TSnapshot> {
   run(): GameSimulationResult<TSnapshot>;
 }
 
-export type GameHudBindingKind = "health" | "meter" | "timer" | "combo" | "round" | "debug-toggle";
+export type GameEventSeverity = "info" | "success" | "warning" | "error";
+
+export interface GameEventInput {
+  readonly type: string;
+  readonly label?: string;
+  readonly targetId?: string;
+  readonly value?: string | number | boolean;
+  readonly tags?: readonly string[];
+  readonly severity?: GameEventSeverity;
+  readonly frame?: number;
+  readonly time?: number;
+}
+
+export interface GameEventRecord {
+  readonly kind: "aura-game-event";
+  readonly id: string;
+  readonly type: string;
+  readonly label: string;
+  readonly targetId?: string;
+  readonly value?: string | number | boolean;
+  readonly tags: readonly string[];
+  readonly severity: GameEventSeverity;
+  readonly frame: number;
+  readonly time: number;
+}
+
+export interface GameEventLogOptions {
+  readonly label?: string;
+  readonly maxEvents?: number;
+}
+
+export interface GameEventLogSnapshot {
+  readonly kind: "aura-game-event-log";
+  readonly label: string;
+  readonly count: number;
+  readonly events: readonly GameEventRecord[];
+  readonly types: readonly string[];
+  readonly last?: GameEventRecord;
+}
+
+export interface GameEventLog {
+  readonly kind: "aura-game-event-log";
+  push(event: GameEventInput): GameEventRecord;
+  events(): readonly GameEventRecord[];
+  consume(): readonly GameEventRecord[];
+  clear(): void;
+  snapshot(): GameEventLogSnapshot;
+}
+
+export type GameHudBindingKind =
+  | "health"
+  | "meter"
+  | "timer"
+  | "combo"
+  | "round"
+  | "score"
+  | "lives"
+  | "objective"
+  | "checkpoint"
+  | "value"
+  | "event-log"
+  | "debug-toggle";
 export type GameHudValueFormat = "number" | "percent" | "clock" | "text" | "boolean";
-export type GameHudSourceKind = "combat" | "round" | "input" | "runtime" | "debug" | "app-state";
+export type GameHudSourceKind = "combat" | "round" | "input" | "runtime" | "debug" | "events" | "app-state";
 
 export interface GameHudBinding {
   readonly kind: "aura-game-hud-binding";
@@ -175,6 +255,34 @@ export interface GameHudDebugToggleBindingOptions {
   readonly action?: string;
   readonly a11yLabel?: string;
   readonly visibleWhen?: string;
+}
+
+export interface GameHudValueBindingOptions {
+  readonly id?: string;
+  readonly binding?: Extract<GameHudBindingKind, "score" | "lives" | "objective" | "checkpoint" | "value" | "event-log">;
+  readonly label?: string;
+  readonly source?: GameHudSourceKind;
+  readonly targetId?: string;
+  readonly valuePath: string;
+  readonly maxPath?: string;
+  readonly format?: GameHudValueFormat;
+  readonly a11yLabel?: string;
+  readonly visibleWhen?: string;
+  readonly debugOnly?: boolean;
+  readonly interactive?: boolean;
+}
+
+export interface GameHudScoreBindingOptions extends Omit<GameHudValueBindingOptions, "binding" | "valuePath" | "format"> {
+  readonly valuePath?: string;
+  readonly format?: Extract<GameHudValueFormat, "number" | "text">;
+}
+
+export interface GameHudObjectiveBindingOptions extends Omit<GameHudValueBindingOptions, "binding" | "valuePath"> {
+  readonly valuePath?: string;
+}
+
+export interface GameHudEventLogBindingOptions extends Omit<GameHudValueBindingOptions, "binding" | "valuePath"> {
+  readonly valuePath?: string;
 }
 
 export type GameAccessibilitySourceKind =
@@ -645,6 +753,129 @@ export interface GameRectCollider extends GameColliderBase {
 }
 
 export type GameCollider = GameBoxCollider | GameSphereCollider | GameCapsuleCollider | GameRectCollider;
+
+export interface GameCollisionBodyOptions {
+  readonly id: string;
+  readonly type?: RigidBodyType;
+  readonly position?: GameVec3;
+  readonly velocity?: GameVec3;
+  readonly shape?: PhysicsShape;
+  readonly sensor?: boolean;
+  readonly tags?: readonly string[];
+  readonly layer?: number;
+  readonly mask?: number;
+  readonly material?: ColliderDescriptor["material"];
+  readonly rigidBody?: Omit<RigidBodyDescriptor, "type" | "position" | "velocity">;
+}
+
+export type GameCollisionAddBodyOptions = Omit<GameCollisionBodyOptions, "id" | "shape">;
+
+export interface GameCollisionBodySnapshot {
+  readonly id: string;
+  readonly bodyId: number;
+  readonly colliderId: number;
+  readonly type: RigidBodyType;
+  readonly position: GameVec3;
+  readonly velocity: GameVec3;
+  readonly shape: PhysicsShape;
+  readonly sensor: boolean;
+  readonly tags: readonly string[];
+  readonly layer: number;
+  readonly mask: number;
+}
+
+export interface GameCollisionBodyHandle {
+  readonly kind: "aura-game-collision-body";
+  readonly id: string;
+  readonly body: RigidBody;
+  readonly collider: Collider;
+  readonly tags: readonly string[];
+  readonly position: GameVec3;
+  readonly velocity: GameVec3;
+  setPosition(position: GameVec3): GameCollisionBodySnapshot;
+  setVelocity(velocity: GameVec3): GameCollisionBodySnapshot;
+  translate(delta: GameVec3): GameCollisionBodySnapshot;
+  snapshot(): GameCollisionBodySnapshot;
+}
+
+export interface GameCollisionParticipant {
+  readonly id: string;
+  readonly bodyId: number;
+  readonly colliderId: number;
+  readonly type: RigidBodyType;
+  readonly position: GameVec3;
+  readonly tags: readonly string[];
+  readonly sensor: boolean;
+  readonly layer: number;
+  readonly mask: number;
+}
+
+export interface GameCollisionContact {
+  readonly kind: "aura-game-collision-contact";
+  readonly pairKey: string;
+  readonly type?: CollisionEvent["type"];
+  readonly a: GameCollisionParticipant;
+  readonly b: GameCollisionParticipant;
+  readonly normal: GameVec3;
+  readonly penetration: number;
+  readonly sensor: boolean;
+  readonly contact: Contact;
+}
+
+export interface GameCollisionEvent extends GameCollisionContact {
+  readonly type: CollisionEvent["type"];
+}
+
+export interface GameCollisionQueryFilter {
+  readonly ids?: readonly string[];
+  readonly tags?: readonly string[];
+  readonly layerMask?: number;
+  readonly includeSensors?: boolean;
+  readonly includeSolids?: boolean;
+}
+
+export interface GameCollisionSweepOptions extends GameCollisionQueryFilter, Omit<RaycastOptions, "mask" | "includeSensors" | "maxDistance"> {
+  readonly radius?: number;
+  readonly mask?: number;
+  readonly includeSelf?: boolean;
+}
+
+export interface GameCollisionSweepHit {
+  readonly kind: "aura-game-collision-sweep-hit";
+  readonly source: GameCollisionParticipant;
+  readonly target: GameCollisionParticipant;
+  readonly point: GameVec3;
+  readonly normal: GameVec3;
+  readonly distance: number;
+  readonly castCenter: GameVec3;
+  readonly castRadius: number;
+  readonly hit: SphereCastHit;
+}
+
+export interface GameCollisionWorldSnapshot {
+  readonly kind: "aura-game-collision-world";
+  readonly bodies: readonly GameCollisionBodySnapshot[];
+  readonly contacts: readonly GameCollisionContact[];
+  readonly stats: PhysicsSnapshot["stats"];
+}
+
+export interface GameCollisionWorld {
+  readonly kind: "aura-game-collision-world";
+  add(options: GameCollisionBodyOptions): GameCollisionBodyHandle;
+  addBox(id: string, halfExtents: GameVec3, options?: GameCollisionAddBodyOptions): GameCollisionBodyHandle;
+  addSphere(id: string, radius: number, options?: GameCollisionAddBodyOptions): GameCollisionBodyHandle;
+  addCapsule(id: string, radius: number, halfHeight: number, options?: GameCollisionAddBodyOptions): GameCollisionBodyHandle;
+  get(id: string): GameCollisionBodyHandle | undefined;
+  require(id: string): GameCollisionBodyHandle;
+  remove(id: string): boolean;
+  clear(): void;
+  step(dt?: number): readonly GameCollisionEvent[];
+  events(filter?: GameCollisionQueryFilter): readonly GameCollisionEvent[];
+  overlaps(filter?: GameCollisionQueryFilter): readonly GameCollisionContact[];
+  sweep(id: string, direction: GameVec3, distance: number, options?: GameCollisionSweepOptions): readonly GameCollisionSweepHit[];
+  resolve(id: string, filter?: GameCollisionQueryFilter): GameCollisionBodySnapshot;
+  snapshot(): GameCollisionWorldSnapshot;
+}
 
 export interface GameCollisionBox {
   readonly id?: string;
@@ -1390,6 +1621,8 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   const bufferMs = options.bufferMs ?? 120;
   const activeBindings = new Set<string>();
   const activeActionOverrides = new Set<string>();
+  const pendingPressedBindings = new Set<string>();
+  const pendingPressedActions = new Set<string>();
   const previousHeld = new Map<string, boolean>();
   const currentHeld = new Map<string, boolean>();
   const pressedEdges = new Set<string>();
@@ -1425,7 +1658,11 @@ export function createGameInput(options: GameInputOptions): GameInputController 
   };
   const pressBinding = (binding: string, shouldRecord = true) => {
     activeBindings.add(binding);
-    if (actions[binding]) activeActionOverrides.add(binding);
+    pendingPressedBindings.add(binding);
+    if (actions[binding]) {
+      activeActionOverrides.add(binding);
+      pendingPressedActions.add(binding);
+    }
     if (shouldRecord) record("press", binding);
   };
   const releaseBinding = (binding: string, shouldRecord = true) => {
@@ -1525,8 +1762,9 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     for (const action of Object.keys(actions)) {
       const held = resolveHeld(action);
       const wasHeld = previousHeld.get(action) ?? false;
+      const pendingPressed = pendingPressedActions.has(action) || (actions[action] ?? []).some((binding) => pendingPressedBindings.has(binding));
       currentHeld.set(action, held);
-      if (held && !wasHeld) {
+      if ((held && !wasHeld) || pendingPressed) {
         pressedEdges.add(action);
         const nowMs = time * 1000;
         lastPressedAt.set(action, nowMs);
@@ -1536,6 +1774,8 @@ export function createGameInput(options: GameInputOptions): GameInputController 
       if (!held && wasHeld) releasedEdges.add(action);
       previousHeld.set(action, held);
     }
+    pendingPressedBindings.clear();
+    pendingPressedActions.clear();
     const axesSnapshot: Record<string, number> = {};
     for (const axisName of Object.keys(axes)) {
       const raw = resolveAxisRaw(axisName, undefined, undefined, framePointer);
@@ -1665,6 +1905,7 @@ export function createGameInput(options: GameInputOptions): GameInputController 
     setAction(action, held) {
       if (held) {
         activeActionOverrides.add(action);
+        pendingPressedActions.add(action);
         record("press", action);
       } else {
         activeActionOverrides.delete(action);
@@ -1699,6 +1940,8 @@ export function createGameInput(options: GameInputOptions): GameInputController 
       }
       activeBindings.clear();
       activeActionOverrides.clear();
+      pendingPressedBindings.clear();
+      pendingPressedActions.clear();
       previousHeld.clear();
       currentHeld.clear();
       pressedEdges.clear();
@@ -1893,6 +2136,254 @@ export function createGameKinematicBody(options: GameKinematicBodyOptions = {}):
       return aabb(position, size);
     },
     snapshot
+  };
+}
+
+export function createGameCollisionWorld(descriptor: PhysicsWorldDescriptor = {}): GameCollisionWorld {
+  let world = new PhysicsWorld(descriptor);
+  const handlesById = new Map<string, GameCollisionBodyHandle>();
+  const handlesByBodyId = new Map<number, GameCollisionBodyHandle>();
+  const handlesByColliderId = new Map<number, GameCollisionBodyHandle>();
+  let lastEvents: readonly GameCollisionEvent[] = [];
+
+  const register = (handle: GameCollisionBodyHandle): GameCollisionBodyHandle => {
+    handlesById.set(handle.id, handle);
+    handlesByBodyId.set(handle.body.id, handle);
+    handlesByColliderId.set(handle.collider.id, handle);
+    return handle;
+  };
+
+  const createHandle = (id: string, tags: readonly string[], body: RigidBody, collider: Collider): GameCollisionBodyHandle => {
+    const snapshot = (): GameCollisionBodySnapshot => ({
+      id,
+      bodyId: body.id,
+      colliderId: collider.id,
+      type: body.type,
+      position: toGameVec3(body.position),
+      velocity: toGameVec3(body.velocity),
+      shape: collider.shape,
+      sensor: collider.sensor,
+      tags,
+      layer: collider.filter.layer,
+      mask: collider.filter.mask
+    });
+    return {
+      kind: "aura-game-collision-body",
+      id,
+      body,
+      collider,
+      tags,
+      get position() {
+        return toGameVec3(body.position);
+      },
+      get velocity() {
+        return toGameVec3(body.velocity);
+      },
+      setPosition(position) {
+        body.setPosition(vec3(position, body.position));
+        return snapshot();
+      },
+      setVelocity(velocity) {
+        body.setVelocity(vec3(velocity, body.velocity));
+        return snapshot();
+      },
+      translate(delta) {
+        body.setPosition(addVec3(body.position, vec3(delta, [0, 0, 0])));
+        return snapshot();
+      },
+      snapshot
+    };
+  };
+
+  const add = (options: GameCollisionBodyOptions): GameCollisionBodyHandle => {
+    const id = options.id.trim();
+    if (!id) {
+      throw new Error("game.collisionWorld body id must be a non-empty string.");
+    }
+    if (handlesById.has(id)) {
+      throw new Error(`game.collisionWorld already has a body named '${id}'.`);
+    }
+    const body = world.createRigidBody({
+      ...options.rigidBody,
+      type: options.type ?? "dynamic",
+      position: vec3(options.position, [0, 0, 0]),
+      velocity: vec3(options.velocity, [0, 0, 0])
+    });
+    const collider = world.createCollider(body, {
+      shape: options.shape ?? PhysicsShapeFactory.box(0.5, 0.5, 0.5),
+      sensor: options.sensor ?? false,
+      filter: {
+        layer: options.layer ?? 1,
+        mask: options.mask ?? 0xffffffff
+      },
+      material: options.material
+    });
+    return register(createHandle(id, [...(options.tags ?? [])], body, collider));
+  };
+
+  const requireBody = (id: string): GameCollisionBodyHandle => {
+    const handle = handlesById.get(id);
+    if (!handle) {
+      throw new Error(`game.collisionWorld missing body '${id}'.`);
+    }
+    return handle;
+  };
+
+  const mapContact = (contact: Contact, type?: CollisionEvent["type"]): GameCollisionContact | undefined => {
+    const a = handlesByColliderId.get(contact.colliderA);
+    const b = handlesByColliderId.get(contact.colliderB);
+    if (!a || !b) {
+      return undefined;
+    }
+    return {
+      kind: "aura-game-collision-contact",
+      pairKey: gameCollisionPairKey(contact.colliderA, contact.colliderB),
+      type,
+      a: gameCollisionParticipant(a),
+      b: gameCollisionParticipant(b),
+      normal: toGameVec3(contact.normal),
+      penetration: contact.penetration,
+      sensor: contact.sensor,
+      contact
+    };
+  };
+
+  const mapEvent = (event: CollisionEvent): GameCollisionEvent | undefined => {
+    const contact = mapContact(event.contact, event.type);
+    if (!contact) {
+      return undefined;
+    }
+    return {
+      ...contact,
+      type: event.type
+    };
+  };
+
+  const currentContacts = (filter: GameCollisionQueryFilter = {}): readonly GameCollisionContact[] => {
+    const contacts: GameCollisionContact[] = [];
+    for (const contact of world.snapshot().contacts) {
+      const mapped = mapContact(contact);
+      if (mapped && gameCollisionContactMatchesFilter(mapped, filter)) {
+        contacts.push(mapped);
+      }
+    }
+    return contacts;
+  };
+
+  return {
+    kind: "aura-game-collision-world",
+    add,
+    addBox(id, halfExtents, options = {}) {
+      return add({
+        ...options,
+        id,
+        shape: PhysicsShapeFactory.box(halfExtents[0], halfExtents[1], halfExtents[2])
+      });
+    },
+    addSphere(id, radius, options = {}) {
+      return add({
+        ...options,
+        id,
+        shape: PhysicsShapeFactory.sphere(radius)
+      });
+    },
+    addCapsule(id, radius, halfHeight, options = {}) {
+      return add({
+        ...options,
+        id,
+        shape: PhysicsShapeFactory.capsule(radius, halfHeight)
+      });
+    },
+    get(id) {
+      return handlesById.get(id);
+    },
+    require: requireBody,
+    remove(id) {
+      const handle = handlesById.get(id);
+      if (!handle) {
+        return false;
+      }
+      handlesById.delete(id);
+      handlesByBodyId.delete(handle.body.id);
+      handlesByColliderId.delete(handle.collider.id);
+      world.removeRigidBody(handle.body.id);
+      return true;
+    },
+    clear() {
+      world = new PhysicsWorld(descriptor);
+      handlesById.clear();
+      handlesByBodyId.clear();
+      handlesByColliderId.clear();
+      lastEvents = [];
+    },
+    step(dt) {
+      const events = dt === undefined ? world.step() : world.step(dt);
+      lastEvents = events.map(mapEvent).filter(isDefined);
+      return lastEvents;
+    },
+    events(filter = {}) {
+      return lastEvents.filter((event) => gameCollisionContactMatchesFilter(event, filter));
+    },
+    overlaps: currentContacts,
+    sweep(id, direction, distance, options = {}) {
+      const source = requireBody(id);
+      if (!Number.isFinite(distance) || distance <= 0) {
+        throw new Error("game.collisionWorld.sweep distance must be a finite positive number.");
+      }
+      const castRadius = options.radius ?? gameCollisionSweepRadius(source.collider.shape);
+      const hits = world.sphereCastAll(source.body.position, castRadius, direction, {
+        maxDistance: distance,
+        mask: options.mask ?? source.collider.filter.mask,
+        includeSensors: options.includeSensors ?? true,
+        includeBackfaces: options.includeBackfaces
+      });
+      const sourceParticipant = gameCollisionParticipant(source);
+      const mapped: GameCollisionSweepHit[] = [];
+      for (const hit of hits) {
+        if (options.includeSelf !== true && hit.colliderId === source.collider.id) {
+          continue;
+        }
+        const target = handlesByColliderId.get(hit.colliderId);
+        if (!target || !gameCollisionParticipantMatchesFilter(target, options)) {
+          continue;
+        }
+        mapped.push({
+          kind: "aura-game-collision-sweep-hit",
+          source: sourceParticipant,
+          target: gameCollisionParticipant(target),
+          point: toGameVec3(hit.point),
+          normal: toGameVec3(hit.normal),
+          distance: hit.distance,
+          castCenter: toGameVec3(hit.castCenter),
+          castRadius: hit.castRadius,
+          hit
+        });
+      }
+      return mapped;
+    },
+    resolve(id, filter = {}) {
+      const handle = requireBody(id);
+      let position = handle.position;
+      for (const contact of currentContacts({ ...filter, includeSensors: false })) {
+        if (contact.contact.colliderA !== handle.collider.id && contact.contact.colliderB !== handle.collider.id) {
+          continue;
+        }
+        const direction = contact.contact.colliderA === handle.collider.id ? -1 : 1;
+        const correction = scaleVec3(contact.normal, direction * (contact.penetration + 0.0001));
+        position = addVec3(position, correction);
+      }
+      handle.body.setPosition(position);
+      return handle.snapshot();
+    },
+    snapshot() {
+      const physicsSnapshot = world.snapshot();
+      return {
+        kind: "aura-game-collision-world",
+        bodies: Array.from(handlesById.values()).map((handle) => handle.snapshot()),
+        contacts: currentContacts(),
+        stats: physicsSnapshot.stats
+      };
+    }
   };
 }
 
@@ -2821,6 +3312,61 @@ function syncBodiesFromActors(bodies: Map<string, GameKinematicBody>, actors: Ma
   }
 }
 
+function gameCollisionParticipant(handle: GameCollisionBodyHandle): GameCollisionParticipant {
+  return {
+    id: handle.id,
+    bodyId: handle.body.id,
+    colliderId: handle.collider.id,
+    type: handle.body.type,
+    position: handle.position,
+    tags: handle.tags,
+    sensor: handle.collider.sensor,
+    layer: handle.collider.filter.layer,
+    mask: handle.collider.filter.mask
+  };
+}
+
+function gameCollisionPairKey(colliderA: number, colliderB: number): string {
+  return colliderA < colliderB ? `${colliderA}:${colliderB}` : `${colliderB}:${colliderA}`;
+}
+
+function gameCollisionSweepRadius(shape: PhysicsShape): number {
+  if (shape.kind === "sphere") return shape.radius;
+  if (shape.kind === "capsule") return shape.radius;
+  if (shape.kind === "box") return Math.max(0.05, Math.min(shape.halfExtents[0], shape.halfExtents[1], shape.halfExtents[2]));
+  return 0.1;
+}
+
+function gameCollisionContactMatchesFilter(contact: GameCollisionContact, filter: GameCollisionQueryFilter): boolean {
+  if (filter.includeSensors === false && contact.sensor) return false;
+  if (filter.includeSolids === false && !contact.sensor) return false;
+  if (filter.ids?.length && !filter.ids.includes(contact.a.id) && !filter.ids.includes(contact.b.id)) return false;
+  if (filter.tags?.length && !hasAnyGameTag(contact.a.tags, filter.tags) && !hasAnyGameTag(contact.b.tags, filter.tags)) return false;
+  if (filter.layerMask !== undefined && (contact.a.layer & filter.layerMask) === 0 && (contact.b.layer & filter.layerMask) === 0) return false;
+  return true;
+}
+
+function gameCollisionParticipantMatchesFilter(handle: GameCollisionBodyHandle, filter: GameCollisionQueryFilter): boolean {
+  if (filter.includeSensors === false && handle.collider.sensor) return false;
+  if (filter.includeSolids === false && !handle.collider.sensor) return false;
+  if (filter.ids?.length && !filter.ids.includes(handle.id)) return false;
+  if (filter.tags?.length && !hasAnyGameTag(handle.tags, filter.tags)) return false;
+  if (filter.layerMask !== undefined && (handle.collider.filter.layer & filter.layerMask) === 0) return false;
+  return true;
+}
+
+function hasAnyGameTag(source: readonly string[], expected: readonly string[]): boolean {
+  return expected.some((tag) => source.includes(tag));
+}
+
+function toGameVec3(value: readonly [number, number, number]): GameVec3 {
+  return [value[0], value[1], value[2]];
+}
+
+function isDefined<T>(value: T | undefined): value is T {
+  return value !== undefined;
+}
+
 function resolvePushboxSeparation(
   actors: Map<string, MutableCombatActor>,
   stageBounds: GameBounds3,
@@ -3232,6 +3778,53 @@ function effectToSceneNode(effect: MutableGameEffectInstance): any {
   };
 }
 
+export function createGameEventLog(options: GameEventLogOptions = {}): GameEventLog {
+  const label = options.label ?? "game events";
+  const maxEvents = Math.max(1, options.maxEvents ?? 64);
+  let sequence = 0;
+  let records: GameEventRecord[] = [];
+  const snapshot = (): GameEventLogSnapshot => ({
+    kind: "aura-game-event-log",
+    label,
+    count: records.length,
+    events: [...records],
+    types: [...new Set(records.map((event) => event.type))].sort(),
+    last: records[records.length - 1]
+  });
+  return {
+    kind: "aura-game-event-log",
+    push(event) {
+      sequence += 1;
+      const record: GameEventRecord = {
+        kind: "aura-game-event",
+        id: `${event.type}:${sequence}`,
+        type: event.type,
+        label: event.label ?? event.type,
+        targetId: event.targetId,
+        value: event.value,
+        tags: [...(event.tags ?? [])],
+        severity: event.severity ?? "info",
+        frame: event.frame ?? sequence,
+        time: event.time ?? 0
+      };
+      records = [...records, record].slice(-maxEvents);
+      return record;
+    },
+    events() {
+      return [...records];
+    },
+    consume() {
+      const consumed = [...records];
+      records = [];
+      return consumed;
+    },
+    clear() {
+      records = [];
+    },
+    snapshot
+  };
+}
+
 export function createGameHudHealthBinding(options: GameHudActorBindingOptions): GameHudBinding {
   return createGameHudBinding({
     binding: "health",
@@ -3315,6 +3908,84 @@ export function createGameHudDebugToggleBinding(options: GameHudDebugToggleBindi
     debugOnly: true,
     interactive: true,
     visibleWhen: options.visibleWhen ?? options.action
+  });
+}
+
+export function createGameHudValueBinding(options: GameHudValueBindingOptions): GameHudBinding {
+  return createGameHudBinding({
+    binding: options.binding ?? "value",
+    id: options.id ?? `hud:${options.binding ?? "value"}:${options.valuePath.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "")}`,
+    label: options.label ?? options.binding ?? "value",
+    source: options.source ?? "app-state",
+    targetId: options.targetId,
+    valuePath: options.valuePath,
+    maxPath: options.maxPath,
+    format: options.format ?? "text",
+    a11yLabel: options.a11yLabel ?? options.label ?? options.binding ?? "value",
+    debugOnly: options.debugOnly,
+    interactive: options.interactive,
+    visibleWhen: options.visibleWhen
+  });
+}
+
+export function createGameHudScoreBinding(options: GameHudScoreBindingOptions = {}): GameHudBinding {
+  return createGameHudValueBinding({
+    ...options,
+    binding: "score",
+    id: options.id ?? "hud:score",
+    label: options.label ?? "score",
+    valuePath: options.valuePath ?? "appState.score",
+    format: options.format ?? "number",
+    a11yLabel: options.a11yLabel ?? "score"
+  });
+}
+
+export function createGameHudLivesBinding(options: GameHudScoreBindingOptions = {}): GameHudBinding {
+  return createGameHudValueBinding({
+    ...options,
+    binding: "lives",
+    id: options.id ?? "hud:lives",
+    label: options.label ?? "lives",
+    valuePath: options.valuePath ?? "appState.lives",
+    format: options.format ?? "number",
+    a11yLabel: options.a11yLabel ?? "lives remaining"
+  });
+}
+
+export function createGameHudObjectiveBinding(options: GameHudObjectiveBindingOptions = {}): GameHudBinding {
+  return createGameHudValueBinding({
+    ...options,
+    binding: "objective",
+    id: options.id ?? "hud:objective",
+    label: options.label ?? "objective",
+    valuePath: options.valuePath ?? "appState.objective",
+    format: options.format ?? "text",
+    a11yLabel: options.a11yLabel ?? "current objective"
+  });
+}
+
+export function createGameHudCheckpointBinding(options: GameHudObjectiveBindingOptions = {}): GameHudBinding {
+  return createGameHudValueBinding({
+    ...options,
+    binding: "checkpoint",
+    id: options.id ?? "hud:checkpoint",
+    label: options.label ?? "checkpoint",
+    valuePath: options.valuePath ?? "appState.checkpoint",
+    format: options.format ?? "text",
+    a11yLabel: options.a11yLabel ?? "current checkpoint"
+  });
+}
+
+export function createGameHudEventLogBinding(options: GameHudEventLogBindingOptions = {}): GameHudBinding {
+  return createGameHudValueBinding({
+    ...options,
+    binding: "event-log",
+    id: options.id ?? "hud:event-log",
+    label: options.label ?? "event log",
+    valuePath: options.valuePath ?? "appState.events",
+    format: options.format ?? "text",
+    a11yLabel: options.a11yLabel ?? "game event log",
+    debugOnly: options.debugOnly ?? true
   });
 }
 

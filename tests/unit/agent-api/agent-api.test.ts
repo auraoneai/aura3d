@@ -39,7 +39,8 @@ import {
   shadows,
   timeline,
   ui,
-  createAuraApp
+  createAuraApp,
+  unsafeModelUrl
 } from "../../../packages/engine/src";
 
 const assets = defineAuraAssets({
@@ -342,6 +343,56 @@ describe("agent API", () => {
     expect(diagnostics.bloom).toMatchObject({ enabled: true, rendered: false });
     expect(diagnostics.runtime).toMatchObject({ mounted: false, backend: "scene-plan", postprocessVerified: false });
     expect(diagnostics.warnings.join(" ")).toContain("scene plan only");
+  });
+
+  test("reports production renderer profile support while keeping ineligible scenes on safe fallback", () => {
+    const profiles = renderer.qualityProfiles();
+    expect(Object.keys(profiles).sort()).toEqual(["cinematic", "experimental-webgpu", "production", "safe-basic"]);
+    expect(renderer.qualityProfile("production")).toMatchObject({
+      id: "production",
+      status: "supported",
+      rendererMode: "production"
+    });
+
+    const app = createAuraApp(null, {
+      renderer: { mode: "production", fallback: "safe-basic", qualityProfile: "production" },
+      scene: scene().add(primitives.box({ material: material.pbr({ roughness: 0.42, metallic: 0.3 }) }))
+    });
+    const diagnostics = app.diagnostics();
+
+    expect(diagnostics.renderer!).toMatchObject({
+      rendererMode: "production",
+      fallbackMode: "safe-basic",
+      qualityProfile: { id: "production", status: "supported" }
+    });
+    expect(diagnostics.renderer!.warnings.join(" ")).toContain("will use safe-basic fallback");
+    expect(diagnostics.renderer!.warnings.join(" ")).toContain("requires at least one typed GLB");
+    app.dispose();
+  });
+
+  test("exposes public material capability diagnostics for root createAuraApp claims", () => {
+    const diagnostics = material.capabilityDiagnostics(material.clearGlass({
+      transmission: 1,
+      clearcoat: 1,
+      normal: material.proceduralTexture("plastic-micro-scratch")
+    }));
+
+    expect(diagnostics.kind).toBe("aura-material-capability-diagnostics");
+    expect(diagnostics.requestedFeatures).toEqual(expect.arrayContaining(["base-color", "clearcoat", "normal-map", "transmission"]));
+    expect(diagnostics.partialRequestedFeatures).toEqual(expect.arrayContaining(["clearcoat", "normal-map", "transmission"]));
+    expect(diagnostics.warnings.join(" ")).toContain("Partial root material features requested");
+  });
+
+  test("reports unsafe model diagnostics with the actual offending URL", () => {
+    const badUrl = "https://example.invalid/not-catalogued.glb";
+    const app = createAuraApp(null, {
+      scene: scene().add(model(unsafeModelUrl(badUrl)))
+    });
+    const warnings = app.diagnostics().warnings.join("\n");
+
+    expect(warnings).toContain(`unsafeModelUrl("${badUrl}")`);
+    expect(warnings).not.toContain('unsafeModelUrl("unsafe-url")');
+    app.dispose();
   });
 
   test("requests mounted hover runtime for the data-viz scene kit without visual-score acceptance", () => {
@@ -983,6 +1034,7 @@ describe("agent API", () => {
     expect(camera.path({ from: [0, 1, 4], to: [0, 1, 1], easing: "linear" })).toMatchObject({ mode: "path", easing: "linear" });
     expect(camera.follow({ targetNode: "hero", smoothing: 0.12, subjectEmphasis: 0.74 })).toMatchObject({ mode: "follow", smoothing: 0.12, subjectEmphasis: 0.74 });
     expect(camera.autoFrame({ bounds: { min: [-2, 0, -1], max: [2, 2, 1] } })).toMatchObject({ mode: "orbit", target: [0, 1, 0] });
+    expect(camera.frameAsset(assets.robot, { targetHeight: 3, floorY: 0.2 })).toMatchObject({ mode: "orbit", target: [0, 1.04, 0] });
     expect(camera.physics()).toMatchObject({ mode: "orbit" });
     expect(camera.charts()).toMatchObject({ mode: "orbit" });
     expect(camera.neon()).toMatchObject({ mode: "flythrough", captureTime: 0.16 });

@@ -3,6 +3,8 @@ import {
   CONTEXTUAL_ROUTE_ALIASES,
   rewriteLegacyPath
 } from "./tools/naming-taxonomy/contextualAliases";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { ViteDevServer } from "vite";
 
 const aliasEntries = [
   ["@aura3d/engine/rendering/production-runtime", "./packages/rendering/src/production-runtime/index.ts"],
@@ -58,8 +60,8 @@ export default {
   plugins: [
     {
       name: "a3d-contextual-taxonomy-aliases",
-      configureServer(server) {
-        server.middlewares.use((request, _response, next) => {
+      configureServer(server: ViteDevServer) {
+        server.middlewares.use((request: IncomingMessage, _response: ServerResponse, next: () => void) => {
           const originalUrl = request.url ?? "";
           request.url = rewriteUrl(originalUrl);
           next();

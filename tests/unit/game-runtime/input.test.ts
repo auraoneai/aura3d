@@ -76,4 +76,31 @@ describe("game.input", () => {
     input.dispose();
     replay.dispose();
   });
+
+  it("does not drop fast taps that press and release between frame updates", () => {
+    const input = game.input({
+      actions: {
+        jump: ["Space"],
+        reset: ["KeyR"]
+      },
+      bufferMs: 140,
+      autoListen: false
+    });
+
+    input.press("Space");
+    input.release("Space");
+    const tapped = input.update(1 / 60);
+
+    expect(tapped.actions.jump).toMatchObject({ pressed: true, held: false, released: false, buffered: true, value: 0 });
+    expect(input.pressed("jump")).toBe(true);
+    expect(input.buffered("jump")).toBe(true);
+
+    input.setAction("reset", true);
+    input.setAction("reset", false);
+    const programmaticTap = input.update(1 / 60);
+
+    expect(programmaticTap.actions.reset).toMatchObject({ pressed: true, held: false, released: false, buffered: true, value: 0 });
+
+    input.dispose();
+  });
 });

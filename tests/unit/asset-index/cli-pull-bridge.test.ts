@@ -16,6 +16,7 @@ import {
 import {
   buildSearchAdapters,
   defaultDownloadFile,
+  scoreResolveCandidate,
   runResolve,
   runSearch,
   selectPullable,
@@ -36,20 +37,48 @@ const WORKER_RESPONSE = {
       title: "Cute Little Robot",
       source: "objaverse",
       url: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/07a6bdfcfde44565a259be970000d2a3.glb",
+      downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/07a6bdfcfde44565a259be970000d2a3.glb",
+      sourcePage: "https://objaverse.allenai.org/object/07a6bdfcfde44565a259be970000d2a3",
       license: "CC-BY-4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
       thumbnail: "https://media.sketchfab.com/x/thumb.jpeg",
       attribution: "Paleo Modelist",
+      author: "Paleo Modelist",
       score: 0.84,
+      workerScore: 0.73,
+      qualityScore: 0.68,
+      bounds: { size: [0.8, 1.6, 0.6] },
+      triangleCount: 12000,
+      meshCount: 4,
+      materialCount: 3,
+      textureCount: 2,
+      animationClipCount: 2,
+      skinCount: 1,
+      intendedRole: "character",
+      roleSuitability: "Readable mascot character candidate with source metadata.",
     },
     {
       id: "sketchfab:6aadb75f596742ada2814ad4593f0032",
       title: "cute robot",
       source: "sketchfab",
       url: "https://api.sketchfab.com/v3/models/6aadb75f596742ada2814ad4593f0032/download",
+      downloadUrl: "https://api.sketchfab.com/v3/models/6aadb75f596742ada2814ad4593f0032/download",
+      sourcePage: "https://sketchfab.com/3d-models/6aadb75f596742ada2814ad4593f0032",
       license: "CC-BY-4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
       thumbnail: "https://media.sketchfab.com/y/thumb.jpeg",
       attribution: "Doink",
+      author: "Doink",
       score: 0.82,
+      workerScore: 0.71,
+      qualityScore: 0.61,
+      bounds: { size: [0.7, 1.4, 0.5] },
+      triangleCount: 9000,
+      meshCount: 3,
+      materialCount: 2,
+      textureCount: 1,
+      intendedRole: "character",
+      roleSuitability: "Readable robot character candidate with source metadata.",
     },
   ],
 } as const;
@@ -306,6 +335,357 @@ describe("runResolve", () => {
       }),
     ).rejects.toThrow(/fighting-character profile/i);
     expect(downloads).toBe(0);
+  });
+});
+
+describe("asset resolve ranking preservation", () => {
+  it("does not choose a weak first candidate when a later candidate has durable provenance", async () => {
+    const projectDir = makeProject();
+    const weakFirst = asset({
+      id: "catalog:weak-car",
+      title: "Sports Car",
+      url: "https://example.test/weak.glb",
+      license: normalizeLicense("CC0"),
+    });
+    const durableSecond = asset({
+      id: "catalog:durable-car",
+      title: "Sports Car With Provenance",
+      url: "https://example.test/durable.glb",
+      downloadUrl: "https://example.test/durable.glb",
+      sourcePage: "https://example.test/assets/durable-car",
+      license: normalizeLicense("CC0", "https://example.test/assets/durable-car"),
+      licenseName: "CC0-1.0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      attribution: "Catalog Author",
+      sourceFamily: "catalog",
+      semanticScore: 0.92,
+      workerScore: 0.86,
+      qualityScore: 0.81,
+      intendedRole: "vehicle",
+      roleSuitability: "Readable vehicle candidate with source, license, and role metadata.",
+    });
+    const downloaded: string[] = [];
+
+    await runResolve({
+      query: "sports car vehicle",
+      name: "car",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(weakFirst, 100), candidate(durableSecond, 10)]) as never,
+      download: async (url, dest) => {
+        downloaded.push(url);
+        writeFileSync(dest, minimalGlb());
+      },
+    });
+
+    expect(downloaded).toEqual(["https://example.test/durable.glb"]);
+  });
+
+  it("preserves score reasons and candidate quality into manifest provenance", async () => {
+    const projectDir = makeProject();
+    const car = asset({
+      id: "catalog:ranked-car",
+      title: "Ranked Sports Car",
+      url: "https://example.test/ranked.glb",
+      downloadUrl: "https://example.test/ranked.glb",
+      sourcePage: "https://example.test/assets/ranked-car",
+      license: normalizeLicense("CC0", "https://example.test/assets/ranked-car"),
+      licenseName: "CC0-1.0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      attribution: "Catalog Author",
+      sourceFamily: "hosted-catalog",
+      retrievedAt: "2026-06-20T20:00:00.000Z",
+      semanticScore: 0.8,
+      workerScore: 0.7,
+      qualityScore: 0.6,
+      bounds: { size: [4, 1.4, 2] },
+      dimensions: [4, 1.4, 2],
+      triangleCount: 32000,
+      meshCount: 5,
+      materialCount: 2,
+      textureCount: 3,
+      animationClipCount: 1,
+      animationClips: ["idle"],
+      skinCount: 1,
+      morphTargetCount: 2,
+      intendedRole: "vehicle",
+      roleSuitability: "Readable vehicle candidate with ranking metadata.",
+      qualityWarnings: ["manual review recommended"],
+      duplicateHash: "sha256-allowed",
+      duplicateOkReason: "same upstream source with corrected metadata",
+      rawCatalogMetadata: {
+        sourcePage: "https://example.test/assets/ranked-car",
+        qualityScore: 0.6,
+      },
+    });
+
+    const report = await runResolve({
+      query: "sports car vehicle",
+      name: "rankedCar",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(car, 10)]) as never,
+      download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+      inspectAssetFn: ({ file }) => ({
+        ok: true,
+        schema: "aura3d.asset-inspection/1.0",
+        file,
+        format: "glb",
+        sizeBytes: minimalGlb().length,
+        bounds: [4, 1.4, 2],
+        materials: ["paint"],
+        animations: ["idle"],
+        skeleton: {
+          skinCount: 1,
+          jointCount: 1,
+          skins: [{ index: 0, name: "Armature", jointCount: 1, joints: ["root"] }],
+          messages: [],
+        },
+        morphTargets: {
+          targetCount: 2,
+          targetNames: ["blink", "smile"],
+          meshes: [],
+          messages: [],
+        },
+        textures: ["albedo.png", "normal.png", "roughness.png"],
+        dependencies: [],
+        warnings: [],
+        messages: [],
+      }),
+    });
+    const output = report.messages.join("\n");
+    expect(output).toContain("Release validation is still required");
+    expect(output).toContain("rendered-probe proof");
+    expect(output).not.toMatch(/production-ready|showcase-ready|release-ready/i);
+
+    const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+      assets: Array<{
+        id: string;
+        quality?: string;
+        role?: string;
+        provenance?: {
+          resolveCandidate?: {
+            catalogId?: string;
+            scoreTotal?: number;
+            reasons?: string[];
+            penalties?: string[];
+            sourcePage?: string;
+            downloadUrl?: string;
+            license?: string;
+            licenseName?: string;
+            licenseUrl?: string;
+            author?: string;
+            attribution?: string;
+            sourceFamily?: string;
+            retrievedAt?: string;
+            semanticScore?: number;
+            workerScore?: number;
+            qualityScore?: number;
+            bounds?: [number, number, number];
+            dimensions?: [number, number, number];
+            triangleCount?: number;
+            meshCount?: number;
+            materialCount?: number;
+            textureCount?: number;
+            animationClipCount?: number;
+            animationClips?: string[];
+            skinCount?: number;
+            morphTargetCount?: number;
+            intendedRole?: string;
+            roleSuitability?: string;
+            qualityWarnings?: string[];
+            duplicateHash?: string;
+            duplicateOkReason?: string;
+            postDownloadInspection?: {
+              materialCount: number;
+              textureCount: number;
+              animationClipCount: number;
+              skinCount: number;
+              morphTargetCount: number;
+              warnings: string[];
+            };
+            rawCatalogMetadata?: Record<string, unknown>;
+          };
+        };
+      }>;
+    };
+    const entry = manifest.assets.find((assetEntry) => assetEntry.id === "rankedCar");
+    expect(entry?.quality).toBe("candidate");
+    expect(entry?.role).toBe("vehicle");
+    expect(entry?.provenance?.resolveCandidate).toMatchObject({
+      catalogId: "catalog:ranked-car",
+    });
+    expect(entry?.provenance?.resolveCandidate?.scoreTotal).toBeGreaterThan(0);
+    expect(entry?.provenance?.resolveCandidate?.reasons?.join("\n")).toContain("source page preserved");
+    expect(entry?.provenance?.resolveCandidate).toMatchObject({
+      sourcePage: "https://example.test/assets/ranked-car",
+      downloadUrl: "https://example.test/ranked.glb",
+      license: "CC0-1.0",
+      licenseName: "CC0-1.0",
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      attribution: "Catalog Author",
+      sourceFamily: "hosted-catalog",
+      retrievedAt: "2026-06-20T20:00:00.000Z",
+      semanticScore: 0.8,
+      workerScore: 0.7,
+      qualityScore: 0.6,
+      bounds: [4, 1.4, 2],
+      dimensions: [4, 1.4, 2],
+      triangleCount: 32000,
+      meshCount: 5,
+      materialCount: 2,
+      textureCount: 3,
+      animationClipCount: 1,
+      animationClips: ["idle"],
+      skinCount: 1,
+      morphTargetCount: 2,
+      intendedRole: "vehicle",
+      roleSuitability: "Readable vehicle candidate with ranking metadata.",
+      qualityWarnings: ["manual review recommended"],
+      duplicateHash: "sha256-allowed",
+      duplicateOkReason: "same upstream source with corrected metadata",
+      rawCatalogMetadata: {
+        sourcePage: "https://example.test/assets/ranked-car",
+        qualityScore: 0.6,
+      },
+    });
+    expect(entry?.provenance?.resolveCandidate?.postDownloadInspection).toMatchObject({
+      materialCount: 1,
+      textureCount: 3,
+      animationClipCount: 1,
+      skinCount: 1,
+      morphTargetCount: 2,
+      warnings: [],
+    });
+  });
+
+  it("falls through when post-download inspection contradicts catalog metadata", async () => {
+    const projectDir = makeProject();
+    const advertisedGeometry = asset({
+      id: "catalog:bad",
+      title: "Advertised Textured Car",
+      url: "https://example.test/bad.glb",
+      sourcePage: "https://example.test/bad",
+      license: normalizeLicense("CC0", "https://example.test/bad"),
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      bounds: { size: [4, 1.4, 2] },
+      materialCount: 3,
+      textureCount: 2,
+      intendedRole: "vehicle",
+      roleSuitability: "Vehicle candidate that claims geometry and materials.",
+    });
+    const fallback = asset({
+      id: "catalog:fallback",
+      title: "Fallback Car",
+      url: "https://example.test/fallback.glb",
+      sourcePage: "https://example.test/fallback",
+      license: normalizeLicense("CC0", "https://example.test/fallback"),
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      intendedRole: "vehicle",
+      roleSuitability: "Fallback vehicle candidate with durable provenance.",
+    });
+    const downloaded: string[] = [];
+
+    const report = await runResolve({
+      query: "vehicle car",
+      name: "car",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(advertisedGeometry, 100), candidate(fallback, 1)]) as never,
+      download: async (url, dest) => {
+        downloaded.push(url);
+        writeFileSync(dest, minimalGlb());
+      },
+    });
+
+    expect(report.ok).toBe(true);
+    expect(downloaded).toEqual(["https://example.test/bad.glb", "https://example.test/fallback.glb"]);
+    expect(report.messages.join("\n")).toContain("post-download inspection blocked candidate");
+  });
+
+  it("requires duplicate hash candidates to carry an allowlist explanation", async () => {
+    const projectDir = makeProject();
+    const duplicate = asset({
+      id: "catalog:duplicate",
+      title: "Duplicate Car",
+      url: "https://example.test/duplicate.glb",
+      sourcePage: "https://example.test/duplicate",
+      license: normalizeLicense("CC0", "https://example.test/duplicate"),
+      duplicateHash: "sha256-deadbeef",
+      intendedRole: "vehicle",
+      roleSuitability: "Duplicate candidate without explicit allowlist reason.",
+    });
+    const clean = asset({
+      id: "catalog:clean",
+      title: "Clean Car",
+      url: "https://example.test/clean.glb",
+      sourcePage: "https://example.test/clean",
+      license: normalizeLicense("CC0", "https://example.test/clean"),
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      intendedRole: "vehicle",
+      roleSuitability: "Clean vehicle candidate with durable provenance.",
+    });
+    const downloaded: string[] = [];
+
+    await runResolve({
+      query: "vehicle car",
+      name: "car",
+      projectDir,
+      makeResolver: () => stubResolver([candidate(duplicate, 100), candidate(clean, 1)]) as never,
+      download: async (url, dest) => {
+        downloaded.push(url);
+        writeFileSync(dest, minimalGlb());
+      },
+    });
+
+    expect(downloaded).toEqual(["https://example.test/clean.glb"]);
+  });
+
+  it("penalizes missing material and texture metadata for non-abstract visual roles", () => {
+    const score = scoreResolveCandidate(candidate(asset({
+      id: "catalog:bare-product",
+      title: "Product Shoe",
+      url: "https://example.test/shoe.glb",
+      sourcePage: "https://example.test/shoe",
+      license: normalizeLicense("CC0", "https://example.test/shoe"),
+      intendedRole: "product",
+      roleSuitability: "Commerce product candidate.",
+    })), { query: "product shoe" });
+
+    expect(score.penalties).toEqual(expect.arrayContaining([
+      "missing material metadata for visual model role",
+      "missing texture metadata for visual model role",
+    ]));
+  });
+
+  it("ranks durable role-fit metadata above a weak first result", () => {
+    const weak = candidate(asset({
+      id: "catalog:weak",
+      title: "Asset",
+      url: "https://example.test/weak.glb",
+      license: normalizeLicense("CC0"),
+    }), 100);
+    const roleFit = candidate(asset({
+      id: "catalog:role-fit",
+      title: "Sports Car",
+      url: "https://example.test/fit.glb",
+      sourcePage: "https://example.test/fit",
+      license: normalizeLicense("CC0", "https://example.test/fit"),
+      licenseUrl: "https://creativecommons.org/publicdomain/zero/1.0/",
+      author: "Catalog Author",
+      semanticScore: 0.8,
+      workerScore: 0.7,
+      qualityScore: 0.6,
+      intendedRole: "vehicle",
+      roleSuitability: "Vehicle candidate that matches the requested role.",
+    }), 1);
+
+    const weakScore = scoreResolveCandidate(weak, { query: "sports car vehicle" });
+    const roleFitScore = scoreResolveCandidate(roleFit, { query: "sports car vehicle" });
+    expect(roleFitScore.total).toBeGreaterThan(weakScore.total);
   });
 });
 
@@ -680,6 +1060,45 @@ describe("aura-index adapter (#24)", () => {
       attribution: "Paleo Modelist",
     });
     expect(records[0]?.license.spdx).toBe("CC-BY-4.0");
+  });
+
+  it("preserves semantic, worker, and quality scores through canonical assets", async () => {
+    const adapter = createAuraIndexAdapter();
+    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
+    expect(records[0]).toMatchObject({
+      semanticScore: 0.84,
+      workerScore: 0.73,
+      qualityScore: 0.68,
+    });
+  });
+
+  it("preserves license/source/author/download metadata from the hosted catalog", async () => {
+    const adapter = createAuraIndexAdapter();
+    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
+    expect(records[0]).toMatchObject({
+      downloadUrl: "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/07a6bdfcfde44565a259be970000d2a3.glb",
+      sourcePage: "https://objaverse.allenai.org/object/07a6bdfcfde44565a259be970000d2a3",
+      licenseName: "CC-BY-4.0",
+      licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      author: "Paleo Modelist",
+      sourceFamily: "objaverse",
+    });
+  });
+
+  it("preserves inspection and role metadata from the hosted catalog", async () => {
+    const adapter = createAuraIndexAdapter();
+    const records = await adapter.search({ text: "robot" }, { fetchJson: workerFetch() });
+    expect(records[0]).toMatchObject({
+      bounds: { size: [0.8, 1.6, 0.6] },
+      triangleCount: 12000,
+      meshCount: 4,
+      materialCount: 3,
+      textureCount: 2,
+      animationClipCount: 2,
+      skinCount: 1,
+      intendedRole: "character",
+      roleSuitability: "Readable mascot character candidate with source metadata.",
+    });
   });
 
   it("returns [] for an empty query without fetching", async () => {

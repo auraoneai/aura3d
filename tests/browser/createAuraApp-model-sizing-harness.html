@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D Model Sizing Contract</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        background: #05070b;
+      }
+
+      body {
+        display: grid;
+        grid-template-columns: 520px 520px;
+        gap: 18px;
+        padding: 18px;
+        box-sizing: border-box;
+      }
+
+      .stage {
+        width: 520px;
+        height: 390px;
+        background: #05070b;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="targetHeight-small-stage" class="stage"></div>
+    <div id="targetHeight-large-stage" class="stage"></div>
+    <div id="targetMaxDimension-small-stage" class="stage"></div>
+    <div id="targetMaxDimension-large-stage" class="stage"></div>
+    <div id="targetLength-small-stage" class="stage"></div>
+    <div id="targetLength-large-stage" class="stage"></div>
+    <script type="module" src="./createAuraApp-model-sizing-harness.ts"></script>
+  </body>
+</html>

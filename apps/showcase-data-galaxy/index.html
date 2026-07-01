@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura3D Showcase - Data Galaxy Explorer</title>
+    <meta
+      name="description"
+      content="Aura3D Data Galaxy Explorer showcase app with CLI-resolved typed data-reactor and orbital station assets, semantic data visualization, particles, attractors, camera presets, and route evidence."
+    >
+    <link rel="stylesheet" href="/apps/showcase-data-galaxy/src/styles.css">
+  </head>
+  <body>
+    <main class="shell" aria-label="Data Galaxy Explorer">
+      <section id="aura-stage" class="stage" aria-label="Aura3D data galaxy viewport"></section>
+
+      <aside class="topbar" aria-label="Data Galaxy controls">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <p class="eyebrow">Showcase 06</p>
+            <h1>Data Galaxy Explorer</h1>
+          </div>
+        </div>
+
+        <div class="control-cluster" aria-label="Formation">
+          <button type="button" data-formation="galaxy">Galaxy</button>
+          <button type="button" data-formation="sphere">Sphere</button>
+          <button type="button" data-formation="vortex">Vortex</button>
+          <button type="button" data-formation="network">Network</button>
+          <button type="button" data-formation="wave">Wave</button>
+        </div>
+
+        <div class="control-cluster" aria-label="Camera">
+          <button type="button" data-camera="overview">Overview</button>
+          <button type="button" data-camera="focus">Focus</button>
+          <button type="button" data-camera="orbital">Orbital</button>
+          <button type="button" data-camera="flythrough">Flythrough</button>
+        </div>
+      </aside>
+
+      <aside class="panel controls" aria-label="Runtime controls">
+        <label>
+          <span>Particles</span>
+          <output id="dg-count-value">120</output>
+          <input id="dg-count" type="range" min="80" max="360" step="40" value="120">
+        </label>
+
+        <label>
+          <span>Flow Speed</span>
+          <output id="dg-speed-value">1.00x</output>
+          <input id="dg-speed" type="range" min="0.40" max="2.40" step="0.05" value="1">
+        </label>
+
+        <label>
+          <span>Performance</span>
+          <select id="dg-performance">
+            <option value="balanced">Balanced</option>
+            <option value="dense">Dense</option>
+            <option value="cinematic">Cinematic</option>
+          </select>
+        </label>
+
+        <label class="toggle-row">
+          <input id="dg-connections" type="checkbox">
+          <span>Connection Arcs</span>
+        </label>
+      </aside>
+
+      <aside class="panel evidence" aria-label="Route evidence">
+        <div class="metric">
+          <span>Frame</span>
+          <output id="dg-frame">0</output>
+        </div>
+        <div class="metric">
+          <span>Nodes</span>
+          <output id="dg-nodes">0</output>
+        </div>
+        <div class="metric">
+          <span>Labels</span>
+          <output id="dg-labels">0</output>
+        </div>
+        <div class="metric">
+          <span>Status</span>
+          <output id="dg-status">booting</output>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="/apps/showcase-data-galaxy/src/main.ts"></script>
+  </body>
+</html>

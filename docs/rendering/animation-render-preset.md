@@ -66,7 +66,12 @@ The gate should reject a video where the only visible change is a whole-frame im
 
 ## Render Preset API (`createAnimationRenderPreset`)
 
-The shipped surface is a small, evidence-producing helper, not a full renderer. `createAnimationRenderPreset` returns a `AnimationRenderPresetEvidence` record describing the policy that an episode route should honor.
+The shipped surface is a small, evidence-producing helper in `@aura3d/rendering`, not a full renderer and not a `createAuraApp` renderer mode. `createAnimationRenderPreset` returns a `AnimationRenderPresetEvidence` record describing the policy that an episode route should honor.
+
+Using this helper does not prove root `createAuraApp` rendered bloom, color
+grading, soft shadows, toon materials, skinning, or morph targets. Those
+features need browser screenshots, diagnostics, and frame metrics from the
+actual route.
 
 `AnimationRenderPresetOptions` fields (all optional):
 
@@ -76,7 +81,10 @@ The shipped surface is a small, evidence-producing helper, not a full renderer. 
 - `reducedMotion` — accessibility flag (defaults to `false`).
 - `reducedFlash` — when set, lowers bloom from `0.18` to `0.08` (defaults to `false`).
 
-`AnimationRenderPresetEvidence` records the resolved `lights`, `shadows` (soft + contact), `postprocess` (`bloom`, `colorGrade`, `fogDepthCue`), the resolved `materialStyle`, a `frameBudgetMs` of `16.7`, and `debugOverlaysAllowedInExport: false`.
+`AnimationRenderPresetEvidence` records the resolved policy for `lights`,
+`shadows` (soft + contact), `postprocess` intent (`bloom`, `colorGrade`,
+`fogDepthCue`), the resolved `materialStyle`, a `frameBudgetMs` of `16.7`, and
+`debugOverlaysAllowedInExport: false`.
 
 ```ts
 import { createAnimationRenderPreset } from "@aura3d/rendering";

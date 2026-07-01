@@ -85,6 +85,8 @@ function toCanonical(
     return null;
   }
   const title = asset.name ?? asset.id;
+  const sourcePage = project.github_url;
+  const licenseName = project.license;
   const tags = Array.from(
     new Set([
       ...tokenize(title),
@@ -98,14 +100,20 @@ function toCanonical(
     title,
     description: asset.description,
     url: asset.model_file_url,
+    downloadUrl: asset.model_file_url,
     access: "direct-download",
     format: normalizeFormat(asset.format),
-    license: normalizeLicense(project.license, project.github_url),
+    license: normalizeLicense(project.license, sourcePage),
+    ...(licenseName ? { licenseName } : {}),
     thumbnailUrl: asset.thumbnail_url,
     fileSizeBytes: asset.metadata?.file_size,
     tags,
-    sourcePage: project.github_url,
+    ...(sourcePage ? { sourcePage } : {}),
+    sourceFamily: "os3a",
+    ...(asset.updated_at ? { retrievedAt: asset.updated_at } : {}),
+    author: project.creator_id,
     attribution: project.creator_id,
+    rawCatalogMetadata: { asset, project },
   };
 }
 

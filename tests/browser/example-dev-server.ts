@@ -16,6 +16,7 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/ecs", "/packages/ecs/src/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine", "/packages/engine/src/index.ts"],
+  ["@aura3d/engine/scene", "/packages/scene/src/index.ts"],
   ["@aura3d/cli", "/packages/aura3d-cli/src/index.ts"],
   ["@aura3d/react", "/packages/react/src/index.ts"],
   ["@aura3d/engine/production-runtime", "/packages/engine/src/production-runtime/index.ts"],
@@ -140,6 +141,10 @@ function resolveRequest(root: string, pathname: string): string | undefined {
 
   if (normalizedPath === "/" || normalizedPath === ".") {
     candidates.push(join(root, "examples", "00-basic-triangle", "index.html"));
+  } else if (normalizedPath.startsWith("aura-assets/") || normalizedPath.startsWith("/aura-assets/")) {
+    candidates.push(join(root, "public", normalizedPath.replace(/^[/\\]?/, "")));
+    candidates.push(join(root, "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
+    candidates.push(join(root, "packages", "create-aura3d", "templates", "mini-game", "public", normalizedPath.replace(/^[/\\]?/, "")));
   } else if (loadersBrowserMappedPath) {
     candidates.push(join(root, loadersBrowserMappedPath));
   } else if (legacyGameSliceTemplatePath) {
