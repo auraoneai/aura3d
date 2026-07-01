@@ -3,8 +3,11 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 
 const expectedEngineVersion = "1.4.0";
+const expectedShowcaseAssetPackage = "@aura3d/showcase-assets-web";
+const expectedShowcaseAssetVersion = "1.4.0";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(marketingDir, "..");
@@ -131,6 +134,15 @@ function copyAuraAssets() {
   }
 }
 
+function resolveShowcaseAssetBaseUrl() {
+  const configuredBase = process.env.AURA3D_SHOWCASE_ASSET_BASE_URL?.trim();
+  if (!configuredBase) return "";
+  if (configuredBase === "jsdelivr") {
+    return `https://cdn.jsdelivr.net/npm/${expectedShowcaseAssetPackage}@${expectedShowcaseAssetVersion}/aura-assets`;
+  }
+  return configuredBase.replace(/\/+$/, "");
+}
+
 function collectRouteAssetIds() {
   const routeAssetIds = new Set();
   const assetReferencePattern = /\bassets\.([A-Za-z0-9_$]+)\b/g;
@@ -192,12 +204,18 @@ function assertBuiltRoutes() {
 
 function main() {
   assertEngineVersion();
+  const showcaseAssetBaseUrl = resolveShowcaseAssetBaseUrl();
   const tempDir = mkdtempSync(path.join(tmpdir(), "aura3d-marketing-showcase-"));
   try {
     const configPath = writeViteConfig(tempDir);
     runViteBuild(configPath);
     copyRouteHealth();
-    copyAuraAssets();
+    if (showcaseAssetBaseUrl) {
+      removeLocalAuraAssets(distDir);
+      rewriteBuiltAuraAssetUrls(distDir, showcaseAssetBaseUrl);
+    } else {
+      copyAuraAssets();
+    }
     assertBuiltRoutes();
     console.log(`Built ${showcaseRoutes.length} showcase routes with @aura3d/engine@${expectedEngineVersion}.`);
   } finally {
