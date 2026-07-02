@@ -158,6 +158,34 @@ Latest implementation change:
 - The Turbo and Skyline compiler templates now emit those bound game-stage modes and no longer render the track/world GLB as the public game board. The track/world typed assets remain hash-bound evidence sources for topology/surface metadata, while the visible gameplay surface is generated from the certified geometry.
 - Live Turbo and Skyline routes were patched to the same generated pattern so browser screenshots exercise the root template behavior, not a one-off route tweak.
 
+## Public Release Gate Enforcement
+
+The public showcase checker now treats game geometry evidence as retained file
+evidence, not review prose:
+
+- `tools/showcase-library/build-and-check.mjs` passes the repo root into the
+  game release validator for any release-ready route with game template status.
+- `tools/showcase-library/showcase-game-release-gates.mjs` verifies the current
+  route-primary screenshot hash, current manifest asset hashes, retained
+  topology/surface report path, report route id, report pass status, and report
+  failures.
+- The game release validator now fails without a repo root, so shape-valid
+  JSON cannot be treated as public game evidence unless the checker can read
+  the current retained files from disk.
+- Racing public candidates must have a passing retained
+  `aura3d-racing-track-topology/1.0` report with mesh extraction passing and an
+  overlay bound to the current route-primary screenshot.
+- Platformer public candidates must have a passing retained
+  `aura3d-platformer-playable-surfaces/1.0` report with a surface map bound to
+  the current route-primary screenshot.
+- Unit coverage proves that synthetic screenshot hashes and stale asset hashes
+  are rejected when the validator runs in release-check mode.
+
+This means Turbo and Skyline cannot return to the public release path by
+passing route-primary, deploy, and input/gameplay checks alone. They need
+current visual review plus retained game-geometry evidence that matches the
+actual files in the repo.
+
 ## Turbo Rebuild Result
 
 Turbo was regenerated through the compiler path with mesh-derived topology from `showcaseTsukubaCircuit`.
@@ -257,3 +285,52 @@ Skyline:
 Turbo still needs a release-certified racing asset pair whose camera/composition proves the car is visibly bound to the road surface.
 
 Skyline still needs a release-certified platformer world asset with mesh-derived playable surfaces and a passing retained release probe.
+
+## Final Binary Assessment: 2026-07-01
+
+Can Aura3D, with the current engine APIs and current asset catalog, produce
+public-quality Turbo Drift and Skyline Runner game examples?
+
+No.
+
+Turbo has partial root-layer support now: retained mesh-derived racing topology
+exists for `showcaseTsukubaCircuit`, and scene-bound racing helpers reject the
+old visible-model/gameplay-route separation. The remaining blocker is lower and
+more specific: the current catalog does not provide a release-certified racing
+asset pair whose topology, visible road surface, car scale, camera, and retained
+screenshot compose into a credible public racing scene. The exact retained
+blocker remains:
+
+`asset-pair:racing-public-composition-bounds-missing`
+
+Skyline has retained surface-map evidence and scene-binding invariants, but the
+active `showcaseSideScrollerWorld` asset does not provide mesh-derived playable
+surfaces that pass the public platformer bar. Authored overlay fallback data is
+not enough to certify a public platformer route. The exact retained blocker is:
+
+`asset-catalog:release-ready-platformer-world-with-mesh-derived-playable-surfaces-missing`
+
+Both routes must remain out of public examples until the catalog contains
+release-ready game assets with retained geometry evidence and the generated
+screenshots pass human visual review as real games.
+
+## Release Gate Enforcement: 2026-07-01
+
+The showcase release gate now rejects any public racing/platformer route that
+tries to pass on route-primary, deploy, gameplay, and visual-review wording
+alone. A public game route must include structured geometry evidence in
+`route-health.json`:
+
+- category-specific geometry kind (`racing-track-topology` or
+  `platformer-playable-surface-map`)
+- accepted geometry source (`asset-mesh-extracted`,
+  `manifest-authored-overlay-validated`, or
+  `compiler-authored-overlay-validated`)
+- retained compiler report path under `tests/reports/showcase-spec-compiler/`
+- retained route-primary screenshot path plus a `sha256-*` screenshot hash
+- current primary asset ids with `sha256-*` asset hashes
+- repo-root retained-file validation; shape-valid evidence without live
+  screenshot/report/manifest checks is rejected
+
+This keeps Turbo/Skyline from being promoted by stale screenshots, manual visual
+QA paths, or input-state proof without asset-bound game geometry.

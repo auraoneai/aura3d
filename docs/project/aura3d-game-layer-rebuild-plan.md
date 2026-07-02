@@ -6,16 +6,31 @@ Turbo Drift Circuit and Skyline Runner are intentionally removed from the public
 showcase examples. They remain retained prototype evidence routes only.
 
 The current engine APIs and asset catalog can render typed GLBs, validate
-deploy metadata, and prove simple input state changes. They do not yet provide
-the game-geometry layer required to turn arbitrary racing and platformer assets
-into public-quality game examples.
+deploy metadata, prove simple input state changes, and retain some structured
+game-geometry evidence. That is still not enough to turn arbitrary racing and
+platformer assets into public-quality game examples.
+
+## Current Implemented Pieces
+
+- Turbo Drift Circuit has retained mesh-derived topology evidence for
+  `showcaseTsukubaCircuit`.
+- The engine exposes scene-bound racing/platformer helpers that reject obvious
+  presentation offsets between visible assets and gameplay geometry.
+- Skyline Runner has retained platformer surface-map evidence, but the active
+  world asset falls back to authored overlay data because mesh-derived surface
+  extraction is ambiguous.
+
+These pieces prevent the old route-local proof-loop from being silently treated
+as public game quality. They do not yet solve public game composition,
+catalog-certified asset pairing, camera-safe framing, or replacement coverage.
 
 ## Missing Racing Capabilities
 
-- Mesh-derived racing topology extraction from real track GLBs.
 - Certified racing track catalog entries with road centerline, road width,
   lap length, scene bounds, start pose, checkpoint positions, and car scale
   compatibility.
+- Public-quality racing asset-pair certification proving the active car,
+  topology, camera, and visible road surface compose into a readable race scene.
 - Game-to-scene transform validation proving the car, checkpoints, camera, and
   lap path are bound to the visible road surface in retained screenshots.
 - Category-level racing camera rules that keep the car readable while showing a
@@ -56,6 +71,13 @@ A game route can return to the public showcase only when all of the following
 are true:
 
 - It has retained game-geometry evidence bound to current asset hashes.
+- The release checker runs retained-file validation against the repo root; a
+  shape-valid JSON object without current screenshot/report/manifest reads is
+  not enough.
+- The release checker can read the retained topology/surface report from disk
+  and confirm the report passes for the current route.
+- The route-primary screenshot hash recorded in the game geometry evidence
+  matches the current retained screenshot file.
 - Its gameplay proof uses that geometry evidence instead of route-local proof
   points or rectangles.
 - Its retained screenshot reads as a credible public game example.
@@ -67,7 +89,7 @@ Turbo Drift Circuit remains blocked by
 `asset-pair:racing-public-composition-bounds-missing`.
 
 Skyline Runner remains blocked by
-`asset-pair:platformer-public-character-world-binding-missing`.
+`asset-catalog:release-ready-platformer-world-with-mesh-derived-playable-surfaces-missing`.
 
 Neither route is counted as a public release candidate until the game layer is
 rebuilt.

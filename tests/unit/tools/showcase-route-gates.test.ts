@@ -50,6 +50,7 @@ interface ShowcaseRouteGateConfig {
 
 interface ManifestAsset {
   readonly id?: string;
+  readonly hash?: string;
 }
 
 interface RouteHealthPrimaryAsset {
@@ -62,6 +63,18 @@ interface RouteHealthGameAssetPairEvidence {
   readonly screenshotEvidence?: string;
   readonly verdict?: string;
   readonly blockers?: readonly string[];
+  readonly geometryEvidence?: {
+    readonly category?: string;
+    readonly kind?: string;
+    readonly source?: string;
+    readonly report?: string;
+    readonly screenshotEvidence?: string;
+    readonly routePrimaryScreenshotSha256?: string;
+    readonly assets?: readonly {
+      readonly id?: string;
+      readonly hash?: string;
+    }[];
+  };
 }
 
 interface RouteHealthFile {
@@ -235,6 +248,14 @@ interface RouteGateModule {
   readShowcaseRouteGateConfig(root?: string): ShowcaseRouteGateConfig;
   showcaseRouteById(id: string, root?: string): ShowcaseRouteGate;
   showcaseRouteGateHash(root?: string): string;
+}
+
+interface GameReleaseGateModule {
+  validateReleaseGameAssetPairEvidence(input: {
+    readonly route: ShowcaseRouteGate;
+    readonly routeHealth: RouteHealthFile;
+    readonly root?: string;
+  }): readonly string[];
 }
 
 describe("showcase route gate registry", () => {
@@ -422,6 +443,155 @@ describe("showcase route gate registry", () => {
         expect.arrayContaining(expected.assetPairBlockers)
       );
     }
+  });
+
+  it("requires current passing game asset-pair evidence before a game route can be public", async () => {
+    const module = await loadGameReleaseGateModule();
+    const prototypeRoute = typedRoute("showcase-turbo-drift-circuit");
+    const releaseRoute: ShowcaseRouteGate = {
+      ...prototypeRoute,
+      releaseClass: "release-ready candidate",
+      gameTemplateStatus: {
+        category: "racing",
+        publicTemplateReady: true,
+        evidence: [
+          "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+        ]
+      }
+    };
+    const failingHealth = JSON.parse(
+      readFileSync(resolve("apps/showcase-turbo-drift-circuit/route-health.json"), "utf8")
+    ) as RouteHealthFile;
+    const releaseHealthBase: RouteHealthFile = {
+      schema: failingHealth.schema,
+      appId: failingHealth.appId,
+      route: failingHealth.route,
+      classification: "release-ready candidate",
+      publicShowcase: true,
+      primaryAssets: failingHealth.primaryAssets,
+      blockers: [],
+      evidence: failingHealth.evidence
+    };
+    const geometryEvidence = {
+      category: "racing",
+      kind: "racing-track-topology",
+      source: "asset-mesh-extracted",
+      report: "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+      screenshotEvidence: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+      routePrimaryScreenshotSha256: `sha256-${"a".repeat(64)}`,
+      assets: releaseRoute.primaryAssets.map((asset) => ({
+        id: asset,
+        hash: `sha256-${"b".repeat(64)}`
+      }))
+    };
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: failingHealth
+    })).toEqual(expect.arrayContaining([
+      "release-game-asset-pair-verdict:fail",
+      expect.stringMatching(/^release-game-asset-pair-blockers:/)
+    ]));
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: releaseHealthBase
+    })).toEqual(expect.arrayContaining([
+      "release-game-asset-pair-evidence-missing:racing"
+    ]));
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: {
+        ...releaseHealthBase,
+        gameAssetPairEvidence: {
+          category: "racing",
+          verdict: "pass",
+          screenshotEvidence: "tests/reports/manual-visual-qa/turbo-drift-circuit.png",
+          assets: releaseRoute.primaryAssets,
+          blockers: []
+        }
+      }
+    })).toEqual(expect.arrayContaining([
+      "release-game-asset-pair-screenshot-evidence:tests/reports/manual-visual-qa/turbo-drift-circuit.png"
+    ]));
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: {
+        ...releaseHealthBase,
+        gameAssetPairEvidence: {
+          category: "racing",
+          verdict: "pass",
+          screenshotEvidence: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          assets: releaseRoute.primaryAssets,
+          blockers: []
+        }
+      }
+    })).toEqual(expect.arrayContaining([
+      "release-game-geometry-evidence-missing:racing"
+    ]));
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: {
+        ...releaseHealthBase,
+        gameAssetPairEvidence: {
+          category: "racing",
+          verdict: "pass",
+          screenshotEvidence: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          assets: releaseRoute.primaryAssets,
+          blockers: [],
+          geometryEvidence
+        }
+      }
+    })).toEqual(expect.arrayContaining([
+      "release-game-geometry-root-required"
+    ]));
+
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: {
+        ...releaseHealthBase,
+        gameAssetPairEvidence: {
+          category: "racing",
+          verdict: "pass",
+          screenshotEvidence: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          assets: releaseRoute.primaryAssets,
+          blockers: [],
+          geometryEvidence
+        }
+      },
+      root: process.cwd()
+    })).toEqual(expect.arrayContaining([
+      "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+      "release-game-geometry-asset-hash-mismatch:showcaseTexturedSportsCar",
+      "release-game-geometry-asset-hash-mismatch:showcaseTsukubaCircuit"
+    ]));
+
+    const manifestHashes = readManifestAssetHashes();
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: releaseRoute,
+      routeHealth: {
+        ...releaseHealthBase,
+        gameAssetPairEvidence: {
+          category: "racing",
+          verdict: "pass",
+          screenshotEvidence: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          assets: releaseRoute.primaryAssets,
+          blockers: [],
+          geometryEvidence: {
+            ...geometryEvidence,
+            routePrimaryScreenshotSha256: fileSha256("tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"),
+            assets: releaseRoute.primaryAssets.map((asset) => ({
+              id: asset,
+              hash: manifestHashes.get(asset)
+            }))
+          }
+        }
+      },
+      root: process.cwd()
+    })).toEqual([]);
   });
 
   it("requires typed primary assets to exist in the manifest, generated type file, and route source", () => {
@@ -880,6 +1050,18 @@ function readManifestAssetIds(): ReadonlySet<string> {
   return new Set((manifest.assets ?? []).map((asset) => asset.id).filter((id): id is string => Boolean(id)));
 }
 
+function readManifestAssetHashes(): ReadonlyMap<string, string> {
+  const manifest = JSON.parse(readFileSync(resolve("aura.assets.json"), "utf8")) as { assets?: readonly ManifestAsset[] };
+  return new Map((manifest.assets ?? [])
+    .filter((asset): asset is ManifestAsset & { readonly id: string; readonly hash: string } =>
+      typeof asset.id === "string" && typeof asset.hash === "string")
+    .map((asset) => [asset.id, asset.hash]));
+}
+
+function fileSha256(path: string): string {
+  return `sha256-${createHash("sha256").update(readFileSync(resolve(path))).digest("hex")}`;
+}
+
 function readGeneratedAssetKeys(): ReadonlySet<string> {
   const generated = readFileSync(resolve("src/aura-assets.ts"), "utf8");
   return new Set(Array.from(generated.matchAll(/"([A-Za-z0-9_]+)"\s*:/g)).map((match) => match[1] ?? "").filter(Boolean));
@@ -904,6 +1086,10 @@ async function loadRoutePrimaryProbeModule(): Promise<RoutePrimaryProbeModule> {
 
 async function loadRouteGateModule(): Promise<RouteGateModule> {
   return await import(pathToFileURL(resolve("tools/showcase-library/route-gates.mjs")).href) as RouteGateModule;
+}
+
+async function loadGameReleaseGateModule(): Promise<GameReleaseGateModule> {
+  return await import(pathToFileURL(resolve("tools/showcase-library/showcase-game-release-gates.mjs")).href) as GameReleaseGateModule;
 }
 
 function publishedTypedRoute(id: string): ShowcaseRouteGate {

@@ -40,11 +40,11 @@ Turbo technically has a retained topology report:
 - `meshExtraction.status`: `pass`
 
 But the current retained screenshot still does not read as a public racing
-game. The visible output shows a small track island, stray large GLB terrain
-geometry, cars not presented in a credible racing camera, and a proof-harness
-composition rather than a race scene. The route-primary probe passing only
-proves visible pixels and readable foreground; it does not prove public racing
-quality.
+game. The visible output shows a weak car/track composition, stray or oversized
+track/terrain presentation, cars not presented in a credible racing camera, and
+a proof-harness composition rather than a race scene. A route-primary pass would
+only prove visible pixels and readable foreground; it would not prove public
+racing quality.
 
 Therefore Turbo is not blocked by deploy metadata. It is blocked by game
 category quality: track topology, car placement, camera framing, and route
@@ -52,13 +52,12 @@ presentation are not yet sufficient as a reusable public racing template.
 
 ## Skyline Finding
 
-Skyline currently fails route-primary evidence:
-
-- `primary-foreground-too-small:2213`
-- `primary-foreground-width:64`
-- `showcaseWalkAnimatedGirl` foreground bounds: `64 x 117`
-- `visible`: `false`
-- `readabilityScore`: `46`
+Skyline currently fails public game quality even when it can render the runner
+and stage. Retained route-primary evidence has alternated between too-small and
+clipped foreground failures as the route was patched, but the public blocker is
+stable: the character, playable surfaces, contact points, and camera framing are
+not certified from the visible world asset in a way that reads as a polished
+platformer.
 
 The retained platformer surface report shows that the active world asset is not
 usable as a public mesh-derived platformer source:
@@ -104,10 +103,10 @@ and level binding against a suitable platformer world.
 
 ## Missing Capabilities
 
-1. Robust racing track topology extraction that produces camera-safe,
-   public-quality drivable route geometry from the actual track asset.
-2. Certified racing asset catalog entries with validated road topology,
+1. Certified racing asset catalog entries with validated road topology,
    route length, road width, car scale compatibility, and scene bounds.
+2. Public racing asset-pair validation that proves the car, topology, camera,
+   and retained screenshot compose into a credible racing scene.
 3. Platformer playable-surface extraction that can identify usable ground,
    platform, hazard, checkpoint, and finish geometry from the world mesh.
 4. Certified platformer world assets with playable surfaces, level length,
@@ -130,3 +129,12 @@ catalog. The next real implementation task is not more route polishing. It is
 to build and certify the game-geometry layer and asset catalog support needed
 for racing and platformer generation.
 
+## Release Gate Enforcement
+
+The repo now enforces this decision in public release checks. A racing or
+platformer route cannot return to the public candidate set by passing
+route-primary, deploy, and quick gameplay proof alone. Public game promotion
+requires route-health asset-pair evidence, retained topology/surface evidence,
+current route-primary screenshot hash validation, current manifest asset hash
+validation, a passing retained geometry report, and human visual review that
+the current screenshot reads as a real public game.

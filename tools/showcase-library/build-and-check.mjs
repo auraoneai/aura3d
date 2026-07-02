@@ -9,6 +9,7 @@ import {
   routeGateConfigRelativePath,
   showcaseRouteGateHash
 } from "./route-gates.mjs";
+import { validateReleaseGameAssetPairEvidence } from "./showcase-game-release-gates.mjs";
 import { validateRoutePrimaryProbeEvidence } from "./route-primary-probes.mjs";
 
 const toolDir = dirname(fileURLToPath(import.meta.url));
@@ -243,6 +244,15 @@ function validateReleaseClassification(route, releaseClass, evidence) {
     if (routeHealth.publicShowcase !== true) {
       failures.push(`route-health-public-showcase:${String(routeHealth.publicShowcase)}`);
     }
+    if (route.gameTemplateStatus) {
+      if (route.gameTemplateStatus.publicTemplateReady !== true) {
+        failures.push(`release-game-template-ready:${String(route.gameTemplateStatus.publicTemplateReady)}`);
+      }
+      if (!Array.isArray(route.gameTemplateStatus.evidence) || route.gameTemplateStatus.evidence.length === 0) {
+        failures.push("release-game-template-evidence-missing");
+      }
+      failures.push(...validateReleaseGameAssetPairEvidence({ route, routeHealth, root: repoRoot }));
+    }
     if (!evidence.staticGate.ok) failures.push("release-static-gate");
     if (!evidence.routePrimaryProbe.ok) failures.push("release-route-primary");
     if (!evidence.build.ok) failures.push("release-build");
@@ -259,6 +269,9 @@ function validateReleaseClassification(route, releaseClass, evidence) {
   } else if (releaseClass === PROTOTYPE_BLOCKED || releaseClass === REMOVED_FROM_PUBLIC_SHOWCASE) {
     if (routeHealth.publicShowcase !== false) {
       failures.push(`route-health-public-showcase:${String(routeHealth.publicShowcase)}`);
+    }
+    if (releaseClass === PROTOTYPE_BLOCKED && evidence.diagnosticBlockers.length === 0) {
+      failures.push("prototype-blocker-missing");
     }
   } else {
     failures.push(`unsupported-release-class:${String(releaseClass)}`);
