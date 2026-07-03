@@ -10,6 +10,8 @@ import {
 } from "../../../packages/create-aura3d/src/showcase-spec-compiler";
 import { expectStrictGeneratedSource } from "./generated-source-assertions";
 
+const SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS = 15000;
+
 describe("showcase racing spec compiler", () => {
   it("requires racing specs to declare different typed vehicle and track assets", () => {
     const baseSpec = readTurboSpec();
@@ -80,6 +82,11 @@ describe("showcase racing spec compiler", () => {
     const trackTopologyEvidencePath = join(proofDir, "track-topology.json");
     const screenshotBytes = onePixelPng();
     const screenshotSha256 = sha256ForBytes(screenshotBytes);
+    const geometryEvidence = createPassingRacingGeometryEvidence(
+      trackTopologyEvidencePath,
+      routePrimaryScreenshotPath,
+      screenshotSha256
+    );
     writeFileSync(routePrimaryScreenshotPath, screenshotBytes);
     writeFileSync(
       trackTopologyEvidencePath,
@@ -101,7 +108,7 @@ describe("showcase racing spec compiler", () => {
             assetPairEvidence: createPassingAssetPairEvidence("racing", [
               "showcaseTexturedSportsCar",
               "showcaseTsukubaCircuit"
-            ], routePrimaryScreenshotPath, routePrimaryProbePath, screenshotSha256)
+            ], routePrimaryScreenshotPath, routePrimaryProbePath, screenshotSha256, geometryEvidence)
           }
         },
         evidence: {
@@ -172,6 +179,7 @@ describe("showcase racing spec compiler", () => {
           noDebugLocatorDisk: true
         }
       });
+      expect(routeHealth.gameAssetPairEvidence?.geometryEvidence).toEqual(geometryEvidence);
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
       rmSync(proofDir, { recursive: true, force: true });
@@ -283,7 +291,7 @@ describe("showcase racing spec compiler", () => {
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
-  });
+  }, SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS);
 
   it("selects a replacement track with hash-bound overlay-validated racing topology", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
@@ -443,7 +451,7 @@ describe("showcase racing spec compiler", () => {
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
-  });
+  }, SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS);
 });
 
 function readTurboSpec(): ShowcaseSpec & { readonly racing: NonNullable<ShowcaseSpec["racing"]> } {
@@ -518,7 +526,8 @@ function createPassingAssetPairEvidence(
   assets: readonly string[],
   screenshotEvidence: string,
   routePrimaryProbe: string,
-  screenshotSha256: string
+  screenshotSha256: string,
+  geometryEvidence?: unknown
 ) {
   return {
     category,
@@ -526,9 +535,35 @@ function createPassingAssetPairEvidence(
     screenshotEvidence,
     routePrimaryProbe,
     screenshotSha256,
+    ...(geometryEvidence === undefined ? {} : { geometryEvidence }),
     verdict: "pass",
     notes: "Unit fixture proving the retained screenshot visually accepts the public game asset pairing.",
     blockers: []
+  } as const;
+}
+
+function createPassingRacingGeometryEvidence(
+  report: string,
+  screenshotEvidence: string,
+  routePrimaryScreenshotSha256: string
+) {
+  return {
+    category: "racing",
+    kind: "racing-track-topology",
+    source: "asset-mesh-extracted",
+    report,
+    screenshotEvidence,
+    routePrimaryScreenshotSha256,
+    assets: [
+      {
+        id: "showcaseTexturedSportsCar",
+        hash: "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935"
+      },
+      {
+        id: "showcaseTsukubaCircuit",
+        hash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+      }
+    ]
   } as const;
 }
 

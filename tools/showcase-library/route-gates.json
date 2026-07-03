@@ -19,8 +19,12 @@
       "globalName": "__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": ["showcaseHeadphones"],
-      "primaryAssetRoles": { "showcaseHeadphones": "product" },
+      "primaryAssets": [
+        "showcaseHeadphones"
+      ],
+      "primaryAssetRoles": {
+        "showcaseHeadphones": "product"
+      },
       "routePrimaryHeroAsset": "showcaseHeadphones",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 24,
@@ -33,8 +37,12 @@
       "globalName": "__AURA3D_SHOWCASE_MATERIAL_ASSET_INSPECTOR__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": ["showcaseHeadphones"],
-      "primaryAssetRoles": { "showcaseHeadphones": "product" },
+      "primaryAssets": [
+        "showcaseHeadphones"
+      ],
+      "primaryAssetRoles": {
+        "showcaseHeadphones": "product"
+      },
       "routePrimaryHeroAsset": "showcaseHeadphones",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 24,
@@ -47,8 +55,12 @@
       "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
       "published": true,
       "releaseClass": "internal-diagnostic",
-      "primaryAssets": ["showcaseParticleCore"],
-      "primaryAssetRoles": { "showcaseParticleCore": "abstract" },
+      "primaryAssets": [
+        "showcaseParticleCore"
+      ],
+      "primaryAssetRoles": {
+        "showcaseParticleCore": "abstract"
+      },
       "routePrimaryHeroAsset": "showcaseParticleCore",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 30,
@@ -62,8 +74,12 @@
       "globalName": "__AURA3D_SHOWCASE_SMART_CITY_CONTROL__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": ["showcaseCityVehicle"],
-      "primaryAssetRoles": { "showcaseCityVehicle": "vehicle" },
+      "primaryAssets": [
+        "showcaseCityVehicle"
+      ],
+      "primaryAssetRoles": {
+        "showcaseCityVehicle": "vehicle"
+      },
       "routePrimaryHeroAsset": "showcaseCityVehicle",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 14,
@@ -76,8 +92,12 @@
       "globalName": "__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": ["showcaseSkylineCity"],
-      "primaryAssetRoles": { "showcaseSkylineCity": "environment" },
+      "primaryAssets": [
+        "showcaseSkylineCity"
+      ],
+      "primaryAssetRoles": {
+        "showcaseSkylineCity": "environment"
+      },
       "routePrimaryHeroAsset": "showcaseSkylineCity",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 10,
@@ -90,8 +110,12 @@
       "globalName": "__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": ["showcaseRoboticWeldingWorkcell"],
-      "primaryAssetRoles": { "showcaseRoboticWeldingWorkcell": "prop" },
+      "primaryAssets": [
+        "showcaseRoboticWeldingWorkcell"
+      ],
+      "primaryAssetRoles": {
+        "showcaseRoboticWeldingWorkcell": "prop"
+      },
       "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 18,
@@ -104,8 +128,12 @@
       "globalName": "__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
       "published": true,
       "releaseClass": "internal-diagnostic",
-      "primaryAssets": ["showcaseParticleCore"],
-      "primaryAssetRoles": { "showcaseParticleCore": "effect-core" },
+      "primaryAssets": [
+        "showcaseParticleCore"
+      ],
+      "primaryAssetRoles": {
+        "showcaseParticleCore": "effect-core"
+      },
       "routePrimaryHeroAsset": "showcaseParticleCore",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 14,
@@ -128,19 +156,174 @@
       "requiresKeyboardDelta": true
     },
     {
+      "id": "showcase-public-racing-presentation-proof",
+      "label": "Public Racing Presentation Proof",
+      "path": "/apps/showcase-public-racing-presentation-proof/",
+      "globalName": "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
+      "published": true,
+      "releaseClass": "release-ready candidate",
+      "primaryAssets": [
+        "showcaseTexturedSportsCar",
+        "showcaseTsukubaCircuit"
+      ],
+      "primaryAssetRoles": {
+        "showcaseTexturedSportsCar": "vehicle",
+        "showcaseTsukubaCircuit": "track-topology"
+      },
+      "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+      "secondaryPrimaryAssets": [
+        "showcaseTsukubaCircuit"
+      ],
+      "primitiveBudget": 12,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "racing",
+        "publicTemplateReady": true,
+        "evidence": [
+          "packages/engine/src/agent-api/index.ts exposes game.publicRacingPresentation, game.racingRoadMesh, game.racingCheckpointGate, game.racingStartFinish, game.racingCameraRig, and game.certifyRacingPresentation.",
+          "apps/showcase-public-racing-presentation-proof/src/main.ts renders a typed sports car on certified public racing presentation geometry.",
+          "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png retains the public route-primary screenshot.",
+          "tests/reports/showcase-gameplay/showcase-public-racing-presentation-proof.json proves throttle, steering, checkpoint, lap, and reset behavior.",
+          "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json retains hash-bound racing topology evidence.",
+          "docs/project/showcase-visual-review.json records the public racing visual review pass."
+        ]
+      }
+    },
+    {
+      "id": "showcase-public-platformer-presentation-proof",
+      "label": "Public Platformer Presentation Proof",
+      "path": "/apps/showcase-public-platformer-presentation-proof/",
+      "globalName": "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
+      "published": true,
+      "releaseClass": "release-ready candidate",
+      "primaryAssets": [
+        "showcaseWalkAnimatedGirl",
+        "showcaseSideScrollerWorld"
+      ],
+      "primaryAssetRoles": {
+        "showcaseWalkAnimatedGirl": "character",
+        "showcaseSideScrollerWorld": "world"
+      },
+      "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+      "secondaryPrimaryAssets": [
+        "showcaseSideScrollerWorld"
+      ],
+      "primitiveBudget": 14,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "platformer",
+        "publicTemplateReady": true,
+        "evidence": [
+          "packages/engine/src/agent-api/index.ts exposes game.publicPlatformerPresentation, game.platformerGroundMesh, game.platformerPlatformMesh, game.platformerHazard, game.platformerCheckpoint, game.platformerFinish, game.platformerCameraRig, and game.certifyPlatformerPresentation.",
+          "apps/showcase-public-platformer-presentation-proof/src/main.ts renders a typed walking character on certified public platformer presentation geometry.",
+          "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png retains the public route-primary screenshot.",
+          "tests/reports/showcase-gameplay/showcase-public-platformer-presentation-proof.json proves movement, jump, checkpoint, hazard respawn, finish, and reset behavior.",
+          "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json retains hash-bound platformer playable-surface evidence.",
+          "docs/project/showcase-visual-review.json records the public platformer visual review pass."
+        ]
+      }
+    },
+    {
+      "id": "showcase-racing-game-layer-proof",
+      "label": "Racing Game Layer Proof",
+      "path": "/apps/showcase-racing-game-layer-proof/",
+      "globalName": "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__",
+      "published": true,
+      "releaseClass": "game-layer-diagnostic",
+      "primaryAssets": [
+        "showcaseTexturedSportsCar",
+        "showcaseTsukubaCircuit"
+      ],
+      "primaryAssetRoles": {
+        "showcaseTexturedSportsCar": "vehicle",
+        "showcaseTsukubaCircuit": "track"
+      },
+      "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+      "secondaryPrimaryAssets": [
+        "showcaseTsukubaCircuit"
+      ],
+      "primitiveBudget": 10,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "racing",
+        "publicTemplateReady": false,
+        "blocker": "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
+        "requiredBeforePublic": [
+          "Replace the diagnostic harness composition with a public-quality racing scene.",
+          "Reframe the typed car and typed circuit so track scale and camera read as a playable racing route.",
+          "Remove visible debug gates and proof markers from the public presentation path.",
+          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after the rebuild."
+        ],
+        "evidence": [
+          "packages/engine/src/agent-api/PublicGameGeometry.ts exports the reusable public racing geometry contract and validator.",
+          "tests/reports/showcase-spec-compiler/racing-game-layer-proof/game-template/showcase-racing-game-layer-proof-racing-track-topology.json retains diagnostic topology proof.",
+          "tests/reports/showcase-gameplay/showcase-racing-game-layer-proof.json proves keyboard throttle, steering, reset, and checkpoint/lap progression.",
+          "docs/project/showcase-visual-review.json records the current public visual blockers for this diagnostic route."
+        ]
+      }
+    },
+    {
+      "id": "showcase-platformer-game-layer-proof",
+      "label": "Platformer Game Layer Proof",
+      "path": "/apps/showcase-platformer-game-layer-proof/",
+      "globalName": "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__",
+      "published": true,
+      "releaseClass": "game-layer-diagnostic",
+      "primaryAssets": [
+        "showcaseWalkAnimatedGirl",
+        "showcaseSideScrollerWorld"
+      ],
+      "primaryAssetRoles": {
+        "showcaseWalkAnimatedGirl": "character",
+        "showcaseSideScrollerWorld": "world"
+      },
+      "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+      "secondaryPrimaryAssets": [
+        "showcaseSideScrollerWorld"
+      ],
+      "primitiveBudget": 18,
+      "requiresTypedPrimaryAssets": true,
+      "requiresKeyboardDelta": true,
+      "gameTemplateStatus": {
+        "category": "platformer",
+        "publicTemplateReady": false,
+        "blocker": "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
+        "requiredBeforePublic": [
+          "Replace the diagnostic harness composition with a public-quality platformer scene.",
+          "Rebuild character placement so foot contact is visibly grounded on authored platform surfaces.",
+          "Remove visible debug surface guides from the public presentation path.",
+          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after the rebuild."
+        ],
+        "evidence": [
+          "packages/engine/src/agent-api/PublicGameGeometry.ts exports the reusable public platformer geometry contract and validator.",
+          "tests/reports/showcase-spec-compiler/platformer-game-layer-proof/game-template/showcase-platformer-game-layer-proof-platformer-playable-surfaces.json retains diagnostic playable-surface proof.",
+          "tests/reports/showcase-gameplay/showcase-platformer-game-layer-proof.json proves keyboard movement, jump, reset, hazards, checkpoints, and finish progression.",
+          "docs/project/showcase-visual-review.json records the current public visual blockers for this diagnostic route."
+        ]
+      }
+    },
+    {
       "id": "showcase-skyline-runner",
       "label": "Skyline Runner",
       "path": "/apps/showcase-skyline-runner/",
       "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["showcaseWalkAnimatedGirl", "showcaseSideScrollerWorld"],
+      "primaryAssets": [
+        "showcaseWalkAnimatedGirl",
+        "showcaseSideScrollerWorld"
+      ],
       "primaryAssetRoles": {
         "showcaseWalkAnimatedGirl": "character",
         "showcaseSideScrollerWorld": "world"
       },
       "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
-      "secondaryPrimaryAssets": ["showcaseSideScrollerWorld"],
+      "secondaryPrimaryAssets": [
+        "showcaseSideScrollerWorld"
+      ],
       "primitiveBudget": 24,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
@@ -163,7 +346,12 @@
       },
       "requiresAnimationSubjectDelta": true,
       "animationSubjectDelta": {
-        "relativeCrop": { "x": 0.34, "y": 0.34, "width": 0.22, "height": 0.3 },
+        "relativeCrop": {
+          "x": 0.34,
+          "y": 0.34,
+          "width": 0.22,
+          "height": 0.3
+        },
         "minChangedRatio": 0.035,
         "minStrongChangedRatio": 0.015,
         "minMeanChannelDelta": 1.2
@@ -176,13 +364,18 @@
       "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
       "published": true,
       "releaseClass": "prototype-blocked",
-      "primaryAssets": ["showcaseTexturedSportsCar", "showcaseTsukubaCircuit"],
+      "primaryAssets": [
+        "showcaseTexturedSportsCar",
+        "showcaseTsukubaCircuit"
+      ],
       "primaryAssetRoles": {
         "showcaseTexturedSportsCar": "vehicle",
         "showcaseTsukubaCircuit": "track"
       },
       "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
-      "secondaryPrimaryAssets": ["showcaseTsukubaCircuit"],
+      "secondaryPrimaryAssets": [
+        "showcaseTsukubaCircuit"
+      ],
       "primitiveBudget": 10,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,

@@ -21,6 +21,7 @@ const routes = routeGateConfig.routes.filter((route) => route.published);
 const showcaseVisualReviewRelativePath = "docs/project/showcase-visual-review.json";
 const RELEASE_READY_CANDIDATE = "release-ready candidate";
 const INTERNAL_DIAGNOSTIC = "internal-diagnostic";
+const GAME_LAYER_DIAGNOSTIC = "game-layer-diagnostic";
 const PROTOTYPE_BLOCKED = "prototype-blocked";
 const INDEX_ROUTE = "index-route";
 const REMOVED_FROM_PUBLIC_SHOWCASE = "removed-from-public-showcase";
@@ -92,7 +93,7 @@ const publicReleaseOk = releaseCandidatePassed === publicReleaseRoutes.length &&
 const allRoutesOk = routeReports.every((route) => route.ok);
 const classificationOk = routeReports.every((route) => route.classificationOk);
 const diagnostics = routeReports
-  .filter((route) => route.releaseClass === INTERNAL_DIAGNOSTIC)
+  .filter((route) => route.releaseClass === INTERNAL_DIAGNOSTIC || route.releaseClass === GAME_LAYER_DIAGNOSTIC)
   .map((route) => ({
     id: route.id,
     classification: route.releaseClass,
@@ -100,6 +101,7 @@ const diagnostics = routeReports
     ok: route.ok,
     blockers: route.diagnosticBlockers
   }));
+const gameLayerDiagnostics = diagnostics.filter((route) => route.classification === GAME_LAYER_DIAGNOSTIC);
 
 const report = {
   schema: "aura3d-showcase-build-deploy/1.0",
@@ -130,10 +132,13 @@ const report = {
   releaseCandidateCount: publicReleaseRoutes.length,
   releaseCandidatePassed,
   internalDiagnosticCount: routeReports.filter((route) => route.releaseClass === INTERNAL_DIAGNOSTIC).length,
+  gameLayerDiagnosticCount: routeReports.filter((route) => route.releaseClass === GAME_LAYER_DIAGNOSTIC).length,
+  diagnosticRouteCount: diagnostics.length,
   prototypeBlockedCount: routeReports.filter((route) => route.releaseClass === PROTOTYPE_BLOCKED).length,
   indexRouteCount: routeReports.filter((route) => route.releaseClass === INDEX_ROUTE).length,
   removedFromPublicShowcaseCount: routeReports.filter((route) => route.releaseClass === REMOVED_FROM_PUBLIC_SHOWCASE).length,
   diagnostics,
+  gameLayerDiagnostics,
   routes: routeReports,
   commands: {
     build: `A3D_SHOWCASE_APP=<route> pnpm exec vite build --config ${configPath}`,
@@ -160,7 +165,8 @@ if (!report.ok) {
 } else {
   console.log(
     `Showcase public release evidence passed for ${report.releaseCandidatePassed}/${report.releaseCandidateCount} release candidates; ` +
-    `${report.internalDiagnosticCount} internal diagnostics retained; ${report.indexRouteCount} index route handled separately.`
+    `${report.internalDiagnosticCount} internal diagnostics retained; ` +
+    `${report.gameLayerDiagnosticCount} game-layer diagnostics retained; ${report.indexRouteCount} index route handled separately.`
   );
 }
 
@@ -266,6 +272,18 @@ function validateReleaseClassification(route, releaseClass, evidence) {
     }
     if (!evidence.build.ok) failures.push("diagnostic-build");
     if (evidence.diagnosticBlockers.length === 0) failures.push("diagnostic-blocker-missing");
+  } else if (releaseClass === GAME_LAYER_DIAGNOSTIC) {
+    if (routeHealth.classification !== GAME_LAYER_DIAGNOSTIC) {
+      failures.push(`route-health-classification:${String(routeHealth.classification)}`);
+    }
+    if (routeHealth.publicShowcase !== false) {
+      failures.push(`route-health-public-showcase:${String(routeHealth.publicShowcase)}`);
+    }
+    if (route.gameTemplateStatus?.publicTemplateReady !== false) {
+      failures.push(`game-layer-diagnostic-template-ready:${String(route.gameTemplateStatus?.publicTemplateReady)}`);
+    }
+    if (!evidence.build.ok) failures.push("game-layer-diagnostic-build");
+    if (evidence.diagnosticBlockers.length === 0) failures.push("game-layer-diagnostic-blocker-missing");
   } else if (releaseClass === PROTOTYPE_BLOCKED || releaseClass === REMOVED_FROM_PUBLIC_SHOWCASE) {
     if (routeHealth.publicShowcase !== false) {
       failures.push(`route-health-public-showcase:${String(routeHealth.publicShowcase)}`);
@@ -398,7 +416,7 @@ function validateRouteVisualReview(route, releaseClass, review) {
 }
 
 function collectDiagnosticBlockers(route, releaseClass, staticGate, routePrimaryProbe, deploy, visualReview) {
-  if (releaseClass !== INTERNAL_DIAGNOSTIC && releaseClass !== PROTOTYPE_BLOCKED) return [];
+  if (releaseClass !== INTERNAL_DIAGNOSTIC && releaseClass !== GAME_LAYER_DIAGNOSTIC && releaseClass !== PROTOTYPE_BLOCKED) return [];
   const blockers = [];
   if (route.gameTemplateStatus?.publicTemplateReady === false && typeof route.gameTemplateStatus.blocker === "string") {
     blockers.push(route.gameTemplateStatus.blocker);
@@ -418,6 +436,9 @@ function finalStatusForRoute(routeOk, releaseClass, diagnosticBlockers) {
   if (releaseClass === RELEASE_READY_CANDIDATE) return routeOk ? "release-ready candidate" : "release-blocked";
   if (releaseClass === INTERNAL_DIAGNOSTIC) {
     return diagnosticBlockers.length > 0 ? "internal-diagnostic-retained" : "internal-diagnostic";
+  }
+  if (releaseClass === GAME_LAYER_DIAGNOSTIC) {
+    return diagnosticBlockers.length > 0 ? "game-layer-diagnostic-retained" : "game-layer-diagnostic";
   }
   if (releaseClass === INDEX_ROUTE) return routeOk ? "index-route" : "index-route-blocked";
   return releaseClass;
@@ -764,10 +785,13 @@ function compactReport(report) {
     releaseCandidateCount: report.releaseCandidateCount,
     releaseCandidatePassed: report.releaseCandidatePassed,
     internalDiagnosticCount: report.internalDiagnosticCount,
+    gameLayerDiagnosticCount: report.gameLayerDiagnosticCount,
+    diagnosticRouteCount: report.diagnosticRouteCount,
     prototypeBlockedCount: report.prototypeBlockedCount,
     indexRouteCount: report.indexRouteCount,
     removedFromPublicShowcaseCount: report.removedFromPublicShowcaseCount,
     diagnostics: report.diagnostics,
+    gameLayerDiagnostics: report.gameLayerDiagnostics,
     commands: report.commands,
     routes: report.routes.map((route) => ({
       id: route.id,

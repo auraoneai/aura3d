@@ -1,0 +1,141 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #071015;
+  color: #eff8fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-width: 320px;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+.proof-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 316px;
+  width: 100vw;
+  height: 100vh;
+  background: #071015;
+}
+
+.proof-viewport {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #0f1a21;
+}
+
+.proof-stage,
+.proof-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.proof-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  padding: 18px;
+  border-left: 1px solid rgba(101, 216, 232, 0.2);
+  background: rgba(5, 12, 16, 0.96);
+  overflow: auto;
+}
+
+.proof-panel h1 {
+  margin: 0;
+  color: #f6f8f4;
+  font-size: 20px;
+  line-height: 1.16;
+  letter-spacing: 0;
+}
+
+.metric-grid,
+.status-list {
+  display: grid;
+  gap: 8px;
+}
+
+.metric-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.metric-grid article,
+.status-list span {
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(101, 216, 232, 0.2);
+  border-radius: 8px;
+  background: rgba(17, 23, 26, 0.86);
+}
+
+.metric-grid span {
+  display: block;
+  color: #aebcc0;
+  font-size: 11px;
+  font-weight: 720;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.metric-grid strong {
+  display: block;
+  margin-top: 4px;
+  color: #ffffff;
+  font-size: 17px;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+.status-list span {
+  color: #cfe3dc;
+  font-size: 12px;
+  line-height: 1.36;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 920px) {
+  body {
+    overflow: auto;
+  }
+
+  .proof-shell {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .proof-viewport {
+    height: 70vh;
+    min-height: 500px;
+  }
+
+  .proof-panel {
+    border-top: 1px solid rgba(101, 216, 232, 0.2);
+    border-left: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .proof-panel {
+    padding: 14px;
+  }
+}

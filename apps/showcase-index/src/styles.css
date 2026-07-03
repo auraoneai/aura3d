@@ -146,6 +146,7 @@ h1 {
 .is-ops { background-color: #20251c; }
 .is-gpu { background-color: #102734; }
 .is-game { background-color: #2a2020; }
+.is-racing { background-color: #173127; }
 
 @media (max-width: 1100px) {
   .library {

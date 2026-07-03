@@ -9,6 +9,7 @@ export const routeGateConfigRelativePath = "tools/showcase-library/route-gates.j
 const releaseClasses = new Set([
   "release-ready candidate",
   "internal-diagnostic",
+  "game-layer-diagnostic",
   "prototype-blocked",
   "index-route",
   "removed-from-public-showcase"

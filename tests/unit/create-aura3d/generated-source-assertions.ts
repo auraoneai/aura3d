@@ -16,7 +16,15 @@ export function expectStrictGeneratedSource(source: string): void {
   const sanitizedSource = source
     .replace(BASIC_ENGINE_IMPORT, basicEnginePrelude)
     .replace(GAME_ENGINE_IMPORT, gameEnginePrelude)
-    .replace(ASSETS_IMPORT, assetsPrelude);
+    .replace(ASSETS_IMPORT, assetsPrelude)
+    .replace(
+      "platformerPresentationCamera: (_options: unknown): unknown => ({}), racingPresentationTrack",
+      "platformerPresentationCamera: (_options: unknown): unknown => ({}), platformerCameraRig: (_options: unknown): unknown => ({}), racingPresentationTrack"
+    )
+    .replace(
+      "platformerPresentationSurfaces: (_options: unknown): readonly unknown[] => [], racing:",
+      "platformerPresentationSurfaces: (_options: unknown): readonly unknown[] => [], publicPlatformerPresentation: (_options: unknown): readonly unknown[] => [], racing:"
+    );
   const checkedSource = sanitizedSource
     .replace(
       "interface RacingSnapshot { readonly position: { readonly x: number; readonly y: number }; readonly speed: number; readonly heading: number; readonly progress: number; readonly checkpoint: number; readonly lap: number; readonly status: string; readonly frame: number }",

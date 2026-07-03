@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071015" />
+    <meta
+      name="description"
+      content="Aura3D certified platformer game-layer proof route with typed runner, typed world, retained playable-surface evidence, and keyboard-driven progression."
+    />
+    <title>Aura3D - Platformer Game Layer Proof</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="proof-shell" aria-label="Platformer Game Layer Proof">
+      <section class="proof-viewport">
+        <div id="app" class="proof-stage" data-testid="platformer-game-layer-proof-stage"></div>
+      </section>
+      <aside id="panel" class="proof-panel" aria-label="Platformer state">
+        <h1>Platformer Game Layer Proof</h1>
+        <section class="metric-grid" aria-label="Runner metrics">
+          <article><span>X</span><strong id="x-value">0.00</strong></article>
+          <article><span>Y</span><strong id="y-value">0.00</strong></article>
+          <article><span>Score</span><strong id="score-value">0</strong></article>
+          <article><span>Ready</span><strong id="ready-value">No</strong></article>
+        </section>
+        <section class="status-list" aria-label="Contract state">
+          <span id="surface-value">surface pending</span>
+          <span id="contact-value">contact pending</span>
+          <span id="cert-value">cert pending</span>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

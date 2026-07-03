@@ -1,0 +1,97 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-07-03",
+  "appId": "showcase-public-platformer-presentation-proof",
+  "route": "/apps/showcase-public-platformer-presentation-proof/",
+  "classification": "candidate",
+  "publicShowcase": true,
+  "promotionStatus": "release-ready-candidate-public-platformer-presentation",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseWalkAnimatedGirl",
+      "role": "character",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
+    {
+      "typedRef": "assets.showcaseSideScrollerWorld",
+      "role": "world",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 0,
+    "primitiveBudget": 14,
+    "role": "certified platformer ground, platforms, hazards, checkpoints, collectibles, finish marker, and backdrop generated through public game helpers",
+    "status": "within-stated-game-geometry-role"
+  },
+  "claimStatus": {
+    "status": "bounded",
+    "label": "createAuraApp",
+    "allowed": [
+      "certified generated platformer presentation geometry from root-safe game helpers",
+      "typed walking character visible as the platformer hero",
+      "typed side-scroller world retained as manifest-backed playable-surface provenance",
+      "keyboard movement, jump, checkpoint, hazard respawn, finish, reset, and route-primary screenshot proof"
+    ],
+    "notAllowed": [
+      "production rendering parity",
+      "commercial platformer game completeness",
+      "collision system claims beyond route-local platformer state"
+    ]
+  },
+  "blockers": [],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
+    "sourceReview": "apps/showcase-public-platformer-presentation-proof/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+    "desktopScreenshot": "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-desktop.png",
+    "mobileScreenshot": "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-mobile.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-public-platformer-presentation-proof/dist --release --source apps/showcase-public-platformer-presentation-proof/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayProof": "tests/reports/showcase-gameplay/showcase-public-platformer-presentation-proof.json",
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseWalkAnimatedGirl": "tests/reports/showcase-release-asset-probes/showcaseWalkAnimatedGirl.json",
+      "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
+    }
+  },
+  "gameAssetPairEvidence": {
+    "category": "platformer",
+    "assets": [
+      "showcaseWalkAnimatedGirl",
+      "showcaseSideScrollerWorld"
+    ],
+    "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+    "verdict": "pass",
+    "notes": "Public platformer route renders a grounded typed walking character on certified generated side-scroller level geometry with styled hazards, checkpoints, finish marker, compact HUD, keyboard gameplay proof, and the typed side-scroller world retained as the manifest-backed surface-map provenance asset.",
+    "blockers": [],
+    "geometryEvidence": {
+      "category": "platformer",
+      "kind": "platformer-playable-surface-map",
+      "source": "compiler-authored-overlay-validated",
+      "report": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+      "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+      "assets": [
+        {
+          "id": "showcaseWalkAnimatedGirl",
+          "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6"
+        },
+        {
+          "id": "showcaseSideScrollerWorld",
+          "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+        }
+      ]
+    }
+  }
+}

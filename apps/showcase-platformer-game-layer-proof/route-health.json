@@ -1,0 +1,108 @@
+{
+  "schema": "aura3d-route-health/1.0",
+  "generatedAt": "2026-07-02",
+  "appId": "showcase-platformer-game-layer-proof",
+  "route": "/apps/showcase-platformer-game-layer-proof/",
+  "classification": "game-layer-diagnostic",
+  "publicShowcase": false,
+  "promotionStatus": "game-layer-diagnostic-certified-platformer-contract-public-presentation-blocked",
+  "renderer": {
+    "path": "createAuraApp root safe API",
+    "mode": "safe-basic",
+    "nativeWebGPU": false,
+    "productionRuntime": false
+  },
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseWalkAnimatedGirl",
+      "role": "character",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    },
+    {
+      "typedRef": "assets.showcaseSideScrollerWorld",
+      "role": "world",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
+  "primitiveStatus": {
+    "sourceOccurrences": 0,
+    "primitiveBudget": 18,
+    "role": "certified platformer surfaces, hazards, checkpoints, collectibles, and finish guides generated through game.platformerPresentationSurfaces",
+    "status": "within-stated-game-geometry-role"
+  },
+  "claimStatus": {
+    "status": "bounded",
+    "label": "createAuraApp",
+    "allowed": [
+      "certified public platformer geometry contract",
+      "typed platformer character and world assets",
+      "route-local platformer gameplay through public game helpers",
+      "retained route-primary screenshot and gameplay proof"
+    ],
+    "notAllowed": [
+      "production rendering parity",
+      "commercial platformer game completeness",
+      "collision system claims beyond route-local platformer state"
+    ]
+  },
+  "blockers": [
+    "evidence:platformer-asset-pair:verdict-not-pass:fail",
+    "evidence:platformer-asset-pair:blocker:visual:platformer-proof-reads-as-diagnostic-harness",
+    "evidence:platformer-asset-pair:blocker:visual:character-not-visibly-grounded-on-platform",
+    "evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible",
+    "evidence:platformer-asset-pair:blocker:visual:character-world-composition-not-public-quality"
+  ],
+  "evidence": {
+    "global": "window.__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__",
+    "sourceReview": "apps/showcase-platformer-game-layer-proof/src/main.ts",
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.json",
+    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+    "desktopScreenshot": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+    "mobileScreenshot": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-platformer-game-layer-proof/dist --release --source apps/showcase-platformer-game-layer-proof/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayProof": "tests/reports/showcase-gameplay/showcase-platformer-game-layer-proof.json",
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseWalkAnimatedGirl": "tests/reports/showcase-release-asset-probes/showcaseWalkAnimatedGirl.json",
+      "showcaseSideScrollerWorld": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.json"
+    }
+  },
+  "gameAssetPairEvidence": {
+    "category": "platformer",
+    "assets": [
+      "showcaseWalkAnimatedGirl",
+      "showcaseSideScrollerWorld"
+    ],
+    "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+    "verdict": "fail",
+    "notes": "The route retains typed character/world assets, playable-surface certification, keyboard gameplay proof, and screenshot-hash plumbing, but the current screenshot reads as a diagnostic harness with visible surface guides and insufficient character grounding.",
+    "blockers": [
+      "visual:platformer-proof-reads-as-diagnostic-harness",
+      "visual:character-not-visibly-grounded-on-platform",
+      "visual:debug-surface-guides-visible",
+      "visual:character-world-composition-not-public-quality"
+    ],
+    "geometryEvidence": {
+      "category": "platformer",
+      "kind": "platformer-playable-surface-map",
+      "source": "manifest-authored-overlay-validated",
+      "report": "tests/reports/showcase-spec-compiler/platformer-game-layer-proof/game-template/showcase-platformer-game-layer-proof-platformer-playable-surfaces.json",
+      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+      "routePrimaryScreenshotSha256": "sha256-258c3c3787cc28f2903a69cc4d2b9518b5e29ed796c6c96874756623d820709c",
+      "assets": [
+        {
+          "id": "showcaseWalkAnimatedGirl",
+          "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6"
+        },
+        {
+          "id": "showcaseSideScrollerWorld",
+          "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+        }
+      ]
+    }
+  }
+}

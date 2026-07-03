@@ -1,6 +1,8 @@
 import type {
   ShowcaseCategoryPlan,
   ShowcaseGameAssetPairEvidence,
+  ShowcaseGameGeometryEvidence,
+  ShowcaseGameGeometryEvidenceAsset,
   ShowcaseGeometryEvidenceRef,
   ShowcaseGeometryEvidenceSource,
   ShowcaseGeometryModelBounds,
@@ -554,9 +556,37 @@ function parseGameAssetPairEvidence(evidence: Readonly<Record<string, unknown>>)
     screenshotEvidence: readString(evidence, "screenshotEvidence"),
     ...optionalString(evidence, "routePrimaryProbe"),
     ...optionalString(evidence, "screenshotSha256"),
+    ...parseOptionalGameGeometryEvidence(evidence),
     verdict: readEnum(evidence, "verdict", ["pass", "fail"]),
     notes: readString(evidence, "notes"),
     blockers: readArray(evidence, "blockers").map((value) => readStringValue(value, "assetPairEvidence.blockers"))
+  };
+}
+
+function parseOptionalGameGeometryEvidence(record: Readonly<Record<string, unknown>>): Record<"geometryEvidence", ShowcaseGameGeometryEvidence> | Record<string, never> {
+  const evidence = record.geometryEvidence;
+  if (evidence === undefined) return {};
+  if (!isRecord(evidence)) throw new Error("assetPairEvidence.geometryEvidence must be an object");
+  return { geometryEvidence: parseGameGeometryEvidence(evidence) };
+}
+
+function parseGameGeometryEvidence(evidence: Readonly<Record<string, unknown>>): ShowcaseGameGeometryEvidence {
+  return {
+    category: readEnum(evidence, "category", ["racing", "platformer"]),
+    kind: readEnum(evidence, "kind", ["racing-track-topology", "platformer-playable-surface-map"]),
+    source: parseGeometryEvidenceSource(evidence.source),
+    report: readString(evidence, "report"),
+    screenshotEvidence: readString(evidence, "screenshotEvidence"),
+    routePrimaryScreenshotSha256: readSha256(evidence, "routePrimaryScreenshotSha256"),
+    assets: readArray(evidence, "assets").map(parseGameGeometryEvidenceAsset)
+  };
+}
+
+function parseGameGeometryEvidenceAsset(value: unknown): ShowcaseGameGeometryEvidenceAsset {
+  if (!isRecord(value)) throw new Error("assetPairEvidence.geometryEvidence.assets must contain objects");
+  return {
+    id: readAssetId(value, "id"),
+    hash: readSha256(value, "hash")
   };
 }
 

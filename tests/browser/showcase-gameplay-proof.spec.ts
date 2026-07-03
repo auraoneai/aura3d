@@ -7,7 +7,11 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 declare global {
   interface Window {
     __AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__?: TurboEvidence;
+    __AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__?: TurboEvidence;
+    __AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__?: TurboEvidence;
     __AURA3D_SHOWCASE_SKYLINE_RUNNER__?: SkylineEvidence;
+    __AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__?: SkylineEvidence;
+    __AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__?: SkylineEvidence;
     __AURA3D_SHOWCASE_BLOCKFALL_REACTOR__?: BlockfallEvidence;
   }
 }
@@ -187,6 +191,22 @@ test.describe("showcase gameplay proof", () => {
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 
+  test("proves racing game layer proof gameplay when keyboard input is applied", async ({ page }) => {
+    await proveRacingRoute(page, server.origin, {
+      appId: "showcase-racing-game-layer-proof",
+      path: "/apps/showcase-racing-game-layer-proof/",
+      globalName: "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__"
+    });
+  });
+
+  test("proves public racing presentation proof gameplay when keyboard input is applied", async ({ page }) => {
+    await proveRacingRoute(page, server.origin, {
+      appId: "showcase-public-racing-presentation-proof",
+      path: "/apps/showcase-public-racing-presentation-proof/",
+      globalName: "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__"
+    });
+  });
+
   test("proves skyline runner gameplay when keyboard input is applied", async ({ page }) => {
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
@@ -224,6 +244,22 @@ test.describe("showcase gameplay proof", () => {
     check(reset.checkpointId === "start" && reset.coins === 0, blockers, "reset did not restore the start checkpoint");
     writeRouteReport("showcase-skyline-runner", blockers, errors, beforePng, afterPng, { before, after, reset });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
+  });
+
+  test("proves platformer game layer proof gameplay when keyboard input is applied", async ({ page }) => {
+    await provePlatformerRoute(page, server.origin, {
+      appId: "showcase-platformer-game-layer-proof",
+      path: "/apps/showcase-platformer-game-layer-proof/",
+      globalName: "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__"
+    });
+  });
+
+  test("proves public platformer presentation proof gameplay when keyboard input is applied", async ({ page }) => {
+    await provePlatformerRoute(page, server.origin, {
+      appId: "showcase-public-platformer-presentation-proof",
+      path: "/apps/showcase-public-platformer-presentation-proof/",
+      globalName: "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__"
+    });
   });
 
   test("proves blockfall reactor gameplay when keyboard input is applied", async ({ page }) => {
@@ -264,6 +300,91 @@ test.describe("showcase gameplay proof", () => {
   });
 });
 
+async function proveRacingRoute(
+  page: Page,
+  origin: string,
+  route: { readonly appId: string; readonly path: string; readonly globalName: "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__" | "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__" }
+): Promise<void> {
+  const blockers: string[] = [];
+  const errors = collectPageErrors(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${origin}${route.path}`, { waitUntil: "domcontentloaded" });
+  const before = await waitForRacing(page, route.globalName);
+  const beforePng = await capture(page, route.appId, "before-input");
+
+  await page.keyboard.down("KeyW");
+  await page.waitForTimeout(900);
+  await page.keyboard.down("KeyD");
+  await page.waitForTimeout(650);
+  await page.keyboard.up("KeyD");
+  await page.keyboard.up("KeyW");
+  await page.waitForTimeout(300);
+  const after = await readRacing(page, route.globalName);
+  const afterPng = await capture(page, route.appId, "after-input");
+  await page.keyboard.press("KeyR");
+  await page.waitForTimeout(260);
+  const reset = await readRacing(page, route.globalName);
+
+  check(after.speed > before.speed + 0.04, blockers, "throttle did not increase visible car speed");
+  check((after.raceState?.progress ?? 0) > (before.raceState?.progress ?? 0) + 0.015, blockers, "throttle did not advance race progress");
+  check(Math.abs((after.raceState?.heading ?? 0) - (before.raceState?.heading ?? 0)) > 0.008, blockers, "steering did not change heading");
+  check((after.raceState?.x ?? 0) !== (before.raceState?.x ?? 0) || (after.raceState?.z ?? 0) !== (before.raceState?.z ?? 0), blockers, "car position did not change");
+  check(after.kitContractProof?.checkpointAdvances === true || after.checkpoint > before.checkpoint || after.lap > before.lap, blockers, "checkpoint/lap progression is not proven");
+  check(reset.speed === 0 && reset.lap === 1 && reset.checkpoint === 0 && (reset.raceState?.progress ?? 1) < 0.005, blockers, "reset did not restore the start state");
+  check((after.raceDesign?.authoredLapSeconds ?? 0) >= 30, blockers, "authored racing lap length is shorter than 30 seconds");
+  check(after.raceDesign?.routeAlignedToVisibleTrack === true, blockers, "racing route is not proven aligned to the visible typed circuit");
+  check(after.raceDesign?.noDebugLocatorDisk === true, blockers, "racing route still exposes a debug locator disk as public composition");
+  check(after.raceDesign?.carTrackSceneBinding === true, blockers, "racing track model and route topology do not share one scene binding");
+  check(after.raceDesign?.carAlignedToVisibleRoad === true, blockers, "racing car is not proven aligned to the visible road surface");
+  check(after.raceState?.roadAlignment?.onRoad === true, blockers, "racing car is not proven on retained road topology after input");
+  check((after.raceState?.roadAlignment?.normalizedOffset ?? Number.POSITIVE_INFINITY) <= 1, blockers, "racing car drifted outside the retained road width");
+  writeRouteReport(route.appId, blockers, errors, beforePng, afterPng, { before, after, reset });
+  expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
+}
+
+async function provePlatformerRoute(
+  page: Page,
+  origin: string,
+  route: { readonly appId: string; readonly path: string; readonly globalName: "__AURA3D_SHOWCASE_SKYLINE_RUNNER__" | "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__" }
+): Promise<void> {
+  const blockers: string[] = [];
+  const errors = collectPageErrors(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${origin}${route.path}`, { waitUntil: "domcontentloaded" });
+  const before = await waitForPlatformer(page, route.globalName);
+  const beforePng = await capture(page, route.appId, "before-input");
+
+  await page.keyboard.down("KeyD");
+  await page.waitForTimeout(620);
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(240);
+  await page.keyboard.up("KeyD");
+  await page.waitForTimeout(580);
+  const after = await readPlatformer(page, route.globalName);
+  const afterPng = await capture(page, route.appId, "after-input");
+  await page.keyboard.press("KeyR");
+  await page.waitForTimeout(260);
+  const reset = await readPlatformer(page, route.globalName);
+  const states = (after.animation?.stateHistory ?? []).map((entry) => entry.state);
+  const beforeContact = before.diagnostics?.surfaceContactAlignment;
+
+  check((after.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
+  check(states.includes("jump") || Math.abs(after.diagnostics?.snapshot?.vy ?? 0) > 0.05 || (after.diagnostics?.snapshot?.y ?? 0) !== (before.diagnostics?.snapshot?.y ?? 0), blockers, "jump did not change vertical or animation state");
+  check(after.animation?.sampleFrame !== before.animation?.sampleFrame, blockers, "animation state frame did not advance");
+  check(after.kitContractProof?.checkpointEvent === true && after.kitContractProof.hazardEvent === true && after.kitContractProof.respawnEvent === true && after.kitContractProof.finishEvent === true, blockers, "checkpoint/hazard/respawn/finish progression is not proven");
+  check(after.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
+  check((after.diagnostics?.completionProof?.finalTime ?? 0) >= 30, blockers, "completion proof is shorter than 30 seconds");
+  check(after.diagnostics?.completionProof?.stable === true && ((after.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (after.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
+  check((after.levelDesign?.authoredPlayableSeconds ?? 0) >= 30, blockers, "authored platformer path is shorter than 30 seconds");
+  check(after.levelDesign?.styleCompatible === true && after.levelDesign.scaleCompatible === true, blockers, "platformer asset style/scale fit is not proven");
+  check(beforeContact?.feetOnSurface === true, blockers, "runner initial feet are not proven on a visible playable surface");
+  check(Math.abs(beforeContact?.verticalGap ?? Number.POSITIVE_INFINITY) <= 0.12, blockers, "runner surface contact gap exceeds playable-surface tolerance");
+  check((beforeContact?.playerTargetHeight ?? 0) > 0, blockers, "runner visible target height is missing from surface binding evidence");
+  check(reset.checkpointId === "start" && reset.coins === 0, blockers, "reset did not restore the start checkpoint");
+  writeRouteReport(route.appId, blockers, errors, beforePng, afterPng, { before, after, reset });
+  expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
+}
+
 function collectPageErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on("console", (message) => {
@@ -281,9 +402,25 @@ async function waitForTurbo(page: Page): Promise<TurboEvidence> {
   return readTurbo(page);
 }
 
+async function waitForRacing(
+  page: Page,
+  globalName: "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__" | "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__"
+): Promise<TurboEvidence> {
+  await expect.poll(() => page.evaluate((name) => window[name]?.status, globalName), { timeout: 60_000 }).toBeTruthy();
+  return readRacing(page, globalName);
+}
+
 async function waitForSkyline(page: Page): Promise<SkylineEvidence> {
   await expect.poll(() => page.evaluate(() => window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__?.frameCount), { timeout: 60_000 }).toBeGreaterThanOrEqual(0);
   return readSkyline(page);
+}
+
+async function waitForPlatformer(
+  page: Page,
+  globalName: "__AURA3D_SHOWCASE_SKYLINE_RUNNER__" | "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__"
+): Promise<SkylineEvidence> {
+  await expect.poll(() => page.evaluate((name) => window[name]?.frameCount, globalName), { timeout: 60_000 }).toBeGreaterThanOrEqual(0);
+  return readPlatformer(page, globalName);
 }
 
 async function waitForBlockfall(page: Page): Promise<BlockfallEvidence> {
@@ -297,9 +434,27 @@ async function readTurbo(page: Page): Promise<TurboEvidence> {
   return evidence;
 }
 
+async function readRacing(
+  page: Page,
+  globalName: "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__" | "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__"
+): Promise<TurboEvidence> {
+  const evidence = await page.evaluate((name) => window[name], globalName);
+  if (!evidence) throw new Error(`${globalName} did not publish gameplay evidence.`);
+  return evidence;
+}
+
 async function readSkyline(page: Page): Promise<SkylineEvidence> {
   const evidence = await page.evaluate(() => window.__AURA3D_SHOWCASE_SKYLINE_RUNNER__);
   if (!evidence) throw new Error("Skyline route did not publish gameplay evidence.");
+  return evidence;
+}
+
+async function readPlatformer(
+  page: Page,
+  globalName: "__AURA3D_SHOWCASE_SKYLINE_RUNNER__" | "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__" | "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__"
+): Promise<SkylineEvidence> {
+  const evidence = await page.evaluate((name) => window[name], globalName);
+  if (!evidence) throw new Error(`${globalName} did not publish gameplay evidence.`);
   return evidence;
 }
 
@@ -334,7 +489,7 @@ function writeRouteReport(appId: string, blockers: readonly string[], errors: re
 
 function createCategoryProof(appId: string, evidence: object): object | undefined {
   const visualReview = readVisualReview(appId);
-  if (appId === "showcase-turbo-drift-circuit" && isTurboReport(evidence)) {
+  if ((appId === "showcase-turbo-drift-circuit" || appId === "showcase-racing-game-layer-proof" || appId === "showcase-public-racing-presentation-proof") && isTurboReport(evidence)) {
     return {
       racing: {
         inputChangesSpeed: evidence.after.speed > evidence.before.speed + 0.04,
@@ -353,7 +508,7 @@ function createCategoryProof(appId: string, evidence: object): object | undefine
       }
     };
   }
-  if (appId === "showcase-skyline-runner" && isSkylineReport(evidence)) {
+  if ((appId === "showcase-skyline-runner" || appId === "showcase-platformer-game-layer-proof" || appId === "showcase-public-platformer-presentation-proof") && isSkylineReport(evidence)) {
     return {
       platformer: {
         movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.35,

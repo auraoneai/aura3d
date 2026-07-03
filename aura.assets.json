@@ -1677,7 +1677,7 @@
       "id": "showcaseArchitectureCityBlock",
       "type": "model",
       "format": "glb",
-      "source": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-wENCKU/showcaseArchitectureCityBlock.glb",
+      "source": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
       "outputPath": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
       "url": "/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
       "hash": "sha256-7b2bb47e610378bdabe9d5c6d0adda6f6f0455c25085b1d2a13b97b700d3ea6d",
@@ -1864,7 +1864,7 @@
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-wENCKU/showcaseArchitectureCityBlock.glb",
+        "sourcePath": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-132/3488e40ceca846bb9023f894a749c398.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-132/3488e40ceca846bb9023f894a749c398.glb",
         "license": "CC-BY-4.0",
@@ -15389,7 +15389,7 @@
       "id": "showcaseModernBuildingOne",
       "type": "model",
       "format": "glb",
-      "source": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-x0aZLT/showcaseModernBuildingOne.glb",
+      "source": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
       "outputPath": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
       "url": "/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
       "hash": "sha256-d3216bb2d6d73964a5e9ec6dc888ea0bbe68eeb2d20921902d67e7f2e4a1ab1d",
@@ -15576,7 +15576,7 @@
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-x0aZLT/showcaseModernBuildingOne.glb",
+        "sourcePath": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-107/b12b935b598a43e19957fb45e95ece6a.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-107/b12b935b598a43e19957fb45e95ece6a.glb",
         "license": "CC-BY-4.0",
@@ -15846,7 +15846,7 @@
       "id": "showcaseModernOfficeBuilding",
       "type": "model",
       "format": "glb",
-      "source": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-S8Zg08/showcaseModernOfficeBuilding.glb",
+      "source": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
       "outputPath": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
       "url": "/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
       "hash": "sha256-ef910dc7e24f61576121d9f5b9dc0aa736d34d412bd62284430f2af5f4150822",
@@ -16090,7 +16090,7 @@
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-S8Zg08/showcaseModernOfficeBuilding.glb",
+        "sourcePath": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/28c251353946454bb57622cb512bca7e.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/28c251353946454bb57622cb512bca7e.glb",
         "license": "CC-BY-4.0",
@@ -28572,6 +28572,18 @@
           "width": 701,
           "height": 494
         }
+      },
+      "gameGeometry": {
+        "certification": "certified-platformer-world",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+          "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
+        }
       }
     },
     {
@@ -35538,7 +35550,7 @@
       ],
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Turbo Drift Circuit release hero vehicle with durable Objaverse provenance, CC-BY-4.0 license, textured material evidence, normalized camera-fit route placement, retained route-primary proof, gameplay-visible drivable car evidence, and isolated root release probe proving a readable car foreground and forward orientation view.",
+      "suitabilityReason": "Public racing presentation release hero vehicle with durable Objaverse provenance, CC-BY-4.0 license, textured material evidence, normalized camera-fit route placement, retained route-primary proof, gameplay-visible drivable car evidence, and isolated root release probe proving a readable car foreground and forward orientation view.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.png",
         "kind": "browser-screenshot",
@@ -35556,6 +35568,18 @@
           "y": 370,
           "width": 272,
           "height": 158
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-racing-vehicle",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+          "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },
@@ -36014,7 +36038,7 @@
       ],
       "quality": "release",
       "role": "track",
-      "suitabilityReason": "Turbo Drift Circuit release track asset with durable Objaverse provenance, CC-BY-4.0 license, twenty-two texture references, readable material metadata, gameplay-scale footprint and route extent, normalized camera-fit placement in the racing route, and isolated root release probe proving a readable circuit foreground.",
+      "suitabilityReason": "Public racing presentation topology provenance asset with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, gameplay-scale footprint, retained generated-circuit topology evidence, and isolated root release probe proving a readable circuit foreground.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
         "kind": "browser-screenshot",
@@ -36032,6 +36056,18 @@
           "y": 198,
           "width": 385,
           "height": 193
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-racing-track",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+          "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },
@@ -37429,6 +37465,18 @@
           "y": 199,
           "width": 221,
           "height": 401
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-platformer-character",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+          "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     }

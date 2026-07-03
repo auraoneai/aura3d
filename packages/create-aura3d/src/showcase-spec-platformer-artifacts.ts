@@ -98,11 +98,9 @@ function round(value: number): number {
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   scene: scene()
-    .addMany(game.platformerPresentationSurfaces({
+    .addMany(game.publicPlatformerPresentation({
       sceneBinding: platformerScene,
       level,
-      mode: "game-level",
-      guideVisibility: "public",
       platformColor: "#526972",
       platformTrimColor: "#b7f3ff",
       hazardColor: "#ff6978",
@@ -118,7 +116,7 @@ const app = createAuraApp("#app", {
       tags: ["player", "character", "typed-primary-asset"]
     })))
     .add(lights.studio())
-    .camera(game.platformerPresentationCamera({
+    .camera(game.platformerCameraRig({
       sceneBinding: platformerScene,
       player: state.player,
       mode: "follow",

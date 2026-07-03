@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07100f" />
+    <meta
+      name="description"
+      content="Aura3D certified racing game-layer proof route with typed car, typed circuit, retained topology evidence, and keyboard-driven lap state."
+    />
+    <title>Aura3D - Racing Game Layer Proof</title>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <main class="proof-shell" aria-label="Racing Game Layer Proof">
+      <section class="proof-viewport">
+        <div id="app" class="proof-stage" data-testid="racing-game-layer-proof-stage"></div>
+      </section>
+      <aside id="panel" class="proof-panel" aria-label="Race state">
+        <h1>Racing Game Layer Proof</h1>
+        <section class="metric-grid" aria-label="Race metrics">
+          <article><span>Speed</span><strong id="speed-value">0.000</strong></article>
+          <article><span>Lap</span><strong id="lap-value">1</strong></article>
+          <article><span>Gate</span><strong id="checkpoint-value">0</strong></article>
+          <article><span>Ready</span><strong id="ready-value">No</strong></article>
+        </section>
+        <section class="status-list" aria-label="Contract state">
+          <span id="track-value">track pending</span>
+          <span id="road-value">road pending</span>
+          <span id="cert-value">cert pending</span>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

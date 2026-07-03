@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070A0C" />
+    <meta
+      name="description"
+      content="Aura3D public racing presentation proof with a typed sports car, certified circuit topology, styled road geometry, checkpoint gates, and keyboard-driven lap state."
+    />
+    <title>Aura3D Showcase - Public Racing Presentation Proof</title>
+    <link rel="stylesheet" href="/apps/showcase-public-racing-presentation-proof/src/styles.css" />
+  </head>
+  <body>
+    <div id="app" class="race-stage" aria-label="Public racing presentation proof"></div>
+    <main class="race-hud" aria-label="Race status">
+      <section class="hud-cluster hud-cluster--identity" aria-label="Route identity">
+        <p>Aura3D Showcase</p>
+        <h1>Public Racing Presentation</h1>
+      </section>
+      <section class="hud-cluster hud-cluster--metrics" aria-label="Race metrics">
+        <article><span>Speed</span><strong id="speed-value">0.000</strong></article>
+        <article><span>Lap</span><strong id="lap-value">1</strong></article>
+        <article><span>Gate</span><strong id="checkpoint-value">0</strong></article>
+        <article><span>Ready</span><strong id="ready-value">No</strong></article>
+      </section>
+      <section class="hud-cluster hud-cluster--route" aria-label="Route evidence">
+        <span id="track-value">Track topology pending</span>
+        <span id="presentation-value">Presentation pending</span>
+      </section>
+    </main>
+    <nav class="race-controls" aria-label="Race controls">
+      <span>W throttle</span>
+      <span>A/D steer</span>
+      <span>R reset</span>
+    </nav>
+    <script type="module" src="/apps/showcase-public-racing-presentation-proof/src/main.ts"></script>
+  </body>
+</html>

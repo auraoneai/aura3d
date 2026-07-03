@@ -20,6 +20,7 @@ type ShowcaseClassification =
   | "candidate"
   | "diagnostic-candidate"
   | "internal-diagnostic"
+  | "game-layer-diagnostic"
   | "prototype-blocked"
   | "prototype"
   | "rebuild-required"
@@ -133,6 +134,50 @@ const apps = [
     notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof."
   },
   {
+    id: "showcase-public-racing-presentation-proof",
+    route: "/apps/showcase-public-racing-presentation-proof/",
+    routeHealth: "/apps/showcase-public-racing-presentation-proof/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Public racing presentation candidate with a typed sports car, retained Tsukuba topology certification, styled racing road geometry, cinematic camera framing, and keyboard gameplay proof."
+  },
+  {
+    id: "showcase-public-platformer-presentation-proof",
+    route: "/apps/showcase-public-platformer-presentation-proof/",
+    routeHealth: "/apps/showcase-public-platformer-presentation-proof/route-health.json",
+    classification: "candidate",
+    publicShowcase: true,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "bounded",
+    notes: "Public platformer presentation candidate with a typed walking character, retained side-scroller surface-map certification, styled platforms, hazards, checkpoints, finish marker, and keyboard progression proof."
+  },
+  {
+    id: "showcase-racing-game-layer-proof",
+    route: "/apps/showcase-racing-game-layer-proof/",
+    routeHealth: "/apps/showcase-racing-game-layer-proof/route-health.json",
+    classification: "game-layer-diagnostic",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "demoted",
+    notes: "Retained diagnostic for racing geometry contracts, certification helpers, screenshot-hash plumbing, and keyboard gameplay proof. Current debug-gate presentation is not a public racing showcase route."
+  },
+  {
+    id: "showcase-platformer-game-layer-proof",
+    route: "/apps/showcase-platformer-game-layer-proof/",
+    routeHealth: "/apps/showcase-platformer-game-layer-proof/route-health.json",
+    classification: "game-layer-diagnostic",
+    publicShowcase: false,
+    primaryAssetStatus: "release-validated-typed-primary-assets",
+    primitiveStatus: "within-stated-role",
+    claimStatus: "demoted",
+    notes: "Retained diagnostic for platformer geometry contracts, certification helpers, screenshot-hash plumbing, and keyboard gameplay proof. Current debug-surface presentation is not a public platformer showcase route."
+  },
+  {
     id: "showcase-skyline-runner",
     route: "/apps/showcase-skyline-runner/",
     routeHealth: "/apps/showcase-skyline-runner/route-health.json",
@@ -162,7 +207,11 @@ const routes = publicApps.map((entry) => entry.route);
 window.__AURA3D_SHOWCASE_INDEX__ = {
   status: "ready",
   appCount: publicApps.length,
-  gameCount: publicApps.filter((entry) => entry.id === "showcase-blockfall-reactor").length,
+  gameCount: publicApps.filter((entry) =>
+    entry.id === "showcase-blockfall-reactor" ||
+    entry.id === "showcase-public-racing-presentation-proof" ||
+    entry.id === "showcase-public-platformer-presentation-proof"
+  ).length,
   routes,
   remediation: {
     schema: "aura3d-showcase-route-health-index/1.0",

@@ -123,8 +123,11 @@ interface LaunchEvidenceRoute {
     readonly nativeWebGpuAllowed?: boolean | null;
   };
   readonly routeHealth?: {
+    readonly classification?: string;
+    readonly publicShowcase?: boolean;
     readonly primaryAssets?: readonly string[];
     readonly evidenceGlobal?: string;
+    readonly gameAssetPairEvidence?: RouteHealthGameAssetPairEvidence | null;
   };
   readonly deployCheckOk?: boolean;
   readonly deployWarnings?: readonly string[];
@@ -151,9 +154,16 @@ interface LaunchEvidenceFile {
   readonly releaseCandidateCount?: number;
   readonly releaseCandidatePassed?: number;
   readonly internalDiagnosticCount?: number;
+  readonly gameLayerDiagnosticCount?: number;
+  readonly diagnosticRouteCount?: number;
   readonly prototypeBlockedCount?: number;
   readonly indexRouteCount?: number;
   readonly diagnostics?: readonly {
+    readonly id?: string;
+    readonly classification?: string;
+    readonly blockers?: readonly string[];
+  }[];
+  readonly gameLayerDiagnostics?: readonly {
     readonly id?: string;
     readonly classification?: string;
     readonly blockers?: readonly string[];
@@ -186,6 +196,7 @@ interface ShowcaseVisualReviewFile {
 type ReleaseClass =
   | "release-ready candidate"
   | "internal-diagnostic"
+  | "game-layer-diagnostic"
   | "prototype-blocked"
   | "index-route"
   | "removed-from-public-showcase";
@@ -196,10 +207,49 @@ const publicReleaseCandidateIds = new Set([
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
   "showcase-blockfall-reactor",
+  "showcase-public-racing-presentation-proof",
+  "showcase-public-platformer-presentation-proof",
   "showcase-digital-twin-ops"
 ]);
 const internalDiagnosticIds = new Set(["showcase-data-galaxy", "showcase-webgpu-particle-lab"]);
+const gameLayerDiagnosticIds = new Set(["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]);
 const prototypeBlockedIds = new Set(["showcase-skyline-runner", "showcase-turbo-drift-circuit"]);
+const gameLayerDiagnosticExpectations = new Map([
+  ["showcase-racing-game-layer-proof", {
+    category: "racing",
+    templateBlocker: "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
+    assetPairVerdictBlocker: "evidence:racing-asset-pair:verdict-not-pass:fail",
+    assetPairBlockers: [
+      "visual:racing-proof-reads-as-diagnostic-harness",
+      "visual:racing-track-scale-and-camera-not-public-quality",
+      "visual:racing-debug-gates-visible",
+      "visual:racing-scene-not-polished-game-presentation"
+    ],
+    healthBlockers: [
+      "evidence:racing-asset-pair:blocker:visual:racing-proof-reads-as-diagnostic-harness",
+      "evidence:racing-asset-pair:blocker:visual:racing-track-scale-and-camera-not-public-quality",
+      "evidence:racing-asset-pair:blocker:visual:racing-debug-gates-visible",
+      "evidence:racing-asset-pair:blocker:visual:racing-scene-not-polished-game-presentation"
+    ]
+  }],
+  ["showcase-platformer-game-layer-proof", {
+    category: "platformer",
+    templateBlocker: "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
+    assetPairVerdictBlocker: "evidence:platformer-asset-pair:verdict-not-pass:fail",
+    assetPairBlockers: [
+      "visual:platformer-proof-reads-as-diagnostic-harness",
+      "visual:character-not-visibly-grounded-on-platform",
+      "visual:debug-surface-guides-visible",
+      "visual:character-world-composition-not-public-quality"
+    ],
+    healthBlockers: [
+      "evidence:platformer-asset-pair:blocker:visual:platformer-proof-reads-as-diagnostic-harness",
+      "evidence:platformer-asset-pair:blocker:visual:character-not-visibly-grounded-on-platform",
+      "evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible",
+      "evidence:platformer-asset-pair:blocker:visual:character-world-composition-not-public-quality"
+    ]
+  }]
+]);
 
 const routeGateConfigPath = resolve("tools/showcase-library/route-gates.json");
 const routeGateConfigRaw = readFileSync(routeGateConfigPath, "utf8");
@@ -296,6 +346,7 @@ describe("showcase route gate registry", () => {
       expect([
         "release-ready candidate",
         "internal-diagnostic",
+        "game-layer-diagnostic",
         "prototype-blocked",
         "index-route",
         "removed-from-public-showcase"
@@ -304,6 +355,8 @@ describe("showcase route gate registry", () => {
         expect(route.releaseClass, "showcase index release class").toBe("index-route");
       } else if (internalDiagnosticIds.has(route.id)) {
         expect(route.releaseClass, `${route.id} diagnostic release class`).toBe("internal-diagnostic");
+      } else if (gameLayerDiagnosticIds.has(route.id)) {
+        expect(route.releaseClass, `${route.id} game-layer diagnostic release class`).toBe("game-layer-diagnostic");
       } else if (prototypeBlockedIds.has(route.id)) {
         expect(route.releaseClass, `${route.id} prototype release class`).toBe("prototype-blocked");
       } else if (publicReleaseCandidateIds.has(route.id)) {
@@ -445,6 +498,64 @@ describe("showcase route gate registry", () => {
     }
   });
 
+  it("keeps game-layer proof routes diagnostic until public game presentation is rebuilt", () => {
+    const review = JSON.parse(readFileSync(resolve("docs/project/showcase-visual-review.json"), "utf8")) as ShowcaseVisualReviewFile;
+    const reviewsById = new Map((review.routes ?? []).map((route) => [route.id, route]));
+
+    for (const [routeId, expected] of gameLayerDiagnosticExpectations) {
+      const route = routeGateConfig.routes.find((entry) => entry.id === routeId);
+      if (!route) throw new Error(`missing route gate for ${routeId}`);
+      expect(route.published, `${routeId} remains published as diagnostic evidence`).toBe(true);
+      expect(route.releaseClass, `${routeId} release class`).toBe("game-layer-diagnostic");
+      expect(route.gameTemplateStatus?.publicTemplateReady, `${routeId} game template ready`).toBe(false);
+      expect(route.gameTemplateStatus?.blocker, `${routeId} game template blocker`).toBe(expected.templateBlocker);
+      expect(route.gameTemplateStatus?.requiredBeforePublic?.length ?? 0, `${routeId} public rebuild requirements`).toBeGreaterThan(0);
+
+      const health = JSON.parse(readFileSync(resolve("apps", routeId, "route-health.json"), "utf8")) as RouteHealthFile;
+      expect(health.classification, `${routeId} route-health classification`).toBe("game-layer-diagnostic");
+      expect(health.publicShowcase, `${routeId} public showcase`).toBe(false);
+      expect(health.blockers, `${routeId} generated route-health blockers`).toEqual(expect.arrayContaining([
+        expected.assetPairVerdictBlocker,
+        ...expected.healthBlockers
+      ]));
+      expect(health.gameAssetPairEvidence?.category, `${routeId} asset-pair category`).toBe(expected.category);
+      expect(health.gameAssetPairEvidence?.verdict, `${routeId} asset-pair verdict`).toBe("fail");
+      expect(health.gameAssetPairEvidence?.screenshotEvidence, `${routeId} asset-pair screenshot`).toBe(
+        `tests/reports/showcase-route-primary-probes/${routeId}.png`
+      );
+      expect(new Set(health.gameAssetPairEvidence?.assets ?? []), `${routeId} asset-pair assets`).toEqual(new Set(route.primaryAssets));
+      expect(health.gameAssetPairEvidence?.blockers, `${routeId} asset-pair blockers`).toEqual(
+        expect.arrayContaining(expected.assetPairBlockers)
+      );
+
+      const visualReview = reviewsById.get(routeId);
+      expect(visualReview?.verdict, `${routeId} visual review`).toBe("fail");
+      expect(visualReview?.screenshotEvidence, `${routeId} visual review screenshot`).toEqual([
+        `tests/reports/showcase-route-primary-probes/${routeId}.png`
+      ]);
+      expect(visualReview?.blockingIssues ?? [], `${routeId} visual review blockers`).toEqual(
+        expect.arrayContaining(expected.assetPairBlockers)
+      );
+    }
+  });
+
+  it("keeps game-layer diagnostic route source from publishing public visual passes", () => {
+    for (const [routeId, expected] of gameLayerDiagnosticExpectations) {
+      const source = readRouteSourceText(routeId);
+
+      expect(source, `${routeId} diagnostic claim label`).toContain("game-layer diagnostic route");
+      expect(source, `${routeId} retained visual review verdict`).toContain('visualReview: "fail"');
+      expect(source, `${routeId} retained asset pair verdict`).toContain("assetPairPass: false");
+      expect(source, `${routeId} runtime visual review verdict`).toContain("visualReviewPass: false");
+      expect(source, `${routeId} retained visual review must not pass`).not.toContain('visualReview: "pass"');
+      expect(source, `${routeId} retained asset pair must not pass`).not.toContain("assetPairPass: true");
+      expect(source, `${routeId} runtime visual review must not pass`).not.toContain("visualReviewPass: true");
+      for (const blocker of expected.assetPairBlockers) {
+        expect(source, `${routeId} source blocker ${blocker}`).toContain(blocker);
+      }
+    }
+  });
+
   it("requires current passing game asset-pair evidence before a game route can be public", async () => {
     const module = await loadGameReleaseGateModule();
     const prototypeRoute = typedRoute("showcase-turbo-drift-circuit");
@@ -500,7 +611,7 @@ describe("showcase route gate registry", () => {
       "release-game-asset-pair-evidence-missing:racing"
     ]));
 
-    expect(module.validateReleaseGameAssetPairEvidence({
+    const turboReleaseFailures = module.validateReleaseGameAssetPairEvidence({
       route: releaseRoute,
       routeHealth: {
         ...releaseHealthBase,
@@ -512,11 +623,12 @@ describe("showcase route gate registry", () => {
           blockers: []
         }
       }
-    })).toEqual(expect.arrayContaining([
+    });
+    expect(turboReleaseFailures).toEqual(expect.arrayContaining([
       "release-game-asset-pair-screenshot-evidence:tests/reports/manual-visual-qa/turbo-drift-circuit.png"
     ]));
 
-    expect(module.validateReleaseGameAssetPairEvidence({
+    const missingGeometryFailures = module.validateReleaseGameAssetPairEvidence({
       route: releaseRoute,
       routeHealth: {
         ...releaseHealthBase,
@@ -528,7 +640,8 @@ describe("showcase route gate registry", () => {
           blockers: []
         }
       }
-    })).toEqual(expect.arrayContaining([
+    });
+    expect(missingGeometryFailures).toEqual(expect.arrayContaining([
       "release-game-geometry-evidence-missing:racing"
     ]));
 
@@ -570,7 +683,7 @@ describe("showcase route gate registry", () => {
     ]));
 
     const manifestHashes = readManifestAssetHashes();
-    expect(module.validateReleaseGameAssetPairEvidence({
+    const forgedTurboReleaseGeometryFailures = module.validateReleaseGameAssetPairEvidence({
       route: releaseRoute,
       routeHealth: {
         ...releaseHealthBase,
@@ -591,7 +704,63 @@ describe("showcase route gate registry", () => {
         }
       },
       root: process.cwd()
-    })).toEqual([]);
+    });
+    expect(forgedTurboReleaseGeometryFailures).toEqual(expect.arrayContaining([
+      "release-game-geometry-asset-evidence-screenshot:showcaseTexturedSportsCar:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseTexturedSportsCar:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTexturedSportsCar:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+      "release-game-geometry-asset-evidence-screenshot:showcaseTsukubaCircuit:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseTsukubaCircuit:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTsukubaCircuit:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44"
+    ]));
+    expect(forgedTurboReleaseGeometryFailures).not.toEqual(expect.arrayContaining([
+      expect.stringMatching(/^release-game-geometry-asset-certification:/)
+    ]));
+
+    const proofRoute = routeGateConfig.routes.find((route) => route.id === "showcase-racing-game-layer-proof");
+    if (proofRoute === undefined) throw new Error("missing racing game layer proof route gate");
+    const proofHealth = JSON.parse(
+      readFileSync(resolve("apps/showcase-racing-game-layer-proof/route-health.json"), "utf8")
+    ) as RouteHealthFile;
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: proofRoute,
+      routeHealth: proofHealth,
+      root: process.cwd()
+    })).toEqual(expect.arrayContaining([
+      "release-game-template-ready:false",
+      expect.stringMatching(/^release-game-asset-pair-verdict:fail$/),
+      expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:racing-debug-gates-visible/),
+      expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:racing-asset-pair:blocker:visual:racing-debug-gates-visible/),
+      "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
+      "release-game-geometry-asset-evidence-screenshot:showcaseTexturedSportsCar:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseTexturedSportsCar:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTexturedSportsCar:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+      "release-game-geometry-asset-evidence-screenshot:showcaseTsukubaCircuit:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseTsukubaCircuit:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTsukubaCircuit:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44"
+    ]));
+
+    const platformerProofRoute = routeGateConfig.routes.find((route) => route.id === "showcase-platformer-game-layer-proof");
+    if (platformerProofRoute === undefined) throw new Error("missing platformer game layer proof route gate");
+    const platformerProofHealth = JSON.parse(
+      readFileSync(resolve("apps/showcase-platformer-game-layer-proof/route-health.json"), "utf8")
+    ) as RouteHealthFile;
+    expect(module.validateReleaseGameAssetPairEvidence({
+      route: platformerProofRoute,
+      routeHealth: platformerProofHealth,
+      root: process.cwd()
+    })).toEqual(expect.arrayContaining([
+      "release-game-template-ready:false",
+      expect.stringMatching(/^release-game-asset-pair-verdict:fail$/),
+      expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:character-not-visibly-grounded-on-platform/),
+      expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible/),
+      "release-game-geometry-asset-evidence-screenshot:showcaseWalkAnimatedGirl:tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseWalkAnimatedGirl:tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseWalkAnimatedGirl:sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+      "release-game-geometry-asset-evidence-screenshot:showcaseSideScrollerWorld:tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+      "release-game-geometry-asset-evidence-report:showcaseSideScrollerWorld:tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseSideScrollerWorld:sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58"
+    ]));
   });
 
   it("requires typed primary assets to exist in the manifest, generated type file, and route source", () => {
@@ -700,6 +869,7 @@ describe("showcase route gate registry", () => {
       .filter((route) => route.releaseClass === "release-ready candidate" && visuallyAcceptedRouteIds.has(route.id))
       .length;
     const expectedReleaseCandidateCount = publishedRoutes.filter((route) => route.releaseClass === "release-ready candidate").length;
+    const expectedGameLayerDiagnosticCount = publishedRoutes.filter((route) => route.releaseClass === "game-layer-diagnostic").length;
     const expectedPrototypeBlockedCount = publishedRoutes.filter((route) => route.releaseClass === "prototype-blocked").length;
 
     expect(launchEvidence.schema, "launch evidence schema").toBe("aura3d-showcase-build-deploy/1.0");
@@ -711,6 +881,8 @@ describe("showcase route gate registry", () => {
     expect(launchEvidence.releaseCandidateCount, "release candidate count").toBe(expectedReleaseCandidateCount);
     expect(launchEvidence.releaseCandidatePassed, "release candidates passed").toBe(expectedReleaseCandidatePassed);
     expect(launchEvidence.internalDiagnosticCount, "internal diagnostics count").toBe(2);
+    expect(launchEvidence.gameLayerDiagnosticCount, "game-layer diagnostics count").toBe(expectedGameLayerDiagnosticCount);
+    expect(launchEvidence.diagnosticRouteCount, "total diagnostics count").toBe(4);
     expect(launchEvidence.prototypeBlockedCount, "prototype blocked count").toBe(expectedPrototypeBlockedCount);
     expect(launchEvidence.indexRouteCount, "index route count").toBe(1);
     expect(launchEvidence.gateConfig?.path, "launch gate config path").toBe("tools/showcase-library/route-gates.json");
@@ -798,6 +970,24 @@ describe("showcase route gate registry", () => {
         expect(launchRoute?.routeHealth?.primaryAssets ?? [], `${route.id} diagnostic primary assets retained`).toEqual(route.primaryAssets);
         expect(launchRoute?.diagnosticBlockers?.length ?? 0, `${route.id} diagnostic blockers retained`).toBeGreaterThan(0);
         expect(launchEvidence.diagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in diagnostics`).toBe(true);
+      }
+
+      if (route.releaseClass === "game-layer-diagnostic") {
+        const expected = gameLayerDiagnosticExpectations.get(route.id);
+        if (!expected) throw new Error(`missing game-layer expectation for ${route.id}`);
+        expect(launchRoute?.publicReleaseCounted, `${route.id} game-layer diagnostic public release counted`).toBe(false);
+        expect(launchRoute?.publicReleaseOk, `${route.id} game-layer diagnostic public release ok`).toBe(true);
+        expect(launchRoute?.routeHealth?.classification, `${route.id} route-health classification`).toBe("game-layer-diagnostic");
+        expect(launchRoute?.routeHealth?.publicShowcase, `${route.id} route-health public showcase`).toBe(false);
+        expect(launchRoute?.routeHealth?.gameAssetPairEvidence?.verdict, `${route.id} asset-pair verdict`).toBe("fail");
+        expect(launchRoute?.diagnosticBlockers ?? [], `${route.id} game-layer diagnostic blockers retained`).toEqual(
+          expect.arrayContaining([
+            expected.templateBlocker,
+            ...expected.assetPairBlockers.map((blocker) => `visual-review:route-visual-review-blocker:${route.id}:${blocker}`)
+          ])
+        );
+        expect(launchEvidence.diagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in diagnostics`).toBe(true);
+        expect(launchEvidence.gameLayerDiagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in game-layer diagnostics`).toBe(true);
       }
 
       if (route.releaseClass === "prototype-blocked") {

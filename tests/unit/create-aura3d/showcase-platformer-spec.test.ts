@@ -89,8 +89,7 @@ describe("showcase platformer spec compiler", () => {
       expect(source).toContain("model(assets.showcaseWalkAnimatedGirl");
       expect(source).not.toContain("model(assets.showcaseSideScrollerWorld");
       expect(source).not.toContain("name: \"platformer-bound-world-asset\"");
-      expect(source).toContain("mode: \"game-level\"");
-      expect(source).toContain("guideVisibility: \"public\"");
+      expect(source).toContain("game.publicPlatformerPresentation");
       expect(source).toContain("targetHeight: 0.58");
       expect(source).toContain("mode: \"follow\"");
       expect(source).toContain("distance: 4.15");
@@ -99,7 +98,7 @@ describe("showcase platformer spec compiler", () => {
       expect(source).toContain("game.assetBoundPlatformerLevel");
       expect(source).toContain("game.platformerSceneBinding");
       expect(source).not.toContain("worldModelPresentationOffset");
-      expect(source).toContain("game.platformerPresentationCamera");
+      expect(source).toContain("game.platformerCameraRig");
       expect(source).not.toContain("camera.follow");
       expect(source).toContain("game.platformer");
       expect(source).toContain("const playableSurfaceMap =");
@@ -114,6 +113,7 @@ describe("showcase platformer spec compiler", () => {
       expect(source).toContain("assetBinding: level.assetBinding");
       expect(source).toContain("visibleGameGeometrySource: \"surface-map-bound-game-level\"");
       expect(source).toContain("worldAssetUsedForSurfaceEvidence: \"showcaseSideScrollerWorld\"");
+      expect(source).toContain("game.platformerCameraRig");
       expect(source).toContain("skyline-finish-ledges");
       expect(source).toContain("hazard-gap-02");
       expect(source).toContain("app.onFrame");
@@ -174,7 +174,7 @@ describe("showcase platformer spec compiler", () => {
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
-  });
+  }, SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS);
 
   it("rejects stale one-anchor playable-surface evidence when the active world has no mesh-derived surfaces", () => {
     const baseSpec = readSkylineSpec();
@@ -349,6 +349,21 @@ describe("showcase platformer spec compiler", () => {
         blockers: []
       }
     };
+    const geometryEvidence = createPassingPlatformerGeometryEvidence(
+      playableSurfaceEvidencePath,
+      routePrimaryScreenshotPath,
+      screenshotSha256,
+      [
+        {
+          id: "showcaseWalkAnimatedGirl",
+          hash: "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6"
+        },
+        {
+          id: worldAssetId,
+          hash: "sha256-56edd8acc1a8c803bef3e5a13044a9ee4a903bafae4e80fc3a9e6e49697c0c68"
+        }
+      ]
+    );
     const releaseProbePaths = Object.fromEntries(expectedAssetIds.map((assetId) => {
       const path = join(proofDir, `${assetId}.json`);
       writeFileSync(path, `${JSON.stringify(createPassingReleaseProbe(assetId), null, 2)}\n`);
@@ -404,7 +419,8 @@ describe("showcase platformer spec compiler", () => {
               expectedAssetIds,
               routePrimaryScreenshotPath,
               routePrimaryProbePath,
-              screenshotSha256
+              screenshotSha256,
+              geometryEvidence
             )
           }
         },
@@ -426,6 +442,8 @@ describe("showcase platformer spec compiler", () => {
       expect(report.finalStatus).toBe("release-ready candidate");
       expect(report.blockers).toEqual([]);
       expect(report.selectedReplacement).toBeUndefined();
+      const routeHealth = JSON.parse(readFileSync(join(outputDir, "route-health.json"), "utf8"));
+      expect(routeHealth.gameAssetPairEvidence?.geometryEvidence).toEqual(geometryEvidence);
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
       rmSync(proofDir, { recursive: true, force: true });
@@ -466,7 +484,7 @@ describe("showcase platformer spec compiler", () => {
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
-  });
+  }, SHOWCASE_SPEC_COMPILER_TEST_TIMEOUT_MS);
 
   it("selects a replacement world with hash-bound overlay-validated playable surfaces", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-platformer-spec-"));
@@ -745,7 +763,8 @@ function createPassingAssetPairEvidence(
   assets: readonly string[],
   screenshotEvidence: string,
   routePrimaryProbe: string,
-  screenshotSha256: string
+  screenshotSha256: string,
+  geometryEvidence?: unknown
 ) {
   return {
     category,
@@ -753,9 +772,27 @@ function createPassingAssetPairEvidence(
     screenshotEvidence,
     routePrimaryProbe,
     screenshotSha256,
+    ...(geometryEvidence === undefined ? {} : { geometryEvidence }),
     verdict: "pass",
     notes: "Unit fixture proving the retained screenshot visually accepts the public game asset pairing.",
     blockers: []
+  } as const;
+}
+
+function createPassingPlatformerGeometryEvidence(
+  report: string,
+  screenshotEvidence: string,
+  routePrimaryScreenshotSha256: string,
+  assets: readonly { readonly id: string; readonly hash: string }[]
+) {
+  return {
+    category: "platformer",
+    kind: "platformer-playable-surface-map",
+    source: "manifest-authored-overlay-validated",
+    report,
+    screenshotEvidence,
+    routePrimaryScreenshotSha256,
+    assets
   } as const;
 }
 

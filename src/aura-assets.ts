@@ -1669,7 +1669,7 @@ export const assets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-wENCKU/showcaseArchitectureCityBlock.glb",
+        "sourcePath": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-132/3488e40ceca846bb9023f894a749c398.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-132/3488e40ceca846bb9023f894a749c398.glb",
         "license": "CC-BY-4.0",
@@ -1742,7 +1742,7 @@ export const assets = defineAuraAssets({
         },
         "checkedAt": "2026-06-25T09:03:24.472Z"
       },
-      "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-wENCKU/showcaseArchitectureCityBlock.glb",
+      "sourcePath": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
       "outputPath": "public/aura-assets/showcaseArchitectureCityBlock.7b2bb47e.glb",
       "license": "CC-BY-4.0",
       "author": "antoniojmonteiro",
@@ -14962,7 +14962,7 @@ export const assets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-x0aZLT/showcaseModernBuildingOne.glb",
+        "sourcePath": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-107/b12b935b598a43e19957fb45e95ece6a.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-107/b12b935b598a43e19957fb45e95ece6a.glb",
         "license": "CC-BY-4.0",
@@ -15034,7 +15034,7 @@ export const assets = defineAuraAssets({
         },
         "checkedAt": "2026-06-25T09:08:39.674Z"
       },
-      "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-x0aZLT/showcaseModernBuildingOne.glb",
+      "sourcePath": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
       "outputPath": "public/aura-assets/showcaseModernBuildingOne.d3216bb2.glb",
       "license": "CC-BY-4.0",
       "author": "burunduk",
@@ -15409,7 +15409,7 @@ export const assets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-S8Zg08/showcaseModernOfficeBuilding.glb",
+        "sourcePath": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/28c251353946454bb57622cb512bca7e.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/28c251353946454bb57622cb512bca7e.glb",
         "license": "CC-BY-4.0",
@@ -15480,7 +15480,7 @@ export const assets = defineAuraAssets({
         },
         "checkedAt": "2026-06-25T09:05:14.934Z"
       },
-      "sourcePath": "../../../../var/folders/3s/trh_q1fd5yn1mdhbvwbf0qrw0000gn/T/aura3d-resolve-S8Zg08/showcaseModernOfficeBuilding.glb",
+      "sourcePath": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
       "outputPath": "public/aura-assets/showcaseModernOfficeBuilding.ef910dc7.glb",
       "license": "CC-BY-4.0",
       "author": "Aurélien Martel",
@@ -24039,7 +24039,7 @@ export const assets = defineAuraAssets({
         ]
       },
       "provenance": {
-        "sourcePath": "../../../../tmp/aura3d-workcell-optimized/showcaseRoboticWeldingWorkcell.r065.glb",
+        "sourcePath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
         "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
         "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-090/2bd7a489a0154ca085da84a43d351647.glb",
@@ -24049,11 +24049,14 @@ export const assets = defineAuraAssets({
         "author": "bluoppVR",
         "sourceFamily": "objaverse",
         "attribution": "bluoppVR",
-        "sha256": "sha256-582e97563443be6e3fae4880a72d5442510ebccb8f3b379a2e745b521c23185f",
+        "sha256": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
         "retrievedAt": "2026-06-19T18:39:41.010Z",
-        "checkedAt": "2026-06-26T00:50:30.605Z"
+        "checkedAt": "2026-06-26T00:49:57.057Z",
+        "evidence": [
+          "Optimized with Blender decimate ratio 0.65 from the original Objaverse GLB to preserve the industrial workcell while reducing stored GLB size from 35,390,404 bytes to 21,324,208 bytes for release packaging."
+        ]
       },
-      "sourcePath": "../../../../tmp/aura3d-workcell-optimized/showcaseRoboticWeldingWorkcell.r065.glb",
+      "sourcePath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
       "outputPath": "public/aura-assets/showcaseRoboticWeldingWorkcell.cb604e0c.glb",
       "license": "CC-BY-4.0",
       "author": "bluoppVR",
@@ -24617,10 +24620,22 @@ export const assets = defineAuraAssets({
         }
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "industrial-workcell-release-view",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe after Blender decimate optimization",
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
-        ]
+          "Hash-bound prop view orientation is approved for this optimized asset hash by retained root release probe evidence. No character, vehicle, or weapon forwardAxis is claimed."
+        ],
+        "assetHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+        "checkedAt": "2026-06-26T00:49:57.057Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseRoboticWeldingWorkcell.png",
+          "sha256": "sha256-a754124bf47ee44ca8e46b412498288ec1d71a2c8de34bcbb016e137e3ef345c",
+          "assetHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+          "checkedAt": "2026-06-26T00:49:57.057Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseRoboticWeldingWorkcell"
+        }
       },
       "nodeNames": [
         "Object_5",
@@ -27729,6 +27744,18 @@ export const assets = defineAuraAssets({
           "y": 0,
           "width": 701,
           "height": 494
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-platformer-world",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+          "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },
@@ -34535,7 +34562,7 @@ export const assets = defineAuraAssets({
       "thumbnailUrl": "/aura-assets/showcaseTexturedSportsCar.thumb.svg",
       "quality": "release",
       "role": "vehicle",
-      "suitabilityReason": "Turbo Drift Circuit release hero vehicle with durable Objaverse provenance, CC-BY-4.0 license, textured material evidence, normalized camera-fit route placement, retained route-primary proof, gameplay-visible drivable car evidence, and isolated root release probe proving a readable car foreground and forward orientation view.",
+      "suitabilityReason": "Public racing presentation release hero vehicle with durable Objaverse provenance, CC-BY-4.0 license, textured material evidence, normalized camera-fit route placement, retained route-primary proof, gameplay-visible drivable car evidence, and isolated root release probe proving a readable car foreground and forward orientation view.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.png",
         "kind": "browser-screenshot",
@@ -34553,6 +34580,18 @@ export const assets = defineAuraAssets({
           "y": 370,
           "width": 272,
           "height": 158
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-racing-vehicle",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+          "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },
@@ -34995,7 +35034,7 @@ export const assets = defineAuraAssets({
       "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg",
       "quality": "release",
       "role": "track",
-      "suitabilityReason": "Turbo Drift Circuit release track asset with durable Objaverse provenance, CC-BY-4.0 license, twenty-two texture references, readable material metadata, gameplay-scale footprint and route extent, normalized camera-fit placement in the racing route, and isolated root release probe proving a readable circuit foreground.",
+      "suitabilityReason": "Public racing presentation topology provenance asset with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, gameplay-scale footprint, retained generated-circuit topology evidence, and isolated root release probe proving a readable circuit foreground.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
         "kind": "browser-screenshot",
@@ -35013,6 +35052,18 @@ export const assets = defineAuraAssets({
           "y": 198,
           "width": 385,
           "height": 193
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-racing-track",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+          "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },
@@ -36368,6 +36419,18 @@ export const assets = defineAuraAssets({
           "y": 199,
           "width": 221,
           "height": 401
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-platformer-character",
+        "evidence": {
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+          "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
         }
       }
     },

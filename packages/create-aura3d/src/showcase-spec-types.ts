@@ -126,12 +126,32 @@ export type ShowcaseGameAssetPairEvidenceCategory = "racing" | "platformer";
 
 export type ShowcaseGameAssetPairEvidenceVerdict = "pass" | "fail";
 
+export type ShowcaseGameGeometryEvidenceKind =
+  | "racing-track-topology"
+  | "platformer-playable-surface-map";
+
+export interface ShowcaseGameGeometryEvidenceAsset {
+  readonly id: string;
+  readonly hash: string;
+}
+
+export interface ShowcaseGameGeometryEvidence {
+  readonly category: ShowcaseGameAssetPairEvidenceCategory;
+  readonly kind: ShowcaseGameGeometryEvidenceKind;
+  readonly source: ShowcaseGeometryEvidenceSource;
+  readonly report: string;
+  readonly screenshotEvidence: string;
+  readonly routePrimaryScreenshotSha256: string;
+  readonly assets: readonly ShowcaseGameGeometryEvidenceAsset[];
+}
+
 export interface ShowcaseGameAssetPairEvidence {
   readonly category: ShowcaseGameAssetPairEvidenceCategory;
   readonly assets: readonly string[];
   readonly screenshotEvidence: string;
   readonly routePrimaryProbe?: string;
   readonly screenshotSha256?: string;
+  readonly geometryEvidence?: ShowcaseGameGeometryEvidence;
   readonly verdict: ShowcaseGameAssetPairEvidenceVerdict;
   readonly notes: string;
   readonly blockers: readonly string[];

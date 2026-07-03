@@ -6,7 +6,7 @@ import {
   extractRacingTrackTopologyFromAsset
 } from "./showcase-spec-game-geometry-extractor.js";
 import { validateGameGameplayProof } from "./showcase-spec-gameplay-evidence.js";
-import type { ShowcaseGameAssetPairEvidence, ShowcaseSpec } from "./showcase-spec-types.js";
+import type { ShowcaseGameAssetPairEvidence, ShowcaseGameGeometryEvidence, ShowcaseSpec } from "./showcase-spec-types.js";
 
 export interface EvidenceValidationContext {
   readonly artifactRoot?: string;
@@ -210,11 +210,83 @@ function validateGameAssetPairEvidence(input: GameAssetPairEvidenceValidationInp
   blockers.push(...validateEvidenceFile(`evidence:${label}:screenshot`, evidence.screenshotEvidence, context));
   if (evidence.verdict === "pass") blockers.push(...validateCurrentRoutePrimaryScreenshotBinding({ label, spec, evidence, context }));
   if (evidence.verdict !== "pass") blockers.push(`evidence:${label}:verdict-not-pass:${evidence.verdict}`);
+  blockers.push(...validateGameAssetPairGeometryEvidence(input));
   if (!evidence.notes.trim()) blockers.push(`evidence:${label}:notes-missing`);
   for (const blocker of evidence.blockers) {
     blockers.push(`evidence:${label}:blocker:${blocker}`);
   }
   return blockers;
+}
+
+function validateGameAssetPairGeometryEvidence(input: GameAssetPairEvidenceValidationInput): readonly string[] {
+  const { label, spec, evidence, expectedCategory, expectedAssets, context } = input;
+  const geometry = evidence?.geometryEvidence;
+  if (!geometry) return [`evidence:${label}:geometry-evidence-missing`];
+
+  const blockers: string[] = [];
+  if (geometry.category !== expectedCategory) {
+    blockers.push(`evidence:${label}:geometry-category-mismatch:${geometry.category}`);
+  }
+  const expectedKind = expectedGameGeometryKind(expectedCategory);
+  if (geometry.kind !== expectedKind) {
+    blockers.push(`evidence:${label}:geometry-kind-mismatch:${geometry.kind}`);
+  }
+  if (!isPublicGameGeometrySource(geometry.source)) {
+    blockers.push(`evidence:${label}:geometry-source-not-public:${geometry.source}`);
+  }
+
+  const expectedReport = expectedGameGeometryReport(spec, expectedCategory);
+  if (!expectedReport) {
+    blockers.push(`evidence:${label}:geometry-report-reference-missing`);
+  } else if (geometry.report !== expectedReport) {
+    blockers.push(`evidence:${label}:geometry-report-mismatch`);
+  }
+  blockers.push(...validateEvidenceFile(`evidence:${label}:geometry-report`, geometry.report, context));
+
+  if (geometry.screenshotEvidence !== spec.evidence.routePrimaryScreenshot) {
+    blockers.push(`evidence:${label}:geometry-screenshot-not-current-route-primary`);
+  }
+  if (evidence && geometry.screenshotEvidence !== evidence.screenshotEvidence) {
+    blockers.push(`evidence:${label}:geometry-screenshot-not-asset-pair-screenshot`);
+  }
+  if (!isSha256(geometry.routePrimaryScreenshotSha256)) {
+    blockers.push(`evidence:${label}:geometry-screenshot-sha256-missing`);
+  } else if (evidence?.screenshotSha256 && geometry.routePrimaryScreenshotSha256 !== evidence.screenshotSha256) {
+    blockers.push(`evidence:${label}:geometry-screenshot-sha256-mismatch`);
+  }
+
+  blockers.push(...validateGameGeometryEvidenceAssets(label, geometry, expectedAssets));
+  return blockers;
+}
+
+function validateGameGeometryEvidenceAssets(
+  label: string,
+  geometry: ShowcaseGameGeometryEvidence,
+  expectedAssets: readonly string[]
+): readonly string[] {
+  const blockers: string[] = [];
+  const actualAssetIds = geometry.assets.map((asset) => asset.id);
+  const actualAssets = new Set(actualAssetIds);
+  for (const assetId of expectedAssets) {
+    if (!actualAssets.has(assetId)) blockers.push(`evidence:${label}:geometry-asset-missing:${assetId}`);
+  }
+  for (const assetId of actualAssetIds) {
+    if (!expectedAssets.includes(assetId)) blockers.push(`evidence:${label}:geometry-asset-extra:${assetId}`);
+  }
+  for (const asset of geometry.assets) {
+    if (!isSha256(asset.hash)) blockers.push(`evidence:${label}:geometry-asset-hash-invalid:${asset.id}`);
+  }
+  return blockers;
+}
+
+function expectedGameGeometryKind(category: ShowcaseGameAssetPairEvidence["category"]): ShowcaseGameGeometryEvidence["kind"] {
+  return category === "racing" ? "racing-track-topology" : "platformer-playable-surface-map";
+}
+
+function expectedGameGeometryReport(spec: ShowcaseSpec, category: ShowcaseGameAssetPairEvidence["category"]): string | undefined {
+  return category === "racing"
+    ? spec.racing?.raceDesign.trackTopologyEvidence
+    : spec.platformer?.levelDesign.playableSurfaceEvidence;
 }
 
 function validateCurrentRoutePrimaryScreenshotBinding(input: ScreenshotBindingValidationInput): readonly string[] {

@@ -1,9 +1,9 @@
 {
   "schema": "aura3d-showcase-visual-review/1.0",
   "reviewer": "codex-browser-visual-review",
-  "reviewedAt": "2026-06-27T00:00:00Z",
+  "reviewedAt": "2026-07-02T22:45:00Z",
   "overallVerdict": "fail",
-  "summary": "Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, and Blockfall Reactor are accepted public-quality bounded showcase routes. Turbo Drift Circuit and Skyline Runner are intentionally removed from public examples and retained as prototype-blocked diagnostics. Turbo still lacks public racing composition bounds: the car/route is not visibly bound to the road and the track/camera composition reads as a proof harness. Skyline still lacks public character/world binding: the primary foreground is too small and character/world contact, scale, and framing are not public quality.",
+  "summary": "Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, Blockfall Reactor, Public Racing Presentation, and Public Platformer Presentation are accepted public-quality bounded showcase routes. Racing Game Layer Proof and Platformer Game Layer Proof are retained as game-layer diagnostics: they prove geometry contracts, certification helpers, route-health evidence, screenshot-hash plumbing, and gameplay proof, but their current screenshots are not public-quality game presentations. Turbo Drift Circuit and Skyline Runner remain prototype-blocked game routes.",
   "routes": [
     {
       "id": "showcase-product-configurator",
@@ -70,6 +70,64 @@
         "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png"
       ],
       "blockingIssues": []
+    },
+    {
+      "id": "showcase-public-racing-presentation-proof",
+      "verdict": "pass",
+      "subject": "Public Racing Presentation candidate",
+      "compositionNotes": "The route now frames a grounded typed sports car on a smoother generated racing loop with a dark integrated start pad, embedded start/finish markings, low side checkpoint markers, and compact HUD. Desktop shows the car plus upcoming road; mobile is pulled back enough to avoid the previous asset-inspection close-up.",
+      "notes": "Accepted as a bounded public racing presentation route after the July 2 polish pass. The route uses the typed sports car as the visible hero, keeps Tsukuba as manifest-backed topology provenance, and limits claims to root-safe generated racing presentation helpers and route-local gameplay proof.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+        "tests/reports/manual-visual-qa/showcase-public-racing-presentation-proof-desktop.png",
+        "tests/reports/manual-visual-qa/showcase-public-racing-presentation-proof-mobile.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-public-platformer-presentation-proof",
+      "verdict": "pass",
+      "subject": "Public Platformer Presentation candidate",
+      "compositionNotes": "The route frames a grounded typed walking character on a generated side-scroller stage with readable platforms, subtle trims, red hazards, checkpoint posts, a finish marker, and a compact HUD outside the main evidence area. The typed side-scroller world is retained as playable-surface provenance rather than rendered as the public foreground wall.",
+      "notes": "Accepted as a bounded public platformer presentation route after the July 3 build. The route uses the typed walking character as the visible hero, keeps SideScrollerWorld as manifest-backed surface-map provenance, and limits claims to root-safe generated platformer presentation helpers and route-local gameplay proof.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+        "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-desktop.png",
+        "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-mobile.png"
+      ],
+      "blockingIssues": []
+    },
+    {
+      "id": "showcase-racing-game-layer-proof",
+      "verdict": "fail",
+      "subject": "Racing Game Layer Proof diagnostic route",
+      "compositionNotes": "The typed car and circuit are present with retained topology evidence, but the scene reads as a diagnostic harness. Track scale, camera framing, visible proof gates, and overall presentation do not meet public racing showcase quality.",
+      "notes": "Retain this route as game-layer diagnostic proof only. It proves geometry contracts, certification helpers, retained screenshot-hash plumbing, and keyboard gameplay proof; it does not prove public-quality racing presentation or Turbo/Skyline readiness.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png"
+      ],
+      "blockingIssues": [
+        "visual:racing-proof-reads-as-diagnostic-harness",
+        "visual:racing-track-scale-and-camera-not-public-quality",
+        "visual:racing-debug-gates-visible",
+        "visual:racing-scene-not-polished-game-presentation"
+      ]
+    },
+    {
+      "id": "showcase-platformer-game-layer-proof",
+      "verdict": "fail",
+      "subject": "Platformer Game Layer Proof diagnostic route",
+      "compositionNotes": "The typed character and world are present with retained playable-surface evidence, but the scene reads as a diagnostic harness. The character is not visibly grounded on a platform, debug surface guides are visible, and the composition is not public-quality platformer presentation.",
+      "notes": "Retain this route as game-layer diagnostic proof only. It proves geometry contracts, certification helpers, retained screenshot-hash plumbing, and keyboard gameplay proof; it does not prove public-quality platformer presentation or Turbo/Skyline readiness.",
+      "screenshotEvidence": [
+        "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png"
+      ],
+      "blockingIssues": [
+        "visual:platformer-proof-reads-as-diagnostic-harness",
+        "visual:character-not-visibly-grounded-on-platform",
+        "visual:debug-surface-guides-visible",
+        "visual:character-world-composition-not-public-quality"
+      ]
     },
     {
       "id": "showcase-skyline-runner",

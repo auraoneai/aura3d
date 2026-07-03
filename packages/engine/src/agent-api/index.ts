@@ -220,16 +220,29 @@ import {
   createGamePlatformerKit,
   createGameRacingKit,
   type GameAssetBoundPlatformerLevel,
-  type GameAssetBoundRacingRoute
+  type GameAssetBoundRacingRoute,
+  type GameKitRect,
+  type GameKitVec2,
+  type GamePlatformerCheckpoint
 } from "./GameGenreKits";
 import {
   createGamePlatformerSceneBinding,
   createGamePlatformerPresentationCamera,
   createGameRacingPresentationCamera,
   createGameRacingSceneBinding,
+  type GamePlatformerPresentationCameraOptions,
   type GamePlatformerSceneBinding,
+  type GameRacingPresentationCameraOptions,
+  type GameScenePresentationCameraSpec,
   type GameRacingSceneBinding
 } from "./GameSceneGeometryBindings";
+import {
+  certifyPublicPlatformerGeometry,
+  certifyPublicRacingGeometry,
+  type PublicGameGeometryCertification,
+  type PublicPlatformerGeometryContract,
+  type PublicRacingGeometryContract
+} from "./PublicGameGeometry";
 export {
   GAME_FALLING_BLOCK_PIECES,
   createGameAssetBoundPlatformerLevel,
@@ -245,6 +258,10 @@ export {
   createGameRacingPresentationCamera,
   createGameRacingSceneBinding
 } from "./GameSceneGeometryBindings";
+export {
+  certifyPublicPlatformerGeometry,
+  certifyPublicRacingGeometry
+} from "./PublicGameGeometry";
 export type {
   GameAssetBoundPlatformerLevel,
   GameAssetBoundPlatformerLevelBinding,
@@ -292,6 +309,21 @@ export type {
   GameRacingRoute,
   GameRacingSnapshot
 } from "./GameGenreKits";
+export type {
+  PublicGameAssetCertification,
+  PublicGameBounds2,
+  PublicGameGeometryCategory,
+  PublicGameGeometryCertification,
+  PublicGameGeometrySource,
+  PublicGameRetainedProof,
+  PublicPlatformerCheckpoint,
+  PublicPlatformerGeometryContract,
+  PublicPlatformerHazard,
+  PublicPlatformerSurface,
+  PublicRacingGeometryCheckpoint,
+  PublicRacingGeometryContract,
+  PublicRacingGeometryPoint
+} from "./PublicGameGeometry";
 export type {
   GamePlatformerSceneBinding,
   GamePlatformerSceneBindingOptions,
@@ -5686,6 +5718,54 @@ export interface AuraRacingPresentationTrackOptions {
   readonly laneColor?: AuraColor;
 }
 
+export interface AuraRacingRoadMeshOptions extends Omit<AuraRacingPresentationTrackOptions, "guideVisibility"> {
+  readonly includeTerrain?: boolean;
+  readonly pitLaneColor?: AuraColor;
+  readonly markingVisibility?: "full" | "subtle" | "none";
+  readonly terrainPaddingScale?: number;
+}
+
+export interface AuraRacingCheckpointGateOptions {
+  readonly sceneBinding: GameRacingSceneBinding;
+  readonly route: GameAssetBoundRacingRoute;
+  readonly progress: number;
+  readonly index?: number;
+  readonly mode?: "scene-bound" | "asset-bound";
+  readonly roadY?: number;
+  readonly roadWidth?: number;
+  readonly gateColor?: AuraColor;
+  readonly accentColor?: AuraColor;
+  readonly lightColor?: AuraColor;
+}
+
+export interface AuraRacingStartFinishOptions {
+  readonly sceneBinding: GameRacingSceneBinding;
+  readonly route: GameAssetBoundRacingRoute;
+  readonly mode?: "scene-bound" | "asset-bound";
+  readonly roadY?: number;
+  readonly roadWidth?: number;
+  readonly checkerColorA?: AuraColor;
+  readonly checkerColorB?: AuraColor;
+  readonly gantryColor?: AuraColor;
+  readonly lightColor?: AuraColor;
+}
+
+export interface AuraPublicRacingPresentationOptions extends Omit<AuraRacingRoadMeshOptions, "mode"> {
+  readonly checkpointColor?: AuraColor;
+  readonly checkpointAccentColor?: AuraColor;
+  readonly startLightColor?: AuraColor;
+}
+
+export interface AuraRacingPresentationCertificationInput extends PublicRacingGeometryContract {
+  readonly presentation?: {
+    readonly roadMeshNodes?: number;
+    readonly checkpointGateNodes?: number;
+    readonly startFinishNodes?: number;
+    readonly cameraMode?: "follow" | "perspective" | "overview";
+    readonly debugMarkerCount?: number;
+  };
+}
+
 export interface AuraPlatformerPresentationSurfaceOptions {
   readonly sceneBinding: GamePlatformerSceneBinding;
   readonly level: GameAssetBoundPlatformerLevel;
@@ -5696,24 +5776,67 @@ export interface AuraPlatformerPresentationSurfaceOptions {
   readonly hazardColor?: AuraColor;
   readonly collectibleColor?: AuraColor;
   readonly finishColor?: AuraColor;
+  readonly includeBackdrop?: boolean;
+}
+
+export type AuraPlatformerPublicSurfaceMode = "scene-bound" | "asset-bound" | "game-level";
+
+export interface AuraPublicPlatformerPresentationOptions extends Omit<AuraPlatformerPresentationSurfaceOptions, "mode" | "guideVisibility"> {}
+
+export interface AuraPlatformerSurfaceMeshOptions {
+  readonly sceneBinding: GamePlatformerSceneBinding;
+  readonly surface: GameKitRect;
+  readonly mode?: AuraPlatformerPublicSurfaceMode;
+  readonly color?: AuraColor;
+  readonly trimColor?: AuraColor;
+}
+
+export interface AuraPlatformerHazardOptions {
+  readonly sceneBinding: GamePlatformerSceneBinding;
+  readonly hazard: GameKitRect;
+  readonly mode?: AuraPlatformerPublicSurfaceMode;
+  readonly color?: AuraColor;
+}
+
+export interface AuraPlatformerCheckpointOptions {
+  readonly sceneBinding: GamePlatformerSceneBinding;
+  readonly checkpoint: GamePlatformerCheckpoint;
+  readonly color?: AuraColor;
+}
+
+export interface AuraPlatformerFinishOptions {
+  readonly sceneBinding: GamePlatformerSceneBinding;
+  readonly finish: GameKitVec2 & { readonly id?: string };
+  readonly color?: AuraColor;
+}
+
+export interface AuraPlatformerPresentationCertificationInput extends PublicPlatformerGeometryContract {
+  readonly presentation?: {
+    readonly groundMeshNodes?: number;
+    readonly platformMeshNodes?: number;
+    readonly hazardNodes?: number;
+    readonly checkpointNodes?: number;
+    readonly finishNodes?: number;
+    readonly cameraMode?: "follow" | "perspective" | "establishing";
+    readonly debugMarkerCount?: number;
+    readonly characterGrounded?: boolean;
+  };
 }
 
 type AuraGamePresentationVec3 = readonly [number, number, number];
 
-export function createGameRacingPresentationTrackNodes(options: AuraRacingPresentationTrackOptions): readonly AuraSceneNode[] {
+export function createGameRacingRoadMeshNodes(options: AuraRacingRoadMeshOptions): readonly AuraSceneNode[] {
   const mode = options.mode ?? "standalone";
-  const routePoints = options.route.points.map((point) => options.sceneBinding.toScenePoint(point, options.roadY ?? 0.012));
+  const routePoints = racingPresentationRoutePoints(options.sceneBinding, options.route, options.roadY);
   if (routePoints.length < 2) return [];
-  const guideVisibility = options.guideVisibility ?? (mode === "asset-overlay" ? "evidence" : "full");
-  if (mode === "asset-overlay" && guideVisibility === "public") return [];
   const isCircuitStage = mode === "game-circuit";
-  const roadWidth = Math.max(
-    (options.route.width ?? 0.18) * options.sceneBinding.transform.scale * (isCircuitStage ? 3.05 : 1.5),
-    isCircuitStage ? 0.42 : 0.18
-  );
+  const roadWidth = racingPresentationRoadWidth(options.sceneBinding, options.route, mode);
+  const markingVisibility = options.markingVisibility ?? "full";
   const nodes: AuraSceneNode[] = [];
-  if (mode === "standalone" || mode === "game-circuit") {
-    const bounds = boundsForPresentationPoints(routePoints, roadWidth * (isCircuitStage ? 4.5 : 3.2));
+  const includeTerrain = options.includeTerrain ?? (mode === "standalone" || isCircuitStage);
+  if (includeTerrain && mode !== "asset-overlay") {
+    const terrainPaddingScale = options.terrainPaddingScale ?? (isCircuitStage ? 4.5 : 3.2);
+    const bounds = boundsForPresentationPoints(routePoints, roadWidth * terrainPaddingScale);
     nodes.push(
       primitives.box({
         name: "scene-bound racing terrain pad",
@@ -5727,7 +5850,7 @@ export function createGameRacingPresentationTrackNodes(options: AuraRacingPresen
       nodes.push(
         primitives.box({
           name: "scene-bound racing pit lane apron",
-          material: material.pbr({ color: "#27323a", roughness: 0.86, metallic: 0 })
+          material: material.pbr({ color: options.pitLaneColor ?? "#121c1e", roughness: 0.86, metallic: 0 })
         })
           .position(roundGamePresentation(bounds.centerX - bounds.width * 0.12), 0.002, roundGamePresentation(bounds.centerZ + bounds.depth * 0.23))
           .rotate(0, -0.16, 0)
@@ -5765,82 +5888,527 @@ export function createGameRacingPresentationTrackNodes(options: AuraRacingPresen
     const sideZ = Math.cos(segment.angle);
     const y = segment.midY;
     nodes.push(
-        primitives.box({
-          name: `scene-bound racing road segment ${index + 1}`,
-          material: material.pbr({ color: options.roadColor ?? "#343b3f", roughness: 0.76, metallic: 0 })
-        })
+      primitives.box({
+        name: `scene-bound racing road segment ${index + 1}`,
+        material: material.pbr({ color: options.roadColor ?? (isCircuitStage ? "#11191d" : "#343b3f"), roughness: 0.82, metallic: 0 })
+      })
         .position(segment.midX, y, segment.midZ)
         .rotate(0, -segment.angle, 0)
-        .scale([segment.length + roadWidth * 0.6, 0.03, roadWidth])
-        .toJSON(),
-      primitives.box({
-        name: `scene-bound racing center stripe ${index + 1}`,
-        material: material.emissive({
-          color: options.laneColor ?? "#d8f6ff",
-          emissive: options.laneColor ?? "#8df4ff",
-          emissiveIntensity: 0.7,
-          roughness: 0.4
-        })
-      })
-        .position(segment.midX, y + 0.022, segment.midZ)
-        .rotate(0, -segment.angle, 0)
-        .scale([Math.max(0.08, segment.length * (isCircuitStage ? 0.44 : 0.72)), 0.012, 0.014])
-        .toJSON(),
-      primitives.box({
-        name: `scene-bound racing left curb ${index + 1}`,
-        material: material.pbr({ color: index % 2 === 0 ? "#f4f7fb" : options.curbColor ?? "#df3550", roughness: 0.62 })
-      })
-        .position(roundGamePresentation(segment.midX + sideX * roadWidth * 0.54), y + 0.024, roundGamePresentation(segment.midZ + sideZ * roadWidth * 0.54))
-        .rotate(0, -segment.angle, 0)
-        .scale([Math.max(0.08, segment.length * 0.82), 0.015, 0.02])
-        .toJSON(),
-      primitives.box({
-        name: `scene-bound racing right curb ${index + 1}`,
-        material: material.pbr({ color: index % 2 === 0 ? options.curbColor ?? "#df3550" : "#f4f7fb", roughness: 0.62 })
-      })
-        .position(roundGamePresentation(segment.midX - sideX * roadWidth * 0.54), y + 0.024, roundGamePresentation(segment.midZ - sideZ * roadWidth * 0.54))
-        .rotate(0, -segment.angle, 0)
-        .scale([Math.max(0.08, segment.length * 0.82), 0.015, 0.02])
+        .scale([segment.length + roadWidth * 0.44, 0.028, roadWidth])
         .toJSON()
     );
-  }
-
-  options.sceneBinding.checkpointScenePoints.forEach((point, index) => {
-    nodes.push(
-      primitives.box({
-        name: `${mode === "asset-overlay" ? "asset-bound" : "scene-bound"} racing checkpoint gate ${index + 1}`,
-        material: material.emissive({
-          color: "#f8f1bf",
-          emissive: "#f6e27a",
-          emissiveIntensity: mode === "asset-overlay" ? 0.38 : 0.56,
-          roughness: 0.46
+    if (markingVisibility === "none") continue;
+    const isSubtleMark = markingVisibility === "subtle";
+    if (!isSubtleMark || index % 3 === 0) {
+      nodes.push(
+        primitives.box({
+          name: `scene-bound racing center stripe ${index + 1}`,
+          material: material.emissive({
+            color: options.laneColor ?? "#d8f6ff",
+            emissive: options.laneColor ?? "#8df4ff",
+            emissiveIntensity: isSubtleMark ? 0.34 : 0.7,
+            roughness: 0.4
+          })
         })
-      })
-        .position(point[0], point[1] + (mode === "asset-overlay" ? 0.045 : 0.026), point[2])
-        .scale([roadWidth * (mode === "asset-overlay" ? 0.9 : 1.25), mode === "asset-overlay" ? 0.01 : 0.014, 0.026])
-        .toJSON()
-    );
-  });
-
-  const start = routePoints[0];
-  if (start) {
-    nodes.push(
-      primitives.box({
-        name: `${mode === "asset-overlay" ? "asset-bound" : "scene-bound"} racing start finish band`,
-        material: material.emissive({
-          color: "#ffffff",
-          emissive: "#ffffff",
-          emissiveIntensity: mode === "asset-overlay" ? 0.36 : 0.5,
-          roughness: 0.3
+          .position(segment.midX, y + 0.022, segment.midZ)
+          .rotate(0, -segment.angle, 0)
+          .scale([Math.max(0.08, segment.length * (isCircuitStage ? 0.28 : 0.72)), 0.009, 0.01])
+          .toJSON()
+      );
+    }
+    if (!isSubtleMark || index % 4 === 0) {
+      nodes.push(
+        primitives.box({
+          name: `scene-bound racing left curb ${index + 1}`,
+          material: material.pbr({ color: index % 2 === 0 ? "#d4ded8" : options.curbColor ?? "#df3550", roughness: 0.66 })
         })
-      })
-        .position(start[0], start[1] + (mode === "asset-overlay" ? 0.052 : 0.03), start[2])
-        .scale([roadWidth * (mode === "asset-overlay" ? 1.05 : 1.45), mode === "asset-overlay" ? 0.01 : 0.014, 0.035])
-        .toJSON()
-    );
+          .position(roundGamePresentation(segment.midX + sideX * roadWidth * 0.54), y + 0.024, roundGamePresentation(segment.midZ + sideZ * roadWidth * 0.54))
+          .rotate(0, -segment.angle, 0)
+          .scale([Math.max(0.08, segment.length * 0.38), 0.012, 0.016])
+          .toJSON(),
+        primitives.box({
+          name: `scene-bound racing right curb ${index + 1}`,
+          material: material.pbr({ color: index % 2 === 0 ? options.curbColor ?? "#df3550" : "#d4ded8", roughness: 0.66 })
+        })
+          .position(roundGamePresentation(segment.midX - sideX * roadWidth * 0.54), y + 0.024, roundGamePresentation(segment.midZ - sideZ * roadWidth * 0.54))
+          .rotate(0, -segment.angle, 0)
+          .scale([Math.max(0.08, segment.length * 0.38), 0.012, 0.016])
+          .toJSON()
+      );
+    }
+    if (isCircuitStage && (!isSubtleMark || index % 2 === 0)) {
+      const railLength = Math.max(0.1, segment.length * (isSubtleMark ? 0.5 : 0.64));
+      nodes.push(
+        primitives.box({
+          name: `scene-bound racing left guardrail ${index + 1}`,
+          material: material.pbr({ color: "#141d20", roughness: 0.74, metallic: 0 })
+        })
+          .position(roundGamePresentation(segment.midX + sideX * roadWidth * 0.62), y + 0.034, roundGamePresentation(segment.midZ + sideZ * roadWidth * 0.62))
+          .rotate(0, -segment.angle, 0)
+          .scale([railLength, 0.018, 0.014])
+          .toJSON(),
+        primitives.box({
+          name: `scene-bound racing right guardrail ${index + 1}`,
+          material: material.pbr({ color: "#141d20", roughness: 0.74, metallic: 0 })
+        })
+          .position(roundGamePresentation(segment.midX - sideX * roadWidth * 0.62), y + 0.034, roundGamePresentation(segment.midZ - sideZ * roadWidth * 0.62))
+          .rotate(0, -segment.angle, 0)
+          .scale([railLength, 0.018, 0.014])
+          .toJSON()
+      );
+    }
   }
 
   return nodes;
+}
+
+export function createGameRacingCheckpointGateNodes(options: AuraRacingCheckpointGateOptions): readonly AuraSceneNode[] {
+  const mode = options.mode ?? "scene-bound";
+  const sample = racingPresentationSceneSample(options.sceneBinding, options.route, options.progress, options.roadY);
+  if (!sample) return [];
+  const roadWidth = options.roadWidth ?? racingPresentationRoadWidth(options.sceneBinding, options.route, "game-circuit");
+  const label = options.index === undefined ? "racing checkpoint gate" : `racing checkpoint gate ${options.index + 1}`;
+  const sideX = -Math.sin(sample.angle);
+  const sideZ = Math.cos(sample.angle);
+  const crossAngle = -sample.angle + Math.PI / 2;
+  const prefix = mode === "asset-bound" ? "asset-bound" : "scene-bound";
+  if (mode === "asset-bound") {
+    return [
+      primitives.box({
+        name: `${prefix} ${label}`,
+        material: material.emissive({ color: options.gateColor ?? "#f8f1bf", emissive: options.accentColor ?? "#f6e27a", emissiveIntensity: 0.38, roughness: 0.46 })
+      })
+        .position(sample.point[0], sample.point[1] + 0.045, sample.point[2])
+        .rotate(0, crossAngle, 0)
+        .scale([roadWidth * 0.9, 0.01, 0.026])
+        .toJSON()
+    ];
+  }
+
+  const postOffset = roadWidth * 0.72;
+  const bannerY = sample.point[1] + 0.096;
+  const lightY = sample.point[1] + 0.072;
+  const leftX = roundGamePresentation(sample.point[0] + sideX * postOffset);
+  const leftZ = roundGamePresentation(sample.point[2] + sideZ * postOffset);
+  const rightX = roundGamePresentation(sample.point[0] - sideX * postOffset);
+  const rightZ = roundGamePresentation(sample.point[2] - sideZ * postOffset);
+  const bannerX = roundGamePresentation(sample.point[0] + sideX * roadWidth * 0.76);
+  const bannerZ = roundGamePresentation(sample.point[2] + sideZ * roadWidth * 0.76);
+  return [
+    primitives.box({
+      name: `${prefix} ${label} left post`,
+      material: material.metal({ color: options.gateColor ?? "#26373a", roughness: 0.5, metallic: 0.28 })
+    })
+      .position(leftX, sample.point[1] + 0.041, leftZ)
+      .scale([0.028, 0.082, 0.028])
+      .toJSON(),
+    primitives.box({
+      name: `${prefix} ${label} right post`,
+      material: material.metal({ color: options.gateColor ?? "#26373a", roughness: 0.5, metallic: 0.28 })
+    })
+      .position(rightX, sample.point[1] + 0.041, rightZ)
+      .scale([0.028, 0.082, 0.028])
+      .toJSON(),
+    primitives.box({
+      name: `${prefix} ${label} overhead banner`,
+      material: material.emissive({
+        color: options.accentColor ?? "#b66d33",
+        emissive: options.accentColor ?? "#d88f4a",
+        emissiveIntensity: 0.16,
+        roughness: 0.42
+      })
+    })
+      .position(bannerX, bannerY, bannerZ)
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 0.26, 0.024, 0.024])
+      .toJSON(),
+    primitives.sphere({
+      name: `${prefix} ${label} left signal light`,
+      material: material.emissive({ color: options.lightColor ?? "#7ee8c4", emissive: options.lightColor ?? "#7ee8c4", emissiveIntensity: 0.64, roughness: 0.32 })
+    })
+      .position(roundGamePresentation(sample.point[0] + sideX * roadWidth * 0.2), lightY, roundGamePresentation(sample.point[2] + sideZ * roadWidth * 0.2))
+      .scale(0.018)
+      .toJSON(),
+    primitives.sphere({
+      name: `${prefix} ${label} right signal light`,
+      material: material.emissive({ color: options.lightColor ?? "#7ee8c4", emissive: options.lightColor ?? "#7ee8c4", emissiveIntensity: 0.64, roughness: 0.32 })
+    })
+      .position(roundGamePresentation(sample.point[0] - sideX * roadWidth * 0.2), lightY, roundGamePresentation(sample.point[2] - sideZ * roadWidth * 0.2))
+      .scale(0.018)
+      .toJSON(),
+    primitives.cylinder({
+      name: `${prefix} ${label} left cone marker`,
+      material: material.emissive({ color: options.accentColor ?? "#c78344", emissive: options.accentColor ?? "#c78344", emissiveIntensity: 0.26, roughness: 0.52 })
+    })
+      .position(roundGamePresentation(sample.point[0] + sideX * roadWidth * 0.78), sample.point[1] + 0.034, roundGamePresentation(sample.point[2] + sideZ * roadWidth * 0.78))
+      .scale([0.038, 0.068, 0.038])
+      .toJSON(),
+    primitives.cylinder({
+      name: `${prefix} ${label} right cone marker`,
+      material: material.emissive({ color: options.accentColor ?? "#c78344", emissive: options.accentColor ?? "#c78344", emissiveIntensity: 0.26, roughness: 0.52 })
+    })
+      .position(roundGamePresentation(sample.point[0] - sideX * roadWidth * 0.78), sample.point[1] + 0.034, roundGamePresentation(sample.point[2] - sideZ * roadWidth * 0.78))
+      .scale([0.038, 0.068, 0.038])
+      .toJSON()
+  ];
+}
+
+export function createGameRacingStartFinishNodes(options: AuraRacingStartFinishOptions): readonly AuraSceneNode[] {
+  const mode = options.mode ?? "scene-bound";
+  const sample = racingPresentationSceneSample(options.sceneBinding, options.route, 0, options.roadY);
+  if (!sample) return [];
+  const roadWidth = options.roadWidth ?? racingPresentationRoadWidth(options.sceneBinding, options.route, "game-circuit");
+  const crossAngle = -sample.angle + Math.PI / 2;
+  const prefix = mode === "asset-bound" ? "asset-bound" : "scene-bound";
+  if (mode === "asset-bound") {
+    return [
+      primitives.box({
+        name: `${prefix} racing start finish band`,
+        material: material.emissive({ color: "#ffffff", emissive: "#ffffff", emissiveIntensity: 0.36, roughness: 0.3 })
+      })
+        .position(sample.point[0], sample.point[1] + 0.052, sample.point[2])
+        .rotate(0, crossAngle, 0)
+        .scale([roadWidth * 1.05, 0.01, 0.035])
+        .toJSON()
+    ];
+  }
+
+  const nodes: AuraSceneNode[] = [];
+  const sideX = -Math.sin(sample.angle);
+  const sideZ = Math.cos(sample.angle);
+  const forwardX = Math.cos(sample.angle);
+  const forwardZ = Math.sin(sample.angle);
+  nodes.push(
+    primitives.box({
+      name: "scene-bound racing start grid vehicle pad",
+      material: material.pbr({ color: options.checkerColorB ?? "#0d1416", roughness: 0.78, metallic: 0 })
+    })
+      .position(
+        roundGamePresentation(sample.point[0] - forwardX * roadWidth * 0.1),
+        sample.point[1] + 0.028,
+        roundGamePresentation(sample.point[2] - forwardZ * roadWidth * 0.1)
+      )
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 1.08, 0.01, roadWidth * 0.78])
+      .toJSON(),
+    primitives.box({
+      name: "scene-bound racing start finish light strip",
+      material: material.emissive({ color: options.lightColor ?? "#86e391", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.48, roughness: 0.38 })
+    })
+      .position(sample.point[0], sample.point[1] + 0.047, sample.point[2])
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 0.86, 0.012, 0.028])
+      .toJSON()
+  );
+  const tileCount = 10;
+  for (let tile = 0; tile < tileCount; tile += 1) {
+    const laneOffset = ((tile + 0.5) / tileCount - 0.5) * roadWidth * 1.18;
+    nodes.push(
+      primitives.box({
+        name: `scene-bound racing start finish checker ${tile + 1}`,
+        material: material.pbr({ color: tile % 2 === 0 ? options.checkerColorA ?? "#d4ded8" : options.checkerColorB ?? "#0d1416", roughness: 0.52, metallic: 0 })
+      })
+        .position(roundGamePresentation(sample.point[0] + sideX * laneOffset), sample.point[1] + 0.04, roundGamePresentation(sample.point[2] + sideZ * laneOffset))
+        .rotate(0, crossAngle, 0)
+        .scale([roadWidth / tileCount, 0.014, 0.07])
+        .toJSON()
+    );
+  }
+
+  const postOffset = roadWidth * 0.68;
+  const leftX = roundGamePresentation(sample.point[0] + sideX * postOffset);
+  const leftZ = roundGamePresentation(sample.point[2] + sideZ * postOffset);
+  const rightX = roundGamePresentation(sample.point[0] - sideX * postOffset);
+  const rightZ = roundGamePresentation(sample.point[2] - sideZ * postOffset);
+  const bannerX = roundGamePresentation(sample.point[0] + sideX * roadWidth * 0.84);
+  const bannerZ = roundGamePresentation(sample.point[2] + sideZ * roadWidth * 0.84);
+  nodes.push(
+    primitives.box({
+      name: "scene-bound racing launch grid bright marker",
+      material: material.emissive({ color: options.checkerColorA ?? "#718980", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.16, roughness: 0.44 })
+    })
+      .position(roundGamePresentation(sample.point[0] - forwardX * roadWidth * 0.28), sample.point[1] + 0.038, roundGamePresentation(sample.point[2] - forwardZ * roadWidth * 0.28))
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 0.44, 0.012, 0.05])
+      .toJSON(),
+    primitives.box({
+      name: "scene-bound racing launch grid dark marker",
+      material: material.pbr({ color: options.checkerColorB ?? "#0d1416", roughness: 0.52, metallic: 0 })
+    })
+      .position(roundGamePresentation(sample.point[0] - forwardX * roadWidth * 0.42), sample.point[1] + 0.039, roundGamePresentation(sample.point[2] - forwardZ * roadWidth * 0.42))
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 0.44, 0.012, 0.05])
+      .toJSON(),
+    primitives.sphere({
+      name: "scene-bound racing start left lane signal",
+      material: material.emissive({ color: options.lightColor ?? "#86e391", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.72, roughness: 0.32 })
+    })
+      .position(
+        roundGamePresentation(sample.point[0] + sideX * roadWidth * 0.34 - forwardX * roadWidth * 0.2),
+        sample.point[1] + 0.06,
+        roundGamePresentation(sample.point[2] + sideZ * roadWidth * 0.34 - forwardZ * roadWidth * 0.2)
+      )
+      .scale(0.036)
+      .toJSON(),
+    primitives.sphere({
+      name: "scene-bound racing start right lane signal",
+      material: material.emissive({ color: options.lightColor ?? "#86e391", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.72, roughness: 0.32 })
+    })
+      .position(
+        roundGamePresentation(sample.point[0] - sideX * roadWidth * 0.34 - forwardX * roadWidth * 0.2),
+        sample.point[1] + 0.06,
+        roundGamePresentation(sample.point[2] - sideZ * roadWidth * 0.34 - forwardZ * roadWidth * 0.2)
+      )
+      .scale(0.036)
+      .toJSON(),
+    primitives.box({
+      name: "scene-bound racing start gantry left post",
+      material: material.metal({ color: options.gantryColor ?? "#26373a", roughness: 0.5, metallic: 0.28 })
+    })
+      .position(leftX, sample.point[1] + 0.064, leftZ)
+      .scale([0.032, 0.128, 0.032])
+      .toJSON(),
+    primitives.box({
+      name: "scene-bound racing start gantry right post",
+      material: material.metal({ color: options.gantryColor ?? "#26373a", roughness: 0.5, metallic: 0.28 })
+    })
+      .position(rightX, sample.point[1] + 0.064, rightZ)
+      .scale([0.032, 0.128, 0.032])
+      .toJSON(),
+    primitives.box({
+      name: "scene-bound racing start finish gantry banner",
+      material: material.emissive({ color: options.gantryColor ?? "#2c4243", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.12, roughness: 0.42 })
+    })
+      .position(bannerX, sample.point[1] + 0.138, bannerZ)
+      .rotate(0, crossAngle, 0)
+      .scale([roadWidth * 0.34, 0.034, 0.034])
+      .toJSON(),
+    primitives.sphere({
+      name: "scene-bound racing start green light",
+      material: material.emissive({ color: options.lightColor ?? "#86e391", emissive: options.lightColor ?? "#86e391", emissiveIntensity: 0.72, roughness: 0.32 })
+    })
+      .position(roundGamePresentation(sample.point[0] - sideX * roadWidth * 0.84), sample.point[1] + 0.156, roundGamePresentation(sample.point[2] - sideZ * roadWidth * 0.84))
+      .scale(0.023)
+      .toJSON()
+  );
+  return nodes;
+}
+
+export function createGamePublicRacingPresentationNodes(options: AuraPublicRacingPresentationOptions): readonly AuraSceneNode[] {
+  const mode = "game-circuit";
+  const roadWidth = racingPresentationRoadWidth(options.sceneBinding, options.route, mode);
+  const nodes: AuraSceneNode[] = [
+    ...createGameRacingRoadMeshNodes({ ...options, mode, includeTerrain: options.includeTerrain ?? true })
+  ];
+  for (const [index, progress] of (options.route.checkpoints ?? []).entries()) {
+    nodes.push(...createGameRacingCheckpointGateNodes({
+      sceneBinding: options.sceneBinding,
+      route: options.route,
+      progress,
+      index,
+      roadY: options.roadY,
+      roadWidth,
+      gateColor: options.checkpointColor,
+      accentColor: options.checkpointAccentColor,
+      lightColor: options.startLightColor
+    }));
+  }
+  nodes.push(...createGameRacingStartFinishNodes({
+    sceneBinding: options.sceneBinding,
+    route: options.route,
+    roadY: options.roadY,
+    roadWidth,
+    lightColor: options.startLightColor
+  }));
+  return nodes;
+}
+
+export function createGameRacingCameraRig(options: GameRacingPresentationCameraOptions): GameScenePresentationCameraSpec {
+  return createGameRacingPresentationCamera(options);
+}
+
+export function certifyPublicRacingPresentation(input: AuraRacingPresentationCertificationInput): PublicGameGeometryCertification {
+  const base = certifyPublicRacingGeometry(input);
+  const blockers = [...base.blockers];
+  const presentation = input.presentation;
+  if (!presentation) {
+    blockers.push("racing:presentation-missing");
+  } else {
+    if ((presentation.roadMeshNodes ?? 0) < 8) blockers.push(`racing:presentation-road-mesh-too-small:${presentation.roadMeshNodes ?? 0}`);
+    if ((presentation.checkpointGateNodes ?? 0) < input.checkpoints.length) {
+      blockers.push(`racing:presentation-checkpoint-gates-too-few:${presentation.checkpointGateNodes ?? 0}`);
+    }
+    if ((presentation.startFinishNodes ?? 0) < 4) blockers.push(`racing:presentation-start-finish-too-small:${presentation.startFinishNodes ?? 0}`);
+    if (presentation.cameraMode !== "follow" && presentation.cameraMode !== "perspective") {
+      blockers.push(`racing:presentation-camera-not-racing:${presentation.cameraMode ?? "missing"}`);
+    }
+    if ((presentation.debugMarkerCount ?? 0) > 0) blockers.push(`racing:presentation-debug-markers:${presentation.debugMarkerCount}`);
+  }
+  return {
+    ...base,
+    publicReady: blockers.length === 0,
+    blockers
+  };
+}
+
+export function createGameRacingPresentationTrackNodes(options: AuraRacingPresentationTrackOptions): readonly AuraSceneNode[] {
+  const mode = options.mode ?? "standalone";
+  const guideVisibility = options.guideVisibility ?? (mode === "asset-overlay" ? "evidence" : "full");
+  if (mode === "asset-overlay" && guideVisibility === "public") return [];
+  const roadWidth = racingPresentationRoadWidth(options.sceneBinding, options.route, mode);
+  const nodes: AuraSceneNode[] = [...createGameRacingRoadMeshNodes(options)];
+  if (mode === "asset-overlay") {
+    for (const [index, progress] of (options.route.checkpoints ?? []).entries()) {
+      nodes.push(...createGameRacingCheckpointGateNodes({
+        sceneBinding: options.sceneBinding,
+        route: options.route,
+        progress,
+        index,
+        mode: "asset-bound",
+        roadY: options.roadY,
+        roadWidth,
+        gateColor: options.laneColor,
+        accentColor: options.laneColor
+      }));
+    }
+    nodes.push(...createGameRacingStartFinishNodes({
+      sceneBinding: options.sceneBinding,
+      route: options.route,
+      mode: "asset-bound",
+      roadY: options.roadY,
+      roadWidth
+    }));
+    return nodes;
+  }
+
+  if (guideVisibility === "evidence" || guideVisibility === "full") {
+    for (const [index, progress] of (options.route.checkpoints ?? []).entries()) {
+      nodes.push(...createGameRacingCheckpointGateNodes({
+        sceneBinding: options.sceneBinding,
+        route: options.route,
+        progress,
+        index,
+        roadY: options.roadY,
+        roadWidth,
+        gateColor: options.laneColor,
+        accentColor: options.laneColor
+      }));
+    }
+    nodes.push(...createGameRacingStartFinishNodes({
+      sceneBinding: options.sceneBinding,
+      route: options.route,
+      roadY: options.roadY,
+      roadWidth,
+      lightColor: options.laneColor
+    }));
+  }
+
+  return nodes;
+}
+
+export function createGamePublicPlatformerPresentationNodes(options: AuraPublicPlatformerPresentationOptions): readonly AuraSceneNode[] {
+  return createGamePlatformerPresentationSurfaceNodes({
+    ...options,
+    mode: "game-level",
+    guideVisibility: "public"
+  });
+}
+
+export function createGamePlatformerGroundMeshNodes(options: AuraPlatformerSurfaceMeshOptions): readonly AuraSceneNode[] {
+  return createSinglePlatformerSurfaceMeshNodes("ground", options);
+}
+
+export function createGamePlatformerPlatformMeshNodes(options: AuraPlatformerSurfaceMeshOptions): readonly AuraSceneNode[] {
+  return createSinglePlatformerSurfaceMeshNodes("platform", options);
+}
+
+export function createGamePlatformerHazardNodes(options: AuraPlatformerHazardOptions): readonly AuraSceneNode[] {
+  const mode = options.mode ?? "game-level";
+  const isGameLevel = mode === "game-level";
+  const rect = options.sceneBinding.surfaceToSceneRect(options.hazard);
+  return [
+    primitives.box({
+      name: `scene-bound platformer hazard ${options.hazard.id}`,
+      material: material.emissive({
+        color: options.color ?? "#ff6b6b",
+        emissive: options.color ?? "#ff6b6b",
+        emissiveIntensity: isGameLevel ? 0.7 : 0.54,
+        roughness: 0.36
+      })
+    })
+      .position(rect.center[0], rect.center[1], rect.center[2] + (isGameLevel ? 0.39 : 0.31))
+      .scale([Math.max(rect.size[0], 0.045), Math.max(rect.size[1], 0.045), 0.055])
+      .toJSON()
+  ];
+}
+
+export function createGamePlatformerCheckpointNodes(options: AuraPlatformerCheckpointOptions): readonly AuraSceneNode[] {
+  const point = options.sceneBinding.toScenePoint(options.checkpoint, 0.02);
+  return [
+    primitives.box({
+      name: `scene-bound platformer checkpoint ${options.checkpoint.id}`,
+      material: material.emissive({
+        color: options.color ?? "#d7f9ff",
+        emissive: options.color ?? "#a6f4ff",
+        emissiveIntensity: 0.48,
+        roughness: 0.4
+      })
+    })
+      .position(point[0], point[1], point[2] + 0.29)
+      .scale([0.026, 0.22, 0.034])
+      .toJSON()
+  ];
+}
+
+export function createGamePlatformerFinishNodes(options: AuraPlatformerFinishOptions): readonly AuraSceneNode[] {
+  const point = options.sceneBinding.toScenePoint(options.finish, 0.04);
+  return [
+    primitives.box({
+      name: `scene-bound platformer finish marker${options.finish.id ? ` ${options.finish.id}` : ""}`,
+      material: material.emissive({
+        color: options.color ?? "#b6ffbd",
+        emissive: options.color ?? "#83f58f",
+        emissiveIntensity: 0.6,
+        roughness: 0.42
+      })
+    })
+      .position(point[0], point[1], point[2] + 0.34)
+      .scale([0.06, 0.34, 0.05])
+      .toJSON()
+  ];
+}
+
+export function createGamePlatformerCameraRig(options: GamePlatformerPresentationCameraOptions): GameScenePresentationCameraSpec {
+  return createGamePlatformerPresentationCamera(options);
+}
+
+export function certifyPublicPlatformerPresentation(input: AuraPlatformerPresentationCertificationInput): PublicGameGeometryCertification {
+  const base = certifyPublicPlatformerGeometry(input);
+  const blockers = [...base.blockers];
+  const presentation = input.presentation;
+  if (!presentation) {
+    blockers.push("platformer:presentation-missing");
+  } else {
+    if ((presentation.groundMeshNodes ?? 0) < 2) blockers.push(`platformer:presentation-ground-mesh-too-small:${presentation.groundMeshNodes ?? 0}`);
+    if ((presentation.platformMeshNodes ?? 0) < 6) blockers.push(`platformer:presentation-platform-mesh-too-small:${presentation.platformMeshNodes ?? 0}`);
+    if ((presentation.hazardNodes ?? 0) < input.hazards.length) {
+      blockers.push(`platformer:presentation-hazards-too-few:${presentation.hazardNodes ?? 0}`);
+    }
+    if ((presentation.checkpointNodes ?? 0) < input.checkpoints.length) {
+      blockers.push(`platformer:presentation-checkpoints-too-few:${presentation.checkpointNodes ?? 0}`);
+    }
+    if ((presentation.finishNodes ?? 0) < 1) blockers.push(`platformer:presentation-finish-missing:${presentation.finishNodes ?? 0}`);
+    if (presentation.cameraMode !== "follow" && presentation.cameraMode !== "perspective") {
+      blockers.push(`platformer:presentation-camera-not-side-scroller:${presentation.cameraMode ?? "missing"}`);
+    }
+    if ((presentation.debugMarkerCount ?? 0) > 0) blockers.push(`platformer:presentation-debug-markers:${presentation.debugMarkerCount}`);
+    if (presentation.characterGrounded !== true) blockers.push("platformer:presentation-character-not-grounded");
+  }
+  return {
+    ...base,
+    publicReady: blockers.length === 0,
+    blockers
+  };
 }
 
 export function createGamePlatformerPresentationSurfaceNodes(options: AuraPlatformerPresentationSurfaceOptions): readonly AuraSceneNode[] {
@@ -5850,7 +6418,7 @@ export function createGamePlatformerPresentationSurfaceNodes(options: AuraPlatfo
   if (mode === "asset-overlay" && guideVisibility === "public") return [];
   const isGameLevel = mode === "game-level";
   const nodes: AuraSceneNode[] = [];
-  if ((mode === "standalone" || mode === "game-level") && platforms.length > 0) {
+  if ((mode === "standalone" || mode === "game-level") && platforms.length > 0 && options.includeBackdrop !== false) {
     const rects = platforms.map((surface) => options.sceneBinding.surfaceToSceneRect(surface));
     const bounds = boundsForPresentationRects(rects, isGameLevel ? 0.78 : 0.42);
     nodes.push(
@@ -5979,6 +6547,58 @@ export function createGamePlatformerPresentationSurfaceNodes(options: AuraPlatfo
   return nodes;
 }
 
+function createSinglePlatformerSurfaceMeshNodes(
+  surfaceRole: "ground" | "platform",
+  options: AuraPlatformerSurfaceMeshOptions
+): readonly AuraSceneNode[] {
+  const mode = options.mode ?? "game-level";
+  const isGameLevel = mode === "game-level";
+  const rect = options.sceneBinding.surfaceToSceneRect(options.surface);
+  const width = Math.max(rect.size[0], 0.08);
+  const height = Math.max(rect.size[1], 0.055);
+  if (mode === "asset-bound") {
+    return [
+      primitives.box({
+        name: `asset-bound platformer ${surfaceRole} contact strip ${options.surface.id}`,
+        material: material.emissive({
+          color: options.trimColor ?? "#c9f7ff",
+          emissive: options.trimColor ?? "#a8f4ff",
+          emissiveIntensity: 0.28,
+          roughness: 0.44
+        })
+      })
+        .position(rect.center[0], roundGamePresentation(rect.center[1] + height / 2 + 0.026), rect.center[2] + 0.24)
+        .scale([width * 0.78, 0.012, 0.024])
+        .toJSON()
+    ];
+  }
+  return [
+    primitives.box({
+      name: `scene-bound platformer ${surfaceRole} mesh ${options.surface.id}`,
+      material: material.pbr({
+        color: options.color ?? (isGameLevel ? "#526972" : "#718994"),
+        roughness: 0.72,
+        metallic: 0
+      })
+    })
+      .position(rect.center[0], rect.center[1], rect.center[2])
+      .scale([width, height, isGameLevel ? 0.64 : 0.5])
+      .toJSON(),
+    primitives.box({
+      name: `scene-bound platformer ${surfaceRole} trim ${options.surface.id}`,
+      material: material.emissive({
+        color: options.trimColor ?? "#c9f7ff",
+        emissive: options.trimColor ?? "#a8f4ff",
+        emissiveIntensity: 0.36,
+        roughness: 0.38
+      })
+    })
+      .position(rect.center[0], roundGamePresentation(rect.center[1] + height / 2 + 0.012), rect.center[2] + (isGameLevel ? 0.334 : 0.262))
+      .scale([width * 0.92, 0.016, 0.035])
+      .toJSON()
+  ];
+}
+
 function boundsForPresentationPoints(points: readonly AuraGamePresentationVec3[], padding: number): {
   readonly centerX: number;
   readonly centerZ: number;
@@ -6041,6 +6661,94 @@ function segmentPresentation(start: AuraGamePresentationVec3, end: AuraGamePrese
   };
 }
 
+function racingPresentationRoutePoints(
+  sceneBinding: GameRacingSceneBinding,
+  route: GameAssetBoundRacingRoute,
+  roadY?: number
+): readonly AuraGamePresentationVec3[] {
+  return route.points.map((point) => sceneBinding.toScenePoint(point, roadY ?? 0.012));
+}
+
+function racingPresentationRoadWidth(
+  sceneBinding: GameRacingSceneBinding,
+  route: GameAssetBoundRacingRoute,
+  mode: NonNullable<AuraRacingPresentationTrackOptions["mode"]>
+): number {
+  const isCircuitStage = mode === "game-circuit";
+  return Math.max(
+    (route.width ?? 0.18) * sceneBinding.transform.scale * (isCircuitStage ? 1.55 : 1.5),
+    isCircuitStage ? 0.34 : 0.18
+  );
+}
+
+function racingPresentationSceneSample(
+  sceneBinding: GameRacingSceneBinding,
+  route: GameAssetBoundRacingRoute,
+  progress: number,
+  roadY?: number
+): { readonly point: AuraGamePresentationVec3; readonly angle: number } | undefined {
+  const sample = racingPresentationRouteSample(route, progress);
+  if (!sample) return undefined;
+  return {
+    point: sceneBinding.toScenePoint(sample.point, roadY ?? 0.012),
+    angle: sample.angle
+  };
+}
+
+function racingPresentationRouteSample(
+  route: GameAssetBoundRacingRoute,
+  progress: number
+): { readonly point: { readonly x: number; readonly y: number }; readonly angle: number } | undefined {
+  const points = route.points;
+  if (points.length < 2) return undefined;
+  const clamped = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
+  let totalLength = 0;
+  const segmentLengths: number[] = [];
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const start = points[index];
+    const end = points[index + 1];
+    if (!start || !end) continue;
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    segmentLengths[index] = length;
+    totalLength += length;
+  }
+  if (totalLength <= 0) {
+    const start = points[0];
+    const end = points[1] ?? start;
+    if (!start || !end) return undefined;
+    return {
+      point: start,
+      angle: Math.atan2(end.y - start.y, end.x - start.x)
+    };
+  }
+  const targetLength = clamped * totalLength;
+  let traversed = 0;
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const start = points[index];
+    const end = points[index + 1];
+    const length = segmentLengths[index] ?? 0;
+    if (!start || !end || length <= 0) continue;
+    if (targetLength <= traversed + length || index === points.length - 2) {
+      const localT = Math.min(1, Math.max(0, (targetLength - traversed) / length));
+      return {
+        point: {
+          x: start.x + (end.x - start.x) * localT,
+          y: start.y + (end.y - start.y) * localT
+        },
+        angle: Math.atan2(end.y - start.y, end.x - start.x)
+      };
+    }
+    traversed += length;
+  }
+  const last = points[points.length - 1];
+  const previous = points[points.length - 2] ?? last;
+  if (!last || !previous) return undefined;
+  return {
+    point: last,
+    angle: Math.atan2(last.y - previous.y, last.x - previous.x)
+  };
+}
+
 function roundGamePresentation(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
@@ -6070,11 +6778,27 @@ export const game = {
   platformerSceneBinding: createGamePlatformerSceneBinding,
   platformerPresentationCamera: createGamePlatformerPresentationCamera,
   platformerPresentationSurfaces: createGamePlatformerPresentationSurfaceNodes,
+  publicPlatformerPresentation: createGamePublicPlatformerPresentationNodes,
+  platformerGroundMesh: createGamePlatformerGroundMeshNodes,
+  platformerPlatformMesh: createGamePlatformerPlatformMeshNodes,
+  platformerHazard: createGamePlatformerHazardNodes,
+  platformerCheckpoint: createGamePlatformerCheckpointNodes,
+  platformerFinish: createGamePlatformerFinishNodes,
+  platformerCameraRig: createGamePlatformerCameraRig,
+  certifyPlatformerGeometry: certifyPublicPlatformerGeometry,
+  certifyPlatformerPresentation: certifyPublicPlatformerPresentation,
   platformer: createGamePlatformerKit,
   assetBoundRacingRoute: createGameAssetBoundRacingRoute,
   racingSceneBinding: createGameRacingSceneBinding,
   racingPresentationCamera: createGameRacingPresentationCamera,
+  racingCameraRig: createGameRacingCameraRig,
+  racingRoadMesh: createGameRacingRoadMeshNodes,
+  racingCheckpointGate: createGameRacingCheckpointGateNodes,
+  racingStartFinish: createGameRacingStartFinishNodes,
   racingPresentationTrack: createGameRacingPresentationTrackNodes,
+  publicRacingPresentation: createGamePublicRacingPresentationNodes,
+  certifyRacingGeometry: certifyPublicRacingGeometry,
+  certifyRacingPresentation: certifyPublicRacingPresentation,
   racing: createGameRacingKit,
   fallingBlocks: createGameFallingBlocksKit,
   fallingBlockPieces: GAME_FALLING_BLOCK_PIECES,

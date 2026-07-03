@@ -131,6 +131,7 @@ export interface GameRacingPresentationCameraOptions {
   readonly height?: number;
   readonly sideOffset?: number;
   readonly lookAhead?: number;
+  readonly target?: Vec3;
   readonly fov?: number;
 }
 
@@ -312,7 +313,7 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
 
 export function createGameRacingPresentationCamera(options: GameRacingPresentationCameraOptions): GameScenePresentationCameraSpec {
   if (options.mode === "overview") {
-    const track = options.sceneBinding.trackModel.position;
+    const track = options.target ?? options.sceneBinding.trackModel.position;
     const distance = positiveOrDefault(options.distance, 5.9);
     const height = positiveOrDefault(options.height, 3.75);
     const target: Vec3 = [

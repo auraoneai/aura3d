@@ -130,6 +130,7 @@ function createGameAssetPairRouteHealth(spec: ShowcaseSpec) {
     screenshotEvidence: assetPairEvidence.screenshotEvidence,
     routePrimaryProbe: assetPairEvidence.routePrimaryProbe,
     screenshotSha256: assetPairEvidence.screenshotSha256,
+    geometryEvidence: assetPairEvidence.geometryEvidence,
     verdict: assetPairEvidence.verdict,
     notes: assetPairEvidence.notes,
     blockers: assetPairEvidence.blockers

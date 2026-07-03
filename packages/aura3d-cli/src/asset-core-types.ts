@@ -25,6 +25,31 @@ export type AuraCliAssetRole =
   | "abstract"
   | "unknown";
 export type AuraCliRenderedProbeKind = "browser-screenshot" | "aura-probe-render" | "manual-inspection" | "unknown";
+export type AuraCliGameAssetCertification =
+  | "not-game-ready"
+  | "candidate-needs-geometry"
+  | "certified-racing-track"
+  | "certified-racing-vehicle"
+  | "certified-platformer-world"
+  | "certified-platformer-character"
+  | "certified-generated-game-world";
+
+export interface AuraCliGameGeometryEvidence {
+  readonly routePrimaryScreenshot?: string;
+  readonly routePrimaryScreenshotSha256?: string;
+  readonly geometryReport?: string;
+  readonly manifestHash?: string;
+  readonly visualReview?: "pass" | "fail";
+  readonly assetPairPass?: boolean;
+  readonly blockers?: readonly string[];
+}
+
+export interface AuraCliGameGeometryMetadata {
+  readonly certification?: AuraCliGameAssetCertification;
+  readonly evidence?: AuraCliGameGeometryEvidence;
+  readonly racingTopology?: Readonly<Record<string, unknown>>;
+  readonly playableSurfaceMap?: Readonly<Record<string, unknown>>;
+}
 
 export interface AuraCliRenderedProbeForegroundBounds {
   readonly x: number;
@@ -158,7 +183,7 @@ export interface AuraCliAssetEntry {
   readonly role?: AuraCliAssetRole;
   readonly suitabilityReason?: string;
   readonly renderedProbe?: AuraCliRenderedProbe;
-  readonly gameGeometry?: Readonly<Record<string, unknown>>;
+  readonly gameGeometry?: AuraCliGameGeometryMetadata;
   readonly warnings: readonly string[];
 }
 
@@ -187,7 +212,7 @@ export interface AddAssetOptions {
   readonly role?: AuraCliAssetRole;
   readonly suitabilityReason?: string;
   readonly renderedProbe?: AuraCliRenderedProbe;
-  readonly gameGeometry?: Readonly<Record<string, unknown>>;
+  readonly gameGeometry?: AuraCliGameGeometryMetadata;
   readonly retrievedAt?: string;
 }
 
