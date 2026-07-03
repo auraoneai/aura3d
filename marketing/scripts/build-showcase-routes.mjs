@@ -12,8 +12,8 @@ const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(marketingDir, "..");
 const distDir = path.join(marketingDir, "dist");
-const enginePackageJson = path.join(marketingDir, "node_modules", "@aura3d", "engine", "package.json");
-const engineEntry = path.join(marketingDir, "node_modules", "@aura3d", "engine", "dist", "engine", "agent-api", "index.js");
+const rootViteConfig = path.join(repoRoot, "vite.config.ts");
+const engineSourceEntry = path.join(repoRoot, "packages", "engine", "src", "agent-api", "index.ts");
 
 const showcaseRoutes = [
   "showcase-index",
@@ -29,28 +29,47 @@ const showcaseRoutes = [
   "showcase-webgpu-particle-lab"
 ];
 
+const requiredPublicGameEngineHelpers = [
+  "racingRoadMesh",
+  "racingStartFinish",
+  "publicRacingPresentation",
+  "certifyRacingPresentation",
+  "platformerGroundMesh",
+  "platformerPlatformMesh",
+  "platformerHazard",
+  "platformerCheckpoint",
+  "platformerFinish",
+  "publicPlatformerPresentation",
+  "certifyPlatformerPresentation"
+];
+
 function readJson(file) {
   return JSON.parse(readFileSync(file, "utf8"));
 }
 
-function assertEngineVersion() {
+function assertEngineBuildContract() {
   const marketingPackage = readJson(path.join(marketingDir, "package.json"));
   const packageDependency = marketingPackage.dependencies?.["@aura3d/engine"];
   if (packageDependency !== expectedEngineVersion) {
     throw new Error(`marketing/package.json must depend on @aura3d/engine@${expectedEngineVersion}; found ${packageDependency ?? "missing"}`);
   }
 
-  if (!existsSync(enginePackageJson)) {
-    throw new Error("marketing/node_modules/@aura3d/engine is missing. Run pnpm install before building the marketing site.");
+  if (!existsSync(rootViteConfig)) {
+    throw new Error(`root Vite config is missing: ${rootViteConfig}`);
   }
 
-  const installedEngine = readJson(enginePackageJson);
-  if (installedEngine.version !== expectedEngineVersion) {
-    throw new Error(`marketing build requires npm @aura3d/engine@${expectedEngineVersion}; installed ${installedEngine.version}`);
+  if (!existsSync(engineSourceEntry)) {
+    throw new Error(`@aura3d/engine public agent-api source entry is missing: ${engineSourceEntry}`);
   }
 
-  if (!existsSync(engineEntry)) {
-    throw new Error(`@aura3d/engine package entry is missing: ${engineEntry}`);
+  assertRequiredEngineSourceHelpers();
+}
+
+function assertRequiredEngineSourceHelpers() {
+  const engineSource = readFileSync(engineSourceEntry, "utf8");
+  const missingHelpers = requiredPublicGameEngineHelpers.filter((helper) => !engineSource.includes(`${helper}:`));
+  if (missingHelpers.length > 0) {
+    throw new Error(`@aura3d/engine public game presentation helpers are missing from source game API: ${missingHelpers.join(", ")}`);
   }
 }
 
@@ -62,13 +81,18 @@ function writeViteConfig(tempDir) {
   const configPath = path.join(tempDir, "vite.config.mjs");
   writeFileSync(
     configPath,
-    `export default {
+    `import rootConfig from ${JSON.stringify(rootViteConfig)};
+
+const rootAliases = Array.isArray(rootConfig.resolve?.alias) ? rootConfig.resolve.alias : [];
+
+export default {
   root: ${JSON.stringify(repoRoot)},
   publicDir: false,
   base: "/",
   resolve: {
     alias: [
-      { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineEntry)} }
+      { find: /^@aura3d\\/engine$/, replacement: ${JSON.stringify(engineSourceEntry)} },
+      ...rootAliases.filter((entry) => entry.find !== "@aura3d/engine")
     ],
     dedupe: ["@aura3d/engine"]
   },
@@ -83,7 +107,8 @@ function writeViteConfig(tempDir) {
     }
   },
   optimizeDeps: {
-    entries: ${JSON.stringify(Object.values(routeInputs), null, 4)}
+    entries: ${JSON.stringify(Object.values(routeInputs), null, 4)},
+    exclude: ["@aura3d/engine"]
   }
 };
 `,
@@ -205,7 +230,7 @@ function assertBuiltRoutes() {
 }
 
 function main() {
-  assertEngineVersion();
+  assertEngineBuildContract();
   const showcaseAssetBaseUrl = resolveShowcaseAssetBaseUrl();
   const tempDir = mkdtempSync(path.join(tmpdir(), "aura3d-marketing-showcase-"));
   try {
@@ -219,7 +244,7 @@ function main() {
       copyAuraAssets();
     }
     assertBuiltRoutes();
-    console.log(`Built ${showcaseRoutes.length} showcase routes with @aura3d/engine@${expectedEngineVersion}.`);
+    console.log(`Built ${showcaseRoutes.length} showcase routes with local @aura3d/engine agent-api source for package version ${expectedEngineVersion}.`);
   } finally {
     rmSync(tempDir, { force: true, recursive: true });
   }
