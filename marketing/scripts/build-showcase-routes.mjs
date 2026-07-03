@@ -23,6 +23,8 @@ const showcaseRoutes = [
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops",
   "showcase-blockfall-reactor",
+  "showcase-public-racing-presentation-proof",
+  "showcase-public-platformer-presentation-proof",
   "showcase-data-galaxy",
   "showcase-webgpu-particle-lab"
 ];
