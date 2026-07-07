@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/workflows",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -18,5 +18,36 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Asset viewer, product configurator, material studio, scene showcase, interactive scene, animation lab, comparison, and production workflow helpers for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "workflows",
+    "asset-viewer",
+    "product-configurator",
+    "material-studio",
+    "scene-showcase",
+    "production-runtime"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/workflows"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

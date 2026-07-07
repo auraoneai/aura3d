@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/animation",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,5 +13,38 @@
   },
   "dependencies": {
     "@aura3d/math": "workspace:*"
-  }
+  },
+  "description": "Deterministic animation clips, mixers, root motion, skeleton palettes, blend trees, state machines, and scene/ECS animation bridges for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "animation",
+    "animation-engine",
+    "skeletal-animation",
+    "blend-trees",
+    "state-machine",
+    "root-motion",
+    "skinning",
+    "game-animation"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/animation"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

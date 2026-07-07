@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/assets",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -19,5 +19,38 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Asset identity, loading, caching, dependency tracking, import pipelines, worker job boundaries, and GLB/glTF runtime loaders for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "assets",
+    "asset-loader",
+    "gltf",
+    "glb",
+    "texture-loader",
+    "asset-cache",
+    "import-pipeline",
+    "typed-assets"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/assets"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

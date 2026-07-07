@@ -82,16 +82,16 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      - name: Create npm tarball
-        run: pnpm pack --pack-destination release
+      - name: Create npm tarballs
+        run: node tools/release/publish-all.mjs --dry-run
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
             dist/
-            release/*.tgz
+            tests/reports/release-tarballs/*.tgz
           retention-days: 30
 
   publish-npm:
@@ -121,7 +121,7 @@ jobs:
         run: pnpm build
 
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks
+        run: node tools/release/publish-all.mjs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -136,7 +136,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-artifacts
           path: ./artifacts
@@ -164,6 +164,11 @@ jobs:
             CHANGELOG=$(git log ${PREV_TAG}..${VERSION} --pretty=format:"- %s (%h)" --no-merges)
           fi
 
+          RELEASE_NOTES_FILE="docs/project/aura3d-${PACKAGE_VERSION//./}-release-notes.md"
+          if [ -f "$RELEASE_NOTES_FILE" ]; then
+            CHANGELOG=$(cat "$RELEASE_NOTES_FILE")
+          fi
+
           echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -174,9 +179,6 @@ jobs:
           tag_name: ${{ steps.changelog.outputs.VERSION }}
           name: '@aura3d/engine ${{ steps.changelog.outputs.VERSION }}'
           body: |
-            # @aura3d/engine ${{ steps.changelog.outputs.VERSION }}
-
-            ## Changes
             ${{ steps.changelog.outputs.CHANGELOG }}
 
             ## Installation
@@ -189,7 +191,7 @@ jobs:
             ## Documentation
             See [README.md](https://github.com/${{ github.repository }}/blob/${{ steps.changelog.outputs.VERSION }}/README.md) for full documentation.
           files: |
-            artifacts/release/*.tgz
+            artifacts/tests/reports/release-tarballs/*.tgz
           draft: false
           prerelease: false
         env:

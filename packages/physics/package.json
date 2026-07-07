@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/physics",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -13,5 +13,37 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
-  }
+  },
+  "description": "Deterministic rigid-body simulation, collision shapes, contacts, constraints, raycasts, fixed stepping, scene/ECS bridges, and debug draw extraction.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "physics",
+    "rigid-body",
+    "collision",
+    "raycast",
+    "constraints",
+    "fixed-step",
+    "game-physics"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/physics"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

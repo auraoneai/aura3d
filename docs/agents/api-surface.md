@@ -50,6 +50,10 @@ import {
 } from "@aura3d/engine";
 ```
 
+React apps can use `@aura3d/react` for component wrappers around the same root
+safe API. Keep typed assets in props and keep public capability claims tied to
+browser evidence for the mounted route.
+
 `unsafeModelUrl` is listed because it may exist for explicit diagnostics or
 temporary local work. It is not allowed in public safe examples, benchmark
 routes, showcase routes, or release-facing docs. Use generated typed assets and
@@ -86,13 +90,13 @@ import { createAuraApp, lights, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
-  scene: scene().add(model(assets.product)).add(lights.studio())
+  scene: scene().add(model(assets.robot)).add(lights.studio())
 });
 ```
 
 Never use raw model strings or URLs in public safe examples:
 
-```ts
+```text
 model("product");
 model("/assets/product.glb");
 model("https://example.com/product.glb");
@@ -153,7 +157,16 @@ Physics boundary:
 Visual QA helpers:
 
 ```ts
-console.log(charts.visualQA(sceneKits.dataViz({ dataset }).nodes));
+import { charts, character, city, product, sceneKits, solar } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const sampleDataset = [
+  [0.42, 0.68, 0.91],
+  [0.55, 0.77, 0.83],
+  [0.31, 0.59, 0.72]
+] as const;
+
+console.log(charts.visualQA(sceneKits.dataViz({ dataset: sampleDataset }).nodes));
 console.log(character.visualQA(sceneKits.humanoidWalk({ animationState: "benchmark-pose" }).nodes));
 console.log(city.visualQA(sceneKits.cityBlock({ timeOfDay: "night" }).nodes));
 console.log(product.visualQA(sceneKits.productViewer(assets.product).nodes));
@@ -195,6 +208,9 @@ support matrix and screenshots for the claimed root or internal path.
 Camera presets and route evidence:
 
 ```ts
+import { collectAuraSceneEvidence, sceneKits } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
 const appScene = sceneKits.productViewer(assets.product).scene();
 const evidence = collectAuraSceneEvidence(appScene);
 console.log(evidence.camera.orbitEnabled, evidence.animation.turntableEnabled, evidence.assets);

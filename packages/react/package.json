@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/react",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -16,5 +16,36 @@
   },
   "devDependencies": {
     "@aura3d/engine": "workspace:*"
-  }
+  },
+  "description": "React components and helpers for mounting Aura3D scenes with typed assets, cameras, lights, effects, and product-viewer scene builders.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "react",
+    "react-components",
+    "react-3d",
+    "aura-canvas",
+    "typed-assets",
+    "product-viewer"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/ecs",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,5 +14,36 @@
   "dependencies": {
     "@aura3d/core": "workspace:*",
     "@aura3d/math": "workspace:*"
-  }
+  },
+  "description": "Entity identity, components, sparse-set and archetype storage, queries, command buffers, systems, scheduling, serialization, and transform components.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "ecs",
+    "entity-component-system",
+    "game-dev",
+    "systems",
+    "queries",
+    "component-storage"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/ecs"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

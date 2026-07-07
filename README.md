@@ -111,9 +111,13 @@ classified as prototype, internal diagnostic, or blocked instead of public.
 
 ## Current Release
 
-`@aura3d/engine@1.4.0` is the published release, live on npm `latest` across the
-26 public Aura3D packages. It carries the 1.1.0-1.3.3 runtime, animation,
-typed-asset, and template foundations forward, then hardens the release path:
+`@aura3d/engine@1.4.1` is the current package release across the 26 public
+Aura3D packages. It keeps the 1.4.0 runtime, animation, typed-asset, and
+template foundations intact, then improves npm package presentation,
+discoverability metadata, package READMEs, and scaffold dependency pins.
+
+`1.4.0` carried the 1.1.0-1.3.3 runtime, animation, typed-asset, and template
+foundations forward, then hardened the release path:
 role-aware asset validation, rendered-probe rejection for fake/stale proof, AST
 source validation, package/dist parity checks, resolver-backed showcase-spec
 repair, route-primary probes, release asset probes, gameplay proof where
@@ -134,11 +138,12 @@ The **Animation Studio** turns a natural-language prompt into a deterministic, r
 
 Aura3D ships a real animation engine: critically-damped, momentum-preserving transitions, two-bone foot IK with a foot-lock, spring-bone secondary dynamics, animation event tracks, texture-backed facial morph targets with viseme lip-sync, and 96-joint character skinning on both WebGL2 and WebGPU — each gate-backed and running live in Aura Clash. Aura Clash uses starter-grade fighter assets with **no new fighter art this release** (the rigs carry no facial blendshapes, so the morph/viseme work is showcased in Animation Studio and the morph proofs), so it stays a development showcase of the engine rather than a finished commercial game.
 
-Registry status: npm `latest` serves `1.4.0` across all 26 public packages
+Registry target: the 1.4.1 release publishes npm `latest` across all 26 public packages
 (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`,
 and the rest of the package family). The `animation-studio`,
 `character-controller`, typed asset, showcase-spec, and release evidence APIs
-above are live for `npx ...@latest` users, and the showcase is deployed at
+above are the intended `npx ...@latest` package surface for this release, and
+the showcase is deployed at
 https://aura3d.auraone.ai.
 
 ## Aura3D 1.1.0 asset catalog
@@ -163,7 +168,8 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.0 is the current published release that carries it forward:
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.1 is
+the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
 - `fighting-game template`: `npx create-aura3d@latest my-fighter --template fighting-game` scaffolds a public-API playable starter using typed assets, `app.input(...)`, `app.onFrame(...)`, `game.kinematicBody(...)`, `game.combatWorld(...)`, and `app.evidence(...)`.
@@ -615,7 +621,10 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the published 1.4.0 baseline, and the release-candidate showcase gate passes for six public examples while retaining two internal diagnostics and two prototype-blocked game routes outside the public path.
+Expected current state — The scoped package gates pass for the published 1.4.1
+baseline, and the release-candidate showcase gate passes for six public examples
+while retaining two internal diagnostics and two prototype-blocked game routes
+outside the public path.
 
 ## Contributing
 

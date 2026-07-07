@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/cli",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "bin": {
     "aura3d": "dist/cli.js",
@@ -8,6 +8,7 @@
     "cli": "dist/cli.js"
   },
   "files": [
+    "README.md",
     "dist"
   ],
   "publishConfig": {
@@ -25,22 +26,35 @@
     "@aura3d/asset-index": "workspace:*",
     "typescript": "^5.8.3"
   },
-  "description": "Aura3D CLI for typed GLB/glTF assets, game/animation readiness, character assembly, agent setup, diagnostics, and deploy checks.",
+  "description": "Aura3D CLI for typed GLB/glTF assets, asset provenance, validation, diagnostics, screenshots, and deploy checks.",
   "keywords": [
     "aura3d",
     "3d",
+    "browser-3d",
+    "web-3d",
+    "webgl",
+    "typescript",
+    "typescript-3d",
     "gltf",
     "glb",
+    "gltf-assets",
+    "glb-assets",
     "typed-assets",
+    "asset-pipeline",
+    "asset-validation",
+    "asset-provenance",
+    "asset-search",
     "game-assets",
-    "animation-animation",
+    "animation-assets",
     "character-assembly",
     "ai-agents",
+    "coding-agents",
     "vite",
     "static-deploy",
-    "diagnostics"
+    "diagnostics",
+    "screenshot-testing"
   ],
-  "homepage": "https://github.com/auraoneai/aura3d#readme",
+  "homepage": "https://aura3d.auraone.ai",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/auraoneai/aura3d.git",

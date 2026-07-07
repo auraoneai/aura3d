@@ -1,5 +1,14 @@
 # Template Selection
 
+Current `create-aura3d` templates: `product-viewer`, `cinematic-scene`,
+`mini-game`, `racing-starter`, `falling-blocks-starter`, `fighting-game`,
+`animation-channel`, `prompt-animation-channel`, `animation-studio`,
+`episode-builder`, `character-controller`, `three-compat-premium-product-viewer`,
+`three-compat-architecture-interior`, `three-compat-material-authoring`,
+`three-compat-asset-inspector`, `three-compat-character-viewer`,
+`three-compat-postprocess-scene`, `three-compat-custom-threejs-migration`, and
+`three-compat-large-scene`.
+
 - `product-viewer`: product pages, asset viewers, configurators, hero objects.
 - `cinematic-scene`: dolly camera, stylized lighting, rain, fog, bloom, timeline.
 - `mini-game`: playable platformer-style starter on the public

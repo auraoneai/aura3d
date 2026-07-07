@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/apps",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -15,5 +15,37 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/workflows": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "High-level Aura3D app workflow presets for asset viewers, product configurators, material studios, scene showcases, and interactive scenes.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "3d-apps",
+    "app-workflows",
+    "asset-viewer",
+    "product-configurator",
+    "material-studio",
+    "scene-showcase",
+    "interactive-3d"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/apps"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

@@ -6,7 +6,7 @@ making public examples, docs, route claims, template claims, or release claims.
 You are NOT writing three.js:
 - Do not `import * as THREE` or import from `three` / `three/examples/...`. Write `@aura3d/engine` public APIs.
 - Do not `new GLTFLoader()`, `new GLTFLoader().load(...)`, or hand-wire a renderer/scene/camera loop. `createAuraApp(...)` owns the runtime.
-- Do not paste memorized or guessed GLB URLs (for example `raw.githubusercontent.com/.../KhronosGroup/glTF-Sample-Assets/.../DamagedHelmet.glb`). Those are hallucinated provenance. Resolve real objects from the asset catalog instead (see below).
+- Do not invent asset paths or paste memorized/guessed GLB URLs (for example `raw.githubusercontent.com/.../KhronosGroup/glTF-Sample-Assets/.../DamagedHelmet.glb`). Those are hallucinated provenance. Resolve real objects from the asset catalog instead (see below).
 - three.js -> Aura3D mapping:
 
 | three.js | Aura3D |
@@ -52,7 +52,7 @@ npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
 npm run dev
 ```
 
-Hello world with typed assets:
+Hello world:
 ```ts
 import { createAuraApp, lights, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
@@ -62,61 +62,12 @@ createAuraApp("#app", {
 });
 ```
 
-Public imports for agent-authored apps:
-```ts
-import {
-  AnimationController,
-  createAuraApp,
-  createAnimationController,
-  collectAuraSceneEvidence,
-  collectPromptAnimationEvidence,
-  compilePromptEpisodePlan,
-  definePromptPlan,
-  compilePromptPlan,
-  promptPlanToScene,
-  captionCueAtTime,
-  scene,
-  model,
-  camera,
-  lights,
-  material,
-  effects,
-  prefabs,
-  sceneKits,
-  primitives,
-  group,
-  groups,
-  shadows,
-  timeline,
-  interactions,
-  physics,
-  labels,
-  environments,
-  game,
-  games,
-  charts,
-  character,
-  city,
-  product,
-  solar,
-  particles,
-  defineAuraAssets,
-  createAudioStemManifest,
-  createAuraVoiceBridgePackage,
-  createAuraVoiceVisemeTrack,
-  createCaptionTimingProof,
-  createAnimationRenderOutputPackageMetadata,
-  createGlbBlendshapeVisemeCue,
-  createPrimitiveMouthVisemeCues,
-  createPromptAnimationDeterministicScreenshotFixtureMetadata,
-  createShotPlaybackPlan,
-  evaluatePromptAnimationPublishReadiness,
-  installShotPlayback,
-  sampleAuraVoiceBridgeAtTime,
-  validateAuraVoiceBridgePackage,
-  ui
-} from "@aura3d/engine";
-```
+Public imports for agent-authored apps come from `@aura3d/engine`: `createAuraApp`,
+`scene`, `model`, `camera`, `lights`, `material`, `effects`, `prefabs`,
+`sceneKits`, `primitives`, `group`, `timeline`, `interactions`, `physics`,
+`labels`, `environments`, `game`, `games`, `charts`, `character`, `city`,
+`product`, `solar`, `particles`, `ui`, evidence helpers, and prompt-animation
+helpers. Import only the names you use.
 
 Game runtime pattern:
 ```ts
@@ -125,7 +76,7 @@ import { assets } from "./aura-assets";
 
 const app = createAuraApp("#app", {
   scene: scene()
-    .add(model(assets.fighter).runtime(game.runtimeNode("player", { tags: ["fighter"] })))
+    .add(model(assets.hero).runtime(game.runtimeNode("player", { tags: ["fighter"] })))
     .add(lights.studio())
 });
 
@@ -158,102 +109,15 @@ Game runtime rules:
 - Use `game.evidence(app)` to prove runtime nodes and frame-loop activity.
 - Keep typed assets from `./aura-assets`; do not use string ids, invented URLs, or direct loader code.
 
-Aura3D 1.1.0 game runtime helpers:
-```ts
-const stage = games.fighting.stagePreset("neon-dojo");
-const stageIssues = games.fighting.validateStage(stage);
+Aura3D 1.1.0 game runtime helpers include fighting presets, touch controls,
+jump assist, collision worlds, colliders, HUD bindings, accessibility state,
+input replay, event logs, platformer/racing/falling-block helpers, and debug
+overlays. Use them through `game`/`games` and prove each mechanic with browser
+input tests before making public game claims.
 
-const fighting = game.fighting({
-  playerId: "player",
-  opponentId: "opponent",
-  stage: { width: stage.combatBounds.maxX - stage.combatBounds.minX },
-  autoListen: true
-});
-
-const touchLayout = game.touchControls({
-  width: window.innerWidth,
-  height: window.innerHeight,
-  buttons: [
-    { action: "jump", label: "Jump", binding: "TouchJump" },
-    { action: "light", label: "Light", binding: "TouchLight" }
-  ]
-});
-
-const jumpAssist = game.jumpAssist({ coyoteMs: 100, bufferMs: 120 });
-const collisionWorld = game.collisionWorld({ gravity: [0, 0, 0], backend: "aura-js" });
-collisionWorld.addBox("player", [0.42, 0.9, 0.32], { tags: ["player"], layer: 0b001, mask: 0b110 });
-collisionWorld.addSphere("coin-01", 0.2, { position: [1.2, 1, 0], sensor: true, tags: ["coin"], layer: 0b010, mask: 0b001 });
-const events = game.eventLog({ label: "starter events" });
-const genericHud = game.hud.bindings([
-  game.hud.score({ valuePath: "appState.score" }),
-  game.hud.objective({ valuePath: "appState.objective" }),
-  game.hud.eventLog({ valuePath: "appState.events" })
-]);
-const platformer = game.platformer({
-  platforms: [{ id: "ground", x: -1, y: 0, width: 14, height: 0.35 }],
-  collectibles: [{ id: "coin-01", x: 3, y: 1, value: 50 }],
-  checkpoints: [{ id: "mid", x: 6, y: 0.35 }],
-  hazards: [{ id: "spikes", x: 8, y: 0.35, width: 1, height: 0.2 }],
-  finish: { x: 12, y: 0.35 }
-});
-const racing = game.racing({
-  route: { points: [{ x: 0, y: 0 }, { x: 8, y: 0 }, { x: 8, y: 6 }, { x: 0, y: 6 }], checkpoints: [0.2, 0.45, 0.7, 0.94] }
-});
-const fallingBlocks = game.fallingBlocks({ seed: 42 });
-const replayPlan = game.inputReplay(fighting.input.recorded(), { fps: 60, label: "round-1" });
-const replayDriver = game.inputReplayDriver(
-  game.input({ actions: fighting.controls.actions, axes: fighting.controls.axes, autoListen: false }),
-  replayPlan
-);
-
-const colliders = [
-  game.collider.capsule({ id: "player-body", center: fighting.bodies.player.position, radius: 0.34, height: 1.7 }),
-  game.collider.capsule({ id: "opponent-body", center: fighting.bodies.opponent.position, radius: 0.34, height: 1.7 })
-];
-
-const hud = game.hud.bindings([
-  game.hud.health({ actorId: "player", label: "Player health" }),
-  game.hud.health({ actorId: "opponent", label: "Opponent health" }),
-  game.hud.timer({ valuePath: "round.timeRemaining" }),
-  game.hud.debugToggle({ action: "debug", statePath: "debug.visible" })
-]);
-
-const accessibility = [
-  game.accessibility.label({ targetId: "player-health", label: "Player health", live: true }),
-  game.accessibility.reducedMotion({ enabled: false }),
-  game.accessibility.reducedFlash({ enabled: false }),
-  game.accessibility.highContrast({ enabled: false }),
-  game.accessibility.pauseControls({ actions: ["pause", "Escape"], resumeActions: ["pause", "Enter"], menuId: "pause-menu" })
-];
-
-const overlay = game.debug.overlay({
-  runtime: app.runtime,
-  input: fighting.input,
-  bodies: [fighting.bodies.player, fighting.bodies.opponent],
-  combat: fighting.combat,
-  effects: fighting.effects,
-  camera: fighting.camera,
-  colliders,
-  warnings: stageIssues.map((issue) => issue.message)
-});
-```
-
-Animation controller pattern:
-```ts
-const animation = new AnimationController({
-  clipRegistry: assets.fighter,
-  requiredClips: ["Idle", "Walk", "LightPunch"],
-  suppressRootMotion: true
-});
-
-app.onFrame(({ dt }) => {
-  fighting.update(dt);
-  animation.update(dt);
-  if (fighting.input.pressed("light")) {
-    animation.crossFade("LightPunch", 0.08, { restart: true });
-  }
-});
-```
+Animation controller pattern: create an `AnimationController` from typed clip
+metadata, call `animation.update(dt)` in `app.onFrame(...)`, and crossfade named
+clips only when the names are present in asset metadata or inspection evidence.
 
 Aura3D 1.1.0 animation/editor/visual scripting rules:
 - Read `docs/api/animation-runtime-events.md` before changing skeletal animation, animation events, or viseme/blendshape sync docs or examples.
@@ -264,7 +128,7 @@ Aura3D 1.1.0 animation/editor/visual scripting rules:
 - Use runtime node `setAnimationPose(...)`, `setMorphTarget(...)`, and `setMorphTargets(...)` for pose/morph state. Do not reach into renderer internals from app code.
 - For AuraVoice/animation sync, sample bridge or viseme timing and apply typed morph weights to the runtime node:
 
-```ts
+```text
 app.onFrame(({ time }) => {
   const sample = sampleAuraVoiceBridgeAtTime(bridgePackage, time, "host");
   app.nodes.require("host").setMorphTargets(sample.viseme?.blendshapeWeights ?? {});
@@ -382,122 +246,21 @@ pnpm prompt-animation:release
 
 Do not claim game, prompt-animation, AuraVoice, package, deployment, screenshot, visual-quality, or accessibility readiness from source declarations alone. The matching command outputs, route evidence, browser screenshots, deterministic hashes, and human/automated visual review must exist.
 
-Aura3D 1.4.0 game-engine/showcase claim rules:
-- Treat 1.4.0 as a scoped runtime-foundation release backed by npm, docs, deployed-route, performance, and readiness evidence.
+Aura3D 1.4.1 game-engine/showcase claim rules:
+- Treat 1.4.1 as a package-presentation patch on top of the scoped 1.4.0
+  runtime-foundation release backed by npm, docs, deployed-route, performance,
+  and readiness evidence.
 - Do not describe Aura3D as a mature commercial game engine, Unity replacement, Unreal competitor, or Babylon.js parity product.
 - Do not describe Aura Clash Arena as a flagship-quality game until gameplay, visual, asset, audio, performance, deployment, and docs-claim gates pass.
 - Aura Clash Arena may be described as a development showcase and runtime proof target when supported by current build, smoke, screenshot, and route evidence.
 - Use a static approved poster/link in marketing previews unless the live playable embed passes the same visual and gameplay gates as the route itself.
 
-Prompt-animation and AuraVoice pattern (the explicit JSON-contract API used by the
-`prompt-animation-channel` template; you pass the cast/locations yourself, so "moon-garden"/miko/luma
-below is just this example's payload — it is NOT a default cast or set):
-```ts
-const plan = compilePromptEpisodePlan({
-  episodeId: "moon-garden",
-  title: "Moon Garden Helpers",
-  prompt: "Two robots clean a glowing moon garden.",
-  language: "en",
-  runtime: { duration: 30, frameRate: 30, resolution: { width: 1280, height: 720 }, maxTimingDriftFrames: 1 },
-  characters: [
-    { id: "miko", name: "Miko", role: "hero", asset: assets.miko },
-    { id: "luma", name: "Luma", role: "sidekick", asset: assets.luma }
-  ],
-  locations: [{ id: "moon-garden", name: "Moon Garden", mood: "soft neon bedtime" }],
-  beats: [
-    {
-      id: "beat-001",
-      locationId: "moon-garden",
-      summary: "Miko and Luma clean the glowing weeds.",
-      visualIntent: "Typed characters with readable captions and gentle light.",
-      duration: 8,
-      characters: ["miko", "luma"],
-      dialogue: [{ speakerId: "miko", text: "The moon garden is glowing again.", emotion: "curious" }]
-    }
-  ],
-  route: "/episodes/moon-garden"
-});
-
-const visemes = createAuraVoiceVisemeTrack({
-  episodeId: plan.episodePlan.episodeId,
-  language: plan.episodePlan.language,
-  frameRate: plan.shotTimeline.frameRate,
-  cues: plan.dialogueTrack.lines.flatMap((line) =>
-    createPrimitiveMouthVisemeCues({
-      characterId: line.speakerId,
-      speakerId: line.speakerId,
-      lineId: line.lineId,
-      startTime: line.startTime,
-      endTime: line.endTime
-    }).map((cue) => createGlbBlendshapeVisemeCue(cue))
-  )
-});
-
-const audioStems = createAudioStemManifest({
-  episodeId: plan.episodePlan.episodeId,
-  duration: plan.dialogueTrack.duration,
-  stems: plan.dialogueTrack.lines.map((line) => ({
-    id: `audio:${line.lineId}`,
-    role: "dialogue",
-    path: line.audioFile ?? `assets/audio/${line.language}/${line.lineId}.wav`,
-    startTime: line.startTime,
-    duration: line.endTime - line.startTime,
-    language: line.language
-  }))
-});
-
-const renderOutputPackage = createAnimationRenderOutputPackageMetadata({
-  episodePlan: plan.episodePlan,
-  shotTimeline: plan.shotTimeline,
-  renderQueue: plan.renderQueue
-});
-
-const bridge = createAuraVoiceBridgePackage({
-  episodePlan: plan.episodePlan,
-  storyboard: plan.storyboard,
-  shotTimeline: plan.shotTimeline,
-  dialogueTrack: plan.dialogueTrack,
-  captionTrack: plan.captionTrack,
-  visemes,
-  audioStems,
-  renderQueue: plan.renderQueue,
-  renderOutputPackage
-});
-
-const playback = createShotPlaybackPlan({
-  timeline: plan.shotTimeline,
-  performance: plan.performance,
-  captions: plan.captionTrack,
-  visemes,
-  runtimeNodeByCharacterId: { miko: "miko", luma: "luma" },
-  loop: true
-});
-
-const app = createAuraApp("#app", {
-  scene: scene()
-    .add(model(assets.miko).runtime(game.runtimeNode("miko")))
-    .add(model(assets.luma).runtime(game.runtimeNode("luma")))
-});
-installShotPlayback(app, playback);
-
-const bridgeIssues = validateAuraVoiceBridgePackage(bridge);
-const sample = sampleAuraVoiceBridgeAtTime(bridge, 3);
-const evidence = collectPromptAnimationEvidence({
-  bridgePackage: bridge,
-  screenshots: [
-    {
-      id: "shot-001",
-      time: sample.time,
-      path: "artifacts/screenshots/shot-001.png",
-      hash: "sha256:replace-with-rendered-screenshot-hash",
-      width: 1280,
-      height: 720
-    }
-  ],
-  routeHealth: { status: "pass" }
-});
-const readiness = evaluatePromptAnimationPublishReadiness(evidence);
-```
+Prompt-animation and AuraVoice pattern:
+- `compilePromptEpisodePlan(...)` owns the explicit episode JSON contract.
+- `createAuraVoiceBridgePackage(...)` carries dialogue/captions/visemes/audio stems.
+- `createShotPlaybackPlan(...)` plus `installShotPlayback(...)` drives a mounted Aura app.
+- `collectPromptAnimationEvidence(...)` and `evaluatePromptAnimationPublishReadiness(...)` are required before public claims.
+- Cast, locations, dialogue, screenshots, and audio paths are user/project data. There is no default cast or set.
 
 Prompt-plan pattern:
 ```ts

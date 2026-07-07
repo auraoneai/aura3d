@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/three-compat",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -28,5 +28,37 @@
     "@aura3d/debug": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "three": "^0.165.0"
-  }
+  },
+  "description": "Three.js compatibility adapters for Aura3D: core objects, math, cameras, geometries, materials, loaders, controls, animation, postprocessing, shaders, and migration helpers.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "threejs",
+    "threejs-compat",
+    "threejs-migration",
+    "gltfloader",
+    "orbit-controls",
+    "postprocessing",
+    "threejs-alternative"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/three-compat"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

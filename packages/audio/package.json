@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/audio",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -12,5 +12,36 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@aura3d/scene": "workspace:*"
-  }
+  },
+  "description": "Browser audio lifecycle, clips, sources, buses, mixing, listener transforms, spatial attenuation, effects, and scene audio bridges for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "audio",
+    "web-audio",
+    "spatial-audio",
+    "audio-engine",
+    "3d-audio",
+    "sound-effects"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/audio"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

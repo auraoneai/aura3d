@@ -1,6 +1,6 @@
 # Security Policy
 
-Version: 1.4.0
+Version: 1.4.1
 
 ## Aura3D advantage
 
@@ -8,7 +8,7 @@ Security policy covers the source, packages, examples, templates, and generated 
 
 ## Supported Version
 
-The current documented version is `1.4.0`.
+The current documented version is `1.4.1`.
 
 ## Reporting
 

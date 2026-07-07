@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/rendering",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -14,5 +14,39 @@
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Render-device abstraction, WebGL2/mock backends, buffers, textures, shader modules, materials, render graphs, lighting, shadows, and particle rendering for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "rendering",
+    "webgl2",
+    "webgpu",
+    "renderer",
+    "shader",
+    "pbr",
+    "render-graph",
+    "particles",
+    "postprocess"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/rendering"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

@@ -1,6 +1,6 @@
 # Asset Workflow
 
-Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.4.0 carries it as the active typed asset baseline.
+Typed GLB/glTF asset workflow for AI coding agents. The 1.0.4 planning track introduced the catalog-first path for named real-world objects; Aura3D 1.4.1 carries it as the active typed asset baseline.
 
 Read `llms.txt` and `docs/agents/claims-and-boundaries.md` before writing route
 code or asset claims. Asset safety is a release blocker, not a style preference.
@@ -132,15 +132,15 @@ Use the generated typed ref directly:
 import { groundedRenderedAssetPlacement, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
-const helmetPlacement = groundedRenderedAssetPlacement(assets.helmet, {
+const robotPlacement = groundedRenderedAssetPlacement(assets.robot, {
   targetMaxDimension: 1.8,
   floorY: 0
 });
 
 scene().add(
-  model(assets.helmet)
-    .position(...helmetPlacement.position)
-    .scale(helmetPlacement.scale)
+  model(assets.robot)
+    .position(...robotPlacement.position)
+    .scale(robotPlacement.scale)
 );
 ```
 

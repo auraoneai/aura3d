@@ -31,6 +31,7 @@ copy boundary and must not present prototypes as public release examples.
 - [Release process](release-process.md)
 - [Aura3D 1.4.0 release candidate](aura3d-140-release-candidate.md)
 - [Aura3D 1.4.0 release notes draft](aura3d-140-release-notes.md)
+- [Aura3D 1.4.1 release notes](aura3d-141-release-notes.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase-quality-gates.md)
 - [Showcase application plan](showcase-application-plan.md)

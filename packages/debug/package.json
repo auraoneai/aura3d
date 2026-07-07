@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/debug",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "dependencies": {
     "@aura3d/animation": "workspace:*",
@@ -14,5 +14,37 @@
     }
   },
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "types": "./dist/index.d.ts",
+  "description": "Diagnostics helpers for rendering, materials, shaders, physics, animation, ECS, profiling, resource leaks, overlays, and report export.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "debug",
+    "diagnostics",
+    "profiler",
+    "render-debug",
+    "shader-debug",
+    "overlays",
+    "telemetry"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/debug"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

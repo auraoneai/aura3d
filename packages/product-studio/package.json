@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/product-studio",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -15,5 +15,37 @@
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Product asset loading, camera framing, diagnostics, export, floor, lighting, material modes, render scenes, and showcase layouts for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "product-studio",
+    "product-viewer",
+    "product-configurator",
+    "3d-commerce",
+    "product-rendering",
+    "materials",
+    "lighting"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/product-studio"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

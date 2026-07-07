@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/asset-index",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,9 +11,39 @@
     }
   },
   "files": [
+    "README.md",
     "dist"
   ],
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "description": "Federated GLB/glTF asset catalog search, ranking, profiles, adapters, and verified auto-pull candidate resolution for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "gltf",
+    "glb",
+    "asset-search",
+    "asset-index",
+    "asset-catalog",
+    "typed-assets",
+    "asset-provenance",
+    "3d-assets",
+    "objaverse",
+    "polyhaven",
+    "khronos"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/asset-index"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT"
 }

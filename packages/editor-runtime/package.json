@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/editor-runtime",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "exports": {
     ".": {
@@ -14,5 +14,36 @@
     "@aura3d/animation": "workspace:*",
     "@aura3d/math": "workspace:*",
     "@aura3d/scene": "workspace:*"
-  }
+  },
+  "description": "Runtime editor command history, selection state, picking, inspector models, play-mode snapshots, material variants, and transform gizmos for Aura3D.",
+  "keywords": [
+    "aura3d",
+    "3d",
+    "browser-3d",
+    "web-3d",
+    "typescript",
+    "editor-runtime",
+    "3d-editor",
+    "command-history",
+    "inspector",
+    "gizmos",
+    "material-variants"
+  ],
+  "homepage": "https://aura3d.auraone.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/auraoneai/aura3d.git",
+    "directory": "packages/editor-runtime"
+  },
+  "bugs": {
+    "url": "https://github.com/auraoneai/aura3d/issues"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "README.md",
+    "dist"
+  ]
 }

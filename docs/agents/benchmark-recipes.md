@@ -83,7 +83,7 @@ grounded shadows. Do not fake collision counters with timers. Use the safe root
 
 Scene kit:
 
-```ts
+```text
 import { createAuraApp, particleFountain, ui } from "@aura3d/engine/scene-kits/particle-fountain";
 
 ui.html("#app", `<label>emission rate <input id="rate" type="range" min="60" max="180" value="120" /></label>`);
@@ -258,7 +258,7 @@ asset URLs.
 
 Use the public lean humanoid-walk scene-kit subpath for the humanoid benchmark prompt. This keeps Prompt 09 asset-free and prevents the broad root engine bundle from carrying the old armored humanoid GLB path into production output.
 
-```ts
+```text
 import { character, createAuraApp, sceneKits } from "@aura3d/engine/scene-kits/humanoid-walk";
 
 const kit = sceneKits.humanoidWalk({ animationState: "benchmark-pose" });
