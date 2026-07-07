@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/assets",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "exports": {
     ".": {

@@ -1,31 +1,35 @@
 # @aura3d/cli
 
-Aura3D CLI for typed GLB/glTF assets, asset provenance, validation,
-diagnostics, screenshots, and deploy checks.
+Bring real 3D assets into a browser app without losing types, provenance, or
+shipping confidence.
+
+`@aura3d/cli` is the Aura3D command center for GLB/glTF projects. It finds
+usable assets, copies local models into the right public path, records source
+and license metadata, generates TypeScript references, validates game and
+animation requirements, captures screenshots, and checks deploy output.
 
 ```bash
 npx @aura3d/cli@latest doctor
 ```
 
-## Asset Workflow
+## Why Developers Install It
 
-Add a local GLB/glTF asset and generate typed references:
+- Real models, not placeholder primitives: add local GLB/glTF files or resolve
+  catalog candidates into a typed asset manifest.
+- TypeScript references by default: routes import `assets.robot` instead of
+  hard-coded URLs that break later.
+- Provenance travels with the app: source, license, quality, role, and hash
+  metadata stay in `aura.assets.json`.
+- Game and animation checks are built in: inspect clips, humanoid structure,
+  fighting-character requirements, and release readiness from the same tool.
+- Deployment is part of the workflow: validate assets, screenshots, and `dist`
+  output before you publish.
+
+## Add A Model
 
 ```bash
 npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
 npx @aura3d/cli@latest assets typegen
-```
-
-Search the Aura3D asset catalog:
-
-```bash
-npx @aura3d/cli@latest assets search "battle-worn knight helmet"
-```
-
-Resolve a verified catalog candidate into the local typed asset pipeline:
-
-```bash
-npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
 ```
 
 Then render the generated asset reference from a public Aura3D route:
@@ -35,13 +39,22 @@ import { createAuraApp, lights, model, scene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 createAuraApp("#app", {
-  scene: scene().add(model(assets.helmet)).add(lights.studio())
+  scene: scene().add(model(assets.robot)).add(lights.studio())
 });
 ```
 
-## Commands
+## Find A Catalog Asset
 
-Common commands:
+```bash
+npx @aura3d/cli@latest assets search "battle-worn knight helmet"
+npx @aura3d/cli@latest assets resolve "battle-worn knight helmet" --name helmet
+npx @aura3d/cli@latest assets typegen
+```
+
+`resolve` brings the chosen catalog result into the same typed local pipeline,
+so the rest of the app still uses `model(assets.helmet)`.
+
+## Command Shortlist
 
 ```bash
 npx @aura3d/cli@latest assets add ./model.glb --name model
@@ -58,27 +71,17 @@ npx @aura3d/cli@latest init --agent all
 
 ## What It Writes
 
-The asset commands maintain:
+- `aura.assets.json`: asset manifest with source, license, quality, role,
+  provenance, and hash metadata.
+- `src/aura-assets.ts`: generated TypeScript asset references for your routes.
+- Public asset files under the configured app asset directory.
 
-- `aura.assets.json` for asset manifest, source, license, quality, role, and
-  provenance metadata;
-- `src/aura-assets.ts` for generated TypeScript asset references;
-- copied asset files under the configured public asset directory.
+## Best With
 
-Public Aura3D examples should use generated `assets.name` references and
-`model(assets.name)`. Avoid raw `.glb` or `.gltf` URLs, guessed model IDs,
-direct loader code, and primitive-only primary subjects for named real objects.
-
-## Package Roles
-
-- `@aura3d/cli`: asset pipeline, validation, provenance, diagnostics, and
-  deploy checks.
-- `create-aura3d`: Vite starter scaffolds.
-- `@aura3d/engine`: public browser 3D runtime APIs such as `createAuraApp`.
-
-The CLI proves CLI asset-pipeline behavior. Renderer, game, animation, WebGPU,
-PBR, postprocess, skinning, and morph-target claims still need matching browser
-or package evidence for the exact API path being claimed.
+- `create-aura3d`: start a Vite browser 3D app with templates for product
+  viewers, cinematic scenes, animation workflows, and games.
+- `@aura3d/engine`: render typed assets through the public `createAuraApp`
+  browser API.
 
 ## Links
 
