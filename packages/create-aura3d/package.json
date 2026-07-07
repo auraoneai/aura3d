@@ -1,6 +1,6 @@
 {
   "name": "create-aura3d",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "type": "module",
   "bin": {
     "create-aura3d": "dist/cli.js"
@@ -56,7 +56,7 @@
   "dependencies": {
     "@aura3d/asset-index": "workspace:*"
   },
-  "description": "Scaffold Vite browser 3D apps with Aura3D, typed GLB/glTF assets, route-health tests, and screenshot-ready starter templates.",
+  "description": "Start real Aura3D browser 3D apps in one command with Vite templates, typed GLB/glTF assets, route-health tests, screenshots, and deploy-ready structure.",
   "keywords": [
     "create-aura3d",
     "vite",

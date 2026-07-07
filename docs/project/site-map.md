@@ -33,6 +33,7 @@ copy boundary and must not present prototypes as public release examples.
 - [Aura3D 1.4.0 release notes draft](aura3d-140-release-notes.md)
 - [Aura3D 1.4.1 release notes](aura3d-141-release-notes.md)
 - [Aura3D 1.4.2 release notes](aura3d-142-release-notes.md)
+- [Aura3D 1.4.3 release notes](aura3d-143-release-notes.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase-quality-gates.md)
 - [Showcase application plan](showcase-application-plan.md)

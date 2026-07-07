@@ -1,17 +1,17 @@
 {
   "schema": "aura3d-release-artifacts/1.0",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "status": "prepublish-verified",
-  "scope": "Aura3D 1.4.2 developer positioning and npm README discoverability patch",
-  "createdAt": "2026-07-07T23:26:00Z",
+  "scope": "Aura3D 1.4.3 npm search metadata correction",
+  "createdAt": "2026-07-07T23:37:00Z",
   "artifacts": [
     {
       "type": "tarball",
       "name": "@aura3d/engine",
-      "version": "1.4.2",
-      "pathOrUrl": "tests/reports/package-install-smoke-fresh/aura3d-engine-1.4.2.tgz",
-      "sha256": "471c4575179ffdf7efdb46276aeae640e8ba68fad3c76263f3fea2a5ead14449",
-      "createdAt": "2026-07-07T23:26:00Z",
+      "version": "1.4.3",
+      "pathOrUrl": "tests/reports/package-install-smoke-fresh/aura3d-engine-1.4.3.tgz",
+      "sha256": "db243a5c1454c2da94cc5b4a4a814567f076fb11e58e8447970c6d823b186714",
+      "createdAt": "2026-07-07T23:37:00Z",
       "source": "pnpm verify:package-install-smoke:fresh"
     }
   ],
@@ -22,8 +22,8 @@
     "tarballAuditCommand": "tar -tzf tests/reports/release-tarballs/*.tgz"
   },
   "notes": [
-    "This manifest records the root tarball used by package install smoke and provenance verification for the 1.4.2 developer-positioning package release.",
+    "This manifest records the root tarball used by package install smoke and provenance verification for the 1.4.3 npm search metadata correction.",
     "The 26-package npm publish is produced by tools/release/publish-all.mjs, which packs every public package with pnpm pack before npm publish.",
-    "This is package README, npm metadata, scaffold-version, and developer-positioning evidence, not proof of new renderer, game-engine, WebGPU, PBR, postprocess, skinned animation, morph-target, or production-runtime capability."
+    "This is npm package description, README, scaffold-version, and developer-discovery evidence, not proof of new renderer, game-engine, WebGPU, PBR, postprocess, skinned animation, morph-target, or production-runtime capability."
   ]
 }

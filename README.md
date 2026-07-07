@@ -89,7 +89,7 @@ an app, add typed assets, run it, test it, deploy it.
 
 ## Current Release
 
-`@aura3d/engine@1.4.2` is the current package release across the 26 public
+`@aura3d/engine@1.4.3` is the current package release across the 26 public
 Aura3D packages. It is a developer-positioning and npm-discoverability patch:
 the root README, `create-aura3d`, and `@aura3d/cli` now lead with the install
 path, typed asset workflow, templates, and developer outcomes that make Aura3D
@@ -101,7 +101,7 @@ templates, asset validation, route-health checks, screenshots, deploy checks,
 game prototype helpers, animation workflow packages, and the package smoke
 tests used for release.
 
-Registry target: npm `latest` resolves to `1.4.2` across all 26 public packages
+Registry target: npm `latest` resolves to `1.4.3` across all 26 public packages
 (`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`, and
 the rest of the package family). Release evidence and detailed claim boundaries
 live under `docs/project/` and `docs/agents/` so the README can stay focused on
@@ -129,7 +129,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.2 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.3 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -582,7 +582,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the published 1.4.2
+Expected current state — The scoped package gates pass for the published 1.4.3
 baseline, and the release-candidate showcase gate passes for six public examples
 while retaining two internal diagnostics and two prototype-blocked game routes
 outside the public path.
