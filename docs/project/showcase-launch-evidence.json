@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-showcase-build-deploy/1.0",
-  "generatedAt": "2026-07-03T11:34:07.873Z",
+  "generatedAt": "2026-07-03T20:16:37.734Z",
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
@@ -300,7 +300,7 @@
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
-          "generatedAt": "2026-07-03T11:28:41.518Z",
+          "generatedAt": "2026-07-03T19:02:42.369Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -518,7 +518,7 @@
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5153b7778337f97d87774fef800e75aa1edc7db23c4232d7532fabadd8ebb225",
-          "generatedAt": "2026-07-03T11:28:45.839Z",
+          "generatedAt": "2026-07-03T19:02:45.154Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -564,7 +564,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-            "sha256": "sha256-c6bfea54e4a8a61125617c68f80809aef74d5438fecf2c9a24d151b70072fae3",
+            "sha256": "sha256-85d17a78d3113d23941c9d52b85124852b010a641d68208dfbe0b638c8306894",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -573,13 +573,13 @@
               "width": 1052,
               "height": 569
             },
-            "nonBlankPixels": 35287,
-            "colorBuckets": 30,
+            "nonBlankPixels": 41305,
+            "colorBuckets": 29,
             "foregroundBounds": {
-              "x": 572,
+              "x": 576,
               "y": 114,
-              "width": 315,
-              "height": 322
+              "width": 311,
+              "height": 324
             },
             "visible": true,
             "clipped": false,
@@ -597,7 +597,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-                "sha256": "sha256-c6bfea54e4a8a61125617c68f80809aef74d5438fecf2c9a24d151b70072fae3",
+                "sha256": "sha256-85d17a78d3113d23941c9d52b85124852b010a641d68208dfbe0b638c8306894",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -606,13 +606,13 @@
                   "width": 1052,
                   "height": 569
                 },
-                "nonBlankPixels": 35287,
-                "colorBuckets": 30,
+                "nonBlankPixels": 41305,
+                "colorBuckets": 29,
                 "foregroundBounds": {
-                  "x": 572,
+                  "x": 576,
                   "y": 114,
-                  "width": 315,
-                  "height": 322
+                  "width": 311,
+                  "height": 324
                 },
                 "visible": true,
                 "clipped": false,
@@ -767,7 +767,7 @@
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-7f96f6965ec1106cab7e9411337d5552c5377ef08b7e6970c0aaffd3a946ff77",
-          "generatedAt": "2026-07-03T11:28:50.000Z",
+          "generatedAt": "2026-07-03T19:02:48.022Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -805,7 +805,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-8e348ce416daeab59a1a81c529aac36054b11aea2e9d4466eb288c431bd55ee9",
+            "sha256": "sha256-c7beb7febd76812f8d192589ef8f93b6164215aef1d8e6243ecfff1f5e2102c9",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -843,7 +843,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-8e348ce416daeab59a1a81c529aac36054b11aea2e9d4466eb288c431bd55ee9",
+                "sha256": "sha256-c7beb7febd76812f8d192589ef8f93b6164215aef1d8e6243ecfff1f5e2102c9",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -993,7 +993,7 @@
           "routePrimaryHeroAsset": "showcaseCityVehicle",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
-          "generatedAt": "2026-07-03T11:28:55.904Z",
+          "generatedAt": "2026-07-03T19:02:50.817Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1030,7 +1030,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-            "sha256": "sha256-0b23f74dcc14da618e1615b9daacb0b9db58fc01660c924f8b4d06605609fcaf",
+            "sha256": "sha256-17e1e3b81f1f980e9b9d5a3006f353bc9f43e10385ace9d57064e3511fcaf9cc",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1063,7 +1063,7 @@
               "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-                "sha256": "sha256-0b23f74dcc14da618e1615b9daacb0b9db58fc01660c924f8b4d06605609fcaf",
+                "sha256": "sha256-17e1e3b81f1f980e9b9d5a3006f353bc9f43e10385ace9d57064e3511fcaf9cc",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1203,7 +1203,7 @@
           "routePrimaryHeroAsset": "showcaseSkylineCity",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-1ef2500bed17e0bf342f5fff98b8b3a0355b0f004a4c84f54ba259194ebfc14b",
-          "generatedAt": "2026-07-03T11:29:00.410Z",
+          "generatedAt": "2026-07-03T19:02:53.682Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1415,7 +1415,7 @@
           "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
-          "generatedAt": "2026-07-03T11:29:07.144Z",
+          "generatedAt": "2026-07-03T19:02:56.391Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1423,7 +1423,7 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "alerts",
               "appId",
@@ -1458,7 +1458,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-            "sha256": "sha256-0a4709b37dd8fcf0ddcf665d324d48de5d55aac8db7958ec72533e963e370e58",
+            "sha256": "sha256-5327b019ef0a216b7f01ef5cc1bd9868591e9e6f9d92f0a020d7da3660a1bdc8",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1467,8 +1467,8 @@
               "width": 1084,
               "height": 786
             },
-            "nonBlankPixels": 289544,
-            "colorBuckets": 263,
+            "nonBlankPixels": 289521,
+            "colorBuckets": 277,
             "foregroundBounds": {
               "x": 216,
               "y": 121,
@@ -1491,7 +1491,7 @@
               "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-                "sha256": "sha256-0a4709b37dd8fcf0ddcf665d324d48de5d55aac8db7958ec72533e963e370e58",
+                "sha256": "sha256-5327b019ef0a216b7f01ef5cc1bd9868591e9e6f9d92f0a020d7da3660a1bdc8",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1500,8 +1500,8 @@
                   "width": 1084,
                   "height": 786
                 },
-                "nonBlankPixels": 289544,
-                "colorBuckets": 263,
+                "nonBlankPixels": 289521,
+                "colorBuckets": 277,
                 "foregroundBounds": {
                   "x": 216,
                   "y": 121,
@@ -1645,7 +1645,7 @@
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-8f9462a81592bc747aa147af35408a5ae1c135ab23fa31de487dcade0c84bcaa",
-          "generatedAt": "2026-07-03T11:29:13.279Z",
+          "generatedAt": "2026-07-03T19:02:59.130Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1681,7 +1681,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-e61db0ea45460e05621a487487b1256e53feab95233957db735e4d5b75075838",
+            "sha256": "sha256-b2af7d938676b935037b6ae6f64df7122c99561f675a81bac19adf95bd142391",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1690,13 +1690,13 @@
               "width": 1045,
               "height": 880
             },
-            "nonBlankPixels": 641959,
+            "nonBlankPixels": 637117,
             "colorBuckets": 122,
             "foregroundBounds": {
               "x": 10,
               "y": 10,
               "width": 1045,
-              "height": 660
+              "height": 652
             },
             "visible": true,
             "clipped": true,
@@ -1716,7 +1716,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-e61db0ea45460e05621a487487b1256e53feab95233957db735e4d5b75075838",
+                "sha256": "sha256-b2af7d938676b935037b6ae6f64df7122c99561f675a81bac19adf95bd142391",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1725,13 +1725,13 @@
                   "width": 1045,
                   "height": 880
                 },
-                "nonBlankPixels": 641959,
+                "nonBlankPixels": 637117,
                 "colorBuckets": 122,
                 "foregroundBounds": {
                   "x": 10,
                   "y": 10,
                   "width": 1045,
-                  "height": 660
+                  "height": 652
                 },
                 "visible": true,
                 "clipped": true,
@@ -1831,7 +1831,7 @@
           "routeGateHash": "f1243a88af94c163f45db6c127e1dda447d65ba4276718a06afb023d9ae9cadf",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5da72dce15292dd9ccac278603865bff99fe3ee06ce688e4412052ee8ee367c0",
-          "generatedAt": "2026-07-03T11:29:18.107Z",
+          "generatedAt": "2026-07-03T19:03:01.726Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1877,7 +1877,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-            "sha256": "sha256-fd781bca43350df8108a9c2699baa1859edc1479a29cb3d492c30c1ec5f23348",
+            "sha256": "sha256-7e311217fc50ae6667739ec434561b7cfe661ff13114fcbe7bd0aacb339f1a32",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2083,7 +2083,7 @@
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-4f1dd4e7d11a6fce6e2a9b27888d29001e0185f7351b2d270f732b79fa1c46aa",
-          "generatedAt": "2026-07-03T11:29:22.755Z",
+          "generatedAt": "2026-07-03T19:03:04.424Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2376,7 +2376,7 @@
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-24d5aa92e2ad19b5d6118724696cb2fa68878b2f0932d538a10024a6b77c9996",
-          "generatedAt": "2026-07-03T11:29:26.928Z",
+          "generatedAt": "2026-07-03T19:03:07.062Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2692,7 +2692,7 @@
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-2db670bfb8a7bb7e3aaec5acb0b2052a4ed4cef2d11c44af54106719d6993e43",
-          "generatedAt": "2026-07-03T11:29:31.111Z",
+          "generatedAt": "2026-07-03T19:03:09.801Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3006,7 +3006,7 @@
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-66edcee2132b45118af24757d6b441972f6d7b5bc97bc73b3d37edba2bc6a288",
-          "generatedAt": "2026-07-03T11:29:37.793Z",
+          "generatedAt": "2026-07-03T19:03:12.509Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3327,7 +3327,7 @@
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-bfa825fdf3ba3b16fca933c9251dd4be4bff17df65b28348853f964527e7f4d7",
-          "generatedAt": "2026-07-03T11:29:43.566Z",
+          "generatedAt": "2026-07-03T19:03:15.231Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3642,7 +3642,7 @@
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-522f6d6239ec9a3ee8ad3782d57424f6d3e032702aadcb5a2f48fd77d3df8c71",
-          "generatedAt": "2026-07-03T11:29:48.901Z",
+          "generatedAt": "2026-07-03T19:03:17.963Z",
           "viewport": {
             "width": 1440,
             "height": 900,
