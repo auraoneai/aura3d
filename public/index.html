@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aura3D Examples</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: #0b0f14; color: #f4f7fb; }
+      body { margin: 0; min-height: 100vh; background: #0b0f14; }
+      main { width: min(1120px, calc(100vw - 40px)); margin: 0 auto; padding: 36px 0 52px; }
+      header { border-bottom: 1px solid #263140; padding-bottom: 22px; margin-bottom: 28px; }
+      h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: 0; }
+      h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }
+      p { margin: 0; color: #aab5c4; line-height: 1.5; max-width: 760px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+      .route-card { display: grid; gap: 10px; min-height: 172px; padding: 18px; border: 1px solid #2d3544; border-radius: 8px; color: #f4f7fb; background: #111821; }
+      .route-card:hover { border-color: #58a6ff; }
+      a { color: #9fd3ff; text-decoration: none; }
+      small { color: #8fa1b4; text-transform: uppercase; }
+      strong { font-size: 18px; }
+      .route-summary { color: #aab5c4; font-size: 13px; line-height: 1.45; }
+      section { margin-top: 30px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Aura3D Example Registry</h1>
+        <p>
+          Live examples are grouped by product workflow: typed asset references,
+          materials and lights, camera motion, diagnostics, screenshots, and
+          deployment checks for agent-written browser 3D.
+        </p>
+      </header>
+
+      <section>
+        <h2>Agent API Starter Examples</h2>
+        <div class="grid">
+          <article class="route-card" data-route-path="/apps/hello-world-typed-asset/">
+            <small>Typed asset API</small>
+            <strong>Hello World Typed Asset</strong>
+            <span class="route-summary">Five-line scene using `model(assets.robot)` and `lights.studio()`.</span>
+            <small><a href="/apps/hello-world-typed-asset/">live</a> · <a href="/apps/hello-world-typed-asset/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
+          </article>
+          <article class="route-card" data-route-path="/apps/material-lighting/">
+            <small>Materials and lights</small>
+            <strong>Material Lighting</strong>
+            <span class="route-summary">PBR, metallic, emissive material helpers with ambient, directional, and point lights.</span>
+            <small><a href="/apps/material-lighting/">live</a> · <a href="/apps/material-lighting/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
+          </article>
+          <article class="route-card" data-route-path="/apps/camera-path/">
+            <small>Camera path</small>
+            <strong>Camera Path</strong>
+            <span class="route-summary">Dolly camera and timeline helpers with bloom and studio lighting.</span>
+            <small><a href="/apps/camera-path/">live</a> · <a href="/apps/camera-path/src/main.ts">source</a> · <a href="/docs/agents/api-surface.md">docs</a></small>
+          </article>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
