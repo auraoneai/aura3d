@@ -87,25 +87,40 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release
+## Current Release: Aura3D 1.4.4
 
-`@aura3d/engine@1.4.4` is the current package release across the 26 public
-Aura3D packages. It is a developer-positioning and npm-discoverability patch:
-the root README, `create-aura3d`, and `@aura3d/cli` now lead with the install
-path, typed asset workflow, templates, and developer outcomes that make Aura3D
-worth trying.
+Aura3D 1.4.4 is the current source release across all 26 public packages. The
+release adds a fail-closed game-geometry certification chain, asset-pair
+composition checks, generated immutable route contracts, retained visual QA,
+and the complete marketing/docs/showcase deployment.
 
-The runtime baseline remains the 1.4.x package family: public
-`createAuraApp` scene composition, typed GLB/glTF assets, prompt-oriented
-templates, asset validation, route-health checks, screenshots, deploy checks,
-game prototype helpers, animation workflow packages, and the package smoke
-tests used for release.
+### What shipped in 1.4.4
 
-Registry target: npm `latest` resolves to `1.4.4` across all 26 public packages
-(`@aura3d/engine`, `@aura3d/asset-index`, `@aura3d/cli`, `create-aura3d`, and
-the rest of the package family). Release evidence and detailed claim boundaries
-live under `docs/project/` and `docs/agents/` so the README can stay focused on
-why developers should install the SDK.
+- **Certified game geometry:** racing topology and platformer playable surfaces
+  are extracted, hash-bound to typed assets, and consumed by generated runtime
+  geometry modules.
+- **Release-ready game presentations:** Turbo Drift Circuit and Skyline Runner
+  now use certified Kenney asset pairs, evidence-selected cameras, reusable
+  contact queries, deterministic gameplay proof, and accepted desktop/mobile
+  visual QA.
+- **Complete public website:** the production artifact includes the full Aura3D
+  homepage, documentation, evidence and claim-boundary pages, typed assets, and
+  public showcase routes rather than the previous one-page example index.
+- **Package release discipline:** all 26 public package manifests are aligned at
+  1.4.4, pack verification rejects `workspace:*` leakage, and clean external
+  install/import/Vite smoke tests cover the packed engine.
+
+Install after the npm publication completes:
+
+```bash
+npm install @aura3d/engine@1.4.4
+# or scaffold an app
+npx create-aura3d@1.4.4 my-product --template product-viewer
+```
+
+Detailed release notes are in
+[`docs/project/aura3d-144-release-notes.md`](docs/project/aura3d-144-release-notes.md),
+with retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 1.1.0 asset catalog
 
