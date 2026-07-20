@@ -7,6 +7,61 @@ export function readPngForegroundMetrics(path, crop) {
   return analyzeForegroundPng(readFileSync(path), crop);
 }
 
+
+export function readPngDifferenceMetrics(visiblePath, hiddenPath, cropInput, channelThreshold = 12) {
+  const first = decodePng(readFileSync(visiblePath));
+  const second = decodePng(readFileSync(hiddenPath));
+  if (first.width !== second.width || first.height !== second.height) {
+    throw new Error("PNG dimensions must match for subject difference metrics.");
+  }
+  const crop = resolveCrop(first, cropInput);
+  let nonBlankPixels = 0;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = -1;
+  let maxY = -1;
+  const colorBuckets = new Set();
+  for (let y = crop.y; y < crop.y + crop.height; y += 1) {
+    for (let x = crop.x; x < crop.x + crop.width; x += 1) {
+      const a = pixelAt(first, x, y);
+      const b = pixelAt(second, x, y);
+      const delta = (Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b)) / 3;
+      if (delta < channelThreshold) continue;
+      nonBlankPixels += 1;
+      colorBuckets.add(`${a.r >> 4}:${a.g >> 4}:${a.b >> 4}`);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  const foregroundBounds = nonBlankPixels > 0
+    ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+    : undefined;
+  const clipped = foregroundBounds ? isBoundsClipped(foregroundBounds, crop) : false;
+  const nonBackgroundRatio = ratio(nonBlankPixels, crop.width * crop.height);
+  const foregroundAreaRatio = foregroundBounds
+    ? ratio(foregroundBounds.width * foregroundBounds.height, crop.width * crop.height)
+    : 0;
+  const readabilityScore = Math.round(
+    Math.min(35, nonBackgroundRatio * 700) +
+    Math.min(25, colorBuckets.size) +
+    Math.min(25, foregroundAreaRatio * 500) +
+    (clipped ? 0 : 15)
+  );
+  return {
+    width: first.width,
+    height: first.height,
+    crop,
+    nonBlankPixels,
+    colorBuckets: colorBuckets.size,
+    ...(foregroundBounds ? { foregroundBounds } : {}),
+    clipped,
+    nonBackgroundRatio,
+    readabilityScore
+  };
+}
+
 function analyzeForegroundPng(buffer, cropInput) {
   const image = decodePng(buffer);
   const crop = resolveCrop(image, cropInput);

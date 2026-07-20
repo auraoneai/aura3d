@@ -11,9 +11,9 @@
     "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts --workers=1"
   },
   "dependencies": {
-    "@aura3d/animation": "1.4.3",
-    "@aura3d/engine": "1.4.3",
-    "@aura3d/physics": "1.4.3"
+    "@aura3d/animation": "1.4.4",
+    "@aura3d/engine": "1.4.4",
+    "@aura3d/physics": "1.4.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",

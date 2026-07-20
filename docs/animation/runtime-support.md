@@ -128,3 +128,11 @@ For release-facing animation claims, archive:
 - pixel-delta or motion-region analysis;
 - route-health JSON naming backend/fallback state;
 - package smoke reports when lower-level package exports are part of the claim.
+
+## Package Runtime Contract
+
+At the package/source level, tracks support scalar, vector2, vector3, quaternion, object values, and numeric arrays. Controllers support play, pause, stop, scrubbing, playback speed, looping, weights, crossfades, and deterministic state transitions. Skeleton helpers can produce renderer-facing joint matrices, and scene and ECS animation bridges exist as package-level integration surfaces. These statements do not upgrade the root renderer boundary described above.
+
+## Current Limits
+
+Retargeting is future work for a broad automatic production root path. Timeline authoring is future work as a complete DCC-style workflow. The current stack is not a production character-animation toolchain. A rig profile format must document mappings, rest pose, scale, and constraints before interoperability can be claimed. Browser evidence using at least two real externally authored skinned glTF characters is required before widening the public retargeting claim.

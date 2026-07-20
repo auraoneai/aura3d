@@ -240,6 +240,108 @@ describe("public game geometry certification", () => {
       ])
     });
   });
+
+  it("binds authored racing time to certified speed and certified road queries", () => {
+    const { route } = createRacingPresentationFixture();
+    expect(route.assetBinding.speedModel).toEqual({
+      kind: "route-length-over-authored-lap-seconds",
+      routeLength: route.assetBinding.routeLength,
+      authoredLapSeconds: 34,
+      certifiedSpeed: Number((route.assetBinding.routeLength / 34).toFixed(3)),
+      units: "game-units-per-second"
+    });
+
+    const racing = game.racing({ route });
+    expect(racing.surfaceQuery.certified).toBe(true);
+    const { sceneBinding } = createRacingPresentationFixture();
+    expect(sceneBinding.speedModel).toEqual({
+      kind: "certified-route-to-scene-speed",
+      routeLength: route.assetBinding.speedModel.routeLength,
+      authoredLapSeconds: 34,
+      gameUnitsPerSecond: route.assetBinding.speedModel.certifiedSpeed,
+      sceneUnitsPerGameUnit: sceneBinding.transform.scale,
+      sceneUnitsPerSecond: Number((route.assetBinding.speedModel.certifiedSpeed * sceneBinding.transform.scale).toFixed(6))
+    });
+    expect(racing.surfaceQuery.query(route.points[0] ?? { x: 0, y: 0 }).onTrack).toBe(true);
+    expect(racing.surfaceQuery.query({ x: 100, y: 100 }).onTrack).toBe(false);
+    expect(racing.maxSpeed).toBe(route.assetBinding.speedModel.certifiedSpeed);
+    const initialHeading = racing.snapshot().heading;
+    let driven = racing.snapshot();
+    for (let frame = 0; frame < 120; frame += 1) {
+      driven = racing.step(1 / 60, { throttle: true, steer: frame >= 54 ? 1 : 0 });
+    }
+    expect(driven.heading).not.toBe(initialHeading);
+    expect(driven.trackOffset).toBeLessThanOrEqual(driven.kind === "aura-game-racing-kit" ? (route.width ?? 1.2) / 2 : 0);
+    expect(racing.surfaceQuery.query(driven.position).onTrack).toBe(true);
+    expect(() => game.racing({ route, maxSpeed: route.assetBinding.speedModel.certifiedSpeed + 1 })).toThrow(/conflicts with certified route speed/);
+  });
+
+  it("grounds safe-rendered platformer character origins on certified surface contact", () => {
+    const { level, sceneBinding } = createPlatformerPresentationFixture();
+    const player = game.platformer(level).snapshot().player;
+    const pose = sceneBinding.toScenePlayer(player);
+    const contact = sceneBinding.contactPointForPlayer(player);
+
+    expect(pose.position[0]).toBe(contact[0]);
+    expect(pose.position[1]).toBeCloseTo(contact[1] + 0.03, 6);
+    expect(pose.position[2]).toBe(contact[2]);
+    expect(sceneBinding.evidence.playerTargetHeight).toBe(0.78);
+  });
+
+  it("uses certified platformer surfaces for reusable ground-contact queries", () => {
+    const { level } = createPlatformerPresentationFixture();
+    const platformer = game.platformer(level);
+    const surface = level.platforms?.[0];
+    if (!surface) throw new Error("fixture requires a platform surface");
+    const top = surface.y + surface.height;
+    const contact = platformer.surfaceQuery.groundContact({
+      previousPlayer: { x: surface.x + surface.width / 2, y: top + 0.1 },
+      player: { x: surface.x + surface.width / 2, y: top, vy: -1 }
+    });
+    expect(platformer.surfaceQuery.certified).toBe(true);
+    expect(contact).toEqual({ grounded: true, surfaceId: surface.id, surfaceTop: top });
+  });
+
+  it("selects chase and top-down racing rigs only from passing composition evidence", () => {
+    const { route, sceneBinding } = createRacingPresentationFixture();
+    const focus = game.racing({ route }).snapshot();
+    const composition = {
+      report: "tests/reports/showcase-spec-compiler/fixture/asset-pair-composition.json",
+      verdict: "pass" as const,
+      cameraReadabilityVerdict: "pass" as const,
+      selectedMode: "chase" as "chase" | "top-down"
+    };
+    const chase = game.racingCameraRig({ sceneBinding, focus, mode: "chase", composition, targetNode: "car" });
+    const topDown = game.racingCameraRig({
+      sceneBinding,
+      focus,
+      mode: "top-down",
+      composition: { ...composition, selectedMode: "top-down" },
+      targetNode: "car",
+      distance: 4.2,
+      height: 3.2
+    });
+    expect(chase).toMatchObject({ mode: "follow", selectionEvidence: { selectedMode: "chase", verdict: "pass" } });
+    expect(topDown).toMatchObject({
+      mode: "follow",
+      targetNode: "car",
+      offsetMode: "scene",
+      offset: [0, 3.2, 4.2],
+      selectionEvidence: { selectedMode: "top-down", verdict: "pass" }
+    });
+    expect(() => game.racingCameraRig({
+      sceneBinding,
+      focus,
+      mode: "chase",
+      composition: { ...composition, cameraReadabilityVerdict: "fail" }
+    })).toThrow(/requires passing asset-pair composition/);
+    expect(() => game.racingCameraRig({
+      sceneBinding,
+      focus,
+      mode: "top-down",
+      composition
+    })).toThrow(/conflicts with composition-selected mode chase/);
+  });
 });
 
 function createRacingContract() {

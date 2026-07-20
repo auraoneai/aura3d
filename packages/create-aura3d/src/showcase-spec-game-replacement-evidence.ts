@@ -69,7 +69,7 @@ function racingTrackGeometryGate(spec: ShowcaseSpec, asset: ManifestAsset, optio
       return {
         reasons: [
           "overlay-validated racing topology evidence matches candidate",
-          "mesh extraction unavailable; using retained hash-bound topology evidence",
+          "mesh extraction did not produce a candidate; retained hash-bound topology evidence accepted",
           ...extracted.reasons
         ],
         penalties: [],
@@ -90,7 +90,11 @@ function racingTrackGeometryGate(spec: ShowcaseSpec, asset: ManifestAsset, optio
 }
 
 function platformerWorldGeometryGate(spec: ShowcaseSpec, asset: ManifestAsset, options: GameGeometryGateOptions): GameGeometryGate {
-  const extracted = extractPlatformerPlayableSurfaceMapFromAsset(asset.id, { projectDir: options.projectDir });
+  const extracted = extractPlatformerPlayableSurfaceMapFromAsset(asset.id, {
+    projectDir: options.projectDir,
+    characterAssetId: spec.platformer?.characterAsset,
+    characterScaleRatio: spec.platformer?.levelDesign.playableSurfaceMap?.characterScaleRatio ?? 0.42
+  });
   if (extracted.ok) {
     const surfaceMap = extracted.value;
     const playableSurfaceCount = countPublicPlatformerPlayableSurfaces(surfaceMap);
@@ -126,7 +130,7 @@ function platformerWorldGeometryGate(spec: ShowcaseSpec, asset: ManifestAsset, o
       return {
         reasons: [
           "overlay-validated playable-surface evidence matches candidate",
-          "mesh extraction unavailable; using retained hash-bound surface evidence",
+          "mesh extraction did not produce a candidate; retained hash-bound surface evidence accepted",
           ...extracted.reasons
         ],
         penalties: [],

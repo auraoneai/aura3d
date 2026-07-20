@@ -1,6 +1,8 @@
 # Contributing Guide
 
-Version: 1.3.3
+Version: 1.4.4
+
+Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
 ## Scope
 

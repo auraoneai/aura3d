@@ -1,6 +1,6 @@
 # Showcase Application Plan
 
-Date: 2026-07-01
+Date: 2026-07-19
 Status: release-candidate showcase plan
 
 The showcase slate is an evidence artifact, not a list of marketing promises.
@@ -38,8 +38,8 @@ screenshots, interaction tests, and claim review before it can be promoted.
 | `apps/showcase-blockfall-reactor` | release-ready candidate | Preserve retained falling-block gameplay proof and public visual review. |
 | `apps/showcase-data-galaxy` | internal diagnostic | Keep as retained diagnostic unless public visual/data evidence is rebuilt. |
 | `apps/showcase-webgpu-particle-lab` | internal diagnostic | Keep native WebGPU demoted until adapter/dispatch/render/pixel proof exists. |
-| `apps/showcase-skyline-runner` | prototype-blocked | Rebuild the game layer before public return: mesh-derived playable surfaces, character/world scale, contact, camera, and visual review. |
-| `apps/showcase-turbo-drift-circuit` | prototype-blocked | Rebuild the game layer before public return: racing topology, car/road binding, camera composition, lap flow, and visual review. |
+| `apps/showcase-skyline-runner` | release-ready candidate | Preserve certified surface extraction, character/world binding, category pacing, contact/camera evidence, and visual QA. |
+| `apps/showcase-turbo-drift-circuit` | release-ready candidate | Preserve certified racing topology, car/road binding, category pacing, camera evidence, gameplay, and visual QA. |
 
 ## Promotion Ladder
 
@@ -78,11 +78,10 @@ Game apps additionally need:
 
 1. Implement shared route-health and source validation gates.
 2. Repair or demote current route claims.
-3. Preserve the six accepted public candidates and do not widen their claims.
+3. Preserve all 10 accepted public candidates and do not widen their claims beyond retained evidence.
 4. Keep Data Galaxy and WebGPU Particle Lab as internal diagnostics until their
    visual/capability blockers close.
-5. Keep Skyline Runner and Turbo Drift out of public examples until the game
-   geometry layer in `docs/project/aura3d-game-layer-rebuild-plan.md` exists.
+5. Keep the two game-layer proof routes diagnostic-only; Turbo Drift and Skyline remain public only while their complete certified evidence chain passes.
 
 ## Related Docs
 

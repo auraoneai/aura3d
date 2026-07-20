@@ -35,7 +35,11 @@ import type {
   AuraCliRenderedProbeForegroundBounds,
   AuraCliRenderedProbeKind,
   AuraCliResolveCandidateProvenance,
+  BindGameRouteEvidenceOptions,
+  BindGameRouteEvidenceResult,
+  CertifyGameGeometryOptions,
   CheckDeployOptions,
+  GameGeometryCertificationResult,
   ReadRenderedProbeMetadataOptions
 } from "./asset-core-types.js";
 import type {
@@ -118,7 +122,11 @@ export type {
   AuraCliRenderedProbeForegroundBounds,
   AuraCliRenderedProbeKind,
   AuraCliResolveCandidateProvenance,
+  BindGameRouteEvidenceOptions,
+  BindGameRouteEvidenceResult,
+  CertifyGameGeometryOptions,
   CheckDeployOptions,
+  GameGeometryCertificationResult,
   ReadRenderedProbeMetadataOptions
 } from "./asset-core-types.js";
 export type {
@@ -293,7 +301,11 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance)),
     textures: inspection.textures,
     dependencies: inspection.dependencies,
-    orientation: inspection.orientation,
+    orientation: options.orientation ?? (
+      existing?.orientation?.source === "manifest-override" && existing.orientation.assetHash === `sha256-${hash}`
+        ? existing.orientation
+        : inspection.orientation
+    ),
     nodeNames: inspection.nodeNames,
     thumbnailUrl,
     quality: options.quality ?? existing?.quality ?? "ungraded",
@@ -303,6 +315,15 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     ...(options.gameGeometry ?? existing?.gameGeometry ? { gameGeometry: options.gameGeometry ?? existing?.gameGeometry } : {}),
     warnings: createAssetWarnings(sourcePath, inspection)
   };
+  if (options.orientation) {
+    if (options.orientation.source !== "manifest-override") {
+      throw new Error("Aura3D assets add failed: --orientation-json must contain a manifest-override orientation.");
+    }
+    const orientationFailures = createManifestOrientationOverrideWarnings(entry);
+    if (orientationFailures.length > 0) {
+      throw new Error(`Aura3D assets add failed: invalid orientation override: ${orientationFailures.join("; ")}`);
+    }
+  }
   const manifest = sortManifest({
     schema: "aura3d.assets/1.0",
     assetBasePath: publicPath,
@@ -325,6 +346,323 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
       `Wrote ${manifest.typegen}`
     ]
   };
+}
+
+export function bindGameRouteEvidence(options: BindGameRouteEvidenceOptions): BindGameRouteEvidenceResult {
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const manifest = readAssetManifest(projectDir);
+  const assetIds = [...new Set(options.assetIds.map((id) => id.trim()).filter(Boolean))];
+  const blockers: string[] = [];
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(options.routeId)) blockers.push(`game-route-evidence:unsafe-route-id:${options.routeId}`);
+  if (assetIds.length !== 2) blockers.push(`game-route-evidence:asset-pair-required:${assetIds.length}`);
+
+  const assets = assetIds.map((id) => manifest.assets.find((asset) => asset.id === id));
+  for (let index = 0; index < assetIds.length; index += 1) {
+    if (!assets[index]) blockers.push(`game-route-evidence:asset-missing:${assetIds[index]}`);
+  }
+
+  const screenshotBytes = readProjectEvidenceBytes(projectDir, options.routePrimaryScreenshot, "screenshot", blockers);
+  const screenshotSha256 = screenshotBytes
+    ? `sha256-${createHash("sha256").update(screenshotBytes).digest("hex")}`
+    : undefined;
+  const geometry = readProjectEvidenceJson(projectDir, options.geometryReport, "geometry-report", blockers);
+  const composition = readProjectEvidenceJson(projectDir, options.compositionReport, "composition-report", blockers);
+  const reviewFile = readProjectEvidenceJson(projectDir, options.visualReview, "visual-review", blockers);
+  const geometryRecord = asRecord(geometry);
+  const compositionRecord = asRecord(composition);
+  const reviewRecord = asRecord(reviewFile);
+
+  if (geometryRecord) {
+    if (geometryRecord.routeId !== options.routeId) blockers.push(`game-route-evidence:geometry-route:${String(geometryRecord.routeId)}`);
+    if (geometryRecord.pass !== true) blockers.push(`game-route-evidence:geometry-not-passing:${String(geometryRecord.pass)}`);
+  }
+  const geometryValue = asRecord(options.category === "racing" ? geometryRecord?.topology : geometryRecord?.surfaceMap);
+  const expectedGeometrySchema = options.category === "racing"
+    ? "aura3d-racing-track-topology/1.0"
+    : "aura3d-platformer-playable-surfaces/1.0";
+  if (geometryRecord && geometryRecord.schema !== expectedGeometrySchema) blockers.push(`game-route-evidence:geometry-schema:${String(geometryRecord.schema)}`);
+  const primaryGeometryAssetId = typeof geometryValue?.assetId === "string" ? geometryValue.assetId : undefined;
+  if (!primaryGeometryAssetId || !assetIds.includes(primaryGeometryAssetId)) {
+    blockers.push(`game-route-evidence:geometry-primary-asset:${String(primaryGeometryAssetId)}`);
+  }
+  if (geometryValue) {
+    const overlay = asRecord(geometryValue.evidence)?.routeOverlay;
+    if (overlay !== options.routePrimaryScreenshot) blockers.push(`game-route-evidence:geometry-screenshot:${String(overlay)}`);
+  }
+
+  if (compositionRecord) {
+    if (compositionRecord.schema !== "aura3d-showcase-asset-pair-composition/1.0") blockers.push(`game-route-evidence:composition-schema:${String(compositionRecord.schema)}`);
+    if (compositionRecord.routeId !== options.routeId) blockers.push(`game-route-evidence:composition-route:${String(compositionRecord.routeId)}`);
+    if (compositionRecord.category !== options.category) blockers.push(`game-route-evidence:composition-category:${String(compositionRecord.category)}`);
+    if (compositionRecord.pass !== true || compositionRecord.verdict !== "pass") blockers.push(`game-route-evidence:composition-not-passing:${String(compositionRecord.verdict)}`);
+    const screenshot = asRecord(compositionRecord.screenshot);
+    if (screenshot?.path !== options.routePrimaryScreenshot) blockers.push(`game-route-evidence:composition-screenshot:${String(screenshot?.path)}`);
+    if (screenshotSha256 && screenshot?.sha256 !== screenshotSha256) blockers.push("game-route-evidence:composition-screenshot-hash-stale");
+    const reportGeometry = asRecord(compositionRecord.geometry);
+    if (reportGeometry?.report !== options.geometryReport) blockers.push(`game-route-evidence:composition-geometry-report:${String(reportGeometry?.report)}`);
+    const compositionAssets = Array.isArray(compositionRecord.assets) ? compositionRecord.assets.map(asRecord).filter(Boolean) : [];
+    for (const asset of assets) {
+      if (!asset) continue;
+      const evidenceAsset = compositionAssets.find((candidate) => candidate?.id === asset.id);
+      if (!evidenceAsset) blockers.push(`game-route-evidence:composition-asset-missing:${asset.id}`);
+      else if (evidenceAsset.manifestHash !== asset.hash || evidenceAsset.evidenceHash !== asset.hash) blockers.push(`game-route-evidence:composition-asset-hash-stale:${asset.id}`);
+    }
+    const requiredChecks = ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"];
+    const checks = Array.isArray(compositionRecord.checks) ? compositionRecord.checks.map(asRecord).filter(Boolean) : [];
+    for (const id of requiredChecks) {
+      if (checks.find((check) => check?.id === id)?.verdict !== "pass") blockers.push(`game-route-evidence:composition-check:${id}`);
+    }
+  }
+
+  const routes = Array.isArray(reviewRecord?.routes) ? reviewRecord.routes.map(asRecord).filter(Boolean) : [];
+  const review = routes.find((candidate) => candidate?.id === options.routeId);
+  if (!review) blockers.push(`game-route-evidence:visual-review-route-missing:${options.routeId}`);
+  else {
+    if (review.verdict !== "pass") blockers.push(`game-route-evidence:visual-review-verdict:${String(review.verdict)}`);
+    const screenshots = Array.isArray(review.screenshotEvidence) ? review.screenshotEvidence : [];
+    if (!screenshots.includes(options.routePrimaryScreenshot)) blockers.push("game-route-evidence:visual-review-screenshot-missing");
+  }
+
+  for (const asset of assets) {
+    if (!asset) continue;
+    const expected = asset.id === primaryGeometryAssetId
+      ? (options.category === "racing" ? "certified-racing-track" : "certified-platformer-world")
+      : (options.category === "racing" ? "certified-racing-vehicle" : "certified-platformer-character");
+    if (asset.gameGeometry?.certification !== expected && asset.gameGeometry?.certification !== "certified-generated-game-world") {
+      blockers.push(`game-route-evidence:asset-certification:${asset.id}:${String(asset.gameGeometry?.certification)}`);
+    }
+    if (asset.gameGeometry?.evidence?.manifestHash !== asset.hash) blockers.push(`game-route-evidence:asset-manifest-hash-stale:${asset.id}`);
+  }
+
+  const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+  if (blockers.length > 0 || !screenshotSha256) {
+    return { ok: false, wroteManifest: false, manifestPath, routeId: options.routeId, assetIds, blockers };
+  }
+  const next = sortManifest({
+    ...manifest,
+    assets: manifest.assets.map((asset) => assetIds.includes(asset.id)
+      ? {
+        ...asset,
+        gameGeometry: {
+          ...asset.gameGeometry,
+          evidence: {
+            manifestHash: asset.hash,
+            routePrimaryScreenshot: options.routePrimaryScreenshot,
+            routePrimaryScreenshotSha256: screenshotSha256,
+            geometryReport: options.geometryReport,
+            visualReview: "pass" as const,
+            assetPairPass: true,
+            blockers: []
+          }
+        }
+      }
+      : asset)
+  });
+  writeAssetManifest(projectDir, next);
+  const typegenPath = writeTypedAssets(projectDir, next);
+  return { ok: true, wroteManifest: true, manifestPath, typegenPath, routeId: options.routeId, assetIds, blockers: [] };
+}
+
+function asRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function readProjectEvidenceBytes(projectDir: string, path: string, label: string, blockers: string[]): Buffer | undefined {
+  if (!path || path.includes("\\0") || path.startsWith("/") || path.startsWith("\\")) {
+    blockers.push(`game-route-evidence:${label}-unsafe-path:${path}`);
+    return undefined;
+  }
+  const absolute = resolve(projectDir, path);
+  const rel = relative(projectDir, absolute);
+  if (rel.startsWith("..") || rel.startsWith("/")) {
+    blockers.push(`game-route-evidence:${label}-unsafe-path:${path}`);
+    return undefined;
+  }
+  if (!existsSync(absolute)) {
+    blockers.push(`game-route-evidence:${label}-missing:${path}`);
+    return undefined;
+  }
+  return readFileSync(absolute);
+}
+
+function readProjectEvidenceJson(projectDir: string, path: string, label: string, blockers: string[]): unknown {
+  const bytes = readProjectEvidenceBytes(projectDir, path, label, blockers);
+  if (!bytes) return undefined;
+  try { return JSON.parse(bytes.toString("utf8")); }
+  catch { blockers.push(`game-route-evidence:${label}-invalid-json:${path}`); return undefined; }
+}
+
+export async function certifyGameGeometry(options: CertifyGameGeometryOptions): Promise<GameGeometryCertificationResult> {
+  const { probeShowcaseGameGeometry } = await import("create-aura3d");
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const manifest = readAssetManifest(projectDir);
+  const batchIds = options.assetIds?.map((id) => id.trim()).filter(Boolean);
+  const mode = batchIds ? "screen" as const : "certify" as const;
+  const assetIds = batchIds ?? (options.assetId ? [options.assetId.trim()] : []);
+  if (assetIds.length === 0) {
+    throw new Error("Game geometry certification requires --asset <id> or read-only --assets <csv> screening.");
+  }
+  if (mode === "certify" && assetIds.length !== 1) {
+    throw new Error("Game geometry certification writes exactly one asset at a time; use --assets for read-only screening.");
+  }
+
+  const evaluated = assetIds.map((assetId) => {
+    const asset = manifest.assets.find((entry) => entry.id === assetId);
+    if (!asset) {
+      return {
+        row: {
+          assetId,
+          category: options.category,
+          pass: false,
+          reasons: [],
+          blockers: [`asset-extraction:asset-not-found:${assetId}`]
+        },
+        gameGeometry: undefined
+      };
+    }
+
+    const visualCertification = options.category === "racing" && asset.role === "vehicle"
+      ? { role: "vehicle" as const, certification: "certified-racing-vehicle" as const, label: "racing-vehicle" as const }
+      : options.category === "platformer" && asset.role === "character"
+        ? { role: "character" as const, certification: "certified-platformer-character" as const, label: "platformer-character" as const }
+        : undefined;
+    if (visualCertification) {
+      const blockers = retainedGameSubjectCertificationBlockers(projectDir, manifest, asset, visualCertification.role, visualCertification.label);
+      const probe = asset.renderedProbe;
+      return {
+        row: {
+          assetId,
+          category: options.category,
+          pass: blockers.length === 0,
+          reasons: blockers.length === 0 && probe
+            ? [
+              `hash-bound retained ${visualCertification.role} probe:${probe.url}`,
+              `foreground:${probe.foregroundBounds?.width ?? 0}x${probe.foregroundBounds?.height ?? 0}`
+            ]
+            : [],
+          blockers
+        },
+        gameGeometry: blockers.length === 0 && probe
+          ? {
+            certification: visualCertification.certification,
+            evidence: {
+              manifestHash: asset.hash,
+              routePrimaryScreenshot: probe.url,
+              routePrimaryScreenshotSha256: probe.sha256,
+              visualReview: "pass" as const,
+              blockers: []
+            }
+          }
+          : undefined
+      };
+    }
+
+    const probe = probeShowcaseGameGeometry(assetId, options.category, { projectDir });
+    const gameGeometry = probe.extraction.ok
+      ? {
+        certification: options.category === "racing" ? "certified-racing-track" as const : "certified-platformer-world" as const,
+        evidence: {
+          manifestHash: asset.hash,
+          blockers: []
+        },
+        ...(options.category === "racing"
+          ? { racingTopology: probe.extraction.value as unknown as Readonly<Record<string, unknown>> }
+          : { playableSurfaceMap: probe.extraction.value as unknown as Readonly<Record<string, unknown>> })
+      }
+      : undefined;
+    return {
+      row: {
+        assetId,
+        category: options.category,
+        pass: probe.extraction.ok,
+        reasons: probe.extraction.reasons,
+        blockers: probe.extraction.ok ? [] : probe.extraction.blockers
+      },
+      gameGeometry
+    };
+  });
+  const rows = evaluated.map(({ row }) => row);
+
+  const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+  if (mode === "screen" || !rows[0]?.pass) {
+    return {
+      ok: rows.every((row) => row.pass),
+      mode,
+      wroteManifest: false,
+      manifestPath,
+      rows
+    };
+  }
+
+  const assetId = rows[0]?.assetId;
+  const gameGeometry = evaluated[0]?.gameGeometry;
+  if (!assetId || !gameGeometry) {
+    return { ok: false, mode, wroteManifest: false, manifestPath, rows };
+  }
+  const next = sortManifest({
+    ...manifest,
+    assets: manifest.assets.map((entry) => entry.id === assetId ? { ...entry, gameGeometry } : entry)
+  });
+  writeAssetManifest(projectDir, next);
+  const typegenPath = writeTypedAssets(projectDir, next);
+  return {
+    ok: true,
+    mode,
+    wroteManifest: true,
+    manifestPath,
+    typegenPath,
+    rows
+  };
+}
+
+function retainedGameSubjectCertificationBlockers(
+  projectDir: string,
+  manifest: AuraCliAssetManifest,
+  asset: AuraCliAssetEntry,
+  role: "vehicle" | "character",
+  label: "racing-vehicle" | "platformer-character"
+): readonly string[] {
+  const blockers: string[] = [];
+  if (asset.role !== role) {
+    blockers.push(`asset-certification:${label}-role-required:${asset.id}`);
+    return blockers;
+  }
+  if (asset.quality !== "release") {
+    blockers.push(`asset-certification:${label}-release-quality-required:${asset.id}`);
+  }
+  const probe = asset.renderedProbe;
+  if (!probe) {
+    blockers.push(`asset-certification:${label}-probe-missing:${asset.id}`);
+    return blockers;
+  }
+  if (probe.assetHash !== asset.hash) {
+    blockers.push(`asset-certification:${label}-probe-asset-hash-stale:${asset.id}`);
+  }
+  const probePath = resolvePublicArtifactPath(projectDir, manifest, probe.url);
+  if (!probePath || !existsSync(probePath)) {
+    blockers.push(`asset-certification:${label}-probe-artifact-missing:${asset.id}`);
+    return blockers;
+  }
+  const probeBytes = readFileSync(probePath);
+  const actualSha256 = `sha256-${createHash("sha256").update(probeBytes).digest("hex")}`;
+  if (probe.sha256 !== actualSha256) {
+    blockers.push(`asset-certification:${label}-probe-image-hash-stale:${asset.id}`);
+  }
+  const probeMetrics = decodeRenderedProbePng(probeBytes);
+  if (!probeMetrics.ok) {
+    blockers.push(`asset-certification:${label}-probe-not-png:${asset.id}`);
+    return blockers;
+  }
+  if (probe.width !== probeMetrics.width || probe.height !== probeMetrics.height) {
+    blockers.push(`asset-certification:${label}-probe-dimensions-stale:${asset.id}`);
+  }
+  if (probe.nonBlankPixels !== probeMetrics.nonBlankPixels || probe.colorBuckets !== probeMetrics.colorBuckets) {
+    blockers.push(`asset-certification:${label}-probe-pixels-stale:${asset.id}`);
+  }
+  if (createRoleAwareRenderedProbeWarnings(asset, role).length > 0) {
+    blockers.push(`asset-certification:${label}-probe-readability-failed:${asset.id}`);
+  }
+  return blockers;
 }
 
 export function scanAssets(options: { readonly projectDir?: string; readonly directory: string }): AssetCliResult {
@@ -2002,9 +2340,10 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
 function createAssetProvenance(
   projectDir: string,
   sourcePath: string,
-  options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "retrievedAt" | "resolveCandidate">,
+  options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "provenanceEvidence" | "retrievedAt" | "resolveCandidate">,
   detected?: Partial<AuraCliAssetProvenance>
 ): AuraCliAssetProvenance {
+  const evidence = [...new Set([...(options.provenanceEvidence ?? []), ...(detected?.evidence ?? [])].map((entry) => entry.trim()).filter(Boolean))];
   return {
     sourcePath: normalizeRelativePath(relative(projectDir, sourcePath)),
     ...(options.sourcePage ?? detected?.sourcePage ? { sourcePage: options.sourcePage ?? detected?.sourcePage } : {}),
@@ -2020,7 +2359,7 @@ function createAssetProvenance(
     ...(options.sha256 ?? detected?.sha256 ? { sha256: options.sha256 ?? detected?.sha256 } : {}),
     ...(options.retrievedAt ?? detected?.retrievedAt ? { retrievedAt: options.retrievedAt ?? detected?.retrievedAt } : {}),
     ...(options.resolveCandidate ?? detected?.resolveCandidate ? { resolveCandidate: options.resolveCandidate ?? detected?.resolveCandidate } : {}),
-    ...(detected?.evidence && detected.evidence.length > 0 ? { evidence: detected.evidence } : {}),
+    ...(evidence.length > 0 ? { evidence } : {}),
     checkedAt: new Date().toISOString()
   };
 }
@@ -2184,7 +2523,7 @@ function createReleaseAssetQualityWarnings(asset: AuraCliAssetEntry): readonly s
   if (asset.materialMetadata?.some((material) => !material.visible || !material.readable)) {
     warnings.push(`${asset.id}: release primary model has invisible or unreadable material metadata.`);
   }
-  if (["glb", "gltf"].includes(asset.format) && asset.textures.length === 0) {
+  if (["glb", "gltf"].includes(asset.format) && asset.textures.length === 0 && !hasHashBoundFlatColorMaterialEvidence(asset)) {
     warnings.push(`${asset.id}: release primary model has no texture references; use only with explicit material/readability evidence.`);
   }
   return warnings;
@@ -2333,9 +2672,30 @@ function hasValidManifestOrientationOverride(asset: AuraCliAssetEntry): boolean 
 }
 
 function releaseStoredAssetWarnings(asset: AuraCliAssetEntry): readonly string[] {
-  const warnings = asset.warnings ?? [];
-  if (!hasValidManifestOrientationOverride(asset)) return warnings;
-  return warnings.filter((warning) => !/orientation metadata missing; facing direction cannot be validated/i.test(warning));
+  let warnings = asset.warnings ?? [];
+  if (hasValidManifestOrientationOverride(asset)) {
+    warnings = warnings.filter((warning) => !/orientation metadata missing; facing direction cannot be validated/i.test(warning));
+  }
+  if (hasHashBoundFlatColorMaterialEvidence(asset)) {
+    warnings = warnings.filter((warning) => !/^no texture references detected$/i.test(warning.trim()));
+  }
+  return warnings;
+}
+
+function hasHashBoundFlatColorMaterialEvidence(asset: AuraCliAssetEntry): boolean {
+  if (asset.materials.length === 0) return false;
+  const materialMetadata = asset.materialMetadata ?? [];
+  if (materialMetadata.length < asset.materials.length) return false;
+  if (materialMetadata.some((material) =>
+    !nonEmpty(material.name) || material.visible !== true || material.readable !== true ||
+    typeof material.opacity !== "number" || material.opacity <= 0
+  )) return false;
+  const probe = asset.renderedProbe;
+  return nonEmpty(probe?.url) &&
+    nonEmpty(probe?.sha256) &&
+    nonEmpty(probe?.assetHash) &&
+    probe?.assetHash === asset.hash &&
+    ["browser-screenshot", "aura-probe-render"].includes(String(probe?.kind));
 }
 
 function createRenderedProbeForegroundWarnings(
@@ -2397,7 +2757,9 @@ function createRoleAwareReleaseQualityWarnings(projectDir: string, manifest: Aur
     if (isHugeForReleaseRole(role, dimensions) && !hasHashBoundNormalizationEvidence(asset)) {
       warnings.push(`${asset.id}: role-aware release ${role} validation found huge bounds without explicit normalization evidence.`);
     }
-    if ((role === "track" || role === "world" || role === "environment") && !hasMeaningfulWorldExtent(dimensions)) {
+    if ((role === "track" || role === "world" || role === "environment") &&
+      !hasMeaningfulWorldExtent(dimensions) &&
+      !hasCurrentMeshExtractedGameplayExtent(asset, role)) {
       warnings.push(`${asset.id}: role-aware release ${role} validation needs a gameplay-scale footprint/extent.`);
     }
   }
@@ -2460,6 +2822,26 @@ function isHugeForReleaseRole(role: AuraCliAssetRole, size: readonly [number, nu
 function hasMeaningfulWorldExtent(size: readonly [number, number, number]): boolean {
   const horizontalArea = Math.abs(size[0] * size[2]);
   return Math.max(size[0], size[2]) >= 10 && horizontalArea >= 100;
+}
+
+function hasCurrentMeshExtractedGameplayExtent(asset: AuraCliAssetEntry, role: AuraCliAssetRole): boolean {
+  const geometry = asset.gameGeometry;
+  if (!geometry || geometry.evidence?.manifestHash !== asset.hash || (geometry.evidence.blockers?.length ?? 0) > 0) return false;
+  if (role === "track" && geometry.certification === "certified-racing-track") {
+    const topology = geometry.racingTopology;
+    return topology?.source === "asset-mesh-extracted" &&
+      topology.assetHash === asset.hash &&
+      typeof topology.lapLengthMeters === "number" &&
+      topology.lapLengthMeters >= 10;
+  }
+  if ((role === "world" || role === "environment") && geometry.certification === "certified-platformer-world") {
+    const surfaceMap = geometry.playableSurfaceMap;
+    return surfaceMap?.source === "asset-mesh-extracted" &&
+      surfaceMap.assetHash === asset.hash &&
+      typeof surfaceMap.levelLength === "number" &&
+      surfaceMap.levelLength >= 10;
+  }
+  return false;
 }
 
 function hasHashBoundNormalizationEvidence(asset: AuraCliAssetEntry): boolean {

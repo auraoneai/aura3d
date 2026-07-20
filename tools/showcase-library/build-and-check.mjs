@@ -10,6 +10,9 @@ import {
   showcaseRouteGateHash
 } from "./route-gates.mjs";
 import { validateReleaseGameAssetPairEvidence } from "./showcase-game-release-gates.mjs";
+import { validateGameGeometryContract } from "./game-geometry-contracts.mjs";
+import { GAME_VISUAL_QA_CHECKS, writeGameVisualQaReport } from "./game-visual-qa.mjs";
+import { applyDownwardOnlyManualReview } from "./showcase-manual-review-gate.mjs";
 import { validateRoutePrimaryProbeEvidence } from "./route-primary-probes.mjs";
 
 const toolDir = dirname(fileURLToPath(import.meta.url));
@@ -55,7 +58,20 @@ for (const route of routes) {
     deployCheckArgs(route, distDir)
   );
   const visualReview = validateRouteVisualReview(route, releaseClass, showcaseVisualReview);
-  const routeOk = staticGate.ok && routePrimaryProbe.ok && build.ok && deploy.ok && visualReview.ok;
+  const gameVisualQa = releaseClass === RELEASE_READY_CANDIDATE && isPublicGameRoute(route)
+    ? writeGameVisualQaReport({
+      route,
+      routeHealth: staticGate.routeHealth.gameAssetPairEvidence
+        ? readJsonFile(staticGate.routeHealth.path)
+        : undefined,
+      root: repoRoot
+    })
+    : skippedGameVisualQa(route);
+  const manualReviewDecision = applyDownwardOnlyManualReview({
+    validatorOk: staticGate.ok && gameVisualQa.pass,
+    manualReviewOk: visualReview.ok
+  });
+  const routeOk = manualReviewDecision.ok && routePrimaryProbe.ok && build.ok && deploy.ok;
   const diagnosticBlockers = collectDiagnosticBlockers(route, releaseClass, staticGate, routePrimaryProbe, deploy, visualReview);
   const classification = validateReleaseClassification(route, releaseClass, {
     staticGate,
@@ -79,6 +95,7 @@ for (const route of routes) {
     ok: routeOk,
     staticGate,
     visualReview,
+    gameVisualQa,
     routePrimaryProbe,
     build,
     deployCheck: deploy,
@@ -168,6 +185,27 @@ if (!report.ok) {
     `${report.internalDiagnosticCount} internal diagnostics retained; ` +
     `${report.gameLayerDiagnosticCount} game-layer diagnostics retained; ${report.indexRouteCount} index route handled separately.`
   );
+}
+
+function isPublicGameRoute(route) {
+  return route.gameTemplateStatus?.category === "racing" || route.gameTemplateStatus?.category === "platformer";
+}
+
+function skippedGameVisualQa(route) {
+  return {
+    schema: "aura3d-game-visual-qa/1.0",
+    routeId: route.id,
+    category: route.gameTemplateStatus?.category ?? null,
+    verdict: "skipped",
+    pass: true,
+    checks: [],
+    blockers: []
+  };
+}
+
+function readJsonFile(relativePath) {
+  if (typeof relativePath !== "string" || !relativePath) return undefined;
+  return JSON.parse(readFileSync(resolve(repoRoot, relativePath), "utf8"));
 }
 
 function runCommand(id, command, args, env = {}) {
@@ -402,6 +440,12 @@ function validateRouteVisualReview(route, releaseClass, review) {
     failures.push(`route-visual-review-screenshot-evidence:${route.id}`);
   }
   if (!Array.isArray(routeReview.blockingIssues)) failures.push(`route-visual-review-blocking-issues:${route.id}`);
+  if (route.gameTemplateStatus?.category === "racing" || route.gameTemplateStatus?.category === "platformer") {
+    const automatedChecks = Array.isArray(routeReview.automatedChecks) ? routeReview.automatedChecks : [];
+    for (const check of GAME_VISUAL_QA_CHECKS) {
+      if (!automatedChecks.includes(check)) failures.push(`route-visual-review-automated-check:${route.id}:${check}`);
+    }
+  }
   if (verdict === "pass" && Array.isArray(routeReview.blockingIssues) && routeReview.blockingIssues.length > 0) {
     failures.push(`route-visual-review-pass-has-blockers:${route.id}`);
   }
@@ -513,6 +557,9 @@ function validateRouteStaticGate(route) {
   const sourceFiles = readShowcaseSourceFiles(route.id);
   const sourceText = sourceFiles.map((file) => file.text).join("\n");
   const routeHealth = validateRouteHealthGate(route);
+  const geometryContract = route.gameTemplateStatus?.category === "racing" || route.gameTemplateStatus?.category === "platformer"
+    ? validateGameGeometryContract(route, { root: repoRoot })
+    : { ok: true, failures: [], required: false };
   const unsafePatterns = [
     { id: "model-string-id", pattern: /\bmodel\s*\(\s*["'`][^"'`]+["'`]/ },
     { id: "unsafe-model-url", pattern: /\bunsafeModelUrl\s*\(/ },
@@ -554,7 +601,8 @@ function validateRouteStaticGate(route) {
   });
   const primitiveCalls = Array.from(sourceText.matchAll(/\bprimitives\.[A-Za-z_]+\s*\(/g)).length;
   const declarations = {
-    publishesEvidenceGlobal: sourceText.includes(`window.${route.globalName}`),
+    publishesEvidenceGlobal: sourceText.includes(`window.${route.globalName}`) ||
+      sourceText.includes(`Object.defineProperty(window, "${route.globalName}"`),
     hasStatus: /\bstatus\s*:/.test(sourceText),
     hasSystems: /\bsystems\s*:/.test(sourceText) || /\bsystems\s*=/.test(sourceText),
     hasControls: /\bcontrols\s*:/.test(sourceText) || /\bcontrols\s*=/.test(sourceText),
@@ -581,6 +629,7 @@ function validateRouteStaticGate(route) {
   if (route.id !== "showcase-index" && declarations.hasNativeWebGpuOverclaim) failures.push("native-webgpu-overclaim");
   if (route.requiresAuraParticles && !declarations.hasAuraParticles) failures.push("missing-aura-particles");
   if (!routeHealth.ok) failures.push(...routeHealth.failures.map((failure) => `route-health:${failure}`));
+  if (!geometryContract.ok) failures.push(...geometryContract.failures.map((failure) => `geometry-contract:${failure}`));
   if (route.requiresTypedPrimaryAssets) {
     for (const asset of route.primaryAssets) {
       if (!primaryAssets.includes(asset)) failures.push(`missing-primary-asset-source:${asset}`);
@@ -599,7 +648,8 @@ function validateRouteStaticGate(route) {
     primaryAssetEvidence,
     typedAssetRefs: Array.from(new Set(typedAssetRefs)).sort(),
     declarations,
-    routeHealth
+    routeHealth,
+    geometryContract
   };
 }
 
@@ -826,6 +876,7 @@ function compactReport(report) {
       staticGateOk: route.staticGate.ok,
       staticGateFailures: route.staticGate.failures,
       visualReview: route.visualReview,
+      gameVisualQa: route.gameVisualQa,
       primaryAssetEvidence: route.staticGate.primaryAssetEvidence,
       routeHealth: route.staticGate.routeHealth,
       routePrimaryProbe: route.routePrimaryProbe,

@@ -2,6 +2,8 @@
 import { spawnSync } from "node:child_process";
 import {
   addAsset,
+  bindGameRouteEvidence,
+  certifyGameGeometry,
   checkDeploy,
   createCharacterAssemblyPlan,
   createAssetThumbnails,
@@ -37,7 +39,9 @@ const {
   readEvidenceOutput,
   readInspectFile,
   readOption,
+  readOrientation,
   readParts,
+  readProvenanceEvidence,
   readRenderedProbe,
   readResolveConstraints,
 } = createCliOptionReaders(args);
@@ -71,13 +75,46 @@ async function main(): Promise<void> {
         author: readOption("--author"),
         sourceFamily: readOption("--source-family"),
         attribution: readOption("--attribution"),
+        provenanceEvidence: readProvenanceEvidence(),
+        retrievedAt: readOption("--retrieved-at"),
         quality: readAssetQuality(),
         role: readAssetRole(),
         suitabilityReason: readOption("--suitability"),
-        renderedProbe: readRenderedProbe()
+        renderedProbe: readRenderedProbe(),
+        orientation: readOrientation()
       }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));
+    } else if (action === "bind-game-route-evidence") {
+      const category = readOption("--category");
+      const routeId = readOption("--route");
+      const assetIds = readOption("--assets")?.split(",").map((id) => id.trim()).filter(Boolean);
+      const routePrimaryScreenshot = readOption("--screenshot");
+      const geometryReport = readOption("--geometry-report");
+      const compositionReport = readOption("--composition-report");
+      const visualReview = readOption("--visual-review");
+      if ((category !== "racing" && category !== "platformer") || !routeId || !assetIds || !routePrimaryScreenshot || !geometryReport || !compositionReport || !visualReview) {
+        throw new Error("Usage: aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>");
+      }
+      const result = bindGameRouteEvidence({ category, routeId, assetIds, routePrimaryScreenshot, geometryReport, compositionReport, visualReview });
+      console.log(JSON.stringify(result, null, 2));
+      if (!result.ok) process.exitCode = 1;
+    } else if (action === "certify-game-geometry") {
+      const assetId = readOption("--asset");
+      const assetIds = readOption("--assets")?.split(",").map((id) => id.trim()).filter(Boolean);
+      const category = readOption("--category");
+      if (category !== "racing" && category !== "platformer") {
+        throw new Error("Usage: aura3d assets certify-game-geometry (--asset <id> | --assets <csv>) --category racing|platformer");
+      }
+      if (Boolean(assetId) === Boolean(assetIds)) {
+        throw new Error("Pass exactly one of --asset <id> or read-only --assets <csv>.");
+      }
+      const result = await certifyGameGeometry({
+        category,
+        ...(assetId ? { assetId } : { assetIds })
+      });
+      console.log(JSON.stringify(result, null, 2));
+      if (!result.ok) process.exitCode = 1;
     } else if (action === "inspect") {
       const file = readInspectFile();
       if (!file) throw new Error("Usage: aura3d assets inspect ./model.glb [--animation] [--humanoid]");

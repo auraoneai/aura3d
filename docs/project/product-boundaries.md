@@ -86,10 +86,7 @@ They are not public release candidates until they pass
 `docs/project/showcase-quality-gates.md` and
 `docs/project/showcase-visual-review.json`.
 
-Turbo Drift Circuit and Skyline Runner are retained prototype-blocked routes.
-They are not public examples until the game layer described in
-`docs/project/aura3d-game-layer-rebuild-plan.md` exists and passes retained
-evidence.
+Turbo Drift Circuit and Skyline Runner are bounded public presentation routes because the certified game-geometry, composition, gameplay, visual-QA, manual-review, and deploy chain currently passes. They are not evidence that arbitrary GLBs become production games. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic-only routes.
 
 ## Prompt Boundary
 

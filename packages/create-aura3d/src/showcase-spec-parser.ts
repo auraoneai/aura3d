@@ -62,6 +62,8 @@ export function parseShowcaseSpec(input: unknown): ShowcaseSpec {
       routePrimaryPassed: readBoolean(evidence, "routePrimaryPassed"),
       ...optionalString(evidence, "gameplayProof"),
       ...optionalBoolean(evidence, "gameplayPassed"),
+      ...optionalBoolean(evidence, "visualReviewPassed"),
+      ...optionalString(evidence, "assetPairCompositionReport"),
       ...optionalStringRecord(evidence, "releaseAssetProbes")
     },
     capabilities: readArray(input, "capabilities").map(parseCapability)
@@ -557,6 +559,7 @@ function parseGameAssetPairEvidence(evidence: Readonly<Record<string, unknown>>)
     ...optionalString(evidence, "routePrimaryProbe"),
     ...optionalString(evidence, "screenshotSha256"),
     ...parseOptionalGameGeometryEvidence(evidence),
+    ...optionalString(evidence, "compositionReport"),
     verdict: readEnum(evidence, "verdict", ["pass", "fail"]),
     notes: readString(evidence, "notes"),
     blockers: readArray(evidence, "blockers").map((value) => readStringValue(value, "assetPairEvidence.blockers"))

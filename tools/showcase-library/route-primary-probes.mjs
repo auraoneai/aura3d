@@ -6,7 +6,7 @@ import {
   defaultRepoRoot,
   showcaseRouteGateHash
 } from "./route-gates.mjs";
-import { readPngForegroundMetrics } from "./png-foreground.mjs";
+import { readPngDifferenceMetrics, readPngForegroundMetrics } from "./png-foreground.mjs";
 
 export const routePrimaryProbeSchema = "aura3d-route-primary-probe/1.0";
 export const routePrimaryProbeReportDirRelativePath = "tests/reports/showcase-route-primary-probes";
@@ -317,7 +317,25 @@ function validateScreenshotFiles(root, route, evidence) {
   const actualSha = `sha256-${hashFile(screenshotPath)}`;
   let metrics;
   try {
-    metrics = readPngForegroundMetrics(screenshotPath, readHeroAnalysisCrop(evidence));
+    const renderedProbe = evidence.renderedProbe;
+    const suppressedRelative = renderedProbe?.subjectSuppressedScreenshotPath;
+    if (typeof suppressedRelative === "string") {
+      const expectedSuppressed = `${routePrimaryProbeReportDirRelativePath}/${safeRouteId(route.id)}-subject-suppressed.png`;
+      if (suppressedRelative !== expectedSuppressed) failures.push(`subject-suppressed-screenshot-path:${suppressedRelative}`);
+      const suppressedPath = resolve(root, suppressedRelative);
+      const suppressedRel = relative(root, suppressedPath);
+      if (suppressedRel.startsWith("..") || !existsSync(suppressedPath)) {
+        failures.push(`missing-subject-suppressed-screenshot:${suppressedRelative}`);
+      } else {
+        const suppressedSha = `sha256-${hashFile(suppressedPath)}`;
+        if (renderedProbe.subjectSuppressedScreenshotSha256 !== suppressedSha) {
+          failures.push(`subject-suppressed-screenshot-hash:${suppressedSha}`);
+        }
+        metrics = readPngDifferenceMetrics(screenshotPath, suppressedPath, readHeroAnalysisCrop(evidence));
+      }
+    } else {
+      metrics = readPngForegroundMetrics(screenshotPath, readHeroAnalysisCrop(evidence));
+    }
   } catch (error) {
     failures.push(`route-primary-screenshot-decode:${error instanceof Error ? error.message : String(error)}`);
   }

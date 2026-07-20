@@ -1,15 +1,20 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   createEvidenceChecklist,
   createReadme,
+  createRouteArtifacts,
   createRouteGatePatch,
-  createRouteHealth,
-  createRouteSource
+  createRouteHealth
 } from "./showcase-spec-artifacts.js";
 import { compileCategoryPlanBlockers } from "./showcase-spec-category-plan.js";
+import { validateShowcaseAssetPairCompositionFromDisk } from "./showcase-spec-asset-pair-composition.js";
 import { compileEvidenceBlockers, type EvidenceValidationContext } from "./showcase-spec-evidence.js";
-import { applyGeneratedGameTemplateEvidence } from "./showcase-spec-game-template-evidence.js";
+import {
+  applyGeneratedGameTemplateEvidence,
+  consumeRetainedGameCompositionEvidence
+} from "./showcase-spec-game-template-evidence.js";
 import { parseShowcaseSpec } from "./showcase-spec-parser.js";
 import { resolveShowcaseSpecReplacements } from "./showcase-spec-replacement.js";
 import type {
@@ -53,21 +58,33 @@ export function compileShowcaseSpecFile(options: CompileShowcaseSpecFileOptions)
 
 export function compileShowcaseSpec(input: unknown, options: CompileShowcaseSpecOptions): CompileShowcaseSpecReport {
   const parsedSpec = parseShowcaseSpec(input);
-  const replacement = resolveShowcaseSpecReplacements(parsedSpec, { projectDir: options.projectDir });
   const outputDir = resolve(options.outputDir);
+  const projectDir = resolve(options.projectDir ?? process.cwd());
+  const canProduceComposition = canProduceGameComposition(parsedSpec, outputDir, projectDir);
+  const retainedComposition = canProduceComposition
+    ? { spec: parsedSpec }
+    : consumeRetainedGameCompositionEvidence(parsedSpec, { projectDir });
+  const replacement = resolveShowcaseSpecReplacements(retainedComposition.spec, { projectDir });
   mkdirSync(join(outputDir, "src"), { recursive: true });
-  const templateEvidence = applyGeneratedGameTemplateEvidence(replacement.spec, { projectDir: options.projectDir });
-  const spec = templateEvidence.spec;
+  const templateEvidence = applyGeneratedGameTemplateEvidence(replacement.spec, { projectDir });
   writeArtifacts(outputDir, templateEvidence.artifacts);
+  const producedComposition = canProduceComposition
+    ? produceGameComposition(templateEvidence.spec, outputDir, projectDir)
+    : undefined;
+  const appliedComposition = producedComposition
+    ? consumeRetainedGameCompositionEvidence(producedComposition.spec, { projectDir })
+    : { spec: templateEvidence.spec, summary: retainedComposition.summary };
+  const spec = appliedComposition.spec;
+  const assetPairComposition = producedComposition?.summary ?? retainedComposition.summary;
   const blockers = [
     ...replacement.blockers,
-    ...compileBlockers(spec, { artifactRoot: outputDir, projectDir: options.projectDir })
+    ...compileBlockers(spec, { artifactRoot: outputDir, projectDir })
   ];
   const finalStatus = chooseFinalStatus(spec, blockers);
 
   const generatedFiles = writeArtifacts(outputDir, {
     ...templateEvidence.artifacts,
-    "src/main.ts": createRouteSource(spec),
+    ...createRouteArtifacts(spec),
     "README.md": createReadme(spec, finalStatus, blockers),
     "route-health.json": createRouteHealth(spec, finalStatus, blockers),
     "route-gate.patch.json": createRouteGatePatch(spec, finalStatus),
@@ -85,10 +102,89 @@ export function compileShowcaseSpec(input: unknown, options: CompileShowcaseSpec
     routeGatePatchPath: join(outputDir, "route-gate.patch.json"),
     rejectedAssets: replacement.rejectedAssets,
     replacementCandidates: replacement.replacementCandidates,
-    ...(replacement.selectedReplacement ? { selectedReplacement: replacement.selectedReplacement } : {})
+    ...(replacement.selectedReplacement ? { selectedReplacement: replacement.selectedReplacement } : {}),
+    ...(assetPairComposition ? { assetPairComposition } : {}),
+    ...createGeometryContractReport(spec, outputDir, projectDir)
   };
   writeArtifact(outputDir, "showcase-spec-compile-report.json", report);
   return report;
+}
+
+function canProduceGameComposition(spec: ShowcaseSpec, outputDir: string, projectDir: string): boolean {
+  if (spec.category !== "game-racing" && spec.category !== "game-platformer") return false;
+  const reportPath = spec.evidence.assetPairCompositionReport;
+  const gameplayProof = spec.evidence.gameplayProof;
+  if (!reportPath || !gameplayProof) return false;
+  if (!containedRelativePath(projectDir, reportPath) || !isContained(projectDir, outputDir)) return false;
+  return [spec.evidence.routePrimaryProbe, gameplayProof, "aura.assets.json"]
+    .every((path) => containedRelativePath(projectDir, path) && existsSync(resolve(projectDir, path)));
+}
+
+function produceGameComposition(
+  spec: ShowcaseSpec,
+  outputDir: string,
+  projectDir: string
+): { readonly spec: ShowcaseSpec; readonly summary: NonNullable<CompileShowcaseSpecReport["assetPairComposition"]> } | undefined {
+  const category = spec.category === "game-racing" ? "racing" : spec.category === "game-platformer" ? "platformer" : undefined;
+  const artifactPath = category === "racing"
+    ? spec.racing?.raceDesign.trackTopologyEvidence
+    : spec.platformer?.levelDesign.playableSurfaceEvidence;
+  const outputPath = spec.evidence.assetPairCompositionReport;
+  const gameplayProof = spec.evidence.gameplayProof;
+  if (!category || !artifactPath || !outputPath || !gameplayProof) return undefined;
+  const geometryAbsolute = resolve(outputDir, artifactPath);
+  if (!isContained(projectDir, geometryAbsolute) || !existsSync(geometryAbsolute)) return undefined;
+  const geometryReport = relative(projectDir, geometryAbsolute);
+  if (!geometryReport || isAbsolute(geometryReport) || geometryReport.startsWith("..")) return undefined;
+  const report = validateShowcaseAssetPairCompositionFromDisk({
+    projectDir,
+    routeId: spec.routeId,
+    category,
+    routePrimaryProbe: spec.evidence.routePrimaryProbe,
+    gameplayProof,
+    geometryReport,
+    outputPath
+  });
+  const specWithGeometryReport = bindGameGeometryReport(spec, geometryReport);
+  return {
+    spec: specWithGeometryReport,
+    summary: {
+      report: outputPath,
+      verdict: report.verdict,
+      checks: report.checks.map(({ id, verdict }) => ({ id, verdict }))
+    }
+  };
+}
+
+function bindGameGeometryReport(spec: ShowcaseSpec, geometryReport: string): ShowcaseSpec {
+  if (spec.category === "game-racing" && spec.racing) {
+    return {
+      ...spec,
+      racing: {
+        ...spec.racing,
+        raceDesign: { ...spec.racing.raceDesign, trackTopologyEvidence: geometryReport }
+      }
+    };
+  }
+  if (spec.category === "game-platformer" && spec.platformer) {
+    return {
+      ...spec,
+      platformer: {
+        ...spec.platformer,
+        levelDesign: { ...spec.platformer.levelDesign, playableSurfaceEvidence: geometryReport }
+      }
+    };
+  }
+  return spec;
+}
+
+function containedRelativePath(root: string, path: string): boolean {
+  return Boolean(path) && !isAbsolute(path) && !path.includes("\0") && isContained(root, resolve(root, path));
+}
+
+function isContained(root: string, path: string): boolean {
+  const rel = relative(root, path);
+  return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
 
 function compileBlockers(spec: ShowcaseSpec, evidenceContext: EvidenceValidationContext): readonly string[] {
@@ -226,6 +322,33 @@ function chooseFinalStatus(spec: ShowcaseSpec, blockers: readonly string[]): Sho
   if (blockers.length === 0) return spec.publicStatus;
   if (spec.publicStatus === "internal-diagnostic" || spec.publicStatus === "removed-from-public-showcase") return spec.publicStatus;
   return "prototype-blocked";
+}
+
+function createGeometryContractReport(
+  spec: ShowcaseSpec,
+  outputDir: string,
+  projectDir: string
+): Pick<CompileShowcaseSpecReport, "geometryContract"> | Record<string, never> {
+  if (!spec.racing && !spec.platformer) return {};
+  const modulePath = "src/generated/game-geometry.ts";
+  const sourceReport = spec.racing?.raceDesign.trackTopologyEvidence ?? spec.platformer?.levelDesign.playableSurfaceEvidence;
+  const moduleAbsolute = join(outputDir, modulePath);
+  const reportAbsolute = sourceReport
+    ? [resolve(outputDir, sourceReport), resolve(projectDir, sourceReport)].find((candidate) => existsSync(candidate))
+    : undefined;
+  if (!sourceReport || !existsSync(moduleAbsolute) || !reportAbsolute) return {};
+  return {
+    geometryContract: {
+      module: modulePath,
+      contentHash: sha256(readFileSync(moduleAbsolute)),
+      sourceReport,
+      sourceReportHash: sha256(readFileSync(reportAbsolute))
+    }
+  };
+}
+
+function sha256(value: Buffer): string {
+  return `sha256-${createHash("sha256").update(value).digest("hex")}`;
 }
 
 function writeArtifacts(outputDir: string, artifacts: Readonly<Record<string, unknown | string>>): readonly string[] {

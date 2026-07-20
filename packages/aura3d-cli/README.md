@@ -21,7 +21,8 @@ npx @aura3d/cli@latest doctor
 - Provenance travels with the app: source, license, quality, role, and hash
   metadata stay in `aura.assets.json`.
 - Game and animation checks are built in: inspect clips, humanoid structure,
-  fighting-character requirements, and release readiness from the same tool.
+  fighting-character requirements, category-specific game geometry, and release readiness from the same tool.
+- Certified game assets fail closed: racing tracks and platformer worlds need current hash-bound geometry probes, while route evidence binds the selected pair to retained screenshots and validator reports.
 - Deployment is part of the workflow: validate assets, screenshots, and `dist`
   output before you publish.
 
@@ -64,6 +65,8 @@ npx @aura3d/cli@latest assets inspect ./model.glb --animation --humanoid
 npx @aura3d/cli@latest assets validate --source --release
 npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset fighter
 npx @aura3d/cli@latest assets validate-animation --clips idle,walk,run
+npx @aura3d/cli@latest assets certify-game-geometry --asset track --category racing
+npx @aura3d/cli@latest assets bind-game-route-evidence --route my-race --category racing --assets car,track --screenshot tests/reports/route.png --geometry-report tests/reports/topology.json --composition-report tests/reports/composition.json --visual-review docs/visual-review.json
 npx @aura3d/cli@latest assets assemble-character --name hero --body heroBody --part hair=heroHair
 npx @aura3d/cli@latest check-deploy --dist dist
 npx @aura3d/cli@latest init --agent all
@@ -71,8 +74,7 @@ npx @aura3d/cli@latest init --agent all
 
 ## What It Writes
 
-- `aura.assets.json`: asset manifest with source, license, quality, role,
-  provenance, and hash metadata.
+- `aura.assets.json`: asset manifest with source, license, quality, role, provenance, hash metadata, retained probes, and optional hash-bound `gameGeometry` certification/evidence.
 - `src/aura-assets.ts`: generated TypeScript asset references for your routes.
 - Public asset files under the configured app asset directory.
 

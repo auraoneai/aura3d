@@ -46,3 +46,7 @@ fake scene effects with CSS/DOM overlays, or replace a named primary model with
 primitives. Primitives are acceptable for set dressing, debug markers, simple
 abstract visuals, and collision guides; they are not a substitute for a primary
 character, vehicle, product, creature, or environment.
+
+## Current Limits
+
+The public root path remains bounded to features proven by current browser evidence. Lower-level renderer exports, internal production-runtime support, or metadata alone do not establish root support for PBR parity, advanced shadows, postprocessing, WebGPU, skinning, or morph deformation.

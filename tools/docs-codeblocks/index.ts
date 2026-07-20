@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { writeReport, type ReleaseCheck } from "../check-common";
+import { CREATE_AURA3D_TEMPLATES } from "../../packages/create-aura3d/src/index";
 
 const docs = [
   "README.md",
@@ -9,7 +10,7 @@ const docs = [
   "docs/templates/create-aura3d-templates.md"
 ].filter((path) => existsSync(path));
 const knownPackages = new Set(["@aura3d/engine", "@aura3d/react", "@aura3d/cli", "create-aura3d"]);
-const knownTemplates = new Set(["product-viewer", "cinematic-scene", "mini-game"]);
+const knownTemplates = new Set<string>(CREATE_AURA3D_TEMPLATES);
 const blocks = docs.flatMap(extractBlocks);
 const packageImportErrors: string[] = [];
 const commandErrors: string[] = [];

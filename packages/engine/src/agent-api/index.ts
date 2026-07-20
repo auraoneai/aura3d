@@ -218,7 +218,9 @@ import {
   createGameFallingBlocksKit,
   createGameLocomotionKit,
   createGamePlatformerKit,
+  createGamePlatformerSurfaceQuery,
   createGameRacingKit,
+  createGameRacingSurfaceQuery,
   type GameAssetBoundPlatformerLevel,
   type GameAssetBoundRacingRoute,
   type GameKitRect,
@@ -233,6 +235,9 @@ import {
   type GamePlatformerPresentationCameraOptions,
   type GamePlatformerSceneBinding,
   type GameRacingPresentationCameraOptions,
+  type GameRacingCameraRigOptions,
+  type GameRacingCameraSelectionEvidence,
+  type GameRacingSceneSpeedModel,
   type GameScenePresentationCameraSpec,
   type GameRacingSceneBinding
 } from "./GameSceneGeometryBindings";
@@ -250,7 +255,9 @@ export {
   createGameFallingBlocksKit,
   createGameLocomotionKit,
   createGamePlatformerKit,
-  createGameRacingKit
+  createGamePlatformerSurfaceQuery,
+  createGameRacingKit,
+  createGameRacingSurfaceQuery
 } from "./GameGenreKits";
 export {
   createGamePlatformerSceneBinding,
@@ -296,6 +303,8 @@ export type {
   GamePlatformerInput,
   GamePlatformerKit,
   GamePlatformerLevel,
+  GamePlatformerGroundContact,
+  GamePlatformerSurfaceQuery,
   GamePlatformerMovingPlatform,
   GamePlatformerPlayerState,
   GamePlatformerSnapshot,
@@ -305,6 +314,9 @@ export type {
   GameRacingEventType,
   GameRacingInput,
   GameRacingKit,
+  GameRacingSpeedModel,
+  GameRacingSurfaceContact,
+  GameRacingSurfaceQuery,
   GameRacingOptions,
   GameRacingRoute,
   GameRacingSnapshot
@@ -331,6 +343,9 @@ export type {
   GameRacingSceneBinding,
   GameRacingSceneBindingOptions,
   GameRacingPresentationCameraOptions,
+  GameRacingCameraRigOptions,
+  GameRacingCameraSelectionEvidence,
+  GameRacingSceneSpeedModel,
   GameRacingScenePose,
   GameScenePresentationCameraSpec,
   GameSceneTransform
@@ -6223,8 +6238,75 @@ export function createGamePublicRacingPresentationNodes(options: AuraPublicRacin
   return nodes;
 }
 
-export function createGameRacingCameraRig(options: GameRacingPresentationCameraOptions): GameScenePresentationCameraSpec {
-  return createGameRacingPresentationCamera(options);
+function createGameRacingTopDownCamera(options: GameRacingCameraRigOptions): GameScenePresentationCameraSpec {
+  const pose = options.sceneBinding.toScenePose(options.focus);
+  const distance = Math.max(0.1, options.distance ?? 4.2);
+  const height = Math.max(0.1, options.height ?? 3.2);
+  const sideOffset = options.sideOffset ?? 0;
+  const lookAhead = Math.max(0, options.lookAhead ?? 0.5);
+  const forwardX = Math.cos(pose.heading);
+  const forwardZ = Math.sin(pose.heading);
+  const targetOffset: readonly [number, number, number] = [
+    Number((forwardX * lookAhead).toFixed(4)),
+    0.18,
+    Number((forwardZ * lookAhead).toFixed(4))
+  ];
+  if (options.targetNode) {
+    return {
+      mode: "follow",
+      targetNode: options.targetNode,
+      offset: [sideOffset, height, distance],
+      targetOffset,
+      offsetMode: "scene",
+      target: [0, 0.2, 0],
+      distance,
+      fov: options.fov ?? 46,
+      smoothing: 0.045,
+      subjectEmphasis: 0.82
+    };
+  }
+  return {
+    mode: "perspective",
+    position: [
+      Number((pose.position[0] + sideOffset).toFixed(4)),
+      Number((pose.position[1] + height).toFixed(4)),
+      Number((pose.position[2] + distance).toFixed(4))
+    ],
+    target: [
+      Number((pose.position[0] + targetOffset[0]).toFixed(4)),
+      Number((pose.position[1] + targetOffset[1]).toFixed(4)),
+      Number((pose.position[2] + targetOffset[2]).toFixed(4))
+    ],
+    fov: options.fov ?? 46,
+    smoothing: 0.045,
+    subjectEmphasis: 0.82
+  };
+}
+
+export function createGameRacingCameraRig(options: GameRacingCameraRigOptions): GameScenePresentationCameraSpec {
+  if (!options.composition.report.trim()) {
+    throw new Error("game.racingCameraRig requires an asset-pair composition report path.");
+  }
+  if (options.composition.verdict !== "pass" || options.composition.cameraReadabilityVerdict !== "pass") {
+    throw new Error("game.racingCameraRig requires passing asset-pair composition and camera-readability verdicts.");
+  }
+  if (options.composition.selectedMode !== options.mode) {
+    throw new Error(`game.racingCameraRig mode ${options.mode} conflicts with composition-selected mode ${options.composition.selectedMode}.`);
+  }
+  const selectedMode = options.mode;
+  const camera = selectedMode === "chase"
+    ? createGameRacingPresentationCamera({ ...options, mode: "follow" })
+    : createGameRacingTopDownCamera(options);
+  return {
+    ...camera,
+    selectionEvidence: {
+      source: "asset-pair-composition",
+      report: options.composition.report,
+      check: "camera-readability",
+      verdict: "pass",
+      selectedMode
+    }
+  };
 }
 
 export function certifyPublicRacingPresentation(input: AuraRacingPresentationCertificationInput): PublicGameGeometryCertification {
@@ -6775,6 +6857,7 @@ export const game = {
   inspector: createGameInspector,
   locomotion: createGameLocomotionKit,
   assetBoundPlatformerLevel: createGameAssetBoundPlatformerLevel,
+  platformerSurfaceQuery: createGamePlatformerSurfaceQuery,
   platformerSceneBinding: createGamePlatformerSceneBinding,
   platformerPresentationCamera: createGamePlatformerPresentationCamera,
   platformerPresentationSurfaces: createGamePlatformerPresentationSurfaceNodes,
@@ -6789,6 +6872,7 @@ export const game = {
   certifyPlatformerPresentation: certifyPublicPlatformerPresentation,
   platformer: createGamePlatformerKit,
   assetBoundRacingRoute: createGameAssetBoundRacingRoute,
+  racingSurfaceQuery: createGameRacingSurfaceQuery,
   racingSceneBinding: createGameRacingSceneBinding,
   racingPresentationCamera: createGameRacingPresentationCamera,
   racingCameraRig: createGameRacingCameraRig,

@@ -1,6 +1,6 @@
 # Known Limits
 
-Date: 2026-07-01
+Date: 2026-07-19
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
@@ -37,8 +37,7 @@ guide or README must include the narrower wording.
 
 - The current public game story includes useful input, runtime node, frame loop,
   replay, HUD, and fighting-game helper surfaces.
-- Platformer and racing reusable kits are not public-quality game-generation
-  APIs until the library roadmap work lands.
+- Platformer and racing helpers support bounded certified presentations; they are not production game-generation APIs or automatic arbitrary-mesh converters.
 - Route-local game logic can be a prototype or showcase candidate, but it is not
   a reusable game runtime claim.
 - A game route is not public-ready unless input visibly changes state and tests
@@ -48,8 +47,7 @@ guide or README must include the narrower wording.
 - Public platformer routes require retained playable-surface evidence that
   binds the character, contact point, collision, checkpoint path, hazards,
   finish, camera, and visible world geometry.
-- Turbo Drift Circuit and Skyline Runner are prototype-blocked until the current
-  asset catalog and game layer can satisfy those contracts.
+- Turbo Drift Circuit and Skyline Runner currently satisfy those contracts for their named certified asset pairs and retained evidence only; this does not generalize to arbitrary assets or production games.
 
 ## Asset Limits
 
@@ -82,3 +80,13 @@ guide or README must include the narrower wording.
   animation, material correctness, or game playability.
 - A deployed URL proves hosting only when route/asset checks and hosted
   screenshots are generated from that origin.
+
+## Lower-Level Renderer Coverage And Limits
+
+- Renderer scene frustum culling is implemented and covered by focused moving-camera unit tests; this is not a broad large-scene performance claim.
+- HDR environment map input exists on tested SDK and production-runtime paths, but it does not prove physically complete image-based lighting on the public root path.
+- Current glTF render resources expose one primary UV path for glTF render resources.
+- Texture support has bounded KTX2/Basis transcoding coverage and GPU capability-driven format selection; it is not universal compressed-texture support.
+- There is no product-studio material-matrix visual coverage broad enough to claim all material combinations.
+- Shadow coverage includes unit-level moving-camera cascade split stress. Directional cascades do not imply production-ready point/spot shadow maps.
+- browser visual stress for long moving-camera paths remains required before broad shadow or culling claims.

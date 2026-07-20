@@ -15,7 +15,7 @@
   "primaryAssets": [
     {
       "typedRef": "assets.showcaseSkylineCity",
-      "role": "environment",
+      "role": "world",
       "status": "typed-primary-asset",
       "quality": "release"
     }

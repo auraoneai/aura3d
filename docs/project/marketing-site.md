@@ -1,6 +1,6 @@
 # Marketing Site
 
-Date: 2026-07-01
+Date: 2026-07-19
 Status: marketing release-candidate copy requirements
 
 The marketing site must be claim-safe. It can sell Aura3D's current strengths,
@@ -9,7 +9,7 @@ capability.
 
 ## Current Showcase Gallery State
 
-The release-candidate website gallery presents only six public showcase cards:
+The production website publishes 10 release-ready showcase routes:
 
 - Product Configurator
 - Material Asset Inspector
@@ -17,11 +17,12 @@ The release-candidate website gallery presents only six public showcase cards:
 - Cinematic Architecture
 - Digital Twin Operations
 - Blockfall Reactor
+- Public Racing Presentation Proof
+- Public Platformer Presentation Proof
+- Turbo Drift Circuit
+- Skyline Runner
 
-Data Galaxy and WebGPU Particle Lab are shown only as Labs diagnostics. Turbo
-Drift Circuit and Skyline Runner are intentionally absent from public examples
-until the game layer has certified racing topology, platformer playable
-surfaces, game-to-scene transform validation, and visual review evidence.
+Data Galaxy and WebGPU Particle Lab remain Labs diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain internal diagnostic harnesses and are not published as marketing cards. The four public game routes keep bounded stylized-presentation claims and require current certified geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence.
 
 ## Allowed Site Message
 
@@ -74,6 +75,4 @@ Before publication:
 - verify every promoted route has current evidence;
 - ensure screenshots come from the current build;
 - ensure app READMEs and marketing copy agree.
-- verify the gallery still matches the six-public, two-diagnostic, two
-  prototype-blocked classification in
-  `docs/project/aura3d-140-release-candidate.md`.
+- verify the gallery matches current `tools/showcase-library/route-gates.json` and `docs/project/showcase-launch-evidence.json`: 10 public release candidates, two Labs diagnostics, two internal game-layer diagnostics, and no prototype-blocked routes.

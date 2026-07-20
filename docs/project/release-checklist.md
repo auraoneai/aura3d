@@ -1,5 +1,9 @@
 # Release Checklist
 
+Version: 1.4.4
+
+Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
 Date: 2026-07-01
 Status: release-candidate gate checklist
 
@@ -72,8 +76,7 @@ routes, benchmark claims, or marketing copy.
 - [ ] Route claims do not exceed detected capability.
 - [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
-- [ ] Turbo Drift Circuit and Skyline Runner are not counted as public examples
-  until the game layer has public game-geometry evidence and visual review pass.
+- [ ] Turbo Drift Circuit and Skyline Runner are counted as public only while current certified geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence all pass.
 
 ## Game Gates
 
@@ -110,8 +113,8 @@ routes, benchmark claims, or marketing copy.
 - [ ] `docs/project/site-map.md` links resolve.
 - [ ] README, marketing, route README, and route-health claims agree.
 - [ ] Prototype routes are not presented as public release candidates.
-- [ ] Turbo Drift Circuit and Skyline Runner are described as prototype-blocked
-  diagnostics, not fixed, green, release-ready, or public-quality.
+- [ ] Turbo Drift Circuit and Skyline Runner are described as bounded certified presentations, not production games or arbitrary GLB-to-game conversion proof.
+- [ ] Racing Game Layer Proof and Platformer Game Layer Proof remain clearly labeled diagnostic harnesses.
 
 ## Go-Live Gates
 

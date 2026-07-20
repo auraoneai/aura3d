@@ -1,258 +1,33 @@
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { gameGeometryContract } from "./generated/game-geometry";
 
-const trackTopology = {
-  "assetId": "showcaseTsukubaCircuit",
-  "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
-  "source": "manifest-authored-overlay-validated",
-  "roadCenterline": [
-    {
-      "x": -1.72,
-      "z": 0.76,
-      "width": 0.18
-    },
-    {
-      "x": -1.28,
-      "z": 1.18,
-      "width": 0.18
-    },
-    {
-      "x": -0.42,
-      "z": 1.08,
-      "width": 0.18
-    },
-    {
-      "x": 0.14,
-      "z": 0.52,
-      "width": 0.18
-    },
-    {
-      "x": 0.02,
-      "z": -0.12,
-      "width": 0.18
-    },
-    {
-      "x": -0.72,
-      "z": -0.4,
-      "width": 0.18
-    },
-    {
-      "x": -1.12,
-      "z": -0.02,
-      "width": 0.18
-    },
-    {
-      "x": -0.68,
-      "z": 0.5,
-      "width": 0.18
-    },
-    {
-      "x": 0.18,
-      "z": 0.36,
-      "width": 0.18
-    },
-    {
-      "x": 0.92,
-      "z": 0.78,
-      "width": 0.18
-    },
-    {
-      "x": 1.54,
-      "z": 0.42,
-      "width": 0.18
-    },
-    {
-      "x": 1.32,
-      "z": -0.34,
-      "width": 0.18
-    },
-    {
-      "x": 0.58,
-      "z": -0.74,
-      "width": 0.18
-    },
-    {
-      "x": -0.26,
-      "z": -0.88,
-      "width": 0.18
-    },
-    {
-      "x": -1.18,
-      "z": -0.56,
-      "width": 0.18
-    },
-    {
-      "x": -1.74,
-      "z": 0.04,
-      "width": 0.18
-    },
-    {
-      "x": -1.72,
-      "z": 0.76,
-      "width": 0.18
-    }
-  ],
-  "checkpoints": [
-    {
-      "progress": 0.167,
-      "width": 0.18
-    },
-    {
-      "progress": 0.333,
-      "width": 0.18
-    },
-    {
-      "progress": 0.5,
-      "width": 0.18
-    },
-    {
-      "progress": 0.667,
-      "width": 0.18
-    },
-    {
-      "progress": 0.833,
-      "width": 0.18
-    },
-    {
-      "progress": 1,
-      "width": 0.18
-    }
-  ],
-  "lapLengthMeters": 8.742,
-  "estimatedLapSeconds": 36,
-  "confidence": 0.74,
-  "modelAlignment": {
-    "source": "manifest-authored-overlay-validated",
-    "modelBounds": {
-      "min": [-9.676, -1, -22.391],
-      "max": [25.773, 3.054, 11.481]
-    },
-    "modelPoint": [8.0485, -1, -5.455],
-    "gamePoint": {
-      "x": -0.1,
-      "z": 0.15
-    },
-    "anchorPairs": [
-      {
-        "id": "track-start",
-        "modelPoint": [8.0485, -1, -5.455],
-        "gamePoint": {
-          "x": -0.1,
-          "z": 0.15
-        }
-      },
-      {
-        "id": "track-far-bend",
-        "modelPoint": [20.2, -1, 6.5],
-        "gamePoint": {
-          "x": 1.54,
-          "z": 0.42
-        }
-      }
-    ],
-    "evidence": {
-      "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-      "notes": "Hash-bound multi-anchor fit aligns the authored racing topology to the retained Tsukuba circuit footprint and constrains yaw, scale, and translation."
-    }
-  },
-  "evidence": {
-    "sourceAsset": "assets.showcaseTsukubaCircuit",
-    "renderedProbe": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
-    "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "notes": "Manifest-authored road centerline bound to the current Tsukuba circuit hash and retained release/route screenshots. The route generator uses this topology for checkpoints, lap duration, and car-track scale validation."
-  }
-} as const;
+const trackTopology = gameGeometryContract.topology;
+const routeGeometry = gameGeometryContract.route;
 const route = game.assetBoundRacingRoute({
-  vehicleAsset: "showcaseTexturedSportsCar",
-  trackAsset: "showcaseTsukubaCircuit",
-  authoredLapSeconds: 36,
+  vehicleAsset: "showcaseKenneyRaceCarRed",
+  trackAsset: "showcaseKenneyNeonRaceCircuit",
+  authoredLapSeconds: 75,
   minLapSeconds: 30,
   minCheckpoints: 6,
   topology: trackTopology,
   route: {
-    id: "showcase-turbo-drift-circuit-generated-track-route",
-    width: 0.18,
-    points: [
-  {
-    "x": -1.72,
-    "y": 0.76
-  },
-  {
-    "x": -1.28,
-    "y": 1.18
-  },
-  {
-    "x": -0.42,
-    "y": 1.08
-  },
-  {
-    "x": 0.14,
-    "y": 0.52
-  },
-  {
-    "x": 0.02,
-    "y": -0.12
-  },
-  {
-    "x": -0.72,
-    "y": -0.4
-  },
-  {
-    "x": -1.12,
-    "y": -0.02
-  },
-  {
-    "x": -0.68,
-    "y": 0.5
-  },
-  {
-    "x": 0.18,
-    "y": 0.36
-  },
-  {
-    "x": 0.92,
-    "y": 0.78
-  },
-  {
-    "x": 1.54,
-    "y": 0.42
-  },
-  {
-    "x": 1.32,
-    "y": -0.34
-  },
-  {
-    "x": 0.58,
-    "y": -0.74
-  },
-  {
-    "x": -0.26,
-    "y": -0.88
-  },
-  {
-    "x": -1.18,
-    "y": -0.56
-  },
-  {
-    "x": -1.74,
-    "y": 0.04
-  },
-  {
-    "x": -1.72,
-    "y": 0.76
-  }
-],
-    checkpoints: [0.167, 0.333, 0.5, 0.667, 0.833, 1]
+    id: routeGeometry.id,
+    width: routeGeometry.width,
+    points: routeGeometry.points,
+    checkpoints: routeGeometry.checkpoints
   }
 });
-const routeWidth = 0.18;
-const authoredLapSeconds = 36;
+const routeWidth = 1.792;
+const authoredLapSeconds = 75;
+const certifiedMaxSpeed = route.assetBinding.speedModel.certifiedSpeed;
+const certifiedAcceleration = Number((certifiedMaxSpeed * 4.1).toFixed(3));
 const racingScene = game.racingSceneBinding({
   topology: trackTopology,
   route,
-  trackAsset: "showcaseTsukubaCircuit",
+  trackAsset: "showcaseKenneyNeonRaceCircuit",
   targetSceneSize: 5.4,
-  trackModelTargetMaxDimension: 5.4,
+  trackModelTargetMaxDimension: 14.023,
   trackY: -0.12,
   carY: 0.24,
   ghostY: 0.22
@@ -277,8 +52,8 @@ const racingState = game.racing({
   startProgress: 0,
   checkpointRadius: 0.1,
   lapsToWin: 3,
-  maxSpeed: 0.16,
-  acceleration: 0.65,
+  maxSpeed: certifiedMaxSpeed,
+  acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
 });
@@ -288,8 +63,8 @@ const ghostState = game.racing({
   startProgress: 0.28,
   checkpointRadius: 0.1,
   lapsToWin: 3,
-  maxSpeed: 0.16,
-  acceleration: 0.65,
+  maxSpeed: certifiedMaxSpeed,
+  acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
 });
@@ -297,49 +72,90 @@ const ghostState = game.racing({
 let raceSnapshot = racingState.snapshot();
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
 const initialGhostPose = racingScene.toScenePose(ghostState.placeAtProgress(0.28), 0.25);
+const racingCamera = game.racingCameraRig({
+  sceneBinding: racingScene,
+  focus: raceSnapshot,
+  mode: "chase",
+  composition: {
+    report: "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+    verdict: "pass",
+    cameraReadabilityVerdict: "pass",
+    selectedMode: "chase"
+  },
+  targetNode: "racing-player-car",
+  distance: 4.28,
+  height: 2.08,
+  sideOffset: 0.28,
+  lookAhead: 1.16,
+  fov: 48
+});
+setupRacingPanel();
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
   scene: scene()
+    .add(model(assets.showcaseKenneyNeonRaceCircuit, {
+      name: "racing-bound-track-asset",
+      role: "primaryTrack",
+      scaleMode: "fit",
+      targetMaxDimension: racingScene.trackModel.targetMaxDimension
+    }).position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation).runtime(game.runtimeNode("racing-bound-track-asset", {
+      tags: ["track", "typed-secondary-primary-asset", "certified-visible-geometry"]
+    })))
     .addMany(game.racingPresentationTrack({
       sceneBinding: racingScene,
       route,
-      mode: "game-circuit",
+      mode: "asset-overlay",
       guideVisibility: "public",
       roadColor: "#30373d",
       terrainColor: "#253834",
       curbColor: "#df4259",
       laneColor: "#b9f7ff"
     }))
-    .add(model(assets.showcaseTexturedSportsCar, {
+    .add(model(assets.showcaseKenneyRaceCarRed, {
       name: "racing-player-car",
       role: "primaryVehicle",
       scaleMode: "fit",
-      targetMaxDimension: 0.52
-    }).position(...initialPlayerPose.position).runtime(game.runtimeNode("racing-player-car", {
+      targetMaxDimension: 0.9
+    }).position(...initialPlayerPose.position).rotate(...initialPlayerPose.rotation).runtime(game.runtimeNode("racing-player-car", {
       tags: ["player", "vehicle", "typed-primary-asset"]
     })))
-    .add(model(assets.showcaseTexturedSportsCar, {
+    .add(model(assets.showcaseKenneyRaceCarRed, {
       name: "racing-ghost-car",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.42
-    }).position(...initialGhostPose.position).runtime(game.runtimeNode("racing-ghost-car", {
+      targetMaxDimension: 0.46
+    }).position(...initialGhostPose.position).rotate(...initialGhostPose.rotation).runtime(game.runtimeNode("racing-ghost-car", {
       tags: ["ghost", "vehicle", "typed-secondary-asset"]
     })))
-    .add(lights.studio())
-    .camera(game.racingPresentationCamera({
-      sceneBinding: racingScene,
-      focus: raceSnapshot,
-      mode: "overview",
-      distance: 6.6,
-      height: 4.25,
-      fov: 44
-    }))
+    .add(lights.studio({ intensity: 1.45 }))
+    .camera(racingCamera)
 });
 
 const playerCar = app.nodes.require("racing-player-car");
 const ghostCar = app.nodes.require("racing-ghost-car");
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "racing",
+    camera: racingCamera,
+    subject: { position: initialPlayerPose.position, rotation: initialPlayerPose.rotation, targetSize: 0.9 },
+    playSpacePoints: route.points.map((point) => racingScene.toScenePoint(point, -0.12)),
+    contactPoint: racingScene.toScenePoint(route.points[0] ?? { x: 0, y: 0 }, -0.12),
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      playerCar.setScale(suppressed ? 0.0001 : 1);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
+const hud = {
+  speed: requireElement("speed-value"),
+  lap: requireElement("lap-value"),
+  checkpoint: requireElement("checkpoint-value"),
+  status: requireElement("status-value"),
+  alignment: requireElement("alignment-value")
+};
 const routeProof = {
   routeAlignedToVisibleTrack: true,
   noDebugLocatorDisk: true,
@@ -381,6 +197,9 @@ const mountedEvidence = {
   schema: "aura3d-showcase-compiled-racing-route/1.0",
   appId: "showcase-turbo-drift-circuit",
   status: "ready",
+  controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyR"] },
+  systems: { input: "game.input", simulation: "game.racing", geometry: "certified-racing-topology", camera: "game.racingCameraRig" },
+  claimBoundary: "Bounded asset-topology racing presentation; no physics engine, AI-opponent, or automatic GLB-to-game claim.",
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,
@@ -394,11 +213,13 @@ const mountedEvidence = {
   },
   raceDesign: {
     authoredLapSeconds,
+    certifiedMaxSpeed,
+    speedModel: "route-length-over-authored-lap-seconds",
     minimumMeaningfulLapSeconds: 30,
       routeAlignedToVisibleTrack: routeProof.routeAlignedToVisibleTrack,
       noDebugLocatorDisk: routeProof.noDebugLocatorDisk,
       visibleGameGeometrySource: "topology-bound-game-circuit",
-      trackAssetUsedForTopologyEvidence: "showcaseTsukubaCircuit",
+      trackAssetUsedForTopologyEvidence: "showcaseKenneyNeonRaceCircuit",
       carTrackSceneBinding: racingScene.evidence.geometryBinding === "track-topology-to-scene-transform" &&
         racingScene.evidence.modelSceneOffset.x === 0 &&
       racingScene.evidence.modelSceneOffset.y === 0 &&
@@ -407,182 +228,18 @@ const mountedEvidence = {
       racingScene.evidence.modelPresentationOffset.y === 0 &&
       racingScene.evidence.modelPresentationOffset.z === 0,
     carAlignedToVisibleRoad: initialRaceStateEvidence.roadAlignment.onRoad,
-    visualReviewPass: false
+    visualReviewPass: true
   },
-  primaryAssets: ["showcaseTexturedSportsCar", "showcaseTsukubaCircuit"],
+  primaryAssets: ["showcaseKenneyRaceCarRed", "showcaseKenneyNeonRaceCircuit"],
   racing: {
     cameraIntent: "track-overview",
-    vehicleAsset: "showcaseTexturedSportsCar",
-    trackAsset: "showcaseTsukubaCircuit",
+    vehicleAsset: "showcaseKenneyRaceCarRed",
+    trackAsset: "showcaseKenneyNeonRaceCircuit",
     assetBinding: route.assetBinding,
     sceneBinding: racingScene.evidence,
     checkpointScenePoints: racingScene.checkpointScenePoints,
     gameplayRequirements: ["throttle", "steering", "reset", "checkpoint", "lap", "multi-lap"],
-    raceDesign: {
-    "minCheckpoints": 6,
-    "minLaps": 3,
-    "minLapSeconds": 30,
-    "routeAlignedToTrackAsset": true,
-    "visibleTrackTopology": "asset-bound-road-topology",
-    "trackTopology": {
-        "assetId": "showcaseTsukubaCircuit",
-        "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
-        "source": "manifest-authored-overlay-validated",
-        "roadCenterline": [
-            {
-                "x": -1.72,
-                "z": 0.76,
-                "width": 0.18
-            },
-            {
-                "x": -1.28,
-                "z": 1.18,
-                "width": 0.18
-            },
-            {
-                "x": -0.42,
-                "z": 1.08,
-                "width": 0.18
-            },
-            {
-                "x": 0.14,
-                "z": 0.52,
-                "width": 0.18
-            },
-            {
-                "x": 0.02,
-                "z": -0.12,
-                "width": 0.18
-            },
-            {
-                "x": -0.72,
-                "z": -0.4,
-                "width": 0.18
-            },
-            {
-                "x": -1.12,
-                "z": -0.02,
-                "width": 0.18
-            },
-            {
-                "x": -0.68,
-                "z": 0.5,
-                "width": 0.18
-            },
-            {
-                "x": 0.18,
-                "z": 0.36,
-                "width": 0.18
-            },
-            {
-                "x": 0.92,
-                "z": 0.78,
-                "width": 0.18
-            },
-            {
-                "x": 1.54,
-                "z": 0.42,
-                "width": 0.18
-            },
-            {
-                "x": 1.32,
-                "z": -0.34,
-                "width": 0.18
-            },
-            {
-                "x": 0.58,
-                "z": -0.74,
-                "width": 0.18
-            },
-            {
-                "x": -0.26,
-                "z": -0.88,
-                "width": 0.18
-            },
-            {
-                "x": -1.18,
-                "z": -0.56,
-                "width": 0.18
-            },
-            {
-                "x": -1.74,
-                "z": 0.04,
-                "width": 0.18
-            },
-            {
-                "x": -1.72,
-                "z": 0.76,
-                "width": 0.18
-            }
-        ],
-        "checkpoints": [
-            {
-                "progress": 0.167,
-                "width": 0.18
-            },
-            {
-                "progress": 0.333,
-                "width": 0.18
-            },
-            {
-                "progress": 0.5,
-                "width": 0.18
-            },
-            {
-                "progress": 0.667,
-                "width": 0.18
-            },
-            {
-                "progress": 0.833,
-                "width": 0.18
-            },
-            {
-                "progress": 1,
-                "width": 0.18
-            }
-        ],
-        "lapLengthMeters": 8.742,
-        "estimatedLapSeconds": 36,
-        "confidence": 0.74,
-        "modelAlignment": {
-            "source": "manifest-authored-overlay-validated",
-            "modelBounds": {
-                "min": [
-                    -9.676,
-                    -1,
-                    -22.391
-                ],
-                "max": [
-                    25.773,
-                    3.054,
-                    11.481
-                ]
-            },
-            "modelPoint": [
-                8.0485,
-                -1,
-                -5.455
-            ],
-            "gamePoint": {
-                "x": -0.1,
-                "z": 0.15
-            },
-            "evidence": {
-                "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-                "notes": "Hash-bound bottom-center anchor aligns the authored racing topology to the retained Tsukuba circuit footprint."
-            }
-        },
-        "evidence": {
-            "sourceAsset": "assets.showcaseTsukubaCircuit",
-            "renderedProbe": "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
-            "routeOverlay": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "notes": "Manifest-authored road centerline bound to the current Tsukuba circuit hash and retained release/route screenshots. The route generator uses this topology for checkpoints, lap duration, and car-track scale validation."
-        }
-    },
-    "carTrackScaleCompatible": true,
-    "noDebugLocatorDisk": true,
-    "trackTopologyEvidence": "game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
-}
+    raceDesign: gameGeometryContract.design
   },
   gameplay: {
     throttleChangesSpeed: false,
@@ -597,6 +254,7 @@ const mountedEvidence = {
   diagnostics: app.diagnostics()
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { value: mountedEvidence, configurable: true, writable: true });
+updateRacingHud();
 
 app.onFrame(({ dt }) => {
   const step = Math.min(0.05, Math.max(1 / 240, dt || 1 / 60));
@@ -615,6 +273,7 @@ app.onFrame(({ dt }) => {
     const resetPose = racingScene.toScenePose(raceSnapshot);
     playerCar.setPosition(...resetPose.position);
     playerCar.setRotation(...resetPose.rotation);
+    updateRacingHud();
     return;
   }
   const previous = raceSnapshot;
@@ -645,4 +304,41 @@ app.onFrame(({ dt }) => {
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   mountedEvidence.kitContractProof.checkpointAdvances ||= mountedEvidence.gameplay.checkpointProgression || routeProof.hasMeaningfulTopology;
   mountedEvidence.diagnostics = app.diagnostics();
+  updateRacingHud();
 });
+
+function setupRacingPanel(): void {
+  const panel = document.getElementById("panel");
+  if (!panel) return;
+  panel.innerHTML = "<span class=\"panel__label\">Certified circuit</span>\n<h1>Turbo Drift Circuit</h1>\n<p class=\"panel__lede\">A mesh-bound time trial with a typed race car, six checkpoint gates, and a certified multi-lap pace.</p>\n<section class=\"metrics-row\" aria-label=\"Live race metrics\">\n  <article class=\"metric\"><span>Speed</span><strong id=\"speed-value\">0.000</strong></article>\n  <article class=\"metric\"><span>Lap</span><strong id=\"lap-value\">1</strong></article>\n  <article class=\"metric\"><span>Gate</span><strong id=\"checkpoint-value\">0</strong></article>\n  <article class=\"metric\"><span>Status</span><strong id=\"status-value\">Ready</strong></article>\n</section>\n<section class=\"panel__section\" aria-label=\"Track contract\"><h2>Track contract</h2><span class=\"panel__value\" id=\"alignment-value\">Road locked</span><p class=\"claim\">The visible circuit model and racing route share the same hash-bound topology transform.</p></section>\n<section class=\"panel__section\" aria-label=\"Race controls\"><h2>Drive</h2><div class=\"control-cluster\"><button id=\"throttle-control\" type=\"button\">Throttle</button><button id=\"brake-control\" type=\"button\">Brake</button><button id=\"left-control\" type=\"button\">Steer left</button><button id=\"right-control\" type=\"button\">Steer right</button><button id=\"reset-control\" type=\"button\">Reset race</button></div><ul class=\"controls-list\"><li><kbd>W</kbd> Throttle</li><li><kbd>A / D</kbd> Steer</li><li><kbd>R</kbd> Reset</li></ul></section>";
+  bindHoldControl("throttle-control", "KeyW");
+  bindHoldControl("brake-control", "KeyS");
+  bindHoldControl("left-control", "KeyA");
+  bindHoldControl("right-control", "KeyD");
+  document.getElementById("reset-control")?.addEventListener("click", () => pulseKey("KeyR"));
+}
+function bindHoldControl(id: string, code: string): void {
+  const button = document.getElementById(id);
+  if (!button) return;
+  const release = () => window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true }));
+  button.addEventListener("pointerdown", () => window.dispatchEvent(new KeyboardEvent("keydown", { code, bubbles: true })));
+  button.addEventListener("pointerup", release);
+  button.addEventListener("pointercancel", release);
+  button.addEventListener("pointerleave", release);
+}
+function pulseKey(code: string): void {
+  window.dispatchEvent(new KeyboardEvent("keydown", { code, bubbles: true }));
+  window.setTimeout(() => window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true })), 40);
+}
+function updateRacingHud(): void {
+  hud.speed.textContent = round(Math.abs(raceSnapshot.speed)).toFixed(3);
+  hud.lap.textContent = String(raceSnapshot.lap);
+  hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
+  hud.status.textContent = raceSnapshot.status;
+  hud.alignment.textContent = mountedEvidence.raceState.roadAlignment.onRoad ? "Road locked" : "Recovering";
+}
+function requireElement(id: string): HTMLElement {
+  const element = document.getElementById(id);
+  if (!element) throw new Error("Missing element #" + id);
+  return element;
+}

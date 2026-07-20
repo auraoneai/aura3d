@@ -73,7 +73,7 @@
     ],
     "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
     "verdict": "pass",
-    "notes": "Public racing route renders a typed sports car on certified generated road geometry with styled checkpoint gates, start/finish geometry, cinematic top-down camera framing, keyboard gameplay proof, and Tsukuba retained as the manifest-backed topology provenance asset.",
+    "notes": "Derived from the retained asset-pair composition validator report; manual review cannot upgrade a validator failure.",
     "blockers": [],
     "geometryEvidence": {
       "category": "racing",
@@ -92,6 +92,32 @@
           "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
         }
       ]
-    }
+    },
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.json",
+    "screenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+    "compositionReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-asset-pair-composition.json",
+    "cameraMode": "chase",
+    "checks": [
+      {
+        "id": "binding-overlap",
+        "verdict": "pass"
+      },
+      {
+        "id": "contact",
+        "verdict": "pass"
+      },
+      {
+        "id": "camera-readability",
+        "verdict": "pass"
+      },
+      {
+        "id": "scale-contract",
+        "verdict": "pass"
+      },
+      {
+        "id": "debug-guide-absence",
+        "verdict": "pass"
+      }
+    ]
   }
 }

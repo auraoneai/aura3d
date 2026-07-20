@@ -155,9 +155,11 @@ function validateGameTemplateStatus(route, configPath) {
   }
   if (
     typeof status.blocker !== "string" ||
-    (!status.blocker.startsWith("category-template:") && !status.blocker.startsWith("asset-pair:"))
+    (!status.blocker.startsWith("category-template:") &&
+      !status.blocker.startsWith("asset-pair:") &&
+      !status.blocker.startsWith("visual-review:"))
   ) {
-    throw new Error(`${configPath} route ${route.id} gameTemplateStatus.blocker must be category-template:* or asset-pair:*`);
+    throw new Error(`${configPath} route ${route.id} gameTemplateStatus.blocker must be category-template:*, asset-pair:*, or visual-review:*`);
   }
   if (!Array.isArray(status.requiredBeforePublic) || status.requiredBeforePublic.length === 0) {
     throw new Error(`${configPath} route ${route.id} gameTemplateStatus.requiredBeforePublic is required`);

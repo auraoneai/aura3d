@@ -903,6 +903,21 @@ app.onFrame(({ dt }) => {
 });
 ```
 
+### Certified racing/platformer geometry contracts
+
+Public racing and platformer presentation routes should bind gameplay to certified geometry instead of passing route-local rectangles or centerlines directly:
+
+- `game.assetBoundRacingRoute(...)` validates the typed vehicle/track pair, route length, ordered checkpoints, topology binding, and an authored lap floor of **30 seconds**. Passing a lower `minLapSeconds` cannot lower that category floor.
+- Its `assetBinding.speedModel` defines `certifiedSpeed = routeLength / authoredLapSeconds`. `game.racing({ route })` consumes that speed; a conflicting `maxSpeed` is rejected rather than silently changing the authored lap claim.
+- `game.racingSceneBinding(...)` exposes `speedModel.gameUnitsPerSecond`, `sceneUnitsPerGameUnit`, and `sceneUnitsPerSecond`, so the emitted geometry contract and runtime scene transform describe the same physical pacing.
+- `game.assetBoundPlatformerLevel(...)` validates certified playable surfaces, checkpoints, hazards, finish state, character/world scale, and an authored completion floor of **30 seconds**. Route options cannot lower that floor.
+
+Both kits expose their reusable certified-surface queries. `racing.surfaceQuery.query(point)` reports road contact/off-track distance against the bound route. `platformer.surfaceQuery.groundContact(...)` resolves landings against the certified base surfaces and optional runtime moving surfaces; callers cannot replace the certified base map with route-local geometry. The kits themselves use these same query objects for off-track and ground-contact behavior.
+
+Racing presentation cameras use `game.racingCameraRig(...)`. Its `mode` is `"chase"` or `"top-down"`, and the supplied composition evidence must include a passing asset-pair report, a passing `camera-readability` check, and the same validator-selected mode. A mismatch throws; camera choice is therefore retained composition evidence, not an arbitrary route preference.
+
+These contracts prove bounded deterministic game state, certified pacing, category-specific contact queries, and evidence-bound camera selection for the current racing/platformer routes. They do **not** prove a production physics engine, rigid-body simulation, arbitrary mesh collision, AI opponents, netcode, automatic GLB-to-game conversion, or production game-engine parity. Browser input, gameplay, route-primary, composition, automated visual QA, manual downward review, and deploy evidence remain separate release gates.
+
 ### `game.fallingBlocks(...)`
 
 `game.fallingBlocks(options)` provides board state, tetromino rotation and wall kicks, hold, seven-bag randomizer, soft/hard drop, lock delay, gravity levels, line clears, scoring, replay records, and deterministic checksums.

@@ -1,4 +1,8 @@
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute, relative, resolve } from "node:path";
 import { validateRetainedGeometryFiles } from "./showcase-game-release-retained-files.mjs";
+import { validateGameVisualQa } from "./game-visual-qa.mjs";
 
 const publicGameCategories = new Set(["racing", "platformer"]);
 const publicGameGeometrySources = new Set([
@@ -61,6 +65,15 @@ export function validateReleaseGameAssetPairEvidence(input) {
     failures.push(`release-game-asset-pair-blockers:${blockers.join(",")}`);
   }
 
+  failures.push(...validateCompositionReport({
+    root: input.root,
+    routeId: input.route.id,
+    category: status.category,
+    expectedScreenshot,
+    primaryAssets: input.route.primaryAssets,
+    evidence
+  }));
+
   const routeHealthBlockers = Array.isArray(input.routeHealth.blockers)
     ? input.routeHealth.blockers.filter((blocker) => typeof blocker === "string")
     : [];
@@ -70,6 +83,9 @@ export function validateReleaseGameAssetPairEvidence(input) {
   if (retainedAssetPairBlockers.length > 0) {
     failures.push(`release-game-asset-pair-route-health-blockers:${retainedAssetPairBlockers.join(",")}`);
   }
+
+  const visualQa = validateGameVisualQa({ route: input.route, routeHealth: input.routeHealth, root: input.root });
+  if (!visualQa.pass) failures.push(...visualQa.blockers.map((blocker) => `release-game-visual-qa:${blocker}`));
 
   failures.push(...validatePublicGameGeometryEvidence({
     category: status.category,
@@ -81,6 +97,72 @@ export function validateReleaseGameAssetPairEvidence(input) {
   }));
 
   return failures;
+}
+
+function validateCompositionReport(input) {
+  const failures = [];
+  const path = input.evidence.compositionReport;
+  if (typeof path !== "string" || !path.endsWith("-asset-pair-composition.json")) {
+    return [`release-game-composition-report:${String(path)}`];
+  }
+  if (typeof input.root !== "string" || !input.root.trim()) return ["release-game-composition-root-required"];
+  const report = readRepoJson(input.root, path, "release-game-composition-report", failures);
+  if (!report) return failures;
+  if (report.schema !== "aura3d-showcase-asset-pair-composition/1.0") failures.push(`release-game-composition-schema:${String(report.schema)}`);
+  if (report.routeId !== input.routeId) failures.push(`release-game-composition-route:${String(report.routeId)}`);
+  if (report.category !== input.category) failures.push(`release-game-composition-category:${String(report.category)}`);
+  if (report.verdict !== "pass" || report.pass !== true) failures.push(`release-game-composition-verdict:${String(report.verdict)}`);
+  const blockers = Array.isArray(report.blockers) ? report.blockers.filter((value) => typeof value === "string") : [];
+  if (blockers.length > 0) failures.push(`release-game-composition-blockers:${blockers.join(",")}`);
+
+  const screenshot = report.screenshot && typeof report.screenshot === "object" && !Array.isArray(report.screenshot) ? report.screenshot : undefined;
+  if (screenshot?.path !== input.expectedScreenshot) failures.push(`release-game-composition-screenshot:${String(screenshot?.path)}`);
+  const screenshotHash = readRepoSha256(input.root, input.expectedScreenshot, "release-game-composition-screenshot", failures);
+  if (screenshotHash && screenshot?.sha256 !== screenshotHash) failures.push(`release-game-composition-screenshot-hash-mismatch:${input.expectedScreenshot}`);
+
+  const manifest = readRepoJson(input.root, "aura.assets.json", "release-game-composition-manifest", failures);
+  const manifestAssets = new Map(Array.isArray(manifest?.assets)
+    ? manifest.assets.filter((asset) => asset && typeof asset === "object" && !Array.isArray(asset) && typeof asset.id === "string").map((asset) => [asset.id, asset.hash])
+    : []);
+  const reportAssets = Array.isArray(report.assets) ? report.assets : [];
+  for (const assetId of input.primaryAssets) {
+    const asset = reportAssets.find((value) => value && typeof value === "object" && !Array.isArray(value) && value.id === assetId);
+    if (!asset) {
+      failures.push(`release-game-composition-asset-missing:${assetId}`);
+      continue;
+    }
+    const currentHash = manifestAssets.get(assetId);
+    if (asset.manifestHash !== currentHash || asset.evidenceHash !== currentHash) failures.push(`release-game-composition-asset-hash-mismatch:${assetId}`);
+  }
+  const requiredChecks = ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"];
+  const checks = Array.isArray(report.checks) ? report.checks : [];
+  for (const id of requiredChecks) {
+    const check = checks.find((value) => value && typeof value === "object" && !Array.isArray(value) && value.id === id);
+    if (!check) failures.push(`release-game-composition-check-missing:${id}`);
+    else if (check.verdict !== "pass") failures.push(`release-game-composition-check-fail:${id}`);
+  }
+  return failures;
+}
+
+function readRepoJson(root, path, label, failures) {
+  const absolute = resolveRepoEvidencePath(root, path, label, failures);
+  if (!absolute) return undefined;
+  if (!existsSync(absolute)) { failures.push(`${label}-missing:${path}`); return undefined; }
+  try { return JSON.parse(readFileSync(absolute, "utf8")); }
+  catch { failures.push(`${label}-invalid-json:${path}`); return undefined; }
+}
+function readRepoSha256(root, path, label, failures) {
+  const absolute = resolveRepoEvidencePath(root, path, label, failures);
+  if (!absolute) return undefined;
+  if (!existsSync(absolute)) { failures.push(`${label}-missing:${path}`); return undefined; }
+  return `sha256-${createHash("sha256").update(readFileSync(absolute)).digest("hex")}`;
+}
+function resolveRepoEvidencePath(root, path, label, failures) {
+  if (typeof path !== "string" || !path || isAbsolute(path) || path.includes("\0")) { failures.push(`${label}-path:${String(path)}`); return undefined; }
+  const absolute = resolve(root, path);
+  const rel = relative(resolve(root), absolute);
+  if (rel.startsWith("..") || isAbsolute(rel)) { failures.push(`${label}-path:${path}`); return undefined; }
+  return absolute;
 }
 
 function validatePublicGameGeometryEvidence(input) {

@@ -1,20 +1,11 @@
 # Turbo Drift Circuit
 
-Status: prototype-blocked
+Status: release-ready candidate
 
-Claim label: createAuraApp
+Claim label: `createAuraApp` root safe API, bounded certified racing presentation
 
-Primary asset: showcaseTexturedSportsCar
+Primary assets: `showcaseKenneyRaceCarRed` and `showcaseKenneyNeonRaceCircuit`
 
-Blocked by:
-- asset-pair:racing-public-composition-bounds-missing
-- asset-pair:car-route-not-visibly-bound-to-road-surface
-- asset-pair:track-camera-composition-reads-as-proof-harness
+The route consumes a compiler-emitted, hash-bound racing topology contract. Public status requires current route-primary, gameplay, pair composition, automated six-check visual QA, manual review, and deploy evidence. The category pacing contract enforces a 30-second authored lap floor.
 
-This route is retained as an internal prototype/diagnostic. It is not a public
-Aura3D racing example and must not be counted as a public release candidate.
-
-It can return to public examples only after Aura3D has certified racing topology
-evidence, car-to-road scene binding, camera-safe race composition, meaningful
-lap flow, and a passing visual review. See
-`docs/project/aura3d-game-layer-rebuild-plan.md`.
+This route does not claim production vehicle physics, AI opponents, netcode, arbitrary GLB-to-game conversion, or production game-engine parity.

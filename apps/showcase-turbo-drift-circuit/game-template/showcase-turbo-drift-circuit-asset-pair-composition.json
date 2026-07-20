@@ -1,0 +1,127 @@
+{
+  "schema": "aura3d-showcase-asset-pair-composition/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "category": "racing",
+  "verdict": "pass",
+  "pass": true,
+  "screenshot": {
+    "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "sha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+    "width": 1440,
+    "height": 900
+  },
+  "geometry": {
+    "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "assetId": "showcaseKenneyNeonRaceCircuit",
+    "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+    "source": "asset-mesh-extracted",
+    "modelAnchorCount": 3
+  },
+  "assets": [
+    {
+      "id": "showcaseKenneyRaceCarRed",
+      "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+      "evidenceHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+    },
+    {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+      "evidenceHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+    }
+  ],
+  "thresholds": {
+    "minBindingOverlapRatio": 0.02,
+    "maxContactOffsetRatio": 1,
+    "maxScreenContactDistanceRatio": 0.35,
+    "minPlaySpaceAreaRatio": 0.04,
+    "maxPlaySpaceAreaRatio": 0.78,
+    "minSubjectWorldRatio": 0.08,
+    "maxSubjectWorldRatio": 0.78,
+    "maxPlatformerScaleDelta": 0.18
+  },
+  "checks": [
+    {
+      "id": "binding-overlap",
+      "verdict": "pass",
+      "tolerance": {
+        "minOverlapRatio": 0.02,
+        "maxAverageBindingError": 0.06,
+        "requiresCurrentHashes": true,
+        "requiresZeroPresentationOffset": true
+      },
+      "measured": {
+        "overlapRatio": 0.6228,
+        "averageBindingError": 0,
+        "modelAnchorCount": 3,
+        "sceneAssetHashMatches": true,
+        "overlayMatches": true,
+        "zeroPresentationOffset": true
+      },
+      "blockers": []
+    },
+    {
+      "id": "contact",
+      "verdict": "pass",
+      "tolerance": {
+        "maxNormalizedOffset": 1,
+        "maxScreenContactDistanceRatio": 0.35
+      },
+      "measured": {
+        "contactProven": true,
+        "normalizedOffset": 0,
+        "screenContactDistance": 28.450592682754436,
+        "screenContactDistanceRatio": 0.2995
+      },
+      "blockers": []
+    },
+    {
+      "id": "camera-readability",
+      "verdict": "pass",
+      "tolerance": {
+        "minPlaySpaceAreaRatio": 0.04,
+        "maxPlaySpaceAreaRatio": 0.78,
+        "clippedAllowed": false,
+        "requiresSubjectFollow": true,
+        "acceptedRacingModes": "chase|top-down"
+      },
+      "measured": {
+        "playSpaceAreaRatio": 0.212,
+        "foregroundClipped": false,
+        "subjectClipped": false,
+        "cameraMode": "follow",
+        "followsSubject": true,
+        "selectedMode": "chase"
+      },
+      "blockers": []
+    },
+    {
+      "id": "scale-contract",
+      "verdict": "pass",
+      "tolerance": {
+        "minSubjectWorldRatio": 0.08,
+        "maxSubjectWorldRatio": 0.78,
+        "maxPlatformerScaleDelta": 0.18
+      },
+      "measured": {
+        "subjectWorldRatio": 0.108,
+        "characterScaleRatio": "not-required",
+        "projectedTargetHeight": "not-required",
+        "renderedSubjectHeight": 95,
+        "scaleDelta": "missing"
+      },
+      "blockers": []
+    },
+    {
+      "id": "debug-guide-absence",
+      "verdict": "pass",
+      "tolerance": {
+        "visibleDebugGuidesAllowed": false
+      },
+      "measured": {
+        "debugGuidesAbsent": true
+      },
+      "blockers": []
+    }
+  ],
+  "blockers": []
+}

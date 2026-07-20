@@ -16,11 +16,14 @@ Options:
   --author NAME
   --source-family NAME
   --attribution TEXT
+  --provenance-evidence TEXT (repeatable)
+  --retrieved-at ISO-8601
   --quality ungraded|blocked|prototype|candidate|release
   --role ${assetRoleUsage}
   --suitability TEXT
   --rendered-probe-json tests/reports/asset.probe.json
   --rendered-probe /aura-assets/probe.png
+  --orientation-json tests/reports/asset.orientation.json
   --public-path /aura-assets/name.glb
   --output public/aura-assets`;
 }
@@ -29,7 +32,7 @@ export function mainHelp(profileUsage: string): string {
   return `Aura3D CLI
 
 Commands:
-  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--quality ungraded|blocked|prototype|candidate|release] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png]
+  aura3d assets add ./model.glb --name robot [--type model|texture|environment|audio] [--license CC0-1.0] [--license-url URL] [--source-page URL] [--download-url URL] [--source-url URL] [--author NAME] [--retrieved-at ISO-8601] [--quality ungraded|blocked|prototype|candidate|release] [--role ${assetRoleUsage}] [--suitability TEXT] [--rendered-probe-json tests/reports/asset.probe.json] [--rendered-probe /aura-assets/probe.png] [--orientation-json tests/reports/asset.orientation.json]
   aura3d assets scan ./assets
   aura3d assets inspect ./model.glb [--animation] [--humanoid] [--skeleton] [--morphs] [--license]
   aura3d assets validate [--asset assetId|--no-assets] [--source [src]] [--release] [--no-placeholders] [--require-license] [--provenance evidence.json]
@@ -39,6 +42,9 @@ Commands:
   aura3d assets assemble-character --name hero --body bodyAsset --part hair=hairAsset
   aura3d assets list
   aura3d assets typegen
+  aura3d assets bind-game-route-evidence --route <id> --category racing|platformer --assets <id,id> --screenshot <png> --geometry-report <json> --composition-report <json> --visual-review <json>
+  aura3d assets certify-game-geometry --asset <id> --category racing|platformer
+  aura3d assets certify-game-geometry --assets <id,id,...> --category racing|platformer
   aura3d assets thumbnail
   aura3d assets search <query> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
   aura3d assets resolve <query> --name <name> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated]

@@ -201,6 +201,7 @@ function validateGameAssetPairEvidence(input: GameAssetPairEvidenceValidationInp
   const { label, spec, evidence, expectedCategory, expectedAssets, context } = input;
   if (!evidence) return [`evidence:${label}:missing`];
   const blockers: string[] = [];
+  blockers.push(...validateAssetPairCompositionReport(input));
   if (evidence.category !== expectedCategory) {
     blockers.push(`evidence:${label}:category-mismatch:${evidence.category}`);
   }
@@ -214,6 +215,39 @@ function validateGameAssetPairEvidence(input: GameAssetPairEvidenceValidationInp
   if (!evidence.notes.trim()) blockers.push(`evidence:${label}:notes-missing`);
   for (const blocker of evidence.blockers) {
     blockers.push(`evidence:${label}:blocker:${blocker}`);
+  }
+  return blockers;
+}
+
+function validateAssetPairCompositionReport(input: GameAssetPairEvidenceValidationInput): readonly string[] {
+  const { label, spec, evidence, expectedCategory, expectedAssets, context } = input;
+  const reportPath = spec.evidence.assetPairCompositionReport;
+  if (!reportPath) return [`evidence:${label}:composition-report-missing`];
+  if (evidence?.compositionReport !== reportPath) return [`evidence:${label}:composition-report-mismatch`];
+  const parsed = readJsonFile(reportPath, `evidence:${label}:composition-report`, context);
+  if (!parsed.ok) return parsed.blockers;
+  if (!isRecord(parsed.value)) return [`evidence:${label}:composition-report-invalid-json`];
+  const report = parsed.value;
+  const blockers: string[] = [];
+  if (report.schema !== "aura3d-showcase-asset-pair-composition/1.0") blockers.push(`evidence:${label}:composition-report-schema`);
+  if (report.routeId !== spec.routeId) blockers.push(`evidence:${label}:composition-report-route`);
+  if (report.category !== expectedCategory) blockers.push(`evidence:${label}:composition-report-category`);
+  if (report.verdict !== evidence.verdict || report.pass !== (evidence.verdict === "pass")) blockers.push(`evidence:${label}:composition-report-verdict`);
+  if (!isRecord(report.screenshot) || report.screenshot.path !== spec.evidence.routePrimaryScreenshot || report.screenshot.sha256 !== evidence.screenshotSha256) {
+    blockers.push(`evidence:${label}:composition-report-screenshot`);
+  }
+  const assets = Array.isArray(report.assets) ? report.assets : [];
+  for (const assetId of expectedAssets) {
+    const asset = assets.find((value) => isRecord(value) && value.id === assetId);
+    if (!isRecord(asset)) blockers.push(`evidence:${label}:composition-report-asset-missing:${assetId}`);
+    else if (!isSha256(asset.manifestHash) || asset.manifestHash !== asset.evidenceHash) blockers.push(`evidence:${label}:composition-report-asset-hash:${assetId}`);
+  }
+  const requiredChecks = ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"];
+  const checks = Array.isArray(report.checks) ? report.checks : [];
+  for (const id of requiredChecks) {
+    const check = checks.find((value) => isRecord(value) && value.id === id);
+    if (!isRecord(check)) blockers.push(`evidence:${label}:composition-report-check-missing:${id}`);
+    else if (evidence.verdict === "pass" && check.verdict !== "pass") blockers.push(`evidence:${label}:composition-report-check-fail:${id}`);
   }
   return blockers;
 }
@@ -553,7 +587,11 @@ function validateLivePlatformerMeshExtraction(
   if (!platformer) return [];
   const worldAsset = stringValue(surfaceMap.assetId);
   if (!platformer.worldAssets.includes(worldAsset)) return ["evidence:platformer-playable-surface:live-extraction-world-mismatch"];
-  const extracted = extractPlatformerPlayableSurfaceMapFromAsset(worldAsset, { projectDir: context.projectDir });
+  const extracted = extractPlatformerPlayableSurfaceMapFromAsset(worldAsset, {
+    projectDir: context.projectDir,
+    characterAssetId: platformer.characterAsset,
+    characterScaleRatio: platformer.levelDesign.playableSurfaceMap?.characterScaleRatio ?? 0.42
+  });
   if (!extracted.ok) {
     return [
       "evidence:platformer-playable-surface:mesh-extraction-not-passing",

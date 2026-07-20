@@ -1,5 +1,9 @@
 # Aura3D Claim Guidelines
 
+Version: 1.4.4
+
+Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
 Date: 2026-06-18
 Status: canonical project claim policy
 

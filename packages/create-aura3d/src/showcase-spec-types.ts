@@ -152,6 +152,9 @@ export interface ShowcaseGameAssetPairEvidence {
   readonly routePrimaryProbe?: string;
   readonly screenshotSha256?: string;
   readonly geometryEvidence?: ShowcaseGameGeometryEvidence;
+  readonly compositionReport?: string;
+  readonly cameraMode?: "chase" | "top-down";
+  readonly checks?: readonly { readonly id: string; readonly verdict: ShowcaseGameAssetPairEvidenceVerdict }[];
   readonly verdict: ShowcaseGameAssetPairEvidenceVerdict;
   readonly notes: string;
   readonly blockers: readonly string[];
@@ -310,6 +313,8 @@ export interface ShowcaseSpec {
     readonly routePrimaryPassed: boolean;
     readonly gameplayProof?: string;
     readonly gameplayPassed?: boolean;
+    readonly visualReviewPassed?: boolean;
+    readonly assetPairCompositionReport?: string;
     readonly releaseAssetProbes?: Readonly<Record<string, string>>;
   };
   readonly capabilities: readonly ShowcaseSpecCapability[];
@@ -336,6 +341,17 @@ export interface CompileShowcaseSpecReport {
   readonly rejectedAssets: readonly ShowcaseSpecRejectedAsset[];
   readonly replacementCandidates: readonly ShowcaseSpecReplacementCandidate[];
   readonly selectedReplacement?: ShowcaseSpecSelectedReplacement;
+  readonly assetPairComposition?: {
+    readonly report: string;
+    readonly verdict: ShowcaseGameAssetPairEvidenceVerdict;
+    readonly checks: readonly { readonly id: string; readonly verdict: ShowcaseGameAssetPairEvidenceVerdict }[];
+  };
+  readonly geometryContract?: {
+    readonly module: "src/generated/game-geometry.ts";
+    readonly contentHash: string;
+    readonly sourceReport: string;
+    readonly sourceReportHash: string;
+  };
 }
 
 export interface ShowcaseSpecRejectedAsset {

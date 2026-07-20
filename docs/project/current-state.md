@@ -1,6 +1,6 @@
 # Current State
 
-Date: 2026-07-01
+Date: 2026-07-19
 Status: release-candidate documentation baseline
 
 Aura3D is a developer SDK, asset workflow, template system, diagnostics surface,
@@ -46,14 +46,10 @@ until library work and browser evidence close the gap:
   in public examples unless the exact route has screenshot proof;
 - skinned GLB animation rendered through root `createAuraApp` screenshots;
 - morph target rendering through root `createAuraApp` screenshots;
-- production-quality platformer or racing reusable game kits;
-- mesh-derived racing road topology extraction that is strong enough for public
-  racing examples;
-- mesh-derived platformer playable-surface extraction that is strong enough for
-  public platformer examples;
-- generic gameplay collision/sensor world for browser games;
-- public game camera and scene-binding systems that certify a car or character
-  is visibly bound to the rendered track or platform world;
+- production-quality platformer or racing game-engine parity; the public genre kits are bounded deterministic presentation/runtime helpers;
+- arbitrary-mesh collision or automatic GLB-to-game conversion; certified racing/platformer geometry applies only to validated assets and retained route evidence;
+- generic rigid-body gameplay collision/sensor world for browser games;
+- AI opponents, netcode, or production vehicle/character physics;
 
 ## Release Track Reality
 
@@ -63,36 +59,23 @@ The package track can be considered for release when package tests, API docs,
 packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
-The current showcase release-candidate track passes for six public routes and
-keeps four non-public routes out of the public release count. The release gate
-is `node tools/showcase-library/build-and-check.mjs`.
+The current showcase release-candidate track passes 10/10 public routes. Two internal diagnostics and two game-layer diagnostic harnesses remain outside the public count. The release gate is `node tools/showcase-library/build-and-check.mjs`.
 
 Current retained result:
 
-- public release candidates: 6/6 passing;
+- public release candidates: 10/10 passing;
 - internal diagnostics: 2 retained and not counted as public failures;
-- prototype-blocked game diagnostics: 2 retained and not counted as public
-  examples;
-- showcase index: handled as an index/catalog route, not a deployable 3D app.
+- game-layer diagnostics: 2 retained as contract/debug harnesses, not public examples;
+- prototype-blocked routes: 0;
+- showcase index: handled as an index/catalog route.
 
 ## Showcase Reality
 
-The current showcase slate is split by public release status:
+The public slate includes Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, Blockfall Reactor, the established public racing/platformer presentation proofs, Turbo Drift Circuit, and Skyline Runner. Data Galaxy and WebGPU Particle Lab remain internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses.
 
-- public release candidates: Product Configurator, Material Asset Inspector,
-  Smart City Control, Cinematic Architecture, Digital Twin Operations, and
-  Blockfall Reactor;
-- internal diagnostics: Data Galaxy and WebGPU Particle Lab;
-- prototype-blocked diagnostics: Turbo Drift Circuit and Skyline Runner.
+Turbo Drift and Skyline are bounded public stylized presentations because current retained evidence proves certified asset geometry, pair composition, gameplay input, contact, camera readability, scale, route-primary screenshots, automated visual QA, manual review, and deploy readiness. This does not establish arbitrary GLB-to-game conversion or production game-engine parity.
 
-Turbo Drift Circuit and Skyline Runner are intentionally removed from public
-examples. The library is not being deleted. The game layer must be rebuilt
-before these categories can return to public release.
-
-No route may move to public-ready based only on boot success, nonblank
-screenshots, route-local claims, deploy metadata, or gameplay state changes.
-Public game routes also require public visual review and retained game-geometry
-evidence.
+No route may move to public-ready based only on boot success, nonblank screenshots, route-local claims, deploy metadata, or gameplay state changes. Public game routes require current certified geometry, pair composition, route-primary, gameplay, automated visual QA, manual downward-only review, and deploy evidence.
 
 ## Canonical Rules
 

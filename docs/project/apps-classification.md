@@ -1,6 +1,6 @@
 # Apps Classification
 
-Date: 2026-07-01
+Date: 2026-07-19
 Status: current classification policy
 
 App classification controls what public copy may say. A route can be useful and
@@ -38,10 +38,14 @@ still not be a public release candidate.
 | `showcase-cinematic-architecture` | release-ready candidate | Public architecture presentation with bounded rendering claims. |
 | `showcase-digital-twin-ops` | release-ready candidate | Public visual ops/dashboard demo; not a real digital-twin integration claim. |
 | `showcase-blockfall-reactor` | release-ready candidate | Public bounded falling-block route with retained gameplay proof. |
+| `showcase-public-racing-presentation-proof` | release-ready candidate | Public bounded racing presentation proof with certified retained geometry and pair evidence. |
+| `showcase-public-platformer-presentation-proof` | release-ready candidate | Public bounded platformer presentation proof with certified retained geometry and pair evidence. |
+| `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
+| `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
-| `showcase-skyline-runner` | prototype-blocked | Removed from public examples until platformer surface extraction, character/world binding, and visual review pass. |
-| `showcase-turbo-drift-circuit` | prototype-blocked | Removed from public examples until racing topology, car/road binding, camera composition, and visual review pass. |
+| `showcase-skyline-runner` | release-ready candidate | Public bounded platformer presentation with certified mesh-derived surfaces, typed character/world binding, gameplay proof, and visual QA. |
+| `showcase-turbo-drift-circuit` | release-ready candidate | Public bounded racing presentation with certified topology, typed car/track binding, gameplay proof, and visual QA. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 ## Retained Engine Evidence
