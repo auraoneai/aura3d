@@ -148,12 +148,12 @@ const apps = [
     id: "showcase-public-platformer-presentation-proof",
     route: "/apps/showcase-public-platformer-presentation-proof/",
     routeHealth: "/apps/showcase-public-platformer-presentation-proof/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
+    classification: "removed-from-public-showcase",
+    publicShowcase: false,
+    primaryAssetStatus: "retained-historical-evidence",
     primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Public platformer presentation candidate with a typed walking character, retained side-scroller surface-map certification, styled platforms, hazards, checkpoints, finish marker, and keyboard progression proof."
+    claimStatus: "demoted",
+    notes: "Superseded by Skyline Runner. This route remains available as historical certification evidence but is no longer promoted or counted as a public platformer."
   },
   {
     id: "showcase-racing-game-layer-proof",
@@ -210,7 +210,6 @@ window.__AURA3D_SHOWCASE_INDEX__ = {
   gameCount: publicApps.filter((entry) =>
     entry.id === "showcase-blockfall-reactor" ||
     entry.id === "showcase-public-racing-presentation-proof" ||
-    entry.id === "showcase-public-platformer-presentation-proof" ||
     entry.id === "showcase-turbo-drift-circuit" ||
     entry.id === "showcase-skyline-runner"
   ).length,

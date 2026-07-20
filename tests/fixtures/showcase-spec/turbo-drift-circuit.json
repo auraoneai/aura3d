@@ -1,0 +1,311 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "label": "Turbo Drift Circuit",
+  "category": "game-racing",
+  "path": "/apps/showcase-turbo-drift-circuit/",
+  "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+  "claimLabel": "createAuraApp",
+  "publicStatus": "release-ready candidate",
+  "layout": {
+    "heroAsset": "showcaseKenneyRaceCarRed",
+    "uiPlacement": "right-panel"
+  },
+  "racing": {
+    "vehicleAsset": "showcaseKenneyRaceCarRed",
+    "trackAsset": "showcaseKenneyNeonRaceCircuit",
+    "cameraIntent": "track-overview",
+    "layoutConstraints": {
+      "keepVehicleReadable": true,
+      "keepTrackReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "gameplayRequirements": [
+      "throttle",
+      "steering",
+      "reset",
+      "checkpoint",
+      "lap",
+      "multi-lap"
+    ],
+    "raceDesign": {
+      "minCheckpoints": 6,
+      "minLaps": 3,
+      "minLapSeconds": 30,
+      "routeAlignedToTrackAsset": true,
+      "visibleTrackTopology": "asset-bound-road-topology",
+      "carTrackScaleCompatible": true,
+      "noDebugLocatorDisk": true,
+      "trackTopology": {
+        "assetId": "showcaseKenneyNeonRaceCircuit",
+        "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+        "source": "asset-mesh-extracted",
+        "roadCenterline": [
+          {
+            "x": -9.098,
+            "z": -1.441,
+            "width": 1.792
+          },
+          {
+            "x": -7.588,
+            "z": -3.867,
+            "width": 1.792
+          },
+          {
+            "x": -5.087,
+            "z": -5.087,
+            "width": 1.792
+          },
+          {
+            "x": -3.037,
+            "z": -5.96,
+            "width": 1.792
+          },
+          {
+            "x": -0.967,
+            "z": -6.102,
+            "width": 1.792
+          },
+          {
+            "x": 0.966,
+            "z": -6.102,
+            "width": 1.792
+          },
+          {
+            "x": 3.037,
+            "z": -5.96,
+            "width": 1.792
+          },
+          {
+            "x": 5.087,
+            "z": -5.087,
+            "width": 1.792
+          },
+          {
+            "x": 7.588,
+            "z": -3.867,
+            "width": 1.792
+          },
+          {
+            "x": 9.097,
+            "z": -1.441,
+            "width": 1.792
+          },
+          {
+            "x": 9.098,
+            "z": 1.441,
+            "width": 1.792
+          },
+          {
+            "x": 7.588,
+            "z": 3.867,
+            "width": 1.792
+          },
+          {
+            "x": 5.087,
+            "z": 5.087,
+            "width": 1.792
+          },
+          {
+            "x": 3.037,
+            "z": 5.96,
+            "width": 1.792
+          },
+          {
+            "x": 0.967,
+            "z": 6.106,
+            "width": 1.792
+          },
+          {
+            "x": -0.967,
+            "z": 6.105,
+            "width": 1.792
+          },
+          {
+            "x": -3.037,
+            "z": 5.96,
+            "width": 1.792
+          },
+          {
+            "x": -5.087,
+            "z": 5.087,
+            "width": 1.792
+          },
+          {
+            "x": -7.588,
+            "z": 3.867,
+            "width": 1.792
+          },
+          {
+            "x": -9.097,
+            "z": 1.441,
+            "width": 1.792
+          },
+          {
+            "x": -9.098,
+            "z": -1.441,
+            "width": 1.792
+          }
+        ],
+        "checkpoints": [
+          {
+            "progress": 0.167,
+            "width": 1.792
+          },
+          {
+            "progress": 0.333,
+            "width": 1.792
+          },
+          {
+            "progress": 0.5,
+            "width": 1.792
+          },
+          {
+            "progress": 0.667,
+            "width": 1.792
+          },
+          {
+            "progress": 0.833,
+            "width": 1.792
+          },
+          {
+            "progress": 1,
+            "width": 1.792
+          }
+        ],
+        "lapLengthMeters": 49.404,
+        "estimatedLapSeconds": 45,
+        "confidence": 0.76,
+        "modelAlignment": {
+          "source": "asset-mesh-extracted",
+          "modelBounds": {
+            "min": [
+              -24.111,
+              -0.67,
+              -17.726
+            ],
+            "max": [
+              23.14,
+              4.08,
+              17.726
+            ]
+          },
+          "modelPoint": [
+            0,
+            0.03,
+            0
+          ],
+          "gamePoint": {
+            "x": 0,
+            "z": 0
+          },
+          "anchorPairs": [
+            {
+              "id": "mesh-road-anchor-1",
+              "modelPoint": [
+                -9.098,
+                0.03,
+                -1.441
+              ],
+              "gamePoint": {
+                "x": -9.098,
+                "z": -1.441
+              }
+            },
+            {
+              "id": "mesh-road-anchor-2",
+              "modelPoint": [
+                5.087,
+                0.03,
+                -5.087
+              ],
+              "gamePoint": {
+                "x": 5.087,
+                "z": -5.087
+              }
+            },
+            {
+              "id": "mesh-road-anchor-3",
+              "modelPoint": [
+                0.967,
+                0.03,
+                6.106
+              ],
+              "gamePoint": {
+                "x": 0.967,
+                "z": 6.106
+              }
+            }
+          ],
+          "evidence": {
+            "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+          }
+        },
+        "evidence": {
+          "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+          "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+        }
+      }
+    },
+    "releaseAssetRequirements": {
+      "vehicleRole": "vehicle",
+      "trackRole": "track",
+      "requiresOrientationEvidence": true,
+      "requiresScaleNormalizationEvidence": true,
+      "requiresRenderedProbe": true,
+      "requiresDurableProvenance": true,
+      "requiresSuitabilityReason": true
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseKenneyRaceCarRed",
+      "role": "vehicle",
+      "typedRef": "assets.showcaseKenneyRaceCarRed",
+      "quality": "release",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": true,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": true
+    },
+    {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "role": "track",
+      "typedRef": "assets.showcaseKenneyNeonRaceCircuit",
+      "quality": "release",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": true,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": true
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseKenneyRaceCarRed --asset showcaseKenneyNeonRaceCircuit",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseKenneyRaceCarRed": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyRaceCarRed.json",
+      "showcaseKenneyNeonRaceCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.json",
+      "showcaseTsukubaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
+    },
+    "assetPairCompositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+    "visualReviewPassed": true
+  },
+  "capabilities": [
+    {
+      "name": "typed-racing-assets",
+      "status": "root-proven",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json"
+    },
+    {
+      "name": "route-local-racing-gameplay",
+      "status": "root-proven",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json"
+    }
+  ]
+}

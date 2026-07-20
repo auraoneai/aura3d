@@ -1,0 +1,46 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-generated-headphones",
+  "label": "Generated Headphones Configurator",
+  "category": "product-configurator",
+  "path": "/apps/showcase-generated-headphones/",
+  "globalName": "__AURA3D_SHOWCASE_GENERATED_HEADPHONES__",
+  "claimLabel": "createAuraApp",
+  "publicStatus": "release-ready candidate",
+  "layout": {
+    "heroAsset": "showcaseHeadphones",
+    "uiPlacement": "right-panel"
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseHeadphones",
+      "role": "product",
+      "typedRef": "assets.showcaseHeadphones",
+      "quality": "release",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": true,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": true
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-product-configurator/dist --release --source apps/showcase-product-configurator/src --asset showcaseHeadphones",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": true,
+    "routePrimaryPassed": true
+  },
+  "capabilities": [
+    {
+      "name": "typed-product-asset",
+      "status": "root-proven",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json"
+    },
+    {
+      "name": "configurator-ui",
+      "status": "root-proven",
+      "evidence": "apps/showcase-product-configurator/README.md"
+    }
+  ]
+}

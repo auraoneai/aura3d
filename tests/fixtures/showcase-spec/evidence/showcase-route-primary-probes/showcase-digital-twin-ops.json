@@ -1,0 +1,115 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-digital-twin-ops",
+  "routePath": "/apps/showcase-digital-twin-ops/",
+  "appId": "showcase-digital-twin-ops",
+  "sourceHash": "sha256-a64755951ad6bf6967aa3c6c5aa47a95ef108e6d8b9dbe028f2447a9bd4c6278",
+  "routeGateHash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d",
+  "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
+  "secondaryPrimaryAssets": [],
+  "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
+  "generatedAt": "2026-07-20T05:20:50.123Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "ready",
+    "evidenceKeys": [
+      "alerts",
+      "appId",
+      "claimBoundary",
+      "controls",
+      "diagnostics",
+      "energyMw",
+      "frameCount",
+      "mode",
+      "motionProof",
+      "runtimeNodeIds",
+      "selectedZone",
+      "status",
+      "systems",
+      "throughput",
+      "uptime",
+      "zones"
+    ],
+    "primaryAssets": [
+      "showcaseRoboticWeldingWorkcell"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 195,
+    "renderSize": [
+      1104,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+    "sha256": "sha256-93162d8bd16528ba114b3872eb8bf9bba07a8f8bbfacf422c3b98407a4464da5",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 104,
+      "width": 1084,
+      "height": 786
+    },
+    "nonBlankPixels": 289522,
+    "colorBuckets": 277,
+    "foregroundBounds": {
+      "x": 216,
+      "y": 121,
+      "width": 717,
+      "height": 574
+    },
+    "visible": true,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 100,
+    "failures": []
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseRoboticWeldingWorkcell",
+      "role": "prop",
+      "expectedTypedRef": "assets.showcaseRoboticWeldingWorkcell",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+        "sha256": "sha256-93162d8bd16528ba114b3872eb8bf9bba07a8f8bbfacf422c3b98407a4464da5",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 104,
+          "width": 1084,
+          "height": 786
+        },
+        "nonBlankPixels": 289522,
+        "colorBuckets": 277,
+        "foregroundBounds": {
+          "x": 216,
+          "y": 121,
+          "width": 717,
+          "height": 574
+        },
+        "visible": true,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 100,
+        "failures": []
+      }
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": true,
+  "failures": []
+}

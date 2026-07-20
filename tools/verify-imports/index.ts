@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
+import ts from "typescript";
 
 interface RootPackageJson {
   name?: string;
@@ -127,9 +128,10 @@ function scanWorkspaceImports(sourceRoot: string): ReadonlySet<string> {
   const imports = new Set<string>();
   for (const path of listTypeScriptFiles(sourceRoot)) {
     const source = readFileSync(path, "utf8");
-    for (const match of source.matchAll(/(?:from\s+|import\s*\(\s*|import\s+)["'](@aura3d\/[^/"']+)/g)) {
-      const specifier = match[1];
-      if (specifier) imports.add(specifier);
+    const importedFiles = ts.preProcessFile(source, true, true).importedFiles;
+    for (const importedFile of importedFiles) {
+      const match = importedFile.fileName.match(/^(@aura3d\/[^/]+)/);
+      if (match?.[1]) imports.add(match[1]);
     }
   }
   return imports;

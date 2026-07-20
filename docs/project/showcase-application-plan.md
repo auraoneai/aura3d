@@ -78,7 +78,7 @@ Game apps additionally need:
 
 1. Implement shared route-health and source validation gates.
 2. Repair or demote current route claims.
-3. Preserve all 10 accepted public candidates and do not widen their claims beyond retained evidence.
+3. Preserve all 9 current accepted public candidates and do not widen their claims beyond retained evidence.
 4. Keep Data Galaxy and WebGPU Particle Lab as internal diagnostics until their
    visual/capability blockers close.
 5. Keep the two game-layer proof routes diagnostic-only; Turbo Drift and Skyline remain public only while their complete certified evidence chain passes.

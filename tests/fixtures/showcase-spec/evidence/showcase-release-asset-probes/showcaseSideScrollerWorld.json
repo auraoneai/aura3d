@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:33:35.621Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSideScrollerWorld",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:33:35.620Z",
+    "sha256": "sha256-18abc022e22a67d9840f271ccc91ceb48c8313f1b925ebf6ae8638e1368ccb9b",
+    "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+    "nonBlankPixels": 444818,
+    "colorBuckets": 72,
+    "foregroundBounds": {
+      "x": 51,
+      "y": 0,
+      "width": 701,
+      "height": 494
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSideScrollerWorld",
+    "asset": {
+      "id": "showcaseSideScrollerWorld",
+      "typed": "assets.showcaseSideScrollerWorld",
+      "url": "/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
+      "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 143,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 259571,
+      "colorBuckets": 256,
+      "foregroundBounds": {
+        "x": 51,
+        "y": 0,
+        "width": 701,
+        "height": 494
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

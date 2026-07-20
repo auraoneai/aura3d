@@ -325,7 +325,7 @@ describe("showcase racing spec compiler", () => {
   it("selects a replacement track with hash-bound overlay-validated racing topology", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
     const projectDir = mkdtempSync(join(tmpdir(), "aura3d-racing-project-"));
-    const routePrimaryScreenshot = "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png";
+    const routePrimaryScreenshot = "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png";
     const currentTopology = createPassingRacingTrackTopologyEvidence(routePrimaryScreenshot).topology;
     const topology = {
       ...currentTopology,
@@ -368,7 +368,7 @@ describe("showcase racing spec compiler", () => {
             },
             suitabilityReason: "Track replacement includes a retained hash-bound road topology map for racing demos.",
             renderedProbe: {
-              url: "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+              url: "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
               foregroundBounds: { x: 42, y: 38, width: 612, height: 482 }
             },
             orientation: {
@@ -713,7 +713,7 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
       },
       evidence: {
         sourceAsset: "assets.showcaseKenneyNeonRaceCircuit",
-        renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
+        renderedProbe: "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
         routeOverlay: routePrimaryScreenshotPath,
         notes: "Unit fixture for hash-bound topology validation."
       }

@@ -307,6 +307,10 @@ test-data/
 *.csv
 
 fixtures/
+# Immutable, hash-bound showcase compiler specs and evidence.
+!tests/fixtures/
+!tests/fixtures/showcase-spec/
+!tests/fixtures/showcase-spec/**
 
 # ============================================================================
 # Keep These (Don't Ignore)

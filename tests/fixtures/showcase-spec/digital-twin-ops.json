@@ -1,0 +1,86 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-digital-twin-ops",
+  "label": "Digital Twin Ops",
+  "category": "industrial-digital-twin",
+  "path": "/apps/showcase-digital-twin-ops/",
+  "globalName": "__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
+  "claimLabel": "prototype",
+  "publicStatus": "prototype-blocked",
+  "layout": {
+    "heroAsset": "showcaseAssemblyLine",
+    "uiPlacement": "right-panel"
+  },
+  "categoryPlan": {
+    "kind": "industrial-digital-twin",
+    "primaryAsset": "showcaseAssemblyLine",
+    "cameraIntent": "industrial-overview",
+    "layoutConstraints": {
+      "keepHeroReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "claims": {
+      "allowed": [
+        "visual operations dashboard",
+        "route-local sample telemetry"
+      ],
+      "notAllowed": [
+        "real facility simulation",
+        "PLC connectivity",
+        "production digital twin"
+      ]
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseAssemblyLine",
+      "role": "facility",
+      "typedRef": "assets.showcaseAssemblyLine",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false,
+      "assetPolicy": {
+        "allowReplacement": true,
+        "replacementQuery": "industrial factory assembly line workcell",
+        "requiredRole": "industrial",
+        "minQuality": "release",
+        "requireRenderedProbe": true,
+        "requireDeployPass": true
+      }
+    },
+    {
+      "id": "showcaseRoboticWeldingWorkcell",
+      "role": "workcell",
+      "typedRef": "assets.showcaseRoboticWeldingWorkcell",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-digital-twin-ops/dist --release --source apps/showcase-digital-twin-ops/src --asset showcaseAssemblyLine --asset showcaseRoboticWeldingWorkcell",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": false,
+    "routePrimaryPassed": false,
+    "releaseAssetProbes": {
+      "showcaseOrangeIndustrialRobot": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.json"
+    }
+  },
+  "capabilities": [
+    {
+      "name": "visual-operations-dashboard",
+      "status": "partial",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-digital-twin-ops.json"
+    },
+    {
+      "name": "real-facility-simulation",
+      "status": "unsupported"
+    }
+  ]
+}

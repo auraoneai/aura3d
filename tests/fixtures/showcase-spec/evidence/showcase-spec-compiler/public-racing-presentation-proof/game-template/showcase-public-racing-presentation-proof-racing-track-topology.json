@@ -1,0 +1,79 @@
+{
+  "schema": "aura3d-racing-track-topology/1.0",
+  "routeId": "showcase-public-racing-presentation-proof",
+  "pass": true,
+  "failures": [],
+  "topology": {
+    "assetId": "showcaseTsukubaCircuit",
+    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    "source": "compiler-authored-overlay-validated",
+    "roadCenterline": [
+      { "x": 0.36, "z": -1.16, "width": 0.38 },
+      { "x": -0.72, "z": -1.04, "width": 0.38 },
+      { "x": -1.52, "z": -0.54, "width": 0.38 },
+      { "x": -1.9, "z": 0.1, "width": 0.38 },
+      { "x": -1.78, "z": 0.62, "width": 0.38 },
+      { "x": -1.34, "z": 1.08, "width": 0.38 },
+      { "x": -0.44, "z": 1.22, "width": 0.38 },
+      { "x": 0.56, "z": 1.06, "width": 0.38 },
+      { "x": 1.34, "z": 0.58, "width": 0.38 },
+      { "x": 1.62, "z": -0.16, "width": 0.38 },
+      { "x": 1.28, "z": -0.84, "width": 0.38 },
+      { "x": 0.36, "z": -1.16, "width": 0.38 }
+    ],
+    "checkpoints": [
+      { "progress": 0.167, "width": 0.38 },
+      { "progress": 0.333, "width": 0.38 },
+      { "progress": 0.5, "width": 0.38 },
+      { "progress": 0.667, "width": 0.38 },
+      { "progress": 0.833, "width": 0.38 },
+      { "progress": 1, "width": 0.38 }
+    ],
+    "lapLengthMeters": 8.742,
+    "estimatedLapSeconds": 38,
+    "confidence": 0.86,
+    "modelAlignment": {
+      "source": "compiler-authored-overlay-validated",
+      "modelBounds": {
+        "min": [-9.676, -1, -22.391],
+        "max": [25.773, 3.054, 11.481]
+      },
+      "modelPoint": [8.0485, -1, -5.455],
+      "gamePoint": { "x": 0.36, "z": -1.16 },
+      "anchorPairs": [
+        {
+          "id": "track-start",
+          "modelPoint": [8.0485, -1, -5.455],
+          "gamePoint": { "x": 0.36, "z": -1.16 }
+        },
+        {
+          "id": "track-far-bend",
+          "modelPoint": [20.2, -1, 6.5],
+          "gamePoint": { "x": 1.34, "z": 0.58 }
+        }
+      ],
+      "evidence": {
+        "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+        "notes": "Compiler-authored topology uses a clean generated racing circuit while retaining the typed Tsukuba asset as the manifest-backed racing topology provenance asset."
+      }
+    },
+    "evidence": {
+      "sourceAsset": "assets.showcaseTsukubaCircuit",
+      "renderedProbe": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+      "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
+      "notes": "The public racing presentation route uses this generated road centerline for checkpoints, lap timing, car placement, styled road geometry, and chase camera framing."
+    }
+  },
+  "route": {
+    "id": "showcase-public-racing-presentation-proof-certified-topology-route",
+    "width": 0.38,
+    "checkpointCount": 6,
+    "minimumLapSeconds": 30,
+    "authoredLapSeconds": 38
+  },
+  "meshExtraction": {
+    "status": "overlay-validated",
+    "source": "compiler-authored-overlay-validated",
+    "notes": "This public route is certified from compiler-authored generated topology bound to the current track asset hash and current route screenshot."
+  }
+}

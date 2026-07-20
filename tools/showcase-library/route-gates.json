@@ -196,7 +196,7 @@
       "path": "/apps/showcase-public-platformer-presentation-proof/",
       "globalName": "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "removed-from-public-showcase",
       "primaryAssets": [
         "showcaseWalkAnimatedGirl",
         "showcaseSideScrollerWorld"
@@ -211,19 +211,7 @@
       ],
       "primitiveBudget": 14,
       "requiresTypedPrimaryAssets": true,
-      "requiresKeyboardDelta": true,
-      "gameTemplateStatus": {
-        "category": "platformer",
-        "publicTemplateReady": true,
-        "evidence": [
-          "packages/engine/src/agent-api/index.ts exposes game.publicPlatformerPresentation, game.platformerGroundMesh, game.platformerPlatformMesh, game.platformerHazard, game.platformerCheckpoint, game.platformerFinish, game.platformerCameraRig, and game.certifyPlatformerPresentation.",
-          "apps/showcase-public-platformer-presentation-proof/src/main.ts renders a typed walking character on certified public platformer presentation geometry.",
-          "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png retains the public route-primary screenshot.",
-          "tests/reports/showcase-gameplay/showcase-public-platformer-presentation-proof.json proves movement, jump, checkpoint, hazard respawn, finish, and reset behavior.",
-          "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json retains hash-bound platformer playable-surface evidence.",
-          "docs/project/showcase-visual-review.json records the public platformer visual review pass."
-        ]
-      }
+      "requiresKeyboardDelta": true
     },
     {
       "id": "showcase-racing-game-layer-proof",

@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:34:42.338Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseParticleCore.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseParticleCore.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:34:42.337Z",
+    "sha256": "sha256-4ae5d0945d783b29ffa744eb1446acecb2a7dbfcce7c0f2148fdf3a1339c5518",
+    "assetHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+    "nonBlankPixels": 451199,
+    "colorBuckets": 75,
+    "foregroundBounds": {
+      "x": 269,
+      "y": 215,
+      "width": 206,
+      "height": 308
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
+    "asset": {
+      "id": "showcaseParticleCore",
+      "typed": "assets.showcaseParticleCore",
+      "url": "/aura-assets/showcaseParticleCore.5443d9a9.glb",
+      "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 4,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 18593,
+      "colorBuckets": 200,
+      "foregroundBounds": {
+        "x": 269,
+        "y": 215,
+        "width": 206,
+        "height": 308
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

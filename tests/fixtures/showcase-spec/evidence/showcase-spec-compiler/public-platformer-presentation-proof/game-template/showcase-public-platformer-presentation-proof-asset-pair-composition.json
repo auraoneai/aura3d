@@ -1,0 +1,126 @@
+{
+  "schema": "aura3d-showcase-asset-pair-composition/1.0",
+  "routeId": "showcase-public-platformer-presentation-proof",
+  "category": "platformer",
+  "verdict": "pass",
+  "pass": true,
+  "screenshot": {
+    "path": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+    "sha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+    "width": 1440,
+    "height": 900
+  },
+  "geometry": {
+    "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
+    "assetId": "showcaseSideScrollerWorld",
+    "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+    "source": "compiler-authored-overlay-validated",
+    "modelAnchorCount": 2
+  },
+  "assets": [
+    {
+      "id": "showcaseWalkAnimatedGirl",
+      "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+      "evidenceHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6"
+    },
+    {
+      "id": "showcaseSideScrollerWorld",
+      "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+      "evidenceHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+    }
+  ],
+  "thresholds": {
+    "minBindingOverlapRatio": 0.02,
+    "maxContactOffsetRatio": 1,
+    "maxScreenContactDistanceRatio": 0.35,
+    "minPlaySpaceAreaRatio": 0.04,
+    "maxPlaySpaceAreaRatio": 0.78,
+    "minSubjectWorldRatio": 0.08,
+    "maxSubjectWorldRatio": 0.78,
+    "maxPlatformerScaleDelta": 0.18
+  },
+  "checks": [
+    {
+      "id": "binding-overlap",
+      "verdict": "pass",
+      "tolerance": {
+        "minOverlapRatio": 0.02,
+        "maxAverageBindingError": 0.06,
+        "requiresCurrentHashes": true,
+        "requiresZeroPresentationOffset": true
+      },
+      "measured": {
+        "overlapRatio": 1,
+        "averageBindingError": 0,
+        "modelAnchorCount": 2,
+        "sceneAssetHashMatches": true,
+        "overlayMatches": true,
+        "zeroPresentationOffset": true
+      },
+      "blockers": []
+    },
+    {
+      "id": "contact",
+      "verdict": "pass",
+      "tolerance": {
+        "maxNormalizedOffset": 1,
+        "maxScreenContactDistanceRatio": 0.35
+      },
+      "measured": {
+        "contactProven": true,
+        "normalizedOffset": 0,
+        "screenContactDistance": 11.30464125923504,
+        "screenContactDistanceRatio": 0.0538
+      },
+      "blockers": []
+    },
+    {
+      "id": "camera-readability",
+      "verdict": "pass",
+      "tolerance": {
+        "minPlaySpaceAreaRatio": 0.04,
+        "maxPlaySpaceAreaRatio": 0.78,
+        "clippedAllowed": false,
+        "requiresSubjectFollow": true,
+        "acceptedRacingModes": "chase|top-down"
+      },
+      "measured": {
+        "playSpaceAreaRatio": 0.0608,
+        "foregroundClipped": false,
+        "subjectClipped": false,
+        "cameraMode": "follow",
+        "followsSubject": true
+      },
+      "blockers": []
+    },
+    {
+      "id": "scale-contract",
+      "verdict": "pass",
+      "tolerance": {
+        "minSubjectWorldRatio": 0.08,
+        "maxSubjectWorldRatio": 0.78,
+        "maxPlatformerScaleDelta": 0.18
+      },
+      "measured": {
+        "subjectWorldRatio": 0.3177,
+        "characterScaleRatio": 0.38,
+        "projectedTargetHeight": 202.055,
+        "renderedSubjectHeight": 210,
+        "scaleDelta": 0.03932097696171831
+      },
+      "blockers": []
+    },
+    {
+      "id": "debug-guide-absence",
+      "verdict": "pass",
+      "tolerance": {
+        "visibleDebugGuidesAllowed": false
+      },
+      "measured": {
+        "debugGuidesAbsent": true
+      },
+      "blockers": []
+    }
+  ],
+  "blockers": []
+}

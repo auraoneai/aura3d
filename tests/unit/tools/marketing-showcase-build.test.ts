@@ -37,15 +37,15 @@ describe("marketing showcase route build", () => {
       expect(engineSource).toContain(`${helper}:`);
     }
   });
-  it("publishes all accepted game presentations and excludes diagnostic harnesses", () => {
+  it("publishes current game presentations plus retained historical routes and excludes diagnostic harnesses", () => {
     for (const route of [
       "showcase-public-racing-presentation-proof",
-      "showcase-public-platformer-presentation-proof",
       "showcase-turbo-drift-circuit",
       "showcase-skyline-runner"
     ]) {
       expect(buildScript).toContain(`"${route}"`);
     }
+    expect(buildScript).toContain('"showcase-public-platformer-presentation-proof"');
     expect(buildScript).toContain("release-ready game route must be published by marketing build");
     expect(buildScript).toContain("game-layer diagnostic route must not be published by marketing build");
   });

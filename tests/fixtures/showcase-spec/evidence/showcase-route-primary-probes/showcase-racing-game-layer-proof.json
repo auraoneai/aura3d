@@ -1,0 +1,127 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-racing-game-layer-proof",
+  "routePath": "/apps/showcase-racing-game-layer-proof/",
+  "appId": "showcase-racing-game-layer-proof",
+  "sourceHash": "sha256-5eabdeb34ce945e97bc0c2c7a88fa3b694bbbfbf6bf02af16e84d1326114fa57",
+  "routeGateHash": "6bf0e341fbdc0268931362bdbd1eadae41de397b9bcdc2a62717b26e0cf3dbdf",
+  "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+  "secondaryPrimaryAssets": [
+    "showcaseTsukubaCircuit"
+  ],
+  "routeHealthHash": "sha256-2db670bfb8a7bb7e3aaec5acb0b2052a4ed4cef2d11c44af54106719d6993e43",
+  "generatedAt": "2026-07-19T21:18:10.504Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "ready",
+    "evidenceKeys": [
+      "appId",
+      "checkpoint",
+      "diagnostics",
+      "frameCount",
+      "gameplay",
+      "geometryCertification",
+      "kitContractProof",
+      "lap",
+      "primaryAssetRecords",
+      "primaryAssets",
+      "raceDesign",
+      "raceState",
+      "racing",
+      "schema",
+      "sourceGate",
+      "speed",
+      "status"
+    ],
+    "primaryAssets": [
+      "showcaseTexturedSportsCar",
+      "showcaseTsukubaCircuit"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 102,
+    "renderSize": [
+      1124,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
+    "sha256": "sha256-3a1345c4fef100b94f36eb99e24244938b9939e6938b519c639bba5ec800b3de",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 10,
+      "width": 1104,
+      "height": 880
+    },
+    "nonBlankPixels": 268938,
+    "colorBuckets": 145,
+    "foregroundBounds": {
+      "x": 187,
+      "y": 67,
+      "width": 750,
+      "height": 518
+    },
+    "visible": true,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 100,
+    "failures": []
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseTexturedSportsCar",
+      "role": "vehicle",
+      "expectedTypedRef": "assets.showcaseTexturedSportsCar",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
+        "sha256": "sha256-3a1345c4fef100b94f36eb99e24244938b9939e6938b519c639bba5ec800b3de",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 10,
+          "width": 1104,
+          "height": 880
+        },
+        "nonBlankPixels": 268938,
+        "colorBuckets": 145,
+        "foregroundBounds": {
+          "x": 187,
+          "y": 67,
+          "width": 750,
+          "height": 518
+        },
+        "visible": true,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 100,
+        "failures": []
+      }
+    },
+    {
+      "id": "showcaseTsukubaCircuit",
+      "role": "track",
+      "expectedTypedRef": "assets.showcaseTsukubaCircuit",
+      "routePrimaryEvidenceTarget": false,
+      "evidenceMode": "secondary-present",
+      "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": true,
+  "failures": []
+}

@@ -1,0 +1,98 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "label": "Turbo Drift Circuit",
+  "category": "game-racing",
+  "path": "/apps/showcase-turbo-drift-circuit/",
+  "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+  "claimLabel": "createAuraApp",
+  "publicStatus": "release-ready candidate",
+  "layout": {
+    "heroAsset": "showcaseTexturedSportsCar",
+    "uiPlacement": "right-panel"
+  },
+  "racing": {
+    "vehicleAsset": "showcaseTexturedSportsCar",
+    "trackAsset": "showcaseTsukubaCircuit",
+    "cameraIntent": "track-overview",
+    "layoutConstraints": {
+      "keepVehicleReadable": true,
+      "keepTrackReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "gameplayRequirements": [
+      "throttle",
+      "steering",
+      "reset",
+      "checkpoint",
+      "lap",
+      "multi-lap"
+    ],
+    "raceDesign": {
+      "minCheckpoints": 6,
+      "minLaps": 3,
+      "minLapSeconds": 8,
+      "routeAlignedToTrackAsset": false,
+      "visibleTrackTopology": "authored-route-over-visible-track",
+      "carTrackScaleCompatible": true,
+      "noDebugLocatorDisk": true
+    },
+    "releaseAssetRequirements": {
+      "vehicleRole": "vehicle",
+      "trackRole": "track",
+      "requiresOrientationEvidence": true,
+      "requiresScaleNormalizationEvidence": true,
+      "requiresRenderedProbe": true,
+      "requiresDurableProvenance": true,
+      "requiresSuitabilityReason": true
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseTexturedSportsCar",
+      "role": "vehicle",
+      "typedRef": "assets.showcaseTexturedSportsCar",
+      "quality": "release",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": true,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": true
+    },
+    {
+      "id": "showcaseTsukubaCircuit",
+      "role": "track",
+      "typedRef": "assets.showcaseTsukubaCircuit",
+      "quality": "release",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": true,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": true
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseTexturedSportsCar --asset showcaseTsukubaCircuit",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": true,
+    "routePrimaryPassed": true,
+    "gameplayPassed": true,
+    "releaseAssetProbes": {
+      "showcaseTexturedSportsCar": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTexturedSportsCar.json",
+      "showcaseTsukubaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
+    }
+  },
+  "capabilities": [
+    {
+      "name": "typed-racing-assets",
+      "status": "root-proven",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json"
+    },
+    {
+      "name": "route-local-racing-gameplay",
+      "status": "root-proven",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json"
+    }
+  ]
+}

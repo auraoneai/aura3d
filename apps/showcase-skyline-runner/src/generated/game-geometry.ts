@@ -290,7 +290,7 @@ export const gameGeometryContract = {
       "x": 16.64,
       "y": 1.13
     },
-    "moveSpeed": 0.498,
+    "moveSpeed": 1.15,
     "jumpVelocity": 7.4,
     "lowerBound": -1.4,
     "platforms": [

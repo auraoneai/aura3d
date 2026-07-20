@@ -21,10 +21,34 @@ interface PackageJson {
   main?: string;
 }
 
-const allowedSubpathExports: Record<string, readonly string[]> = {
-  "@aura3d/engine-runtime": ["./advanced-runtime"],
-  "@aura3d/three-compat": ["./controls", "./loaders", "./postprocessing"]
+interface ApprovedSubpathExport {
+  readonly types: string;
+  readonly import: string;
+}
+
+const approvedSubpathExports: Record<string, Readonly<Record<string, ApprovedSubpathExport>>> = {
+  "@aura3d/assets": {
+    "./browser": { types: "./dist/browser-index.d.ts", import: "./dist/browser-index.js" }
+  },
+  "@aura3d/engine-runtime": {
+    "./advanced-runtime": { types: "./dist/advanced-runtime/index.d.ts", import: "./dist/advanced-runtime/index.js" },
+    "./animation-studio": { types: "./dist/animation-studio/index.d.ts", import: "./dist/animation-studio/index.js" }
+  },
+  "@aura3d/three-compat": {
+    "./controls": { types: "./dist/controls/index.d.ts", import: "./dist/controls/index.js" },
+    "./loaders": { types: "./dist/loaders/index.d.ts", import: "./dist/loaders/index.js" },
+    "./postprocessing": { types: "./dist/postprocessing/index.d.ts", import: "./dist/postprocessing/index.js" }
+  }
 };
+
+// These packages are intentionally installed as standalone tools/adapters rather
+// than re-exported through the browser-focused @aura3d/engine facade.
+const standaloneRootPackages = new Set([
+  "@aura3d/asset-index",
+  "@aura3d/cli",
+  "@aura3d/react",
+  "@aura3d/three-compat"
+]);
 
 function readJson(path: string): PackageJson {
   return JSON.parse(readFileSync(path, "utf8")) as PackageJson;
@@ -73,8 +97,8 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     if (!exportsMap || typeof exportsMap !== "object" || !("." in exportsMap)) {
       violations.push({ packageName: name, message: "Package must expose only an explicit \".\" export." });
     } else {
-      const allowedSubpaths = allowedSubpathExports[name] ?? [];
-      const unapprovedSubpaths = Object.keys(exportsMap).filter((key) => key !== "." && !allowedSubpaths.includes(key));
+      const approvedSubpaths = approvedSubpathExports[name] ?? {};
+      const unapprovedSubpaths = Object.keys(exportsMap).filter((key) => key !== "." && !(key in approvedSubpaths));
       if (unapprovedSubpaths.length > 0) {
         violations.push({ packageName: name, message: `Unapproved package subpath export found: ${unapprovedSubpaths.join(", ")}.` });
       }
@@ -90,19 +114,18 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
       } else if (mainExport !== "./dist/index.js") {
         violations.push({ packageName: name, message: "Package string export must point to ./dist/index.js." });
       }
-      for (const subpath of allowedSubpaths) {
+      for (const [subpath, expectedExport] of Object.entries(approvedSubpaths)) {
         const subpathExport = exportsMap[subpath];
         if (typeof subpathExport !== "object" || subpathExport === null) {
           violations.push({ packageName: name, message: `Package subpath export ${subpath} must be an explicit object export.` });
           continue;
         }
         const exportObject = subpathExport as Record<string, unknown>;
-        const distPath = `./dist/${subpath.slice(2)}/index`;
-        if (exportObject.types !== `${distPath}.d.ts`) {
-          violations.push({ packageName: name, message: `Package subpath export ${subpath} types must point to ${distPath}.d.ts.` });
+        if (exportObject.types !== expectedExport.types) {
+          violations.push({ packageName: name, message: `Package subpath export ${subpath} types must point to ${expectedExport.types}.` });
         }
-        if (exportObject.import !== `${distPath}.js`) {
-          violations.push({ packageName: name, message: `Package subpath export ${subpath} import must point to ${distPath}.js.` });
+        if (exportObject.import !== expectedExport.import) {
+          violations.push({ packageName: name, message: `Package subpath export ${subpath} import must point to ${expectedExport.import}.` });
         }
       }
     }
@@ -123,6 +146,7 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
       violations.push({ packageName: rootManifest.name ?? "root", message: "Root package must define exports." });
     } else {
       for (const packageName of publicPackages) {
+        if (standaloneRootPackages.has(packageName)) continue;
         const shortName = packageName.replace("@aura3d/", "");
         if (!(`./${shortName}` in rootExports)) {
           violations.push({ packageName: rootManifest.name ?? "root", message: `Missing root export ./${shortName}.` });

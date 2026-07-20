@@ -145,7 +145,7 @@
       }
     ],
     "lapLengthMeters": 49.404,
-    "estimatedLapSeconds": 75,
+    "estimatedLapSeconds": 45,
     "confidence": 0.76,
     "modelAlignment": {
       "source": "asset-mesh-extracted",
@@ -223,7 +223,7 @@
     "reasons": [
       "mesh-derived racing topology from 108 road primitive(s)",
       "lapLengthMeters:49.404",
-      "estimatedLapSeconds:75"
+      "estimatedLapSeconds:45"
     ],
     "blockers": []
   },
@@ -237,7 +237,7 @@
     "topologySource": "asset-mesh-extracted",
     "confidence": 0.76,
     "routeLength": 49.404,
-    "authoredLapSeconds": 75,
+    "authoredLapSeconds": 45,
     "pointCount": 21,
     "checkpointCount": 6
   },
@@ -340,7 +340,7 @@
     ]
   },
   "minLapSeconds": 30,
-  "authoredLapSeconds": 75,
+  "authoredLapSeconds": 45,
   "minCheckpoints": 6,
   "minLaps": 3,
   "routeAlignedToTrackAsset": true,

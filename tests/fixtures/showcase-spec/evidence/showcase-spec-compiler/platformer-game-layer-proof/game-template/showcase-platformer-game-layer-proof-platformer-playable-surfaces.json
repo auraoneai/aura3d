@@ -1,0 +1,71 @@
+{
+  "schema": "aura3d-platformer-playable-surfaces/1.0",
+  "routeId": "showcase-platformer-game-layer-proof",
+  "pass": true,
+  "failures": [],
+  "surfaceMap": {
+    "assetId": "showcaseSideScrollerWorld",
+    "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+    "source": "manifest-authored-overlay-validated",
+    "surfaces": [
+      { "id": "proof-main-runway", "x": 2.4, "y": 0, "width": 7.4, "height": 0.34, "kind": "ground" },
+      { "id": "proof-lower-bridge", "x": 9.6, "y": 0.12, "width": 6.4, "height": 0.34, "kind": "platform" },
+      { "id": "proof-mid-span", "x": 16.2, "y": 0.28, "width": 6.6, "height": 0.34, "kind": "platform" },
+      { "id": "proof-gap-run", "x": 22.8, "y": 0.18, "width": 5.8, "height": 0.34, "kind": "platform" },
+      { "id": "proof-upper-run", "x": 29.6, "y": 0.34, "width": 7.8, "height": 0.34, "kind": "platform" },
+      { "id": "proof-finish-ledges", "x": 35.2, "y": 0.7, "width": 1.1, "height": 1.1, "kind": "finish" },
+      { "id": "proof-hazard-gap-01", "x": 19.2, "y": 0.52, "width": 0.42, "height": 0.24, "kind": "hazard" },
+      { "id": "proof-hazard-gap-02", "x": 27.2, "y": 0.58, "width": 0.42, "height": 0.24, "kind": "hazard" },
+      { "id": "proof-checkpoint-start", "x": 6, "y": 0.72, "width": 1.1, "height": 1.1, "kind": "checkpoint" },
+      { "id": "proof-checkpoint-bridge", "x": 11.2, "y": 0.84, "width": 1.1, "height": 1.1, "kind": "checkpoint" },
+      { "id": "proof-checkpoint-mid", "x": 16.8, "y": 1, "width": 1.1, "height": 1.1, "kind": "checkpoint" },
+      { "id": "proof-checkpoint-hazard", "x": 23.4, "y": 0.92, "width": 1.1, "height": 1.1, "kind": "checkpoint" },
+      { "id": "proof-checkpoint-final", "x": 30.6, "y": 1.08, "width": 1.1, "height": 1.1, "kind": "checkpoint" },
+      { "id": "proof-checkpoint-finish", "x": 35.2, "y": 1.08, "width": 1.1, "height": 1.1, "kind": "checkpoint" }
+    ],
+    "levelLength": 37.2,
+    "estimatedCompletionSeconds": 36,
+    "characterScaleRatio": 0.38,
+    "confidence": 0.8,
+    "modelAlignment": {
+      "source": "manifest-authored-overlay-validated",
+      "modelBounds": {
+        "min": [-192.317, -102.591, -85.575],
+        "max": [188.919, 206.984, 238.905]
+      },
+      "modelPoint": [-1.699, -102.591, 76.665],
+      "gamePoint": { "x": 16.1, "y": 0 },
+      "anchorPairs": [
+        {
+          "id": "proof-main-runway-anchor",
+          "modelPoint": [-1.699, -102.591, 76.665],
+          "gamePoint": { "x": 16.1, "y": 0 }
+        },
+        {
+          "id": "proof-finish-anchor",
+          "modelPoint": [120, -102, 145],
+          "gamePoint": { "x": 35.2, "y": 0.7 }
+        }
+      ],
+      "evidence": {
+        "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+        "notes": "Overlay-validated surface anchors bind the proof route to the typed side-scroller world."
+      }
+    },
+    "evidence": {
+      "sourceAsset": "assets.showcaseSideScrollerWorld",
+      "renderedProbe": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
+      "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+      "notes": "The certified platformer proof route uses this retained surface map for contact, hazards, checkpoints, finish progression, and camera framing."
+    }
+  },
+  "level": {
+    "id": "showcase-platformer-game-layer-proof-surface-bound-level",
+    "minPlayableSeconds": 30,
+    "authoredPlayableSeconds": 36,
+    "playableSurfaceCount": 5,
+    "checkpointCount": 6,
+    "hazardCount": 2,
+    "finish": true
+  }
+}

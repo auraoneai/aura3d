@@ -20,7 +20,7 @@ describe("showcase non-game spec compiler", () => {
       expect(report.rejectedAssets).toHaveLength(1);
       expect(report.rejectedAssets[0]).toEqual(expect.objectContaining({
         id: "showcaseTeaHouse",
-        evidence: "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.json"
+        evidence: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json"
       }));
       expect(["route-primary-clipped", "route-primary-missing"]).toContain(report.rejectedAssets[0]?.reason);
       expect(report.replacementCandidates.length).toBeGreaterThan(0);
@@ -34,7 +34,7 @@ describe("showcase non-game spec compiler", () => {
       expect(report.replacementCandidates.find((candidate) => candidate.id === "showcaseVoxelBuilding")).toMatchObject({
         accepted: true,
         selected: true,
-        evidence: "tests/reports/showcase-release-asset-probes/showcaseVoxelBuilding.json"
+        evidence: "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseVoxelBuilding.json"
       });
       expect(readJson(outputDir, "route-health.json")).toMatchObject({
         categoryPlan: {
@@ -103,7 +103,7 @@ describe("showcase non-game spec compiler", () => {
       expect(report.rejectedAssets).toHaveLength(1);
       expect(report.rejectedAssets[0]).toEqual(expect.objectContaining({
         id: "showcaseDataStation",
-        evidence: "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.json"
+        evidence: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.json"
       }));
       expect(["route-primary-missing", "route-primary-unreadable"]).toContain(report.rejectedAssets[0]?.reason);
       expect(report.blockers).not.toContain("replacement:showcaseDataStation:no-suitable-candidate");

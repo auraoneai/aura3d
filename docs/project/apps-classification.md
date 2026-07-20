@@ -39,7 +39,7 @@ still not be a public release candidate.
 | `showcase-digital-twin-ops` | release-ready candidate | Public visual ops/dashboard demo; not a real digital-twin integration claim. |
 | `showcase-blockfall-reactor` | release-ready candidate | Public bounded falling-block route with retained gameplay proof. |
 | `showcase-public-racing-presentation-proof` | release-ready candidate | Public bounded racing presentation proof with certified retained geometry and pair evidence. |
-| `showcase-public-platformer-presentation-proof` | release-ready candidate | Public bounded platformer presentation proof with certified retained geometry and pair evidence. |
+| `showcase-public-platformer-presentation-proof` | removed-from-public-showcase | Superseded by Skyline Runner; retained only as inspectable historical certification evidence. |
 | `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |

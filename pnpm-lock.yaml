@@ -229,6 +229,9 @@ importers:
       '@aura3d/math':
         specifier: workspace:*
         version: link:../math
+      '@aura3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
 
   packages/editor:
     dependencies:

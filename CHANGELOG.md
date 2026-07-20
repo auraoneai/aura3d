@@ -11,8 +11,8 @@ Game-geometry certification, composition validation, generated immutable route c
 - Added CLI-owned game-geometry certification and route-evidence binding with current asset hashes, retained probes, provenance, and atomic manifest updates.
 - Added category-specific racing topology and platformer playable-surface extraction, asset-pair composition validation, scene-scale/pacing contracts, and compiler-emitted geometry modules.
 - Rebuilt Turbo Drift Circuit and Skyline Runner with certified assets, evidence-selected cameras, reusable contact queries, 30-second category floors, gameplay proof, and accepted desktop/mobile presentation.
-- Added fail-closed six-check automated visual QA with manual downward-only review; all four public game routes retain independent reports.
-- Updated the public showcase to 10/10 release candidates while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
+- Added fail-closed six-check automated visual QA with manual downward-only review; the three current public game routes and one superseded historical proof retain independent reports.
+- Updated the public showcase to 9/9 current release candidates, retained one superseded historical platformer proof, and kept two internal diagnostics plus two game-layer diagnostic harnesses outside the public count.
 - Restored the complete multi-page marketing/docs/showcase deployment and aligned package, API, agent, route, governance, and release documentation to 1.4.4.
 
 ### Claim Boundary

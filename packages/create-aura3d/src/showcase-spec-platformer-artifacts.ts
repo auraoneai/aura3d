@@ -79,6 +79,7 @@ const level = game.assetBoundPlatformerLevel({
   characterAsset: "${platformer.characterAsset}",
   worldAssetBindings: gameGeometryContract.worldAssetBindings,
   playableSurfaceMap,
+  authoredPlayableSeconds,
   minPlayableSeconds: ${platformer.levelDesign.minPlayableSeconds},
   minCheckpoints: ${platformer.levelDesign.minCheckpoints},
   level: gameGeometryContract.level

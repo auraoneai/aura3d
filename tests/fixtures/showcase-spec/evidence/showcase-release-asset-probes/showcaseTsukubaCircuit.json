@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:33:11.956Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:33:11.953Z",
+    "sha256": "sha256-2ff3419b5fc2051df3f8ef0a8c6193af4a0e44cb619b59fe84c2f71ceb70a9a4",
+    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 44,
+    "foregroundBounds": {
+      "x": 177,
+      "y": 198,
+      "width": 385,
+      "height": 193
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseTsukubaCircuit",
+    "asset": {
+      "id": "showcaseTsukubaCircuit",
+      "typed": "assets.showcaseTsukubaCircuit",
+      "url": "/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+      "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 128,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 19814,
+      "colorBuckets": 153,
+      "foregroundBounds": {
+        "x": 177,
+        "y": 198,
+        "width": 385,
+        "height": 193
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

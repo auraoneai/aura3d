@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:35:29.162Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyRaceCarRed.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyRaceCarRed.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyRaceCarRed",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:35:29.161Z",
+    "sha256": "sha256-0dced141fff6bc708404d70d84c0f900541c1d46050340ddfcecfe41074b06db",
+    "assetHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 43,
+    "foregroundBounds": {
+      "x": 59,
+      "y": 274,
+      "width": 283,
+      "height": 158
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyRaceCarRed",
+    "asset": {
+      "id": "showcaseKenneyRaceCarRed",
+      "typed": "assets.showcaseKenneyRaceCarRed",
+      "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+      "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 22,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 32067,
+      "colorBuckets": 112,
+      "foregroundBounds": {
+        "x": 59,
+        "y": 274,
+        "width": 283,
+        "height": 158
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

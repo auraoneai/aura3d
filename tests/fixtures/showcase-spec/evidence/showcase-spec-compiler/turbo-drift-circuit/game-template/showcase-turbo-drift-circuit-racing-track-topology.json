@@ -1,0 +1,351 @@
+{
+  "schema": "aura3d-racing-track-topology/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "generatedBy": "showcase-spec-compiler",
+  "topologySource": "asset-bound-road-topology",
+  "templateCapabilityStatus": "asset-bound-road-topology-proven",
+  "vehicleAsset": "showcaseKenneyRaceCarRed",
+  "trackAsset": "showcaseKenneyNeonRaceCircuit",
+  "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+  "topology": {
+    "assetId": "showcaseKenneyNeonRaceCircuit",
+    "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+    "source": "asset-mesh-extracted",
+    "roadCenterline": [
+      {
+        "x": -9.098,
+        "z": -1.441,
+        "width": 1.792
+      },
+      {
+        "x": -7.588,
+        "z": -3.867,
+        "width": 1.792
+      },
+      {
+        "x": -5.087,
+        "z": -5.087,
+        "width": 1.792
+      },
+      {
+        "x": -3.037,
+        "z": -5.96,
+        "width": 1.792
+      },
+      {
+        "x": -0.967,
+        "z": -6.102,
+        "width": 1.792
+      },
+      {
+        "x": 0.966,
+        "z": -6.102,
+        "width": 1.792
+      },
+      {
+        "x": 3.037,
+        "z": -5.96,
+        "width": 1.792
+      },
+      {
+        "x": 5.087,
+        "z": -5.087,
+        "width": 1.792
+      },
+      {
+        "x": 7.588,
+        "z": -3.867,
+        "width": 1.792
+      },
+      {
+        "x": 9.097,
+        "z": -1.441,
+        "width": 1.792
+      },
+      {
+        "x": 9.098,
+        "z": 1.441,
+        "width": 1.792
+      },
+      {
+        "x": 7.588,
+        "z": 3.867,
+        "width": 1.792
+      },
+      {
+        "x": 5.087,
+        "z": 5.087,
+        "width": 1.792
+      },
+      {
+        "x": 3.037,
+        "z": 5.96,
+        "width": 1.792
+      },
+      {
+        "x": 0.967,
+        "z": 6.106,
+        "width": 1.792
+      },
+      {
+        "x": -0.967,
+        "z": 6.105,
+        "width": 1.792
+      },
+      {
+        "x": -3.037,
+        "z": 5.96,
+        "width": 1.792
+      },
+      {
+        "x": -5.087,
+        "z": 5.087,
+        "width": 1.792
+      },
+      {
+        "x": -7.588,
+        "z": 3.867,
+        "width": 1.792
+      },
+      {
+        "x": -9.097,
+        "z": 1.441,
+        "width": 1.792
+      },
+      {
+        "x": -9.098,
+        "z": -1.441,
+        "width": 1.792
+      }
+    ],
+    "checkpoints": [
+      {
+        "progress": 0.167,
+        "width": 1.792
+      },
+      {
+        "progress": 0.333,
+        "width": 1.792
+      },
+      {
+        "progress": 0.5,
+        "width": 1.792
+      },
+      {
+        "progress": 0.667,
+        "width": 1.792
+      },
+      {
+        "progress": 0.833,
+        "width": 1.792
+      },
+      {
+        "progress": 1,
+        "width": 1.792
+      }
+    ],
+    "lapLengthMeters": 49.404,
+    "estimatedLapSeconds": 45,
+    "confidence": 0.76,
+    "modelAlignment": {
+      "source": "asset-mesh-extracted",
+      "modelBounds": {
+        "min": [
+          -24.111,
+          -0.67,
+          -17.726
+        ],
+        "max": [
+          23.14,
+          4.08,
+          17.726
+        ]
+      },
+      "modelPoint": [
+        0,
+        0.03,
+        0
+      ],
+      "gamePoint": {
+        "x": 0,
+        "z": 0
+      },
+      "anchorPairs": [
+        {
+          "id": "mesh-road-anchor-1",
+          "modelPoint": [
+            -9.098,
+            0.03,
+            -1.441
+          ],
+          "gamePoint": {
+            "x": -9.098,
+            "z": -1.441
+          }
+        },
+        {
+          "id": "mesh-road-anchor-2",
+          "modelPoint": [
+            5.087,
+            0.03,
+            -5.087
+          ],
+          "gamePoint": {
+            "x": 5.087,
+            "z": -5.087
+          }
+        },
+        {
+          "id": "mesh-road-anchor-3",
+          "modelPoint": [
+            0.967,
+            0.03,
+            6.106
+          ],
+          "gamePoint": {
+            "x": 0.967,
+            "z": 6.106
+          }
+        }
+      ],
+      "evidence": {
+        "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+      }
+    },
+    "evidence": {
+      "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+      "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash.",
+      "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+    }
+  },
+  "meshExtraction": {
+    "status": "pass",
+    "reasons": [
+      "mesh-derived racing topology from 108 road primitive(s)",
+      "lapLengthMeters:49.404",
+      "estimatedLapSeconds:45"
+    ],
+    "blockers": []
+  },
+  "assetBinding": {
+    "kind": "aura-game-asset-bound-racing-route",
+    "layoutContractVersion": "1.0",
+    "generatedFrom": "mesh-derived-track-topology",
+    "vehicleAsset": "showcaseKenneyRaceCarRed",
+    "trackAsset": "showcaseKenneyNeonRaceCircuit",
+    "trackAssetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+    "topologySource": "asset-mesh-extracted",
+    "confidence": 0.76,
+    "routeLength": 49.404,
+    "authoredLapSeconds": 45,
+    "pointCount": 21,
+    "checkpointCount": 6
+  },
+  "route": {
+    "width": 1.792,
+    "routeLength": 49.404,
+    "points": [
+      {
+        "x": -9.098,
+        "y": -1.441
+      },
+      {
+        "x": -7.588,
+        "y": -3.867
+      },
+      {
+        "x": -5.087,
+        "y": -5.087
+      },
+      {
+        "x": -3.037,
+        "y": -5.96
+      },
+      {
+        "x": -0.967,
+        "y": -6.102
+      },
+      {
+        "x": 0.966,
+        "y": -6.102
+      },
+      {
+        "x": 3.037,
+        "y": -5.96
+      },
+      {
+        "x": 5.087,
+        "y": -5.087
+      },
+      {
+        "x": 7.588,
+        "y": -3.867
+      },
+      {
+        "x": 9.097,
+        "y": -1.441
+      },
+      {
+        "x": 9.098,
+        "y": 1.441
+      },
+      {
+        "x": 7.588,
+        "y": 3.867
+      },
+      {
+        "x": 5.087,
+        "y": 5.087
+      },
+      {
+        "x": 3.037,
+        "y": 5.96
+      },
+      {
+        "x": 0.967,
+        "y": 6.106
+      },
+      {
+        "x": -0.967,
+        "y": 6.105
+      },
+      {
+        "x": -3.037,
+        "y": 5.96
+      },
+      {
+        "x": -5.087,
+        "y": 5.087
+      },
+      {
+        "x": -7.588,
+        "y": 3.867
+      },
+      {
+        "x": -9.097,
+        "y": 1.441
+      },
+      {
+        "x": -9.098,
+        "y": -1.441
+      }
+    ],
+    "checkpoints": [
+      0.167,
+      0.333,
+      0.5,
+      0.667,
+      0.833,
+      1
+    ]
+  },
+  "minLapSeconds": 30,
+  "authoredLapSeconds": 45,
+  "minCheckpoints": 6,
+  "minLaps": 3,
+  "routeAlignedToTrackAsset": true,
+  "carTrackScaleCompatible": true,
+  "noDebugLocatorDisk": true,
+  "pass": true,
+  "failures": []
+}

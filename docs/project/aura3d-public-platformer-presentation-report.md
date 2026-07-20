@@ -1,5 +1,7 @@
 # Aura3D Public Platformer Presentation Report
 
+> **Superseded by Skyline Runner:** this route remains available for historical certification evidence but is no longer a public marketing card or release candidate.
+
 ## Scope
 
 This report records the public platformer presentation layer added on
@@ -10,7 +12,7 @@ commercial platformer kit, or a general collision system.
 
 ## Public Route
 
-`apps/showcase-public-platformer-presentation-proof` is the public platformer
+`apps/showcase-public-platformer-presentation-proof` was the original public platformer
 presentation proof route.
 
 - Character asset: `assets.showcaseWalkAnimatedGirl`.
@@ -76,7 +78,7 @@ public retained geometry report.
 
 ## Classification
 
-- `showcase-public-platformer-presentation-proof` is a public release-ready
+- `showcase-public-platformer-presentation-proof` is retained historical
   candidate.
 - `showcase-platformer-game-layer-proof` remains a `game-layer-diagnostic`
   route. It continues to prove geometry contracts and evidence plumbing, not
@@ -87,7 +89,7 @@ public retained geometry report.
 `node tools/showcase-library/build-and-check.mjs` now reports:
 
 ```text
-Showcase public release evidence passed for 10/10 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
+Current showcase public release evidence passes 9/9 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
 ```
 
 ## Verification

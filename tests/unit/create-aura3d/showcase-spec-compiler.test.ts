@@ -71,7 +71,7 @@ describe("showcase spec compiler", () => {
           status: "release-ready candidate",
           label: "createAuraApp",
           allowed: [
-            "typed-product-asset: tests/reports/showcase-route-primary-probes/showcase-product-configurator.json",
+            "typed-product-asset: tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
             "configurator-ui: apps/showcase-product-configurator/README.md"
           ],
           notAllowed: []
@@ -79,10 +79,10 @@ describe("showcase spec compiler", () => {
         evidence: {
           global: "window.__AURA3D_SHOWCASE_GENERATED_HEADPHONES__",
           sourceReview: "apps/showcase-generated-headphones/src/main.ts",
-          routePrimaryProbe: "tests/reports/showcase-route-primary-probes/showcase-product-configurator.json",
-          routePrimaryScreenshot: "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          desktopScreenshot: "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          mobileScreenshot: "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png"
+          routePrimaryProbe: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.json",
+          routePrimaryScreenshot: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
+          desktopScreenshot: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
+          mobileScreenshot: "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png"
         }
       });
       expect(routeHealth.primaryAssets).toEqual([{

@@ -361,7 +361,8 @@ function platformerPlanFromSurfaceMap(
     id: `${spec.routeId}-asset-bound-platformer-level`,
     start,
     finish,
-    moveSpeed: Number((playableSurfaceMap.levelLength / playableSurfaceMap.estimatedCompletionSeconds).toFixed(3)),
+    // Authored duration includes the checkpoint, jump, hazard, and finish flow; do not turn that duration into sluggish walking speed.
+    moveSpeed: Number(Math.max(1.15, playableSurfaceMap.levelLength / playableSurfaceMap.estimatedCompletionSeconds).toFixed(3)),
     jumpVelocity: 7.4,
     lowerBound: -1.4,
     platforms,

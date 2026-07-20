@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-webgpu-particle-lab",
+  "label": "WebGPU Particle Lab",
+  "category": "particle-diagnostic",
+  "path": "/apps/showcase-webgpu-particle-lab/",
+  "globalName": "__AURA3D_SHOWCASE_WEBGPU_PARTICLE_LAB__",
+  "claimLabel": "prototype",
+  "publicStatus": "internal-diagnostic",
+  "layout": {
+    "heroAsset": "showcaseParticleCore",
+    "uiPlacement": "right-panel"
+  },
+  "categoryPlan": {
+    "kind": "particle-diagnostic",
+    "primaryAsset": "showcaseParticleCore",
+    "cameraIntent": "diagnostic-core",
+    "backendClaim": "fallback",
+    "layoutConstraints": {
+      "keepHeroReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "claims": {
+      "allowed": [
+        "webgl particle diagnostic",
+        "typed lab asset"
+      ],
+      "notAllowed": [
+        "native WebGPU",
+        "compute dispatch"
+      ]
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseParticleCore",
+      "role": "effect-core",
+      "typedRef": "assets.showcaseParticleCore",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false,
+      "assetPolicy": {
+        "allowReplacement": false,
+        "replacementQuery": "particle diagnostic reactor core",
+        "requiredRole": "effect-core",
+        "minQuality": "candidate",
+        "requireRenderedProbe": false,
+        "requireDeployPass": false
+      }
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": false,
+    "routePrimaryPassed": false
+  },
+  "capabilities": [
+    {
+      "name": "webgl-particle-diagnostic",
+      "status": "partial",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.json"
+    },
+    {
+      "name": "native-webgpu",
+      "status": "unsupported"
+    }
+  ]
+}

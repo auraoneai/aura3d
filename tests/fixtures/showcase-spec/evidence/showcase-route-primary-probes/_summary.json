@@ -1,0 +1,26 @@
+{
+  "schema": "aura3d-route-primary-probe-summary/1.0",
+  "generatedAt": "2026-07-20T06:12:31.143Z",
+  "routeGateConfig": {
+    "path": "tools/showcase-library/route-gates.json",
+    "schema": "aura3d-showcase-route-gates/1.0",
+    "hash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d"
+  },
+  "pass": true,
+  "routes": [
+    {
+      "routeId": "showcase-skyline-runner",
+      "pass": true,
+      "failures": [],
+      "evidencePath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+      "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png"
+    },
+    {
+      "routeId": "showcase-turbo-drift-circuit",
+      "pass": true,
+      "failures": [],
+      "evidencePath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+      "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+    }
+  ]
+}

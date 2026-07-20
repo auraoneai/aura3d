@@ -162,8 +162,8 @@ const IDENTITY_MATRIX: Mat4 = [
   0, 0, 0, 1
 ];
 
-const RACING_CERTIFIED_GAME_UNITS_PER_SECOND = 0.66;
-const RACING_MAX_AUTHORED_LAP_SECONDS = 75;
+const RACING_CERTIFIED_GAME_UNITS_PER_SECOND = 1.1;
+const RACING_MAX_AUTHORED_LAP_SECONDS = 60;
 
 const ROAD_PATTERN = /\b(asph|asphalt|road|track|circuit|route|lane|kerb|curb)\b/i;
 const ROAD_EXCLUDE_PATTERN = /\b(grass|water|lake|mount|terrain|wall|fence|tree|building|sky)\b/i;

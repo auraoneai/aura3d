@@ -1,0 +1,114 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-webgpu-particle-lab",
+  "routePath": "/apps/showcase-webgpu-particle-lab/",
+  "appId": "showcase-webgpu-particle-lab",
+  "sourceHash": "sha256-5eb644e50b9381edcc96bc7a6c25995e060fa256dc5440a533be10b89b9c4fda",
+  "routeGateHash": "6bf0e341fbdc0268931362bdbd1eadae41de397b9bcdc2a62717b26e0cf3dbdf",
+  "routePrimaryHeroAsset": "showcaseParticleCore",
+  "secondaryPrimaryAssets": [],
+  "routeHealthHash": "sha256-8f9462a81592bc747aa147af35408a5ae1c135ab23fa31de487dcade0c84bcaa",
+  "generatedAt": "2026-07-19T21:17:36.123Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "running",
+    "evidenceKeys": [
+      "appId",
+      "capabilityState",
+      "claimBoundary",
+      "controls",
+      "frameCount",
+      "labSet",
+      "performance",
+      "status",
+      "systems"
+    ],
+    "primaryAssets": [
+      "showcaseParticleCore"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 15,
+    "renderSize": [
+      1066,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+    "sha256": "sha256-da16338a73136f1915033b0a97b612cfe8bafde7fcea1f71b663d1179dc5bbe5",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 10,
+      "width": 1045,
+      "height": 880
+    },
+    "nonBlankPixels": 638443,
+    "colorBuckets": 122,
+    "foregroundBounds": {
+      "x": 10,
+      "y": 10,
+      "width": 1045,
+      "height": 655
+    },
+    "visible": true,
+    "clipped": true,
+    "occludedByUi": false,
+    "readabilityScore": 85,
+    "failures": [
+      "primary-foreground-clipped"
+    ]
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseParticleCore",
+      "role": "effect-core",
+      "expectedTypedRef": "assets.showcaseParticleCore",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+        "sha256": "sha256-da16338a73136f1915033b0a97b612cfe8bafde7fcea1f71b663d1179dc5bbe5",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 10,
+          "width": 1045,
+          "height": 880
+        },
+        "nonBlankPixels": 638443,
+        "colorBuckets": 122,
+        "foregroundBounds": {
+          "x": 10,
+          "y": 10,
+          "width": 1045,
+          "height": 655
+        },
+        "visible": true,
+        "clipped": true,
+        "occludedByUi": false,
+        "readabilityScore": 85,
+        "failures": [
+          "primary-foreground-clipped"
+        ]
+      }
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": false,
+  "failures": [
+    "primary-foreground-clipped"
+  ]
+}

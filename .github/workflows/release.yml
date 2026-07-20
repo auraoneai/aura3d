@@ -44,13 +44,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run all checks
-        run: |
-          pnpm typecheck
-          pnpm test:unit
-          pnpm build
-          pnpm verify:package-provenance
-          pnpm verify:release:quick
+      - name: Validate publishable packages from tracked source
+        run: pnpm verify:npm-release
 
       - name: Verify requested package version
         if: github.event_name == 'workflow_dispatch'

@@ -4,7 +4,7 @@ Status: completed on 2026-07-19
 
 ## Result
 
-The game-layer rebuild is complete for the current certified racing/platformer asset set. Turbo Drift Circuit and Skyline Runner are bounded public release-ready candidates. Racing Game Layer Proof and Platformer Game Layer Proof remain internal diagnostic harnesses. Current aggregate evidence passes 10/10 public release candidates, two internal diagnostics, two game-layer diagnostics, zero prototype-blocked routes, and one separate index route.
+The game-layer rebuild is complete for the current certified racing/platformer asset set. Turbo Drift Circuit and Skyline Runner are bounded public release-ready candidates. Racing Game Layer Proof and Platformer Game Layer Proof remain internal diagnostic harnesses. Current aggregate evidence passes 9/9 current public release candidates, with the earlier public platformer proof retained as superseded historical evidence, two internal diagnostics, two game-layer diagnostics, zero prototype-blocked routes, and one separate index route.
 
 ## Shipped Layers
 
