@@ -1,0 +1,43 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-generated-webgpu-lab",
+  "label": "Generated WebGPU Particle Lab",
+  "category": "particle-lab",
+  "path": "/apps/showcase-generated-webgpu-lab/",
+  "globalName": "__AURA3D_SHOWCASE_GENERATED_WEBGPU_LAB__",
+  "claimLabel": "createAuraApp",
+  "publicStatus": "release-ready candidate",
+  "layout": {
+    "heroAsset": "showcaseParticleCore",
+    "uiPlacement": "right-panel"
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseParticleCore",
+      "role": "effect-core",
+      "typedRef": "assets.showcaseParticleCore",
+      "quality": "candidate",
+      "hasDurableProvenance": false,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": false,
+      "hasForegroundBounds": false
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
+    "deployPassed": false,
+    "routePrimaryPassed": false
+  },
+  "capabilities": [
+    {
+      "name": "native-webgpu",
+      "status": "unsupported"
+    },
+    {
+      "name": "compute-dispatch",
+      "status": "unsupported"
+    }
+  ]
+}

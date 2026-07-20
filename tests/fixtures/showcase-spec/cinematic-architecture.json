@@ -1,0 +1,73 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-cinematic-architecture",
+  "label": "Cinematic Architecture",
+  "category": "architecture-environment",
+  "path": "/apps/showcase-cinematic-architecture/",
+  "globalName": "__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
+  "claimLabel": "prototype",
+  "publicStatus": "prototype-blocked",
+  "layout": {
+    "heroAsset": "showcaseTeaHouse",
+    "uiPlacement": "left-panel"
+  },
+  "categoryPlan": {
+    "kind": "architecture-environment",
+    "primaryAsset": "showcaseTeaHouse",
+    "cameraIntent": "architecture-hero",
+    "layoutConstraints": {
+      "keepHeroReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "claims": {
+      "allowed": [
+        "typed architecture asset",
+        "base material route"
+      ],
+      "notAllowed": [
+        "HDR",
+        "shadow proof",
+        "postprocess",
+        "full PBR"
+      ]
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseTeaHouse",
+      "role": "environment",
+      "typedRef": "assets.showcaseTeaHouse",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false,
+      "assetPolicy": {
+        "allowReplacement": true,
+        "replacementQuery": "readable architecture building exterior environment",
+        "requiredRole": "architecture",
+        "minQuality": "release",
+        "requireRenderedProbe": true,
+        "requireDeployPass": true
+      }
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-cinematic-architecture/dist --release --source apps/showcase-cinematic-architecture/src --asset showcaseTeaHouse",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": false,
+    "routePrimaryPassed": false,
+    "releaseAssetProbes": {
+      "showcaseVoxelBuilding": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseVoxelBuilding.json"
+    }
+  },
+  "capabilities": [
+    {
+      "name": "architecture-environment",
+      "status": "partial",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-cinematic-architecture.json"
+    }
+  ]
+}

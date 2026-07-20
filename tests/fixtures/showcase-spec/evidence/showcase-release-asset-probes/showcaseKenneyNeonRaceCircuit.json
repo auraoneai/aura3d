@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:35:22.484Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyNeonRaceCircuit",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:35:22.484Z",
+    "sha256": "sha256-c61746e75fe3306b26af68691e68bcf766ed91ea29cdcb4224988e90ec6676a1",
+    "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 112,
+    "foregroundBounds": {
+      "x": 111,
+      "y": 109,
+      "width": 536,
+      "height": 329
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyNeonRaceCircuit",
+    "asset": {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "typed": "assets.showcaseKenneyNeonRaceCircuit",
+      "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+      "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 560,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 90931,
+      "colorBuckets": 356,
+      "foregroundBounds": {
+        "x": 111,
+        "y": 109,
+        "width": 536,
+        "height": 329
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

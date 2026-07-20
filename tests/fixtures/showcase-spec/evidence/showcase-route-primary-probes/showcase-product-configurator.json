@@ -1,0 +1,117 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-product-configurator",
+  "routePath": "/apps/showcase-product-configurator/",
+  "appId": "showcase-product-configurator",
+  "sourceHash": "sha256-dba0f07c491674f648e71cd67f73f381e4621d6d15a05a6404670e02a7ff3c15",
+  "routeGateHash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d",
+  "routePrimaryHeroAsset": "showcaseHeadphones",
+  "secondaryPrimaryAssets": [],
+  "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
+  "generatedAt": "2026-07-20T05:20:38.765Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "ready",
+    "evidenceKeys": [
+      "appId",
+      "asset",
+      "auraSceneEvidence",
+      "claimBoundary",
+      "controls",
+      "diagnostics",
+      "interactionState",
+      "proceduralStatus",
+      "productDiagnostics",
+      "productVisualQA",
+      "routeHealth",
+      "scene",
+      "schema",
+      "state",
+      "status",
+      "systems",
+      "telemetry",
+      "updatedAt"
+    ],
+    "primaryAssets": [
+      "showcaseHeadphones"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "scene-plan",
+    "drawCalls": 6,
+    "renderSize": [
+      1440,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
+    "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 398,
+      "y": 218,
+      "width": 1032,
+      "height": 526
+    },
+    "nonBlankPixels": 54766,
+    "colorBuckets": 31,
+    "foregroundBounds": {
+      "x": 576,
+      "y": 293,
+      "width": 298,
+      "height": 344
+    },
+    "visible": true,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 100,
+    "failures": []
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseHeadphones",
+      "role": "product",
+      "expectedTypedRef": "assets.showcaseHeadphones",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-product-configurator.png",
+        "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 398,
+          "y": 218,
+          "width": 1032,
+          "height": 526
+        },
+        "nonBlankPixels": 54766,
+        "colorBuckets": 31,
+        "foregroundBounds": {
+          "x": 576,
+          "y": 293,
+          "width": 298,
+          "height": 344
+        },
+        "visible": true,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 100,
+        "failures": []
+      }
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": true,
+  "failures": []
+}

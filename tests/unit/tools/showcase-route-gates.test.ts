@@ -1,9 +1,9 @@
 // allow: SIZE_OK - route-gate contract suite; split plan recorded in .omo/evidence/full-showcase-recovery-size-split-plan.md.
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 interface ShowcaseRouteGate {
   readonly id: string;
@@ -210,7 +210,6 @@ const publicReleaseCandidateIds = new Set([
   "showcase-cinematic-architecture",
   "showcase-blockfall-reactor",
   "showcase-public-racing-presentation-proof",
-  "showcase-public-platformer-presentation-proof",
   "showcase-digital-twin-ops",
   "showcase-skyline-runner",
   "showcase-turbo-drift-circuit"
@@ -218,6 +217,7 @@ const publicReleaseCandidateIds = new Set([
 const internalDiagnosticIds = new Set(["showcase-data-galaxy", "showcase-webgpu-particle-lab"]);
 const gameLayerDiagnosticIds = new Set(["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]);
 const prototypeBlockedIds = new Set<string>();
+const removedFromPublicShowcaseIds = new Set(["showcase-public-platformer-presentation-proof"]);
 const gameLayerDiagnosticExpectations = new Map([
   ["showcase-racing-game-layer-proof", {
     category: "racing",
@@ -313,6 +313,16 @@ interface GameReleaseGateModule {
 }
 
 describe("showcase route gate registry", () => {
+  const materializedFixtureFiles: string[] = [];
+
+  beforeAll(() => {
+    materializedFixtureFiles.push(...materializeRetainedShowcaseFixtures());
+  });
+
+  afterAll(() => {
+    for (const path of materializedFixtureFiles.reverse()) rmSync(path, { force: true });
+  });
+
   it("loads route gates through the shared route-gates module", async () => {
     const module = await loadRouteGateModule();
     const loadedConfig = module.readShowcaseRouteGateConfig(process.cwd());
@@ -363,6 +373,8 @@ describe("showcase route gate registry", () => {
         expect(route.releaseClass, `${route.id} game-layer diagnostic release class`).toBe("game-layer-diagnostic");
       } else if (prototypeBlockedIds.has(route.id)) {
         expect(route.releaseClass, `${route.id} prototype release class`).toBe("prototype-blocked");
+      } else if (removedFromPublicShowcaseIds.has(route.id)) {
+        expect(route.releaseClass, `${route.id} superseded release class`).toBe("removed-from-public-showcase");
       } else if (publicReleaseCandidateIds.has(route.id)) {
         expect(route.releaseClass, `${route.id} public release class`).toBe("release-ready candidate");
       }
@@ -977,6 +989,12 @@ describe("showcase route gate registry", () => {
         expect(launchEvidence.gameLayerDiagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in game-layer diagnostics`).toBe(true);
       }
 
+      if (route.releaseClass === "removed-from-public-showcase") {
+        expect(launchRoute?.publicReleaseCounted, `${route.id} superseded route public release counted`).toBe(false);
+        expect(launchRoute?.routeHealth?.classification, `${route.id} superseded route-health classification`).toBe("removed-from-public-showcase");
+        expect(launchRoute?.routeHealth?.publicShowcase, `${route.id} superseded route is not public`).toBe(false);
+      }
+
       if (route.releaseClass === "prototype-blocked") {
         expect(launchRoute?.publicReleaseCounted, `${route.id} prototype public release counted`).toBe(false);
         expect(launchRoute?.publicReleaseOk, `${route.id} prototype public release ok`).toBe(true);
@@ -1201,6 +1219,28 @@ describe("showcase route gate registry", () => {
     }
   });
 });
+
+function materializeRetainedShowcaseFixtures(): string[] {
+  const fixtureRoot = resolve("tests/fixtures/showcase-spec/evidence");
+  const reportsRoot = resolve("tests/reports");
+  if (!existsSync(fixtureRoot)) return [];
+  const created: string[] = [];
+  for (const source of walkFiles(fixtureRoot)) {
+    const relativePath = source.slice(fixtureRoot.length + 1);
+    const target = resolve(reportsRoot, relativePath);
+    if (existsSync(target)) continue;
+    mkdirSync(resolve(target, ".."), { recursive: true });
+    if (source.endsWith(".json")) {
+      const fixturePrefix = "tests/fixtures/showcase-spec/evidence/";
+      const reportSource = readFileSync(source, "utf8").replaceAll(fixturePrefix, "tests/reports/");
+      writeFileSync(target, reportSource);
+    } else {
+      copyFileSync(source, target);
+    }
+    created.push(target);
+  }
+  return created;
+}
 
 function expectedGlobalName(routeId: string): string {
   return `__AURA3D_${routeId.replace(/-/g, "_").toUpperCase()}__`;

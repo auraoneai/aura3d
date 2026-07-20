@@ -161,7 +161,7 @@ describe("showcase platformer spec compiler", () => {
         }
       });
       expect(routeHealth.evidence).toMatchObject({
-        gameplayProof: "tests/reports/showcase-gameplay/showcase-skyline-runner.json",
+        gameplayProof: "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-skyline-runner.json",
         gameplayPassed: true
       });
     } finally {
@@ -530,7 +530,7 @@ describe("showcase platformer spec compiler", () => {
   it("selects a replacement world with hash-bound overlay-validated playable surfaces", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-platformer-spec-"));
     const projectDir = mkdtempSync(join(tmpdir(), "aura3d-platformer-project-"));
-    const routePrimaryScreenshot = "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png";
+    const routePrimaryScreenshot = "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png";
     const passingSurfaceMap = createPassingPlayableSurfaceEvidence(routePrimaryScreenshot).surfaceMap;
     const surfaceMap = {
       ...passingSurfaceMap,

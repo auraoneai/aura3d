@@ -1,0 +1,4989 @@
+{
+  "schema": "aura3d-showcase-gameplay-proof",
+  "appId": "showcase-skyline-runner",
+  "pass": true,
+  "blockers": [],
+  "browserErrors": [],
+  "screenshots": {
+    "beforeInput": {
+      "path": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-gameplay/showcase-skyline-runner-before-input.png",
+      "bytes": 132164,
+      "sha256": "13605628c99c56a09d277993d03d0dda8f954b936a81a2ac9c617c872c3b7cb5"
+    },
+    "afterInput": {
+      "path": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+      "bytes": 131717,
+      "sha256": "06df3b2750af2e047df605b49ec92a268ff97525fdbfc769ab012d3315b1848d"
+    }
+  },
+  "evidence": {
+    "before": {
+      "schema": "aura3d-showcase-compiled-platformer-route/1.1",
+      "appId": "showcase-skyline-runner",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyA",
+          "KeyD",
+          "Space",
+          "ArrowUp",
+          "KeyW",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.platformer",
+        "geometry": "certified-platformer-surfaces",
+        "camera": "game.platformerCameraRig"
+      },
+      "claimBoundary": "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
+      "platformerStateStatus": "playing",
+      "frameCount": 1,
+      "score": 0,
+      "coins": 0,
+      "deaths": 0,
+      "checkpointId": "start",
+      "animation": {
+        "stateHistory": [
+          {
+            "state": "idle"
+          }
+        ],
+        "sampleFrame": 1
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 0,
+        "drawCalls": 0,
+        "renderSize": [
+          0,
+          0
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyVerdantPlatformerWorld",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          {
+            "id": "showcaseKenneyOobiPlatformerHero",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            },
+            "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "platformer-player"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 2,
+              "ids": [
+                "platformer-bound-world-asset",
+                "platformer-player"
+              ],
+              "debugLabels": {
+                "platformer-bound-world-asset": "runtime:platformer-bound-world-asset",
+                "platformer-player": "runtime:platformer-player"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 2,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": [],
+        "snapshot": {
+          "x": 0.8,
+          "y": 0.22,
+          "vy": 0
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        },
+        "surfaceContact": [
+          -2.858,
+          -0.626,
+          0.42
+        ],
+        "surfaceContactAlignment": {
+          "feetOnSurface": true,
+          "surfaceId": "asset-main-ground",
+          "verticalGap": 0,
+          "sceneContact": [
+            -2.858,
+            -0.626,
+            0.42
+          ],
+          "scenePlayer": [
+            -2.858,
+            -0.626,
+            0.42
+          ],
+          "playerTargetHeight": 0.32
+        },
+        "completionProof": {
+          "completed": true,
+          "stable": true,
+          "finalTime": 31.807,
+          "checkpoints": [
+            "asset-checkpoint-01",
+            "asset-checkpoint-02",
+            "asset-checkpoint-03",
+            "asset-checkpoint-04",
+            "asset-checkpoint-05",
+            "asset-checkpoint-06"
+          ],
+          "eventCounts": {
+            "respawn": 1,
+            "finish": 1
+          }
+        }
+      },
+      "kitContractProof": {
+        "movementChangesPosition": false,
+        "jumpChangesVerticalState": true,
+        "checkpointOrProgression": true,
+        "hazardRespawnOrRetry": true,
+        "finishProgression": true,
+        "checkpointEvent": true,
+        "hazardEvent": true,
+        "respawnEvent": true,
+        "finishEvent": true,
+        "resetRestoresStart": false
+      },
+      "levelDesign": {
+        "authoredPlayableSeconds": 31.807,
+        "minimumMeaningfulPlaySeconds": 30,
+        "surfaceCount": 11,
+        "styleCompatible": true,
+        "scaleCompatible": true,
+        "surfaceContactProven": true,
+        "visibleGameGeometrySource": "surface-map-bound-game-level",
+        "worldAssetUsedForSurfaceEvidence": "showcaseKenneyVerdantPlatformerWorld",
+        "noDebugSurfaceGuides": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyOobiPlatformerHero",
+        "showcaseKenneyVerdantPlatformerWorld"
+      ],
+      "platformer": {
+        "cameraIntent": "side-scroller",
+        "characterAsset": "showcaseKenneyOobiPlatformerHero",
+        "worldAssets": [
+          "showcaseKenneyVerdantPlatformerWorld"
+        ],
+        "gameplayRequirements": [
+          "movement",
+          "jump",
+          "checkpoint",
+          "progression"
+        ],
+        "levelDesign": {
+          "minPlayableSeconds": 30,
+          "minCheckpoints": 6,
+          "requiresHazardRespawn": true,
+          "requiresFinish": true,
+          "authoredLevelFlow": true,
+          "playableSurfaceSource": "asset-derived-playable-surfaces",
+          "playableSurfaceLayoutValidated": true,
+          "playableSurfaceMap": {
+            "assetId": "showcaseKenneyVerdantPlatformerWorld",
+            "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+            "source": "asset-mesh-extracted",
+            "surfaces": [
+              {
+                "id": "asset-main-ground",
+                "x": 0.81,
+                "y": 0,
+                "width": 1.62,
+                "height": 0.22,
+                "kind": "ground"
+              },
+              {
+                "id": "asset-platform-01",
+                "x": 2.25,
+                "y": 0.216,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-02",
+                "x": 3.33,
+                "y": 0.432,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-03",
+                "x": 4.41,
+                "y": 0.234,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-04",
+                "x": 5.67,
+                "y": 0.54,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-05",
+                "x": 7.11,
+                "y": 0.324,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-06",
+                "x": 8.55,
+                "y": 0.684,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-07",
+                "x": 9.99,
+                "y": 0.468,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-08",
+                "x": 11.43,
+                "y": 0.756,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-09",
+                "x": 12.87,
+                "y": 0.504,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-10",
+                "x": 14.31,
+                "y": 0.81,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-finish-run",
+                "x": 15.94,
+                "y": 0.81,
+                "width": 1.4,
+                "height": 0.3,
+                "kind": "finish"
+              },
+              {
+                "id": "asset-hazard-gap",
+                "x": 8.665,
+                "y": 0.772,
+                "width": 0.48,
+                "height": 0.24,
+                "kind": "hazard"
+              },
+              {
+                "id": "asset-checkpoint-01",
+                "x": 2.988,
+                "y": 0.9,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-02",
+                "x": 5.378,
+                "y": 1.116,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-03",
+                "x": 7.769,
+                "y": 1.332,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-04",
+                "x": 10.159,
+                "y": 1.134,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-05",
+                "x": 12.55,
+                "y": 1.44,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-06",
+                "x": 14.342,
+                "y": 1.224,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              }
+            ],
+            "levelLength": 14.94,
+            "estimatedCompletionSeconds": 30,
+            "characterScaleRatio": 0.42,
+            "confidence": 0.74,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -15.804,
+                  -2,
+                  -9
+                ],
+                "max": [
+                  75.706,
+                  12.4,
+                  1.854
+                ]
+              },
+              "modelPoint": [
+                30.81,
+                -1.1,
+                -0.075
+              ],
+              "gamePoint": {
+                "x": 7.47,
+                "y": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-surface-anchor-1",
+                  "modelPoint": [
+                    -6.999999999999999,
+                    0.18,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 0.81,
+                    "y": 0
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-2",
+                  "modelPoint": [
+                    28,
+                    1.98,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 7.11,
+                    "y": 0.324
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-3",
+                  "modelPoint": [
+                    68,
+                    4.68,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 14.31,
+                    "y": 0.81
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+              "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+            }
+          },
+          "characterWorldScaleCompatible": true,
+          "styleCompatible": true,
+          "primitivePrimaryWorldRejected": true,
+          "playableSurfaceEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "assetPairEvidence": {
+            "category": "platformer",
+            "assets": [
+              "showcaseKenneyOobiPlatformerHero",
+              "showcaseKenneyVerdantPlatformerWorld"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
+            "screenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+            "geometryEvidence": {
+              "category": "platformer",
+              "kind": "platformer-playable-surface-map",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+              "routePrimaryScreenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+              "assets": [
+                {
+                  "id": "showcaseKenneyOobiPlatformerHero",
+                  "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+                },
+                {
+                  "id": "showcaseKenneyVerdantPlatformerWorld",
+                  "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseKenneyVerdantPlatformerWorld",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 0.81,
+              "y": 0,
+              "width": 1.62,
+              "height": 0.22,
+              "modelTopY": 0.18,
+              "modelCenterZ": 0,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 2.25,
+              "y": 0.216,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 3.33,
+              "y": 0.432,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.58,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 4.41,
+              "y": 0.234,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.48,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 5.67,
+              "y": 0.54,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.18,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-05",
+              "x": 7.11,
+              "y": 0.324,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 1.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-06",
+              "x": 8.55,
+              "y": 0.684,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-07",
+              "x": 9.99,
+              "y": 0.468,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.78,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-08",
+              "x": 11.43,
+              "y": 0.756,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 4.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-09",
+              "x": 12.87,
+              "y": 0.504,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-10",
+              "x": 14.31,
+              "y": 0.81,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 4.68,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 15.94,
+              "y": 0.81,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 8.665,
+              "y": 0.772,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 2.988,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.378,
+              "y": 1.116,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 7.769,
+              "y": 1.332,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 10.159,
+              "y": 1.134,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 12.55,
+              "y": 1.44,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 14.342,
+              "y": 1.224,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 14.94,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -15.804,
+                -2,
+                -9
+              ],
+              "max": [
+                75.706,
+                12.4,
+                1.854
+              ]
+            },
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -6.999999999999999,
+                  0.18,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 0.81,
+                  "y": 0
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  28,
+                  1.98,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 7.11,
+                  "y": 0.324
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  68,
+                  4.68,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 14.31,
+                  "y": 0.81
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+            "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
+        },
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-platformer-level",
+          "layoutContractVersion": "1.0",
+          "characterAsset": "showcaseKenneyOobiPlatformerHero",
+          "worldAssets": [
+            "showcaseKenneyVerdantPlatformerWorld"
+          ],
+          "worldAssetHashes": {
+            "showcaseKenneyVerdantPlatformerWorld": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          "surfaceSource": "asset-mesh-extracted",
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "authoredPlayableSeconds": 31.807,
+          "surfaceCount": 11,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        }
+      },
+      "gameplay": {
+        "moveChangesX": false,
+        "jumpChangesY": true,
+        "checkpointProgression": false,
+        "hazardRespawn": false,
+        "finishProgression": false,
+        "resetWorks": false,
+        "surfaceContactProven": true,
+        "authoredPlayableSeconds": 30
+      }
+    },
+    "after": {
+      "schema": "aura3d-showcase-compiled-platformer-route/1.1",
+      "appId": "showcase-skyline-runner",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyA",
+          "KeyD",
+          "Space",
+          "ArrowUp",
+          "KeyW",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.platformer",
+        "geometry": "certified-platformer-surfaces",
+        "camera": "game.platformerCameraRig"
+      },
+      "claimBoundary": "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
+      "platformerStateStatus": "playing",
+      "frameCount": 202,
+      "score": 0,
+      "coins": 0,
+      "deaths": 0,
+      "checkpointId": "start",
+      "animation": {
+        "stateHistory": [
+          {
+            "state": "idle"
+          },
+          {
+            "state": "run"
+          },
+          {
+            "state": "jump"
+          },
+          {
+            "state": "fall"
+          },
+          {
+            "state": "idle"
+          }
+        ],
+        "sampleFrame": 202
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 60,
+        "drawCalls": 167,
+        "renderSize": [
+          948,
+          800
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyVerdantPlatformerWorld",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          {
+            "id": "showcaseKenneyOobiPlatformerHero",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            },
+            "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "platformer-player"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 2,
+              "ids": [
+                "platformer-bound-world-asset",
+                "platformer-player"
+              ],
+              "debugLabels": {
+                "platformer-bound-world-asset": "runtime:platformer-bound-world-asset",
+                "platformer-player": "runtime:platformer-player"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 2,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": [],
+        "snapshot": {
+          "x": 1.2486482000000014,
+          "y": 0.436,
+          "vy": 0
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        },
+        "surfaceContact": [
+          -2.666,
+          -0.533,
+          0.42
+        ],
+        "surfaceContactAlignment": {
+          "feetOnSurface": false,
+          "surfaceId": "",
+          "verticalGap": 999,
+          "sceneContact": [
+            -2.666,
+            -0.533,
+            0.42
+          ],
+          "scenePlayer": [
+            -2.666,
+            -0.533,
+            0.42
+          ],
+          "playerTargetHeight": 0.32
+        },
+        "completionProof": {
+          "completed": true,
+          "stable": true,
+          "finalTime": 31.807,
+          "checkpoints": [
+            "asset-checkpoint-01",
+            "asset-checkpoint-02",
+            "asset-checkpoint-03",
+            "asset-checkpoint-04",
+            "asset-checkpoint-05",
+            "asset-checkpoint-06"
+          ],
+          "eventCounts": {
+            "respawn": 1,
+            "finish": 1
+          }
+        }
+      },
+      "kitContractProof": {
+        "movementChangesPosition": true,
+        "jumpChangesVerticalState": true,
+        "checkpointOrProgression": true,
+        "hazardRespawnOrRetry": true,
+        "finishProgression": true,
+        "checkpointEvent": true,
+        "hazardEvent": true,
+        "respawnEvent": true,
+        "finishEvent": true,
+        "resetRestoresStart": false
+      },
+      "levelDesign": {
+        "authoredPlayableSeconds": 31.807,
+        "minimumMeaningfulPlaySeconds": 30,
+        "surfaceCount": 11,
+        "styleCompatible": true,
+        "scaleCompatible": true,
+        "surfaceContactProven": true,
+        "visibleGameGeometrySource": "surface-map-bound-game-level",
+        "worldAssetUsedForSurfaceEvidence": "showcaseKenneyVerdantPlatformerWorld",
+        "noDebugSurfaceGuides": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyOobiPlatformerHero",
+        "showcaseKenneyVerdantPlatformerWorld"
+      ],
+      "platformer": {
+        "cameraIntent": "side-scroller",
+        "characterAsset": "showcaseKenneyOobiPlatformerHero",
+        "worldAssets": [
+          "showcaseKenneyVerdantPlatformerWorld"
+        ],
+        "gameplayRequirements": [
+          "movement",
+          "jump",
+          "checkpoint",
+          "progression"
+        ],
+        "levelDesign": {
+          "minPlayableSeconds": 30,
+          "minCheckpoints": 6,
+          "requiresHazardRespawn": true,
+          "requiresFinish": true,
+          "authoredLevelFlow": true,
+          "playableSurfaceSource": "asset-derived-playable-surfaces",
+          "playableSurfaceLayoutValidated": true,
+          "playableSurfaceMap": {
+            "assetId": "showcaseKenneyVerdantPlatformerWorld",
+            "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+            "source": "asset-mesh-extracted",
+            "surfaces": [
+              {
+                "id": "asset-main-ground",
+                "x": 0.81,
+                "y": 0,
+                "width": 1.62,
+                "height": 0.22,
+                "kind": "ground"
+              },
+              {
+                "id": "asset-platform-01",
+                "x": 2.25,
+                "y": 0.216,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-02",
+                "x": 3.33,
+                "y": 0.432,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-03",
+                "x": 4.41,
+                "y": 0.234,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-04",
+                "x": 5.67,
+                "y": 0.54,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-05",
+                "x": 7.11,
+                "y": 0.324,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-06",
+                "x": 8.55,
+                "y": 0.684,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-07",
+                "x": 9.99,
+                "y": 0.468,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-08",
+                "x": 11.43,
+                "y": 0.756,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-09",
+                "x": 12.87,
+                "y": 0.504,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-10",
+                "x": 14.31,
+                "y": 0.81,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-finish-run",
+                "x": 15.94,
+                "y": 0.81,
+                "width": 1.4,
+                "height": 0.3,
+                "kind": "finish"
+              },
+              {
+                "id": "asset-hazard-gap",
+                "x": 8.665,
+                "y": 0.772,
+                "width": 0.48,
+                "height": 0.24,
+                "kind": "hazard"
+              },
+              {
+                "id": "asset-checkpoint-01",
+                "x": 2.988,
+                "y": 0.9,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-02",
+                "x": 5.378,
+                "y": 1.116,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-03",
+                "x": 7.769,
+                "y": 1.332,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-04",
+                "x": 10.159,
+                "y": 1.134,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-05",
+                "x": 12.55,
+                "y": 1.44,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-06",
+                "x": 14.342,
+                "y": 1.224,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              }
+            ],
+            "levelLength": 14.94,
+            "estimatedCompletionSeconds": 30,
+            "characterScaleRatio": 0.42,
+            "confidence": 0.74,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -15.804,
+                  -2,
+                  -9
+                ],
+                "max": [
+                  75.706,
+                  12.4,
+                  1.854
+                ]
+              },
+              "modelPoint": [
+                30.81,
+                -1.1,
+                -0.075
+              ],
+              "gamePoint": {
+                "x": 7.47,
+                "y": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-surface-anchor-1",
+                  "modelPoint": [
+                    -6.999999999999999,
+                    0.18,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 0.81,
+                    "y": 0
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-2",
+                  "modelPoint": [
+                    28,
+                    1.98,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 7.11,
+                    "y": 0.324
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-3",
+                  "modelPoint": [
+                    68,
+                    4.68,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 14.31,
+                    "y": 0.81
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+              "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+            }
+          },
+          "characterWorldScaleCompatible": true,
+          "styleCompatible": true,
+          "primitivePrimaryWorldRejected": true,
+          "playableSurfaceEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "assetPairEvidence": {
+            "category": "platformer",
+            "assets": [
+              "showcaseKenneyOobiPlatformerHero",
+              "showcaseKenneyVerdantPlatformerWorld"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
+            "screenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+            "geometryEvidence": {
+              "category": "platformer",
+              "kind": "platformer-playable-surface-map",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+              "routePrimaryScreenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+              "assets": [
+                {
+                  "id": "showcaseKenneyOobiPlatformerHero",
+                  "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+                },
+                {
+                  "id": "showcaseKenneyVerdantPlatformerWorld",
+                  "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseKenneyVerdantPlatformerWorld",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 0.81,
+              "y": 0,
+              "width": 1.62,
+              "height": 0.22,
+              "modelTopY": 0.18,
+              "modelCenterZ": 0,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 2.25,
+              "y": 0.216,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 3.33,
+              "y": 0.432,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.58,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 4.41,
+              "y": 0.234,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.48,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 5.67,
+              "y": 0.54,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.18,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-05",
+              "x": 7.11,
+              "y": 0.324,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 1.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-06",
+              "x": 8.55,
+              "y": 0.684,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-07",
+              "x": 9.99,
+              "y": 0.468,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.78,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-08",
+              "x": 11.43,
+              "y": 0.756,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 4.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-09",
+              "x": 12.87,
+              "y": 0.504,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-10",
+              "x": 14.31,
+              "y": 0.81,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 4.68,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 15.94,
+              "y": 0.81,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 8.665,
+              "y": 0.772,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 2.988,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.378,
+              "y": 1.116,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 7.769,
+              "y": 1.332,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 10.159,
+              "y": 1.134,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 12.55,
+              "y": 1.44,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 14.342,
+              "y": 1.224,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 14.94,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -15.804,
+                -2,
+                -9
+              ],
+              "max": [
+                75.706,
+                12.4,
+                1.854
+              ]
+            },
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -6.999999999999999,
+                  0.18,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 0.81,
+                  "y": 0
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  28,
+                  1.98,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 7.11,
+                  "y": 0.324
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  68,
+                  4.68,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 14.31,
+                  "y": 0.81
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+            "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
+        },
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-platformer-level",
+          "layoutContractVersion": "1.0",
+          "characterAsset": "showcaseKenneyOobiPlatformerHero",
+          "worldAssets": [
+            "showcaseKenneyVerdantPlatformerWorld"
+          ],
+          "worldAssetHashes": {
+            "showcaseKenneyVerdantPlatformerWorld": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          "surfaceSource": "asset-mesh-extracted",
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "authoredPlayableSeconds": 31.807,
+          "surfaceCount": 11,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        }
+      },
+      "gameplay": {
+        "moveChangesX": true,
+        "jumpChangesY": true,
+        "checkpointProgression": false,
+        "hazardRespawn": false,
+        "finishProgression": false,
+        "resetWorks": false,
+        "surfaceContactProven": true,
+        "authoredPlayableSeconds": 30
+      }
+    },
+    "reset": {
+      "schema": "aura3d-showcase-compiled-platformer-route/1.1",
+      "appId": "showcase-skyline-runner",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyA",
+          "KeyD",
+          "Space",
+          "ArrowUp",
+          "KeyW",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.platformer",
+        "geometry": "certified-platformer-surfaces",
+        "camera": "game.platformerCameraRig"
+      },
+      "claimBoundary": "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
+      "platformerStateStatus": "playing",
+      "frameCount": 246,
+      "score": 0,
+      "coins": 0,
+      "deaths": 0,
+      "checkpointId": "start",
+      "animation": {
+        "stateHistory": [
+          {
+            "state": "idle"
+          },
+          {
+            "state": "run"
+          },
+          {
+            "state": "jump"
+          },
+          {
+            "state": "fall"
+          },
+          {
+            "state": "idle"
+          }
+        ],
+        "sampleFrame": 246
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 60,
+        "drawCalls": 167,
+        "renderSize": [
+          948,
+          800
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyVerdantPlatformerWorld",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          {
+            "id": "showcaseKenneyOobiPlatformerHero",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            },
+            "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "platformer-player"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 2,
+              "ids": [
+                "platformer-bound-world-asset",
+                "platformer-player"
+              ],
+              "debugLabels": {
+                "platformer-bound-world-asset": "runtime:platformer-bound-world-asset",
+                "platformer-player": "runtime:platformer-player"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 2,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyVerdantPlatformerWorld",
+              "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+              "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+              "bounds": [
+                11.413,
+                10.8,
+                10.854
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyOobiPlatformerHero",
+              "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+              "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+              "bounds": [
+                0.868,
+                0.907,
+                0.603
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": [],
+        "snapshot": {
+          "x": 0.8,
+          "y": 0.22,
+          "vy": 0
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        },
+        "surfaceContact": [
+          -2.858,
+          -0.626,
+          0.42
+        ],
+        "surfaceContactAlignment": {
+          "feetOnSurface": true,
+          "surfaceId": "asset-main-ground",
+          "verticalGap": 0,
+          "sceneContact": [
+            -2.858,
+            -0.626,
+            0.42
+          ],
+          "scenePlayer": [
+            -2.858,
+            -0.626,
+            0.42
+          ],
+          "playerTargetHeight": 0.32
+        },
+        "completionProof": {
+          "completed": true,
+          "stable": true,
+          "finalTime": 31.807,
+          "checkpoints": [
+            "asset-checkpoint-01",
+            "asset-checkpoint-02",
+            "asset-checkpoint-03",
+            "asset-checkpoint-04",
+            "asset-checkpoint-05",
+            "asset-checkpoint-06"
+          ],
+          "eventCounts": {
+            "respawn": 1,
+            "finish": 1
+          }
+        }
+      },
+      "kitContractProof": {
+        "movementChangesPosition": true,
+        "jumpChangesVerticalState": true,
+        "checkpointOrProgression": true,
+        "hazardRespawnOrRetry": true,
+        "finishProgression": true,
+        "checkpointEvent": true,
+        "hazardEvent": true,
+        "respawnEvent": true,
+        "finishEvent": true,
+        "resetRestoresStart": true
+      },
+      "levelDesign": {
+        "authoredPlayableSeconds": 31.807,
+        "minimumMeaningfulPlaySeconds": 30,
+        "surfaceCount": 11,
+        "styleCompatible": true,
+        "scaleCompatible": true,
+        "surfaceContactProven": true,
+        "visibleGameGeometrySource": "surface-map-bound-game-level",
+        "worldAssetUsedForSurfaceEvidence": "showcaseKenneyVerdantPlatformerWorld",
+        "noDebugSurfaceGuides": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyOobiPlatformerHero",
+        "showcaseKenneyVerdantPlatformerWorld"
+      ],
+      "platformer": {
+        "cameraIntent": "side-scroller",
+        "characterAsset": "showcaseKenneyOobiPlatformerHero",
+        "worldAssets": [
+          "showcaseKenneyVerdantPlatformerWorld"
+        ],
+        "gameplayRequirements": [
+          "movement",
+          "jump",
+          "checkpoint",
+          "progression"
+        ],
+        "levelDesign": {
+          "minPlayableSeconds": 30,
+          "minCheckpoints": 6,
+          "requiresHazardRespawn": true,
+          "requiresFinish": true,
+          "authoredLevelFlow": true,
+          "playableSurfaceSource": "asset-derived-playable-surfaces",
+          "playableSurfaceLayoutValidated": true,
+          "playableSurfaceMap": {
+            "assetId": "showcaseKenneyVerdantPlatformerWorld",
+            "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+            "source": "asset-mesh-extracted",
+            "surfaces": [
+              {
+                "id": "asset-main-ground",
+                "x": 0.81,
+                "y": 0,
+                "width": 1.62,
+                "height": 0.22,
+                "kind": "ground"
+              },
+              {
+                "id": "asset-platform-01",
+                "x": 2.25,
+                "y": 0.216,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-02",
+                "x": 3.33,
+                "y": 0.432,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-03",
+                "x": 4.41,
+                "y": 0.234,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-04",
+                "x": 5.67,
+                "y": 0.54,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-05",
+                "x": 7.11,
+                "y": 0.324,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-06",
+                "x": 8.55,
+                "y": 0.684,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-07",
+                "x": 9.99,
+                "y": 0.468,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-08",
+                "x": 11.43,
+                "y": 0.756,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-09",
+                "x": 12.87,
+                "y": 0.504,
+                "width": 1.2,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-platform-10",
+                "x": 14.31,
+                "y": 0.81,
+                "width": 1.26,
+                "height": 0.22,
+                "kind": "platform"
+              },
+              {
+                "id": "asset-finish-run",
+                "x": 15.94,
+                "y": 0.81,
+                "width": 1.4,
+                "height": 0.3,
+                "kind": "finish"
+              },
+              {
+                "id": "asset-hazard-gap",
+                "x": 8.665,
+                "y": 0.772,
+                "width": 0.48,
+                "height": 0.24,
+                "kind": "hazard"
+              },
+              {
+                "id": "asset-checkpoint-01",
+                "x": 2.988,
+                "y": 0.9,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-02",
+                "x": 5.378,
+                "y": 1.116,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-03",
+                "x": 7.769,
+                "y": 1.332,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-04",
+                "x": 10.159,
+                "y": 1.134,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-05",
+                "x": 12.55,
+                "y": 1.44,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              },
+              {
+                "id": "asset-checkpoint-06",
+                "x": 14.342,
+                "y": 1.224,
+                "width": 1.1,
+                "height": 1.1,
+                "kind": "checkpoint"
+              }
+            ],
+            "levelLength": 14.94,
+            "estimatedCompletionSeconds": 30,
+            "characterScaleRatio": 0.42,
+            "confidence": 0.74,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -15.804,
+                  -2,
+                  -9
+                ],
+                "max": [
+                  75.706,
+                  12.4,
+                  1.854
+                ]
+              },
+              "modelPoint": [
+                30.81,
+                -1.1,
+                -0.075
+              ],
+              "gamePoint": {
+                "x": 7.47,
+                "y": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-surface-anchor-1",
+                  "modelPoint": [
+                    -6.999999999999999,
+                    0.18,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 0.81,
+                    "y": 0
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-2",
+                  "modelPoint": [
+                    28,
+                    1.98,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 7.11,
+                    "y": 0.324
+                  }
+                },
+                {
+                  "id": "mesh-surface-anchor-3",
+                  "modelPoint": [
+                    68,
+                    4.68,
+                    0
+                  ],
+                  "gamePoint": {
+                    "x": 14.31,
+                    "y": 0.81
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+              "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+            }
+          },
+          "characterWorldScaleCompatible": true,
+          "styleCompatible": true,
+          "primitivePrimaryWorldRejected": true,
+          "playableSurfaceEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "assetPairEvidence": {
+            "category": "platformer",
+            "assets": [
+              "showcaseKenneyOobiPlatformerHero",
+              "showcaseKenneyVerdantPlatformerWorld"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.json",
+            "screenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+            "geometryEvidence": {
+              "category": "platformer",
+              "kind": "platformer-playable-surface-map",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+              "routePrimaryScreenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+              "assets": [
+                {
+                  "id": "showcaseKenneyOobiPlatformerHero",
+                  "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+                },
+                {
+                  "id": "showcaseKenneyVerdantPlatformerWorld",
+                  "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseKenneyVerdantPlatformerWorld",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 0.81,
+              "y": 0,
+              "width": 1.62,
+              "height": 0.22,
+              "modelTopY": 0.18,
+              "modelCenterZ": 0,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 2.25,
+              "y": 0.216,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 3.33,
+              "y": 0.432,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.58,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 4.41,
+              "y": 0.234,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.48,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 5.67,
+              "y": 0.54,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.18,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-05",
+              "x": 7.11,
+              "y": 0.324,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 1.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-06",
+              "x": 8.55,
+              "y": 0.684,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-07",
+              "x": 9.99,
+              "y": 0.468,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.78,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-08",
+              "x": 11.43,
+              "y": 0.756,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 4.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-09",
+              "x": 12.87,
+              "y": 0.504,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-10",
+              "x": 14.31,
+              "y": 0.81,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 4.68,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 15.94,
+              "y": 0.81,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 8.665,
+              "y": 0.772,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 2.988,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.378,
+              "y": 1.116,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 7.769,
+              "y": 1.332,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 10.159,
+              "y": 1.134,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 12.55,
+              "y": 1.44,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 14.342,
+              "y": 1.224,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 14.94,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -15.804,
+                -2,
+                -9
+              ],
+              "max": [
+                75.706,
+                12.4,
+                1.854
+              ]
+            },
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -6.999999999999999,
+                  0.18,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 0.81,
+                  "y": 0
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  28,
+                  1.98,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 7.11,
+                  "y": 0.324
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  68,
+                  4.68,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 14.31,
+                  "y": 0.81
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+            "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
+        },
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-platformer-level",
+          "layoutContractVersion": "1.0",
+          "characterAsset": "showcaseKenneyOobiPlatformerHero",
+          "worldAssets": [
+            "showcaseKenneyVerdantPlatformerWorld"
+          ],
+          "worldAssetHashes": {
+            "showcaseKenneyVerdantPlatformerWorld": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+          },
+          "surfaceSource": "asset-mesh-extracted",
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "authoredPlayableSeconds": 31.807,
+          "surfaceCount": 11,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+          "surfaceOverlay": "",
+          "geometryBinding": "playable-surface-to-scene-transform",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "surfaceSource": "asset-mesh-extracted",
+          "surfaceCount": 19,
+          "levelSurfaceCount": 11,
+          "characterScaleRatio": 0.42,
+          "averageSurfaceBindingError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "playerTargetHeight": 0.32,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.002,
+            "maxAnchorError": 0.003,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+        }
+      },
+      "gameplay": {
+        "moveChangesX": true,
+        "jumpChangesY": true,
+        "checkpointProgression": false,
+        "hazardRespawn": false,
+        "finishProgression": false,
+        "resetWorks": true,
+        "surfaceContactProven": true,
+        "authoredPlayableSeconds": 30
+      }
+    }
+  },
+  "categoryProof": {
+    "platformer": {
+      "movementChangesPosition": true,
+      "jumpChangesState": true,
+      "checkpointProgression": true,
+      "hazardRespawn": true,
+      "finishProgression": true,
+      "authoredPlayableSeconds": 31.807,
+      "styleCompatible": true,
+      "scaleCompatible": true,
+      "visualReviewPass": true,
+      "visualReviewEvidence": {
+        "source": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "screenshotEvidence": [
+          "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-skyline-runner-before-input.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-library-screenshots/showcase-skyline-runner-mobile.png"
+        ]
+      }
+    }
+  }
+}

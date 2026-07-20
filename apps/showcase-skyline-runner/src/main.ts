@@ -18,6 +18,7 @@ const level = game.assetBoundPlatformerLevel({
   characterAsset: "showcaseKenneyOobiPlatformerHero",
   worldAssetBindings: gameGeometryContract.worldAssetBindings,
   playableSurfaceMap,
+  authoredPlayableSeconds,
   minPlayableSeconds: 30,
   minCheckpoints: 6,
   level: gameGeometryContract.level

@@ -1,0 +1,125 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-data-galaxy",
+  "routePath": "/apps/showcase-data-galaxy/",
+  "appId": "showcase-data-galaxy",
+  "sourceHash": "sha256-0cea1739e0413a774b90b8f4c4ccd87f81c7c0a4d3627b6801b14c4e3bb76efb",
+  "routeGateHash": "6bf0e341fbdc0268931362bdbd1eadae41de397b9bcdc2a62717b26e0cf3dbdf",
+  "routePrimaryHeroAsset": "showcaseParticleCore",
+  "secondaryPrimaryAssets": [],
+  "routeHealthHash": "sha256-7f96f6965ec1106cab7e9411337d5552c5377ef08b7e6970c0aaffd3a946ff77",
+  "generatedAt": "2026-07-19T21:16:39.592Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "ready",
+    "evidenceKeys": [
+      "appId",
+      "assets",
+      "claimBoundary",
+      "controls",
+      "diagnostics",
+      "frameCount",
+      "interactionState",
+      "status",
+      "systems",
+      "telemetry",
+      "updatedAt"
+    ],
+    "primaryAssets": [
+      "showcaseParticleCore"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 69,
+    "renderSize": [
+      1440,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.png",
+    "sha256": "sha256-cd82b48b09b218c29867a5b105be31e491cecc116bb8fd352a64a43fb076a2da",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 106,
+      "width": 1420,
+      "height": 516
+    },
+    "nonBlankPixels": 620,
+    "colorBuckets": 18,
+    "foregroundBounds": {
+      "x": 770,
+      "y": 385,
+      "width": 51,
+      "height": 13
+    },
+    "visible": false,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 34,
+    "failures": [
+      "primary-foreground-too-small:620",
+      "primary-foreground-width:51",
+      "primary-foreground-height:13",
+      "primary-readability-score:34"
+    ]
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseParticleCore",
+      "role": "abstract",
+      "expectedTypedRef": "assets.showcaseParticleCore",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.png",
+        "sha256": "sha256-cd82b48b09b218c29867a5b105be31e491cecc116bb8fd352a64a43fb076a2da",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 106,
+          "width": 1420,
+          "height": 516
+        },
+        "nonBlankPixels": 620,
+        "colorBuckets": 18,
+        "foregroundBounds": {
+          "x": 770,
+          "y": 385,
+          "width": 51,
+          "height": 13
+        },
+        "visible": false,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 34,
+        "failures": [
+          "primary-foreground-too-small:620",
+          "primary-foreground-width:51",
+          "primary-foreground-height:13",
+          "primary-readability-score:34"
+        ]
+      }
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": false,
+  "failures": [
+    "primary-foreground-too-small:620",
+    "primary-foreground-width:51",
+    "primary-foreground-height:13",
+    "primary-readability-score:34"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "aura3d-showcase-spec-compile-report/1.0",
+  "routeId": "showcase-public-racing-presentation-proof",
+  "generatedFiles": [
+    "src/generated/game-geometry.ts"
+  ],
+  "geometryContract": {
+    "module": "src/generated/game-geometry.ts",
+    "contentHash": "sha256-b746cba74d12256db6f1623b1f652b613cbcbef9b1639c57999641fc299a0d1d",
+    "sourceReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+    "sourceReportHash": "sha256-0f0be0a93f1c29822f005aafd01320b573f99b44900a9695138cbac53c169d1d"
+  }
+}

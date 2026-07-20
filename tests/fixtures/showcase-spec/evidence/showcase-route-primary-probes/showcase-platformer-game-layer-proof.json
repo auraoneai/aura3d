@@ -1,0 +1,128 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-platformer-game-layer-proof",
+  "routePath": "/apps/showcase-platformer-game-layer-proof/",
+  "appId": "showcase-platformer-game-layer-proof",
+  "sourceHash": "sha256-f6c85a21a4932e2670f92ccb20d150a940d27edab2beed8454631a0b4846b66f",
+  "routeGateHash": "6bf0e341fbdc0268931362bdbd1eadae41de397b9bcdc2a62717b26e0cf3dbdf",
+  "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+  "secondaryPrimaryAssets": [
+    "showcaseSideScrollerWorld"
+  ],
+  "routeHealthHash": "sha256-66edcee2132b45118af24757d6b441972f6d7b5bc97bc73b3d37edba2bc6a288",
+  "generatedAt": "2026-07-19T21:18:19.582Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "playing",
+    "evidenceKeys": [
+      "animation",
+      "appId",
+      "checkpointId",
+      "coins",
+      "deaths",
+      "diagnostics",
+      "frameCount",
+      "gameplay",
+      "geometryCertification",
+      "kitContractProof",
+      "levelDesign",
+      "platformer",
+      "primaryAssetRecords",
+      "primaryAssets",
+      "schema",
+      "score",
+      "sourceGate",
+      "status"
+    ],
+    "primaryAssets": [
+      "showcaseWalkAnimatedGirl",
+      "showcaseSideScrollerWorld"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 106,
+    "renderSize": [
+      1124,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+    "sha256": "sha256-3f8035ee9afce79750eb310a8795b758dc719c62263dd753b956874ebbd5f5d6",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 10,
+      "width": 1104,
+      "height": 880
+    },
+    "nonBlankPixels": 299997,
+    "colorBuckets": 88,
+    "foregroundBounds": {
+      "x": 187,
+      "y": 67,
+      "width": 855,
+      "height": 524
+    },
+    "visible": true,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 100,
+    "failures": []
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseWalkAnimatedGirl",
+      "role": "character",
+      "expectedTypedRef": "assets.showcaseWalkAnimatedGirl",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+        "sha256": "sha256-3f8035ee9afce79750eb310a8795b758dc719c62263dd753b956874ebbd5f5d6",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 10,
+          "width": 1104,
+          "height": 880
+        },
+        "nonBlankPixels": 299997,
+        "colorBuckets": 88,
+        "foregroundBounds": {
+          "x": 187,
+          "y": 67,
+          "width": 855,
+          "height": 524
+        },
+        "visible": true,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 100,
+        "failures": []
+      }
+    },
+    {
+      "id": "showcaseSideScrollerWorld",
+      "role": "world",
+      "expectedTypedRef": "assets.showcaseSideScrollerWorld",
+      "routePrimaryEvidenceTarget": false,
+      "evidenceMode": "secondary-present",
+      "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": true,
+  "failures": []
+}

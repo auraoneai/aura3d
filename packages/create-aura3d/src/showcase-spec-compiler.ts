@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   createEvidenceChecklist,
@@ -107,6 +107,8 @@ export function compileShowcaseSpec(input: unknown, options: CompileShowcaseSpec
     ...createGeometryContractReport(spec, outputDir, projectDir)
   };
   writeArtifact(outputDir, "showcase-spec-compile-report.json", report);
+  const retainedReportPath = retainedShowcaseCompileReportPath(spec, outputDir, projectDir);
+  if (retainedReportPath) writeArtifact(projectDir, retainedReportPath, report);
   return report;
 }
 
@@ -134,8 +136,14 @@ function produceGameComposition(
   if (!category || !artifactPath || !outputPath || !gameplayProof) return undefined;
   const geometryAbsolute = resolve(outputDir, artifactPath);
   if (!isContained(projectDir, geometryAbsolute) || !existsSync(geometryAbsolute)) return undefined;
-  const geometryReport = relative(projectDir, geometryAbsolute);
-  if (!geometryReport || isAbsolute(geometryReport) || geometryReport.startsWith("..")) return undefined;
+  const generatedGeometryReport = relative(projectDir, geometryAbsolute);
+  if (!generatedGeometryReport || isAbsolute(generatedGeometryReport) || generatedGeometryReport.startsWith("..")) return undefined;
+  const geometryReport = retainedGameGeometryReportPath(spec, outputDir, projectDir, artifactPath) ?? generatedGeometryReport;
+  if (geometryReport !== generatedGeometryReport) {
+    const retainedAbsolute = resolve(projectDir, geometryReport);
+    mkdirSync(dirname(retainedAbsolute), { recursive: true });
+    copyFileSync(geometryAbsolute, retainedAbsolute);
+  }
   const report = validateShowcaseAssetPairCompositionFromDisk({
     projectDir,
     routeId: spec.routeId,
@@ -154,6 +162,31 @@ function produceGameComposition(
       checks: report.checks.map(({ id, verdict }) => ({ id, verdict }))
     }
   };
+}
+
+function retainedShowcaseCompileReportPath(
+  spec: ShowcaseSpec,
+  outputDir: string,
+  projectDir: string
+): string | undefined {
+  const outputRelative = relative(projectDir, outputDir).replaceAll("\\", "/");
+  if (outputRelative !== `apps/${spec.routeId}`) return undefined;
+  const reportDir = spec.routeId.replace(/^showcase-/, "");
+  return `tests/reports/showcase-spec-compiler/${reportDir}/showcase-spec-compile-report.json`;
+}
+
+function retainedGameGeometryReportPath(
+  spec: ShowcaseSpec,
+  outputDir: string,
+  projectDir: string,
+  artifactPath: string
+): string | undefined {
+  const outputRelative = relative(projectDir, outputDir).replaceAll("\\", "/");
+  if (outputRelative !== `apps/${spec.routeId}`) return undefined;
+  const artifactName = artifactPath.split(/[\\/]/).at(-1);
+  if (!artifactName) return undefined;
+  const reportDir = spec.routeId.replace(/^showcase-/, "");
+  return `tests/reports/showcase-spec-compiler/${reportDir}/game-template/${artifactName}`;
 }
 
 function bindGameGeometryReport(spec: ShowcaseSpec, geometryReport: string): ShowcaseSpec {

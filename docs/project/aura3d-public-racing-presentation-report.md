@@ -87,7 +87,7 @@ public retained geometry report.
 `node tools/showcase-library/build-and-check.mjs` now reports:
 
 ```text
-Showcase public release evidence passed for 10/10 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
+Current showcase public release evidence passes 9/9 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
 ```
 
 ## Verification

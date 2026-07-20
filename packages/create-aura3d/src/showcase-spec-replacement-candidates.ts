@@ -101,7 +101,8 @@ function evaluateCandidate(options: {
   if (options.policy.minQuality === "release" && asset.quality !== "release") penalties.push("quality is not release");
   else if (asset.quality === "release") reasons.push("release quality metadata present");
 
-  const releaseProbePath = `tests/reports/showcase-release-asset-probes/${asset.id}.json`;
+  const releaseProbePath = options.spec.evidence.releaseAssetProbes?.[asset.id]
+    ?? `tests/reports/showcase-release-asset-probes/${asset.id}.json`;
   const releaseProbePasses = releaseAssetProbePasses(releaseProbePath);
   if (releaseProbePasses) reasons.push("passing retained release probe");
   else if (options.policy.requireRenderedProbe) penalties.push("missing passing release probe");

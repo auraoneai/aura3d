@@ -1,0 +1,471 @@
+{
+  "schema": "aura3d-platformer-playable-surfaces/1.0",
+  "routeId": "showcase-skyline-runner",
+  "generatedBy": "showcase-spec-compiler",
+  "surfaceSource": "asset-derived-playable-surfaces",
+  "templateCapabilityStatus": "asset-derived-playable-surfaces-proven",
+  "characterAsset": "showcaseKenneyOobiPlatformerHero",
+  "worldAssets": [
+    "showcaseKenneyVerdantPlatformerWorld"
+  ],
+  "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+  "surfaceMap": {
+    "assetId": "showcaseKenneyVerdantPlatformerWorld",
+    "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+    "source": "asset-mesh-extracted",
+    "surfaces": [
+      {
+        "id": "asset-main-ground",
+        "x": 0.81,
+        "y": 0,
+        "width": 1.62,
+        "height": 0.22,
+        "modelTopY": 0.18,
+        "modelCenterZ": 0,
+        "kind": "ground"
+      },
+      {
+        "id": "asset-platform-01",
+        "x": 2.25,
+        "y": 0.216,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 1.38,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-02",
+        "x": 3.33,
+        "y": 0.432,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 2.58,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-03",
+        "x": 4.41,
+        "y": 0.234,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 1.48,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-04",
+        "x": 5.67,
+        "y": 0.54,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 3.18,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-05",
+        "x": 7.11,
+        "y": 0.324,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 1.98,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-06",
+        "x": 8.55,
+        "y": 0.684,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 3.98,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-07",
+        "x": 9.99,
+        "y": 0.468,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 2.78,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-08",
+        "x": 11.43,
+        "y": 0.756,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 4.38,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-09",
+        "x": 12.87,
+        "y": 0.504,
+        "width": 1.2,
+        "height": 0.22,
+        "modelTopY": 2.98,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-platform-10",
+        "x": 14.31,
+        "y": 0.81,
+        "width": 1.26,
+        "height": 0.22,
+        "modelTopY": 4.68,
+        "modelCenterZ": 0,
+        "kind": "platform"
+      },
+      {
+        "id": "asset-finish-run",
+        "x": 15.94,
+        "y": 0.81,
+        "width": 1.4,
+        "height": 0.3,
+        "kind": "finish"
+      },
+      {
+        "id": "asset-hazard-gap",
+        "x": 8.665,
+        "y": 0.772,
+        "width": 0.48,
+        "height": 0.24,
+        "kind": "hazard"
+      },
+      {
+        "id": "asset-checkpoint-01",
+        "x": 2.988,
+        "y": 0.9,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "asset-checkpoint-02",
+        "x": 5.378,
+        "y": 1.116,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "asset-checkpoint-03",
+        "x": 7.769,
+        "y": 1.332,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "asset-checkpoint-04",
+        "x": 10.159,
+        "y": 1.134,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "asset-checkpoint-05",
+        "x": 12.55,
+        "y": 1.44,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "asset-checkpoint-06",
+        "x": 14.342,
+        "y": 1.224,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      }
+    ],
+    "levelLength": 14.94,
+    "estimatedCompletionSeconds": 30,
+    "characterScaleRatio": 0.42,
+    "confidence": 0.74,
+    "modelAlignment": {
+      "source": "asset-mesh-extracted",
+      "modelBounds": {
+        "min": [
+          -15.804,
+          -2,
+          -9
+        ],
+        "max": [
+          75.706,
+          12.4,
+          1.854
+        ]
+      },
+      "modelPoint": [
+        30.81,
+        -1.1,
+        -0.075
+      ],
+      "gamePoint": {
+        "x": 7.47,
+        "y": 0
+      },
+      "anchorPairs": [
+        {
+          "id": "mesh-surface-anchor-1",
+          "modelPoint": [
+            -6.999999999999999,
+            0.18,
+            0
+          ],
+          "gamePoint": {
+            "x": 0.81,
+            "y": 0
+          }
+        },
+        {
+          "id": "mesh-surface-anchor-2",
+          "modelPoint": [
+            28,
+            1.98,
+            0
+          ],
+          "gamePoint": {
+            "x": 7.11,
+            "y": 0.324
+          }
+        },
+        {
+          "id": "mesh-surface-anchor-3",
+          "modelPoint": [
+            68,
+            4.68,
+            0
+          ],
+          "gamePoint": {
+            "x": 14.31,
+            "y": 0.81
+          }
+        }
+      ],
+      "evidence": {
+        "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+      }
+    },
+    "evidence": {
+      "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+      "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash.",
+      "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-skyline-runner.png"
+    }
+  },
+  "meshExtraction": {
+    "status": "pass",
+    "reasons": [
+      "mesh-derived platformer surfaces from 56 geometric primitive(s)",
+      "selected depth-coherent family with 11 primitive(s) at model z 0..0",
+      "excluded 45 primitive(s) narrower than the 0.72 game-unit character footprint",
+      "selected traversable component with 11 mesh surface(s) spanning 14.94 game units",
+      "semantic hints: 11 playable label(s), 0 decorative label(s); hints only affected family ranking",
+      "selected 56 primitive(s) by flat horizontal game-surface geometry; 29 playable and 0 decorative semantic hint(s) remained soft ranking signals",
+      "surfaceCount:19",
+      "meshPlayableSurfaceCount:11",
+      "estimatedCompletionSeconds:30"
+    ],
+    "blockers": []
+  },
+  "assetBindings": [
+    {
+      "kind": "aura-game-asset-bound-platformer-level",
+      "layoutContractVersion": "1.0",
+      "generatedFrom": "mesh-derived-playable-surface-map",
+      "characterAsset": "showcaseKenneyOobiPlatformerHero",
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "worldAssetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "surfaceSource": "asset-mesh-extracted",
+      "confidence": 0.74,
+      "surfaceIds": [
+        "asset-main-ground",
+        "asset-platform-01",
+        "asset-platform-02",
+        "asset-platform-03",
+        "asset-platform-04",
+        "asset-platform-05",
+        "asset-platform-06",
+        "asset-platform-07",
+        "asset-platform-08",
+        "asset-platform-09",
+        "asset-platform-10"
+      ]
+    }
+  ],
+  "authoredPlayableSeconds": 30,
+  "minPlayableSeconds": 30,
+  "start": {
+    "x": 0.8,
+    "y": 0.24
+  },
+  "finish": {
+    "x": 16.64,
+    "y": 1.13
+  },
+  "surfaces": [
+    {
+      "id": "asset-main-ground",
+      "x": 0,
+      "y": 0,
+      "width": 1.62,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-01",
+      "x": 1.65,
+      "y": 0.216,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-02",
+      "x": 2.73,
+      "y": 0.432,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-03",
+      "x": 3.81,
+      "y": 0.234,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-04",
+      "x": 5.07,
+      "y": 0.54,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-05",
+      "x": 6.48,
+      "y": 0.324,
+      "width": 1.26,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-06",
+      "x": 7.95,
+      "y": 0.684,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-07",
+      "x": 9.39,
+      "y": 0.468,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-08",
+      "x": 10.83,
+      "y": 0.756,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-09",
+      "x": 12.27,
+      "y": 0.504,
+      "width": 1.2,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-platform-10",
+      "x": 13.68,
+      "y": 0.81,
+      "width": 1.26,
+      "height": 0.22,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "playable-surface"
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "asset-checkpoint-01",
+      "x": 2.988,
+      "y": 0.9,
+      "radius": 0.9
+    },
+    {
+      "id": "asset-checkpoint-02",
+      "x": 5.378,
+      "y": 1.116,
+      "radius": 0.9
+    },
+    {
+      "id": "asset-checkpoint-03",
+      "x": 7.769,
+      "y": 1.332,
+      "radius": 0.9
+    },
+    {
+      "id": "asset-checkpoint-04",
+      "x": 10.159,
+      "y": 1.134,
+      "radius": 0.9
+    },
+    {
+      "id": "asset-checkpoint-05",
+      "x": 12.55,
+      "y": 1.44,
+      "radius": 0.9
+    },
+    {
+      "id": "asset-checkpoint-06",
+      "x": 14.342,
+      "y": 1.224,
+      "radius": 0.9
+    }
+  ],
+  "hazards": [
+    {
+      "id": "asset-hazard-gap",
+      "x": 8.425,
+      "y": 0.772,
+      "width": 0.48,
+      "height": 0.24,
+      "respawn": true
+    }
+  ],
+  "styleCompatible": true,
+  "scaleCompatible": true,
+  "primitivePrimaryWorldRejected": true,
+  "pass": true,
+  "failures": []
+}

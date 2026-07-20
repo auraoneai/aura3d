@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:35:57.612Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyOobiPlatformerHero",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:35:57.611Z",
+    "sha256": "sha256-afb7bd24ac8a96414d5d7ff13c4ccd8b1c4a19ade3531fe5c63806651f287fb0",
+    "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 63,
+    "foregroundBounds": {
+      "x": 218,
+      "y": 192,
+      "width": 328,
+      "height": 369
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyOobiPlatformerHero",
+    "asset": {
+      "id": "showcaseKenneyOobiPlatformerHero",
+      "typed": "assets.showcaseKenneyOobiPlatformerHero",
+      "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 2,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 78270,
+      "colorBuckets": 270,
+      "foregroundBounds": {
+        "x": 218,
+        "y": 192,
+        "width": 328,
+        "height": 369
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

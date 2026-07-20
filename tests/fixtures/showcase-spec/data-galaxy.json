@@ -1,0 +1,81 @@
+{
+  "schema": "aura3d-showcase-spec/1.0",
+  "routeId": "showcase-data-galaxy",
+  "label": "Data Galaxy",
+  "category": "data-diagnostic",
+  "path": "/apps/showcase-data-galaxy/",
+  "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
+  "claimLabel": "prototype",
+  "publicStatus": "internal-diagnostic",
+  "layout": {
+    "heroAsset": "showcaseDataStation",
+    "uiPlacement": "right-panel"
+  },
+  "categoryPlan": {
+    "kind": "data-diagnostic",
+    "primaryAsset": "showcaseDataStation",
+    "cameraIntent": "data-observatory",
+    "layoutConstraints": {
+      "keepHeroReadable": true,
+      "uiAvoidsEvidenceArea": true
+    },
+    "claims": {
+      "allowed": [
+        "abstract data visualization",
+        "typed anchor asset"
+      ],
+      "notAllowed": [
+        "public flagship data product",
+        "native GPU compute"
+      ]
+    }
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseParticleCore",
+      "role": "effect-core",
+      "typedRef": "assets.showcaseParticleCore",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false
+    },
+    {
+      "id": "showcaseDataStation",
+      "role": "data-station",
+      "typedRef": "assets.showcaseDataStation",
+      "quality": "candidate",
+      "hasDurableProvenance": true,
+      "hasRenderedProbe": false,
+      "hasOrientationEvidence": true,
+      "hasForegroundBounds": false,
+      "assetPolicy": {
+        "allowReplacement": true,
+        "replacementQuery": "data observatory station dashboard anchor",
+        "requiredRole": "data-station",
+        "minQuality": "release",
+        "requireRenderedProbe": true,
+        "requireDeployPass": true
+      }
+    }
+  ],
+  "evidence": {
+    "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.json",
+    "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.png",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-data-galaxy/dist --release --source apps/showcase-data-galaxy/src --asset showcaseParticleCore --asset showcaseDataStation",
+    "deployEvidence": "docs/project/showcase-launch-evidence.json",
+    "deployPassed": false,
+    "routePrimaryPassed": false,
+    "releaseAssetProbes": {
+      "showcaseParticleCore": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseParticleCore.json"
+    }
+  },
+  "capabilities": [
+    {
+      "name": "abstract-data-visualization",
+      "status": "partial",
+      "evidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.json"
+    }
+  ]
+}

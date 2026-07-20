@@ -1,0 +1,296 @@
+{
+  "schema": "aura3d-platformer-playable-surfaces/1.0",
+  "routeId": "showcase-public-platformer-presentation-proof",
+  "pass": true,
+  "failures": [],
+  "surfaceSource": "asset-bound-playable-surfaces",
+  "status": "asset-bound-playable-surfaces-proven",
+  "characterAsset": "showcaseWalkAnimatedGirl",
+  "worldAssets": [
+    "showcaseSideScrollerWorld"
+  ],
+  "surfaceMap": {
+    "assetId": "showcaseSideScrollerWorld",
+    "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+    "source": "compiler-authored-overlay-validated",
+    "surfaces": [
+      {
+        "id": "public-ground-start",
+        "x": 1.8,
+        "y": 0,
+        "width": 5.2,
+        "height": 0.4,
+        "kind": "ground"
+      },
+      {
+        "id": "public-market-hop",
+        "x": 6.8,
+        "y": 0.62,
+        "width": 3.6,
+        "height": 0.32,
+        "kind": "platform"
+      },
+      {
+        "id": "public-rooftop-bridge",
+        "x": 10.8,
+        "y": 1.04,
+        "width": 3.8,
+        "height": 0.32,
+        "kind": "platform"
+      },
+      {
+        "id": "public-lantern-drop",
+        "x": 15.1,
+        "y": 0.54,
+        "width": 4.2,
+        "height": 0.32,
+        "kind": "platform"
+      },
+      {
+        "id": "public-finish-run",
+        "x": 20,
+        "y": 0.86,
+        "width": 5.6,
+        "height": 0.32,
+        "kind": "platform"
+      },
+      {
+        "id": "public-hazard-gap-01",
+        "x": 7.9,
+        "y": 0.9,
+        "width": 0.55,
+        "height": 0.34,
+        "kind": "hazard"
+      },
+      {
+        "id": "public-hazard-gap-02",
+        "x": 15.8,
+        "y": 0.79,
+        "width": 0.55,
+        "height": 0.34,
+        "kind": "hazard"
+      },
+      {
+        "id": "public-checkpoint-market",
+        "x": 4.4,
+        "y": 0.82,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "public-checkpoint-rooftop",
+        "x": 10.9,
+        "y": 1.42,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "public-checkpoint-lantern",
+        "x": 16.7,
+        "y": 0.96,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      },
+      {
+        "id": "public-checkpoint-finish",
+        "x": 21.1,
+        "y": 1.34,
+        "width": 1.1,
+        "height": 1.1,
+        "kind": "checkpoint"
+      }
+    ],
+    "levelLength": 23.2,
+    "estimatedCompletionSeconds": 34,
+    "characterScaleRatio": 0.38,
+    "confidence": 0.88,
+    "modelAlignment": {
+      "source": "compiler-authored-overlay-validated",
+      "modelBounds": {
+        "min": [
+          -0.8,
+          0,
+          -1
+        ],
+        "max": [
+          22.8,
+          3.2,
+          1
+        ]
+      },
+      "modelPoint": [
+        1.8,
+        0,
+        0
+      ],
+      "gamePoint": {
+        "x": 1.8,
+        "y": 0
+      },
+      "anchorPairs": [
+        {
+          "id": "public-platformer-start-anchor",
+          "modelPoint": [
+            1.8,
+            0,
+            0
+          ],
+          "gamePoint": {
+            "x": 1.8,
+            "y": 0
+          }
+        },
+        {
+          "id": "public-platformer-finish-anchor",
+          "modelPoint": [
+            20,
+            0.86,
+            0
+          ],
+          "gamePoint": {
+            "x": 20,
+            "y": 0.86
+          }
+        }
+      ],
+      "evidence": {
+        "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+        "notes": "Compiler-authored public platformer surface map overlays the retained route-primary screenshot while using the typed side-scroller world as manifest-backed provenance."
+      }
+    },
+    "evidence": {
+      "sourceAsset": "assets.showcaseSideScrollerWorld",
+      "renderedProbe": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
+      "routeOverlay": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+      "notes": "Public platformer route renders generated playable surfaces for the visible stage while retaining the typed side-scroller world for certified surface-map provenance and release evidence."
+    }
+  },
+  "start": {
+    "x": 0.6,
+    "y": 0.4
+  },
+  "finish": {
+    "x": 19.5,
+    "y": 1.18
+  },
+  "platforms": [
+    {
+      "id": "public-ground-start",
+      "x": -0.8,
+      "y": 0,
+      "width": 5.2,
+      "height": 0.4,
+      "worldAsset": "showcaseSideScrollerWorld"
+    },
+    {
+      "id": "public-market-hop",
+      "x": 5,
+      "y": 0.62,
+      "width": 3.6,
+      "height": 0.32,
+      "worldAsset": "showcaseSideScrollerWorld"
+    },
+    {
+      "id": "public-rooftop-bridge",
+      "x": 8.9,
+      "y": 1.04,
+      "width": 3.8,
+      "height": 0.32,
+      "worldAsset": "showcaseSideScrollerWorld"
+    },
+    {
+      "id": "public-lantern-drop",
+      "x": 13,
+      "y": 0.54,
+      "width": 4.2,
+      "height": 0.32,
+      "worldAsset": "showcaseSideScrollerWorld"
+    },
+    {
+      "id": "public-finish-run",
+      "x": 17.2,
+      "y": 0.86,
+      "width": 5.6,
+      "height": 0.32,
+      "worldAsset": "showcaseSideScrollerWorld"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "public-hazard-gap-01",
+      "x": 7.625,
+      "y": 0.9,
+      "width": 0.55,
+      "height": 0.34,
+      "respawn": true
+    },
+    {
+      "id": "public-hazard-gap-02",
+      "x": 15.525,
+      "y": 0.79,
+      "width": 0.55,
+      "height": 0.34,
+      "respawn": true
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "public-checkpoint-market",
+      "x": 4.4,
+      "y": 0.82,
+      "radius": 0.85
+    },
+    {
+      "id": "public-checkpoint-rooftop",
+      "x": 10.9,
+      "y": 1.42,
+      "radius": 0.85
+    },
+    {
+      "id": "public-checkpoint-lantern",
+      "x": 16.7,
+      "y": 0.96,
+      "radius": 0.85
+    },
+    {
+      "id": "public-checkpoint-finish",
+      "x": 21.1,
+      "y": 1.34,
+      "radius": 0.85
+    }
+  ],
+  "assetBindings": [
+    {
+      "kind": "aura-game-asset-bound-platformer-level",
+      "layoutContractVersion": "1.0",
+      "characterAsset": "showcaseWalkAnimatedGirl",
+      "worldAssets": [
+        "showcaseSideScrollerWorld"
+      ],
+      "worldAssetHashes": {
+        "showcaseSideScrollerWorld": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
+      },
+      "surfaceSource": "compiler-authored-overlay-validated",
+      "characterScaleRatio": 0.38,
+      "confidence": 0.88,
+      "authoredPlayableSeconds": 34,
+      "surfaceCount": 5,
+      "checkpointCount": 4
+    }
+  ],
+  "authoredPlayableSeconds": 34,
+  "minPlayableSeconds": 30,
+  "styleCompatible": true,
+  "scaleCompatible": true,
+  "primitivePrimaryWorldRejected": true,
+  "meshExtraction": {
+    "status": "overlay-validated",
+    "reasons": [
+      "compiler-authored public platformer surface map retained against route-primary screenshot"
+    ],
+    "blockers": []
+  }
+}

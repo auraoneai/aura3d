@@ -252,7 +252,7 @@
           }
         ],
         "lapLengthMeters": 49.404,
-        "estimatedLapSeconds": 177,
+        "estimatedLapSeconds": 45,
         "confidence": 0.76,
         "modelAlignment": {
           "source": "asset-mesh-extracted",

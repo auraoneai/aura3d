@@ -1,0 +1,4082 @@
+{
+  "schema": "aura3d-showcase-gameplay-proof",
+  "appId": "showcase-turbo-drift-circuit",
+  "pass": true,
+  "blockers": [],
+  "browserErrors": [],
+  "screenshots": {
+    "beforeInput": {
+      "path": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-before-input.png",
+      "bytes": 153634,
+      "sha256": "eac02b5d1688d19effe7cf7e3cf11013238082aa6c125ac904685c05cb23dad6"
+    },
+    "afterInput": {
+      "path": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+      "bytes": 163347,
+      "sha256": "4a7154cb6a0978ddfea59c279a7878d99e0bd49ce12e34651310784fe2f2116c"
+    }
+  },
+  "evidence": {
+    "before": {
+      "schema": "aura3d-showcase-compiled-racing-route/1.0",
+      "appId": "showcase-turbo-drift-circuit",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyW",
+          "KeyA",
+          "KeyS",
+          "KeyD",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.racing",
+        "geometry": "certified-racing-topology",
+        "camera": "game.racingCameraRig"
+      },
+      "claimBoundary": "Bounded asset-topology racing presentation; no physics engine, AI-opponent, or automatic GLB-to-game claim.",
+      "frameCount": 7,
+      "speed": 0,
+      "lap": 1,
+      "checkpoint": 0,
+      "raceState": {
+        "x": -9.098,
+        "z": -1.441,
+        "heading": -1.014,
+        "scene": {
+          "x": -2.702,
+          "y": 0.24,
+          "z": -0.429,
+          "heading": -1.014
+        },
+        "progress": 0,
+        "lastProgress": 0,
+        "lapValidated": true,
+        "roadAlignment": {
+          "trackOffset": 0,
+          "roadHalfWidth": 0.896,
+          "normalizedOffset": 0,
+          "onRoad": true
+        }
+      },
+      "kitContractProof": {
+        "throttleIncreasesSpeed": false,
+        "steeringChangesHeading": false,
+        "checkpointAdvances": true,
+        "resetRestoresStart": false
+      },
+      "raceDesign": {
+        "authoredLapSeconds": 75,
+        "certifiedMaxSpeed": 0.659,
+        "speedModel": "route-length-over-authored-lap-seconds",
+        "minimumMeaningfulLapSeconds": 30,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "visibleGameGeometrySource": "topology-bound-game-circuit",
+        "trackAssetUsedForTopologyEvidence": "showcaseKenneyNeonRaceCircuit",
+        "carTrackSceneBinding": true,
+        "carAlignedToVisibleRoad": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyRaceCarRed",
+        "showcaseKenneyNeonRaceCircuit"
+      ],
+      "racing": {
+        "cameraIntent": "track-overview",
+        "vehicleAsset": "showcaseKenneyRaceCarRed",
+        "trackAsset": "showcaseKenneyNeonRaceCircuit",
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-racing-route",
+          "layoutContractVersion": "1.0",
+          "vehicleAsset": "showcaseKenneyRaceCarRed",
+          "trackAsset": "showcaseKenneyNeonRaceCircuit",
+          "trackAssetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "confidence": 0.76,
+          "routeLength": 49.404,
+          "authoredLapSeconds": 75,
+          "speedModel": {
+            "kind": "route-length-over-authored-lap-seconds",
+            "routeLength": 49.404,
+            "authoredLapSeconds": 75,
+            "certifiedSpeed": 0.659,
+            "units": "game-units-per-second"
+          },
+          "pointCount": 21,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+          "routeOverlay": "",
+          "geometryBinding": "track-topology-to-scene-transform",
+          "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "routePointCount": 21,
+          "checkpointCount": 6,
+          "averageRouteTopologyError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              0,
+              0.03,
+              0
+            ],
+            "gamePoint": {
+              "x": 0,
+              "z": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.001,
+            "maxAnchorError": 0.002,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+        },
+        "checkpointScenePoints": [
+          [
+            -0.902,
+            0.24,
+            -1.771
+          ],
+          [
+            1.511,
+            0.24,
+            -1.512
+          ],
+          [
+            2.702,
+            0.24,
+            0.427
+          ],
+          [
+            0.902,
+            0.24,
+            1.769
+          ],
+          [
+            -1.511,
+            0.24,
+            1.51
+          ],
+          [
+            -2.702,
+            0.24,
+            -0.429
+          ]
+        ],
+        "gameplayRequirements": [
+          "throttle",
+          "steering",
+          "reset",
+          "checkpoint",
+          "lap",
+          "multi-lap"
+        ],
+        "raceDesign": {
+          "minCheckpoints": 6,
+          "minLaps": 3,
+          "minLapSeconds": 30,
+          "routeAlignedToTrackAsset": true,
+          "visibleTrackTopology": "asset-bound-road-topology",
+          "trackTopology": {
+            "assetId": "showcaseKenneyNeonRaceCircuit",
+            "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+            "source": "asset-mesh-extracted",
+            "roadCenterline": [
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 0.966,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": 9.097,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": 9.098,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": 0.967,
+                "z": 6.106,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": 6.105,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": -9.097,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              }
+            ],
+            "checkpoints": [
+              {
+                "progress": 0.167,
+                "width": 1.792
+              },
+              {
+                "progress": 0.333,
+                "width": 1.792
+              },
+              {
+                "progress": 0.5,
+                "width": 1.792
+              },
+              {
+                "progress": 0.667,
+                "width": 1.792
+              },
+              {
+                "progress": 0.833,
+                "width": 1.792
+              },
+              {
+                "progress": 1,
+                "width": 1.792
+              }
+            ],
+            "lapLengthMeters": 49.404,
+            "estimatedLapSeconds": 177,
+            "confidence": 0.76,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -24.111,
+                  -0.67,
+                  -17.726
+                ],
+                "max": [
+                  23.14,
+                  4.08,
+                  17.726
+                ]
+              },
+              "modelPoint": [
+                0,
+                0.03,
+                0
+              ],
+              "gamePoint": {
+                "x": 0,
+                "z": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-road-anchor-1",
+                  "modelPoint": [
+                    -9.098,
+                    0.03,
+                    -1.441
+                  ],
+                  "gamePoint": {
+                    "x": -9.098,
+                    "z": -1.441
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-2",
+                  "modelPoint": [
+                    5.087,
+                    0.03,
+                    -5.087
+                  ],
+                  "gamePoint": {
+                    "x": 5.087,
+                    "z": -5.087
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-3",
+                  "modelPoint": [
+                    0.967,
+                    0.03,
+                    6.106
+                  ],
+                  "gamePoint": {
+                    "x": 0.967,
+                    "z": 6.106
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+              "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+            }
+          },
+          "carTrackScaleCompatible": true,
+          "noDebugLocatorDisk": true,
+          "trackTopologyEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "assetPairEvidence": {
+            "category": "racing",
+            "assets": [
+              "showcaseKenneyRaceCarRed",
+              "showcaseKenneyNeonRaceCircuit"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+            "screenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+            "geometryEvidence": {
+              "category": "racing",
+              "kind": "racing-track-topology",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+              "routePrimaryScreenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+              "assets": [
+                {
+                  "id": "showcaseKenneyRaceCarRed",
+                  "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+                },
+                {
+                  "id": "showcaseKenneyNeonRaceCircuit",
+                  "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+            "cameraMode": "chase",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        }
+      },
+      "gameplay": {
+        "throttleChangesSpeed": false,
+        "steeringChangesHeading": false,
+        "resetWorks": false,
+        "checkpointProgression": false,
+        "authoredLapSeconds": 75,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "carAlignedToVisibleRoad": true
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 60,
+        "drawCalls": 303,
+        "renderSize": [
+          962,
+          800
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyNeonRaceCircuit",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "racing-player-car"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 3,
+              "ids": [
+                "racing-bound-track-asset",
+                "racing-player-car",
+                "racing-ghost-car"
+              ],
+              "debugLabels": {
+                "racing-bound-track-asset": "runtime:racing-bound-track-asset",
+                "racing-player-car": "runtime:racing-player-car",
+                "racing-ghost-car": "runtime:racing-ghost-car"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 3,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": []
+      }
+    },
+    "after": {
+      "schema": "aura3d-showcase-compiled-racing-route/1.0",
+      "appId": "showcase-turbo-drift-circuit",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyW",
+          "KeyA",
+          "KeyS",
+          "KeyD",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.racing",
+        "geometry": "certified-racing-topology",
+        "camera": "game.racingCameraRig"
+      },
+      "claimBoundary": "Bounded asset-topology racing presentation; no physics engine, AI-opponent, or automatic GLB-to-game claim.",
+      "frameCount": 247,
+      "speed": 0.572592,
+      "lap": 1,
+      "checkpoint": 0,
+      "raceState": {
+        "x": -8.341,
+        "z": -2.259,
+        "heading": -0.486,
+        "scene": {
+          "x": -2.477,
+          "y": 0.24,
+          "z": -0.672,
+          "heading": -0.486
+        },
+        "progress": 0.022,
+        "lastProgress": 0.022,
+        "lapValidated": true,
+        "roadAlignment": {
+          "trackOffset": 0.21,
+          "roadHalfWidth": 0.896,
+          "normalizedOffset": 0.235,
+          "onRoad": true
+        }
+      },
+      "kitContractProof": {
+        "throttleIncreasesSpeed": true,
+        "steeringChangesHeading": true,
+        "checkpointAdvances": true,
+        "resetRestoresStart": false
+      },
+      "raceDesign": {
+        "authoredLapSeconds": 75,
+        "certifiedMaxSpeed": 0.659,
+        "speedModel": "route-length-over-authored-lap-seconds",
+        "minimumMeaningfulLapSeconds": 30,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "visibleGameGeometrySource": "topology-bound-game-circuit",
+        "trackAssetUsedForTopologyEvidence": "showcaseKenneyNeonRaceCircuit",
+        "carTrackSceneBinding": true,
+        "carAlignedToVisibleRoad": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyRaceCarRed",
+        "showcaseKenneyNeonRaceCircuit"
+      ],
+      "racing": {
+        "cameraIntent": "track-overview",
+        "vehicleAsset": "showcaseKenneyRaceCarRed",
+        "trackAsset": "showcaseKenneyNeonRaceCircuit",
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-racing-route",
+          "layoutContractVersion": "1.0",
+          "vehicleAsset": "showcaseKenneyRaceCarRed",
+          "trackAsset": "showcaseKenneyNeonRaceCircuit",
+          "trackAssetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "confidence": 0.76,
+          "routeLength": 49.404,
+          "authoredLapSeconds": 75,
+          "speedModel": {
+            "kind": "route-length-over-authored-lap-seconds",
+            "routeLength": 49.404,
+            "authoredLapSeconds": 75,
+            "certifiedSpeed": 0.659,
+            "units": "game-units-per-second"
+          },
+          "pointCount": 21,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+          "routeOverlay": "",
+          "geometryBinding": "track-topology-to-scene-transform",
+          "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "routePointCount": 21,
+          "checkpointCount": 6,
+          "averageRouteTopologyError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              0,
+              0.03,
+              0
+            ],
+            "gamePoint": {
+              "x": 0,
+              "z": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.001,
+            "maxAnchorError": 0.002,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+        },
+        "checkpointScenePoints": [
+          [
+            -0.902,
+            0.24,
+            -1.771
+          ],
+          [
+            1.511,
+            0.24,
+            -1.512
+          ],
+          [
+            2.702,
+            0.24,
+            0.427
+          ],
+          [
+            0.902,
+            0.24,
+            1.769
+          ],
+          [
+            -1.511,
+            0.24,
+            1.51
+          ],
+          [
+            -2.702,
+            0.24,
+            -0.429
+          ]
+        ],
+        "gameplayRequirements": [
+          "throttle",
+          "steering",
+          "reset",
+          "checkpoint",
+          "lap",
+          "multi-lap"
+        ],
+        "raceDesign": {
+          "minCheckpoints": 6,
+          "minLaps": 3,
+          "minLapSeconds": 30,
+          "routeAlignedToTrackAsset": true,
+          "visibleTrackTopology": "asset-bound-road-topology",
+          "trackTopology": {
+            "assetId": "showcaseKenneyNeonRaceCircuit",
+            "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+            "source": "asset-mesh-extracted",
+            "roadCenterline": [
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 0.966,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": 9.097,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": 9.098,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": 0.967,
+                "z": 6.106,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": 6.105,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": -9.097,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              }
+            ],
+            "checkpoints": [
+              {
+                "progress": 0.167,
+                "width": 1.792
+              },
+              {
+                "progress": 0.333,
+                "width": 1.792
+              },
+              {
+                "progress": 0.5,
+                "width": 1.792
+              },
+              {
+                "progress": 0.667,
+                "width": 1.792
+              },
+              {
+                "progress": 0.833,
+                "width": 1.792
+              },
+              {
+                "progress": 1,
+                "width": 1.792
+              }
+            ],
+            "lapLengthMeters": 49.404,
+            "estimatedLapSeconds": 177,
+            "confidence": 0.76,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -24.111,
+                  -0.67,
+                  -17.726
+                ],
+                "max": [
+                  23.14,
+                  4.08,
+                  17.726
+                ]
+              },
+              "modelPoint": [
+                0,
+                0.03,
+                0
+              ],
+              "gamePoint": {
+                "x": 0,
+                "z": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-road-anchor-1",
+                  "modelPoint": [
+                    -9.098,
+                    0.03,
+                    -1.441
+                  ],
+                  "gamePoint": {
+                    "x": -9.098,
+                    "z": -1.441
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-2",
+                  "modelPoint": [
+                    5.087,
+                    0.03,
+                    -5.087
+                  ],
+                  "gamePoint": {
+                    "x": 5.087,
+                    "z": -5.087
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-3",
+                  "modelPoint": [
+                    0.967,
+                    0.03,
+                    6.106
+                  ],
+                  "gamePoint": {
+                    "x": 0.967,
+                    "z": 6.106
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+              "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+            }
+          },
+          "carTrackScaleCompatible": true,
+          "noDebugLocatorDisk": true,
+          "trackTopologyEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "assetPairEvidence": {
+            "category": "racing",
+            "assets": [
+              "showcaseKenneyRaceCarRed",
+              "showcaseKenneyNeonRaceCircuit"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+            "screenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+            "geometryEvidence": {
+              "category": "racing",
+              "kind": "racing-track-topology",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+              "routePrimaryScreenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+              "assets": [
+                {
+                  "id": "showcaseKenneyRaceCarRed",
+                  "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+                },
+                {
+                  "id": "showcaseKenneyNeonRaceCircuit",
+                  "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+            "cameraMode": "chase",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        }
+      },
+      "gameplay": {
+        "throttleChangesSpeed": true,
+        "steeringChangesHeading": true,
+        "resetWorks": false,
+        "checkpointProgression": false,
+        "authoredLapSeconds": 75,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "carAlignedToVisibleRoad": true
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 60,
+        "drawCalls": 303,
+        "renderSize": [
+          962,
+          800
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyNeonRaceCircuit",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "racing-player-car"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 3,
+              "ids": [
+                "racing-bound-track-asset",
+                "racing-player-car",
+                "racing-ghost-car"
+              ],
+              "debugLabels": {
+                "racing-bound-track-asset": "runtime:racing-bound-track-asset",
+                "racing-player-car": "runtime:racing-player-car",
+                "racing-ghost-car": "runtime:racing-ghost-car"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 3,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": []
+      }
+    },
+    "reset": {
+      "schema": "aura3d-showcase-compiled-racing-route/1.0",
+      "appId": "showcase-turbo-drift-circuit",
+      "status": "running",
+      "controls": {
+        "keyboard": [
+          "ArrowUp",
+          "ArrowDown",
+          "ArrowLeft",
+          "ArrowRight",
+          "KeyW",
+          "KeyA",
+          "KeyS",
+          "KeyD",
+          "KeyR"
+        ]
+      },
+      "systems": {
+        "input": "game.input",
+        "simulation": "game.racing",
+        "geometry": "certified-racing-topology",
+        "camera": "game.racingCameraRig"
+      },
+      "claimBoundary": "Bounded asset-topology racing presentation; no physics engine, AI-opponent, or automatic GLB-to-game claim.",
+      "frameCount": 31,
+      "speed": 0,
+      "lap": 1,
+      "checkpoint": 0,
+      "raceState": {
+        "x": -9.098,
+        "z": -1.441,
+        "heading": -1.014,
+        "scene": {
+          "x": -2.702,
+          "y": 0.24,
+          "z": -0.429,
+          "heading": -1.014
+        },
+        "progress": 0,
+        "lastProgress": 0,
+        "lapValidated": true,
+        "roadAlignment": {
+          "trackOffset": 0,
+          "roadHalfWidth": 0.896,
+          "normalizedOffset": 0,
+          "onRoad": true
+        }
+      },
+      "kitContractProof": {
+        "throttleIncreasesSpeed": true,
+        "steeringChangesHeading": true,
+        "checkpointAdvances": true,
+        "resetRestoresStart": true
+      },
+      "raceDesign": {
+        "authoredLapSeconds": 75,
+        "certifiedMaxSpeed": 0.659,
+        "speedModel": "route-length-over-authored-lap-seconds",
+        "minimumMeaningfulLapSeconds": 30,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "visibleGameGeometrySource": "topology-bound-game-circuit",
+        "trackAssetUsedForTopologyEvidence": "showcaseKenneyNeonRaceCircuit",
+        "carTrackSceneBinding": true,
+        "carAlignedToVisibleRoad": true,
+        "visualReviewPass": true
+      },
+      "primaryAssets": [
+        "showcaseKenneyRaceCarRed",
+        "showcaseKenneyNeonRaceCircuit"
+      ],
+      "racing": {
+        "cameraIntent": "track-overview",
+        "vehicleAsset": "showcaseKenneyRaceCarRed",
+        "trackAsset": "showcaseKenneyNeonRaceCircuit",
+        "assetBinding": {
+          "kind": "aura-game-asset-bound-racing-route",
+          "layoutContractVersion": "1.0",
+          "vehicleAsset": "showcaseKenneyRaceCarRed",
+          "trackAsset": "showcaseKenneyNeonRaceCircuit",
+          "trackAssetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "confidence": 0.76,
+          "routeLength": 49.404,
+          "authoredLapSeconds": 75,
+          "speedModel": {
+            "kind": "route-length-over-authored-lap-seconds",
+            "routeLength": 49.404,
+            "authoredLapSeconds": 75,
+            "certifiedSpeed": 0.659,
+            "units": "game-units-per-second"
+          },
+          "pointCount": 21,
+          "checkpointCount": 6
+        },
+        "sceneBinding": {
+          "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+          "routeOverlay": "",
+          "geometryBinding": "track-topology-to-scene-transform",
+          "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "topologySource": "asset-mesh-extracted",
+          "routePointCount": 21,
+          "checkpointCount": 6,
+          "averageRouteTopologyError": 0,
+          "modelSceneOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelPresentationOffset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelPoint": [
+              0,
+              0.03,
+              0
+            ],
+            "gamePoint": {
+              "x": 0,
+              "z": 0
+            },
+            "anchorCount": 3,
+            "averageAnchorError": 0.001,
+            "maxAnchorError": 0.002,
+            "rotation": [
+              0,
+              0,
+              0
+            ]
+          },
+          "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+        },
+        "checkpointScenePoints": [
+          [
+            -0.902,
+            0.24,
+            -1.771
+          ],
+          [
+            1.511,
+            0.24,
+            -1.512
+          ],
+          [
+            2.702,
+            0.24,
+            0.427
+          ],
+          [
+            0.902,
+            0.24,
+            1.769
+          ],
+          [
+            -1.511,
+            0.24,
+            1.51
+          ],
+          [
+            -2.702,
+            0.24,
+            -0.429
+          ]
+        ],
+        "gameplayRequirements": [
+          "throttle",
+          "steering",
+          "reset",
+          "checkpoint",
+          "lap",
+          "multi-lap"
+        ],
+        "raceDesign": {
+          "minCheckpoints": 6,
+          "minLaps": 3,
+          "minLapSeconds": 30,
+          "routeAlignedToTrackAsset": true,
+          "visibleTrackTopology": "asset-bound-road-topology",
+          "trackTopology": {
+            "assetId": "showcaseKenneyNeonRaceCircuit",
+            "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+            "source": "asset-mesh-extracted",
+            "roadCenterline": [
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 0.966,
+                "z": -6.102,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": -5.96,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": -5.087,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": -3.867,
+                "width": 1.792
+              },
+              {
+                "x": 9.097,
+                "z": -1.441,
+                "width": 1.792
+              },
+              {
+                "x": 9.098,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": 7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": 5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": 3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": 0.967,
+                "z": 6.106,
+                "width": 1.792
+              },
+              {
+                "x": -0.967,
+                "z": 6.105,
+                "width": 1.792
+              },
+              {
+                "x": -3.037,
+                "z": 5.96,
+                "width": 1.792
+              },
+              {
+                "x": -5.087,
+                "z": 5.087,
+                "width": 1.792
+              },
+              {
+                "x": -7.588,
+                "z": 3.867,
+                "width": 1.792
+              },
+              {
+                "x": -9.097,
+                "z": 1.441,
+                "width": 1.792
+              },
+              {
+                "x": -9.098,
+                "z": -1.441,
+                "width": 1.792
+              }
+            ],
+            "checkpoints": [
+              {
+                "progress": 0.167,
+                "width": 1.792
+              },
+              {
+                "progress": 0.333,
+                "width": 1.792
+              },
+              {
+                "progress": 0.5,
+                "width": 1.792
+              },
+              {
+                "progress": 0.667,
+                "width": 1.792
+              },
+              {
+                "progress": 0.833,
+                "width": 1.792
+              },
+              {
+                "progress": 1,
+                "width": 1.792
+              }
+            ],
+            "lapLengthMeters": 49.404,
+            "estimatedLapSeconds": 177,
+            "confidence": 0.76,
+            "modelAlignment": {
+              "source": "asset-mesh-extracted",
+              "modelBounds": {
+                "min": [
+                  -24.111,
+                  -0.67,
+                  -17.726
+                ],
+                "max": [
+                  23.14,
+                  4.08,
+                  17.726
+                ]
+              },
+              "modelPoint": [
+                0,
+                0.03,
+                0
+              ],
+              "gamePoint": {
+                "x": 0,
+                "z": 0
+              },
+              "anchorPairs": [
+                {
+                  "id": "mesh-road-anchor-1",
+                  "modelPoint": [
+                    -9.098,
+                    0.03,
+                    -1.441
+                  ],
+                  "gamePoint": {
+                    "x": -9.098,
+                    "z": -1.441
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-2",
+                  "modelPoint": [
+                    5.087,
+                    0.03,
+                    -5.087
+                  ],
+                  "gamePoint": {
+                    "x": 5.087,
+                    "z": -5.087
+                  }
+                },
+                {
+                  "id": "mesh-road-anchor-3",
+                  "modelPoint": [
+                    0.967,
+                    0.03,
+                    6.106
+                  ],
+                  "gamePoint": {
+                    "x": 0.967,
+                    "z": 6.106
+                  }
+                }
+              ],
+              "evidence": {
+                "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+              }
+            },
+            "evidence": {
+              "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+              "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+            }
+          },
+          "carTrackScaleCompatible": true,
+          "noDebugLocatorDisk": true,
+          "trackTopologyEvidence": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "assetPairEvidence": {
+            "category": "racing",
+            "assets": [
+              "showcaseKenneyRaceCarRed",
+              "showcaseKenneyNeonRaceCircuit"
+            ],
+            "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+            "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+            "screenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+            "geometryEvidence": {
+              "category": "racing",
+              "kind": "racing-track-topology",
+              "source": "asset-mesh-extracted",
+              "report": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+              "screenshotEvidence": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+              "routePrimaryScreenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+              "assets": [
+                {
+                  "id": "showcaseKenneyRaceCarRed",
+                  "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+                },
+                {
+                  "id": "showcaseKenneyNeonRaceCircuit",
+                  "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+                }
+              ]
+            },
+            "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+            "cameraMode": "chase",
+            "checks": [
+              {
+                "id": "binding-overlap",
+                "verdict": "pass"
+              },
+              {
+                "id": "contact",
+                "verdict": "pass"
+              },
+              {
+                "id": "camera-readability",
+                "verdict": "pass"
+              },
+              {
+                "id": "scale-contract",
+                "verdict": "pass"
+              },
+              {
+                "id": "debug-guide-absence",
+                "verdict": "pass"
+              }
+            ],
+            "verdict": "pass",
+            "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
+            "blockers": []
+          }
+        }
+      },
+      "gameplay": {
+        "throttleChangesSpeed": true,
+        "steeringChangesHeading": true,
+        "resetWorks": true,
+        "checkpointProgression": false,
+        "authoredLapSeconds": 75,
+        "routeAlignedToVisibleTrack": true,
+        "noDebugLocatorDisk": true,
+        "carAlignedToVisibleRoad": true
+      },
+      "diagnostics": {
+        "backend": "webgl2",
+        "fps": 60,
+        "drawCalls": 303,
+        "renderSize": [
+          962,
+          800
+        ],
+        "assets": [
+          {
+            "id": "showcaseKenneyNeonRaceCircuit",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          },
+          {
+            "id": "showcaseKenneyRaceCarRed",
+            "type": "model",
+            "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+            "status": "ready",
+            "provenance": {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+          }
+        ],
+        "evidence": {
+          "physics": {
+            "worldAttached": false,
+            "bodies": 0,
+            "colliders": 0,
+            "contacts": 0,
+            "steps": 0,
+            "resets": 0,
+            "nodesWithPhysics": 0,
+            "sensors": 0
+          },
+          "interactions": {
+            "modes": [],
+            "orbitEnabled": false,
+            "hoverTargets": [],
+            "dragTargets": [],
+            "impulseTargets": []
+          },
+          "camera": {
+            "mode": "follow",
+            "orbitEnabled": false,
+            "followTarget": "racing-player-car"
+          },
+          "animation": {
+            "animatedNodes": 0,
+            "turntableEnabled": false,
+            "walkEnabled": false,
+            "clips": []
+          },
+          "labels": {
+            "count": 0,
+            "kinds": [],
+            "occlusionAware": 0,
+            "collisionAvoidance": 0
+          },
+          "performance": {
+            "budgets": [],
+            "helperCount": 0,
+            "nodeBudgetExceeded": []
+          },
+          "gameRuntime": {
+            "kind": "aura-game-runtime-evidence",
+            "source": {
+              "kind": "aura-game-runtime-source-evidence",
+              "mode": "scene-source",
+              "expectsGame": true,
+              "label": "collectAuraSceneEvidence",
+              "aura3dOwned": [
+                "runtime-nodes",
+                "frame-loop",
+                "assets"
+              ],
+              "appOwned": [
+                "input",
+                "kinematic-bodies",
+                "combat",
+                "events",
+                "hud",
+                "accessibility"
+              ],
+              "shared": [
+                "collision",
+                "effects",
+                "camera",
+                "animation",
+                "stage"
+              ]
+            },
+            "ownership": [
+              {
+                "subsystem": "runtime-nodes",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D registers scene nodes marked with .runtime(game.runtimeNode(id)); app code mutates the returned handles."
+              },
+              {
+                "subsystem": "frame-loop",
+                "owner": "aura3d",
+                "configured": false,
+                "evidence": "Aura3D owns app.onFrame(), app.pause(), app.resume(), and app.step(); app code owns per-frame gameplay decisions."
+              },
+              {
+                "subsystem": "input",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code declares action maps, axes, buffering, combos, and when input.update(dt) is called."
+              },
+              {
+                "subsystem": "kinematic-bodies",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns gameplay body state and syncs body snapshots to Aura3D runtime node handles."
+              },
+              {
+                "subsystem": "collision",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides game.collisionWorld() queries/events; app code owns game-specific collision responses."
+              },
+              {
+                "subsystem": "combat",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns actors, teams, hitboxes, move timing, damage, guard, meter, and combat event handling."
+              },
+              {
+                "subsystem": "events",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns genre-specific score/objective/event semantics; Aura3D event-log helpers type them for evidence."
+              },
+              {
+                "subsystem": "effects",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides pooled effect helpers; app code decides when gameplay events spawn or suppress effects."
+              },
+              {
+                "subsystem": "camera",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D provides camera director math; app code supplies targets and applies camera state to the route."
+              },
+              {
+                "subsystem": "animation",
+                "owner": "shared",
+                "configured": true,
+                "evidence": "Aura3D stores animation clips on runtime nodes; app code chooses clips, restart rules, and timing."
+              },
+              {
+                "subsystem": "assets",
+                "owner": "aura3d",
+                "configured": true,
+                "evidence": "Aura3D typed assets prove catalog/manifest provenance; app code imports typed assets instead of string ids."
+              },
+              {
+                "subsystem": "stage",
+                "owner": "shared",
+                "configured": false,
+                "evidence": "Aura3D stage helpers can provide safe bounds; app code owns game-specific rules inside those bounds."
+              },
+              {
+                "subsystem": "hud",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns DOM/text rendering; Aura3D source helpers type HUD bindings for evidence and diagnostics."
+              },
+              {
+                "subsystem": "accessibility",
+                "owner": "app",
+                "configured": false,
+                "evidence": "App code owns labels, focus, contrast, and pause UI; Aura3D helpers expose source evidence and reduced-motion/reduced-flash flags."
+              }
+            ],
+            "loop": {
+              "frame": 0,
+              "time": 0,
+              "paused": true
+            },
+            "runtimeNodes": {
+              "count": 3,
+              "ids": [
+                "racing-bound-track-asset",
+                "racing-player-car",
+                "racing-ghost-car"
+              ],
+              "debugLabels": {
+                "racing-bound-track-asset": "runtime:racing-bound-track-asset",
+                "racing-player-car": "runtime:racing-player-car",
+                "racing-ghost-car": "runtime:racing-ghost-car"
+              },
+              "runtimeUpdatesReconstructScene": false,
+              "sceneReconstructionRequired": false
+            },
+            "systems": {
+              "mutableNodes": true,
+              "frameLoop": false,
+              "inputPlan": false,
+              "physicsPlan": false,
+              "animationPlan": true,
+              "effectsPlan": false,
+              "cameraPlan": false,
+              "collisionPlan": false,
+              "stagePlan": false
+            },
+            "input": {
+              "configured": false,
+              "actions": [],
+              "axes": [],
+              "activeBindings": [],
+              "frame": 0
+            },
+            "physics": {
+              "kinematicBodies": 0,
+              "groundedBodies": 0
+            },
+            "movement": {
+              "bodies": 0,
+              "groundedBodies": 0,
+              "airborneBodies": 0,
+              "movingBodies": 0
+            },
+            "collision": {
+              "collisionWorld": false,
+              "combatWorld": false,
+              "bodies": 0,
+              "contacts": 0,
+              "sensorContacts": 0,
+              "actors": 0,
+              "activeAttacks": 0,
+              "events": 0
+            },
+            "events": {
+              "configured": false,
+              "count": 0,
+              "types": []
+            },
+            "animation": {
+              "controllers": 0,
+              "activeClips": [],
+              "eventCount": 0
+            },
+            "renderer": {
+              "assetFailures": [],
+              "contextLost": false
+            },
+            "audio": {
+              "unlocked": false,
+              "muted": false,
+              "cuesTriggered": [],
+              "musicPlaying": false,
+              "errors": []
+            },
+            "errors": [],
+            "effects": {
+              "active": 0,
+              "spawned": 0,
+              "pooled": 0
+            },
+            "camera": {
+              "active": false
+            },
+            "assets": {
+              "typedAssets": 3,
+              "missingAssets": []
+            },
+            "stage": {
+              "safeZones": false,
+              "warnings": []
+            },
+            "hud": {
+              "bindings": 0,
+              "kinds": [],
+              "targetIds": [],
+              "debugToggles": 0,
+              "interactive": 0,
+              "warnings": [
+                "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles."
+              ]
+            },
+            "accessibility": {
+              "sources": 0,
+              "labels": 0,
+              "focusScopes": 0,
+              "reducedMotion": false,
+              "reducedFlash": false,
+              "highContrast": false,
+              "pauseControls": false,
+              "warnings": [
+                "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+              ]
+            },
+            "warnings": [
+              "No HUD source bindings were supplied. Add game.hud helpers for score/objective/event-log or fighting health/meter/timer/combo/round/debug toggles.",
+              "No accessibility source helpers were supplied. Add labels, focus, reduced-motion, reduced-flash, high-contrast, and pause-controls evidence."
+            ]
+          },
+          "rendering": {
+            "kind": "aura-renderer-diagnostics",
+            "colorManagement": {
+              "kind": "aura-renderer-color-management",
+              "workflow": "linear",
+              "outputColorSpace": "srgb",
+              "toneMapping": "aces-filmic",
+              "defaultExposure": 1.05,
+              "notes": [
+                "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+                "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+              ]
+            },
+            "rendererMode": "safe-basic",
+            "fallbackMode": "safe-basic",
+            "qualityProfile": {
+              "kind": "aura-renderer-quality-profile",
+              "id": "safe-basic",
+              "label": "Safe Basic",
+              "rendererMode": "safe-basic",
+              "status": "supported",
+              "antialiasing": "msaa",
+              "pixelRatio": 1,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 180,
+              "requestedFeatures": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "supportedInRoot": [
+                "typed models",
+                "primitives",
+                "basic particles",
+                "base-color textures",
+                "runtime nodes"
+              ],
+              "blockedInRoot": [
+                "production PBR parity",
+                "skinned animation mixer",
+                "native WebGPU compute",
+                "postprocess pass chain"
+              ],
+              "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+            },
+            "sceneCategory": "game",
+            "exposure": {
+              "category": "game",
+              "exposure": 1.05,
+              "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+            },
+            "toneMapping": "aces-filmic",
+            "outputColorSpace": "srgb",
+            "linearWorkflow": true,
+            "bloom": {
+              "enabled": false,
+              "rendered": false,
+              "intensity": 0,
+              "threshold": 0,
+              "radius": 0,
+              "antiBlowout": true
+            },
+            "shadows": {
+              "enabled": true,
+              "contactShadows": 0,
+              "mapType": "pcf-soft"
+            },
+            "occlusion": {
+              "enabled": false,
+              "ambientOcclusion": false,
+              "contactOcclusion": false,
+              "evidence": "no grounding occlusion detected"
+            },
+            "fog": {
+              "enabled": false,
+              "density": 0,
+              "preset": "none"
+            },
+            "postprocess": {
+              "enabled": false,
+              "requested": false,
+              "renderPass": false,
+              "outputPass": false,
+              "bloomPass": false,
+              "ambientOcclusionPass": false,
+              "contactOcclusionReceiver": false,
+              "pixelBacked": false,
+              "runtimeStatus": "disabled",
+              "requestedPasses": [],
+              "actualPasses": [],
+              "fallbackPasses": [],
+              "evidence": "no renderer postprocess effects requested"
+            },
+            "runtime": {
+              "mounted": false,
+              "backend": "scene-plan",
+              "postprocessVerified": false,
+              "passNames": [],
+              "warnings": []
+            },
+            "environment": {
+              "enabled": false,
+              "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+            },
+            "antialiasing": "msaa-plus-high-dpi",
+            "screenshotQuality": {
+              "kind": "aura-renderer-quality",
+              "id": "screenshot",
+              "antialiasing": "msaa-plus-high-dpi",
+              "shadowMap": "pcf-soft",
+              "pixelRatio": 1.5,
+              "preserveDrawingBuffer": true,
+              "maxRecommendedDrawCalls": 260,
+              "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+            },
+            "materialCapabilities": {
+              "kind": "aura-material-capability-diagnostics",
+              "rendererPath": "root-createAuraApp",
+              "requestedFeatures": [],
+              "unsupportedRequestedFeatures": [],
+              "partialRequestedFeatures": [],
+              "features": [
+                {
+                  "id": "base-color",
+                  "label": "Base color",
+                  "rootSafeApi": "supported",
+                  "productionRuntime": "supported",
+                  "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                  "claimRule": "Can be claimed with a route screenshot.",
+                  "requested": false
+                },
+                {
+                  "id": "base-color-texture",
+                  "label": "Base-color texture",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                  "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "metallic-roughness",
+                  "label": "Metallic/roughness",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                  "claimRule": "Do not claim full PBR parity without browser evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "normal-map",
+                  "label": "Normal maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                  "claimRule": "Claim only with material-specific screenshot evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "emissive",
+                  "label": "Emissive",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                  "claimRule": "Distinguish emissive material from postprocess bloom.",
+                  "requested": false
+                },
+                {
+                  "id": "alpha",
+                  "label": "Alpha/opacity",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                  "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                  "requested": false
+                },
+                {
+                  "id": "double-sided",
+                  "label": "Double-sided materials",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                  "claimRule": "Claim only when tested route shows backface behavior.",
+                  "requested": false
+                },
+                {
+                  "id": "clearcoat",
+                  "label": "Clearcoat",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                  "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                  "requested": false
+                },
+                {
+                  "id": "sheen",
+                  "label": "Sheen",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                  "claimRule": "Treat as partial unless screenshot-proven.",
+                  "requested": false
+                },
+                {
+                  "id": "transmission",
+                  "label": "Transmission/glass",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                  "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "variants",
+                  "label": "Material variants",
+                  "rootSafeApi": "metadata-only",
+                  "productionRuntime": "supported",
+                  "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                  "claimRule": "Claim selected variant behavior only when tested.",
+                  "requested": false
+                },
+                {
+                  "id": "hdr-ibl",
+                  "label": "HDR/IBL",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                  "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                  "requested": false
+                },
+                {
+                  "id": "shadow-maps",
+                  "label": "Shadow maps",
+                  "rootSafeApi": "partial",
+                  "productionRuntime": "supported",
+                  "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                  "claimRule": "Production-shadow claims require pixel proof.",
+                  "requested": false
+                }
+              ],
+              "warnings": [],
+              "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+            },
+            "warnings": [
+              "scene has no contact shadow or contact-occlusion grounding cue"
+            ]
+          },
+          "assets": [
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyNeonRaceCircuit",
+              "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+              "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+              "bounds": [
+                40,
+                4,
+                30
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            },
+            {
+              "source": "typed-aura-assets-manifest",
+              "id": "showcaseKenneyRaceCarRed",
+              "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+              "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "bounds": [
+                0.742,
+                0.467,
+                1.487
+              ]
+            }
+          ]
+        },
+        "renderer": {
+          "kind": "aura-renderer-diagnostics",
+          "colorManagement": {
+            "kind": "aura-renderer-color-management",
+            "workflow": "linear",
+            "outputColorSpace": "srgb",
+            "toneMapping": "aces-filmic",
+            "defaultExposure": 1.05,
+            "notes": [
+              "Aura3D WebGL2 renderer uses sRGB output and ACES filmic tone mapping.",
+              "Exposure is selected by scene category to avoid blown-out product/material whites and crushed dark scenes."
+            ]
+          },
+          "rendererMode": "safe-basic",
+          "fallbackMode": "safe-basic",
+          "qualityProfile": {
+            "kind": "aura-renderer-quality-profile",
+            "id": "safe-basic",
+            "label": "Safe Basic",
+            "rendererMode": "safe-basic",
+            "status": "supported",
+            "antialiasing": "msaa",
+            "pixelRatio": 1,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 180,
+            "requestedFeatures": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "supportedInRoot": [
+              "typed models",
+              "primitives",
+              "basic particles",
+              "base-color textures",
+              "runtime nodes"
+            ],
+            "blockedInRoot": [
+              "production PBR parity",
+              "skinned animation mixer",
+              "native WebGPU compute",
+              "postprocess pass chain"
+            ],
+            "claimBoundary": "Root createAuraApp safe path. Use this for public examples unless a browser test proves a stronger profile."
+          },
+          "sceneCategory": "game",
+          "exposure": {
+            "category": "game",
+            "exposure": 1.05,
+            "evidence": "mini-game UI, aim vectors, and course boundaries stay readable"
+          },
+          "toneMapping": "aces-filmic",
+          "outputColorSpace": "srgb",
+          "linearWorkflow": true,
+          "bloom": {
+            "enabled": false,
+            "rendered": false,
+            "intensity": 0,
+            "threshold": 0,
+            "radius": 0,
+            "antiBlowout": true
+          },
+          "shadows": {
+            "enabled": true,
+            "contactShadows": 0,
+            "mapType": "pcf-soft"
+          },
+          "occlusion": {
+            "enabled": false,
+            "ambientOcclusion": false,
+            "contactOcclusion": false,
+            "evidence": "no grounding occlusion detected"
+          },
+          "fog": {
+            "enabled": false,
+            "density": 0,
+            "preset": "none"
+          },
+          "postprocess": {
+            "enabled": false,
+            "requested": false,
+            "renderPass": false,
+            "outputPass": false,
+            "bloomPass": false,
+            "ambientOcclusionPass": false,
+            "contactOcclusionReceiver": false,
+            "pixelBacked": false,
+            "runtimeStatus": "disabled",
+            "requestedPasses": [],
+            "actualPasses": [],
+            "fallbackPasses": [],
+            "evidence": "no renderer postprocess effects requested"
+          },
+          "runtime": {
+            "mounted": true,
+            "backend": "webgl2-agent-runtime",
+            "postprocessVerified": false,
+            "passNames": [],
+            "warnings": [
+              "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+            ]
+          },
+          "environment": {
+            "enabled": false,
+            "evidence": "procedural fallback environment requested only; runtime environment prefilter status is unavailable until render"
+          },
+          "antialiasing": "msaa-plus-high-dpi",
+          "screenshotQuality": {
+            "kind": "aura-renderer-quality",
+            "id": "screenshot",
+            "antialiasing": "msaa-plus-high-dpi",
+            "shadowMap": "pcf-soft",
+            "pixelRatio": 1.5,
+            "preserveDrawingBuffer": true,
+            "maxRecommendedDrawCalls": 260,
+            "evidence": "prioritizes benchmark screenshots with stronger edge quality for labels, axes, and neon rings"
+          },
+          "materialCapabilities": {
+            "kind": "aura-material-capability-diagnostics",
+            "rendererPath": "root-createAuraApp",
+            "requestedFeatures": [],
+            "unsupportedRequestedFeatures": [],
+            "partialRequestedFeatures": [],
+            "features": [
+              {
+                "id": "base-color",
+                "label": "Base color",
+                "rootSafeApi": "supported",
+                "productionRuntime": "supported",
+                "evidence": "AuraMaterialSpec.color and imported GLB baseColorFactor are consumed by the root renderer.",
+                "claimRule": "Can be claimed with a route screenshot.",
+                "requested": false
+              },
+              {
+                "id": "base-color-texture",
+                "label": "Base-color texture",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Imported GLB baseColorTexture is sampled by the root WebGL path, but the root material contract currently keeps texture support partial until controlled texture on/off pixels are retained.",
+                "claimRule": "Can describe typed texture metadata and rendered textured assets; do not claim full texture-material parity without controlled root pixels.",
+                "requested": false
+              },
+              {
+                "id": "metallic-roughness",
+                "label": "Metallic/roughness",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root material specs expose values, but production-style material response needs route-specific pixel proof.",
+                "claimRule": "Do not claim full PBR parity without browser evidence.",
+                "requested": false
+              },
+              {
+                "id": "normal-map",
+                "label": "Normal maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs carry normal/procedural-normal intent; production shader parity is not guaranteed.",
+                "claimRule": "Claim only with material-specific screenshot evidence.",
+                "requested": false
+              },
+              {
+                "id": "emissive",
+                "label": "Emissive",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and effects expose emissive color; pixel-backed bloom is reported separately.",
+                "claimRule": "Distinguish emissive material from postprocess bloom.",
+                "requested": false
+              },
+              {
+                "id": "alpha",
+                "label": "Alpha/opacity",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Opacity is accepted by the public spec, but sorting and blending must be visually verified.",
+                "claimRule": "Verify alpha behavior in screenshots before claiming.",
+                "requested": false
+              },
+              {
+                "id": "double-sided",
+                "label": "Double-sided materials",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Root diagnostics may preserve metadata, but public material specs do not expose a full double-sided render contract.",
+                "claimRule": "Claim only when tested route shows backface behavior.",
+                "requested": false
+              },
+              {
+                "id": "clearcoat",
+                "label": "Clearcoat",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs and inspectors expose clearcoat values; physically accurate layered highlights need pixel proof.",
+                "claimRule": "Do not call clearcoat physically accurate without renderer evidence.",
+                "requested": false
+              },
+              {
+                "id": "sheen",
+                "label": "Sheen",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose sheen values for inspection and future renderer binding.",
+                "claimRule": "Treat as partial unless screenshot-proven.",
+                "requested": false
+              },
+              {
+                "id": "transmission",
+                "label": "Transmission/glass",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root specs expose glass intent, opacity, IOR, and thickness; real refraction/volume is not proven in the root path.",
+                "claimRule": "Do not claim real transmission/refraction through root createAuraApp without pixels.",
+                "requested": false
+              },
+              {
+                "id": "variants",
+                "label": "Material variants",
+                "rootSafeApi": "metadata-only",
+                "productionRuntime": "supported",
+                "evidence": "Variant metadata and route logic can be inspected; renderer-level variant switching needs route tests.",
+                "claimRule": "Claim selected variant behavior only when tested.",
+                "requested": false
+              },
+              {
+                "id": "hdr-ibl",
+                "label": "HDR/IBL",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root environment nodes request lighting intent; environment prefiltering is not proven in the root path.",
+                "claimRule": "Root HDR/IBL claims require diagnostics and browser pixels.",
+                "requested": false
+              },
+              {
+                "id": "shadow-maps",
+                "label": "Shadow maps",
+                "rootSafeApi": "partial",
+                "productionRuntime": "supported",
+                "evidence": "Root path reports contact-shadow cues; production shadow-map sampling is not proven by spec alone.",
+                "claimRule": "Production-shadow claims require pixel proof.",
+                "requested": false
+              }
+            ],
+            "warnings": [],
+            "claimBoundary": "Material diagnostics describe public root createAuraApp support. They are not a substitute for browser screenshot evidence."
+          },
+          "warnings": [
+            "scene has no contact shadow or contact-occlusion grounding cue",
+            "Aura3D WebGL2 agent runtime renders typed models, primitives, and basic effects; advanced postprocess, environment prefiltering, shadow maps, and GLB animation mixers are reported as unsupported unless a route uses the typed-GLB production bridge."
+          ]
+        },
+        "warnings": [
+          "Scene has no interactions. Suggested fix: add interactions.orbit() for product/viewer scenes."
+        ],
+        "errors": []
+      }
+    }
+  },
+  "categoryProof": {
+    "racing": {
+      "inputChangesSpeed": true,
+      "inputChangesHeading": true,
+      "checkpointOrLapProgression": true,
+      "resetWorks": true,
+      "authoredLapSeconds": 75,
+      "routeAlignedToVisibleTrack": true,
+      "noDebugLocatorDisk": true,
+      "visualReviewPass": true,
+      "visualReviewEvidence": {
+        "source": "docs/project/showcase-visual-review.json",
+        "verdict": "pass",
+        "screenshotEvidence": [
+          "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit-before-input.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "tests/fixtures/showcase-spec/evidence/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png"
+        ]
+      }
+    }
+  }
+}

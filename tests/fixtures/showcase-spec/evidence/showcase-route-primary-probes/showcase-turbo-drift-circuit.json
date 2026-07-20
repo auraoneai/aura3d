@@ -1,0 +1,161 @@
+{
+  "schema": "aura3d-route-primary-probe/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "routePath": "/apps/showcase-turbo-drift-circuit/",
+  "appId": "showcase-turbo-drift-circuit",
+  "sourceHash": "sha256-c84d081e1cc8cf22f977d83fa724f4ee6c176f74f07a1d640b0e1905918218b3",
+  "routeGateHash": "50834c20f1ad1fb9761f5555da93cb35f864f69fea6585cca56a2aff0824c96d",
+  "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+  "secondaryPrimaryAssets": [
+    "showcaseKenneyNeonRaceCircuit"
+  ],
+  "routeHealthHash": "sha256-2f1494cc7e36e424b4ecb5ebcfd02dcd730039d359cfe186d34d7c0557a692f8",
+  "generatedAt": "2026-07-20T06:12:31.138Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 1
+  },
+  "mountedEvidence": {
+    "present": true,
+    "status": "running",
+    "evidenceKeys": [
+      "appId",
+      "checkpoint",
+      "claimBoundary",
+      "controls",
+      "diagnostics",
+      "frameCount",
+      "gameplay",
+      "kitContractProof",
+      "lap",
+      "primaryAssets",
+      "raceDesign",
+      "raceState",
+      "racing",
+      "schema",
+      "speed",
+      "status",
+      "systems"
+    ],
+    "primaryAssets": [
+      "showcaseKenneyRaceCarRed",
+      "showcaseKenneyNeonRaceCircuit"
+    ],
+    "missingPrimaryAssets": [],
+    "hasRendererDiagnostics": true
+  },
+  "renderer": {
+    "backend": "webgl2",
+    "drawCalls": 303,
+    "renderSize": [
+      1122,
+      900
+    ]
+  },
+  "renderedProbe": {
+    "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+    "sha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+    "width": 1440,
+    "height": 900,
+    "analysisCrop": {
+      "x": 10,
+      "y": 10,
+      "width": 1102,
+      "height": 880
+    },
+    "nonBlankPixels": 8671,
+    "colorBuckets": 45,
+    "foregroundBounds": {
+      "x": 508,
+      "y": 425,
+      "width": 114,
+      "height": 95
+    },
+    "visible": true,
+    "clipped": false,
+    "occludedByUi": false,
+    "readabilityScore": 52,
+    "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
+    "subjectSuppressedScreenshotSha256": "sha256-a747f2da2e9d90385c2005a9f202bf82e4a5ac1d2aff35162a5a08c02c46ea0f",
+    "evidenceMethod": "runtime-bound-subject-pixel-difference",
+    "failures": []
+  },
+  "compositionProbe": {
+    "category": "racing",
+    "subjectBounds": {
+      "x": 508,
+      "y": 425,
+      "width": 114,
+      "height": 95
+    },
+    "subjectPixels": 8671,
+    "subjectColorBuckets": 45,
+    "subjectClipped": false,
+    "subjectReadabilityScore": 52,
+    "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
+    "subjectSuppressedScreenshotSha256": "sha256-a747f2da2e9d90385c2005a9f202bf82e4a5ac1d2aff35162a5a08c02c46ea0f",
+    "projectedPlaySpaceBounds": {
+      "x": 551,
+      "y": 321,
+      "width": 571,
+      "height": 360
+    },
+    "projectedContactPoint": {
+      "x": 561,
+      "y": 548.168
+    },
+    "projectedSubjectHeight": 166.454,
+    "subjectTargetSize": 0.9,
+    "cameraMode": "follow"
+  },
+  "primaryAssets": [
+    {
+      "id": "showcaseKenneyRaceCarRed",
+      "role": "vehicle",
+      "expectedTypedRef": "assets.showcaseKenneyRaceCarRed",
+      "routePrimaryEvidenceTarget": true,
+      "evidenceMode": "route-primary-foreground",
+      "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+      "renderedProbe": {
+        "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        "sha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+        "width": 1440,
+        "height": 900,
+        "analysisCrop": {
+          "x": 10,
+          "y": 10,
+          "width": 1102,
+          "height": 880
+        },
+        "nonBlankPixels": 8671,
+        "colorBuckets": 45,
+        "foregroundBounds": {
+          "x": 508,
+          "y": 425,
+          "width": 114,
+          "height": 95
+        },
+        "visible": true,
+        "clipped": false,
+        "occludedByUi": false,
+        "readabilityScore": 52,
+        "subjectSuppressedScreenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
+        "subjectSuppressedScreenshotSha256": "sha256-a747f2da2e9d90385c2005a9f202bf82e4a5ac1d2aff35162a5a08c02c46ea0f",
+        "evidenceMethod": "runtime-bound-subject-pixel-difference",
+        "failures": []
+      }
+    },
+    {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "role": "track",
+      "expectedTypedRef": "assets.showcaseKenneyNeonRaceCircuit",
+      "routePrimaryEvidenceTarget": false,
+      "evidenceMode": "secondary-present",
+      "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+    }
+  ],
+  "primitivePrimaryCandidates": [],
+  "pass": true,
+  "failures": []
+}

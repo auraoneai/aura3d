@@ -33,20 +33,20 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /Agent-written 3D/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /The 3D SDK/i })).toBeVisible();
     await expect(page.locator(".hero-grid")).toBeVisible();
     const heroDisplay = await page.locator(".hero-grid").evaluate((element) => getComputedStyle(element).display);
     expect(heroDisplay).toBe("grid");
     const navPosition = await page.locator(".nav").evaluate((element) => getComputedStyle(element).position);
     expect(navPosition).toBe("sticky");
-    await expect(page.locator(".hero-right iframe[data-route='/apps/wow-concept-car-cinema/']")).toBeVisible();
-    await expect(page.locator(".hero-right iframe")).toHaveAttribute("src", /wow-concept-car-cinema/);
-    await expect(page.locator(".hero-left")).toContainText("Agent-written 3D");
-    await expect(page.locator(".hero-left")).toContainText("The agent writes code. You bring the assets.");
+    await expect(page.locator(".hero-right iframe[data-route='/apps/wow-webgpu-compute-particles/']")).toBeVisible();
+    await expect(page.locator(".hero-right iframe")).toHaveAttribute("src", /wow-webgpu-compute-particles/);
+    await expect(page.locator(".hero-left")).toContainText("The 3D SDK");
+    await expect(page.locator(".hero-left")).toContainText("800,000+ real GLB/glTF assets");
     expect(await page.locator("a[href='/llms.txt']").count()).toBeGreaterThanOrEqual(1);
     await expect(page.locator("[data-copy='asset-add']")).toBeVisible();
     await expect(page.locator("[data-copy]")).toHaveCount(4);
-    await expect(page.locator("[data-search-index]")).toContainText("deployment");
+    await expect(page.locator("#templates")).toHaveAttribute("data-search-index", /deployment/);
     const search = page.getByRole("searchbox", { name: /Search Aura3D docs/i });
     await expect(search).toBeVisible();
     for (const query of ["install", "asset add", "templates", "deployment", "troubleshooting"]) {
@@ -77,7 +77,7 @@ test.describe("docs and marketing site", () => {
     await stubMarketingEmbeds(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${server.origin}/marketing/index.html`, { waitUntil: "domcontentloaded" });
-    await expect(page.getByRole("heading", { name: /Agent-written 3D/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /The 3D SDK/i })).toBeVisible();
     await expect(page.locator(".hero-left .hero-cta")).toBeVisible();
     await expect(page.locator("#templates")).toBeVisible();
     await expect(page.locator("#templates .pkg-grid")).toBeVisible();

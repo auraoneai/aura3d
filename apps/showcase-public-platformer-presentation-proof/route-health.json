@@ -3,9 +3,9 @@
   "generatedAt": "2026-07-03",
   "appId": "showcase-public-platformer-presentation-proof",
   "route": "/apps/showcase-public-platformer-presentation-proof/",
-  "classification": "candidate",
-  "publicShowcase": true,
-  "promotionStatus": "release-ready-candidate-public-platformer-presentation",
+  "classification": "removed-from-public-showcase",
+  "publicShowcase": false,
+  "promotionStatus": "superseded-by-showcase-skyline-runner",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
@@ -33,13 +33,12 @@
     "status": "within-stated-game-geometry-role"
   },
   "claimStatus": {
-    "status": "bounded",
+    "status": "removed-from-public-showcase",
     "label": "createAuraApp",
     "allowed": [
-      "certified generated platformer presentation geometry from root-safe game helpers",
-      "typed walking character visible as the platformer hero",
-      "typed side-scroller world retained as manifest-backed playable-surface provenance",
-      "keyboard movement, jump, checkpoint, hazard respawn, finish, reset, and route-primary screenshot proof"
+      "retained historical certification evidence for the superseded platformer presentation",
+      "typed walking character and side-scroller world evidence remain inspectable",
+      "Skyline Runner is the current public platformer showcase"
     ],
     "notAllowed": [
       "production rendering parity",
@@ -47,7 +46,9 @@
       "collision system claims beyond route-local platformer state"
     ]
   },
-  "blockers": [],
+  "blockers": [
+    "superseded-by:showcase-skyline-runner"
+  ],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
     "sourceReview": "apps/showcase-public-platformer-presentation-proof/src/main.ts",

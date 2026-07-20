@@ -7,7 +7,7 @@ const routeGeometry = gameGeometryContract.route;
 const route = game.assetBoundRacingRoute({
   vehicleAsset: "showcaseKenneyRaceCarRed",
   trackAsset: "showcaseKenneyNeonRaceCircuit",
-  authoredLapSeconds: 75,
+  authoredLapSeconds: 45,
   minLapSeconds: 30,
   minCheckpoints: 6,
   topology: trackTopology,
@@ -19,7 +19,7 @@ const route = game.assetBoundRacingRoute({
   }
 });
 const routeWidth = 1.792;
-const authoredLapSeconds = 75;
+const authoredLapSeconds = 45;
 const certifiedMaxSpeed = route.assetBinding.speedModel.certifiedSpeed;
 const certifiedAcceleration = Number((certifiedMaxSpeed * 4.1).toFixed(3));
 const racingScene = game.racingSceneBinding({

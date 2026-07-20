@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:35:41.978Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:35:41.977Z",
+    "sha256": "sha256-000844ca5e70442b225b5bec7396eeefb3d16a1fbba14007ceea2c68c8dd8bac",
+    "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+    "nonBlankPixels": 451200,
+    "colorBuckets": 118,
+    "foregroundBounds": {
+      "x": 81,
+      "y": 282,
+      "width": 671,
+      "height": 318
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
+    "asset": {
+      "id": "showcaseKenneyVerdantPlatformerWorld",
+      "typed": "assets.showcaseKenneyVerdantPlatformerWorld",
+      "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+      "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 330,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 124551,
+      "colorBuckets": 392,
+      "foregroundBounds": {
+        "x": 81,
+        "y": 282,
+        "width": 671,
+        "height": 318
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

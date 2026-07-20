@@ -143,7 +143,7 @@ export const gameGeometryContract = {
       }
     ],
     "lapLengthMeters": 49.404,
-    "estimatedLapSeconds": 75,
+    "estimatedLapSeconds": 45,
     "confidence": 0.76,
     "modelAlignment": {
       "source": "asset-mesh-extracted",
@@ -313,14 +313,14 @@ export const gameGeometryContract = {
       1
     ]
   },
-  "authoredSeconds": 75,
+  "authoredSeconds": 45,
   "speedModel": {
     "kind": "route-length-over-authored-lap-seconds",
     "routeLength": 49.404,
-    "authoredLapSeconds": 75,
-    "gameUnitsPerSecond": 0.659,
+    "authoredLapSeconds": 45,
+    "gameUnitsPerSecond": 1.098,
     "sceneUnitsPerGameUnit": 0.297,
-    "sceneUnitsPerSecond": 0.195723,
+    "sceneUnitsPerSecond": 0.326106,
     "units": "game-and-scene-units-per-second"
   },
   "cameraRig": {
@@ -483,7 +483,7 @@ export const gameGeometryContract = {
         }
       ],
       "lapLengthMeters": 49.404,
-      "estimatedLapSeconds": 177,
+      "estimatedLapSeconds": 45,
       "confidence": 0.76,
       "modelAlignment": {
         "source": "asset-mesh-extracted",

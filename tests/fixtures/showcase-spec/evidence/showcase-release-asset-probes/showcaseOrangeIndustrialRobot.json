@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-07-19T21:34:17.073Z",
+  "screenshotPath": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.png",
+  "renderedProbe": {
+    "url": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseOrangeIndustrialRobot.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseOrangeIndustrialRobot",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-07-19T21:34:17.072Z",
+    "sha256": "sha256-7b5815e6fed00aee994f6378272923a5cd81fda6c1d422528ba11b0a15271311",
+    "assetHash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8",
+    "nonBlankPixels": 451046,
+    "colorBuckets": 55,
+    "foregroundBounds": {
+      "x": 264,
+      "y": 348,
+      "width": 206,
+      "height": 161
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseOrangeIndustrialRobot",
+    "asset": {
+      "id": "showcaseOrangeIndustrialRobot",
+      "typed": "assets.showcaseOrangeIndustrialRobot",
+      "url": "/aura-assets/showcaseOrangeIndustrialRobot.d816ddb7.glb",
+      "hash": "sha256-d816ddb76416390d6d43072dba428f9afa81fbd19bde5ec2f8d26af27e78f7c8"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 3,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 18771,
+      "colorBuckets": 169,
+      "foregroundBounds": {
+        "x": 264,
+        "y": 348,
+        "width": 206,
+        "height": 161
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

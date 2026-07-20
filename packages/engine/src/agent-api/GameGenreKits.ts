@@ -522,6 +522,7 @@ export interface GameAssetBoundPlatformerLevelBinding {
   readonly characterScaleRatio?: number;
   readonly confidence?: number;
   readonly authoredPlayableSeconds: number;
+  readonly traversalSeconds: number;
   readonly surfaceCount: number;
   readonly checkpointCount: number;
 }
@@ -535,6 +536,8 @@ export interface GameAssetBoundPlatformerLevelOptions {
   readonly worldAssetBindings: readonly GamePlatformerWorldAssetBinding[];
   readonly level: GamePlatformerLevel;
   readonly playableSurfaceMap?: GamePlatformerPlayableSurfaceMap;
+  /** Authored duration backed by certified level flow, including traversal, jumps, hazards, and checkpoints. */
+  readonly authoredPlayableSeconds?: number;
   readonly minPlayableSeconds?: number;
   readonly minCheckpoints?: number;
   readonly minSurfaceCount?: number;
@@ -933,7 +936,11 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
   if (checkpoints.length < minCheckpoints) {
     throw new Error(`game.assetBoundPlatformerLevel requires at least ${minCheckpoints} checkpoints.`);
   }
-  const authoredPlayableSeconds = roundGameMetric((finish.x - start.x) / moveSpeed);
+  const traversalSeconds = roundGameMetric((finish.x - start.x) / moveSpeed);
+  const authoredPlayableSeconds = roundGameMetric(options.authoredPlayableSeconds ?? traversalSeconds);
+  if (!Number.isFinite(authoredPlayableSeconds) || authoredPlayableSeconds <= 0) {
+    throw new Error("game.assetBoundPlatformerLevel authoredPlayableSeconds must be a positive finite duration.");
+  }
   if (authoredPlayableSeconds < minPlayableSeconds) {
     throw new Error(`game.assetBoundPlatformerLevel requires at least ${minPlayableSeconds}s of authored playable path.`);
   }
@@ -956,6 +963,7 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
       ...(Object.keys(worldAssetHashes).length > 0 ? { worldAssetHashes } : {}),
       ...(playableSurfaceMap ? { surfaceSource: playableSurfaceMap.source, characterScaleRatio: playableSurfaceMap.characterScaleRatio, confidence: playableSurfaceMap.confidence } : {}),
       authoredPlayableSeconds,
+      traversalSeconds,
       surfaceCount: platforms.length,
       checkpointCount: checkpoints.length
     }
