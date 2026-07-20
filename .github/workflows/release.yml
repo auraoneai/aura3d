@@ -52,7 +52,20 @@ jobs:
           pnpm verify:package-provenance
           pnpm verify:release:quick
 
+      - name: Verify requested package version
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          REQUESTED_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          REQUESTED_VERSION=${REQUESTED_VERSION#v}
+          if [ "$REQUESTED_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Requested version $REQUESTED_VERSION does not match package.json $PACKAGE_VERSION" >&2
+            exit 1
+          fi
+
       - name: Verify benchmark release proof
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.benchmark_round != ''
         env:
           BENCHMARK_ROUND: ${{ github.event.inputs.benchmark_round }}
         run: node tools/release-proof-guard.mjs "$BENCHMARK_ROUND"
