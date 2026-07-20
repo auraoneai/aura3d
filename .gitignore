@@ -348,3 +348,6 @@ apps/aura-clash-showcase/assets/source/
 apps/aura-clash-showcase/assets/quaternius-*.json
 apps/world-war-x-showcase/
 marketing/public/aura-assets/
+
+# Curated production marketing previews.
+!marketing/public/previews/showcase/*.png

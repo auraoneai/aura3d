@@ -48,7 +48,11 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html, body { margin: 0; padding: 0; }
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
+}
 
 html {
   background: var(--bg);
@@ -1980,6 +1984,10 @@ footer {
 }
 @media (max-width: 640px) {
   :root { --section-y: 80px; --gutter: 20px; }
+  .wrap, .split, .split-code, .split-view, .example-host { min-width: 0; max-width: 100%; }
+  .split-code-head { align-items: flex-start; gap: 10px; }
+  .split-code-tabs { min-width: 0; flex-wrap: wrap; }
+  pre.code { max-width: 100%; }
   .compare-head, .compare-row { grid-template-columns: 1.2fr 1fr 1fr; padding: 14px 16px; }
   .compare-value { font-size: 16px; }
   .pkg-grid { grid-template-columns: 1fr; }
