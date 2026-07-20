@@ -72,10 +72,7 @@ Required gates:
 - copy review against `docs/project/claim-guidelines.md`.
 - `node tools/showcase-library/build-and-check.mjs`
 
-Current status for this track: 6/6 public release candidates pass. Data Galaxy
-and WebGPU Particle Lab are internal diagnostics. Turbo Drift Circuit and
-Skyline Runner are prototype-blocked game diagnostics and are not public
-examples.
+Current status for this track: 10/10 public release candidates pass. Data Galaxy and WebGPU Particle Lab are internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses and are not public examples.
 
 ## Track 3: Marketing Launch Release
 

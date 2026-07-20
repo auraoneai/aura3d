@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   readRenderedProbeMetadata,
   type AuraAssetQuality,
   type AuraCliAssetRole,
+  type AuraCliOrientationInspection,
   type AuraCliRenderedProbe,
 } from "./index.js";
 import type {
@@ -74,6 +77,11 @@ export function createCliOptionReaders(args: readonly string[]) {
     return values;
   }
 
+  function readProvenanceEvidence(): readonly string[] | undefined {
+    const evidence = readRepeatedOptions("--provenance-evidence").map((entry) => entry.trim()).filter(Boolean);
+    return evidence.length > 0 ? evidence : undefined;
+  }
+
   function readParts(name: string): readonly { readonly slot: string; readonly asset: string }[] {
     const parts: { slot: string; asset: string }[] = [];
     for (let index = 0; index < args.length; index += 1) {
@@ -119,6 +127,20 @@ export function createCliOptionReaders(args: readonly string[]) {
       value === "unknown"
     ) return value;
     throw new Error(`Unsupported --role value "${value}". Use character, vehicle, world, environment, track, product, weapon, prop, set-dressing, debug, abstract, or unknown.`);
+  }
+
+  function readOrientation(): AuraCliOrientationInspection | undefined {
+    const file = readOption("--orientation-json");
+    if (!file) return undefined;
+    if (file.startsWith("--")) throw new Error("Expected --orientation-json <metadata.json>.");
+    const parsed: unknown = JSON.parse(readFileSync(resolve(process.cwd(), file), "utf8"));
+    const root = typeof parsed === "object" && parsed !== null ? parsed as Record<string, unknown> : undefined;
+    const candidate = root && "orientation" in root ? root.orientation : parsed;
+    const orientation = typeof candidate === "object" && candidate !== null ? candidate as Partial<AuraCliOrientationInspection> : undefined;
+    if (!orientation || orientation.source !== "manifest-override" || !Array.isArray(orientation.messages)) {
+      throw new Error("--orientation-json must contain a manifest-override orientation with messages.");
+    }
+    return orientation as AuraCliOrientationInspection;
   }
 
   function readRenderedProbe(): AuraCliRenderedProbe | undefined {
@@ -175,7 +197,9 @@ export function createCliOptionReaders(args: readonly string[]) {
     readEvidenceOutput,
     readInspectFile,
     readOption,
+    readOrientation,
     readParts,
+    readProvenanceEvidence,
     readRenderedProbe,
     readResolveConstraints,
   };

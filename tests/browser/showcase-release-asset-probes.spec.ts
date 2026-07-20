@@ -8,6 +8,15 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 import { PROBE_ASSETS } from "./showcase-release-asset-probe-config";
 
 const REPORT_DIR = "tests/reports/showcase-release-asset-probes";
+const requestedAssetIds = new Set(
+  (process.env.AURA3D_PROBE_ASSETS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+);
+const selectedProbeAssets = requestedAssetIds.size === 0
+  ? PROBE_ASSETS
+  : PROBE_ASSETS.filter((assetId) => requestedAssetIds.has(assetId));
 
 interface ProbePngMetrics {
   readonly width: number;
@@ -17,7 +26,9 @@ interface ProbePngMetrics {
 }
 
 test.describe("showcase release asset probe generation", () => {
-  test.setTimeout(180_000);
+  // This producer renders every configured asset serially. Keep each harness wait
+  // bounded below, while scaling the aggregate budget as the certified catalog grows.
+  test.setTimeout(Math.max(180_000, selectedProbeAssets.length * 30_000));
 
   let server: ExampleDevServer;
 
@@ -33,25 +44,27 @@ test.describe("showcase release asset probe generation", () => {
     const generated: string[] = [];
     mkdirSync(resolve(REPORT_DIR), { recursive: true });
 
-    for (const assetId of PROBE_ASSETS) {
-      const page = await context.newPage();
-      const errors: string[] = [];
-      try {
-        page.on("pageerror", (error) => errors.push(error.message));
-        await page.goto(`${server.origin}/tests/browser/showcase-release-asset-probe-harness.html?asset=${assetId}`, { waitUntil: "domcontentloaded" });
-        await page.waitForFunction(
+    const page = await context.newPage();
+    try {
+      for (const assetId of selectedProbeAssets) {
+        const errors: string[] = [];
+        const capturePageError = (error: Error) => errors.push(error.message);
+        page.on("pageerror", capturePageError);
+        try {
+          await page.goto(`${server.origin}/tests/browser/showcase-release-asset-probe-harness.html?asset=${assetId}`, { waitUntil: "domcontentloaded" });
+          await page.waitForFunction(
           () => Boolean(
             (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE__?: unknown }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE__ ||
             (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__?: unknown }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__
           ),
           undefined,
           { timeout: 20_000 }
-        );
+          );
 
-        const harnessError = await page.evaluate(() => (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__?: string }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__);
-        if (harnessError) throw new Error(harnessError);
+          const harnessError = await page.evaluate(() => (window as { __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__?: string }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE_ERROR__);
+          if (harnessError) throw new Error(harnessError);
 
-        const evidence = await page.evaluate(() => (window as {
+          const evidence = await page.evaluate(() => (window as {
           __AURA3D_SHOWCASE_RELEASE_ASSET_PROBE__: {
             readonly imports: readonly string[];
             readonly route: string;
@@ -76,15 +89,15 @@ test.describe("showcase release asset probe generation", () => {
             readonly pass: boolean;
             readonly failures: readonly string[];
           };
-        }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE__);
-        const screenshotPath = `${REPORT_DIR}/${assetId}.png`;
-        const reportPath = `${REPORT_DIR}/${assetId}.json`;
-        mkdirSync(dirname(resolve(screenshotPath)), { recursive: true });
-        await page.locator("#probe-stage canvas").screenshot({ path: screenshotPath });
+          }).__AURA3D_SHOWCASE_RELEASE_ASSET_PROBE__);
+          const screenshotPath = `${REPORT_DIR}/${assetId}.png`;
+          const reportPath = `${REPORT_DIR}/${assetId}.json`;
+          mkdirSync(dirname(resolve(screenshotPath)), { recursive: true });
+          await page.locator("#probe-stage canvas").screenshot({ path: screenshotPath });
 
-        const screenshotBytes = readFileSync(resolve(screenshotPath));
-        const pngMetrics = readProbePngMetrics(screenshotBytes);
-        const renderedProbe = {
+          const screenshotBytes = readFileSync(resolve(screenshotPath));
+          const pngMetrics = readProbePngMetrics(screenshotBytes);
+          const renderedProbe = {
           url: screenshotPath,
           kind: "browser-screenshot" as const,
           renderer: "createAuraApp @aura3d/engine showcase release asset probe",
@@ -97,34 +110,37 @@ test.describe("showcase release asset probe generation", () => {
           nonBlankPixels: pngMetrics.nonBlankPixels,
           colorBuckets: pngMetrics.colorBuckets,
           foregroundBounds: evidence.pixels.foregroundBounds
-        };
-        writeFileSync(resolve(reportPath), `${JSON.stringify({
+          };
+          writeFileSync(resolve(reportPath), `${JSON.stringify({
           schema: "aura3d-showcase-release-asset-probe/1.0",
           generatedAt: new Date().toISOString(),
           screenshotPath,
           renderedProbe,
           evidence
-        }, null, 2)}\n`);
-        generated.push(reportPath, screenshotPath);
+          }, null, 2)}\n`);
+          generated.push(reportPath, screenshotPath);
 
-        expect(evidence.imports).toEqual(["@aura3d/engine", "../../src/aura-assets"]);
-        expect(evidence.asset).toMatchObject({ id: assetId, typed: `assets.${assetId}` });
-        expect(evidence.asset.hash).toMatch(/^sha256-[a-f0-9]{64}$/);
-        expect(evidence.diagnostics.runtimeBackend).toBe("production-runtime");
-        expect(evidence.diagnostics.drawCalls).toBeGreaterThan(0);
-        expect(evidence.diagnostics.renderSize[0]).toBeGreaterThan(0);
-        expect(evidence.pass, evidence.failures.join("; ")).toBe(true);
-        expect(readRenderedProbeMetadata({ file: reportPath })).toEqual(renderedProbe);
-        expect(errors).toEqual([]);
-      } finally {
-        await page.close();
+          expect(evidence.imports).toEqual(["@aura3d/engine", "../../src/aura-assets"]);
+          expect(evidence.asset).toMatchObject({ id: assetId, typed: `assets.${assetId}` });
+          expect(evidence.asset.hash).toMatch(/^sha256-[a-f0-9]{64}$/);
+          expect(evidence.diagnostics.runtimeBackend).toBe("production-runtime");
+          expect(evidence.diagnostics.drawCalls).toBeGreaterThan(0);
+          expect(evidence.diagnostics.renderSize[0]).toBeGreaterThan(0);
+          expect(evidence.pass, evidence.failures.join("; ")).toBe(true);
+          expect(readRenderedProbeMetadata({ file: reportPath })).toEqual(renderedProbe);
+          expect(errors).toEqual([]);
+        } finally {
+          page.off("pageerror", capturePageError);
+        }
       }
+    } finally {
+      await page.close();
     }
 
     writeFileSync(resolve(REPORT_DIR, "_summary.json"), `${JSON.stringify({
       schema: "aura3d-showcase-release-asset-probe-summary/1.0",
       generatedAt: new Date().toISOString(),
-      assets: PROBE_ASSETS,
+      assets: selectedProbeAssets,
       generated
     }, null, 2)}\n`);
   });

@@ -681,7 +681,7 @@ describe("game runtime source gates", () => {
       vehicleAsset: "showcaseTexturedSportsCar",
       trackAsset: "showcaseTsukubaCircuit",
       authoredLapSeconds: 5,
-      minLapSeconds: 30,
+      minLapSeconds: 5,
       route
     })).toThrow(/at least 30s authored lap duration/);
   });
@@ -1280,15 +1280,18 @@ describe("game runtime source gates", () => {
     expect(skylineMain).toContain("const level = game.assetBoundPlatformerLevel(");
     expect(skylineMain).toContain("const platformerScene = game.platformerSceneBinding({");
     expect(skylineMain).toContain("const platformerState = game.platformer(level)");
-    expect(skylineMain).toContain('"source": "manifest-authored-overlay-validated"');
-    expect(skylineMain).toContain('"worldAssetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"');
-    expect(skylineMain).toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
+    const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
+    expect(skylineMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
+    expect(skylineMain).not.toContain('"source": "asset-mesh-extracted"');
+    expect(skylineMain).not.toContain("sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4");
+    expect(skylineGeometry).toContain('"source": "asset-mesh-extracted"');
+    expect(skylineGeometry).toContain('"worldAssetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"');
     expect(skylineMain).toContain("sceneBinding: platformerScene.evidence");
     expect(skylineMain).toContain("surfaceContact: platformerScene.contactPointForPlayer(state.player)");
     expect(skylineMain).toContain("surfaceContactAlignment: playerSurfaceAlignment()");
     expect(skylineMain).toContain("playerTargetHeight: platformerScene.evidence.playerTargetHeight");
     expect(skylineMain).toContain("platformerScene.toScenePlayer");
-    expect(skylineMain).toContain("game.platformerPresentationCamera({");
+    expect(skylineMain).toContain("game.platformerCameraRig({");
     expect(skylineMain).not.toContain("camera.follow(");
     expect(skylineMain).not.toContain("import { camera,");
     expect(skylineMain).not.toContain("stepSkylineRunner(");
@@ -1302,15 +1305,20 @@ describe("game runtime source gates", () => {
     expect(turboMain).toContain("const route = game.assetBoundRacingRoute(");
     expect(turboMain).toContain("const racingScene = game.racingSceneBinding({");
     expect(turboMain).toContain("const racingState = game.racing(");
-    expect(turboMain).toContain('"source": "manifest-authored-overlay-validated"');
-    expect(turboMain).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+    const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
+    expect(turboMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
+    expect(turboMain).not.toContain('"source": "asset-mesh-extracted"');
+    expect(turboMain).not.toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+    expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
+    expect(turboGeometry).toContain("sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065");
     expect(turboMain).toContain("sceneBinding: racingScene.evidence");
     expect(turboMain).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
     expect(turboMain).toContain("roadAlignment: roadAlignmentForSnapshot");
     expect(turboMain).toContain("carTrackSceneBinding");
     expect(turboMain).toContain("carAlignedToVisibleRoad");
     expect(turboMain).toContain("racingScene.toScenePose");
-    expect(turboMain).toContain("game.racingPresentationCamera({");
+    expect(turboMain).toContain("game.racingCameraRig({");
+    expect(turboMain).toContain('selectedMode: "chase"');
     expect(turboMain).not.toContain("trackModelSceneOffset");
     expect(turboMain).not.toContain("camera.follow(");
     expect(turboMain).not.toContain("import { camera,");

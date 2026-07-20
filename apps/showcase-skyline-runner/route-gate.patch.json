@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-showcase-route-gate-patch/1.0",
+  "route": {
+    "id": "showcase-skyline-runner",
+    "label": "Skyline Runner",
+    "path": "/apps/showcase-skyline-runner/",
+    "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
+    "published": true,
+    "primaryAssets": [
+      "showcaseKenneyOobiPlatformerHero",
+      "showcaseKenneyVerdantPlatformerWorld"
+    ],
+    "primaryAssetRoles": {
+      "showcaseKenneyOobiPlatformerHero": "character",
+      "showcaseKenneyVerdantPlatformerWorld": "world"
+    },
+    "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
+    "secondaryPrimaryAssets": [
+      "showcaseKenneyVerdantPlatformerWorld"
+    ],
+    "primitiveBudget": 0,
+    "requiresTypedPrimaryAssets": true
+  }
+}

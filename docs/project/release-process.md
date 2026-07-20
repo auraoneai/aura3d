@@ -1,5 +1,9 @@
 # Release Process
 
+Version: 1.4.4
+
+Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
+
 Date: 2026-07-01
 Status: release-candidate process
 
@@ -66,9 +70,7 @@ The exact command names may evolve, but the release run must generate or verify:
 
 Nonblank screenshots alone are not release evidence.
 Route-primary, deploy, and gameplay proof are also not enough for public game
-routes. Public racing and platformer examples require visual review and
-retained game-geometry evidence. Turbo Drift Circuit and Skyline Runner remain
-prototype-blocked until that layer exists.
+routes. Public racing and platformer examples require certified game geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence. Turbo Drift Circuit and Skyline Runner currently pass that bounded chain; the diagnostic proof routes remain non-public.
 
 ## Hosted Demo Deployment
 

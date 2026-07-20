@@ -184,6 +184,9 @@ importers:
       '@aura3d/asset-index':
         specifier: workspace:*
         version: link:../asset-index
+      create-aura3d:
+        specifier: workspace:*
+        version: link:../create-aura3d
       typescript:
         specifier: ^5.8.3
         version: 5.9.3

@@ -5,7 +5,8 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
-import { analyzeForegroundPng, type PngCrop } from "./showcase-visual-quality";
+import { analyzeForegroundPng, analyzePngDifferenceBounds, type PngCrop } from "./showcase-visual-quality";
+import { projectScenePoint, resolveCompositionCamera, type CompositionCameraProjectionInput } from "./showcase-composition-projection";
 
 const EVIDENCE_TIMEOUT_MS = 30_000;
 const VIEWPORT = { width: 1440, height: 900 } as const;
@@ -30,8 +31,14 @@ const UI_EVIDENCE_SELECTOR = [
 const ROUTE_GATE_CONFIG_TEXT = readFileSync(ROUTE_GATE_CONFIG_PATH, "utf8");
 const ROUTE_GATE_CONFIG_HASH = createHash("sha256").update(ROUTE_GATE_CONFIG_TEXT).digest("hex");
 const ROUTE_GATE_CONFIG = JSON.parse(ROUTE_GATE_CONFIG_TEXT) as ShowcaseRouteGateConfig;
+const ROUTE_FILTER = new Set((process.env.A3D_ROUTE_PRIMARY_IDS ?? "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean));
 const ROUTES = ROUTE_GATE_CONFIG.routes.filter((route) =>
-  route.published && (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true)
+  route.published &&
+  (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true) &&
+  (ROUTE_FILTER.size === 0 || ROUTE_FILTER.has(route.id))
 );
 
 interface ShowcaseRouteGateConfig {
@@ -120,6 +127,22 @@ interface MountedEvidenceSummary {
   readonly hasRendererDiagnostics: boolean;
 }
 
+interface CompositionProbeMeasurement {
+  readonly category: "racing" | "platformer";
+  readonly subjectBounds: PngCrop;
+  readonly subjectPixels: number;
+  readonly subjectColorBuckets: number;
+  readonly subjectClipped: boolean;
+  readonly subjectReadabilityScore: number;
+  readonly subjectSuppressedScreenshotPath: string;
+  readonly subjectSuppressedScreenshotSha256: string;
+  readonly projectedPlaySpaceBounds: PngCrop;
+  readonly projectedContactPoint: { readonly x: number; readonly y: number };
+  readonly projectedSubjectHeight: number;
+  readonly subjectTargetSize: number;
+  readonly cameraMode: string;
+}
+
 test.describe("showcase route-primary probe generation", () => {
   test.setTimeout(300_000);
 
@@ -188,6 +211,8 @@ async function writeRoutePrimaryProbe(
   const screenshotPath = routePrimaryProbe.routePrimaryProbeScreenshotPath(route.id);
   const relativeEvidencePath = routePrimaryProbe.routePrimaryProbeRelativeEvidencePath(route.id);
   const relativeScreenshotPath = routePrimaryProbe.routePrimaryProbeRelativeScreenshotPath(route.id);
+  const suppressedScreenshotPath = resolve(REPORT_DIR, `${route.id}-subject-suppressed.png`);
+  const relativeSuppressedScreenshotPath = `tests/reports/showcase-route-primary-probes/${route.id}-subject-suppressed.png`;
   const failures: string[] = [];
   const pageErrors: string[] = [];
   const consoleErrors: string[] = [];
@@ -195,6 +220,7 @@ async function writeRoutePrimaryProbe(
   let renderer: RendererDiagnostics = {};
   let viewport = { width: VIEWPORT.width, height: VIEWPORT.height, deviceScaleFactor: 1 };
   let foreground = emptyForeground();
+  let compositionProbe: CompositionProbeMeasurement | undefined;
   let canvasCrop: PngCrop | undefined;
   let analysisCrop: PngCrop | undefined;
   let uiOccluded = false;
@@ -225,8 +251,35 @@ async function writeRoutePrimaryProbe(
 
   const screenshot = await page.screenshot({ path: screenshotPath, fullPage: false, scale: "css" });
   const screenshotHash = `sha256-${createHash("sha256").update(screenshot).digest("hex")}`;
+  if (canvasCrop) {
+    try {
+      compositionProbe = await measureCompositionProbe(
+        page,
+        screenshot,
+        canvasCrop,
+        analysisCrop ?? canvasCrop,
+        suppressedScreenshotPath,
+        relativeSuppressedScreenshotPath
+      );
+    } catch (error) {
+      if (route.id.includes("racing") || route.id.includes("platformer") || route.id.includes("turbo-drift") || route.id.includes("skyline-runner")) {
+        failures.push(`composition-probe:${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+  }
+
   try {
-    foreground = analyzeForegroundPng(screenshot, analysisCrop);
+    foreground = compositionProbe ? {
+      width: VIEWPORT.width,
+      height: VIEWPORT.height,
+      crop: analysisCrop ?? canvasCrop ?? { x: 0, y: 0, width: VIEWPORT.width, height: VIEWPORT.height },
+      nonBlankPixels: compositionProbe.subjectPixels,
+      colorBuckets: compositionProbe.subjectColorBuckets,
+      foregroundBounds: compositionProbe.subjectBounds,
+      clipped: compositionProbe.subjectClipped,
+      nonBackgroundRatio: compositionProbe.subjectPixels / Math.max(1, (analysisCrop?.width ?? canvasCrop?.width ?? VIEWPORT.width) * (analysisCrop?.height ?? canvasCrop?.height ?? VIEWPORT.height)),
+      readabilityScore: compositionProbe.subjectReadabilityScore
+    } : analyzeForegroundPng(screenshot, analysisCrop);
     if (!foreground.foregroundBounds) failures.push("primary-foreground-missing");
     if (foreground.nonBlankPixels < thresholds.minNonBlankPixels) failures.push(`primary-foreground-too-small:${foreground.nonBlankPixels}`);
     if (foreground.colorBuckets < thresholds.minColorBuckets) failures.push(`primary-color-buckets-too-low:${foreground.colorBuckets}`);
@@ -271,6 +324,11 @@ async function writeRoutePrimaryProbe(
     clipped: foreground.clipped,
     occludedByUi: uiOccluded,
     readabilityScore: foreground.readabilityScore,
+    ...(compositionProbe ? {
+      subjectSuppressedScreenshotPath: compositionProbe.subjectSuppressedScreenshotPath,
+      subjectSuppressedScreenshotSha256: compositionProbe.subjectSuppressedScreenshotSha256,
+      evidenceMethod: "runtime-bound-subject-pixel-difference"
+    } : {}),
     failures
   };
   const evidence = {
@@ -288,6 +346,7 @@ async function writeRoutePrimaryProbe(
     mountedEvidence,
     renderer,
     renderedProbe,
+    ...(compositionProbe ? { compositionProbe } : {}),
     primaryAssets: context.primaryAssets.map((asset) => ({
       id: asset.id,
       role: asset.role,
@@ -311,6 +370,152 @@ async function writeRoutePrimaryProbe(
     screenshotPath: relativeScreenshotPath
   };
 }
+
+
+async function measureCompositionProbe(
+  page: Page,
+  visibleScreenshot: Buffer,
+  canvasCrop: PngCrop,
+  analysisCrop: PngCrop,
+  suppressedScreenshotPath: string,
+  relativeSuppressedScreenshotPath: string
+): Promise<CompositionProbeMeasurement | undefined> {
+  const raw = await page.evaluate(() => {
+    const probe = (window as unknown as { __AURA3D_COMPOSITION_PROBE__?: {
+      category?: unknown;
+      camera?: unknown;
+      subject?: unknown;
+      playSpacePoints?: unknown;
+      contactPoint?: unknown;
+      setSubjectSuppressed?: (suppressed: boolean) => unknown;
+    } }).__AURA3D_COMPOSITION_PROBE__;
+    if (!probe || typeof probe.setSubjectSuppressed !== "function") return undefined;
+    return {
+      category: probe.category,
+      camera: probe.camera,
+      subject: probe.subject,
+      playSpacePoints: probe.playSpacePoints,
+      contactPoint: probe.contactPoint
+    };
+  });
+  if (!raw) return undefined;
+  if (raw.category !== "racing" && raw.category !== "platformer") throw new Error("invalid-category");
+  const camera = readCompositionCamera(raw.camera);
+  const subject = readCompositionSubject(raw.subject);
+  const playSpacePoints = readVec3Array(raw.playSpacePoints, "play-space-points");
+  const contactPoint = readVec3(raw.contactPoint, "contact-point");
+  if (playSpacePoints.length < 2) throw new Error("insufficient-play-space-points");
+
+  await page.evaluate(() => {
+    const probe = (window as unknown as { __AURA3D_COMPOSITION_PROBE__?: { setSubjectSuppressed?: (suppressed: boolean) => unknown } }).__AURA3D_COMPOSITION_PROBE__;
+    probe?.setSubjectSuppressed?.(true);
+  });
+  const hiddenScreenshot = await page.screenshot({ path: suppressedScreenshotPath, fullPage: false, scale: "css" });
+  await page.evaluate(() => {
+    const probe = (window as unknown as { __AURA3D_COMPOSITION_PROBE__?: { setSubjectSuppressed?: (suppressed: boolean) => unknown } }).__AURA3D_COMPOSITION_PROBE__;
+    probe?.setSubjectSuppressed?.(false);
+  });
+
+  const difference = analyzePngDifferenceBounds(visibleScreenshot, hiddenScreenshot, analysisCrop);
+  if (!difference.bounds || difference.changedPixels < 20) throw new Error(`subject-difference-too-small:${difference.changedPixels}`);
+  const resolvedCamera = resolveCompositionCamera(camera, subject);
+  const projectedPoints = playSpacePoints
+    .map((point) => projectScenePoint(point, resolvedCamera, canvasCrop))
+    .filter((point): point is { x: number; y: number } => Boolean(point));
+  const projectedContactPoint = projectScenePoint(contactPoint, resolvedCamera, canvasCrop);
+  const projectedSubjectTop = projectScenePoint(
+    addVec3(subject.position, [0, subject.targetSize / 2, 0]),
+    resolvedCamera,
+    canvasCrop
+  );
+  const projectedSubjectBottom = projectScenePoint(
+    addVec3(subject.position, [0, -subject.targetSize / 2, 0]),
+    resolvedCamera,
+    canvasCrop
+  );
+  if (projectedPoints.length < 2 || !projectedContactPoint || !projectedSubjectTop || !projectedSubjectBottom) {
+    throw new Error("camera-projection-failed");
+  }
+  const projectedSubjectHeight = Number(Math.abs(projectedSubjectBottom.y - projectedSubjectTop.y).toFixed(3));
+  if (projectedSubjectHeight <= 0) throw new Error("subject-scale-projection-failed");
+  return {
+    category: raw.category,
+    subjectBounds: difference.bounds,
+    subjectPixels: difference.changedPixels,
+    subjectColorBuckets: difference.colorBuckets,
+    subjectClipped: difference.clipped,
+    subjectReadabilityScore: difference.readabilityScore,
+    subjectSuppressedScreenshotPath: relativeSuppressedScreenshotPath,
+    subjectSuppressedScreenshotSha256: `sha256-${createHash("sha256").update(hiddenScreenshot).digest("hex")}`,
+    projectedPlaySpaceBounds: boundsForProjectedPoints(projectedPoints, canvasCrop),
+    projectedContactPoint,
+    projectedSubjectHeight,
+    subjectTargetSize: subject.targetSize,
+    cameraMode: camera.mode
+  };
+}
+
+interface CompositionCamera extends CompositionCameraProjectionInput {
+  readonly mode: string;
+  readonly position?: readonly [number, number, number];
+  readonly target: readonly [number, number, number];
+  readonly offset?: readonly [number, number, number];
+  readonly targetOffset?: readonly [number, number, number];
+  readonly offsetMode?: string;
+  readonly fov: number;
+}
+
+interface CompositionSubject {
+  readonly position: readonly [number, number, number];
+  readonly rotation: readonly [number, number, number];
+  readonly targetSize: number;
+}
+
+function readCompositionCamera(value: unknown): CompositionCamera {
+  if (!isEvidenceRecord(value)) throw new Error("camera-missing");
+  return {
+    mode: typeof value.mode === "string" ? value.mode : "missing",
+    ...(value.position ? { position: readVec3(value.position, "camera-position") } : {}),
+    target: readVec3(value.target, "camera-target"),
+    ...(value.offset ? { offset: readVec3(value.offset, "camera-offset") } : {}),
+    ...(value.targetOffset ? { targetOffset: readVec3(value.targetOffset, "camera-target-offset") } : {}),
+    ...(typeof value.offsetMode === "string" ? { offsetMode: value.offsetMode } : {}),
+    fov: typeof value.fov === "number" && Number.isFinite(value.fov) ? value.fov : 42
+  };
+}
+
+function readCompositionSubject(value: unknown): CompositionSubject {
+  if (!isEvidenceRecord(value)) throw new Error("subject-missing");
+  const targetSize = value.targetSize;
+  if (typeof targetSize !== "number" || !Number.isFinite(targetSize) || targetSize <= 0) throw new Error("subject-target-size");
+  return {
+    position: readVec3(value.position, "subject-position"),
+    rotation: readVec3(value.rotation, "subject-rotation"),
+    targetSize
+  };
+}
+
+function boundsForProjectedPoints(points: readonly { readonly x: number; readonly y: number }[], crop: PngCrop): PngCrop {
+  const minX = Math.max(crop.x, Math.floor(Math.min(...points.map((point) => point.x))));
+  const minY = Math.max(crop.y, Math.floor(Math.min(...points.map((point) => point.y))));
+  const maxX = Math.min(crop.x + crop.width, Math.ceil(Math.max(...points.map((point) => point.x))));
+  const maxY = Math.min(crop.y + crop.height, Math.ceil(Math.max(...points.map((point) => point.y))));
+  return { x: minX, y: minY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) };
+}
+
+function readVec3Array(value: unknown, label: string): readonly (readonly [number, number, number])[] {
+  if (!Array.isArray(value)) throw new Error(`${label}-missing`);
+  return value.map((entry, index) => readVec3(entry, `${label}-${index}`));
+}
+
+function readVec3(value: unknown, label: string): readonly [number, number, number] {
+  if (!Array.isArray(value) || value.length !== 3 || value.some((entry) => typeof entry !== "number" || !Number.isFinite(entry))) {
+    throw new Error(`${label}-invalid`);
+  }
+  return [value[0] as number, value[1] as number, value[2] as number];
+}
+function isEvidenceRecord(value: unknown): value is EvidenceRecord { return typeof value === "object" && value !== null && !Array.isArray(value); }
+function addVec3(a: readonly [number, number, number], b: readonly [number, number, number]): readonly [number, number, number] { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
 
 async function importRoutePrimaryProbeModule(): Promise<RoutePrimaryProbeModule> {
   return await import(pathToFileURL(resolve("tools/showcase-library/route-primary-probes.mjs")).href) as RoutePrimaryProbeModule;

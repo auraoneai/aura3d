@@ -25,9 +25,14 @@ for (const href of hrefs) {
     if (href.includes(template)) starterTemplateLinks.add(template);
   }
   const clean = href.split("#")[0]!.split("?")[0]!;
-  if (!clean || clean.startsWith("/apps/")) continue;
+  if (!clean || clean.startsWith("/apps/") || clean.startsWith("/showcase/") || clean.startsWith("/playable")) continue;
   const path = clean.startsWith("/") ? clean.slice(1) : clean;
-  if (!existsSync(resolve(path))) localMissing.push(href);
+  const candidates = [
+    resolve(path),
+    resolve("marketing", path),
+    resolve("marketing", "public", path)
+  ];
+  if (!candidates.some((candidate) => existsSync(candidate))) localMissing.push(href);
 }
 
 const badCopyCommands = copyCommands.filter((command) => !isValidCopyCommand(command));

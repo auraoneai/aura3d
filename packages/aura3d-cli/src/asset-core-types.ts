@@ -51,6 +51,53 @@ export interface AuraCliGameGeometryMetadata {
   readonly playableSurfaceMap?: Readonly<Record<string, unknown>>;
 }
 
+export type AuraCliGameGeometryCategory = "racing" | "platformer";
+
+export interface CertifyGameGeometryOptions {
+  readonly projectDir?: string;
+  readonly category: AuraCliGameGeometryCategory;
+  readonly assetId?: string;
+  readonly assetIds?: readonly string[];
+}
+
+export interface GameGeometryCertificationRow {
+  readonly assetId: string;
+  readonly category: AuraCliGameGeometryCategory;
+  readonly pass: boolean;
+  readonly reasons: readonly string[];
+  readonly blockers: readonly string[];
+}
+
+export interface GameGeometryCertificationResult {
+  readonly ok: boolean;
+  readonly mode: "certify" | "screen";
+  readonly wroteManifest: boolean;
+  readonly manifestPath: string;
+  readonly typegenPath?: string;
+  readonly rows: readonly GameGeometryCertificationRow[];
+}
+
+export interface BindGameRouteEvidenceOptions {
+  readonly projectDir?: string;
+  readonly category: AuraCliGameGeometryCategory;
+  readonly routeId: string;
+  readonly assetIds: readonly string[];
+  readonly routePrimaryScreenshot: string;
+  readonly geometryReport: string;
+  readonly compositionReport: string;
+  readonly visualReview: string;
+}
+
+export interface BindGameRouteEvidenceResult {
+  readonly ok: boolean;
+  readonly wroteManifest: boolean;
+  readonly manifestPath: string;
+  readonly typegenPath?: string;
+  readonly routeId: string;
+  readonly assetIds: readonly string[];
+  readonly blockers: readonly string[];
+}
+
 export interface AuraCliRenderedProbeForegroundBounds {
   readonly x: number;
   readonly y: number;
@@ -207,11 +254,13 @@ export interface AddAssetOptions {
   readonly sourceFamily?: string;
   readonly attribution?: string;
   readonly sha256?: string;
+  readonly provenanceEvidence?: readonly string[];
   readonly resolveCandidate?: AuraCliResolveCandidateProvenance;
   readonly quality?: AuraAssetQuality;
   readonly role?: AuraCliAssetRole;
   readonly suitabilityReason?: string;
   readonly renderedProbe?: AuraCliRenderedProbe;
+  readonly orientation?: AuraCliOrientationInspection;
   readonly gameGeometry?: AuraCliGameGeometryMetadata;
   readonly retrievedAt?: string;
 }

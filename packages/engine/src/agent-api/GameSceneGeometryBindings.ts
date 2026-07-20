@@ -26,8 +26,17 @@ import {
 type Vec3 = readonly [number, number, number];
 type Euler3 = readonly [number, number, number];
 
+export interface GameRacingCameraSelectionEvidence {
+  readonly source: "asset-pair-composition";
+  readonly report: string;
+  readonly check: "camera-readability";
+  readonly verdict: "pass";
+  readonly selectedMode: "chase" | "top-down";
+}
+
 export interface GameScenePresentationCameraSpec {
   readonly mode: "perspective" | "follow";
+  readonly selectionEvidence?: GameRacingCameraSelectionEvidence;
   readonly position?: Vec3;
   readonly target: Vec3;
   readonly offset?: Vec3;
@@ -81,11 +90,21 @@ export interface GameRacingScenePose {
   readonly heading: number;
 }
 
+export interface GameRacingSceneSpeedModel {
+  readonly kind: "certified-route-to-scene-speed";
+  readonly routeLength: number;
+  readonly authoredLapSeconds: number;
+  readonly gameUnitsPerSecond: number;
+  readonly sceneUnitsPerGameUnit: number;
+  readonly sceneUnitsPerSecond: number;
+}
+
 export interface GameRacingSceneBinding {
   readonly kind: "aura-game-racing-scene-binding";
   readonly sceneContractVersion: "1.0";
   readonly topologyAssetHash: string;
   readonly transform: GameSceneTransform;
+  readonly speedModel: GameRacingSceneSpeedModel;
   readonly trackModel: {
     readonly position: Vec3;
     readonly rotation: Euler3;
@@ -133,6 +152,16 @@ export interface GameRacingPresentationCameraOptions {
   readonly lookAhead?: number;
   readonly target?: Vec3;
   readonly fov?: number;
+}
+
+export interface GameRacingCameraRigOptions extends Omit<GameRacingPresentationCameraOptions, "mode"> {
+  readonly mode: "chase" | "top-down";
+  readonly composition: {
+    readonly report: string;
+    readonly verdict: "pass" | "fail";
+    readonly cameraReadabilityVerdict: "pass" | "fail";
+    readonly selectedMode: "chase" | "top-down";
+  };
 }
 
 export interface GamePlatformerSceneBindingOptions {
@@ -271,6 +300,14 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
     sceneContractVersion: "1.0",
     topologyAssetHash: topology.assetHash,
     transform,
+    speedModel: {
+      kind: "certified-route-to-scene-speed",
+      routeLength: options.route.assetBinding.speedModel.routeLength,
+      authoredLapSeconds: options.route.assetBinding.speedModel.authoredLapSeconds,
+      gameUnitsPerSecond: options.route.assetBinding.speedModel.certifiedSpeed,
+      sceneUnitsPerGameUnit: transform.scale,
+      sceneUnitsPerSecond: Number((options.route.assetBinding.speedModel.certifiedSpeed * transform.scale).toFixed(6))
+    },
     trackModel: {
       position: trackModelPosition,
       rotation: trackModelFit.anchorFit.rotation,
@@ -429,7 +466,9 @@ export function createGamePlatformerSceneBinding(options: GamePlatformerSceneBin
     const contact = toScenePoint({ x: player.x, y: player.y }, 0);
     return [
       contact[0],
-      roundScene(contact[1] + playerTargetHeight / 2 + playerYOffset),
+      // Safe-rendered fit models are normalized with their minimum Y at the node origin.
+      // Keep that grounded origin on the certified surface instead of adding half-height twice.
+      roundScene(contact[1] + playerYOffset),
       contact[2]
     ];
   };

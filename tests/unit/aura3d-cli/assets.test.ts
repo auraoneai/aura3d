@@ -1,12 +1,277 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { describe, expect, test } from "vitest";
-import { addAsset, initAgentFiles, inspectAsset, listAssets, readRenderedProbeMetadata, validateAssets, validateAnimationStudioAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
+import { addAsset, bindGameRouteEvidence, certifyGameGeometry, initAgentFiles, inspectAsset, listAssets, readAssetManifest, readRenderedProbeMetadata, validateAssets, validateAnimationStudioAssets, validateGameAssets } from "../../../packages/aura3d-cli/src";
 
 describe("@aura3d/cli assets", () => {
+  test("screens game geometry without writing and certifies a passing hash-bound track", async () => {
+    const projectDir = createProject();
+    const sourceManifest = readAssetManifest(process.cwd());
+    const passing = sourceManifest.assets.find((asset) => asset.id === "showcaseMiniRaceTrack");
+    const failing = sourceManifest.assets.find((asset) => asset.id === "showcaseKartCircuitTrack");
+    expect(passing).toBeDefined();
+    expect(failing).toBeDefined();
+    if (!passing || !failing) return;
+    for (const asset of [passing, failing]) {
+      mkdirSync(join(projectDir, "public", "aura-assets"), { recursive: true });
+      cpSync(join(process.cwd(), asset.outputPath), join(projectDir, asset.outputPath));
+    }
+    writeFileSync(join(projectDir, "aura.assets.json"), `${JSON.stringify({
+      ...sourceManifest,
+      assets: [passing, failing]
+    }, null, 2)}\n`);
+    const before = readFileSync(join(projectDir, "aura.assets.json"), "utf8");
+
+    const screened = await certifyGameGeometry({
+      projectDir,
+      category: "racing",
+      assetIds: [passing.id, failing.id]
+    });
+    expect(screened).toMatchObject({ mode: "screen", wroteManifest: false, ok: false });
+    expect(screened.rows).toEqual(expect.arrayContaining([
+      expect.objectContaining({ assetId: passing.id, pass: true, blockers: [] }),
+      expect.objectContaining({ assetId: failing.id, pass: false })
+    ]));
+    expect(readFileSync(join(projectDir, "aura.assets.json"), "utf8")).toBe(before);
+
+    const refused = await certifyGameGeometry({ projectDir, category: "racing", assetId: failing.id });
+    expect(refused).toMatchObject({ mode: "certify", wroteManifest: false, ok: false });
+    expect(refused.rows[0]?.blockers).toContain(`asset-extraction:racing-road-mesh-not-found:${failing.id}`);
+    expect(readFileSync(join(projectDir, "aura.assets.json"), "utf8")).toBe(before);
+
+    const certified = await certifyGameGeometry({ projectDir, category: "racing", assetId: passing.id });
+    expect(certified).toMatchObject({ mode: "certify", wroteManifest: true, ok: true });
+    const stored = readAssetManifest(projectDir).assets.find((asset) => asset.id === passing.id);
+    expect(stored?.gameGeometry).toMatchObject({
+      certification: "certified-racing-track",
+      evidence: { manifestHash: passing.hash, blockers: [] },
+      racingTopology: { assetId: passing.id, assetHash: passing.hash, source: "asset-mesh-extracted" }
+    });
+    expect(readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8")).toContain('"certified-racing-track"');
+  });
+
+  test("atomically binds a certified asset pair to current route evidence and refuses stale evidence", () => {
+    const projectDir = createProject();
+    mkdirSync(join(projectDir, "evidence"), { recursive: true });
+    const screenshot = Buffer.from("current-route-primary-png-bytes");
+    const screenshotPath = "evidence/route.png";
+    const geometryPath = "evidence/geometry.json";
+    const compositionPath = "evidence/composition.json";
+    const reviewPath = "evidence/review.json";
+    const routeId = "showcase-test-race";
+    const trackHash = `sha256-${"1".repeat(64)}`;
+    const vehicleHash = `sha256-${"2".repeat(64)}`;
+    writeFileSync(join(projectDir, screenshotPath), screenshot);
+    writeFileSync(join(projectDir, geometryPath), JSON.stringify({
+      schema: "aura3d-racing-track-topology/1.0",
+      routeId,
+      pass: true,
+      topology: {
+        assetId: "track",
+        assetHash: trackHash,
+        source: "asset-mesh-extracted",
+        evidence: { routeOverlay: screenshotPath }
+      }
+    }));
+    const composition = {
+      schema: "aura3d-showcase-asset-pair-composition/1.0",
+      routeId,
+      category: "racing",
+      pass: true,
+      verdict: "pass",
+      screenshot: { path: screenshotPath, sha256: sha256(screenshot) },
+      geometry: { report: geometryPath, assetId: "track", assetHash: trackHash },
+      assets: [
+        { id: "vehicle", manifestHash: vehicleHash, evidenceHash: vehicleHash },
+        { id: "track", manifestHash: trackHash, evidenceHash: trackHash }
+      ],
+      checks: ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"].map((id) => ({ id, verdict: "pass" })),
+      blockers: []
+    };
+    writeFileSync(join(projectDir, compositionPath), JSON.stringify(composition));
+    writeFileSync(join(projectDir, reviewPath), JSON.stringify({ routes: [{ id: routeId, verdict: "pass", screenshotEvidence: [screenshotPath] }] }));
+    writeFileSync(join(projectDir, "aura.assets.json"), `${JSON.stringify({
+      schema: "aura3d.assets/1.0",
+      assetBasePath: "/aura-assets",
+      outputDir: "public/aura-assets",
+      typegen: "src/aura-assets.ts",
+      assets: [
+        {
+          id: "vehicle", type: "model", format: "gltf", source: "assets/vehicle.gltf", outputPath: "public/aura-assets/vehicle.gltf", url: "/aura-assets/vehicle.gltf", hash: vehicleHash, sizeBytes: 1, materials: [], animations: [], textures: [], dependencies: [],
+          gameGeometry: { certification: "certified-racing-vehicle", evidence: { manifestHash: vehicleHash, blockers: [] } }
+        },
+        {
+          id: "track", type: "model", format: "gltf", source: "assets/track.gltf", outputPath: "public/aura-assets/track.gltf", url: "/aura-assets/track.gltf", hash: trackHash, sizeBytes: 1, materials: [], animations: [], textures: [], dependencies: [],
+          gameGeometry: { certification: "certified-racing-track", evidence: { manifestHash: trackHash, blockers: [] }, racingTopology: { assetId: "track", assetHash: trackHash, source: "asset-mesh-extracted" } }
+        }
+      ]
+    }, null, 2)}\n`);
+
+    const options = {
+      projectDir, category: "racing" as const, routeId, assetIds: ["vehicle", "track"],
+      routePrimaryScreenshot: screenshotPath, geometryReport: geometryPath,
+      compositionReport: compositionPath, visualReview: reviewPath
+    };
+    expect(bindGameRouteEvidence(options)).toMatchObject({ ok: true, wroteManifest: true, blockers: [] });
+    for (const asset of readAssetManifest(projectDir).assets) {
+      expect(asset.gameGeometry?.evidence).toMatchObject({
+        routePrimaryScreenshot: screenshotPath,
+        routePrimaryScreenshotSha256: sha256(screenshot),
+        geometryReport: geometryPath,
+        visualReview: "pass",
+        assetPairPass: true,
+        blockers: []
+      });
+    }
+
+    writeFileSync(join(projectDir, compositionPath), JSON.stringify({ ...composition, screenshot: { ...composition.screenshot, sha256: `sha256-${"0".repeat(64)}` } }));
+    const before = readFileSync(join(projectDir, "aura.assets.json"), "utf8");
+    expect(bindGameRouteEvidence(options)).toMatchObject({
+      ok: false,
+      wroteManifest: false,
+      blockers: ["game-route-evidence:composition-screenshot-hash-stale"]
+    });
+    expect(readFileSync(join(projectDir, "aura.assets.json"), "utf8")).toBe(before);
+  });
+
+  test("adds and preserves explicit duplicate provenance evidence", () => {
+    const projectDir = createProject();
+    writeFileSync(join(projectDir, "assets", "shared.gltf"), JSON.stringify(createAnimatedCharacterGltf()));
+    for (const name of ["sharedHero", "sharedSidekick"]) {
+      addAsset({
+        projectDir,
+        file: "assets/shared.gltf",
+        name,
+        license: "CC0-1.0",
+        sourceUrl: "https://example.test/shared",
+        sourceFamily: "test-fixture",
+        provenanceEvidence: ["intentional-duplicate: role-specific typed alias for the same reviewed source model"]
+      });
+    }
+    const manifest = readAssetManifest(projectDir);
+    expect(manifest.assets.every((asset) => asset.provenance?.evidence?.some((entry) => entry.includes("intentional-duplicate")))).toBe(true);
+    expect(validateAssets({ projectDir }).warnings.join("\n")).not.toContain("duplicate asset hash");
+    addAsset({ projectDir, file: "assets/shared.gltf", name: "sharedHero", copy: false });
+    expect(readAssetManifest(projectDir).assets.find((asset) => asset.id === "sharedHero")?.provenance?.evidence).toContain(
+      "intentional-duplicate: role-specific typed alias for the same reviewed source model"
+    );
+  });
+
+  test("adds and preserves validated hash-bound orientation overrides", () => {
+    const projectDir = createProject();
+    const sourceFile = join(projectDir, "assets", "oriented.gltf");
+    writeFileSync(sourceFile, JSON.stringify(createAnimatedCharacterGltf()));
+    const renderedProbe = writeRenderedProbe(projectDir, "oriented.probe.png", sourceFile, "oriented-probe");
+    const orientation = {
+      source: "manifest-override" as const,
+      forwardAxis: "+Z",
+      upAxis: "+Y",
+      generatedBy: "reviewed retained browser probe fixture",
+      assetHash: renderedProbe.assetHash,
+      checkedAt: renderedProbe.checkedAt,
+      route: renderedProbe.route,
+      renderedProbe: {
+        url: renderedProbe.url,
+        sha256: renderedProbe.sha256,
+        assetHash: renderedProbe.assetHash,
+        checkedAt: renderedProbe.checkedAt,
+        route: renderedProbe.route
+      },
+      messages: ["Reviewed character orientation bound to the current retained browser probe."]
+    };
+    addAsset({
+      projectDir, file: "assets/oriented.gltf", name: "oriented", quality: "release", role: "character",
+      suitabilityReason: "Release player character with readable orientation, textured material, retained browser proof, and normalized camera-fit placement.",
+      renderedProbe, orientation
+    });
+    expect(readAssetManifest(projectDir).assets[0]?.orientation).toEqual(orientation);
+    addAsset({ projectDir, file: "assets/oriented.gltf", name: "oriented", copy: false });
+    expect(readAssetManifest(projectDir).assets[0]?.orientation).toEqual(orientation);
+    expect(() => addAsset({
+      projectDir, file: "assets/oriented.gltf", name: "badOrientation", quality: "release", role: "character",
+      suitabilityReason: "Release player character with retained browser proof and reviewed readable orientation.",
+      renderedProbe,
+      orientation: { ...orientation, assetHash: `sha256-${"0".repeat(64)}` }
+    })).toThrow(/orientation override asset hash binding is stale/);
+  });
+
+  test("certifies a release racing vehicle from hash-bound retained visual proof and rejects stale proof", async () => {
+    const projectDir = createProject();
+    addReleaseFixtureAsset(projectDir, {
+      name: "raceVehicle",
+      role: "vehicle",
+      suitabilityReason: "Release racing vehicle with readable meter-scale bounds, explicit orientation, stylized material rationale, normalized camera-fit placement, and retained browser-rendered vehicle proof.",
+      foregroundBounds: { x: 120, y: 140, width: 360, height: 120 },
+      patch: {
+        bounds: [4.2, 1.4, 2.1],
+        boundsMetadata: { min: [-2.1, 0, -1.05], max: [2.1, 1.4, 1.05], size: [4.2, 1.4, 2.1], center: [0, 0.7, 0], maxDimension: 4.2, grounded: true }
+      }
+    });
+
+    const certified = await certifyGameGeometry({ projectDir, category: "racing", assetId: "raceVehicle" });
+    expect(certified).toMatchObject({ mode: "certify", wroteManifest: true, ok: true });
+    expect(readAssetManifest(projectDir).assets[0]?.gameGeometry).toMatchObject({
+      certification: "certified-racing-vehicle",
+      evidence: {
+        manifestHash: expect.stringMatching(/^sha256-/),
+        routePrimaryScreenshot: "/aura-assets/raceVehicle.probe.png",
+        visualReview: "pass",
+        blockers: []
+      }
+    });
+
+    const stored = readAssetManifest(projectDir).assets[0];
+    expect(stored).toBeDefined();
+    if (!stored?.renderedProbe) return;
+    updateManifestAsset(projectDir, "raceVehicle", {
+      gameGeometry: undefined,
+      renderedProbe: { ...stored.renderedProbe, assetHash: `sha256-${"0".repeat(64)}` }
+    });
+    const before = readFileSync(join(projectDir, "aura.assets.json"), "utf8");
+    const refused = await certifyGameGeometry({ projectDir, category: "racing", assetId: "raceVehicle" });
+    expect(refused).toMatchObject({ mode: "certify", wroteManifest: false, ok: false });
+    expect(refused.rows[0]?.blockers).toContain("asset-certification:racing-vehicle-probe-asset-hash-stale:raceVehicle");
+    expect(readFileSync(join(projectDir, "aura.assets.json"), "utf8")).toBe(before);
+  });
+
+  test("certifies a release platformer character from hash-bound retained visual proof and rejects stale proof", async () => {
+    const projectDir = createProject();
+    addReleaseFixtureAsset(projectDir, {
+      name: "platformHero",
+      role: "character",
+      suitabilityReason: "Release platformer player character with readable height, explicit orientation, texture evidence, and retained browser-rendered avatar proof.",
+      foregroundBounds: { x: 180, y: 40, width: 220, height: 280 }
+    });
+
+    const certified = await certifyGameGeometry({ projectDir, category: "platformer", assetId: "platformHero" });
+    expect(certified).toMatchObject({ mode: "certify", wroteManifest: true, ok: true });
+    expect(readAssetManifest(projectDir).assets[0]?.gameGeometry).toMatchObject({
+      certification: "certified-platformer-character",
+      evidence: {
+        manifestHash: expect.stringMatching(/^sha256-/),
+        routePrimaryScreenshot: "/aura-assets/platformHero.probe.png",
+        visualReview: "pass",
+        blockers: []
+      }
+    });
+
+    const stored = readAssetManifest(projectDir).assets[0];
+    expect(stored).toBeDefined();
+    if (!stored?.renderedProbe) return;
+    updateManifestAsset(projectDir, "platformHero", {
+      gameGeometry: undefined,
+      renderedProbe: { ...stored.renderedProbe, assetHash: `sha256-${"0".repeat(64)}` }
+    });
+    const before = readFileSync(join(projectDir, "aura.assets.json"), "utf8");
+    const refused = await certifyGameGeometry({ projectDir, category: "platformer", assetId: "platformHero" });
+    expect(refused).toMatchObject({ mode: "certify", wroteManifest: false, ok: false });
+    expect(refused.rows[0]?.blockers).toContain("asset-certification:platformer-character-probe-asset-hash-stale:platformHero");
+    expect(readFileSync(join(projectDir, "aura.assets.json"), "utf8")).toBe(before);
+  });
+
   test("adds a glTF asset, writes manifest, and generates typed imports", () => {
     const projectDir = createProject();
     writeFileSync(join(projectDir, "assets", "robot.gltf"), JSON.stringify({
@@ -350,6 +615,20 @@ describe("@aura3d/cli assets", () => {
     ]);
   });
 
+  test("re-adding an asset preserves or explicitly records its acquisition timestamp", () => {
+    const projectDir = createProject();
+    const source = join(projectDir, "assets", "retrieved-at.gltf");
+    writeFileSync(source, JSON.stringify(createAnimatedCharacterGltf()));
+    const retrievedAt = "2026-07-19T09:32:32.000Z";
+
+    addAsset({ projectDir, file: "assets/retrieved-at.gltf", name: "retrievedAtAsset", retrievedAt });
+    addAsset({ projectDir, file: "assets/retrieved-at.gltf", name: "retrievedAtAsset" });
+
+    const stored = readAssetManifest(projectDir).assets.find((asset) => asset.id === "retrievedAtAsset");
+    expect(stored).toBeDefined();
+    expect(stored?.provenance?.retrievedAt).toBe(retrievedAt);
+  });
+
   test("AST release source validation rejects primitive group player characters", () => {
     const projectDir = createProject();
     mkdirSync(join(projectDir, "src"), { recursive: true });
@@ -639,6 +918,39 @@ describe("@aura3d/cli assets", () => {
     expect(report.messages).toEqual(["Asset manifest is release-valid."]);
   });
 
+  test("release validation accepts untextured flat-color assets only with complete hash-bound material and pixel evidence", () => {
+    const projectDir = createProject();
+    addReleaseFixtureAsset(projectDir, {
+      name: "flatColorProduct",
+      role: "product",
+      suitabilityReason: "Release flat-color product with complete readable named materials, stable product bounds, explicit view evidence, and a hash-bound browser screenshot probe.",
+      patch: {
+        bounds: [1.6, 0.9, 0.8],
+        boundsMetadata: { min: [-0.8, 0, -0.4], max: [0.8, 0.9, 0.4], size: [1.6, 0.9, 0.8], center: [0, 0.45, 0], maxDimension: 1.6, grounded: true },
+        textures: [],
+        hierarchy: { nodeCount: 1, meshCount: 1, materialCount: 1, textureCount: 0, animationClipCount: 3, skinCount: 1, morphTargetCount: 0, rootNodeNames: ["FlatColorProduct"], maxDepth: 1, messages: [] },
+        warnings: ["no texture references detected"]
+      }
+    });
+    const manifestPath = join(projectDir, "aura.assets.json");
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as { assets: Record<string, any>[] };
+    const asset = manifest.assets.find((entry) => entry.id === "flatColorProduct");
+    if (!asset) throw new Error("missing flatColorProduct fixture");
+    asset.orientation = createProductViewOrientationOverride(asset.renderedProbe);
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+    const passing = validateAssets({ projectDir, release: true });
+    expect(passing.ok, JSON.stringify(passing, null, 2)).toBe(true);
+    expect(passing.warnings).toEqual([]);
+
+    asset.materialMetadata[0].readable = false;
+    writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+    const blocked = validateAssets({ projectDir, release: true });
+    expect(blocked.ok).toBe(false);
+    expect(blocked.warnings.join("\n")).toContain("release primary model has no texture references");
+    expect(blocked.warnings.join("\n")).toContain("invisible or unreadable material metadata");
+  });
+
   test("role-aware release validation rejects vehicle assets missing orientation evidence", () => {
     const projectDir = createProject();
     addReleaseFixtureAsset(projectDir, {
@@ -845,6 +1157,48 @@ describe("@aura3d/cli assets", () => {
     expect(report.ok).toBe(false);
     expect(report.warnings.join("\n")).toContain("productNoSurface: role-aware release product validation requires readable material evidence");
     expect(report.warnings.join("\n")).toContain("productNoSurface: role-aware release product validation requires texture evidence");
+  });
+
+  test("role-aware release validation accepts current mesh-extracted gameplay extent and rejects stale certification", () => {
+    for (const stale of [false, true]) {
+      const projectDir = createProject();
+      const name = stale ? "staleCertifiedTrack" : "currentCertifiedTrack";
+      addReleaseFixtureAsset(projectDir, {
+        name,
+        role: "track",
+        suitabilityReason: "Release racing track with mesh-extracted route extent, normalized camera-fit placement, readable textured road materials, and retained browser proof.",
+        foregroundBounds: { x: 90, y: 60, width: 460, height: 240 },
+        patch: {
+          bounds: [20, 2, 2],
+          boundsMetadata: { min: [-10, -1, -1], max: [10, 1, 1], size: [20, 2, 2], center: [0, 0, 0], maxDimension: 20, grounded: false }
+        }
+      });
+      const asset = readAssetManifest(projectDir).assets[0];
+      expect(asset).toBeDefined();
+      if (!asset) continue;
+      const certificationHash = stale ? `sha256-${"0".repeat(64)}` : asset.hash;
+      updateManifestAsset(projectDir, name, {
+        gameGeometry: {
+          certification: "certified-racing-track",
+          evidence: { manifestHash: certificationHash, blockers: [] },
+          racingTopology: {
+            assetId: name,
+            assetHash: certificationHash,
+            source: "asset-mesh-extracted",
+            lapLengthMeters: 19.5
+          }
+        }
+      });
+
+      const report = validateAssets({ projectDir, release: true });
+      if (stale) {
+        expect(report.ok).toBe(false);
+        expect(report.warnings.join("\n")).toContain(`${name}: role-aware release track validation needs a gameplay-scale footprint/extent`);
+      } else {
+        expect(report.ok).toBe(true);
+        expect(report.warnings).toEqual([]);
+      }
+    }
   });
 
   test("role-aware release validation rejects huge world and track assets without normalization evidence", () => {

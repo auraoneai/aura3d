@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "schema": "aura3d-showcase-spec-compile-report/1.0",
+  "routeId": "showcase-turbo-drift-circuit",
+  "finalStatus": "release-ready candidate",
+  "generatedFiles": [
+    "README.md",
+    "game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "route-gate.patch.json",
+    "route-health.json",
+    "showcase-evidence-checklist.json",
+    "showcase-spec-compile-report.json",
+    "src/generated/game-geometry.ts",
+    "src/main.ts"
+  ],
+  "blockers": [],
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/turbo-drift-circuit/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/turbo-drift-circuit/route-gate.patch.json",
+  "rejectedAssets": [],
+  "replacementCandidates": [],
+  "assetPairComposition": {
+    "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+    "verdict": "pass",
+    "checks": [
+      {
+        "id": "binding-overlap",
+        "verdict": "pass"
+      },
+      {
+        "id": "contact",
+        "verdict": "pass"
+      },
+      {
+        "id": "camera-readability",
+        "verdict": "pass"
+      },
+      {
+        "id": "scale-contract",
+        "verdict": "pass"
+      },
+      {
+        "id": "debug-guide-absence",
+        "verdict": "pass"
+      }
+    ]
+  },
+  "geometryContract": {
+    "module": "src/generated/game-geometry.ts",
+    "contentHash": "sha256-504fbaead91ebfa03f92dbb30271b8b581defbad23b40d132f803839915d36a6",
+    "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+    "sourceReportHash": "sha256-48b0bc5cf23aa412310ee12b09b996f3ee0c643c30e92f3d7cf84df06d6052e8"
+  }
+}

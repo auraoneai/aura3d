@@ -1,5 +1,6 @@
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { gameGeometryContract } from "./generated/game-geometry";
 import "./styles.css";
 
 const routeId = "showcase-public-racing-presentation-proof";
@@ -7,41 +8,10 @@ const vehicleAsset = "showcaseTexturedSportsCar";
 const trackAsset = "showcaseTsukubaCircuit";
 const certifiedVehicleAsset = assets.showcaseTexturedSportsCar;
 const certifiedTrackAsset = assets.showcaseTsukubaCircuit;
-const vehicleHash = certifiedVehicleAsset.hash;
-const trackHash = certifiedTrackAsset.hash;
-const screenshotPath = "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png";
-const screenshotSha256 = "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44";
-const geometryReport = "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json";
-const routeWidth = 0.38;
-const authoredLapSeconds = 38;
-const checkpointProgress = [0.167, 0.333, 0.5, 0.667, 0.833, 1] as const;
 const compactViewport = window.matchMedia("(max-width: 720px)").matches;
-
-const roadCenterline = [
-  [0.36, -1.16],
-  [-0.22, -1.13],
-  [-0.72, -1.04],
-  [-1.18, -0.82],
-  [-1.52, -0.54],
-  [-1.77, -0.2],
-  [-1.9, 0.1],
-  [-1.87, 0.39],
-  [-1.78, 0.62],
-  [-1.55, 0.88],
-  [-1.34, 1.08],
-  [-0.9, 1.2],
-  [-0.44, 1.22],
-  [0.08, 1.18],
-  [0.56, 1.06],
-  [1.02, 0.84],
-  [1.34, 0.58],
-  [1.55, 0.22],
-  [1.62, -0.16],
-  [1.52, -0.52],
-  [1.28, -0.84],
-  [0.82, -1.04],
-  [0.36, -1.16]
-].map(([x, z]) => ({ x, z, width: routeWidth }));
+const { routeWidth, authoredLapSeconds, checkpointProgress, roadCenterline, topology: trackTopology, drivableBounds, cameraBounds } = gameGeometryContract;
+const { screenshotPath, screenshotSha256, geometryReport } = gameGeometryContract.evidence;
+const { vehicle: vehicleHash, track: trackHash } = gameGeometryContract.assetHashes;
 
 const sourceGate = {
   evidenceGlobal: "window.__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
@@ -55,37 +25,6 @@ const sourceGate = {
     "game.certifyRacingPresentation"
   ],
   claimBoundary: "createAuraApp root safe API public racing presentation route"
-} as const;
-
-const trackTopology = {
-  assetId: trackAsset,
-  assetHash: trackHash,
-  source: "compiler-authored-overlay-validated",
-  roadCenterline,
-  checkpoints: checkpointProgress.map((progress) => ({ progress, width: routeWidth })),
-  lapLengthMeters: 8.742,
-  estimatedLapSeconds: authoredLapSeconds,
-  confidence: 0.86,
-  modelAlignment: {
-    source: "compiler-authored-overlay-validated",
-    modelBounds: { min: [-9.676, -1, -22.391], max: [25.773, 3.054, 11.481] },
-    modelPoint: [8.0485, -1, -5.455],
-    gamePoint: { x: 0.36, z: -1.16 },
-    anchorPairs: [
-      { id: "track-start", modelPoint: [8.0485, -1, -5.455], gamePoint: { x: 0.36, z: -1.16 } },
-      { id: "track-far-bend", modelPoint: [20.2, -1, 6.5], gamePoint: { x: 1.34, z: 0.58 } }
-    ],
-    evidence: {
-      routeOverlay: screenshotPath,
-      notes: "Compiler-authored topology uses a clean generated racing circuit while retaining the typed Tsukuba asset as the manifest-backed racing topology provenance asset."
-    }
-  },
-  evidence: {
-    sourceAsset: "assets.showcaseTsukubaCircuit",
-    renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
-    routeOverlay: screenshotPath,
-    notes: "Public racing route uses a compiler-authored generated circuit for the visible road while retaining the typed circuit asset for certified topology provenance and release evidence."
-  }
 } as const;
 
 const route = game.assetBoundRacingRoute({
@@ -157,8 +96,8 @@ const geometryCertification = game.certifyRacingPresentation({
   startPose: { x: roadCenterline[0]?.x ?? 0, z: roadCenterline[0]?.z ?? 0, heading: 3.031 },
   checkpoints: checkpointProgress.map((progress, index) => ({ id: `gate-${index + 1}`, progress, width: routeWidth })),
   lap: { finishProgress: 1, lapsToWin: 3, minLapSeconds: authoredLapSeconds },
-  drivableBounds: { minX: -1.9, maxX: 1.7, minZ: -1, maxZ: 1.3 },
-  cameraBounds: { minX: -3.3, maxX: 3.3, minZ: -2.6, maxZ: 2.4 },
+  drivableBounds,
+  cameraBounds,
   vehicleScale: { width: 0.16, length: 0.32 },
   retainedProof: {
     routePrimaryScreenshot: screenshotPath,
@@ -194,7 +133,7 @@ const racingState = game.racing({
   startProgress: 0,
   checkpointRadius: 0.16,
   lapsToWin: 3,
-  maxSpeed: 0.2,
+  maxSpeed: route.assetBinding.speedModel.certifiedSpeed,
   acceleration: 0.74,
   drag: 0.24,
   steerRate: 0.62
@@ -205,7 +144,13 @@ const racingCamera = compactViewport
   ? game.racingCameraRig({
     sceneBinding: racingScene,
     focus: raceSnapshot,
-    mode: "follow",
+    mode: "chase",
+    composition: {
+      report: "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-asset-pair-composition.json",
+      verdict: "pass",
+      cameraReadabilityVerdict: "pass",
+      selectedMode: "chase"
+    },
     targetNode: "racing-player-car",
     distance: 5.35,
     height: 2.78,
@@ -216,7 +161,13 @@ const racingCamera = compactViewport
   : game.racingCameraRig({
     sceneBinding: racingScene,
     focus: raceSnapshot,
-    mode: "follow",
+    mode: "chase",
+    composition: {
+      report: "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-asset-pair-composition.json",
+      verdict: "pass",
+      cameraReadabilityVerdict: "pass",
+      selectedMode: "chase"
+    },
     targetNode: "racing-player-car",
     distance: 4.28,
     height: 2.08,
@@ -282,6 +233,21 @@ const app = createAuraApp("#app", {
 });
 
 const playerCar = app.nodes.require("racing-player-car");
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "racing",
+    camera: racingCamera,
+    subject: { position: initialPlayerPose.position, rotation: initialPlayerPose.rotation, targetSize: compactViewport ? 0.82 : 1.15 },
+    playSpacePoints: roadCenterline.map((point) => racingScene.toScenePoint({ x: point.x, y: point.z }, -0.12)),
+    contactPoint: racingScene.toScenePoint({ x: roadCenterline[0]?.x ?? 0, y: roadCenterline[0]?.z ?? 0 }, -0.12),
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      playerCar.setScale(suppressed ? 0.0001 : 1);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
 const hud = {
   speed: requireElement("speed-value"),
   lap: requireElement("lap-value"),

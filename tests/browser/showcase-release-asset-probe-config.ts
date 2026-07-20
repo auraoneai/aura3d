@@ -1,21 +1,43 @@
 import type { AuraVec3 } from "@aura3d/engine";
 
 export type ProbeAssetId =
+  | "showcaseDetailedRaceCircuit"
+  | "showcaseRaceGameEnvironment"
+  | "showcaseIsometricRaceTrack"
+  | "showcaseSouthGardaTrack"
+  | "showcaseSmallCarRacingEnvironment"
+  | "showcaseHighpolySportsCar"
+  | "showcaseRaceCar"
+  | "showcasePlatformerWorldLevel"
+  | "showcaseFloatingIslandWorld"
+  | "showcaseReadablePlatformLevel"
+  | "showcaseRooftopParkourWorld"
+  | "showcaseRunnerRobot"
+  | "showcasePlatformRunnerHero"
+  | "showcaseStylizedMaleRunner"
+  | "showcaseArchitectureCityBlock"
   | "showcaseArcadeCabinet"
   | "showcaseArcadeController"
   | "showcaseBlockfallCabinet"
   | "showcaseCityVehicle"
   | "showcaseOrangeIndustrialRobot"
   | "showcaseParticleCore"
+  | "showcaseMiniRaceTrack"
+  | "showcasePlatformHero"
   | "showcasePlatformerWorldLevel"
   | "showcaseRoboticWeldingWorkcell"
   | "showcaseSidekickRunner"
   | "showcaseSideScrollerWorld"
   | "showcaseSkylineCity"
+  | "showcaseSideScrollerPlatformLevel"
   | "showcaseTexturedSportsCar"
   | "showcaseTsukubaCircuit"
   | "showcaseVoxelBuilding"
-  | "showcaseWalkAnimatedGirl";
+  | "showcaseWalkAnimatedGirl"
+  | "showcaseKenneyNeonRaceCircuit"
+  | "showcaseKenneyRaceCarRed"
+  | "showcaseKenneyVerdantPlatformerWorld"
+  | "showcaseKenneyOobiPlatformerHero";
 
 export interface ProbeConfig {
   readonly targetHeight?: number;
@@ -32,6 +54,7 @@ export interface ProbeConfig {
 }
 
 export const PROBE_ASSETS = [
+  "showcaseArchitectureCityBlock",
   "showcaseArcadeCabinet",
   "showcaseArcadeController",
   "showcaseBlockfallCabinet",
@@ -44,7 +67,14 @@ export const PROBE_ASSETS = [
   "showcaseSkylineCity",
   "showcaseOrangeIndustrialRobot",
   "showcaseRoboticWeldingWorkcell",
-  "showcaseParticleCore"
+  "showcaseParticleCore",
+  "showcaseMiniRaceTrack",
+  "showcasePlatformHero",
+  "showcaseSideScrollerPlatformLevel",
+  "showcaseKenneyNeonRaceCircuit",
+  "showcaseKenneyRaceCarRed",
+  "showcaseKenneyVerdantPlatformerWorld",
+  "showcaseKenneyOobiPlatformerHero"
 ] as const satisfies readonly ProbeAssetId[];
 
 const propView = {
@@ -59,6 +89,31 @@ const propView = {
 } as const satisfies Omit<ProbeConfig, "rotation">;
 
 export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
+  showcaseDetailedRaceCircuit: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.12, fov: 34, azimuth: 0.62, elevation: 0.58, rotation: [-1.5708, 0, 0], minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseRaceGameEnvironment: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.12, fov: 34, azimuth: 0.62, elevation: 0.5, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseIsometricRaceTrack: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.1, fov: 34, azimuth: 0.62, elevation: 0.62, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseSouthGardaTrack: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.1, fov: 34, azimuth: 0.62, elevation: 0.62, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseSmallCarRacingEnvironment: { targetMaxDimension: 5.8, cameraTargetMaxDimension: 5.8, padding: 1.1, fov: 34, azimuth: 0.62, elevation: 0.58, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseHighpolySportsCar: { targetMaxDimension: 4.2, cameraTargetMaxDimension: 4.2, padding: 1.12, fov: 31, azimuth: 0.78, elevation: 0.2, rotation: [0, 0.82, 0], minForegroundWidth: 100, minForegroundHeight: 60 },
+  showcaseRaceCar: { targetMaxDimension: 4.2, cameraTargetMaxDimension: 4.2, padding: 1.12, fov: 31, azimuth: 0.78, elevation: 0.2, rotation: [0, 0.82, 0], minForegroundWidth: 100, minForegroundHeight: 60 },
+  showcasePlatformerWorldLevel: { targetMaxDimension: 5.4, cameraTargetMaxDimension: 5.4, padding: 1.1, fov: 34, azimuth: 0.72, elevation: 0.34, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseFloatingIslandWorld: { targetMaxDimension: 5.2, cameraTargetMaxDimension: 5.2, padding: 1.1, fov: 34, azimuth: 0.72, elevation: 0.34, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseReadablePlatformLevel: { targetMaxDimension: 5.4, cameraTargetMaxDimension: 5.4, padding: 1.1, fov: 34, azimuth: 0.72, elevation: 0.34, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseRooftopParkourWorld: { targetMaxDimension: 5.4, cameraTargetMaxDimension: 5.4, padding: 1.1, fov: 34, azimuth: 0.72, elevation: 0.34, minForegroundWidth: 180, minForegroundHeight: 120 },
+  showcaseRunnerRobot: { targetMaxDimension: 3.4, cameraTargetMaxDimension: 3.4, padding: 1.05, fov: 30, azimuth: 0.76, elevation: 0.16, rotation: [-1.5708, 0.5, 0], minForegroundWidth: 90, minForegroundHeight: 140 },
+  showcasePlatformRunnerHero: { targetMaxDimension: 3.4, cameraTargetMaxDimension: 3.4, padding: 1.05, fov: 30, azimuth: 0.76, elevation: 0.16, minForegroundWidth: 90, minForegroundHeight: 140 },
+  showcaseStylizedMaleRunner: { targetHeight: 3.0, cameraTargetHeight: 3.0, padding: 1.05, fov: 30, azimuth: 0.76, elevation: 0.16, minForegroundWidth: 90, minForegroundHeight: 140 },
+  showcaseArchitectureCityBlock: {
+    targetMaxDimension: 5.2,
+    cameraTargetMaxDimension: 5.2,
+    padding: 1.12,
+    fov: 34,
+    azimuth: 0.68,
+    elevation: 0.48,
+    rotation: [0, -0.28, 0],
+    minForegroundWidth: 260,
+    minForegroundHeight: 120
+  },
   showcaseArcadeCabinet: { ...propView, padding: 1.2, fov: 32, rotation: [0, 0.54, 0] },
   showcaseArcadeController: {
     targetMaxDimension: 5.8,
@@ -93,6 +148,17 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 110,
     minForegroundHeight: 110
   },
+  showcaseMiniRaceTrack: {
+    targetMaxDimension: 5.4,
+    cameraTargetMaxDimension: 5.4,
+    padding: 1.12,
+    fov: 34,
+    azimuth: 0.52,
+    elevation: 0.58,
+    rotation: [-1.5708, 0, -0.18],
+    minForegroundWidth: 210,
+    minForegroundHeight: 150
+  },
   showcaseParticleCore: {
     targetMaxDimension: 2.8,
     cameraTargetMaxDimension: 2.8,
@@ -104,6 +170,18 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 100,
     minForegroundHeight: 100
   },
+  showcasePlatformHero: {
+    targetHeight: 8.4,
+    cameraTargetHeight: 2.75,
+    padding: 0.92,
+    fov: 27,
+    azimuth: 0.58,
+    elevation: 0.18,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 96,
+    minForegroundHeight: 160
+  },
+
   showcasePlatformerWorldLevel: {
     targetMaxDimension: 4.2,
     cameraTargetMaxDimension: 4.2,
@@ -159,6 +237,18 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundWidth: 160,
     minForegroundHeight: 120
   },
+  showcaseSideScrollerPlatformLevel: {
+    targetMaxDimension: 4.3,
+    cameraTargetMaxDimension: 4.3,
+    padding: 1.1,
+    fov: 33,
+    azimuth: 0.74,
+    elevation: 0.3,
+    rotation: [0, -0.22, 0],
+    minForegroundWidth: 280,
+    minForegroundHeight: 160
+  },
+
   showcaseTexturedSportsCar: {
     targetMaxDimension: 4.2,
     cameraTargetMaxDimension: 4.2,
@@ -201,5 +291,48 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     rotation: [0, 0.9, 0],
     minForegroundWidth: 130,
     minForegroundHeight: 240
+  },
+  showcaseKenneyNeonRaceCircuit: {
+    targetMaxDimension: 6.4,
+    cameraTargetMaxDimension: 6.4,
+    padding: 1.12,
+    fov: 34,
+    azimuth: 0.7,
+    elevation: 0.62,
+    minForegroundWidth: 260,
+    minForegroundHeight: 150
+  },
+  showcaseKenneyRaceCarRed: {
+    targetMaxDimension: 3.8,
+    cameraTargetMaxDimension: 3.8,
+    padding: 1.16,
+    fov: 31,
+    azimuth: 0.82,
+    elevation: 0.2,
+    rotation: [0, 0.72, 0],
+    minForegroundWidth: 120,
+    minForegroundHeight: 70
+  },
+  showcaseKenneyVerdantPlatformerWorld: {
+    targetMaxDimension: 5.4,
+    cameraTargetMaxDimension: 5.4,
+    padding: 1.14,
+    fov: 34,
+    azimuth: 0.45,
+    elevation: 0.24,
+    rotation: [0, -0.12, 0],
+    minForegroundWidth: 280,
+    minForegroundHeight: 150
+  },
+  showcaseKenneyOobiPlatformerHero: {
+    targetHeight: 3.0,
+    cameraTargetHeight: 3.0,
+    padding: 1.12,
+    fov: 31,
+    azimuth: 0.8,
+    elevation: 0.14,
+    rotation: [0, 0.45, 0],
+    minForegroundWidth: 110,
+    minForegroundHeight: 180
   }
 };

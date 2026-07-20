@@ -57,9 +57,11 @@ function validatePlatformerGameplayProof(spec: ShowcaseSpec, proof: Readonly<Rec
 
 function validateVisualReviewEvidence(label: string, spec: ShowcaseSpec, proof: Readonly<Record<string, unknown>> | undefined): readonly string[] {
   const blockers: string[] = [];
-  if (proof?.visualReviewPass !== true) blockers.push(`${label}:visual-review-missing`);
   const visualReviewEvidence = recordValue(proof?.visualReviewEvidence);
-  if (!visualReviewEvidence) return [...blockers, `${label}:visual-review-evidence-missing`];
+  if (!visualReviewEvidence) {
+    if (proof?.visualReviewPass !== true) blockers.push(`${label}:visual-review-missing`);
+    return [...blockers, `${label}:visual-review-evidence-missing`];
+  }
   if (visualReviewEvidence.source !== "docs/project/showcase-visual-review.json") {
     blockers.push(`${label}:visual-review-source-mismatch`);
   }

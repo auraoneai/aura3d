@@ -1,6 +1,12 @@
 import { cameraForCategoryPlan } from "./showcase-spec-category-plan.js";
-import { createPlatformerRouteSource } from "./showcase-spec-platformer-artifacts.js";
-import { createRacingRouteSource } from "./showcase-spec-racing-artifacts.js";
+import {
+  createPlatformerGeometryContractSource,
+  createPlatformerRouteSource
+} from "./showcase-spec-platformer-artifacts.js";
+import {
+  createRacingGeometryContractSource,
+  createRacingRouteSource
+} from "./showcase-spec-racing-artifacts.js";
 import type {
   ShowcaseCategoryPlan,
   ShowcaseSpec,
@@ -14,6 +20,14 @@ export function createRouteSource(spec: ShowcaseSpec): string {
   if (spec.categoryPlan) return createCategoryRouteSource(spec, spec.categoryPlan);
   const heroAsset = requireAsset(spec, spec.layout.heroAsset);
   return createBasicRouteSource(spec, heroAsset);
+}
+
+export function createRouteArtifacts(spec: ShowcaseSpec): Readonly<Record<string, string>> {
+  return {
+    "src/main.ts": createRouteSource(spec),
+    ...(spec.platformer ? { "src/generated/game-geometry.ts": createPlatformerGeometryContractSource(spec, spec.platformer) } : {}),
+    ...(spec.racing ? { "src/generated/game-geometry.ts": createRacingGeometryContractSource(spec, spec.racing) } : {})
+  };
 }
 
 export function createReadme(spec: ShowcaseSpec, finalStatus: ShowcaseSpecFinalStatus, blockers: readonly string[]): string {
@@ -116,6 +130,7 @@ function createRouteHealthEvidence(spec: ShowcaseSpec) {
     routePrimaryPassed: spec.evidence.routePrimaryPassed,
     ...("gameplayProof" in spec.evidence ? { gameplayProof: spec.evidence.gameplayProof } : {}),
     ...("gameplayPassed" in spec.evidence ? { gameplayPassed: spec.evidence.gameplayPassed } : {}),
+    ...("visualReviewPassed" in spec.evidence ? { visualReviewPassed: spec.evidence.visualReviewPassed } : {}),
     ...("releaseAssetProbes" in spec.evidence ? { releaseAssetProbes: spec.evidence.releaseAssetProbes } : {})
   };
 }
@@ -131,6 +146,7 @@ function createGameAssetPairRouteHealth(spec: ShowcaseSpec) {
     routePrimaryProbe: assetPairEvidence.routePrimaryProbe,
     screenshotSha256: assetPairEvidence.screenshotSha256,
     geometryEvidence: assetPairEvidence.geometryEvidence,
+    compositionReport: assetPairEvidence.compositionReport,
     verdict: assetPairEvidence.verdict,
     notes: assetPairEvidence.notes,
     blockers: assetPairEvidence.blockers

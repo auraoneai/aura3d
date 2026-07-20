@@ -181,23 +181,23 @@ const apps = [
     id: "showcase-skyline-runner",
     route: "/apps/showcase-skyline-runner/",
     routeHealth: "/apps/showcase-skyline-runner/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
-    claimStatus: "blocked",
-    notes: "Removed from public examples by the game stop decision. Current assets and engine APIs do not prove public-quality character/world binding, grounded contact, scale, or platformer framing; keep direct route access as a prototype diagnostic only."
+    claimStatus: "bounded",
+    notes: "Public platformer candidate with a typed Kenney character, mesh-derived verdant-world surfaces, grounded contact, follow-camera framing, and retained gameplay evidence."
   },
   {
     id: "showcase-turbo-drift-circuit",
     route: "/apps/showcase-turbo-drift-circuit/",
     routeHealth: "/apps/showcase-turbo-drift-circuit/route-health.json",
-    classification: "prototype-blocked",
-    publicShowcase: false,
+    classification: "candidate",
+    publicShowcase: true,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
-    claimStatus: "blocked",
-    notes: "Removed from public examples by the game stop decision. Current assets and engine APIs do not prove public-quality car-to-road binding, racing composition bounds, or camera/track framing; keep direct route access as a prototype diagnostic only."
+    claimStatus: "bounded",
+    notes: "Public racing candidate with a typed Kenney race car, mesh-derived neon-circuit topology, certified car-to-road binding, evidence-selected framing, and retained gameplay evidence."
   }
 ] as const;
 
@@ -210,7 +210,9 @@ window.__AURA3D_SHOWCASE_INDEX__ = {
   gameCount: publicApps.filter((entry) =>
     entry.id === "showcase-blockfall-reactor" ||
     entry.id === "showcase-public-racing-presentation-proof" ||
-    entry.id === "showcase-public-platformer-presentation-proof"
+    entry.id === "showcase-public-platformer-presentation-proof" ||
+    entry.id === "showcase-turbo-drift-circuit" ||
+    entry.id === "showcase-skyline-runner"
   ).length,
   routes,
   remediation: {

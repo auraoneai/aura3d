@@ -1,8 +1,27 @@
 # Changelog
 
-Version: 1.3.3
+Version: 1.4.4
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current published release is `1.3.3` — all 26 packages (`@aura3d/*` + `create-aura3d`) are on npm and the showcase is live at https://aura3d.auraone.ai, with every claim below gate-verified.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.4.4` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+
+## 1.4.4 (2026-07-19)
+
+Game-geometry certification, composition validation, generated immutable route contracts, and retained visual QA now form one fail-closed public game release chain. Turbo Drift Circuit and Skyline Runner were rebuilt against release-certified Kenney asset pairs and join the two established racing/platformer presentation proofs as bounded public examples. The full marketing website replaces the accidentally deployed static example registry at `https://aura3d.auraone.ai`.
+
+- Added CLI-owned game-geometry certification and route-evidence binding with current asset hashes, retained probes, provenance, and atomic manifest updates.
+- Added category-specific racing topology and platformer playable-surface extraction, asset-pair composition validation, scene-scale/pacing contracts, and compiler-emitted geometry modules.
+- Rebuilt Turbo Drift Circuit and Skyline Runner with certified assets, evidence-selected cameras, reusable contact queries, 30-second category floors, gameplay proof, and accepted desktop/mobile presentation.
+- Added fail-closed six-check automated visual QA with manual downward-only review; all four public game routes retain independent reports.
+- Updated the public showcase to 10/10 release candidates while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
+- Restored the complete multi-page marketing/docs/showcase deployment and aligned package, API, agent, route, governance, and release documentation to 1.4.4.
+
+### Claim Boundary
+
+This patch proves bounded stylized racing/platformer presentations for the named certified routes. It does not claim arbitrary GLB-to-game conversion, production physics, AI opponents, netcode, production game-engine parity, or root-wide renderer parity.
+
+## 1.4.3 (2026-07-18)
+
+Current maintenance release metadata, public API documentation, and governance references are aligned to the 1.4.3 package set. Public release language remains governed by `docs/project/product-studio-claim-registry.md`; route and runtime claims require their named retained gates.
 
 ## 1.3.3 (2026-06-10)
 

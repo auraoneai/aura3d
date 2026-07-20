@@ -53,6 +53,18 @@ export interface PngDiffStats {
   readonly signatureAfter: string;
 }
 
+export interface PngDifferenceBounds {
+  readonly width: number;
+  readonly height: number;
+  readonly crop: PngCrop;
+  readonly changedPixels: number;
+  readonly colorBuckets: number;
+  readonly bounds?: PngCrop;
+  readonly clipped: boolean;
+  readonly nonBackgroundRatio: number;
+  readonly readabilityScore: number;
+}
+
 interface DecodedPng {
   readonly width: number;
   readonly height: number;
@@ -309,6 +321,65 @@ export function comparePngBuffers(before: Buffer, after: Buffer, crop?: Partial<
     strongChangedRatio: ratio(strongChangedCount, sampleCount),
     signatureBefore: `fnv1a-${(hashBefore >>> 0).toString(16).padStart(8, "0")}`,
     signatureAfter: `fnv1a-${(hashAfter >>> 0).toString(16).padStart(8, "0")}`
+  };
+}
+
+export function analyzePngDifferenceBounds(
+  visible: Buffer,
+  hidden: Buffer,
+  crop?: Partial<PngCrop>,
+  channelThreshold = 12
+): PngDifferenceBounds {
+  const first = decodePng(visible);
+  const second = decodePng(hidden);
+  if (first.width !== second.width || first.height !== second.height) {
+    throw new Error("PNG dimensions must match for difference bounds.");
+  }
+  const resolvedCrop = resolveCrop(first, crop);
+  let changedPixels = 0;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = -1;
+  let maxY = -1;
+  const colorBuckets = new Set<string>();
+  for (let y = resolvedCrop.y; y < resolvedCrop.y + resolvedCrop.height; y += 1) {
+    for (let x = resolvedCrop.x; x < resolvedCrop.x + resolvedCrop.width; x += 1) {
+      const a = pixelAt(first, x, y);
+      const b = pixelAt(second, x, y);
+      const delta = (Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b)) / 3;
+      if (delta < channelThreshold) continue;
+      changedPixels += 1;
+      colorBuckets.add(`${a.r >> 4}:${a.g >> 4}:${a.b >> 4}`);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+  const bounds = changedPixels > 0
+    ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+    : undefined;
+  const clipped = bounds ? isBoundsClipped(bounds, resolvedCrop) : false;
+  const nonBackgroundRatio = ratio(changedPixels, resolvedCrop.width * resolvedCrop.height);
+  const foregroundAreaRatio = bounds
+    ? ratio(bounds.width * bounds.height, resolvedCrop.width * resolvedCrop.height)
+    : 0;
+  const readabilityScore = Math.round(
+    Math.min(35, nonBackgroundRatio * 700) +
+    Math.min(25, colorBuckets.size) +
+    Math.min(25, foregroundAreaRatio * 500) +
+    (clipped ? 0 : 15)
+  );
+  return {
+    width: first.width,
+    height: first.height,
+    crop: resolvedCrop,
+    changedPixels,
+    colorBuckets: colorBuckets.size,
+    ...(bounds ? { bounds } : {}),
+    clipped,
+    nonBackgroundRatio,
+    readabilityScore
   };
 }
 

@@ -29,6 +29,7 @@ Status: project documentation index
 - Aura3D 1.4.1 release notes: `docs/project/aura3d-141-release-notes.md`
 - Aura3D 1.4.2 release notes: `docs/project/aura3d-142-release-notes.md`
 - Aura3D 1.4.3 release notes: `docs/project/aura3d-143-release-notes.md`
+- Aura3D 1.4.4 release notes: `docs/project/aura3d-144-release-notes.md`
 - Verification evidence: `docs/project/verification-evidence.md`
 - Requirements trace: `docs/project/requirements-trace.md`
 - Completion audit: `docs/project/completion-audit.md`

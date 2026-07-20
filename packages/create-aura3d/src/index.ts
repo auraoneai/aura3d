@@ -59,7 +59,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   };
   packageJson.dependencies = {
     ...(packageJson.dependencies ?? {}),
-    "@aura3d/engine": options.packageVersion ?? packageJson.dependencies?.["@aura3d/engine"] ?? "1.4.3"
+    "@aura3d/engine": options.packageVersion ?? packageJson.dependencies?.["@aura3d/engine"] ?? "1.4.4"
   };
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
   return {
@@ -97,3 +97,30 @@ function findDefaultTemplateRoot(): string {
   }
   return process.cwd();
 }
+
+export {
+  probeShowcaseGameGeometry,
+  type ShowcaseGameGeometryCategory,
+  type ShowcaseGameGeometryProbeResult
+} from "./showcase-spec-game-geometry-probe.js";
+export type {
+  ExtractOptions as ShowcaseGameGeometryExtractOptions,
+  GeometryExtractionFailure as ShowcaseGameGeometryExtractionFailure,
+  GeometryExtractionResult as ShowcaseGameGeometryExtractionResult,
+  GeometryExtractionSuccess as ShowcaseGameGeometryExtractionSuccess
+} from "./showcase-spec-game-geometry-extractor.js";
+export type {
+  ShowcasePlatformerPlayableSurfaceMap,
+  ShowcaseRacingTrackTopology
+} from "./showcase-spec-types.js";
+
+export {
+  SHOWCASE_ASSET_PAIR_COMPOSITION_THRESHOLDS,
+  validateShowcaseAssetPairComposition,
+  validateShowcaseAssetPairCompositionFromDisk,
+  type ShowcaseAssetPairCompositionCategory,
+  type ShowcaseAssetPairCompositionCheck,
+  type ShowcaseAssetPairCompositionInput,
+  type ShowcaseAssetPairCompositionReport,
+  type ValidateShowcaseAssetPairCompositionFromDiskOptions
+} from "./showcase-spec-asset-pair-composition.js";

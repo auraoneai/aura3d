@@ -1,0 +1,24 @@
+{
+  "schema": "aura3d-showcase-route-gate-patch/1.0",
+  "route": {
+    "id": "showcase-turbo-drift-circuit",
+    "label": "Turbo Drift Circuit",
+    "path": "/apps/showcase-turbo-drift-circuit/",
+    "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
+    "published": true,
+    "primaryAssets": [
+      "showcaseKenneyRaceCarRed",
+      "showcaseKenneyNeonRaceCircuit"
+    ],
+    "primaryAssetRoles": {
+      "showcaseKenneyRaceCarRed": "vehicle",
+      "showcaseKenneyNeonRaceCircuit": "track"
+    },
+    "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+    "secondaryPrimaryAssets": [
+      "showcaseKenneyNeonRaceCircuit"
+    ],
+    "primitiveBudget": 0,
+    "requiresTypedPrimaryAssets": true
+  }
+}

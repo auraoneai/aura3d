@@ -81,13 +81,13 @@ public retained geometry report.
 - `showcase-platformer-game-layer-proof` remains a `game-layer-diagnostic`
   route. It continues to prove geometry contracts and evidence plumbing, not
   public platformer presentation.
-- Skyline Runner remains prototype-blocked.
-- Turbo Drift Circuit remains prototype-blocked.
+- Skyline Runner is now a bounded release-ready candidate with its own certified Kenney character/world pair and retained evidence chain.
+- Turbo Drift Circuit is now a bounded release-ready candidate with its own certified Kenney car/track pair and retained evidence chain.
 
 `node tools/showcase-library/build-and-check.mjs` now reports:
 
 ```text
-Showcase public release evidence passed for 8/8 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
+Showcase public release evidence passed for 10/10 release candidates; 2 internal diagnostics retained; 2 game-layer diagnostics retained; 1 index route handled separately.
 ```
 
 ## Verification

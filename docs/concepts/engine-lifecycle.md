@@ -44,3 +44,7 @@ production-runtime renderer.
 Claims about startup, disposal, route health, renderer backend, or fallback
 behavior must cite the specific app API and the browser/test evidence that
 exercised it.
+
+## Current Limits
+
+Lifecycle ownership does not guarantee production renderer parity, leak-free third-party integrations, or valid use of multiple apps on one target. Validate backend, disposal, and retained route evidence for the exact environment being claimed.

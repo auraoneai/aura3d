@@ -1,5 +1,7 @@
 # Aura3D Game Layer Proof Report
 
+> **Historical snapshot:** This document preserves the pre-presentation diagnostic proof snapshot. It is superseded for current classification and release counts by `docs/project/aura3d-144-release-notes.md`, `docs/project/showcase-launch-evidence.json`, and `tools/showcase-library/route-gates.json`. Current aggregate status is 10/10 public release candidates, two internal diagnostics, two game-layer diagnostics, and zero prototype-blocked routes.
+
 ## Scope
 
 This report records the current diagnostic proof state for the root-safe Aura3D

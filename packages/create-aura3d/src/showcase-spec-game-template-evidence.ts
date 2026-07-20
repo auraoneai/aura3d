@@ -9,10 +9,16 @@ import {
   extractPlatformerPlayableSurfaceMapFromAsset,
   extractRacingTrackTopologyFromAsset
 } from "./showcase-spec-game-geometry-extractor.js";
+import { applyRetainedCompositionEvidence } from "./showcase-spec-composition-evidence.js";
 
 export interface ShowcaseGameTemplateArtifacts {
   readonly spec: ShowcaseSpec;
   readonly artifacts: Readonly<Record<string, unknown>>;
+  readonly assetPairComposition?: {
+    readonly report: string;
+    readonly verdict: "pass" | "fail";
+    readonly checks: readonly { readonly id: string; readonly verdict: "pass" | "fail" }[];
+  };
 }
 
 export interface ShowcaseGameTemplateEvidenceOptions {
@@ -56,6 +62,13 @@ export interface PlatformerSurface {
   readonly evidenceRole: "playable-surface" | "bridge" | "finish-run";
 }
 
+export function consumeRetainedGameCompositionEvidence(
+  spec: ShowcaseSpec,
+  options: ShowcaseGameTemplateEvidenceOptions = {}
+): ReturnType<typeof applyRetainedCompositionEvidence> {
+  return applyRetainedCompositionEvidence(spec, options.projectDir);
+}
+
 export function applyGeneratedGameTemplateEvidence(
   spec: ShowcaseSpec,
   options: ShowcaseGameTemplateEvidenceOptions = {}
@@ -66,7 +79,18 @@ export function applyGeneratedGameTemplateEvidence(
       ...spec.racing,
       raceDesign: {
         ...spec.racing.raceDesign,
-        trackTopologyEvidence: evidencePath
+        trackTopologyEvidence: evidencePath,
+        ...(spec.racing.raceDesign.assetPairEvidence ? {
+          assetPairEvidence: {
+            ...spec.racing.raceDesign.assetPairEvidence,
+            ...(spec.racing.raceDesign.assetPairEvidence.geometryEvidence ? {
+              geometryEvidence: {
+                ...spec.racing.raceDesign.assetPairEvidence.geometryEvidence,
+                report: evidencePath
+              }
+            } : {})
+          }
+        } : {})
       }
     };
     const nextSpec: ShowcaseSpec = { ...spec, racing };
@@ -84,7 +108,18 @@ export function applyGeneratedGameTemplateEvidence(
       ...spec.platformer,
       levelDesign: {
         ...spec.platformer.levelDesign,
-        playableSurfaceEvidence: evidencePath
+        playableSurfaceEvidence: evidencePath,
+        ...(spec.platformer.levelDesign.assetPairEvidence ? {
+          assetPairEvidence: {
+            ...spec.platformer.levelDesign.assetPairEvidence,
+            ...(spec.platformer.levelDesign.assetPairEvidence.geometryEvidence ? {
+              geometryEvidence: {
+                ...spec.platformer.levelDesign.assetPairEvidence.geometryEvidence,
+                report: evidencePath
+              }
+            } : {})
+          }
+        } : {})
       }
     };
     const nextSpec: ShowcaseSpec = { ...spec, platformer };
@@ -202,6 +237,8 @@ export function createPlatformerTemplatePlan(
   const worldAsset = platformer.worldAssets[0] ?? "missing-world-asset";
   const extracted = extractPlatformerPlayableSurfaceMapFromAsset(worldAsset, {
     projectDir: options.projectDir,
+    characterAssetId: platformer.characterAsset,
+    characterScaleRatio: platformer.levelDesign.playableSurfaceMap?.characterScaleRatio ?? 0.42,
     renderedProbePath: platformer.levelDesign.playableSurfaceMap?.evidence.renderedProbe,
     routeOverlayPath: platformer.levelDesign.playableSurfaceMap?.evidence.routeOverlay
   });
@@ -361,6 +398,13 @@ function createRacingTrackTopologyEvidence(
   options: ShowcaseGameTemplateEvidenceOptions
 ): unknown {
   const plan = createRacingTemplatePlan(racing, options);
+  const topology: ShowcaseRacingTrackTopology = {
+    ...plan.topology,
+    evidence: {
+      ...plan.topology.evidence,
+      ...(spec.evidence.routePrimaryScreenshot ? { routeOverlay: spec.evidence.routePrimaryScreenshot } : {})
+    }
+  };
   const releaseSafeTopology = isReleaseSafeRacingTopology(racing.raceDesign.visibleTrackTopology);
   const failures = [
     ...(releaseSafeTopology ? [] : ["missing-release-safe-track-topology"]),
@@ -388,7 +432,7 @@ function createRacingTrackTopologyEvidence(
     vehicleAsset: racing.vehicleAsset,
     trackAsset: racing.trackAsset,
     assetHash: plan.topology.assetHash,
-    topology: plan.topology,
+    topology,
     meshExtraction: {
       status: createGeometryExtractionStatus(plan.topology.source, plan.extractionBlockers),
       reasons: plan.extractionReasons,
@@ -432,6 +476,13 @@ function createPlatformerPlayableSurfaceEvidence(
   options: ShowcaseGameTemplateEvidenceOptions
 ): unknown {
   const plan = createPlatformerTemplatePlan(spec, platformer, options);
+  const playableSurfaceMap: ShowcasePlatformerPlayableSurfaceMap = {
+    ...plan.playableSurfaceMap,
+    evidence: {
+      ...plan.playableSurfaceMap.evidence,
+      ...(spec.evidence.routePrimaryScreenshot ? { routeOverlay: spec.evidence.routePrimaryScreenshot } : {})
+    }
+  };
   const releaseSafeSurfaceSource = isReleaseSafePlatformerSurfaceSource(platformer.levelDesign.playableSurfaceSource);
   const failures = [
     ...(releaseSafeSurfaceSource ? [] : ["missing-release-safe-playable-surfaces"]),
@@ -461,7 +512,7 @@ function createPlatformerPlayableSurfaceEvidence(
     characterAsset: platformer.characterAsset,
     worldAssets: platformer.worldAssets,
     assetHash: plan.playableSurfaceMap.assetHash,
-    surfaceMap: plan.playableSurfaceMap,
+    surfaceMap: playableSurfaceMap,
     meshExtraction: {
       status: createGeometryExtractionStatus(plan.playableSurfaceMap.source, plan.extractionBlockers),
       reasons: plan.extractionReasons,

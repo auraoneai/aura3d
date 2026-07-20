@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "schema": "aura3d-showcase-spec-compile-report/1.0",
+  "routeId": "showcase-skyline-runner",
+  "finalStatus": "release-ready candidate",
+  "generatedFiles": [
+    "README.md",
+    "game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "route-gate.patch.json",
+    "route-health.json",
+    "showcase-evidence-checklist.json",
+    "showcase-spec-compile-report.json",
+    "src/generated/game-geometry.ts",
+    "src/main.ts"
+  ],
+  "blockers": [],
+  "evidenceChecklistPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/skyline-runner/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "/Users/gurbakshchahal/platforms/aura3d/tests/reports/showcase-spec-compiler/skyline-runner/route-gate.patch.json",
+  "rejectedAssets": [],
+  "replacementCandidates": [],
+  "assetPairComposition": {
+    "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
+    "verdict": "pass",
+    "checks": [
+      {
+        "id": "binding-overlap",
+        "verdict": "pass"
+      },
+      {
+        "id": "contact",
+        "verdict": "pass"
+      },
+      {
+        "id": "camera-readability",
+        "verdict": "pass"
+      },
+      {
+        "id": "scale-contract",
+        "verdict": "pass"
+      },
+      {
+        "id": "debug-guide-absence",
+        "verdict": "pass"
+      }
+    ]
+  },
+  "geometryContract": {
+    "module": "src/generated/game-geometry.ts",
+    "contentHash": "sha256-0f992aab1401679f640e0be342d563352c4cb456d6cb99ce5d044e9ba07b2682",
+    "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "sourceReportHash": "sha256-9f6a83f2c8f5c3af17171aaea64e0049cc34305ca64d8e578499f1d663f8e8bf"
+  }
+}

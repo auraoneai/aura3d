@@ -1,5 +1,7 @@
 # Aura3D Game Layer Implementation Report
 
+> **Historical snapshot:** This document preserves the 2026-07-02 diagnostic implementation snapshot. It is superseded for current classification and release counts by `docs/project/aura3d-144-release-notes.md`, `docs/project/showcase-launch-evidence.json`, and `tools/showcase-library/route-gates.json`. Current aggregate status is 10/10 public release candidates, two internal diagnostics, two game-layer diagnostics, and zero prototype-blocked routes.
+
 ## Scope
 
 This report records the corrected root-safe Aura3D game-layer diagnostic state

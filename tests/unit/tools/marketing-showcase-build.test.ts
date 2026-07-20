@@ -5,7 +5,9 @@ const buildScript = readFileSync("marketing/scripts/build-showcase-routes.mjs", 
 const engineSource = readFileSync("packages/engine/src/agent-api/index.ts", "utf8");
 const publicGameRouteSources = [
   readFileSync("apps/showcase-public-racing-presentation-proof/src/main.ts", "utf8"),
-  readFileSync("apps/showcase-public-platformer-presentation-proof/src/main.ts", "utf8")
+  readFileSync("apps/showcase-public-platformer-presentation-proof/src/main.ts", "utf8"),
+  readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8"),
+  readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8")
 ].join("\n");
 
 const requiredPublicGameHelpers = [
@@ -35,4 +37,17 @@ describe("marketing showcase route build", () => {
       expect(engineSource).toContain(`${helper}:`);
     }
   });
+  it("publishes all accepted game presentations and excludes diagnostic harnesses", () => {
+    for (const route of [
+      "showcase-public-racing-presentation-proof",
+      "showcase-public-platformer-presentation-proof",
+      "showcase-turbo-drift-circuit",
+      "showcase-skyline-runner"
+    ]) {
+      expect(buildScript).toContain(`"${route}"`);
+    }
+    expect(buildScript).toContain("release-ready game route must be published by marketing build");
+    expect(buildScript).toContain("game-layer diagnostic route must not be published by marketing build");
+  });
+
 });

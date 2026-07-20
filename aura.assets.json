@@ -12581,6 +12581,2860 @@
       ]
     },
     {
+      "id": "showcaseKenneyNeonRaceCircuit",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/source/kenney-game-kits/kenney-neon-race-circuit.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+      "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
+      "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+      "sizeBytes": 1880904,
+      "bounds": [
+        40,
+        4,
+        30
+      ],
+      "boundsMetadata": {
+        "min": [
+          -20,
+          -2,
+          -15
+        ],
+        "max": [
+          20,
+          2,
+          15
+        ],
+        "size": [
+          40,
+          4,
+          30
+        ],
+        "center": [
+          0,
+          0,
+          0
+        ],
+        "maxDimension": 40,
+        "grounded": false
+      },
+      "materials": [
+        "terrain grass",
+        "infield grass",
+        "road asphalt",
+        "road lane paint",
+        "curb red",
+        "curb white",
+        "grandstand dark",
+        "neon cyan",
+        "neon orange",
+        "grandstand seats",
+        "barrier concrete",
+        "tree trunk",
+        "tree foliage"
+      ],
+      "materialMetadata": [
+        {
+          "name": "terrain grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "infield grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "road asphalt",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "road lane paint",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "curb red",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "curb white",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "grandstand dark",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "neon cyan",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "neon orange",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "grandstand seats",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "barrier concrete",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tree trunk",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "tree foliage",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [
+          "head"
+        ],
+        "missingBones": [
+          "hips",
+          "spine",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid status is unknown; missing bone groups: hips, spine, leftArm, rightArm, leftLeg, rightLeg."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 280,
+        "meshCount": 280,
+        "materialCount": 13,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "terrain-ground",
+          "infield-ground",
+          "road-track-circuit",
+          "road-inner-lane-line",
+          "road-curb-0-0.78",
+          "road-curb-0-1.22",
+          "road-curb-1-0.78",
+          "road-curb-1-1.22",
+          "road-curb-2-0.78",
+          "road-curb-2-1.22",
+          "road-curb-3-0.78",
+          "road-curb-3-1.22",
+          "road-curb-4-0.78",
+          "road-curb-4-1.22",
+          "road-curb-5-0.78",
+          "road-curb-5-1.22",
+          "road-curb-6-0.78",
+          "road-curb-6-1.22",
+          "road-curb-7-0.78",
+          "road-curb-7-1.22",
+          "road-curb-8-0.78",
+          "road-curb-8-1.22",
+          "road-curb-9-0.78",
+          "road-curb-9-1.22",
+          "road-curb-10-0.78",
+          "road-curb-10-1.22",
+          "road-curb-11-0.78",
+          "road-curb-11-1.22",
+          "road-curb-12-0.78",
+          "road-curb-12-1.22",
+          "road-curb-13-0.78",
+          "road-curb-13-1.22",
+          "road-curb-14-0.78",
+          "road-curb-14-1.22",
+          "road-curb-15-0.78",
+          "road-curb-15-1.22",
+          "road-curb-16-0.78",
+          "road-curb-16-1.22",
+          "road-curb-17-0.78",
+          "road-curb-17-1.22",
+          "road-curb-18-0.78",
+          "road-curb-18-1.22",
+          "road-curb-19-0.78",
+          "road-curb-19-1.22",
+          "road-curb-20-0.78",
+          "road-curb-20-1.22",
+          "road-curb-21-0.78",
+          "road-curb-21-1.22",
+          "road-curb-22-0.78",
+          "road-curb-22-1.22",
+          "road-curb-23-0.78",
+          "road-curb-23-1.22",
+          "road-curb-24-0.78",
+          "road-curb-24-1.22",
+          "road-curb-25-0.78",
+          "road-curb-25-1.22",
+          "road-curb-26-0.78",
+          "road-curb-26-1.22",
+          "road-curb-27-0.78",
+          "road-curb-27-1.22",
+          "road-curb-28-0.78",
+          "road-curb-28-1.22",
+          "road-curb-29-0.78",
+          "road-curb-29-1.22",
+          "road-curb-30-0.78",
+          "road-curb-30-1.22",
+          "road-curb-31-0.78",
+          "road-curb-31-1.22",
+          "road-curb-32-0.78",
+          "road-curb-32-1.22",
+          "road-curb-33-0.78",
+          "road-curb-33-1.22",
+          "road-curb-34-0.78",
+          "road-curb-34-1.22",
+          "road-curb-35-0.78",
+          "road-curb-35-1.22",
+          "road-curb-36-0.78",
+          "road-curb-36-1.22",
+          "road-curb-37-0.78",
+          "road-curb-37-1.22",
+          "road-curb-38-0.78",
+          "road-curb-38-1.22",
+          "road-curb-39-0.78",
+          "road-curb-39-1.22",
+          "road-curb-40-0.78",
+          "road-curb-40-1.22",
+          "road-curb-41-0.78",
+          "road-curb-41-1.22",
+          "road-curb-42-0.78",
+          "road-curb-42-1.22",
+          "road-curb-43-0.78",
+          "road-curb-43-1.22",
+          "road-curb-44-0.78",
+          "road-curb-44-1.22",
+          "road-curb-45-0.78",
+          "road-curb-45-1.22",
+          "road-curb-46-0.78",
+          "road-curb-46-1.22",
+          "road-curb-47-0.78",
+          "road-curb-47-1.22",
+          "road-start-grid-0",
+          "road-start-grid-1",
+          "road-start-grid-2",
+          "road-start-grid-3",
+          "road-start-grid-4",
+          "road-start-grid-5",
+          "road-start-grid-6",
+          "road-start-grid-7",
+          "road-start-grid-8",
+          "road-start-grid-9",
+          "start-arch-column",
+          "start-arch-column.001",
+          "start-arch-header",
+          "start-light",
+          "start-light.001",
+          "start-light.002",
+          "start-light.003",
+          "start-light.004",
+          "start-light.005",
+          "grandstand-base-1--8",
+          "grandstand-seat-1--8-0",
+          "grandstand-seat-1--8-1",
+          "grandstand-seat-1--8-2",
+          "grandstand-seat-1--8-3",
+          "grandstand-base-1--4",
+          "grandstand-seat-1--4-0",
+          "grandstand-seat-1--4-1",
+          "grandstand-seat-1--4-2",
+          "grandstand-seat-1--4-3",
+          "grandstand-base-1-4",
+          "grandstand-seat-1-4-0",
+          "grandstand-seat-1-4-1",
+          "grandstand-seat-1-4-2",
+          "grandstand-seat-1-4-3",
+          "grandstand-base-1-8",
+          "grandstand-seat-1-8-0",
+          "grandstand-seat-1-8-1",
+          "grandstand-seat-1-8-2",
+          "grandstand-seat-1-8-3",
+          "grandstand-base--1--8",
+          "grandstand-seat--1--8-0",
+          "grandstand-seat--1--8-1",
+          "grandstand-seat--1--8-2",
+          "grandstand-seat--1--8-3",
+          "grandstand-base--1--4",
+          "grandstand-seat--1--4-0",
+          "grandstand-seat--1--4-1",
+          "grandstand-seat--1--4-2",
+          "grandstand-seat--1--4-3",
+          "grandstand-base--1-4",
+          "grandstand-seat--1-4-0",
+          "grandstand-seat--1-4-1",
+          "grandstand-seat--1-4-2",
+          "grandstand-seat--1-4-3",
+          "grandstand-base--1-8",
+          "grandstand-seat--1-8-0",
+          "grandstand-seat--1-8-1",
+          "grandstand-seat--1-8-2",
+          "grandstand-seat--1-8-3",
+          "pit-garage--8",
+          "pit-awning--8",
+          "pit-garage--5",
+          "pit-awning--5",
+          "pit-garage--2",
+          "pit-awning--2",
+          "barrier-0",
+          "barrier-1",
+          "barrier-2",
+          "barrier-3",
+          "barrier-4",
+          "barrier-5",
+          "barrier-6",
+          "barrier-7",
+          "barrier-8",
+          "barrier-9",
+          "barrier-10",
+          "barrier-11",
+          "barrier-12",
+          "barrier-13",
+          "barrier-14",
+          "barrier-15",
+          "barrier-16",
+          "barrier-17",
+          "barrier-18",
+          "barrier-19",
+          "barrier-20",
+          "barrier-21",
+          "barrier-22",
+          "barrier-23",
+          "barrier-24",
+          "barrier-25",
+          "barrier-26",
+          "barrier-27",
+          "light-post-0",
+          "light-head-0",
+          "light-post-1",
+          "light-head-1",
+          "light-post-2",
+          "light-head-2",
+          "light-post-3",
+          "light-head-3",
+          "light-post-4",
+          "light-head-4",
+          "light-post-5",
+          "light-head-5",
+          "light-post-6",
+          "light-head-6",
+          "light-post-7",
+          "light-head-7",
+          "light-post-8",
+          "light-head-8",
+          "light-post-9",
+          "light-head-9",
+          "light-post-10",
+          "light-head-10",
+          "light-post-11",
+          "light-head-11",
+          "light-post-12",
+          "light-head-12",
+          "light-post-13",
+          "light-head-13",
+          "light-post-14",
+          "light-head-14",
+          "light-post-15",
+          "light-head-15",
+          "tree-trunk-0",
+          "tree-canopy-0",
+          "tree-trunk-1",
+          "tree-canopy-1",
+          "tree-trunk-2",
+          "tree-canopy-2",
+          "tree-trunk-3",
+          "tree-canopy-3",
+          "tree-trunk-4",
+          "tree-canopy-4",
+          "tree-trunk-5",
+          "tree-canopy-5",
+          "tree-trunk-6",
+          "tree-canopy-6",
+          "tree-trunk-7",
+          "tree-canopy-7",
+          "tree-trunk-8",
+          "tree-canopy-8",
+          "tree-trunk-9",
+          "tree-canopy-9",
+          "tree-trunk-10",
+          "tree-canopy-10",
+          "tree-trunk-11",
+          "tree-canopy-11",
+          "tree-trunk-12",
+          "tree-canopy-12",
+          "tree-trunk-13",
+          "tree-canopy-13",
+          "tree-trunk-14",
+          "tree-canopy-14",
+          "tree-trunk-15",
+          "tree-canopy-15",
+          "tree-trunk-16",
+          "tree-canopy-16",
+          "tree-trunk-17",
+          "tree-canopy-17",
+          "tree-trunk-18",
+          "tree-canopy-18",
+          "tree-trunk-19",
+          "tree-canopy-19",
+          "tree-trunk-20",
+          "tree-canopy-20",
+          "tree-trunk-21",
+          "tree-canopy-21",
+          "tree-trunk-22",
+          "tree-canopy-22",
+          "tree-trunk-23",
+          "tree-canopy-23",
+          "tree-trunk-24",
+          "tree-canopy-24",
+          "tree-trunk-25",
+          "tree-canopy-25",
+          "billboard--10",
+          "billboard-0",
+          "billboard-10"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 280 nodes across 280 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/kenney-game-kits/kenney-neon-race-circuit.glb",
+        "sourcePage": "https://kenney.nl/assets/racing-kit",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/racing-kit/cf6b19f341-1775122158/kenney_racing-kit.zip",
+        "sourceUrl": "https://kenney.nl/assets/racing-kit",
+        "license": "CC0-1.0",
+        "licenseName": "Creative Commons CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "sourceFamily": "Kenney game kits",
+        "attribution": "Kenney",
+        "retrievedAt": "2026-07-19T09:32:32.000Z",
+        "evidence": [
+          "official-publisher-CC0-page",
+          "source-zip-sha256-9b254faa4292c12bbeb19d4c6991dd11230bb7281fc1ec95a47e7edb0d19561b",
+          "deterministic-derivative-build-script",
+          "source-zip-sha256-8a71ea16219315a01d00d5a90c4f6b5c090faddbc56d80ecf727e2b3b853c6c0"
+        ],
+        "checkedAt": "2026-07-19T12:07:19.059Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "isometric-track-overview",
+        "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp candidate probe",
+        "checkedAt": "2026-07-19T10:03:04.712Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyNeonRaceCircuit",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
+          "sha256": "sha256-c61746e75fe3306b26af68691e68bcf766ed91ea29cdcb4224988e90ec6676a1",
+          "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "checkedAt": "2026-07-19T10:03:04.712Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyNeonRaceCircuit"
+        },
+        "messages": [
+          "Track isometric view approved against the current hash-bound retained candidate probe; no forward axis is claimed for this track role."
+        ]
+      },
+      "nodeNames": [
+        "terrain-ground",
+        "infield-ground",
+        "road-track-circuit",
+        "road-inner-lane-line",
+        "road-curb-0-0.78",
+        "road-curb-0-1.22",
+        "road-curb-1-0.78",
+        "road-curb-1-1.22",
+        "road-curb-2-0.78",
+        "road-curb-2-1.22",
+        "road-curb-3-0.78",
+        "road-curb-3-1.22",
+        "road-curb-4-0.78",
+        "road-curb-4-1.22",
+        "road-curb-5-0.78",
+        "road-curb-5-1.22",
+        "road-curb-6-0.78",
+        "road-curb-6-1.22",
+        "road-curb-7-0.78",
+        "road-curb-7-1.22",
+        "road-curb-8-0.78",
+        "road-curb-8-1.22",
+        "road-curb-9-0.78",
+        "road-curb-9-1.22",
+        "road-curb-10-0.78",
+        "road-curb-10-1.22",
+        "road-curb-11-0.78",
+        "road-curb-11-1.22",
+        "road-curb-12-0.78",
+        "road-curb-12-1.22",
+        "road-curb-13-0.78",
+        "road-curb-13-1.22",
+        "road-curb-14-0.78",
+        "road-curb-14-1.22",
+        "road-curb-15-0.78",
+        "road-curb-15-1.22",
+        "road-curb-16-0.78",
+        "road-curb-16-1.22",
+        "road-curb-17-0.78",
+        "road-curb-17-1.22",
+        "road-curb-18-0.78",
+        "road-curb-18-1.22",
+        "road-curb-19-0.78",
+        "road-curb-19-1.22",
+        "road-curb-20-0.78",
+        "road-curb-20-1.22",
+        "road-curb-21-0.78",
+        "road-curb-21-1.22",
+        "road-curb-22-0.78",
+        "road-curb-22-1.22",
+        "road-curb-23-0.78",
+        "road-curb-23-1.22",
+        "road-curb-24-0.78",
+        "road-curb-24-1.22",
+        "road-curb-25-0.78",
+        "road-curb-25-1.22",
+        "road-curb-26-0.78",
+        "road-curb-26-1.22",
+        "road-curb-27-0.78",
+        "road-curb-27-1.22",
+        "road-curb-28-0.78",
+        "road-curb-28-1.22",
+        "road-curb-29-0.78",
+        "road-curb-29-1.22",
+        "road-curb-30-0.78",
+        "road-curb-30-1.22",
+        "road-curb-31-0.78",
+        "road-curb-31-1.22",
+        "road-curb-32-0.78",
+        "road-curb-32-1.22",
+        "road-curb-33-0.78",
+        "road-curb-33-1.22",
+        "road-curb-34-0.78",
+        "road-curb-34-1.22",
+        "road-curb-35-0.78",
+        "road-curb-35-1.22",
+        "road-curb-36-0.78",
+        "road-curb-36-1.22",
+        "road-curb-37-0.78",
+        "road-curb-37-1.22",
+        "road-curb-38-0.78",
+        "road-curb-38-1.22",
+        "road-curb-39-0.78",
+        "road-curb-39-1.22",
+        "road-curb-40-0.78",
+        "road-curb-40-1.22",
+        "road-curb-41-0.78",
+        "road-curb-41-1.22",
+        "road-curb-42-0.78",
+        "road-curb-42-1.22",
+        "road-curb-43-0.78",
+        "road-curb-43-1.22",
+        "road-curb-44-0.78",
+        "road-curb-44-1.22",
+        "road-curb-45-0.78",
+        "road-curb-45-1.22",
+        "road-curb-46-0.78",
+        "road-curb-46-1.22",
+        "road-curb-47-0.78",
+        "road-curb-47-1.22",
+        "road-start-grid-0",
+        "road-start-grid-1",
+        "road-start-grid-2",
+        "road-start-grid-3",
+        "road-start-grid-4",
+        "road-start-grid-5",
+        "road-start-grid-6",
+        "road-start-grid-7",
+        "road-start-grid-8",
+        "road-start-grid-9",
+        "start-arch-column",
+        "start-arch-column.001",
+        "start-arch-header",
+        "start-light",
+        "start-light.001",
+        "start-light.002",
+        "start-light.003",
+        "start-light.004",
+        "start-light.005",
+        "grandstand-base-1--8",
+        "grandstand-seat-1--8-0",
+        "grandstand-seat-1--8-1",
+        "grandstand-seat-1--8-2",
+        "grandstand-seat-1--8-3",
+        "grandstand-base-1--4",
+        "grandstand-seat-1--4-0",
+        "grandstand-seat-1--4-1",
+        "grandstand-seat-1--4-2",
+        "grandstand-seat-1--4-3",
+        "grandstand-base-1-4",
+        "grandstand-seat-1-4-0",
+        "grandstand-seat-1-4-1",
+        "grandstand-seat-1-4-2",
+        "grandstand-seat-1-4-3",
+        "grandstand-base-1-8",
+        "grandstand-seat-1-8-0",
+        "grandstand-seat-1-8-1",
+        "grandstand-seat-1-8-2",
+        "grandstand-seat-1-8-3",
+        "grandstand-base--1--8",
+        "grandstand-seat--1--8-0",
+        "grandstand-seat--1--8-1",
+        "grandstand-seat--1--8-2",
+        "grandstand-seat--1--8-3",
+        "grandstand-base--1--4",
+        "grandstand-seat--1--4-0",
+        "grandstand-seat--1--4-1",
+        "grandstand-seat--1--4-2",
+        "grandstand-seat--1--4-3",
+        "grandstand-base--1-4",
+        "grandstand-seat--1-4-0",
+        "grandstand-seat--1-4-1",
+        "grandstand-seat--1-4-2",
+        "grandstand-seat--1-4-3",
+        "grandstand-base--1-8",
+        "grandstand-seat--1-8-0",
+        "grandstand-seat--1-8-1",
+        "grandstand-seat--1-8-2",
+        "grandstand-seat--1-8-3",
+        "pit-garage--8",
+        "pit-awning--8",
+        "pit-garage--5",
+        "pit-awning--5",
+        "pit-garage--2",
+        "pit-awning--2",
+        "barrier-0",
+        "barrier-1",
+        "barrier-2",
+        "barrier-3",
+        "barrier-4",
+        "barrier-5",
+        "barrier-6",
+        "barrier-7",
+        "barrier-8",
+        "barrier-9",
+        "barrier-10",
+        "barrier-11",
+        "barrier-12",
+        "barrier-13",
+        "barrier-14",
+        "barrier-15",
+        "barrier-16",
+        "barrier-17",
+        "barrier-18",
+        "barrier-19",
+        "barrier-20",
+        "barrier-21",
+        "barrier-22",
+        "barrier-23",
+        "barrier-24",
+        "barrier-25",
+        "barrier-26",
+        "barrier-27",
+        "light-post-0",
+        "light-head-0",
+        "light-post-1",
+        "light-head-1",
+        "light-post-2",
+        "light-head-2",
+        "light-post-3",
+        "light-head-3",
+        "light-post-4",
+        "light-head-4",
+        "light-post-5",
+        "light-head-5",
+        "light-post-6",
+        "light-head-6",
+        "light-post-7",
+        "light-head-7",
+        "light-post-8",
+        "light-head-8",
+        "light-post-9",
+        "light-head-9",
+        "light-post-10",
+        "light-head-10",
+        "light-post-11",
+        "light-head-11",
+        "light-post-12",
+        "light-head-12",
+        "light-post-13",
+        "light-head-13",
+        "light-post-14",
+        "light-head-14",
+        "light-post-15",
+        "light-head-15",
+        "tree-trunk-0",
+        "tree-canopy-0",
+        "tree-trunk-1",
+        "tree-canopy-1",
+        "tree-trunk-2",
+        "tree-canopy-2",
+        "tree-trunk-3",
+        "tree-canopy-3",
+        "tree-trunk-4",
+        "tree-canopy-4",
+        "tree-trunk-5",
+        "tree-canopy-5",
+        "tree-trunk-6",
+        "tree-canopy-6",
+        "tree-trunk-7",
+        "tree-canopy-7",
+        "tree-trunk-8",
+        "tree-canopy-8",
+        "tree-trunk-9",
+        "tree-canopy-9",
+        "tree-trunk-10",
+        "tree-canopy-10",
+        "tree-trunk-11",
+        "tree-canopy-11",
+        "tree-trunk-12",
+        "tree-canopy-12",
+        "tree-trunk-13",
+        "tree-canopy-13",
+        "tree-trunk-14",
+        "tree-canopy-14",
+        "tree-trunk-15",
+        "tree-canopy-15",
+        "tree-trunk-16",
+        "tree-canopy-16",
+        "tree-trunk-17",
+        "tree-canopy-17",
+        "tree-trunk-18",
+        "tree-canopy-18",
+        "tree-trunk-19",
+        "tree-canopy-19",
+        "tree-trunk-20",
+        "tree-canopy-20",
+        "tree-trunk-21",
+        "tree-canopy-21",
+        "tree-trunk-22",
+        "tree-canopy-22",
+        "tree-trunk-23",
+        "tree-canopy-23",
+        "tree-trunk-24",
+        "tree-canopy-24",
+        "tree-trunk-25",
+        "tree-canopy-25",
+        "billboard--10",
+        "billboard-0",
+        "billboard-10"
+      ],
+      "thumbnailUrl": "/aura-assets/showcaseKenneyNeonRaceCircuit.thumb.svg",
+      "quality": "release",
+      "role": "track",
+      "suitabilityReason": "Release stylized flat-color racing track with durable Kenney CC0 provenance, coherent neon circuit venue, readable named materials, normalized camera-fit placement, retained browser-rendered probe, and hash-bound mesh-extracted road topology.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyNeonRaceCircuit",
+        "sha256": "sha256-c61746e75fe3306b26af68691e68bcf766ed91ea29cdcb4224988e90ec6676a1",
+        "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 112,
+        "checkedAt": "2026-07-19T10:03:04.712Z",
+        "foregroundBounds": {
+          "x": 111,
+          "y": 109,
+          "width": 536,
+          "height": 329
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-racing-track",
+        "evidence": {
+          "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          "routePrimaryScreenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+          "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
+        },
+        "racingTopology": {
+          "assetId": "showcaseKenneyNeonRaceCircuit",
+          "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+          "source": "asset-mesh-extracted",
+          "roadCenterline": [
+            {
+              "x": -9.098,
+              "z": -1.441,
+              "width": 1.792
+            },
+            {
+              "x": -7.588,
+              "z": -3.867,
+              "width": 1.792
+            },
+            {
+              "x": -5.087,
+              "z": -5.087,
+              "width": 1.792
+            },
+            {
+              "x": -3.037,
+              "z": -5.96,
+              "width": 1.792
+            },
+            {
+              "x": -0.967,
+              "z": -6.102,
+              "width": 1.792
+            },
+            {
+              "x": 0.966,
+              "z": -6.102,
+              "width": 1.792
+            },
+            {
+              "x": 3.037,
+              "z": -5.96,
+              "width": 1.792
+            },
+            {
+              "x": 5.087,
+              "z": -5.087,
+              "width": 1.792
+            },
+            {
+              "x": 7.588,
+              "z": -3.867,
+              "width": 1.792
+            },
+            {
+              "x": 9.097,
+              "z": -1.441,
+              "width": 1.792
+            },
+            {
+              "x": 9.098,
+              "z": 1.441,
+              "width": 1.792
+            },
+            {
+              "x": 7.588,
+              "z": 3.867,
+              "width": 1.792
+            },
+            {
+              "x": 5.087,
+              "z": 5.087,
+              "width": 1.792
+            },
+            {
+              "x": 3.037,
+              "z": 5.96,
+              "width": 1.792
+            },
+            {
+              "x": 0.967,
+              "z": 6.106,
+              "width": 1.792
+            },
+            {
+              "x": -0.967,
+              "z": 6.105,
+              "width": 1.792
+            },
+            {
+              "x": -3.037,
+              "z": 5.96,
+              "width": 1.792
+            },
+            {
+              "x": -5.087,
+              "z": 5.087,
+              "width": 1.792
+            },
+            {
+              "x": -7.588,
+              "z": 3.867,
+              "width": 1.792
+            },
+            {
+              "x": -9.097,
+              "z": 1.441,
+              "width": 1.792
+            },
+            {
+              "x": -9.098,
+              "z": -1.441,
+              "width": 1.792
+            }
+          ],
+          "checkpoints": [
+            {
+              "progress": 0.167,
+              "width": 1.792
+            },
+            {
+              "progress": 0.333,
+              "width": 1.792
+            },
+            {
+              "progress": 0.5,
+              "width": 1.792
+            },
+            {
+              "progress": 0.667,
+              "width": 1.792
+            },
+            {
+              "progress": 0.833,
+              "width": 1.792
+            },
+            {
+              "progress": 1,
+              "width": 1.792
+            }
+          ],
+          "lapLengthMeters": 49.404,
+          "estimatedLapSeconds": 75,
+          "confidence": 0.76,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -24.111,
+                -0.67,
+                -17.726
+              ],
+              "max": [
+                23.14,
+                4.08,
+                17.726
+              ]
+            },
+            "modelPoint": [
+              0,
+              0.03,
+              0
+            ],
+            "gamePoint": {
+              "x": 0,
+              "z": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-road-anchor-1",
+                "modelPoint": [
+                  -9.098,
+                  0.03,
+                  -1.441
+                ],
+                "gamePoint": {
+                  "x": -9.098,
+                  "z": -1.441
+                }
+              },
+              {
+                "id": "mesh-road-anchor-2",
+                "modelPoint": [
+                  5.087,
+                  0.03,
+                  -5.087
+                ],
+                "gamePoint": {
+                  "x": 5.087,
+                  "z": -5.087
+                }
+              },
+              {
+                "id": "mesh-road-anchor-3",
+                "modelPoint": [
+                  0.967,
+                  0.03,
+                  6.106
+                ],
+                "gamePoint": {
+                  "x": 0.967,
+                  "z": 6.106
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
+            "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+          }
+        }
+      },
+      "warnings": [
+        "no texture references detected",
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
+      "id": "showcaseKenneyOobiPlatformerHero",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/source/kenney-game-kits/kenney-oobi-platformer-hero.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
+      "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "sizeBytes": 208028,
+      "bounds": [
+        0.868,
+        0.907,
+        0.603
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.427,
+          0,
+          -0.287
+        ],
+        "max": [
+          0.441,
+          0.907,
+          0.316
+        ],
+        "size": [
+          0.868,
+          0.907,
+          0.603
+        ],
+        "center": [
+          0.007,
+          0.454,
+          0.015
+        ],
+        "maxDimension": 0.907,
+        "grounded": true
+      },
+      "materials": [
+        "colormap"
+      ],
+      "materialMetadata": [
+        {
+          "name": "colormap",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [
+        "attack-kick-left",
+        "attack-kick-right",
+        "attack-melee-left",
+        "attack-melee-right",
+        "crouch",
+        "die",
+        "drive",
+        "emote-no",
+        "emote-yes",
+        "fall",
+        "holding-both",
+        "holding-both-shoot",
+        "holding-left",
+        "holding-left-shoot",
+        "holding-right",
+        "holding-right-shoot",
+        "idle",
+        "interact-left",
+        "interact-right",
+        "jump",
+        "pick-up",
+        "sit",
+        "sprint",
+        "static",
+        "walk"
+      ],
+      "animationMetadata": {
+        "clipCount": 25,
+        "clips": [
+          {
+            "index": 0,
+            "name": "attack-kick-left",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 1,
+            "name": "attack-kick-right",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 2,
+            "name": "attack-melee-left",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 3,
+            "name": "attack-melee-right",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 4,
+            "name": "crouch",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 5,
+            "name": "die",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 6,
+            "name": "drive",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 7,
+            "name": "emote-no",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 8,
+            "name": "emote-yes",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 9,
+            "name": "fall",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 10,
+            "name": "holding-both",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 11,
+            "name": "holding-both-shoot",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 12,
+            "name": "holding-left",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 13,
+            "name": "holding-left-shoot",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 14,
+            "name": "holding-right",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 15,
+            "name": "holding-right-shoot",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 16,
+            "name": "idle",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 17,
+            "name": "interact-left",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 18,
+            "name": "interact-right",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 19,
+            "name": "jump",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 20,
+            "name": "pick-up",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 21,
+            "name": "sit",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 22,
+            "name": "sprint",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 23,
+            "name": "static",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          },
+          {
+            "index": 24,
+            "name": "walk",
+            "channelCount": 18,
+            "samplerCount": 18,
+            "targetPaths": [
+              "translation",
+              "rotation",
+              "scale"
+            ],
+            "targetNodes": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 25 embedded animation clips."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "medium",
+        "skinCount": 1,
+        "jointCount": 6,
+        "matchedBones": [
+          "spine",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "missingBones": [
+          "hips",
+          "head"
+        ],
+        "messages": [
+          "Humanoid status is unknown; missing bone groups: hips, head."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 1,
+        "jointCount": 6,
+        "skins": [
+          {
+            "index": 0,
+            "name": "kenney-oobi-hero-character-oobi",
+            "jointCount": 6,
+            "joints": [
+              "root",
+              "leg-left",
+              "leg-right",
+              "torso",
+              "arm-left",
+              "arm-right"
+            ]
+          }
+        ],
+        "messages": [
+          "Detected 1 skin with 6 unique joints."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 8,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 25,
+        "skinCount": 1,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "kenney-oobi-hero-character-oobi"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 8 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/kenney-game-kits/kenney-oobi-platformer-hero.glb",
+        "sourcePage": "https://kenney.nl/assets/platformer-kit",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/platformer-kit/1585cf62b4-1775122253/kenney_platformer-kit.zip",
+        "sourceUrl": "https://kenney.nl/assets/platformer-kit",
+        "license": "CC0-1.0",
+        "licenseName": "Creative Commons CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "sourceFamily": "Kenney game kits",
+        "attribution": "Kenney",
+        "retrievedAt": "2026-07-19T09:32:32.000Z",
+        "evidence": [
+          "official-publisher-CC0-page",
+          "source-zip-sha256-899605d237367688c6b42e41fff2206c0fb8d626163158294556353f7baa7c1b",
+          "deterministic-derivative-build-script"
+        ],
+        "checkedAt": "2026-07-19T12:07:20.826Z"
+      },
+      "textures": [
+        "colormap"
+      ],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp candidate probe",
+        "checkedAt": "2026-07-19T10:03:25.574Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyOobiPlatformerHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
+          "sha256": "sha256-afb7bd24ac8a96414d5d7ff13c4ccd8b1c4a19ade3531fe5c63806651f287fb0",
+          "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+          "checkedAt": "2026-07-19T10:03:25.574Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyOobiPlatformerHero"
+        },
+        "messages": [
+          "Character +Z forward and +Y up orientation reviewed against the current hash-bound retained candidate probe; final route-facing evidence is required before public release."
+        ]
+      },
+      "nodeNames": [
+        "leg-left",
+        "leg-right",
+        "arm-left",
+        "arm-right",
+        "torso",
+        "root",
+        "kenney-oobi-hero-body-mesh",
+        "kenney-oobi-hero-character-oobi"
+      ],
+      "thumbnailUrl": "/aura-assets/showcaseKenneyOobiPlatformerHero.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Release stylized flat-color platformer character with durable Kenney CC0 provenance, readable named material evidence, normalized camera-fit placement, explicit +Z forward orientation, retained browser-rendered probe, and certified world-scale contact evidence.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyOobiPlatformerHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyOobiPlatformerHero",
+        "sha256": "sha256-afb7bd24ac8a96414d5d7ff13c4ccd8b1c4a19ade3531fe5c63806651f287fb0",
+        "assetHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 63,
+        "checkedAt": "2026-07-19T10:03:25.574Z",
+        "foregroundBounds": {
+          "x": 218,
+          "y": 192,
+          "width": 328,
+          "height": 369
+        }
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "gameGeometry": {
+        "certification": "certified-platformer-character",
+        "evidence": {
+          "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          "routePrimaryScreenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+          "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
+        }
+      }
+    },
+    {
+      "id": "showcaseKenneyRaceCarRed",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/source/kenney-game-kits/kenney-race-car-red.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+      "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
+      "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+      "sizeBytes": 100008,
+      "bounds": [
+        0.742,
+        0.467,
+        1.487
+      ],
+      "boundsMetadata": {
+        "min": [
+          -0.159,
+          -0.141,
+          -1.346
+        ],
+        "max": [
+          0.582,
+          0.326,
+          0.141
+        ],
+        "size": [
+          0.742,
+          0.467,
+          1.487
+        ],
+        "center": [
+          0.212,
+          0.092,
+          -0.602
+        ],
+        "maxDimension": 1.487,
+        "grounded": false
+      },
+      "materials": [
+        "carTire",
+        "red",
+        "glass",
+        "grey"
+      ],
+      "materialMetadata": [
+        {
+          "name": "carTire",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "red",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "glass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "grey",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "non-humanoid",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [],
+        "missingBones": [
+          "hips",
+          "spine",
+          "head",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "No humanoid skeleton signals detected."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 6,
+        "meshCount": 5,
+        "materialCount": 4,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "kenney-race-car-raceCarRed %8angles(Clone)"
+        ],
+        "maxDepth": 2,
+        "messages": [
+          "Detected 6 nodes across 1 root."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/kenney-game-kits/kenney-race-car-red.glb",
+        "sourcePage": "https://kenney.nl/assets/racing-kit",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/racing-kit/cf6b19f341-1775122158/kenney_racing-kit.zip",
+        "sourceUrl": "https://kenney.nl/assets/racing-kit",
+        "license": "CC0-1.0",
+        "licenseName": "Creative Commons CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "sourceFamily": "Kenney game kits",
+        "attribution": "Kenney",
+        "retrievedAt": "2026-07-19T09:32:32.000Z",
+        "evidence": [
+          "official-publisher-CC0-page",
+          "source-zip-sha256-9b254faa4292c12bbeb19d4c6991dd11230bb7281fc1ec95a47e7edb0d19561b",
+          "deterministic-derivative-build-script",
+          "source-zip-sha256-8a71ea16219315a01d00d5a90c4f6b5c090faddbc56d80ecf727e2b3b853c6c0"
+        ],
+        "checkedAt": "2026-07-19T12:07:17.404Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "assetHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp candidate probe",
+        "checkedAt": "2026-07-19T10:03:11.100Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyRaceCarRed",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyRaceCarRed.png",
+          "sha256": "sha256-0dced141fff6bc708404d70d84c0f900541c1d46050340ddfcecfe41074b06db",
+          "assetHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+          "checkedAt": "2026-07-19T10:03:11.100Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyRaceCarRed"
+        },
+        "messages": [
+          "Vehicle +Z forward and +Y up orientation reviewed against the current hash-bound retained candidate probe; final route-facing evidence is required before public release."
+        ]
+      },
+      "nodeNames": [
+        "kenney-race-car-body",
+        "kenney-race-car-wheelBackLeft",
+        "kenney-race-car-wheelBackRight",
+        "kenney-race-car-wheelFrontLeft",
+        "kenney-race-car-wheelFrontRight",
+        "kenney-race-car-raceCarRed %8angles(Clone)"
+      ],
+      "thumbnailUrl": "/aura-assets/showcaseKenneyRaceCarRed.thumb.svg",
+      "quality": "release",
+      "role": "vehicle",
+      "suitabilityReason": "Release stylized flat-color racing vehicle with durable Kenney CC0 provenance, readable named materials, normalized camera-fit placement, explicit +Z forward orientation, retained browser-rendered probe, and certified route-scale contact evidence for Turbo Drift Circuit.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyRaceCarRed.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyRaceCarRed",
+        "sha256": "sha256-0dced141fff6bc708404d70d84c0f900541c1d46050340ddfcecfe41074b06db",
+        "assetHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 43,
+        "checkedAt": "2026-07-19T10:03:11.100Z",
+        "foregroundBounds": {
+          "x": 59,
+          "y": 274,
+          "width": 283,
+          "height": 158
+        }
+      },
+      "warnings": [
+        "no texture references detected",
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "gameGeometry": {
+        "certification": "certified-racing-vehicle",
+        "evidence": {
+          "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+          "routePrimaryScreenshotSha256": "sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3",
+          "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
+        }
+      }
+    },
+    {
+      "id": "showcaseKenneyVerdantPlatformerWorld",
+      "type": "model",
+      "format": "glb",
+      "source": "assets/source/kenney-game-kits/kenney-verdant-platformer-world.glb",
+      "outputPath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+      "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
+      "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "sizeBytes": 1246284,
+      "bounds": [
+        11.413,
+        10.8,
+        10.854
+      ],
+      "boundsMetadata": {
+        "min": [
+          -5.706,
+          -5.4,
+          -6
+        ],
+        "max": [
+          5.706,
+          5.4,
+          4.854
+        ],
+        "size": [
+          11.413,
+          10.8,
+          10.854
+        ],
+        "center": [
+          0,
+          0,
+          -0.573
+        ],
+        "maxDimension": 11.413,
+        "grounded": false
+      },
+      "materials": [
+        "platform stone",
+        "platform cliff",
+        "platform grass",
+        "platform moss",
+        "hazard lava",
+        "bark",
+        "foliage",
+        "collectible gold",
+        "accent purple",
+        "finish portal",
+        "background cloud"
+      ],
+      "materialMetadata": [
+        {
+          "name": "platform stone",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "platform cliff",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "platform grass",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "platform moss",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "hazard lava",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "bark",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "foliage",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "collectible gold",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "accent purple",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "finish portal",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        },
+        {
+          "name": "background cloud",
+          "visible": true,
+          "readable": true,
+          "opacity": 1,
+          "reasons": []
+        }
+      ],
+      "animations": [],
+      "animationMetadata": {
+        "clipCount": 0,
+        "clips": [],
+        "messages": [
+          "No embedded animation clips detected."
+        ]
+      },
+      "humanoid": {
+        "humanoid": false,
+        "status": "unknown",
+        "confidence": "low",
+        "skinCount": 0,
+        "jointCount": 0,
+        "matchedBones": [
+          "head"
+        ],
+        "missingBones": [
+          "hips",
+          "spine",
+          "leftArm",
+          "rightArm",
+          "leftLeg",
+          "rightLeg"
+        ],
+        "messages": [
+          "Humanoid status is unknown; missing bone groups: hips, spine, leftArm, rightArm, leftLeg, rightLeg."
+        ]
+      },
+      "skeleton": {
+        "skinCount": 0,
+        "jointCount": 0,
+        "skins": [],
+        "messages": [
+          "No skin/skeleton metadata detected."
+        ]
+      },
+      "morphTargets": {
+        "targetCount": 0,
+        "targetNames": [],
+        "meshes": [],
+        "messages": [
+          "No morph target metadata detected."
+        ]
+      },
+      "hierarchy": {
+        "nodeCount": 165,
+        "meshCount": 165,
+        "materialCount": 11,
+        "textureCount": 0,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "background-mountain-0",
+          "background-mountain-1",
+          "background-mountain-2",
+          "background-mountain-3",
+          "background-mountain-4",
+          "background-mountain-5",
+          "background-mountain-6",
+          "background-mountain-7",
+          "platform-ground-0",
+          "platform-grass-top-0",
+          "cliff-rock-0-0",
+          "cliff-rock-0-1",
+          "cliff-rock-0-2",
+          "cliff-rock-0-3",
+          "platform-ground-1",
+          "platform-grass-top-1",
+          "cliff-rock-1-0",
+          "cliff-rock-1-1",
+          "platform-ground-2",
+          "platform-grass-top-2",
+          "cliff-rock-2-0",
+          "cliff-rock-2-1",
+          "platform-ground-3",
+          "platform-grass-top-3",
+          "cliff-rock-3-0",
+          "cliff-rock-3-1",
+          "platform-ground-4",
+          "platform-grass-top-4",
+          "cliff-rock-4-0",
+          "cliff-rock-4-1",
+          "platform-ground-5",
+          "platform-grass-top-5",
+          "cliff-rock-5-0",
+          "cliff-rock-5-1",
+          "cliff-rock-5-2",
+          "platform-ground-6",
+          "platform-grass-top-6",
+          "cliff-rock-6-0",
+          "cliff-rock-6-1",
+          "cliff-rock-6-2",
+          "platform-ground-7",
+          "platform-grass-top-7",
+          "cliff-rock-7-0",
+          "cliff-rock-7-1",
+          "platform-ground-8",
+          "platform-grass-top-8",
+          "cliff-rock-8-0",
+          "cliff-rock-8-1",
+          "cliff-rock-8-2",
+          "platform-ground-9",
+          "platform-grass-top-9",
+          "cliff-rock-9-0",
+          "cliff-rock-9-1",
+          "platform-ground-10",
+          "platform-grass-top-10",
+          "cliff-rock-10-0",
+          "cliff-rock-10-1",
+          "cliff-rock-10-2",
+          "platform-floating-0",
+          "platform-moss-0",
+          "platform-floating-1",
+          "platform-moss-1",
+          "platform-floating-2",
+          "platform-moss-2",
+          "platform-floating-3",
+          "platform-moss-3",
+          "platform-floating-4",
+          "platform-moss-4",
+          "platform-floating-5",
+          "platform-moss-5",
+          "platform-floating-6",
+          "platform-moss-6",
+          "platform-floating-7",
+          "platform-moss-7",
+          "platform-floating-8",
+          "platform-moss-8",
+          "hazard-lava-0",
+          "hazard-lava-1",
+          "hazard-lava-2",
+          "hazard-lava-3",
+          "hazard-lava-4",
+          "hazard-lava-5",
+          "hazard-lava-6",
+          "hazard-lava-7",
+          "hazard-lava-8",
+          "hazard-lava-9",
+          "tree-trunk-0",
+          "tree-canopy-0",
+          "tree-trunk-1",
+          "tree-canopy-1",
+          "tree-trunk-2",
+          "tree-canopy-2",
+          "tree-trunk-3",
+          "tree-canopy-3",
+          "tree-trunk-4",
+          "tree-canopy-4",
+          "tree-trunk-5",
+          "tree-canopy-5",
+          "tree-trunk-6",
+          "tree-canopy-6",
+          "tree-trunk-7",
+          "tree-canopy-7",
+          "tree-trunk-8",
+          "tree-canopy-8",
+          "tree-trunk-9",
+          "tree-canopy-9",
+          "tree-trunk-10",
+          "tree-canopy-10",
+          "collectible-coin-0",
+          "collectible-coin-1",
+          "collectible-coin-2",
+          "collectible-coin-3",
+          "collectible-coin-4",
+          "collectible-coin-5",
+          "collectible-coin-6",
+          "collectible-coin-7",
+          "collectible-coin-8",
+          "collectible-coin-9",
+          "collectible-coin-10",
+          "collectible-coin-11",
+          "collectible-coin-12",
+          "collectible-coin-13",
+          "collectible-coin-14",
+          "collectible-coin-15",
+          "collectible-coin-16",
+          "collectible-coin-17",
+          "collectible-coin-18",
+          "collectible-coin-19",
+          "collectible-coin-20",
+          "checkpoint-column-0--0.8",
+          "checkpoint-column-0-0.8",
+          "checkpoint-header-0",
+          "checkpoint-column-1--0.8",
+          "checkpoint-column-1-0.8",
+          "checkpoint-header-1",
+          "checkpoint-column-2--0.8",
+          "checkpoint-column-2-0.8",
+          "checkpoint-header-2",
+          "checkpoint-column-3--0.8",
+          "checkpoint-column-3-0.8",
+          "checkpoint-header-3",
+          "checkpoint-column-4--0.8",
+          "checkpoint-column-4-0.8",
+          "checkpoint-header-4",
+          "finish-column--1",
+          "finish-column-1",
+          "finish-header",
+          "background-cloud-0-0",
+          "background-cloud-0-1",
+          "background-cloud-0-2",
+          "background-cloud-1-0",
+          "background-cloud-1-1",
+          "background-cloud-1-2",
+          "background-cloud-2-0",
+          "background-cloud-2-1",
+          "background-cloud-2-2",
+          "background-cloud-3-0",
+          "background-cloud-3-1",
+          "background-cloud-3-2",
+          "background-cloud-4-0",
+          "background-cloud-4-1",
+          "background-cloud-4-2",
+          "background-cloud-5-0",
+          "background-cloud-5-1",
+          "background-cloud-5-2"
+        ],
+        "maxDepth": 1,
+        "messages": [
+          "Detected 165 nodes across 165 roots."
+        ]
+      },
+      "provenance": {
+        "sourcePath": "assets/source/kenney-game-kits/kenney-verdant-platformer-world.glb",
+        "sourcePage": "https://kenney.nl/assets/platformer-kit",
+        "downloadUrl": "https://kenney.nl/media/pages/assets/platformer-kit/1585cf62b4-1775122253/kenney_platformer-kit.zip",
+        "sourceUrl": "https://kenney.nl/assets/platformer-kit",
+        "license": "CC0-1.0",
+        "licenseName": "Creative Commons CC0 1.0 Universal",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+        "author": "Kenney",
+        "sourceFamily": "Kenney game kits",
+        "attribution": "Kenney",
+        "retrievedAt": "2026-07-19T09:53:39.000Z",
+        "evidence": [
+          "official-publisher-CC0-page",
+          "source-zip-sha256-899605d237367688c6b42e41fff2206c0fb8d626163158294556353f7baa7c1b",
+          "deterministic-derivative-build-script"
+        ],
+        "checkedAt": "2026-07-19T12:07:22.665Z"
+      },
+      "textures": [],
+      "dependencies": [],
+      "orientation": {
+        "source": "manifest-override",
+        "view": "side-scroller-world-overview",
+        "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp candidate probe",
+        "checkedAt": "2026-07-19T10:03:19.973Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
+          "sha256": "sha256-000844ca5e70442b225b5bec7396eeefb3d16a1fbba14007ceea2c68c8dd8bac",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "checkedAt": "2026-07-19T10:03:19.973Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld"
+        },
+        "messages": [
+          "World side-scroller view approved against the current hash-bound retained candidate probe; no forward axis is claimed for this world role."
+        ]
+      },
+      "nodeNames": [
+        "background-mountain-0",
+        "background-mountain-1",
+        "background-mountain-2",
+        "background-mountain-3",
+        "background-mountain-4",
+        "background-mountain-5",
+        "background-mountain-6",
+        "background-mountain-7",
+        "platform-ground-0",
+        "platform-grass-top-0",
+        "cliff-rock-0-0",
+        "cliff-rock-0-1",
+        "cliff-rock-0-2",
+        "cliff-rock-0-3",
+        "platform-ground-1",
+        "platform-grass-top-1",
+        "cliff-rock-1-0",
+        "cliff-rock-1-1",
+        "platform-ground-2",
+        "platform-grass-top-2",
+        "cliff-rock-2-0",
+        "cliff-rock-2-1",
+        "platform-ground-3",
+        "platform-grass-top-3",
+        "cliff-rock-3-0",
+        "cliff-rock-3-1",
+        "platform-ground-4",
+        "platform-grass-top-4",
+        "cliff-rock-4-0",
+        "cliff-rock-4-1",
+        "platform-ground-5",
+        "platform-grass-top-5",
+        "cliff-rock-5-0",
+        "cliff-rock-5-1",
+        "cliff-rock-5-2",
+        "platform-ground-6",
+        "platform-grass-top-6",
+        "cliff-rock-6-0",
+        "cliff-rock-6-1",
+        "cliff-rock-6-2",
+        "platform-ground-7",
+        "platform-grass-top-7",
+        "cliff-rock-7-0",
+        "cliff-rock-7-1",
+        "platform-ground-8",
+        "platform-grass-top-8",
+        "cliff-rock-8-0",
+        "cliff-rock-8-1",
+        "cliff-rock-8-2",
+        "platform-ground-9",
+        "platform-grass-top-9",
+        "cliff-rock-9-0",
+        "cliff-rock-9-1",
+        "platform-ground-10",
+        "platform-grass-top-10",
+        "cliff-rock-10-0",
+        "cliff-rock-10-1",
+        "cliff-rock-10-2",
+        "platform-floating-0",
+        "platform-moss-0",
+        "platform-floating-1",
+        "platform-moss-1",
+        "platform-floating-2",
+        "platform-moss-2",
+        "platform-floating-3",
+        "platform-moss-3",
+        "platform-floating-4",
+        "platform-moss-4",
+        "platform-floating-5",
+        "platform-moss-5",
+        "platform-floating-6",
+        "platform-moss-6",
+        "platform-floating-7",
+        "platform-moss-7",
+        "platform-floating-8",
+        "platform-moss-8",
+        "hazard-lava-0",
+        "hazard-lava-1",
+        "hazard-lava-2",
+        "hazard-lava-3",
+        "hazard-lava-4",
+        "hazard-lava-5",
+        "hazard-lava-6",
+        "hazard-lava-7",
+        "hazard-lava-8",
+        "hazard-lava-9",
+        "tree-trunk-0",
+        "tree-canopy-0",
+        "tree-trunk-1",
+        "tree-canopy-1",
+        "tree-trunk-2",
+        "tree-canopy-2",
+        "tree-trunk-3",
+        "tree-canopy-3",
+        "tree-trunk-4",
+        "tree-canopy-4",
+        "tree-trunk-5",
+        "tree-canopy-5",
+        "tree-trunk-6",
+        "tree-canopy-6",
+        "tree-trunk-7",
+        "tree-canopy-7",
+        "tree-trunk-8",
+        "tree-canopy-8",
+        "tree-trunk-9",
+        "tree-canopy-9",
+        "tree-trunk-10",
+        "tree-canopy-10",
+        "collectible-coin-0",
+        "collectible-coin-1",
+        "collectible-coin-2",
+        "collectible-coin-3",
+        "collectible-coin-4",
+        "collectible-coin-5",
+        "collectible-coin-6",
+        "collectible-coin-7",
+        "collectible-coin-8",
+        "collectible-coin-9",
+        "collectible-coin-10",
+        "collectible-coin-11",
+        "collectible-coin-12",
+        "collectible-coin-13",
+        "collectible-coin-14",
+        "collectible-coin-15",
+        "collectible-coin-16",
+        "collectible-coin-17",
+        "collectible-coin-18",
+        "collectible-coin-19",
+        "collectible-coin-20",
+        "checkpoint-column-0--0.8",
+        "checkpoint-column-0-0.8",
+        "checkpoint-header-0",
+        "checkpoint-column-1--0.8",
+        "checkpoint-column-1-0.8",
+        "checkpoint-header-1",
+        "checkpoint-column-2--0.8",
+        "checkpoint-column-2-0.8",
+        "checkpoint-header-2",
+        "checkpoint-column-3--0.8",
+        "checkpoint-column-3-0.8",
+        "checkpoint-header-3",
+        "checkpoint-column-4--0.8",
+        "checkpoint-column-4-0.8",
+        "checkpoint-header-4",
+        "finish-column--1",
+        "finish-column-1",
+        "finish-header",
+        "background-cloud-0-0",
+        "background-cloud-0-1",
+        "background-cloud-0-2",
+        "background-cloud-1-0",
+        "background-cloud-1-1",
+        "background-cloud-1-2",
+        "background-cloud-2-0",
+        "background-cloud-2-1",
+        "background-cloud-2-2",
+        "background-cloud-3-0",
+        "background-cloud-3-1",
+        "background-cloud-3-2",
+        "background-cloud-4-0",
+        "background-cloud-4-1",
+        "background-cloud-4-2",
+        "background-cloud-5-0",
+        "background-cloud-5-1",
+        "background-cloud-5-2"
+      ],
+      "thumbnailUrl": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Release stylized flat-color platformer world with durable Kenney CC0 provenance, coherent traversable island chain, readable named materials, normalized camera-fit placement, retained browser-rendered probe, and hash-bound mesh-extracted playable surfaces.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseKenneyVerdantPlatformerWorld.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseKenneyVerdantPlatformerWorld",
+        "sha256": "sha256-000844ca5e70442b225b5bec7396eeefb3d16a1fbba14007ceea2c68c8dd8bac",
+        "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 118,
+        "checkedAt": "2026-07-19T10:03:19.973Z",
+        "foregroundBounds": {
+          "x": 81,
+          "y": 282,
+          "width": 671,
+          "height": 318
+        }
+      },
+      "gameGeometry": {
+        "certification": "certified-platformer-world",
+        "evidence": {
+          "manifestHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+          "routePrimaryScreenshotSha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+          "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+          "visualReview": "pass",
+          "assetPairPass": true,
+          "blockers": []
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseKenneyVerdantPlatformerWorld",
+          "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 0.81,
+              "y": 0,
+              "width": 1.62,
+              "height": 0.22,
+              "modelTopY": 0.18,
+              "modelCenterZ": 0,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 2.25,
+              "y": 0.216,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 3.33,
+              "y": 0.432,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.58,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 4.41,
+              "y": 0.234,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 1.48,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 5.67,
+              "y": 0.54,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.18,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-05",
+              "x": 7.11,
+              "y": 0.324,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 1.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-06",
+              "x": 8.55,
+              "y": 0.684,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 3.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-07",
+              "x": 9.99,
+              "y": 0.468,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.78,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-08",
+              "x": 11.43,
+              "y": 0.756,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 4.38,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-09",
+              "x": 12.87,
+              "y": 0.504,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 2.98,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-10",
+              "x": 14.31,
+              "y": 0.81,
+              "width": 1.26,
+              "height": 0.22,
+              "modelTopY": 4.68,
+              "modelCenterZ": 0,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 15.94,
+              "y": 0.81,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 8.665,
+              "y": 0.772,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 2.988,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.378,
+              "y": 1.116,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 7.769,
+              "y": 1.332,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 10.159,
+              "y": 1.134,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 12.55,
+              "y": 1.44,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 14.342,
+              "y": 1.224,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 14.94,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -15.804,
+                -2,
+                -9
+              ],
+              "max": [
+                75.706,
+                12.4,
+                1.854
+              ]
+            },
+            "modelPoint": [
+              30.81,
+              -1.1,
+              -0.075
+            ],
+            "gamePoint": {
+              "x": 7.47,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -6.999999999999999,
+                  0.18,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 0.81,
+                  "y": 0
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  28,
+                  1.98,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 7.11,
+                  "y": 0.324
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  68,
+                  4.68,
+                  0
+                ],
+                "gamePoint": {
+                  "x": 14.31,
+                  "y": 0.81
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseKenneyVerdantPlatformerWorld",
+            "notes": "Playable surfaces extracted from 56 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
+        }
+      },
+      "warnings": [
+        "no texture references detected",
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
+    },
+    {
       "id": "showcaseLowPolyCharacterPack",
       "type": "model",
       "format": "glb",
@@ -15337,20 +18191,36 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 13,
+        "meshCount": 5,
+        "materialCount": 4,
+        "textureCount": 4,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 13 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseMiniRaceTrack.a4ed75bd.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-038/2123a7c1b4fc4892a7f45e67964cabce.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-038/2123a7c1b4fc4892a7f45e67964cabce.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-038/2123a7c1b4fc4892a7f45e67964cabce.glb",
-        "license": "CC-BY-4.0",
-        "author": "Dylan Jade",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "isimp4aerith (https://sketchfab.com/isimp4aerith)",
         "sourceFamily": "objaverse",
         "attribution": "Dylan Jade",
         "sha256": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
         "retrievedAt": "2026-06-18T08:04:20.698Z",
-        "checkedAt": "2026-06-18T08:04:22.901Z",
-        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-038/2123a7c1b4fc4892a7f45e67964cabce.glb",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-038/2123a7c1b4fc4892a7f45e67964cabce.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "checkedAt": "2026-07-18T17:20:40.371Z"
       },
       "textures": [
         "image-0",
@@ -15360,9 +18230,21 @@
       ],
       "dependencies": [],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "track-game-geometry-release-view",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
+        "assetHash": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
+        "checkedAt": "2026-07-18T17:05:14.814Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseMiniRaceTrack",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseMiniRaceTrack.png",
+          "sha256": "sha256-d0de2b5b88af637b5c315101c8a907f233cb72d8e7b04bdc6bc284daf7b09e47",
+          "assetHash": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
+          "checkedAt": "2026-07-18T17:05:14.814Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseMiniRaceTrack"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "Reviewed track view is bound to the current asset hash and retained root probe; no character or vehicle forward axis is claimed."
         ]
       },
       "nodeNames": [
@@ -15381,9 +18263,238 @@
         "arch_barrier_0"
       ],
       "thumbnailUrl": "/aura-assets/showcaseMiniRaceTrack.thumb.svg",
+      "quality": "release",
+      "role": "track",
+      "suitabilityReason": "Release racing track with mesh-extracted ordered centerline and checkpoints, normalized camera-fit placement, readable textured road materials, gameplay-scale route extent, and durable CC-BY provenance.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseMiniRaceTrack.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseMiniRaceTrack",
+        "sha256": "sha256-d0de2b5b88af637b5c315101c8a907f233cb72d8e7b04bdc6bc284daf7b09e47",
+        "assetHash": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 78,
+        "checkedAt": "2026-07-18T17:05:14.814Z",
+        "foregroundBounds": {
+          "x": 323,
+          "y": 171,
+          "width": 285,
+          "height": 278
+        }
+      },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
+      ],
+      "gameGeometry": {
+        "certification": "certified-racing-track",
+        "evidence": {
+          "manifestHash": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
+          "blockers": []
+        },
+        "racingTopology": {
+          "assetId": "showcaseMiniRaceTrack",
+          "assetHash": "sha256-a4ed75bd3eaf25cc08c6b2c0bbc158d9fd584fbab254bc7543f1e5420384cbe1",
+          "source": "asset-mesh-extracted",
+          "roadCenterline": [
+            {
+              "x": -2.676,
+              "z": -0.644,
+              "width": 0.845
+            },
+            {
+              "x": -0.504,
+              "z": -0.877,
+              "width": 0.845
+            },
+            {
+              "x": -0.646,
+              "z": -1.815,
+              "width": 0.845
+            },
+            {
+              "x": -0.167,
+              "z": -2.395,
+              "width": 0.845
+            },
+            {
+              "x": 0.594,
+              "z": -2.793,
+              "width": 0.845
+            },
+            {
+              "x": 1.591,
+              "z": -2.956,
+              "width": 0.845
+            },
+            {
+              "x": 2.16,
+              "z": -2.169,
+              "width": 0.845
+            },
+            {
+              "x": 2.492,
+              "z": -1.368,
+              "width": 0.845
+            },
+            {
+              "x": 1.61,
+              "z": -0.417,
+              "width": 0.845
+            },
+            {
+              "x": 2.463,
+              "z": 0.17,
+              "width": 0.845
+            },
+            {
+              "x": 2.113,
+              "z": 0.793,
+              "width": 0.845
+            },
+            {
+              "x": 1.749,
+              "z": 1.376,
+              "width": 0.845
+            },
+            {
+              "x": 0.682,
+              "z": 0.791,
+              "width": 0.845
+            },
+            {
+              "x": -0.202,
+              "z": 2.233,
+              "width": 0.845
+            },
+            {
+              "x": -1.214,
+              "z": 2.549,
+              "width": 0.845
+            },
+            {
+              "x": -2.039,
+              "z": 2.03,
+              "width": 0.845
+            },
+            {
+              "x": -2.994,
+              "z": 1.427,
+              "width": 0.845
+            },
+            {
+              "x": -3.026,
+              "z": 0.317,
+              "width": 0.845
+            },
+            {
+              "x": -2.676,
+              "z": -0.644,
+              "width": 0.845
+            }
+          ],
+          "checkpoints": [
+            {
+              "progress": 0.167,
+              "width": 0.845
+            },
+            {
+              "progress": 0.333,
+              "width": 0.845
+            },
+            {
+              "progress": 0.5,
+              "width": 0.845
+            },
+            {
+              "progress": 0.667,
+              "width": 0.845
+            },
+            {
+              "progress": 0.833,
+              "width": 0.845
+            },
+            {
+              "progress": 1,
+              "width": 0.845
+            }
+          ],
+          "lapLengthMeters": 19.533,
+          "estimatedLapSeconds": 70,
+          "confidence": 0.76,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -11.971,
+                0.252,
+                -11.971
+              ],
+              "max": [
+                11.971,
+                1.296,
+                11.971
+              ]
+            },
+            "modelPoint": [
+              0.182,
+              0.276,
+              -0.191
+            ],
+            "gamePoint": {
+              "x": 0.182,
+              "z": -0.191
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-road-anchor-1",
+                "modelPoint": [
+                  -2.676,
+                  0.276,
+                  -0.644
+                ],
+                "gamePoint": {
+                  "x": -2.676,
+                  "z": -0.644
+                }
+              },
+              {
+                "id": "mesh-road-anchor-2",
+                "modelPoint": [
+                  2.16,
+                  0.276,
+                  -2.169
+                ],
+                "gamePoint": {
+                  "x": 2.16,
+                  "z": -2.169
+                }
+              },
+              {
+                "id": "mesh-road-anchor-3",
+                "modelPoint": [
+                  0.682,
+                  0.276,
+                  0.791
+                ],
+                "gamePoint": {
+                  "x": 0.682,
+                  "z": 0.791
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseMiniRaceTrack",
+            "notes": "Road topology extracted from 1 GLB primitive(s) with road/track material names and bound to the current asset hash."
+          }
+        }
+      }
     },
     {
       "id": "showcaseModernBuildingOne",
@@ -20892,20 +24003,39 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 8,
+        "meshCount": 6,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 27,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "character-a"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 8 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcasePlatformHero.8ee5dae1.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://kenney.nl/assets",
         "sourceUrl": "https://kenney.nl/assets",
         "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Kenney",
         "sourceFamily": "starter:kenney",
         "attribution": "Kenney",
         "sha256": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
         "retrievedAt": "2026-06-17T23:28:58.383Z",
-        "checkedAt": "2026-06-17T23:29:00.047Z",
-        "sourcePage": "https://kenney.nl/assets",
-        "downloadUrl": "https://kenney.nl/assets",
-        "licenseName": "CC0-1.0",
-        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+        "evidence": [
+          "intentional-duplicate: role-specific platformer character aliases share the reviewed Kenney source model"
+        ],
+        "checkedAt": "2026-07-18T17:20:40.765Z"
       },
       "textures": [
         "Textures/texture-a.png"
@@ -20914,9 +24044,22 @@
         "Textures/texture-a.png"
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
+        "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+        "checkedAt": "2026-07-18T17:05:20.390Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcasePlatformHero.png",
+          "sha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+          "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+          "checkedAt": "2026-07-18T17:05:20.390Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "Character +Z forward and +Y up review is bound to the current asset hash, embedded locomotion clips, and retained front-readable root probe."
         ]
       },
       "nodeNames": [
@@ -20930,9 +24073,41 @@
         "head"
       ],
       "thumbnailUrl": "/aura-assets/showcasePlatformHero.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Release platformer player character with readable height, reviewed +Z orientation, embedded locomotion animation clips, textured material, normalized camera-fit placement, and retained browser proof.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcasePlatformHero.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcasePlatformHero",
+        "sha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+        "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 80,
+        "checkedAt": "2026-07-18T17:05:20.390Z",
+        "foregroundBounds": {
+          "x": 258,
+          "y": 317,
+          "width": 235,
+          "height": 283
+        }
+      },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
+      ],
+      "gameGeometry": {
+        "certification": "certified-platformer-character",
+        "evidence": {
+          "manifestHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+          "routePrimaryScreenshot": "tests/reports/showcase-release-asset-probes/showcasePlatformHero.png",
+          "routePrimaryScreenshotSha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+          "visualReview": "pass",
+          "blockers": []
+        }
+      }
     },
     {
       "id": "showcasePlatformRunnerHero",
@@ -27655,16 +30830,39 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 8,
+        "meshCount": 6,
+        "materialCount": 1,
+        "textureCount": 1,
+        "animationClipCount": 27,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "character-a"
+        ],
+        "maxDepth": 4,
+        "messages": [
+          "Detected 8 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseSidekickRunner.8ee5dae1.glb",
+        "sourcePage": "https://kenney.nl/assets",
+        "downloadUrl": "https://kenney.nl/assets",
         "sourceUrl": "https://kenney.nl/assets",
         "license": "CC0-1.0",
+        "licenseName": "CC0-1.0",
+        "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
         "author": "Kenney",
         "sourceFamily": "starter:kenney",
         "attribution": "Kenney",
         "sha256": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
         "retrievedAt": "2026-06-19T13:47:54.470Z",
-        "checkedAt": "2026-06-19T13:47:56.545Z"
+        "evidence": [
+          "intentional-duplicate: role-specific platformer character aliases share the reviewed Kenney source model"
+        ],
+        "checkedAt": "2026-07-18T17:20:40.911Z"
       },
       "textures": [
         "Textures/texture-a.png"
@@ -27673,9 +30871,22 @@
         "Textures/texture-a.png"
       ],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "forwardAxis": "+Z",
+        "upAxis": "+Y",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
+        "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+        "checkedAt": "2026-07-18T17:15:30.946Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSidekickRunner",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseSidekickRunner.png",
+          "sha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+          "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+          "checkedAt": "2026-07-18T17:15:30.946Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSidekickRunner"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "Character +Z forward and +Y up review is bound to the current asset hash, embedded locomotion clips, and retained front-readable root probe."
         ]
       },
       "nodeNames": [
@@ -27689,9 +30900,41 @@
         "head"
       ],
       "thumbnailUrl": "/aura-assets/showcaseSidekickRunner.thumb.svg",
+      "quality": "release",
+      "role": "character",
+      "suitabilityReason": "Release platformer sidekick character with readable height, reviewed +Z orientation, embedded locomotion animation clips, textured material, normalized camera-fit placement, and retained browser proof.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseSidekickRunner.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSidekickRunner",
+        "sha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+        "assetHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 451200,
+        "colorBuckets": 80,
+        "checkedAt": "2026-07-18T17:15:30.946Z",
+        "foregroundBounds": {
+          "x": 258,
+          "y": 317,
+          "width": 235,
+          "height": 283
+        }
+      },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
+      ],
+      "gameGeometry": {
+        "certification": "certified-platformer-character",
+        "evidence": {
+          "manifestHash": "sha256-8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+          "routePrimaryScreenshot": "tests/reports/showcase-release-asset-probes/showcaseSidekickRunner.png",
+          "routePrimaryScreenshotSha256": "sha256-ea4184858f557ea4590deac15395aa0bc5c2be12c280fb04b5c24303b0b242be",
+          "visualReview": "pass",
+          "blockers": []
+        }
+      }
     },
     {
       "id": "showcaseSideScrollerPlatformLevel",
@@ -27854,20 +31097,39 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 216,
+        "meshCount": 81,
+        "materialCount": 9,
+        "textureCount": 17,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 7,
+        "messages": [
+          "Detected 216 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseSideScrollerPlatformLevel.68e11570.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "license": "CC-BY-4.0",
-        "author": "Lowpolyprincipal",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Lowpolyprincipal (https://sketchfab.com/Lowpolyprincipal)",
         "sourceFamily": "objaverse",
         "attribution": "Lowpolyprincipal",
         "sha256": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
         "retrievedAt": "2026-06-18T10:13:34.355Z",
-        "checkedAt": "2026-06-18T10:13:37.439Z",
-        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "evidence": [
+          "intentional-duplicate: role-specific platformer candidate alias shares the reviewed source mesh with showcaseSideScrollerWorld"
+        ],
+        "checkedAt": "2026-07-18T17:20:40.701Z"
       },
       "textures": [
         "image-0",
@@ -27890,9 +31152,21 @@
       ],
       "dependencies": [],
       "orientation": {
-        "source": "unknown",
+        "source": "manifest-override",
+        "view": "world-game-geometry-release-view",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
+        "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+        "checkedAt": "2026-07-18T17:09:49.234Z",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSideScrollerPlatformLevel",
+        "renderedProbe": {
+          "url": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerPlatformLevel.png",
+          "sha256": "sha256-bb007485fd160572633ef366af0b4624e52dee1cf91ddabfa70302cb86273849",
+          "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "checkedAt": "2026-07-18T17:09:49.234Z",
+          "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSideScrollerPlatformLevel"
+        },
         "messages": [
-          "No orientation metadata detected; facing direction cannot be proven."
+          "Reviewed world view is bound to the current asset hash and retained root probe; no character or vehicle forward axis is claimed."
         ]
       },
       "nodeNames": [
@@ -28114,9 +31388,232 @@
         "Box252_Material #71_0"
       ],
       "thumbnailUrl": "/aura-assets/showcaseSideScrollerPlatformLevel.thumb.svg",
+      "quality": "release",
+      "role": "world",
+      "suitabilityReason": "Release side-scroller platform world with a mesh-extracted 16.616-unit traversable route, normalized camera-fit placement, readable textured materials, broad gameplay footprint, and durable CC-BY provenance.",
+      "renderedProbe": {
+        "url": "tests/reports/showcase-release-asset-probes/showcaseSideScrollerPlatformLevel.png",
+        "kind": "browser-screenshot",
+        "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+        "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSideScrollerPlatformLevel",
+        "sha256": "sha256-bb007485fd160572633ef366af0b4624e52dee1cf91ddabfa70302cb86273849",
+        "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+        "width": 752,
+        "height": 600,
+        "nonBlankPixels": 444736,
+        "colorBuckets": 74,
+        "checkedAt": "2026-07-18T17:09:49.234Z",
+        "foregroundBounds": {
+          "x": 51,
+          "y": 0,
+          "width": 701,
+          "height": 494
+        }
+      },
       "warnings": [
         "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ]
+      ],
+      "gameGeometry": {
+        "certification": "certified-platformer-world",
+        "evidence": {
+          "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "blockers": []
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseSideScrollerPlatformLevel",
+          "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 1.659,
+              "y": 3.843,
+              "width": 2.564,
+              "height": 0.22,
+              "modelTopY": -2.257,
+              "modelCenterZ": 46.976,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 1.688,
+              "y": 2.409,
+              "width": 3.376,
+              "height": 0.22,
+              "modelTopY": -47.064,
+              "modelCenterZ": 52.004,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 5.128,
+              "y": 2.409,
+              "width": 3.376,
+              "height": 0.22,
+              "modelTopY": -47.064,
+              "modelCenterZ": 52.004,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 5.192,
+              "y": 3.843,
+              "width": 2.564,
+              "height": 0.22,
+              "modelTopY": -2.257,
+              "modelCenterZ": 46.976,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 15.211,
+              "y": 0,
+              "width": 2.809,
+              "height": 0.449,
+              "modelTopY": -122.341,
+              "modelCenterZ": 67.564,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 17.616,
+              "y": 0,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 9.637,
+              "y": 2.749,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 3.323,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.982,
+              "y": 3.309,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 8.64,
+              "y": 3.309,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 11.299,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 13.957,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 15.951,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 16.616,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -638.53,
+                -228.02,
+                -341.136
+              ],
+              "max": [
+                789.625,
+                158.151,
+                394.238
+              ]
+            },
+            "modelPoint": [
+              79.2,
+              -136.36,
+              -36.754
+            ],
+            "gamePoint": {
+              "x": 8.308,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -454.65125,
+                  -2.257,
+                  46.976
+                ],
+                "gamePoint": {
+                  "x": 1.659,
+                  "y": 3.843
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  -346.245,
+                  -47.064,
+                  52.004
+                ],
+                "gamePoint": {
+                  "x": 5.128,
+                  "y": 2.409
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  -31.151250000000005,
+                  -122.341,
+                  67.564
+                ],
+                "gamePoint": {
+                  "x": 15.211,
+                  "y": 0
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseSideScrollerPlatformLevel",
+            "notes": "Playable surfaces extracted from 22 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
+        }
+      }
     },
     {
       "id": "showcaseSideScrollerWorld",
@@ -28279,20 +31776,39 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 216,
+        "meshCount": 81,
+        "materialCount": 9,
+        "textureCount": 17,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 7,
+        "messages": [
+          "Detected 216 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "license": "CC-BY-4.0",
-        "author": "Lowpolyprincipal",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Lowpolyprincipal (https://sketchfab.com/Lowpolyprincipal)",
         "sourceFamily": "objaverse",
         "attribution": "Lowpolyprincipal",
         "sha256": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
         "retrievedAt": "2026-06-20T05:38:40.968Z",
-        "checkedAt": "2026-06-20T05:38:45.655Z",
-        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "evidence": [
+          "intentional-duplicate: role-specific platformer candidate alias shares the reviewed source mesh with showcaseSideScrollerWorld"
+        ],
+        "checkedAt": "2026-07-18T17:20:40.256Z"
       },
       "textures": [
         "image-0",
@@ -28576,15 +32092,212 @@
       "gameGeometry": {
         "certification": "certified-platformer-world",
         "evidence": {
-          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
-          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
           "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
           "blockers": []
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseSideScrollerWorld",
+          "assetHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 1.659,
+              "y": 3.843,
+              "width": 2.564,
+              "height": 0.22,
+              "modelTopY": -2.257,
+              "modelCenterZ": 46.976,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 1.688,
+              "y": 2.409,
+              "width": 3.376,
+              "height": 0.22,
+              "modelTopY": -47.064,
+              "modelCenterZ": 52.004,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 5.128,
+              "y": 2.409,
+              "width": 3.376,
+              "height": 0.22,
+              "modelTopY": -47.064,
+              "modelCenterZ": 52.004,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 5.192,
+              "y": 3.843,
+              "width": 2.564,
+              "height": 0.22,
+              "modelTopY": -2.257,
+              "modelCenterZ": 46.976,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 15.211,
+              "y": 0,
+              "width": 2.809,
+              "height": 0.449,
+              "modelTopY": -122.341,
+              "modelCenterZ": 67.564,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 17.616,
+              "y": 0,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 9.637,
+              "y": 2.749,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 3.323,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 5.982,
+              "y": 3.309,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 8.64,
+              "y": 3.309,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 11.299,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 13.957,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 15.951,
+              "y": 4.743,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 16.616,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -638.53,
+                -228.02,
+                -341.136
+              ],
+              "max": [
+                789.625,
+                158.151,
+                394.238
+              ]
+            },
+            "modelPoint": [
+              79.2,
+              -136.36,
+              -36.754
+            ],
+            "gamePoint": {
+              "x": 8.308,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -454.65125,
+                  -2.257,
+                  46.976
+                ],
+                "gamePoint": {
+                  "x": 1.659,
+                  "y": 3.843
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  -346.245,
+                  -47.064,
+                  52.004
+                ],
+                "gamePoint": {
+                  "x": 5.128,
+                  "y": 2.409
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  -31.151250000000005,
+                  -122.341,
+                  67.564
+                ],
+                "gamePoint": {
+                  "x": 15.211,
+                  "y": 0
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseSideScrollerWorld",
+            "notes": "Playable surfaces extracted from 22 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
         }
-      }
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ]
     },
     {
       "id": "showcaseSkylineCity",
@@ -29362,20 +33075,36 @@
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 1489,
+        "meshCount": 772,
+        "materialCount": 85,
+        "textureCount": 15,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 6,
+        "messages": [
+          "Detected 1489 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
-        "license": "CC-BY-4.0",
-        "author": "Virginia Vidonis",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Virginia Vidonis (https://sketchfab.com/virginiavidonis)",
         "sourceFamily": "objaverse",
         "attribution": "Virginia Vidonis",
         "sha256": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
         "retrievedAt": "2026-06-18T01:12:46.047Z",
-        "checkedAt": "2026-06-18T01:13:02.014Z",
-        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "checkedAt": "2026-07-18T17:20:40.521Z"
       },
       "textures": [
         "image-0",
@@ -29397,21 +33126,21 @@
       "dependencies": [],
       "orientation": {
         "source": "manifest-override",
-        "view": "architecture-city-environment-view",
-        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts root createAuraApp release probe",
-        "messages": [
-          "Hash-bound environment view orientation is approved for this asset hash by retained root release probe evidence. No character, vehicle, or weapon forwardAxis is claimed."
-        ],
+        "view": "world-game-geometry-release-view",
+        "generatedBy": "tests/browser/showcase-release-asset-probes.spec.ts retained root createAuraApp probe",
         "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
-        "checkedAt": "2026-06-22T22:40:47.670Z",
+        "checkedAt": "2026-07-18T17:04:47.707Z",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcaseSkylineCity.png",
           "sha256": "sha256-08da1482cd495188cfafa973f6554fcfa0ff42b566c82f1b0d168477105e0572",
           "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
-          "checkedAt": "2026-06-22T22:40:47.670Z",
+          "checkedAt": "2026-07-18T17:04:47.707Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity"
-        }
+        },
+        "messages": [
+          "Reviewed world view is bound to the current asset hash and retained root probe; no character or vehicle forward axis is claimed."
+        ]
       },
       "nodeNames": [
         "Sketchfab_model",
@@ -30905,29 +34634,300 @@
         "Icosphere.088_TEXTURE FINALE.002_0"
       ],
       "thumbnailUrl": "/aura-assets/showcaseSkylineCity.thumb.svg",
-      "warnings": [
-        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
-      ],
-      "role": "environment",
       "quality": "release",
-      "suitabilityReason": "Architecture environment backup candidate with durable Objaverse provenance, CC-BY-4.0 license, texture references, readable material metadata, normalized camera-fit release probe foreground proof, and bounds-approved city structure extent for architecture/environment route use.",
+      "role": "world",
+      "suitabilityReason": "Release city world with a mesh-extracted 13.514-unit traversable platform route, normalized camera-fit placement, readable textured materials, broad gameplay footprint, and durable CC-BY provenance.",
       "renderedProbe": {
         "url": "tests/reports/showcase-release-asset-probes/showcaseSkylineCity.png",
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseSkylineCity",
-        "width": 752,
-        "height": 600,
-        "checkedAt": "2026-06-22T22:40:47.670Z",
         "sha256": "sha256-08da1482cd495188cfafa973f6554fcfa0ff42b566c82f1b0d168477105e0572",
         "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
+        "width": 752,
+        "height": 600,
         "nonBlankPixels": 451199,
         "colorBuckets": 204,
+        "checkedAt": "2026-07-18T17:04:47.707Z",
         "foregroundBounds": {
           "x": 198,
           "y": 333,
           "width": 551,
           "height": 267
+        }
+      },
+      "warnings": [
+        "orientation metadata missing; facing direction cannot be validated until GLTF extras declare aura3d.orientation.forwardAxis"
+      ],
+      "gameGeometry": {
+        "certification": "certified-platformer-world",
+        "evidence": {
+          "manifestHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
+          "blockers": []
+        },
+        "playableSurfaceMap": {
+          "assetId": "showcaseSkylineCity",
+          "assetHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
+          "source": "asset-mesh-extracted",
+          "surfaces": [
+            {
+              "id": "asset-main-ground",
+              "x": 2.309,
+              "y": 0.797,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 9.654,
+              "modelCenterZ": 4.158,
+              "kind": "ground"
+            },
+            {
+              "id": "asset-platform-01",
+              "x": 2.309,
+              "y": 0.068,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 5.606,
+              "modelCenterZ": 4.223,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-02",
+              "x": 2.344,
+              "y": 0.021,
+              "width": 1.803,
+              "height": 0.22,
+              "modelTopY": 5.342,
+              "modelCenterZ": 4.017,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-03",
+              "x": 5.485,
+              "y": 0,
+              "width": 10.74,
+              "height": 0.22,
+              "modelTopY": 5.226,
+              "modelCenterZ": 2.624,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-04",
+              "x": 6.757,
+              "y": 0.013,
+              "width": 13.514,
+              "height": 0.93,
+              "modelTopY": 5.299,
+              "modelCenterZ": 1.589,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-05",
+              "x": 7.09,
+              "y": 0.791,
+              "width": 3.997,
+              "height": 0.695,
+              "modelTopY": 9.623,
+              "modelCenterZ": 2.791,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-06",
+              "x": 7.099,
+              "y": 0.233,
+              "width": 4.196,
+              "height": 0.23,
+              "modelTopY": 6.52,
+              "modelCenterZ": 2.823,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-07",
+              "x": 7.099,
+              "y": 0.424,
+              "width": 4.243,
+              "height": 0.412,
+              "modelTopY": 7.582,
+              "modelCenterZ": 2.839,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-08",
+              "x": 7.1,
+              "y": 0.129,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 5.941,
+              "modelCenterZ": 2.91,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-09",
+              "x": 7.1,
+              "y": 0.161,
+              "width": 1.2,
+              "height": 0.22,
+              "modelTopY": 6.119,
+              "modelCenterZ": 2.91,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-10",
+              "x": 7.101,
+              "y": 0.023,
+              "width": 4.191,
+              "height": 0.22,
+              "modelTopY": 5.355,
+              "modelCenterZ": 2.722,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-platform-11",
+              "x": 7.104,
+              "y": 0.013,
+              "width": 4.865,
+              "height": 0.22,
+              "modelTopY": 5.299,
+              "modelCenterZ": 2.596,
+              "kind": "platform"
+            },
+            {
+              "id": "asset-finish-run",
+              "x": 14.514,
+              "y": 0.013,
+              "width": 1.4,
+              "height": 0.3,
+              "kind": "finish"
+            },
+            {
+              "id": "asset-hazard-gap",
+              "x": 7.838,
+              "y": 0.361,
+              "width": 0.48,
+              "height": 0.24,
+              "kind": "hazard"
+            },
+            {
+              "id": "asset-checkpoint-01",
+              "x": 2.703,
+              "y": 1.697,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-02",
+              "x": 4.865,
+              "y": 0.968,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-03",
+              "x": 7.027,
+              "y": 0.921,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-04",
+              "x": 9.19,
+              "y": 0.9,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-05",
+              "x": 11.352,
+              "y": 0.913,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            },
+            {
+              "id": "asset-checkpoint-06",
+              "x": 12.973,
+              "y": 1.691,
+              "width": 1.1,
+              "height": 1.1,
+              "kind": "checkpoint"
+            }
+          ],
+          "levelLength": 13.514,
+          "estimatedCompletionSeconds": 30,
+          "characterScaleRatio": 0.42,
+          "confidence": 0.74,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -22.42,
+                0.13,
+                -41.275
+              ],
+              "max": [
+                53.713,
+                62.282,
+                43.658
+              ]
+            },
+            "modelPoint": [
+              15.864,
+              0.13,
+              1.61
+            ],
+            "gamePoint": {
+              "x": 6.757,
+              "y": 0
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-surface-anchor-1",
+                "modelPoint": [
+                  -8.84622222222222,
+                  9.654,
+                  4.158
+                ],
+                "gamePoint": {
+                  "x": 2.309,
+                  "y": 0.797
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-2",
+                "modelPoint": [
+                  17.76488888888889,
+                  6.52,
+                  2.823
+                ],
+                "gamePoint": {
+                  "x": 7.099,
+                  "y": 0.233
+                }
+              },
+              {
+                "id": "mesh-surface-anchor-3",
+                "modelPoint": [
+                  17.79266666666667,
+                  5.299,
+                  2.596
+                ],
+                "gamePoint": {
+                  "x": 7.104,
+                  "y": 0.013
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived playable-surface anchors are computed from flat platform/world primitives and bind the generated level to the visible world asset with the same model-to-game scale used by the generated level."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseSkylineCity",
+            "notes": "Playable surfaces extracted from 68 flat geometric GLB primitive(s) and bound to the current asset hash."
+          }
         }
       }
     },
@@ -35573,10 +39573,10 @@
       "gameGeometry": {
         "certification": "certified-racing-vehicle",
         "evidence": {
+          "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
           "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
           "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
-          "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
           "visualReview": "pass",
           "assetPairPass": true,
           "blockers": []
@@ -36061,13 +40061,213 @@
       "gameGeometry": {
         "certification": "certified-racing-track",
         "evidence": {
+          "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
           "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
           "geometryReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
-          "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
           "visualReview": "pass",
           "assetPairPass": true,
           "blockers": []
+        },
+        "racingTopology": {
+          "assetId": "showcaseTsukubaCircuit",
+          "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "source": "asset-mesh-extracted",
+          "roadCenterline": [
+            {
+              "x": 2.429,
+              "z": -0.358,
+              "width": 0.886
+            },
+            {
+              "x": 2.369,
+              "z": -1.374,
+              "width": 0.886
+            },
+            {
+              "x": 2.742,
+              "z": -2.408,
+              "width": 0.886
+            },
+            {
+              "x": 5.266,
+              "z": -0.093,
+              "width": 0.886
+            },
+            {
+              "x": 7.769,
+              "z": -4.882,
+              "width": 0.886
+            },
+            {
+              "x": 8.127,
+              "z": -2.803,
+              "width": 0.886
+            },
+            {
+              "x": 7.113,
+              "z": -0.869,
+              "width": 0.886
+            },
+            {
+              "x": 6.663,
+              "z": -0.139,
+              "width": 0.886
+            },
+            {
+              "x": 6.153,
+              "z": 0.232,
+              "width": 0.886
+            },
+            {
+              "x": 6.027,
+              "z": 0.49,
+              "width": 0.886
+            },
+            {
+              "x": 5.93,
+              "z": 0.78,
+              "width": 0.886
+            },
+            {
+              "x": 6.211,
+              "z": 1.999,
+              "width": 0.886
+            },
+            {
+              "x": 5.76,
+              "z": 3.388,
+              "width": 0.886
+            },
+            {
+              "x": 4.516,
+              "z": 4.642,
+              "width": 0.886
+            },
+            {
+              "x": 3.194,
+              "z": 4.097,
+              "width": 0.886
+            },
+            {
+              "x": 2.631,
+              "z": 2.693,
+              "width": 0.886
+            },
+            {
+              "x": 2.518,
+              "z": 1.473,
+              "width": 0.886
+            },
+            {
+              "x": 2.217,
+              "z": 0.565,
+              "width": 0.886
+            },
+            {
+              "x": 2.429,
+              "z": -0.358,
+              "width": 0.886
+            }
+          ],
+          "checkpoints": [
+            {
+              "progress": 0.167,
+              "width": 0.886
+            },
+            {
+              "progress": 0.333,
+              "width": 0.886
+            },
+            {
+              "progress": 0.5,
+              "width": 0.886
+            },
+            {
+              "progress": 0.667,
+              "width": 0.886
+            },
+            {
+              "progress": 0.833,
+              "width": 0.886
+            },
+            {
+              "progress": 1,
+              "width": 0.886
+            }
+          ],
+          "lapLengthMeters": 27.869,
+          "estimatedLapSeconds": 100,
+          "confidence": 0.76,
+          "modelAlignment": {
+            "source": "asset-mesh-extracted",
+            "modelBounds": {
+              "min": [
+                -9.676,
+                -0.332,
+                -22.391
+              ],
+              "max": [
+                25.773,
+                3.054,
+                11.481
+              ]
+            },
+            "modelPoint": [
+              5.237,
+              -0.05,
+              0.087
+            ],
+            "gamePoint": {
+              "x": 5.237,
+              "z": 0.087
+            },
+            "anchorPairs": [
+              {
+                "id": "mesh-road-anchor-1",
+                "modelPoint": [
+                  2.429,
+                  -0.05,
+                  -0.358
+                ],
+                "gamePoint": {
+                  "x": 2.429,
+                  "z": -0.358
+                }
+              },
+              {
+                "id": "mesh-road-anchor-2",
+                "modelPoint": [
+                  7.113,
+                  -0.05,
+                  -0.869
+                ],
+                "gamePoint": {
+                  "x": 7.113,
+                  "z": -0.869
+                }
+              },
+              {
+                "id": "mesh-road-anchor-3",
+                "modelPoint": [
+                  5.76,
+                  -0.05,
+                  3.388
+                ],
+                "gamePoint": {
+                  "x": 5.76,
+                  "z": 3.388
+                }
+              }
+            ],
+            "evidence": {
+              "notes": "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
+            }
+          },
+          "evidence": {
+            "sourceAsset": "assets.showcaseTsukubaCircuit",
+            "notes": "Road topology extracted from 7 GLB primitive(s) with road/track material names and bound to the current asset hash."
+          }
         }
       }
     },
@@ -37470,10 +41670,10 @@
       "gameGeometry": {
         "certification": "certified-platformer-character",
         "evidence": {
-          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-          "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
-          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
           "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
+          "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
+          "routePrimaryScreenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+          "geometryReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
           "blockers": []

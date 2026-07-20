@@ -1,9 +1,9 @@
 {
   "schema": "aura3d-showcase-visual-review/1.0",
-  "reviewer": "codex-browser-visual-review",
-  "reviewedAt": "2026-07-02T22:45:00Z",
+  "reviewer": "kiro-current-retained-screenshot-review",
+  "reviewedAt": "2026-07-19T21:03:32Z",
   "overallVerdict": "fail",
-  "summary": "Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, Blockfall Reactor, Public Racing Presentation, and Public Platformer Presentation are accepted public-quality bounded showcase routes. Racing Game Layer Proof and Platformer Game Layer Proof are retained as game-layer diagnostics: they prove geometry contracts, certification helpers, route-health evidence, screenshot-hash plumbing, and gameplay proof, but their current screenshots are not public-quality game presentations. Turbo Drift Circuit and Skyline Runner remain prototype-blocked game routes.",
+  "summary": "Ten bounded public showcase routes are accepted from current retained evidence. Turbo Drift Circuit and Skyline Runner now pass manual review after replacement-asset rebuilds, corrected camera/contact evidence, and inspected before/after gameplay frames. Two game-layer proof routes remain diagnostics with downward visual vetoes.",
   "routes": [
     {
       "id": "showcase-product-configurator",
@@ -82,7 +82,15 @@
         "tests/reports/manual-visual-qa/showcase-public-racing-presentation-proof-desktop.png",
         "tests/reports/manual-visual-qa/showcase-public-racing-presentation-proof-mobile.png"
       ],
-      "blockingIssues": []
+      "blockingIssues": [],
+      "automatedChecks": [
+        "subject-bound-to-surface",
+        "contact",
+        "camera-readability",
+        "scale-contract",
+        "debug-guide-absence",
+        "hud-occlusion-budget"
+      ]
     },
     {
       "id": "showcase-public-platformer-presentation-proof",
@@ -95,7 +103,15 @@
         "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-desktop.png",
         "tests/reports/manual-visual-qa/showcase-public-platformer-presentation-proof-mobile.png"
       ],
-      "blockingIssues": []
+      "blockingIssues": [],
+      "automatedChecks": [
+        "subject-bound-to-surface",
+        "contact",
+        "camera-readability",
+        "scale-contract",
+        "debug-guide-absence",
+        "hud-occlusion-budget"
+      ]
     },
     {
       "id": "showcase-racing-game-layer-proof",
@@ -131,34 +147,48 @@
     },
     {
       "id": "showcase-skyline-runner",
-      "verdict": "fail",
-      "subject": "Skyline Runner prototype platformer route",
-      "compositionNotes": "The retained screenshot still reads as a route-local platformer proof harness rather than a public-quality game. The typed runner and typed world render, but the current primary foreground is too small and the generated composition does not visibly prove character/world binding, grounded contact, scale compatibility, or public platformer framing.",
-      "notes": "Removed from public examples. Keep this route only as a prototype diagnostic until the asset pipeline selects or certifies a world asset with mesh-derived playable surfaces, then the platformer compiler/game template proves character foot contact, scale, camera composition, and current human visual review against retained evidence.",
+      "verdict": "pass",
+      "subject": "Skyline Runner public platformer candidate",
+      "compositionNotes": "The current desktop and mobile frames present a readable grounded character within a cohesive verdant typed platform world. Platforms, hazards, collectibles, checkpoint progression, and finish direction remain visually distinct; responsive framing keeps both the character and traversal path readable without debug surface guides.",
+      "notes": "Accepted as a bounded public platformer presentation. Manual review inspected the current route-primary image (sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e), current before/after keyboard frames, and fresh desktop/mobile captures; claims remain limited to certified surface-bound presentation and public genre-kit gameplay proof.",
       "screenshotEvidence": [
-        "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png"
+        "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-before-input.png",
+        "tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+        "tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png"
       ],
-      "blockingIssues": [
-        "asset-extraction:platformer-playable-surface-columns-ambiguous:showcaseSideScrollerWorld",
-        "asset-pair:platformer-public-character-world-binding-missing",
-        "route-primary:primary-foreground-too-small",
-        "asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface",
-        "asset-pair:character-world-scale-and-art-direction-not-public-quality"
+      "blockingIssues": [],
+      "automatedChecks": [
+        "subject-bound-to-surface",
+        "contact",
+        "camera-readability",
+        "scale-contract",
+        "debug-guide-absence",
+        "hud-occlusion-budget"
       ]
     },
     {
       "id": "showcase-turbo-drift-circuit",
-      "verdict": "fail",
-      "subject": "Turbo Drift Circuit prototype racing route",
-      "compositionNotes": "The retained screenshot still reads as a route-local racing proof harness rather than a public-quality racing game. The typed car and typed Tsukuba circuit render, and the compiler now carries hash-bound racing topology evidence, but the current generated composition still does not read as a production-quality racing example.",
-      "notes": "Removed from public examples. Keep this route only as a prototype diagnostic until the racing compiler/game template proves car-to-road binding, route scale, and camera composition against the retained track topology and passes current human visual review. The missing structured-topology blocker is closed; the remaining blocker is asset-pair/racing composition evidence.",
+      "verdict": "pass",
+      "subject": "Turbo Drift Circuit public racing candidate",
+      "compositionNotes": "The current desktop and mobile frames present a readable player car plus a smaller deterministic ghost on a cohesive typed neon circuit, with upcoming road remaining legible from the evidence-selected camera. The compact HUD and controls stay outside the primary car/road contact area, and input evidence shows clear motion without debug guides.",
+      "notes": "Accepted as a bounded public racing presentation. Manual review inspected the current route-primary image (sha256-59a678f67d6eeb4d4a1cdb911e9002516e099ecdbb7512da795ec2c53587d9a3), current before/after keyboard frames, and fresh desktop/mobile captures. The second vehicle is a deterministic route-progress ghost, not AI; claims remain limited to certified topology-bound presentation and public genre-kit gameplay proof.",
       "screenshotEvidence": [
-        "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"
+        "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-before-input.png",
+        "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+        "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+        "tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png"
       ],
-      "blockingIssues": [
-        "asset-pair:racing-public-composition-bounds-missing",
-        "asset-pair:car-route-not-visibly-bound-to-road-surface",
-        "asset-pair:track-camera-composition-reads-as-proof-harness"
+      "blockingIssues": [],
+      "automatedChecks": [
+        "subject-bound-to-surface",
+        "contact",
+        "camera-readability",
+        "scale-contract",
+        "debug-guide-absence",
+        "hud-occlusion-budget"
       ]
     }
   ],

@@ -73,7 +73,7 @@
     ],
     "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
     "verdict": "pass",
-    "notes": "Public platformer route renders a grounded typed walking character on certified generated side-scroller level geometry with styled hazards, checkpoints, finish marker, compact HUD, keyboard gameplay proof, and the typed side-scroller world retained as the manifest-backed surface-map provenance asset.",
+    "notes": "Derived from the retained asset-pair composition validator report; manual review cannot upgrade a validator failure.",
     "blockers": [],
     "geometryEvidence": {
       "category": "platformer",
@@ -81,7 +81,7 @@
       "source": "compiler-authored-overlay-validated",
       "report": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
       "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-      "routePrimaryScreenshotSha256": "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58",
+      "routePrimaryScreenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
       "assets": [
         {
           "id": "showcaseWalkAnimatedGirl",
@@ -92,6 +92,31 @@
           "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
         }
       ]
-    }
+    },
+    "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.json",
+    "screenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+    "compositionReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-asset-pair-composition.json",
+    "checks": [
+      {
+        "id": "binding-overlap",
+        "verdict": "pass"
+      },
+      {
+        "id": "contact",
+        "verdict": "pass"
+      },
+      {
+        "id": "camera-readability",
+        "verdict": "pass"
+      },
+      {
+        "id": "scale-contract",
+        "verdict": "pass"
+      },
+      {
+        "id": "debug-guide-absence",
+        "verdict": "pass"
+      }
+    ]
   }
 }

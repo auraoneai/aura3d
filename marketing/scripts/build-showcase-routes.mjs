@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 
-const expectedEngineVersion = "1.4.0";
+const expectedEngineVersion = "1.4.4";
 const expectedShowcaseAssetPackage = "@aura3d/showcase-assets-web";
-const expectedShowcaseAssetVersion = "1.4.0";
+const expectedShowcaseAssetVersion = "1.4.4";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(marketingDir, "..");
@@ -25,6 +25,8 @@ const showcaseRoutes = [
   "showcase-blockfall-reactor",
   "showcase-public-racing-presentation-proof",
   "showcase-public-platformer-presentation-proof",
+  "showcase-turbo-drift-circuit",
+  "showcase-skyline-runner",
   "showcase-data-galaxy",
   "showcase-webgpu-particle-lab"
 ];
@@ -222,9 +224,16 @@ function assertBuiltRoutes() {
   }
 
   for (const route of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
-    const blockedHtml = path.join(distDir, "apps", route, "index.html");
-    if (existsSync(blockedHtml)) {
-      throw new Error(`prototype game route must not be published by marketing build: ${blockedHtml}`);
+    const publicHtml = path.join(distDir, "apps", route, "index.html");
+    if (!existsSync(publicHtml)) {
+      throw new Error(`release-ready game route must be published by marketing build: ${publicHtml}`);
+    }
+  }
+
+  for (const route of ["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]) {
+    const diagnosticHtml = path.join(distDir, "apps", route, "index.html");
+    if (existsSync(diagnosticHtml)) {
+      throw new Error(`game-layer diagnostic route must not be published by marketing build: ${diagnosticHtml}`);
     }
   }
 }

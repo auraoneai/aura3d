@@ -71,6 +71,15 @@ const SHOWCASE_ROUTES: readonly ShowcaseRoute[] = SHOWCASE_ROUTE_GATE_CONFIG.rou
     appId: route.id,
     globalName: route.globalName
   }));
+const requestedScreenshotRouteIds = new Set(
+  (process.env.AURA3D_SHOWCASE_SCREENSHOT_IDS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean)
+);
+const SCREENSHOT_ROUTES = requestedScreenshotRouteIds.size === 0
+  ? SHOWCASE_ROUTES
+  : SHOWCASE_ROUTES.filter((route) => requestedScreenshotRouteIds.has(route.appId));
 const SHOWCASE_ROUTE_GATES: Record<ShowcaseAppId, ShowcaseRouteGateDefinition> = Object.fromEntries(
   SHOWCASE_ROUTE_GATE_CONFIG.routes.map((route) => [route.id, route])
 );
@@ -685,7 +694,7 @@ test.describe("showcase library", () => {
       { label: "mobile", width: 390, height: 740 }
     ] as const;
 
-    for (const route of SHOWCASE_ROUTES.filter((entry) => entry.appId !== "showcase-index")) {
+    for (const route of SCREENSHOT_ROUTES.filter((entry) => entry.appId !== "showcase-index")) {
       for (const viewport of viewports) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
         const response = await page.goto(`${server.origin}${route.path}`, { waitUntil: "domcontentloaded" });

@@ -105,8 +105,25 @@ export interface GamePlatformerSnapshot {
   readonly events: readonly GamePlatformerEvent[];
 }
 
+export interface GamePlatformerGroundContact {
+  readonly grounded: boolean;
+  readonly surfaceId?: string;
+  readonly surfaceTop?: number;
+}
+
+export interface GamePlatformerSurfaceQuery {
+  readonly kind: "aura-game-platformer-surface-query";
+  readonly certified: boolean;
+  groundContact(input: {
+    readonly player: Pick<GamePlatformerPlayerState, "x" | "y" | "vy">;
+    readonly previousPlayer: Pick<GamePlatformerPlayerState, "x" | "y">;
+    readonly additionalSurfaces?: readonly GameKitRect[];
+  }): GamePlatformerGroundContact;
+}
+
 export interface GamePlatformerKit {
   readonly kind: "aura-game-platformer-kit";
+  readonly surfaceQuery: GamePlatformerSurfaceQuery;
   step(dt: number, input?: GamePlatformerInput): GamePlatformerSnapshot;
   reset(checkpointId?: string): GamePlatformerSnapshot;
   snapshot(): GamePlatformerSnapshot;
@@ -409,6 +426,14 @@ export interface GameRacingTrackTopology {
   };
 }
 
+export interface GameRacingSpeedModel {
+  readonly kind: "route-length-over-authored-lap-seconds";
+  readonly routeLength: number;
+  readonly authoredLapSeconds: number;
+  readonly certifiedSpeed: number;
+  readonly units: "game-units-per-second";
+}
+
 export interface GameAssetBoundRacingRouteBinding {
   readonly kind: "aura-game-asset-bound-racing-route";
   readonly layoutContractVersion: "1.0";
@@ -419,6 +444,7 @@ export interface GameAssetBoundRacingRouteBinding {
   readonly confidence?: number;
   readonly routeLength: number;
   readonly authoredLapSeconds: number;
+  readonly speedModel: GameRacingSpeedModel;
   readonly pointCount: number;
   readonly checkpointCount: number;
 }
@@ -564,8 +590,24 @@ export interface GameRacingCameraSnapshot {
   readonly fov: number;
 }
 
+export interface GameRacingSurfaceContact {
+  readonly onTrack: boolean;
+  readonly progress: number;
+  readonly distance: number;
+  readonly trackOffset: number;
+  readonly roadHalfWidth: number;
+}
+
+export interface GameRacingSurfaceQuery {
+  readonly kind: "aura-game-racing-surface-query";
+  readonly certified: boolean;
+  query(position: GameKitVec2): GameRacingSurfaceContact;
+}
+
 export interface GameRacingKit {
   readonly kind: "aura-game-racing-kit";
+  readonly maxSpeed: number;
+  readonly surfaceQuery: GameRacingSurfaceQuery;
   step(dt: number, input?: GameRacingInput): GameRacingSnapshot;
   reset(progress?: number): GameRacingSnapshot;
   placeAtProgress(progress: number, offset?: number): GameRacingSnapshot;
@@ -687,10 +729,32 @@ const DEFAULT_PLATFORMER_LEVEL: Required<Omit<GamePlatformerLevel, "id">> & { re
   lives: 3
 };
 
+export function createGamePlatformerSurfaceQuery(level: GamePlatformerLevel = {}): GamePlatformerSurfaceQuery {
+  const config = { ...DEFAULT_PLATFORMER_LEVEL, ...level };
+  const playerWidth = config.playerSize[0];
+  return {
+    kind: "aura-game-platformer-surface-query",
+    certified: isAssetBoundPlatformerLevel(level),
+    groundContact(input) {
+      const surfaces = [...config.platforms, ...(input.additionalSurfaces ?? [])];
+      for (const surface of surfaces) {
+        const top = platformTop(surface);
+        const wasAbove = input.previousPlayer.y >= top - 0.04;
+        const fallingOnto = input.player.vy <= 0 && input.player.y <= top + config.ledgeGrabTolerance;
+        if (wasAbove && fallingOnto && platformerHorizontalOverlap(input.player.x, playerWidth, surface, config.ledgeGrabTolerance)) {
+          return { grounded: true, surfaceId: surface.id, surfaceTop: top };
+        }
+      }
+      return { grounded: false };
+    }
+  };
+}
+
 export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePlatformerKit {
   const config = { ...DEFAULT_PLATFORMER_LEVEL, ...level };
   const playerWidth = config.playerSize[0];
   const playerHeight = config.playerSize[1];
+  const surfaceQuery = createGamePlatformerSurfaceQuery(level);
   let state = createPlatformerState(config);
   let events: GamePlatformerEvent[] = [];
 
@@ -744,6 +808,7 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
 
   return {
     kind: "aura-game-platformer-kit",
+    surfaceQuery,
     step(dt, input = {}) {
       const step = Math.min(0.05, Math.max(0, dt || 0));
       events = [];
@@ -792,19 +857,14 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       state.player.ridingPlatformId = undefined;
 
       const platforms = [...config.platforms, ...moving];
-      for (const platform of platforms) {
-        const top = platformTop(platform);
-        const wasAbove = previousPlayer.y >= top - 0.04;
-        const fallingOnto = state.player.vy <= 0 && state.player.y <= top + config.ledgeGrabTolerance;
-        if (wasAbove && fallingOnto && platformerHorizontalOverlap(state.player.x, playerWidth, platform, config.ledgeGrabTolerance)) {
-          state.player.y = top;
-          state.player.vy = 0;
-          state.player.grounded = true;
-          state.player.coyote = config.coyoteMs / 1000;
-          state.player.ridingPlatformId = moving.some((candidate) => candidate.id === platform.id) ? platform.id : undefined;
-          if (!previousPlayer.grounded) emit("land", platform.id);
-          break;
-        }
+      const groundContact = surfaceQuery.groundContact({ player: state.player, previousPlayer, additionalSurfaces: moving });
+      if (groundContact.grounded && groundContact.surfaceId && groundContact.surfaceTop !== undefined) {
+        state.player.y = groundContact.surfaceTop;
+        state.player.vy = 0;
+        state.player.grounded = true;
+        state.player.coyote = config.coyoteMs / 1000;
+        state.player.ridingPlatformId = moving.some((candidate) => candidate.id === groundContact.surfaceId) ? groundContact.surfaceId : undefined;
+        if (!previousPlayer.grounded) emit("land", groundContact.surfaceId);
       }
 
       for (const coin of config.collectibles) {
@@ -859,7 +919,7 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
   const level = options.level;
   const platforms = [...(level.platforms ?? [])];
   const checkpoints = [...(level.checkpoints ?? [])];
-  const minPlayableSeconds = options.minPlayableSeconds ?? 30;
+  const minPlayableSeconds = Math.max(30, options.minPlayableSeconds ?? 30);
   const minCheckpoints = options.minCheckpoints ?? 3;
   const minSurfaceCount = options.minSurfaceCount ?? 4;
   const start = level.start ?? DEFAULT_PLATFORMER_LEVEL.start;
@@ -907,7 +967,7 @@ export function createGameAssetBoundRacingRoute(options: GameAssetBoundRacingRou
   assertGameAssetId(options.trackAsset, "trackAsset");
   const points = [...options.route.points];
   const checkpoints = [...(options.route.checkpoints ?? [])];
-  const minLapSeconds = options.minLapSeconds ?? 30;
+  const minLapSeconds = Math.max(30, options.minLapSeconds ?? 30);
   const minCheckpoints = options.minCheckpoints ?? 4;
   const minRouteLength = options.minRouteLength ?? 6;
   if (points.length < 8) throw new Error("game.assetBoundRacingRoute requires at least 8 route points.");
@@ -924,6 +984,8 @@ export function createGameAssetBoundRacingRoute(options: GameAssetBoundRacingRou
   if (options.topology) {
     validateRacingTrackTopology(options.topology, options.trackAsset, points, checkpoints, minLapSeconds);
   }
+  const authoredLapSeconds = roundGameMetric(options.authoredLapSeconds);
+  const certifiedSpeed = roundGameMetric(routeLength / authoredLapSeconds);
   return {
     ...options.route,
     assetBinding: {
@@ -933,9 +995,38 @@ export function createGameAssetBoundRacingRoute(options: GameAssetBoundRacingRou
       trackAsset: options.trackAsset,
       ...(options.topology ? { trackAssetHash: options.topology.assetHash, topologySource: options.topology.source, confidence: options.topology.confidence } : {}),
       routeLength,
-      authoredLapSeconds: roundGameMetric(options.authoredLapSeconds),
+      authoredLapSeconds,
+      speedModel: {
+        kind: "route-length-over-authored-lap-seconds",
+        routeLength,
+        authoredLapSeconds,
+        certifiedSpeed,
+        units: "game-units-per-second"
+      },
       pointCount: points.length,
       checkpointCount: checkpoints.length
+    }
+  };
+}
+
+export function createGameRacingSurfaceQuery(route: GameRacingRoute): GameRacingSurfaceQuery {
+  const segments = createRaceSegments(route);
+  const length = segments.at(-1) ? segments[segments.length - 1].start + segments[segments.length - 1].length : 1;
+  const roadHalfWidth = (isAssetBoundRacingRoute(route)
+    ? Math.max(0.002, route.width ?? 1.2)
+    : Math.max(0.25, route.width ?? 1.2)) * 0.5;
+  return {
+    kind: "aura-game-racing-surface-query",
+    certified: isAssetBoundRacingRoute(route),
+    query(position) {
+      const nearest = nearestRacePoint(segments, length, position);
+      return {
+        onTrack: nearest.offset <= roadHalfWidth,
+        progress: nearest.progress,
+        distance: nearest.distance,
+        trackOffset: nearest.offset,
+        roadHalfWidth
+      };
     }
   };
 }
@@ -945,8 +1036,12 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
   const segments = createRaceSegments(options.route);
   const length = segments.at(-1) ? segments[segments.length - 1].start + segments[segments.length - 1].length : 1;
   const checkpoints = options.route.checkpoints?.length ? [...options.route.checkpoints] : [0.25, 0.5, 0.75, 0.98];
-  const width = Math.max(0.25, options.route.width ?? 1.2);
-  const maxSpeed = options.maxSpeed ?? 18;
+  const surfaceQuery = createGameRacingSurfaceQuery(options.route);
+  const certifiedSpeed = isAssetBoundRacingRoute(options.route) ? options.route.assetBinding.speedModel.certifiedSpeed : undefined;
+  if (certifiedSpeed !== undefined && options.maxSpeed !== undefined && Math.abs(options.maxSpeed - certifiedSpeed) > 0.001) {
+    throw new Error(`game.racing maxSpeed ${options.maxSpeed} conflicts with certified route speed ${certifiedSpeed}.`);
+  }
+  const maxSpeed = certifiedSpeed ?? options.maxSpeed ?? 18;
   const acceleration = options.acceleration ?? 16;
   const brakeStrength = options.brakeStrength ?? 24;
   const reverseSpeed = options.reverseSpeed ?? 4;
@@ -1007,6 +1102,8 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
 
   return {
     kind: "aura-game-racing-kit",
+    maxSpeed,
+    surfaceQuery,
     step(dt, input = {}) {
       events = [];
       const step = Math.min(0.05, Math.max(0, dt || 0));
@@ -1027,15 +1124,23 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       const steer = clampNumber(input.steer ?? 0, -1, 1);
       const drift = clampNumber(state.drift + ((input.drift && Math.abs(steer) > 0.1 && speed > 2) ? step * 1.8 : -step * 1.2), 0, 1);
       const heading = state.heading + steer * steerRate * (0.28 + Math.min(1, Math.abs(speed) / maxSpeed)) * (1 + drift * 0.55) * step * (speed < 0 ? -1 : 1);
-      const position = {
+      let position = {
         x: state.position.x + Math.cos(heading) * speed * step,
         y: state.position.y + Math.sin(heading) * speed * step
       };
-      const nearest = nearestRacePoint(segments, length, position);
-      const offTrack = nearest.offset > width * 0.5;
+      let contact = surfaceQuery.query(position);
+      const offTrack = !contact.onTrack;
       if (offTrack) {
         speed *= Math.max(0, 1 - offTrackDrag * step);
         if (!state.offTrack) emit("off-track");
+        if (surfaceQuery.certified) {
+          const center = sampleRaceRoute(segments, length, contact.progress);
+          const dx = position.x - center.x;
+          const dy = position.y - center.y;
+          const scale = contact.trackOffset > 0 ? (contact.roadHalfWidth * 0.98) / contact.trackOffset : 0;
+          position = { x: center.x + dx * scale, y: center.y + dy * scale };
+          contact = surfaceQuery.query(position);
+        }
       }
       state = {
         ...state,
@@ -1043,9 +1148,9 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
         drift,
         heading,
         position,
-        progress: nearest.progress,
-        distance: nearest.distance,
-        trackOffset: nearest.offset,
+        progress: contact.progress,
+        distance: contact.distance,
+        trackOffset: contact.trackOffset,
         offTrack
       };
       const target = checkpoints[state.checkpoint] ?? 1;
@@ -1476,6 +1581,16 @@ function createRaceSegments(route: GameRacingRoute): readonly RaceSegment[] {
 function measureRacingRouteLength(route: GameRacingRoute): number {
   const segments = createRaceSegments(route);
   return segments.at(-1) ? segments[segments.length - 1].start + segments[segments.length - 1].length : 0;
+}
+
+function isAssetBoundRacingRoute(route: GameRacingRoute): route is GameAssetBoundRacingRoute {
+  const candidate = route as Partial<GameAssetBoundRacingRoute>;
+  return candidate.assetBinding?.kind === "aura-game-asset-bound-racing-route";
+}
+
+function isAssetBoundPlatformerLevel(level: GamePlatformerLevel): level is GameAssetBoundPlatformerLevel {
+  const candidate = level as Partial<GameAssetBoundPlatformerLevel>;
+  return candidate.assetBinding?.kind === "aura-game-asset-bound-platformer-level";
 }
 
 function validatePlatformerWorldBindings(

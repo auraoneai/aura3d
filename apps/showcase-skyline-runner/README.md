@@ -1,21 +1,11 @@
 # Skyline Runner
 
-Status: prototype-blocked
+Status: release-ready candidate
 
-Claim label: createAuraApp
+Claim label: `createAuraApp` root safe API, bounded certified platformer presentation
 
-Primary asset: showcaseWalkAnimatedGirl
+Primary assets: `showcaseKenneyOobiPlatformerHero` and `showcaseKenneyVerdantPlatformerWorld`
 
-Blocked by:
-- asset-pair:platformer-public-character-world-binding-missing
-- route-primary:primary-foreground-too-small
-- asset-pair:character-foot-contact-not-visibly-bound-to-platform-surface
-- asset-pair:character-world-scale-and-art-direction-not-public-quality
+The route consumes a compiler-emitted, hash-bound mesh-derived playable-surface contract. Public status requires current route-primary, gameplay, pair composition, automated six-check visual QA, manual review, and deploy evidence. The category pacing contract enforces a 30-second authored completion floor.
 
-This route is retained as an internal prototype/diagnostic. It is not a public
-Aura3D platformer example and must not be counted as a public release candidate.
-
-It can return to public examples only after Aura3D has certified playable
-surface evidence, character-to-world scene binding, camera-safe platformer
-composition, meaningful level flow, and a passing visual review. See
-`docs/project/aura3d-game-layer-rebuild-plan.md`.
+This route does not claim production character physics, arbitrary mesh collision, automatic GLB-to-game conversion, unsupported skinned animation, or production game-engine parity.

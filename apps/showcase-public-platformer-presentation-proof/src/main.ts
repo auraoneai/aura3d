@@ -1,5 +1,6 @@
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { gameGeometryContract } from "./generated/game-geometry";
 import "./styles.css";
 
 const routeId = "showcase-public-platformer-presentation-proof";
@@ -7,110 +8,14 @@ const characterAsset = "showcaseWalkAnimatedGirl";
 const worldAsset = "showcaseSideScrollerWorld";
 const certifiedCharacterAsset = assets.showcaseWalkAnimatedGirl;
 const certifiedWorldAsset = assets.showcaseSideScrollerWorld;
-const characterHash = certifiedCharacterAsset.hash;
-const worldHash = certifiedWorldAsset.hash;
-const screenshotPath = "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png";
-const screenshotSha256 = "sha256-ac12b1b699f9c6bbb51fcf1ee9c543a303f9bf14c42dc35bf07e3596ec36cd58";
-const geometryReport = "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json";
-const authoredPlayableSeconds = 34;
+const { authoredPlayableSeconds, playableSurfaces, hazardSurfaces, checkpointSurfaces, finishPoint, surfaceMap: playableSurfaceMap, worldAssetBindings, level: levelDefinition, worldBounds, cameraBounds } = gameGeometryContract;
+const { screenshotPath, screenshotSha256, geometryReport } = gameGeometryContract.evidence;
+const { character: characterHash, world: worldHash } = gameGeometryContract.assetHashes;
 const compactViewport = window.matchMedia("(max-width: 720px)").matches;
 
-const playableSurfaces = [
-  { id: "public-ground-start", x: 1.8, y: 0, width: 5.2, height: 0.4, kind: "ground" },
-  { id: "public-market-hop", x: 6.8, y: 0.62, width: 3.6, height: 0.32, kind: "platform" },
-  { id: "public-rooftop-bridge", x: 10.8, y: 1.04, width: 3.8, height: 0.32, kind: "platform" },
-  { id: "public-lantern-drop", x: 15.1, y: 0.54, width: 4.2, height: 0.32, kind: "platform" },
-  { id: "public-finish-run", x: 20, y: 0.86, width: 5.6, height: 0.32, kind: "platform" }
-] as const;
-const hazardSurfaces = [
-  { id: "public-hazard-gap-01", x: 7.9, y: 0.9, width: 0.55, height: 0.34, kind: "hazard" },
-  { id: "public-hazard-gap-02", x: 15.8, y: 0.79, width: 0.55, height: 0.34, kind: "hazard" }
-] as const;
-const checkpointSurfaces = [
-  { id: "public-checkpoint-market", x: 4.4, y: 0.82, width: 1.1, height: 1.1, kind: "checkpoint" },
-  { id: "public-checkpoint-rooftop", x: 10.9, y: 1.42, width: 1.1, height: 1.1, kind: "checkpoint" },
-  { id: "public-checkpoint-lantern", x: 16.7, y: 0.96, width: 1.1, height: 1.1, kind: "checkpoint" },
-  { id: "public-checkpoint-finish", x: 21.1, y: 1.34, width: 1.1, height: 1.1, kind: "checkpoint" }
-] as const;
-const finishPoint = { id: "public-finish-marker", x: 19.5, y: 1.18 } as const;
-
-const playableSurfaceMap = {
-  assetId: worldAsset,
-  assetHash: worldHash,
-  source: "compiler-authored-overlay-validated",
-  surfaces: [...playableSurfaces, ...hazardSurfaces, ...checkpointSurfaces],
-  levelLength: 23.2,
-  estimatedCompletionSeconds: authoredPlayableSeconds,
-  characterScaleRatio: 0.38,
-  confidence: 0.88,
-  modelAlignment: {
-    source: "compiler-authored-overlay-validated",
-    modelBounds: { min: [-0.8, 0, -1], max: [22.8, 3.2, 1] },
-    modelPoint: [1.8, 0, 0],
-    gamePoint: { x: 1.8, y: 0 },
-    anchorPairs: [
-      { id: "public-platformer-start-anchor", modelPoint: [1.8, 0, 0], gamePoint: { x: 1.8, y: 0 } },
-      { id: "public-platformer-finish-anchor", modelPoint: [20, 0.86, 0], gamePoint: { x: 20, y: 0.86 } }
-    ],
-    evidence: {
-      routeOverlay: screenshotPath,
-      notes: "Compiler-authored public platformer surface map overlays the retained route-primary screenshot while using the typed side-scroller world as manifest-backed provenance."
-    }
-  },
-  evidence: {
-    sourceAsset: "assets.showcaseSideScrollerWorld",
-    renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
-    routeOverlay: screenshotPath,
-    notes: "Public platformer route renders generated playable surfaces for the visible stage while retaining the typed side-scroller world for certified surface-map provenance and release evidence."
-  }
-} as const;
-
 const level = game.assetBoundPlatformerLevel({
-  characterAsset,
-  worldAssetBindings: [{
-    worldAsset,
-    worldAssetHash: worldHash,
-    surfaceSource: "compiler-authored-overlay-validated",
-    confidence: 0.88,
-    surfaceIds: playableSurfaces.map((surface) => surface.id)
-  }],
-  playableSurfaceMap,
-  minPlayableSeconds: 30,
-  minCheckpoints: checkpointSurfaces.length,
-  level: {
-    id: `${routeId}-certified-surface-route`,
-    start: { x: 0.6, y: 0.4 },
-    finish: finishPoint,
-    moveSpeed: 0.62,
-    jumpVelocity: 7.4,
-    lowerBound: -1.5,
-    platforms: playableSurfaces.map((surface) => ({
-      id: surface.id,
-      x: surface.x - surface.width / 2,
-      y: surface.y,
-      width: surface.width,
-      height: surface.height
-    })),
-    collectibles: [
-      { id: "public-coin-01", x: 3.2, y: 1.08, radius: 0.28, value: 50 },
-      { id: "public-coin-02", x: 10.9, y: 1.86, radius: 0.28, value: 50 },
-      { id: "public-coin-03", x: 19.9, y: 1.58, radius: 0.28, value: 50 }
-    ],
-    hazards: hazardSurfaces.map((hazard) => ({
-      id: hazard.id,
-      x: hazard.x - hazard.width / 2,
-      y: hazard.y,
-      width: hazard.width,
-      height: hazard.height,
-      respawn: true
-    })),
-    checkpoints: checkpointSurfaces.map((checkpoint) => ({
-      id: checkpoint.id,
-      x: checkpoint.x,
-      y: checkpoint.y,
-      radius: 0.85
-    }))
-  }
+  characterAsset, worldAssetBindings, playableSurfaceMap, minPlayableSeconds: 30,
+  minCheckpoints: checkpointSurfaces.length, level: levelDefinition
 });
 const platformerScene = game.platformerSceneBinding({
   surfaceMap: playableSurfaceMap,
@@ -122,7 +27,7 @@ const platformerScene = game.platformerSceneBinding({
   worldZ: -0.52,
   playerZ: 0.48,
   playerTargetHeight: compactViewport ? 0.78 : 0.86,
-  playerYOffset: compactViewport ? -0.3 : -0.36
+  playerYOffset: compactViewport ? 0.04 : 0.06
 });
 const input = game.input({
   actions: {
@@ -201,8 +106,8 @@ const geometryCertification = game.certifyPlatformerPresentation({
     radius: 0.85
   })),
   finish: finishPoint,
-  worldBounds: { minX: -1.2, maxX: 23.1, minY: -1.5, maxY: 3.2 },
-  cameraBounds: { minX: -1.6, maxX: 23.8, minY: -0.6, maxY: 3.7 },
+  worldBounds,
+  cameraBounds,
   characterScale: { width: 0.36, height: compactViewport ? 0.78 : 0.86 },
   retainedProof: {
     routePrimaryScreenshot: screenshotPath,
@@ -255,6 +160,24 @@ const app = createAuraApp("#app", {
 });
 
 const player = app.nodes.require("platformer-player");
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "platformer",
+    camera: platformerCamera,
+    subject: { position: initialPlayerPose.position, rotation: [0, 0, 0], targetSize: compactViewport ? 0.78 : 0.86 },
+    playSpacePoints: level.platforms.flatMap((surface) => [
+      platformerScene.toScenePoint({ x: surface.x, y: surface.y + surface.height }),
+      platformerScene.toScenePoint({ x: surface.x + surface.width, y: surface.y + surface.height })
+    ]),
+    contactPoint: platformerScene.contactPointForPlayer(state.player),
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      player.setScale(suppressed ? 0.0001 : 1);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
 const hud = {
   x: requireElement("x-value"),
   score: requireElement("score-value"),

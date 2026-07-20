@@ -1,6 +1,6 @@
 {
   "name": "@aura3d/cli",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "type": "module",
   "bin": {
     "aura3d": "dist/cli.js",
@@ -24,6 +24,7 @@
   "types": "./dist/index.d.ts",
   "dependencies": {
     "@aura3d/asset-index": "workspace:*",
+    "create-aura3d": "workspace:*",
     "typescript": "^5.8.3"
   },
   "description": "Bring real GLB/glTF assets into Aura3D browser apps with typed references, provenance, catalog search, validation, screenshots, and deploy checks.",

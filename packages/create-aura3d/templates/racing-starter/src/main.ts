@@ -43,7 +43,7 @@ interface RacingStarterEvidence {
 const raceContract = {
   checkpointCount: 6,
   lapsToWin: 3,
-  minLapSeconds: 22,
+  minLapSeconds: 30,
   routeAlignedToVisibleTrack: true
 } as const;
 

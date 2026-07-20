@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -30,10 +30,11 @@ describe("showcase game release gate", () => {
     const routeId = "showcase-racing-game-layer-proof";
     const screenshotPath = `tests/reports/showcase-route-primary-probes/${routeId}.png`;
     const reportPath = `tests/reports/showcase-spec-compiler/${routeId}/game-template/${routeId}-racing-track-topology.json`;
+    const compositionReportPath = `tests/reports/showcase-spec-compiler/${routeId}/game-template/${routeId}-asset-pair-composition.json`;
     const primaryAssets = ["certifiedRaceCar", "certifiedRaceTrack"] as const;
     const carHash = "sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     const trackHash = "sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-    const screenshot = onePixelPng();
+    const screenshot = readFileSync("tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png");
     const screenshotSha256 = sha256ForBytes(screenshot);
     const retainedCarEvidence = {
       routePrimaryScreenshot: screenshotPath,
@@ -88,6 +89,30 @@ describe("showcase game release gate", () => {
         }
       }, null, 2)}\n`);
 
+      writeFileSync(join(root, compositionReportPath), `${JSON.stringify({
+        schema: "aura3d-showcase-asset-pair-composition/1.0",
+        routeId,
+        category: "racing",
+        verdict: "pass",
+        pass: true,
+        screenshot: { path: screenshotPath, sha256: screenshotSha256, width: 1, height: 1 },
+        geometry: {
+          report: reportPath,
+          assetId: primaryAssets[1],
+          assetHash: trackHash,
+          source: "compiler-authored-overlay-validated",
+          modelAnchorCount: 2
+        },
+        assets: [
+          { id: primaryAssets[0], manifestHash: carHash, evidenceHash: carHash },
+          { id: primaryAssets[1], manifestHash: trackHash, evidenceHash: trackHash }
+        ],
+        thresholds: {},
+        checks: ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"]
+          .map((id) => ({ id, verdict: "pass", tolerance: {}, measured: {}, blockers: [] })),
+        blockers: []
+      }, null, 2)}\n`);
+
       const releaseInput = {
         route: {
           id: routeId,
@@ -104,6 +129,7 @@ describe("showcase game release gate", () => {
             category: "racing",
             assets: primaryAssets,
             screenshotEvidence: screenshotPath,
+            compositionReport: compositionReportPath,
             verdict: "pass",
             blockers: [],
             geometryEvidence: {
@@ -122,6 +148,32 @@ describe("showcase game release gate", () => {
         },
         root
       };
+
+      const sourcePath = `apps/${routeId}/src/main.ts`;
+      const healthPath = `apps/${routeId}/route-health.json`;
+      const probePath = `tests/reports/showcase-route-primary-probes/${routeId}.json`;
+      const sourceText = "export const route = 'visual-qa-fixture';\n";
+      const healthText = `${JSON.stringify(releaseInput.routeHealth, null, 2)}\n`;
+      mkdirSync(join(root, `apps/${routeId}/src`), { recursive: true });
+      writeFileSync(join(root, sourcePath), sourceText);
+      writeFileSync(join(root, healthPath), healthText);
+      writeFileSync(join(root, probePath), `${JSON.stringify({
+        schema: "aura3d-route-primary-probe/1.0",
+        routeId,
+        pass: true,
+        sourceHash: routeSourceHash(routeId, sourcePath, sourceText),
+        routeHealthHash: sha256ForBytes(Buffer.from(healthText)),
+        renderedProbe: {
+          screenshotPath,
+          sha256: screenshotSha256,
+          analysisCrop: { x: 10, y: 183, width: 1420, height: 661 },
+          visible: true,
+          clipped: false,
+          occludedByUi: false,
+          readabilityScore: 57,
+          failures: []
+        }
+      }, null, 2)}\n`);
 
       expect(module.validateReleaseGameAssetPairEvidence(releaseInput)).toEqual(expect.arrayContaining([
         "release-game-geometry-asset-certification:certifiedRaceCar:missing",
@@ -175,6 +227,29 @@ describe("showcase game release gate", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+
+  it("enforces manual visual review as a downward-only veto", async () => {
+    const module = await import(
+      pathToFileURL(join(process.cwd(), "tools/showcase-library/showcase-manual-review-gate.mjs")).href
+    );
+
+    expect(module.applyDownwardOnlyManualReview({ validatorOk: true, manualReviewOk: false })).toEqual({
+      ok: false,
+      validatorOk: true,
+      manualReviewOk: false,
+      vetoedByManualReview: true,
+      blockedByValidator: false
+    });
+    expect(module.applyDownwardOnlyManualReview({ validatorOk: false, manualReviewOk: true })).toEqual({
+      ok: false,
+      validatorOk: false,
+      manualReviewOk: true,
+      vetoedByManualReview: false,
+      blockedByValidator: true
+    });
+    expect(module.applyDownwardOnlyManualReview({ validatorOk: true, manualReviewOk: true }).ok).toBe(true);
   });
 
   it("rejects diagnostic game-layer visual blockers as public release evidence", async () => {
@@ -234,13 +309,12 @@ describe("showcase game release gate", () => {
   });
 });
 
-function onePixelPng(): Buffer {
-  return Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=",
-    "base64"
-  );
-}
-
 function sha256ForBytes(bytes: Buffer): string {
   return `sha256-${createHash("sha256").update(bytes).digest("hex")}`;
+}
+
+function routeSourceHash(routeId: string, sourcePath: string, sourceText: string): string {
+  const hash = createHash("sha256");
+  hash.update(sourcePath); hash.update("\0"); hash.update(sourceText); hash.update("\0");
+  return `sha256-${hash.digest("hex")}`;
 }

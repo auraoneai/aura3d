@@ -40,8 +40,8 @@ npx create-aura3d@latest --help
   code renders `model(assets.product)` instead of guessed URLs or string IDs.
 - **AI output stays maintainable.** Coding agents can generate scenes while
   developers keep normal TypeScript, package scripts, and browser tests.
-- **Proof is part of the starter.** Route-health, screenshot, gameplay, or
-  template checks are included where the template needs them.
+- **Proof is part of the starter.** Route-health, screenshot, gameplay, composition, generated geometry-contract, or template checks are included where the template needs them.
+- **Game routes fail closed.** Public racing/platformer generation uses certified assets and compiler-emitted geometry contracts rather than guessed route-local rectangles or centerlines.
 - **Static deploys are first-class.** Build output is a browser app you can
   deploy like any Vite project.
 

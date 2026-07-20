@@ -80,6 +80,7 @@ describe("showcase racing spec compiler", () => {
     const routePrimaryProbePath = join(proofDir, "route-primary.json");
     const routePrimaryScreenshotPath = join(proofDir, "route-primary.png");
     const trackTopologyEvidencePath = join(proofDir, "track-topology.json");
+    const compositionReportPath = join(proofDir, "asset-pair-composition.json");
     const screenshotBytes = onePixelPng();
     const screenshotSha256 = sha256ForBytes(screenshotBytes);
     const geometryEvidence = createPassingRacingGeometryEvidence(
@@ -93,7 +94,18 @@ describe("showcase racing spec compiler", () => {
       `${JSON.stringify(createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath), null, 2)}\n`
     );
     writeFileSync(gameplayProofPath, `${JSON.stringify(createPassingRacingGameplayProof(routePrimaryScreenshotPath), null, 2)}\n`);
-    writeFileSync(routePrimaryProbePath, `${JSON.stringify(createPassingRoutePrimaryProbe("showcaseTexturedSportsCar", routePrimaryScreenshotPath, screenshotSha256), null, 2)}\n`);
+    writeFileSync(routePrimaryProbePath, `${JSON.stringify(createPassingRoutePrimaryProbe("showcaseKenneyRaceCarRed", routePrimaryScreenshotPath, screenshotSha256), null, 2)}\n`);
+    writeFileSync(compositionReportPath, `${JSON.stringify(createPassingCompositionReport({
+      routeId: "showcase-turbo-drift-circuit",
+      category: "racing",
+      screenshotPath: routePrimaryScreenshotPath,
+      screenshotSha256,
+      geometryReport: trackTopologyEvidencePath,
+      geometrySource: "asset-mesh-extracted",
+      geometryAssetId: "showcaseKenneyNeonRaceCircuit",
+      geometryAssetHash: geometryEvidence.assets[1].hash,
+      assets: geometryEvidence.assets
+    }), null, 2)}\n`);
 
     try {
       const report = compileShowcaseSpec({
@@ -106,8 +118,8 @@ describe("showcase racing spec compiler", () => {
             visibleTrackTopology: "mesh-road-topology",
             trackTopologyEvidence: trackTopologyEvidencePath,
             assetPairEvidence: createPassingAssetPairEvidence("racing", [
-              "showcaseTexturedSportsCar",
-              "showcaseTsukubaCircuit"
+              "showcaseKenneyRaceCarRed",
+              "showcaseKenneyNeonRaceCircuit"
             ], routePrimaryScreenshotPath, routePrimaryProbePath, screenshotSha256, geometryEvidence)
           }
         },
@@ -115,7 +127,8 @@ describe("showcase racing spec compiler", () => {
           ...baseSpec.evidence,
           routePrimaryProbe: routePrimaryProbePath,
           gameplayProof: gameplayProofPath,
-          routePrimaryScreenshot: routePrimaryScreenshotPath
+          routePrimaryScreenshot: routePrimaryScreenshotPath,
+          assetPairCompositionReport: compositionReportPath
         }
       }, { outputDir });
 
@@ -125,22 +138,37 @@ describe("showcase racing spec compiler", () => {
 
       const source = readFileSync(join(outputDir, "src", "main.ts"), "utf8");
       expect(source).toContain("import { createAuraApp, game, lights, model, scene } from \"@aura3d/engine\";");
-      expect(source).toContain("model(assets.showcaseTexturedSportsCar");
-      expect(source).not.toContain("model(assets.showcaseTsukubaCircuit");
-      expect(source).not.toContain("name: \"racing-bound-track-asset\"");
-      expect(source).toContain("mode: \"game-circuit\"");
+      expect(source).toContain("model(assets.showcaseKenneyRaceCarRed");
+      expect(source).toContain("model(assets.showcaseKenneyNeonRaceCircuit");
+      expect(source).toContain("name: \"racing-bound-track-asset\"");
+      expect(source).toContain("targetMaxDimension: racingScene.trackModel.targetMaxDimension");
+      expect(source).toContain(".position(...racingScene.trackModel.position).rotate(...racingScene.trackModel.rotation)");
+      expect(source).toContain("mode: \"asset-overlay\"");
       expect(source).toContain("guideVisibility: \"public\"");
-      expect(source).toContain("targetMaxDimension: 0.52");
-      expect(source).toContain("mode: \"follow\"");
+      expect(source).toContain("targetMaxDimension: 0.9");
+      expect(source).toContain("mode: \"chase\"");
       expect(source).toContain("targetNode: \"racing-player-car\"");
-      expect(source).toContain("distance: 2.35");
+      expect(source).toContain("distance: 4.28");
       expect(source).toContain("game.assetBoundRacingRoute");
       expect(source).toContain("game.racingSceneBinding");
       expect(source).not.toContain("trackModelPresentationOffset");
-      expect(source).toContain("game.racingPresentationCamera");
+      expect(source).toContain("game.racingCameraRig");
+      expect(source).toContain("cameraReadabilityVerdict: \"pass\"");
+      expect(source).toContain("route.assetBinding.speedModel.certifiedSpeed");
       expect(source).not.toContain("camera.follow");
-      expect(source).toContain("const trackTopology =");
-      expect(source).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
+      expect(source).toContain('import { gameGeometryContract } from "./generated/game-geometry";');
+      expect(source).toContain("const trackTopology = gameGeometryContract.topology;");
+      expect(source).not.toContain("sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065");
+      const geometryContract = readFileSync(join(outputDir, "src", "generated", "game-geometry.ts"), "utf8");
+      expect(geometryContract).toContain('\"schema\": \"aura3d-game-geometry-contract/1.0\"');
+      expect(geometryContract).toContain("sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065");
+      expect(report.generatedFiles).toContain("src/generated/game-geometry.ts");
+      expect(report.geometryContract).toMatchObject({
+        module: "src/generated/game-geometry.ts",
+        sourceReport: trackTopologyEvidencePath
+      });
+      expect(report.geometryContract?.contentHash).toMatch(/^sha256-[a-f0-9]{64}$/);
+      expect(report.geometryContract?.sourceReportHash).toMatch(/^sha256-[a-f0-9]{64}$/);
       expect(source).toContain("topology: trackTopology");
       expect(source).toContain("sceneBinding: racingScene.evidence");
       expect(source).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
@@ -152,8 +180,11 @@ describe("showcase racing spec compiler", () => {
       expect(source).toContain("routeAlignedToVisibleTrack: true");
       expect(source).toContain("noDebugLocatorDisk: true");
       expect(source).toContain("visibleGameGeometrySource: \"topology-bound-game-circuit\"");
-      expect(source).toContain("trackAssetUsedForTopologyEvidence: \"showcaseTsukubaCircuit\"");
+      expect(source).toContain("trackAssetUsedForTopologyEvidence: \"showcaseKenneyNeonRaceCircuit\"");
       expect(source).toContain("Object.defineProperty(window, \"__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__\"");
+      expect(source).toContain("controls: {");
+      expect(source).toContain("systems: {");
+      expect(source).toContain("claimBoundary: ");
       expect(source).not.toContain("racing-topology-source-track");
       expect(source).not.toContain("visible: false");
       expect(source).not.toContain("primitives.");
@@ -165,8 +196,8 @@ describe("showcase racing spec compiler", () => {
 
       const routeHealth = JSON.parse(readFileSync(join(outputDir, "route-health.json"), "utf8"));
       expect(routeHealth.racing).toMatchObject({
-        vehicleAsset: "showcaseTexturedSportsCar",
-        trackAsset: "showcaseTsukubaCircuit",
+        vehicleAsset: "showcaseKenneyRaceCarRed",
+        trackAsset: "showcaseKenneyNeonRaceCircuit",
         gameplayRequirements: ["throttle", "steering", "reset", "checkpoint", "lap", "multi-lap"],
         raceDesign: {
           minCheckpoints: 6,
@@ -180,11 +211,12 @@ describe("showcase racing spec compiler", () => {
         }
       });
       expect(routeHealth.gameAssetPairEvidence?.geometryEvidence).toEqual(geometryEvidence);
+      expect(routeHealth.gameAssetPairEvidence?.compositionReport).toBe(compositionReportPath);
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
       rmSync(proofDir, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 
   it("refuses release-ready racing output when gameplay proof is missing", () => {
     const baseSpec = readTurboSpec();
@@ -246,7 +278,7 @@ describe("showcase racing spec compiler", () => {
         pass: true,
         topologySource: "mesh-road-topology",
         topology: {
-          assetId: "showcaseTsukubaCircuit",
+          assetId: "showcaseKenneyNeonRaceCircuit",
           source: "asset-mesh-extracted"
         },
         meshExtraction: {
@@ -257,37 +289,34 @@ describe("showcase racing spec compiler", () => {
       rmSync(outputDir, { recursive: true, force: true });
       rmSync(proofDir, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
 
-  it("blocks public racing output when the car and track asset pair is not visually accepted", () => {
+  it("marks current racing output release-ready after asset-pair automation and visual review pass", () => {
     const baseSpec = readTurboCircuitSpec();
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
 
     try {
       const report = compileShowcaseSpec(baseSpec, { outputDir });
 
-      expect(report.ok).toBe(false);
-      expect(report.finalStatus).toBe("prototype-blocked");
-      expect(report.blockers).toEqual(expect.arrayContaining([
-        "replacement:showcaseTsukubaCircuit:no-suitable-candidate",
-        "evidence:racing-asset-pair:verdict-not-pass:fail",
-        "evidence:racing-asset-pair:blocker:asset-pair:car-route-not-visibly-bound-to-road-surface",
-        "evidence:racing-asset-pair:blocker:asset-pair:track-camera-composition-reads-as-proof-harness"
-      ]));
-      expect(report.rejectedAssets).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: "showcaseTsukubaCircuit",
-          reason: "game-asset-pair-failing"
-        })
-      ]));
-      expect(report.replacementCandidates).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          id: "showcaseMiniRaceTrack",
-          accepted: false,
-          penalties: expect.arrayContaining(["missing passing release probe"]),
-          reasons: expect.arrayContaining(["mesh-derived racing topology evidence matches candidate"])
-        })
-      ]));
+      expect(report.ok).toBe(true);
+      expect(report.finalStatus).toBe("release-ready candidate");
+      expect(report.blockers).toEqual([]);
+      expect(report.blockers).not.toContain("evidence:racing-asset-pair:verdict-not-pass:fail");
+      expect(report.assetPairComposition).toMatchObject({
+        verdict: "pass",
+        checks: expect.arrayContaining([
+          expect.objectContaining({ id: "binding-overlap", verdict: "pass" }),
+          expect.objectContaining({ id: "contact", verdict: "pass" }),
+          expect.objectContaining({ id: "camera-readability", verdict: "pass" }),
+          expect.objectContaining({ id: "scale-contract", verdict: "pass" })
+        ])
+      });
+      expect(report.rejectedAssets).toEqual([]);
+      expect(report.selectedReplacement).toBeUndefined();
+      expect(report.replacementCandidates).toEqual([]);
+      expect(report.blockers).not.toContain("replacement:showcaseKenneyNeonRaceCircuit:no-suitable-candidate");
+      const generatedTopologyEvidence = JSON.parse(readFileSync(join(outputDir, "game-template", "showcase-turbo-drift-circuit-racing-track-topology.json"), "utf8"));
+      expect(generatedTopologyEvidence.topology.evidence.routeOverlay).toBe(baseSpec.evidence.routePrimaryScreenshot);
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
     }
@@ -297,8 +326,11 @@ describe("showcase racing spec compiler", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
     const projectDir = mkdtempSync(join(tmpdir(), "aura3d-racing-project-"));
     const routePrimaryScreenshot = "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png";
+    const currentTopology = createPassingRacingTrackTopologyEvidence(routePrimaryScreenshot).topology;
     const topology = {
-      ...createPassingRacingTrackTopologyEvidence(routePrimaryScreenshot).topology,
+      ...currentTopology,
+      assetId: "showcaseTsukubaCircuit",
+      assetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
       source: "manifest-authored-overlay-validated" as const,
       modelAlignment: {
         ...createPassingRacingTrackTopologyEvidence(routePrimaryScreenshot).topology.modelAlignment,
@@ -361,7 +393,7 @@ describe("showcase racing spec compiler", () => {
         role: "track",
         reasons: expect.arrayContaining([
           "overlay-validated racing topology evidence matches candidate",
-          "mesh extraction unavailable; using retained hash-bound topology evidence"
+          "mesh extraction did not produce a candidate; retained hash-bound topology evidence accepted"
         ])
       });
       expect(report.blockers).not.toContain("replacement:showcaseTinyDebugTrack:no-suitable-candidate");
@@ -372,7 +404,7 @@ describe("showcase racing spec compiler", () => {
           selected: true,
           reasons: expect.arrayContaining([
             "overlay-validated racing topology evidence matches candidate",
-            "mesh extraction unavailable; using retained hash-bound topology evidence"
+            "mesh extraction did not produce a candidate; retained hash-bound topology evidence accepted"
           ]),
           penalties: []
         })
@@ -383,33 +415,42 @@ describe("showcase racing spec compiler", () => {
     }
   });
 
-  it("blocks public racing output when asset-pair evidence is not bound to the current route-primary screenshot hash", () => {
+  it("blocks public racing output when the composition report is not bound to the current route-primary screenshot hash", () => {
     const baseSpec = readTurboCircuitSpec();
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-racing-spec-"));
+    const proofDir = `tests/reports/showcase-racing-spec-unit-${process.pid}-${Date.now()}-stale-composition`;
+    mkdirSync(proofDir, { recursive: true });
+    const compositionReportPath = join(proofDir, "asset-pair-composition.json");
+    const retainedReport = JSON.parse(readFileSync(baseSpec.evidence.assetPairCompositionReport!, "utf8"));
+    writeFileSync(compositionReportPath, `${JSON.stringify({
+      ...retainedReport,
+      verdict: "pass",
+      pass: true,
+      screenshot: {
+        ...retainedReport.screenshot,
+        sha256: "sha256-0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      checks: retainedReport.checks.map((check: Record<string, unknown>) => ({ ...check, verdict: "pass", blockers: [] })),
+      blockers: []
+    }, null, 2)}\n`);
 
     try {
       const report = compileShowcaseSpec({
         ...baseSpec,
-        racing: {
-          ...baseSpec.racing,
-          raceDesign: {
-            ...baseSpec.racing.raceDesign,
-            assetPairEvidence: {
-              ...baseSpec.racing.raceDesign.assetPairEvidence,
-              verdict: "pass",
-              blockers: [],
-              routePrimaryProbe: baseSpec.evidence.routePrimaryProbe,
-              screenshotSha256: "sha256-0000000000000000000000000000000000000000000000000000000000000000"
-            }
-          }
+        primaryAssets: baseSpec.primaryAssets.map(omitAssetPolicy),
+        evidence: {
+          ...baseSpec.evidence,
+          assetPairCompositionReport: compositionReportPath
         }
       }, { outputDir });
 
       expect(report.ok).toBe(false);
       expect(report.finalStatus).toBe("prototype-blocked");
       expect(report.blockers).toContain("evidence:racing-asset-pair:screenshot-sha256-mismatch");
+      expect(report.blockers).toContain("evidence:racing-asset-pair:screenshot:file-sha256-mismatch");
     } finally {
       rmSync(outputDir, { recursive: true, force: true });
+      rmSync(proofDir, { recursive: true, force: true });
     }
   });
 
@@ -420,6 +461,7 @@ describe("showcase racing spec compiler", () => {
     try {
       const report = compileShowcaseSpec({
         ...baseSpec,
+        primaryAssets: baseSpec.primaryAssets.map(omitAssetPolicy),
         racing: {
           ...baseSpec.racing,
           raceDesign: {
@@ -521,6 +563,39 @@ function omitAssetPolicy(asset: ShowcaseSpec["primaryAssets"][number]): Showcase
   return assetWithoutPolicy;
 }
 
+function createPassingCompositionReport(input: {
+  readonly routeId: string;
+  readonly category: "racing" | "platformer";
+  readonly screenshotPath: string;
+  readonly screenshotSha256: string;
+  readonly geometryReport: string;
+  readonly geometrySource: "asset-mesh-extracted" | "manifest-authored-overlay-validated";
+  readonly geometryAssetId: string;
+  readonly geometryAssetHash: string;
+  readonly assets: readonly { readonly id: string; readonly hash: string }[];
+}) {
+  const checkIds = ["binding-overlap", "contact", "camera-readability", "scale-contract", "debug-guide-absence"] as const;
+  return {
+    schema: "aura3d-showcase-asset-pair-composition/1.0",
+    routeId: input.routeId,
+    category: input.category,
+    verdict: "pass",
+    pass: true,
+    screenshot: { path: input.screenshotPath, sha256: input.screenshotSha256, width: 1, height: 1 },
+    geometry: {
+      report: input.geometryReport,
+      assetId: input.geometryAssetId,
+      assetHash: input.geometryAssetHash,
+      source: input.geometrySource,
+      modelAnchorCount: 2
+    },
+    assets: input.assets.map((asset) => ({ id: asset.id, manifestHash: asset.hash, evidenceHash: asset.hash })),
+    thresholds: {},
+    checks: checkIds.map((id) => ({ id, verdict: "pass", tolerance: {}, measured: {}, blockers: [] })),
+    blockers: []
+  } as const;
+}
+
 function createPassingAssetPairEvidence(
   category: "racing",
   assets: readonly string[],
@@ -556,12 +631,12 @@ function createPassingRacingGeometryEvidence(
     routePrimaryScreenshotSha256,
     assets: [
       {
-        id: "showcaseTexturedSportsCar",
-        hash: "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935"
+        id: "showcaseKenneyRaceCarRed",
+        hash: "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
       },
       {
-        id: "showcaseTsukubaCircuit",
-        hash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+        id: "showcaseKenneyNeonRaceCircuit",
+        hash: "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
       }
     ]
   } as const;
@@ -574,12 +649,12 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
     generatedBy: "showcase-spec-compiler",
     topologySource: "mesh-road-topology",
     templateCapabilityStatus: "mesh-road-topology-proven",
-    vehicleAsset: "showcaseTexturedSportsCar",
-    trackAsset: "showcaseTsukubaCircuit",
-    assetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+    vehicleAsset: "showcaseKenneyRaceCarRed",
+    trackAsset: "showcaseKenneyNeonRaceCircuit",
+    assetHash: "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
     topology: {
-      assetId: "showcaseTsukubaCircuit",
-      assetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+      assetId: "showcaseKenneyNeonRaceCircuit",
+      assetHash: "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
       source: "asset-mesh-extracted",
       roadCenterline: [
         { x: -1.72, z: 0.76, width: 0.18 },
@@ -637,8 +712,8 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
         }
       },
       evidence: {
-        sourceAsset: "assets.showcaseTsukubaCircuit",
-        renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseTsukubaCircuit.png",
+        sourceAsset: "assets.showcaseKenneyNeonRaceCircuit",
+        renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseKenneyNeonRaceCircuit.png",
         routeOverlay: routePrimaryScreenshotPath,
         notes: "Unit fixture for hash-bound topology validation."
       }
@@ -647,9 +722,9 @@ function createPassingRacingTrackTopologyEvidence(routePrimaryScreenshotPath: st
       kind: "aura-game-asset-bound-racing-route",
       layoutContractVersion: "1.0",
       generatedFrom: "mesh-derived-track-topology",
-      vehicleAsset: "showcaseTexturedSportsCar",
-      trackAsset: "showcaseTsukubaCircuit",
-      trackAssetHash: "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+      vehicleAsset: "showcaseKenneyRaceCarRed",
+      trackAsset: "showcaseKenneyNeonRaceCircuit",
+      trackAssetHash: "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
       topologySource: "asset-mesh-extracted",
       confidence: 0.74,
       routeLength: 8.742,

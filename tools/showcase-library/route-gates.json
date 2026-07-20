@@ -96,7 +96,7 @@
         "showcaseSkylineCity"
       ],
       "primaryAssetRoles": {
-        "showcaseSkylineCity": "environment"
+        "showcaseSkylineCity": "world"
       },
       "routePrimaryHeroAsset": "showcaseSkylineCity",
       "secondaryPrimaryAssets": [],
@@ -311,37 +311,30 @@
       "path": "/apps/showcase-skyline-runner/",
       "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
       "published": true,
-      "releaseClass": "prototype-blocked",
+      "releaseClass": "release-ready candidate",
       "primaryAssets": [
-        "showcaseWalkAnimatedGirl",
-        "showcaseSideScrollerWorld"
+        "showcaseKenneyOobiPlatformerHero",
+        "showcaseKenneyVerdantPlatformerWorld"
       ],
       "primaryAssetRoles": {
-        "showcaseWalkAnimatedGirl": "character",
-        "showcaseSideScrollerWorld": "world"
+        "showcaseKenneyOobiPlatformerHero": "character",
+        "showcaseKenneyVerdantPlatformerWorld": "world"
       },
-      "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
+      "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
       "secondaryPrimaryAssets": [
-        "showcaseSideScrollerWorld"
+        "showcaseKenneyVerdantPlatformerWorld"
       ],
       "primitiveBudget": 24,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
         "category": "platformer",
-        "publicTemplateReady": false,
-        "blocker": "asset-pair:platformer-public-character-world-binding-missing",
-        "requiredBeforePublic": [
-          "select or certify a platformer world asset with mesh-derived playable surfaces",
-          "prove character foot contact is visibly bound to retained platform surface evidence",
-          "prove character/world scale and camera framing from the current retained screenshot",
-          "pass public platformer visual review from the current retained screenshot"
-        ],
+        "publicTemplateReady": true,
         "evidence": [
-          "aura3d-game-examples-stop-decision.md records the NO decision for current engine APIs and asset catalog",
-          "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json retains hash-bound but non-public-quality playable-surface evidence",
-          "tests/fixtures/showcase-spec/skyline-runner.json records failing platformer asset-pair evidence for the current screenshot",
-          "docs/project/showcase-visual-review.json blocks public platformer visual approval"
+          "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json records five passing automated composition checks",
+          "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png is the current retained route-primary screenshot",
+          "docs/project/showcase-visual-review.json records the current passing manual review and all six automated visual QA checks",
+          "tests/reports/showcase-gameplay/showcase-skyline-runner.json proves the required platformer interactions and category floor"
         ]
       },
       "requiresAnimationSubjectDelta": true,
@@ -363,37 +356,30 @@
       "path": "/apps/showcase-turbo-drift-circuit/",
       "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
       "published": true,
-      "releaseClass": "prototype-blocked",
+      "releaseClass": "release-ready candidate",
       "primaryAssets": [
-        "showcaseTexturedSportsCar",
-        "showcaseTsukubaCircuit"
+        "showcaseKenneyRaceCarRed",
+        "showcaseKenneyNeonRaceCircuit"
       ],
       "primaryAssetRoles": {
-        "showcaseTexturedSportsCar": "vehicle",
-        "showcaseTsukubaCircuit": "track"
+        "showcaseKenneyRaceCarRed": "vehicle",
+        "showcaseKenneyNeonRaceCircuit": "track"
       },
-      "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
+      "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
       "secondaryPrimaryAssets": [
-        "showcaseTsukubaCircuit"
+        "showcaseKenneyNeonRaceCircuit"
       ],
       "primitiveBudget": 10,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
         "category": "racing",
-        "publicTemplateReady": false,
-        "blocker": "asset-pair:racing-public-composition-bounds-missing",
-        "requiredBeforePublic": [
-          "prove the car route is visibly bound to the retained road-surface topology",
-          "prove car/track/camera composition bounds from the current retained screenshot",
-          "replace the current generated presentation with a visually acceptable public racing scene",
-          "pass public racing visual review from the current retained screenshot"
-        ],
+        "publicTemplateReady": true,
         "evidence": [
-          "aura3d-game-examples-stop-decision.md records the NO decision for current engine APIs and asset catalog",
-          "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json retains hash-bound racing topology evidence",
-          "tests/fixtures/showcase-spec/turbo-drift-circuit.json records failing racing asset-pair evidence for the current screenshot",
-          "docs/project/showcase-visual-review.json blocks public racing visual approval"
+          "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json records five passing automated composition checks",
+          "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png is the current retained route-primary screenshot",
+          "docs/project/showcase-visual-review.json records the current passing manual review and all six automated visual QA checks",
+          "tests/reports/showcase-gameplay/showcase-turbo-drift-circuit.json proves the required racing interactions and category floor"
         ]
       }
     }

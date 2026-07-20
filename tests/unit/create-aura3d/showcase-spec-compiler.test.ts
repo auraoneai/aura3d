@@ -95,7 +95,58 @@ describe("showcase spec compiler", () => {
       rmSync(outputDir, { recursive: true, force: true });
       rmSync(proofDir, { recursive: true, force: true });
     }
-  });
+  }, 30_000);
+
+  it("replaces a stale composition report with current geometry and screenshot evidence in one invocation", () => {
+    const outputDir = `tests/reports/showcase-spec-one-pass-${process.pid}-${Date.now()}`;
+    const compositionPath = join(outputDir, "game-template", "showcase-turbo-drift-circuit-asset-pair-composition.json");
+    const baseSpec = JSON.parse(readFileSync("tests/fixtures/showcase-spec/turbo-drift-circuit.json", "utf8"));
+    mkdirSync(join(outputDir, "game-template"), { recursive: true });
+    writeFileSync(compositionPath, `${JSON.stringify({
+      schema: "aura3d-showcase-asset-pair-composition/1.0",
+      routeId: baseSpec.routeId,
+      category: "racing",
+      verdict: "fail",
+      pass: false,
+      screenshot: {
+        path: baseSpec.evidence.routePrimaryScreenshot,
+        sha256: "sha256-0000000000000000000000000000000000000000000000000000000000000000",
+        width: 1440,
+        height: 900
+      },
+      geometry: {
+        report: "stale-geometry.json",
+        assetId: "showcaseMiniRaceTrack",
+        assetHash: "sha256-0000000000000000000000000000000000000000000000000000000000000000",
+        source: "asset-mesh-extracted",
+        modelAnchorCount: 1
+      },
+      assets: [],
+      thresholds: {},
+      checks: [],
+      blockers: ["stale"]
+    }, null, 2)}\n`);
+
+    try {
+      const report = compileShowcaseSpec({
+        ...baseSpec,
+        evidence: {
+          ...baseSpec.evidence,
+          assetPairCompositionReport: compositionPath
+        }
+      }, { outputDir });
+      const composition = JSON.parse(readFileSync(compositionPath, "utf8"));
+      const routeProbe = JSON.parse(readFileSync(baseSpec.evidence.routePrimaryProbe, "utf8"));
+
+      expect(report.assetPairComposition?.report).toBe(compositionPath);
+      expect(composition.geometry.assetId).toBe(baseSpec.racing.trackAsset);
+      expect(composition.geometry.report).toBe(join(outputDir, "game-template", "showcase-turbo-drift-circuit-racing-track-topology.json"));
+      expect(composition.screenshot.sha256).toBe(routeProbe.renderedProbe.sha256);
+      expect(composition.screenshot.sha256).not.toBe("sha256-0000000000000000000000000000000000000000000000000000000000000000");
+    } finally {
+      rmSync(outputDir, { recursive: true, force: true });
+    }
+  }, 30_000);
 
   it("demotes overclaimed specs and records evidence blockers instead of fake-green release status", () => {
     const outputDir = mkdtempSync(join(tmpdir(), "aura3d-showcase-spec-"));

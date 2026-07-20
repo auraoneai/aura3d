@@ -1,5 +1,7 @@
 # Site Map
 
+Version: 1.4.4
+
 Date: 2026-06-18
 Status: remediation site map
 
@@ -10,14 +12,14 @@ copy boundary and must not present prototypes as public release examples.
 
 | Path | Public purpose | Claim boundary |
 | --- | --- | --- |
-| `/marketing/index.html` | Product overview | Agent-friendly TypeScript browser 3D SDK with typed assets and diagnostics. |
-| `/marketing/docs/index.html` | Docs landing page | Link to current root API, asset workflow, limitations, and release evidence. |
-| `/marketing/docs/agent-quickstart.html` | Agent quickstart | Start with `llms.txt`, typed assets, and public `@aura3d/engine`. |
-| `/marketing/docs/assets.html` | Typed asset workflow | CLI asset add/resolve, generated `aura-assets.ts`, no string IDs. |
-| `/marketing/docs/templates.html` | Template docs | Templates are starters; game templates need playability evidence before game claims. |
-| `/marketing/docs/api.html` | API overview | Public root API only; mark internal/experimental surfaces clearly. |
-| `/marketing/docs/claims.html` | Claims and release notes | Link claim labels, release tracks, and known limits. |
-| `/marketing/docs/evidence.html` | Evidence summary | Route-health, screenshots, asset validation, package checks, benchmark gates. |
+| `/` | Product overview | Agent-friendly TypeScript browser 3D SDK with typed assets and diagnostics. |
+| `/docs/index.html` | Docs landing page | Link to current root API, asset workflow, limitations, and release evidence. |
+| `/docs/agent-quickstart.html` | Agent quickstart | Start with `llms.txt`, typed assets, and public `@aura3d/engine`. |
+| `/docs/assets.html` | Typed asset workflow | CLI asset add/resolve, generated `aura-assets.ts`, no string IDs. |
+| `/docs/templates.html` | Template docs | Templates are starters; game templates need playability evidence before game claims. |
+| `/docs/api.html` | API overview | Public root API only; mark internal/experimental surfaces clearly. |
+| `/docs/claims.html` | Claims and release notes | Link claim labels, release tracks, and known limits. |
+| `/docs/evidence.html` | Evidence summary | Route-health, screenshots, asset validation, package checks, benchmark gates. |
 
 ## Canonical Repo Docs
 
@@ -33,7 +35,7 @@ copy boundary and must not present prototypes as public release examples.
 - [Aura3D 1.4.0 release notes draft](aura3d-140-release-notes.md)
 - [Aura3D 1.4.1 release notes](aura3d-141-release-notes.md)
 - [Aura3D 1.4.2 release notes](aura3d-142-release-notes.md)
-- [Aura3D 1.4.3 release notes](aura3d-143-release-notes.md)
+- [Aura3D 1.4.4 release notes](aura3d-144-release-notes.md)
 - [Verification evidence](verification-evidence.md)
 - [Showcase quality gates](showcase-quality-gates.md)
 - [Showcase application plan](showcase-application-plan.md)
@@ -61,3 +63,9 @@ Showcase routes must be linked only with their classification from
 
 Blocked, prototype-blocked, and internal-diagnostic routes should not appear as
 public release cards.
+
+## Release And API References
+
+- [Public API reference](../api/public-api.md)
+- [Getting-started real-scene tutorial](tutorials-getting-started-real-scene.md)
+- [Changelog](../../CHANGELOG.md)

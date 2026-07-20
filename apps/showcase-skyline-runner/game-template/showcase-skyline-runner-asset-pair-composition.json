@@ -1,0 +1,126 @@
+{
+  "schema": "aura3d-showcase-asset-pair-composition/1.0",
+  "routeId": "showcase-skyline-runner",
+  "category": "platformer",
+  "verdict": "pass",
+  "pass": true,
+  "screenshot": {
+    "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
+    "sha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+    "width": 1440,
+    "height": 900
+  },
+  "geometry": {
+    "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
+    "assetId": "showcaseKenneyVerdantPlatformerWorld",
+    "assetHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+    "source": "asset-mesh-extracted",
+    "modelAnchorCount": 3
+  },
+  "assets": [
+    {
+      "id": "showcaseKenneyOobiPlatformerHero",
+      "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
+      "evidenceHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+    },
+    {
+      "id": "showcaseKenneyVerdantPlatformerWorld",
+      "manifestHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
+      "evidenceHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+    }
+  ],
+  "thresholds": {
+    "minBindingOverlapRatio": 0.02,
+    "maxContactOffsetRatio": 1,
+    "maxScreenContactDistanceRatio": 0.35,
+    "minPlaySpaceAreaRatio": 0.04,
+    "maxPlaySpaceAreaRatio": 0.78,
+    "minSubjectWorldRatio": 0.08,
+    "maxSubjectWorldRatio": 0.78,
+    "maxPlatformerScaleDelta": 0.18
+  },
+  "checks": [
+    {
+      "id": "binding-overlap",
+      "verdict": "pass",
+      "tolerance": {
+        "minOverlapRatio": 0.02,
+        "maxAverageBindingError": 0.06,
+        "requiresCurrentHashes": true,
+        "requiresZeroPresentationOffset": true
+      },
+      "measured": {
+        "overlapRatio": 1,
+        "averageBindingError": 0,
+        "modelAnchorCount": 3,
+        "sceneAssetHashMatches": true,
+        "overlayMatches": true,
+        "zeroPresentationOffset": true
+      },
+      "blockers": []
+    },
+    {
+      "id": "contact",
+      "verdict": "pass",
+      "tolerance": {
+        "maxNormalizedOffset": 1,
+        "maxScreenContactDistanceRatio": 0.35
+      },
+      "measured": {
+        "contactProven": true,
+        "normalizedOffset": 0.02,
+        "screenContactDistance": 3.4632390907934747,
+        "screenContactDistanceRatio": 0.0333
+      },
+      "blockers": []
+    },
+    {
+      "id": "camera-readability",
+      "verdict": "pass",
+      "tolerance": {
+        "minPlaySpaceAreaRatio": 0.04,
+        "maxPlaySpaceAreaRatio": 0.78,
+        "clippedAllowed": false,
+        "requiresSubjectFollow": true,
+        "acceptedRacingModes": "chase|top-down"
+      },
+      "measured": {
+        "playSpaceAreaRatio": 0.0842,
+        "foregroundClipped": false,
+        "subjectClipped": false,
+        "cameraMode": "follow",
+        "followsSubject": true
+      },
+      "blockers": []
+    },
+    {
+      "id": "scale-contract",
+      "verdict": "pass",
+      "tolerance": {
+        "minSubjectWorldRatio": 0.08,
+        "maxSubjectWorldRatio": 0.78,
+        "maxPlatformerScaleDelta": 0.18
+      },
+      "measured": {
+        "subjectWorldRatio": 0.1182,
+        "characterScaleRatio": 0.42,
+        "projectedTargetHeight": 100.554,
+        "renderedSubjectHeight": 104,
+        "scaleDelta": 0.034270143405533325
+      },
+      "blockers": []
+    },
+    {
+      "id": "debug-guide-absence",
+      "verdict": "pass",
+      "tolerance": {
+        "visibleDebugGuidesAllowed": false
+      },
+      "measured": {
+        "debugGuidesAbsent": true
+      },
+      "blockers": []
+    }
+  ],
+  "blockers": []
+}
