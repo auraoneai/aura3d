@@ -1,7 +1,7 @@
 {
   "schema": "aura3d-release-artifacts/1.0",
   "version": "1.4.5",
-  "status": "prepublish-verified",
+  "status": "published",
   "scope": "Aura3D 1.4.5 game-runtime, curated showcase, production preview, and release-infrastructure maintenance release",
   "createdAt": "2026-07-21T04:41:36.226Z",
   "artifacts": [
@@ -13,6 +13,464 @@
       "sha256": "3c8069bf04316bb4d64c3de178ab319ba982ccd64fbcc7861ef7245bffba2a38",
       "createdAt": "2026-07-21T04:41:36.226Z",
       "source": "pnpm verify:package-install-smoke:fresh"
+    },
+    {
+      "type": "git-tag",
+      "name": "v1.4.5",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/tree/v1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "annotated tag v1.4.5 at 92629f84948d908c59e02f4adc2a1e60c5fe33f4"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/engine",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/engine/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/animation",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/animation/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/apps",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/apps/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/asset-index",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/asset-index/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/assets",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/assets/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/audio",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/audio/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/cli",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/cli/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/controls",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/controls/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/core",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/core/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "create-aura3d",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/create-aura3d/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/debug",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/debug/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/ecs",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/ecs/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/editor",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/editor/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/editor-runtime",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/editor-runtime/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/environments",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/environments/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/input",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/input/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/materials",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/materials/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/math",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/math/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/physics",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/physics/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/product-studio",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/product-studio/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/react",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/react/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/rendering",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/rendering/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/scene",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/scene/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/scripting",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/scripting/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/three-compat",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/three-compat/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "registry",
+      "name": "@aura3d/workflows",
+      "version": "1.4.5",
+      "pathOrUrl": "https://www.npmjs.com/package/@aura3d/workflows/v/1.4.5",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "npm registry verification: version and latest dist-tag"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/engine",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-engine-1.4.5.tgz",
+      "sha256": "fd2c56f4584002d99dece8bf87f4d6f1620d05cf9ff6150c42174e3e7e7c1b5b",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/animation",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-animation-1.4.5.tgz",
+      "sha256": "16afe21bebc96d2189d54d30374b2098639f9180f5ae683f3768fc69c2d56d5b",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/apps",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-apps-1.4.5.tgz",
+      "sha256": "8db37abb02984f35ae4d18a589ecc9b33e34b207717225da72176879f029092a",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/asset-index",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-asset-index-1.4.5.tgz",
+      "sha256": "2a7c4ba090ea4d03d5f1401f338c860f4f5b405e053936824b2de10aa8e5aacc",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/assets",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-assets-1.4.5.tgz",
+      "sha256": "c02b3a8855d8814c5ea8c8797af32fe8a49224aa2f1eaf32c8ffe3e908292ed0",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/audio",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-audio-1.4.5.tgz",
+      "sha256": "ad5001829f8a07b0e9504c5f41a2e60d56169587468e781305c6b0fa2977d8bf",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/cli",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-cli-1.4.5.tgz",
+      "sha256": "cbbb16916ad3752ac324046fcc49081eabb1288ef6680666b5631b395ffb539f",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/controls",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-controls-1.4.5.tgz",
+      "sha256": "5b3f73bda3da41b22f1a0e4e01c3ae71be6f0e547ff706ea8fef7f6887eba5e5",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/core",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-core-1.4.5.tgz",
+      "sha256": "0c3acf27f19371111948f31264aa20612dd16eb8b75b25cd309fb20e13a0182b",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "create-aura3d",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/create-aura3d-1.4.5.tgz",
+      "sha256": "8d69d8c5a068eab6db3b43d2a5ec76c11ba5fc9ef8a611821a12b3eaaaca9779",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/debug",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-debug-1.4.5.tgz",
+      "sha256": "146a0b059aeea37a70988a2c35f2ae5fda38b45dd5f0c1144f9052d9ed39bf61",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/ecs",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-ecs-1.4.5.tgz",
+      "sha256": "86574f98d3af052f379db48836f5433a0f4a7ac87acf8de52e8aec68a127e4f8",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/editor",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-editor-1.4.5.tgz",
+      "sha256": "001d41fa5fa60dd375e4090823bd65586be3960fab2ec790671b57a49289a8c3",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/editor-runtime",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-editor-runtime-1.4.5.tgz",
+      "sha256": "ca43390a49679a7550023615dc62e9d1da61997941f7ba2b30a0eaed363b3a41",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/environments",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-environments-1.4.5.tgz",
+      "sha256": "e3882a38a88506021db80c284ff67d9cef6bc40807c5a5c3deb4a3edc46a73cc",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/input",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-input-1.4.5.tgz",
+      "sha256": "25648029e5947809406171be2bb1a71b0164a5543aaafd2c62f9a9c644ee5ffe",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/materials",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-materials-1.4.5.tgz",
+      "sha256": "36d348582741b784277cdfb9cecd477c6a2983a4c85cd10ff6f349e7355b5a0b",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/math",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-math-1.4.5.tgz",
+      "sha256": "563de17753a698d9a5a5ab5c71305ac9d6d7a6b059962f0038bf72115c750513",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/physics",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-physics-1.4.5.tgz",
+      "sha256": "53af12d2f0103e7c6be7cf02002a2e120243b5aa5015f29da5c5c58c7ee121ff",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/product-studio",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-product-studio-1.4.5.tgz",
+      "sha256": "d38a237fe5926e820f99953fa109bfcf90a85069fa6ced5f9b7fc8504edea35f",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/react",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-react-1.4.5.tgz",
+      "sha256": "5eb97a273b3bdc8db5f099458ad5f424ae937380ff8acc0912b131d379b24008",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/rendering",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-rendering-1.4.5.tgz",
+      "sha256": "2a7a2e36bd830ed2e0fd6dd536fe6ea989f11d146872320ffd506cb6341be3c9",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/scene",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-scene-1.4.5.tgz",
+      "sha256": "8b5a68be445caf6219d45616a1952af4a20aa105e1b7d6ffbe24e8891dd98140",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/scripting",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-scripting-1.4.5.tgz",
+      "sha256": "40df2e8110d416f40ce660715981df53244526b4e03af5433114ca257231c654",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/three-compat",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-three-compat-1.4.5.tgz",
+      "sha256": "0bda9bf26f7ed09d14747ce725090df3d449e1624a5d920f64d57faf357061c1",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "tarball",
+      "name": "@aura3d/workflows",
+      "version": "1.4.5",
+      "pathOrUrl": "https://github.com/auraoneai/aura3d/releases/download/v1.4.5/aura3d-workflows-1.4.5.tgz",
+      "sha256": "8e8fad3f9d8e341e7af619ca109a557c8cdeaced7c1c25e18475ec39f30285b2",
+      "createdAt": "2026-07-21T04:56:31Z",
+      "source": "GitHub release v1.4.5"
+    },
+    {
+      "type": "docs-site",
+      "name": "Aura3D production site",
+      "version": "1.4.5",
+      "pathOrUrl": "https://aura3d.auraone.ai/",
+      "createdAt": "2026-07-21T04:56:30Z",
+      "source": "post-publication HTTPS route verification"
     }
   ],
   "verification": {
@@ -22,8 +480,32 @@
     "tarballAuditCommand": "tar -tzf tests/reports/release-tarballs/*.tgz"
   },
   "notes": [
-    "This manifest records the root tarball used by the clean external package-install and Vite browser-import smoke for Aura3D 1.4.5.",
-    "The 26-package npm publish is produced by tools/release/publish-all.mjs, which packs every public package with pnpm pack before npm publish.",
-    "Showcase and hosted-site claims remain independently gated by docs/project/showcase-launch-evidence.json and production URL verification."
-  ]
+    "The local root tarball is the clean external package-install and Vite browser-import smoke subject for Aura3D 1.4.5.",
+    "All 26 public packages are published on npm with version 1.4.5 as the latest dist-tag; registry and GitHub release tarball artifacts are recorded above.",
+    "The production homepage, seven promoted route-library candidates, and Aura Clash playable route returned HTTP 200 in post-publication verification."
+  ],
+  "publishedAt": "2026-07-21T04:56:30Z",
+  "publication": {
+    "workflow": {
+      "url": "https://github.com/auraoneai/aura3d/actions/runs/29802114504",
+      "status": "success",
+      "commit": "92629f84948d908c59e02f4adc2a1e60c5fe33f4"
+    },
+    "githubRelease": {
+      "url": "https://github.com/auraoneai/aura3d/releases/tag/v1.4.5",
+      "assetCount": 26,
+      "digests": "sha256"
+    },
+    "npm": {
+      "packageCount": 26,
+      "version": "1.4.5",
+      "latestDistTagVerified": true
+    },
+    "hostedRoutes": {
+      "baseUrl": "https://aura3d.auraone.ai",
+      "verifiedAt": "2026-07-21T04:56:30Z",
+      "expectedHttpStatus": 200,
+      "routeCount": 9
+    }
+  }
 }
