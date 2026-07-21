@@ -729,7 +729,7 @@ describe("verification tools", () => {
       expect(publicDeploymentManifest.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
       const workflow = readFileSync(join(process.cwd(), ".github", "workflows", "public-demo-deploy.yml"), "utf8");
       expect(workflow).toContain("pnpm/action-setup@v4");
-      expect(workflow).toContain("version: 8");
+      expect(workflow).toContain("version: 11.1.3");
       expect(workflow).toContain("pnpm verify:public-demo-deployment");
       expect(workflow).toContain("actions/deploy-pages@v4");
     } finally {

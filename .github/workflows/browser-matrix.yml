@@ -24,7 +24,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.1.3
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -40,6 +40,9 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Build workspace packages
+        run: pnpm build:raw
 
       - name: Browser tests
         run: pnpm test:browser
