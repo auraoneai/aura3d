@@ -8,7 +8,7 @@ Aura3D 1.4.4 closes the certified game-presentation and production website gap o
 - Added mesh-derived racing topology and platformer surface extraction, pair-level composition checks, scene-scale pacing, reusable contact queries, and compiler-emitted immutable geometry contracts.
 - Rebuilt Turbo Drift Circuit and Skyline Runner with release-certified Kenney pairs, accepted desktop/mobile visuals, route-primary and gameplay proof, 30-second category floors, and direct deploy checks.
 - Retained independent automated visual-QA reports for the two established public game proofs plus Turbo and Skyline. Manual review remains a downward-only veto.
-- Established the release-candidate slate, then retired superseded racing/platformer proofs and the duplicate headphone inspector from promotion. The current marketing slate contains eight distinct experiences: seven route-library candidates plus Aura Clash, while retained diagnostics remain outside the public count.
+- Established 10 accepted release candidates, then retired the superseded public platformer proof so the current public slate contains 9 distinct examples while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
 - Restored the complete Aura3D marketing website at `https://aura3d.auraone.ai`, replacing the accidentally deployed static example registry, and published all accepted showcase routes from the same production build.
 
 ## Public Game Scope

@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-showcase-build-deploy/1.0",
-  "generatedAt": "2026-07-20T22:13:16.197Z",
+  "generatedAt": "2026-07-21T04:40:10.069Z",
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
@@ -41,17 +41,14 @@
       "ok": false,
       "blockers": [
         "route-primary:route-primary-probe-pass:false",
-        "route-primary:route-primary-probe-failure:primary-foreground-too-small:620",
+        "route-primary:route-primary-probe-failure:primary-foreground-too-small:627",
         "route-primary:route-primary-probe-failure:primary-foreground-width:51",
         "route-primary:route-primary-probe-failure:primary-foreground-height:13",
-        "route-primary:route-primary-probe-failure:primary-readability-score:34",
         "route-primary:probe-visible:showcaseParticleCore:false",
-        "route-primary:probe-readability:showcaseParticleCore:34",
-        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:627",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-width:51",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-height:13",
-        "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
-        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
+        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:627",
         "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
         "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
       ]
@@ -74,10 +71,9 @@
       "id": "showcase-racing-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": false,
+      "ok": true,
       "blockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/racing-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
@@ -88,10 +84,9 @@
       "id": "showcase-platformer-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": false,
+      "ok": true,
       "blockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/platformer-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
@@ -104,10 +99,9 @@
       "id": "showcase-racing-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": false,
+      "ok": true,
       "blockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/racing-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
@@ -118,10 +112,9 @@
       "id": "showcase-platformer-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": false,
+      "ok": true,
       "blockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/platformer-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
@@ -207,8 +200,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 178,
-        "totalBytes": 652075191,
+        "fileCount": 183,
+        "totalBytes": 652159060,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -322,7 +315,7 @@
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
-          "generatedAt": "2026-07-20T22:06:28.280Z",
+          "generatedAt": "2026-07-21T04:18:37.544Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -367,7 +360,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-            "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+            "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -376,7 +369,7 @@
               "width": 1032,
               "height": 526
             },
-            "nonBlankPixels": 54766,
+            "nonBlankPixels": 54771,
             "colorBuckets": 31,
             "foregroundBounds": {
               "x": 576,
@@ -400,7 +393,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-                "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+                "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -409,7 +402,7 @@
                   "width": 1032,
                   "height": 526
                 },
-                "nonBlankPixels": 54766,
+                "nonBlankPixels": 54771,
                 "colorBuckets": 31,
                 "foregroundBounds": {
                   "x": 576,
@@ -434,8 +427,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662507743,
+        "fileCount": 190,
+        "totalBytes": 662591612,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -549,7 +542,7 @@
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-f5f2458769e70a9ab242d71ea0d0c362904bf9db30554e40f8e9af0a94f03368",
-          "generatedAt": "2026-07-20T22:06:40.040Z",
+          "generatedAt": "2026-07-21T04:18:41.757Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -595,7 +588,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-            "sha256": "sha256-2cddad0235bb33f02e5a5c643625484fcf3e778f1abcc37336f05db9033e5670",
+            "sha256": "sha256-d80b3fd6090b210309856614440846bdd831bef9256960d94a4878ffc2cce683",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -604,13 +597,13 @@
               "width": 1052,
               "height": 569
             },
-            "nonBlankPixels": 46333,
+            "nonBlankPixels": 36203,
             "colorBuckets": 30,
             "foregroundBounds": {
-              "x": 585,
+              "x": 572,
               "y": 114,
-              "width": 298,
-              "height": 325
+              "width": 315,
+              "height": 323
             },
             "visible": true,
             "clipped": false,
@@ -628,7 +621,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-                "sha256": "sha256-2cddad0235bb33f02e5a5c643625484fcf3e778f1abcc37336f05db9033e5670",
+                "sha256": "sha256-d80b3fd6090b210309856614440846bdd831bef9256960d94a4878ffc2cce683",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -637,13 +630,13 @@
                   "width": 1052,
                   "height": 569
                 },
-                "nonBlankPixels": 46333,
+                "nonBlankPixels": 36203,
                 "colorBuckets": 30,
                 "foregroundBounds": {
-                  "x": 585,
+                  "x": 572,
                   "y": 114,
-                  "width": 298,
-                  "height": 325
+                  "width": 315,
+                  "height": 323
                 },
                 "visible": true,
                 "clipped": false,
@@ -662,8 +655,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662491751,
+        "fileCount": 190,
+        "totalBytes": 662575620,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -684,17 +677,14 @@
       "classificationFailures": [],
       "diagnosticBlockers": [
         "route-primary:route-primary-probe-pass:false",
-        "route-primary:route-primary-probe-failure:primary-foreground-too-small:620",
+        "route-primary:route-primary-probe-failure:primary-foreground-too-small:627",
         "route-primary:route-primary-probe-failure:primary-foreground-width:51",
         "route-primary:route-primary-probe-failure:primary-foreground-height:13",
-        "route-primary:route-primary-probe-failure:primary-readability-score:34",
         "route-primary:probe-visible:showcaseParticleCore:false",
-        "route-primary:probe-readability:showcaseParticleCore:34",
-        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+        "route-primary:probe-failure:showcaseParticleCore:primary-foreground-too-small:627",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-width:51",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-height:13",
-        "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
-        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
+        "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:627",
         "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
         "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
       ],
@@ -783,17 +773,14 @@
         "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
         "failures": [
           "route-primary-probe-pass:false",
-          "route-primary-probe-failure:primary-foreground-too-small:620",
+          "route-primary-probe-failure:primary-foreground-too-small:627",
           "route-primary-probe-failure:primary-foreground-width:51",
           "route-primary-probe-failure:primary-foreground-height:13",
-          "route-primary-probe-failure:primary-readability-score:34",
           "probe-visible:showcaseParticleCore:false",
-          "probe-readability:showcaseParticleCore:34",
-          "probe-failure:showcaseParticleCore:primary-foreground-too-small:620",
+          "probe-failure:showcaseParticleCore:primary-foreground-too-small:627",
           "probe-failure:showcaseParticleCore:primary-foreground-width:51",
           "probe-failure:showcaseParticleCore:primary-foreground-height:13",
-          "probe-failure:showcaseParticleCore:primary-readability-score:34",
-          "probe-primary-foreground-too-small:showcaseParticleCore:620",
+          "probe-primary-foreground-too-small:showcaseParticleCore:627",
           "probe-primary-foreground-width:showcaseParticleCore:51",
           "probe-primary-foreground-height:showcaseParticleCore:13"
         ],
@@ -807,7 +794,7 @@
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-7f96f6965ec1106cab7e9411337d5552c5377ef08b7e6970c0aaffd3a946ff77",
-          "generatedAt": "2026-07-20T22:06:48.036Z",
+          "generatedAt": "2026-07-21T04:18:46.138Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -845,7 +832,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-dd4b7739bb24a42fe6ebe09037c383f5d68c165c4fcf541206539751d96c7d13",
+            "sha256": "sha256-f7dba3b4f24adbe75978aefc371d995e918220423d3c86640a96f1ec9591a81f",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -854,8 +841,8 @@
               "width": 1420,
               "height": 516
             },
-            "nonBlankPixels": 620,
-            "colorBuckets": 18,
+            "nonBlankPixels": 627,
+            "colorBuckets": 19,
             "foregroundBounds": {
               "x": 770,
               "y": 385,
@@ -865,12 +852,11 @@
             "visible": false,
             "clipped": false,
             "occludedByUi": false,
-            "readabilityScore": 34,
+            "readabilityScore": 35,
             "failures": [
-              "primary-foreground-too-small:620",
+              "primary-foreground-too-small:627",
               "primary-foreground-width:51",
-              "primary-foreground-height:13",
-              "primary-readability-score:34"
+              "primary-foreground-height:13"
             ]
           },
           "primaryAssets": [
@@ -883,7 +869,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-dd4b7739bb24a42fe6ebe09037c383f5d68c165c4fcf541206539751d96c7d13",
+                "sha256": "sha256-f7dba3b4f24adbe75978aefc371d995e918220423d3c86640a96f1ec9591a81f",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -892,8 +878,8 @@
                   "width": 1420,
                   "height": 516
                 },
-                "nonBlankPixels": 620,
-                "colorBuckets": 18,
+                "nonBlankPixels": 627,
+                "colorBuckets": 19,
                 "foregroundBounds": {
                   "x": 770,
                   "y": 385,
@@ -903,12 +889,11 @@
                 "visible": false,
                 "clipped": false,
                 "occludedByUi": false,
-                "readabilityScore": 34,
+                "readabilityScore": 35,
                 "failures": [
-                  "primary-foreground-too-small:620",
+                  "primary-foreground-too-small:627",
                   "primary-foreground-width:51",
-                  "primary-foreground-height:13",
-                  "primary-readability-score:34"
+                  "primary-foreground-height:13"
                 ]
               }
             }
@@ -916,10 +901,9 @@
           "primitivePrimaryCandidates": [],
           "pass": false,
           "failures": [
-            "primary-foreground-too-small:620",
+            "primary-foreground-too-small:627",
             "primary-foreground-width:51",
-            "primary-foreground-height:13",
-            "primary-readability-score:34"
+            "primary-foreground-height:13"
           ]
         }
       },
@@ -927,8 +911,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662955056,
+        "fileCount": 190,
+        "totalBytes": 663041577,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1042,7 +1026,7 @@
           "routePrimaryHeroAsset": "showcaseCityVehicle",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
-          "generatedAt": "2026-07-20T22:06:54.557Z",
+          "generatedAt": "2026-07-21T04:18:50.349Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1079,7 +1063,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-            "sha256": "sha256-37e5205f186bb016da26b6d6ac5b6c18477cbb504ceb624b908534815ce5def5",
+            "sha256": "sha256-756124696ac3f9c8efe6cd7a1895f153bb034ca576fb53dac24d3f5deec4ed26",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1088,7 +1072,7 @@
               "width": 1042,
               "height": 611
             },
-            "nonBlankPixels": 9260,
+            "nonBlankPixels": 9085,
             "colorBuckets": 27,
             "foregroundBounds": {
               "x": 186,
@@ -1112,7 +1096,7 @@
               "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-                "sha256": "sha256-37e5205f186bb016da26b6d6ac5b6c18477cbb504ceb624b908534815ce5def5",
+                "sha256": "sha256-756124696ac3f9c8efe6cd7a1895f153bb034ca576fb53dac24d3f5deec4ed26",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1121,7 +1105,7 @@
                   "width": 1042,
                   "height": 611
                 },
-                "nonBlankPixels": 9260,
+                "nonBlankPixels": 9085,
                 "colorBuckets": 27,
                 "foregroundBounds": {
                   "x": 186,
@@ -1146,8 +1130,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 187,
-        "totalBytes": 663698316,
+        "fileCount": 192,
+        "totalBytes": 663784833,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1261,7 +1245,7 @@
           "routePrimaryHeroAsset": "showcaseSkylineCity",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-8f3852397e93e3bc0f62986b14ce2174bd1d3a91076268b2ee5afca0a317093a",
-          "generatedAt": "2026-07-20T22:07:03.023Z",
+          "generatedAt": "2026-07-21T04:18:56.867Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1300,7 +1284,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-            "sha256": "sha256-1f92733a9ab41564af2800fd71b00ba670161f7d11310a06bcf08f3cd6782ba4",
+            "sha256": "sha256-5a16d23692529098affa0aa30014d285b926ea667ef670c2a0bb41cd8504399d",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1309,8 +1293,8 @@
               "width": 1060,
               "height": 880
             },
-            "nonBlankPixels": 391510,
-            "colorBuckets": 451,
+            "nonBlankPixels": 391511,
+            "colorBuckets": 437,
             "foregroundBounds": {
               "x": 147,
               "y": 26,
@@ -1333,7 +1317,7 @@
               "manifestHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-                "sha256": "sha256-1f92733a9ab41564af2800fd71b00ba670161f7d11310a06bcf08f3cd6782ba4",
+                "sha256": "sha256-5a16d23692529098affa0aa30014d285b926ea667ef670c2a0bb41cd8504399d",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1342,8 +1326,8 @@
                   "width": 1060,
                   "height": 880
                 },
-                "nonBlankPixels": 391510,
-                "colorBuckets": 451,
+                "nonBlankPixels": 391511,
+                "colorBuckets": 437,
                 "foregroundBounds": {
                   "x": 147,
                   "y": 26,
@@ -1367,8 +1351,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662289502,
+        "fileCount": 190,
+        "totalBytes": 662373371,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1482,7 +1466,7 @@
           "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
-          "generatedAt": "2026-07-20T22:07:09.912Z",
+          "generatedAt": "2026-07-21T04:19:04.042Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1490,7 +1474,7 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "alerts",
               "appId",
@@ -1525,7 +1509,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-            "sha256": "sha256-9b31cc458d70cb132e0c69daeeef866334ec7f98cd5dc28c1798e7d64673fb1b",
+            "sha256": "sha256-69608a95ef293e0e0518d5372886685b9a01e12a9dd06a091a2f12acb1782e7b",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1534,8 +1518,8 @@
               "width": 1084,
               "height": 786
             },
-            "nonBlankPixels": 289555,
-            "colorBuckets": 272,
+            "nonBlankPixels": 289989,
+            "colorBuckets": 261,
             "foregroundBounds": {
               "x": 216,
               "y": 121,
@@ -1558,7 +1542,7 @@
               "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-                "sha256": "sha256-9b31cc458d70cb132e0c69daeeef866334ec7f98cd5dc28c1798e7d64673fb1b",
+                "sha256": "sha256-69608a95ef293e0e0518d5372886685b9a01e12a9dd06a091a2f12acb1782e7b",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1567,8 +1551,8 @@
                   "width": 1084,
                   "height": 786
                 },
-                "nonBlankPixels": 289555,
-                "colorBuckets": 272,
+                "nonBlankPixels": 289989,
+                "colorBuckets": 261,
                 "foregroundBounds": {
                   "x": 216,
                   "y": 121,
@@ -1592,8 +1576,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662781804,
+        "fileCount": 190,
+        "totalBytes": 662868321,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1721,7 +1705,7 @@
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-8f9462a81592bc747aa147af35408a5ae1c135ab23fa31de487dcade0c84bcaa",
-          "generatedAt": "2026-07-20T22:07:17.834Z",
+          "generatedAt": "2026-07-21T04:19:08.110Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1757,7 +1741,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-2e86e9c3c8b0018a77026afe0fcd590d9b2f24e44e0086e23dce0b2392319073",
+            "sha256": "sha256-8328afeb3d1b95799f2277d86ebc7d732f97c40dc42f2d73834327e1dfff6fca",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1766,13 +1750,13 @@
               "width": 1045,
               "height": 880
             },
-            "nonBlankPixels": 631172,
-            "colorBuckets": 119,
+            "nonBlankPixels": 640737,
+            "colorBuckets": 123,
             "foregroundBounds": {
               "x": 10,
               "y": 10,
               "width": 1045,
-              "height": 642
+              "height": 658
             },
             "visible": true,
             "clipped": true,
@@ -1792,7 +1776,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-2e86e9c3c8b0018a77026afe0fcd590d9b2f24e44e0086e23dce0b2392319073",
+                "sha256": "sha256-8328afeb3d1b95799f2277d86ebc7d732f97c40dc42f2d73834327e1dfff6fca",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1801,13 +1785,13 @@
                   "width": 1045,
                   "height": 880
                 },
-                "nonBlankPixels": 631172,
-                "colorBuckets": 119,
+                "nonBlankPixels": 640737,
+                "colorBuckets": 123,
                 "foregroundBounds": {
                   "x": 10,
                   "y": 10,
                   "width": 1045,
-                  "height": 642
+                  "height": 658
                 },
                 "visible": true,
                 "clipped": true,
@@ -1830,8 +1814,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662323844,
+        "fileCount": 190,
+        "totalBytes": 662407713,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1916,7 +1900,7 @@
           "routeGateHash": "6a5ded55d46c7ada43fcd2529dad27fa4f52daf8ff5590448d4df924b565669a",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5da72dce15292dd9ccac278603865bff99fe3ee06ce688e4412052ee8ee367c0",
-          "generatedAt": "2026-07-20T22:07:23.756Z",
+          "generatedAt": "2026-07-21T04:19:12.559Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1962,7 +1946,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-            "sha256": "sha256-5a60b6f9a4dd07252d250f156d0a29e67b8428c49eacf62d7df0aeb386c09ac9",
+            "sha256": "sha256-7ef07546a2f70773371bebf4cddf0364ba1a6571d2bcadd07d38ccb097f5fa6d",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1971,13 +1955,13 @@
               "width": 768,
               "height": 880
             },
-            "nonBlankPixels": 241661,
-            "colorBuckets": 51,
+            "nonBlankPixels": 242255,
+            "colorBuckets": 57,
             "foregroundBounds": {
-              "x": 451,
+              "x": 450,
               "y": 54,
-              "width": 539,
-              "height": 738
+              "width": 540,
+              "height": 745
             },
             "visible": true,
             "clipped": false,
@@ -1995,8 +1979,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 660647792,
+        "fileCount": 190,
+        "totalBytes": 660734309,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2053,11 +2037,9 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": false,
-      "staticGateOk": false,
-      "staticGateFailures": [
-        "geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/showcase-spec-compile-report.json"
-      ],
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
       "visualReview": {
         "required": false,
         "ok": true,
@@ -2205,7 +2187,7 @@
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-a29bddb9b795969ec9acf919f80ca5e423c439974f982528559493e06c50071e",
-          "generatedAt": "2026-07-20T22:07:29.055Z",
+          "generatedAt": "2026-07-21T04:19:16.554Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2250,7 +2232,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-            "sha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+            "sha256": "sha256-0fa0829372a8dd424e0fd23306f0383b5d4e9703ba4f2952229f8091b07174d2",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2259,8 +2241,8 @@
               "width": 1420,
               "height": 661
             },
-            "nonBlankPixels": 9135,
-            "colorBuckets": 80,
+            "nonBlankPixels": 9082,
+            "colorBuckets": 82,
             "foregroundBounds": {
               "x": 656,
               "y": 387,
@@ -2272,7 +2254,7 @@
             "occludedByUi": false,
             "readabilityScore": 57,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-bc7a8dc0ea6d783ba6045016869dc6716731b64fff9657b95ba54bd6b2df3b69",
+            "subjectSuppressedScreenshotSha256": "sha256-2524d6154473ea17c6cdc4d56772e10ad39f9286d2173b21a8b1a4dc3ed4e344",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -2284,12 +2266,12 @@
               "width": 134,
               "height": 146
             },
-            "subjectPixels": 9135,
-            "subjectColorBuckets": 80,
+            "subjectPixels": 9082,
+            "subjectColorBuckets": 82,
             "subjectClipped": false,
             "subjectReadabilityScore": 57,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-bc7a8dc0ea6d783ba6045016869dc6716731b64fff9657b95ba54bd6b2df3b69",
+            "subjectSuppressedScreenshotSha256": "sha256-2524d6154473ea17c6cdc4d56772e10ad39f9286d2173b21a8b1a4dc3ed4e344",
             "projectedPlaySpaceBounds": {
               "x": 174,
               "y": 351,
@@ -2314,7 +2296,7 @@
               "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-                "sha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
+                "sha256": "sha256-0fa0829372a8dd424e0fd23306f0383b5d4e9703ba4f2952229f8091b07174d2",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2323,8 +2305,8 @@
                   "width": 1420,
                   "height": 661
                 },
-                "nonBlankPixels": 9135,
-                "colorBuckets": 80,
+                "nonBlankPixels": 9082,
+                "colorBuckets": 82,
                 "foregroundBounds": {
                   "x": 656,
                   "y": 387,
@@ -2336,7 +2318,7 @@
                 "occludedByUi": false,
                 "readabilityScore": 57,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-bc7a8dc0ea6d783ba6045016869dc6716731b64fff9657b95ba54bd6b2df3b69",
+                "subjectSuppressedScreenshotSha256": "sha256-2524d6154473ea17c6cdc4d56772e10ad39f9286d2173b21a8b1a4dc3ed4e344",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2359,8 +2341,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662771336,
+        "fileCount": 190,
+        "totalBytes": 662857853,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2555,7 +2537,7 @@
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-cc832fb5b4d75c0443cf7b08c3b273804e2c5c11004b149950376039363bda22",
-          "generatedAt": "2026-07-20T22:07:35.396Z",
+          "generatedAt": "2026-07-21T04:19:20.020Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2563,7 +2545,7 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "animation",
               "appId",
@@ -2602,7 +2584,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-            "sha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+            "sha256": "sha256-8725630556060f589b50c5e10efc355ee963fd84cc92ffe7935c14dcf40dfd92",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2611,8 +2593,8 @@
               "width": 1420,
               "height": 661
             },
-            "nonBlankPixels": 6457,
-            "colorBuckets": 81,
+            "nonBlankPixels": 6462,
+            "colorBuckets": 83,
             "foregroundBounds": {
               "x": 406,
               "y": 321,
@@ -2624,7 +2606,7 @@
             "occludedByUi": false,
             "readabilityScore": 57,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-2d394de886c20f0e0ac6980b9cb8716da1d5c7e71ea99298010412e3394a87a9",
+            "subjectSuppressedScreenshotSha256": "sha256-de1ef05133dbf5a9c34fc1d6c5cb6b666350b69b4283027dc75a3268b7137496",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -2636,12 +2618,12 @@
               "width": 110,
               "height": 210
             },
-            "subjectPixels": 6457,
-            "subjectColorBuckets": 81,
+            "subjectPixels": 6462,
+            "subjectColorBuckets": 83,
             "subjectClipped": false,
             "subjectReadabilityScore": 57,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-2d394de886c20f0e0ac6980b9cb8716da1d5c7e71ea99298010412e3394a87a9",
+            "subjectSuppressedScreenshotSha256": "sha256-de1ef05133dbf5a9c34fc1d6c5cb6b666350b69b4283027dc75a3268b7137496",
             "projectedPlaySpaceBounds": {
               "x": 383,
               "y": 492,
@@ -2666,7 +2648,7 @@
               "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-                "sha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
+                "sha256": "sha256-8725630556060f589b50c5e10efc355ee963fd84cc92ffe7935c14dcf40dfd92",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2675,8 +2657,8 @@
                   "width": 1420,
                   "height": 661
                 },
-                "nonBlankPixels": 6457,
-                "colorBuckets": 81,
+                "nonBlankPixels": 6462,
+                "colorBuckets": 83,
                 "foregroundBounds": {
                   "x": 406,
                   "y": 321,
@@ -2688,7 +2670,7 @@
                 "occludedByUi": false,
                 "readabilityScore": 57,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-2d394de886c20f0e0ac6980b9cb8716da1d5c7e71ea99298010412e3394a87a9",
+                "subjectSuppressedScreenshotSha256": "sha256-de1ef05133dbf5a9c34fc1d6c5cb6b666350b69b4283027dc75a3268b7137496",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2711,8 +2693,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662777876,
+        "fileCount": 190,
+        "totalBytes": 662864405,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2733,7 +2715,6 @@
       "classificationFailures": [],
       "diagnosticBlockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/racing-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
         "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
@@ -2781,11 +2762,9 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": false,
-      "staticGateOk": false,
-      "staticGateFailures": [
-        "geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/racing-game-layer-proof/showcase-spec-compile-report.json"
-      ],
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
       "visualReview": {
         "required": false,
         "ok": true,
@@ -2917,7 +2896,7 @@
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-2db670bfb8a7bb7e3aaec5acb0b2052a4ed4cef2d11c44af54106719d6993e43",
-          "generatedAt": "2026-07-20T22:07:43.722Z",
+          "generatedAt": "2026-07-21T04:19:23.352Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2962,7 +2941,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
-            "sha256": "sha256-3a1345c4fef100b94f36eb99e24244938b9939e6938b519c639bba5ec800b3de",
+            "sha256": "sha256-019a1b5d6d3227f6f7b699de7c8c7fc4cd771baae4ac762b509fb7449112d17f",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2971,8 +2950,8 @@
               "width": 1104,
               "height": 880
             },
-            "nonBlankPixels": 268938,
-            "colorBuckets": 145,
+            "nonBlankPixels": 268906,
+            "colorBuckets": 147,
             "foregroundBounds": {
               "x": 187,
               "y": 67,
@@ -2995,7 +2974,7 @@
               "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
-                "sha256": "sha256-3a1345c4fef100b94f36eb99e24244938b9939e6938b519c639bba5ec800b3de",
+                "sha256": "sha256-019a1b5d6d3227f6f7b699de7c8c7fc4cd771baae4ac762b509fb7449112d17f",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -3004,8 +2983,8 @@
                   "width": 1104,
                   "height": 880
                 },
-                "nonBlankPixels": 268938,
-                "colorBuckets": 145,
+                "nonBlankPixels": 268906,
+                "colorBuckets": 147,
                 "foregroundBounds": {
                   "x": 187,
                   "y": 67,
@@ -3037,8 +3016,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662762625,
+        "fileCount": 190,
+        "totalBytes": 662849142,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3059,7 +3038,6 @@
       "classificationFailures": [],
       "diagnosticBlockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "static:geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/platformer-game-layer-proof/showcase-spec-compile-report.json",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
         "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
@@ -3107,11 +3085,9 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": false,
-      "staticGateOk": false,
-      "staticGateFailures": [
-        "geometry-contract:compile-report-missing:tests/reports/showcase-spec-compiler/platformer-game-layer-proof/showcase-spec-compile-report.json"
-      ],
+      "ok": true,
+      "staticGateOk": true,
+      "staticGateFailures": [],
       "visualReview": {
         "required": false,
         "ok": true,
@@ -3243,7 +3219,7 @@
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-66edcee2132b45118af24757d6b441972f6d7b5bc97bc73b3d37edba2bc6a288",
-          "generatedAt": "2026-07-20T22:07:47.734Z",
+          "generatedAt": "2026-07-21T04:19:26.596Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3289,7 +3265,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
-            "sha256": "sha256-3f8035ee9afce79750eb310a8795b758dc719c62263dd753b956874ebbd5f5d6",
+            "sha256": "sha256-84931e89bdc833cee33eb0d7a29e6678b8756b484551a75453d801cbab2ce671",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -3298,8 +3274,8 @@
               "width": 1104,
               "height": 880
             },
-            "nonBlankPixels": 299997,
-            "colorBuckets": 88,
+            "nonBlankPixels": 299993,
+            "colorBuckets": 93,
             "foregroundBounds": {
               "x": 187,
               "y": 67,
@@ -3322,7 +3298,7 @@
               "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
-                "sha256": "sha256-3f8035ee9afce79750eb310a8795b758dc719c62263dd753b956874ebbd5f5d6",
+                "sha256": "sha256-84931e89bdc833cee33eb0d7a29e6678b8756b484551a75453d801cbab2ce671",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -3331,8 +3307,8 @@
                   "width": 1104,
                   "height": 880
                 },
-                "nonBlankPixels": 299997,
-                "colorBuckets": 88,
+                "nonBlankPixels": 299993,
+                "colorBuckets": 93,
                 "foregroundBounds": {
                   "x": 187,
                   "y": 67,
@@ -3364,8 +3340,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662769484,
+        "fileCount": 190,
+        "totalBytes": 662856001,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3440,7 +3416,7 @@
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
         "screenshot": {
           "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "sha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "sha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "metrics": {
             "width": 1440,
             "height": 900,
@@ -3495,8 +3471,8 @@
             "measured": {
               "contactProven": true,
               "normalizedOffset": 0,
-              "screenContactDistance": 6.354370543177356,
-              "screenContactDistanceRatio": 0.0432
+              "screenContactDistance": 3.4632390907934747,
+              "screenContactDistanceRatio": 0.0333
             },
             "blockers": []
           },
@@ -3512,7 +3488,7 @@
               "acceptedRacingModes": "chase|top-down"
             },
             "measured": {
-              "playSpaceAreaRatio": 0.0813,
+              "playSpaceAreaRatio": 0.0842,
               "foregroundClipped": false,
               "subjectClipped": false,
               "cameraMode": "follow",
@@ -3530,11 +3506,11 @@
               "maxPlatformerScaleDelta": 0.18
             },
             "measured": {
-              "subjectWorldRatio": 0.167,
+              "subjectWorldRatio": 0.1182,
               "characterScaleRatio": 0.42,
-              "projectedTargetHeight": 138.266,
-              "renderedSubjectHeight": 147,
-              "scaleDelta": 0.06316809627818849
+              "projectedTargetHeight": 100.554,
+              "renderedSubjectHeight": 104,
+              "scaleDelta": 0.034270143405533325
             },
             "blockers": []
           },
@@ -3636,14 +3612,14 @@
           ],
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
           "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "screenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "screenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "geometryEvidence": {
             "category": "platformer",
             "kind": "platformer-playable-surface-map",
             "source": "asset-mesh-extracted",
             "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
             "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "routePrimaryScreenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+            "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
             "assets": [
               {
                 "id": "showcaseKenneyOobiPlatformerHero",
@@ -3672,14 +3648,14 @@
           "routeId": "showcase-skyline-runner",
           "routePath": "/apps/showcase-skyline-runner/",
           "appId": "showcase-skyline-runner",
-          "sourceHash": "sha256-9ccac0be52e2a2384c9e2cc01de89dcca2eaced658b61eee1c358c90b38e8c79",
+          "sourceHash": "sha256-3cfd029a131bf6bf1b6f9f9adfa22b93d2fdb06e8d903d905f6672d4e43392cd",
           "routeGateHash": "6a5ded55d46c7ada43fcd2529dad27fa4f52daf8ff5590448d4df924b565669a",
           "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
           "secondaryPrimaryAssets": [
             "showcaseKenneyVerdantPlatformerWorld"
           ],
-          "routeHealthHash": "sha256-9721b5444112447dd2475b87c3bbfeaa223bf53fb6b14079807532e9352029f9",
-          "generatedAt": "2026-07-20T22:07:54.741Z",
+          "routeHealthHash": "sha256-029cd3ebdaec8ea72c43c4176de7ec3de514a3b9a181f4c84da2023b89db0629",
+          "generatedAt": "2026-07-21T04:19:30.387Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3687,7 +3663,7 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "animation",
               "appId",
@@ -3726,7 +3702,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "sha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+            "sha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -3735,8 +3711,8 @@
               "width": 1088,
               "height": 880
             },
-            "nonBlankPixels": 9591,
-            "colorBuckets": 52,
+            "nonBlankPixels": 9577,
+            "colorBuckets": 53,
             "foregroundBounds": {
               "x": 279,
               "y": 415,
@@ -3748,7 +3724,7 @@
             "occludedByUi": false,
             "readabilityScore": 55,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-c272285b4e7aea39c4ffc750199d7d6d26e6fca10254095b7a821ac0ce4e8a08",
+            "subjectSuppressedScreenshotSha256": "sha256-9eeaa8cd9fbbd3e9323d80375a9907783dfdf0ea667fa4b7d82a81a956584ced",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -3760,12 +3736,12 @@
               "width": 101,
               "height": 147
             },
-            "subjectPixels": 9591,
-            "subjectColorBuckets": 52,
+            "subjectPixels": 9577,
+            "subjectColorBuckets": 53,
             "subjectClipped": false,
             "subjectReadabilityScore": 55,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-c272285b4e7aea39c4ffc750199d7d6d26e6fca10254095b7a821ac0ce4e8a08",
+            "subjectSuppressedScreenshotSha256": "sha256-9eeaa8cd9fbbd3e9323d80375a9907783dfdf0ea667fa4b7d82a81a956584ced",
             "projectedPlaySpaceBounds": {
               "x": 233,
               "y": 471,
@@ -3790,7 +3766,7 @@
               "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-                "sha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+                "sha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -3799,8 +3775,8 @@
                   "width": 1088,
                   "height": 880
                 },
-                "nonBlankPixels": 9591,
-                "colorBuckets": 52,
+                "nonBlankPixels": 9577,
+                "colorBuckets": 53,
                 "foregroundBounds": {
                   "x": 279,
                   "y": 415,
@@ -3812,7 +3788,7 @@
                 "occludedByUi": false,
                 "readabilityScore": 55,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-c272285b4e7aea39c4ffc750199d7d6d26e6fca10254095b7a821ac0ce4e8a08",
+                "subjectSuppressedScreenshotSha256": "sha256-9eeaa8cd9fbbd3e9323d80375a9907783dfdf0ea667fa4b7d82a81a956584ced",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -3835,8 +3811,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662803522,
+        "fileCount": 190,
+        "totalBytes": 662890039,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3911,7 +3887,7 @@
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
         "screenshot": {
           "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "sha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "sha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "metrics": {
             "width": 1440,
             "height": 900,
@@ -3921,8 +3897,8 @@
               "width": 1102,
               "height": 880
             },
-            "nonBlankPixels": 410898,
-            "colorBuckets": 207,
+            "nonBlankPixels": 410968,
+            "colorBuckets": 206,
             "foregroundBounds": {
               "x": 10,
               "y": 10,
@@ -3930,7 +3906,7 @@
               "height": 880
             },
             "clipped": true,
-            "nonBackgroundRatio": 0.4237,
+            "nonBackgroundRatio": 0.4238,
             "readabilityScore": 85
           }
         },
@@ -4108,14 +4084,14 @@
           ],
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
           "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "screenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "screenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "geometryEvidence": {
             "category": "racing",
             "kind": "racing-track-topology",
             "source": "asset-mesh-extracted",
             "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
             "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "routePrimaryScreenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+            "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
             "assets": [
               {
                 "id": "showcaseKenneyRaceCarRed",
@@ -4144,14 +4120,14 @@
           "routeId": "showcase-turbo-drift-circuit",
           "routePath": "/apps/showcase-turbo-drift-circuit/",
           "appId": "showcase-turbo-drift-circuit",
-          "sourceHash": "sha256-c22883239d29b72599714d66be1f4b1019f4fee1cfcfcce68d2ad05d33224c6a",
+          "sourceHash": "sha256-b7ac0de40902b87dd8b29506e3a5a248961cf73b81fe2ad2012becfe16e555b0",
           "routeGateHash": "6a5ded55d46c7ada43fcd2529dad27fa4f52daf8ff5590448d4df924b565669a",
           "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
           "secondaryPrimaryAssets": [
             "showcaseKenneyNeonRaceCircuit"
           ],
-          "routeHealthHash": "sha256-ef88f5d4fc31c9c22a61a086fc21d22c694a21af8616e824dbf6efa0c5133f8c",
-          "generatedAt": "2026-07-20T22:08:00.774Z",
+          "routeHealthHash": "sha256-a14d5aaaa59fd6daa5a5f8c7c5d07dfc015147716010b8939e0b1d1c5ef12be2",
+          "generatedAt": "2026-07-21T04:19:35.050Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -4196,7 +4172,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "sha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+            "sha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -4205,8 +4181,8 @@
               "width": 1102,
               "height": 880
             },
-            "nonBlankPixels": 8671,
-            "colorBuckets": 45,
+            "nonBlankPixels": 8665,
+            "colorBuckets": 46,
             "foregroundBounds": {
               "x": 508,
               "y": 425,
@@ -4218,7 +4194,7 @@
             "occludedByUi": false,
             "readabilityScore": 52,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-7c59b1a262aae1b5552a451cf17df228975cfe51799dce7152775430212ca8f1",
+            "subjectSuppressedScreenshotSha256": "sha256-2a18bdb47ba76e2ea2fd91a104133557f3f0351d9c3554a638b636c08ebacea6",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -4230,12 +4206,12 @@
               "width": 114,
               "height": 95
             },
-            "subjectPixels": 8671,
-            "subjectColorBuckets": 45,
+            "subjectPixels": 8665,
+            "subjectColorBuckets": 46,
             "subjectClipped": false,
             "subjectReadabilityScore": 52,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-7c59b1a262aae1b5552a451cf17df228975cfe51799dce7152775430212ca8f1",
+            "subjectSuppressedScreenshotSha256": "sha256-2a18bdb47ba76e2ea2fd91a104133557f3f0351d9c3554a638b636c08ebacea6",
             "projectedPlaySpaceBounds": {
               "x": 551,
               "y": 321,
@@ -4260,7 +4236,7 @@
               "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-                "sha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+                "sha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -4269,8 +4245,8 @@
                   "width": 1102,
                   "height": 880
                 },
-                "nonBlankPixels": 8671,
-                "colorBuckets": 45,
+                "nonBlankPixels": 8665,
+                "colorBuckets": 46,
                 "foregroundBounds": {
                   "x": 508,
                   "y": 425,
@@ -4282,7 +4258,7 @@
                 "occludedByUi": false,
                 "readabilityScore": 52,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-7c59b1a262aae1b5552a451cf17df228975cfe51799dce7152775430212ca8f1",
+                "subjectSuppressedScreenshotSha256": "sha256-2a18bdb47ba76e2ea2fd91a104133557f3f0351d9c3554a638b636c08ebacea6",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -4305,8 +4281,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 185,
-        "totalBytes": 662793054,
+        "fileCount": 190,
+        "totalBytes": 662879571,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },

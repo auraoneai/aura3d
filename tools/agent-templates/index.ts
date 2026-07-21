@@ -7,6 +7,7 @@ import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../ch
 const templates = [...CREATE_AURA3D_TEMPLATES];
 const templateNames = new Set<string>(templates);
 const rootPackagedTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
+const promptPlanTemplates = ["product-viewer", "cinematic-scene"] as const;
 const heldBackTemplateDirs = [
   "asset-gallery",
   "interactive-scene",
@@ -55,12 +56,17 @@ const checks: ReleaseCheck[] = [
     existsCheck(`templates/${template}/package.json`, `${template} packaged root template package`),
     existsCheck(`templates/${template}/playwright.config.ts`, `${template} packaged root template Playwright config`),
     existsCheck(`templates/${template}/src/main.ts`, `${template} packaged root template main`),
-    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`)
+    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine"], `${template} packaged root Aura3D api`)
   ]),
+  ...promptPlanTemplates.flatMap((template) => [
+    fileIncludes(`templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`),
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`)
+  ]),
+  fileIncludes("templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game packaged root game api"),
+  fileIncludes("packages/create-aura3d/templates/mini-game/src/main.ts", ["createAuraApp", "game.platformer"], "mini-game public game api"),
   ...rootPackagedTemplates.flatMap((template) => [
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`)
+    fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`)
   ]),
   fileIncludes("packages/create-aura3d/src/index.ts", templates, "create command templates"),
   {
@@ -174,6 +180,7 @@ function templateSmokeSpecCheck(template: string): ReleaseCheck {
 function templateSmokeSpecs(template: string): readonly string[] {
   if (template === "fighting-game") return ["route-health.spec.ts", "gameplay-smoke.spec.ts"];
   if (template === "animation-channel" || template === "prompt-animation-channel") return ["route-health.spec.ts", "storyboard-playback.spec.ts"];
+  if (template === "racing-starter" || template === "falling-blocks-starter") return ["route-health.spec.ts", "playable.spec.ts"];
   return ["route-health.spec.ts", "screenshot.spec.ts"];
 }
 

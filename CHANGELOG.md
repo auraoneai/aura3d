@@ -1,8 +1,23 @@
 # Changelog
 
-Version: 1.4.4
+Version: 1.4.5
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.4.4` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.4.5` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+
+## 1.4.5 (2026-07-20)
+
+Maintenance release for the public game runtime, production showcase, and release infrastructure. The package and route claim boundaries remain unchanged: the named presentations are evidence-bounded examples, not a claim of production game-engine or renderer parity.
+
+- Added a bounded racing `paceMultiplier`, grounded platformer checkpoint respawns, and finish-surface validation to the public game genre kits.
+- Corrected Skyline Runner hazard placement, character scale/facing, event handling, and generated geometry; corrected Turbo Drift Circuit pacing and speed presentation.
+- Curated promotion to seven distinct route-library candidates plus Aura Clash while retaining superseded proofs, duplicate tools, and diagnostics as accessible but unpromoted evidence.
+- Added complete production preview imagery and responsive marketing/showcase presentation, with corrected nested Aura Clash links and deployment paths.
+- Aligned GitHub Actions with Node 22, pnpm 11.1.3, and current artifact actions; replaced the stale coverage job with the supported source-package suite.
+- Bumped all 26 public packages, private workspace package metadata, templates, API docs, governance docs, and current marketing metadata to 1.4.5.
+
+### Claim Boundary
+
+This patch improves the named runtime helpers and retained public routes. It does not establish arbitrary asset-to-game conversion, general collision or vehicle physics, AI opponents, netcode, production game-engine parity, or root-wide renderer parity.
 
 ## 1.4.4 (2026-07-19)
 
@@ -12,7 +27,7 @@ Game-geometry certification, composition validation, generated immutable route c
 - Added category-specific racing topology and platformer playable-surface extraction, asset-pair composition validation, scene-scale/pacing contracts, and compiler-emitted geometry modules.
 - Rebuilt Turbo Drift Circuit and Skyline Runner with certified assets, evidence-selected cameras, reusable contact queries, 30-second category floors, gameplay proof, and accepted desktop/mobile presentation.
 - Added fail-closed six-check automated visual QA with manual downward-only review; the three current public game routes and one superseded historical proof retain independent reports.
-- Curated the public showcase to eight distinct promoted experiences: seven route-library candidates plus Aura Clash; superseded proof routes and the duplicate headphone inspector remain accessible but unpromoted.
+- Updated the public showcase to 9/9 current release candidates, retained one superseded historical platformer proof, and kept two internal diagnostics plus two game-layer diagnostic harnesses outside the public count.
 - Restored the complete multi-page marketing/docs/showcase deployment and aligned package, API, agent, route, governance, and release documentation to 1.4.4.
 
 ### Claim Boundary

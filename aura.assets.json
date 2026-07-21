@@ -10762,13 +10762,13 @@
           "Product-view orientation is approved for the current showcaseHeadphones asset hash by retained route-primary probe evidence. No forwardAxis is claimed for this product role."
         ],
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-        "checkedAt": "2026-06-24T04:21:24.744Z",
+        "checkedAt": "2026-07-21T04:18:37.544Z",
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+          "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-06-24T04:21:24.744Z",
+          "checkedAt": "2026-07-21T04:18:37.544Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -10788,13 +10788,13 @@
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+        "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
-        "nonBlankPixels": 697883,
-        "colorBuckets": 52,
-        "checkedAt": "2026-06-24T04:21:24.744Z",
+        "nonBlankPixels": 698311,
+        "colorBuckets": 54,
+        "checkedAt": "2026-07-21T04:18:37.544Z",
         "foregroundBounds": {
           "x": 576,
           "y": 293,
@@ -13416,7 +13416,7 @@
         "evidence": {
           "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14348,7 +14348,7 @@
         "evidence": {
           "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14571,7 +14571,7 @@
         "evidence": {
           "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -15168,7 +15168,7 @@
         "evidence": {
           "manifestHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -17584,8 +17584,8 @@
               "Master_26",
               "Coluna_02_14",
               "Coluna_03_13",
-              "Pesco��o_4",
-              "Cabe��a_1",
+              "Pesco\ufffd\ufffdo_4",
+              "Cabe\ufffd\ufffda_1",
               "Focinho_0",
               "Orelha_L_2",
               "Orelha_R_3",
@@ -17628,9 +17628,9 @@
         "sourcePath": "public/aura-assets/showcaseLowPolyKidRunner.3c67a1e6.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-040/15d4cf0ad6bc418fa63872a9f5f37734.glb",
         "license": "CC-BY-4.0",
-        "author": "Jéssica Magno",
+        "author": "J\u00e9ssica Magno",
         "sourceFamily": "objaverse",
-        "attribution": "Jéssica Magno",
+        "attribution": "J\u00e9ssica Magno",
         "sha256": "sha256-3c67a1e67eb8d160add10914ce2a151c8724f87ba8cc76af77ba55944115ffcf",
         "retrievedAt": "2026-06-19T13:47:54.244Z",
         "checkedAt": "2026-06-19T13:47:56.915Z"
@@ -17657,8 +17657,8 @@
         "Master_26",
         "Coluna_02_14",
         "Coluna_03_13",
-        "Pesco��o_4",
-        "Cabe��a_1",
+        "Pesco\ufffd\ufffdo_4",
+        "Cabe\ufffd\ufffda_1",
         "Focinho_0",
         "Orelha_L_2",
         "Orelha_R_3",
@@ -19207,9 +19207,9 @@
         "license": "CC-BY-4.0",
         "licenseName": "CC-BY-4.0",
         "licenseRaw": "CC-BY-4.0",
-        "author": "Aurélien Martel",
+        "author": "Aur\u00e9lien Martel",
         "sourceFamily": "objaverse",
-        "attribution": "Aurélien Martel",
+        "attribution": "Aur\u00e9lien Martel",
         "sha256": "sha256-ef910dc7e24f61576121d9f5b9dc0aa736d34d412bd62284430f2af5f4150822",
         "retrievedAt": "2026-06-25T09:05:12.174Z",
         "resolveCandidate": {
@@ -19241,8 +19241,8 @@
           "license": "CC-BY-4.0",
           "licenseName": "CC-BY-4.0",
           "licenseRaw": "CC-BY-4.0",
-          "author": "Aurélien Martel",
-          "attribution": "Aurélien Martel",
+          "author": "Aur\u00e9lien Martel",
+          "attribution": "Aur\u00e9lien Martel",
           "semanticScore": 0.7594550784181253,
           "postDownloadInspection": {
             "bounds": [
@@ -19266,7 +19266,7 @@
             "url": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-103/28c251353946454bb57622cb512bca7e.glb",
             "license": "CC-BY-4.0",
             "thumbnail": "https://media.sketchfab.com/models/28c251353946454bb57622cb512bca7e/thumbnails/08eba835698b4db09eb3d9a06931d716/50x50.jpeg",
-            "attribution": "Aurélien Martel",
+            "attribution": "Aur\u00e9lien Martel",
             "score": 0.7594550784181253
           }
         },

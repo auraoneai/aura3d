@@ -33,7 +33,8 @@ test("create-aura3d scaffolds every starter template from public package imports
     }
     writeCreateA3DReport("tests/reports/create-aura3d.json", results[0]!);
     writeFileSync("tests/reports/create-aura3d-templates.json", `${JSON.stringify({ ok: true, templates: results }, null, 2)}\n`);
-    expect(results).toHaveLength(17);
+    expect(CREATE_AURA3D_TEMPLATES).toEqual(expect.arrayContaining(["falling-blocks-starter", "racing-starter"]));
+    expect(results).toHaveLength(CREATE_AURA3D_TEMPLATES.length);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

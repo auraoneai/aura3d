@@ -1,17 +1,17 @@
 {
   "schema": "aura3d-release-artifacts/1.0",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "status": "prepublish-verified",
-  "scope": "Aura3D 1.4.4 certified game-presentation and complete marketing-site release",
-  "createdAt": "2026-07-20T00:39:49.308Z",
+  "scope": "Aura3D 1.4.5 game-runtime, curated showcase, production preview, and release-infrastructure maintenance release",
+  "createdAt": "2026-07-21T04:41:36.226Z",
   "artifacts": [
     {
       "type": "tarball",
       "name": "@aura3d/engine",
-      "version": "1.4.4",
-      "pathOrUrl": "tests/reports/package-install-smoke-fresh/aura3d-engine-1.4.4.tgz",
-      "sha256": "499dbb67a428660309f6a4087a51c0a9f6b82eee3150b6205b543cb84f285dba",
-      "createdAt": "2026-07-20T00:39:49.308Z",
+      "version": "1.4.5",
+      "pathOrUrl": "tests/reports/package-install-smoke-fresh/aura3d-engine-1.4.5.tgz",
+      "sha256": "3c8069bf04316bb4d64c3de178ab319ba982ccd64fbcc7861ef7245bffba2a38",
+      "createdAt": "2026-07-21T04:41:36.226Z",
       "source": "pnpm verify:package-install-smoke:fresh"
     }
   ],
@@ -22,7 +22,7 @@
     "tarballAuditCommand": "tar -tzf tests/reports/release-tarballs/*.tgz"
   },
   "notes": [
-    "This manifest records the root tarball used by the clean external package-install and Vite browser-import smoke for Aura3D 1.4.4.",
+    "This manifest records the root tarball used by the clean external package-install and Vite browser-import smoke for Aura3D 1.4.5.",
     "The 26-package npm publish is produced by tools/release/publish-all.mjs, which packs every public package with pnpm pack before npm publish.",
     "Showcase and hosted-site claims remain independently gated by docs/project/showcase-launch-evidence.json and production URL verification."
   ]

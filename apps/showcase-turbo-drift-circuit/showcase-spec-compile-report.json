@@ -14,8 +14,8 @@
     "src/main.ts"
   ],
   "blockers": [],
-  "evidenceChecklistPath": "/private/tmp/aura3d-gameplay-curation/apps/showcase-turbo-drift-circuit/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "/private/tmp/aura3d-gameplay-curation/apps/showcase-turbo-drift-circuit/route-gate.patch.json",
+  "evidenceChecklistPath": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
@@ -46,7 +46,7 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-0bea5e6de143339355ffd6c365e209fe3fa150d98d9cde701738342111553661",
+    "contentHash": "sha256-b4cc4a1f021e1dba5e92b10f9cc14a5cbe07fb030dfa791b50c1fac8f4bff52e",
     "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
     "sourceReportHash": "sha256-d59e02946909dfc0feaa243232f63ef8be37e0b09bc4e380e57503c6fef42232"
   }

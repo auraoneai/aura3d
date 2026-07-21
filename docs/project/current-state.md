@@ -71,7 +71,7 @@ Current retained result:
 
 ## Showcase Reality
 
-The public slate includes Product Configurator, Material Asset Inspector, Smart City Control, Cinematic Architecture, Digital Twin Operations, Blockfall Reactor, the established public racing presentation proof, Turbo Drift Circuit, and Skyline Runner. Data Galaxy and WebGPU Particle Lab remain internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses.
+The public route-library slate includes Product Configurator, Smart City Control, Cinematic Architecture, Digital Twin Operations, Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner. Aura Clash is promoted separately as the flagship game experience. Material Asset Inspector and the earlier racing/platformer presentation proofs remain accessible but unpromoted. Data Galaxy and WebGPU Particle Lab remain internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses.
 
 Turbo Drift and Skyline are bounded public stylized presentations because current retained evidence proves certified asset geometry, pair composition, gameplay input, contact, camera readability, scale, route-primary screenshots, automated visual QA, manual review, and deploy readiness. This does not establish arbitrary GLB-to-game conversion or production game-engine parity.
 

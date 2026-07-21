@@ -66,7 +66,7 @@ const route = {
     { x: 0.3, y: 3.15 },
     { x: -0.75, y: 1.15 }
   ],
-  checkpoints: [0.08, 0.22, 0.36, 0.5, 0.64, 0.78]
+  checkpoints: [0.14, 0.27, 0.4, 0.53, 0.66, 0.79]
 };
 
 const input = game.input({

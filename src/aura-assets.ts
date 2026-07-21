@@ -10405,13 +10405,13 @@ export const assets = defineAuraAssets({
           "Product-view orientation is approved for the current showcaseHeadphones asset hash by retained route-primary probe evidence. No forwardAxis is claimed for this product role."
         ],
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-        "checkedAt": "2026-06-24T04:21:24.744Z",
+        "checkedAt": "2026-07-21T04:18:37.544Z",
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+          "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-06-24T04:21:24.744Z",
+          "checkedAt": "2026-07-21T04:18:37.544Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -10438,13 +10438,13 @@ export const assets = defineAuraAssets({
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-b5f0775f65137eb795e8eae0956495a77b90a8422bc853504f27d544b686ebe9",
+        "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
-        "nonBlankPixels": 697883,
-        "colorBuckets": 52,
-        "checkedAt": "2026-06-24T04:21:24.744Z",
+        "nonBlankPixels": 698311,
+        "colorBuckets": 54,
+        "checkedAt": "2026-07-21T04:18:37.544Z",
         "foregroundBounds": {
           "x": 576,
           "y": 293,
@@ -12996,7 +12996,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -13933,7 +13933,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14139,7 +14139,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-e3d40806f8a2a41db7d5d167aff0676b13cc69230ba25816a80e5632dbee5d61",
+          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14722,7 +14722,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
+          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,

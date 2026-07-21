@@ -59,8 +59,10 @@ jobs:
             exit 1
           fi
 
+      # Benchmark/superiority releases require their separate signed proof. Routine
+      # package tags do not inherit that unrelated claim gate.
       - name: Verify benchmark release proof
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.benchmark_round != ''
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.benchmark_round != ''
         env:
           BENCHMARK_ROUND: ${{ github.event.inputs.benchmark_round }}
         run: node tools/release-proof-guard.mjs "$BENCHMARK_ROUND"

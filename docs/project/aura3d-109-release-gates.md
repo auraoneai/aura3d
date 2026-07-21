@@ -2,7 +2,7 @@
 
 Version: 1.0.9
 Status: Historical scoped release gate; not a current showcase-quality waiver
-Current published baseline: `@aura3d/engine@1.4.4` and `create-aura3d@1.4.4`
+Current release baseline: `@aura3d/engine@1.4.5` and `create-aura3d@1.4.5`
 Related: `docs/project/current-state.md`, `docs/project/library-gap-roadmap.md`,
 `docs/project/showcase-quality-gates.md`
 

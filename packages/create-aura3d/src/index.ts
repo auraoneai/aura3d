@@ -59,7 +59,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   };
   packageJson.dependencies = {
     ...(packageJson.dependencies ?? {}),
-    "@aura3d/engine": options.packageVersion ?? packageJson.dependencies?.["@aura3d/engine"] ?? "1.4.4"
+    "@aura3d/engine": options.packageVersion ?? packageJson.dependencies?.["@aura3d/engine"] ?? "1.4.5"
   };
   writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
   return {

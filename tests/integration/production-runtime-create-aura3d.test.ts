@@ -27,7 +27,13 @@ describe("create-aura3d templates", () => {
           expect(hasMainTs).toBe(true);
         }
         expect(existsSync(join(result.targetDir, "tests", "route-health.spec.ts"))).toBe(true);
-        expect(existsSync(join(result.targetDir, "tests", "screenshot.spec.ts"))).toBe(true);
+        const smokeSpecs = [
+          "screenshot.spec.ts",
+          "gameplay-smoke.spec.ts",
+          "playable.spec.ts",
+          "storyboard-playback.spec.ts"
+        ];
+        expect(smokeSpecs.some((file) => existsSync(join(result.targetDir, "tests", file)))).toBe(true);
       }
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });

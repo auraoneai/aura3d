@@ -14,8 +14,8 @@
     "src/main.ts"
   ],
   "blockers": [],
-  "evidenceChecklistPath": "/private/tmp/aura3d-gameplay-curation/apps/showcase-skyline-runner/showcase-evidence-checklist.json",
-  "routeGatePatchPath": "/private/tmp/aura3d-gameplay-curation/apps/showcase-skyline-runner/route-gate.patch.json",
+  "evidenceChecklistPath": "tests/reports/showcase-spec-compiler/skyline-runner/showcase-evidence-checklist.json",
+  "routeGatePatchPath": "tests/reports/showcase-spec-compiler/skyline-runner/route-gate.patch.json",
   "rejectedAssets": [],
   "replacementCandidates": [],
   "assetPairComposition": {
@@ -46,8 +46,8 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-9b31d98c99e0c0900787a5979ae950f227e48c5b1d8a9a4290b1cbbdf4c5793f",
+    "contentHash": "sha256-f96aa69eb0628397b567a4019833057cbe4416aa75cd2f7c159d5d888749f733",
     "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
-    "sourceReportHash": "sha256-3da001cd6399827eaa4434261e3f37050ac58e53562d5c4ed4d33a254736c798"
+    "sourceReportHash": "sha256-9f6a83f2c8f5c3af17171aaea64e0049cc34305ca64d8e578499f1d663f8e8bf"
   }
 }

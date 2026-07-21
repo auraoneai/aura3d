@@ -5,9 +5,9 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 
-const expectedEngineVersion = "1.4.4";
+const expectedEngineVersion = "1.4.5";
 const expectedShowcaseAssetPackage = "@aura3d/showcase-assets-web";
-const expectedShowcaseAssetVersion = "1.4.4";
+const expectedShowcaseAssetVersion = "1.4.5";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(marketingDir, "..");

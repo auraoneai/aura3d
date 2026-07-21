@@ -87,39 +87,39 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.4.4
+## Current Release: Aura3D 1.4.5
 
-Aura3D 1.4.4 is the current source release across all 26 public packages. The
-release adds a fail-closed game-geometry certification chain, asset-pair
-composition checks, generated immutable route contracts, retained visual QA,
-and the complete marketing/docs/showcase deployment.
+Aura3D 1.4.5 is the current source release across all 26 public packages. This
+maintenance release turns the 1.4.4 game-geometry work into a tighter public
+showcase: gameplay pacing and spawn behavior are corrected, obsolete duplicate
+routes are unpromoted, production previews are complete, and CI is aligned to
+Node 22 and pnpm 11.
 
-### What shipped in 1.4.4
+### What shipped in 1.4.5
 
-- **Certified game geometry:** racing topology and platformer playable surfaces
-  are extracted, hash-bound to typed assets, and consumed by generated runtime
-  geometry modules.
-- **Release-ready game presentations:** Turbo Drift Circuit and Skyline Runner
-  now use certified Kenney asset pairs, evidence-selected cameras, reusable
-  contact queries, deterministic gameplay proof, and accepted desktop/mobile
-  visual QA.
-- **Complete public website:** the production artifact includes the full Aura3D
-  homepage, documentation, evidence and claim-boundary pages, typed assets, and
-  public showcase routes rather than the previous one-page example index.
-- **Package release discipline:** all 26 public package manifests are aligned at
-  1.4.4, pack verification rejects `workspace:*` leakage, and clean external
-  install/import/Vite smoke tests cover the packed engine.
+- **Game-runtime corrections:** certified racing routes support bounded gameplay
+  pace multipliers; platformer checkpoint respawns resolve onto valid supporting
+  surfaces; finish surfaces participate in public playable-surface validation.
+- **Playable showcase polish:** Skyline Runner gains safer hazards, grounded
+  respawns, readable character scale and facing; Turbo Drift Circuit gains a
+  faster bounded pace and km/h HUD; Aura Clash uses production-safe nested links.
+- **Curated production showcase:** seven route-library candidates plus Aura Clash
+  are promoted with complete production preview imagery. Superseded proof routes
+  and the duplicate headphone inspector remain accessible but unpromoted.
+- **Current release tooling:** all 26 public package manifests and template pins
+  are aligned at 1.4.5, while GitHub Actions uses Node 22, pnpm 11.1.3, and current
+  artifact actions.
 
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.4.4
+npm install @aura3d/engine@1.4.5
 # or scaffold an app
-npx create-aura3d@1.4.4 my-product --template product-viewer
+npx create-aura3d@1.4.5 my-product --template product-viewer
 ```
 
 Detailed release notes are in
-[`docs/project/aura3d-144-release-notes.md`](docs/project/aura3d-144-release-notes.md),
+[`docs/project/aura3d-145-release-notes.md`](docs/project/aura3d-145-release-notes.md),
 with retained claim boundaries and release evidence under `docs/project/`.
 
 ## Aura3D 1.1.0 asset catalog
@@ -144,7 +144,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.4 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.5 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -597,7 +597,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.4.4 baseline, and the release-candidate showcase gate passes 7/7 current route-library examples, with Aura Clash promoted separately as the flagship game experience while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
+Expected current state — The scoped package gates pass for the 1.4.5 baseline, and the release-candidate showcase gate passes 7/7 current route-library examples, with Aura Clash promoted separately as the flagship game experience while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
 
 ## Contributing
 
