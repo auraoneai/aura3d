@@ -72,7 +72,7 @@ Required gates:
 - copy review against `docs/project/claim-guidelines.md`.
 - `node tools/showcase-library/build-and-check.mjs`
 
-Current status for this track: 9/9 current public release candidates pass. Data Galaxy and WebGPU Particle Lab are internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses and are not public examples.
+Current status for this track: 7/7 distinct route-library release candidates pass; Aura Clash is tracked separately as the flagship game experience. Data Galaxy and WebGPU Particle Lab are internal diagnostics. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic harnesses and are not public examples.
 
 ## Track 3: Marketing Launch Release
 

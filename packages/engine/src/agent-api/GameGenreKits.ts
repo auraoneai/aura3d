@@ -466,6 +466,8 @@ export interface GameAssetBoundRacingRouteOptions {
 
 export interface GameRacingOptions {
   readonly route: GameRacingRoute;
+  /** Multiplies the certified baseline pace without changing route geometry or authored evidence duration. */
+  readonly paceMultiplier?: number;
   readonly maxSpeed?: number;
   readonly acceleration?: number;
   readonly brakeStrength?: number;
@@ -1046,10 +1048,12 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
   const checkpoints = options.route.checkpoints?.length ? [...options.route.checkpoints] : [0.25, 0.5, 0.75, 0.98];
   const surfaceQuery = createGameRacingSurfaceQuery(options.route);
   const certifiedSpeed = isAssetBoundRacingRoute(options.route) ? options.route.assetBinding.speedModel.certifiedSpeed : undefined;
-  if (certifiedSpeed !== undefined && options.maxSpeed !== undefined && Math.abs(options.maxSpeed - certifiedSpeed) > 0.001) {
-    throw new Error(`game.racing maxSpeed ${options.maxSpeed} conflicts with certified route speed ${certifiedSpeed}.`);
+  const paceMultiplier = clampNumber(options.paceMultiplier ?? 1, 0.5, 4);
+  const certifiedGameplaySpeed = certifiedSpeed === undefined ? undefined : certifiedSpeed * paceMultiplier;
+  if (certifiedGameplaySpeed !== undefined && options.maxSpeed !== undefined && Math.abs(options.maxSpeed - certifiedGameplaySpeed) > 0.001) {
+    throw new Error(`game.racing maxSpeed ${options.maxSpeed} conflicts with certified route speed ${certifiedGameplaySpeed} at gameplay pace ${paceMultiplier}.`);
   }
-  const maxSpeed = certifiedSpeed ?? options.maxSpeed ?? 18;
+  const maxSpeed = certifiedGameplaySpeed ?? options.maxSpeed ?? 18;
   const acceleration = options.acceleration ?? 16;
   const brakeStrength = options.brakeStrength ?? 24;
   const reverseSpeed = options.reverseSpeed ?? 4;
@@ -1531,9 +1535,32 @@ function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">>
 function platformerSpawn(config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }, checkpointId: string): GameKitVec2 {
   if (checkpointId !== "start") {
     const checkpoint = config.checkpoints.find((candidate) => candidate.id === checkpointId);
-    if (checkpoint) return checkpoint;
+    if (checkpoint) {
+      const supportingSurface = platformerSpawnSurface(config.platforms, checkpoint.x);
+      if (supportingSurface) {
+        const minX = supportingSurface.x + Math.min(config.playerSize[0] * 0.5, supportingSurface.width * 0.25);
+        const maxX = supportingSurface.x + supportingSurface.width - Math.min(config.playerSize[0] * 0.5, supportingSurface.width * 0.25);
+        return {
+          x: clampNumber(checkpoint.x, Math.min(minX, maxX), Math.max(minX, maxX)),
+          y: platformTop(supportingSurface)
+        };
+      }
+      return checkpoint;
+    }
   }
   return config.start;
+}
+
+function platformerSpawnSurface(platforms: readonly GameKitRect[], checkpointX: number): GameKitRect | undefined {
+  const containing = platforms
+    .filter((surface) => checkpointX >= surface.x && checkpointX <= surface.x + surface.width)
+    .sort((left, right) => platformTop(right) - platformTop(left));
+  if (containing[0]) return containing[0];
+  return [...platforms].sort((left, right) => {
+    const leftDistance = Math.abs(checkpointX - clampNumber(checkpointX, left.x, left.x + left.width));
+    const rightDistance = Math.abs(checkpointX - clampNumber(checkpointX, right.x, right.x + right.width));
+    return leftDistance - rightDistance;
+  })[0];
 }
 
 function platformerMovingRectsAt(time: number, config: Required<Omit<GamePlatformerLevel, "id">> & { readonly id: string }): readonly GameKitRect[] {
@@ -1705,7 +1732,7 @@ function validatePlatformerPlayableSurfaceMap(
 }
 
 function isPublicPlatformerPlayableSurface(surface: GamePlatformerPlayableSurfaceMap["surfaces"][number]): boolean {
-  return surface.kind === "ground" || surface.kind === "platform" || surface.kind === "moving";
+  return surface.kind === "ground" || surface.kind === "platform" || surface.kind === "moving" || surface.kind === "finish";
 }
 
 function assertFiniteNumber(value: number, field: string): void {

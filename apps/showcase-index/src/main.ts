@@ -21,6 +21,7 @@ type ShowcaseClassification =
   | "diagnostic-candidate"
   | "internal-diagnostic"
   | "game-layer-diagnostic"
+  | "removed-from-public-showcase"
   | "prototype-blocked"
   | "prototype"
   | "rebuild-required"
@@ -60,12 +61,12 @@ const apps = [
     id: "showcase-material-asset-inspector",
     route: "/apps/showcase-material-asset-inspector/",
     routeHealth: "/apps/showcase-material-asset-inspector/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
+    classification: "removed-from-public-showcase",
+    publicShowcase: false,
     primaryAssetStatus: "typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Typed headphones pass retained route-primary and release/deploy asset evidence; material panels remain bounded metadata inspection, not PBR parity."
+    notes: "Retained typed-asset inspection tool. It is accessible but no longer promoted because Product Configurator already uses the same headphone hero."
   },
   {
     id: "showcase-data-galaxy",
@@ -137,12 +138,12 @@ const apps = [
     id: "showcase-public-racing-presentation-proof",
     route: "/apps/showcase-public-racing-presentation-proof/",
     routeHealth: "/apps/showcase-public-racing-presentation-proof/route-health.json",
-    classification: "candidate",
-    publicShowcase: true,
+    classification: "removed-from-public-showcase",
+    publicShowcase: false,
     primaryAssetStatus: "release-validated-typed-primary-assets",
     primitiveStatus: "within-stated-role",
     claimStatus: "bounded",
-    notes: "Public racing presentation candidate with a typed sports car, retained Tsukuba topology certification, styled racing road geometry, cinematic camera framing, and keyboard gameplay proof."
+    notes: "Superseded by Turbo Drift Circuit. This route remains available as historical certification evidence but is no longer promoted or counted as a current racer."
   },
   {
     id: "showcase-public-platformer-presentation-proof",
@@ -209,7 +210,6 @@ window.__AURA3D_SHOWCASE_INDEX__ = {
   appCount: publicApps.length,
   gameCount: publicApps.filter((entry) =>
     entry.id === "showcase-blockfall-reactor" ||
-    entry.id === "showcase-public-racing-presentation-proof" ||
     entry.id === "showcase-turbo-drift-circuit" ||
     entry.id === "showcase-skyline-runner"
   ).length,

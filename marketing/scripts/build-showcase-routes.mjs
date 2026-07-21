@@ -18,13 +18,10 @@ const engineSourceEntry = path.join(repoRoot, "packages", "engine", "src", "agen
 const showcaseRoutes = [
   "showcase-index",
   "showcase-product-configurator",
-  "showcase-material-asset-inspector",
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops",
   "showcase-blockfall-reactor",
-  "showcase-public-racing-presentation-proof",
-  "showcase-public-platformer-presentation-proof",
   "showcase-turbo-drift-circuit",
   "showcase-skyline-runner",
   "showcase-data-galaxy",
@@ -216,10 +213,36 @@ function copyAuraAssetFile(assetUrl) {
 }
 
 function assertBuiltRoutes() {
+  const auraClashPlayable = path.join(distDir, "showcase", "aura-clash", "playable", "index.html");
+  if (!existsSync(auraClashPlayable)) {
+    throw new Error(`homepage Aura Clash playable route was not emitted: ${auraClashPlayable}`);
+  }
+
+  const supersededPublicRoutes = [
+    "showcase-material-asset-inspector",
+    "showcase-public-racing-presentation-proof",
+    "showcase-public-platformer-presentation-proof"
+  ];
+  for (const route of supersededPublicRoutes) {
+    const staleRoute = path.join(distDir, "apps", route);
+    rmSync(staleRoute, { recursive: true, force: true });
+    const stalePoster = path.join(distDir, "previews", "showcase", `${route}.png`);
+    rmSync(stalePoster, { force: true });
+  }
+
   for (const route of showcaseRoutes) {
     const builtHtml = path.join(distDir, "apps", route, "index.html");
     if (!existsSync(builtHtml)) {
       throw new Error(`showcase route did not build: ${builtHtml}`);
+    }
+  }
+
+  for (const route of supersededPublicRoutes) {
+    if (existsSync(path.join(distDir, "apps", route, "index.html"))) {
+      throw new Error(`superseded or duplicate route must not be published by marketing build: ${route}`);
+    }
+    if (existsSync(path.join(distDir, "previews", "showcase", `${route}.png`))) {
+      throw new Error(`superseded or duplicate poster must not be published by marketing build: ${route}`);
     }
   }
 

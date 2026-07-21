@@ -849,12 +849,20 @@ function createPlayableSurfaces(primitives: readonly PrimitiveGeometry[], bounds
     height: 1.1,
     kind: "checkpoint" as const
   }));
+  const widestGap = topSurfaces.slice(0, -1).map((surface, index) => {
+    const next = topSurfaces[index + 1];
+    const right = surface.x + surface.width / 2;
+    const left = next.x - next.width / 2;
+    return { left, right, width: Math.max(0, left - right), floorY: Math.min(surface.y, next.y) };
+  }).sort((a, b) => b.width - a.width)[0];
+  const hazardWidth = round3(Math.max(0.12, Math.min(0.3, (widestGap?.width ?? 0.18) * 0.8)));
   const hazard: ExtractedPlatformerPlayableSurface = {
     id: "asset-hazard-gap",
-    x: round3(maxX * 0.58),
-    y: round3((topSurfaces[Math.min(2, topSurfaces.length - 1)]?.y ?? 0.4) + 0.34),
-    width: 0.48,
-    height: 0.24,
+    x: round3(widestGap ? (widestGap.left + widestGap.right) / 2 : maxX * 0.58),
+    // Keep hazards beneath landing surfaces so they punish a missed jump without creating a respawn trap on the route.
+    y: round3((widestGap?.floorY ?? 0) - 0.34),
+    width: hazardWidth,
+    height: 0.18,
     kind: "hazard"
   };
   return [...topSurfaces, finish, hazard, ...checkpoints];

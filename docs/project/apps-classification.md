@@ -33,12 +33,12 @@ still not be a public release candidate.
 | Route directory | Classification | Public use |
 | --- | --- | --- |
 | `showcase-product-configurator` | release-ready candidate | Public product configurator example with bounded material/configuration claims. |
-| `showcase-material-asset-inspector` | release-ready candidate | Public material/asset inspection demo with bounded root material claims. |
+| `showcase-material-asset-inspector` | removed-from-public-showcase | Retained typed-asset inspection tool; not promoted because Product Configurator already uses the same headphone hero. |
 | `showcase-smart-city-control` | release-ready candidate | Public visual operations demo; not a real city simulation claim. |
 | `showcase-cinematic-architecture` | release-ready candidate | Public architecture presentation with bounded rendering claims. |
 | `showcase-digital-twin-ops` | release-ready candidate | Public visual ops/dashboard demo; not a real digital-twin integration claim. |
 | `showcase-blockfall-reactor` | release-ready candidate | Public bounded falling-block route with retained gameplay proof. |
-| `showcase-public-racing-presentation-proof` | release-ready candidate | Public bounded racing presentation proof with certified retained geometry and pair evidence. |
+| `showcase-public-racing-presentation-proof` | removed-from-public-showcase | Superseded by Turbo Drift Circuit; retained as historical certification evidence. |
 | `showcase-public-platformer-presentation-proof` | removed-from-public-showcase | Superseded by Skyline Runner; retained only as inspectable historical certification evidence. |
 | `showcase-racing-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |

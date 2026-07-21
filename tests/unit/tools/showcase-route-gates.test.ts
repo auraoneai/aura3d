@@ -205,11 +205,9 @@ type ReleaseClass =
 
 const publicReleaseCandidateIds = new Set([
   "showcase-product-configurator",
-  "showcase-material-asset-inspector",
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
   "showcase-blockfall-reactor",
-  "showcase-public-racing-presentation-proof",
   "showcase-digital-twin-ops",
   "showcase-skyline-runner",
   "showcase-turbo-drift-circuit"
@@ -217,7 +215,11 @@ const publicReleaseCandidateIds = new Set([
 const internalDiagnosticIds = new Set(["showcase-data-galaxy", "showcase-webgpu-particle-lab"]);
 const gameLayerDiagnosticIds = new Set(["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]);
 const prototypeBlockedIds = new Set<string>();
-const removedFromPublicShowcaseIds = new Set(["showcase-public-platformer-presentation-proof"]);
+const removedFromPublicShowcaseIds = new Set([
+  "showcase-public-platformer-presentation-proof",
+  "showcase-public-racing-presentation-proof",
+  "showcase-material-asset-inspector"
+]);
 const gameLayerDiagnosticExpectations = new Map([
   ["showcase-racing-game-layer-proof", {
     category: "racing",
@@ -426,8 +428,7 @@ describe("showcase route gate registry", () => {
       if (route.gameTemplateStatus) {
         expect(route.gameTemplateStatus.category, `${route.id} game template category`).toMatch(/^[a-z][a-z0-9-]*$/);
         expect(typeof route.gameTemplateStatus.publicTemplateReady, `${route.id} game template readiness`).toBe("boolean");
-        if (route.releaseClass === "release-ready candidate") {
-          expect(route.gameTemplateStatus.publicTemplateReady, `${route.id} release candidate game template`).toBe(true);
+        if (route.gameTemplateStatus.publicTemplateReady) {
           expect(route.gameTemplateStatus.evidence?.length ?? 0, `${route.id} game template evidence`).toBeGreaterThan(0);
         } else {
           expect(route.gameTemplateStatus.blocker, `${route.id} game template blocker`).toMatch(/^(category-template|asset-pair|visual-review):/);

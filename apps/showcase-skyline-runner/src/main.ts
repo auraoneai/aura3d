@@ -32,33 +32,39 @@ const platformerScene = game.platformerSceneBinding({
   worldY: -0.72,
   worldZ: -0.46,
   playerZ: 0.42,
-  playerTargetHeight: 0.32,
+  playerTargetHeight: 0.44,
   playerYOffset: 0
 });
+const platforms = level.platforms ?? [];
+const checkpoints = level.checkpoints ?? [];
+const hazards = level.hazards ?? [];
+const characterScaleRatio = level.assetBinding.characterScaleRatio ?? 1;
 const platformerState = game.platformer(level);
 let state = platformerState.snapshot();
 const initialPlayerPose = platformerScene.toScenePlayer(state.player);
+let playerFacing = 1;
+const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
 let frameCount = 0;
 
 const completionProof = {
   completed: true,
   stable: true,
   finalTime: level.assetBinding.authoredPlayableSeconds,
-  checkpoints: level.checkpoints.map((checkpoint) => checkpoint.id),
+  checkpoints: checkpoints.map((checkpoint) => checkpoint.id),
   eventCounts: {
-    respawn: level.hazards.length > 0 ? 1 : 0,
+    respawn: hazards.length > 0 ? 1 : 0,
     finish: level.finish ? 1 : 0
   }
 };
 const kitContractProof = {
   movementChangesPosition: false,
   jumpChangesVerticalState: false,
-  checkpointOrProgression: level.checkpoints.length >= 6,
-  hazardRespawnOrRetry: level.hazards.length > 0,
+  checkpointOrProgression: checkpoints.length >= 6,
+  hazardRespawnOrRetry: hazards.length > 0,
   finishProgression: Boolean(level.finish),
-  checkpointEvent: level.checkpoints.length >= 6,
-  hazardEvent: level.hazards.length > 0,
-  respawnEvent: level.hazards.length > 0,
+  checkpointEvent: checkpoints.length >= 6,
+  hazardEvent: hazards.length > 0,
+  respawnEvent: hazards.length > 0,
   finishEvent: Boolean(level.finish),
   resetRestoresStart: false
 };
@@ -104,8 +110,8 @@ const app = createAuraApp("#app", {
       name: "platformer-readable-character",
       role: "primaryCharacter",
       scaleMode: "fit",
-      targetHeight: 0.32
-    }).position(...initialPlayerPose.position).runtime(game.runtimeNode("platformer-player", {
+      targetHeight: 0.44
+    }).position(...initialPlayerPose.position).rotate(0, playerYawForFacing(playerFacing), 0).runtime(game.runtimeNode("platformer-player", {
       tags: ["player", "character", "typed-primary-asset"]
     })))
     .add(lights.studio({ intensity: 1.5 }))
@@ -117,8 +123,8 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "platformer",
     camera: platformerCamera,
-    subject: { position: initialPlayerPose.position, rotation: [0, 0, 0], targetSize: 0.32 },
-    playSpacePoints: level.platforms.flatMap((surface) => [
+    subject: { position: initialPlayerPose.position, rotation: [0, 0, 0], targetSize: 0.44 },
+    playSpacePoints: platforms.flatMap((surface) => [
       platformerScene.toScenePoint({ x: surface.x, y: surface.y + surface.height }),
       platformerScene.toScenePoint({ x: surface.x + surface.width, y: surface.y + surface.height })
     ]),
@@ -139,7 +145,7 @@ const hud = {
   surface: requireElement("surface-value")
 };
 function readAnimationState(): string {
-  if (state.events.some((event) => event.type === "hit")) return "hit";
+  if (state.events.some((event) => event.type === "hazard")) return "hit";
   if (state.player.vy > 0.05) return "jump";
   if (state.player.vy < -0.05) return "fall";
   if (Math.abs(state.player.vx) > 0.01) return "run";
@@ -151,7 +157,7 @@ function rememberAnimationState(): void {
   if (lastState !== nextState) animationStateHistory.push({ state: nextState });
 }
 function playerSurfaceAlignment() {
-  const standingSurface = level.platforms.find((surface) => {
+  const standingSurface = platforms.find((surface) => {
     const minX = surface.x - 0.04;
     const maxX = surface.x + surface.width + 0.04;
     const surfaceTop = surface.y + surface.height;
@@ -174,7 +180,9 @@ function routeDiagnostics() {
     snapshot: {
       x: state.player.x,
       y: state.player.y,
-      vy: state.player.vy
+      vy: state.player.vy,
+      facing: playerFacing,
+      facingYaw: playerYawForFacing(playerFacing)
     },
     sceneBinding: platformerScene.evidence,
     surfaceContact: platformerScene.contactPointForPlayer(state.player),
@@ -205,9 +213,9 @@ const mountedEvidence = {
   levelDesign: {
     authoredPlayableSeconds: level.assetBinding.authoredPlayableSeconds,
     minimumMeaningfulPlaySeconds: 30,
-      surfaceCount: level.platforms.length,
+      surfaceCount: platforms.length,
       styleCompatible: true,
-      scaleCompatible: level.assetBinding.characterScaleRatio > 0 && level.assetBinding.characterScaleRatio <= 1,
+      scaleCompatible: characterScaleRatio > 0 && characterScaleRatio <= 1,
       surfaceContactProven: initialSurfaceAlignment.feetOnSurface,
       visibleGameGeometrySource: "surface-map-bound-game-level",
       worldAssetUsedForSurfaceEvidence: "showcaseKenneyVerdantPlatformerWorld",
@@ -242,7 +250,9 @@ updatePlatformerHud();
 function publishPlatformerEvidence(): void {
   rememberAnimationState();
   const scenePlayer = platformerScene.toScenePlayer(state.player);
+  if (Math.abs(state.player.vx) > 0.01) playerFacing = state.player.vx >= 0 ? 1 : -1;
   player.setPosition(...scenePlayer.position);
+  player.setRotation(0, playerYawForFacing(playerFacing), 0);
   mountedEvidence.status = "running";
   mountedEvidence.platformerStateStatus = state.status;
   mountedEvidence.frameCount = frameCount;
@@ -263,6 +273,7 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("reset")) {
     state = platformerState.reset();
+    playerFacing = 1;
     frameCount += 1;
     mountedEvidence.gameplay.resetWorks = true;
     kitContractProof.resetRestoresStart = state.checkpointId === "start" && state.collected.length === 0;

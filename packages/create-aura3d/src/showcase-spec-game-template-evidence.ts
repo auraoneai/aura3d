@@ -337,7 +337,9 @@ function platformerPlanFromSurfaceMap(
   extractionReasons: readonly string[],
   extractionBlockers: readonly string[]
 ): PlatformerTemplatePlan {
-  const playableSurfaces = playableSurfaceMap.surfaces.filter((surface) => surface.kind === "ground" || surface.kind === "platform" || surface.kind === "moving");
+  const playableSurfaces = playableSurfaceMap.surfaces.filter((surface) =>
+    surface.kind === "ground" || surface.kind === "platform" || surface.kind === "moving" || surface.kind === "finish"
+  );
   const platforms: readonly PlatformerSurface[] = playableSurfaces.map((surface) => ({
     id: surface.id,
     x: Number((surface.x - surface.width / 2).toFixed(3)),
@@ -345,7 +347,7 @@ function platformerPlanFromSurfaceMap(
     width: surface.width,
     height: surface.height,
     worldAsset: playableSurfaceMap.assetId,
-    evidenceRole: surface.kind === "moving" ? "bridge" : "playable-surface"
+    evidenceRole: surface.kind === "moving" ? "bridge" : surface.kind === "finish" ? "finish-run" : "playable-surface"
   }));
   const checkpointSurfaces = playableSurfaceMap.surfaces.filter((surface) => surface.kind === "checkpoint");
   const hazardSurfaces = playableSurfaceMap.surfaces.filter((surface) => surface.kind === "hazard");

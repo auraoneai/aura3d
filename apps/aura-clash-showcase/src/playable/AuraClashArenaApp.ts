@@ -361,11 +361,11 @@ export function mountAuraClashArenaApp(): void {
     <main class="aca" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
-        <a class="aca-brand" href="/playable/"><span></span>Aura Clash Arena</a>
+        <a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a>
         <div class="aca-links">
-          <a href="/playable/">Playable</a>
+          <a href="/showcase/aura-clash/playable/">Playable</a>
           <a href="#evidence">Evidence</a>
-          <a href="/deploy-check/">Deploy check</a>
+          <a href="/showcase/aura-clash/deploy-check/">Deploy check</a>
           <a href="https://github.com/auraoneai/aura3d">GitHub</a>
           <a href="https://www.npmjs.com/package/@aura3d/engine">npm</a>
           <button type="button" id="arena-tweaks-toggle" class="aca-link-button" aria-expanded="false" aria-controls="arena-tweaks">Tweaks</button>

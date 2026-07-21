@@ -134,10 +134,10 @@
       },
       {
         "id": "asset-hazard-gap",
-        "x": 8.665,
-        "y": 0.772,
-        "width": 0.48,
-        "height": 0.24,
+        "x": 9.27,
+        "y": 0.128,
+        "width": 0.192,
+        "height": 0.18,
         "kind": "hazard"
       },
       {
@@ -300,7 +300,8 @@
         "asset-platform-07",
         "asset-platform-08",
         "asset-platform-09",
-        "asset-platform-10"
+        "asset-platform-10",
+        "asset-finish-run"
       ]
     }
   ],
@@ -413,6 +414,15 @@
       "height": 0.22,
       "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
       "evidenceRole": "playable-surface"
+    },
+    {
+      "id": "asset-finish-run",
+      "x": 15.24,
+      "y": 0.81,
+      "width": 1.4,
+      "height": 0.3,
+      "worldAsset": "showcaseKenneyVerdantPlatformerWorld",
+      "evidenceRole": "finish-run"
     }
   ],
   "checkpoints": [
@@ -456,10 +466,10 @@
   "hazards": [
     {
       "id": "asset-hazard-gap",
-      "x": 8.425,
-      "y": 0.772,
-      "width": 0.48,
-      "height": 0.24,
+      "x": 9.174,
+      "y": 0.128,
+      "width": 0.192,
+      "height": 0.18,
       "respawn": true
     }
   ],

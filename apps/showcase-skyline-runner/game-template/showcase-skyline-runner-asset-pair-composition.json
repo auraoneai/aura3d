@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "sha256": "sha256-95bd1c7e6af04bd64f1fdecd502b28d5233ae85083c7801daf9d74e0731cdc6e",
+    "sha256": "sha256-fa3e9ed99301c5a2b82dbadf9565d1b03ec7bf0ecec9b7b4314f4eaa427ffab0",
     "width": 1440,
     "height": 900
   },
@@ -68,9 +68,9 @@
       },
       "measured": {
         "contactProven": true,
-        "normalizedOffset": 0.02,
-        "screenContactDistance": 3.4632390907934747,
-        "screenContactDistanceRatio": 0.0333
+        "normalizedOffset": 0,
+        "screenContactDistance": 6.354370543177356,
+        "screenContactDistanceRatio": 0.0432
       },
       "blockers": []
     },
@@ -85,7 +85,7 @@
         "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.0842,
+        "playSpaceAreaRatio": 0.0813,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
@@ -102,11 +102,11 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.1182,
+        "subjectWorldRatio": 0.167,
         "characterScaleRatio": 0.42,
-        "projectedTargetHeight": 100.554,
-        "renderedSubjectHeight": 104,
-        "scaleDelta": 0.034270143405533325
+        "projectedTargetHeight": 138.266,
+        "renderedSubjectHeight": 147,
+        "scaleDelta": 0.06316809627818849
       },
       "blockers": []
     },

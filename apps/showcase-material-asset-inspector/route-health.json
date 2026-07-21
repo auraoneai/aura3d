@@ -3,9 +3,9 @@
   "generatedAt": "2026-06-21",
   "appId": "showcase-material-asset-inspector",
   "route": "/apps/showcase-material-asset-inspector/",
-  "classification": "candidate",
-  "publicShowcase": true,
-  "promotionStatus": "release-ready-with-current-route-primary-and-deploy-evidence",
+  "classification": "removed-from-public-showcase",
+  "publicShowcase": false,
+  "promotionStatus": "retained-accessible-route-not-promoted",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",

@@ -59,11 +59,11 @@ The package track can be considered for release when package tests, API docs,
 packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
-The current showcase release-candidate track passes 9/9 current public routes. Two internal diagnostics and two game-layer diagnostic harnesses remain outside the public count. The release gate is `node tools/showcase-library/build-and-check.mjs`.
+The current showcase release-candidate track passes 7/7 current route-library candidates; Aura Clash is promoted separately as the flagship game experience. Two internal diagnostics and two game-layer diagnostic harnesses remain outside the public count. The release gate is `node tools/showcase-library/build-and-check.mjs`.
 
 Current retained result:
 
-- public release candidates: 9/9 passing;
+- public route-library candidates: 7/7 passing;
 - internal diagnostics: 2 retained and not counted as public failures;
 - game-layer diagnostics: 2 retained as contract/debug harnesses, not public examples;
 - prototype-blocked routes: 0;

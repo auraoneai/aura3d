@@ -36,7 +36,7 @@
       "path": "/apps/showcase-material-asset-inspector/",
       "globalName": "__AURA3D_SHOWCASE_MATERIAL_ASSET_INSPECTOR__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "removed-from-public-showcase",
       "primaryAssets": [
         "showcaseHeadphones"
       ],
@@ -161,7 +161,7 @@
       "path": "/apps/showcase-public-racing-presentation-proof/",
       "globalName": "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "removed-from-public-showcase",
       "primaryAssets": [
         "showcaseTexturedSportsCar",
         "showcaseTsukubaCircuit"

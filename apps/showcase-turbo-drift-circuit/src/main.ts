@@ -21,7 +21,9 @@ const route = game.assetBoundRacingRoute({
 const routeWidth = 1.792;
 const authoredLapSeconds = 45;
 const certifiedMaxSpeed = route.assetBinding.speedModel.certifiedSpeed;
-const certifiedAcceleration = Number((certifiedMaxSpeed * 4.1).toFixed(3));
+const gameplayPaceMultiplier = 4;
+const gameplayMaxSpeed = Number((certifiedMaxSpeed * gameplayPaceMultiplier).toFixed(3));
+const certifiedAcceleration = Number((gameplayMaxSpeed * 4.1).toFixed(3));
 const racingScene = game.racingSceneBinding({
   topology: trackTopology,
   route,
@@ -52,7 +54,7 @@ const racingState = game.racing({
   startProgress: 0,
   checkpointRadius: 0.1,
   lapsToWin: 3,
-  maxSpeed: certifiedMaxSpeed,
+  paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
@@ -63,7 +65,7 @@ const ghostState = game.racing({
   startProgress: 0.28,
   checkpointRadius: 0.1,
   lapsToWin: 3,
-  maxSpeed: certifiedMaxSpeed,
+  paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
@@ -214,6 +216,8 @@ const mountedEvidence = {
   raceDesign: {
     authoredLapSeconds,
     certifiedMaxSpeed,
+    gameplayPaceMultiplier,
+    gameplayMaxSpeed,
     speedModel: "route-length-over-authored-lap-seconds",
     minimumMeaningfulLapSeconds: 30,
       routeAlignedToVisibleTrack: routeProof.routeAlignedToVisibleTrack,
@@ -310,7 +314,7 @@ app.onFrame(({ dt }) => {
 function setupRacingPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = "<span class=\"panel__label\">Certified circuit</span>\n<h1>Turbo Drift Circuit</h1>\n<p class=\"panel__lede\">A mesh-bound time trial with a typed race car, six checkpoint gates, and a certified multi-lap pace.</p>\n<section class=\"metrics-row\" aria-label=\"Live race metrics\">\n  <article class=\"metric\"><span>Speed</span><strong id=\"speed-value\">0.000</strong></article>\n  <article class=\"metric\"><span>Lap</span><strong id=\"lap-value\">1</strong></article>\n  <article class=\"metric\"><span>Gate</span><strong id=\"checkpoint-value\">0</strong></article>\n  <article class=\"metric\"><span>Status</span><strong id=\"status-value\">Ready</strong></article>\n</section>\n<section class=\"panel__section\" aria-label=\"Track contract\"><h2>Track contract</h2><span class=\"panel__value\" id=\"alignment-value\">Road locked</span><p class=\"claim\">The visible circuit model and racing route share the same hash-bound topology transform.</p></section>\n<section class=\"panel__section\" aria-label=\"Race controls\"><h2>Drive</h2><div class=\"control-cluster\"><button id=\"throttle-control\" type=\"button\">Throttle</button><button id=\"brake-control\" type=\"button\">Brake</button><button id=\"left-control\" type=\"button\">Steer left</button><button id=\"right-control\" type=\"button\">Steer right</button><button id=\"reset-control\" type=\"button\">Reset race</button></div><ul class=\"controls-list\"><li><kbd>W</kbd> Throttle</li><li><kbd>A / D</kbd> Steer</li><li><kbd>R</kbd> Reset</li></ul></section>";
+  panel.innerHTML = "<span class=\"panel__label\">Certified circuit</span>\n<h1>Turbo Drift Circuit</h1>\n<p class=\"panel__lede\">A mesh-bound time trial with a typed race car, six checkpoint gates, and a certified multi-lap pace.</p>\n<section class=\"metrics-row\" aria-label=\"Live race metrics\">\n  <article class=\"metric\"><span>Speed · km/h</span><strong id=\"speed-value\">0</strong></article>\n  <article class=\"metric\"><span>Lap</span><strong id=\"lap-value\">1</strong></article>\n  <article class=\"metric\"><span>Gate</span><strong id=\"checkpoint-value\">0</strong></article>\n  <article class=\"metric\"><span>Status</span><strong id=\"status-value\">Ready</strong></article>\n</section>\n<section class=\"panel__section\" aria-label=\"Track contract\"><h2>Track contract</h2><span class=\"panel__value\" id=\"alignment-value\">Road locked</span><p class=\"claim\">The visible circuit model and racing route share the same hash-bound topology transform.</p></section>\n<section class=\"panel__section\" aria-label=\"Race controls\"><h2>Drive</h2><div class=\"control-cluster\"><button id=\"throttle-control\" type=\"button\">Throttle</button><button id=\"brake-control\" type=\"button\">Brake</button><button id=\"left-control\" type=\"button\">Steer left</button><button id=\"right-control\" type=\"button\">Steer right</button><button id=\"reset-control\" type=\"button\">Reset race</button></div><ul class=\"controls-list\"><li><kbd>W</kbd> Throttle</li><li><kbd>A / D</kbd> Steer</li><li><kbd>R</kbd> Reset</li></ul></section>";
   bindHoldControl("throttle-control", "KeyW");
   bindHoldControl("brake-control", "KeyS");
   bindHoldControl("left-control", "KeyA");
@@ -331,7 +335,7 @@ function pulseKey(code: string): void {
   window.setTimeout(() => window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true })), 40);
 }
 function updateRacingHud(): void {
-  hud.speed.textContent = round(Math.abs(raceSnapshot.speed)).toFixed(3);
+  hud.speed.textContent = String(Math.round(Math.abs(raceSnapshot.speed) * 36));
   hud.lap.textContent = String(raceSnapshot.lap);
   hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
   hud.status.textContent = raceSnapshot.status;

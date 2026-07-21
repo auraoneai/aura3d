@@ -86,7 +86,7 @@ interface SkylineEvidence {
     readonly sampleFrame: number;
   };
   readonly diagnostics?: {
-    readonly snapshot?: { readonly x: number; readonly y: number; readonly vy: number };
+    readonly snapshot?: { readonly x: number; readonly y: number; readonly vy: number; readonly facing?: number; readonly facingYaw?: number };
     readonly surfaceContactAlignment?: {
       readonly feetOnSurface: boolean;
       readonly surfaceId: string;
@@ -223,6 +223,41 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(580);
     const after = await readSkyline(page);
     const afterPng = await capture(page, "showcase-skyline-runner", "after-input");
+    const rightFacing = after.diagnostics?.snapshot;
+    await page.keyboard.down("KeyA");
+    await page.waitForTimeout(180);
+    await page.keyboard.up("KeyA");
+    await page.waitForTimeout(80);
+    const leftFacing = await readSkyline(page);
+
+    // Reach checkpoint 03 with ordinary keyboard play, miss the next jump naturally,
+    // then prove the repaired checkpoint respawn can recover and continue forward.
+    await page.keyboard.press("KeyR");
+    await page.waitForTimeout(120);
+    await page.keyboard.down("KeyD");
+    for (let hop = 0; hop < 11; hop += 1) {
+      await page.keyboard.press("Space");
+      await page.waitForTimeout(620);
+    }
+    await page.keyboard.up("KeyD");
+    await page.waitForTimeout(120);
+    const checkpointSpawn = await readSkyline(page);
+    const checkpointDeaths = checkpointSpawn.deaths;
+    await page.keyboard.down("KeyD");
+    await expect.poll(async () => (await readSkyline(page)).deaths, { timeout: 4_000 }).toBeGreaterThan(checkpointDeaths);
+    await page.keyboard.up("KeyD");
+    await page.waitForTimeout(120);
+    const respawned = await readSkyline(page);
+    await page.keyboard.down("KeyD");
+    await page.waitForTimeout(120);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(620);
+    await page.keyboard.press("Space");
+    await page.waitForTimeout(620);
+    await page.keyboard.up("KeyD");
+    await page.waitForTimeout(120);
+    const continued = await readSkyline(page);
+
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
     const reset = await readSkyline(page);
@@ -230,6 +265,12 @@ test.describe("showcase gameplay proof", () => {
     const beforeContact = before.diagnostics?.surfaceContactAlignment;
 
     check((after.diagnostics?.snapshot?.x ?? 0) > (before.diagnostics?.snapshot?.x ?? 0) + 0.35, blockers, "movement did not change runner x position");
+    check(rightFacing?.facing === 1 && rightFacing.facingYaw === Math.PI / 2, blockers, "runner did not face right along forward travel");
+    check(leftFacing.diagnostics?.snapshot?.facing === -1 && leftFacing.diagnostics.snapshot.facingYaw === -Math.PI / 2, blockers, "runner did not turn left with reverse travel");
+    check(checkpointSpawn.checkpointId === "asset-checkpoint-03", blockers, "mid-course checkpoint setup failed");
+    check(respawned.deaths > checkpointSpawn.deaths, blockers, "missed mid-course jump did not respawn the runner");
+    check((continued.diagnostics?.snapshot?.x ?? 0) > (respawned.diagnostics?.snapshot?.x ?? 0) + 0.65, blockers, "runner remained blocked after checkpoint respawn");
+    check(continued.deaths === respawned.deaths, blockers, "runner re-entered a death loop after checkpoint respawn");
     check(states.includes("jump") || Math.abs(after.diagnostics?.snapshot?.vy ?? 0) > 0.05 || (after.diagnostics?.snapshot?.y ?? 0) !== (before.diagnostics?.snapshot?.y ?? 0), blockers, "jump did not change vertical or animation state");
     check(after.animation?.sampleFrame !== before.animation?.sampleFrame, blockers, "animation state frame did not advance");
     check(after.kitContractProof?.checkpointEvent === true && after.kitContractProof.hazardEvent === true && after.kitContractProof.respawnEvent === true && after.kitContractProof.finishEvent === true, blockers, "checkpoint/hazard/respawn/finish progression is not proven");

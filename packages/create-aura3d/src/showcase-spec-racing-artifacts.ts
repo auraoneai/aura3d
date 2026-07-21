@@ -70,6 +70,7 @@ export function createRacingRouteSource(spec: ShowcaseSpec, racing: ShowcaseRaci
   const plan = createRacingTemplatePlan(racing);
   const sceneScale = racingSceneScale(plan.topology);
   const certifiedAccelerationMultiplier = 4.1;
+  const gameplayPaceMultiplier = 4;
   const compositionReport = racing.raceDesign.assetPairEvidence?.compositionReport ?? spec.evidence.assetPairCompositionReport ?? "missing-composition-report";
   const selectedCameraMode = racing.raceDesign.assetPairEvidence?.cameraMode ?? "chase";
   const cameraReadabilityPass = racing.raceDesign.assetPairEvidence?.checks?.some((check) => check.id === "camera-readability" && check.verdict === "pass") === true;
@@ -123,7 +124,9 @@ const route = game.assetBoundRacingRoute({
 const routeWidth = ${plan.width};
 const authoredLapSeconds = ${plan.authoredLapSeconds};
 const certifiedMaxSpeed = route.assetBinding.speedModel.certifiedSpeed;
-const certifiedAcceleration = Number((certifiedMaxSpeed * ${certifiedAccelerationMultiplier}).toFixed(3));
+const gameplayPaceMultiplier = ${gameplayPaceMultiplier};
+const gameplayMaxSpeed = Number((certifiedMaxSpeed * gameplayPaceMultiplier).toFixed(3));
+const certifiedAcceleration = Number((gameplayMaxSpeed * ${certifiedAccelerationMultiplier}).toFixed(3));
 const racingScene = game.racingSceneBinding({
   topology: trackTopology,
   route,
@@ -154,7 +157,7 @@ const racingState = game.racing({
   startProgress: 0,
   checkpointRadius: 0.1,
   lapsToWin: ${lapsToWin},
-  maxSpeed: certifiedMaxSpeed,
+  paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
@@ -165,7 +168,7 @@ const ghostState = game.racing({
   startProgress: 0.28,
   checkpointRadius: 0.1,
   lapsToWin: ${lapsToWin},
-  maxSpeed: certifiedMaxSpeed,
+  paceMultiplier: gameplayPaceMultiplier,
   acceleration: certifiedAcceleration,
   drag: 0.28,
   steerRate: 0.62
@@ -300,6 +303,8 @@ const mountedEvidence = {
   raceDesign: {
     authoredLapSeconds,
     certifiedMaxSpeed,
+    gameplayPaceMultiplier,
+    gameplayMaxSpeed,
     speedModel: "route-length-over-authored-lap-seconds",
     minimumMeaningfulLapSeconds: ${racing.raceDesign.minLapSeconds},
       routeAlignedToVisibleTrack: routeProof.routeAlignedToVisibleTrack,
@@ -417,7 +422,7 @@ function pulseKey(code: string): void {
   window.setTimeout(() => window.dispatchEvent(new KeyboardEvent("keyup", { code, bubbles: true })), 40);
 }
 function updateRacingHud(): void {
-  hud.speed.textContent = round(Math.abs(raceSnapshot.speed)).toFixed(3);
+  hud.speed.textContent = String(Math.round(Math.abs(raceSnapshot.speed) * 36));
   hud.lap.textContent = String(raceSnapshot.lap);
   hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
   hud.status.textContent = raceSnapshot.status;
@@ -436,7 +441,7 @@ function createRacingPanelMarkup(spec: ShowcaseSpec): string {
 <h1>${spec.label}</h1>
 <p class="panel__lede">A mesh-bound time trial with a typed race car, six checkpoint gates, and a certified multi-lap pace.</p>
 <section class="metrics-row" aria-label="Live race metrics">
-  <article class="metric"><span>Speed</span><strong id="speed-value">0.000</strong></article>
+  <article class="metric"><span>Speed · km/h</span><strong id="speed-value">0</strong></article>
   <article class="metric"><span>Lap</span><strong id="lap-value">1</strong></article>
   <article class="metric"><span>Gate</span><strong id="checkpoint-value">0</strong></article>
   <article class="metric"><span>Status</span><strong id="status-value">Ready</strong></article>

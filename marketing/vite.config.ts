@@ -68,7 +68,9 @@ function copyMarketingPublicFiles() {
 
 function copyAuraClashApp(outDir: string): void {
   const sourceDir = resolve(repoRoot, "apps/aura-clash-showcase/dist");
-  if (!existsSync(resolve(sourceDir, "index.html"))) return;
+  if (!existsSync(resolve(sourceDir, "index.html"))) {
+    throw new Error("Aura Clash production build is missing. Run the Aura Clash build before the marketing build.");
+  }
 
   copyDir(resolve(sourceDir, "assets"), resolve(outDir, "assets"));
   const routeRoots = [

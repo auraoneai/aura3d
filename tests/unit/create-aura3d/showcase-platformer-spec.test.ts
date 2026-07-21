@@ -85,7 +85,7 @@ describe("showcase platformer spec compiler", () => {
       expect(source).toContain("game.platformerPresentationSurfaces");
       expect(source).toContain("mode: \"asset-overlay\"");
       expect(source).toContain("guideVisibility: \"public\"");
-      expect(source).toContain("targetHeight: 0.32");
+      expect(source).toContain("targetHeight: 0.44");
       expect(source).toContain("mode: \"follow\"");
       expect(source).toContain("distance: 3.7");
       expect(source).not.toContain("showcasePlatformerWorldLevel");
@@ -127,6 +127,9 @@ describe("showcase platformer spec compiler", () => {
       expect(source).not.toContain("asset-hazard-gap");
       expect(geometryContract).toContain("asset-finish-run");
       expect(geometryContract).toContain("asset-hazard-gap");
+      expect(geometryContract).toContain('"id": "asset-finish-run"');
+      expect(source).toContain("playerYawForFacing");
+      expect(source).toContain("player.setRotation(0, playerYawForFacing(playerFacing), 0)");
       expect(source).toContain("app.onFrame");
       expect(source).toContain("Object.defineProperty(window, \"__AURA3D_SHOWCASE_SKYLINE_RUNNER__\"");
       expect(source).toContain("controls: {");

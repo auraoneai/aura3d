@@ -265,6 +265,8 @@ describe("public game geometry certification", () => {
     expect(racing.surfaceQuery.query(route.points[0] ?? { x: 0, y: 0 }).onTrack).toBe(true);
     expect(racing.surfaceQuery.query({ x: 100, y: 100 }).onTrack).toBe(false);
     expect(racing.maxSpeed).toBe(route.assetBinding.speedModel.certifiedSpeed);
+    const arcadePace = game.racing({ route, paceMultiplier: 4 });
+    expect(arcadePace.maxSpeed).toBeCloseTo(route.assetBinding.speedModel.certifiedSpeed * 4, 6);
     const initialHeading = racing.snapshot().heading;
     let driven = racing.snapshot();
     for (let frame = 0; frame < 120; frame += 1) {

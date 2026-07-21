@@ -597,7 +597,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.4.4 baseline, and the release-candidate showcase gate passes 9/9 current public examples while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
+Expected current state — The scoped package gates pass for the 1.4.4 baseline, and the release-candidate showcase gate passes 7/7 current route-library examples, with Aura Clash promoted separately as the flagship game experience while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
 
 ## Contributing
 
