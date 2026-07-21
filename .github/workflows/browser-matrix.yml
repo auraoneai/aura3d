@@ -41,6 +41,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Build workspace packages
+        run: pnpm build:raw
+
       - name: Browser tests
         run: pnpm test:browser
 

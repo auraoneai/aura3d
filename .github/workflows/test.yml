@@ -116,8 +116,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run unit tests
-        run: pnpm test
+      - name: Run source package tests
+        run: pnpm test:packages
         env:
           NODE_ENV: test
 
@@ -131,9 +131,9 @@ jobs:
             coverage/
           retention-days: 7
 
-  # Coverage job (runs only once on ubuntu + Node 22)
+  # Distribution package tests run once after a clean package build.
   coverage:
-    name: Test Coverage
+    name: Distribution Package Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -157,38 +157,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Run tests with coverage
-        run: pnpm test:coverage
+      - name: Build workspace packages
+        run: pnpm build:raw
+
+      - name: Run distribution package tests
+        run: pnpm test:packages:dist
         env:
           NODE_ENV: test
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          flags: unittests
-          name: a3d-coverage
-          fail_ci_if_error: false
-          verbose: true
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: |
-            coverage/
-            test-reports/
-          retention-days: 30
-
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: romeovs/lcov-reporter-action@v0.3.1
-        with:
-          lcov-file: ./coverage/lcov.info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          delete-old-comments: true
-        continue-on-error: true
 
   # Integration tests (if they exist)
   integration:
