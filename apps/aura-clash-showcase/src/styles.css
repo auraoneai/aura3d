@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@500;700;900&family=IBM+Plex+Mono:wght@400;600;700&display=swap");
+@import url("/fonts/local.css");
 
 :root {
   color-scheme: dark;

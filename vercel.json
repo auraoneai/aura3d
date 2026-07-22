@@ -4,6 +4,10 @@
   "outputDirectory": ".",
   "rewrites": [
     {
+      "source": "/fonts/:path*",
+      "destination": "/marketing/public/fonts/:path*"
+    },
+    {
       "source": "/showcase/aura-clash",
       "destination": "/apps/aura-clash-showcase/"
     },
