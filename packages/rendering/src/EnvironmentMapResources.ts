@@ -1,4 +1,9 @@
 import { type TextureMipLevelDescriptor } from "./Texture";
+import {
+  convolveEnvironmentIrradiance,
+  prefilterGgxEnvironmentLevels,
+  specularPrefilterLevelRoughness
+} from "./SpecularPrefilter";
 
 export type EnvironmentColorSpace = "linear" | "srgb";
 export type EnvironmentInputEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
@@ -60,6 +65,7 @@ export interface EnvironmentResourceSetOptions {
   readonly toneMapping?: EnvironmentToneMappingOperator;
   readonly specularLevels?: number;
   readonly specularBlurRadius?: number;
+  readonly specularSampleCount?: number;
   readonly irradianceWidth?: number;
   readonly irradianceHeight?: number;
   readonly irradianceBlurRadius?: number;
@@ -79,6 +85,10 @@ export interface EnvironmentMapResourceSet {
     readonly hdrSource: boolean;
     readonly maxLinearValue: number;
     readonly specularMipCount: number;
+    /** Roughness each specular level was GGX-filtered for, ordered by level. */
+    readonly specularLevelRoughness: readonly number[];
+    readonly specularFilterModel: "ggx-importance-sampled-equirect-prefilter";
+    readonly diffuseIrradianceModel: "sh9-cosine-convolved";
     readonly diffuseIrradianceSize: readonly [number, number];
     readonly brdfLutSize: readonly [number, number];
   };
@@ -218,15 +228,62 @@ export function generateRgba8EnvironmentMipLevels(
   return levels;
 }
 
+/**
+ * Real GGX importance-sampled specular prefilter over an RGBA8 environment.
+ *
+ * Each level `i` of `levelCount` is filtered for roughness `i / (levelCount - 1)`
+ * by convolving the linearised source with the GGX lobe for that exact
+ * roughness, so the roughness a shader assigns to a LOD is the roughness the
+ * texels were actually filtered for. The previous implementation delegated to
+ * `generateRgba8EnvironmentMipLevels` with a box-blur radius, which produced a
+ * mip chain whose blur width was unrelated to its nominal roughness.
+ *
+ * `blurRadius` is retained only for call-site compatibility and no longer
+ * affects the filter; `sampleCount` controls GGX sample density instead.
+ */
 export function generateSpecularPrefilterMipLevels(
   source: Rgba8EnvironmentMapSource,
-  options: EnvironmentMipGenerationOptions = {}
+  options: EnvironmentSpecularPrefilterGenerationOptions = {}
 ): readonly TextureMipLevelDescriptor[] {
-  return generateRgba8EnvironmentMipLevels(source, {
-    levels: options.levels,
-    blurRadius: options.blurRadius ?? 2
+  validateSource(source);
+  const maxLevels = maxMipLevels(source.width, source.height);
+  const requestedLevels = options.levels ?? maxLevels;
+  if (!Number.isInteger(requestedLevels) || requestedLevels < 1) {
+    throw new RangeError("Environment specular prefilter levels must be a positive integer");
+  }
+  const sampleCount = options.sampleCount ?? 64;
+  if (!Number.isInteger(sampleCount) || sampleCount <= 0) {
+    throw new RangeError("Environment specular prefilter sampleCount must be a positive integer");
+  }
+
+  const levelCount = Math.min(requestedLevels, maxLevels);
+  const linear = decodeRgba8EnvironmentToLinear(source, "srgb");
+  const prefiltered = prefilterGgxEnvironmentLevels(linear, { levels: levelCount, sampleCount });
+  return prefiltered.map((level, index) => {
+    if (index === 0) {
+      // Roughness 0 is a mirror reflection, so level 0 is the unfiltered
+      // source. Copy the bytes instead of round-tripping through sRGB to keep
+      // it bit-exact.
+      return { width: source.width, height: source.height, data: new Uint8Array(source.data) };
+    }
+    const data = new Uint8Array(level.width * level.height * 4);
+    for (let index2 = 0; index2 < level.width * level.height; index2 += 1) {
+      const offset = index2 * 4;
+      data[offset] = encodeColorByte(clamp(level.data[offset] ?? 0, 0, 1), "srgb");
+      data[offset + 1] = encodeColorByte(clamp(level.data[offset + 1] ?? 0, 0, 1), "srgb");
+      data[offset + 2] = encodeColorByte(clamp(level.data[offset + 2] ?? 0, 0, 1), "srgb");
+      data[offset + 3] = 255;
+    }
+    return { width: level.width, height: level.height, data };
   });
 }
+
+/**
+ * Roughness each specular prefilter level was genuinely filtered for. Callers
+ * must use this rather than deriving roughness from a mip index they did not
+ * generate.
+ */
+export { specularPrefilterLevelRoughness } from "./SpecularPrefilter";
 
 export function generateRgbeEnvironmentMipLevels(
   source: LinearHdrEnvironmentMapSource,
@@ -255,6 +312,36 @@ export function generateRgbeEnvironmentMipLevels(
     levels.push(encodeLinearHdrEnvironmentToRgbe(linearLevel));
   }
   return levels;
+}
+
+/**
+ * Real GGX specular prefilter for HDR environments, encoded as RGBE per level.
+ * `generateRgbeEnvironmentMipLevels` remains available for plain mip pyramids,
+ * but it is a progressive box downsample and must not be labelled as
+ * roughness-prefiltered.
+ */
+export function generateRgbeSpecularPrefilterMipLevels(
+  source: LinearHdrEnvironmentMapSource,
+  options: EnvironmentSpecularPrefilterGenerationOptions = {}
+): readonly TextureMipLevelDescriptor[] {
+  validateHdrSource(source);
+  const maxLevels = maxMipLevels(source.width, source.height);
+  const requestedLevels = options.levels ?? maxLevels;
+  if (!Number.isInteger(requestedLevels) || requestedLevels < 1) {
+    throw new RangeError("Environment RGBe specular prefilter levels must be a positive integer");
+  }
+  const sampleCount = options.sampleCount ?? 32;
+  if (!Number.isInteger(sampleCount) || sampleCount <= 0) {
+    throw new RangeError("Environment RGBe specular prefilter sampleCount must be a positive integer");
+  }
+  return prefilterGgxEnvironmentLevels(source, {
+    levels: Math.min(requestedLevels, maxLevels),
+    sampleCount
+  }).map((level) => encodeLinearHdrEnvironmentToRgbe({
+    width: level.width,
+    height: level.height,
+    data: level.data
+  }));
 }
 
 export function generateRgba16fEnvironmentMipLevels(
@@ -302,19 +389,12 @@ export function generateRgba16fSpecularPrefilterMipLevels(
   }
 
   const mipCount = Math.min(requestedLevels, maxLevels);
-  const levels: TextureMipLevelDescriptor[] = [
-    encodeLinearHdrEnvironmentToRgba16f({
-      width: source.width,
-      height: source.height,
-      data: new Float32Array(source.data)
-    })
-  ];
-  for (let mipIndex = 1; mipIndex < mipCount; mipIndex += 1) {
-    const roughness = clamp(mipIndex / Math.max(1, mipCount - 1), 0, 1);
-    const effectiveSamples = Math.max(8, Math.round(sampleCount * lerp(0.5, 1, roughness)));
-    const level = prefilterLinearHdrEnvironmentLevel(source, mipIndex, roughness, effectiveSamples);
-    levels.push(encodeLinearHdrEnvironmentToRgba16f(level));
-  }
+  const prefiltered = prefilterGgxEnvironmentLevels(source, { levels: mipCount, sampleCount });
+  const levels: TextureMipLevelDescriptor[] = prefiltered.map((level) => encodeLinearHdrEnvironmentToRgba16f({
+    width: level.width,
+    height: level.height,
+    data: level.data
+  }));
   if (levels.length > 1) {
     const diffuseLevel = levels[levels.length - 1]!;
     levels[levels.length - 1] = generateRgba16fDiffuseIrradianceMipLevel(source, {
@@ -356,6 +436,18 @@ export function generateRgba16fDiffuseIrradianceMipLevel(
   return encodeLinearHdrEnvironmentToRgba16f({ width, height, data });
 }
 
+/**
+ * Cosine-convolved diffuse irradiance for RGBA8 environments.
+ *
+ * This previously averaged a square box of source texels, which is not a cosine
+ * convolution: it ignores the hemisphere orientation entirely, so two opposite
+ * normals sampled from nearby texels received nearly identical "irradiance".
+ * The environment is now decoded to linear, projected onto nine irradiance SH
+ * bands with per-texel solid angle weights, and evaluated per output direction.
+ *
+ * `blurRadius` is retained for call-site compatibility and no longer affects
+ * the result.
+ */
 export function generateDiffuseIrradianceRgba8(
   source: Rgba8EnvironmentMapSource,
   options: DiffuseIrradianceGenerationOptions = {}
@@ -371,22 +463,22 @@ export function generateDiffuseIrradianceRgba8(
     throw new RangeError("Environment diffuse irradiance blurRadius must be a non-negative integer");
   }
 
+  const irradiance = convolveEnvironmentIrradiance(decodeRgba8EnvironmentToLinear(source, "srgb"), width, height);
   const data = new Uint8Array(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const sourceX = Math.round((x / Math.max(1, width - 1)) * (source.width - 1));
-      const sourceY = Math.round((y / Math.max(1, height - 1)) * (source.height - 1));
-      const color = sampleBox(source, sourceX, sourceY, blurRadius);
-      const index = (y * width + x) * 4;
-      data[index] = color[0];
-      data[index + 1] = color[1];
-      data[index + 2] = color[2];
-      data[index + 3] = color[3];
-    }
+  for (let index = 0; index < width * height; index += 1) {
+    const offset = index * 4;
+    data[offset] = encodeColorByte(clamp(irradiance.data[offset] ?? 0, 0, 1), "srgb");
+    data[offset + 1] = encodeColorByte(clamp(irradiance.data[offset + 1] ?? 0, 0, 1), "srgb");
+    data[offset + 2] = encodeColorByte(clamp(irradiance.data[offset + 2] ?? 0, 0, 1), "srgb");
+    data[offset + 3] = 255;
   }
   return { width, height, data };
 }
 
+/**
+ * Cosine-convolved diffuse irradiance for HDR environments, encoded as RGBE.
+ * Replaces the previous box average for the same reason as the RGBA8 path.
+ */
 export function generateDiffuseIrradianceRgbe(
   source: LinearHdrEnvironmentMapSource,
   options: DiffuseIrradianceGenerationOptions = {}
@@ -402,14 +494,18 @@ export function generateDiffuseIrradianceRgbe(
     throw new RangeError("Environment diffuse irradiance blurRadius must be a non-negative integer");
   }
 
+  const irradiance = convolveEnvironmentIrradiance(source, width, height);
   const data = new Uint8Array(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const sourceX = Math.round((x / Math.max(1, width - 1)) * (source.width - 1));
-      const sourceY = Math.round((y / Math.max(1, height - 1)) * (source.height - 1));
-      const color = sampleLinearHdrBox(source, sourceX, sourceY, blurRadius);
-      encodeLinearRgbePixel(color[0], color[1], color[2], color[3], data, (y * width + x) * 4);
-    }
+  for (let index = 0; index < width * height; index += 1) {
+    const offset = index * 4;
+    encodeLinearRgbePixel(
+      irradiance.data[offset] ?? 0,
+      irradiance.data[offset + 1] ?? 0,
+      irradiance.data[offset + 2] ?? 0,
+      1,
+      data,
+      offset
+    );
   }
   return { width, height, data };
 }
@@ -433,13 +529,13 @@ export function createEnvironmentMapResourceSet(
       outputColorSpace: textureEncoding === "rgba8-linear" ? "linear" : "srgb"
     });
   const specularMipLevels = textureEncoding === "rgbe"
-    ? generateRgbeEnvironmentMipLevels(linearForTexture, {
+    ? generateRgbeSpecularPrefilterMipLevels(linearForTexture, {
       levels: options.specularLevels,
-      blurRadius: options.specularBlurRadius ?? 2
+      ...(options.specularSampleCount === undefined ? {} : { sampleCount: options.specularSampleCount })
     })
     : generateSpecularPrefilterMipLevels(base, {
       levels: options.specularLevels,
-      blurRadius: options.specularBlurRadius ?? 2
+      ...(options.specularSampleCount === undefined ? {} : { sampleCount: options.specularSampleCount })
     });
   const diffuseIrradiance = textureEncoding === "rgbe"
     ? generateDiffuseIrradianceRgbe(linearForTexture, {
@@ -469,6 +565,9 @@ export function createEnvironmentMapResourceSet(
       hdrSource: inputEncoding === "rgbe" || inputEncoding === "linear-hdr",
       maxLinearValue: Number(maxLinearValue(linear).toFixed(6)),
       specularMipCount: specularMipLevels.length,
+      specularLevelRoughness: specularPrefilterLevelRoughness(specularMipLevels.length),
+      specularFilterModel: "ggx-importance-sampled-equirect-prefilter",
+      diffuseIrradianceModel: "sh9-cosine-convolved",
       diffuseIrradianceSize: [diffuseIrradiance.width, diffuseIrradiance.height],
       brdfLutSize: [brdfLut.width, brdfLut.height]
     }
@@ -527,7 +626,12 @@ function integrateGgxEnvironmentBrdf(
     if (nDotL <= 0 || nDotH <= 0 || vDotH <= 0) {
       continue;
     }
-    const visibility = ggxGeometrySmithCorrelated(nDotV, nDotL, roughness) * vDotH / Math.max(nDotH * nDotV, A3D_EPSILON_NUMBER);
+    // Split-sum weight for GGX-importance-sampled half vectors. The GGX pdf is
+    // D * nDotH / (4 * vDotH), so the estimator for the specular integral
+    // D * V * nDotL reduces to 4 * V * nDotL * vDotH / nDotH. Dropping the
+    // 4 * nDotL factor (or dividing by nDotV instead) produces values far above
+    // 1 that clamp to white and destroy split-sum energy conservation.
+    const visibility = 4 * ggxGeometrySmithCorrelated(nDotV, nDotL, roughness) * nDotL * vDotH / Math.max(nDotH, A3D_EPSILON_NUMBER);
     const fresnel = Math.pow(1 - vDotH, 5);
     scale += (1 - fresnel) * visibility;
     bias += fresnel * visibility;
@@ -618,76 +722,6 @@ function downsampleLinearHdrEnvironmentLevel(source: LinearHdrEnvironmentMapSour
     }
   }
   return { width, height, data };
-}
-
-function prefilterLinearHdrEnvironmentLevel(
-  source: LinearHdrEnvironmentMapSource,
-  mipIndex: number,
-  roughness: number,
-  sampleCount: number
-): LinearHdrEnvironmentMapSource {
-  const width = Math.max(1, Math.floor(source.width / 2 ** mipIndex));
-  const height = Math.max(1, Math.floor(source.height / 2 ** mipIndex));
-  const data = new Float32Array(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const direction = equirectPixelDirection(x, y, width, height);
-      const color = prefilterLinearHdrEnvironmentDirection(source, direction, roughness, sampleCount);
-      const index = (y * width + x) * 4;
-      data[index] = color[0];
-      data[index + 1] = color[1];
-      data[index + 2] = color[2];
-      data[index + 3] = color[3];
-    }
-  }
-  return { width, height, data };
-}
-
-function prefilterLinearHdrEnvironmentDirection(
-  source: LinearHdrEnvironmentMapSource,
-  reflectionDirection: readonly [number, number, number],
-  roughness: number,
-  sampleCount: number
-): readonly [number, number, number, number] {
-  if (roughness <= A3D_EPSILON_NUMBER) {
-    return sampleLinearHdrEquirect(source, reflectionDirection);
-  }
-  const normal = reflectionDirection;
-  const view = reflectionDirection;
-  let red = 0;
-  let green = 0;
-  let blue = 0;
-  let alpha = 0;
-  let totalWeight = 0;
-  for (let sampleIndex = 0; sampleIndex < sampleCount; sampleIndex += 1) {
-    const xi = hammersley2d(sampleIndex, sampleCount);
-    const halfVector = tangentToWorld(importanceSampleGgx(xi, roughness), normal);
-    const vDotH = Math.max(dot3(view, halfVector), 0);
-    const light = normalize3([
-      2 * vDotH * halfVector[0] - view[0],
-      2 * vDotH * halfVector[1] - view[1],
-      2 * vDotH * halfVector[2] - view[2]
-    ]);
-    const nDotL = Math.max(dot3(normal, light), 0);
-    if (nDotL <= A3D_EPSILON_NUMBER) {
-      continue;
-    }
-    const sample = sampleLinearHdrEquirect(source, light);
-    red += sample[0] * nDotL;
-    green += sample[1] * nDotL;
-    blue += sample[2] * nDotL;
-    alpha += sample[3] * nDotL;
-    totalWeight += nDotL;
-  }
-  if (totalWeight <= A3D_EPSILON_NUMBER) {
-    return sampleLinearHdrEquirect(source, reflectionDirection);
-  }
-  return [
-    red / totalWeight,
-    green / totalWeight,
-    blue / totalWeight,
-    alpha / totalWeight
-  ];
 }
 
 function integrateDiffuseIrradianceOverHemisphere(

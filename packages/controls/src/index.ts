@@ -1,4 +1,5 @@
 export { OrbitControls } from "./OrbitControls";
+export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
 export { FirstPersonControls } from "./FirstPersonControls";

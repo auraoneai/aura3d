@@ -76,6 +76,19 @@ export {
   srgbChannelToLinear
 } from "./EnvironmentMapResources";
 export {
+  convolveEnvironmentIrradiance,
+  evaluateShIrradiance,
+  prefilterGgxEnvironmentLevels,
+  projectEnvironmentIrradianceSh,
+  specularPrefilterLevelRoughness
+} from "./SpecularPrefilter";
+export type {
+  GgxPrefilteredEnvironmentLevel,
+  GgxSpecularPrefilterOptions,
+  LinearHdrEnvironmentMapOutput,
+  ShIrradianceCoefficients
+} from "./SpecularPrefilter";
+export {
   createEnvironmentCapabilityReport,
   createEnvironmentFogProfile,
   createEnvironmentPreset,

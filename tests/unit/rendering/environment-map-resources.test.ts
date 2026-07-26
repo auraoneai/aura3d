@@ -55,6 +55,69 @@ describe("environment map resource helpers", () => {
     expect(lut.data[3]).toBe(255);
   });
 
+  // The independent 256^2 reference quadrature runs for every compared cell,
+  // which costs a few seconds and exceeds the 5s default timeout.
+  it("integrates the split-sum environment BRDF so a white furnace conserves energy", () => {
+    // White furnace: uniform environment radiance of 1 and F0 = 1 reduce the
+    // split-sum specular term to scale + bias, which must equal the GGX
+    // single-scattering directional albedo. That value is <= 1 for every
+    // (nDotV, roughness) pair and is compared against an independent
+    // cosine-hemisphere reference integral of D * V * nDotL below.
+    const lut = generateApproximateBrdfLutPixels({ width: 32, height: 32, sampleCount: 4096 });
+    // The LUT stores scale and bias as independently rounded UNORM8 channels,
+    // so their sum can exceed the analytic bound by up to one quantization step.
+    const quantizationStep = 1 / 255;
+    const deltas: number[] = [];
+
+    for (let y = 0; y < lut.height; y += 1) {
+      const roughness = y / (lut.height - 1);
+      for (let x = 0; x < lut.width; x += 1) {
+        const nDotV = Math.max(x / (lut.width - 1), 0.001);
+        const scale = lut.data[(y * lut.width + x) * 4]! / 255;
+        const bias = lut.data[(y * lut.width + x) * 4 + 1]! / 255;
+        const directionalAlbedo = scale + bias;
+
+        // Energy conservation: single-scattering albedo can never exceed 1.
+        expect(directionalAlbedo).toBeLessThanOrEqual(1 + quantizationStep);
+        expect(directionalAlbedo).toBeGreaterThan(0);
+
+        // The cosine-hemisphere reference is only a usable oracle where its own
+        // quadrature converges. Refining its grid from 256^2 to 512^2 still
+        // moves the result by 0.266 at roughness 0.194 and 0.057 at 0.258
+        // (worst case at nDotV 0.129), but by under 0.0006 from roughness 0.387
+        // up, so the narrow-lobe rows measure reference error rather than LUT
+        // error. Grazing nDotV below 0.1 is likewise excluded because nDotV is
+        // clamped to 0.001 at the edge.
+        if (roughness < 0.4 || nDotV < 0.1) continue;
+        deltas.push(Math.abs(directionalAlbedo - referenceDirectionalAlbedo(nDotV, roughness)));
+      }
+    }
+
+    // Measured worst case in this domain is 0.0049 at nDotV 0.129, roughness
+    // 0.613 with 4096 samples. The residual is importance-sampling noise, not
+    // bias: it falls 0.0111 -> 0.0072 -> 0.0049 -> 0.0039 as the sample count
+    // goes 1024 -> 2048 -> 4096 -> 8192, the expected Monte Carlo 1/sqrt(N).
+    const maxDelta = Math.max(...deltas);
+    expect(maxDelta).toBeLessThan(0.01);
+  }, 30_000);
+
+  it("keeps the split-sum BRDF LUT monotonic in roughness and bounded near grazing angles", () => {
+    const lut = generateApproximateBrdfLutPixels({ width: 16, height: 16, sampleCount: 512 });
+    const albedoAt = (x: number, y: number): number =>
+      (lut.data[(y * lut.width + x) * 4]! + lut.data[(y * lut.width + x) * 4 + 1]!) / 255;
+
+    // Facing view: rougher GGX loses more single-scattering energy.
+    const facing = lut.width - 1;
+    for (let y = 1; y < lut.height; y += 1) {
+      expect(albedoAt(facing, y)).toBeLessThanOrEqual(albedoAt(facing, y - 1) + 0.01);
+    }
+
+    // Smooth surfaces reflect essentially all incident specular energy.
+    expect(albedoAt(facing, 0)).toBeGreaterThan(0.98);
+    // The bias term carries the grazing-angle Fresnel response.
+    expect(lut.data[(0 * lut.width + 0) * 4 + 1]!).toBeGreaterThan(0);
+  });
+
   it("converts between sRGB and linear channels with deterministic endpoints", () => {
     expect(srgbChannelToLinear(0)).toBe(0);
     expect(linearChannelToSrgb(0)).toBe(0);
@@ -201,6 +264,11 @@ describe("environment map resource helpers", () => {
       hdrSource: true,
       maxLinearValue: 2,
       specularMipCount: 2,
+      // Diagnostics now name the filter actually used, so callers can tell a
+      // real GGX/SH convolution apart from a plain mip chain.
+      specularFilterModel: "ggx-importance-sampled-equirect-prefilter",
+      specularLevelRoughness: [0, 1],
+      diffuseIrradianceModel: "sh9-cosine-convolved",
       diffuseIrradianceSize: [2, 1],
       brdfLutSize: [8, 8]
     });
@@ -210,6 +278,60 @@ describe("environment map resource helpers", () => {
 function expectUint16Array(data: unknown): Uint16Array {
   expect(data).toBeInstanceOf(Uint16Array);
   return data as Uint16Array;
+}
+
+/**
+ * Independent oracle for the split-sum BRDF LUT: a uniform cosine-hemisphere
+ * quadrature of the GGX single-scattering lobe D * V * nDotL with F = 1. This
+ * deliberately shares no code with `generateApproximateBrdfLutPixels`, which
+ * uses GGX importance sampling, so agreement between the two is real evidence
+ * rather than a tautology.
+ *
+ * The 256^2 grid is chosen so the quadrature is self-converged over the domain
+ * the furnace test asserts on: refining to 512^2 moves the result by less than
+ * 0.0006 for roughness >= 0.387. Below that roughness the GGX lobe is narrower
+ * than the grid step and this reference stops being trustworthy (peaking at a
+ * 0.266 shift at roughness 0.194), which is why the caller restricts the
+ * compared range.
+ */
+function referenceDirectionalAlbedo(nDotV: number, roughness: number): number {
+  const thetaSteps = 256;
+  const phiSteps = 256;
+  const viewX = Math.sqrt(Math.max(0, 1 - nDotV * nDotV));
+  let total = 0;
+
+  for (let thetaIndex = 0; thetaIndex < thetaSteps; thetaIndex += 1) {
+    const cosTheta = (thetaIndex + 0.5) / thetaSteps;
+    const sinTheta = Math.sqrt(Math.max(0, 1 - cosTheta * cosTheta));
+    for (let phiIndex = 0; phiIndex < phiSteps; phiIndex += 1) {
+      const phi = (2 * Math.PI * (phiIndex + 0.5)) / phiSteps;
+      const lightX = Math.cos(phi) * sinTheta;
+      const lightY = Math.sin(phi) * sinTheta;
+      const lightZ = cosTheta;
+      const halfLength = Math.hypot(viewX + lightX, lightY, nDotV + lightZ);
+      if (halfLength <= 1e-6) continue;
+      const nDotH = (nDotV + lightZ) / halfLength;
+      total += referenceGgxDistribution(nDotH, roughness)
+        * referenceGgxVisibility(nDotV, lightZ, roughness)
+        * lightZ;
+    }
+  }
+
+  return (total / (thetaSteps * phiSteps)) * 2 * Math.PI;
+}
+
+function referenceGgxDistribution(nDotH: number, roughness: number): number {
+  const alpha = Math.max(roughness, 0.045) ** 2;
+  const alphaSquared = alpha * alpha;
+  const denominator = nDotH * nDotH * (alphaSquared - 1) + 1;
+  return alphaSquared / Math.max(Math.PI * denominator * denominator, 1e-5);
+}
+
+function referenceGgxVisibility(nDotV: number, nDotL: number, roughness: number): number {
+  const alphaSquared = Math.max(roughness, 0.045) ** 4;
+  const lambdaV = nDotL * Math.sqrt(Math.max((nDotV - alphaSquared * nDotV) * nDotV + alphaSquared, 1e-5));
+  const lambdaL = nDotV * Math.sqrt(Math.max((nDotL - alphaSquared * nDotL) * nDotL + alphaSquared, 1e-5));
+  return 0.5 / Math.max(lambdaV + lambdaL, 1e-5);
 }
 
 function maxHalfFloatChannel(data: Uint16Array, channel: number): number {

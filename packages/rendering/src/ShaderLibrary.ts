@@ -884,10 +884,14 @@ vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
-  vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
+}
+vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness) {
+  float nDotV = clamp(dot(normalize(normal), normalize(viewDirection)), 0.0, 1.0);
+  vec2 lut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clamp(roughness, 0.0, 1.0))).rg;
+  return mix(vec2(1.0, 0.0), lut, step(0.0001, u_environmentBrdfLutEnabled));
 }
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
@@ -900,11 +904,12 @@ void main() {
   if (!gl_FrontFacing) normal = -normal;
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 base = u_baseColor.rgb * v_instanceColor.rgb;
-  vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLight(
+  vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLightSplitSum(
     normal,
     viewDirection,
     a3dPbrEnvironmentDiffuseInput(normal),
     a3dPbrEnvironmentSpecularInput(normal, viewDirection, u_roughness),
+    a3dPbrEnvironmentBrdfInput(normal, viewDirection, u_roughness),
     base,
     u_metallic,
     u_roughness,
@@ -1743,10 +1748,14 @@ vec3 a3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledSpecular = a3dPbrBoundHdrSpecularRadiance(a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
-  vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = a3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
+}
+vec2 a3dPbrEnvironmentBrdfInput(vec3 normal, vec3 viewDirection, float roughness) {
+  float nDotV = clamp(dot(normalize(normal), normalize(viewDirection)), 0.0, 1.0);
+  vec2 lut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clamp(roughness, 0.0, 1.0))).rg;
+  return mix(vec2(1.0, 0.0), lut, step(0.0001, u_environmentBrdfLutEnabled));
 }
 vec3 a3dPbrEncodeOutput(vec3 linearColor) {
   vec3 color = max(linearColor, vec3(0.0));
@@ -1759,11 +1768,12 @@ void main() {
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec3 materialBase = u_baseColor.rgb * v_vertexColor.rgb;
-  vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLight(
+  vec3 shaded = u_emissiveColor * u_emissiveStrength + a3dPbrEnvironmentLightSplitSum(
     mappedNormal,
     viewDirection,
     a3dPbrEnvironmentDiffuseInput(mappedNormal),
     a3dPbrEnvironmentSpecularInput(mappedNormal, viewDirection, u_roughness),
+    a3dPbrEnvironmentBrdfInput(mappedNormal, viewDirection, u_roughness),
     materialBase,
     u_metallic,
     u_roughness,
@@ -2289,7 +2299,6 @@ vec3 a3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureSpecularIntensity);
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledSpecular = a3dTexturedPbrBoundHdrSpecularRadiance(a3dTexturedPbrDecodeEnvironmentSample(a3dTexturedPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
-  vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = a3dTexturedPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   float proceduralSpecularScale = materialFiniteSpecularScale * mix(0.34, 1.0, faceOnSpecularGate);

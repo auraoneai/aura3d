@@ -12,19 +12,20 @@ import {
   orthographicMat4,
   perspectiveMat4,
   transformPoint,
+  toMathMat4,
   type Mat4,
   type Vec3,
   type SceneNode
 } from "@aura3d/scene";
-import type { Ray } from "@aura3d/math";
+import { Frustum, type Ray } from "@aura3d/math";
 import { createRenderDevice, type RenderBackendOptions } from "./RenderBackend";
 import { type LdrPostprocessPassDescriptor, type RenderDevice, RenderDeviceError, type RenderDeviceDiagnostics, type RenderTarget, type RenderTargetDescriptor } from "./RenderDevice";
 import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, EnvironmentBackgroundPass, type EnvironmentBackgroundOptions } from "./EnvironmentBackgroundPass";
 import { ForwardPass, type EnvironmentLightingOptions, type ForwardEnvironmentFogOptions, type ForwardShadowMapOptions, type RenderItem, type RenderMaterial, type SkinningPaletteBinding } from "./ForwardPass";
 import { type CollectedLight, LightCollector } from "./LightCollector";
-import { Geometry } from "./Geometry";
+import { Geometry, type Bounds3 } from "./Geometry";
 import { type MorphTargetDelta } from "./MorphTarget";
-import { computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
+import { computeSkinnedGeometryBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 import { RenderGraph } from "./RenderGraph";
 import {
   BloomPass,
@@ -1869,13 +1870,111 @@ function collectRenderItemsWithDiagnostics(
     explicitItems.push(...source.renderItems);
   }
   if (explicitItems.length > 0) {
-    const optimizedItems = applyRendererOwnedStaticBatching(source, explicitItems);
+    const cullingFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
+    const visibleItems = cullExplicitRenderItems(explicitItems, cullingFrustum, diagnostics);
+    const optimizedItems = applyRendererOwnedStaticBatching(source, visibleItems);
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
-    diagnostics.submittedObjects += explicitItems.length;
-    diagnostics.visibleObjects += explicitItems.length;
     items.push(...projectedItems);
   }
   return { items, diagnostics };
+}
+
+function explicitCullingFrustum(
+  source: RenderSource,
+  cameraViewProjection: Mat4 | undefined,
+  camera: Camera | undefined
+): Frustum | undefined {
+  // Explicit render-item sources were historically never culled, so culling
+  // stays opt-in: only an explicit `frustumCulling: true` turns it on.
+  if (source.frustumCulling !== true) return undefined;
+  if (camera) return camera.frustum;
+  if (!cameraViewProjection) return undefined;
+  return Frustum.fromMatrix(toMathMat4(cameraViewProjection));
+}
+
+function cullExplicitRenderItems(
+  items: readonly RenderItem[],
+  frustum: Frustum | undefined,
+  diagnostics: RenderCollectionDiagnostics
+): readonly RenderItem[] {
+  if (!frustum) {
+    diagnostics.submittedObjects += items.length;
+    diagnostics.visibleObjects += items.length;
+    return items;
+  }
+  const visible: RenderItem[] = [];
+  for (const item of items) {
+    diagnostics.submittedObjects += 1;
+    if (!isFrustumCullableRenderItem(item)) {
+      diagnostics.visibleObjects += 1;
+      visible.push(item);
+      continue;
+    }
+    diagnostics.frustumTestedObjects += 1;
+    const bounds = explicitRenderItemWorldBounds(item);
+    if (!frustum.intersectsBox(bounds.toMathBox())) {
+      diagnostics.culledObjects += 1;
+      continue;
+    }
+    diagnostics.visibleObjects += 1;
+    visible.push(item);
+  }
+  return visible;
+}
+
+function isFrustumCullableRenderItem(item: RenderItem): boolean {
+  if (item.drawRange !== undefined) return false;
+  if (item.morphTargets !== undefined || item.morphWeights !== undefined) return false;
+  return true;
+}
+
+function explicitRenderItemWorldBounds(item: RenderItem): SceneBounds3 {
+  const modelMatrix = toMat4(item.modelMatrix ?? identityMat4(), "modelMatrix", item.label);
+  if (item.skinning) {
+    const local = skinnedItemLocalBounds(item.geometry, item.skinning);
+    return boundsFromLocal(local, modelMatrix, item.instanceTransforms);
+  }
+  return boundsFromLocal(item.geometry.bounds, modelMatrix, item.instanceTransforms);
+}
+
+function boundsFromLocal(
+  envelope: Bounds3,
+  modelMatrix: Mat4,
+  instanceTransforms: Float32Array | readonly number[] | undefined
+): SceneBounds3 {
+  const local = new SceneBounds3(
+    [envelope.min[0], envelope.min[1], envelope.min[2]],
+    [envelope.max[0], envelope.max[1], envelope.max[2]]
+  );
+  if (!instanceTransforms || instanceTransforms.length < 16) {
+    return local.transform(modelMatrix);
+  }
+  let bounds = new SceneBounds3();
+  for (let offset = 0; offset + 16 <= instanceTransforms.length; offset += 16) {
+    const instanceMatrix = toMat4(instanceTransforms.slice(offset, offset + 16), "instanceTransforms");
+    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, instanceMatrix)));
+  }
+  return bounds;
+}
+
+const skinnedCullingBoundsCache = new WeakMap<Geometry, { readonly matrices: Float32Array; readonly bounds: Bounds3 }>();
+
+function skinnedItemLocalBounds(geometry: Geometry, skinning: SkinningPaletteBinding): Bounds3 {
+  const cached = skinnedCullingBoundsCache.get(geometry);
+  if (cached && float32ArraysEqual(cached.matrices, skinning.matrices)) {
+    return cached.bounds;
+  }
+  const bounds = computeSkinnedGeometryBounds(geometry, skinning);
+  skinnedCullingBoundsCache.set(geometry, { matrices: new Float32Array(skinning.matrices), bounds });
+  return bounds;
+}
+
+function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
+  if (left.length !== right.length) return false;
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) return false;
+  }
+  return true;
 }
 
 const staticBatchGeometryIds = new WeakMap<Geometry, number>();

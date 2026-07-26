@@ -55,7 +55,6 @@ export function createExternalParityIblResources(options: ExternalParityIblOptio
   });
   const pmrem = createExternalParityPmrem(resources.base, {
     levels: 6,
-    blurRadius: 3,
     textureLabel: `external-parity-${options.preset}-pmrem`
   });
   const brdfLut = createExternalParityBrdfLut(64);

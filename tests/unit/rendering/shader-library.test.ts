@@ -24,6 +24,60 @@ import {
   texturedPbrShaderActiveTextureSlots
 } from "../../../packages/rendering/src";
 
+const SPLIT_SUM_CALL = "a3dPbrEnvironmentLightSplitSum(";
+
+function splitTopLevelArguments(argumentText: string): string[] {
+  const args: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const character of argumentText) {
+    if (character === "(") {
+      depth += 1;
+    } else if (character === ")") {
+      depth -= 1;
+    }
+    if (character === "," && depth === 0) {
+      args.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += character;
+  }
+  if (current.trim().length > 0) {
+    args.push(current.trim());
+  }
+  return args;
+}
+
+/**
+ * Extracts the argument lists of every `a3dPbrEnvironmentLightSplitSum` call site
+ * in a compiled fragment source, skipping the function declaration itself.
+ */
+function splitSumCallArguments(fragmentSource: string): string[][] {
+  const calls: string[][] = [];
+  let searchIndex = fragmentSource.indexOf(SPLIT_SUM_CALL);
+  while (searchIndex >= 0) {
+    let cursor = searchIndex + SPLIT_SUM_CALL.length;
+    let depth = 1;
+    while (cursor < fragmentSource.length && depth > 0) {
+      const character = fragmentSource[cursor];
+      if (character === "(") {
+        depth += 1;
+      } else if (character === ")") {
+        depth -= 1;
+      }
+      cursor += 1;
+    }
+    const args = splitTopLevelArguments(fragmentSource.slice(searchIndex + SPLIT_SUM_CALL.length, cursor - 1));
+    const isDeclaration = args.every((argument) => /^(?:vec[234]|float|int|bool)\s+\w+$/.test(argument));
+    if (!isDeclaration) {
+      calls.push(args);
+    }
+    searchIndex = fragmentSource.indexOf(SPLIT_SUM_CALL, cursor);
+  }
+  return calls;
+}
+
 describe("ShaderLibrary", () => {
   it("preserves source markers when compiling default unlit shader", () => {
     const library = createDefaultShaderLibrary();
@@ -82,6 +136,34 @@ describe("ShaderLibrary", () => {
       expect(compiled.fragment).toContain("textureLod(u_environmentCubeMapTexture");
       expect(compiled.fragment).toContain("u_environmentMapTextureRotation");
       expect(compiled.fragment).not.toContain("a3dPbrDecodeEnvironmentSample(textureLod(u_environmentMapTexture");
+    }
+  });
+
+  it("feeds the environment BRDF LUT into split-sum IBL in every active PBR shader path", () => {
+    const library = createDefaultShaderLibrary();
+    const pbrShaders: readonly [string, { readonly fragment: string }][] = [
+      [DEFAULT_PBR_SHADER_NAME, library.compileSource(DEFAULT_PBR_SHADER_NAME)],
+      [DEFAULT_INSTANCED_PBR_SHADER_NAME, library.compileSource(DEFAULT_INSTANCED_PBR_SHADER_NAME)],
+      [DEFAULT_SKINNED_LIT_SHADER_NAME, library.compileSource(DEFAULT_SKINNED_LIT_SHADER_NAME)],
+      [DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME, library.compileSource(DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME)],
+      [DEFAULT_TEXTURED_PBR_SHADER_NAME, library.compileSource(DEFAULT_TEXTURED_PBR_SHADER_NAME)]
+    ];
+
+    for (const [name, compiled] of pbrShaders) {
+      expect(compiled.fragment, name).toContain("uniform sampler2D u_environmentBrdfLutTexture;");
+      expect(compiled.fragment, name).toContain("uniform float u_environmentBrdfLutEnabled;");
+      expect(compiled.fragment, name).toContain("texture(u_environmentBrdfLutTexture,");
+      // The LUT must reach the split-sum evaluator, not be sampled into a dead local.
+      expect(compiled.fragment, name).toContain("a3dPbrEnvironmentLightSplitSum(");
+      const splitSumArguments = splitSumCallArguments(compiled.fragment);
+      expect(splitSumArguments.length, name).toBeGreaterThan(0);
+      for (const args of splitSumArguments) {
+        expect(args.length, name).toBe(10);
+        expect(args[4], `${name} split-sum environment BRDF argument`).toMatch(/[Bb]rdf/);
+      }
+      // Disabled LUT must fall back to the analytic (1, 0) split-sum term rather than black.
+      expect(compiled.fragment, name).toContain("mix(vec2(1.0, 0.0)");
+      expect(compiled.fragment, name).toContain("step(0.0001, u_environmentBrdfLutEnabled)");
     }
   });
 

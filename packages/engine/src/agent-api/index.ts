@@ -10420,8 +10420,8 @@ function createProductionRuntimeRendererInput(
   const source: RenderSource = {
     collectRenderItems: () => items,
     cameraPolicy: "require",
-    staticBatching: false,
-    frustumCulling: false,
+    staticBatching: true,
+    frustumCulling: true,
     collectedLights: createProductionRuntimeCollectedLights(),
     environmentLighting,
     postprocess: createProductionRuntimePostprocess(),

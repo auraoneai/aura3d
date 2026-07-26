@@ -1,5 +1,6 @@
 import {
   generateSpecularPrefilterMipLevels,
+  specularPrefilterLevelRoughness,
   type Rgba8EnvironmentMapSource
 } from "./EnvironmentMapResources";
 import type { TextureMipLevelDescriptor } from "./Texture";
@@ -21,22 +22,40 @@ export interface ExternalParityPmrem {
     readonly maxRoughness: number;
     readonly totalByteLength: number;
     readonly directionalReflectionReady: boolean;
+    readonly filterModel: "ggx-importance-sampled-equirect-prefilter";
+    readonly sampleCount: number;
   };
 }
 
+/**
+ * Builds a PMREM-style specular chain using real GGX importance-sampled
+ * prefiltering. Each level's reported roughness is the roughness that level's
+ * texels were actually convolved for, taken from the same schedule the filter
+ * used — not derived post-hoc from a mip index.
+ *
+ * The previous implementation requested `blurRadius: 3` box-blurred mips and
+ * then labelled level `i` with roughness `i / (levels - 1)`, so the reported
+ * roughness had no relationship to the filter width actually applied.
+ */
 export function createExternalParityPmrem(
   source: Rgba8EnvironmentMapSource,
-  options: { readonly levels?: number; readonly blurRadius?: number; readonly textureLabel?: string } = {}
+  options: {
+    readonly levels?: number;
+    readonly sampleCount?: number;
+    readonly textureLabel?: string;
+  } = {}
 ): ExternalParityPmrem {
+  const sampleCount = options.sampleCount ?? 64;
   const mipLevels = generateSpecularPrefilterMipLevels(source, {
     levels: options.levels ?? 6,
-    blurRadius: options.blurRadius ?? 3
+    sampleCount
   });
+  const levelRoughness = specularPrefilterLevelRoughness(mipLevels.length);
   const levels = mipLevels.map((level, index) => ({
     level: index,
     width: level.width,
     height: level.height,
-    roughness: Number((index / Math.max(1, mipLevels.length - 1)).toFixed(4)),
+    roughness: levelRoughness[index]!,
     byteLength: level.data.byteLength
   }));
   return {
@@ -47,7 +66,9 @@ export function createExternalParityPmrem(
       mipCount: mipLevels.length,
       maxRoughness: levels.at(-1)?.roughness ?? 0,
       totalByteLength: levels.reduce((sum, level) => sum + level.byteLength, 0),
-      directionalReflectionReady: mipLevels.length >= 4 && mipLevels[0]!.width > mipLevels.at(-1)!.width
+      directionalReflectionReady: mipLevels.length >= 4 && mipLevels[0]!.width > mipLevels.at(-1)!.width,
+      filterModel: "ggx-importance-sampled-equirect-prefilter",
+      sampleCount
     }
   };
 }

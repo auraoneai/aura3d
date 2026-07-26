@@ -153,6 +153,9 @@ export function createProductionPbrHdrPipelineFromRadiance(
     toneMapping: environmentToneMappingOperator(toneMapping.operator),
     specularLevels: options.specularLevels ?? 9,
     specularBlurRadius: 3,
+    ...(options.specularSampleCount === undefined
+      ? {}
+      : { specularSampleCount: options.specularSampleCount }),
     irradianceWidth: options.irradianceWidth ?? 32,
     irradianceHeight: options.irradianceHeight ?? 16,
     irradianceBlurRadius: 12,
