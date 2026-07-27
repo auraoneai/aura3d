@@ -118,11 +118,11 @@ Ranking is by visual-quality cost weighted by whether it blocks Phase 3.
 |---|---|---|---|---|
 | 1 | Post-processing runs on the CPU | P0 | open | **Yes — all four** |
 | 2 | PMREM was a box blur | P0 | done, 1 sub-item open | No |
-| 3 | Cascaded shadow maps are dead code | P0 | dead-code | **Yes — racing, runner** |
+| 3 | Cascaded shadow maps are dead code | P0 | dead-code — wire decided | **Yes — racing, runner** |
 | 4 | Root agent path disables its own optimizations | P0 | partial | **Yes — all four** |
 | 5 | MSAA is only the context flag | P1 | open | Yes — quality ceiling |
-| 6 | Hard 16-light cap | P1 | open | Yes — arena |
-| 7 | Physics fidelity ceiling | P1 | open | **Yes — blockfall, racing** |
+| 6 | Hard 16-light cap | P1 | open — clustered forward decided | Yes — arena |
+| 7 | Physics fidelity ceiling | P1 | open — cannon-es decided | **Yes — blockfall, racing** |
 | 8 | Duplicate OrbitControls | P1 | done, stubs open | No |
 | 9 | Features the codebase already declares missing | P1 | correctly disclosed | No |
 
@@ -227,6 +227,12 @@ single map.
 would discard a working implementation and would also require walking back the shadow claims
 in `docs/api/public-api.md` and two shadow-readiness gates.
 
+**DECISION (2026-07-26, owner): wire it.** Task 2.11a proceeds; 2.11b (delete) is cancelled.
+Frustum-split selection and per-cascade matrix upload go into `Renderer.ts` and
+`ForwardPass.ts`. The existing `CascadedShadowPipeline` is the implementation — do not
+rewrite it. Shadow claims in `docs/api/public-api.md` stay as written only once a pixel test
+proves cascades are reached from a live render path.
+
 ---
 
 ### Gap 4 — Root agent path disables its own optimizations · P0 · partial
@@ -304,6 +310,17 @@ dropped count. Clustered forward is a multi-week project and none of the four ga
 more than a bounded light count if the degradation is honest. **Do not silently raise the
 constant** — that trades a loud failure for a quiet performance cliff.
 
+**DECISION (2026-07-26, owner): implement clustered forward rendering.** The cap is removed
+properly rather than documented. This overrides the recommendation above and is the largest
+single item in Phase 2 — a light-cluster grid (froxel or screen-tile), a per-cluster light
+index list in a storage/texture buffer, and shader-side cluster lookup replacing the fixed
+`u_lightData` array walk, on both the WebGL2 and WebGPU backends.
+
+Sequencing consequence: this lands **after** gaps 1, 3, and 4 so the Phase 3 gate has
+passing pixel tests to show before the multi-week item completes. Graceful degradation is
+still implemented first as an interim safety net, so the `RangeError` at
+`LightUniforms.ts:21-22` stops being a live crash path while clustered work proceeds.
+
 ---
 
 ### Gap 7 — Physics fidelity ceiling · P1 · open, no decision recorded
@@ -341,6 +358,15 @@ this audit. Recommendation: route Blockfall and Turbo Drift through `cannon-es`,
 already has box↔box, angular response, and CCD; extend `aura-js` only if a
 dependency-free path is a hard requirement. Aura Clash uses `HitboxWorld` rather than rigid
 bodies and is unaffected.
+
+**DECISION (2026-07-26, owner): route Blockfall Reactor and Turbo Drift Circuit through the
+existing `cannon-es@0.20.0` backend.** No new native solver work. The `aura-js` narrow-phase
+keeps its six pairs and its AABB fallback, and that limitation is documented rather than
+fixed. Aura Clash Arena stays on `HitboxWorld`; Skyline Runner is unaffected.
+
+Consequence to disclose: the native `aura-js` backend remains without box↔box, angular
+contact response, or CCD. Any doc or gate implying otherwise must be corrected in Phase 4,
+and the per-game backend choice must be stated wherever physics fidelity is claimed.
 
 ---
 
@@ -406,10 +432,16 @@ fallback (`ForwardPass.ts:1418-1440`), frustum culling against real AABBs
 and a ~2,877-line WebGPU backend are all real. The gaps are in the post-chain, the shadow
 path, the light packing, and the agent-API defaults.
 
-**Three of the nine gaps are decisions, not implementations.** Gap 3 (wire or delete), gap 6
-(clustered or documented cap), and gap 7 (cannon-es or extend native) each need a recorded
-choice before code. All three were left ambiguous by the previous attempt. Recommendations
-are given above; the prompt requires the decision be written into this file when taken.
+**Three of the nine gaps were decisions, not implementations — all three are now taken.**
+Gap 3: **wire** the cascade pipeline. Gap 6: **implement clustered forward**, removing the
+16-light cap properly. Gap 7: **route Blockfall and Turbo Drift through `cannon-es`**, leaving
+the native solver's limits documented rather than fixed. Recorded 2026-07-26 by the owner;
+see each gap section for the full decision text and its consequences.
+
+Gap 6 taking the clustered path rather than the documented-cap path makes it the largest item
+in Phase 2. It is therefore sequenced last among the P0/P1 renderer work, with graceful
+degradation landing first as an interim safety net so the `RangeError` stops being a live
+crash path in the meantime.
 
 **Evidence hygiene is the binding constraint on claims.** The performance gate fails on six
 missing reports (§1.2), the visual-quality capture is 38 days stale (§1.3), both committed
