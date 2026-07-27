@@ -73,27 +73,27 @@ the gate the first attempt skipped.
 For every gap below, the audit entry must carry: file:line, why it costs visual quality,
 fix cost estimate, and whether it blocks the game rebuilds.
 
-- [ ] **1.1** Create `docs/project/engine-parity-gap-audit.md` with one ranked section per
+- [x] **1.1** Create `docs/project/engine-parity-gap-audit.md` with one ranked section per
       gap 1-9 below, each with the four required fields.
-- [ ] **1.2** Establish the parity baseline. `tests/reports/` is gitignored and the
+- [x] **1.2** Establish the parity baseline. `tests/reports/` is gitignored and the
       `threejs-parity/`, `external-parity/`, `three-compat/`, `production-runtime/`,
       `foundation/`, `engine-readiness/`, `superiority/`, `product-studio/` directories are
       currently empty — there is no score to regress against. Generate and record:
       `pnpm threejs-parity:inventory`, `pnpm threejs-parity:same-scene-render`,
       `pnpm threejs-parity:performance`, `pnpm engine-readiness:visual-quality`.
       Paste the numbers into the audit as the "before" column.
-- [ ] **1.3** Record in the audit that the only committed verdicts are both non-passing, and
+- [x] **1.3** Record in the audit that the only committed verdicts are both non-passing, and
       do not treat either as a baseline pass:
       `benchmark/results/aura3d-106-peer-benchmark-report.json` (release 1.0.9,
       `scoped-pass`, `auraDrawCalls 333` / `auraNonDarkPixels 45866` vs `threeChildren 75` /
       `threeNonDarkPixels 13289`, explicitly does not rank Aura3D above Unity/Unreal/Babylon)
       and `benchmark/results/round-50.md` (`owner-skipped / pending`, missing
       `benchmark/runs/round-50/human-review.json`).
-- [ ] **1.4** Note the frozen bar from `benchmark/rubric.md`: ≥7/10 prompts per agent, ≥2
+- [x] **1.4** Note the frozen bar from `benchmark/rubric.md`: ≥7/10 prompts per agent, ≥2
       wins from prompts 7/8/10, ≥4 visual scores ≥4, none <3. And that internal tools
       "cannot score visual quality, decide wins, or certify release readiness." Do not
       self-certify.
-- [ ] **1.5** Note the tooling caveat: most `tools/` gates are boolean `checks[]` of
+- [x] **1.5** Note the tooling caveat: most `tools/` gates are boolean `checks[]` of
       `{ id, ok, detail }` and many assert on **source tokens** — `game-runtime-readiness`
       greps `package.json` and greps an agent report for literal strings;
       `threejs-parity-threejs-inventory` holds 54 hand-authored `item(...)` entries
