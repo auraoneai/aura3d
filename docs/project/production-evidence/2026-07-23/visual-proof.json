@@ -1,0 +1,451 @@
+{
+  "schema": "aura3d-production-visual-proof/1.0",
+  "generatedAt": "2026-07-23T14:10:19.991Z",
+  "origin": "https://aura3d.auraone.ai",
+  "deploymentId": "dpl_HbEsEz44zJSnu8R1zkvg2RmmXG9b",
+  "rollbackDeploymentId": "dpl_6xp2zFcQ8ryLoFxfuKhReebzJzLg",
+  "ok": true,
+  "results": [
+    {
+      "name": "home-desktop",
+      "path": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/home-desktop.png",
+      "screenshotBytes": 359783,
+      "screenshotSha256": "4c0c2b9ddda910dcf96a8c4d1aa84d06e0edba3de4ee5cf0f10895b1dc1b3a0f",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 17867,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [],
+        "iframes": [
+          {
+            "src": "https://aura3d.auraone.ai/apps/wow-webgpu-compute-particles/?chrome=hidden",
+            "width": 549,
+            "height": 549
+          },
+          {
+            "src": "",
+            "width": 607,
+            "height": 460
+          },
+          {
+            "src": "",
+            "width": 607,
+            "height": 460
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          }
+        ],
+        "bodyTextLength": 18772
+      },
+      "ok": true
+    },
+    {
+      "name": "home-mobile",
+      "path": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "url": "https://aura3d.auraone.ai/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/home-mobile.png",
+      "screenshotBytes": 185654,
+      "screenshotSha256": "e2b0230954a86104debc61022d8b0101b320cb7556d3a790164c2c21b860d20f",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D: AI-Native TypeScript 3D SDK for Browser 3D Apps",
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "scrollHeight": 28863,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [],
+        "iframes": [
+          {
+            "src": "https://aura3d.auraone.ai/apps/wow-webgpu-compute-particles/?chrome=hidden",
+            "width": 348,
+            "height": 260.5
+          },
+          {
+            "src": "",
+            "width": 348,
+            "height": 460
+          },
+          {
+            "src": "",
+            "width": 348,
+            "height": 460
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          },
+          {
+            "src": "",
+            "width": 0,
+            "height": 0
+          }
+        ],
+        "bodyTextLength": 18681
+      },
+      "ok": true
+    },
+    {
+      "name": "showcase-index",
+      "path": "/apps/showcase-index/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-index/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/showcase-index.png",
+      "screenshotBytes": 436999,
+      "screenshotSha256": "867e3ccba39427db61be411c2c483ae4df757db6275d1710b4e76959c8ba50de",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D Showcase Library",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1041,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [],
+        "iframes": [],
+        "bodyTextLength": 852
+      },
+      "ok": true
+    },
+    {
+      "name": "product-configurator",
+      "path": "/apps/showcase-product-configurator/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-product-configurator/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/product-configurator.png",
+      "screenshotBytes": 158400,
+      "screenshotSha256": "8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Headphones Configurator | Aura3D",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1440,
+            "height": 900,
+            "cssWidth": 1440,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 419
+      },
+      "ok": true
+    },
+    {
+      "name": "smart-city-control",
+      "path": "/apps/showcase-smart-city-control/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-smart-city-control/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/smart-city-control.png",
+      "screenshotBytes": 491284,
+      "screenshotSha256": "07541e5aaeff8ac87ba79ef03ca5b2283c774ca418a845bbbd41695b09b13f2b",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D Showcase - Smart City Control",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1440,
+            "height": 900,
+            "cssWidth": 1440,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 327
+      },
+      "ok": true
+    },
+    {
+      "name": "cinematic-architecture",
+      "path": "/apps/showcase-cinematic-architecture/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-cinematic-architecture/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/cinematic-architecture.png",
+      "screenshotBytes": 273616,
+      "screenshotSha256": "648afa8b2418239f6062e6304b37fe99d228c2925c382d3c7f87969c9cb0c6a1",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D Showcase - Cinematic Architecture",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 1000,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1080,
+            "height": 900,
+            "cssWidth": 1080,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 426
+      },
+      "ok": true
+    },
+    {
+      "name": "digital-twin-ops",
+      "path": "/apps/showcase-digital-twin-ops/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-digital-twin-ops/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/digital-twin-ops.png",
+      "screenshotBytes": 195978,
+      "screenshotSha256": "3c43865a72eed4cc4268a950f33717ed3dc097eb0cdd53e9fa1124473b037447",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D Digital Twin Operations",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1104,
+            "height": 900,
+            "cssWidth": 1104,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 382
+      },
+      "ok": true
+    },
+    {
+      "name": "blockfall-reactor",
+      "path": "/apps/showcase-blockfall-reactor/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-blockfall-reactor/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/blockfall-reactor.png",
+      "screenshotBytes": 73111,
+      "screenshotSha256": "e545e106919acb35e9b23eb932c110b0b560590bdce6b1d277d3b07f383054ca",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D Showcase - Blockfall Reactor",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1440,
+            "height": 900,
+            "cssWidth": 1440,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 263
+      },
+      "ok": true
+    },
+    {
+      "name": "turbo-drift-circuit",
+      "path": "/apps/showcase-turbo-drift-circuit/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-turbo-drift-circuit/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/turbo-drift-circuit.png",
+      "screenshotBytes": 174822,
+      "screenshotSha256": "aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D - Turbo Drift Circuit",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1122,
+            "height": 900,
+            "cssWidth": 1122,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 387
+      },
+      "ok": true
+    },
+    {
+      "name": "skyline-runner",
+      "path": "/apps/showcase-skyline-runner/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "url": "https://aura3d.auraone.ai/apps/showcase-skyline-runner/",
+      "status": 200,
+      "screenshotPath": "docs/project/production-evidence/2026-07-23/skyline-runner.png",
+      "screenshotBytes": 153615,
+      "screenshotSha256": "81cdad3c62a00c7e9455fa14ccc04d667d007fcb8f75b4a6d8824c0012b1bbdd",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "metrics": {
+        "title": "Aura3D - Skyline Runner",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "scrollHeight": 900,
+        "horizontalOverflow": false,
+        "overflow": [],
+        "canvases": [
+          {
+            "width": 1108,
+            "height": 900,
+            "cssWidth": 1108,
+            "cssHeight": 900
+          }
+        ],
+        "iframes": [],
+        "bodyTextLength": 478
+      },
+      "ok": true
+    }
+  ]
+}

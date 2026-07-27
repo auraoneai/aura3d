@@ -14,9 +14,9 @@ guide or README must include the narrower wording.
 - Root screenshots currently prove basic GLB rendering, base-color material and
   texture paths, scene composition, simple effects, runtime transforms, and
   non-skinned node animation on tested routes.
-- Full PBR parity, HDR/IBL lighting, PMREM-style filtering, production tone
-  mapping, high-quality shadows, and broad postprocess are not root-wide public
-  claims.
+- Root-wide PBR parity is not a current public claim. HDR/IBL lighting,
+  PMREM-style filtering, production tone mapping, high-quality shadows, and
+  broad postprocess likewise require path-specific evidence.
 - Bloom, SSAO, DOF, FXAA/TAA, color grading, cinematic fog, and similar effects
   require exact route screenshot proof before public use.
 - Internal renderer or production-runtime evidence does not prove root

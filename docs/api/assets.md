@@ -236,7 +236,7 @@ npx @aura3d/cli@latest assets validate-animation \
 
 In the working `animation-studio` flow, the cast is normally resolved per-scene through
 `animation-scene cast add` (see below), not as a fixed manifest. When you do pre-stage assets for a
-production-ready validation, the report still expects at least two **distinct** typed character
+release validation, the report still expects at least two **distinct** typed character
 assets and one typed set. The names and queries are arbitrary — they follow the prompt, not a fixed
 moon-garden cast:
 

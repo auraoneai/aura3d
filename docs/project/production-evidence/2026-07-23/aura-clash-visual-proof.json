@@ -1,0 +1,1811 @@
+{
+  "schema": "aura3d109-deployed-visual-proof",
+  "ok": true,
+  "generatedAt": "2026-07-23T14:09:37.080Z",
+  "targetUrls": [
+    "https://aura3d.auraone.ai/playable",
+    "https://aura3d.auraone.ai/apps/aura-clash",
+    "https://aura3d.auraone.ai/showcase/aura-clash/playable/"
+  ],
+  "localReferenceUrl": null,
+  "checks": [
+    {
+      "url": "https://aura3d.auraone.ai/playable",
+      "ok": true,
+      "page": {
+        "url": "https://aura3d.auraone.ai/playable",
+        "finalUrl": "https://aura3d.auraone.ai/playable",
+        "httpStatus": 200,
+        "title": "Aura Clash - Aura3D Fighting Game Showcase",
+        "screenshotPath": "docs/project/production-evidence/2026-07-23/aura-clash-playable.png",
+        "screenshotBytes": 795635,
+        "screenshotSha256": "93e48b9e015fa5c60d35cd2ebec9ccb7949af6bd4f5e01986a8c3bc8374b5aa8",
+        "consoleErrors": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "resources": {
+          "js": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/index-DCrSwmIo.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 2128
+            },
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-B_Who1k_.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 1344388
+            }
+          ],
+          "css": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-BuJLiP-_.css",
+              "status": 200,
+              "contentType": "text/css; charset=utf-8",
+              "bytes": 20289
+            }
+          ],
+          "models": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8114364
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8061600
+            }
+          ],
+          "textures": [],
+          "audio": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7286
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7117
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7373
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 11617
+            }
+          ]
+        },
+        "canvas": {
+          "present": true,
+          "width": 300,
+          "height": 151,
+          "litPixels": 15016,
+          "uniqueBuckets": 82,
+          "centerObjectPixels": 6627,
+          "blank": false
+        },
+        "proof": {
+          "schemaVersion": "aura-clash-arena-proof/v1",
+          "route": "/playable/",
+          "app": "Aura Clash Arena",
+          "release": "1.4.5",
+          "version": "aura-clash-arena-production-gltf-animation-crossfade-reactions",
+          "noPrimitiveFighters": true,
+          "status": "running",
+          "error": null,
+          "frame": 69,
+          "roundTime": 97.85,
+          "totalHits": 1,
+          "lastHitFrame": 43,
+          "callout": "HIT",
+          "visibleFighterAsset": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+          "fighterAssets": {
+            "player": {
+              "id": "auraClashPlayerRig",
+              "url": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "hash": "sha256-d867292451e432b735e2a910c2db6640fbea97b205d85a2e8ffed26da87972cf"
+            },
+            "rival": {
+              "id": "auraClashRivalRig",
+              "url": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "hash": "sha256-9a0ffda4931f934f13fb584002c51673723b03f9655a581167e7e5dae744f086"
+            },
+            "distinct": true,
+            "releaseReady": true
+          },
+          "renderer": {
+            "surface": "aura3d-production-gltf-animation",
+            "backend": "webgl2",
+            "drawCalls": 10
+          },
+          "player": {
+            "name": "Flux Vanta",
+            "health": 360,
+            "meter": 78,
+            "x": -0.705,
+            "y": 0,
+            "grounded": true,
+            "action": "idle",
+            "activeClip": "Idle_Loop",
+            "attacking": null
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "health": 302,
+            "meter": 60,
+            "x": 0.563,
+            "y": 0,
+            "grounded": true,
+            "action": "idle",
+            "activeClip": "Idle_FoldArms_Loop",
+            "attacking": null
+          },
+          "animation": {
+            "visibleSkinnedGlb": true,
+            "skinnedDrawItems": 4,
+            "playerSkinningBindings": 2,
+            "rivalSkinningBindings": 2,
+            "playerLastTracks": 195,
+            "rivalLastTracks": 195,
+            "playerLastSkinningPalettes": 2,
+            "rivalLastSkinningPalettes": 2,
+            "clips": [
+              "A_TPose",
+              "Crouch_Fwd_Loop",
+              "Crouch_Idle_Loop",
+              "Dance_Loop",
+              "Death01",
+              "Driving_Loop",
+              "Fixing_Kneeling",
+              "Hit_Chest",
+              "Hit_Head",
+              "Idle_Loop",
+              "Idle_Talking_Loop",
+              "Idle_Torch_Loop",
+              "Interact",
+              "Jog_Fwd_Loop",
+              "Jump_Land",
+              "Jump_Loop",
+              "Jump_Start",
+              "PickUp_Table",
+              "Pistol_Aim_Down",
+              "Pistol_Aim_Neutral",
+              "Pistol_Aim_Up",
+              "Pistol_Idle_Loop",
+              "Pistol_Reload",
+              "Pistol_Shoot",
+              "Punch_Cross",
+              "Punch_Jab",
+              "Push_Loop",
+              "Roll",
+              "Roll_RM",
+              "Sitting_Enter",
+              "Sitting_Exit",
+              "Sitting_Idle_Loop",
+              "Sitting_Talking_Loop",
+              "Spell_Simple_Enter",
+              "Spell_Simple_Exit",
+              "Spell_Simple_Idle_Loop",
+              "Spell_Simple_Shoot",
+              "Sprint_Loop",
+              "Swim_Fwd_Loop",
+              "Swim_Idle_Loop",
+              "Sword_Attack",
+              "Sword_Attack_RM",
+              "Sword_Idle",
+              "Walk_Formal_Loop",
+              "Walk_Loop"
+            ],
+            "clipReadiness": {
+              "ok": true,
+              "fighters": [
+                {
+                  "fighterId": "player",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_Loop",
+                    "Walk_Loop",
+                    "Sprint_Loop",
+                    "Jump_Loop",
+                    "Crouch_Idle_Loop",
+                    "Sword_Idle",
+                    "Punch_Jab",
+                    "Punch_Cross",
+                    "Sword_Attack",
+                    "Hit_Chest",
+                    "Death01"
+                  ],
+                  "availableClipCount": 45,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                },
+                {
+                  "fighterId": "rival",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_FoldArms_Loop",
+                    "Zombie_Walk_Fwd_Loop",
+                    "Shield_Dash_RM",
+                    "NinjaJump_Idle_Loop",
+                    "Sword_Block",
+                    "Sword_Block",
+                    "Melee_Hook",
+                    "Sword_Regular_A",
+                    "Sword_Regular_Combo",
+                    "Hit_Knockback",
+                    "LayToIdle"
+                  ],
+                  "availableClipCount": 43,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                }
+              ],
+              "diagnostics": []
+            }
+          },
+          "runtime": {
+            "frameLoop": true,
+            "input": true,
+            "deterministicCombat": true,
+            "hitWindows": true,
+            "hud": true,
+            "evidence": true
+          },
+          "controls": {
+            "lastInput": "special",
+            "downSupported": true,
+            "specialRequiresMeter": true,
+            "koLocked": false,
+            "resetCount": 0
+          },
+          "stage": {
+            "schemaVersion": "aura-clash-arena-stage/v1",
+            "elementCount": 15,
+            "namedElementCount": 15,
+            "togglableElementCount": 12,
+            "missingElementIds": [],
+            "evidenceBacked": true,
+            "elements": [
+              {
+                "id": "sky-gradient",
+                "label": "sky gradient",
+                "selector": ".aca-sky",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.skyGradient"
+              },
+              {
+                "id": "portal-core",
+                "label": "central portal core",
+                "selector": ".aca-portal",
+                "layer": "lighting",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.portalCore"
+              },
+              {
+                "id": "downtown-skyline",
+                "label": "downtown skyline silhouettes",
+                "selector": ".aca-skyline",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.downtownSkyline"
+              },
+              {
+                "id": "side-banners",
+                "label": "arena side banners",
+                "selector": ".aca-banners",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.sideBanners"
+              },
+              {
+                "id": "light-rays",
+                "label": "volumetric light rays",
+                "selector": ".aca-rays",
+                "layer": "lighting",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.lightRays"
+              },
+              {
+                "id": "far-fog",
+                "label": "far fog band",
+                "selector": ".aca-fog-far",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.farFog"
+              },
+              {
+                "id": "drift-fog",
+                "label": "drifting fog band",
+                "selector": ".aca-fog-drift",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.driftFog"
+              },
+              {
+                "id": "near-fog",
+                "label": "near fog band",
+                "selector": ".aca-fog-near",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.nearFog"
+              },
+              {
+                "id": "platform-dais",
+                "label": "combat platform dais",
+                "selector": ".aca-dais",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.platformDais"
+              },
+              {
+                "id": "svg-platform",
+                "label": "rim-lit SVG platform",
+                "selector": ".aca-platform",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.svgPlatform"
+              },
+              {
+                "id": "floor-sheen",
+                "label": "floor reflection sheen",
+                "selector": ".aca-floor-sheen",
+                "layer": "platform",
+                "toggleGroup": "reflections",
+                "evidenceKey": "stage.floorSheen"
+              },
+              {
+                "id": "particle-canvas",
+                "label": "ambient particle canvas",
+                "selector": "#arena-particles",
+                "layer": "atmosphere",
+                "toggleGroup": "particles",
+                "evidenceKey": "stage.particleCanvas"
+              },
+              {
+                "id": "renderer-canvas",
+                "label": "Aura3D renderer canvas",
+                "selector": "#aura-clash-arena-canvas",
+                "layer": "renderer",
+                "toggleGroup": null,
+                "evidenceKey": "stage.rendererCanvas"
+              },
+              {
+                "id": "scanline-overlay",
+                "label": "scanline overlay",
+                "selector": ".aca-scanline",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.scanlineOverlay"
+              },
+              {
+                "id": "stage-vignette",
+                "label": "stage vignette",
+                "selector": ".aca-stage-vignette",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.stageVignette"
+              }
+            ],
+            "toggleGroups": [
+              "accessibility",
+              "backdrop",
+              "motion",
+              "particles",
+              "reflections"
+            ]
+          },
+          "tweaks": {
+            "schemaVersion": "aura-clash-arena-tweaks/v1",
+            "includedInEvidence": true,
+            "affectsDeterministicReplay": false,
+            "deterministicReplayInputs": [
+              "game.inputReplay",
+              "game.runSimulation",
+              "moveData",
+              "roundRules"
+            ],
+            "visualOnlyControls": [
+              "palette",
+              "backdrop",
+              "fogDensity",
+              "motion",
+              "particles",
+              "reflections"
+            ],
+            "state": {
+              "palette": "holo",
+              "backdrop": "all",
+              "fogDensity": 0.58,
+              "motion": "subtle",
+              "particles": true,
+              "reflections": true
+            }
+          },
+          "fighterController": {
+            "id": "aura-clash-fighter-controller-boundary",
+            "combatSource": "engine.combatWorld",
+            "routeMayQueueMoves": true,
+            "routeMayMirrorEngineState": true,
+            "routeMayCalculateHits": false,
+            "routeMayCalculateDamage": false,
+            "allowedRouteGlue": [
+              "translate input into move requests",
+              "begin engine combat-world attacks",
+              "mirror engine health and meter snapshots into route HUD state",
+              "translate engine hit and block events into VFX, audio, HUD, and animation reactions"
+            ]
+          },
+          "lighting": {
+            "contractId": "aura-clash-lighting-review-v1",
+            "presetId": "aura-clash-neon-night",
+            "readable": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ],
+            "ambientIntensity": 0.36,
+            "keyIntensity": 1.15,
+            "minRimIntensity": 1.35,
+            "silhouetteSeparation": "rim-and-key",
+            "backgroundSeparation": "dark-stage-with-cyan-emerald-rim"
+          },
+          "postProcess": {
+            "contractId": "aura-clash-material-postprocess-review-v1",
+            "presetId": "aura-clash-cinematic-readable",
+            "gameplayVisible": true,
+            "performanceBudgetOk": true,
+            "bloomIntensity": 0.58,
+            "reducedFlashBloomIntensity": 0.18,
+            "bloomWithinGameplayLimit": true,
+            "fogRange": [
+              8,
+              30
+            ],
+            "fogBehindCombatLane": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ]
+          },
+          "performance": {
+            "frameTimeMs": 16.67,
+            "fps": 60,
+            "drawCalls": 10,
+            "budgetOk": true
+          },
+          "audio": {
+            "enabled": true,
+            "muted": false,
+            "musicReady": true,
+            "sfxReady": true,
+            "lastCue": "footstep",
+            "recentCues": [
+              "footstep",
+              "footstep",
+              "footstep",
+              "dash",
+              "footstep",
+              "guard",
+              "footstep",
+              "guard",
+              "footstep",
+              "special-denied",
+              "guard",
+              "footstep",
+              "player-hit",
+              "footstep"
+            ],
+            "cueCount": 14,
+            "typedAssetCount": 11,
+            "assetUrls": [
+              "/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+              "/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+              "/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+              "/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+              "/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "/aura-assets/auraClashWinSfx.568967a3.ogg",
+              "/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+              "/aura-assets/auraClashDrawSfx.d21d0f0b.ogg"
+            ],
+            "oscillatorFallback": false,
+            "audioErrors": []
+          },
+          "deterministicReplay": {
+            "kind": "aura-clash-deterministic-replay-proof",
+            "runner": "game.runSimulation",
+            "inputReplay": "game.inputReplay",
+            "frameCount": 392,
+            "eventCount": 36,
+            "finalHash": "e4f93cdd",
+            "repeatedFinalHash": "e4f93cdd",
+            "stable": true,
+            "exportedReplay": {
+              "schemaVersion": "aura-game-input-replay/v1",
+              "checksum": "023b262e",
+              "frameCount": 362,
+              "duration": 6.033
+            },
+            "finalSnapshot": {
+              "playerX": -0.74,
+              "rivalHp": 0,
+              "hits": 36,
+              "ko": true,
+              "roundTime": 92.336
+            }
+          },
+          "engineCombat": {
+            "frame": 69,
+            "activeAttacks": 1,
+            "events": [],
+            "playerHealth": 360,
+            "rivalHealth": 302,
+            "playerGuarding": false,
+            "rivalGuarding": false
+          }
+        },
+        "bodyTextSample": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own clips, spacing, and hit windows. IDLE - 302 HP Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Flux Vanta lands special for 56 damage. A / Left D / Right S / Down W Jump Space Dash Shift Block J Light K Heavy L Special Pause Reset RendererProduction GLB render resources plus advanced-runtime A3DRenderer. FightersTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig. AnimationJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway. ProofDeterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls. Tweaks Close Palette Holo Teal Cyber Magenta Ember Forge Cosmic Void Backdrop Portal + Skyline Skyline only Portal only Fog density Motion Subtle Static Lively Particles Floor reflections"
+      },
+      "parity": {
+        "comparedAgainst": "expected-current-contract",
+        "ok": true,
+        "releaseMatches": true,
+        "appMatches": true,
+        "proofVersionMatches": true,
+        "routeMatches": true,
+        "canvasProfileDelta": {
+          "litPixels": null,
+          "uniqueBuckets": null,
+          "centerObjectPixels": null
+        },
+        "blockers": []
+      },
+      "blockers": []
+    },
+    {
+      "url": "https://aura3d.auraone.ai/apps/aura-clash",
+      "ok": true,
+      "page": {
+        "url": "https://aura3d.auraone.ai/apps/aura-clash",
+        "finalUrl": "https://aura3d.auraone.ai/apps/aura-clash",
+        "httpStatus": 200,
+        "title": "Aura Clash - Aura3D Fighting Game Showcase",
+        "screenshotPath": "docs/project/production-evidence/2026-07-23/aura-clash-app-alias.png",
+        "screenshotBytes": 791054,
+        "screenshotSha256": "406608056e821e6e6a1b5f7b0ff58f1b5de5cd2215787c978e044874ba3ed2b5",
+        "consoleErrors": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "resources": {
+          "js": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/index-DCrSwmIo.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 2128
+            },
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-B_Who1k_.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 1344388
+            }
+          ],
+          "css": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-BuJLiP-_.css",
+              "status": 200,
+              "contentType": "text/css; charset=utf-8",
+              "bytes": 20289
+            }
+          ],
+          "models": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8114364
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8061600
+            }
+          ],
+          "textures": [],
+          "audio": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7286
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7117
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7373
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 11617
+            }
+          ]
+        },
+        "canvas": {
+          "present": true,
+          "width": 300,
+          "height": 151,
+          "litPixels": 14574,
+          "uniqueBuckets": 71,
+          "centerObjectPixels": 6384,
+          "blank": false
+        },
+        "proof": {
+          "schemaVersion": "aura-clash-arena-proof/v1",
+          "route": "/playable/",
+          "app": "Aura Clash Arena",
+          "release": "1.4.5",
+          "version": "aura-clash-arena-production-gltf-animation-crossfade-reactions",
+          "noPrimitiveFighters": true,
+          "status": "running",
+          "error": null,
+          "frame": 66,
+          "roundTime": 97.9,
+          "totalHits": 1,
+          "lastHitFrame": 40,
+          "callout": "HIT",
+          "visibleFighterAsset": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+          "fighterAssets": {
+            "player": {
+              "id": "auraClashPlayerRig",
+              "url": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "hash": "sha256-d867292451e432b735e2a910c2db6640fbea97b205d85a2e8ffed26da87972cf"
+            },
+            "rival": {
+              "id": "auraClashRivalRig",
+              "url": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "hash": "sha256-9a0ffda4931f934f13fb584002c51673723b03f9655a581167e7e5dae744f086"
+            },
+            "distinct": true,
+            "releaseReady": true
+          },
+          "renderer": {
+            "surface": "aura3d-production-gltf-animation",
+            "backend": "webgl2",
+            "drawCalls": 10
+          },
+          "player": {
+            "name": "Flux Vanta",
+            "health": 360,
+            "meter": 78,
+            "x": -0.705,
+            "y": 0,
+            "grounded": true,
+            "action": "idle",
+            "activeClip": "Idle_Loop",
+            "attacking": null
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "health": 302,
+            "meter": 60,
+            "x": 0.563,
+            "y": 0,
+            "grounded": true,
+            "action": "idle",
+            "activeClip": "Idle_FoldArms_Loop",
+            "attacking": null
+          },
+          "animation": {
+            "visibleSkinnedGlb": true,
+            "skinnedDrawItems": 4,
+            "playerSkinningBindings": 2,
+            "rivalSkinningBindings": 2,
+            "playerLastTracks": 195,
+            "rivalLastTracks": 195,
+            "playerLastSkinningPalettes": 2,
+            "rivalLastSkinningPalettes": 2,
+            "clips": [
+              "A_TPose",
+              "Crouch_Fwd_Loop",
+              "Crouch_Idle_Loop",
+              "Dance_Loop",
+              "Death01",
+              "Driving_Loop",
+              "Fixing_Kneeling",
+              "Hit_Chest",
+              "Hit_Head",
+              "Idle_Loop",
+              "Idle_Talking_Loop",
+              "Idle_Torch_Loop",
+              "Interact",
+              "Jog_Fwd_Loop",
+              "Jump_Land",
+              "Jump_Loop",
+              "Jump_Start",
+              "PickUp_Table",
+              "Pistol_Aim_Down",
+              "Pistol_Aim_Neutral",
+              "Pistol_Aim_Up",
+              "Pistol_Idle_Loop",
+              "Pistol_Reload",
+              "Pistol_Shoot",
+              "Punch_Cross",
+              "Punch_Jab",
+              "Push_Loop",
+              "Roll",
+              "Roll_RM",
+              "Sitting_Enter",
+              "Sitting_Exit",
+              "Sitting_Idle_Loop",
+              "Sitting_Talking_Loop",
+              "Spell_Simple_Enter",
+              "Spell_Simple_Exit",
+              "Spell_Simple_Idle_Loop",
+              "Spell_Simple_Shoot",
+              "Sprint_Loop",
+              "Swim_Fwd_Loop",
+              "Swim_Idle_Loop",
+              "Sword_Attack",
+              "Sword_Attack_RM",
+              "Sword_Idle",
+              "Walk_Formal_Loop",
+              "Walk_Loop"
+            ],
+            "clipReadiness": {
+              "ok": true,
+              "fighters": [
+                {
+                  "fighterId": "player",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_Loop",
+                    "Walk_Loop",
+                    "Sprint_Loop",
+                    "Jump_Loop",
+                    "Crouch_Idle_Loop",
+                    "Sword_Idle",
+                    "Punch_Jab",
+                    "Punch_Cross",
+                    "Sword_Attack",
+                    "Hit_Chest",
+                    "Death01"
+                  ],
+                  "availableClipCount": 45,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                },
+                {
+                  "fighterId": "rival",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_FoldArms_Loop",
+                    "Zombie_Walk_Fwd_Loop",
+                    "Shield_Dash_RM",
+                    "NinjaJump_Idle_Loop",
+                    "Sword_Block",
+                    "Sword_Block",
+                    "Melee_Hook",
+                    "Sword_Regular_A",
+                    "Sword_Regular_Combo",
+                    "Hit_Knockback",
+                    "LayToIdle"
+                  ],
+                  "availableClipCount": 43,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                }
+              ],
+              "diagnostics": []
+            }
+          },
+          "runtime": {
+            "frameLoop": true,
+            "input": true,
+            "deterministicCombat": true,
+            "hitWindows": true,
+            "hud": true,
+            "evidence": true
+          },
+          "controls": {
+            "lastInput": "special",
+            "downSupported": true,
+            "specialRequiresMeter": true,
+            "koLocked": false,
+            "resetCount": 0
+          },
+          "stage": {
+            "schemaVersion": "aura-clash-arena-stage/v1",
+            "elementCount": 15,
+            "namedElementCount": 15,
+            "togglableElementCount": 12,
+            "missingElementIds": [],
+            "evidenceBacked": true,
+            "elements": [
+              {
+                "id": "sky-gradient",
+                "label": "sky gradient",
+                "selector": ".aca-sky",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.skyGradient"
+              },
+              {
+                "id": "portal-core",
+                "label": "central portal core",
+                "selector": ".aca-portal",
+                "layer": "lighting",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.portalCore"
+              },
+              {
+                "id": "downtown-skyline",
+                "label": "downtown skyline silhouettes",
+                "selector": ".aca-skyline",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.downtownSkyline"
+              },
+              {
+                "id": "side-banners",
+                "label": "arena side banners",
+                "selector": ".aca-banners",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.sideBanners"
+              },
+              {
+                "id": "light-rays",
+                "label": "volumetric light rays",
+                "selector": ".aca-rays",
+                "layer": "lighting",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.lightRays"
+              },
+              {
+                "id": "far-fog",
+                "label": "far fog band",
+                "selector": ".aca-fog-far",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.farFog"
+              },
+              {
+                "id": "drift-fog",
+                "label": "drifting fog band",
+                "selector": ".aca-fog-drift",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.driftFog"
+              },
+              {
+                "id": "near-fog",
+                "label": "near fog band",
+                "selector": ".aca-fog-near",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.nearFog"
+              },
+              {
+                "id": "platform-dais",
+                "label": "combat platform dais",
+                "selector": ".aca-dais",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.platformDais"
+              },
+              {
+                "id": "svg-platform",
+                "label": "rim-lit SVG platform",
+                "selector": ".aca-platform",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.svgPlatform"
+              },
+              {
+                "id": "floor-sheen",
+                "label": "floor reflection sheen",
+                "selector": ".aca-floor-sheen",
+                "layer": "platform",
+                "toggleGroup": "reflections",
+                "evidenceKey": "stage.floorSheen"
+              },
+              {
+                "id": "particle-canvas",
+                "label": "ambient particle canvas",
+                "selector": "#arena-particles",
+                "layer": "atmosphere",
+                "toggleGroup": "particles",
+                "evidenceKey": "stage.particleCanvas"
+              },
+              {
+                "id": "renderer-canvas",
+                "label": "Aura3D renderer canvas",
+                "selector": "#aura-clash-arena-canvas",
+                "layer": "renderer",
+                "toggleGroup": null,
+                "evidenceKey": "stage.rendererCanvas"
+              },
+              {
+                "id": "scanline-overlay",
+                "label": "scanline overlay",
+                "selector": ".aca-scanline",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.scanlineOverlay"
+              },
+              {
+                "id": "stage-vignette",
+                "label": "stage vignette",
+                "selector": ".aca-stage-vignette",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.stageVignette"
+              }
+            ],
+            "toggleGroups": [
+              "accessibility",
+              "backdrop",
+              "motion",
+              "particles",
+              "reflections"
+            ]
+          },
+          "tweaks": {
+            "schemaVersion": "aura-clash-arena-tweaks/v1",
+            "includedInEvidence": true,
+            "affectsDeterministicReplay": false,
+            "deterministicReplayInputs": [
+              "game.inputReplay",
+              "game.runSimulation",
+              "moveData",
+              "roundRules"
+            ],
+            "visualOnlyControls": [
+              "palette",
+              "backdrop",
+              "fogDensity",
+              "motion",
+              "particles",
+              "reflections"
+            ],
+            "state": {
+              "palette": "holo",
+              "backdrop": "all",
+              "fogDensity": 0.58,
+              "motion": "subtle",
+              "particles": true,
+              "reflections": true
+            }
+          },
+          "fighterController": {
+            "id": "aura-clash-fighter-controller-boundary",
+            "combatSource": "engine.combatWorld",
+            "routeMayQueueMoves": true,
+            "routeMayMirrorEngineState": true,
+            "routeMayCalculateHits": false,
+            "routeMayCalculateDamage": false,
+            "allowedRouteGlue": [
+              "translate input into move requests",
+              "begin engine combat-world attacks",
+              "mirror engine health and meter snapshots into route HUD state",
+              "translate engine hit and block events into VFX, audio, HUD, and animation reactions"
+            ]
+          },
+          "lighting": {
+            "contractId": "aura-clash-lighting-review-v1",
+            "presetId": "aura-clash-neon-night",
+            "readable": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ],
+            "ambientIntensity": 0.36,
+            "keyIntensity": 1.15,
+            "minRimIntensity": 1.35,
+            "silhouetteSeparation": "rim-and-key",
+            "backgroundSeparation": "dark-stage-with-cyan-emerald-rim"
+          },
+          "postProcess": {
+            "contractId": "aura-clash-material-postprocess-review-v1",
+            "presetId": "aura-clash-cinematic-readable",
+            "gameplayVisible": true,
+            "performanceBudgetOk": true,
+            "bloomIntensity": 0.58,
+            "reducedFlashBloomIntensity": 0.18,
+            "bloomWithinGameplayLimit": true,
+            "fogRange": [
+              8,
+              30
+            ],
+            "fogBehindCombatLane": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ]
+          },
+          "performance": {
+            "frameTimeMs": 16.67,
+            "fps": 60,
+            "drawCalls": 10,
+            "budgetOk": true
+          },
+          "audio": {
+            "enabled": true,
+            "muted": false,
+            "musicReady": true,
+            "sfxReady": true,
+            "lastCue": "footstep",
+            "recentCues": [
+              "footstep",
+              "footstep",
+              "footstep",
+              "dash",
+              "footstep",
+              "guard",
+              "footstep",
+              "guard",
+              "footstep",
+              "special-denied",
+              "guard",
+              "footstep",
+              "player-hit",
+              "footstep",
+              "footstep"
+            ],
+            "cueCount": 14,
+            "typedAssetCount": 11,
+            "assetUrls": [
+              "/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+              "/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+              "/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+              "/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+              "/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "/aura-assets/auraClashWinSfx.568967a3.ogg",
+              "/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+              "/aura-assets/auraClashDrawSfx.d21d0f0b.ogg"
+            ],
+            "oscillatorFallback": false,
+            "audioErrors": []
+          },
+          "deterministicReplay": {
+            "kind": "aura-clash-deterministic-replay-proof",
+            "runner": "game.runSimulation",
+            "inputReplay": "game.inputReplay",
+            "frameCount": 392,
+            "eventCount": 36,
+            "finalHash": "e4f93cdd",
+            "repeatedFinalHash": "e4f93cdd",
+            "stable": true,
+            "exportedReplay": {
+              "schemaVersion": "aura-game-input-replay/v1",
+              "checksum": "023b262e",
+              "frameCount": 362,
+              "duration": 6.033
+            },
+            "finalSnapshot": {
+              "playerX": -0.74,
+              "rivalHp": 0,
+              "hits": 36,
+              "ko": true,
+              "roundTime": 92.336
+            }
+          },
+          "engineCombat": {
+            "frame": 66,
+            "activeAttacks": 1,
+            "events": [],
+            "playerHealth": 360,
+            "rivalHealth": 302,
+            "playerGuarding": false,
+            "rivalGuarding": false
+          }
+        },
+        "bodyTextSample": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own clips, spacing, and hit windows. IDLE - 302 HP Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Flux Vanta lands special for 56 damage. A / Left D / Right S / Down W Jump Space Dash Shift Block J Light K Heavy L Special Pause Reset RendererProduction GLB render resources plus advanced-runtime A3DRenderer. FightersTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig. AnimationJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway. ProofDeterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls. Tweaks Close Palette Holo Teal Cyber Magenta Ember Forge Cosmic Void Backdrop Portal + Skyline Skyline only Portal only Fog density Motion Subtle Static Lively Particles Floor reflections"
+      },
+      "parity": {
+        "comparedAgainst": "expected-current-contract",
+        "ok": true,
+        "releaseMatches": true,
+        "appMatches": true,
+        "proofVersionMatches": true,
+        "routeMatches": true,
+        "canvasProfileDelta": {
+          "litPixels": null,
+          "uniqueBuckets": null,
+          "centerObjectPixels": null
+        },
+        "blockers": []
+      },
+      "blockers": []
+    },
+    {
+      "url": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
+      "ok": true,
+      "page": {
+        "url": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
+        "finalUrl": "https://aura3d.auraone.ai/showcase/aura-clash/playable/",
+        "httpStatus": 200,
+        "title": "Aura Clash - Aura3D Fighting Game Showcase",
+        "screenshotPath": "docs/project/production-evidence/2026-07-23/aura-clash-canonical.png",
+        "screenshotBytes": 803211,
+        "screenshotSha256": "40bed03b5dbcd3a551ceb583552f34a6e6e0593116dd703b413a1cc0476826cd",
+        "consoleErrors": [],
+        "pageErrors": [],
+        "failedRequests": [],
+        "resources": {
+          "js": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/index-DCrSwmIo.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 2128
+            },
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-B_Who1k_.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8",
+              "bytes": 1344388
+            }
+          ],
+          "css": [
+            {
+              "url": "https://aura3d.auraone.ai/assets/AuraClashArenaApp-BuJLiP-_.css",
+              "status": 200,
+              "contentType": "text/css; charset=utf-8",
+              "bytes": 20289
+            }
+          ],
+          "models": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8114364
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary",
+              "bytes": 8061600
+            }
+          ],
+          "textures": [],
+          "audio": [
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7286
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7117
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 11617
+            },
+            {
+              "url": "https://aura3d.auraone.ai/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "status": 200,
+              "contentType": "audio/ogg",
+              "bytes": 7373
+            }
+          ]
+        },
+        "canvas": {
+          "present": true,
+          "width": 300,
+          "height": 151,
+          "litPixels": 14855,
+          "uniqueBuckets": 75,
+          "centerObjectPixels": 6703,
+          "blank": false
+        },
+        "proof": {
+          "schemaVersion": "aura-clash-arena-proof/v1",
+          "route": "/playable/",
+          "app": "Aura Clash Arena",
+          "release": "1.4.5",
+          "version": "aura-clash-arena-production-gltf-animation-crossfade-reactions",
+          "noPrimitiveFighters": true,
+          "status": "running",
+          "error": null,
+          "frame": 60,
+          "roundTime": 98,
+          "totalHits": 3,
+          "lastHitFrame": 35,
+          "callout": "HIT",
+          "visibleFighterAsset": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+          "fighterAssets": {
+            "player": {
+              "id": "auraClashPlayerRig",
+              "url": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+              "hash": "sha256-d867292451e432b735e2a910c2db6640fbea97b205d85a2e8ffed26da87972cf"
+            },
+            "rival": {
+              "id": "auraClashRivalRig",
+              "url": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+              "hash": "sha256-9a0ffda4931f934f13fb584002c51673723b03f9655a581167e7e5dae744f086"
+            },
+            "distinct": true,
+            "releaseReady": true
+          },
+          "renderer": {
+            "surface": "aura3d-production-gltf-animation",
+            "backend": "webgl2",
+            "drawCalls": 10
+          },
+          "player": {
+            "name": "Flux Vanta",
+            "health": 360,
+            "meter": 100,
+            "x": -0.83,
+            "y": 0,
+            "grounded": true,
+            "action": "idle",
+            "activeClip": "Idle_Loop",
+            "attacking": null
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "health": 284,
+            "meter": 60,
+            "x": 1.333,
+            "y": 0,
+            "grounded": true,
+            "action": "walk",
+            "activeClip": "Zombie_Walk_Fwd_Loop",
+            "attacking": null
+          },
+          "animation": {
+            "visibleSkinnedGlb": true,
+            "skinnedDrawItems": 4,
+            "playerSkinningBindings": 2,
+            "rivalSkinningBindings": 2,
+            "playerLastTracks": 195,
+            "rivalLastTracks": 195,
+            "playerLastSkinningPalettes": 2,
+            "rivalLastSkinningPalettes": 2,
+            "clips": [
+              "A_TPose",
+              "Crouch_Fwd_Loop",
+              "Crouch_Idle_Loop",
+              "Dance_Loop",
+              "Death01",
+              "Driving_Loop",
+              "Fixing_Kneeling",
+              "Hit_Chest",
+              "Hit_Head",
+              "Idle_Loop",
+              "Idle_Talking_Loop",
+              "Idle_Torch_Loop",
+              "Interact",
+              "Jog_Fwd_Loop",
+              "Jump_Land",
+              "Jump_Loop",
+              "Jump_Start",
+              "PickUp_Table",
+              "Pistol_Aim_Down",
+              "Pistol_Aim_Neutral",
+              "Pistol_Aim_Up",
+              "Pistol_Idle_Loop",
+              "Pistol_Reload",
+              "Pistol_Shoot",
+              "Punch_Cross",
+              "Punch_Jab",
+              "Push_Loop",
+              "Roll",
+              "Roll_RM",
+              "Sitting_Enter",
+              "Sitting_Exit",
+              "Sitting_Idle_Loop",
+              "Sitting_Talking_Loop",
+              "Spell_Simple_Enter",
+              "Spell_Simple_Exit",
+              "Spell_Simple_Idle_Loop",
+              "Spell_Simple_Shoot",
+              "Sprint_Loop",
+              "Swim_Fwd_Loop",
+              "Swim_Idle_Loop",
+              "Sword_Attack",
+              "Sword_Attack_RM",
+              "Sword_Idle",
+              "Walk_Formal_Loop",
+              "Walk_Loop"
+            ],
+            "clipReadiness": {
+              "ok": true,
+              "fighters": [
+                {
+                  "fighterId": "player",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_Loop",
+                    "Walk_Loop",
+                    "Sprint_Loop",
+                    "Jump_Loop",
+                    "Crouch_Idle_Loop",
+                    "Sword_Idle",
+                    "Punch_Jab",
+                    "Punch_Cross",
+                    "Sword_Attack",
+                    "Hit_Chest",
+                    "Death01"
+                  ],
+                  "availableClipCount": 45,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                },
+                {
+                  "fighterId": "rival",
+                  "ok": true,
+                  "requiredKeys": [
+                    "idle",
+                    "walk",
+                    "run",
+                    "air",
+                    "down",
+                    "guard",
+                    "light",
+                    "heavy",
+                    "special",
+                    "hurt",
+                    "ko"
+                  ],
+                  "mappedClips": [
+                    "Idle_FoldArms_Loop",
+                    "Zombie_Walk_Fwd_Loop",
+                    "Shield_Dash_RM",
+                    "NinjaJump_Idle_Loop",
+                    "Sword_Block",
+                    "Sword_Block",
+                    "Melee_Hook",
+                    "Sword_Regular_A",
+                    "Sword_Regular_Combo",
+                    "Hit_Knockback",
+                    "LayToIdle"
+                  ],
+                  "availableClipCount": 43,
+                  "missingKeys": [],
+                  "missingClips": [],
+                  "diagnostics": []
+                }
+              ],
+              "diagnostics": []
+            }
+          },
+          "runtime": {
+            "frameLoop": true,
+            "input": true,
+            "deterministicCombat": true,
+            "hitWindows": true,
+            "hud": true,
+            "evidence": true
+          },
+          "controls": {
+            "lastInput": "special",
+            "downSupported": true,
+            "specialRequiresMeter": true,
+            "koLocked": false,
+            "resetCount": 0
+          },
+          "stage": {
+            "schemaVersion": "aura-clash-arena-stage/v1",
+            "elementCount": 15,
+            "namedElementCount": 15,
+            "togglableElementCount": 12,
+            "missingElementIds": [],
+            "evidenceBacked": true,
+            "elements": [
+              {
+                "id": "sky-gradient",
+                "label": "sky gradient",
+                "selector": ".aca-sky",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.skyGradient"
+              },
+              {
+                "id": "portal-core",
+                "label": "central portal core",
+                "selector": ".aca-portal",
+                "layer": "lighting",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.portalCore"
+              },
+              {
+                "id": "downtown-skyline",
+                "label": "downtown skyline silhouettes",
+                "selector": ".aca-skyline",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.downtownSkyline"
+              },
+              {
+                "id": "side-banners",
+                "label": "arena side banners",
+                "selector": ".aca-banners",
+                "layer": "backdrop",
+                "toggleGroup": "backdrop",
+                "evidenceKey": "stage.sideBanners"
+              },
+              {
+                "id": "light-rays",
+                "label": "volumetric light rays",
+                "selector": ".aca-rays",
+                "layer": "lighting",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.lightRays"
+              },
+              {
+                "id": "far-fog",
+                "label": "far fog band",
+                "selector": ".aca-fog-far",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.farFog"
+              },
+              {
+                "id": "drift-fog",
+                "label": "drifting fog band",
+                "selector": ".aca-fog-drift",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.driftFog"
+              },
+              {
+                "id": "near-fog",
+                "label": "near fog band",
+                "selector": ".aca-fog-near",
+                "layer": "atmosphere",
+                "toggleGroup": "motion",
+                "evidenceKey": "stage.nearFog"
+              },
+              {
+                "id": "platform-dais",
+                "label": "combat platform dais",
+                "selector": ".aca-dais",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.platformDais"
+              },
+              {
+                "id": "svg-platform",
+                "label": "rim-lit SVG platform",
+                "selector": ".aca-platform",
+                "layer": "platform",
+                "toggleGroup": null,
+                "evidenceKey": "stage.svgPlatform"
+              },
+              {
+                "id": "floor-sheen",
+                "label": "floor reflection sheen",
+                "selector": ".aca-floor-sheen",
+                "layer": "platform",
+                "toggleGroup": "reflections",
+                "evidenceKey": "stage.floorSheen"
+              },
+              {
+                "id": "particle-canvas",
+                "label": "ambient particle canvas",
+                "selector": "#arena-particles",
+                "layer": "atmosphere",
+                "toggleGroup": "particles",
+                "evidenceKey": "stage.particleCanvas"
+              },
+              {
+                "id": "renderer-canvas",
+                "label": "Aura3D renderer canvas",
+                "selector": "#aura-clash-arena-canvas",
+                "layer": "renderer",
+                "toggleGroup": null,
+                "evidenceKey": "stage.rendererCanvas"
+              },
+              {
+                "id": "scanline-overlay",
+                "label": "scanline overlay",
+                "selector": ".aca-scanline",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.scanlineOverlay"
+              },
+              {
+                "id": "stage-vignette",
+                "label": "stage vignette",
+                "selector": ".aca-stage-vignette",
+                "layer": "overlay",
+                "toggleGroup": "accessibility",
+                "evidenceKey": "stage.stageVignette"
+              }
+            ],
+            "toggleGroups": [
+              "accessibility",
+              "backdrop",
+              "motion",
+              "particles",
+              "reflections"
+            ]
+          },
+          "tweaks": {
+            "schemaVersion": "aura-clash-arena-tweaks/v1",
+            "includedInEvidence": true,
+            "affectsDeterministicReplay": false,
+            "deterministicReplayInputs": [
+              "game.inputReplay",
+              "game.runSimulation",
+              "moveData",
+              "roundRules"
+            ],
+            "visualOnlyControls": [
+              "palette",
+              "backdrop",
+              "fogDensity",
+              "motion",
+              "particles",
+              "reflections"
+            ],
+            "state": {
+              "palette": "holo",
+              "backdrop": "all",
+              "fogDensity": 0.58,
+              "motion": "subtle",
+              "particles": true,
+              "reflections": true
+            }
+          },
+          "fighterController": {
+            "id": "aura-clash-fighter-controller-boundary",
+            "combatSource": "engine.combatWorld",
+            "routeMayQueueMoves": true,
+            "routeMayMirrorEngineState": true,
+            "routeMayCalculateHits": false,
+            "routeMayCalculateDamage": false,
+            "allowedRouteGlue": [
+              "translate input into move requests",
+              "begin engine combat-world attacks",
+              "mirror engine health and meter snapshots into route HUD state",
+              "translate engine hit and block events into VFX, audio, HUD, and animation reactions"
+            ]
+          },
+          "lighting": {
+            "contractId": "aura-clash-lighting-review-v1",
+            "presetId": "aura-clash-neon-night",
+            "readable": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ],
+            "ambientIntensity": 0.36,
+            "keyIntensity": 1.15,
+            "minRimIntensity": 1.35,
+            "silhouetteSeparation": "rim-and-key",
+            "backgroundSeparation": "dark-stage-with-cyan-emerald-rim"
+          },
+          "postProcess": {
+            "contractId": "aura-clash-material-postprocess-review-v1",
+            "presetId": "aura-clash-cinematic-readable",
+            "gameplayVisible": true,
+            "performanceBudgetOk": true,
+            "bloomIntensity": 0.58,
+            "reducedFlashBloomIntensity": 0.18,
+            "bloomWithinGameplayLimit": true,
+            "fogRange": [
+              8,
+              30
+            ],
+            "fogBehindCombatLane": true,
+            "validatedStates": [
+              "first",
+              "action",
+              "ko"
+            ]
+          },
+          "performance": {
+            "frameTimeMs": 16.67,
+            "fps": 60,
+            "drawCalls": 10,
+            "budgetOk": true
+          },
+          "audio": {
+            "enabled": true,
+            "muted": false,
+            "musicReady": true,
+            "sfxReady": true,
+            "lastCue": "footstep",
+            "recentCues": [
+              "footstep",
+              "footstep",
+              "dash",
+              "footstep",
+              "guard",
+              "footstep",
+              "player-hit",
+              "special-denied",
+              "player-hit",
+              "footstep",
+              "player-hit",
+              "footstep"
+            ],
+            "cueCount": 14,
+            "typedAssetCount": 11,
+            "assetUrls": [
+              "/aura-assets/auraClashUiToggleSfx.ca1d2dde.ogg",
+              "/aura-assets/auraClashUiConfirmSfx.06356470.ogg",
+              "/aura-assets/auraClashSpecialSfx.a56d9579.ogg",
+              "/aura-assets/auraClashDeniedSfx.46e67425.ogg",
+              "/aura-assets/auraClashJumpSfx.0fdc474d.ogg",
+              "/aura-assets/auraClashDashSfx.72b589ea.ogg",
+              "/aura-assets/auraClashHitSfx.b33a8f14.ogg",
+              "/aura-assets/auraClashGuardSfx.a96f879f.ogg",
+              "/aura-assets/auraClashWinSfx.568967a3.ogg",
+              "/aura-assets/auraClashKoSfx.3cb48d86.ogg",
+              "/aura-assets/auraClashDrawSfx.d21d0f0b.ogg"
+            ],
+            "oscillatorFallback": false,
+            "audioErrors": []
+          },
+          "deterministicReplay": {
+            "kind": "aura-clash-deterministic-replay-proof",
+            "runner": "game.runSimulation",
+            "inputReplay": "game.inputReplay",
+            "frameCount": 392,
+            "eventCount": 36,
+            "finalHash": "e4f93cdd",
+            "repeatedFinalHash": "e4f93cdd",
+            "stable": true,
+            "exportedReplay": {
+              "schemaVersion": "aura-game-input-replay/v1",
+              "checksum": "023b262e",
+              "frameCount": 362,
+              "duration": 6.033
+            },
+            "finalSnapshot": {
+              "playerX": -0.74,
+              "rivalHp": 0,
+              "hits": 36,
+              "ko": true,
+              "roundTime": 92.336
+            }
+          },
+          "engineCombat": {
+            "frame": 60,
+            "activeAttacks": 1,
+            "events": [],
+            "playerHealth": 360,
+            "rivalHealth": 284,
+            "playerGuarding": false,
+            "rivalGuarding": false
+          }
+        },
+        "bodyTextSample": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own clips, spacing, and hit windows. IDLE - 284 HP Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Flux Vanta lands special for 56 damage. A / Left D / Right S / Down W Jump Space Dash Shift Block J Light K Heavy L Special Pause Reset RendererProduction GLB render resources plus advanced-runtime A3DRenderer. FightersTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig. AnimationJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway. ProofDeterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls. Tweaks Close Palette Holo Teal Cyber Magenta Ember Forge Cosmic Void Backdrop Portal + Skyline Skyline only Portal only Fog density Motion Subtle Static Lively Particles Floor reflections"
+      },
+      "parity": {
+        "comparedAgainst": "expected-current-contract",
+        "ok": true,
+        "releaseMatches": true,
+        "appMatches": true,
+        "proofVersionMatches": true,
+        "routeMatches": true,
+        "canvasProfileDelta": {
+          "litPixels": null,
+          "uniqueBuckets": null,
+          "centerObjectPixels": null
+        },
+        "blockers": []
+      },
+      "blockers": []
+    }
+  ],
+  "localReference": null,
+  "blockers": []
+}

@@ -119,7 +119,7 @@ The 1.2.0 work was never published as its own release; it shipped as part of 1.3
 ### 1.2.0 — Removed / housekeeping
 
 - Removed the dead `apps/aura-clash-showcase/src/fighters/{FighterController,FighterAI}.ts` and the legacy `packages/animation/src/Retargeting.ts` stub (its public export dropped; superseded by `HumanoidRetargeting`). A dead-code gate enforces no production import resolves to them.
-- Documented animation non-goals (motion matching, ragdoll, full-body IK, inertialization, Unity Mecanim / Unreal Control Rig parity, cloth/hair) in `docs/project/known-limits.md`, enforced by `animation-engine-docs-claims`.
+- Documented unsupported animation areas (motion matching, ragdoll, full-body IK, inertialization, no parity with Unity Mecanim or Unreal Control Rig, cloth/hair) in `docs/project/known-limits.md`, enforced by `animation-engine-docs-claims`.
 
 ### 1.2.0 — Honest scope
 

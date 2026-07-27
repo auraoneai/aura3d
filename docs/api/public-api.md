@@ -19,7 +19,7 @@ pnpm verify:api-docs
 | `@aura3d/assets` | `1.4.5` | `packages/assets/src/index.ts` | 83 |
 | `@aura3d/audio` | `1.4.5` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `1.4.5` | `packages/aura3d-cli/src/index.ts` | 24 |
-| `@aura3d/controls` | `1.4.5` | `packages/controls/src/index.ts` | 20 |
+| `@aura3d/controls` | `1.4.5` | `packages/controls/src/index.ts` | 21 |
 | `@aura3d/core` | `1.4.5` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `1.4.5` | `packages/create-aura3d/src/index.ts` | 10 |
 | `@aura3d/debug` | `1.4.5` | `packages/debug/src/index.ts` | 30 |
@@ -34,7 +34,7 @@ pnpm verify:api-docs
 | `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 28 |
 | `@aura3d/product-studio` | `1.4.5` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.4.5` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 262 |
+| `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 264 |
 | `@aura3d/scene` | `1.4.5` | `packages/scene/src/index.ts` | 20 |
 | `@aura3d/scripting` | `1.4.5` | `packages/scripting/src/index.ts` | 53 |
 | `@aura3d/three-compat` | `1.4.5` | `packages/three-compat/src/index.ts` | 31 |
@@ -343,6 +343,7 @@ export function initAgentFiles(options: { readonly projectDir?: string; readonly
 
 ```ts
 export { OrbitControls } from "./OrbitControls";
+export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
 export { FirstPersonControls } from "./FirstPersonControls";
@@ -891,6 +892,8 @@ export type { SkinningBoundsPalette } from "./SkinningBounds";
 export { Texture, bytesPerPixel, compressedBlockByteLength, compressedTextureByteLength, isCompressedTextureFormat } from "./Texture";
 export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
 export { createEnvironmentMapResourceSet, decodeRgba8EnvironmentToLinear, decodeRgbeEnvironmentMap, encodeLinearHdrEnvironmentToRgba8, encodeLinearHdrEnvironmentToRgba16f, generateApproximateBrdfLutPixels, generateDiffuseIrradianceRgba8, generateRgba8EnvironmentMipLevels, generateRgba16fEnvironmentMipLevels, generateRgba16fDiffuseIrradianceMipLevel, generateRgba16fSpecularPrefilterMipLevels, generateSpecularPrefilterMipLevels, linearChannelToSrgb, srgbChannelToLinear } from "./EnvironmentMapResources";
+export { convolveEnvironmentIrradiance, evaluateShIrradiance, prefilterGgxEnvironmentLevels, projectEnvironmentIrradianceSh, specularPrefilterLevelRoughness } from "./SpecularPrefilter";
+export type { GgxPrefilteredEnvironmentLevel, GgxSpecularPrefilterOptions, LinearHdrEnvironmentMapOutput, ShIrradianceCoefficients } from "./SpecularPrefilter";
 export { createEnvironmentCapabilityReport, createEnvironmentFogProfile, createEnvironmentPreset, createEnvironmentStage, createEnvironmentUnsupportedRequestDisclosures, createInfiniteGroundGrid, applyEnvironmentFogToColor, createProceduralSkyDome, listEnvironmentCapabilities, sampleEnvironmentFogFactor } from "./EnvironmentPlatform";
 export type { EnvironmentCapability, EnvironmentCapabilityId, EnvironmentCapabilityReport, EnvironmentCapabilityStatus, EnvironmentFeatureRequest, EnvironmentFogInput, EnvironmentFogMode, EnvironmentFogOptions, EnvironmentFogPresetId, EnvironmentFogProfile, EnvironmentFogTelemetry, EnvironmentFogUniforms, EnvironmentPreset, EnvironmentPresetBackground, EnvironmentPresetGround, EnvironmentPresetLighting, EnvironmentPresetOptions, EnvironmentPresetType, EnvironmentStage, EnvironmentStageOptions, EnvironmentStagePresetId, EnvironmentUnsupportedRequestDisclosure, EnvironmentUnsupportedRequestDisclosureOptions } from "./EnvironmentPlatform";
 export { createEnvironmentPresetReport, createNamedEnvironmentPreset, listNamedEnvironmentPresets } from "./EnvironmentPreset";

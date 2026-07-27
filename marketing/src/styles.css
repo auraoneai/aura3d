@@ -879,6 +879,18 @@ img, svg, canvas, iframe { display: block; max-width: 100%; }
 }
 .install-copy:hover { color: var(--accent); background: var(--bg-3); }
 .install-copy.copied { color: var(--accent); }
+
+.deployment-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.deployment-steps > * {
+  min-width: 0;
+}
+
 .command-copy {
   width: 100%;
   min-height: 38px;
@@ -2049,6 +2061,30 @@ footer {
 @media (max-width: 640px) {
   :root { --section-y: 80px; --gutter: 20px; }
   .wrap, .split, .split-code, .split-view, .example-host { min-width: 0; max-width: 100%; }
+  .install {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+    height: auto;
+    min-height: 40px;
+  }
+  .install-cmd {
+    display: block;
+    min-width: 0;
+    padding-block: 8px;
+    line-height: 1.45;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .code .c {
+    display: block;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .deployment-steps {
+    grid-template-columns: 1fr;
+  }
   .split-code-head { align-items: flex-start; gap: 10px; }
   .split-code-tabs { min-width: 0; flex-wrap: wrap; }
   pre.code { max-width: 100%; }
@@ -2439,7 +2475,9 @@ footer {
   }
 
   .example-poster-orb {
-    right: -20px;
+    width: min(160px, 44vw);
+    height: min(160px, 44vw);
+    right: 12px;
     top: 24%;
   }
 }

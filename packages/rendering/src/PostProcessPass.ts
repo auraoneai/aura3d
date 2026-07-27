@@ -1,5 +1,6 @@
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "./RenderDevice";
+import { OUTLINE_LUMA_SCALE, createOutlineGradientBound } from "./postprocess/NativeLdrEffectLuts";
 
 export type ToneMappingOperator = "linear" | "reinhard" | "aces" | "filmic" | "uncharted2" | "agx" | "neutral";
 export type PostProcessColorSpace = "linear" | "srgb";
@@ -984,16 +985,19 @@ export function outlinePixels(
   validateOutlineColor(color);
 
   const edgeMask = new Uint8Array(width * height);
-  let maxGradient = 0;
+  const gradientBound = createOutlineGradientBound(threshold).numberValue;
+  let maxGradientNumerator = 0;
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      const gradient = sobelLumaGradient(pixels, width, height, x, y);
-      maxGradient = Math.max(maxGradient, gradient);
-      if (gradient >= threshold) {
+      const { gx, gy } = sobelLumaNumeratorGradient(pixels, width, height, x, y);
+      const squared = gx * gx + gy * gy;
+      if (squared > maxGradientNumerator) maxGradientNumerator = squared;
+      if (outlineEdgeExceedsBound(gx, gy, gradientBound)) {
         edgeMask[y * width + x] = 255;
       }
     }
   }
+  const maxGradient = Math.sqrt(maxGradientNumerator) / OUTLINE_LUMA_SCALE;
 
   const outlineMask = dilateMask(edgeMask, width, height, outlineWidth);
   const output = new Uint8Array(pixels);
@@ -2168,18 +2172,44 @@ function validateOutlineColor(color: readonly [number, number, number, number?])
   }
 }
 
-function sobelLumaGradient(pixels: Uint8Array, width: number, height: number, x: number, y: number): number {
-  const nw = lumaAt(pixels, width, height, x - 1, y - 1);
-  const n = lumaAt(pixels, width, height, x, y - 1);
-  const ne = lumaAt(pixels, width, height, x + 1, y - 1);
-  const w = lumaAt(pixels, width, height, x - 1, y);
-  const e = lumaAt(pixels, width, height, x + 1, y);
-  const sw = lumaAt(pixels, width, height, x - 1, y + 1);
-  const s = lumaAt(pixels, width, height, x, y + 1);
-  const se = lumaAt(pixels, width, height, x + 1, y + 1);
-  const gx = -nw - 2 * w - sw + ne + 2 * e + se;
-  const gy = -nw - 2 * n - ne + sw + 2 * s + se;
-  return Math.hypot(gx, gy);
+/**
+ * Sobel response of the integer luma numerator `2126 * r + 7152 * g + 722 * b`.
+ *
+ * This is the same operator as {@link sobelLumaGradient} scaled by `OUTLINE_LUMA_SCALE`, but every
+ * intermediate is an exact integer: each numerator is at most `2550000`, so a response is at most
+ * `4 * 2550000` and the squared magnitude used by {@link outlineEdgeExceedsBound} stays below 2^48,
+ * well inside the range where float64 represents integers exactly.
+ */
+function sobelLumaNumeratorGradient(
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  x: number,
+  y: number
+): { readonly gx: number; readonly gy: number } {
+  const nw = lumaNumeratorAt(pixels, width, height, x - 1, y - 1);
+  const n = lumaNumeratorAt(pixels, width, height, x, y - 1);
+  const ne = lumaNumeratorAt(pixels, width, height, x + 1, y - 1);
+  const w = lumaNumeratorAt(pixels, width, height, x - 1, y);
+  const e = lumaNumeratorAt(pixels, width, height, x + 1, y);
+  const sw = lumaNumeratorAt(pixels, width, height, x - 1, y + 1);
+  const s = lumaNumeratorAt(pixels, width, height, x, y + 1);
+  const se = lumaNumeratorAt(pixels, width, height, x + 1, y + 1);
+  return {
+    gx: -nw - 2 * w - sw + ne + 2 * e + se,
+    gy: -nw - 2 * n - ne + sw + 2 * s + se
+  };
+}
+
+/**
+ * Exact outline edge predicate shared by the CPU kernel and the WebGL2 shader.
+ *
+ * Equivalent to `hypot(gx, gy) >= threshold` on the real numbers, but decided with integers so
+ * that it never depends on float rounding. `bound` comes from {@link createOutlineGradientBound},
+ * which pre-squares the threshold as an exact rational and rounds up.
+ */
+function outlineEdgeExceedsBound(gx: number, gy: number, bound: number): boolean {
+  return gx * gx + gy * gy >= bound;
 }
 
 function dilateMask(mask: Uint8Array, width: number, height: number, radius: number): Uint8Array {
@@ -2469,6 +2499,14 @@ function lumaAt(pixels: Uint8Array, width: number, height: number, x: number, y:
   const sampleY = clampInt(y, 0, height - 1);
   const index = (sampleY * width + sampleX) * 4;
   return (0.2126 * pixels[index]! + 0.7152 * pixels[index + 1]! + 0.0722 * pixels[index + 2]!) / 255;
+}
+
+/** Integer luma numerator at a clamped coordinate, matching the outline shader exactly. */
+function lumaNumeratorAt(pixels: Uint8Array, width: number, height: number, x: number, y: number): number {
+  const sampleX = clampInt(x, 0, width - 1);
+  const sampleY = clampInt(y, 0, height - 1);
+  const index = (sampleY * width + sampleX) * 4;
+  return 2126 * pixels[index]! + 7152 * pixels[index + 1]! + 722 * pixels[index + 2]!;
 }
 
 function channelAt(pixels: Uint8Array, width: number, height: number, x: number, y: number, channel: number): number {
