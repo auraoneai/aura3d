@@ -166,12 +166,14 @@ export class RigidBody {
     this.applyAngularImpulse(crossVec3(subVec3(worldPoint, this.position), impulse));
   }
 
-  integrate(dt: number, gravity: Vec3): void {
+  integrate(dt: number, gravity: Vec3, clearForces = true): void {
     if (!Number.isFinite(dt) || dt <= 0) {
       throw new Error("dt must be a finite positive number.");
     }
     if (this.type !== "dynamic" || this.sleeping) {
-      this.clearForces();
+      if (clearForces) {
+        this.clearForces();
+      }
       this.previousPosition = cloneVec3(this.position);
       this.previousRotation = cloneQuat(this.rotation);
       return;
@@ -187,7 +189,9 @@ export class RigidBody {
     this.angularVelocity = scaleVec3(this.angularVelocity, angularDampingFactor);
     this.position = addVec3(this.position, scaleVec3(this.velocity, dt));
     this.rotation = integrateRotation(this.rotation, this.angularVelocity, dt);
-    this.clearForces();
+    if (clearForces) {
+      this.clearForces();
+    }
   }
 
   clearForces(): void {

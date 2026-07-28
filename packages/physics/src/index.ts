@@ -5,6 +5,7 @@ export * from "./CollisionEvents.js";
 export * from "./Constraint.js";
 export * from "./Constraints.js";
 export * from "./Raycast.js";
+export * from "./TimeOfImpact.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 export * from "./ScenePhysicsBridge.js";

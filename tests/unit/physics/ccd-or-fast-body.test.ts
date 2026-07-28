@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { PhysicsWorld, Shape } from "../../../packages/physics/src/index.js";
+import { PhysicsWorld, Shape, timeOfImpact } from "../../../packages/physics/src/index.js";
 
 test("a cannon-es box dropped on a corner tumbles from angular contact response", () => {
   const initialRotation = zRotation(Math.PI / 6);
@@ -93,6 +93,79 @@ test("Aura adaptive-substep CCD prevents a cannon-es fast mover from tunneling",
   assert.equal(ccd.limitExceeded, false);
   assert.ok(fastBody.position[0] < -0.1, `expected body to remain before wall, got x=${fastBody.position[0]}`);
   assert.ok(fastBody.velocity[0] <= 0, `expected impact response, got vx=${fastBody.velocity[0]}`);
+});
+
+test("Aura adaptive-substep CCD prevents a native fast mover from tunneling", () => {
+  const world = new PhysicsWorld({
+    backend: "aura-js",
+    gravity: [0, 0, 0],
+    solverIterations: 8,
+    enableSleeping: false,
+    continuousCollision: {
+      mode: "adaptive-substeps",
+      maxSubSteps: 256,
+      motionThreshold: 0.5
+    }
+  });
+  const wall = world.createRigidBody({ type: "static", position: [0, 0, 0] });
+  world.createCollider(wall, { shape: Shape.box(0.05, 1, 1) });
+  const fastBody = world.createRigidBody({ position: [-2, 0, 0], velocity: [240, 0, 0] });
+  world.createCollider(fastBody, { shape: Shape.box(0.05, 0.05, 0.05) });
+
+  world.step(1 / 60);
+
+  const ccd = world.snapshot().backend.continuousCollision;
+  assert.equal(ccd.active, true);
+  assert.equal(ccd.lastRequiredSubSteps, 160);
+  assert.equal(ccd.lastSubSteps, 160);
+  assert.ok(Math.abs((ccd.lastTimeOfImpact ?? 0) - 1.9 / 240) < 1e-9);
+  assert.ok(fastBody.position[0] <= -0.1, `expected body to remain before wall, got x=${fastBody.position[0]}`);
+  assert.ok(fastBody.velocity[0] <= 0, `expected impact response, got vx=${fastBody.velocity[0]}`);
+});
+
+test("timeOfImpact returns the first swept-bounds contact and rejects misses", () => {
+  const hit = timeOfImpact(
+    Shape.box(0.5, 0.5, 0.5),
+    [-2, 0, 0],
+    [4, 0, 0],
+    Shape.box(0.5, 0.5, 0.5),
+    [0, 0, 0],
+    [0, 0, 0],
+    1
+  );
+  const miss = timeOfImpact(
+    Shape.sphere(0.5),
+    [-2, 2, 0],
+    [4, 0, 0],
+    Shape.box(0.5, 0.5, 0.5),
+    [0, 0, 0],
+    [0, 0, 0],
+    1
+  );
+
+  assert.deepEqual(hit, { time: 0.25, normal: [1, 0, 0] });
+  assert.equal(miss, undefined);
+});
+
+test("native CCD substeps preserve outer-step forces and interpolation history", () => {
+  const world = new PhysicsWorld({
+    backend: "aura-js",
+    gravity: [0, 0, 0],
+    continuousCollision: {
+      mode: "adaptive-substeps",
+      maxSubSteps: 16,
+      motionThreshold: 0.5
+    }
+  });
+  const body = world.createRigidBody({ position: [0, 0, 0], velocity: [60, 0, 0] });
+  world.createCollider(body, { shape: Shape.box(0.5, 0.5, 0.5) });
+  body.applyForce([60, 0, 0]);
+
+  world.step(1 / 60);
+
+  assert.equal(world.snapshot().backend.continuousCollision.lastSubSteps, 4);
+  assert.ok(Math.abs(body.velocity[0] - 61) < 1e-9);
+  assert.deepEqual(body.previousPosition, [0, 0, 0]);
 });
 
 test("adaptive-substep CCD rejects a step that exceeds its configured guarantee", () => {

@@ -14,11 +14,12 @@ import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
 import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
+import { timeOfImpact } from "./TimeOfImpact.js";
 
 export type PhysicsContinuousCollisionDescriptor = {
   /**
-   * cannon-es 0.20.0 has no native swept/TOI solver. This wrapper bounds the
-   * travel of every moving collider by splitting a requested step.
+   * Bounds the travel of every moving collider by splitting a requested step.
+   * The wrapper protects both the native and cannon-es backends.
    */
   readonly mode: "adaptive-substeps";
   /**
@@ -46,6 +47,7 @@ export type PhysicsContinuousCollisionSelection = {
   readonly lastRequiredSubSteps: number;
   readonly lastMaxMotion: number;
   readonly lastMinColliderFeature?: number;
+  readonly lastTimeOfImpact?: number;
   readonly limitExceeded: boolean;
 };
 
@@ -153,7 +155,7 @@ export class PhysicsWorld {
       active: this.requestedBackend === "aura-js" ? "aura-js" : "cannon-es",
       deterministic: true,
       jsFallbackAvailable: true,
-      continuousCollision: this.continuousCollisionSelection(this.requestedBackend !== "aura-js")
+      continuousCollision: this.continuousCollisionSelection(true)
     };
     if (this.backendSelection.active === "cannon-es") {
       this.cannonWorld = new CannonWorld({
@@ -269,21 +271,44 @@ export class PhysicsWorld {
     if (this.cannonWorld) {
       return this.stepCannon(dt);
     }
-    for (const body of this.bodyValues()) {
-      body.integrate(dt, this.gravity);
-    }
-    for (const constraint of this.constraintsList) {
-      constraint.solve();
-    }
+    const continuousStep = this.planContinuousCollisionStep(dt);
+    this.lastContinuousCollisionStep = continuousStep;
+    this.assertContinuousCollisionPlan(continuousStep);
+    const subDelta = dt / continuousStep.subSteps;
+    const outerStepTransforms = new Map(
+      this.bodies().map((body) => [
+        body.id,
+        {
+          position: cloneVec3(body.position),
+          rotation: [...body.rotation] as [number, number, number, number]
+        }
+      ])
+    );
     let contacts: Contact[] = [];
-    const contactImpulses = new Map<string, ContactImpulseState>();
-    for (let i = 0; i < this.solverIterations; i += 1) {
-      contacts = this.detectContacts();
-      for (const contact of contacts) {
-        this.resolveContact(contact, contactImpulses);
+    for (let subStep = 0; subStep < continuousStep.subSteps; subStep += 1) {
+      for (const body of this.bodyValues()) {
+        body.integrate(subDelta, this.gravity, false);
       }
       for (const constraint of this.constraintsList) {
         constraint.solve();
+      }
+      const contactImpulses = new Map<string, ContactImpulseState>();
+      for (let i = 0; i < this.solverIterations; i += 1) {
+        contacts = this.detectContacts();
+        for (const contact of contacts) {
+          this.resolveContact(contact, contactImpulses);
+        }
+        for (const constraint of this.constraintsList) {
+          constraint.solve();
+        }
+      }
+    }
+    for (const body of this.bodyValues()) {
+      body.clearForces();
+      const outerTransform = outerStepTransforms.get(body.id);
+      if (outerTransform) {
+        body.previousPosition = outerTransform.position;
+        body.previousRotation = outerTransform.rotation;
       }
     }
     this.lastEvents = this.eventQueue.update(contacts);
@@ -347,7 +372,7 @@ export class PhysicsWorld {
     return {
       backend: {
         ...this.backendSelection,
-        continuousCollision: this.continuousCollisionSelection(this.backendSelection.active === "cannon-es")
+        continuousCollision: this.continuousCollisionSelection(true)
       },
       bodies: bodies.map((body) => body.snapshot()),
       contacts,
@@ -605,7 +630,7 @@ export class PhysicsWorld {
       fallback: reason,
       deterministic: true,
       jsFallbackAvailable: true,
-      continuousCollision: this.continuousCollisionSelection(false)
+      continuousCollision: this.continuousCollisionSelection(true)
     };
   }
 
@@ -618,13 +643,7 @@ export class PhysicsWorld {
     }
     const continuousStep = this.planContinuousCollisionStep(dt);
     this.lastContinuousCollisionStep = continuousStep;
-    if (continuousStep.limitExceeded && this.continuousCollision.onSubstepLimit === "error") {
-      throw new Error(
-        `PhysicsWorld adaptive-substep CCD requires ${continuousStep.requiredSubSteps} substeps, ` +
-        `above maxSubSteps ${this.continuousCollision.maxSubSteps}. Increase maxSubSteps, reduce dt, ` +
-        "or use a swept movement query; the step was rejected so tunneling is not silently accepted."
-      );
-    }
+    this.assertContinuousCollisionPlan(continuousStep);
     const subSteps = continuousStep.subSteps;
     const subDelta = dt / subSteps;
     for (let index = 0; index < subSteps; index += 1) {
@@ -654,12 +673,14 @@ export class PhysicsWorld {
       maxMotion = Math.max(maxMotion, linearMotion + angularMotion);
     }
     const minColliderFeature = this.smallestFiniteColliderFeature();
+    const earliestImpact = this.earliestTimeOfImpact(dt);
     if (maxMotion <= 0 || minColliderFeature === undefined) {
       return {
         subSteps: 1,
         requiredSubSteps: 1,
         maxMotion,
         minColliderFeature,
+        timeOfImpact: earliestImpact,
         limitExceeded: false
       };
     }
@@ -671,8 +692,54 @@ export class PhysicsWorld {
       requiredSubSteps,
       maxMotion,
       minColliderFeature,
+      timeOfImpact: earliestImpact,
       limitExceeded
     };
+  }
+
+  private earliestTimeOfImpact(dt: number): number | undefined {
+    let earliest: number | undefined;
+    const colliders = this.colliders();
+    for (let firstIndex = 0; firstIndex < colliders.length; firstIndex += 1) {
+      const colliderA = colliders[firstIndex]!;
+      const bodyA = this.bodiesById.get(colliderA.bodyId);
+      if (!bodyA) continue;
+      for (let secondIndex = firstIndex + 1; secondIndex < colliders.length; secondIndex += 1) {
+        const colliderB = colliders[secondIndex]!;
+        const bodyB = this.bodiesById.get(colliderB.bodyId);
+        if (
+          !bodyB ||
+          bodyA.id === bodyB.id ||
+          (bodyA.type !== "dynamic" && bodyB.type !== "dynamic") ||
+          !colliderA.canCollideWith(colliderB)
+        ) {
+          continue;
+        }
+        const impact = timeOfImpact(
+          colliderA.shape,
+          bodyA.position,
+          bodyA.velocity,
+          colliderB.shape,
+          bodyB.position,
+          bodyB.velocity,
+          dt
+        );
+        if (impact && (earliest === undefined || impact.time < earliest)) {
+          earliest = impact.time;
+        }
+      }
+    }
+    return earliest;
+  }
+
+  private assertContinuousCollisionPlan(plan: ContinuousCollisionStepPlan): void {
+    if (plan.limitExceeded && this.continuousCollision.onSubstepLimit === "error") {
+      throw new Error(
+        `PhysicsWorld adaptive-substep CCD requires ${plan.requiredSubSteps} substeps, ` +
+        `above maxSubSteps ${this.continuousCollision.maxSubSteps}. Increase maxSubSteps, reduce dt, ` +
+        "or use a swept movement query; the step was rejected so tunneling is not silently accepted."
+      );
+    }
   }
 
   private smallestFiniteColliderFeature(): number | undefined {
@@ -709,6 +776,9 @@ export class PhysicsWorld {
       ...(active && this.lastContinuousCollisionStep.minColliderFeature !== undefined
         ? { lastMinColliderFeature: this.lastContinuousCollisionStep.minColliderFeature }
         : {}),
+      ...(active && this.lastContinuousCollisionStep.timeOfImpact !== undefined
+        ? { lastTimeOfImpact: this.lastContinuousCollisionStep.timeOfImpact }
+        : {}),
       limitExceeded: active && this.lastContinuousCollisionStep.limitExceeded
     };
   }
@@ -726,6 +796,7 @@ type ContinuousCollisionStepPlan = {
   readonly requiredSubSteps: number;
   readonly maxMotion: number;
   readonly minColliderFeature?: number;
+  readonly timeOfImpact?: number;
   readonly limitExceeded: boolean;
 };
 

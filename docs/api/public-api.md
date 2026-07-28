@@ -16,7 +16,7 @@ pnpm verify:api-docs
 | `@aura3d/animation` | `1.4.5` | `packages/animation/src/index.ts` | 47 |
 | `@aura3d/apps` | `1.4.5` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/asset-index` | `1.4.5` | `packages/asset-index/src/index.ts` | 32 |
-| `@aura3d/assets` | `1.4.5` | `packages/assets/src/index.ts` | 83 |
+| `@aura3d/assets` | `1.4.5` | `packages/assets/src/index.ts` | 82 |
 | `@aura3d/audio` | `1.4.5` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `1.4.5` | `packages/aura3d-cli/src/index.ts` | 24 |
 | `@aura3d/controls` | `1.4.5` | `packages/controls/src/index.ts` | 25 |
@@ -31,7 +31,7 @@ pnpm verify:api-docs
 | `@aura3d/input` | `1.4.5` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.4.5` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.4.5` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 28 |
+| `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 29 |
 | `@aura3d/product-studio` | `1.4.5` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.4.5` | `packages/react/src/index.ts` | 14 |
 | `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 266 |
@@ -252,7 +252,6 @@ export type { TextureDescriptorAsset } from "./TextureLoader";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
-export * from "./EXRLoader.js";
 export * from "./TextureStreaming.js";
 ```
 
@@ -789,6 +788,7 @@ export * from "./CollisionEvents.js";
 export * from "./Constraint.js";
 export * from "./Constraints.js";
 export * from "./Raycast.js";
+export * from "./TimeOfImpact.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 export * from "./ScenePhysicsBridge.js";
@@ -969,8 +969,8 @@ export * from "./threejs-compatibility/postprocess";
 export * from "./threejs-compatibility/shaders";
 export * from "./threejs-compatibility/vfx";
 export * from "./threejs-compatibility/performance";
-export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironment, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
-export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./production-runtime";
+export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
+export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
@@ -1051,8 +1051,8 @@ export { ShadowPass } from "./ShadowPass";
 export type { ShadowPassOptions, ShadowPassReason, ShadowPassResult, ShadowTextureKind } from "./ShadowPass";
 export { ShadowProjectionBuilder } from "./ShadowProjection";
 export type { ShadowProjection, ShadowProjectionOptions, Vec3Tuple } from "./ShadowProjection";
-export { BloomPass, DepthVisualizationPass, FXAAPass, ToneMappingPass, applyToneMappingPreset, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, computeAutoExposureFromHistogram, computeExposureHistogramFromPixels, createDepthTextureBinding, createToneMappingCalibration, depthTextureStats, depthOfFieldPixels, filmGrainPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, toneMappingPresets, resolveToneMappingPreset, visualizeDepthTexture } from "./PostProcessPass";
-export type { AutoExposureOptions, AutoExposureResult, BloomOptions, BloomPassOptions, BloomResult, ChromaticAberrationOptions, ChromaticAberrationResult, ColorGradeOptions, ColorGradeResult, ContactShadowPostProcessOptions, ContactShadowPostProcessResult, DepthTextureBinding, DepthTextureFormat, DepthTextureStats, DepthVisualizationPassOptions, DepthVisualizationResult, DepthOfFieldOptions, DepthOfFieldResult, FilmGrainOptions, FilmGrainResult, FXAAOptions, FXAAPassOptions, FXAAResult, HdrToneMappingResult, ExposureHistogram, ExposureHistogramOptions, MotionBlurOptions, MotionBlurResult, OutlineOptions, OutlineResult, PostProcessColorSpace, SSAOOptions, SSAOResult, SSROptions, SSRResult, TAAOptions, TAAResult, ToneMappingCalibration, ToneMappingCalibrationSample, ToneMappingOperator, ToneMappingOptions, ToneMappingPassOptions, ToneMappingPreset, ToneMappingPresetName, ToneMappingPresetResult, ToneMappingResult } from "./PostProcessPass";
+export { BloomPass, DepthVisualizationPass, FXAAPass, ToneMappingPass, applyToneMappingPreset, bloomFloatPixels, bloomPixels, chromaticAberrationPixels, colorGradePixels, contactShadowPixels, computeAutoExposureFromHistogram, computeExposureHistogramFromPixels, createDepthTextureBinding, createToneMappingCalibration, depthTextureStats, depthOfFieldPixels, filmGrainPixels, fxaaPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels, toneMapFloatPixels, toneMapPixels, toneMappingPresets, volumetricLightPixels, resolveToneMappingPreset, visualizeDepthTexture } from "./PostProcessPass";
+export type { AutoExposureOptions, AutoExposureResult, BloomOptions, BloomPassOptions, BloomResult, ChromaticAberrationOptions, ChromaticAberrationResult, ColorGradeOptions, ColorGradeResult, ContactShadowPostProcessOptions, ContactShadowPostProcessResult, DepthTextureBinding, DepthTextureFormat, DepthTextureStats, DepthVisualizationPassOptions, DepthVisualizationResult, DepthOfFieldOptions, DepthOfFieldResult, FilmGrainOptions, FilmGrainResult, FXAAOptions, FXAAPassOptions, FXAAResult, HdrToneMappingResult, ExposureHistogram, ExposureHistogramOptions, MotionBlurOptions, MotionBlurResult, OutlineOptions, OutlineResult, PostProcessColorSpace, SSAOOptions, SSAOResult, SSROptions, SSRResult, TAAOptions, TAAResult, ToneMappingCalibration, ToneMappingCalibrationSample, ToneMappingOperator, ToneMappingOptions, ToneMappingPassOptions, ToneMappingPreset, ToneMappingPresetName, ToneMappingPresetResult, ToneMappingResult, VolumetricLightOptions, VolumetricLightResult } from "./PostProcessPass";
 export { architecturalMaterialCatalogSummary, architecturalMaterialDescriptor, createArchitecturalMaterial, createArchitecturalMaterialCatalog } from "./ArchitecturalMaterialCatalog";
 export type { ArchitecturalMaterialCatalogSummary, ArchitecturalMaterialCategory, ArchitecturalMaterialDescriptor } from "./ArchitecturalMaterialCatalog";
 export { createArchitecturalLightingFixture } from "./ArchitecturalLightingFixtures";
@@ -1069,8 +1069,8 @@ export { createLightingDefault } from "./LightingDefaults";
 export type { LightingDefault, LightingDefaultPreset } from "./LightingDefaults";
 export { createLightingRig, listLightingRigPresets } from "./LightingRig";
 export type { LightingRig, LightingRigDiagnostics, LightingRigLightDescriptor, LightingRigOptions, LightingRigPreset, LightingRigUnsupportedFeature } from "./LightingRig";
-export { createTerrainHeightfieldFixture, sampleTerrainHeightfield } from "./TerrainFixtures";
-export type { TerrainFixtureBiome, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldSample } from "./TerrainFixtures";
+export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainFixtures";
+export type { TerrainFixtureBiome, TerrainHeightfieldColliderDescriptor, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldGeometry, TerrainHeightfieldGeometryOptions, TerrainHeightfieldSample } from "./TerrainFixtures";
 export { sampleWeatherFixture } from "./WeatherFixtures";
 export type { WeatherFixtureOptions, WeatherFixtureSample, WeatherFixtureType, WeatherPuddlePatch, WeatherVisualDrop } from "./WeatherFixtures";
 export { sampleVegetationFixture } from "./VegetationFixtures";
