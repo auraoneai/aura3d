@@ -5,7 +5,6 @@ export type { ThreeCompatLoadedObjAsset } from "./OBJLoader";
 export { MTLLoaderThreeCompat } from "./MTLLoader";
 export type { ThreeCompatLoadedMtlAsset } from "./MTLLoader";
 export { HDRLoaderThreeCompat } from "./HDRLoader";
-export { EXRLoaderThreeCompat } from "./EXRLoader";
 export { KTX2LoaderThreeCompat } from "./KTX2Loader";
 export { TextureLoaderThreeCompat } from "./TextureLoader";
 export type { ThreeCompatBrowserTextureFormat } from "./TextureLoader";

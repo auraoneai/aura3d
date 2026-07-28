@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  EXRLoader,
   GLTF_DECODER_REQUIRED_EXTENSION_NAMES,
   GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES,
   GLTF_SUPPORTED_EXTENSION_NAMES,
@@ -103,20 +102,11 @@ describe("glTF extension support matrix", () => {
       .rejects.toThrow(/Unsupported required glTF extensions: KHR_animation_pointer/);
   });
 
-  it("keeps HDR and EXR loader diagnostics honest about decode parity", () => {
-    const existingHdr = "fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr";
+  it("keeps the HDR loader diagnostic honest about decode parity", () => {
+    const existingHdr = "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr";
     expect(new HDRLoader().load(existingHdr)).toMatchObject({
       loader: "HDRLoaderThreeCompat",
       status: "loaded"
-    });
-    expect(new EXRLoader().load(existingHdr)).toMatchObject({
-      loader: "EXRLoaderThreeCompat",
-      status: "diagnostic-only",
-      warnings: [expect.stringContaining("diagnostic-only")]
-    });
-    expect(new EXRLoader().load("fixtures/three-compat/environments/hdri/missing.exr")).toMatchObject({
-      status: "missing",
-      bytes: 0
     });
   });
 });

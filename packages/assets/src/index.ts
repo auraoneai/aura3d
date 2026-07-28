@@ -321,5 +321,4 @@ export type { TextureDescriptorAsset } from "./TextureLoader";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 export * from "./HDRLoader.js";
-export * from "./EXRLoader.js";
 export * from "./TextureStreaming.js";

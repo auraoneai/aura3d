@@ -23,8 +23,8 @@ describe("environment platform capability inventory", () => {
     expect(report.implementedCount).toBe(0);
     expect(report.partialCount).toBe(6);
     expect(report.helperCount).toBe(11);
-    expect(report.missingCount).toBe(2);
-    expect(report.unsupportedCount).toBe(1);
+    expect(report.missingCount).toBe(1);
+    expect(report.unsupportedCount).toBe(2);
     expect(report.productionReadyCount).toBe(0);
     expect(report.nonProductionReadyCount).toBe(20);
     expect(report.productionReady).toEqual([]);
@@ -59,7 +59,8 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("atmospheric-scattering")?.status).toBe("unsupported");
     expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);
-    expect(byId.get("exr-parser")?.status).toBe("missing");
+    expect(byId.get("exr-parser")?.status).toBe("unsupported");
+    expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
     expect(byId.get("cube-camera-reflections")?.status).toBe("missing");
     expect(byId.get("linear-fog")?.status).toBe("partial");
     expect(byId.get("linear-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);

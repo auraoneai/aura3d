@@ -266,7 +266,15 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "parseProductionRadianceHDR decodes Radiance/RGBE RLE buffers.",
     "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data."
   ], "Public HDRLoaderThreeCompat remains diagnostic-only.", "Expose an end-to-end public HDR file-to-environment loader path."),
-  capability("exr-parser", "EXR Parser", "missing", false, [], "EXRLoaderThreeCompat is diagnostic-only and does not decode OpenEXR pixels.", "Implement real EXR decode or document EXR as unsupported."),
+  capability(
+    "exr-parser",
+    "EXR Parser",
+    "unsupported",
+    false,
+    [],
+    "Documented unsupported: Aura3D does not decode OpenEXR pixels. The diagnostic-only assets-package EXR loader shells were removed so file presence cannot be mistaken for decode support.",
+    "Keep EXR loading and OpenEXR decode out of accepted claims; convert source environments to a supported format before ingestion."
+  ),
   capability("cube-camera-reflections", "Cube Camera Reflections", "missing", false, [], "ReflectionProbe is a descriptor helper; live six-direction capture is not implemented.", "Implement cube camera/probe capture and reflective material binding."),
   capability("dynamic-ocean-plane", "Dynamic Ocean Plane", "helper", true, [
     "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry.",
