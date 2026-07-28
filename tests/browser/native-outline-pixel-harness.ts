@@ -1,4 +1,4 @@
-import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels } from "@aura3d/rendering";
+import { VertexFormat, bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -25,6 +25,9 @@ declare global {
       readonly taaMaxChannelDelta?: number;
       readonly taaChangedChannelCount?: number;
       readonly taaEffectChangedChannelCount?: number;
+      readonly msaaSampleCount?: number;
+      readonly singleSampleIntermediatePixels?: number;
+      readonly multisampleIntermediatePixels?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -156,6 +159,7 @@ async function run(): Promise<void> {
     const actualTaa = device.readPixels(0, 0, width, height);
     const taaComparison = comparePixels(actualTaa, expectedTaa);
     const taaEffect = comparePixels(expectedTaa, sourcePixels);
+    const msaa = renderMultisampleEdge(device);
 
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
@@ -180,6 +184,9 @@ async function run(): Promise<void> {
       taaMaxChannelDelta: taaComparison.maxChannelDelta,
       taaChangedChannelCount: taaComparison.changedChannelCount,
       taaEffectChangedChannelCount: taaEffect.changedChannelCount,
+      msaaSampleCount: msaa.sampleCount,
+      singleSampleIntermediatePixels: msaa.singleSampleIntermediatePixels,
+      multisampleIntermediatePixels: msaa.multisampleIntermediatePixels,
       gpu: [...actual],
       cpu: [...expected]
     };
@@ -287,4 +294,72 @@ function createHistoryFixture(source: Uint8Array): Uint8Array {
     history[index + 3] = source[index + 3] ?? 255;
   }
   return history;
+}
+
+function renderMultisampleEdge(device: Awaited<ReturnType<typeof createRenderDevice>>): {
+  readonly sampleCount: number;
+  readonly singleSampleIntermediatePixels: number;
+  readonly multisampleIntermediatePixels: number;
+} {
+  const size = 64;
+  const single = device.createRenderTarget({ width: size, height: size, depth: false, sampleCount: 1, label: "single-sample-edge" });
+  const multisample = device.createRenderTarget({ width: size, height: size, depth: false, sampleCount: 4, label: "four-sample-edge" });
+  const vertices = new Float32Array([
+    -0.93, -0.91, 0,
+    0.97, -0.83, 0,
+    -0.81, 0.96, 0
+  ]);
+  const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
+  const marker = "@aura3d-shader:msaa-edge-proof";
+  const shader = device.createShaderProgram({
+    label: "msaa-edge-proof",
+    marker,
+    vertex: `#version 300 es
+// ${marker}
+layout(location = 0) in vec3 a_position;
+void main() { gl_Position = vec4(a_position, 1.0); }`,
+    fragment: `#version 300 es
+precision highp float;
+// ${marker}
+out vec4 outColor;
+void main() { outColor = vec4(1.0); }`
+  });
+  const draw = (target: typeof single): Uint8Array => {
+    device.beginFrame(size, size);
+    device.setRenderTarget(target);
+    device.clear([0, 0, 0, 1]);
+    device.draw({
+      label: "msaa-edge-triangle",
+      topology: "triangles",
+      vertexBuffer,
+      vertexFormat: VertexFormat.P3,
+      vertexCount: 3,
+      shader
+    });
+    device.endFrame();
+    device.setRenderTarget(target);
+    return device.readPixels(0, 0, size, size);
+  };
+  const singlePixels = draw(single);
+  device.setRenderTarget(null);
+  const multisamplePixels = draw(multisample);
+  device.setRenderTarget(null);
+  const intermediate = (pixels: Uint8Array): number => {
+    let count = 0;
+    for (let index = 0; index < pixels.length; index += 4) {
+      const value = pixels[index] ?? 0;
+      if (value > 0 && value < 255) count += 1;
+    }
+    return count;
+  };
+  const result = {
+    sampleCount: multisample.sampleCount ?? 1,
+    singleSampleIntermediatePixels: intermediate(singlePixels),
+    multisampleIntermediatePixels: intermediate(multisamplePixels)
+  };
+  single.dispose();
+  multisample.dispose();
+  vertexBuffer.dispose();
+  shader.dispose();
+  return result;
 }

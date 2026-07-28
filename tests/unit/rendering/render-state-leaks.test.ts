@@ -314,6 +314,34 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.textureBindings.get(4)).toBe(sentinelTexture);
   });
 
+  it("allocates and resolves a four-sample offscreen color and depth target", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const target = device.createRenderTarget({
+      width: 8,
+      height: 8,
+      label: "multisample-target",
+      sampleCount: 4
+    });
+
+    expect(target.sampleCount).toBe(4);
+    expect(gl.state.multisampleAllocations).toEqual([
+      { samples: 4, internalFormat: gl.RGBA8, width: 8, height: 8 },
+      { samples: 4, internalFormat: gl.DEPTH_COMPONENT24, width: 8, height: 8 }
+    ]);
+    device.beginFrame(8, 8);
+    device.setRenderTarget(target);
+    device.clear([0, 0, 0, 1]);
+    device.setRenderTarget(null);
+    device.endFrame();
+    expect(gl.state.framebufferBlits).toContainEqual({
+      mask: gl.COLOR_BUFFER_BIT,
+      filter: gl.NEAREST
+    });
+    expect(device.getDiagnostics().maxRenderTargetSampleCount).toBe(4);
+    device.dispose();
+  });
+
   it("keeps default depth render targets on renderbuffers unless callers request depth textures", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
@@ -701,6 +729,8 @@ interface FakeWebGL2State {
     readonly dataLength: number | null;
   }[];
   textureParameters: { readonly parameter: number; readonly value: number }[];
+  multisampleAllocations: { readonly samples: number; readonly internalFormat: number; readonly width: number; readonly height: number }[];
+  framebufferBlits: { readonly mask: number; readonly filter: number }[];
   samplerParameters: { readonly parameter: number; readonly value: number }[];
   fullscreenDraws: { readonly program: FakeProgram | null; readonly framebuffer: unknown }[];
   depthTextureUploadAttempts: number;
@@ -761,6 +791,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     framebufferRenderbufferAttachments: [],
     textureUploads: [],
     textureParameters: [],
+    multisampleAllocations: [],
+    framebufferBlits: [],
     samplerParameters: [],
     fullscreenDraws: [],
     depthTextureUploadAttempts: 0,
@@ -807,6 +839,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     RG32F: 0x8230,
     FRAGMENT_SHADER: 0x8b30,
     FRAMEBUFFER: 0x8d40,
+    READ_FRAMEBUFFER: 0x8ca8,
+    DRAW_FRAMEBUFFER: 0x8ca9,
     FRAMEBUFFER_BINDING: 0x8ca6,
     FRAMEBUFFER_COMPLETE: 0x8cd5,
     FRONT: 0x0404,
@@ -825,6 +859,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     LINES: 0x0001,
     LINK_STATUS: 0x8b82,
     MAX_VERTEX_ATTRIBS: 0x8869,
+    MAX_SAMPLES: 0x8d57,
     MIRRORED_REPEAT: 0x8370,
     NEAREST: 0x2600,
     NEAREST_MIPMAP_LINEAR: 0x2702,
@@ -871,6 +906,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     state,
     getParameter(parameter: number) {
       if (parameter === this.MAX_VERTEX_ATTRIBS) return 8;
+      if (parameter === this.MAX_SAMPLES) return 4;
       if (parameter === this.VENDOR) return "aura3d";
       if (parameter === this.RENDERER) return "fake-webgl2";
       if (parameter === this.CURRENT_PROGRAM) return state.currentProgram;
@@ -993,12 +1029,22 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       return { id: nextId++ };
     },
     bindFramebuffer(target: number, framebuffer: unknown) {
-      if (target === this.FRAMEBUFFER) state.framebuffer = framebuffer;
+      if (target === this.FRAMEBUFFER || target === this.READ_FRAMEBUFFER || target === this.DRAW_FRAMEBUFFER) state.framebuffer = framebuffer;
     },
     bindRenderbuffer(target: number, renderbuffer: unknown) {
       if (target === this.RENDERBUFFER) state.renderbuffer = renderbuffer;
     },
     renderbufferStorage() {},
+    renderbufferStorageMultisample(_target: number, samples: number, internalFormat: number, width: number, height: number) {
+      state.multisampleAllocations.push({ samples, internalFormat, width, height });
+    },
+    blitFramebuffer(
+      _sourceX0: number, _sourceY0: number, _sourceX1: number, _sourceY1: number,
+      _targetX0: number, _targetY0: number, _targetX1: number, _targetY1: number,
+      mask: number, filter: number
+    ) {
+      state.framebufferBlits.push({ mask, filter });
+    },
     framebufferRenderbuffer(_target: number, attachment: number, _renderbufferTarget: number, renderbuffer: unknown) {
       state.framebufferRenderbufferAttachments.push({ attachment, renderbuffer });
     },

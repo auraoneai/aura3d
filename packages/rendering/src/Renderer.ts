@@ -329,6 +329,7 @@ export interface RendererShadowOptions extends ShadowMapOptions {
 
 export interface RendererPostProcessOptions extends RendererPostprocessPlanOptions {
   readonly targetFormat?: RendererPostprocessTargetFormat;
+  readonly sampleCount?: number;
 }
 
 export type RenderResourceLookup<T> = ReadonlyMap<string, T> | Readonly<Record<string, T>>;
@@ -524,7 +525,8 @@ export class Renderer {
         height: this.height,
         label: "renderer-forward-color",
         format,
-        depth: requiresDepthTexture ? "texture" : true
+        depth: requiresDepthTexture ? "texture" : true,
+        sampleCount: postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4)
       });
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
@@ -663,7 +665,8 @@ export class Renderer {
         height: this.height,
         label: "renderer-forward-color",
         format,
-        depth: requiresDepthTexture ? "texture" : true
+        depth: requiresDepthTexture ? "texture" : true,
+        sampleCount: postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4)
       });
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);

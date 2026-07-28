@@ -3128,6 +3128,57 @@ describe("Renderer", () => {
     device.dispose();
   });
 
+  it("creates a four-sample WebGPU attachment and resolves it into the target texture", async () => {
+    const native = createNativeFakeWebGPU();
+    const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
+    const vertices = new Float32Array([
+      -0.5, -0.5, 0,
+      0.5, -0.5, 0,
+      0, 0.5, 0
+    ]);
+    const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
+    const shader = device.createShaderProgram({
+      label: "native-webgpu-msaa",
+      marker: "@aura3d-shader:native-webgpu-msaa",
+      vertex: "// @aura3d-shader:native-webgpu-msaa\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-msaa\nuniform vec4 color;"
+    });
+    const target = device.createRenderTarget({
+      width: 8,
+      height: 8,
+      label: "native-msaa-target",
+      depth: true,
+      sampleCount: 4
+    });
+
+    device.setRenderTarget(target);
+    device.beginFrame(8, 8);
+    device.clear([0, 0, 0, 1]);
+    device.draw({
+      label: "native-msaa-triangle",
+      topology: "triangles",
+      vertexBuffer,
+      vertexFormat: VertexFormat.P3,
+      vertexCount: 3,
+      shader
+    });
+    device.endFrame();
+
+    expect(target.sampleCount).toBe(4);
+    expect(native.device.textureDescriptors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: "native-msaa-target", format: "rgba8unorm" }),
+      expect.objectContaining({ label: "native-msaa-target-multisample", sampleCount: 4 }),
+      expect.objectContaining({ label: "native-msaa-target-depth", sampleCount: 4 })
+    ]));
+    expect(native.device.pipelines[0]).toMatchObject({ multisample: { count: 4 } });
+    expect(native.device.renderPasses[0]).toMatchObject({
+      label: "native-msaa-triangle-pass",
+      colorResolveTarget: true
+    });
+    expect(device.getDiagnostics().maxRenderTargetSampleCount).toBe(4);
+    device.dispose();
+  });
+
   it("tracks native WebGPU render-target clears per target instead of per frame", async () => {
     const native = createNativeFakeWebGPU();
     const device = await createRenderDevice({ backend: "webgpu", webgpu: native.gpu });
@@ -3940,6 +3991,7 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
     pipeline?: string;
     depthStencilAttachment: boolean;
     colorLoadOp: "clear" | "load";
+    colorResolveTarget: boolean;
     depthLoadOp?: "clear" | "load";
     vertexBuffers: number[];
     indexBuffers: Array<{ slot: number; indexFormat: "uint16" | "uint32" }>;
@@ -3974,6 +4026,7 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
     pipeline?: string;
     depthStencilAttachment: boolean;
     colorLoadOp: "clear" | "load";
+    colorResolveTarget: boolean;
     depthLoadOp?: "clear" | "load";
     vertexBuffers: number[];
     indexBuffers: Array<{ slot: number; indexFormat: "uint16" | "uint32" }>;
@@ -4141,6 +4194,7 @@ function createNativeFakeWebGPUDevice(options: { readonly indexedPassApi?: boole
             label: renderPassDescriptor.label,
             depthStencilAttachment: renderPassDescriptor.depthStencilAttachment !== undefined,
             colorLoadOp: renderPassDescriptor.colorAttachments[0]?.loadOp ?? "load",
+            colorResolveTarget: renderPassDescriptor.colorAttachments[0]?.resolveTarget !== undefined,
             depthLoadOp: renderPassDescriptor.depthStencilAttachment?.depthLoadOp,
             vertexBuffers: [] as number[],
             indexBuffers: [] as Array<{ slot: number; indexFormat: "uint16" | "uint32" }>,

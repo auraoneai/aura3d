@@ -45,6 +45,7 @@ export interface RenderTargetDescriptor {
   readonly label?: string;
   readonly format?: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">;
   readonly depth?: boolean | "renderbuffer" | "texture";
+  readonly sampleCount?: number;
 }
 
 export interface RenderTarget extends DisposableResource {
@@ -54,6 +55,7 @@ export interface RenderTarget extends DisposableResource {
   readonly label: string;
   readonly colorTexture: Texture;
   readonly depthTexture?: Texture;
+  readonly sampleCount?: number;
 }
 
 export type LdrPostprocessPassName = "bloom" | "tone-mapping" | "color-grade" | "depth-of-field" | "motion-blur" | "ssao" | "ssr" | "taa" | "outline" | "fxaa";
@@ -209,6 +211,7 @@ export interface RenderDeviceDiagnostics {
   readonly postprocessTextures?: number;
   readonly postprocessTargetWidth?: number;
   readonly postprocessTargetHeight?: number;
+  readonly maxRenderTargetSampleCount?: number;
   readonly postprocessPlan?: RendererPostprocessPlanDiagnostics;
   readonly lastError: string | null;
   readonly contextLost: boolean;
@@ -309,7 +312,8 @@ export class MockRenderTarget implements RenderTarget {
     public readonly height: number,
     public readonly label: string,
     public readonly colorTexture: Texture,
-    public readonly depthTexture?: Texture
+    public readonly depthTexture?: Texture,
+    public readonly sampleCount = 1
   ) {
     this.colorPixels = new Uint8Array(width * height * 4);
     this.colorFloatPixels = colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
@@ -429,7 +433,8 @@ export class MockRenderDevice implements RenderDevice {
       new Texture({ width: descriptor.width, height: descriptor.height, format: descriptor.format ?? "rgba8", label: descriptor.label ?? "render-target-color" }),
       descriptor.depth === "texture"
         ? new Texture({ width: descriptor.width, height: descriptor.height, format: "depth24", label: `${descriptor.label ?? "render-target"}-depth` })
-        : undefined
+        : undefined,
+      descriptor.sampleCount ?? 1
     );
     this.renderTargets.add(target);
     return target;
@@ -723,6 +728,7 @@ export class MockRenderDevice implements RenderDevice {
       buffers: [...this.buffers].filter((buffer) => !buffer.disposed).length,
       shaders: [...this.shaders].filter((shader) => !shader.disposed).length,
       renderTargets: liveRenderTargets.length,
+      maxRenderTargetSampleCount: Math.max(1, ...liveRenderTargets.map((target) => target.sampleCount ?? 1)),
       textures: liveTextures.length,
       bufferBytes,
       textureBytes,

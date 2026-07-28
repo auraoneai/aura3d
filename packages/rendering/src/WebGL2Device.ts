@@ -91,6 +91,7 @@ class WebGL2ShaderProgram implements RenderShaderProgram {
 
 class WebGL2RenderTarget implements RenderTarget {
   public disposed = false;
+  public needsResolve = false;
 
   constructor(
     public readonly id: number,
@@ -103,14 +104,19 @@ class WebGL2RenderTarget implements RenderTarget {
     public readonly colorHandle: WebGLTexture,
     public readonly depthHandle: WebGLRenderbuffer | null,
     public readonly depthTextureHandle: WebGLTexture | null,
+    public readonly sampleCount: number,
+    public readonly drawFramebuffer: WebGLFramebuffer,
+    public readonly multisampleColorHandle: WebGLRenderbuffer | null,
     private readonly gl: WebGL2RenderingContext
   ) {}
 
   dispose(): void {
     if (!this.disposed) {
       this.gl.deleteFramebuffer(this.framebuffer);
+      if (this.drawFramebuffer !== this.framebuffer) this.gl.deleteFramebuffer(this.drawFramebuffer);
       this.gl.deleteTexture(this.colorHandle);
       if (this.depthHandle) this.gl.deleteRenderbuffer(this.depthHandle);
+      if (this.multisampleColorHandle) this.gl.deleteRenderbuffer(this.multisampleColorHandle);
       if (this.depthTextureHandle) this.gl.deleteTexture(this.depthTextureHandle);
       this.colorTexture.dispose();
       this.depthTexture?.dispose();
@@ -450,15 +456,39 @@ export class WebGL2Device implements RenderDevice {
         label: descriptor.label
       });
     }
+    const requestedSampleCount = descriptor.sampleCount ?? 1;
+    const maxSamples = Number(this.gl.getParameter(this.gl.MAX_SAMPLES) ?? 1);
+    if (!Number.isInteger(requestedSampleCount) || requestedSampleCount < 1 || requestedSampleCount > maxSamples) {
+      throw new RenderDeviceError("WebGL2 render-target sampleCount must be an integer supported by MAX_SAMPLES.", "INVALID_RENDER_TARGET_SAMPLE_COUNT", {
+        sampleCount: requestedSampleCount,
+        maxSamples,
+        label: descriptor.label
+      });
+    }
+    const sampleCount = requestedSampleCount;
     const colorHandle = this.gl.createTexture();
     const framebuffer = this.gl.createFramebuffer();
+    const drawFramebuffer = sampleCount > 1 ? this.gl.createFramebuffer() : framebuffer;
+    const multisampleColorHandle = sampleCount > 1 ? this.gl.createRenderbuffer() : null;
     const depthMode = descriptor.depth === "texture" ? "texture" : descriptor.depth === false ? "none" : "renderbuffer";
     const depthHandle = depthMode === "renderbuffer" ? this.gl.createRenderbuffer() : null;
+    const multisampleDepthHandle = sampleCount > 1 && depthMode !== "none"
+      ? (depthHandle ?? this.gl.createRenderbuffer())
+      : depthHandle;
     const depthTextureHandle = depthMode === "texture" ? this.gl.createTexture() : null;
-    if (!colorHandle || !framebuffer || (depthMode === "renderbuffer" && !depthHandle) || (depthMode === "texture" && !depthTextureHandle)) {
+    if (
+      !colorHandle
+      || !framebuffer
+      || !drawFramebuffer
+      || (sampleCount > 1 && !multisampleColorHandle)
+      || ((depthMode === "renderbuffer" || (sampleCount > 1 && depthMode !== "none")) && !multisampleDepthHandle)
+      || (depthMode === "texture" && !depthTextureHandle)
+    ) {
       if (colorHandle) this.gl.deleteTexture(colorHandle);
       if (framebuffer) this.gl.deleteFramebuffer(framebuffer);
-      if (depthHandle) this.gl.deleteRenderbuffer(depthHandle);
+      if (drawFramebuffer && drawFramebuffer !== framebuffer) this.gl.deleteFramebuffer(drawFramebuffer);
+      if (multisampleColorHandle) this.gl.deleteRenderbuffer(multisampleColorHandle);
+      if (multisampleDepthHandle) this.gl.deleteRenderbuffer(multisampleDepthHandle);
       if (depthTextureHandle) this.gl.deleteTexture(depthTextureHandle);
       throw new RenderDeviceError("Failed to allocate WebGL render target", "WEBGL_ALLOCATION_FAILED", {
         width: descriptor.width,
@@ -492,7 +522,7 @@ export class WebGL2Device implements RenderDevice {
 
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
     this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, colorHandle, 0);
-    if (depthHandle) {
+    if (depthHandle && sampleCount === 1) {
       this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, depthHandle);
       this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, descriptor.width, descriptor.height);
       this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, depthHandle);
@@ -516,18 +546,34 @@ export class WebGL2Device implements RenderDevice {
       );
       this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.TEXTURE_2D, depthTextureHandle, 0);
     }
-    const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+    const resolveStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+    let drawStatus = resolveStatus;
+    if (sampleCount > 1 && multisampleColorHandle) {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, drawFramebuffer);
+      this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, multisampleColorHandle);
+      const multisampleColorFormat = format === "rgba8" ? this.gl.RGBA8 : textureFormat.internalFormat;
+      this.gl.renderbufferStorageMultisample(this.gl.RENDERBUFFER, sampleCount, multisampleColorFormat, descriptor.width, descriptor.height);
+      this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.RENDERBUFFER, multisampleColorHandle);
+      if (multisampleDepthHandle) {
+        this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, multisampleDepthHandle);
+        this.gl.renderbufferStorageMultisample(this.gl.RENDERBUFFER, sampleCount, this.gl.DEPTH_COMPONENT24, descriptor.width, descriptor.height);
+        this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT, this.gl.RENDERBUFFER, multisampleDepthHandle);
+      }
+      drawStatus = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+    }
     this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, previousRenderbuffer);
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, previousFramebuffer);
     this.gl.bindTexture(this.gl.TEXTURE_2D, previousTexture);
     this.gl.activeTexture(previousActiveTexture);
     this.stateCache.invalidate();
-    if (status !== this.gl.FRAMEBUFFER_COMPLETE) {
+    if (resolveStatus !== this.gl.FRAMEBUFFER_COMPLETE || drawStatus !== this.gl.FRAMEBUFFER_COMPLETE) {
       this.gl.deleteTexture(colorHandle);
       this.gl.deleteFramebuffer(framebuffer);
-      this.gl.deleteRenderbuffer(depthHandle);
+      if (drawFramebuffer !== framebuffer) this.gl.deleteFramebuffer(drawFramebuffer);
+      if (multisampleColorHandle) this.gl.deleteRenderbuffer(multisampleColorHandle);
+      if (multisampleDepthHandle) this.gl.deleteRenderbuffer(multisampleDepthHandle);
       if (depthTextureHandle) this.gl.deleteTexture(depthTextureHandle);
-      throw new RenderDeviceError("WebGL render target framebuffer status is invalid", "FRAMEBUFFER_INVALID", { status });
+      throw new RenderDeviceError("WebGL render target framebuffer status is invalid", "FRAMEBUFFER_INVALID", { resolveStatus, drawStatus });
     }
 
     const depthTexture = depthTextureHandle
@@ -542,8 +588,11 @@ export class WebGL2Device implements RenderDevice {
       depthTexture,
       framebuffer,
       colorHandle,
-      depthHandle,
+      multisampleDepthHandle,
       depthTextureHandle,
+      sampleCount,
+      drawFramebuffer,
+      multisampleColorHandle,
       this.gl
     );
     this.renderTargets.add(target);
@@ -558,6 +607,9 @@ export class WebGL2Device implements RenderDevice {
 
   setRenderTarget(target: RenderTarget | null): void {
     this.assertAlive();
+    if (this.activeRenderTarget && this.activeRenderTarget !== target) {
+      this.resolveMultisampleTarget(this.activeRenderTarget);
+    }
     if (target === null) {
       this.activeRenderTarget = null;
       this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, null, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null));
@@ -576,8 +628,26 @@ export class WebGL2Device implements RenderDevice {
       });
     }
     this.activeRenderTarget = target;
-    this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, target.framebuffer, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, target.framebuffer));
+    this.stateCache.bindFramebuffer(this.gl.FRAMEBUFFER, target.drawFramebuffer, () => this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, target.drawFramebuffer));
     this.stateCache.viewport(0, 0, target.width, target.height, () => this.gl.viewport(0, 0, target.width, target.height));
+  }
+
+  private resolveMultisampleTarget(target: WebGL2RenderTarget): void {
+    if (target.sampleCount <= 1 || !target.needsResolve) return;
+    const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, target.drawFramebuffer);
+    this.gl.bindFramebuffer(this.gl.DRAW_FRAMEBUFFER, target.framebuffer);
+    let mask = this.gl.COLOR_BUFFER_BIT;
+    if (target.depthTextureHandle) mask |= this.gl.DEPTH_BUFFER_BIT;
+    this.gl.blitFramebuffer(
+      0, 0, target.width, target.height,
+      0, 0, target.width, target.height,
+      mask,
+      this.gl.NEAREST
+    );
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, previousFramebuffer);
+    target.needsResolve = false;
+    this.stateCache.invalidate();
   }
 
   writeRenderTargetPixels(target: RenderTarget, pixels: Uint8Array): void {
@@ -604,6 +674,7 @@ export class WebGL2Device implements RenderDevice {
     try {
       this.gl.bindTexture(this.gl.TEXTURE_2D, target.colorHandle);
       this.gl.texSubImage2D(this.gl.TEXTURE_2D, 0, 0, 0, target.width, target.height, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
+      target.needsResolve = false;
     } finally {
       this.restoreTextureUnit0(textureUnit0);
     }
@@ -623,6 +694,7 @@ export class WebGL2Device implements RenderDevice {
         targetId: source.id
       });
     }
+    this.resolveMultisampleTarget(source);
     const outputWidth = this.viewportWidth || this.gl.drawingBufferWidth;
     const outputHeight = this.viewportHeight || this.gl.drawingBufferHeight;
     this.drawRenderTargetToBackbuffer(source, outputWidth, outputHeight);
@@ -644,6 +716,7 @@ export class WebGL2Device implements RenderDevice {
         targetId: source.id
       });
     }
+    this.resolveMultisampleTarget(source);
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
     const depthOfFieldPass = options.passes.find((pass) => pass.name === "depth-of-field");
@@ -869,8 +942,17 @@ export class WebGL2Device implements RenderDevice {
         boundsHeight
       });
     }
+    const readTarget = this.activeRenderTarget;
+    if (readTarget) {
+      this.resolveMultisampleTarget(readTarget);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, readTarget.framebuffer);
+    }
     const pixels = new Uint8Array(width * height * 4);
     this.gl.readPixels(x, y, width, height, this.gl.RGBA, this.gl.UNSIGNED_BYTE, pixels);
+    if (readTarget && readTarget.sampleCount > 1) {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
+      this.stateCache.invalidate();
+    }
     return pixels;
   }
 
@@ -891,8 +973,17 @@ export class WebGL2Device implements RenderDevice {
         boundsHeight
       });
     }
+    const readTarget = this.activeRenderTarget;
+    if (readTarget) {
+      this.resolveMultisampleTarget(readTarget);
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, readTarget.framebuffer);
+    }
     const pixels = new Float32Array(width * height * 4);
     this.gl.readPixels(x, y, width, height, this.gl.RGBA, this.gl.FLOAT, pixels);
+    if (readTarget && readTarget.sampleCount > 1) {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, readTarget.drawFramebuffer);
+      this.stateCache.invalidate();
+    }
     return pixels;
   }
 
@@ -917,6 +1008,7 @@ export class WebGL2Device implements RenderDevice {
         boundsHeight: target.height
       });
     }
+    this.resolveMultisampleTarget(target);
     const encoded = this.copyDepthTextureToBytes(target, x, y, width, height);
     const pixels = new Float32Array(width * height);
     for (let index = 0; index < pixels.length; index += 1) {
@@ -958,6 +1050,7 @@ export class WebGL2Device implements RenderDevice {
     this.stateCache.depthMask(true, () => this.gl.depthMask(true));
     this.gl.clearDepth(1);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    if (this.activeRenderTarget?.sampleCount && this.activeRenderTarget.sampleCount > 1) this.activeRenderTarget.needsResolve = true;
   }
 
   clearRenderTarget(color: readonly [number, number, number, number]): void {
@@ -966,6 +1059,7 @@ export class WebGL2Device implements RenderDevice {
     this.stateCache.depthMask(true, () => this.gl.depthMask(true));
     this.gl.clearDepth(1);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    if (this.activeRenderTarget?.sampleCount && this.activeRenderTarget.sampleCount > 1) this.activeRenderTarget.needsResolve = true;
   }
 
   draw(command: DrawCommand): void {
@@ -1031,6 +1125,7 @@ export class WebGL2Device implements RenderDevice {
       }
     }
     this.drawCalls += 1;
+    if (this.activeRenderTarget?.sampleCount && this.activeRenderTarget.sampleCount > 1) this.activeRenderTarget.needsResolve = true;
     if (this.errorCheckMode === "strict") {
       const drawError = this.readError();
       if (drawError) {
@@ -1103,6 +1198,7 @@ export class WebGL2Device implements RenderDevice {
       buffers: [...this.buffers].filter((buffer) => !buffer.disposed).length,
       shaders: [...this.shaders].filter((shader) => !shader.disposed).length,
       renderTargets: liveRenderTargets.length,
+      maxRenderTargetSampleCount: Math.max(1, ...liveRenderTargets.map((target) => target.sampleCount)),
       textures: liveTextures.size,
       bufferBytes,
       textureBytes,

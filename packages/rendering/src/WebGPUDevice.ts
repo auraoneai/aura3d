@@ -108,6 +108,7 @@ export interface WebGPUTextureDescriptorLike {
   readonly format: string;
   readonly usage: number;
   readonly mipLevelCount?: number;
+  readonly sampleCount?: number;
 }
 
 export interface WebGPUTextureLike {
@@ -158,6 +159,9 @@ export interface WebGPURenderPipelineDescriptorLike {
     readonly format: string;
     readonly depthWriteEnabled: boolean;
     readonly depthCompare: "less-equal" | "always";
+  };
+  readonly multisample?: {
+    readonly count: number;
   };
 }
 
@@ -238,6 +242,7 @@ export interface WebGPURenderPassDescriptorLike {
   readonly label?: string;
   readonly colorAttachments: readonly [{
     readonly view: unknown;
+    readonly resolveTarget?: unknown;
     readonly clearValue?: readonly [number, number, number, number];
     readonly loadOp: "clear" | "load";
     readonly storeOp: "store";
@@ -340,7 +345,10 @@ class WebGPURenderTarget implements RenderTarget {
     public readonly nativeView: unknown | null,
     public readonly nativeDepthTexture: WebGPUTextureLike | null,
     public readonly nativeDepthView: unknown | null,
-    public readonly hasDepth: boolean
+    public readonly hasDepth: boolean,
+    public readonly sampleCount: number,
+    public readonly nativeMultisampleTexture: WebGPUTextureLike | null,
+    public readonly nativeMultisampleView: unknown | null
   ) {
     this.colorPixels = new Uint8Array(width * height * 4);
     this.colorFloatPixels = colorTexture.format === "rgba16f" || colorTexture.format === "rgba32f"
@@ -353,6 +361,7 @@ class WebGPURenderTarget implements RenderTarget {
     if (!this.disposed) {
       this.nativeTexture?.destroy();
       this.nativeDepthTexture?.destroy();
+      this.nativeMultisampleTexture?.destroy();
       this.colorTexture.dispose();
       this.depthTexture?.dispose();
       this.disposed = true;
@@ -558,12 +567,35 @@ export class WebGPUDevice implements RenderDevice {
         label: descriptor.label
       });
     }
+    const sampleCount = descriptor.sampleCount ?? 1;
+    if (sampleCount !== 1 && sampleCount !== 4) {
+      throw new RenderDeviceError("WebGPU render-target sampleCount must be 1 or 4.", "INVALID_RENDER_TARGET_SAMPLE_COUNT", {
+        sampleCount,
+        label: descriptor.label
+      });
+    }
+    if (sampleCount > 1 && descriptor.depth === "texture") {
+      throw new RenderDeviceError("WebGPU multisampled targets cannot resolve depth into a sampleable texture.", "MULTISAMPLE_DEPTH_RESOLVE_UNSUPPORTED", {
+        sampleCount,
+        label: descriptor.label
+      });
+    }
+    const textureFormat = webgpuTextureFormat(descriptor.format ?? "rgba8");
     const nativeTexture = this.device.createTexture?.({
       label: descriptor.label ?? "aura3d-webgpu-render-target",
       size: [descriptor.width, descriptor.height],
-      format: webgpuTextureFormat(descriptor.format ?? "rgba8"),
+      format: textureFormat,
       usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.COPY_SRC | TEXTURE_USAGE.COPY_DST | TEXTURE_USAGE.TEXTURE_BINDING
     }) ?? null;
+    const nativeMultisampleTexture = sampleCount > 1
+      ? this.device.createTexture?.({
+        label: `${descriptor.label ?? "aura3d-webgpu-render-target"}-multisample`,
+        size: [descriptor.width, descriptor.height],
+        format: textureFormat,
+        usage: TEXTURE_USAGE.RENDER_ATTACHMENT,
+        sampleCount
+      }) ?? null
+      : null;
     const hasDepth = descriptor.depth !== false;
     const hasSampleableDepth = descriptor.depth === "texture";
     const nativeDepthTexture = hasDepth
@@ -571,7 +603,8 @@ export class WebGPUDevice implements RenderDevice {
         label: `${descriptor.label ?? "aura3d-webgpu-render-target"}-depth`,
         size: [descriptor.width, descriptor.height],
         format: DEPTH_TEXTURE_FORMAT,
-        usage: TEXTURE_USAGE.RENDER_ATTACHMENT | (hasSampleableDepth ? TEXTURE_USAGE.TEXTURE_BINDING : 0)
+        usage: TEXTURE_USAGE.RENDER_ATTACHMENT | (hasSampleableDepth ? TEXTURE_USAGE.TEXTURE_BINDING : 0),
+        sampleCount
       }) ?? null
       : null;
     const depthTexture = hasSampleableDepth
@@ -588,7 +621,10 @@ export class WebGPUDevice implements RenderDevice {
       nativeTexture?.createView() ?? null,
       nativeDepthTexture,
       nativeDepthTexture?.createView() ?? null,
-      hasDepth
+      hasDepth,
+      sampleCount,
+      nativeMultisampleTexture,
+      nativeMultisampleTexture?.createView() ?? null
     );
     this.renderTargets.add(target);
     return target;
@@ -1040,6 +1076,7 @@ export class WebGPUDevice implements RenderDevice {
       buffers: [...this.buffers].filter((buffer) => !buffer.disposed).length,
       shaders: [...this.shaders].filter((shader) => !shader.disposed).length,
       renderTargets: liveRenderTargets.length,
+      maxRenderTargetSampleCount: Math.max(1, ...liveRenderTargets.map((target) => target.sampleCount)),
       textures: liveRenderTargets.length,
       bufferBytes,
       textureBytes,
@@ -1222,7 +1259,8 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   private submitNativeRenderPass(command: DrawCommand, vertexBuffer: WebGPURenderBuffer): void {
-    const nativeView = this.activeRenderTarget?.nativeView ?? this.currentCanvasView();
+    const resolveView = this.activeRenderTarget?.nativeView ?? null;
+    const nativeView = this.activeRenderTarget?.nativeMultisampleView ?? resolveView ?? this.currentCanvasView();
     if (!nativeView || !command.shader) return;
     if (!hasNativeRenderPipeline(this.device)) return;
     const shader = this.requireShader(command.shader);
@@ -1240,7 +1278,8 @@ export class WebGPUDevice implements RenderDevice {
     const depthWriteEnabled = command.renderState?.depthWrite ?? true;
     const depthCompare = command.renderState?.depthCompare ?? "less-equal";
     const blendEnabled = command.renderState?.blend === true;
-    const pipelineKey = `${shader.nativeUniformLayout}:${topology}:${targetFormat}:${blendEnabled ? "blend" : "opaque"}:${depthEnabled ? `${depthWriteEnabled}:${depthCompare}` : "nodepth"}:${command.vertexFormat?.stride ?? 0}:${command.vertexFormat?.attributes.map((attribute) => `${attribute.shaderLocation}/${attribute.offset}/${attribute.components}`).join(",") ?? "none"}`;
+    const sampleCount = this.activeRenderTarget?.sampleCount ?? 1;
+    const pipelineKey = `${shader.nativeUniformLayout}:${topology}:${targetFormat}:samples=${sampleCount}:${blendEnabled ? "blend" : "opaque"}:${depthEnabled ? `${depthWriteEnabled}:${depthCompare}` : "nodepth"}:${command.vertexFormat?.stride ?? 0}:${command.vertexFormat?.attributes.map((attribute) => `${attribute.shaderLocation}/${attribute.offset}/${attribute.components}`).join(",") ?? "none"}`;
     let pipeline = shader.renderPipelines.get(pipelineKey);
     if (!pipeline) {
       pipeline = this.device.createRenderPipeline({
@@ -1263,6 +1302,7 @@ export class WebGPUDevice implements RenderDevice {
           }]
         },
         primitive: { topology },
+        ...(sampleCount > 1 ? { multisample: { count: sampleCount } } : {}),
         ...(depthEnabled
           ? {
               depthStencil: {
@@ -1320,6 +1360,7 @@ export class WebGPUDevice implements RenderDevice {
       label: `${command.label ?? "draw"}-pass`,
       colorAttachments: [{
         view: nativeView,
+        ...(sampleCount > 1 && resolveView ? { resolveTarget: resolveView } : {}),
         clearValue: this.activeRenderTarget?.nativeClearColor ?? this.clearColor,
         loadOp: shouldClear ? "clear" : "load",
         storeOp: "store"
@@ -1375,12 +1416,14 @@ export class WebGPUDevice implements RenderDevice {
   }
 
   private flushNativeRenderTargetClear(target: WebGPURenderTarget): void {
-    if (!target.nativeNeedsClear || !target.nativeView || !this.device.createCommandEncoder) return;
+    const drawView = target.nativeMultisampleView ?? target.nativeView;
+    if (!target.nativeNeedsClear || !drawView || !this.device.createCommandEncoder) return;
     const encoder = this.device.createCommandEncoder({ label: `${target.label}-native-clear` });
     const pass = encoder.beginRenderPass({
       label: `${target.label}-native-clear-pass`,
       colorAttachments: [{
-        view: target.nativeView,
+        view: drawView,
+        ...(target.sampleCount > 1 && target.nativeView ? { resolveTarget: target.nativeView } : {}),
         clearValue: target.nativeClearColor,
         loadOp: "clear",
         storeOp: "store"

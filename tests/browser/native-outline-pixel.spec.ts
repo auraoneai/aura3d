@@ -31,6 +31,9 @@ test("ported native WebGL2 postprocess passes match their CPU byte kernels", asy
     expect(result?.taaMaxChannelDelta).toBeLessThanOrEqual(1);
     expect(result?.taaChangedChannelCount).toBeLessThanOrEqual(8);
     expect(result?.taaEffectChangedChannelCount).toBeGreaterThan(0);
+    expect(result?.msaaSampleCount).toBe(4);
+    expect(result?.singleSampleIntermediatePixels).toBe(0);
+    expect(result?.multisampleIntermediatePixels).toBeGreaterThan(0);
   } finally {
     await server.close();
   }
