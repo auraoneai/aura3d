@@ -7,6 +7,7 @@ export type Contact = {
   readonly bodyB: number;
   readonly normal: Vec3;
   readonly penetration: number;
+  readonly point?: Vec3;
   readonly sensor: boolean;
 };
 

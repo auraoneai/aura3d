@@ -323,10 +323,10 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   ], "No terrain streaming, vegetation lighting, or physical atmosphere is accepted.", "Add route proof and keep outdoor claims bounded to backdrop/lighting."),
   capability("terrain-heightfield", "Terrain Heightfield Geometry", "implemented", true, [
     "createTerrainHeightfieldGeometry converts deterministic height samples into indexed PBR-ready geometry with generated normals, tangents, UVs, and bounds.",
-    "The generated mesh includes a cell-aligned heightfield collider descriptor for future native narrow-phase work; Phase 2B did not land heightfield collision response.",
+    "The generated mesh includes a cell-aligned heightfield collider descriptor compatible with the native physics heightfield sample grid; callers must still attach the collider explicitly.",
     "createEnvironmentPreset({ ground: \"terrain\" }) attaches the reusable generated terrain instead of reporting an unsupported fallback.",
     "Browser evidence renders the generated heightfield and verifies non-background terrain pixels."
-  ], "Rendering heightfields are implemented; native heightfield collision response, streaming, erosion, and clipmap LOD remain separate capabilities.", "Retain deterministic geometry, descriptor, preset integration, and browser pixel gates; keep collision claims excluded until native narrow-phase proof lands."),
+  ], "Rendering heightfields and native triangle-backed heightfield contacts are separately implemented; automatic render-to-physics attachment, streaming, erosion, and clipmap LOD remain outside this preset.", "Retain deterministic geometry, descriptor, preset integration, browser pixel gates, and separate native physics contact proof."),
   capability("urban-city-shell", "Urban City Shell", "helper", true, [
     "createEnvironmentStage(\"urban-city\") creates reusable neon shell panels and lighting colors."
   ], "This is a reusable shell, not a city renderer or instancing proof.", "Use with Smart City/data routes while keeping scale claims separate."),

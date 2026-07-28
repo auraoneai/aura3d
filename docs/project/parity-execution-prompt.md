@@ -34,8 +34,9 @@ Completed and committed:
 | `601275c4` | Three Phase 2 gate decisions recorded in the audit |
 
 Phase 1, Phase 2, and the Phase 3 game work have been executed. Phase 2B has also been
-executed under Rule 0: fog pixels, rectangular area lights, native oriented/mesh
-narrow-phase, and native angular contact remain explicitly blocked; the final full-unit
+executed under Rule 0. The follow-on remediation has since completed fog pixels,
+rectangular area lights, and native oriented/convex/mesh/heightfield narrow-phase; native
+angular contact remains in progress. The final full-unit
 exit gate is blocked only on two retained racing visual-QA assertions. The 2B-specific
 documentation pass and the general Phase 4 claim audit are complete. Remaining
 non-passing gates and Rule 0 blockers are summarized in **4.8**; they were not
@@ -718,7 +719,7 @@ That is correct for shipping the games and leaves the native solver permanently 
 tasks close it. Do **not** start them before 2.20-2.22 have shipped — the decision stands
 until the games work.
 
-- [!] **2B.14** Extend `buildContact()` (`packages/physics/src/PhysicsWorld.ts:686`) past its
+- [x] **2B.14** Extend `buildContact()` (`packages/physics/src/PhysicsWorld.ts:686`) past its
       six analytic pairs — plane↔any, sphere↔sphere, sphere↔box, capsule↔sphere, capsule↔box,
       capsule↔capsule — after which it falls through to the AABB overlap path at `:740`.
       Priority order: box↔box first (most common game pair, currently on that AABB fallback),
@@ -728,8 +729,14 @@ until the games work.
       mesh, and heightfield cases emitted contacts, but the required first-priority rotated
       box↔box case emitted no contact even after the second attempt moved the bodies into
       deep overlap; the 70 existing focused physics checks remained green. Per Rule 0 the
-      unverified task changes were removed. Native box↔box remains on the AABB fallback, and
-      convex-hull/heightfield shape additions remain unshipped.
+      unverified task changes were removed at that time. The explicitly requested
+      remediation pass subsequently added rotation-aware broadphase bounds, a proven
+      15-axis OBB SAT path that rejects rotated AABB false positives and accepts actual
+      overlap, public validated convex-hull and heightfield shapes, convex-pair GJK/EPA with
+      a SAT degeneracy fallback, and triangle-backed box/convex/sphere/capsule contacts for
+      indexed meshes and heightfields. Six focused native tests prove every new path while
+      the full existing physics suite remains green. Surface↔surface pairs and automatic
+      rendering-preset collider attachment remain excluded.
 - [!] **2B.15** Route contact impulses through `angularVelocity` so contacts generate torque.
       `applyImpulsePair` (`PhysicsWorld.ts:452-464`) writes only linear velocity on both
       bodies, even though `RigidBody.applyImpulse` (`:155`) does apply angular response — so
@@ -1102,11 +1109,11 @@ exists.
       - **Broad skinned/morph/animation support** remains unclaimed because the
         passing root browser evidence covers named assets/fixtures, not
         arbitrary rigs, clips, or facial pipelines.
-      - **Native production physics** remains unclaimed because oriented
-        box/convex/mesh/heightfield narrow-phase and angular contact impulses
-        did not survive their two Rule 0 attempts. The diagonal inertia tensor
-        was correctly left conditional. Game docs name `cannon-es` where route
-        fidelity depends on it.
+      - **Native production physics** remains unclaimed as a broad label.
+        Package-scoped rotated box SAT, convex-hull GJK/EPA, and
+        mesh/heightfield contacts now have focused proof, while angular contact
+        impulses remain open. The diagonal inertia tensor remains conditional.
+        Game docs name `cannon-es` where route fidelity depends on it.
       - **Turbo Drift Circuit and Skyline Runner public-ready status** is held:
         the required retained racing visual-QA unit test is red on a stale
         screenshot hash, and Skyline's world-level proof remains
@@ -1141,8 +1148,8 @@ exists.
   stub. That entry must be corrected regardless of what else ships.
 - Per the Gap 7 decision, state the per-game physics backend wherever fidelity is claimed.
   Native `aura-js` now has bounded adaptive CCD and accumulated Coulomb
-  friction, but rotated box↔box still uses the AABB fallback and native angular
-  contact response, convex/mesh/heightfield narrow-phase, and production
+  friction plus focused rotated box, convex-hull, mesh, and heightfield
+  narrow-phase proof. Native angular contact response and broad production
   collision parity remain absent.
 
 ---

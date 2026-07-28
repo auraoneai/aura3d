@@ -28,8 +28,9 @@ Environment lighting is implemented through renderer environment resources, envi
 
 These are `rendering` or `production-runtime` capabilities, not automatic root
 `createAuraApp` claims. OpenEXR decode, physical Rayleigh/Mie atmosphere, three.js LTC
-lookup-table identity, rectangular-light shadow maps, planar mirrors, physical caustics,
-and native terrain collision are not implemented. Rendering-internal finite rectangular
+lookup-table identity, rectangular-light shadow maps, planar mirrors, and physical caustics
+are not implemented. Native physics heightfield contacts require explicit collider
+attachment and are not automatically created by an environment preset. Rendering-internal finite rectangular
 emitters have size-dependent and one-sided WebGL2 pixel proof; rendering-internal linear
 and exponential-squared fog have deterministic
 WebGL2 object-pixel and screenshot proof; that evidence does not establish volumetric

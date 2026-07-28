@@ -66,7 +66,7 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);
     expect(byId.get("terrain-heightfield")?.status).toBe("implemented");
-    expect(byId.get("terrain-heightfield")?.gap).toMatch(/native heightfield collision response.*separate/i);
+    expect(byId.get("terrain-heightfield")?.gap).toMatch(/native triangle-backed heightfield contacts.*separately implemented.*automatic render-to-physics attachment/i);
     expect(byId.get("transmission-refraction")?.status).toBe("implemented");
     expect(byId.get("transmission-refraction")?.gap).toMatch(/depth ray marching.*not claimed/i);
     expect(byId.get("volumetric-weather-enclosure")?.status).toBe("implemented");

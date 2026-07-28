@@ -11,6 +11,7 @@ import {
 import { Collider, type ColliderDescriptor } from "./Collider.js";
 import { CollisionEventQueue, type CollisionEvent, type Contact } from "./CollisionEvents.js";
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
+import { buildNativeNarrowPhaseContact } from "./NarrowPhase.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
 import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
@@ -419,7 +420,7 @@ export class PhysicsWorld {
       if (!body) {
         continue;
       }
-      const bounds = collider.bounds(body.position);
+      const bounds = collider.bounds(body.position, body.rotation);
       const entry = { collider, body, bounds };
       if (isFiniteBounds(bounds)) {
         finiteEntries.push(entry);
@@ -1024,6 +1025,19 @@ function buildContact(a: Collider, bodyA: RigidBody, b: Collider, bodyB: RigidBo
   if (a.shape.kind === "capsule" && b.shape.kind === "capsule") {
     return buildCapsuleCapsuleContact(a, bodyA, b, bodyB);
   }
+  const nativeContact = buildNativeNarrowPhaseContact(a, bodyA, b, bodyB);
+  if (nativeContact) {
+    return {
+      colliderA: a.id,
+      colliderB: b.id,
+      bodyA: bodyA.id,
+      bodyB: bodyB.id,
+      normal: nativeContact.normal,
+      penetration: nativeContact.penetration,
+      point: nativeContact.point,
+      sensor: a.sensor || b.sensor
+    };
+  }
   const boundsA = a.bounds(bodyA.position);
   const boundsB = b.bounds(bodyB.position);
   const overlapX = Math.min(boundsA.max[0] - boundsB.min[0], boundsB.max[0] - boundsA.min[0]);
@@ -1266,6 +1280,11 @@ function supportRadius(collider: Collider): number {
     case "plane":
       return 0;
     case "mesh": {
+      const bounds = collider.bounds([0, 0, 0]);
+      return Math.max(Math.abs(bounds.min[1]), Math.abs(bounds.max[1]));
+    }
+    case "convex-hull":
+    case "heightfield": {
       const bounds = collider.bounds([0, 0, 0]);
       return Math.max(Math.abs(bounds.min[1]), Math.abs(bounds.max[1]));
     }

@@ -61,7 +61,7 @@ export class Collider {
     return (this.filter.mask & other.filter.layer) !== 0 && (other.filter.mask & this.filter.layer) !== 0;
   }
 
-  bounds(position: Vec3): Bounds {
-    return Shape.bounds(this.shape, position);
+  bounds(position: Vec3, rotation?: readonly [number, number, number, number]): Bounds {
+    return Shape.bounds(this.shape, position, rotation);
   }
 }

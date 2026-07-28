@@ -28,7 +28,21 @@ export type MeshShape = {
   readonly indices: readonly number[];
 };
 
-export type PhysicsShape = BoxShape | SphereShape | CapsuleShape | PlaneShape | MeshShape;
+export type ConvexHullShape = {
+  readonly kind: "convex-hull";
+  readonly vertices: readonly Vec3[];
+  readonly indices: readonly number[];
+};
+
+export type HeightfieldShape = {
+  readonly kind: "heightfield";
+  readonly rows: number;
+  readonly columns: number;
+  readonly heights: readonly number[];
+  readonly cellSize: number;
+};
+
+export type PhysicsShape = BoxShape | SphereShape | CapsuleShape | PlaneShape | MeshShape | ConvexHullShape | HeightfieldShape;
 
 export type Bounds = {
   readonly min: Vec3;
@@ -121,20 +135,7 @@ export class Shape {
   }
 
   static mesh(vertices: readonly Vec3[], indices: readonly number[]): MeshShape {
-    if (vertices.length < 3) {
-      throw new Error("mesh shape requires at least three vertices.");
-    }
-    for (const [index, vertex] of vertices.entries()) {
-      validateFiniteVec3(vertex, `mesh vertex ${index}`);
-    }
-    if (indices.length === 0 || indices.length % 3 !== 0) {
-      throw new Error("mesh shape indices must contain one or more complete triangles.");
-    }
-    for (const index of indices) {
-      if (!Number.isInteger(index) || index < 0 || index >= vertices.length) {
-        throw new Error(`mesh shape index ${index} is out of range.`);
-      }
-    }
+    validateIndexedTriangles(vertices, indices, "mesh");
     return {
       kind: "mesh",
       vertices: vertices.map(cloneVec3),
@@ -142,24 +143,62 @@ export class Shape {
     };
   }
 
-  static bounds(shape: PhysicsShape, position: Vec3): Bounds {
+  static convexHull(vertices: readonly Vec3[], indices: readonly number[]): ConvexHullShape {
+    if (vertices.length < 4) {
+      throw new Error("convex hull shape requires at least four vertices.");
+    }
+    validateIndexedTriangles(vertices, indices, "convex hull");
+    return {
+      kind: "convex-hull",
+      vertices: vertices.map(cloneVec3),
+      indices: [...indices]
+    };
+  }
+
+  static heightfield(rows: readonly (readonly number[])[], cellSize = 1): HeightfieldShape {
+    if (rows.length < 2 || rows[0] === undefined || rows[0].length < 2) {
+      throw new Error("heightfield shape requires at least two rows and two columns.");
+    }
+    validatePositive(cellSize, "heightfield cellSize");
+    const columns = rows[0].length;
+    const heights: number[] = [];
+    for (const [rowIndex, row] of rows.entries()) {
+      if (row.length !== columns) {
+        throw new Error(`heightfield row ${rowIndex} must contain ${columns} columns.`);
+      }
+      for (const [columnIndex, height] of row.entries()) {
+        if (!Number.isFinite(height)) {
+          throw new Error(`heightfield sample [${rowIndex}, ${columnIndex}] must be finite.`);
+        }
+        heights.push(height);
+      }
+    }
+    return { kind: "heightfield", rows: rows.length, columns, heights, cellSize };
+  }
+
+  static bounds(shape: PhysicsShape, position: Vec3, rotation: readonly [number, number, number, number] = [0, 0, 0, 1]): Bounds {
     validateFiniteVec3(position, "shape position");
     switch (shape.kind) {
       case "box":
-        return {
-          min: subVec3(position, shape.halfExtents),
-          max: addVec3(position, shape.halfExtents)
-        };
+        return boundsFromLocalVertices(boxVertices(shape.halfExtents), position, rotation);
       case "sphere":
         return {
           min: [position[0] - shape.radius, position[1] - shape.radius, position[2] - shape.radius],
           max: [position[0] + shape.radius, position[1] + shape.radius, position[2] + shape.radius]
         };
       case "capsule": {
-        const yRadius = shape.radius + shape.halfHeight;
+        const axis = rotateVec3ByQuat([0, shape.halfHeight, 0], rotation);
         return {
-          min: [position[0] - shape.radius, position[1] - yRadius, position[2] - shape.radius],
-          max: [position[0] + shape.radius, position[1] + yRadius, position[2] + shape.radius]
+          min: [
+            position[0] - Math.abs(axis[0]) - shape.radius,
+            position[1] - Math.abs(axis[1]) - shape.radius,
+            position[2] - Math.abs(axis[2]) - shape.radius
+          ],
+          max: [
+            position[0] + Math.abs(axis[0]) + shape.radius,
+            position[1] + Math.abs(axis[1]) + shape.radius,
+            position[2] + Math.abs(axis[2]) + shape.radius
+          ]
         };
       }
       case "plane":
@@ -167,18 +206,64 @@ export class Shape {
           min: [-Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER, -Number.MAX_SAFE_INTEGER],
           max: [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER]
         };
-      case "mesh": {
-        let min = addVec3(position, shape.vertices[0]!);
-        let max = cloneVec3(min);
-        for (let index = 1; index < shape.vertices.length; index += 1) {
-          const vertex = addVec3(position, shape.vertices[index]!);
-          min = minVec3(min, vertex);
-          max = maxVec3(max, vertex);
-        }
-        return { min, max };
+      case "mesh":
+      case "convex-hull":
+        return boundsFromLocalVertices(shape.vertices, position, rotation);
+      case "heightfield": {
+        const halfWidth = (shape.columns - 1) * shape.cellSize * 0.5;
+        const halfDepth = (shape.rows - 1) * shape.cellSize * 0.5;
+        const minHeight = Math.min(...shape.heights);
+        const maxHeight = Math.max(...shape.heights);
+        return boundsFromLocalVertices([
+          [-halfWidth, minHeight, -halfDepth],
+          [halfWidth, minHeight, -halfDepth],
+          [-halfWidth, maxHeight, halfDepth],
+          [halfWidth, maxHeight, halfDepth]
+        ], position, rotation);
       }
+    }
   }
 }
+
+function validateIndexedTriangles(vertices: readonly Vec3[], indices: readonly number[], label: string): void {
+    if (vertices.length < 3) {
+      throw new Error(`${label} shape requires at least three vertices.`);
+    }
+    for (const [index, vertex] of vertices.entries()) {
+      validateFiniteVec3(vertex, `${label} vertex ${index}`);
+    }
+    if (indices.length === 0 || indices.length % 3 !== 0) {
+      throw new Error(`${label} shape indices must contain one or more complete triangles.`);
+    }
+    for (const index of indices) {
+      if (!Number.isInteger(index) || index < 0 || index >= vertices.length) {
+        throw new Error(`${label} shape index ${index} is out of range.`);
+      }
+    }
+}
+
+function boxVertices(halfExtents: Vec3): readonly Vec3[] {
+  const [x, y, z] = halfExtents;
+  return [
+    [-x, -y, -z], [x, -y, -z], [x, y, -z], [-x, y, -z],
+    [-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z]
+  ];
+}
+
+function boundsFromLocalVertices(
+  vertices: readonly Vec3[],
+  position: Vec3,
+  rotation: readonly [number, number, number, number]
+): Bounds {
+  const first = addVec3(position, rotateVec3ByQuat(vertices[0]!, rotation));
+  let min = cloneVec3(first);
+  let max = cloneVec3(first);
+  for (let index = 1; index < vertices.length; index += 1) {
+    const vertex = addVec3(position, rotateVec3ByQuat(vertices[index]!, rotation));
+    min = minVec3(min, vertex);
+    max = maxVec3(max, vertex);
+  }
+  return { min, max };
 }
 
 export function rotateVec3ByQuat(v: Vec3, q: readonly [number, number, number, number]): [number, number, number] {

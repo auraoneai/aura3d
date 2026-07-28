@@ -417,9 +417,13 @@ now protects `aura-js` as well as `cannon-es`, including force/history preservat
 configured-guarantee rejection path. Native oriented box SAT, convex/mesh/heightfield
 narrow-phase, and angular contact impulses did not land after their two allowed attempts.
 
-Consequence to disclose: native `aura-js` has bounded adaptive CCD and accumulated Coulomb
-friction, but remains without oriented box collision or angular contact response. The
-per-game backend choice must still be stated wherever physics fidelity is claimed.
+**Follow-on remediation update.** A later explicitly requested pass added rotation-aware
+broadphase bounds, 15-axis OBB SAT, convex-hull GJK/EPA with a degeneracy fallback, and
+triangle-backed contacts for box/convex/sphere/capsule shapes against indexed meshes and
+heightfields. Focused tests prove both rotated AABB false-positive rejection and real
+rotated overlap, plus each new shape family. Native angular contact response remains the
+separate open solver limit. The per-game backend choice must still be stated wherever
+physics fidelity is claimed.
 
 ---
 

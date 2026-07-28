@@ -61,9 +61,10 @@ proves the exact result:
 - generic physics/collision behavior not exported and tested from the root API.
 
 Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
-has bounded adaptive CCD and accumulated Coulomb friction, but still lacks
-oriented box/convex/mesh narrow-phase and angular contact impulses. Do not turn
-package physics tests or a `cannon-es` route into a generic root collision claim.
+has bounded adaptive CCD, accumulated Coulomb friction, rotated box SAT,
+convex-hull GJK/EPA, and triangle-backed mesh/heightfield contacts. Native
+contact impulses still lack angular response. Do not turn package physics tests
+or a `cannon-es` route into a generic root collision claim.
 
 Performance claims require current comparative reports. A passing hand-authored
 feature inventory, stale visual capture, package benchmark, or missing-evidence

@@ -36,5 +36,5 @@ The physics boundary is `@aura3d/engine/physics`. Claims about collision, solver
 ## Current Limits
 
 - Physics support is limited to the implemented runtime primitives and tested routes; advanced solver, vehicle, cloth, and large-scale simulation claims require separate evidence.
-- Native `aura-js` uses accumulated Coulomb friction and bounded adaptive CCD, but still lacks oriented box/convex/mesh/heightfield narrow-phase and angular contact impulses.
+- Native `aura-js` uses accumulated Coulomb friction, bounded adaptive CCD, rotated box SAT, convex-hull GJK/EPA, and triangle-backed mesh/heightfield contacts. Contact impulses remain linear-only until the separate angular-response gate passes.
 - Route claims must identify whether they use native `aura-js`, `cannon-es`, or a route-local kinematic/combat system.

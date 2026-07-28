@@ -53,7 +53,7 @@ function appendColliderLines(lines: DebugLine[], collider: Collider, position: V
     const h = collider.shape.halfHeight;
     lines.push({ from: [position[0], position[1] - h - r, position[2]], to: [position[0], position[1] + h + r, position[2]], color });
     lines.push({ from: [position[0] - r, position[1], position[2]], to: [position[0] + r, position[1], position[2]], color });
-  } else {
+  } else if (collider.shape.kind === "mesh" || collider.shape.kind === "convex-hull") {
     const { vertices, indices } = collider.shape;
     for (let index = 0; index < indices.length; index += 3) {
       const a = translate(vertices[indices[index]!]!, position);
@@ -62,6 +62,21 @@ function appendColliderLines(lines: DebugLine[], collider: Collider, position: V
       lines.push({ from: a, to: b, color });
       lines.push({ from: b, to: c, color });
       lines.push({ from: c, to: a, color });
+    }
+  } else {
+    const shape = collider.shape;
+    const halfWidth = (shape.columns - 1) * shape.cellSize * 0.5;
+    const halfDepth = (shape.rows - 1) * shape.cellSize * 0.5;
+    const sample = (row: number, column: number): Vec3 => [
+      position[0] + column * shape.cellSize - halfWidth,
+      position[1] + shape.heights[row * shape.columns + column]!,
+      position[2] + row * shape.cellSize - halfDepth
+    ];
+    for (let row = 0; row < shape.rows; row += 1) {
+      for (let column = 0; column < shape.columns; column += 1) {
+        if (column + 1 < shape.columns) lines.push({ from: sample(row, column), to: sample(row, column + 1), color });
+        if (row + 1 < shape.rows) lines.push({ from: sample(row, column), to: sample(row + 1, column), color });
+      }
     }
   }
 }
