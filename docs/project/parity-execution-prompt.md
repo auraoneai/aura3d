@@ -15,7 +15,7 @@ Companion documents (read, do not duplicate):
 - `docs/agents/claims-and-boundaries.md` and `docs/project/known-limits.md` — binding claim
   authority. Narrower wording always wins.
 
-Last verified against code: 2026-07-27, at commit `504a76a1`.
+Last verified against code: 2026-07-27, through the Phase 4 closing audit.
 
 Status legend: `[ ]` open · `[x]` done · `[~]` partial, detail required · `[!]` blocked
 
@@ -37,8 +37,9 @@ Phase 1, Phase 2, and the Phase 3 game work have been executed. Phase 2B has als
 executed under Rule 0: fog pixels, rectangular area lights, native oriented/mesh
 narrow-phase, and native angular contact remain explicitly blocked; the final full-unit
 exit gate is blocked only on two retained racing visual-QA assertions. The 2B-specific
-documentation pass is complete. The next actionable work is the remaining general Phase 4
-documentation checklist, starting at **4.1**.
+documentation pass and the general Phase 4 claim audit are complete. Remaining
+non-passing gates and Rule 0 blockers are summarized in **4.8**; they were not
+converted into broader claims.
 
 Scope note: Phases 2-4 close the nine audited gaps and ship the four games. **Phase 2B** covers
 the remaining distance to three.js feature coverage — the entries `EnvironmentPlatform.ts`
@@ -1053,7 +1054,69 @@ exists.
       pnpm check:marketing-truth && pnpm check:marketing-links && pnpm verify:claims`
       Exact command chain passes. The claim registry scanned 51 governed files
       with 0 violations.
-- [ ] **4.8** Closing summary: every claim raised with its proof, every claim lowered with why
+- [x] **4.8** Closing summary: every claim raised with its proof, every claim lowered with why
+
+      Claims raised, with the narrowest proven scope:
+
+      - **Rendering internals / production-runtime:** six-face cubemaps,
+        equirectangular backgrounds, bounded GGX PMREM under the retained RGBE
+        fixture, the root-exported HDR file loader, generated terrain geometry,
+        bounded scene-color transmission, and depth-aware radial volumetric
+        light. Each is tied to its focused unit/browser-pixel gate recorded in
+        2B.4-2B.6 and 2B.9-2B.13; none is generalized to root renderer parity.
+      - **Root animation, named fixtures only:**
+        `createAuraApp-animation-bridge-contract.spec.ts` proves the tested
+        skinned asset/pose deltas, and `createAuraApp-morph-targets.spec.ts`
+        proves the tested morph asset/influence pixels. Neither becomes an
+        arbitrary-rig or broad character-pipeline claim.
+      - **`@aura3d/physics`:** native accumulated Coulomb friction is backed by
+        the focused friction/iteration tests from 2B.16; conservative
+        `timeOfImpact(...)` and adaptive-substep CCD on `aura-js` and
+        `cannon-es` are backed by the fast-wall, hit/miss, force-history, API,
+        typecheck, build, export, and claims gates from 2B.17.
+      - **Configured showcase inventory:** the latest route-library producer
+        reports 7/7 configured candidates, with two internal diagnostics, two
+        game-layer diagnostic harnesses, zero prototype-blocked routes, and the
+        index handled separately. Docs and marketing label 7/7 as a sub-gate,
+        not an overall release verdict.
+
+      Claims lowered, with the missing or failing proof:
+
+      - **Root rendering/PBR/HDR/IBL/PMREM/postprocess/shadow/WebGPU parity**
+        remains unclaimed because the new proof is lower-level or
+        route-specific; real-device WGSL and root-default WebGPU remain
+        evidence-bound. OpenEXR and physical atmosphere remain unsupported.
+      - **Broad skinned/morph/animation support** remains unclaimed because the
+        passing root browser evidence covers named assets/fixtures, not
+        arbitrary rigs, clips, or facial pipelines.
+      - **Native production physics** remains unclaimed because oriented
+        box/convex/mesh/heightfield narrow-phase and angular contact impulses
+        did not survive their two Rule 0 attempts. The diagonal inertia tensor
+        was correctly left conditional. Game docs name `cannon-es` where route
+        fidelity depends on it.
+      - **Turbo Drift Circuit and Skyline Runner public-ready status** is held:
+        the required retained racing visual-QA unit test is red on a stale
+        screenshot hash, and Skyline's world-level proof remains
+        fixture-bounded. Their topology/geometry/gameplay evidence is retained,
+        not erased.
+      - **Aura Clash flagship quality** is lowered to development showcase:
+        its route uses root plus advanced-runtime, production-runtime,
+        rendering, scene, and animation subpaths, and the complete current
+        gameplay/art/audio/performance/deploy/docs gate chain is not green.
+      - **Performance or engine-parity promotion** remains prohibited because
+        `threejs-parity:performance` is `pass: false` with six missing inputs,
+        both retained comparative verdicts are non-passing, and 54/54 is a
+        feature inventory rather than a performance measurement.
+      - **Current worktree/public promotion** is held even though the
+        2026-07-23 npm/deployment receipts remain valid historical records.
+        `test:unit` still fails the two retained racing visual-QA assertions,
+        and `check:examples` currently measures zero cyan pixels for the
+        hello-world screenshot.
+
+      Closing claim gates pass: agent docs, codeblocks, marketing truth,
+      marketing links, and the claim registry (51 governed files, 0
+      violations). Two separate legacy/visual verification blockers remain
+      recorded at 4.3 and 4.4 under Rule 0.
 
 ### Standing Phase 4 obligations carried from Phase 1 and 2
 
@@ -1063,8 +1126,11 @@ exists.
   claim in docs or marketing has backing.**
 - `misc_controls_transform` is listed `"matched"` at `priority: "high"` against a 19-line
   stub. That entry must be corrected regardless of what else ships.
-- Per the Gap 7 decision, state the per-game physics backend wherever fidelity is claimed,
-  and disclose that native `aura-js` has no box↔box, no angular contact response, no CCD.
+- Per the Gap 7 decision, state the per-game physics backend wherever fidelity is claimed.
+  Native `aura-js` now has bounded adaptive CCD and accumulated Coulomb
+  friction, but rotated box↔box still uses the AABB fallback and native angular
+  contact response, convex/mesh/heightfield narrow-phase, and production
+  collision parity remain absent.
 
 ---
 
@@ -1109,13 +1175,16 @@ scripts; prefer named narrow ones over ad hoc checks.
 ## Deliverables
 
 1. `docs/project/engine-parity-gap-audit.md` — **done**
-2. Engine fixes, P0 first, each with a pixel-or-diagnostic test — open
-3. Four rebuilt games with regenerated evidence — open
-4. Doc updates whose labels match the evidence that actually exists — open
-5. Closing summary: every claim raised with its proof, every claim lowered with why — open
+2. Engine fixes, P0 first, each with a pixel-or-diagnostic test — **executed;
+   remaining Rule 0 blocks are recorded**
+3. Four rebuilt games with regenerated evidence — **executed; current
+   Turbo/Skyline promotion is held by the retained visual-QA gate**
+4. Doc updates whose labels match the evidence that actually exists — **done**
+5. Closing summary: every claim raised with its proof, every claim lowered with why — **done**
 
 ## Scope
 
-This is weeks of work, not one session. Phase 1 is complete and reviewed. Do not start
-Phase 3 until the P0 engine fixes have passing pixel tests. If a claim cannot be proven,
-lower the label. Never broaden a claim to match ambition.
+Phases 1-4 have been executed. Remaining work is limited to the explicitly
+recorded Rule 0 blockers and non-passing evidence gates; completion of this
+checklist does not silently waive them. If a claim cannot be proven, lower the
+label. Never broaden a claim to match ambition.
