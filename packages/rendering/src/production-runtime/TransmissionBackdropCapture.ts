@@ -1,4 +1,4 @@
-import { type RenderMaterial } from "../ForwardPass";
+import { type RenderItem, type RenderMaterial } from "../ForwardPass";
 import { Material } from "../Material";
 import { MaterialInstance } from "../MaterialInstance";
 import type { RenderSource } from "../Renderer";
@@ -38,10 +38,41 @@ export function bindTransmissionBackdropCapture(
   });
   let count = 0;
   for (const material of collectSourceMaterials(source)) {
+    if (!isTransmissionMaterial(material)) continue;
     setMaterialTransmissionBackdrop(material, binding, options);
     count += 1;
   }
   return count;
+}
+
+export interface TransmissionBackdropSource {
+  readonly source: RenderSource;
+  readonly excludedTransmissionItems: number;
+}
+
+export function createTransmissionBackdropSource(source: RenderSource): TransmissionBackdropSource {
+  let excludedTransmissionItems = 0;
+  const retainOpaque = (items: Iterable<RenderItem>): readonly RenderItem[] => {
+    const retained: RenderItem[] = [];
+    for (const item of items) {
+      if (item.material && isTransmissionMaterial(item.material)) {
+        excludedTransmissionItems += 1;
+      } else {
+        retained.push(item);
+      }
+    }
+    return retained;
+  };
+  const renderItems = source.renderItems ? retainOpaque(source.renderItems) : undefined;
+  const collectedItems = source.collectRenderItems ? retainOpaque(source.collectRenderItems()) : undefined;
+  return {
+    source: {
+      ...source,
+      ...(renderItems ? { renderItems } : {}),
+      ...(collectedItems ? { collectRenderItems: () => collectedItems } : {})
+    },
+    excludedTransmissionItems
+  };
 }
 
 export function createSceneColorMipLevels(source: Uint8Array, width: number, height: number): readonly {
@@ -127,4 +158,18 @@ function collectSourceMaterials(source: RenderSource): readonly RenderMaterial[]
     for (const item of source.collectRenderItems()) add(item.material);
   }
   return materials;
+}
+
+function isTransmissionMaterial(material: RenderMaterial): boolean {
+  const parameter = (name: string): number => {
+    const value = material instanceof MaterialInstance
+      ? material.getParameter(name)
+      : material instanceof Material
+        ? material.getParameter(name)
+        : undefined;
+    return typeof value === "number" && Number.isFinite(value) ? value : 0;
+  };
+  return parameter("u_transmissionFactor") > 0.001 ||
+    parameter("u_diffuseTransmissionFactor") > 0.001 ||
+    parameter("u_volumeThicknessFactor") > 0.001;
 }

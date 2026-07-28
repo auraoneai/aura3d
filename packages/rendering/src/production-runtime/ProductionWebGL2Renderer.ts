@@ -3,6 +3,7 @@ import type { RenderDeviceDiagnostics } from "../RenderDevice";
 import { Texture } from "../Texture";
 import {
   bindTransmissionBackdropCapture,
+  createTransmissionBackdropSource,
   createSceneColorMipLevels,
   normalizeTransmissionBackdropCapture
 } from "./TransmissionBackdropCapture";
@@ -74,9 +75,10 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
     let transmissionBackdropTexture: Texture | undefined;
     const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
     if (captureOptions) {
+      const backdrop = createTransmissionBackdropSource(input.source);
       const captureStart = timing.now();
       const captureRenderStart = timing.now();
-      this.renderer.render(input.source, input.camera);
+      this.renderer.render(backdrop.source, input.camera);
       timing.addRender(captureRenderStart);
       const captureReadbackStart = timing.now();
       const scenePixels = this.renderer.device.readPixels(0, 0, this.width, this.height);
@@ -98,7 +100,8 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
         mipCount: mipLevels.length,
         strength: captureOptions.strength,
         refractionScale: captureOptions.refractionScale,
-        materialBindings
+        materialBindings,
+        excludedTransmissionItems: backdrop.excludedTransmissionItems
       };
       timing.addTransmissionBackdropCapture(captureStart);
     }

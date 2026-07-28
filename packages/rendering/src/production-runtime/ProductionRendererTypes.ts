@@ -49,6 +49,7 @@ export interface RuntimeParityTransmissionBackdropCaptureProof {
   readonly strength: number;
   readonly refractionScale: number;
   readonly materialBindings: number;
+  readonly excludedTransmissionItems: number;
 }
 
 export interface ProductionPixelMetrics {

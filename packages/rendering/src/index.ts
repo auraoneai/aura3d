@@ -383,6 +383,9 @@ export {
   ProductionRuntimeRenderer,
   ProductionWebGPURenderer,
   analyzePixels,
+  bindTransmissionBackdropCapture,
+  createSceneColorMipLevels,
+  createTransmissionBackdropSource,
   createContactShadowPass,
   createProductionOrbitControlPreset,
   createProductionEnvironmentLightingResources,
@@ -393,6 +396,7 @@ export {
   resolveProductionRuntimeRendererBackend,
   loadProductionHdrEnvironmentFile,
   loadProductionHdrEnvironment,
+  normalizeTransmissionBackdropCapture,
   parseProductionRadianceHDR,
   summarizeProductionAnimationWorkflow,
   summarizeProductionEffectsProof,
@@ -433,7 +437,10 @@ export type {
   ProductionRuntimeRendererBackendSelection,
   ProductionRuntimeRendererOptions,
   ProductionWebGL2RendererOptions,
-  ProductionWebGPURendererOptions
+  ProductionWebGPURendererOptions,
+  RuntimeParityTransmissionBackdropCaptureOptions,
+  RuntimeParityTransmissionBackdropCaptureProof,
+  TransmissionBackdropSource
 } from "./production-runtime";
 
 export { ShaderModule } from "./ShaderModule";

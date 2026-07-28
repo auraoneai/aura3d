@@ -16,6 +16,7 @@ import type {
 } from "./ProductionRendererTypes";
 import {
   bindTransmissionBackdropCapture,
+  createTransmissionBackdropSource,
   createSceneColorMipLevels,
   normalizeTransmissionBackdropCapture
 } from "./TransmissionBackdropCapture";
@@ -81,7 +82,8 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
     try {
       const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
       if (captureOptions) {
-        this.renderer.render({ source: { ...input.source, renderTarget: target }, camera: input.camera });
+        const backdrop = createTransmissionBackdropSource(input.source);
+        this.renderer.render({ source: { ...backdrop.source, renderTarget: target }, camera: input.camera });
         this.renderer.device.setRenderTarget(target);
         const scenePixels = this.renderer.device.readPixels(0, 0, this.width, this.height);
         const mipLevels = createSceneColorMipLevels(scenePixels, this.width, this.height);
@@ -101,7 +103,8 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
           mipCount: mipLevels.length,
           strength: captureOptions.strength,
           refractionScale: captureOptions.refractionScale,
-          materialBindings
+          materialBindings,
+          excludedTransmissionItems: backdrop.excludedTransmissionItems
         };
       }
       const diagnostics = this.renderer.render({ source: { ...input.source, renderTarget: target }, camera: input.camera });
@@ -124,7 +127,8 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
       const readPixelsAsync = this.renderer.device.readPixelsAsync;
       const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
       if (captureOptions) {
-        await this.renderer.renderAsync({ source: { ...input.source, renderTarget: target }, camera: input.camera });
+        const backdrop = createTransmissionBackdropSource(input.source);
+        await this.renderer.renderAsync({ source: { ...backdrop.source, renderTarget: target }, camera: input.camera });
         this.renderer.device.setRenderTarget(target);
         const scenePixels = readPixelsAsync
           ? await readPixelsAsync.call(this.renderer.device, 0, 0, this.width, this.height)
@@ -146,7 +150,8 @@ export class ProductionWebGPURenderer implements ProductionProductionRenderer {
           mipCount: mipLevels.length,
           strength: captureOptions.strength,
           refractionScale: captureOptions.refractionScale,
-          materialBindings
+          materialBindings,
+          excludedTransmissionItems: backdrop.excludedTransmissionItems
         };
       }
       const diagnostics = await this.renderer.renderAsync({ source: { ...input.source, renderTarget: target }, camera: input.camera });

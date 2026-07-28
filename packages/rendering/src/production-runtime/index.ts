@@ -4,6 +4,13 @@ export {
   summarizeProductionProductionProof,
   summarizeProductionWebGL2Proof
 } from "./ProductionWebGL2Renderer";
+export {
+  bindTransmissionBackdropCapture,
+  createSceneColorMipLevels,
+  createTransmissionBackdropSource,
+  normalizeTransmissionBackdropCapture
+} from "./TransmissionBackdropCapture";
+export type { TransmissionBackdropSource } from "./TransmissionBackdropCapture";
 export type { ProductionWebGL2RendererOptions } from "./ProductionWebGL2Renderer";
 export {
   createProductionEnvironmentLightingResources,
@@ -63,7 +70,9 @@ export type {
   ProductionRendererFeature,
   ProductionRendererFeatureState,
   ProductionRendererInput,
-  RuntimeParityFrameRenderResult
+  RuntimeParityFrameRenderResult,
+  RuntimeParityTransmissionBackdropCaptureOptions,
+  RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
 export * from "./ProductionRuntimeRenderer";
 export * from "./backends/RendererBackend";

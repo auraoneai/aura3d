@@ -9,6 +9,7 @@ export type EnvironmentCapabilityId =
   | "cubemap-renderer"
   | "equirectangular-projection"
   | "pmrem-generator"
+  | "transmission-refraction"
   | "atmospheric-scattering"
   | "analytical-studio-box"
   | "linear-fog"
@@ -246,6 +247,11 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "The runtime PMREM parity route renders four metallic roughness swatches from 0.02 through 0.74 under a retained real Radiance HDR fixture.",
     "The browser gate compares A3D against Three.js PMREMGenerator, validates declining cubemap mip variance, and writes stable sphere, skybox, atlas, and diff screenshots."
   ], "Bounded rendering-internal GGX PMREM behavior has accepted HDR roughness evidence; this does not claim every Three.js environment-map edge case or root createAuraApp exposure.", "Retain the real-HDR roughness row, mip-variance, screenshot, and bounded Three.js delta gates."),
+  capability("transmission-refraction", "Scene-space Transmission Refraction", "implemented", true, [
+    "ProductionWebGL2Renderer and ProductionWebGPURenderer capture an opaque-only scene-color backdrop before the final transmission pass.",
+    "The captured backdrop is mipmapped and bound to textured PBR transmission materials for roughness-aware, IOR-offset screen-space refraction.",
+    "Transmission objects are excluded from their own backdrop capture to avoid recursive self-sampling."
+  ], "Bounded scene-color refraction is implemented; depth ray marching, off-screen recovery, recursive refraction, physical caustic projection, and root createAuraApp exposure are not claimed.", "Retain opaque-only capture diagnostics and pixel-difference evidence across refraction scales."),
   capability(
     "atmospheric-scattering",
     "Atmospheric Scattering Shader",
@@ -1120,9 +1126,9 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
     case "transmission-refraction":
       return unsupported(
         request,
-        ["pmrem-generator"],
-        "bounded material/environment response",
-        "Scene-space refraction requests remain unsupported; current material/environment helpers do not provide water refraction, caustics, or background ray marching parity."
+        ["transmission-refraction"],
+        "explicit ProductionWebGL2Renderer or ProductionWebGPURenderer transmissionBackdropCapture",
+        "Bounded scene-color transmission refraction is implemented through explicit production-runtime capture; environment presets do not attach it automatically, and depth ray marching, recursive refraction, off-screen recovery, and physical caustic projection remain unsupported."
       );
     case "linear-fog":
       return unsupported(

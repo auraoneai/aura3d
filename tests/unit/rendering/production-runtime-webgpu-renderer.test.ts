@@ -2,6 +2,12 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  Geometry,
+  PBRMaterial,
+  UnlitMaterial,
+  createTransmissionBackdropSource
+} from "../../../packages/rendering/src";
+import {
   createProductionWebGPUReport,
   createProductionWebGPUReadinessReport,
   resolveProductionRuntimeRendererBackend
@@ -140,14 +146,33 @@ describe("WebGPU report", () => {
 
     expect(types).toContain("transmissionBackdropCapture?: false | RuntimeParityTransmissionBackdropCaptureOptions");
     expect(types).toContain("readonly mipCount: number;");
+    expect(types).toContain("readonly excludedTransmissionItems: number;");
     expect(helper).toContain("export function createSceneColorMipLevels");
+    expect(helper).toContain("export function createTransmissionBackdropSource");
     expect(helper).toContain("set(\"u_transmissionBackdropTexture\", binding);");
     expect(helper).toContain("set(\"u_transmissionBackdropMipCount\", binding.texture?.textureLevels.length ?? 1);");
     expect(webgl2).toContain("normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture)");
     expect(webgl2).toContain("bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions)");
     expect(webgpu).toContain("normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture)");
-    expect(webgpu).toContain("await this.renderer.renderAsync({ source: { ...input.source, renderTarget: target }, camera: input.camera });");
+    expect(webgpu).toContain("createTransmissionBackdropSource(input.source)");
     expect(webgpu).toContain("bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions)");
     expect(webgpu).toContain("scene-color-transmission-capture");
+  });
+
+  it("excludes transmissive geometry from its own scene-color backdrop", () => {
+    const opaque = {
+      geometry: Geometry.triangle(),
+      material: new UnlitMaterial({ color: [1, 0, 0, 1] }),
+      label: "opaque-backdrop"
+    };
+    const glass = {
+      geometry: Geometry.litTriangle(),
+      material: new PBRMaterial({ transmissionFactor: 0.9, volumeThicknessFactor: 0.2 }),
+      label: "transmission-subject"
+    };
+    const capture = createTransmissionBackdropSource({ renderItems: [opaque, glass] });
+
+    expect(capture.excludedTransmissionItems).toBe(1);
+    expect(Array.from(capture.source.renderItems ?? [])).toEqual([opaque]);
   });
 });
