@@ -1,4 +1,4 @@
-import { DirectionalLight, Light, PointLight, SpotLight } from "@aura3d/scene";
+import { DirectionalLight, Light, PointLight, RectAreaLight, SpotLight } from "@aura3d/scene";
 import type { CollectedLight, CollectedLightKind } from "./LightCollector";
 
 export type LightingRigPreset =
@@ -28,6 +28,8 @@ export interface LightingRigLightDescriptor {
   readonly range: number;
   readonly spotAngle: number;
   readonly penumbra: number;
+  readonly width: number;
+  readonly height: number;
   readonly castsShadow: boolean;
   readonly claimBoundary: string;
 }
@@ -95,7 +97,7 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
       softboxProxyCount: softboxes.length,
       unsupportedFeatures,
       disclosures: unsupportedFeatures.map(lightingDisclosure),
-      claimBoundary: "Lighting rigs are reusable direct-light descriptors for A3D ForwardPass; true area lights, IES profiles, GI, contact shadows, and cascaded-shadow production claims require separate renderer evidence."
+      claimBoundary: "Lighting rigs are reusable direct-light descriptors for A3D ForwardPass, including finite rectangular emitters in studio presets; IES profiles, GI, contact shadows, cascaded shadows, and rectangular-light shadow maps require separate renderer evidence."
     }
   };
 }
@@ -108,7 +110,7 @@ function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRig
   switch (preset) {
     case "studio-softbox":
       return [
-        light("studio-key", "directional", "key", [1, 0.95, 0.88], 1.25, [-3, 5, 4], [0.45, -0.72, -0.53], 0, 0, 0, true, "Softbox represented as a broad directional key plus fill accents, not a physical rectangular area light."),
+        areaLight("studio-key", "key", [1, 0.95, 0.88], 12, [-3, 5, 4], [0.45, -0.72, -0.53], 12, [2.2, 1.2], "Finite rectangular studio key integrated by the forward PBR shader; rectangular-light shadow maps remain unsupported."),
         light("studio-fill", "directional", "fill", [0.68, 0.78, 1], 0.38, [4, 3, 2], [-0.76, -0.42, -0.5], 0, 0, 0, false, "Fill is a direct-light approximation."),
         light("studio-rim", "spot", "rim", [0.78, 0.9, 1], 0.72, [0, 3.2, -4], [0, -0.42, 0.91], 9, Math.PI / 5, 0.45, false, "Rim light is a bounded spot helper.")
       ];
@@ -131,14 +133,14 @@ function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRig
       ];
     case "product-detail":
       return [
-        light("product-detail-key", "directional", "key", [1, 0.9, 0.78], 1.48, [-4.8, 3.3, 3.2], [0.7, -0.48, -0.52], 0, 0, 0, true, "Product detail key is a low glancing directional softbox approximation for normal/AO inspection."),
+        areaLight("product-detail-key", "key", [1, 0.9, 0.78], 14, [-4.8, 3.3, 3.2], [0.7, -0.48, -0.52], 12, [1.9, 0.58], "Finite rectangular glancing key for normal/AO inspection; its dimensions affect PBR lighting."),
         light("product-detail-cool-edge", "spot", "rim", [0.64, 0.78, 1], 1.15, [2.9, 2.6, -3.6], [-0.42, -0.34, 0.84], 8, Math.PI / 5.5, 0.38, false, "Cool edge strip is a bounded spot helper for product silhouette separation."),
         light("product-detail-warm-edge", "point", "accent", [1, 0.55, 0.28], 0.54, [-2.4, 1.1, -1.2], [0.3, -0.18, 0.72], 4.8, 0, 0, false, "Warm practical accent adds bounded hue separation; it is not emissive bounce or GI."),
         light("product-detail-fill", "directional", "fill", [0.48, 0.56, 0.68], 0.16, [4.2, 2.4, 3.6], [-0.68, -0.34, -0.64], 0, 0, 0, false, "Low fill preserves product material contrast.")
       ];
     case "product-shot":
       return [
-        light("product-key", "directional", "key", [1, 0.95, 0.88], 1.55, [-4, 5, 4], [0.52, -0.64, -0.56], 0, 0, 0, true, "Product key approximates a large softbox."),
+        areaLight("product-key", "key", [1, 0.95, 0.88], 16, [-4, 5, 4], [0.52, -0.64, -0.56], 14, [2.4, 1.35], "Finite rectangular product key integrated across its emitting surface."),
         light("product-fill", "directional", "fill", [0.7, 0.78, 0.9], 0.3, [4, 3, 3], [-0.68, -0.46, -0.57], 0, 0, 0, false, "Product fill is direct lighting."),
         light("product-rim", "spot", "rim", [0.85, 0.92, 1], 0.78, [0.5, 3.2, -4.5], [-0.08, -0.36, 0.93], 8, Math.PI / 6, 0.42, false, "Rim light is a bounded spot helper.")
       ];
@@ -214,18 +216,52 @@ function light(
   castsShadow: boolean,
   claimBoundary: string
 ): LightingRigLightDescriptor {
-  return { id, kind, role, color, intensity, position, direction: normalize(direction), range, spotAngle, penumbra, castsShadow, claimBoundary };
+  return { id, kind, role, color, intensity, position, direction: normalize(direction), range, spotAngle, penumbra, width: 0, height: 0, castsShadow, claimBoundary };
+}
+
+function areaLight(
+  id: string,
+  role: LightingRigLightDescriptor["role"],
+  color: readonly [number, number, number],
+  intensity: number,
+  position: readonly [number, number, number],
+  direction: readonly [number, number, number],
+  range: number,
+  size: readonly [number, number],
+  claimBoundary: string
+): LightingRigLightDescriptor {
+  return {
+    id,
+    kind: "rect-area",
+    role,
+    color,
+    intensity,
+    position,
+    direction: normalize(direction),
+    range,
+    spotAngle: 0,
+    penumbra: 0,
+    width: size[0],
+    height: size[1],
+    castsShadow: false,
+    claimBoundary
+  };
 }
 
 function toCollectedLight(light: LightingRigLightDescriptor): CollectedLight {
   const source = createSourceLight(light);
+  const [right, up] = areaBasis(light.direction);
   return {
     kind: light.kind,
     color: light.color,
     intensity: light.intensity,
     position: light.position,
     direction: light.direction,
+    right,
+    up,
     range: light.range,
+    width: light.width,
+    height: light.height,
     spotAngle: light.spotAngle,
     penumbra: light.penumbra,
     castsShadow: light.castsShadow,
@@ -239,15 +275,21 @@ function createSourceLight(light: LightingRigLightDescriptor): Light {
     ? new DirectionalLight(light.id)
     : light.kind === "point"
       ? new PointLight(light.id)
-      : new SpotLight(light.id);
+      : light.kind === "spot"
+        ? new SpotLight(light.id)
+        : new RectAreaLight(light.id);
   source.color = [...light.color];
   source.intensity = light.intensity;
   source.castsShadow = light.castsShadow;
   source.transform.setPosition(light.position[0], light.position[1], light.position[2]);
-  if (source instanceof PointLight || source instanceof SpotLight) source.range = Math.max(0.001, light.range);
+  if (source instanceof PointLight || source instanceof SpotLight || source instanceof RectAreaLight) source.range = Math.max(0.001, light.range);
   if (source instanceof SpotLight) {
     source.angle = clamp(light.spotAngle || Math.PI / 5, 0.001, Math.PI / 2 - 0.001);
     source.penumbra = clamp(light.penumbra, 0, 1);
+  }
+  if (source instanceof RectAreaLight) {
+    source.width = light.width;
+    source.height = light.height;
   }
   return source;
 }
@@ -258,7 +300,6 @@ function unsupportedFeaturesForRig(
 ): readonly LightingRigUnsupportedFeature[] {
   if (!includeUnsupportedDiagnostics) return [];
   const base: LightingRigUnsupportedFeature[] = ["ies-photometric-profile", "contact-shadow-map", "global-illumination"];
-  if (preset === "studio-softbox" || preset === "product-shot" || preset === "product-detail") base.unshift("rectangular-area-light");
   if (preset === "sun") base.push("cascaded-shadow-map");
   return base;
 }
@@ -266,7 +307,7 @@ function unsupportedFeaturesForRig(
 function lightingDisclosure(feature: LightingRigUnsupportedFeature): string {
   switch (feature) {
     case "rectangular-area-light":
-      return "Rectangular/area lights are represented by direct-light and emissive-panel approximations until physical area-light shading exists.";
+      return "Rectangular area-light shading is implemented for finite emitters; this diagnostic is reserved for callers that explicitly require rectangular-light shadow maps or three.js LTC lookup-table identity.";
     case "ies-photometric-profile":
       return "IES photometric profiles are unsupported; point and spot practicals use bounded cone/range descriptors only.";
     case "contact-shadow-map":
@@ -281,6 +322,26 @@ function lightingDisclosure(feature: LightingRigUnsupportedFeature): string {
 function normalize(value: readonly [number, number, number]): readonly [number, number, number] {
   const length = Math.hypot(value[0], value[1], value[2]);
   return length === 0 ? [0, -1, 0] : [round5(value[0] / length), round5(value[1] / length), round5(value[2] / length)];
+}
+
+function areaBasis(direction: readonly [number, number, number]): readonly [
+  readonly [number, number, number],
+  readonly [number, number, number]
+] {
+  const reference: readonly [number, number, number] = Math.abs(direction[1]) < 0.99 ? [0, 1, 0] : [1, 0, 0];
+  const right = normalize(cross(reference, direction));
+  return [right, normalize(cross(direction, right))];
+}
+
+function cross(
+  left: readonly [number, number, number],
+  right: readonly [number, number, number]
+): readonly [number, number, number] {
+  return [
+    left[1] * right[2] - left[2] * right[1],
+    left[2] * right[0] - left[0] * right[2],
+    left[0] * right[1] - left[1] * right[0]
+  ];
 }
 
 function positive(value: number, label: string): number {

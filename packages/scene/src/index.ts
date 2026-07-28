@@ -11,6 +11,7 @@ export * from "./Light.js";
 export * from "./DirectionalLight.js";
 export * from "./PointLight.js";
 export * from "./SpotLight.js";
+export * from "./RectAreaLight.js";
 export * from "./Layers.js";
 export * from "./Lights.js";
 export * from "./Renderable.js";

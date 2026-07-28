@@ -93,6 +93,73 @@ vec3 a3dPbrDirectLight(
   vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0));
   return (diffuse + specular) * lightColor * lightIntensity * nDotL;
 }
+vec3 a3dPbrRectAreaLightSample(
+  vec3 worldPosition,
+  vec3 samplePosition,
+  vec3 emitterNormal,
+  float range,
+  float sampleArea,
+  vec3 normal,
+  vec3 viewDirection,
+  vec3 lightColor,
+  float lightIntensity,
+  vec3 albedo,
+  float metallic,
+  float roughness,
+  float specularFactor,
+  vec3 specularColorFactor
+) {
+  vec3 toSample = samplePosition - worldPosition;
+  float distanceToSample = length(toSample);
+  vec3 lightDirection = distanceToSample > A3D_EPSILON ? toSample / distanceToSample : -normalize(emitterNormal);
+  float emitterCosine = max(dot(normalize(emitterNormal), -lightDirection), 0.0);
+  float rangeFalloff = clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
+  rangeFalloff *= rangeFalloff;
+  float irradiance = lightIntensity * sampleArea * emitterCosine * rangeFalloff / max(distanceToSample * distanceToSample, 0.01);
+  return a3dPbrDirectLight(
+    normal,
+    viewDirection,
+    lightDirection,
+    lightColor,
+    irradiance,
+    albedo,
+    metallic,
+    roughness,
+    specularFactor,
+    specularColorFactor
+  );
+}
+// Two-point Gauss-Legendre quadrature on each rectangle axis integrates the
+// finite emitter without reducing it to a point or directional-light proxy.
+vec3 a3dPbrRectAreaLight(
+  vec3 worldPosition,
+  vec3 center,
+  vec3 emitterNormal,
+  vec3 emitterRight,
+  vec3 emitterUp,
+  float width,
+  float height,
+  float range,
+  vec3 normal,
+  vec3 viewDirection,
+  vec3 lightColor,
+  float lightIntensity,
+  vec3 albedo,
+  float metallic,
+  float roughness,
+  float specularFactor,
+  vec3 specularColorFactor
+) {
+  float quadratureOffset = 0.28867513459;
+  vec3 rightOffset = normalize(emitterRight) * width * quadratureOffset;
+  vec3 upOffset = normalize(emitterUp) * height * quadratureOffset;
+  float sampleArea = width * height * 0.25;
+  return
+    a3dPbrRectAreaLightSample(worldPosition, center - rightOffset - upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center + rightOffset - upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center - rightOffset + upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center + rightOffset + upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor);
+}
 vec3 a3dPbrEnvironmentLight(
   vec3 normal,
   vec3 viewDirection,
@@ -334,7 +401,7 @@ uniform float u_iridescenceThicknessMinimum;
 uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
 uniform vec2 u_clusterViewportSize;
@@ -634,12 +701,23 @@ void main() {
   for (int i = 0; i < 64; ++i) {
     if (i >= count) break;
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
+      );
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {

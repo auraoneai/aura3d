@@ -261,9 +261,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Documented unsupported: Aura3D exposes no reusable Rayleigh/Mie sky shader. The procedural sky dome is color-gradient geometry and must not be described as physical atmospheric scattering.",
     "Keep physical atmosphere, Rayleigh/Mie scattering, and sun-driven in-scattering out of accepted claims."
   ),
-  capability("analytical-studio-box", "Analytical Studio Box", "helper", true, [
-    "createEnvironmentStage(\"indoor-studio\") returns reusable softbox panels and cove geometry."
-  ], "Studio helper is procedural geometry, not an infinite analytical lighting renderer.", "Connect reusable stage helper to accepted product/material routes and visual tests."),
+  capability("analytical-studio-box", "Analytical Studio Box", "implemented", true, [
+    "RectAreaLight exposes finite width, height, range, transform orientation, serialization, collection, and direct-light packing.",
+    "Studio, product-shot, and product-detail lighting rigs bind a rectangular key emitter instead of a directional-light proxy.",
+    "The PBR-family WebGL2 shaders integrate each rectangular surface with deterministic two-by-two Gauss-Legendre quadrature.",
+    "The browser harness verifies front/back one-sided behavior, a dimension-dependent pixel footprint, and a retained screenshot."
+  ], "Rendering-internal finite rectangular emitters have accepted direct-light pixel evidence; LTC lookup-table identity, rectangular-light shadow maps, GI, and root createAuraApp exposure remain separate claims.", "Retain one-sided and size-dependent rectangular-light pixel gates across PBR shader changes."),
   capability("linear-fog", "Linear Fog System", "implemented", true, [
     "createEnvironmentFogProfile emits uniform-ready linear fog settings.",
     "sampleEnvironmentFogFactor provides deterministic CPU reference attenuation for validation.",
@@ -314,7 +317,7 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   ], "Grid is finite helper geometry, not a renderer-level infinite grid with shadow catch.", "Add fade/shadow/catch-plane controls and route evidence."),
   capability("indoor-studio-stage", "Indoor Studio Stage", "helper", true, [
     "createEnvironmentStage(\"indoor-studio\") creates reusable cove, floor, wall, and softbox items."
-  ], "Stage does not yet provide physically accurate area-light shading.", "Use as shared product/material route stage and document area-light limits."),
+  ], "Stage geometry is reusable and its lighting rig now provides a finite rectangular key, but contact shadows, GI, and automatic light attachment remain separate integrations.", "Use with createLightingRig(\"studio-softbox\") and retain the rectangular-emitter browser proof."),
   capability("outdoor-nature-backdrop", "Outdoor Nature Backdrop", "helper", true, [
     "createEnvironmentStage(\"outdoor-nature\") creates reusable sky, ground, horizon, and ambient palette."
   ], "No terrain streaming, vegetation lighting, or physical atmosphere is accepted.", "Add route proof and keep outdoor claims bounded to backdrop/lighting."),
@@ -329,7 +332,7 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   ], "This is a reusable shell, not a city renderer or instancing proof.", "Use with Smart City/data routes while keeping scale claims separate."),
   capability("industrial-warehouse-void", "Industrial Warehouse Void", "helper", true, [
     "createEnvironmentStage(\"industrial-warehouse\") creates reusable overhead bulbs, concrete floor, window strips, and rails."
-  ], "No GI, physical area lights, or warehouse asset library is accepted.", "Use as shared robotics/physics/digital-twin environment shell."),
+  ], "No GI, warehouse-specific rectangular fixture rig, or warehouse asset library is accepted.", "Use as shared robotics/physics/digital-twin environment shell."),
   capability("deep-space-box", "Deep Space Box", "helper", true, [
     "createEnvironmentStage(\"deep-space\") creates reusable starfield shell points and sky dome."
   ], "Not volumetric nebula or HDR skybox lighting parity.", "Add cubemap/HDR background integration before accepted deep-space claims."),
@@ -657,6 +660,7 @@ export function createEnvironmentUnsupportedRequestDisclosures(
   if (fog?.mode === "linear") requested.delete("linear-fog");
   if (fog?.mode === "exponential" || fog?.mode === "exponential-squared") requested.delete("exponential-fog");
   requested.delete("terrain-heightfield");
+  requested.delete("rectangular-area-light");
 
   return [...requested].map((request) => unsupportedRequestDisclosure(request));
 }
@@ -1107,12 +1111,7 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
     case "terrain-heightfield":
       throw new Error("Terrain heightfield is supported and must be removed before unsupported request disclosure.");
     case "rectangular-area-light":
-      return unsupported(
-        request,
-        ["analytical-studio-box"],
-        "emissive panels plus environment lighting",
-        "Softbox preset uses emissive panels and environment lighting; true rectangular area-light shading is not implemented."
-      );
+      throw new Error("Rectangular area-light shading is supported and must be removed before unsupported request disclosure.");
     case "cube-camera-reflection":
       return unsupported(
         request,
@@ -1201,8 +1200,8 @@ function stageLimitations(preset: EnvironmentStagePresetId): readonly string[] {
   ];
   if (preset === "indoor-studio") return [
     ...shared,
-    "Softboxes are emissive geometry and environment-light presets, not physically integrated area lights.",
-    "Product studio tones use compact analytical catch planes; full contact shadows and live area-light integration remain separate renderer evidence."
+    "Softbox panels are visible emissive geometry; createLightingRig(\"studio-softbox\") supplies the separately rendered finite rectangular key emitter.",
+    "Product studio tones use compact analytical catch planes; contact shadows, GI, and rectangular-light shadow maps remain separate renderer capabilities."
   ];
   if (preset === "deep-space") return [...shared, "Star field is point geometry, not HDR cubemap or volumetric nebula rendering."];
   if (preset === "outdoor-nature") return [...shared, "Outdoor sky is a colored dome/horizon helper, not atmospheric scattering."];

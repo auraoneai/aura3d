@@ -319,7 +319,7 @@ uniform float u_iridescenceThicknessMinimum;
 uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
 uniform vec2 u_clusterViewportSize;
@@ -599,12 +599,23 @@ void main() {
   for (int i = 0; i < 64; ++i) {
     if (i >= count) break;
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
+      );
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {
@@ -725,7 +736,7 @@ uniform float u_environmentBrdfLutEnabled;
 uniform vec3 u_emissiveColor;
 uniform float u_emissiveStrength;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
 uniform vec2 u_clusterViewportSize;
@@ -936,12 +947,23 @@ void main() {
   for (int i = 0; i < 64; ++i) {
     if (i >= count) break;
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        base, u_metallic, u_roughness, 1.0, vec3(1.0)
+      );
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {
@@ -1170,7 +1192,7 @@ uniform float u_iridescenceThicknessMinimum;
 uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
 uniform vec2 u_clusterViewportSize;
@@ -1424,12 +1446,23 @@ void main() {
   for (int i = 0; i < 64; ++i) {
     if (i >= count) break;
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        normal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        materialBase, metallic, roughness, u_specularFactor, u_specularColorFactor
+      );
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {
@@ -1603,7 +1636,7 @@ uniform vec3 u_specularColorFactor;
 uniform vec3 u_sheenColorFactor;
 uniform float u_sheenRoughnessFactor;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
 uniform vec2 u_clusterViewportSize;
@@ -1818,12 +1851,23 @@ void main() {
   for (int i = 0; i < 64; ++i) {
     if (i >= count) break;
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        mappedNormal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        materialBase, u_metallic, u_roughness, u_specularFactor, u_specularColorFactor
+      );
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {
@@ -1958,7 +2002,7 @@ uniform float u_iridescenceThicknessMinimum;
 uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
-uniform vec4 u_lightData[64];
+uniform vec4 u_lightData[96];
 #ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
 uniform float u_clusteredLightEnabled;
 uniform vec2 u_clusterGridSize;
@@ -2665,19 +2709,32 @@ void main() {
     if (i >= count) break;
 #ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
     int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
-    int baseIndex = lightIndex * 4;
+    int baseIndex = lightIndex * 6;
     vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
     vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
     vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+    vec4 areaRight = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(4, lightIndex), 0) : u_lightData[baseIndex + 4];
+    vec4 areaUp = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(5, lightIndex), 0) : u_lightData[baseIndex + 5];
 #else
-    int baseIndex = i * 4;
+    int baseIndex = i * 6;
     vec4 colorIntensity = u_lightData[baseIndex];
     vec4 positionRange = u_lightData[baseIndex + 1];
     vec4 directionKind = u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+    vec4 areaRight = u_lightData[baseIndex + 4];
+    vec4 areaUp = u_lightData[baseIndex + 5];
 #endif
     float kind = directionKind.w;
+    if (kind > 2.5) {
+      shaded += a3dPbrRectAreaLight(
+        v_worldPosition, positionRange.xyz, directionKind.xyz, areaRight.xyz, areaUp.xyz,
+        spotShadowLayer.x, spotShadowLayer.y, positionRange.w,
+        mappedNormal, viewDirection, colorIntensity.rgb, colorIntensity.a,
+        base, metallic, roughness, specular, specularColor
+      ) * directTextureOcclusion;
+      continue;
+    }
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
     if (kind > 0.5) {

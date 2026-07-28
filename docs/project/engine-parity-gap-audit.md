@@ -453,9 +453,12 @@ snapping, and local/world-space semantics.
 implemented by task 2B.3 with six-face capture and moving-object reflective pixel evidence;
 `atmospheric-scattering` is documented unsupported. Phase 2B subsequently added bounded
 scene-space transmission/refraction, depth-aware radial volumetric light, and generated
-terrain heightfield geometry with browser pixels. Planar mirrors, physical caustics,
-rectangular area lights, physical atmosphere, and native terrain collision response remain
-unsupported or separately excluded.
+terrain heightfield geometry with browser pixels. The follow-on remediation pass added
+finite, one-sided rectangular emitters using deterministic surface quadrature across all
+PBR-family shaders, with size-dependent WebGL2 pixel evidence. Exact three.js LTC
+lookup-table identity and rectangular-light shadow maps remain separately excluded, as do
+planar mirrors, physical caustics, physical atmosphere, and native terrain collision
+response.
 
 Ten environment presets are `"helper"` — geometry descriptors, not rendering features —
 consistent with `packages/environments/src` totalling only 469 LOC.
@@ -465,7 +468,9 @@ ledger entries and documented atmospheric scattering and EXR as unsupported. The
 remediation pass then promoted linear and exponential fog after a deterministic synthetic
 WebGL2 harness proved no-fog/linear/exponential-squared object-pixel deltas and retained a
 full-page screenshot without relying on authored GLBs. The ledger changes carry their proof
-in the same task commits.
+in the same task commits. The same rule promoted `analytical-studio-box` only after the
+rectangular-emitter harness proved more than 1,000 size-dependent and one-sided changed
+pixels and retained its own screenshot.
 
 **Standing rule (2.25).** If a Phase 2 task implements a ledger entry, flip its status **and**
 attach the proof in the same commit. Never flip without proof.

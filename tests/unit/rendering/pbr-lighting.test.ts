@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Scene, PointLight, SpotLight } from "@aura3d/scene";
+import { RectAreaLight, Scene, PointLight, SpotLight } from "@aura3d/scene";
 import { Vector3 } from "@aura3d/math";
 import {
   DEFAULT_PBR_SHADER_NAME,
@@ -1193,22 +1193,22 @@ describe("PBR material and direct light contracts", () => {
       expect.closeTo(0.8),
       expect.closeTo(4)
     ]);
-    expect(Array.from(packed.data.slice(16, 20))).toEqual([
+    expect(Array.from(packed.data.slice(24, 28))).toEqual([
       expect.closeTo(0.2),
       expect.closeTo(0.4),
       expect.closeTo(1),
       expect.closeTo(2)
     ]);
-    expect(Array.from(packed.data.slice(20, 24))).toEqual([1, 2, 3, 5]);
-    expect(Array.from(packed.data.slice(28, 32))).toEqual([0, 0, 1, 1]);
-    expect(Array.from(packed.data.slice(40, 44))).toEqual([
+    expect(Array.from(packed.data.slice(28, 32))).toEqual([1, 2, 3, 5]);
+    expect(Array.from(packed.data.slice(36, 40))).toEqual([0, 0, 1, 1]);
+    expect(Array.from(packed.data.slice(56, 60))).toEqual([
       expect.closeTo(0),
       expect.closeTo(0),
       expect.closeTo(-1),
       2
     ]);
-    expect(Array.from(packed.data.slice(36, 40))).toEqual([0, 0, 2, 7]);
-    expect(Array.from(packed.data.slice(44, 48))).toEqual([
+    expect(Array.from(packed.data.slice(52, 56))).toEqual([0, 0, 2, 7]);
+    expect(Array.from(packed.data.slice(60, 64))).toEqual([
       expect.closeTo(Math.PI / 6),
       expect.closeTo(0.25),
       1,
@@ -1216,9 +1216,38 @@ describe("PBR material and direct light contracts", () => {
     ]);
   });
 
+  it("collects rectangular emitters with finite dimensions and orientation data", () => {
+    const scene = new Scene();
+    const panel = scene.createLight("rect-area", "key-panel") as RectAreaLight;
+    panel.color = [0.8, 0.9, 1];
+    panel.intensity = 12;
+    panel.width = 3;
+    panel.height = 1.5;
+    panel.range = 18;
+    panel.castsShadow = true;
+    panel.transform.setPosition(2, 4, 6);
+    scene.root.addChild(panel);
+
+    const [collected] = new LightCollector().collect(scene);
+    const packed = LightUniforms.pack([collected!]);
+
+    expect(collected).toMatchObject({
+      kind: "rect-area",
+      position: [2, 4, 6],
+      direction: [0, 0, -1],
+      right: [1, 0, 0],
+      up: [0, 1, 0],
+      range: 18,
+      width: 3,
+      height: 1.5
+    });
+    expect(Array.from(packed.data.slice(8, 16))).toEqual([0, 0, -1, 3, 3, 1.5, 0, 1]);
+    expect(Array.from(packed.data.slice(16, 24))).toEqual([1, 0, 0, 0, 0, 1, 0, 0]);
+  });
+
   it("keeps packed direct-light uniforms aligned with shader storage declarations", () => {
     const library = createDefaultShaderLibrary();
-    const expectedVec4Slots = MAX_DIRECT_LIGHTS * 4;
+    const expectedVec4Slots = MAX_DIRECT_LIGHTS * LightUniforms.vec4sPerLight;
     const expectedFloatSlots = MAX_DIRECT_LIGHTS * LightUniforms.floatsPerLight;
     const lightDataField = LightUniforms.layout.getField("u_lightData");
     const shaders = [
@@ -1375,10 +1404,10 @@ describe("PBR material and direct light contracts", () => {
       culledLightCount: 0,
       droppedLightCount: 0
     });
-    expect(clustered.lightData.texture).toMatchObject({ width: 4, height: 17, format: "rgba32f" });
+    expect(clustered.lightData.texture).toMatchObject({ width: 6, height: 17, format: "rgba32f" });
     expect(clustered.lightIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
     expect(lightPixels[3]).toBe(17);
-    expect(lightPixels[(16 * 16) + 3]).toBe(1);
+    expect(lightPixels[(16 * 24) + 3]).toBe(1);
     expect(Array.from(indexPixels.slice(0, 8))).toEqual([0, 17, 0, 0, 1, 17, 0, 0]);
 
     clustered.dispose();
@@ -1480,7 +1509,7 @@ describe("PBR material and direct light contracts", () => {
     expect(diagnostics.drawCalls).toBe(1);
     expect(command?.uniforms?.get("u_lightCount")).toBe(1);
     expect(lightData).toBeInstanceOf(Float32Array);
-    expect(lightData?.length).toBe(256);
+    expect(lightData?.length).toBe(MAX_DIRECT_LIGHTS * LightUniforms.floatsPerLight);
     expect(Array.from(lightData?.slice(0, 4) ?? [])).toEqual([
       expect.closeTo(1),
       expect.closeTo(0.85),
@@ -1519,10 +1548,10 @@ describe("PBR material and direct light contracts", () => {
     expect(command?.uniforms?.get("u_clusteredLightEnabled")).toBe(1);
     expect(command?.uniforms?.get("u_clusterGridSize")).toEqual([3, 2]);
     expect(command?.uniforms?.get("u_clusterViewportSize")).toEqual([130, 66]);
-    expect(clusteredData.texture).toMatchObject({ width: 4, height: 17, format: "rgba32f" });
+    expect(clusteredData.texture).toMatchObject({ width: 6, height: 17, format: "rgba32f" });
     expect(clusteredIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
     expect(dataPixels[3]).toBe(17);
-    expect(dataPixels[(16 * 16) + 3]).toBe(1);
+    expect(dataPixels[(16 * 24) + 3]).toBe(1);
     expect(indexPixels[1]).toBe(17);
 
     renderer.dispose();

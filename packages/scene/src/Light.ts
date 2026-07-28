@@ -3,7 +3,7 @@ import { type Vector3 } from "@aura3d/math";
 import { type Vec3 } from "./MathTypes.js";
 import { SceneNode } from "./SceneNode.js";
 
-export type LightKind = "directional" | "point" | "spot";
+export type LightKind = "directional" | "point" | "spot" | "rect-area";
 
 export abstract class Light extends SceneNode {
   readonly kind: LightKind;

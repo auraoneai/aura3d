@@ -1,4 +1,4 @@
-import { Bounds3, DirectionalLight, Group, InstancedMesh, Mesh, Object3D, PerspectiveCamera, PointLight, Renderable, Scene, SceneNode, SkinnedMesh, SpotLight, batchReparent, deserializeScene, serializeScene } from "@aura3d/scene";
+import { Bounds3, DirectionalLight, Group, InstancedMesh, Mesh, Object3D, PerspectiveCamera, PointLight, RectAreaLight, Renderable, Scene, SceneNode, SkinnedMesh, SpotLight, batchReparent, deserializeScene, serializeScene } from "@aura3d/scene";
 import { describe, expect, it } from "vitest";
 
 describe("scene hierarchy, query, and serialization", () => {
@@ -316,12 +316,16 @@ describe("scene hierarchy, query, and serialization", () => {
     const directional = scene.createLight("directional", "sun") as DirectionalLight;
     const point = scene.createLight("point", "lamp") as PointLight;
     const spot = scene.createLight("spot", "cone") as SpotLight;
+    const area = scene.createLight("rect-area", "softbox") as RectAreaLight;
     camera.setViewport({ x: 1, y: 2, width: 320, height: 180 });
     directional.intensity = 3;
     directional.castsShadow = true;
     point.range = 7;
     spot.angle = Math.PI / 6;
     spot.penumbra = 0.25;
+    area.width = 4;
+    area.height = 2;
+    area.range = 15;
     scene.addRenderable(mesh, new Renderable({
       geometry: "geometry:mesh",
       material: "material:pbr",
@@ -342,12 +346,14 @@ describe("scene hierarchy, query, and serialization", () => {
     scene.root.addChild(directional);
     scene.root.addChild(point);
     scene.root.addChild(spot);
+    scene.root.addChild(area);
 
     const restored = deserializeScene(serializeScene(scene));
     const restoredCamera = restored.getNodeById(camera.id);
     const restoredMesh = restored.getNodeById(mesh.id);
     const restoredPoint = restored.getNodeById(point.id);
     const restoredSpot = restored.getNodeById(spot.id);
+    const restoredArea = restored.getNodeById(area.id);
 
     expect(restoredMesh?.id).toBe(mesh.id);
     expect(restored.collectRenderables()[0]?.renderable).toMatchObject({ geometry: "geometry:mesh", material: "material:pbr", layerMask: 2, castShadow: true, receiveShadow: false, morphWeights: [0.25, 0.75] });
@@ -367,8 +373,10 @@ describe("scene hierarchy, query, and serialization", () => {
     expect((restoredCamera as PerspectiveCamera).aspect).toBe(1.5);
     expect((restoredCamera as PerspectiveCamera).viewport).toEqual({ x: 1, y: 2, width: 320, height: 180 });
     expect(restored.findByName("sun")[0]).toBeInstanceOf(DirectionalLight);
-    expect(restored.collectLights()).toHaveLength(3);
+    expect(restored.collectLights()).toHaveLength(4);
     expect((restoredPoint as PointLight).range).toBe(7);
     expect((restoredSpot as SpotLight).penumbra).toBe(0.25);
+    expect(restoredArea).toBeInstanceOf(RectAreaLight);
+    expect(restoredArea).toMatchObject({ width: 4, height: 2, range: 15 });
   });
 });

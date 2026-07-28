@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(22);
-    expect(report.implementedCount).toBe(10);
+    expect(report.implementedCount).toBe(11);
     expect(report.partialCount).toBe(0);
-    expect(report.helperCount).toBe(10);
+    expect(report.helperCount).toBe(9);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(10);
-    expect(report.nonProductionReadyCount).toBe(12);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "linear-fog", "exponential-fog", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
-    expect(report.backlog).toHaveLength(12);
+    expect(report.productionReadyCount).toBe(11);
+    expect(report.nonProductionReadyCount).toBe(11);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "analytical-studio-box", "linear-fog", "exponential-fog", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
+    expect(report.backlog).toHaveLength(11);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -326,7 +326,7 @@ describe("environment stage helpers", () => {
     expect(studio.capabilityIds).toContain("indoor-studio-stage");
     expect(studio.capabilityIds).toContain("cube-camera-reflections");
     expect(studio.unsupportedRequests.join(" ")).toMatch(/reflective floor/i);
-    expect(studio.unsupportedRequests.join(" ")).toMatch(/rectangular area-light/i);
+    expect(studio.unsupportedRequests.join(" ")).not.toMatch(/rectangular area-light/i);
     expect(ocean.preset).toBe("outdoor-nature");
     expect(ocean.capabilityIds).toContain("dynamic-ocean-plane");
     expect(ocean.capabilityIds).toContain("terrain-heightfield");

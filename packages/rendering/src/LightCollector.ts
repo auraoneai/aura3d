@@ -1,6 +1,6 @@
-import { DirectionalLight, Light, PointLight, Scene, SpotLight } from "@aura3d/scene";
+import { DirectionalLight, Light, PointLight, RectAreaLight, Scene, SpotLight } from "@aura3d/scene";
 
-export type CollectedLightKind = "directional" | "point" | "spot";
+export type CollectedLightKind = "directional" | "point" | "spot" | "rect-area";
 
 export interface CollectedLight {
   readonly kind: CollectedLightKind;
@@ -8,7 +8,11 @@ export interface CollectedLight {
   readonly intensity: number;
   readonly position: readonly [number, number, number];
   readonly direction: readonly [number, number, number];
+  readonly right?: readonly [number, number, number];
+  readonly up?: readonly [number, number, number];
   readonly range: number;
+  readonly width?: number;
+  readonly height?: number;
   readonly spotAngle: number;
   readonly penumbra: number;
   readonly castsShadow: boolean;
@@ -45,7 +49,11 @@ function collectLight(light: Light): CollectedLight {
   const direction = light instanceof DirectionalLight
     ? vectorToTuple(light.getDirection())
     : normalize([-matrix[8], -matrix[9], -matrix[10]]);
-  const range = light instanceof PointLight || light instanceof SpotLight ? light.range : 0;
+  const right = normalize([matrix[0], matrix[1], matrix[2]]);
+  const up = normalize([matrix[4], matrix[5], matrix[6]]);
+  const range = light instanceof PointLight || light instanceof SpotLight || light instanceof RectAreaLight ? light.range : 0;
+  const width = light instanceof RectAreaLight ? light.width : 0;
+  const height = light instanceof RectAreaLight ? light.height : 0;
   const spotAngle = light instanceof SpotLight ? light.angle : 0;
   const penumbra = light instanceof SpotLight ? light.penumbra : 0;
   return {
@@ -54,7 +62,11 @@ function collectLight(light: Light): CollectedLight {
     intensity: light.intensity,
     position,
     direction,
+    right,
+    up,
     range,
+    width,
+    height,
     spotAngle,
     penumbra,
     castsShadow: light.castsShadow,
@@ -78,5 +90,11 @@ function matrixElements(value: unknown): readonly number[] {
 
 function normalize(value: readonly [number, number, number]): readonly [number, number, number] {
   const length = Math.hypot(value[0], value[1], value[2]);
-  return length === 0 ? [0, 0, -1] : [value[0] / length, value[1] / length, value[2] / length];
+  return length === 0
+    ? [0, 0, -1]
+    : [canonicalZero(value[0] / length), canonicalZero(value[1] / length), canonicalZero(value[2] / length)];
+}
+
+function canonicalZero(value: number): number {
+  return value === 0 ? 0 : value;
 }

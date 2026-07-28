@@ -45,13 +45,20 @@ export function createClusteredForwardLighting(
   const gridWidth = Math.max(1, Math.ceil(viewportWidth / CLUSTER_TILE_SIZE));
   const gridHeight = Math.max(1, Math.ceil(viewportHeight / CLUSTER_TILE_SIZE));
   const clusterCount = gridWidth * gridHeight;
-  const lightPixels = new Float32Array(Math.max(1, lights.length) * 4 * 4);
+  const lightPixels = new Float32Array(Math.max(1, lights.length) * 6 * 4);
   for (const [index, light] of lights.entries()) {
-    const offset = index * 16;
+    const offset = index * 24;
     lightPixels.set([light.color[0], light.color[1], light.color[2], light.intensity], offset);
     lightPixels.set([light.position[0], light.position[1], light.position[2], light.range], offset + 4);
     lightPixels.set([light.direction[0], light.direction[1], light.direction[2], lightKind(light.kind)], offset + 8);
-    lightPixels.set([light.spotAngle, light.penumbra, light.castsShadow ? 1 : 0, light.layerMask], offset + 12);
+    lightPixels.set([
+      light.kind === "rect-area" ? light.width ?? 1 : light.spotAngle,
+      light.kind === "rect-area" ? light.height ?? 1 : light.penumbra,
+      light.castsShadow && light.kind !== "rect-area" ? 1 : 0,
+      light.layerMask
+    ], offset + 12);
+    lightPixels.set([...(light.right ?? [1, 0, 0]), 0], offset + 16);
+    lightPixels.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
   }
   const indexPixels = new Float32Array(MAX_LIGHTS_PER_CLUSTER * clusterCount * 4);
   const clusterLists = Array.from({ length: clusterCount }, () => [] as number[]);
@@ -85,12 +92,12 @@ export function createClusteredForwardLighting(
     }
   }
   const lightTexture = new Texture({
-    width: 4,
+    width: 6,
     height: Math.max(1, lights.length),
     format: "rgba32f",
     colorSpace: "linear",
     label: "clustered-forward-light-data",
-    mipLevels: [{ width: 4, height: Math.max(1, lights.length), data: lightPixels }]
+    mipLevels: [{ width: 6, height: Math.max(1, lights.length), data: lightPixels }]
   });
   const indexTexture = new Texture({
     width: MAX_LIGHTS_PER_CLUSTER,
@@ -188,5 +195,5 @@ function clampTile(value: number, size: number): number {
 }
 
 function lightKind(kind: CollectedLight["kind"]): number {
-  return kind === "directional" ? 0 : kind === "point" ? 1 : 2;
+  return kind === "directional" ? 0 : kind === "point" ? 1 : kind === "spot" ? 2 : 3;
 }

@@ -180,7 +180,7 @@ describe("lighting rig platform helpers", () => {
     expect(product.softboxes).toHaveLength(3);
     expect(product.collectedLights).toHaveLength(3);
     expect(product.collectedLights[0]?.source.name).toBe("product-key");
-    expect(product.lights[0]?.intensity).toBe(2.325);
+    expect(product.lights[0]).toMatchObject({ kind: "rect-area", intensity: 24, width: 2.4, height: 1.35 });
     expect(product.softboxes[0]).toMatchObject({
       id: "product-key-softbox",
       role: "key",
@@ -190,11 +190,11 @@ describe("lighting rig platform helpers", () => {
     });
     expect(product.softboxes.map((softbox) => softbox.role)).toEqual(["key", "fill", "rim"]);
     expect(product.softboxes.every((softbox) => softbox.claimBoundary.match(/proxy|direct light|GI|area-light/i))).toBe(true);
-    expect(product.diagnostics.shadowCastingLightCount).toBe(1);
+    expect(product.diagnostics.shadowCastingLightCount).toBe(0);
     expect(product.diagnostics.softboxProxyCount).toBe(3);
-    expect(product.diagnostics.unsupportedFeatures).toContain("rectangular-area-light");
+    expect(product.diagnostics.unsupportedFeatures).not.toContain("rectangular-area-light");
     expect(product.diagnostics.disclosures.join(" ")).toMatch(/IES photometric profiles are unsupported/i);
-    expect(product.diagnostics.claimBoundary).toMatch(/true area lights/i);
+    expect(product.diagnostics.claimBoundary).toMatch(/finite rectangular emitters/i);
     expect(productDetail.lights.map((light) => light.id)).toEqual([
       "product-detail-key",
       "product-detail-cool-edge",
@@ -207,7 +207,8 @@ describe("lighting rig platform helpers", () => {
       "product-detail-fill-card"
     ]);
     expect(productDetail.lights.find((light) => light.id === "product-detail-fill")?.intensity).toBeLessThan(0.2);
-    expect(productDetail.diagnostics.unsupportedFeatures).toContain("rectangular-area-light");
+    expect(productDetail.lights[0]?.kind).toBe("rect-area");
+    expect(productDetail.diagnostics.unsupportedFeatures).not.toContain("rectangular-area-light");
 
     expect(sun.diagnostics.shadowCastingLightCount).toBe(0);
     expect(sun.diagnostics.softboxProxyCount).toBe(0);

@@ -37,11 +37,12 @@ export interface PackedLightUniforms {
 }
 
 export class LightUniforms {
-  static readonly floatsPerLight = 16;
+  static readonly floatsPerLight = 24;
+  static readonly vec4sPerLight = LightUniforms.floatsPerLight / 4;
 
   static readonly layout = new UniformLayout([
     { name: "u_lightCount", type: "float" },
-    { name: "u_lightData", type: "vec4", arrayLength: MAX_DIRECT_LIGHTS * 4 }
+    { name: "u_lightData", type: "vec4", arrayLength: MAX_DIRECT_LIGHTS * LightUniforms.vec4sPerLight }
   ]);
 
   static pack(lights: readonly CollectedLight[], maxLights = MAX_DIRECT_LIGHTS): PackedLightUniforms {
@@ -65,7 +66,14 @@ export class LightUniforms {
       data.set([light.color[0], light.color[1], light.color[2], light.intensity], offset);
       data.set([light.position[0], light.position[1], light.position[2], light.range], offset + 4);
       data.set([light.direction[0], light.direction[1], light.direction[2], kindToFloat(light.kind)], offset + 8);
-      data.set([light.spotAngle, light.penumbra, forwardShadowSupported ? 1 : 0, light.layerMask], offset + 12);
+      data.set([
+        light.kind === "rect-area" ? light.width ?? 1 : light.spotAngle,
+        light.kind === "rect-area" ? light.height ?? 1 : light.penumbra,
+        forwardShadowSupported && light.kind !== "rect-area" ? 1 : 0,
+        light.layerMask
+      ], offset + 12);
+      data.set([...(light.right ?? [1, 0, 0]), 0], offset + 16);
+      data.set([...(light.up ?? [0, 1, 0]), 0], offset + 20);
     });
     const selectedEntries = selected.map(selectionEntry);
     const droppedEntries = dropped.map(selectionEntry);
@@ -183,7 +191,11 @@ function stableLightKey(light: CollectedLight): string {
     light.intensity,
     light.position,
     light.direction,
+    light.right,
+    light.up,
     light.range,
+    light.width,
+    light.height,
     light.spotAngle,
     light.penumbra,
     light.castsShadow ? 1 : 0,
@@ -207,5 +219,7 @@ function kindToFloat(kind: CollectedLight["kind"]): number {
       return 1;
     case "spot":
       return 2;
+    case "rect-area":
+      return 3;
   }
 }

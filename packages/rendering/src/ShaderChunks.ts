@@ -117,6 +117,75 @@ vec3 a3dPbrDirectLight(
   return (diffuse + specular) * lightColor * lightIntensity * nDotL;
 }
 
+vec3 a3dPbrRectAreaLightSample(
+  vec3 worldPosition,
+  vec3 samplePosition,
+  vec3 emitterNormal,
+  float range,
+  float sampleArea,
+  vec3 normal,
+  vec3 viewDirection,
+  vec3 lightColor,
+  float lightIntensity,
+  vec3 albedo,
+  float metallic,
+  float roughness,
+  float specularFactor,
+  vec3 specularColorFactor
+) {
+  vec3 toSample = samplePosition - worldPosition;
+  float distanceToSample = length(toSample);
+  vec3 lightDirection = distanceToSample > A3D_EPSILON ? toSample / distanceToSample : -normalize(emitterNormal);
+  float emitterCosine = max(dot(normalize(emitterNormal), -lightDirection), 0.0);
+  float rangeFalloff = clamp(1.0 - pow(distanceToSample / max(range, A3D_EPSILON), 4.0), 0.0, 1.0);
+  rangeFalloff *= rangeFalloff;
+  float irradiance = lightIntensity * sampleArea * emitterCosine * rangeFalloff / max(distanceToSample * distanceToSample, 0.01);
+  return a3dPbrDirectLight(
+    normal,
+    viewDirection,
+    lightDirection,
+    lightColor,
+    irradiance,
+    albedo,
+    metallic,
+    roughness,
+    specularFactor,
+    specularColorFactor
+  );
+}
+
+// Two-point Gauss-Legendre quadrature on each rectangle axis integrates the
+// finite emitter without reducing it to a point or directional-light proxy.
+vec3 a3dPbrRectAreaLight(
+  vec3 worldPosition,
+  vec3 center,
+  vec3 emitterNormal,
+  vec3 emitterRight,
+  vec3 emitterUp,
+  float width,
+  float height,
+  float range,
+  vec3 normal,
+  vec3 viewDirection,
+  vec3 lightColor,
+  float lightIntensity,
+  vec3 albedo,
+  float metallic,
+  float roughness,
+  float specularFactor,
+  vec3 specularColorFactor
+) {
+  float quadratureOffset = 0.28867513459;
+  vec3 rightOffset = normalize(emitterRight) * width * quadratureOffset;
+  vec3 upOffset = normalize(emitterUp) * height * quadratureOffset;
+  float sampleArea = width * height * 0.25;
+  return
+    a3dPbrRectAreaLightSample(worldPosition, center - rightOffset - upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center + rightOffset - upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center - rightOffset + upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor) +
+    a3dPbrRectAreaLightSample(worldPosition, center + rightOffset + upOffset, emitterNormal, range, sampleArea, normal, viewDirection, lightColor, lightIntensity, albedo, metallic, roughness, specularFactor, specularColorFactor);
+}
+
 vec3 a3dPbrEnvironmentLight(
   vec3 normal,
   vec3 viewDirection,

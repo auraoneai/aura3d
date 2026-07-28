@@ -7,6 +7,7 @@ import { OrthographicCamera } from "./OrthographicCamera.js";
 import { PerspectiveCamera } from "./PerspectiveCamera.js";
 import { PointLight } from "./PointLight.js";
 import { Renderable } from "./Renderable.js";
+import { RectAreaLight } from "./RectAreaLight.js";
 import { collectRenderables, queryScene, type SceneQueryOptions } from "./SceneQuery.js";
 import { SceneMetadata } from "./SceneMetadata.js";
 import { SceneNode } from "./SceneNode.js";
@@ -49,8 +50,19 @@ export class Scene {
     return this.register(new OrthographicCamera(options));
   }
 
-  createLight(kind: "directional" | "point" | "spot", name?: string): DirectionalLight | PointLight | SpotLight {
-    const light = kind === "directional" ? new DirectionalLight(name) : kind === "point" ? new PointLight(name) : new SpotLight(name);
+  createLight(kind: "directional", name?: string): DirectionalLight;
+  createLight(kind: "point", name?: string): PointLight;
+  createLight(kind: "spot", name?: string): SpotLight;
+  createLight(kind: "rect-area", name?: string): RectAreaLight;
+  createLight(kind: "directional" | "point" | "spot" | "rect-area", name?: string): DirectionalLight | PointLight | SpotLight | RectAreaLight;
+  createLight(kind: "directional" | "point" | "spot" | "rect-area", name?: string): DirectionalLight | PointLight | SpotLight | RectAreaLight {
+    const light = kind === "directional"
+      ? new DirectionalLight(name)
+      : kind === "point"
+        ? new PointLight(name)
+        : kind === "spot"
+          ? new SpotLight(name)
+          : new RectAreaLight(name);
     return this.register(light);
   }
 

@@ -659,14 +659,23 @@ assuming code is missing.
 These are `unsupported(...)` fallbacks in `resolveEnvironmentFeatureRequest` and limitation
 strings, not ledger statuses. Same proof rule applies to the strings.
 
-- [!] **2B.10** `rectangular-area-light` (`:1040-1046`) — softbox presets use emissive panels;
-      true rectangular area-light shading (three.js `RectAreaLight` + LTC) is absent. Medium.
-      Would also improve `indoor-studio-stage` (`:275-277`) and `analytical-studio-box`
-      (`:243-245`), both of which name area-light limits in their `gap` strings.
+- [x] **2B.10** `rectangular-area-light` (`:1040-1046`) — the baseline softbox presets
+      used emissive panels while true rectangular area-light shading was absent. The task
+      also covered `indoor-studio-stage` (`:275-277`) and `analytical-studio-box`
+      (`:243-245`), both of which named area-light limits in their baseline `gap` strings.
       Two implementation/test attempts were made. Attempt 1 exposed stale softbox
       unsupported assertions plus signed-zero direction comparisons; attempt 2 still stopped
       on the packed uniform assertion distinguishing `-0` from `0` before browser proof.
-      Per Rule 0 the unverified partial implementation was removed and the disclosure stays.
+      Per Rule 0 the unverified partial implementation was removed at that time. The
+      explicitly requested remediation pass subsequently added a serialized `RectAreaLight`
+      scene type, normalized transform basis collection, six-vec4 uniform/cluster packing,
+      and deterministic two-by-two Gauss-Legendre surface integration across every
+      PBR-family shader. Studio, product-shot, and product-detail key rigs now bind finite
+      rectangular emitters. WebGL2 compares small, wide, and back-facing emitters, proves
+      more than 1,000 size-dependent and one-sided changed pixels, and retains a screenshot.
+      Exact three.js LTC lookup-table identity, rectangular-light shadow maps, GI, and root
+      `createAuraApp` exposure remain excluded rather than inferred from this
+      rendering-internal proof.
 - [x] **2B.11** `terrain-heightfield` (`:1033-1039`) — falls back to outdoor backdrop
       geometry. Implement reusable terrain/heightfield generation. Medium. Pair with the
       physics heightfield narrow-phase in 2B.14 — a terrain you cannot collide with is half a

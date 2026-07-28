@@ -21,14 +21,17 @@ Environment lighting is implemented through renderer environment resources, envi
 - Live cube-camera captures bind six refreshed faces into PBR environment sampling.
 - Bounded scene-color transmission/refraction captures opaque color, excludes recursive self-sampling, and uses roughness mips.
 - Generated terrain heightfields provide indexed PBR geometry, bounds, normals, tangents, UVs, and a future-collider descriptor.
+- Rendering-internal `RectAreaLight` emitters carry finite dimensions and orientation through scene serialization, direct-light packing, clustered textures, and all PBR-family shaders. Studio/product key rigs integrate the emitting surface with deterministic two-by-two quadrature.
 - Environment preset and fog/stage helpers remain separately scoped.
 
 ## Boundaries
 
 These are `rendering` or `production-runtime` capabilities, not automatic root
-`createAuraApp` claims. OpenEXR decode, physical Rayleigh/Mie atmosphere, rectangular
-area-light/LTC shading, planar mirrors, physical caustics, and native terrain collision are
-not implemented. Rendering-internal linear and exponential-squared fog have deterministic
+`createAuraApp` claims. OpenEXR decode, physical Rayleigh/Mie atmosphere, three.js LTC
+lookup-table identity, rectangular-light shadow maps, planar mirrors, physical caustics,
+and native terrain collision are not implemented. Rendering-internal finite rectangular
+emitters have size-dependent and one-sided WebGL2 pixel proof; rendering-internal linear
+and exponential-squared fog have deterministic
 WebGL2 object-pixel and screenshot proof; that evidence does not establish volumetric
 scattering, physical atmosphere, automatic preset attachment, or root `createAuraApp`
 support.
