@@ -158,7 +158,7 @@ export function createRendererPostprocessPlanDiagnostics(
   const passes = createRendererPostprocessPasses(postprocess);
   const sourceTargetFormat = context.sourceTargetFormat ?? context.targetFormat ?? "rgba8";
   const targetFormat = context.targetFormat ?? sourceTargetFormat;
-  const requiresNativeSpatialPass = passes.some((pass) => pass.name === "ssao");
+  const requiresNativeSpatialPass = passes.some((pass) => pass.name === "ssao" || pass.name === "ssr");
   const canFuseLdr = canFuseLdrPostprocessPlan(sourceTargetFormat, passes)
     && (context.nativeLdrPostprocess === true || !requiresNativeSpatialPass);
   const executionMode = passes.length === 0
@@ -209,7 +209,7 @@ export function createRendererPostprocessPlanDiagnostics(
 function canFuseLdrPostprocessPlan(sourceTargetFormat: RendererPostprocessTargetFormat, passes: readonly RendererPostProcessPassPlan[]): boolean {
   return passes.length > 1
     && (sourceTargetFormat === "rgba8" || passes[0]?.name === "tone-mapping")
-    && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "ssao" || pass.name === "outline" || pass.name === "fxaa")
+    && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "outline" || pass.name === "fxaa")
     && passes.every((pass, index) => {
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
       return ldrFusionPassRank(pass.name) >= previousRank;
@@ -221,8 +221,9 @@ function ldrFusionPassRank(name: RendererPostProcessPassName): number {
   if (name === "tone-mapping") return 0;
   if (name === "color-grade") return 1;
   if (name === "ssao") return 2;
-  if (name === "outline") return 3;
-  if (name === "fxaa") return 4;
+  if (name === "ssr") return 3;
+  if (name === "outline") return 4;
+  if (name === "fxaa") return 5;
   return Number.POSITIVE_INFINITY;
 }
 

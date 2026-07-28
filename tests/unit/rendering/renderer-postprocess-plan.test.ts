@@ -153,6 +153,34 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
+  it("routes renderer-depth SSR after SSAO through native fusion with no readback", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      ssao: { radius: 2, intensity: 0.7, bias: 0.01 },
+      ssr: { intensity: 0.6, maxDistance: 8 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      rendererDepthAvailable: true,
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["ssao", "ssr", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      missingInputs: [],
+      readbackPassNames: []
+    });
+    expect(plan.passes[1]).toMatchObject({
+      name: "ssr",
+      requiresDepth: true,
+      usesRendererOwnedDepth: true,
+      usesReadback: false
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },

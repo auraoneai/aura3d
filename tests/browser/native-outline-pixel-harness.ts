@@ -1,4 +1,4 @@
-import { bloomPixels, createDepthTextureBinding, createRenderDevice, outlinePixels, ssaoPixels } from "@aura3d/rendering";
+import { bloomPixels, createDepthTextureBinding, createRenderDevice, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -13,6 +13,9 @@ declare global {
       readonly ssaoMaxChannelDelta?: number;
       readonly ssaoChangedChannelCount?: number;
       readonly ssaoEffectChangedChannelCount?: number;
+      readonly ssrMaxChannelDelta?: number;
+      readonly ssrChangedChannelCount?: number;
+      readonly ssrEffectChangedChannelCount?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -89,6 +92,21 @@ async function run(): Promise<void> {
     const ssaoComparison = comparePixels(actualSsao, expectedSsao);
     const ssaoEffect = comparePixels(expectedSsao, sourcePixels);
 
+    const ssrOptions = { intensity: 0.6, maxDistance: 4 };
+    const expectedSsr = ssrPixels(sourcePixels, width, height, {
+      ...ssrOptions,
+      depth: createDepthTextureBinding({ label: "native-ssr-depth-fixture", width, height, data: depth })
+    }).pixels;
+    device.writeRenderTargetPixels(source, sourcePixels);
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "ssr", options: ssrOptions }],
+      outputTarget: output
+    });
+    device.setRenderTarget(output);
+    const actualSsr = device.readPixels(0, 0, width, height);
+    const ssrComparison = comparePixels(actualSsr, expectedSsr);
+    const ssrEffect = comparePixels(expectedSsr, sourcePixels);
+
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
       width,
@@ -100,6 +118,9 @@ async function run(): Promise<void> {
       ssaoMaxChannelDelta: ssaoComparison.maxChannelDelta,
       ssaoChangedChannelCount: ssaoComparison.changedChannelCount,
       ssaoEffectChangedChannelCount: ssaoEffect.changedChannelCount,
+      ssrMaxChannelDelta: ssrComparison.maxChannelDelta,
+      ssrChangedChannelCount: ssrComparison.changedChannelCount,
+      ssrEffectChangedChannelCount: ssrEffect.changedChannelCount,
       gpu: [...actual],
       cpu: [...expected]
     };

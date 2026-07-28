@@ -506,6 +506,29 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
   });
 
+  it("runs SSR as a depth-texture reflection stage", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-ssr-source", depth: "texture" });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-ssr-output", depth: false });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "ssr", options: { intensity: 0.6, maxDistance: 8 } },
+        { name: "fxaa", options: {} }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources[0]).toContain("rayDistance");
+    expect(drawSources[0]).toContain("uniform sampler2D u_depth");
+    expect(drawSources[1]).toContain("u_hasFxaa");
+    device.dispose();
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
