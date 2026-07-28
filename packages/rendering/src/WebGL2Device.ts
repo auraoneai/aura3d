@@ -197,6 +197,11 @@ interface NativeMotionBlurOptions {
   readonly velocity: Float32Array;
 }
 
+interface NativeTaaOptions {
+  readonly blend: number;
+  readonly history: Uint8Array;
+}
+
 export class WebGL2Device implements RenderDevice {
   public readonly kind = "webgl2";
   public readonly info: RenderDeviceInfo;
@@ -225,6 +230,8 @@ export class WebGL2Device implements RenderDevice {
   private depthOfFieldProgram: WebGLProgram | null = null;
   private motionBlurProgram: WebGLProgram | null = null;
   private motionBlurVelocityTexture: WebGLTexture | null = null;
+  private taaProgram: WebGLProgram | null = null;
+  private taaHistoryTexture: WebGLTexture | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
@@ -643,6 +650,7 @@ export class WebGL2Device implements RenderDevice {
     const motionBlurPass = options.passes.find((pass) => pass.name === "motion-blur");
     const ssaoPass = options.passes.find((pass) => pass.name === "ssao");
     const ssrPass = options.passes.find((pass) => pass.name === "ssr");
+    const taaPass = options.passes.find((pass) => pass.name === "taa");
     const outlinePass = options.passes.find((pass) => pass.name === "outline");
     if (source.colorTexture.format !== "rgba8" && !tonePass) {
       throw new RenderDeviceError("WebGL2 HDR postprocess presentation requires a tone-mapping pass before LDR output.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
@@ -657,11 +665,11 @@ export class WebGL2Device implements RenderDevice {
         pass: "bloom"
       });
     }
-    if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || motionBlurPass || ssaoPass || ssrPass || outlinePass) && !tonePass) {
+    if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || motionBlurPass || ssaoPass || ssrPass || taaPass || outlinePass) && !tonePass) {
       throw new RenderDeviceError("WebGL2 byte-kernel postprocess requires rgba8 input or a preceding tone-mapping pass.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
         format: source.colorTexture.format,
-        pass: depthOfFieldPass ? "depth-of-field" : motionBlurPass ? "motion-blur" : ssaoPass ? "ssao" : ssrPass ? "ssr" : "outline"
+        pass: depthOfFieldPass ? "depth-of-field" : motionBlurPass ? "motion-blur" : ssaoPass ? "ssao" : ssrPass ? "ssr" : taaPass ? "taa" : "outline"
       });
     }
     if ((depthOfFieldPass || ssaoPass || ssrPass) && !source.depthTextureHandle) {
@@ -701,10 +709,11 @@ export class WebGL2Device implements RenderDevice {
       : undefined;
     const ssaoOptions = ssaoPass ? normalizeNativeSsaoOptions(ssaoPass.options) : undefined;
     const ssrOptions = ssrPass ? normalizeNativeSsrOptions(ssrPass.options) : undefined;
+    const taaOptions = taaPass ? normalizeNativeTaaOptions(taaPass.options, source.width, source.height) : undefined;
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
-    const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions
+    const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions
       ? this.ensureBloomPingPongResources(source.width, source.height)
       : undefined;
     if (bloomOptions) {
@@ -716,6 +725,9 @@ export class WebGL2Device implements RenderDevice {
     if (motionBlurOptions) {
       this.ensureMotionBlurVelocityTexture(source.width, source.height, motionBlurOptions.velocity);
     }
+    if (taaOptions) {
+      this.ensureTaaHistoryTexture(source.width, source.height, taaOptions.history);
+    }
     const outputWidth = webglOutputTarget?.width ?? (this.viewportWidth || this.gl.drawingBufferWidth);
     const outputHeight = webglOutputTarget?.height ?? (this.viewportHeight || this.gl.drawingBufferHeight);
     const previousState = this.prepareFullscreenPresentation(webglOutputTarget?.framebuffer ?? null, outputWidth, outputHeight);
@@ -726,7 +738,7 @@ export class WebGL2Device implements RenderDevice {
         ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
         temporarySourceIndex = 1;
       }
-      if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions) && bloomResources) {
+      if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions) && bloomResources) {
         if (tonePass || colorPass) {
           const baseTargetIndex = 0 as const;
           this.drawNativeLdrStage(
@@ -791,6 +803,17 @@ export class WebGL2Device implements RenderDevice {
           );
           temporarySourceIndex = ssrTargetIndex;
         }
+        if (taaOptions) {
+          const taaTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
+          ldrSourceHandle = this.executeNativeTaaPass(
+            ldrSourceHandle,
+            bloomResources,
+            taaOptions,
+            vertexArray,
+            taaTargetIndex
+          );
+          temporarySourceIndex = taaTargetIndex;
+        }
       }
       if (outlineOptions && bloomResources) {
         const outlineTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
@@ -810,8 +833,8 @@ export class WebGL2Device implements RenderDevice {
         outputHeight,
         program,
         vertexArray,
-        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : tonePass,
-        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : colorPass,
+        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : tonePass,
+        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || taaOptions || outlineOptions ? undefined : colorPass,
         fxaaPass,
         options.toneMappingDefaults
       );
@@ -1187,6 +1210,14 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteTexture(this.motionBlurVelocityTexture);
       this.motionBlurVelocityTexture = null;
     }
+    if (this.taaProgram) {
+      this.gl.deleteProgram(this.taaProgram);
+      this.taaProgram = null;
+    }
+    if (this.taaHistoryTexture) {
+      this.gl.deleteTexture(this.taaHistoryTexture);
+      this.taaHistoryTexture = null;
+    }
     this.disposeBloomPingPongResources();
     if (this.bloomBrightLutTexture) {
       this.gl.deleteTexture(this.bloomBrightLutTexture);
@@ -1492,6 +1523,30 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
+  private ensureTaaHistoryTexture(width: number, height: number, history: Uint8Array): void {
+    const textureUnit0 = this.captureTextureUnit0();
+    try {
+      if (!this.taaHistoryTexture) {
+        this.taaHistoryTexture = this.createNativeBloomDataTexture();
+      }
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.taaHistoryTexture);
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
+        0,
+        this.gl.RGBA8,
+        width,
+        height,
+        0,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
+        history
+      );
+    } finally {
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
+  }
+
   private drawNativeLdrStage(
     sourceTexture: WebGLTexture,
     framebuffer: WebGLFramebuffer | null,
@@ -1720,6 +1775,32 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_samples"), options.samples);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_scale"), options.scale);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return targetTexture;
+  }
+
+  private executeNativeTaaPass(
+    sourceTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeTaaOptions,
+    vertexArray: WebGLVertexArrayObject,
+    targetIndex: 0 | 1
+  ): WebGLTexture {
+    const historyTexture = this.taaHistoryTexture;
+    if (!historyTexture) {
+      throw new RenderDeviceError("WebGL2 TAA history texture was not initialized", "WEBGL_ALLOCATION_FAILED");
+    }
+    const program = this.ensureTaaProgram();
+    const targetTexture = resources.textures[targetIndex];
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, historyTexture);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_history"), 1);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_blend"), options.blend);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -2285,6 +2366,25 @@ void main() {
 }
 `, "webgl2-motion-blur");
     return this.motionBlurProgram;
+  }
+
+  private ensureTaaProgram(): WebGLProgram {
+    if (this.taaProgram) return this.taaProgram;
+    this.taaProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+uniform sampler2D u_source;
+uniform sampler2D u_history;
+uniform float u_blend;
+out vec4 outColor;
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  vec4 source = texelFetch(u_source, pixel, 0);
+  vec3 history = texelFetch(u_history, pixel, 0).rgb;
+  outColor = vec4(mix(source.rgb, history, u_blend), source.a);
+}
+`, "webgl2-taa");
+    return this.taaProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -3430,6 +3530,28 @@ function normalizeNativeMotionBlurOptions(
   return { samples, scale, velocity };
 }
 
+function normalizeNativeTaaOptions(
+  options: Readonly<Record<string, unknown>>,
+  width: number,
+  height: number
+): NativeTaaOptions {
+  const blend = taaNumberOption(options, "blend", 0.18);
+  const history = options.history;
+  if (!(history instanceof Uint8Array)) {
+    throw new RenderDeviceError("TAA requires a Uint8Array history buffer.", "WEBGL_LDR_POSTPROCESS_HISTORY_REQUIRED");
+  }
+  if (history.byteLength !== width * height * 4) {
+    throw new RenderDeviceError("TAA history must contain width * height * 4 RGBA bytes.", "INVALID_POSTPROCESS_OPTIONS", {
+      expectedLength: width * height * 4,
+      actualLength: history.byteLength
+    });
+  }
+  if (blend < 0 || blend > 0.95) {
+    throw new RenderDeviceError("TAA blend must be finite and in [0, 0.95].", "INVALID_POSTPROCESS_OPTIONS", { blend });
+  }
+  return { blend, history };
+}
+
 function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   if (value === undefined) return fallback;
@@ -3480,6 +3602,15 @@ function motionBlurNumberOption(options: Readonly<Record<string, unknown>>, key:
   if (value === undefined) return fallback;
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RenderDeviceError(`Motion blur ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
+}
+
+function taaNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`TAA ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
   }
   return value;
 }

@@ -1,4 +1,4 @@
-import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
+import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels, taaPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -22,6 +22,9 @@ declare global {
       readonly motionBlurMaxChannelDelta?: number;
       readonly motionBlurChangedChannelCount?: number;
       readonly motionBlurEffectChangedChannelCount?: number;
+      readonly taaMaxChannelDelta?: number;
+      readonly taaChangedChannelCount?: number;
+      readonly taaEffectChangedChannelCount?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -141,6 +144,19 @@ async function run(): Promise<void> {
     const motionBlurComparison = comparePixels(actualMotionBlur, expectedMotionBlur);
     const motionBlurEffect = comparePixels(expectedMotionBlur, sourcePixels);
 
+    const history = createHistoryFixture(sourcePixels);
+    const taaOptions = { history, blend: 0.25 };
+    const expectedTaa = taaPixels(sourcePixels, width, height, taaOptions).pixels;
+    device.writeRenderTargetPixels(source, sourcePixels);
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "taa", options: taaOptions }],
+      outputTarget: output
+    });
+    device.setRenderTarget(output);
+    const actualTaa = device.readPixels(0, 0, width, height);
+    const taaComparison = comparePixels(actualTaa, expectedTaa);
+    const taaEffect = comparePixels(expectedTaa, sourcePixels);
+
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
       width,
@@ -161,6 +177,9 @@ async function run(): Promise<void> {
       motionBlurMaxChannelDelta: motionBlurComparison.maxChannelDelta,
       motionBlurChangedChannelCount: motionBlurComparison.changedChannelCount,
       motionBlurEffectChangedChannelCount: motionBlurEffect.changedChannelCount,
+      taaMaxChannelDelta: taaComparison.maxChannelDelta,
+      taaChangedChannelCount: taaComparison.changedChannelCount,
+      taaEffectChangedChannelCount: taaEffect.changedChannelCount,
       gpu: [...actual],
       cpu: [...expected]
     };
@@ -257,4 +276,15 @@ function createVelocityFixture(width: number, height: number): Float32Array {
     velocity[index * 2 + 1] = index % 2 === 0 ? 0.8 : -0.6;
   }
   return velocity;
+}
+
+function createHistoryFixture(source: Uint8Array): Uint8Array {
+  const history = new Uint8Array(source.length);
+  for (let index = 0; index < source.length; index += 4) {
+    history[index] = 255 - (source[index] ?? 0);
+    history[index + 1] = Math.floor((source[index + 1] ?? 0) / 2);
+    history[index + 2] = (source[index + 2] ?? 0) < 128 ? 224 : 24;
+    history[index + 3] = source[index + 3] ?? 255;
+  }
+  return history;
 }

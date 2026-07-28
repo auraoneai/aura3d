@@ -235,6 +235,31 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
+  it("routes explicit TAA history through native fusion with no readback", () => {
+    const history = new Uint8Array(3 * 2 * 4).fill(96);
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      taa: { history, blend: 0.25 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["taa", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      missingInputs: [],
+      readbackPassNames: []
+    });
+    expect(plan.passes[0]).toMatchObject({
+      name: "taa",
+      usesReadback: false
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },

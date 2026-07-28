@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer } from "./example-dev-server";
 
-test("native WebGL2 bloom and outline match their CPU byte kernels", async ({ page }) => {
+test("ported native WebGL2 postprocess passes match their CPU byte kernels", async ({ page }) => {
   const server = await startExampleDevServer();
   try {
     await page.goto(`${server.origin}/tests/browser/native-outline-pixel-harness.html`);
@@ -28,6 +28,9 @@ test("native WebGL2 bloom and outline match their CPU byte kernels", async ({ pa
     expect(result?.motionBlurMaxChannelDelta).toBeLessThanOrEqual(1);
     expect(result?.motionBlurChangedChannelCount).toBeLessThanOrEqual(8);
     expect(result?.motionBlurEffectChangedChannelCount).toBeGreaterThan(0);
+    expect(result?.taaMaxChannelDelta).toBeLessThanOrEqual(1);
+    expect(result?.taaChangedChannelCount).toBeLessThanOrEqual(8);
+    expect(result?.taaEffectChangedChannelCount).toBeGreaterThan(0);
   } finally {
     await server.close();
   }

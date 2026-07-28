@@ -580,6 +580,34 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
   });
 
+  it("uploads explicit RGBA8 history and runs TAA as a fullscreen stage", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-taa-source", depth: false });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-taa-output", depth: false });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "taa", options: { history: new Uint8Array(5 * 4 * 4).fill(96), blend: 0.25 } },
+        { name: "fxaa", options: {} }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources[0]).toContain("uniform sampler2D u_history");
+    expect(drawSources[0]).toContain("mix(source.rgb, history, u_blend)");
+    expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
+      internalFormat: gl.RGBA8,
+      width: 5,
+      height: 4,
+      dataLength: 5 * 4 * 4
+    }));
+    device.dispose();
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
