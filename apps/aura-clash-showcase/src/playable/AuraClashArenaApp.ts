@@ -77,6 +77,11 @@ type FighterId = "player" | "rival";
 
 type AuraClashWindow = Window & {
   __AURA_CLASH_ARENA_PROOF__?: AuraClashArenaProof;
+  __AURA_CLASH_VISUAL_REVIEW__?: {
+    version: string;
+    humanApprovalRequired: true;
+    areas: Record<string, { evidence: string[] }>;
+  };
   __AURA3D_GAME_EVIDENCE__?: unknown;
   __AURA3D_GAME_RUNTIME__?: unknown;
   __AURA_CLASH_ARENA_TEST_DRIVER__?: {
@@ -355,11 +360,48 @@ export function mountAuraClashArenaApp(): void {
   const root = document.querySelector<HTMLDivElement>("#app");
   if (!root) throw new Error("Missing #app");
 
+  gameWindow.__AURA_CLASH_VISUAL_REVIEW__ = {
+    version: "aura-clash-visual-review/v1",
+    humanApprovalRequired: true,
+    areas: {
+      "debug-overlays": {
+        evidence: [
+          "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+        ]
+      },
+      "readable-fighters": {
+        evidence: [
+          "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+        ]
+      },
+      effects: {
+        evidence: [
+          "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+        ]
+      },
+      hud: {
+        evidence: [
+          "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+        ]
+      },
+      "stage-depth": {
+        evidence: [
+          "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+        ]
+      },
+      "lighting-materials": {
+        evidence: [
+          "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+        ]
+      }
+    }
+  };
+
   root.innerHTML = `
     <main class="aca" tabindex="0" aria-label="Aura Clash Arena playable game">
       <div class="aca-page-bg" aria-hidden="true"><div class="aca-page-grid"></div></div>
       <nav class="aca-nav" aria-label="Aura Clash navigation">
-        <a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a>
+        <h1 class="aca-title"><a class="aca-brand" href="/showcase/aura-clash/playable/"><span></span>Aura Clash Arena</a></h1>
         <div class="aca-links">
           <a href="/showcase/aura-clash/playable/">Playable</a>
           <a href="#evidence">Evidence</a>
@@ -373,7 +415,7 @@ export function mountAuraClashArenaApp(): void {
       <section class="aca-hud" aria-label="Fight HUD">
         <article class="aca-card">
           <span>Player one</span>
-          <h1 id="player-name">Flux Vanta</h1>
+          <h2 id="player-name">Flux Vanta</h2>
           <p>Skinned GLB fighter driven by Aura3D production animation runtime.</p>
           <div class="aca-bar aca-health"><i id="player-health"></i></div>
           <div class="aca-bar aca-meter"><i id="player-meter"></i></div>

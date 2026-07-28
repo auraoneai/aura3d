@@ -1,0 +1,2006 @@
+{
+  "ok": true,
+  "generatedAt": "2026-07-28T10:09:39.634Z",
+  "startedAt": "2026-07-28T10:09:20.989Z",
+  "targetUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+  "finalUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+  "status": 200,
+  "statusText": "OK",
+  "viewport": {
+    "width": 1440,
+    "height": 1200
+  },
+  "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+  "screenshotCount": 3,
+  "compositionCount": 3,
+  "screenshots": [
+    "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+    "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+    "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png"
+  ],
+  "title": "Play Aura Clash - Aura3D Browser Fighting Game",
+  "bodyBox": {
+    "x": 0,
+    "y": 0,
+    "width": 1440,
+    "height": 1436.625
+  },
+  "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay plu",
+  "nonblank": true,
+  "imageEvidence": {
+    "kind": "aura-clash-screenshot-image-evidence",
+    "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+    "byteLength": 495979,
+    "sha256": "ada8c1d6337bc3c47e2adcf035e833279716d704340618142f94f7e583d7f789",
+    "sampleStride": 121,
+    "sampledBytes": 4099,
+    "uniqueByteValues": 256,
+    "minByte": 0,
+    "maxByte": 255,
+    "meanByte": 131.631,
+    "standardDeviation": 74.768,
+    "nonblank": true
+  },
+  "visualReviewContract": {
+    "version": "aura-clash-screenshot-review-v1",
+    "scope": "source-only screenshot metadata for later human visual review",
+    "humanApprovalRequired": true,
+    "evidenceRequirements": {
+      "requiredCaptureCount": 3,
+      "allRequiredCapturesMustBeNonblank": true,
+      "requiredCompositionIds": [
+        "arena-establishing",
+        "fighter-readability",
+        "effects-hud-debug"
+      ],
+      "requiredReviewAreaIds": [
+        "debug-overlays",
+        "readable-fighters",
+        "effects",
+        "hud",
+        "stage-depth",
+        "lighting-materials"
+      ],
+      "humanApprovalBoundary": "Machine evidence can prove nonblank captures and declared review signals, but cannot approve visual quality."
+    },
+    "notes": [
+      "This contract records machine-readable page declarations and DOM evidence. It does not approve visual quality automatically.",
+      "Canvas-only evidence should be declared by the route through window.__AURA_CLASH_VISUAL_REVIEW__ or #aura-clash-visual-review JSON."
+    ],
+    "areas": [
+      {
+        "id": "debug-overlays",
+        "label": "Debug overlays",
+        "requiredEvidence": [
+          "debug overlay visible or explicitly declared",
+          "hitbox, hurtbox, collider, camera, runtime, or frame diagnostic evidence"
+        ],
+        "textSignals": [
+          "debug",
+          "overlay",
+          "hitbox",
+          "hurtbox",
+          "collider",
+          "runtime",
+          "fps",
+          "camera"
+        ],
+        "selectors": [
+          "[data-aura-debug]",
+          "[data-debug-overlay]",
+          "[data-testid*='debug' i]",
+          "[data-testid*='hitbox' i]",
+          "[data-testid*='collider' i]",
+          ".debug-overlay",
+          "[aria-label*='debug' i]"
+        ]
+      },
+      {
+        "id": "readable-fighters",
+        "label": "Readable fighters",
+        "requiredEvidence": [
+          "both fighters visible or explicitly declared",
+          "fighter names, sides, poses, silhouettes, or bounds readable"
+        ],
+        "textSignals": [
+          "fighter",
+          "player",
+          "opponent",
+          "rival",
+          "health",
+          "combo",
+          "round"
+        ],
+        "selectors": [
+          "[data-fighter]",
+          "[data-player]",
+          "[data-opponent]",
+          "[data-testid*='fighter' i]",
+          "[data-testid*='player' i]",
+          "[data-testid*='opponent' i]",
+          "[aria-label*='fighter' i]",
+          "[aria-label*='player' i]",
+          "[aria-label*='opponent' i]"
+        ]
+      },
+      {
+        "id": "effects",
+        "label": "Effects",
+        "requiredEvidence": [
+          "combat effects, particles, impact flashes, bloom, trails, or shader effects visible or explicitly declared",
+          "effect state named with non-empty intensity/count/timing details when available"
+        ],
+        "textSignals": [
+          "effect",
+          "effects",
+          "vfx",
+          "particle",
+          "impact",
+          "spark",
+          "trail",
+          "bloom",
+          "flash"
+        ],
+        "selectors": [
+          "[data-effect]",
+          "[data-effects]",
+          "[data-vfx]",
+          "[data-particles]",
+          "[data-testid*='effect' i]",
+          "[data-testid*='vfx' i]",
+          "[aria-label*='effect' i]"
+        ]
+      },
+      {
+        "id": "hud",
+        "label": "HUD",
+        "requiredEvidence": [
+          "health, timer, round, combo, or control HUD visible or explicitly declared",
+          "HUD text readable in captured viewport"
+        ],
+        "textSignals": [
+          "hud",
+          "health",
+          "timer",
+          "round",
+          "combo",
+          "super",
+          "controls",
+          "pause"
+        ],
+        "selectors": [
+          "[data-hud]",
+          "[data-testid*='hud' i]",
+          "[data-testid*='health' i]",
+          "[data-testid*='timer' i]",
+          "[role='status']",
+          "[aria-label*='health' i]",
+          "[aria-label*='timer' i]"
+        ]
+      },
+      {
+        "id": "stage-depth",
+        "label": "Stage depth",
+        "requiredEvidence": [
+          "foreground, midground, and background/depth cues visible or explicitly declared",
+          "arena boundaries, parallax, floor grid, shadows, or city/stage layers named when available"
+        ],
+        "textSignals": [
+          "stage",
+          "arena",
+          "depth",
+          "foreground",
+          "midground",
+          "background",
+          "parallax",
+          "floor",
+          "shadows"
+        ],
+        "selectors": [
+          "[data-stage]",
+          "[data-arena]",
+          "[data-depth]",
+          "[data-testid*='stage' i]",
+          "[data-testid*='arena' i]",
+          "[data-testid*='depth' i]",
+          "[aria-label*='stage' i]",
+          "[aria-label*='arena' i]"
+        ]
+      },
+      {
+        "id": "lighting-materials",
+        "label": "Lighting and materials",
+        "requiredEvidence": [
+          "key/fill/rim, bloom, shadows, reflections, emissive, metal, glass, cloth, or material contrast visible or explicitly declared",
+          "lighting/material checks named with non-empty values when available"
+        ],
+        "textSignals": [
+          "lighting",
+          "light",
+          "material",
+          "materials",
+          "shadow",
+          "reflection",
+          "emissive",
+          "metal",
+          "glass",
+          "rim",
+          "bloom"
+        ],
+        "selectors": [
+          "[data-lighting]",
+          "[data-material]",
+          "[data-materials]",
+          "[data-testid*='lighting' i]",
+          "[data-testid*='material' i]",
+          "[aria-label*='lighting' i]",
+          "[aria-label*='material' i]"
+        ]
+      }
+    ],
+    "compositionExpectations": [
+      {
+        "id": "arena-establishing",
+        "label": "Arena establishing",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "full stage composition",
+          "stage depth",
+          "lighting/material context"
+        ],
+        "reviewCriteria": [
+          "foreground, combat lane, midground, and skyline/background are readable",
+          "lighting and material context is visible without hiding the canvas",
+          "capture is not a title-card-only or CSS fallback composition"
+        ]
+      },
+      {
+        "id": "fighter-readability",
+        "label": "Fighter readability",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "both fighters",
+          "readable silhouettes/poses",
+          "HUD relationship"
+        ],
+        "reviewCriteria": [
+          "both Quaternius-derived fighter GLBs are visible and grounded",
+          "fighter silhouettes and poses remain readable against the stage",
+          "HUD placement does not cover critical fighter readability"
+        ]
+      },
+      {
+        "id": "effects-hud-debug",
+        "label": "Effects, HUD, and debug",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "combat effects",
+          "HUD",
+          "debug overlays"
+        ],
+        "reviewCriteria": [
+          "impact/super effects are visible without washing out the scene",
+          "HUD state remains legible during effect-heavy frames",
+          "debug/proof overlays or declarations are visible enough for source-backed review"
+        ]
+      }
+    ]
+  },
+  "visualReviewEvidence": {
+    "ok": true,
+    "statusCounts": {
+      "pass": 6,
+      "needs-review": 0,
+      "missing": 0
+    },
+    "areas": [
+      {
+        "id": "debug-overlays",
+        "label": "Debug overlays",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": false,
+        "hasTextSignal": true,
+        "requiredEvidence": [
+          "debug overlay visible or explicitly declared",
+          "hitbox, hurtbox, collider, camera, runtime, or frame diagnostic evidence"
+        ],
+        "captures": [
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "readable-fighters",
+        "label": "Readable fighters",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": false,
+        "hasTextSignal": true,
+        "requiredEvidence": [
+          "both fighters visible or explicitly declared",
+          "fighter names, sides, poses, silhouettes, or bounds readable"
+        ],
+        "captures": [
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "effects",
+        "label": "Effects",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": false,
+        "hasTextSignal": false,
+        "requiredEvidence": [
+          "combat effects, particles, impact flashes, bloom, trails, or shader effects visible or explicitly declared",
+          "effect state named with non-empty intensity/count/timing details when available"
+        ],
+        "captures": [
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          },
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          },
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          }
+        ]
+      },
+      {
+        "id": "hud",
+        "label": "HUD",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": false,
+        "hasTextSignal": true,
+        "requiredEvidence": [
+          "health, timer, round, combo, or control HUD visible or explicitly declared",
+          "HUD text readable in captured viewport"
+        ],
+        "captures": [
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "stage-depth",
+        "label": "Stage depth",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": true,
+        "hasTextSignal": true,
+        "requiredEvidence": [
+          "foreground, midground, and background/depth cues visible or explicitly declared",
+          "arena boundaries, parallax, floor grid, shadows, or city/stage layers named when available"
+        ],
+        "captures": [
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          }
+        ]
+      },
+      {
+        "id": "lighting-materials",
+        "label": "Lighting and materials",
+        "status": "pass",
+        "hasPageDeclaration": true,
+        "hasVisibleDomSignal": false,
+        "hasTextSignal": true,
+        "requiredEvidence": [
+          "key/fill/rim, bloom, shadows, reflections, emissive, metal, glass, cloth, or material contrast visible or explicitly declared",
+          "lighting/material checks named with non-empty values when available"
+        ],
+        "captures": [
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      }
+    ],
+    "humanApprovalRequired": true
+  },
+  "compositionEvidence": {
+    "expectedCount": 3,
+    "configuredCompositionLimit": 3,
+    "requiredCompositionIds": [
+      "arena-establishing",
+      "fighter-readability",
+      "effects-hud-debug"
+    ],
+    "capturedRoles": [
+      "arena-establishing",
+      "fighter-readability",
+      "effects-hud-debug"
+    ],
+    "missingCompositionIds": [],
+    "capturedCount": 3,
+    "nonblankCaptureCount": 3,
+    "allRequiredCapturesNonblank": true,
+    "optionalAvailableCount": 0,
+    "fallbackAvailableCount": 2,
+    "availableCompositionCount": 2,
+    "captureLimitAllowsRequiredCount": true,
+    "allAvailableCompositionsCaptured": true,
+    "threeCompositionEvidenceAvailable": true,
+    "expectations": [
+      {
+        "id": "arena-establishing",
+        "label": "Arena establishing",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "full stage composition",
+          "stage depth",
+          "lighting/material context"
+        ],
+        "reviewCriteria": [
+          "foreground, combat lane, midground, and skyline/background are readable",
+          "lighting and material context is visible without hiding the canvas",
+          "capture is not a title-card-only or CSS fallback composition"
+        ]
+      },
+      {
+        "id": "fighter-readability",
+        "label": "Fighter readability",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "both fighters",
+          "readable silhouettes/poses",
+          "HUD relationship"
+        ],
+        "reviewCriteria": [
+          "both Quaternius-derived fighter GLBs are visible and grounded",
+          "fighter silhouettes and poses remain readable against the stage",
+          "HUD placement does not cover critical fighter readability"
+        ]
+      },
+      {
+        "id": "effects-hud-debug",
+        "label": "Effects, HUD, and debug",
+        "required": true,
+        "nonblankRequired": true,
+        "mustShow": [
+          "combat effects",
+          "HUD",
+          "debug overlays"
+        ],
+        "reviewCriteria": [
+          "impact/super effects are visible without washing out the scene",
+          "HUD state remains legible during effect-heavy frames",
+          "debug/proof overlays or declarations are visible enough for source-backed review"
+        ]
+      }
+    ],
+    "captures": [
+      {
+        "id": "first-frame",
+        "label": "First-frame screenshot",
+        "role": "arena-establishing",
+        "ok": true,
+        "required": true,
+        "nonblank": true,
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "targetUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+        "finalUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+        "reviewIntent": null
+      },
+      {
+        "id": "fighter-readability",
+        "label": "Fighter readability composition",
+        "role": "fighter-readability",
+        "ok": true,
+        "required": false,
+        "nonblank": true,
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+        "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+        "reviewIntent": "Both typed fighter GLBs grounded on the combat lane with readable HUD and stage depth."
+      },
+      {
+        "id": "effects-hud-debug",
+        "label": "Effects, HUD, and debug composition",
+        "role": "effects-hud-debug",
+        "ok": true,
+        "required": false,
+        "nonblank": true,
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+        "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+        "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes."
+      }
+    ],
+    "declaredCompositions": [],
+    "requestedCompositions": [],
+    "fallbackCompositions": [
+      {
+        "id": "fighter-readability",
+        "label": "Fighter readability composition",
+        "url": "http://127.0.0.1:5178/playable/?capture=match-start",
+        "settleMs": 1200,
+        "reviewIntent": "Both typed fighter GLBs grounded on the combat lane with readable HUD and stage depth.",
+        "source": "capture-script-default"
+      },
+      {
+        "id": "effects-hud-debug",
+        "label": "Effects, HUD, and debug composition",
+        "url": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+        "settleMs": 1200,
+        "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes.",
+        "source": "capture-script-default"
+      }
+    ]
+  },
+  "visualEvidenceGate": {
+    "kind": "aura-clash-visual-evidence-gate",
+    "machineChecksOk": true,
+    "checks": [
+      {
+        "id": "http-status",
+        "label": "All required captures returned successful HTTP status",
+        "ok": true
+      },
+      {
+        "id": "nonblank-captures",
+        "label": "All required captures are nonblank",
+        "ok": true
+      },
+      {
+        "id": "review-area-evidence",
+        "label": "Required visual review areas have declarations or visible DOM evidence",
+        "ok": true
+      },
+      {
+        "id": "three-composition-evidence",
+        "label": "Three screenshot compositions are captured and nonblank",
+        "ok": true
+      }
+    ],
+    "requiredCaptureCount": 3,
+    "requiredCompositionIds": [
+      "arena-establishing",
+      "fighter-readability",
+      "effects-hud-debug"
+    ],
+    "requiredReviewAreaIds": [
+      "debug-overlays",
+      "readable-fighters",
+      "effects",
+      "hud",
+      "stage-depth",
+      "lighting-materials"
+    ],
+    "humanApprovalRequired": true,
+    "humanApprovalCapturedByThisScript": false,
+    "approvalBoundary": "This gate can fail or pass machine evidence requirements, but it never marks human visual approval complete."
+  },
+  "captures": [
+    {
+      "id": "first-frame",
+      "label": "First-frame screenshot",
+      "ok": true,
+      "required": true,
+      "targetUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+      "finalUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
+      "status": 200,
+      "statusText": "OK",
+      "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+      "imageEvidence": {
+        "kind": "aura-clash-screenshot-image-evidence",
+        "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "byteLength": 495979,
+        "sha256": "ada8c1d6337bc3c47e2adcf035e833279716d704340618142f94f7e583d7f789",
+        "sampleStride": 121,
+        "sampledBytes": 4099,
+        "uniqueByteValues": 256,
+        "minByte": 0,
+        "maxByte": 255,
+        "meanByte": 131.631,
+        "standardDeviation": 74.768,
+        "nonblank": true
+      },
+      "reviewIntent": null,
+      "pageEvidence": {
+        "title": "Play Aura Clash - Aura3D Browser Fighting Game",
+        "bodyBox": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1436.625
+        },
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay plu",
+        "canvas": [
+          {
+            "index": 0,
+            "id": "aura-clash-arena-canvas",
+            "ariaLabel": "Aura3D production renderer canvas",
+            "testId": null,
+            "width": 1358,
+            "height": 598,
+            "clientWidth": 1358,
+            "clientHeight": 598,
+            "visible": true
+          }
+        ],
+        "pageReviewDeclaration": {
+          "version": "aura-clash-visual-review/v1",
+          "humanApprovalRequired": true,
+          "areas": {
+            "debug-overlays": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "readable-fighters": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "effects": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "hud": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "stage-depth": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "lighting-materials": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            }
+          }
+        },
+        "compositionDeclaration": null,
+        "areas": [
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          },
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "fighter-readability",
+      "label": "Fighter readability composition",
+      "ok": true,
+      "required": false,
+      "targetUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+      "finalUrl": "http://127.0.0.1:5178/playable/?capture=match-start",
+      "status": 200,
+      "statusText": "OK",
+      "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+      "imageEvidence": {
+        "kind": "aura-clash-screenshot-image-evidence",
+        "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "byteLength": 496606,
+        "sha256": "87e733989e67bd566999b0d0ca9a497d420b836ce6a90a6de84da04bc10d64ab",
+        "sampleStride": 121,
+        "sampledBytes": 4105,
+        "uniqueByteValues": 256,
+        "minByte": 0,
+        "maxByte": 255,
+        "meanByte": 130.137,
+        "standardDeviation": 74.786,
+        "nonblank": true
+      },
+      "reviewIntent": "Both typed fighter GLBs grounded on the combat lane with readable HUD and stage depth.",
+      "pageEvidence": {
+        "title": "Play Aura Clash - Aura3D Browser Fighting Game",
+        "bodyBox": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1436.625
+        },
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nWALK - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Zombie_Walk_Fwd_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay p",
+        "canvas": [
+          {
+            "index": 0,
+            "id": "aura-clash-arena-canvas",
+            "ariaLabel": "Aura3D production renderer canvas",
+            "testId": null,
+            "width": 1358,
+            "height": 598,
+            "clientWidth": 1358,
+            "clientHeight": 598,
+            "visible": true
+          }
+        ],
+        "pageReviewDeclaration": {
+          "version": "aura-clash-visual-review/v1",
+          "humanApprovalRequired": true,
+          "areas": {
+            "debug-overlays": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "readable-fighters": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "effects": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "hud": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "stage-depth": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "lighting-materials": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            }
+          }
+        },
+        "compositionDeclaration": null,
+        "areas": [
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          },
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "effects-hud-debug",
+      "label": "Effects, HUD, and debug composition",
+      "ok": true,
+      "required": false,
+      "targetUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+      "finalUrl": "http://127.0.0.1:5178/playable/?capture=combat-impact",
+      "status": 200,
+      "statusText": "OK",
+      "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+      "imageEvidence": {
+        "kind": "aura-clash-screenshot-image-evidence",
+        "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "byteLength": 496606,
+        "sha256": "87e733989e67bd566999b0d0ca9a497d420b836ce6a90a6de84da04bc10d64ab",
+        "sampleStride": 121,
+        "sampledBytes": 4105,
+        "uniqueByteValues": 256,
+        "minByte": 0,
+        "maxByte": 255,
+        "meanByte": 130.137,
+        "standardDeviation": 74.786,
+        "nonblank": true
+      },
+      "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes.",
+      "pageEvidence": {
+        "title": "Play Aura Clash - Aura3D Browser Fighting Game",
+        "bodyBox": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1436.625
+        },
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nWALK - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Zombie_Walk_Fwd_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay p",
+        "canvas": [
+          {
+            "index": 0,
+            "id": "aura-clash-arena-canvas",
+            "ariaLabel": "Aura3D production renderer canvas",
+            "testId": null,
+            "width": 1358,
+            "height": 598,
+            "clientWidth": 1358,
+            "clientHeight": 598,
+            "visible": true
+          }
+        ],
+        "pageReviewDeclaration": {
+          "version": "aura-clash-visual-review/v1",
+          "humanApprovalRequired": true,
+          "areas": {
+            "debug-overlays": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "readable-fighters": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "effects": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "hud": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "stage-depth": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "lighting-materials": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            }
+          }
+        },
+        "compositionDeclaration": null,
+        "areas": [
+          {
+            "id": "debug-overlays",
+            "label": "Debug overlays",
+            "declared": {
+              "evidence": [
+                "The evidence panel exposes renderer, frame-time, draw-call, animation, and deterministic replay diagnostics."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "runtime"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "readable-fighters",
+            "label": "Readable fighters",
+            "declared": {
+              "evidence": [
+                "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "fighter",
+              "player",
+              "rival"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "effects",
+            "label": "Effects",
+            "declared": {
+              "evidence": [
+                "The combat-impact capture drives the designed spark and post-process hit-effect path; normal hit VFX do not use debug cubes."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": false
+            }
+          },
+          {
+            "id": "hud",
+            "label": "HUD",
+            "declared": {
+              "evidence": [
+                "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "pause"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "stage-depth",
+            "label": "Stage depth",
+            "declared": {
+              "evidence": [
+                "The rendered arena includes foreground floor treatment, the combat lane, skyline depth, portal layers, shadows, and reflections."
+              ]
+            },
+            "selectorMatchCount": 4,
+            "visibleSelectorMatchCount": 3,
+            "selectorMatches": [
+              {
+                "selector": "[aria-label*='stage' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "main",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena playable game",
+                "testId": null,
+                "visible": true,
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "bounds": {
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 1437
+                }
+              },
+              {
+                "selector": "[aria-label*='arena' i]",
+                "tagName": "section",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Aura Clash Arena production GLB stage",
+                "testId": null,
+                "visible": true,
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "bounds": {
+                  "x": 40,
+                  "y": 399,
+                  "width": 1360,
+                  "height": 600
+                }
+              }
+            ],
+            "textMatches": [
+              "arena"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": true,
+              "textSignal": true
+            }
+          },
+          {
+            "id": "lighting-materials",
+            "label": "Lighting and materials",
+            "declared": {
+              "evidence": [
+                "The production-runtime frame uses the declared arena lighting, post-process, emissive, reflective-floor, and fighter material paths."
+              ]
+            },
+            "selectorMatchCount": 0,
+            "visibleSelectorMatchCount": 0,
+            "selectorMatches": [],
+            "textMatches": [
+              "light"
+            ],
+            "evidenceSources": {
+              "pageDeclaration": true,
+              "visibleDomSignal": false,
+              "textSignal": true
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "consoleMessages": [
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
+    },
+    {
+      "type": "warning",
+      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
+    }
+  ]
+}

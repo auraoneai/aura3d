@@ -10,7 +10,7 @@ const appRoot = resolve(__dirname, "..");
 
 const targetUrl =
   process.env.AURA_CLASH_SCREENSHOT_URL ??
-  "http://127.0.0.1:5173/playable/?capture=first-frame";
+  "http://127.0.0.1:5178/playable/?capture=first-frame";
 const outPng = resolve(
   appRoot,
   process.env.AURA_CLASH_SCREENSHOT_OUT ?? "launch-evidence/first-frame.png"
@@ -266,7 +266,7 @@ const visualReviewContract = {
 };
 
 const managedServer = await ensureScreenshotServer(targetUrl);
-const { chromium } = await import("playwright");
+const { chromium } = await import("@playwright/test");
 const browser = await chromium.launch({
   headless: process.env.AURA_CLASH_SCREENSHOT_HEADLESS !== "0"
 });
@@ -413,7 +413,16 @@ async function ensureScreenshotServer(url) {
   const command = process.env.AURA_CLASH_SCREENSHOT_SERVER_COMMAND ?? "npm";
   const args = process.env.AURA_CLASH_SCREENSHOT_SERVER_ARGS
     ? process.env.AURA_CLASH_SCREENSHOT_SERVER_ARGS.split(" ").filter(Boolean)
-    : ["run", "dev"];
+    : [
+        "run",
+        "dev",
+        "--",
+        "--host",
+        new URL(url).hostname,
+        "--port",
+        new URL(url).port,
+        "--strictPort"
+      ];
   const server = spawn(command, args, {
     cwd: appRoot,
     stdio: ["ignore", "pipe", "pipe"],

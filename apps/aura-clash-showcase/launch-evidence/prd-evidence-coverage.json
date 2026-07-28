@@ -1,10 +1,10 @@
 {
   "ok": true,
-  "generatedAt": "2026-06-05T19:29:55.671Z",
+  "generatedAt": "2026-07-28T10:09:40.275Z",
   "manifest": "apps/aura-clash-showcase/launch-evidence.coverage.json",
   "prd": "docs/project/aura-clash-showcase.md",
   "activeScopeEndHeading": "# Legacy World War X PRD Archive",
-  "activeScopeLineCount": 188,
+  "activeScopeLineCount": 191,
   "totalUnchecked": 0,
   "coveredUnchecked": 0,
   "uncoveredUnchecked": 0,

@@ -23,7 +23,7 @@ type AuraClashArenaEvidence = {
 
 test("poster route exposes capture-ready layout", async ({ page }) => {
   await page.goto("/poster/");
-  await expect(page.getByRole("heading", { name: /Aura Clash/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Aura Clash — Hero versus", exact: true })).toBeVisible();
   await expect(page.getByText(/Downtown City MegaKit arena/i)).toBeVisible();
 });
 

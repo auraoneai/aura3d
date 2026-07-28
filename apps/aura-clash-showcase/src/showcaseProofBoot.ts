@@ -131,8 +131,19 @@ function posterCards(): string {
 }
 
 function renderEvidenceConsole(): string {
+  const deployOverview = window.location.pathname.includes("/deploy-check")
+    ? `
+      <div class="ac-proof-console__header">
+        <span>Production handoff</span>
+        <h2>Deploy-check route</h2>
+        <p>Asset provenance workflow: download → stage → build GLB → CLI register.</p>
+      </div>
+    `
+    : "";
+
   return `
     <section class="ac-proof-console" aria-labelledby="aura-clash-proof-title">
+      ${deployOverview}
       <div class="ac-proof-console__header">
         <span>Developer evidence</span>
         <h2 id="aura-clash-proof-title">Aura Clash runtime evidence</h2>

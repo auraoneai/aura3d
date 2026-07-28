@@ -1,10 +1,10 @@
 {
   "ok": true,
-  "generatedAt": "2026-06-05T19:29:23.349Z",
+  "generatedAt": "2026-07-28T10:09:40.150Z",
   "coverage": "apps/aura-clash-showcase/launch-evidence.coverage.json",
   "commandPlan": "apps/aura-clash-showcase/launch-evidence.command-plan.json",
   "manifest": "apps/aura-clash-showcase/launch-evidence.manifest.json",
-  "knownArtifactCount": 94,
+  "knownArtifactCount": 99,
   "coverageArtifactCount": 43,
   "unknownArtifactCount": 0,
   "knownSources": [

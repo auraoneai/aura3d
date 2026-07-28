@@ -171,6 +171,11 @@ input {
   text-decoration: none;
 }
 
+.aca-title {
+  margin: 0;
+  font: inherit;
+}
+
 .aca-brand {
   display: inline-flex;
   align-items: center;

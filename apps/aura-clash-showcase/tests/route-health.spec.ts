@@ -8,7 +8,7 @@ test.describe("Aura Clash route health", () => {
       const response = await page.goto(route);
       expect(response?.ok()).toBeTruthy();
       await expect(page.getByRole("link", { name: /Aura Clash/i })).toBeVisible();
-      await expect(page.getByRole("heading", { name: /Aura Clash/i })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Aura Clash Arena", exact: true })).toBeVisible();
     });
   }
 });
