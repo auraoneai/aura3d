@@ -482,6 +482,30 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(5);
   });
 
+  it("runs SSAO as a depth-texture fullscreen stage before FXAA", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-ssao-source", depth: "texture" });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-ssao-output", depth: false });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "ssao", options: { radius: 2, intensity: 0.7, bias: 0.01 } },
+        { name: "fxaa", options: { edgeThreshold: 0.1 } }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources).toHaveLength(2);
+    expect(drawSources[0]).toContain("uniform sampler2D u_depth");
+    expect(drawSources[0]).toContain("centerDepth - sampleDepth - u_bias");
+    expect(drawSources[1]).toContain("u_hasFxaa");
+    device.dispose();
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });

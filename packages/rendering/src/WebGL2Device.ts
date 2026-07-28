@@ -174,6 +174,12 @@ interface NativeOutlineOptions {
   readonly color: readonly [number, number, number, number];
 }
 
+interface NativeSsaoOptions {
+  readonly radius: number;
+  readonly intensity: number;
+  readonly bias: number;
+}
+
 export class WebGL2Device implements RenderDevice {
   public readonly kind = "webgl2";
   public readonly info: RenderDeviceInfo;
@@ -197,6 +203,7 @@ export class WebGL2Device implements RenderDevice {
   private bloomBlurProgram: WebGLProgram | null = null;
   private bloomCompositeProgram: WebGLProgram | null = null;
   private outlineProgram: WebGLProgram | null = null;
+  private ssaoProgram: WebGLProgram | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
@@ -611,6 +618,7 @@ export class WebGL2Device implements RenderDevice {
     }
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
+    const ssaoPass = options.passes.find((pass) => pass.name === "ssao");
     const outlinePass = options.passes.find((pass) => pass.name === "outline");
     if (source.colorTexture.format !== "rgba8" && !tonePass) {
       throw new RenderDeviceError("WebGL2 HDR postprocess presentation requires a tone-mapping pass before LDR output.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
@@ -625,11 +633,17 @@ export class WebGL2Device implements RenderDevice {
         pass: "bloom"
       });
     }
-    if (source.colorTexture.format !== "rgba8" && outlinePass) {
-      throw new RenderDeviceError("WebGL2 native LUT outline accepts rgba8 input; HDR sources must be tone-mapped to an intermediate LDR target first.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
+    if (source.colorTexture.format !== "rgba8" && (ssaoPass || outlinePass) && !tonePass) {
+      throw new RenderDeviceError("WebGL2 byte-kernel postprocess requires rgba8 input or a preceding tone-mapping pass.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
         format: source.colorTexture.format,
-        pass: "outline"
+        pass: ssaoPass ? "ssao" : "outline"
+      });
+    }
+    if (ssaoPass && !source.depthTextureHandle) {
+      throw new RenderDeviceError("WebGL2 native SSAO requires a renderer-owned sampleable depth texture.", "WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED", {
+        targetId: source.id,
+        pass: "ssao"
       });
     }
     const outputTarget = options.outputTarget;
@@ -657,10 +671,11 @@ export class WebGL2Device implements RenderDevice {
     const colorPass = options.passes.find((pass) => pass.name === "color-grade");
     const fxaaPass = options.passes.find((pass) => pass.name === "fxaa");
     const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
+    const ssaoOptions = ssaoPass ? normalizeNativeSsaoOptions(ssaoPass.options) : undefined;
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
-    const bloomResources = bloomOptions || outlineOptions
+    const bloomResources = bloomOptions || ssaoOptions || outlineOptions
       ? this.ensureBloomPingPongResources(source.width, source.height)
       : undefined;
     if (bloomOptions) {
@@ -679,7 +694,7 @@ export class WebGL2Device implements RenderDevice {
         ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
         temporarySourceIndex = 1;
       }
-      if (outlineOptions && bloomResources) {
+      if ((ssaoOptions || outlineOptions) && bloomResources) {
         if (tonePass || colorPass) {
           const baseTargetIndex = 0 as const;
           this.drawNativeLdrStage(
@@ -697,6 +712,20 @@ export class WebGL2Device implements RenderDevice {
           ldrSourceHandle = bloomResources.textures[baseTargetIndex];
           temporarySourceIndex = baseTargetIndex;
         }
+        if (ssaoOptions && source.depthTextureHandle) {
+          const ssaoTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
+          ldrSourceHandle = this.executeNativeSsaoPass(
+            ldrSourceHandle,
+            source.depthTextureHandle,
+            bloomResources,
+            ssaoOptions,
+            vertexArray,
+            ssaoTargetIndex
+          );
+          temporarySourceIndex = ssaoTargetIndex;
+        }
+      }
+      if (outlineOptions && bloomResources) {
         const outlineTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
         ldrSourceHandle = this.executeNativeOutlinePasses(
           ldrSourceHandle,
@@ -714,8 +743,8 @@ export class WebGL2Device implements RenderDevice {
         outputHeight,
         program,
         vertexArray,
-        outlineOptions ? undefined : tonePass,
-        outlineOptions ? undefined : colorPass,
+        ssaoOptions || outlineOptions ? undefined : tonePass,
+        ssaoOptions || outlineOptions ? undefined : colorPass,
         fxaaPass,
         options.toneMappingDefaults
       );
@@ -1070,6 +1099,10 @@ export class WebGL2Device implements RenderDevice {
     if (this.outlineProgram) {
       this.gl.deleteProgram(this.outlineProgram);
       this.outlineProgram = null;
+    }
+    if (this.ssaoProgram) {
+      this.gl.deleteProgram(this.ssaoProgram);
+      this.ssaoProgram = null;
     }
     this.disposeBloomPingPongResources();
     if (this.bloomBrightLutTexture) {
@@ -1475,6 +1508,32 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_width"), options.width);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_boundHigh"), bound.highWord);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_boundLow"), bound.lowWord);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return targetTexture;
+  }
+
+  private executeNativeSsaoPass(
+    sourceTexture: WebGLTexture,
+    depthTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeSsaoOptions,
+    vertexArray: WebGLVertexArrayObject,
+    targetIndex: 0 | 1
+  ): WebGLTexture {
+    const program = this.ensureSsaoProgram();
+    const targetTexture = resources.textures[targetIndex];
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, depthTexture);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_depth"), 1);
+    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_radius"), options.radius);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_intensity"), options.intensity);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_bias"), options.bias);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -1888,6 +1947,48 @@ void main() {
 }
 `, "webgl2-outline");
     return this.outlineProgram;
+  }
+
+  private ensureSsaoProgram(): WebGLProgram {
+    if (this.ssaoProgram) return this.ssaoProgram;
+    this.ssaoProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_depth;
+uniform ivec2 u_size;
+uniform int u_radius;
+uniform float u_intensity;
+uniform float u_bias;
+out vec4 outColor;
+
+float depthAt(ivec2 coordinate) {
+  return texelFetch(u_depth, clamp(coordinate, ivec2(0), u_size - ivec2(1)), 0).r;
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  float centerDepth = depthAt(pixel);
+  float occlusion = 0.0;
+  float samples = 0.0;
+  for (int stepY = -1; stepY <= 1; stepY += 1) {
+    for (int stepX = -1; stepX <= 1; stepX += 1) {
+      if (stepX == 0 && stepY == 0) continue;
+      float sampleDepth = depthAt(pixel + ivec2(stepX * u_radius, stepY * u_radius));
+      occlusion += clamp(
+        (centerDepth - sampleDepth - u_bias) / (0.14 + float(u_radius) * 0.04),
+        0.0,
+        1.0
+      );
+      samples += 1.0;
+    }
+  }
+  float factor = max(0.18, 1.0 - (occlusion / max(1.0, samples)) * u_intensity * 0.72);
+  vec4 source = texelFetch(u_source, pixel, 0);
+  outColor = vec4(source.rgb * factor, source.a);
+}
+`, "webgl2-ssao");
+    return this.ssaoProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -2962,6 +3063,22 @@ function normalizeNativeOutlineOptions(options: Readonly<Record<string, unknown>
   return { width, threshold, opacity, color };
 }
 
+function normalizeNativeSsaoOptions(options: Readonly<Record<string, unknown>>): NativeSsaoOptions {
+  const radius = ssaoNumberOption(options, "radius", 2);
+  const intensity = ssaoNumberOption(options, "intensity", 0.38);
+  const bias = ssaoNumberOption(options, "bias", 0.015);
+  if (!Number.isInteger(radius) || radius < 1 || radius > 8) {
+    throw new RenderDeviceError("SSAO radius must be an integer in [1, 8].", "INVALID_POSTPROCESS_OPTIONS", { radius });
+  }
+  if (intensity < 0 || intensity > 2) {
+    throw new RenderDeviceError("SSAO intensity must be finite and in [0, 2].", "INVALID_POSTPROCESS_OPTIONS", { intensity });
+  }
+  if (bias < 0 || bias > 0.25) {
+    throw new RenderDeviceError("SSAO bias must be finite and in [0, 0.25].", "INVALID_POSTPROCESS_OPTIONS", { bias });
+  }
+  return { radius, intensity, bias };
+}
+
 function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   if (value === undefined) return fallback;
@@ -2976,6 +3093,15 @@ function outlineNumberOption(options: Readonly<Record<string, unknown>>, key: st
   if (value === undefined) return fallback;
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RenderDeviceError(`Outline ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
+}
+
+function ssaoNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`SSAO ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
   }
   return value;
 }

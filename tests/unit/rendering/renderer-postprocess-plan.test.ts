@@ -105,7 +105,7 @@ describe("renderer postprocess plan diagnostics", () => {
     ]);
   });
 
-  it("keeps HDR outline out of byte-exact native fusion until an LDR intermediate exists", () => {
+  it("uses a tone-mapped LDR intermediate before native HDR-source outline", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       toneMapping: { operator: "filmic" },
       outline: true,
@@ -118,9 +118,38 @@ describe("renderer postprocess plan diagnostics", () => {
 
     expect(plan).toMatchObject({
       passNames: ["tone-mapping", "outline", "fxaa"],
-      executionMode: "renderer-owned-pass-chain-readback",
-      canFuseLdr: false,
-      readbackPassNames: ["tone-mapping", "outline", "fxaa"]
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+  });
+
+  it("routes renderer-depth SSAO through native fusion with no readback", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      ssao: { radius: 2, intensity: 0.7, bias: 0.01 },
+      outline: false,
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      rendererDepthAvailable: true,
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["ssao", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      requiresDepthTexture: true,
+      missingInputs: [],
+      readbackPassNames: []
+    });
+    expect(plan.passes[0]).toMatchObject({
+      name: "ssao",
+      requiresDepth: true,
+      usesRendererOwnedDepth: true,
+      usesReadback: false
     });
   });
 

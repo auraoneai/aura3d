@@ -1,4 +1,4 @@
-import { bloomPixels, createRenderDevice, outlinePixels } from "@aura3d/rendering";
+import { bloomPixels, createDepthTextureBinding, createRenderDevice, outlinePixels, ssaoPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -10,6 +10,9 @@ declare global {
       readonly changedChannelCount?: number;
       readonly bloomMaxChannelDelta?: number;
       readonly bloomChangedChannelCount?: number;
+      readonly ssaoMaxChannelDelta?: number;
+      readonly ssaoChangedChannelCount?: number;
+      readonly ssaoEffectChangedChannelCount?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -39,7 +42,7 @@ async function run(): Promise<void> {
       antialias: false,
       preserveDrawingBuffer: true
     });
-    const source = device.createRenderTarget({ width, height, label: "native-outline-pixel-source", format: "rgba8", depth: false });
+    const source = device.createRenderTarget({ width, height, label: "native-outline-pixel-source", format: "rgba8", depth: "texture" });
     const output = device.createRenderTarget({ width, height, label: "native-outline-pixel-output", format: "rgba8", depth: false });
     if (!device.writeRenderTargetPixels || !device.presentLdrPostprocess) {
       throw new Error("WebGL2 native LDR presentation capabilities are unavailable.");
@@ -65,6 +68,27 @@ async function run(): Promise<void> {
     const actualBloom = device.readPixels(0, 0, width, height);
     const bloomComparison = comparePixels(actualBloom, expectedBloom);
 
+    const depth = createDepthFixture(width, height);
+    uploadDepthFixture(
+      canvas,
+      (source as unknown as { readonly depthTextureHandle: WebGLTexture }).depthTextureHandle,
+      depth
+    );
+    const ssaoOptions = { radius: 2, intensity: 0.7, bias: 0.01 };
+    const expectedSsao = ssaoPixels(sourcePixels, width, height, {
+      ...ssaoOptions,
+      depth: createDepthTextureBinding({ label: "native-ssao-depth-fixture", width, height, data: depth })
+    }).pixels;
+    device.writeRenderTargetPixels(source, sourcePixels);
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "ssao", options: ssaoOptions }],
+      outputTarget: output
+    });
+    device.setRenderTarget(output);
+    const actualSsao = device.readPixels(0, 0, width, height);
+    const ssaoComparison = comparePixels(actualSsao, expectedSsao);
+    const ssaoEffect = comparePixels(expectedSsao, sourcePixels);
+
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
       width,
@@ -73,6 +97,9 @@ async function run(): Promise<void> {
       changedChannelCount: outlineComparison.changedChannelCount,
       bloomMaxChannelDelta: bloomComparison.maxChannelDelta,
       bloomChangedChannelCount: bloomComparison.changedChannelCount,
+      ssaoMaxChannelDelta: ssaoComparison.maxChannelDelta,
+      ssaoChangedChannelCount: ssaoComparison.changedChannelCount,
+      ssaoEffectChangedChannelCount: ssaoEffect.changedChannelCount,
       gpu: [...actual],
       cpu: [...expected]
     };
@@ -129,4 +156,35 @@ function comparePixels(actual: Uint8Array, expected: Uint8Array): {
     if (delta !== 0) changedChannelCount += 1;
   }
   return { maxChannelDelta, changedChannelCount };
+}
+
+function createDepthFixture(width: number, height: number): Float32Array {
+  const depth = new Float32Array(width * height);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      depth[y * width + x] = x >= 3 && x <= 5 && y >= 2 && y <= 4 ? 0.72 : 0.22;
+    }
+  }
+  return depth;
+}
+
+function uploadDepthFixture(canvas: HTMLCanvasElement, texture: WebGLTexture, depth: Float32Array): void {
+  const gl = canvas.getContext("webgl2");
+  if (!gl) throw new Error("WebGL2 context unavailable for depth fixture upload.");
+  const encoded = new Uint32Array(depth.length);
+  for (let index = 0; index < depth.length; index += 1) {
+    encoded[index] = Math.round((depth[index] ?? 1) * 0xffffffff);
+  }
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texSubImage2D(
+    gl.TEXTURE_2D,
+    0,
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+    gl.DEPTH_COMPONENT,
+    gl.UNSIGNED_INT,
+    encoded
+  );
 }

@@ -56,7 +56,7 @@ export interface RenderTarget extends DisposableResource {
   readonly depthTexture?: Texture;
 }
 
-export type LdrPostprocessPassName = "bloom" | "tone-mapping" | "color-grade" | "outline" | "fxaa";
+export type LdrPostprocessPassName = "bloom" | "tone-mapping" | "color-grade" | "ssao" | "outline" | "fxaa";
 
 export interface LdrPostprocessPassDescriptor {
   readonly name: LdrPostprocessPassName;
