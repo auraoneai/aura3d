@@ -242,7 +242,7 @@ test("collision filters and sensors emit bridgeable events without physical reso
 
 test("contact friction damps tangential sliding while preserving deterministic support", () => {
   const run = () => {
-    const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, enableSleeping: false, backend: "aura-js" });
+    const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 6, enableSleeping: false, backend: "aura-js" });
     const box = world.createRigidBody({ position: [0, 0, 0], velocity: [4, 0, 0], friction: 0.8 });
     world.createCollider(box, { shape: Shape.box(0.5, 0.5, 0.5) });
     const floor = world.createRigidBody({ type: "static", position: [0, -0.75, 0], friction: 0.8 });
@@ -277,7 +277,7 @@ test("collider materials drive restitution and friction during contact resolutio
   assert.equal(Number(ball.velocity[1].toFixed(6)), 2);
 
   const slide = (friction: number) => {
-    const world = new PhysicsWorld({ gravity: [0, 0, 0], solverIterations: 6, enableSleeping: false, backend: "aura-js" });
+    const world = new PhysicsWorld({ gravity: [0, -9.81, 0], solverIterations: 6, enableSleeping: false, backend: "aura-js" });
     const box = world.createRigidBody({ position: [0, 0, 0], velocity: [4, 0, 0], friction: 0 });
     world.createCollider(box, { shape: Shape.box(0.5, 0.5, 0.5), material: { friction } });
     const ground = world.createRigidBody({ type: "static", position: [0, -0.75, 0], friction: 0 });

@@ -72,6 +72,11 @@ export type PhysicsBackendSelection = {
   readonly continuousCollision: PhysicsContinuousCollisionSelection;
 };
 
+type ContactImpulseState = {
+  normal: number;
+  tangent: Vec3;
+};
+
 export type PhysicsStepStats = {
   readonly steps: number;
   readonly bodies: number;
@@ -271,10 +276,11 @@ export class PhysicsWorld {
       constraint.solve();
     }
     let contacts: Contact[] = [];
+    const contactImpulses = new Map<string, ContactImpulseState>();
     for (let i = 0; i < this.solverIterations; i += 1) {
       contacts = this.detectContacts();
       for (const contact of contacts) {
-        this.resolveContact(contact);
+        this.resolveContact(contact, contactImpulses);
       }
       for (const constraint of this.constraintsList) {
         constraint.solve();
@@ -438,7 +444,7 @@ export class PhysicsWorld {
     return pairs;
   }
 
-  private resolveContact(contact: Contact): void {
+  private resolveContact(contact: Contact, contactImpulses: Map<string, ContactImpulseState>): void {
     if (contact.sensor) {
       return;
     }
@@ -463,9 +469,12 @@ export class PhysicsWorld {
     const materialA = this.effectiveMaterial(bodyA, contact.colliderA);
     const materialB = this.effectiveMaterial(bodyB, contact.colliderB);
     const restitution = Math.max(materialA.restitution, materialB.restitution);
+    const pairKey = `${contact.colliderA}:${contact.colliderB}`;
+    const impulseState = contactImpulses.get(pairKey) ?? { normal: 0, tangent: [0, 0, 0] };
     let normalImpulseMagnitude = 0;
     if (velocityAlongNormal <= 0) {
       normalImpulseMagnitude = -(1 + restitution) * velocityAlongNormal / invMassSum;
+      impulseState.normal += normalImpulseMagnitude;
       this.applyImpulsePair(bodyA, bodyB, scaleVec3(contact.normal, normalImpulseMagnitude));
     }
     const updatedRelativeVelocity = subVec3(bodyB.velocity, bodyA.velocity);
@@ -473,15 +482,25 @@ export class PhysicsWorld {
     const tangentVelocity = subVec3(updatedRelativeVelocity, scaleVec3(contact.normal, updatedNormalVelocity));
     const tangentSpeed = Math.hypot(tangentVelocity[0], tangentVelocity[1], tangentVelocity[2]);
     if (tangentSpeed > 1e-9) {
-      const tangent = scaleVec3(tangentVelocity, 1 / tangentSpeed);
       const friction = Math.sqrt(Math.max(0, materialA.friction) * Math.max(0, materialB.friction));
-      const targetMagnitude = -dotVec3(updatedRelativeVelocity, tangent) / invMassSum;
-      const maxFriction = friction * (Math.abs(normalImpulseMagnitude) + contact.penetration);
-      const frictionMagnitude = Math.max(-maxFriction, Math.min(maxFriction, targetMagnitude));
-      if (frictionMagnitude !== 0) {
-        this.applyImpulsePair(bodyA, bodyB, scaleVec3(tangent, frictionMagnitude));
+      const targetImpulse = scaleVec3(tangentVelocity, -1 / invMassSum);
+      const proposedTangent: Vec3 = [
+        impulseState.tangent[0] + targetImpulse[0],
+        impulseState.tangent[1] + targetImpulse[1],
+        impulseState.tangent[2] + targetImpulse[2]
+      ];
+      const proposedMagnitude = lengthVec3(proposedTangent);
+      const maxFriction = friction * impulseState.normal;
+      const accumulatedTangent = proposedMagnitude > maxFriction && proposedMagnitude > 0
+        ? scaleVec3(proposedTangent, maxFriction / proposedMagnitude)
+        : proposedTangent;
+      const frictionImpulse = subVec3(accumulatedTangent, impulseState.tangent);
+      impulseState.tangent = accumulatedTangent;
+      if (lengthVec3(frictionImpulse) > 0) {
+        this.applyImpulsePair(bodyA, bodyB, frictionImpulse);
       }
     }
+    contactImpulses.set(pairKey, impulseState);
   }
 
   private effectiveMaterial(body: RigidBody, colliderId: number): { readonly restitution: number; readonly friction: number } {
