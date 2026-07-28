@@ -7,8 +7,13 @@ describe("renderer known limits", () => {
 
     expect(knownLimits).toContain("Renderer scene frustum culling is implemented");
     expect(knownLimits).toContain("not a broad large-scene performance claim");
-    expect(knownLimits).toContain("HDR environment map input");
-    expect(knownLimits).toContain("physically complete image-based lighting");
+    expect(knownLimits).toContain("GGX PMREM, RGBE HDR file loading");
+    expect(knownLimits).toContain(
+      "None of those package-level proofs automatically establishes root `createAuraApp` support",
+    );
+    expect(knownLimits).toContain(
+      "OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported",
+    );
     expect(knownLimits).toContain("one primary UV path for glTF render resources");
     expect(knownLimits).toContain("bounded KTX2/Basis transcoding coverage");
     expect(knownLimits).toContain("GPU capability-driven format selection");

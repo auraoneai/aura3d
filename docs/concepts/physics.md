@@ -1,6 +1,6 @@
 # Physics
 
-Version: 1.0.5
+Version: 1.4.5
 
 Aura3D physics code lives in `packages/physics` and is used by routes and workflow examples.
 

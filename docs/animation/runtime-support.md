@@ -85,6 +85,13 @@ Those claims require browser evidence:
 If a named clip exists only as metadata or a pose-baked fallback, label it as a
 source-level fallback until rendered pixels prove mesh deformation.
 
+Named root evidence currently includes
+`tests/browser/createAuraApp-animation-bridge-contract.spec.ts` for one typed
+skinned GLB pose change and `tests/browser/createAuraApp-morph-targets.spec.ts`
+for one typed morph-target asset. Those proofs are asset- and route-specific;
+they do not establish generic compatibility with arbitrary rigs or blendshape
+layouts.
+
 ## Package-Level Capabilities
 
 `@aura3d/animation` and `@aura3d/rendering` contain additional primitives and

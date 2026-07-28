@@ -71,7 +71,7 @@ and warnings without copying the asset into `public/aura-assets`.
 ## Strict release validation
 
 Use the strict validation command before claiming a template, showcase, or
-launch route uses real production assets:
+launch route uses release-validated typed assets:
 
 ```bash
 npx @aura3d/cli@latest assets validate --source --release

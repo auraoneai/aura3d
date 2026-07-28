@@ -1,6 +1,6 @@
 # Animation
 
-Version: 1.0.5
+Version: 1.4.5
 
 Aura3D animation is a runtime system for clips, tracks, mixers, layers, skeletal data, morph weights, root motion, IK, and motion diagnostics.
 
@@ -35,4 +35,4 @@ The animation boundary is `@aura3d/engine/animation` for runtime primitives and 
 
 Animation support is runtime-focused. Broad retargeting, DCC authoring, production character pipelines, and every imported rig convention need dedicated fixtures, browser evidence, and documentation before being treated as supported.
 
-Explicit non-goals (NOT provided as production systems; see `docs/project/known-limits.md`): motion matching is a deterministic fixture, not a real engine; inertialization is not implemented; ragdoll is a physics-sandbox preset with no controller, joint limits, or animation-to-physics blend; full-body IK / FABRIK / CCD are not implemented (only two-bone IK); production foot-locking, spring-bone, cloth, and hair simulation are fixtures; Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is not a goal.
+Explicit limits (see `docs/project/known-limits.md`): motion matching is a deterministic fixture, not a production search/runtime system; critically damped inertialized transitions are implemented at package level, but they do not establish broad root character-pipeline support; ragdoll is a physics-sandbox preset with no controller, joint limits, or animation-to-physics blend; full-body IK / FABRIK / CCD IK are not implemented (only two-bone and bounded foot-IK systems); production cloth and hair simulation remain fixtures; Unity Mecanim / Unity Animation Rigging / Unreal Control Rig parity is not a goal.

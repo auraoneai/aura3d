@@ -1,8 +1,8 @@
 # Believable-Motion runtimes (1.3)
 
-The 1.3 track adds four motion-quality runtimes to `@aura3d/animation` + `@aura3d/rendering`, plus a
+The 1.3 track adds motion-quality runtimes to `@aura3d/animation` + `@aura3d/rendering`, plus a
 morph-influence API in `@aura3d/engine`. Each is pure/deterministic where it can be, gate-backed
-(`pnpm animation-engine:believable-motion`), and wired live into the Aura Clash arena.
+(`pnpm animation-engine:believable-motion`), and integrated into Aura Clash source/tests.
 
 Each runtime is a real, gate-backed engine feature. Foot IK is per-limb two-bone; spring bones are
 secondary dynamics. See `docs/project/known-limits.md` for the precise capability boundaries.
@@ -98,9 +98,11 @@ the WebGL2 `u_jointMatrices[96]` path — the WGSL `DrawUniforms` carries a 96-e
 the device skins the full palette. Real-device WGSL execution remains evidence-bound; the emulated
 rasterizer covers correctness in CI.
 
-## Aura Clash showcase
+## Aura Clash integration
 
-The deployed Aura Clash arena exercises these live: critically-damped move transitions, foot-IK
+The Aura Clash arena integration exercises these in source/tests: critically-damped move transitions, foot-IK
 foot-lock with footsteps, spring body-sway, and authored clip-event hit/footstep/VFX frames — all
 presentation-layer, so the deterministic combat replay checksum is unchanged. The fighter rigs carry
 no facial blendshapes, so morph/viseme is showcased by Animation Studio and the morph proofs instead.
+This package integration is not a flagship, deployment, or public-ready claim; the route must still
+pass its current gameplay, visual, asset, audio, performance, deploy, and documentation gates.

@@ -984,13 +984,20 @@ exists.
       erase oriented/angular gaps; and Turbo/Skyline public-ready wording is lowered while
       current racing visual QA is non-passing. The two `llms.txt` copies are byte-identical.
       Agent-doc, codeblock, claims, and docs-site checks pass.
-- [ ] **4.2** Rendering / API: `docs/rendering/postprocess.md`, `environment-lighting.md`,
+- [x] **4.2** Rendering / API: `docs/rendering/postprocess.md`, `environment-lighting.md`,
       `skinning-and-morphs.md`, `material-matrix.md`, `renderer-lifecycle.md`,
       `webgpu-fallback.md`, `docs/concepts/rendering.md`, `docs/concepts/physics.md`,
       `docs/concepts/animation.md`, `docs/physics/runtime.md`,
       `docs/animation/runtime-support.md`, `believable-motion.md`, `docs/api/public-api.md`,
       `docs/api/game-runtime.md`, `docs/api/app-api.md`, `docs/api/assets.md`,
       `docs/project/public-api-contract.md`
+      Audited every named file and regenerated the public API contract. Rendering-internal
+      RGBE/PMREM and bounded transmission proof no longer reads as root support; WebGPU
+      remains route-, backend-, and device-evidence-bound; animation names the exact root
+      bridge/morph browser proofs while keeping those claims asset-specific; inertialized
+      transitions and lower-level physics are described at package scope. The focused docs
+      tests, API-doc verifier, full build/public-export audit, agent-doc check, codeblock
+      check, and claim registry all pass.
 - [ ] **4.3** Status / release: `docs/project/current-state.md` — it fixes 7/7 public
       route-library count, 2 internal diagnostics, 2 game-layer harnesses, 0
       prototype-blocked; **do not silently break those numbers**. Plus `CHANGELOG.md`,

@@ -1,6 +1,6 @@
 # Renderer Lifecycle
 
-Version: 1.0.5
+Version: 1.4.5
 
 Renderer lifecycle behavior is implemented by renderer/device classes, explicit disposal paths, and resource accounting tests.
 
@@ -30,3 +30,8 @@ pnpm exec vitest run tests/unit/rendering/resource-lifetime.test.ts tests/unit/r
 
 ## Boundaries
 
+Renderer/device lifecycle tests prove package resource ownership and cleanup.
+They do not prove root `createAuraApp` cleanup, browser-wide leak freedom, or
+comparative performance unless the claimed route and repeated lifecycle test
+exercise that exact public path. A successful disposal counter is not evidence
+that Aura3D matches another engine's memory or frame-time behavior.

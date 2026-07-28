@@ -14,9 +14,9 @@ claim applies to.
 | Double-sided materials | Source/import metadata at root | Package support exists | Claim only if the tested route shows backface behavior. |
 | Clearcoat | Material spec/inspector intent at root; root contract measured no clearcoat-specific visible delta | Package support exists | Do not claim rendered clearcoat from root until pixel evidence proves it. |
 | Sheen | Material spec/inspector intent at root | Package support exists | Treat as partial unless screenshot-proven. |
-| Transmission / glass / volume | Partial intent at root | Package support exists | Do not claim real refraction/transmission through root without pixels. |
+| Transmission / glass / volume | Partial intent at root | Bounded scene-color refraction has production-runtime/WebGL2 pixel proof | Do not claim real refraction/transmission through root without root-only pixels; do not extend the package proof to physical caustics or recursive/off-screen refraction. |
 | Variants | Asset/material metadata and route logic | Package/workflow support | Claim selected variant behavior only when tested. |
-| HDR/IBL / PMREM | Requested/source diagnostics at root | Package support exists | Root claim requires browser evidence and diagnostics. |
+| HDR/IBL / PMREM | Requested/source diagnostics at root | RGBE file loading and bounded GGX PMREM have production-runtime/rendering proof | Root claim requires root-only browser evidence and diagnostics. |
 | Shadow maps / high-quality shadows | Basic/contact/source cues at root | Package support exists | Root production-shadow claims require pixel proof. |
 
 ## Current Rule
