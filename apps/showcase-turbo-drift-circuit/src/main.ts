@@ -2,6 +2,7 @@ import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
+import { createTurboOpponentAi } from "./opponent-ai";
 
 const trackTopology = gameGeometryContract.topology;
 const routeGeometry = gameGeometryContract.route;
@@ -61,9 +62,10 @@ const racingState = game.racing({
   steerRate: 0.62
 });
 
-const ghostState = game.racing({
+const opponentStartProgress = 0.12;
+const opponentState = game.racing({
   route,
-  startProgress: 0.28,
+  startProgress: opponentStartProgress,
   checkpointRadius: 0.1,
   lapsToWin: 3,
   paceMultiplier: gameplayPaceMultiplier,
@@ -71,11 +73,18 @@ const ghostState = game.racing({
   drag: 0.28,
   steerRate: 0.62
 });
+const opponentAi = createTurboOpponentAi(opponentState, {
+  startProgress: opponentStartProgress,
+  maxSpeed: gameplayMaxSpeed,
+  cruiseRatio: 0.79,
+  catchUpStrength: 0.22
+});
 const physicsProof = createShowcaseCannonPhysicsProof("turbo-drift-circuit");
 
 let raceSnapshot = racingState.snapshot();
+let opponentRaceStarted = false;
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
-const initialGhostPose = racingScene.toScenePose(ghostState.placeAtProgress(0.28), 0.25);
+const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), 0.25);
 const racingCamera = game.racingCameraRig({
   sceneBinding: racingScene,
   focus: raceSnapshot,
@@ -125,19 +134,21 @@ const app = createAuraApp("#app", {
       tags: ["player", "vehicle", "typed-primary-asset"]
     })))
     .add(model(assets.showcaseKenneyRaceCarRed, {
-      name: "racing-ghost-car",
+      name: "racing-opponent-car",
       role: "setDressing",
       scaleMode: "fit",
-      targetMaxDimension: 0.46
-    }).position(...initialGhostPose.position).rotate(...initialGhostPose.rotation).runtime(game.runtimeNode("racing-ghost-car", {
-      tags: ["ghost", "vehicle", "typed-secondary-asset"]
+      targetMaxDimension: 0.64
+    }).position(...initialOpponentPose.position).rotate(...initialOpponentPose.rotation).runtime(game.runtimeNode("racing-opponent-car", {
+      tags: ["opponent", "vehicle", "typed-secondary-asset", "route-local-ai"]
     })))
+    .add(lights.directional({ name: "circuit cool moon key", color: "#b9f7ff", intensity: 0.42 }).position(-3, 5, 2))
+    .add(lights.point({ name: "pit lane magenta spill", color: "#ff547c", intensity: 0.48 }).position(2.4, 0.8, -1.8))
     .add(lights.studio({ intensity: 1.45 }))
     .camera(racingCamera)
 });
 
 const playerCar = app.nodes.require("racing-player-car");
-const ghostCar = app.nodes.require("racing-ghost-car");
+const opponentCar = app.nodes.require("racing-opponent-car");
 Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
   value: {
     category: "racing",
@@ -203,11 +214,12 @@ const mountedEvidence = {
   status: "ready",
   controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyR"] },
   systems: { input: "game.input", simulation: "game.racing", physics: "game.collisionWorld:cannon-es", geometry: "certified-racing-topology", camera: "game.racingCameraRig" },
-  claimBoundary: "Bounded asset-topology racing presentation with route-selected cannon-es collision fidelity proof; no full vehicle dynamics, AI-opponent, or automatic GLB-to-game claim.",
+  claimBoundary: "Bounded asset-topology racing presentation with route-selected cannon-es collision fidelity proof and a route-local deterministic opponent controller; no advanced vehicle dynamics, reusable racing AI, or automatic GLB-to-game claim.",
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,
   checkpoint: raceSnapshot.checkpoint,
+  opponent: opponentAi.evidence(raceSnapshot.progress),
   raceState: initialRaceStateEvidence,
   kitContractProof: {
     throttleIncreasesSpeed: false,
@@ -252,6 +264,7 @@ const mountedEvidence = {
     steeringChangesHeading: false,
     resetWorks: false,
     checkpointProgression: false,
+    opponentMovesIndependently: false,
     authoredLapSeconds,
     routeAlignedToVisibleTrack: true,
     noDebugLocatorDisk: true,
@@ -276,6 +289,8 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("reset")) {
     raceSnapshot = racingState.reset(0);
+    opponentRaceStarted = false;
+    const resetOpponent = opponentAi.reset();
     mountedEvidence.gameplay.resetWorks = true;
     mountedEvidence.kitContractProof.resetRestoresStart = true;
     mountedEvidence.speed = raceSnapshot.speed;
@@ -286,12 +301,17 @@ app.onFrame(({ dt }) => {
     mountedEvidence.gameplay.carAlignedToVisibleRoad = mountedEvidence.raceState.roadAlignment.onRoad;
     mountedEvidence.diagnostics = app.diagnostics();
     const resetPose = racingScene.toScenePose(raceSnapshot);
+    const resetOpponentPose = racingScene.toScenePose(resetOpponent, 0.25);
     playerCar.setPosition(...resetPose.position);
     playerCar.setRotation(...resetPose.rotation);
+    opponentCar.setPosition(...resetOpponentPose.position);
+    opponentCar.setRotation(...resetOpponentPose.rotation);
+    mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
     return;
   }
   const previous = raceSnapshot;
+  opponentRaceStarted ||= input.held("throttle") || input.held("brake") || Math.abs(input.axis("steer")) > 0.01;
   raceSnapshot = racingState.step(step, {
     throttle: input.held("throttle"),
     brake: input.held("brake"),
@@ -300,21 +320,27 @@ app.onFrame(({ dt }) => {
   const playerPose = racingScene.toScenePose(raceSnapshot);
   playerCar.setPosition(...playerPose.position);
   playerCar.setRotation(...playerPose.rotation);
-  const ghost = ghostState.placeAtProgress((raceSnapshot.progress + 0.22) % 1);
-  const ghostPose = racingScene.toScenePose(ghost, 0.25);
-  ghostCar.setPosition(...ghostPose.position);
-  ghostCar.setRotation(...ghostPose.rotation);
+  const previousOpponent = opponentAi.snapshot();
+  const opponent = opponentRaceStarted
+    ? opponentAi.step(step, raceSnapshot.progress)
+    : previousOpponent;
+  const opponentPose = racingScene.toScenePose(opponent, 0.25);
+  opponentCar.setPosition(...opponentPose.position);
+  opponentCar.setRotation(...opponentPose.rotation);
   mountedEvidence.status = raceSnapshot.status;
   mountedEvidence.frameCount = raceSnapshot.frame;
   mountedEvidence.speed = raceSnapshot.speed;
   mountedEvidence.lap = raceSnapshot.lap;
   mountedEvidence.checkpoint = raceSnapshot.checkpoint;
+  mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
   mountedEvidence.raceState = raceStateEvidence(previous.progress);
   mountedEvidence.raceDesign.carAlignedToVisibleRoad = mountedEvidence.raceState.roadAlignment.onRoad;
   mountedEvidence.gameplay.carAlignedToVisibleRoad = mountedEvidence.raceState.roadAlignment.onRoad;
   mountedEvidence.gameplay.throttleChangesSpeed ||= Math.abs(raceSnapshot.speed) > Math.abs(previous.speed) + 0.001;
   mountedEvidence.gameplay.steeringChangesHeading ||= Math.abs(raceSnapshot.heading - previous.heading) > 0.001;
   mountedEvidence.gameplay.checkpointProgression ||= raceSnapshot.checkpoint !== previous.checkpoint || raceSnapshot.lap !== previous.lap;
+  mountedEvidence.gameplay.opponentMovesIndependently ||= opponent.progress !== previousOpponent.progress &&
+    mountedEvidence.opponent.decisionCount > 0;
   mountedEvidence.kitContractProof.throttleIncreasesSpeed ||= mountedEvidence.gameplay.throttleChangesSpeed;
   mountedEvidence.kitContractProof.steeringChangesHeading ||= mountedEvidence.gameplay.steeringChangesHeading;
   mountedEvidence.kitContractProof.checkpointAdvances ||= mountedEvidence.gameplay.checkpointProgression || routeProof.hasMeaningfulTopology;

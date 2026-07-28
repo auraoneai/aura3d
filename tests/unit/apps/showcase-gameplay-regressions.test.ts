@@ -8,6 +8,7 @@ import {
 } from "../../../packages/engine/src/agent-api/GameGenreKits";
 import { gameGeometryContract as skylineGeometry } from "../../../apps/showcase-skyline-runner/src/generated/game-geometry";
 import { gameGeometryContract as turboGeometry } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
+import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
 
 describe("public showcase gameplay regressions", () => {
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
@@ -112,6 +113,53 @@ describe("public showcase gameplay regressions", () => {
     const source = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
     expect(source).toContain("const gameplayPaceMultiplier = 4");
     expect(source).toContain("Speed · km/h");
+  });
+
+  it("drives the Turbo opponent from its own racing state instead of a player-progress offset", () => {
+    let snapshot = {
+      progress: 0.12,
+      speed: 0,
+      trackOffset: 0.08,
+      lap: 1,
+      checkpoint: 0,
+      status: "running",
+      frame: 0
+    };
+    const inputs: TurboOpponentInput[] = [];
+    const state = {
+      snapshot: () => snapshot,
+      step: (dt: number, input: TurboOpponentInput) => {
+        inputs.push(input);
+        const speed = Math.max(0, snapshot.speed + (input.throttle ? 2.4 * dt : 0) - (input.brake ? 3 * dt : 0));
+        snapshot = {
+          ...snapshot,
+          speed,
+          trackOffset: snapshot.trackOffset + input.steer * dt,
+          progress: (snapshot.progress + speed * dt * 0.08) % 1,
+          frame: snapshot.frame + 1
+        };
+        return snapshot;
+      },
+      reset: (progress = 0) => {
+        snapshot = { ...snapshot, progress, speed: 0, frame: 0 };
+        return snapshot;
+      }
+    };
+    const opponent = createTurboOpponentAi(state, { startProgress: 0.12, maxSpeed: 4.4 });
+
+    for (let frame = 0; frame < 180; frame += 1) opponent.step(1 / 60, 0.02);
+    const evidence = opponent.evidence(0.02);
+
+    expect(opponent.snapshot().progress).not.toBeCloseTo(0.24, 3);
+    expect(opponent.snapshot().progress).toBeGreaterThan(0.12);
+    expect(inputs.some((input) => input.throttle)).toBe(true);
+    expect(inputs.some((input) => Math.abs(input.steer) > 0.01)).toBe(true);
+    expect(evidence.independentFromPlayerPlacement).toBe(true);
+    expect(evidence.decisionCount).toBeGreaterThan(0);
+    expect(evidence.recentDecisions.length).toBeGreaterThan(0);
+
+    expect(opponent.reset().progress).toBeCloseTo(0.12, 6);
+    expect(opponent.snapshot().speed).toBe(0);
   });
 });
 

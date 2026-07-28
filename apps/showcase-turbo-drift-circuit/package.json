@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura3D showcase racing time-trial with typed race car asset, deterministic ghost proof, runtime HUD, and drift/boost gameplay.",
+  "description": "Aura3D showcase circuit race with a certified typed car/track pair, deterministic route-local opponent AI, runtime HUD, and checkpoint/lap gameplay.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",

@@ -279,14 +279,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-        "screenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
+        "screenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
         "geometryEvidence": {
           "category": "racing",
           "kind": "racing-track-topology",
           "source": "asset-mesh-extracted",
           "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
+          "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
           "assets": [
             {
               "id": "showcaseKenneyRaceCarRed",

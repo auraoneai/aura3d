@@ -43,6 +43,14 @@ interface TurboEvidence {
   readonly speed: number;
   readonly lap: number;
   readonly checkpoint: number;
+  readonly opponent?: {
+    readonly controller: string;
+    readonly independentFromPlayerPlacement: boolean;
+    readonly decisionCount: number;
+    readonly progress: number;
+    readonly playerProgress: number;
+    readonly separation: number;
+  };
   readonly raceState?: {
     readonly x: number;
     readonly z: number;
@@ -199,6 +207,10 @@ test.describe("showcase gameplay proof", () => {
     check(after.raceDesign?.carAlignedToVisibleRoad === true, blockers, "racing car is not proven aligned to the visible road surface");
     check(after.raceState?.roadAlignment?.onRoad === true, blockers, "racing car is not proven on retained road topology after input");
     check((after.raceState?.roadAlignment?.normalizedOffset ?? Number.POSITIVE_INFINITY) <= 1, blockers, "racing car drifted outside the retained road width");
+    check(after.opponent?.controller === "route-local-deterministic-opponent-ai", blockers, "opponent controller evidence is missing");
+    check(after.opponent?.independentFromPlayerPlacement === true, blockers, "opponent is still derived from player placement");
+    check((after.opponent?.decisionCount ?? 0) > 0, blockers, "opponent did not make autonomous pacing decisions");
+    check((after.opponent?.progress ?? 0) !== ((after.raceState?.progress ?? 0) + 0.22) % 1, blockers, "opponent retained the old player-progress offset behavior");
     checkPhysicsBackend(after.physics, blockers, "turbo drift");
     writeRouteReport("showcase-turbo-drift-circuit", blockers, errors, beforePng, afterPng, { before, after, reset });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
