@@ -26,7 +26,7 @@ export type EnvironmentCapabilityId =
   | "deep-space-box"
   | "clean-void-backdrop";
 
-export type EnvironmentCapabilityStatus = "implemented" | "partial" | "helper" | "missing";
+export type EnvironmentCapabilityStatus = "implemented" | "partial" | "helper" | "missing" | "unsupported";
 
 export interface EnvironmentCapability {
   readonly id: EnvironmentCapabilityId;
@@ -44,6 +44,7 @@ export interface EnvironmentCapabilityReport {
   readonly partialCount: number;
   readonly helperCount: number;
   readonly missingCount: number;
+  readonly unsupportedCount: number;
   readonly productionReadyCount: number;
   readonly nonProductionReadyCount: number;
   readonly productionReady: readonly EnvironmentCapabilityId[];
@@ -239,7 +240,15 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "generateCubemapPMREMResources creates GGX-prefiltered cubemap mip levels.",
     "createCubemapPMREMShaderContract documents sampler-cube material bindings."
   ], "Current PMREM audit is explicitly bounded and not Three.js parity.", "Prove material roughness response against stable HDR route screenshots."),
-  capability("atmospheric-scattering", "Atmospheric Scattering Shader", "missing", false, [], "No reusable Rayleigh/Mie sky shader is exposed.", "Implement physical sky shader or keep scattering out of accepted claims."),
+  capability(
+    "atmospheric-scattering",
+    "Atmospheric Scattering Shader",
+    "unsupported",
+    false,
+    [],
+    "Documented unsupported: Aura3D exposes no reusable Rayleigh/Mie sky shader. The procedural sky dome is color-gradient geometry and must not be described as physical atmospheric scattering.",
+    "Keep physical atmosphere, Rayleigh/Mie scattering, and sun-driven in-scattering out of accepted claims."
+  ),
   capability("analytical-studio-box", "Analytical Studio Box", "helper", true, [
     "createEnvironmentStage(\"indoor-studio\") returns reusable softbox panels and cove geometry."
   ], "Studio helper is procedural geometry, not an infinite analytical lighting renderer.", "Connect reusable stage helper to accepted product/material routes and visual tests."),
@@ -306,6 +315,7 @@ export function createEnvironmentCapabilityReport(): EnvironmentCapabilityReport
     partialCount: capabilities.filter((item) => item.status === "partial").length,
     helperCount: capabilities.filter((item) => item.status === "helper").length,
     missingCount: capabilities.filter((item) => item.status === "missing").length,
+    unsupportedCount: capabilities.filter((item) => item.status === "unsupported").length,
     productionReadyCount: productionReady.length,
     nonProductionReadyCount: backlog.length,
     productionReady,

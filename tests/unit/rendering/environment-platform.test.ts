@@ -23,7 +23,8 @@ describe("environment platform capability inventory", () => {
     expect(report.implementedCount).toBe(0);
     expect(report.partialCount).toBe(6);
     expect(report.helperCount).toBe(11);
-    expect(report.missingCount).toBe(3);
+    expect(report.missingCount).toBe(2);
+    expect(report.unsupportedCount).toBe(1);
     expect(report.productionReadyCount).toBe(0);
     expect(report.nonProductionReadyCount).toBe(20);
     expect(report.productionReady).toEqual([]);
@@ -55,6 +56,9 @@ describe("environment platform capability inventory", () => {
   it("does not mask missing production systems as implemented helpers", () => {
     const byId = new Map(listEnvironmentCapabilities().map((capability) => [capability.id, capability]));
 
+    expect(byId.get("atmospheric-scattering")?.status).toBe("unsupported");
+    expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
+    expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);
     expect(byId.get("exr-parser")?.status).toBe("missing");
     expect(byId.get("cube-camera-reflections")?.status).toBe("missing");
     expect(byId.get("linear-fog")?.status).toBe("partial");
