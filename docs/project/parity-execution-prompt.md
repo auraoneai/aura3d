@@ -1043,7 +1043,12 @@ exists.
       backends. Marketing truth, link audit, the full marketing/showcase build,
       responsive docs-site browser checks, and the claim registry all pass. No
       production deployment was made by this source-audit task.
-- [ ] **4.6** `docs/comparisons/` and `docs/benchmarks/` only if a real benchmark exists
+- [x] **4.6** `docs/comparisons/` and `docs/benchmarks/` only if a real benchmark exists
+      Not applicable: the current comparative performance report is `pass:
+      false` with all six required evidence inputs missing, the retained
+      comparative verdicts remain non-passing, and the 54/54 inventory is not a
+      performance measurement. Per the task condition, no comparison or
+      benchmark prose was raised or refreshed.
 - [ ] **4.7** `pnpm check:agent-docs && pnpm check:docs-codeblocks &&
       pnpm check:marketing-truth && pnpm check:marketing-links && pnpm verify:claims`
 - [ ] **4.8** Closing summary: every claim raised with its proof, every claim lowered with why
