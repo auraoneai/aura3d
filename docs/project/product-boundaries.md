@@ -37,8 +37,8 @@ Agents write normal TypeScript or JavaScript against public Aura3D APIs.
 - licensing decisions for user assets;
 - hidden provider-backed scene generation;
 - a server-side OpenAI, Anthropic, Gemini, or local-model proxy;
-- a default full production renderer through root `createAuraApp` until the
-  bridge is implemented and tested;
+- a guarantee that root `createAuraApp` defaults to every production-runtime
+  renderer capability; each bridged feature still needs root-only proof;
 - production game kits for every genre;
 - public-quality racing or platformer generation until retained game-geometry
   evidence proves asset-bound road topology or playable surfaces;
@@ -86,7 +86,12 @@ They are not public release candidates until they pass
 `docs/project/showcase-quality-gates.md` and
 `docs/project/showcase-visual-review.json`.
 
-Turbo Drift Circuit and Skyline Runner are bounded public presentation routes because the certified game-geometry, composition, gameplay, visual-QA, manual-review, and deploy chain currently passes. They are not evidence that arbitrary GLBs become production games. Racing Game Layer Proof and Platformer Game Layer Proof remain diagnostic-only routes.
+Turbo Drift Circuit and Skyline Runner have bounded certified game-geometry and
+gameplay evidence, but they are not currently public-ready claims: the retained
+racing visual-QA unit gate is non-passing, and Skyline's world-level release
+probe remains blocked in `Fixed-Needed-PRD.md`. They are not evidence that
+arbitrary GLBs become production games. Racing Game Layer Proof and Platformer
+Game Layer Proof remain diagnostic-only routes.
 
 ## Prompt Boundary
 

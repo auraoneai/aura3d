@@ -37,7 +37,9 @@
 - Do not submit primitive humanoid puppets, toy mini-golf, stray chart geometry,
   blown-out neon, washed material labs, bare product GLBs, or one-asset scenes
   with symbolic labels as production-quality benchmark answers.
-  works until the relevant finite build/test/check command passes.
+- Do not say a route, feature, or performance comparison works until the
+  relevant finite build/test/check command passes with all required evidence
+  inputs present.
 - Do not describe Aura3D as an AI model, asset store, or runtime for arbitrary
   generated code. Aura3D is a public TypeScript/JavaScript engine API, asset CLI,
   template system, diagnostics surface, and deployment checker.

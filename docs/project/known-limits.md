@@ -47,7 +47,7 @@ guide or README must include the narrower wording.
 - Public platformer routes require retained playable-surface evidence that
   binds the character, contact point, collision, checkpoint path, hazards,
   finish, camera, and visible world geometry.
-- Turbo Drift Circuit and Skyline Runner currently satisfy those contracts for their named certified asset pairs and retained evidence only; this does not generalize to arbitrary assets or production games.
+- Turbo Drift Circuit and Skyline Runner have bounded certified asset-pair and gameplay evidence, but current public-ready wording remains blocked while the retained racing visual-QA unit gate is non-passing. This does not generalize to arbitrary assets or production games.
 
 ## Asset Limits
 

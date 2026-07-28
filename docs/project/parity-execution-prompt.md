@@ -971,13 +971,19 @@ Note: `CHANGELOG.md`, `GoLiveCheckList.md`, `marketing/index.html`,
 Marketing was supposed to come last — re-verify those edits still match the evidence that
 exists.
 
-- [ ] **4.1** Claims and boundaries first, these gate everything else:
+- [x] **4.1** Claims and boundaries first, these gate everything else:
       `docs/agents/claims-and-boundaries.md`, `docs/project/known-limits.md`,
       `docs/project/claim-guidelines.md`, `docs/project/product-boundaries.md`,
       `docs/agents/rendering-proof-required.md`, `docs/agents/anti-hallucination-rules.md`,
       `docs/agents/no-hackjob-rules.md`, `docs/agents/game-example-standards.md`,
       `docs/agents/verification.md`, `llms.txt` + `public/llms.txt`,
       `.cursor/rules/aura3d.mdc`, `AGENTS.md`, `Fixed-Needed-PRD.md`
+      Audited every named file. Root, production-runtime, rendering, physics-package, game,
+      and performance scopes now remain distinct. Broad skinned/morph support stays blocked
+      while named root routes may cite their exact pixels; native physics additions do not
+      erase oriented/angular gaps; and Turbo/Skyline public-ready wording is lowered while
+      current racing visual QA is non-passing. The two `llms.txt` copies are byte-identical.
+      Agent-doc, codeblock, claims, and docs-site checks pass.
 - [ ] **4.2** Rendering / API: `docs/rendering/postprocess.md`, `environment-lighting.md`,
       `skinning-and-morphs.md`, `material-matrix.md`, `renderer-lifecycle.md`,
       `webgpu-fallback.md`, `docs/concepts/rendering.md`, `docs/concepts/physics.md`,

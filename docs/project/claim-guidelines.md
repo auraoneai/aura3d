@@ -86,8 +86,9 @@ Do not claim these until the named gates pass:
   `docs/project/library-gap-roadmap.md`.
 - "Public examples have full PBR, HDR/IBL, production shadows, or cinematic
   postprocess." Blocked unless exact route screenshots prove those pixels.
-- "Root examples support skinned GLB animation or morph targets." Blocked until
-  screenshot pairs prove pose/morph changes through public root imports.
+- "Root examples generically support skinned GLB animation or morph targets."
+  Blocked as a broad claim. A named route may make the narrower claim only when
+  root-only screenshot pairs prove pose/morph changes for its exact typed asset.
 - "Native WebGPU particles/rendering." Blocked unless adapter/backend,
   dispatch/render, fallback state, telemetry, and pixels are all verified.
 - "A showcase route is flagship quality." Blocked until
@@ -98,6 +99,9 @@ Do not claim these until the named gates pass:
 - "The asset catalog returns production-ready game art." Blocked. Catalog search
   finds candidates; release readiness requires validation, license review,
   visual review, and route evidence.
+- "Aura3D matches or exceeds Three.js performance." Blocked while the
+  comparative performance report has six missing evidence inputs; feature
+  inventory status and stale visual captures are not performance measurements.
 
 ## Allowed Product Wording Today
 

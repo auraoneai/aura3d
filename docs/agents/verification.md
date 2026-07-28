@@ -13,6 +13,8 @@ pnpm run check:deployment
 pnpm run check:docs-site
 pnpm run check:bundle-size
 pnpm run check:marketing-truth
+pnpm run check:docs-codeblocks
+pnpm run verify:claims
 ```
 
 Template-local gate:
@@ -47,3 +49,5 @@ Visual review:
   plus symbolic effects.
 - Do not use an in-repo scorer as release proof. Benchmark scoring must be done
   by a neutral human reviewer or opposite-vendor model.
+- Treat a report with missing evidence inputs as non-passing even if the report
+  generator command exits successfully.

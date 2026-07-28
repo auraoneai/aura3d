@@ -70,3 +70,8 @@ Do not use these as proof for public rendering claims:
 When evidence is partial, keep the claim partial. Do not upgrade a route to
 flagship, PBR, HD, HDR, WebGPU, skinned-animation, or production-quality wording
 until the pixels and diagnostics prove it.
+
+Do not infer performance parity from this visual evidence. Comparative
+performance wording additionally requires current like-for-like frame-time,
+draw-call, memory/lifecycle, and environment reports; an inventory match is not
+a benchmark.

@@ -60,6 +60,15 @@ proves the exact result:
   collision/gameplay kits;
 - generic physics/collision behavior not exported and tested from the root API.
 
+Lower-level `@aura3d/physics` proof is also path-specific. Its native backend
+has bounded adaptive CCD and accumulated Coulomb friction, but still lacks
+oriented box/convex/mesh narrow-phase and angular contact impulses. Do not turn
+package physics tests or a `cannon-es` route into a generic root collision claim.
+
+Performance claims require current comparative reports. A passing hand-authored
+feature inventory, stale visual capture, package benchmark, or missing-evidence
+performance report is not proof that Aura3D matches or exceeds another engine.
+
 ## Asset Boundary
 
 Do not invent assets. Use the Aura3D CLI so the route has durable provenance

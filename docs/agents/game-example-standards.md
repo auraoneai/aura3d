@@ -23,6 +23,8 @@ A public game example must prove:
   score, lap, checkpoint, line-clear, collection, or completion mechanic;
 - screenshots show first load, after input, mid-route, fail/reset when relevant,
   and finish/progression.
+- all current release, visual-QA, and deploy gates for that exact route pass;
+  historical retained evidence cannot override a failing current gate.
 
 ## Session Length
 

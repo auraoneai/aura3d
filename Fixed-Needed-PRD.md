@@ -6,6 +6,21 @@ Last recovery audit: 2026-06-20
 Scope: Aura3D engine/library gaps, showcase app integrity, and all Markdown/docs guidance that lets agents build weak or misleading examples.  
 Source: Six parallel audit passes over renderer/runtime, asset CLI, game runtime, showcase apps, docs boundaries, and PRD synthesis.
 
+## Claim Boundary Audit Update - 2026-07-27
+
+- Root, production-runtime, rendering-internal, CLI, template, prototype, and
+  roadmap scopes remain distinct; lower-level Phase 2B renderer/physics proof
+  does not broaden root `createAuraApp` claims.
+- Native `aura-js` now has bounded adaptive CCD and accumulated Coulomb
+  friction, but oriented narrow-phase and angular contact remain blocked.
+- Broad root skinned/morph wording remains blocked; only named typed-asset
+  routes with root-only pose/morph pixel proof may make the narrower claim.
+- Turbo Drift Circuit and Skyline Runner must not be called public-ready while
+  the current retained racing visual-QA unit gate is non-passing. Skyline also
+  retains its world-level release-probe blocker below.
+- Performance parity remains unclaimable while the comparative report is
+  missing all six required evidence inputs.
+
 ## Decision Summary
 
 The current problem is not only the individual showcase examples. The deeper issue is that the public agent-facing Aura3D path, especially root `@aura3d/engine` through `createAuraApp`, is narrower than the production renderer and the docs do not make that boundary impossible to miss.
