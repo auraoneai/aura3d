@@ -1029,12 +1029,20 @@ exists.
       catalog was corrected, the proper `check:examples` wrapper failed because
       the `hello-world-typed-asset` screenshot measured `cyanPixels: 0` where
       `>16` is required. No third visual/threshold variation was attempted.
-- [ ] **4.5** Marketing **last**, only after evidence lands: `marketing/index.html`
+- [x] **4.5** Marketing **last**, only after evidence lands: `marketing/index.html`
       (~lines 178, 234-280, 511, 564-575 carry the version claim, the Aura Clash pitch, the
       "seven distinct route-library examples" count, per-game tiles),
       `marketing/docs/claims.html`, `marketing/docs/aura-clash.html`,
       `marketing/docs/evidence.html`, `marketing/sections/aura-clash-homepage.html`,
       `apps/showcase-index/index.html`
+      Audited every named surface after the docs pass. Marketing now labels 7/7
+      as a configured route-library sub-gate, overall promotion as held,
+      Turbo/Skyline as held, and Aura Clash as a development showcase. Package
+      copy scopes WebGPU/96-joint evidence to lower-level/emulated paths, names
+      RGBE while keeping OpenEXR unsupported, and names the actual physics
+      backends. Marketing truth, link audit, the full marketing/showcase build,
+      responsive docs-site browser checks, and the claim registry all pass. No
+      production deployment was made by this source-audit task.
 - [ ] **4.6** `docs/comparisons/` and `docs/benchmarks/` only if a real benchmark exists
 - [ ] **4.7** `pnpm check:agent-docs && pnpm check:docs-codeblocks &&
       pnpm check:marketing-truth && pnpm check:marketing-links && pnpm verify:claims`
