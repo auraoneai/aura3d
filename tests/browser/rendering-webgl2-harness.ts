@@ -36,6 +36,7 @@ export interface RenderingHarnessResult {
   readonly pointDiagnostics?: RenderDeviceDiagnostics;
   readonly cubeDiagnostics?: RenderDeviceDiagnostics;
   readonly pbrDiagnostics?: RenderDeviceDiagnostics;
+  readonly clusteredLightDiagnostics?: RenderDeviceDiagnostics;
   readonly pbrSphereDiagnostics?: RenderDeviceDiagnostics;
   readonly litCubeDiagnostics?: RenderDeviceDiagnostics;
   readonly texturedCubeDiagnostics?: RenderDeviceDiagnostics;
@@ -55,6 +56,8 @@ export interface RenderingHarnessResult {
   readonly pointPixel?: readonly number[];
   readonly cubePixel?: readonly number[];
   readonly pbrCenterPixel?: readonly number[];
+  readonly sixteenLightPixel?: readonly number[];
+  readonly seventeenLightPixel?: readonly number[];
   readonly pbrSphereCenterPixel?: readonly number[];
   readonly pbrSphereRimPixel?: readonly number[];
   readonly litCubePixel?: readonly number[];
@@ -210,6 +213,49 @@ async function run(): Promise<void> {
     });
     const pbrCenterPixel = readPixel(pbrCanvas, 32, 32);
     pbrRenderer.dispose();
+
+    const clusteredCanvas = requireCanvas("pbr-clustered-lights");
+    const clusteredRenderer = await Renderer.create({
+      backend: "webgl2",
+      canvas: clusteredCanvas,
+      width: clusteredCanvas.width,
+      height: clusteredCanvas.height,
+      clearColor: [0, 0, 0, 1]
+    });
+    const clusteredScene = new Scene();
+    for (let index = 0; index < 16; index += 1) {
+      const light = clusteredScene.createLight("directional", `browser-cluster-base-${index}`);
+      light.intensity = 0.03;
+      light.color = [1, 1, 1];
+      clusteredScene.root.addChild(light);
+    }
+    const clusteredRenderItems = [{
+      geometry: Geometry.litTriangle(),
+      material: new PBRMaterial({
+        baseColor: [0.72, 0.72, 0.72, 1],
+        roughness: 0.9,
+        metallic: 0,
+        environmentIntensity: 0
+      }),
+      label: "browser-pbr-clustered-lights"
+    }];
+    clusteredRenderer.render({
+      scene: clusteredScene,
+      environmentLighting: false,
+      renderItems: clusteredRenderItems
+    });
+    const sixteenLightPixel = readPixel(clusteredCanvas, 32, 32);
+    const seventeenthLight = clusteredScene.createLight("directional", "browser-cluster-seventeenth");
+    seventeenthLight.intensity = 0.029;
+    seventeenthLight.color = [1, 0, 0];
+    clusteredScene.root.addChild(seventeenthLight);
+    const clusteredLightDiagnostics = clusteredRenderer.render({
+      scene: clusteredScene,
+      environmentLighting: false,
+      renderItems: clusteredRenderItems
+    });
+    const seventeenLightPixel = readPixel(clusteredCanvas, 32, 32);
+    clusteredRenderer.dispose();
 
     const sphereCanvas = requireCanvas("pbr-sphere");
     const sphereRenderer = await Renderer.create({
@@ -794,6 +840,7 @@ async function run(): Promise<void> {
       pointDiagnostics,
       cubeDiagnostics,
       pbrDiagnostics,
+      clusteredLightDiagnostics,
       pbrSphereDiagnostics,
       litCubeDiagnostics,
       texturedCubeDiagnostics,
@@ -813,6 +860,8 @@ async function run(): Promise<void> {
       pointPixel,
       cubePixel,
       pbrCenterPixel,
+      sixteenLightPixel,
+      seventeenLightPixel,
       pbrSphereCenterPixel,
       pbrSphereRimPixel,
       litCubePixel,

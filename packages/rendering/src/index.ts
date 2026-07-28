@@ -615,6 +615,8 @@ export { LightCollector } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
+export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting } from "./ClusteredForwardLighting";
+export type { ClusteredForwardLightingDiagnostics, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 export { DepthMaterial, DepthPass } from "./DepthPass";
 export type { DepthPassOptions } from "./DepthPass";
 export { ShadowMap, computeShadowDepthBias, createPoissonDiskShadowKernel, createShadowAtlasLayout, createShadowFilterKernel } from "./ShadowMap";

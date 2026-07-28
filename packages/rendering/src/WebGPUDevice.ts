@@ -963,6 +963,7 @@ export class WebGPUDevice implements RenderDevice {
     this.lastError = null;
     this.viewportWidth = width;
     this.viewportHeight = height;
+    this.releaseDisposedNativeSampledTextures();
     this.ensureCanvasDepthAttachment(width, height);
   }
 
@@ -1351,7 +1352,9 @@ export class WebGPUDevice implements RenderDevice {
               { binding: 11, resource: materialTextures.metallicRoughness.sampler },
               { binding: 12, resource: materialTextures.metallicRoughness.view },
               { binding: 13, resource: materialTextures.occlusion.sampler },
-              { binding: 14, resource: materialTextures.occlusion.view }
+              { binding: 14, resource: materialTextures.occlusion.view },
+              { binding: 15, resource: materialTextures.clusterLightData.view },
+              { binding: 16, resource: materialTextures.clusterLightIndices.view }
             ] : [])
           ]
         })
@@ -1505,6 +1508,15 @@ export class WebGPUDevice implements RenderDevice {
     };
   }
 
+  private releaseDisposedNativeSampledTextures(): void {
+    for (const [texture, resource] of this.nativeSampledTextures) {
+      if (texture instanceof Texture && texture.disposed) {
+        resource.texture.destroy();
+        this.nativeSampledTextures.delete(texture);
+      }
+    }
+  }
+
   private createNativePbrTextureBindings(command: DrawCommand): {
     readonly base: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly environment: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
@@ -1513,6 +1525,8 @@ export class WebGPUDevice implements RenderDevice {
     readonly normal: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly metallicRoughness: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly occlusion: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
+    readonly clusterLightData: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
+    readonly clusterLightIndices: { readonly view: unknown; readonly sampler: WebGPUSamplerLike; readonly actual: boolean };
     readonly actualBaseColor: boolean;
     readonly actualEnvironment: boolean;
     readonly actualBrdf: boolean;
@@ -1529,6 +1543,8 @@ export class WebGPUDevice implements RenderDevice {
     const normalBinding = uniformTextureBinding(command.uniforms, "u_normalTexture");
     const metallicRoughnessBinding = uniformTextureBinding(command.uniforms, "u_metallicRoughnessTexture");
     const occlusionBinding = uniformTextureBinding(command.uniforms, "u_occlusionTexture");
+    const clusterLightDataBinding = uniformTextureBinding(command.uniforms, "u_clusterLightData");
+    const clusterLightIndicesBinding = uniformTextureBinding(command.uniforms, "u_clusterLightIndices");
     const base = this.createNativeSampledTextureBinding(baseBinding) ?? this.createNativeFallbackSampledTextureBinding("white-srgb", [255, 255, 255, 255], "srgb");
     const environment = this.createNativeSampledTextureBinding(environmentBinding) ?? this.createNativeFallbackSampledTextureBinding("environment-srgb", [92, 116, 156, 255], "srgb");
     const brdf = this.createNativeSampledTextureBinding(brdfBinding) ?? this.createNativeFallbackSampledTextureBinding("brdf-linear", [180, 180, 255, 255], "linear");
@@ -1536,7 +1552,9 @@ export class WebGPUDevice implements RenderDevice {
     const normal = this.createNativeSampledTextureBinding(normalBinding) ?? this.createNativeFallbackSampledTextureBinding("flat-normal-linear", [128, 128, 255, 255], "linear");
     const metallicRoughness = this.createNativeSampledTextureBinding(metallicRoughnessBinding) ?? this.createNativeFallbackSampledTextureBinding("metallic-roughness-linear", [255, 255, 255, 255], "linear");
     const occlusion = this.createNativeSampledTextureBinding(occlusionBinding) ?? this.createNativeFallbackSampledTextureBinding("occlusion-linear", [255, 255, 255, 255], "linear");
-    if (!base || !environment || !brdf || !shadow || !normal || !metallicRoughness || !occlusion) return null;
+    const clusterLightData = this.createNativeSampledTextureBinding(clusterLightDataBinding) ?? this.createNativeFallbackSampledTextureBinding("cluster-light-data-linear", [0, 0, 0, 0], "linear");
+    const clusterLightIndices = this.createNativeSampledTextureBinding(clusterLightIndicesBinding) ?? this.createNativeFallbackSampledTextureBinding("cluster-light-indices-linear", [0, 0, 0, 0], "linear");
+    if (!base || !environment || !brdf || !shadow || !normal || !metallicRoughness || !occlusion || !clusterLightData || !clusterLightIndices) return null;
     return {
       base,
       environment,
@@ -1545,6 +1563,8 @@ export class WebGPUDevice implements RenderDevice {
       normal,
       metallicRoughness,
       occlusion,
+      clusterLightData,
+      clusterLightIndices,
       actualBaseColor: baseBinding !== null && base.actual,
       actualEnvironment: environmentBinding !== null && environment.actual,
       actualBrdf: brdfBinding !== null && brdf.actual,
@@ -1617,11 +1637,13 @@ export class WebGPUDevice implements RenderDevice {
     data[160] = uniformNumber(command.uniforms?.get("u_alphaCutoff"), 0);
     data[161] = uniformNumber(command.uniforms?.get("u_transmissionFactor"), 0);
     data[162] = uniformNumber(command.uniforms?.get("u_diffuseTransmissionFactor"), 0);
+    data[163] = uniformVec2(command.uniforms?.get("u_clusterGridSize"))?.[0] ?? 1;
     data.set(uniformVec3(command.uniforms?.get("u_cameraPosition")) ?? [0, 0, 1], 164);
     data[167] = 1;
     data[168] = uniformNumber(command.uniforms?.get("u_metallicRoughnessTextureEnabled"), metallicRoughnessBinding ? 1 : 0);
     data[169] = uniformNumber(command.uniforms?.get("u_occlusionTextureEnabled"), occlusionBinding ? 1 : 0);
     data[170] = uniformNumber(command.uniforms?.get("u_productColorSmoothing"), 0);
+    data[171] = uniformNumber(command.uniforms?.get("u_clusteredLightEnabled"), 0);
     data.set(uniformMat4(command.uniforms?.get("u_normalMatrix")) ?? identityMatrix(), 172);
     const modelMatrix = uniformMat4(command.uniforms?.get("u_modelMatrix")) ?? identityMatrix();
     const instanceMatrixValue = command.uniforms?.get("u_instanceMatrices");
@@ -2024,6 +2046,13 @@ function uniformVec3(value: UniformValue | undefined): readonly [number, number,
   const components = value instanceof Float32Array || Array.isArray(value) ? Array.from(value).slice(0, 3) : [];
   return components.length === 3 && components.every(Number.isFinite)
     ? [components[0]!, components[1]!, components[2]!]
+    : null;
+}
+
+function uniformVec2(value: UniformValue | undefined): readonly [number, number] | null {
+  const components = value instanceof Float32Array || Array.isArray(value) ? Array.from(value).slice(0, 2) : [];
+  return components.length === 2 && components.every(Number.isFinite)
+    ? [components[0]!, components[1]!]
     : null;
 }
 
@@ -2541,6 +2570,8 @@ ${nativeUniformStruct()}
 @group(0) @binding(12) var u_metallicRoughnessTexture: texture_2d<f32>;
 @group(0) @binding(13) var u_occlusionSampler: sampler;
 @group(0) @binding(14) var u_occlusionTexture: texture_2d<f32>;
+@group(0) @binding(15) var u_clusterLightData: texture_2d<f32>;
+@group(0) @binding(16) var u_clusterLightIndices: texture_2d<f32>;
 
 struct VertexOutput {
   @builtin(position) position: vec4<f32>,
@@ -2632,7 +2663,7 @@ fn perturbNormal(normalInput: vec3<f32>, tangentFrame: vec4<f32>, normalSample: 
   return normalize(tangent * mapped.x + bitangent * mapped.y + n * max(mapped.z, 0.001));
 }
 
-fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>) -> vec4<f32> {
+fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>, fragmentPosition: vec2<f32>) -> vec4<f32> {
   var normal = normalize(normalInput);
   if (u_draw.morph0.x > 0.5) {
     normal = perturbNormal(normal, tangentFrame, textureSample(u_normalTexture, u_normalSampler, uv).rgb, u_draw.morph0.y);
@@ -2700,7 +2731,36 @@ fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worl
     let shadowDepth = textureSampleLevel(u_shadowTexture, u_shadowSampler, vec2<f32>(0.5, 0.5), 0.0).r;
     shadow = mix(1.0, shadowDepth, clamp(u_draw.flags.z, 0.0, 1.0));
   }
-  let litOpaqueLinearColor = environment + (diffuse + specular) * nDotL * 2.25 * shadow;
+  var clusteredDirect = vec3<f32>(0.0, 0.0, 0.0);
+  if (u_draw.materialFlags.w > 0.5) {
+    let indexDimensions = textureDimensions(u_clusterLightIndices);
+    let gridWidth = max(i32(u_draw.material.w), 1);
+    let tileX = max(i32(fragmentPosition.x) / 64, 0);
+    let tileY = max(i32(fragmentPosition.y) / 64, 0);
+    let clusterIndex = clamp(tileY * gridWidth + tileX, 0, i32(indexDimensions.y) - 1);
+    let clusterLightCount = min(i32(textureLoad(u_clusterLightIndices, vec2<i32>(0, clusterIndex), 0).g), 64);
+    for (var clusteredIndex = 0; clusteredIndex < 64; clusteredIndex = clusteredIndex + 1) {
+      if (clusteredIndex >= clusterLightCount) { break; }
+      let lightIndex = i32(textureLoad(u_clusterLightIndices, vec2<i32>(clusteredIndex, clusterIndex), 0).r);
+      let colorIntensity = textureLoad(u_clusterLightData, vec2<i32>(0, lightIndex), 0);
+      let positionRange = textureLoad(u_clusterLightData, vec2<i32>(1, lightIndex), 0);
+      let directionKind = textureLoad(u_clusterLightData, vec2<i32>(2, lightIndex), 0);
+      var clusteredDirection = normalize(-directionKind.xyz);
+      var attenuation = 1.0;
+      if (directionKind.w > 0.5) {
+        let toLight = positionRange.xyz - worldPosition;
+        let distanceToLight = length(toLight);
+        clusteredDirection = select(clusteredDirection, toLight / max(distanceToLight, 0.0001), distanceToLight > 0.0001);
+        let range = max(positionRange.w, 0.0001);
+        let rangeFalloff = clamp(1.0 - pow(distanceToLight / range, 4.0), 0.0, 1.0);
+        attenuation = rangeFalloff * rangeFalloff / max(distanceToLight * distanceToLight, 1.0);
+      }
+      let clusteredNdotL = max(dot(normal, clusteredDirection), 0.0);
+      clusteredDirect = clusteredDirect + baseColor * colorIntensity.rgb * colorIntensity.a * attenuation * clusteredNdotL;
+    }
+  }
+  let legacyDirect = (diffuse + specular) * nDotL * 2.25 * shadow;
+  let litOpaqueLinearColor = environment + select(legacyDirect, clusteredDirect, u_draw.materialFlags.w > 0.5);
   let smoothedBodyColor = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012), productBodyGate * 0.32);
   let smoothedBeakColor = mix(baseColor, vec3<f32>(1.0, 0.24, 0.018), productOrangeGate * 0.82);
   let softBodyProduct = smoothedBodyColor * (1.5 + 0.06 * nDotL) + specular * nDotL * 0.018;
@@ -2742,7 +2802,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition, input.position.xy);
 }
 `
   };
@@ -2775,7 +2835,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition, input.position.xy);
 }
 `
   };
@@ -2816,7 +2876,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition, input.position.xy);
 }
 `
   };

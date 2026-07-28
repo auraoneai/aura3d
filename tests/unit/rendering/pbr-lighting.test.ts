@@ -33,6 +33,7 @@ import {
   TextureBinding,
   TexturedPBRMaterial,
   UniformLayout,
+  createClusteredForwardLighting,
   createDefaultShaderLibrary
 } from "../../../packages/rendering/src";
 
@@ -1345,6 +1346,82 @@ describe("PBR material and direct light contracts", () => {
     ))).toEqual([1, 1, 1, 2]);
   });
 
+  it("builds a screen-tile clustered light grid without dropping the seventeenth light", () => {
+    const scene = new Scene();
+    for (let index = 1; index <= MAX_DIRECT_LIGHTS + 1; index += 1) {
+      const light = scene.createLight("directional", `cluster-light-${index}`);
+      light.intensity = index;
+      light.color = [index / (MAX_DIRECT_LIGHTS + 1), 0.25, 0.5];
+      scene.root.addChild(light);
+    }
+    const collected = new LightCollector().collect(scene);
+    const clustered = createClusteredForwardLighting(collected, 129, 65);
+    const lightPixels = clustered.lightData.texture?.textureLevels[0]?.data as Float32Array;
+    const indexPixels = clustered.lightIndices.texture?.textureLevels[0]?.data as Float32Array;
+
+    expect(clustered.diagnostics).toEqual({
+      source: "createClusteredForwardLighting",
+      mode: "screen-tile-texture-grid",
+      gridWidth: 3,
+      gridHeight: 2,
+      clusterCount: 6,
+      viewportWidth: 129,
+      viewportHeight: 65,
+      requestedLightCount: 17,
+      indexedLightCount: 17,
+      maxLightsPerCluster: 64,
+      maxIndexedLightsInCluster: 17,
+      totalLightReferences: 102,
+      culledLightCount: 0,
+      droppedLightCount: 0
+    });
+    expect(clustered.lightData.texture).toMatchObject({ width: 4, height: 17, format: "rgba32f" });
+    expect(clustered.lightIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
+    expect(lightPixels[3]).toBe(17);
+    expect(lightPixels[(16 * 16) + 3]).toBe(1);
+    expect(Array.from(indexPixels.slice(0, 8))).toEqual([0, 17, 0, 0, 1, 17, 0, 0]);
+
+    clustered.dispose();
+    expect(clustered.lightData.texture?.disposed).toBe(true);
+    expect(clustered.lightIndices.texture?.disposed).toBe(true);
+  });
+
+  it("assigns local lights only to projected screen tiles", () => {
+    const scene = new Scene();
+    const left = scene.createLight("point", "cluster-left") as PointLight;
+    left.intensity = 2;
+    left.range = 0.05;
+    left.transform.setPosition(-0.8, 0, 0);
+    scene.root.addChild(left);
+    const right = scene.createLight("point", "cluster-right") as PointLight;
+    right.intensity = 1;
+    right.range = 0.05;
+    right.transform.setPosition(0.8, 0, 0);
+    scene.root.addChild(right);
+    const clustered = createClusteredForwardLighting(
+      new LightCollector().collect(scene),
+      192,
+      64,
+      new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+    );
+    const indices = clustered.lightIndices.texture?.textureLevels[0]?.data as Float32Array;
+
+    expect(clustered.diagnostics).toMatchObject({
+      gridWidth: 3,
+      gridHeight: 1,
+      requestedLightCount: 2,
+      indexedLightCount: 2,
+      maxIndexedLightsInCluster: 1,
+      totalLightReferences: 2,
+      culledLightCount: 0,
+      droppedLightCount: 0
+    });
+    expect(Array.from(indices.slice(0, 8))).toEqual([0, 1, 0, 0, 0, 0, 0, 0]);
+    expect(indices[64 * 4 + 1]).toBe(0);
+    expect(Array.from(indices.slice(128 * 4, 128 * 4 + 8))).toEqual([1, 1, 0, 0, 0, 0, 0, 0]);
+    clustered.dispose();
+  });
+
   it("filters disabled and layer-mismatched lights while enforcing max light ordering", () => {
     const scene = new Scene();
     const key = scene.createLight("directional", "key");
@@ -1410,6 +1487,43 @@ describe("PBR material and direct light contracts", () => {
       expect.closeTo(0.7),
       expect.closeTo(3)
     ]);
+
+    renderer.dispose();
+  });
+
+  it("routes more than 16 scene lights through clustered PBR texture bindings", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 130, height: 66 });
+    const scene = new Scene();
+    for (let index = 1; index <= MAX_DIRECT_LIGHTS + 1; index += 1) {
+      const light = scene.createLight("directional", `renderer-cluster-light-${index}`);
+      light.intensity = index;
+      light.color = [1, index / (MAX_DIRECT_LIGHTS + 1), 0.25];
+      scene.root.addChild(light);
+    }
+
+    renderer.render({
+      scene,
+      renderItems: [{
+        geometry: Geometry.litTriangle(),
+        material: new PBRMaterial({ baseColor: [0.7, 0.4, 0.2, 1] }),
+        label: "clustered-pbr-light-uniforms"
+      }]
+    });
+    const command = (renderer.device as MockRenderDevice).drawCommands[0];
+    const clusteredData = command?.uniforms?.get("u_clusterLightData") as TextureBinding;
+    const clusteredIndices = command?.uniforms?.get("u_clusterLightIndices") as TextureBinding;
+    const dataPixels = clusteredData.texture?.textureLevels[0]?.data as Float32Array;
+    const indexPixels = clusteredIndices.texture?.textureLevels[0]?.data as Float32Array;
+
+    expect(command?.uniforms?.get("u_lightCount")).toBe(MAX_DIRECT_LIGHTS);
+    expect(command?.uniforms?.get("u_clusteredLightEnabled")).toBe(1);
+    expect(command?.uniforms?.get("u_clusterGridSize")).toEqual([3, 2]);
+    expect(command?.uniforms?.get("u_clusterViewportSize")).toEqual([130, 66]);
+    expect(clusteredData.texture).toMatchObject({ width: 4, height: 17, format: "rgba32f" });
+    expect(clusteredIndices.texture).toMatchObject({ width: 64, height: 6, format: "rgba32f" });
+    expect(dataPixels[3]).toBe(17);
+    expect(dataPixels[(16 * 16) + 3]).toBe(1);
+    expect(indexPixels[1]).toBe(17);
 
     renderer.dispose();
   });

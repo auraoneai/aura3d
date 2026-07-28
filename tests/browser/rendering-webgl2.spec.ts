@@ -38,6 +38,12 @@ test.describe("rendering WebGL2 device", () => {
       pbrDiagnostics: result?.pbrDiagnostics,
       pbrCenterPixel: result?.pbrCenterPixel
     }, null, 2)).toBeNull();
+    expect(result?.clusteredLightDiagnostics?.drawCalls).toBe(1);
+    expect(result?.clusteredLightDiagnostics?.lastError, JSON.stringify({
+      clusteredLightDiagnostics: result?.clusteredLightDiagnostics,
+      sixteenLightPixel: result?.sixteenLightPixel,
+      seventeenLightPixel: result?.seventeenLightPixel
+    }, null, 2)).toBeNull();
     expect(result?.pbrSphereDiagnostics?.drawCalls).toBe(1);
     expect(result?.pbrSphereDiagnostics?.lastError).toBeNull();
     expect(result?.litCubeDiagnostics?.drawCalls).toBe(1);
@@ -125,6 +131,15 @@ test.describe("rendering WebGL2 device", () => {
     expect(pr).toBeGreaterThan(pg);
     expect(pg).toBeGreaterThan(pb);
     expect(pa).toBe(255);
+
+    const [sixteenR = 0, sixteenG = 0, sixteenB = 0, sixteenA = 0] = result?.sixteenLightPixel ?? [];
+    const [seventeenR = 0, seventeenG = 0, seventeenB = 0, seventeenA = 0] = result?.seventeenLightPixel ?? [];
+    expect(sixteenR).toBeGreaterThan(20);
+    expect(seventeenR).toBeGreaterThan(sixteenR + 1);
+    expect(Math.abs(seventeenG - sixteenG)).toBeLessThanOrEqual(1);
+    expect(Math.abs(seventeenB - sixteenB)).toBeLessThanOrEqual(1);
+    expect(sixteenA).toBe(255);
+    expect(seventeenA).toBe(255);
 
     const [sr = 0, sg = 0, sb = 0, sa = 0] = result?.pbrSphereCenterPixel ?? [];
     const [rr = 0, rg = 0, rb = 0, ra = 0] = result?.pbrSphereRimPixel ?? [];

@@ -569,6 +569,7 @@ export class Renderer {
         shadowMap: rendererShadowMap,
         cameraPosition,
         cameraViewMatrix: resolvedCamera?.viewMatrix,
+        cameraViewProjectionMatrix: cameraViewProjection,
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));
@@ -709,6 +710,7 @@ export class Renderer {
         shadowMap: rendererShadowMap,
         cameraPosition,
         cameraViewMatrix: resolvedCamera?.viewMatrix,
+        cameraViewProjectionMatrix: cameraViewProjection,
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));

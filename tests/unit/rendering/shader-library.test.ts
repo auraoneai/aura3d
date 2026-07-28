@@ -410,6 +410,8 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("u_metallicRoughnessTexture");
     expect(compiled.fragment).toContain("u_occlusionTexture");
     expect(compiled.fragment).toContain("u_emissiveTexture");
+    expect(compiled.fragment).toContain("uniform sampler2D u_clusterLightData;");
+    expect(compiled.fragment).toContain("uniform sampler2D u_clusterLightIndices;");
     expect(compiled.fragment).toContain("uniform float u_transmissionParallaxStrength;");
     expect(compiled.fragment).toContain("uniform sampler2D u_transmissionBackdropTexture;");
     expect(compiled.fragment).toContain("uniform float u_transmissionBackdropMipCount;");
@@ -622,6 +624,8 @@ describe("ShaderLibrary", () => {
 
       expect(compiled.label).toBe(`${DEFAULT_TEXTURED_PBR_SHADER_NAME}:${variant.name}`);
       expect(fragmentSamplerCount).toBeLessThanOrEqual(16);
+      expect(compiled.fragment).not.toContain("u_clusterLightData");
+      expect(compiled.fragment).not.toContain("u_clusterLightIndices");
       for (const sampler of variant.samplers) {
         expect(compiled.fragment).toContain(sampler);
       }

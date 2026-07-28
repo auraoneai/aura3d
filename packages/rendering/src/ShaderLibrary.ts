@@ -320,6 +320,11 @@ uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -588,13 +593,17 @@ void main() {
     vec3 refractionRadiance = (refractedEnvironment + vec3(causticEnergy)) * volumeTint * u_environmentMapTextureIntensity * transmissionAmount * fallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * roughVolumeIorLift;
     shaded = mix(shaded, shaded * 0.72 + refractionRadiance, transmissionAmount * mix(0.08, 0.58, fallbackEnvironmentTransmissionEnergy));
   }
-  int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
-    int baseIndex = i * 4;
-    vec4 colorIntensity = u_lightData[baseIndex];
-    vec4 positionRange = u_lightData[baseIndex + 1];
-    vec4 directionKind = u_lightData[baseIndex + 2];
-    vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
@@ -717,6 +726,11 @@ uniform vec3 u_emissiveColor;
 uniform float u_emissiveStrength;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -916,13 +930,17 @@ void main() {
     1.0,
     vec3(1.0)
   );
-  int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
-    int baseIndex = i * 4;
-    vec4 colorIntensity = u_lightData[baseIndex];
-    vec4 positionRange = u_lightData[baseIndex + 1];
-    vec4 directionKind = u_lightData[baseIndex + 2];
-    vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
@@ -1153,6 +1171,11 @@ uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -1395,13 +1418,17 @@ void main() {
     u_specularFactor,
     u_specularColorFactor
   ) * occlusion + emissive;
-  int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
-    int baseIndex = i * 4;
-    vec4 colorIntensity = u_lightData[baseIndex];
-    vec4 positionRange = u_lightData[baseIndex + 1];
-    vec4 directionKind = u_lightData[baseIndex + 2];
-    vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
@@ -1577,6 +1604,11 @@ uniform vec3 u_sheenColorFactor;
 uniform float u_sheenRoughnessFactor;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
 uniform sampler2D u_normalTexture;
 uniform float u_normalScale;
 uniform sampler2D u_shadowMapTexture;
@@ -1780,13 +1812,17 @@ void main() {
     u_specularFactor,
     u_specularColorFactor
   );
-  int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
-    int baseIndex = i * 4;
-    vec4 colorIntensity = u_lightData[baseIndex];
-    vec4 positionRange = u_lightData[baseIndex + 1];
-    vec4 directionKind = u_lightData[baseIndex + 2];
-    vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;
@@ -1820,13 +1856,13 @@ void main() {
     name: DEFAULT_TEXTURED_PBR_SHADER_NAME,
     marker: DEFAULT_TEXTURED_PBR_SHADER_MARKER,
     variants: [
-      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } }
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, defines: { A3D_PBR_CLEARCOAT_TEXTURES: true, A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } },
+      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { A3D_PBR_SPECULAR_TEXTURES: true, A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, A3D_PBR_IRIDESCENCE_TEXTURES: true, A3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true, A3D_PBR_DISABLE_CLUSTERED_LIGHTING: true } }
     ],
     vertex: `#version 300 es
 // ${DEFAULT_TEXTURED_PBR_SHADER_MARKER}
@@ -1923,6 +1959,13 @@ uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+#ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
+#endif
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -2611,13 +2654,29 @@ void main() {
 #endif
     shaded = mix(shaded, shaded * 0.72 + texturedRefractionRadiance, texturedTransmissionAmount * mix(0.08, 0.58, texturedFallbackEnvironmentTransmissionEnergy));
   }
+#ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+#else
   int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
+#endif
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+#ifndef A3D_PBR_DISABLE_CLUSTERED_LIGHTING
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
+#else
     int baseIndex = i * 4;
     vec4 colorIntensity = u_lightData[baseIndex];
     vec4 positionRange = u_lightData[baseIndex + 1];
     vec4 directionKind = u_lightData[baseIndex + 2];
     vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+#endif
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;

@@ -14,6 +14,7 @@ import { createShadowFilterKernel, type ShadowFilterKernel } from "./ShadowMap";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
+import { createClusteredForwardLighting, type ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 
 export interface RenderItem {
   readonly geometry: Geometry;
@@ -66,6 +67,7 @@ export interface ForwardPassOptions {
   readonly shadowMap?: ForwardShadowMapOptions;
   readonly cameraPosition?: readonly [number, number, number];
   readonly cameraViewMatrix?: Float32Array | readonly number[];
+  readonly cameraViewProjectionMatrix?: Float32Array | readonly number[];
   readonly outputColorSpace?: "linear" | "srgb";
   readonly shaderLibrary?: ShaderLibrary;
 }
@@ -159,6 +161,7 @@ export class ForwardPass extends BaseRenderPass {
   private readonly materialBinding = new MaterialBinding();
   private readonly shaderLibrary: ShaderLibrary;
   private readonly skinningPaletteUploads = new SkinningPaletteUploadManager();
+  private clusteredLighting: ClusteredForwardLightingResources | null = null;
 
   constructor(private readonly options: ForwardPassOptions) {
     super("forward", options.inputColorResource ? [options.inputColorResource] : [], ["color"]);
@@ -167,8 +170,21 @@ export class ForwardPass extends BaseRenderPass {
 
   execute(context: RenderPassContext): void {
     this.skinningPaletteUploads.beginFrame();
-    for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
-      this.drawItem(context.device, item);
+    this.clusteredLighting = (this.options.lights?.length ?? 0) > 16
+      ? createClusteredForwardLighting(
+          this.options.lights ?? [],
+          context.width,
+          context.height,
+          this.options.cameraViewProjectionMatrix
+        )
+      : null;
+    try {
+      for (const item of sortForwardRenderItems(this.options.items, this.options.cameraPosition)) {
+        this.drawItem(context.device, item);
+      }
+    } finally {
+      this.clusteredLighting?.dispose();
+      this.clusteredLighting = null;
     }
   }
 
@@ -197,6 +213,7 @@ export class ForwardPass extends BaseRenderPass {
     }
     const binding = this.materialBinding.bind(material, shader);
     const uniforms = new Map<string, UniformValue>(binding.uniforms);
+    applyClusteredLightingUniforms(this.clusteredLighting, shader, uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
     applyForwardShadowMapUniforms(
@@ -751,6 +768,37 @@ function applyForwardShadowMapUniforms(
   uniforms.set("u_shadowMapTexelSize", texelSize);
   uniforms.set("u_shadowPcfSampleCount", filterKernel.samples.length);
   uniforms.set("u_shadowPcfSamples", pcfSamples);
+}
+
+function applyClusteredLightingUniforms(
+  clustered: ClusteredForwardLightingResources | null,
+  shader: RenderShaderProgram,
+  uniforms: Map<string, UniformValue>
+): void {
+  const required = [
+    "u_clusteredLightEnabled",
+    "u_clusterGridSize",
+    "u_clusterViewportSize",
+    "u_clusterLightData",
+    "u_clusterLightIndices"
+  ];
+  if (!required.every((name) => shader.reflection.uniforms.has(name))) return;
+  if (!clustered) {
+    uniforms.set("u_clusteredLightEnabled", 0);
+    uniforms.set("u_clusterGridSize", [1, 1]);
+    uniforms.set("u_clusterViewportSize", [1, 1]);
+    uniforms.set("u_clusterLightData", new TextureBinding({ name: "u_clusterLightData", required: false }));
+    uniforms.set("u_clusterLightIndices", new TextureBinding({ name: "u_clusterLightIndices", required: false }));
+    return;
+  }
+  uniforms.set("u_clusteredLightEnabled", 1);
+  uniforms.set("u_clusterGridSize", [clustered.diagnostics.gridWidth, clustered.diagnostics.gridHeight]);
+  uniforms.set("u_clusterViewportSize", [
+    clustered.diagnostics.viewportWidth,
+    clustered.diagnostics.viewportHeight
+  ]);
+  uniforms.set("u_clusterLightData", clustered.lightData);
+  uniforms.set("u_clusterLightIndices", clustered.lightIndices);
 }
 
 function applyForwardPointShadowMapUniforms(

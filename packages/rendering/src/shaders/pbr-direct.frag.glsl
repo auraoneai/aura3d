@@ -335,6 +335,11 @@ uniform float u_iridescenceThicknessMaximum;
 uniform float u_dispersion;
 uniform float u_lightCount;
 uniform vec4 u_lightData[64];
+uniform float u_clusteredLightEnabled;
+uniform vec2 u_clusterGridSize;
+uniform vec2 u_clusterViewportSize;
+uniform sampler2D u_clusterLightData;
+uniform sampler2D u_clusterLightIndices;
 uniform sampler2D u_shadowMapTexture;
 uniform float u_shadowMapEnabled;
 uniform mat4 u_shadowMapMatrix;
@@ -623,13 +628,17 @@ void main() {
     vec3 refractionRadiance = (refractedEnvironment + vec3(causticEnergy)) * volumeTint * u_environmentMapTextureIntensity * transmissionAmount * fallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * roughVolumeIorLift;
     shaded = mix(shaded, shaded * 0.72 + refractionRadiance, transmissionAmount * mix(0.08, 0.58, fallbackEnvironmentTransmissionEnergy));
   }
-  int count = min(int(u_lightCount), 16);
-  for (int i = 0; i < count; ++i) {
-    int baseIndex = i * 4;
-    vec4 colorIntensity = u_lightData[baseIndex];
-    vec4 positionRange = u_lightData[baseIndex + 1];
-    vec4 directionKind = u_lightData[baseIndex + 2];
-    vec4 spotShadowLayer = u_lightData[baseIndex + 3];
+  ivec2 clusterTile = clamp(ivec2(floor(gl_FragCoord.xy / max(u_clusterViewportSize / u_clusterGridSize, vec2(1.0)))), ivec2(0), ivec2(u_clusterGridSize) - ivec2(1));
+  int clusterIndex = clusterTile.y * int(u_clusterGridSize.x) + clusterTile.x;
+  int count = u_clusteredLightEnabled > 0.5 ? min(int(texelFetch(u_clusterLightIndices, ivec2(0, clusterIndex), 0).g), 64) : min(int(u_lightCount), 16);
+  for (int i = 0; i < 64; ++i) {
+    if (i >= count) break;
+    int lightIndex = u_clusteredLightEnabled > 0.5 ? int(texelFetch(u_clusterLightIndices, ivec2(i, clusterIndex), 0).r) : i;
+    int baseIndex = lightIndex * 4;
+    vec4 colorIntensity = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(0, lightIndex), 0) : u_lightData[baseIndex];
+    vec4 positionRange = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(1, lightIndex), 0) : u_lightData[baseIndex + 1];
+    vec4 directionKind = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(2, lightIndex), 0) : u_lightData[baseIndex + 2];
+    vec4 spotShadowLayer = u_clusteredLightEnabled > 0.5 ? texelFetch(u_clusterLightData, ivec2(3, lightIndex), 0) : u_lightData[baseIndex + 3];
     float kind = directionKind.w;
     vec3 lightDirection = -directionKind.xyz;
     float attenuation = 1.0;

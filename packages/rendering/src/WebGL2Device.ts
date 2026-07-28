@@ -2778,6 +2778,16 @@ void main() {
       } else {
         throw new RenderDeviceError("Unsupported uniform value", "UNSUPPORTED_UNIFORM", { name, valueType: typeof value });
       }
+      if (this.errorCheckMode === "strict") {
+        const uniformError = this.readError();
+        if (uniformError) {
+          throw new RenderDeviceError(`WebGL2 uniform upload failed for ${name}: ${uniformError}`, "WEBGL_DRAW_FAILED", {
+            name,
+            stage: "uniform",
+            error: uniformError
+          });
+        }
+      }
     }
   }
 

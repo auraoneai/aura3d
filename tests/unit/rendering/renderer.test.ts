@@ -2955,6 +2955,9 @@ describe("Renderer", () => {
     expect(fragmentSource).toContain("@group(0) @binding(10) var u_normalTexture: texture_2d<f32>;");
     expect(fragmentSource).toContain("@group(0) @binding(12) var u_metallicRoughnessTexture: texture_2d<f32>;");
     expect(fragmentSource).toContain("@group(0) @binding(14) var u_occlusionTexture: texture_2d<f32>;");
+    expect(fragmentSource).toContain("@group(0) @binding(15) var u_clusterLightData: texture_2d<f32>;");
+    expect(fragmentSource).toContain("@group(0) @binding(16) var u_clusterLightIndices: texture_2d<f32>;");
+    expect(fragmentSource).toContain("textureLoad(u_clusterLightData");
     expect(fragmentSource).toContain("fn perturbNormal");
     expect(fragmentSource).toContain("textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv)");
     expect(fragmentSource).toContain("textureSample(u_occlusionTexture, u_occlusionSampler, uv)");
@@ -2968,7 +2971,9 @@ describe("Renderer", () => {
     expect(native.device.uniformWrites[0]?.[128]).toBe(0);
     expect(native.device.uniformWrites[0]?.[129]).toBe(1);
     expect(native.device.uniformWrites[0]?.[130]).toBe(1);
-    expect((native.device.bindGroups[0] as { entries: Array<{ binding: number }> }).entries.map((entry) => entry.binding)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]);
+    expect((native.device.bindGroups[0] as { entries: Array<{ binding: number }> }).entries.map((entry) => entry.binding)).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+    ]);
     expect(device.getDiagnostics().nativePbrSubmissions).toBe(1);
     device.dispose();
   });
