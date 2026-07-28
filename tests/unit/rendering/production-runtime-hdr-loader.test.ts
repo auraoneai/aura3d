@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  loadProductionHdrEnvironmentFile,
   loadProductionHdrEnvironment,
   parseRadianceHDR
 } from "../../../packages/rendering/src/production-runtime";
@@ -10,7 +11,58 @@ describe("Production HDRLoader contract", () => {
   it("exports the Radiance HDR parser and public environment loader helper", () => {
     expect(parseRadianceHDR).toBeTypeOf("function");
     expect(loadProductionHdrEnvironment).toBeTypeOf("function");
+    expect(loadProductionHdrEnvironmentFile).toBeTypeOf("function");
   });
+
+  it("loads a public URL through fetch into disposable renderer-ready resources", async () => {
+    const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
+    const requested: string[] = [];
+    const environment = await loadProductionHdrEnvironmentFile("https://assets.example/studio.hdr", {
+      id: "url-hdr-environment",
+      cubemapFaceSize: 4,
+      cubemapMipCount: 3,
+      cubemapSampleCount: 1,
+      irradianceWidth: 4,
+      irradianceHeight: 2,
+      specularLevels: 3,
+      specularSampleCount: 1,
+      brdfLutSize: 4,
+      brdfLutSampleCount: 4,
+      fetcher: async (input) => {
+        requested.push(String(input));
+        return new Response(hdr, { status: 200, headers: { "content-type": "image/vnd.radiance" } });
+      }
+    });
+
+    expect(requested).toEqual(["https://assets.example/studio.hdr"]);
+    expect(environment.id).toBe("url-hdr-environment");
+    expect(environment.radiance).toMatchObject({ width: 1024, height: 512, format: "32-bit_rle_rgbe" });
+    expect(environment.resources.environmentCubeTexture.cubeFaces).toHaveLength(6);
+    expect(environment.lighting.environmentCubeMapTexture?.validate().ok).toBe(true);
+    environment.dispose();
+    expect(environment.resources.environmentCubeTexture.disposed).toBe(true);
+  }, 15_000);
+
+  it("loads Blob sources and rejects failed HTTP responses", async () => {
+    const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
+    const environment = await loadProductionHdrEnvironmentFile(new Blob([hdr]), {
+      cubemapFaceSize: 2,
+      cubemapMipCount: 2,
+      cubemapSampleCount: 1,
+      irradianceWidth: 2,
+      irradianceHeight: 1,
+      specularLevels: 2,
+      specularSampleCount: 1,
+      brdfLutSize: 2,
+      brdfLutSampleCount: 2
+    });
+    expect(environment.pipeline.diagnostics.realRadianceHdr).toBe(true);
+    environment.dispose();
+
+    await expect(loadProductionHdrEnvironmentFile("https://assets.example/missing.hdr", {
+      fetcher: async () => new Response(null, { status: 404, statusText: "Not Found" })
+    })).rejects.toThrow(/HTTP 404 Not Found/);
+  }, 15_000);
 
   it("loads a real Radiance RGBE fixture into renderer-ready environment resources", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");

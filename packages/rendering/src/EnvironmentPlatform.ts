@@ -266,10 +266,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Fog telemetry records distance sample factors and uniform keys for route evidence.",
     "Renderer and ForwardPass bind exponential fog uniforms into active PBR-family shader paths."
   ], "Renderer shader path exists, but no accepted gallery route/screenshot proves FogExp2-style blending yet.", "Add visual gates before claiming FogExp2 parity."),
-  capability("rgbe-hdr-parser", "RGBE HDR Parser", "partial", true, [
+  capability("rgbe-hdr-parser", "RGBE HDR Parser", "implemented", true, [
     "parseProductionRadianceHDR decodes Radiance/RGBE RLE buffers.",
-    "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data."
-  ], "Public HDRLoaderThreeCompat remains diagnostic-only.", "Expose an end-to-end public HDR file-to-environment loader path."),
+    "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data.",
+    "loadProductionHdrEnvironmentFile is root-exported and accepts URL or Blob sources, validates HTTP failures, and returns disposable renderer-ready HDR, cubemap PMREM, and BRDF resources.",
+    "Browser proof fetches a retained 1024x512 Radiance fixture through the public API and renders an HDR-lit metallic sphere."
+  ], "The production-runtime public Radiance HDR file path is implemented; HDRLoaderThreeCompat remains diagnostic-only and EXR is explicitly unsupported.", "Retain real-fixture URL/Blob, HTTP-error, disposal, root-export, and browser render gates."),
   capability(
     "exr-parser",
     "EXR Parser",

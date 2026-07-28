@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(20);
-    expect(report.implementedCount).toBe(4);
-    expect(report.partialCount).toBe(3);
+    expect(report.implementedCount).toBe(5);
+    expect(report.partialCount).toBe(2);
     expect(report.helperCount).toBe(11);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(4);
-    expect(report.nonProductionReadyCount).toBe(16);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "cube-camera-reflections"]);
-    expect(report.backlog).toHaveLength(16);
+    expect(report.productionReadyCount).toBe(5);
+    expect(report.nonProductionReadyCount).toBe(15);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "rgbe-hdr-parser", "cube-camera-reflections"]);
+    expect(report.backlog).toHaveLength(15);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -70,6 +70,8 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("linear-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);
     expect(byId.get("exponential-fog")?.status).toBe("partial");
     expect(byId.get("exponential-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);
+    expect(byId.get("rgbe-hdr-parser")?.status).toBe("implemented");
+    expect(byId.get("rgbe-hdr-parser")?.evidence.join(" ")).toMatch(/loadProductionHdrEnvironmentFile/i);
     expect(byId.get("dynamic-ocean-plane")?.status).toBe("helper");
     expect(byId.get("pmrem-generator")?.status).toBe("implemented");
     expect(byId.get("pmrem-generator")?.evidence.join(" ")).toMatch(/four metallic roughness swatches/i);

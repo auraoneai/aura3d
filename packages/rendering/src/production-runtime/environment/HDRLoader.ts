@@ -14,6 +14,13 @@ export interface ProductionHdrEnvironmentLoaderOptions extends Omit<ProductionPb
   readonly label?: string;
 }
 
+export type ProductionHdrEnvironmentFileSource = string | URL | Blob;
+
+export interface ProductionHdrEnvironmentFileLoaderOptions extends ProductionHdrEnvironmentLoaderOptions {
+  readonly fetcher?: (input: string | URL, init?: RequestInit) => Promise<Response>;
+  readonly requestInit?: RequestInit;
+}
+
 export interface ProductionLoadedHdrEnvironment {
   readonly id: string;
   readonly label: string;
@@ -46,6 +53,28 @@ export function loadProductionHdrEnvironment(
     resources,
     dispose: () => resources.dispose()
   };
+}
+
+export async function loadProductionHdrEnvironmentFile(
+  source: ProductionHdrEnvironmentFileSource,
+  options: ProductionHdrEnvironmentFileLoaderOptions = {}
+): Promise<ProductionLoadedHdrEnvironment> {
+  const { fetcher, requestInit, ...environmentOptions } = options;
+  let bytes: ArrayBuffer;
+  if (typeof Blob !== "undefined" && source instanceof Blob) {
+    bytes = await source.arrayBuffer();
+  } else {
+    const fetchImplementation = fetcher ?? globalThis.fetch;
+    if (typeof fetchImplementation !== "function") {
+      throw new Error("Production HDR file loading requires fetch or an explicit fetcher.");
+    }
+    const response = await fetchImplementation(source as string | URL, requestInit);
+    if (!response.ok) {
+      throw new Error(`Production HDR file request failed with HTTP ${response.status} ${response.statusText}`.trim());
+    }
+    bytes = await response.arrayBuffer();
+  }
+  return loadProductionHdrEnvironment(bytes, environmentOptions);
 }
 
 export { parseProductionRadianceHDR as parseRadianceHDR };
