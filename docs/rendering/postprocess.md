@@ -22,8 +22,11 @@ claim a rendered postprocess effect only when:
 
 `@aura3d/rendering` contains postprocess/composer classes and production-runtime
 passes such as bloom, FXAA-facing paths, SSAO, depth of field, color grading,
-and related render-target helpers. Those are package-level capabilities until
-they are proven through the public root app path.
+depth-aware radial volumetric light, and related render-target helpers. The
+volumetric pass has WebGL2 pixel evidence with renderer-owned depth occlusion;
+it is not proof of volumetric clouds, froxel lighting, physical atmosphere, or
+root support. These remain package-level capabilities until they are proven
+through the public root app path.
 
 ## Verification
 

@@ -13,6 +13,7 @@ Version: 1.1.0
 | Contacts and collision events | `CollisionEvents.ts` |
 | Constraints | `Constraint.ts`, `Constraints.ts` |
 | Queries | `Raycast.ts` |
+| Continuous queries | `TimeOfImpact.ts` |
 | Character and movement helpers | `CharacterController.ts`, `Navigation.ts`, `Steering.ts` |
 | Scene/ECS bridges | `ScenePhysicsBridge.ts`, `ECSPhysicsBridge.ts` |
 | Debug visualization | `PhysicsDebugDraw.ts`, `packages/debug/src/PhysicsDebugAdapter.ts` |
@@ -34,6 +35,8 @@ The physics runtime supports evidence for:
 - begin/stay/end contact events;
 - fixed, hinge, slider, and spring-style constraints;
 - raycasts and scene queries;
+- conservative swept-bounds `timeOfImpact(...)` queries;
+- opt-in adaptive-substep CCD on `aura-js` and `cannon-es`, with explicit substep-limit policy and snapshot diagnostics;
 - broadphase profiling counters;
 - debug-line extraction;
 - scene/ECS synchronization.
@@ -120,6 +123,9 @@ pnpm advanced-gallery:pipeline
 ## Current Limits
 
 - The built-in broadphase is deterministic and inspectable.
-- Continuous collision detection is bounded; fast bodies use fixed-step discrete checks where the current tests cover them.
+- Continuous collision protection is opt-in and bounded. It uses adaptive substeps rather than a general exact swept-shape solver; `timeOfImpact(...)` conservatively sweeps finite world AABBs and excludes rotation, angular velocity, and infinite plane bounds.
+- Native `aura-js` friction uses accumulated normal/tangent impulses and a Coulomb cone. Its contact response remains linear-only, so native contacts do not generate torque.
+- Native `aura-js` still lacks oriented box SAT, convex GJK/EPA, and mesh/heightfield narrow-phase response. Unsupported pairs use the axis-aligned overlap fallback.
+- `cannon-es@0.20.0` supplies the tested angular-contact backend for Turbo Drift Circuit and Blockfall Reactor. Aura3D's adaptive-substep wrapper supplies their fast-body protection.
 - The advanced gallery does not claim mesh-derived colliders or full articulated robot dynamics.
 - Vehicle, cloth, soft-body, fluid, fracture, fire/smoke, and crowd modules are fixture/evidence surfaces unless a specific test or route proves production behavior.

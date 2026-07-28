@@ -9,6 +9,9 @@ visual-quality cost, fix cost, and whether it blocks the Phase 3 game rebuilds.
 
 Nothing was fixed while producing this document. Findings only.
 
+Task tracking lives in `docs/project/parity-execution-prompt.md` — that file is the numbered
+checklist of open work and the handoff document. This file is the evidence behind it.
+
 Status legend: `open` · `partial` · `done` · `dead-code`
 
 ---
@@ -17,14 +20,20 @@ Status legend: `open` · `partial` · `done` · `dead-code`
 
 `tests/reports/` is gitignored (`.gitignore:43`), so no parity score was committed and there
 was no "before" column to regress against. The four baseline commands were run fresh on
-2026-07-27T04:55Z. Results:
+2026-07-27T04:55Z. The Phase 2 after run completed at 2026-07-28T04:59Z:
 
-| Command | Report | Verdict | Key numbers |
-|---|---|---|---|
-| `threejs-parity:inventory` | `threejs-parity/threejs-inventory.json` | `pass: true` | 54 examples, 30 high-priority, 0 high-priority open, `byStatus: { matched: 54 }` |
-| `threejs-parity:same-scene-render` | `threejs-parity/same-scene-render.json` | `pass: true` | 54 candidates, 0 missing, 0 issues |
-| `threejs-parity:performance` | `threejs-parity/performance.json` | **`pass: false`** | all 6 evidence reports missing |
-| `engine-readiness:visual-quality` | `engine-readiness-visual-quality.json` | `ok: true` | 187 draw calls canonical, `nonDarkRatio 0.674`, `salientRatio 0.109` |
+| Command | Before | After |
+|---|---|---|
+| `threejs-parity:inventory` | `pass: true`; 54 examples, 30 high-priority, 0 high-priority open, 54 matched | `pass: true`; 54 examples, 30 high-priority, **1 high-priority open**, 53 matched, 1 partial (`misc_controls_transform`) |
+| `threejs-parity:same-scene-render` | `pass: true`; 54 candidates, 0 missing, 0 issues | unchanged: `pass: true`; 54 candidates, 0 missing, 0 issues |
+| `threejs-parity:performance` | **`pass: false`**; all 6 evidence reports missing | unchanged: **`pass: false`**; the same 6 evidence reports remain missing |
+| `engine-readiness:visual-quality` | `ok: true`; 187 canonical draw calls, `nonDarkRatio 0.674`, `salientRatio 0.109` | metrics unchanged because the command still reads the 2026-06-19 capture: `ok: true`; 187 canonical draw calls, `nonDarkRatio 0.674`, `salientRatio 0.109` |
+
+The inventory change is an honesty correction, not a rendering regression:
+`misc_controls_transform` now records the compatibility wrapper as partial because it does
+not implement rendered handles, pointer dragging, axis/plane constraints, snapping, or
+local/world gizmo spaces. The tool remains a hand-authored inventory rather than visual
+proof.
 
 ### 1.1 The inventory "54/54 matched" number is not a quality measurement
 
@@ -116,19 +125,19 @@ Ranking is by visual-quality cost weighted by whether it blocks Phase 3.
 
 | # | Gap | Priority | Status | Blocks games? |
 |---|---|---|---|---|
-| 1 | Post-processing runs on the CPU | P0 | open | **Yes — all four** |
-| 2 | PMREM was a box blur | P0 | done, 1 sub-item open | No |
-| 3 | Cascaded shadow maps are dead code | P0 | dead-code — wire decided | **Yes — racing, runner** |
-| 4 | Root agent path disables its own optimizations | P0 | partial | **Yes — all four** |
-| 5 | MSAA is only the context flag | P1 | open | Yes — quality ceiling |
-| 6 | Hard 16-light cap | P1 | open — clustered forward decided | Yes — arena |
-| 7 | Physics fidelity ceiling | P1 | open — cannon-es decided | **Yes — blockfall, racing** |
-| 8 | Duplicate OrbitControls | P1 | done, stubs open | No |
+| 1 | Post-processing runs on the CPU | P0 | renderer-owned ports native; explicit CPU reference retained | **Yes — all four** |
+| 2 | PMREM was a box blur | P0 | done | No |
+| 3 | Cascaded shadow maps are dead code | P0 | done — live renderer wiring and pixel proof | **Yes — racing, runner** |
+| 4 | Root agent path disables its own optimizations | P0 | done | No |
+| 5 | MSAA is only the context flag | P1 | done — offscreen resolve on WebGL2 and WebGPU | Yes — quality ceiling |
+| 6 | Hard 16-light cap | P1 | implemented — clustered forward with safe fallback | No |
+| 7 | Physics fidelity ceiling | P1 | route decision implemented | No |
+| 8 | Duplicate OrbitControls | P1 | done | No |
 | 9 | Features the codebase already declares missing | P1 | correctly disclosed | No |
 
 ---
 
-### Gap 1 — Post-processing runs on the CPU · P0 · open
+### Gap 1 — Post-processing runs on the CPU · P0 · partial
 
 The largest architectural divergence from three.js.
 
@@ -147,8 +156,14 @@ The only GPU path is `presentLdrPostprocess` (`WebGL2Device.ts:555`, interface d
 `canFuseLdrPostprocess` (`Renderer.ts:1783-1792`) admits only `tone-mapping`,
 `color-grade`, and `fxaa`, and only in `ldrFusionPassRank` order (`:1794-1799`).
 
-**SSAO, SSR, DOF, motion blur, TAA, and bloom have no GPU implementation.** In three.js all
-six are fullscreen fragment shaders.
+**Implemented (2.1-2.9).** Bloom now runs as bright extract, horizontal/vertical ping-pong
+blur, and composite fullscreen stages using the precomputed threshold/composite LUTs.
+Outline runs an integer Sobel predicate, circular dilation, and blend-LUT fullscreen stage.
+Bloom, outline, SSAO, SSR, depth-of-field, explicit-velocity motion blur, and
+explicit-history TAA extend renderer and plan fusion consistently. Real WebGL2 readback
+matches the CPU fixtures within a stated one-byte tolerance (with exact fixed-fixture
+matches for bloom and outline). `postprocess.execution: "cpu-deterministic"` retains the
+reference kernels behind an explicit flag.
 
 **Visual cost.** Every frame stalls the GPU pipeline on a synchronous readback, then burns
 CPU on per-pixel JS. In practice this forces routes to disable post-processing to stay
@@ -166,17 +181,15 @@ effort — this is why the prompt gates Phase 3 behind it.
 
 **Note on prior work.** `packages/rendering/src/postprocess/NativeLdrEffectLuts.ts` (landed
 `e0f7e2e0`) holds exact LUTs: a bloom bright-extract bitset, a 256×256 composite table, a
-256-entry outline blend table, and a BigInt outline gradient bound. Its verifier reports all
+256-entry outline blend table, and a BigInt outline gradient bound. Bloom and outline now
+consume these tables in `WebGL2Device`; the verifier reports all
 checks passing over 134,217,728 colors, 589,824 byte pairs, 15,360 channel entries, and
 32,880 numerator pairs, with 2 known float64-vs-exact disagreements at
-`t=0.02 gx=51000` and `t=0.22 gx=561000`. **Nothing consumes these LUTs outside
-`tools/verify-native-ldr-luts.ts`** — confirmed by search: the only three files referencing
-them are `PostProcessPass.ts`, the LUT module itself, and the verifier. This is the
-highest-value unconsumed asset in the repo. Do not extend it; consume it in 2.1-2.2.
+`t=0.02 gx=51000` and `t=0.22 gx=561000`.
 
 ---
 
-### Gap 2 — PMREM was a box blur · P0 · done, one sub-item open
+### Gap 2 — PMREM was a box blur · P0 · done
 
 **Resolved at `606c826d`.** `EnvironmentMapResources.ts:244` now runs GGX
 importance-sampled prefiltering via the 628-line `SpecularPrefilter.ts`. Per-level roughness
@@ -186,19 +199,22 @@ post-hoc `index / (levels - 1)`. `PMREM.ts` reports
 `tests/unit/rendering/specular-prefilter.test.ts`, `environment-map-resources.test.ts`,
 `shader-library.test.ts`.
 
-**Open sub-item (2.10).** The split-sum BRDF LUT is still `generateApproximateBrdfLutPixels`
-— an analytic approximation, not a real split-sum integration. Cost: small, self-contained.
-Visual impact: modest and mostly at grazing angles on smooth metals. Does not block games.
+**Sub-item 2.10 verified complete 2026-07-27.** Despite its historical
+`generateApproximateBrdfLutPixels` export name, the implementation at `606c826d` performs
+deterministic Hammersley-sampled GGX split-sum integration. The test oracle uses independent
+midpoint quadrature, locks reference bytes, and includes a white-furnace energy-conservation
+check. `pnpm exec vitest run tests/unit/rendering/environment-map-resources.test.ts` passes
+14/14.
 
 ---
 
-### Gap 3 — Cascaded shadow maps are dead code · P0 · dead-code
+### Gap 3 — Cascaded shadow maps are dead code · P0 · done
 
-**Evidence.** `CascadedShadowMaps.ts` and `shadows/CascadedShadowPipeline.ts` export
+**Original evidence.** `CascadedShadowMaps.ts` and `shadows/CascadedShadowPipeline.ts` export
 `CascadedShadowMaps`, `CascadedShadowPass`, and `supportsCascadedShadowLight`.
 `rg -c "cascade" packages/rendering/src/Renderer.ts packages/rendering/src/ForwardPass.ts`
-returns **zero matches in both files** (verified 2026-07-26). No render path reaches the
-cascade code.
+returned **zero matches in both files** on 2026-07-26. No render path reached the cascade
+code at audit time.
 
 Consumers are: `packages/rendering/src/index.ts` (re-export),
 `packages/rendering/src/LightingDebug.ts` (a `CascadeSplit` *type* import only),
@@ -208,7 +224,12 @@ Consumers are: `packages/rendering/src/index.ts` (re-export),
 (`lighting-debug-cascades.test.ts`, `shadow-pass.test.ts`,
 `rendering-foundation-labs.spec.ts`, `external-parity-shadow-quality.spec.ts`).
 
-Directional shadows therefore use a single 1024px map.
+**Implemented (2.11-2.12).** Directional renderer shadows now accept two to four cascades,
+compute stabilized frustum fits, render and retain a live depth target per cascade, and
+select the binding and light matrix in `ForwardPass` from camera-space draw depth. A live
+renderer test proves four depth passes and distinct near/far bindings; a deterministic
+pixel-buffer test shows the selected mid-distance cascade has smaller world-space texels and
+more distinct diagonal edge steps than one full-range map.
 
 **Visual cost.** Severe aliasing at distance in any scene with a large view frustum. A
 1024px map stretched across a race track or a runner's draw distance gives roughly
@@ -241,14 +262,20 @@ proves cascades are reached from a live render path.
 `frustumCulling: true` (`packages/engine/src/agent-api/index.ts:10423-10424`; both were
 `false`).
 
-**Still open.** `createProductionRuntimeCollectedLights` (`:10240`) returns a hardcoded
-three-directional-light rig — key, fill, rim, one shadow caster — regardless of scene
-content (2.13). `PRODUCTION_RUNTIME_POSTPROCESS` (`:10157`) and
-`PRODUCTION_RUNTIME_SHADOWS` (`:10179`, 1024px PCF) are frozen module constants (2.14).
+**Fixed (2.13).** `createProductionRuntimeCollectedLights` now derives directional, point,
+studio, rect, and softbox direct-light descriptors from the authored scene snapshot, keeps
+ambient intent separate, and selects one shadow caster deterministically. The old key/fill/rim
+rig remains only as an explicitly diagnosed fallback for scenes without authored direct
+lights.
 
-**Visual cost.** Every scene built through the root agent API is lit identically. A dark
-interior, a bright outdoor track, and a neon arena all receive the same three-light rig and
-the same 1024px shadow map. This is a large part of why the four games look like each other.
+**Fixed (2.14).** The frozen postprocess and shadow constants are removed. Production-runtime
+postprocess responds to category, authored bloom, and emissive content. Shadow enablement,
+1024/2048/4096 resolution, bias, strength, and PCF settings respond to the selected caster,
+scene extent, and category.
+
+**Remaining visual cost.** The root bridge now distinguishes authored lighting and quality
+profiles, but its scene-category heuristics remain bounded production-runtime defaults rather
+than an automatic art-direction system.
 
 **Fix cost.** Medium for 2.13 — needs a light-derivation pass over scene content. Small for
 2.14 once 2.13 establishes the scene-inspection plumbing.
@@ -261,17 +288,19 @@ change; bundling it with 2.13/2.14 would make both unreviewable.
 
 ---
 
-### Gap 5 — MSAA is only the context flag · P1 · open
+### Gap 5 — MSAA is only the context flag · P1 · done
 
-**Evidence.** `antialias: true` is passed at context creation (`WebGL2Device.ts:191`), but
+**Original evidence.** `antialias: true` was passed at context creation, but
 `rg -c "sampleCount|renderbufferStorageMultisample" packages/rendering/src/WebGL2Device.ts`
-returns **zero matches** (verified 2026-07-26). FBOs are created with plain
-`DEPTH_COMPONENT24` and single-sampled colour attachments (`:409-432`).
+returned **zero matches** on 2026-07-26.
 
-Every render target is single-sampled. The context flag only affects the default framebuffer,
-so any scene that routes through an offscreen target — which is every scene with
-post-processing — gets no MSAA whatsoever. The sole edge-antialiasing available is the fused
-FXAA pass.
+**Implemented (2.16-2.17).** Render targets expose `sampleCount`. WebGL2 allocates
+multisampled color/depth renderbuffers and resolves into sampleable textures with
+`blitFramebuffer`; WebGPU allocates a four-sample attachment, matching pipeline multisample
+state, and a color `resolveTarget`. Renderer-owned postprocess requests four samples by
+default where its attachment requirements permit. Diagnostics expose the maximum live
+render-target sample count, and a real WebGL2 pixel fixture proves a diagonal four-sample
+edge contains intermediate coverage pixels while the single-sample edge remains binary.
 
 **Visual cost.** Jagged geometry edges throughout. FXAA is a blur heuristic over an already
 aliased image; it cannot recover subpixel coverage. Consistent with the measured
@@ -286,23 +315,41 @@ look.
 
 ---
 
-### Gap 6 — Hard 16-light cap · P1 · open
+### Gap 6 — Hard 16-light cap · P1 · implemented
 
 **Evidence.** `MAX_DIRECT_LIGHTS = 16` (`packages/rendering/src/LightUniforms.ts:4`), packed
 into a fixed `u_lightData` array of `MAX_DIRECT_LIGHTS * 4` vec4 slots (`:17`) backed by a
-`Float32Array(MAX_DIRECT_LIGHTS * floatsPerLight)` (`:25`). `pack()` hard-throws a
-`RangeError` above the cap (`:21-22`). There is no clustered or deferred path. Point-light
-shadows throw when the device lacks render-target pixel upload (`Renderer.ts:1196`).
+`Float32Array(MAX_DIRECT_LIGHTS * floatsPerLight)` (`:25`). There is no clustered or deferred
+path. Point-light shadows throw when the device lacks render-target pixel upload
+(`Renderer.ts:1196`).
 
-**Visual cost.** Caps scene complexity for any lighting-dense scene. A neon arena wants far
-more than 16 emissive sources. The failure mode is worse than the cap itself: a `RangeError`
-thrown from the render path rather than graceful degradation to the 16 most significant
-lights.
+**Interim safety fixed (2.18a).** `LightUniforms.pack()` now scores contribution
+deterministically, retains the strongest 16 lights, and returns structured diagnostics naming
+the selected and dropped lights. Exact-boundary and above-boundary tests verify input-order
+preservation at 16 and deterministic graceful degradation above 16.
 
-**Fix cost.** Large for clustered forward. Small for the graceful-degradation path.
+**Clustered-forward fix (2.18b-2.19).** Forward rendering now builds a 64-pixel screen-tile
+grid, projects point and spot light ranges into affected tiles, retains directional lights
+globally, uploads an RGBA32F light-data texture plus per-tile index texture, and performs
+shader-side tile lookup. The global 16-light truncation is removed for the core, instanced,
+skinned, normal-mapped, and default textured PBR paths on WebGL2 and for native PBR paths on
+WebGPU. Texture-heavy extension variants preserve the deterministic 16-light fallback to
+stay within the common WebGL2 16-fragment-sampler budget.
 
-**Blocks games?** Yes for Aura Clash Arena — a neon arena is exactly the lighting-dense case
-the cap forbids.
+The 64-light bound is per tile rather than global. Diagnostics report requested and indexed
+lights, local lights culled outside the viewport, total tile references, peak tile
+occupancy, and lights dropped by per-tile overflow.
+
+**Proof.** Unit coverage verifies the exact 16-light boundary, deterministic degradation,
+17-light cluster packing, projected local-light tile assignment, renderer texture binding,
+native WebGPU cluster bindings/WGSL lookup, and sampler-budget fallback. A real Chromium
+WebGL2 pixel test renders 16 weak white lights and then a weaker 17th red light; only the red
+channel increases, proving that a light excluded by the legacy fallback contributes through
+the clustered shader path. The WebGPU parity browser suite and focused rendering tests pass.
+
+**Fix cost.** Implemented.
+
+**Blocks games?** No.
 
 **Recommendation.** The prompt requires a recorded decision (2.18). Take the documented cap
 plus graceful diagnostic: sort by contribution, keep 16, emit a diagnostic naming the
@@ -323,22 +370,22 @@ still implemented first as an interim safety net, so the `RangeError` at
 
 ---
 
-### Gap 7 — Physics fidelity ceiling · P1 · open, no decision recorded
+### Gap 7 — Physics fidelity ceiling · P1 · route decision implemented
 
 **Evidence.** `buildContact()` at `packages/physics/src/PhysicsWorld.ts:686` (called from
 `:330`) implements hand-written narrow-phase for six pairs only: plane↔any, sphere↔sphere,
 sphere↔box, capsule↔sphere, capsule↔box, capsule↔capsule. **Everything else falls back to
 AABB overlap resolved on the minimum penetration axis.**
 
-`rg -c "gjk|convexHull|timeOfImpact" packages/physics/src` returns **zero matches**
-(verified 2026-07-26). No convex hull, no GJK/EPA, no mesh or heightfield narrow-phase, no
-CCD.
+At the 2026-07-26 baseline,
+`rg -c "gjk|convexHull|timeOfImpact" packages/physics/src` returned **zero matches**. There
+was no convex hull, GJK/EPA, mesh or heightfield narrow-phase, or CCD.
 
 `inverseInertia` is a diagonal `Vec3` (`RigidBody.ts:30`, constructed `:88`, inverted
 `:264`). Contact impulses generate **no torque** — `applyImpulse` touches
 `angularVelocity` (`:155`) but the contact resolver does not route through it — so contact
-resolution is purely linear. Friction clamps against `μ·(|Jn| + penetration)` rather than a
-Coulomb cone on accumulated normal impulse.
+resolution is purely linear. At the baseline, friction also clamped against
+`μ·(|Jn| + penetration)` rather than a Coulomb cone on accumulated normal impulse.
 
 **Visual cost.** Boxes do not tumble. A box dropped on a corner settles flat, which reads as
 obviously wrong to anyone who has seen a physics engine. Fast movers tunnel through
@@ -351,22 +398,28 @@ response from contact impulses, plus CCD or a documented tunneling limit.
 **Blocks games?** Yes for Blockfall Reactor (stacked boxes are the entire game) and Turbo
 Drift Circuit (fast movers tunnel).
 
-**Required decision (2.20).** The prompt requires stating per-game whether to route through
-the `cannon-es@0.20.0` backend or extend the native `aura-js` solver. This decision was
-required by the original prompt and **was never made** — recording that omission is part of
-this audit. Recommendation: route Blockfall and Turbo Drift through `cannon-es`, which
-already has box↔box, angular response, and CCD; extend `aura-js` only if a
-dependency-free path is a hard requirement. Aura Clash uses `HitboxWorld` rather than rigid
-bodies and is unaffected.
-
 **DECISION (2026-07-26, owner): route Blockfall Reactor and Turbo Drift Circuit through the
 existing `cannon-es@0.20.0` backend.** No new native solver work. The `aura-js` narrow-phase
 keeps its six pairs and its AABB fallback, and that limitation is documented rather than
 fixed. Aura Clash Arena stays on `HitboxWorld`; Skyline Runner is unaffected.
 
-Consequence to disclose: the native `aura-js` backend remains without box↔box, angular
-contact response, or CCD. Any doc or gate implying otherwise must be corrected in Phase 4,
-and the per-game backend choice must be stated wherever physics fidelity is claimed.
+**Implemented (2.20-2.22).** Both routes select `cannon-es` in source and publish the
+selection in runtime evidence. Route and package tests prove Cannon angular contact response
+with an off-axis falling box. Because `cannon-es@0.20.0` does not expose native swept
+time-of-impact, Aura3D's explicitly named adaptive-substep wrapper bounds per-step motion,
+rejects steps that exceed its configured guarantee, and prevents the tested fast mover from
+tunneling. The evidence names the provider rather than attributing CCD to Cannon itself.
+
+**Phase 2B update.** Native friction now projects accumulated tangent impulse onto the
+`|Jt| <= μ·Jn` Coulomb cone. `@aura3d/physics` exports a conservative swept-bounds
+`timeOfImpact(...)` query, and the existing adaptive-substep continuous-collision contract
+now protects `aura-js` as well as `cannon-es`, including force/history preservation and a
+configured-guarantee rejection path. Native oriented box SAT, convex/mesh/heightfield
+narrow-phase, and angular contact impulses did not land after their two allowed attempts.
+
+Consequence to disclose: native `aura-js` has bounded adaptive CCD and accumulated Coulomb
+friction, but remains without oriented box collision or angular contact response. The
+per-game backend choice must still be stated wherever physics fidelity is claimed.
 
 ---
 
@@ -377,17 +430,15 @@ now delegates all camera math to the `@aura3d/input` engine when a camera is att
 Detached mode is documented as bookkeeping-only and carries no parity claim. `MapControls`
 delegates damping. Covered by `tests/unit/controls/orbit-controls-delegation.test.ts`.
 
-**Still open (2.23).** Seven exported placeholders remain in the same package:
-`FirstPersonControls` (8 lines), `FlyControls` (14), `MapControls` (15),
-`PointerLockControls` (15), `DragControls` (17), `SelectionManager` (18),
-`TransformControls` (19). Each is a public export that does nothing. Resolve or explicitly
-deprecate.
+**Resolved (2.23).** Fly, first-person, map, and pointer-lock controls now delegate to the
+input engines; selection is observable. DragControls and TransformControls retain functional
+explicit-delta compatibility shims with typed deprecation contracts that name their supported
+replacements.
 
-**Also open (2.24).** The inventory's `misc_controls_orbit` `"matched"` entry
-(`priority: "high"`) was written against the `input` implementation. Re-check it against the
-now-delegating `controls` version. Related: `misc_controls_transform` is also listed
-`"matched"` at `priority: "high"` while `TransformControls` is a 19-line stub — that entry
-is not defensible as written.
+**Resolved (2.24).** The inventory now scopes `misc_controls_orbit` to the delegated proof
+and cites the controls-package delegation test. `misc_controls_transform` is lowered from
+`"matched"` to `"partial"` and names the missing interactive gizmo, picking, constraint,
+snapping, and local/world-space semantics.
 
 **Blocks games?** No.
 
@@ -398,17 +449,21 @@ is not defensible as written.
 `packages/rendering/src/EnvironmentPlatform.ts` maintains an honest ledger with a
 `"missing" | "partial" | "helper"` status enum (`:29`). Notable entries: `exr-parser` —
 "EXRLoaderThreeCompat is diagnostic-only and does not decode OpenEXR pixels" (`:260`);
-`cube-camera-reflections` — "ReflectionProbe is a descriptor helper; live six-direction
-capture is not implemented" (`:261`); `atmospheric-scattering` missing (`:242`). Planar
-reflections, scene refraction/caustics, area lights, terrain/heightfield (`:1027-1069`), and
-volumetrics/god rays (`:457`) are all disclosed unsupported.
+`cube-camera-reflections` was descriptor-only at this Phase 1 baseline and was subsequently
+implemented by task 2B.3 with six-face capture and moving-object reflective pixel evidence;
+`atmospheric-scattering` is documented unsupported. Phase 2B subsequently added bounded
+scene-space transmission/refraction, depth-aware radial volumetric light, and generated
+terrain heightfield geometry with browser pixels. Planar mirrors, physical caustics,
+rectangular area lights, physical atmosphere, and native terrain collision response remain
+unsupported or separately excluded.
 
 Ten environment presets are `"helper"` — geometry descriptors, not rendering features —
 consistent with `packages/environments/src` totalling only 469 LOC.
 
-**Assessment: this gap is correctly handled and needs no work.** The ledger was not
-downgraded or deleted, and nothing was flipped because nothing was implemented. This is the
-model the rest of the repo should follow.
+**Phase 1 assessment:** the disclosures were honest. Phase 2B later resolved eight
+implemented ledger entries, documented atmospheric scattering and EXR as unsupported, and
+left linear/exponential fog partial after their visual proof failed twice. The ledger changes
+carry their proof in the same task commits.
 
 **Standing rule (2.25).** If a Phase 2 task implements a ledger entry, flip its status **and**
 attach the proof in the same commit. Never flip without proof.

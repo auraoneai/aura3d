@@ -1,6 +1,6 @@
 # Known Limits
 
-Date: 2026-07-19
+Date: 2026-07-27
 Status: canonical limitations doc
 
 This file is the public limitations source for project docs, release copy, and
@@ -84,9 +84,17 @@ guide or README must include the narrower wording.
 ## Lower-Level Renderer Coverage And Limits
 
 - Renderer scene frustum culling is implemented and covered by focused moving-camera unit tests; this is not a broad large-scene performance claim.
-- HDR environment map input exists on tested SDK and production-runtime paths, but it does not prove physically complete image-based lighting on the public root path.
+- Rendering-internal cubemap and equirectangular backgrounds, GGX PMREM, RGBE HDR file loading, live cube-camera probes, bounded scene-color transmission/refraction, depth-aware radial volumetric light, and generated terrain heightfields have focused unit and browser-pixel evidence. None of those package-level proofs automatically establishes root `createAuraApp` support.
+- OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported. Rectangular area-light/LTC shading remains absent; studio softboxes are emissive geometry. Linear and exponential fog remain partial until accepted route pixels prove object/background blending.
 - Current glTF render resources expose one primary UV path for glTF render resources.
 - Texture support has bounded KTX2/Basis transcoding coverage and GPU capability-driven format selection; it is not universal compressed-texture support.
 - There is no product-studio material-matrix visual coverage broad enough to claim all material combinations.
 - Shadow coverage includes unit-level moving-camera cascade split stress. Directional cascades do not imply production-ready point/spot shadow maps.
 - browser visual stress for long moving-camera paths remains required before broad shadow or culling claims.
+
+## Physics Backend Limits
+
+- `@aura3d/physics` exposes a conservative swept-bounds `timeOfImpact(...)` query and an opt-in adaptive-substep continuous-collision wrapper on both `aura-js` and `cannon-es`. The wrapper bounds linear/angular travel and rejects a step when its configured substep guarantee would be exceeded.
+- The native `aura-js` contact solver now uses accumulated Coulomb friction impulses; penetration depth is not part of the friction impulse bound.
+- Native `aura-js` still lacks oriented box SAT, convex GJK/EPA, triangle-mesh/heightfield narrow-phase response, and angular contact impulses. Unsupported pairs still fall through to axis-aligned bounds, so rotated stacking and tumbling claims require a backend and test that actually prove them.
+- Turbo Drift Circuit and Blockfall Reactor use `cannon-es@0.20.0` for angular contact fidelity. Their fast-body protection is Aura3D's adaptive-substep wrapper, not native Cannon swept-TOI support.

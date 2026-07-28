@@ -19,6 +19,8 @@ Aura3D physics code lives in `packages/physics` and is used by routes and workfl
 - Rigid bodies and colliders.
 - Constraints.
 - Raycasts.
+- Conservative swept-bounds time-of-impact queries.
+- Opt-in adaptive-substep continuous-collision protection on both physics backends.
 - Broadphase helpers.
 - Character-controller-facing helpers.
 - Scene sync and debug route evidence.
@@ -33,8 +35,6 @@ The physics boundary is `@aura3d/engine/physics`. Claims about collision, solver
 
 ## Current Limits
 
-Physics support is scoped to the implemented runtime primitives and route evidence. Complex solver behavior, large-world stability, and engine-replacement claims remain out of scope until covered by focused tests and reports.
-
-## Current Limits
-
 - Physics support is limited to the implemented runtime primitives and tested routes; advanced solver, vehicle, cloth, and large-scale simulation claims require separate evidence.
+- Native `aura-js` uses accumulated Coulomb friction and bounded adaptive CCD, but still lacks oriented box/convex/mesh/heightfield narrow-phase and angular contact impulses.
+- Route claims must identify whether they use native `aura-js`, `cannon-es`, or a route-local kinematic/combat system.
