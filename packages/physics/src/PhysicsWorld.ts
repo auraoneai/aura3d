@@ -490,7 +490,7 @@ export class PhysicsWorld {
     if (bodyB.inverseMass > 0) {
       bodyB.position = [bodyB.position[0] + correction[0] * bodyB.inverseMass, bodyB.position[1] + correction[1] * bodyB.inverseMass, bodyB.position[2] + correction[2] * bodyB.inverseMass];
     }
-    const relativeVelocity = subVec3(bodyB.velocity, bodyA.velocity);
+    const relativeVelocity = relativeContactVelocity(bodyA, bodyB, contact.point);
     const velocityAlongNormal = dotVec3(relativeVelocity, contact.normal);
     const materialA = this.effectiveMaterial(bodyA, contact.colliderA);
     const materialB = this.effectiveMaterial(bodyB, contact.colliderB);
@@ -499,17 +499,20 @@ export class PhysicsWorld {
     const impulseState = contactImpulses.get(pairKey) ?? { normal: 0, tangent: [0, 0, 0] };
     let normalImpulseMagnitude = 0;
     if (velocityAlongNormal <= 0) {
-      normalImpulseMagnitude = -(1 + restitution) * velocityAlongNormal / invMassSum;
+      const normalDenominator = contactImpulseDenominator(bodyA, bodyB, contact.normal, contact.point);
+      normalImpulseMagnitude = normalDenominator > 0 ? -(1 + restitution) * velocityAlongNormal / normalDenominator : 0;
       impulseState.normal += normalImpulseMagnitude;
-      this.applyImpulsePair(bodyA, bodyB, scaleVec3(contact.normal, normalImpulseMagnitude));
+      this.applyImpulsePair(bodyA, bodyB, scaleVec3(contact.normal, normalImpulseMagnitude), contact.point);
     }
-    const updatedRelativeVelocity = subVec3(bodyB.velocity, bodyA.velocity);
+    const updatedRelativeVelocity = relativeContactVelocity(bodyA, bodyB, contact.point);
     const updatedNormalVelocity = dotVec3(updatedRelativeVelocity, contact.normal);
     const tangentVelocity = subVec3(updatedRelativeVelocity, scaleVec3(contact.normal, updatedNormalVelocity));
     const tangentSpeed = Math.hypot(tangentVelocity[0], tangentVelocity[1], tangentVelocity[2]);
     if (tangentSpeed > 1e-9) {
       const friction = Math.sqrt(Math.max(0, materialA.friction) * Math.max(0, materialB.friction));
-      const targetImpulse = scaleVec3(tangentVelocity, -1 / invMassSum);
+      const tangent = scaleVec3(tangentVelocity, 1 / tangentSpeed);
+      const tangentDenominator = contactImpulseDenominator(bodyA, bodyB, tangent, contact.point);
+      const targetImpulse: Vec3 = tangentDenominator > 0 ? scaleVec3(tangentVelocity, -1 / tangentDenominator) : [0, 0, 0];
       const proposedTangent: Vec3 = [
         impulseState.tangent[0] + targetImpulse[0],
         impulseState.tangent[1] + targetImpulse[1],
@@ -523,7 +526,7 @@ export class PhysicsWorld {
       const frictionImpulse = subVec3(accumulatedTangent, impulseState.tangent);
       impulseState.tangent = accumulatedTangent;
       if (lengthVec3(frictionImpulse) > 0) {
-        this.applyImpulsePair(bodyA, bodyB, frictionImpulse);
+        this.applyImpulsePair(bodyA, bodyB, frictionImpulse, contact.point);
       }
     }
     contactImpulses.set(pairKey, impulseState);
@@ -537,15 +540,17 @@ export class PhysicsWorld {
     };
   }
 
-  private applyImpulsePair(bodyA: RigidBody, bodyB: RigidBody, impulse: Vec3): void {
+  private applyImpulsePair(bodyA: RigidBody, bodyB: RigidBody, impulse: Vec3, point?: Vec3): void {
     if (bodyA.inverseMass > 0) {
-      bodyA.velocity = [bodyA.velocity[0] - impulse[0] * bodyA.inverseMass, bodyA.velocity[1] - impulse[1] * bodyA.inverseMass, bodyA.velocity[2] - impulse[2] * bodyA.inverseMass];
+      if (point) bodyA.applyContactImpulseAtPoint(scaleVec3(impulse, -1), point);
+      else bodyA.velocity = [bodyA.velocity[0] - impulse[0] * bodyA.inverseMass, bodyA.velocity[1] - impulse[1] * bodyA.inverseMass, bodyA.velocity[2] - impulse[2] * bodyA.inverseMass];
       if (bodyA.sleeping && bodyA.speedSquared() > this.sleepVelocityThreshold * this.sleepVelocityThreshold) {
         bodyA.wake();
       }
     }
     if (bodyB.inverseMass > 0) {
-      bodyB.velocity = [bodyB.velocity[0] + impulse[0] * bodyB.inverseMass, bodyB.velocity[1] + impulse[1] * bodyB.inverseMass, bodyB.velocity[2] + impulse[2] * bodyB.inverseMass];
+      if (point) bodyB.applyContactImpulseAtPoint(impulse, point);
+      else bodyB.velocity = [bodyB.velocity[0] + impulse[0] * bodyB.inverseMass, bodyB.velocity[1] + impulse[1] * bodyB.inverseMass, bodyB.velocity[2] + impulse[2] * bodyB.inverseMass];
       if (bodyB.sleeping && bodyB.speedSquared() > this.sleepVelocityThreshold * this.sleepVelocityThreshold) {
         bodyB.wake();
       }
@@ -928,6 +933,43 @@ type BroadphaseProfile = {
   activeMax: number;
   rejectedByBounds: number;
 };
+
+function relativeContactVelocity(bodyA: RigidBody, bodyB: RigidBody, point?: Vec3): Vec3 {
+  if (!point) return subVec3(bodyB.velocity, bodyA.velocity);
+  const radiusA = subVec3(point, bodyA.position);
+  const radiusB = subVec3(point, bodyB.position);
+  const velocityA = addVectors(bodyA.velocity, crossVectors(bodyA.angularVelocity, radiusA));
+  const velocityB = addVectors(bodyB.velocity, crossVectors(bodyB.angularVelocity, radiusB));
+  return subVec3(velocityB, velocityA);
+}
+
+function contactImpulseDenominator(bodyA: RigidBody, bodyB: RigidBody, direction: Vec3, point?: Vec3): number {
+  let denominator = bodyA.inverseMass + bodyB.inverseMass;
+  if (!point) return denominator;
+  if (bodyA.inverseMass > 0) {
+    const radius = subVec3(point, bodyA.position);
+    const angular = bodyA.multiplyInverseInertiaWorld(crossVectors(radius, direction));
+    denominator += dotVec3(direction, crossVectors(angular, radius));
+  }
+  if (bodyB.inverseMass > 0) {
+    const radius = subVec3(point, bodyB.position);
+    const angular = bodyB.multiplyInverseInertiaWorld(crossVectors(radius, direction));
+    denominator += dotVec3(direction, crossVectors(angular, radius));
+  }
+  return denominator;
+}
+
+function addVectors(a: Vec3, b: Vec3): Vec3 {
+  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+}
+
+function crossVectors(a: Vec3, b: Vec3): Vec3 {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ];
+}
 
 function emptyBroadphaseProfile(): BroadphaseProfile {
   return {

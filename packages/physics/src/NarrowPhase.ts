@@ -172,12 +172,11 @@ function minimumOverlapContact(
   if (!Number.isFinite(minimumOverlap)) return undefined;
   const centerDelta = subVec3(b.center, a.center);
   const normal = dotVec3(centerDelta, minimumAxis) < 0 ? scaleVec3(minimumAxis, -1) : minimumAxis;
-  const pointA = supportVertex(a.vertices, normal);
-  const pointB = supportVertex(b.vertices, scaleVec3(normal, -1));
+  const point = opposingSupportContactPoint(a.vertices, b.vertices, normal);
   return {
     normal,
     penetration: minimumOverlap,
-    point: scaleVec3(addVec3(pointA, pointB), 0.5)
+    point
   };
 }
 
@@ -276,12 +275,10 @@ function epaPenetration(
     if (supportDistance - closest.distance <= 1e-6) {
       const centerDelta = subVec3(b.center, a.center);
       const normal = dotVec3(centerDelta, closest.normal) < 0 ? scaleVec3(closest.normal, -1) : closest.normal;
-      const pointA = supportVertex(a.vertices, normal);
-      const pointB = supportVertex(b.vertices, scaleVec3(normal, -1));
       return {
         normal,
         penetration: Math.max(closest.distance, EPSILON),
-        point: scaleVec3(addVec3(pointA, pointB), 0.5)
+        point: opposingSupportContactPoint(a.vertices, b.vertices, normal)
       };
     }
     const newIndex = vertices.push(support) - 1;
@@ -501,6 +498,22 @@ function supportVertex(vertices: readonly Vec3[], direction: Vec3): Vec3 {
     }
   }
   return best;
+}
+
+function opposingSupportContactPoint(verticesA: readonly Vec3[], verticesB: readonly Vec3[], normal: Vec3): Vec3 {
+  const featureA = supportFeature(verticesA, normal);
+  const featureB = supportFeature(verticesB, scaleVec3(normal, -1));
+  const selected = featureA.spread <= featureB.spread ? featureA.point : featureB.point;
+  const middlePlane = (dotVec3(featureA.point, normal) + dotVec3(featureB.point, normal)) * 0.5;
+  return addVec3(selected, scaleVec3(normal, middlePlane - dotVec3(selected, normal)));
+}
+
+function supportFeature(vertices: readonly Vec3[], direction: Vec3): { readonly point: Vec3; readonly spread: number } {
+  const maximum = Math.max(...vertices.map((vertex) => dotVec3(vertex, direction)));
+  const support = vertices.filter((vertex) => maximum - dotVec3(vertex, direction) <= 1e-7);
+  const point = centroid(support);
+  const spread = support.reduce((sum, vertex) => sum + squaredDistance(vertex, point), 0);
+  return { point, spread };
 }
 
 function project(vertices: readonly Vec3[], axis: Vec3): { readonly min: number; readonly max: number } {

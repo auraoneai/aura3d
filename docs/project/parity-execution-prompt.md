@@ -35,8 +35,8 @@ Completed and committed:
 
 Phase 1, Phase 2, and the Phase 3 game work have been executed. Phase 2B has also been
 executed under Rule 0. The follow-on remediation has since completed fog pixels,
-rectangular area lights, and native oriented/convex/mesh/heightfield narrow-phase; native
-angular contact remains in progress. The final full-unit
+rectangular area lights, native oriented/convex/mesh/heightfield narrow-phase, and native
+angular contact. The final full-unit
 exit gate is blocked only on two retained racing visual-QA assertions. The 2B-specific
 documentation pass and the general Phase 4 claim audit are complete. Remaining
 non-passing gates and Rule 0 blockers are summarized in **4.8**; they were not
@@ -737,7 +737,7 @@ until the games work.
       indexed meshes and heightfields. Six focused native tests prove every new path while
       the full existing physics suite remains green. Surface↔surface pairs and automatic
       rendering-preset collider attachment remain excluded.
-- [!] **2B.15** Route contact impulses through `angularVelocity` so contacts generate torque.
+- [x] **2B.15** Route contact impulses through `angularVelocity` so contacts generate torque.
       `applyImpulsePair` (`PhysicsWorld.ts:452-464`) writes only linear velocity on both
       bodies, even though `RigidBody.applyImpulse` (`:155`) does apply angular response — so
       the solver is the gap, not the body. Test: a box dropped on a corner must tumble on the
@@ -747,8 +747,14 @@ until the games work.
       from sleeping and regressed capsule↔sphere settling. After removing per-impulse wake
       resets and using the sphere surface point, attempt 2 still regressed
       capsule↔capsule settling from `[0, 0]` to residual x velocities
-      `[0.015385, -0.015385]`. Per Rule 0 the solver changes and new test were removed;
-      contact impulses remain linear-only.
+      `[0.015385, -0.015385]`. Per Rule 0 the solver changes and new test were removed at
+      that time. The explicitly requested remediation added support-feature contact points,
+      world-space principal inverse inertia, point-relative linear/angular velocity, and
+      point-aware effective mass for both normal and friction impulses. Solver-owned
+      impulses avoid resetting sleep timers. The native corner-drop test now records
+      angular speed and rotation, while centered face contacts manufacture no torque and
+      the full 117-test physics/workstream suite—including the three-box sleep and capsule
+      settling regressions—passes.
 - [x] **2B.16** Replace the friction clamp at `PhysicsWorld.ts:436` — currently
       `μ·(|Jn| + penetration)`, which mixes a penetration depth into an impulse bound — with a
       proper Coulomb cone on accumulated normal impulse. Medium.
@@ -775,6 +781,11 @@ until the games work.
       error. A tensor rewrite would not fix the current linear-only contact impulse path, so
       it remains deferred until angular contacts are stable and a rotated anisotropic-body
       test demonstrates the need.
+      Follow-on remediation now rotates the diagonal principal inverse inertia into world
+      space for every angular/contact impulse, which provides the full world-space tensor
+      action required for rotated principal-axis bodies. The bounded isotropic
+      corner-tumble and regression suite do not demonstrate a need for a public arbitrary
+      off-diagonal body-inertia input, so that broader API remains correctly deferred.
 
 ## Phase 2B exit gate
 
@@ -1111,8 +1122,9 @@ exists.
         arbitrary rigs, clips, or facial pipelines.
       - **Native production physics** remains unclaimed as a broad label.
         Package-scoped rotated box SAT, convex-hull GJK/EPA, and
-        mesh/heightfield contacts now have focused proof, while angular contact
-        impulses remain open. The diagonal inertia tensor remains conditional.
+        mesh/heightfield contacts and contact-point angular impulses now have
+        focused proof. Arbitrary off-diagonal body-inertia input remains
+        conditional.
         Game docs name `cannon-es` where route fidelity depends on it.
       - **Turbo Drift Circuit and Skyline Runner public-ready status** is held:
         the required retained racing visual-QA unit test is red on a stale
@@ -1149,8 +1161,8 @@ exists.
 - Per the Gap 7 decision, state the per-game physics backend wherever fidelity is claimed.
   Native `aura-js` now has bounded adaptive CCD and accumulated Coulomb
   friction plus focused rotated box, convex-hull, mesh, and heightfield
-  narrow-phase proof. Native angular contact response and broad production
-  collision parity remain absent.
+  narrow-phase and corner-tumble angular-contact proof. Broad production
+  collision parity remains absent.
 
 ---
 

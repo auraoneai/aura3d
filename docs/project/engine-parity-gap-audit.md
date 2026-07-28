@@ -421,8 +421,11 @@ narrow-phase, and angular contact impulses did not land after their two allowed 
 broadphase bounds, 15-axis OBB SAT, convex-hull GJK/EPA with a degeneracy fallback, and
 triangle-backed contacts for box/convex/sphere/capsule shapes against indexed meshes and
 heightfields. Focused tests prove both rotated AABB false-positive rejection and real
-rotated overlap, plus each new shape family. Native angular contact response remains the
-separate open solver limit. The per-game backend choice must still be stated wherever
+rotated overlap, plus each new shape family. The next remediation task routed proven
+contact points through linear/angular relative velocity and world-space principal inertia,
+with point-aware normal and friction effective mass. A native corner-drop box develops
+angular velocity and tumbles, while centered support faces, the three-box sleep test, and
+capsule settling remain stable. The per-game backend choice must still be stated wherever
 physics fidelity is claimed.
 
 ---

@@ -124,7 +124,7 @@ pnpm advanced-gallery:pipeline
 
 - The built-in broadphase is deterministic and inspectable.
 - Continuous collision protection is opt-in and bounded. It uses adaptive substeps rather than a general exact swept-shape solver; `timeOfImpact(...)` conservatively sweeps finite world AABBs and excludes rotation, angular velocity, and infinite plane bounds.
-- Native `aura-js` friction uses accumulated normal/tangent impulses and a Coulomb cone. Its contact response remains linear-only, so native contacts do not generate torque.
+- Native `aura-js` friction uses accumulated normal/tangent impulses and a Coulomb cone. Contacts with a proven world-space point use linear and angular relative velocity, world-space principal inverse inertia, and point-aware effective mass for both normal and friction impulses. Analytic pairs without a reliable point retain their established center-linear path.
 - Native `aura-js` routes rotated box pairs through 15-axis OBB SAT, convex-hull pairs through GJK/EPA with a SAT degeneracy fallback, and box/convex/sphere/capsule contacts against indexed meshes and heightfields through triangle-backed narrow phase. Mesh↔mesh and other unsupported surface/surface pairs remain outside the accepted contract.
 - `cannon-es@0.20.0` supplies the tested angular-contact backend for Turbo Drift Circuit and Blockfall Reactor. Aura3D's adaptive-substep wrapper supplies their fast-body protection.
 - The advanced gallery does not claim mesh-derived colliders or full articulated robot dynamics.

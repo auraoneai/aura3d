@@ -1,4 +1,4 @@
-import { addVec3, cloneVec3, scaleVec3, validateFiniteVec3, type Vec3, vec3 } from "./Shape.js";
+import { addVec3, cloneVec3, rotateVec3ByQuat, scaleVec3, validateFiniteVec3, type Vec3, vec3 } from "./Shape.js";
 
 export type RigidBodyType = "dynamic" | "static" | "kinematic";
 export type Quat = readonly [number, number, number, number];
@@ -152,7 +152,7 @@ export class RigidBody {
     if (this.type !== "dynamic") {
       return;
     }
-    this.angularVelocity = addVec3(this.angularVelocity, multiplyVec3(impulse, this.inverseInertia));
+    this.angularVelocity = addVec3(this.angularVelocity, this.multiplyInverseInertiaWorld(impulse));
     this.wake();
   }
 
@@ -164,6 +164,29 @@ export class RigidBody {
     }
     this.applyImpulse(impulse);
     this.applyAngularImpulse(crossVec3(subVec3(worldPoint, this.position), impulse));
+  }
+
+  /**
+   * Applies a solver-owned contact impulse without resetting an already
+   * accumulating sleep timer. PhysicsWorld performs threshold-based waking
+   * after the full linear/angular velocity update.
+   */
+  applyContactImpulseAtPoint(impulse: Vec3, worldPoint: Vec3): void {
+    validateFiniteVec3(impulse, "contact impulse");
+    validateFiniteVec3(worldPoint, "contact impulse point");
+    if (this.type !== "dynamic") return;
+    this.velocity = addVec3(this.velocity, scaleVec3(impulse, this.inverseMass));
+    const angularImpulse = crossVec3(subVec3(worldPoint, this.position), impulse);
+    this.angularVelocity = addVec3(this.angularVelocity, this.multiplyInverseInertiaWorld(angularImpulse));
+  }
+
+  multiplyInverseInertiaWorld(value: Vec3): Vec3 {
+    validateFiniteVec3(value, "inverse inertia input");
+    if (this.type !== "dynamic") return [0, 0, 0];
+    const inverseRotation: Quat = [-this.rotation[0], -this.rotation[1], -this.rotation[2], this.rotation[3]];
+    const local = rotateVec3ByQuat(value, inverseRotation);
+    const localResponse = multiplyVec3(local, this.inverseInertia);
+    return rotateVec3ByQuat(localResponse, this.rotation);
   }
 
   integrate(dt: number, gravity: Vec3, clearForces = true): void {

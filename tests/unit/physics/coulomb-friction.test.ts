@@ -32,7 +32,7 @@ test("Coulomb friction is bounded by accumulated normal impulse, not penetration
   const shallowContact = slideAfterContact(0.01, 1);
   const deepContact = slideAfterContact(0.45, 1);
 
-  assert.ok(Math.abs(shallowContact - 3) < 1e-9);
+  assert.ok(Math.abs(shallowContact - 3) < 1e-9, `expected vx=3, got ${shallowContact}`);
   assert.ok(Math.abs(deepContact - shallowContact) < 1e-9);
 });
 
