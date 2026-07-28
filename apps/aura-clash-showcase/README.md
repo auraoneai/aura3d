@@ -1,6 +1,8 @@
 # Aura Clash
 
-Aura Clash is the flagship Aura3D browser fighting game showcase. It is an original arcade fighter built to demonstrate typed GLB assets, Quaternius-derived character and city assets, cinematic arenas, responsive combat UI, accessibility controls, evidence routes, poster capture scenarios, and deploy-ready TypeScript.
+Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.
+
+The live route uses production-runtime render resources with the advanced-runtime `A3DRenderer`; it does not make a root `createAuraApp` capability claim.
 
 ## Routes
 

@@ -9,34 +9,34 @@
     "command": "assets validate-game",
     "label": "AuraClash game asset validator"
   },
-  "checkedAt": "2026-06-06T07:32:08.182Z",
-  "manifestPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/aura.assets.json",
+  "checkedAt": "2026-07-28T05:59:01.648Z",
+  "manifestPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/aura.assets.json",
   "artifacts": {
-    "manifestPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/aura.assets.json",
-    "typedAssetsPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/src/aura-assets.ts",
-    "outputDir": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets",
+    "manifestPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/aura.assets.json",
+    "typedAssetsPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/src/aura-assets.ts",
+    "outputDir": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets",
     "assetBasePath": "/aura-assets/",
     "assetFiles": [
       {
         "id": "auraClashPlayerRig",
-        "sourcePath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL1_Standard.glb",
-        "outputPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.d8672924.glb",
+        "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL1_Standard.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.d8672924.glb",
         "publicUrl": "/aura-assets/auraClashPlayerRig.d8672924.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashPlayerRig.thumb.svg",
-        "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
+        "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
       },
       {
         "id": "auraClashRivalRig",
-        "sourcePath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL2_Standard.glb",
-        "outputPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+        "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL2_Standard.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.9a0ffda4.glb",
         "publicUrl": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashRivalRig.thumb.svg",
-        "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
+        "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
       }
     ],
-    "evidencePath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/launch-evidence/assets-validate-game.json"
+    "evidencePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/assets-validate-game.json"
   },
   "contracts": [
     {
@@ -87,6 +87,7 @@
       "source": "assets/quaternius-source/selected/animations/UAL1_Standard.glb",
       "outputPath": "public/aura-assets/auraClashPlayerRig.d8672924.glb",
       "url": "/aura-assets/auraClashPlayerRig.d8672924.glb",
+      "hash": "sha256-d867292451e432b735e2a910c2db6640fbea97b205d85a2e8ffed26da87972cf",
       "sizeBytes": 8114364,
       "bounds": [
         1.944,
@@ -4084,12 +4085,12 @@
       ],
       "artifactPaths": {
         "id": "auraClashPlayerRig",
-        "sourcePath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL1_Standard.glb",
-        "outputPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.d8672924.glb",
+        "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL1_Standard.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.d8672924.glb",
         "publicUrl": "/aura-assets/auraClashPlayerRig.d8672924.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashPlayerRig.thumb.svg",
-        "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
+        "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashPlayerRig.thumb.svg"
       },
       "gameReady": true,
       "animationReady": true,
@@ -4107,6 +4108,7 @@
       "source": "assets/quaternius-source/selected/animations/UAL2_Standard.glb",
       "outputPath": "public/aura-assets/auraClashRivalRig.9a0ffda4.glb",
       "url": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+      "hash": "sha256-9a0ffda4931f934f13fb584002c51673723b03f9655a581167e7e5dae744f086",
       "sizeBytes": 8061600,
       "bounds": [
         1.944,
@@ -7938,12 +7940,12 @@
       ],
       "artifactPaths": {
         "id": "auraClashRivalRig",
-        "sourcePath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL2_Standard.glb",
-        "outputPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.9a0ffda4.glb",
+        "sourcePath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/assets/quaternius-source/selected/animations/UAL2_Standard.glb",
+        "outputPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.9a0ffda4.glb",
         "publicUrl": "/aura-assets/auraClashRivalRig.9a0ffda4.glb",
         "dependencyPaths": [],
         "thumbnailUrl": "/aura-assets/auraClashRivalRig.thumb.svg",
-        "thumbnailPath": "/Users/gurbakshchahal/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
+        "thumbnailPath": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/public/aura-assets/auraClashRivalRig.thumb.svg"
       },
       "gameReady": true,
       "animationReady": true,

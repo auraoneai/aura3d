@@ -29,21 +29,7 @@ interface FakeRoot extends ParentNode {
 function createStageRoot(): FakeRoot {
   const selectors = [
     ".aca",
-    ".aca-sky",
-    ".aca-portal",
-    ".aca-skyline",
-    ".aca-banners",
-    ".aca-rays",
-    ".aca-fog-far",
-    ".aca-fog-drift",
-    ".aca-fog-near",
-    ".aca-dais",
-    ".aca-platform",
-    ".aca-floor-sheen",
-    "#arena-particles",
     "#aura-clash-arena-canvas",
-    ".aca-scanline",
-    ".aca-stage-vignette",
     "#arena-fog"
   ];
   const elements = new Map<string, FakeElement>();
@@ -80,7 +66,7 @@ function createStageRoot(): FakeRoot {
 }
 
 describe("Aura Clash arena stage evidence", () => {
-  it("names each visual target element and annotates DOM evidence keys", () => {
+  it("names each rendered visual target and annotates only the renderer canvas", () => {
     const root = createStageRoot();
 
     annotateAuraClashArenaStage(root);
@@ -88,10 +74,12 @@ describe("Aura Clash arena stage evidence", () => {
 
     expect(evidence.evidenceBacked).toBe(true);
     expect(evidence.missingElementIds).toEqual([]);
+    expect(evidence.domSceneElementCount).toBe(0);
+    expect(evidence.rendererOwner).toBe("production-runtime");
     expect(evidence.namedElementCount).toBe(auraClashArenaStageElements.length);
     expect(evidence.togglableElementCount).toBeGreaterThan(0);
-    expect(evidence.toggleGroups).toEqual(["accessibility", "backdrop", "motion", "particles", "reflections"]);
-    expect(root.element(".aca-portal").dataset.stageEvidence).toBe("stage.portalCore");
+    expect(evidence.toggleGroups).toEqual(["backdrop", "motion", "particles", "reflections"]);
+    expect(root.element("#aura-clash-arena-canvas").dataset.stageEvidence).toBe("renderedStage.productionRuntimeCanvas");
   });
 });
 

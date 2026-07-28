@@ -189,7 +189,8 @@ export const auraClashRuntimeMutationEvidenceContract = {
     "apps/aura-clash-showcase/src/game/AuraClashGame.ts",
     "apps/aura-clash-showcase/src/game/CameraDirector.ts",
     "apps/aura-clash-showcase/src/game/HitboxSystem.ts",
-    "apps/aura-clash-showcase/src/scenes/createFighterNodes.ts",
+    "apps/aura-clash-showcase/src/playable/AuraClashArenaApp.ts",
+    "apps/aura-clash-showcase/src/playable/arena/RenderedArenaStage.ts",
   ],
 } as const;
 

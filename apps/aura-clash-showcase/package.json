@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aura Clash flagship Aura3D browser fighting game showcase with typed GLB assets, Quaternius CC0-style fighters, cinematic arenas, accessibility controls, evidence routes, and deploy-ready TypeScript.",
+  "description": "Aura Clash Aura3D browser runtime development showcase with typed GLB assets, combat mechanics, accessibility controls, evidence routes, and deployment checks.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.shipping.json --noEmit",

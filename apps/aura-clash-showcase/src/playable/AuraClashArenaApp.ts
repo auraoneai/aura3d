@@ -6,14 +6,11 @@ import {
   type TypedGLBActor
 } from "@aura3d/engine/production-runtime";
 import {
-  Geometry,
-  PBRMaterial,
-  UnlitMaterial,
   type RenderDeviceDiagnostics,
   type RenderItem,
   type RenderSource
 } from "@aura3d/engine/rendering";
-import { composeMat4, quatFromEuler, type Mat4 } from "@aura3d/scene";
+import { quatFromEuler } from "@aura3d/scene";
 import { fighterInertializedWeights, sampleClipEvents } from "@aura3d/animation";
 import {
   createFighterSecondaryMotion,
@@ -51,7 +48,8 @@ import {
   annotateAuraClashArenaStage,
   collectAuraClashArenaStageEvidence
 } from "./arena/AuraClashArenaStage";
-import { createArenaTweaksEvidence } from "./arena/ArenaTweaksPanel";
+import { createArenaTweaksEvidence, collectArenaTweaksState } from "./arena/ArenaTweaksPanel";
+import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
 import {
   emptyComboState,
@@ -396,91 +394,6 @@ export function mountAuraClashArenaApp(): void {
       </section>
 
       <section class="aca-stage-shell" aria-label="Aura Clash Arena production GLB stage">
-        <div class="aca-arena-bg" aria-hidden="true">
-          <div class="aca-sky" data-depth="0.05"></div>
-          <div class="aca-core" data-depth="0.15"></div>
-          <div class="aca-backdrop">
-            <div class="aca-skyline" data-depth="0.45">
-              <svg viewBox="0 0 1200 420" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                <g fill="currentColor">
-                  <rect x="40" y="180" width="70" height="240"/><rect x="120" y="120" width="48" height="300"/>
-                  <rect x="180" y="220" width="90" height="200"/><rect x="285" y="80" width="40" height="340"/>
-                  <rect x="335" y="160" width="76" height="260"/><rect x="430" y="40" width="54" height="380"/>
-                  <rect x="500" y="210" width="120" height="210"/><rect x="640" y="120" width="46" height="300"/>
-                  <rect x="700" y="180" width="84" height="240"/><rect x="800" y="60" width="44" height="360"/>
-                  <rect x="860" y="200" width="110" height="220"/><rect x="985" y="140" width="50" height="280"/>
-                  <rect x="1050" y="110" width="70" height="310"/><rect x="1130" y="200" width="50" height="220"/>
-                </g>
-                <g fill="none" stroke="var(--aca-core)" stroke-width="2" opacity="0.85">
-                  <line x1="305" y1="80" x2="305" y2="60"/>
-                  <line x1="457" y1="40" x2="457" y2="18"/>
-                  <line x1="822" y1="60" x2="822" y2="38"/>
-                </g>
-              </svg>
-            </div>
-            <div class="aca-portal" data-depth="0.3"></div>
-            <div class="aca-banners" data-depth="0.55">
-              <div class="aca-banner aca-banner-left"></div>
-              <div class="aca-banner aca-banner-right"></div>
-            </div>
-          </div>
-          <div class="aca-rays" data-depth="0.2">
-            <span class="aca-ray aca-ray-a"></span>
-            <span class="aca-ray aca-ray-b"></span>
-            <span class="aca-ray aca-ray-c"></span>
-          </div>
-          <div class="aca-fog aca-fog-far" data-depth="0.25"></div>
-          <div class="aca-fog aca-fog-drift" data-depth="0.3"></div>
-          <div class="aca-dais" data-depth="0.5">
-            <svg class="aca-platform" viewBox="0 0 1000 360" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="aca-floor-gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#0b252b"/>
-                  <stop offset="0.55" stop-color="#0d343d"/>
-                  <stop offset="1" stop-color="#123f47"/>
-                </linearGradient>
-                <linearGradient id="aca-face-gradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stop-color="#07191d"/>
-                  <stop offset="1" stop-color="#02080a"/>
-                </linearGradient>
-                <filter id="aca-rim-glow" x="-40%" y="-40%" width="180%" height="180%">
-                  <feGaussianBlur stdDeviation="3" result="blur"/>
-                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-              </defs>
-              <polygon points="20,300 980,300 948,352 52,352" fill="url(#aca-face-gradient)"/>
-              <polygon class="aca-platform-top" points="200,40 800,40 980,300 20,300" fill="url(#aca-floor-gradient)"/>
-              <g class="aca-platform-grid">
-                <path d="M164,92 H836 M128,144 H872 M92,196 H908 M56,248 H944"/>
-                <path d="M320,40 L212,300 M440,40 L404,300 M560,40 L596,300 M680,40 L788,300"/>
-              </g>
-              <line class="aca-platform-seam" x1="500" y1="40" x2="500" y2="300"/>
-              <polygon class="aca-platform-rim" points="200,40 800,40 980,300 20,300" filter="url(#aca-rim-glow)"/>
-              <line class="aca-platform-front" x1="20" y1="300" x2="980" y2="300" filter="url(#aca-rim-glow)"/>
-              <g filter="url(#aca-rim-glow)">
-                <line class="aca-platform-post" x1="20" y1="300" x2="20" y2="150"/>
-                <line class="aca-platform-post" x1="980" y1="300" x2="980" y2="150"/>
-                <line class="aca-platform-post aca-platform-post-back" x1="200" y1="40" x2="200" y2="-30"/>
-                <line class="aca-platform-post aca-platform-post-back" x1="800" y1="40" x2="800" y2="-30"/>
-                <circle class="aca-platform-cap" cx="20" cy="150" r="6"/><circle class="aca-platform-cap" cx="980" cy="150" r="6"/>
-                <circle class="aca-platform-cap" cx="200" cy="-30" r="4"/><circle class="aca-platform-cap" cx="800" cy="-30" r="4"/>
-              </g>
-              <g class="aca-platform-rope">
-                <line x1="20" y1="150" x2="980" y2="150"/>
-                <line x1="200" y1="-30" x2="800" y2="-30"/>
-                <line x1="20" y1="150" x2="200" y2="-30"/>
-                <line x1="980" y1="150" x2="800" y2="-30"/>
-                <line x1="20" y1="225" x2="980" y2="225"/>
-                <line x1="110" y1="60" x2="890" y2="60"/>
-              </g>
-            </svg>
-            <div class="aca-floor-sheen"></div>
-          </div>
-          <div class="aca-fog aca-fog-near" data-depth="0.65"></div>
-          <canvas id="arena-particles" class="aca-particles"></canvas>
-          <div class="aca-scanline"></div>
-          <div class="aca-stage-vignette"></div>
-        </div>
         <canvas id="aura-clash-arena-canvas" class="aca-canvas" aria-label="Aura3D production renderer canvas"></canvas>
         <div class="aca-topline">
           <span id="render-status">Loading skinned GLB animation runtime</span>
@@ -496,16 +409,17 @@ export function mountAuraClashArenaApp(): void {
         <button type="button" data-hold="down">S / Down</button>
         <button type="button" data-press="jump">W Jump</button>
         <button type="button" data-press="dash">Space Dash</button>
-        <button type="button" data-hold="guard">Shift Block</button>
+        <button type="button" data-hold="guard">Shift / Q Block</button>
         <button type="button" data-press="light">J Light</button>
         <button type="button" data-press="heavy">K Heavy</button>
         <button type="button" data-press="special">L Special</button>
-        <button type="button" data-press="pause">Pause</button>
-        <button type="button" data-press="reset">Reset</button>
+        <button type="button" data-press="pause">P Pause</button>
+        <button type="button" data-press="reset">R Reset</button>
       </section>
 
       <section id="evidence" class="aca-proof" aria-label="Aura3D evidence">
-        <div><b>Renderer</b><span>Production GLB render resources plus advanced-runtime A3DRenderer.</span></div>
+        <div><b>Scope</b><span>Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.</span></div>
+        <div><b>Renderer</b><span>Production-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.</span></div>
         <div><b>Fighters</b><span>Two distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.</span></div>
         <div><b>Animation</b><span>Jab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.</span></div>
         <div><b>Proof</b><span>Deterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls.</span></div>
@@ -720,11 +634,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     width: Math.max(1, canvas.clientWidth),
     height: Math.max(1, canvas.clientHeight),
     backend: "webgl2",
-    alpha: true,
-    clearColor: [0.008, 0.012, 0.018, 0]
+    alpha: false,
+    clearColor: [0.008, 0.014, 0.024, 1]
   });
 
-  const stageItems = createStageItems();
+  const renderedStage = createRenderedArenaStage();
   const renderPreset = createSideViewGameRenderPreset({
     debugVolumesEnabled: false,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
@@ -746,7 +660,6 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let playerScore = 0;
   let rivalScore = 0;
   let roundIndex = 1;
-  let intermissionTimer = 0;
   let rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
   let diagnostics: RenderDeviceDiagnostics = renderer.getDiagnostics();
   let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
@@ -754,7 +667,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   const source: RenderSource = {
     collectRenderItems: () => [
-      ...stageItems,
+      ...renderedStage.collect(collectArenaTweaksState(root), frame),
       ...collectFighterRenderItems(playerRuntime),
       ...collectFighterRenderItems(rivalRuntime),
       ...createFighterEffectItems(playerRuntime),
@@ -782,9 +695,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       toast = paused ? "Round paused." : "Round resumed.";
       audio.cue(paused ? "pause" : "resume");
     }
-    const resetRound = (reason: "manual" | "auto" | "continue" | "intermission") => {
+    const resetRound = () => {
       resetCount += 1;
-      lastInput = reason === "manual" ? "reset" : reason === "continue" ? "continue" : "auto-reset";
+      lastInput = "reset";
       resetFighter(playerState, -1.25, 1);
       resetFighter(rivalState, 1.25, -1);
       resetFighterSecondaryMotion(playerRuntime.secondary);
@@ -794,18 +707,17 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
       lastHitFrame = 0;
-      postResetInputLock = reason === "continue" ? 0.32 : 0.14;
+      postResetInputLock = 0.14;
       roundTime = 99;
       roundOver = false;
-      intermissionTimer = 0;
       callout = "FIGHT";
-      toast = reason === "auto" ? "Next round." : reason === "intermission" ? `Round ${roundIndex} — FIGHT!` : "Round reset.";
+      toast = `Round ${roundIndex} reset. FIGHT!`;
       sparks.length = 0;
       audio.cue("reset");
     };
 
     if (controls.pressed("reset")) {
-      resetRound("manual");
+      resetRound();
     }
 
     if (testDriverEnabled) {
@@ -877,32 +789,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     }
 
     let skipGameplayThisFrame = false;
-    if (!paused && intermissionTimer > 0) {
-      intermissionTimer = Math.max(0, intermissionTimer - dt);
-      if (intermissionTimer === 0 && roundOver) {
-        resetRound("intermission");
-        skipGameplayThisFrame = true;
-      }
-    }
-
     if (!paused && roundOver) {
-      const continuePressed =
-        isPressed(runtimeInput, controls, "light") ||
-        isPressed(runtimeInput, controls, "heavy") ||
-        isPressed(runtimeInput, controls, "special") ||
-        isPressed(runtimeInput, controls, "jump") ||
-        isPressed(runtimeInput, controls, "dash") ||
-        isPressed(runtimeInput, controls, "left") ||
-        isPressed(runtimeInput, controls, "right") ||
-        isPressed(runtimeInput, controls, "down") ||
-        isPressed(runtimeInput, controls, "guard");
-      if (continuePressed) {
-        resetRound("continue");
-        skipGameplayThisFrame = true;
-      } else {
-        const winner = playerState.health >= rivalState.health ? playerState.name : rivalState.name;
-        toast = `${winner} wins. Press Reset or any control for another round.`;
-      }
+      const winner = playerState.health >= rivalState.health ? playerState.name : rivalState.name;
+      toast = `${winner} wins. Combat is locked; press R to reset the round.`;
     }
 
     if (postResetInputLock > 0) {
@@ -973,13 +862,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         if (callout === "WIN") playerScore++;
         else if (callout === "KO") rivalScore++;
         roundIndex++;
-        intermissionTimer = 2.5;
         const scoreText = `${playerScore} — ${rivalScore}`;
         toast = callout === "WIN"
-          ? `${playerState.name} wins! ${scoreText}. Press any control to continue.`
+          ? `${playerState.name} wins! ${scoreText}. Press R to reset.`
           : callout === "KO"
-            ? `${rivalState.name} wins! ${scoreText}. Press any control to continue.`
-            : `Draw! ${scoreText}. Press any control to continue.`;
+            ? `${rivalState.name} wins! ${scoreText}. Press R to reset.`
+            : `Draw! ${scoreText}. Press R to reset.`;
         sparks.length = 0;
         audio.cue(callout.toLowerCase());
       }
@@ -1099,8 +987,6 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
 function installArenaPresentation(root: HTMLElement): void {
   installArenaTweaks(root);
-  installArenaParallax(root);
-  installArenaParticles(root);
 }
 
 function installArenaTweaks(root: HTMLElement): void {
@@ -1136,124 +1022,6 @@ function installArenaTweaks(root: HTMLElement): void {
     control?.addEventListener("change", apply);
   }
   apply();
-}
-
-function installArenaParallax(root: HTMLElement): void {
-  const shell = root.querySelector<HTMLElement>(".aca");
-  const stageShell = root.querySelector<HTMLElement>(".aca-stage-shell");
-  if (!shell || !stageShell) return;
-  const layers = Array.from(stageShell.querySelectorAll<HTMLElement>("[data-depth]"));
-  let targetX = 0;
-  let targetY = 0;
-  let currentX = 0;
-  let currentY = 0;
-  stageShell.addEventListener("pointermove", (event) => {
-    const rect = stageShell.getBoundingClientRect();
-    targetX = event.clientX / rect.width - rect.left / rect.width - 0.5;
-    targetY = event.clientY / rect.height - rect.top / rect.height - 0.5;
-  });
-  stageShell.addEventListener("pointerleave", () => {
-    targetX = 0;
-    targetY = 0;
-  });
-  const frame = (): void => {
-    currentX += (targetX - currentX) * 0.06;
-    currentY += (targetY - currentY) * 0.06;
-    const motionEnabled = shell.dataset.motion !== "static";
-    for (const layer of layers) {
-      const depth = Number(layer.dataset.depth ?? "0");
-      const x = motionEnabled ? -currentX * depth * 26 : 0;
-      const y = motionEnabled ? -currentY * depth * 14 : 0;
-      layer.style.translate = `${x.toFixed(2)}px ${y.toFixed(2)}px`;
-    }
-    window.requestAnimationFrame(frame);
-  };
-  window.requestAnimationFrame(frame);
-}
-
-function installArenaParticles(root: HTMLElement): void {
-  const shell = root.querySelector<HTMLElement>(".aca");
-  const canvas = root.querySelector<HTMLCanvasElement>("#arena-particles");
-  const context = canvas?.getContext("2d");
-  if (!shell || !canvas || !context) return;
-  type Particle = {
-    x: number;
-    y: number;
-    z: number;
-    vx: number;
-    vy: number;
-    radius: number;
-    twinkle: number;
-    speed: number;
-    warm: boolean;
-  };
-  let width = 1;
-  let height = 1;
-  let dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let particles: Particle[] = [];
-  const random = (min: number, max: number): number => min + Math.random() * (max - min);
-  const seed = (): void => {
-    const count = Math.max(28, Math.round((width * height) / 14000));
-    particles = Array.from({ length: count }, () => ({
-      x: random(0, width),
-      y: random(0, height),
-      z: random(0.25, 1),
-      vx: random(-0.12, 0.12),
-      vy: random(-0.45, -0.08),
-      radius: random(0.6, 2.2),
-      twinkle: random(0, Math.PI * 2),
-      speed: random(0.6, 1.6),
-      warm: Math.random() < 0.18
-    }));
-  };
-  const resize = (): void => {
-    const rect = canvas.getBoundingClientRect();
-    width = Math.max(1, rect.width);
-    height = Math.max(1, rect.height);
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    seed();
-  };
-  resize();
-  window.addEventListener("resize", resize);
-  let last = performance.now();
-  const frame = (now: number): void => {
-    const dt = Math.min(40, now - last);
-    last = now;
-    const style = getComputedStyle(shell);
-    const speed = shell.dataset.motion === "lively" ? 2.1 : shell.dataset.motion === "static" ? 0 : 1;
-    const cool = style.getPropertyValue("--aca-mote-cool").trim() || "#7fe9d8";
-    const warm = style.getPropertyValue("--aca-mote-warm").trim() || "#ffc187";
-    context.clearRect(0, 0, width, height);
-    if (!shell.classList.contains("aca-no-particles")) {
-      for (const particle of particles) {
-        particle.x += particle.vx * particle.z * speed * (dt / 16);
-        particle.y += particle.vy * particle.z * speed * (dt / 16);
-        particle.twinkle += 0.02 * particle.speed * Math.max(speed, 0.35);
-        if (particle.y < -10) {
-          particle.y = height + 8;
-          particle.x = random(0, width);
-        }
-        if (particle.x < -10) particle.x = width + 8;
-        if (particle.x > width + 10) particle.x = -8;
-        const alpha = (0.22 + 0.5 * (0.5 + 0.5 * Math.sin(particle.twinkle))) * particle.z;
-        const radius = particle.radius * (0.6 + particle.z);
-        context.beginPath();
-        context.globalAlpha = alpha;
-        context.shadowBlur = 8 * particle.z;
-        context.shadowColor = particle.warm ? warm : cool;
-        context.fillStyle = particle.warm ? warm : cool;
-        context.arc(particle.x, particle.y, radius, 0, Math.PI * 2);
-        context.fill();
-      }
-      context.globalAlpha = 1;
-      context.shadowBlur = 0;
-    }
-    window.requestAnimationFrame(frame);
-  };
-  window.requestAnimationFrame(frame);
 }
 
 function createFighter(id: FighterId, name: string, subtitle: string, x: number, facing: 1 | -1, clips: FighterClipMap): FighterState {
@@ -2111,28 +1879,6 @@ function collectFighterRenderItems(fighter: RuntimeFighter): RenderItem[] {
   return fighter.actor.collectRenderItems();
 }
 
-function createStageItems(): RenderItem[] {
-  const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({
-    name: "aura-clash-arena-floor",
-    baseColor: [0.025, 0.052, 0.058, 1],
-    metallic: 0.18,
-    roughness: 0.28,
-    emissiveColor: [0.03, 0.18, 0.14],
-    emissiveStrength: 0.16
-  });
-  const cyan = new UnlitMaterial({ name: "aura-clash-arena-cyan-neon", color: [0.28, 1, 0.84, 1] });
-  const amber = new UnlitMaterial({ name: "aura-clash-arena-amber-neon", color: [1, 0.74, 0.28, 1] });
-  return [
-    item("floor", cube, floor, [0, -0.052, 0], [5.75, 0.055, 1.08]),
-    item("front-rail-cyan", cube, cyan, [0, 0.055, 0.58], [5.7, 0.025, 0.025]),
-    item("back-rail-amber", cube, amber, [0, 0.055, -0.46], [5.35, 0.018, 0.022]),
-    item("center-mark", cube, cyan, [0, 0.075, 0], [0.028, 0.04, 1.08]),
-    item("left-floor-accent", cube, amber, [-1.92, 0.06, -0.42], [0.52, 0.018, 0.035]),
-    item("right-floor-accent", cube, amber, [1.92, 0.06, -0.42], [0.52, 0.018, 0.035])
-  ];
-}
-
 function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
   void fighter;
   return [];
@@ -2141,23 +1887,6 @@ function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
 function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
   void sparks;
   return [];
-}
-
-function item(
-  label: string,
-  geometry: Geometry,
-  material: PBRMaterial | UnlitMaterial,
-  position: readonly [number, number, number],
-  scale: readonly [number, number, number],
-  rotation: readonly [number, number, number] = [0, 0, 0]
-): RenderItem {
-  return {
-    label,
-    geometry,
-    material,
-    modelMatrix: composeMat4([...position], quatFromEuler(rotation[0], rotation[1], rotation[2]), [...scale]) as Mat4,
-    includeInAutoFrame: true
-  };
 }
 
 function updateSparks(sparks: Spark[], dt: number): void {

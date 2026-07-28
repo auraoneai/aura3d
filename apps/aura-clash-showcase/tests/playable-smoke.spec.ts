@@ -232,22 +232,29 @@ test("AuraClash runs the 1.3 believable-motion runtimes (foot IK + spring body-s
 });
 
 test("AuraClash fires authored VFX clip-event markers during an attack (T2.2 event tracks)", async ({ page }) => {
-  await loadPlayable(page);
-  const fired = await page.evaluate(async () => {
-    type Proof = { source?: string; firedEvents?: Record<string, number> };
-    let proof: Proof | undefined;
-    const start = performance.now();
-    // throw several attacks so the authored vfx markers cross
-    while (performance.now() - start < 1400) {
-      window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyK" }));
-      await new Promise((r) => setTimeout(r, 60));
-      window.dispatchEvent(new KeyboardEvent("keyup", { code: "KeyK" }));
-      await new Promise((r) => setTimeout(r, 120));
-      proof = (window as unknown as { __AURA_CLASH_EVENT_TRACKS_PROOF__?: Proof }).__AURA_CLASH_EVENT_TRACKS_PROOF__;
-      if ((proof?.firedEvents?.vfx ?? 0) > 0) break;
-    }
-    return proof;
+  test.setTimeout(90_000);
+  await loadPlayable(page, "?auraTestDriver=1");
+  type Proof = { source?: string; firedEvents?: Record<string, number> };
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: {
+        setPositions(playerX: number, rivalX: number): void;
+        queuePlayerAttack(move: "light" | "heavy" | "special"): void;
+      };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash event-track test driver was not installed.");
+    driver.setPositions(-1.2, 0.9);
+    driver.queuePlayerAttack("heavy");
   });
+  await page.waitForFunction(() => {
+    const proof = (window as unknown as {
+      __AURA_CLASH_EVENT_TRACKS_PROOF__?: Proof;
+    }).__AURA_CLASH_EVENT_TRACKS_PROOF__;
+    return (proof?.firedEvents?.vfx ?? 0) > 0;
+  });
+  const fired = await page.evaluate(() => (
+    window as unknown as { __AURA_CLASH_EVENT_TRACKS_PROOF__?: Proof }
+  ).__AURA_CLASH_EVENT_TRACKS_PROOF__);
   expect(fired?.source).toBe("authored-clip-events");
   expect(fired?.firedEvents?.vfx ?? 0, "expected authored VFX markers to fire from attack clip events").toBeGreaterThan(0);
 });
@@ -438,7 +445,7 @@ test("AuraClash captures visual proof screenshots", async ({ page }) => {
   expect(proof.rival.health).toBeLessThan(360);
 });
 
-test("AuraClash locks combat after KO and reset clears the round; any control starts the next round", async ({ page }) => {
+test("AuraClash locks combat after KO until reset clears the round", async ({ page }) => {
   test.setTimeout(35_000);
   await loadPlayable(page, "?auraTestDriver=1");
   await queueNearKoHeavy(page);
@@ -453,6 +460,12 @@ test("AuraClash locks combat after KO and reset clears the round; any control st
   const afterKo = await readProof(page);
   expect(afterKo.totalHits).toBe(hitsAtKo);
   await hold(page, "KeyL", 180);
+  await page.waitForTimeout(260);
+  const stillLocked = await readProof(page);
+  expect(stillLocked.controls.resetCount).toBe(proof.controls.resetCount);
+  expect(stillLocked.controls.koLocked).toBe(true);
+  expect(stillLocked.rival.health).toBe(0);
+  await hold(page, "KeyR", 180);
   await expect.poll(async () => (await readProof(page)).controls.resetCount).toBeGreaterThan(0);
   const reset = await readProof(page);
   expect(reset.player.health).toBe(360);
