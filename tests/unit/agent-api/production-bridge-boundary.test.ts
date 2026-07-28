@@ -26,6 +26,7 @@ describe("createAuraApp production bridge boundary", () => {
     const sceneRenderer = extractFunctionBody(source, "createProductionSceneRenderer");
     const runtimeRenderer = extractFunctionBody(source, "createProductionRuntimeSceneRenderer");
     const inputBuilder = extractFunctionBody(source, "createProductionRuntimeRendererInput");
+    const collectedLights = extractFunctionBody(source, "createProductionRuntimeCollectedLights");
 
     expect(sceneRenderer).toContain("analyzeProductionBridgeEligibility");
     expect(sceneRenderer).toContain("createProductionRuntimeSceneRenderer");
@@ -35,10 +36,18 @@ describe("createAuraApp production bridge boundary", () => {
     expect(runtimeRenderer).toContain("createTypedGLBActor");
     expect(runtimeRenderer).toContain("ProductionRuntimeRenderer.create");
     expect(runtimeRenderer).toContain("renderInteractiveFrame");
+    expect(runtimeRenderer).toContain("createProductionRuntimeCollectedLights(snapshot)");
+    expect(runtimeRenderer).toContain("productionRuntimeLights");
 
     expect(inputBuilder).toContain("entry.actor.collectRenderItems");
     expect(inputBuilder).toContain("applyProductionActorAnimation");
     expect(inputBuilder).toContain("attachProductionActorEvidence");
+    expect(inputBuilder).toContain("collectedLights,");
+
+    expect(collectedLights).toContain("groups.flatten(snapshot.nodes)");
+    expect(collectedLights).toContain("createProductionRuntimeLightDescriptors");
+    expect(collectedLights).toContain("createProductionRuntimeFallbackLights");
+    expect(collectedLights).toContain("createProductionRuntimeCollectedLight");
 
     for (const productionOnlyBody of [runtimeRenderer, inputBuilder]) {
       expect(productionOnlyBody).not.toContain("createWebGLSceneRenderer");

@@ -43,7 +43,12 @@ import {
   type RendererShadowOptions,
   type RenderSource
 } from "@aura3d/rendering";
-import { DirectionalLight } from "@aura3d/scene";
+import {
+  DirectionalLight,
+  PointLight,
+  SpotLight,
+  type Light
+} from "@aura3d/scene";
 import {
   createTypedGLBActor,
   type TypedGLBActor,
@@ -10187,7 +10192,7 @@ const PRODUCTION_RUNTIME_SHADOWS: RendererShadowOptions = {
   label: "aura3d-root-production-shadow-map"
 };
 
-let cachedProductionRuntimeLights: readonly CollectedLight[] | undefined;
+let cachedProductionRuntimeFallbackLights: readonly CollectedLight[] | undefined;
 
 function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   readonly preset: string;
@@ -10237,21 +10242,180 @@ function createProductionRuntimePostprocessObservation(
   };
 }
 
-function createProductionRuntimeCollectedLights(): readonly CollectedLight[] {
-  if (cachedProductionRuntimeLights) return cachedProductionRuntimeLights;
-  const key = new DirectionalLight("aura3d-root-production-key-shadow");
-  const fill = new DirectionalLight("aura3d-root-production-fill");
-  const rim = new DirectionalLight("aura3d-root-production-rim");
-  key.castsShadow = true;
-  key.color = [1, 0.94, 0.82];
-  key.intensity = 2.6;
-  fill.color = [0.52, 0.64, 0.9];
-  fill.intensity = 0.64;
-  rim.color = [0.88, 0.94, 1];
-  rim.intensity = 0.88;
-  cachedProductionRuntimeLights = [
+interface ProductionRuntimeLightDescriptor {
+  readonly kind: CollectedLight["kind"];
+  readonly name: string;
+  readonly color: readonly [number, number, number];
+  readonly intensity: number;
+  readonly position: AuraVec3;
+  readonly direction: AuraVec3;
+  readonly range: number;
+  readonly spotAngle: number;
+  readonly penumbra: number;
+  readonly shadowPriority: number;
+  readonly authoredLight: AuraLightType | "fallback";
+  readonly authoredWidth?: number;
+  readonly authoredHeight?: number;
+}
+
+function createProductionRuntimeCollectedLights(snapshot: AuraSceneSnapshot): readonly CollectedLight[] {
+  const authoredLights = groups.flatten(snapshot.nodes).filter((node): node is AuraLightNode => node.kind === "light");
+  const descriptors = authoredLights.flatMap((node, index) => createProductionRuntimeLightDescriptors(node, index));
+  if (descriptors.length === 0) return createProductionRuntimeFallbackLights();
+
+  const shadowCasterIndex = descriptors.reduce((selected, descriptor, index) => {
+    if (selected < 0) return index;
+    const current = descriptors[selected]!;
+    if (descriptor.shadowPriority !== current.shadowPriority) {
+      return descriptor.shadowPriority > current.shadowPriority ? index : selected;
+    }
+    return descriptor.intensity > current.intensity ? index : selected;
+  }, -1);
+  return descriptors.map((descriptor, index) =>
+    createProductionRuntimeCollectedLight(descriptor, index === shadowCasterIndex)
+  );
+}
+
+function createProductionRuntimeLightDescriptors(
+  node: AuraLightNode,
+  authoredIndex: number
+): readonly ProductionRuntimeLightDescriptor[] {
+  const name = node.name?.trim() || `aura-authored-${node.light}-${authoredIndex + 1}`;
+  const color = colorToRgb(node.color ?? "#ffffff");
+  const intensity = nonNegativeFinite(node.intensity);
+  const position = productionRuntimeLightPosition(node);
+  const direction = productionRuntimeLightDirection(node, position);
+
+  if (node.light === "ambient") {
+    // CollectedLight intentionally represents direct lights only. Ambient light remains
+    // environment-lighting intent and does not masquerade as a directional light.
+    return [];
+  }
+  if (node.light === "directional") {
+    return [{
+      kind: "directional",
+      name,
+      color,
+      intensity,
+      position,
+      direction,
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      shadowPriority: 3,
+      authoredLight: node.light
+    }];
+  }
+  if (node.light === "point") {
+    return [{
+      kind: "point",
+      name,
+      color,
+      intensity,
+      position,
+      direction,
+      range: 10 * productionRuntimeLightMaxScale(node.scale),
+      spotAngle: 0,
+      penumbra: 0,
+      shadowPriority: 1,
+      authoredLight: node.light
+    }];
+  }
+  if (node.light === "studio") {
+    return createProductionRuntimeStudioLightDescriptors(node, name, color, intensity, position);
+  }
+
+  const width = positiveFinite(node.width, node.light === "softbox" ? 2.4 : 2.2)
+    * productionRuntimeLightAxisScale(node.scale, 0);
+  const height = positiveFinite(node.height, node.light === "softbox" ? 1.6 : 1.2)
+    * productionRuntimeLightAxisScale(node.scale, 1);
+  const target = node.lookAt ?? [0, 0.75, 0];
+  const targetDistance = Math.max(0.001, distance3(position, target));
+  const halfDiagonal = Math.hypot(width, height) / 2;
+  return [{
+    kind: "spot",
+    name: `${name}-${node.light}-spot-proxy`,
+    color,
+    intensity,
+    position,
+    direction,
+    range: Math.max(1, targetDistance + halfDiagonal * 2),
+    spotAngle: clampNumber(Math.atan2(halfDiagonal, targetDistance), 0.08, Math.PI / 2 - 0.01),
+    penumbra: node.light === "softbox" ? 0.78 : 0.42,
+    shadowPriority: 2,
+    authoredLight: node.light,
+    authoredWidth: width,
+    authoredHeight: height
+  }];
+}
+
+function createProductionRuntimeStudioLightDescriptors(
+  node: AuraLightNode,
+  name: string,
+  color: readonly [number, number, number],
+  intensity: number,
+  position: AuraVec3
+): readonly ProductionRuntimeLightDescriptor[] {
+  const target = node.lookAt ?? [0, 0.75, 0] as const;
+  const fillPosition: AuraVec3 = [
+    position[0] === 0 ? 3.2 : -position[0],
+    Math.max(1, position[1] * 0.72),
+    position[2] * 0.58
+  ];
+  const rimPosition: AuraVec3 = [
+    position[0] * 0.2,
+    Math.max(1, position[1] * 0.88),
+    position[2] === 0 ? -3.6 : -Math.abs(position[2])
+  ];
+  return [
     {
       kind: "directional",
+      name: `${name}-key`,
+      color,
+      intensity,
+      position,
+      direction: productionRuntimeLightDirection(node, position),
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      shadowPriority: 3,
+      authoredLight: node.light
+    },
+    {
+      kind: "directional",
+      name: `${name}-fill`,
+      color: multiplyRgb(color, [0.62, 0.72, 1]),
+      intensity: intensity * 0.32,
+      position: fillPosition,
+      direction: normalizedDirection(fillPosition, target),
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      shadowPriority: 0,
+      authoredLight: node.light
+    },
+    {
+      kind: "directional",
+      name: `${name}-rim`,
+      color: multiplyRgb(color, [0.84, 0.92, 1]),
+      intensity: intensity * 0.54,
+      position: rimPosition,
+      direction: normalizedDirection(rimPosition, target),
+      range: 0,
+      spotAngle: 0,
+      penumbra: 0,
+      shadowPriority: 0,
+      authoredLight: node.light
+    }
+  ];
+}
+
+function createProductionRuntimeFallbackLights(): readonly CollectedLight[] {
+  if (cachedProductionRuntimeFallbackLights) return cachedProductionRuntimeFallbackLights;
+  const descriptors: readonly ProductionRuntimeLightDescriptor[] = [
+    {
+      kind: "directional",
+      name: "aura3d-root-production-fallback-key-shadow",
       color: [1, 0.94, 0.82],
       intensity: 2.6,
       position: [0, 0, 0],
@@ -10259,12 +10423,12 @@ function createProductionRuntimeCollectedLights(): readonly CollectedLight[] {
       range: 0,
       spotAngle: 0,
       penumbra: 0,
-      castsShadow: true,
-      layerMask: 0xffffffff,
-      source: key
+      shadowPriority: 3,
+      authoredLight: "fallback"
     },
     {
       kind: "directional",
+      name: "aura3d-root-production-fallback-fill",
       color: [0.52, 0.64, 0.9],
       intensity: 0.64,
       position: [0, 0, 0],
@@ -10272,12 +10436,12 @@ function createProductionRuntimeCollectedLights(): readonly CollectedLight[] {
       range: 0,
       spotAngle: 0,
       penumbra: 0,
-      castsShadow: false,
-      layerMask: 0xffffffff,
-      source: fill
+      shadowPriority: 0,
+      authoredLight: "fallback"
     },
     {
       kind: "directional",
+      name: "aura3d-root-production-fallback-rim",
       color: [0.88, 0.94, 1],
       intensity: 0.88,
       position: [0, 0, 0],
@@ -10285,12 +10449,139 @@ function createProductionRuntimeCollectedLights(): readonly CollectedLight[] {
       range: 0,
       spotAngle: 0,
       penumbra: 0,
-      castsShadow: false,
-      layerMask: 0xffffffff,
-      source: rim
+      shadowPriority: 0,
+      authoredLight: "fallback"
     }
   ];
-  return cachedProductionRuntimeLights;
+  cachedProductionRuntimeFallbackLights = descriptors.map((descriptor, index) =>
+    createProductionRuntimeCollectedLight(descriptor, index === 0)
+  );
+  return cachedProductionRuntimeFallbackLights;
+}
+
+function createProductionRuntimeCollectedLight(
+  descriptor: ProductionRuntimeLightDescriptor,
+  castsShadow: boolean
+): CollectedLight {
+  const source: Light = descriptor.kind === "directional"
+    ? new DirectionalLight(descriptor.name)
+    : descriptor.kind === "point"
+      ? new PointLight(descriptor.name)
+      : new SpotLight(descriptor.name);
+  source.color = [...descriptor.color];
+  source.intensity = descriptor.intensity;
+  source.castsShadow = castsShadow;
+  source.layerMask = 0xffffffff;
+  source.userData.aura3dAuthoredLight = descriptor.authoredLight;
+  if (descriptor.authoredWidth !== undefined) source.userData.aura3dAuthoredWidth = descriptor.authoredWidth;
+  if (descriptor.authoredHeight !== undefined) source.userData.aura3dAuthoredHeight = descriptor.authoredHeight;
+  source.transform.setPosition(...descriptor.position);
+  if (source instanceof PointLight || source instanceof SpotLight) {
+    source.range = Math.max(0.001, descriptor.range);
+  }
+  if (source instanceof SpotLight) {
+    source.angle = clampNumber(descriptor.spotAngle, 0.001, Math.PI / 2 - 0.001);
+    source.penumbra = clampNumber(descriptor.penumbra, 0, 1);
+  }
+  if (!(source instanceof PointLight)) {
+    const rotation = quaternionFromForwardDirection(descriptor.direction);
+    source.transform.setRotation(...rotation);
+  }
+  source.updateWorldTransform(true);
+  return {
+    kind: descriptor.kind,
+    color: descriptor.color,
+    intensity: descriptor.intensity,
+    position: descriptor.position,
+    direction: normalize3(descriptor.direction),
+    range: descriptor.range,
+    spotAngle: descriptor.spotAngle,
+    penumbra: descriptor.penumbra,
+    castsShadow,
+    layerMask: 0xffffffff,
+    source
+  };
+}
+
+function productionRuntimeLightPosition(node: AuraLightNode): AuraVec3 {
+  const fallback: AuraVec3 =
+    node.light === "directional" ? [3, 4, 3]
+      : node.light === "point" ? [2, 2.5, 1.5]
+        : node.light === "studio" ? [0, 3, 4]
+          : node.light === "softbox" ? [-2.2, 2.4, 2.2]
+            : node.light === "rect" ? [0, 2.6, 1.8]
+              : [0, 0, 0];
+  const position = node.position ?? fallback;
+  return position.map((component, index) => Number.isFinite(component) ? component : fallback[index]) as unknown as AuraVec3;
+}
+
+function productionRuntimeLightDirection(node: AuraLightNode, position: AuraVec3): AuraVec3 {
+  if (node.lookAt) {
+    const direction = normalizedDirection(position, node.lookAt);
+    if (length3(direction) > 0) return direction;
+  }
+  if (node.rotation) {
+    const matrix = rotationXYZ(node.rotation);
+    return normalize3([-matrix[8]!, -matrix[9]!, -matrix[10]!]);
+  }
+  if (length3(position) > 0.000001) return normalize3([-position[0], -position[1], -position[2]]);
+  return [0, -1, 0];
+}
+
+function quaternionFromForwardDirection(direction: AuraVec3): readonly [number, number, number, number] {
+  const target = normalize3(direction);
+  const dot = clampNumber(-target[2], -1, 1);
+  if (dot > 0.999999) return [0, 0, 0, 1];
+  if (dot < -0.999999) return [0, 1, 0, 0];
+  const quaternion: readonly [number, number, number, number] = [target[1], -target[0], 0, 1 + dot];
+  const length = Math.hypot(...quaternion) || 1;
+  return [
+    quaternion[0] / length,
+    quaternion[1] / length,
+    quaternion[2] / length,
+    quaternion[3] / length
+  ];
+}
+
+function normalizedDirection(from: AuraVec3, to: AuraVec3): AuraVec3 {
+  const direction: AuraVec3 = [to[0] - from[0], to[1] - from[1], to[2] - from[2]];
+  return length3(direction) > 0.000001 ? normalize3(direction) : [0, -1, 0];
+}
+
+function length3(value: AuraVec3): number {
+  return Math.hypot(value[0], value[1], value[2]);
+}
+
+function productionRuntimeLightMaxScale(scale: number | AuraVec3 | undefined): number {
+  return Math.max(
+    productionRuntimeLightAxisScale(scale, 0),
+    productionRuntimeLightAxisScale(scale, 1),
+    productionRuntimeLightAxisScale(scale, 2)
+  );
+}
+
+function productionRuntimeLightAxisScale(scale: number | AuraVec3 | undefined, axis: 0 | 1 | 2): number {
+  const value = typeof scale === "number" ? scale : scale?.[axis] ?? 1;
+  return positiveFinite(Math.abs(value), 1);
+}
+
+function nonNegativeFinite(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+function positiveFinite(value: number | undefined, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, Number.isFinite(value) ? value : min));
+}
+
+function multiplyRgb(
+  color: readonly [number, number, number],
+  tint: readonly [number, number, number]
+): readonly [number, number, number] {
+  return [color[0] * tint[0], color[1] * tint[1], color[2] * tint[2]];
 }
 
 async function createProductionRuntimeSceneRenderer(
@@ -10328,6 +10619,11 @@ async function createProductionRuntimeSceneRenderer(
   let latestFeatures: readonly ProductionRendererFeature[] = productionRenderer.getFeatures();
   const runtimeWarnings = new Set<string>();
   const productionEnvironment = createProductionRuntimeEnvironment(snapshot);
+  const productionRuntimeLights = createProductionRuntimeCollectedLights(snapshot);
+  const authoredLightNodes = flattened.filter((node): node is AuraLightNode => node.kind === "light");
+  const authoredDirectLightNodes = authoredLightNodes.filter((node) => node.light !== "ambient");
+  const authoredAmbientLightCount = authoredLightNodes.length - authoredDirectLightNodes.length;
+  const authoredAreaProxyCount = authoredDirectLightNodes.filter((node) => node.light === "rect" || node.light === "softbox").length;
 
   const buildDiagnostics = (): AuraRendererDiagnosticReport => createRendererDiagnosticReport(
     snapshot,
@@ -10343,6 +10639,15 @@ async function createProductionRuntimeSceneRenderer(
       },
       warnings: [
         `Production runtime bridge active with ${actorEntries.length} typed GLB actor${actorEntries.length === 1 ? "" : "s"} and ${primitiveEntries.length} Aura primitive${primitiveEntries.length === 1 ? "" : "s"} on ${productionRenderer.backend}.`,
+        ...(authoredDirectLightNodes.length === 0
+          ? ["Production runtime direct-light fallback active: the scene has no authored directional, point, studio, rect, or softbox light."]
+          : [`Production runtime derived ${productionRuntimeLights.length} collected direct light${productionRuntimeLights.length === 1 ? "" : "s"} from ${authoredDirectLightNodes.length} authored scene light${authoredDirectLightNodes.length === 1 ? "" : "s"}.`]),
+        ...(authoredAmbientLightCount > 0
+          ? [`${authoredAmbientLightCount} authored ambient light${authoredAmbientLightCount === 1 ? "" : "s"} remain environment-lighting intent and are not mislabeled as direct CollectedLight entries.`]
+          : []),
+        ...(authoredAreaProxyCount > 0
+          ? [`${authoredAreaProxyCount} authored rect/softbox light${authoredAreaProxyCount === 1 ? "" : "s"} use bounded spot-light proxies whose cone and range derive from authored width and height; this does not claim physical area-light shading.`]
+          : []),
         ...(flattened.some((node) => node.kind === "effect")
           ? ["Effect nodes are requested in the scene graph; production bridge diagnostics report them, but unsupported postprocess/effect passes remain non-pixel-backed until the runtime feature reports support."]
           : []),
@@ -10365,7 +10670,17 @@ async function createProductionRuntimeSceneRenderer(
     },
     render(time) {
       runtimeWarnings.clear();
-      const input = createProductionRuntimeRendererInput(snapshot, canvas, actorEntries, primitiveEntries, time, runtimeNodes, runtimeWarnings, productionEnvironment.lighting);
+      const input = createProductionRuntimeRendererInput(
+        snapshot,
+        canvas,
+        actorEntries,
+        primitiveEntries,
+        time,
+        runtimeNodes,
+        runtimeWarnings,
+        productionEnvironment.lighting,
+        productionRuntimeLights
+      );
       const result = productionRenderer.renderInteractiveFrame(input);
       latestDeviceDiagnostics = result.diagnostics;
       latestFeatures = result.features;
@@ -10390,7 +10705,8 @@ function createProductionRuntimeRendererInput(
   time: number,
   runtimeNodes: AuraRuntimeNodeRegistry | undefined,
   runtimeWarnings: Set<string>,
-  environmentLighting: EnvironmentLightingOptions
+  environmentLighting: EnvironmentLightingOptions,
+  collectedLights: readonly CollectedLight[]
 ): ProductionRendererInput {
   const items: RenderItem[] = [];
   for (const entry of actorEntries) {
@@ -10422,7 +10738,7 @@ function createProductionRuntimeRendererInput(
     cameraPolicy: "require",
     staticBatching: true,
     frustumCulling: true,
-    collectedLights: createProductionRuntimeCollectedLights(),
+    collectedLights,
     environmentLighting,
     postprocess: createProductionRuntimePostprocess(),
     shadow: createProductionRuntimeShadowOptions(),
