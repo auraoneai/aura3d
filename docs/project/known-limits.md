@@ -85,7 +85,7 @@ guide or README must include the narrower wording.
 
 - Renderer scene frustum culling is implemented and covered by focused moving-camera unit tests; this is not a broad large-scene performance claim.
 - Rendering-internal cubemap and equirectangular backgrounds, GGX PMREM, RGBE HDR file loading, live cube-camera probes, bounded scene-color transmission/refraction, depth-aware radial volumetric light, and generated terrain heightfields have focused unit and browser-pixel evidence. None of those package-level proofs automatically establishes root `createAuraApp` support.
-- OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported. Rectangular area-light/LTC shading remains absent; studio softboxes are emissive geometry. Linear and exponential fog remain partial until accepted route pixels prove object/background blending.
+- OpenEXR decoding and physical Rayleigh/Mie atmosphere remain explicitly unsupported. Rectangular area-light/LTC shading remains absent; studio softboxes are emissive geometry. Rendering-internal linear and exponential-squared fog have deterministic WebGL2 object-pixel proof, but this does not establish volumetric scattering, physical atmosphere, automatic preset attachment, or root `createAuraApp` support.
 - Current glTF render resources expose one primary UV path for glTF render resources.
 - Texture support has bounded KTX2/Basis transcoding coverage and GPU capability-driven format selection; it is not universal compressed-texture support.
 - There is no product-studio material-matrix visual coverage broad enough to claim all material combinations.

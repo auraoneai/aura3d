@@ -632,15 +632,19 @@ assuming code is missing.
       roughness 0.02→0.74 under `studio_small_08_1k.hdr`, cubemap mip variance decreases,
       bounded A3D/Three.js deltas pass, and 15 high-resolution screenshots/diffs are
       validated. The gate now explicitly asserts the retained HDR URI and swatch values.
-- [!] **2B.7** `linear-fog` (`:246-250`) — uniforms bound in `Renderer.ts`/`ForwardPass.ts`;
+- [x] **2B.7** `linear-fog` (`:246-250`) — uniforms bound in `Renderer.ts`/`ForwardPass.ts`;
       needs a visual gate before claiming three.js `Fog` parity. Small.
-- [!] **2B.8** `exponential-fog` (`:251-255`) — same; needs a `FogExp2`-equivalent visual
+- [x] **2B.8** `exponential-fog` (`:251-255`) — same; needs a `FogExp2`-equivalent visual
       gate. Small. Do 2B.7 and 2B.8 together.
       Two focused advanced-gallery attempts were made for Robotics Lab (linear) and Fog
       Cathedral (exponential-squared). Attempt 1 stopped on authored-resource 404 console
       errors; after exposing the underlying state, attempt 2 showed both routes at
       `authoredAsset.status: "error"` before the fog on/off screenshot-delta capture.
-      Per Rule 0 no third variation was attempted. Both ledger entries remain `"partial"`.
+      A later explicitly requested remediation used a deterministic renderer-owned harness
+      with synthetic PBR cubes and no authored-asset dependency. WebGL2 now compares no-fog,
+      linear, and exponential-squared canvases, proves more than 1,000 changed pixels for
+      each fog mode plus a distinct linear/exp2 result, and retains a full-page screenshot.
+      Both ledger entries are now `"implemented"` at rendering-internal scope.
 - [x] **2B.9** `rgbe-hdr-parser` (`:256-259`) — decode works
       (`parseProductionRadianceHDR`, `decodeRgbeEnvironmentMap`) but public
       `HDRLoaderThreeCompat` is diagnostic-only. Expose an end-to-end public HDR

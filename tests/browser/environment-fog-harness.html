@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Aura3D Environment Fog Pixel Proof</title>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #05070c; color: #eef2ff; font-family: system-ui, sans-serif; }
+      main { display: grid; grid-template-columns: repeat(3, 320px); gap: 18px; padding: 24px; }
+      figure { margin: 0; }
+      figcaption { margin-bottom: 8px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; }
+      canvas { display: block; width: 320px; height: 200px; border: 1px solid #26324b; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <figure><figcaption>No fog</figcaption><canvas id="fog-none" width="320" height="200"></canvas></figure>
+      <figure><figcaption>Linear fog</figcaption><canvas id="fog-linear" width="320" height="200"></canvas></figure>
+      <figure><figcaption>Exponential-squared fog</figcaption><canvas id="fog-exp2" width="320" height="200"></canvas></figure>
+    </main>
+    <script type="module" src="/tests/browser/environment-fog-harness.js"></script>
+  </body>
+</html>

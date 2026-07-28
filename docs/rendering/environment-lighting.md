@@ -28,5 +28,7 @@ Environment lighting is implemented through renderer environment resources, envi
 These are `rendering` or `production-runtime` capabilities, not automatic root
 `createAuraApp` claims. OpenEXR decode, physical Rayleigh/Mie atmosphere, rectangular
 area-light/LTC shading, planar mirrors, physical caustics, and native terrain collision are
-not implemented. Linear and exponential fog remain partial until accepted route pixels
-prove blending.
+not implemented. Rendering-internal linear and exponential-squared fog have deterministic
+WebGL2 object-pixel and screenshot proof; that evidence does not establish volumetric
+scattering, physical atmosphere, automatic preset attachment, or root `createAuraApp`
+support.

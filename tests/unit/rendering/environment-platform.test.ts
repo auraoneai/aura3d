@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(22);
-    expect(report.implementedCount).toBe(8);
-    expect(report.partialCount).toBe(2);
+    expect(report.implementedCount).toBe(10);
+    expect(report.partialCount).toBe(0);
     expect(report.helperCount).toBe(10);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(8);
-    expect(report.nonProductionReadyCount).toBe(14);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
-    expect(report.backlog).toHaveLength(14);
+    expect(report.productionReadyCount).toBe(10);
+    expect(report.nonProductionReadyCount).toBe(12);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "linear-fog", "exponential-fog", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
+    expect(report.backlog).toHaveLength(12);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -74,10 +74,10 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("exr-parser")?.status).toBe("unsupported");
     expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
     expect(byId.get("cube-camera-reflections")?.status).toBe("implemented");
-    expect(byId.get("linear-fog")?.status).toBe("partial");
-    expect(byId.get("linear-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);
-    expect(byId.get("exponential-fog")?.status).toBe("partial");
-    expect(byId.get("exponential-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);
+    expect(byId.get("linear-fog")?.status).toBe("implemented");
+    expect(byId.get("linear-fog")?.evidence.join(" ")).toMatch(/more than 1,000 changed pixels/i);
+    expect(byId.get("exponential-fog")?.status).toBe("implemented");
+    expect(byId.get("exponential-fog")?.evidence.join(" ")).toMatch(/differs from both no-fog and linear-fog/i);
     expect(byId.get("rgbe-hdr-parser")?.status).toBe("implemented");
     expect(byId.get("rgbe-hdr-parser")?.evidence.join(" ")).toMatch(/loadProductionHdrEnvironmentFile/i);
     expect(byId.get("dynamic-ocean-plane")?.status).toBe("helper");
@@ -365,7 +365,7 @@ describe("environment stage helpers", () => {
     });
     expect(linear.telemetry.sampleFactors).toEqual([0, 0, 0.4, 0.8, 0.8]);
     expect(linear.telemetry.monotonicDistanceResponse).toBe(true);
-    expect(linear.telemetry.claimBoundary).toMatch(/not an accepted volumetric fog/i);
+    expect(linear.telemetry.claimBoundary).toMatch(/not volumetric fog/i);
 
     expect(marine.capabilityIds).toEqual(["exponential-fog"]);
     expect(marine.uniforms.u_environmentFogMode).toBe(3);
@@ -424,7 +424,7 @@ describe("environment stage helpers", () => {
     expect(byRequest.get("transmission-refraction")?.disclosure).toMatch(/scene-color transmission refraction is implemented/i);
     expect(byRequest.get("transmission-refraction")?.disclosure).toMatch(/physical caustic projection remain unsupported/i);
     expect(byRequest.has("linear-fog")).toBe(false);
-    expect(byRequest.get("exponential-fog")?.disclosure).toMatch(/Renderer exponential fog support exists/i);
+    expect(byRequest.get("exponential-fog")?.disclosure).toMatch(/accepted browser pixels/i);
     expect(byRequest.get("volumetric-fog")?.fallback).toMatch(/Renderer\.postprocess\.volumetricLight/i);
     expect(byRequest.get("volumetric-fog")?.disclosure).toMatch(/god-ray pass is implemented/i);
     expect(byRequest.get("fft-webgpu-water")?.disclosure).toMatch(/does not provide FFT\/WebGPU water/i);

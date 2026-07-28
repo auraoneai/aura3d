@@ -460,10 +460,12 @@ unsupported or separately excluded.
 Ten environment presets are `"helper"` — geometry descriptors, not rendering features —
 consistent with `packages/environments/src` totalling only 469 LOC.
 
-**Phase 1 assessment:** the disclosures were honest. Phase 2B later resolved eight
-implemented ledger entries, documented atmospheric scattering and EXR as unsupported, and
-left linear/exponential fog partial after their visual proof failed twice. The ledger changes
-carry their proof in the same task commits.
+**Phase 1 assessment:** the disclosures were honest. Phase 2B resolved eight implemented
+ledger entries and documented atmospheric scattering and EXR as unsupported. The follow-on
+remediation pass then promoted linear and exponential fog after a deterministic synthetic
+WebGL2 harness proved no-fog/linear/exponential-squared object-pixel deltas and retained a
+full-page screenshot without relying on authored GLBs. The ledger changes carry their proof
+in the same task commits.
 
 **Standing rule (2.25).** If a Phase 2 task implements a ledger entry, flip its status **and**
 attach the proof in the same commit. Never flip without proof.

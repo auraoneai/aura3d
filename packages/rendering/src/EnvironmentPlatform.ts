@@ -264,16 +264,18 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   capability("analytical-studio-box", "Analytical Studio Box", "helper", true, [
     "createEnvironmentStage(\"indoor-studio\") returns reusable softbox panels and cove geometry."
   ], "Studio helper is procedural geometry, not an infinite analytical lighting renderer.", "Connect reusable stage helper to accepted product/material routes and visual tests."),
-  capability("linear-fog", "Linear Fog System", "partial", true, [
+  capability("linear-fog", "Linear Fog System", "implemented", true, [
     "createEnvironmentFogProfile emits uniform-ready linear fog settings.",
     "sampleEnvironmentFogFactor provides deterministic CPU reference attenuation for validation.",
-    "Renderer and ForwardPass bind linear fog uniforms into active PBR-family shader paths."
-  ], "Renderer shader path exists, but no accepted gallery route/screenshot proves object/background blending yet.", "Add visual gates before claiming Three.js Fog parity."),
-  capability("exponential-fog", "Exponential Fog System", "partial", true, [
+    "Renderer and ForwardPass bind linear fog uniforms into active PBR-family shader paths.",
+    "The deterministic WebGL2 browser harness compares no-fog and linear-fog canvases, asserts more than 1,000 changed pixels, and retains a full-page screenshot."
+  ], "Rendering-internal distance fog has accepted object-pixel blending evidence; volumetric scattering, atmospheric simulation, and root createAuraApp support remain separate claims.", "Retain the no-fog/linear changed-pixel and screenshot gate."),
+  capability("exponential-fog", "Exponential Fog System", "implemented", true, [
     "createEnvironmentFogProfile emits uniform-ready exponential and exponential-squared fog settings.",
     "Fog telemetry records distance sample factors and uniform keys for route evidence.",
-    "Renderer and ForwardPass bind exponential fog uniforms into active PBR-family shader paths."
-  ], "Renderer shader path exists, but no accepted gallery route/screenshot proves FogExp2-style blending yet.", "Add visual gates before claiming FogExp2 parity."),
+    "Renderer and ForwardPass bind exponential fog uniforms into active PBR-family shader paths.",
+    "The deterministic WebGL2 browser harness proves exponential-squared blending differs from both no-fog and linear-fog canvases and retains a full-page screenshot."
+  ], "Rendering-internal FogExp2-style blending has accepted object-pixel evidence; volumetric scattering, atmospheric simulation, and root createAuraApp support remain separate claims.", "Retain the no-fog/linear/exponential-squared pixel-delta and screenshot gate."),
   capability("rgbe-hdr-parser", "RGBE HDR Parser", "implemented", true, [
     "parseProductionRadianceHDR decodes Radiance/RGBE RLE buffers.",
     "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data.",
@@ -527,7 +529,7 @@ export function createEnvironmentFogProfile(options: EnvironmentFogPresetId | En
       sampleFactors,
       monotonicDistanceResponse: sampleFactors.every((value, index) => index === 0 || value >= sampleFactors[index - 1]!),
       uniformKeys: Object.keys(uniforms),
-      claimBoundary: "Uniform-ready A3D environment fog helper with deterministic CPU attenuation samples; not an accepted volumetric fog, atmospheric scattering, or Three.js Fog/FogExp2 parity claim.",
+      claimBoundary: "Uniform-ready A3D environment fog helper with deterministic CPU attenuation samples and bounded rendering-internal browser pixels; not volumetric fog, atmospheric scattering, broad Three.js parity, or root createAuraApp proof.",
       limitations
     }
   };
@@ -1137,14 +1139,14 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
         request,
         ["linear-fog"],
         "Renderer.environmentFog linear profile when a fog profile is supplied",
-        "Renderer linear fog support exists, but this request did not attach an environment fog profile; accepted Fog parity still requires route visual gates."
+        "Rendering-internal linear fog has accepted browser pixels, but this preset request did not attach an environment fog profile; root createAuraApp and automatic preset support are not implied."
       );
     case "exponential-fog":
       return unsupported(
         request,
         ["exponential-fog"],
         "Renderer.environmentFog exponential profile when a fog profile is supplied",
-        "Renderer exponential fog support exists, but this request did not attach an exponential environment fog profile; accepted FogExp2 parity still requires route visual gates."
+        "Rendering-internal exponential-squared fog has accepted browser pixels, but this preset request did not attach an exponential environment fog profile; root createAuraApp and automatic preset support are not implied."
       );
     case "volumetric-fog":
       return unsupported(
