@@ -10159,39 +10159,6 @@ interface ProductionRuntimePrimitiveState {
   readonly visible: boolean;
 }
 
-const PRODUCTION_RUNTIME_POSTPROCESS: RendererPostProcessOptions = {
-  targetFormat: "rgba8",
-  toneMapping: {
-    exposure: 1.14,
-    whitePoint: 1.18,
-    operator: "filmic",
-    inputColorSpace: "linear",
-    outputColorSpace: "srgb"
-  },
-  colorGrade: {
-    contrast: 1.1,
-    saturation: 1.06,
-    vibrance: 0.12,
-    vignette: 0.08,
-    sharpening: 0.24
-  },
-  fxaa: {
-    edgeThreshold: 0.08,
-    subpixelBlend: 0.55
-  }
-};
-
-const PRODUCTION_RUNTIME_SHADOWS: RendererShadowOptions = {
-  enabled: true,
-  size: 1024,
-  bias: 0.0014,
-  strength: 0.28,
-  pcfRadius: 1.2,
-  pcfSamples: 9,
-  filter: "pcf",
-  label: "aura3d-root-production-shadow-map"
-};
-
 let cachedProductionRuntimeFallbackLights: readonly CollectedLight[] | undefined;
 
 function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
@@ -10217,12 +10184,86 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   };
 }
 
-function createProductionRuntimePostprocess(): RendererPostProcessOptions {
-  return PRODUCTION_RUNTIME_POSTPROCESS;
+function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): RendererPostProcessOptions {
+  const nodes = groups.flatten(snapshot.nodes);
+  const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
+  const category = resolveRendererSceneCategory(snapshot, names);
+  const authoredBloom = nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
+  const emissiveSubjects = nodes.filter((node) => {
+    if (!("material" in node) || !node.material) return false;
+    return Boolean(node.material.emissive) && (node.material.emissiveIntensity ?? 1) > 0;
+  }).length;
+  const darkScene = ["neon", "city-night", "space", "game"].includes(category);
+  const bloomRequested = Boolean(authoredBloom) || (darkScene && emissiveSubjects > 0);
+  const exposure = category === "city-day" ? 1.02
+    : category === "material" || category === "product" ? 1.08
+      : category === "space" ? 1.18
+        : 1.12;
+  const saturation = category === "material" || category === "product" ? 1.01
+    : category === "city-day" ? 1.04
+      : 1.1;
+  return {
+    targetFormat: "rgba8",
+    ...(bloomRequested ? {
+      bloom: {
+        threshold: clampNumber(authoredBloom?.threshold ?? (darkScene ? 0.68 : 0.78), 0, 1),
+        intensity: clampNumber(authoredBloom?.intensity ?? Math.min(0.5, 0.24 + emissiveSubjects * 0.035), 0, 2),
+        radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? (category === "space" ? 3 : 2))))
+      }
+    } : {}),
+    toneMapping: {
+      exposure,
+      whitePoint: category === "city-day" ? 1.28 : 1.18,
+      operator: "filmic",
+      inputColorSpace: "linear",
+      outputColorSpace: "srgb"
+    },
+    colorGrade: {
+      contrast: category === "material" || category === "product" ? 1.06 : 1.1,
+      saturation,
+      vibrance: darkScene ? 0.14 : 0.06,
+      vignette: category === "game" || category === "neon" ? 0.1 : 0.04,
+      sharpening: category === "material" || category === "product" ? 0.28 : 0.2
+    },
+    fxaa: {
+      edgeThreshold: category === "game" ? 0.07 : 0.09,
+      subpixelBlend: category === "material" || category === "product" ? 0.48 : 0.58
+    }
+  };
 }
 
-function createProductionRuntimeShadowOptions(): RendererShadowOptions {
-  return PRODUCTION_RUNTIME_SHADOWS;
+function createProductionRuntimeShadowOptions(
+  snapshot: AuraSceneSnapshot,
+  collectedLights: readonly CollectedLight[]
+): RendererShadowOptions {
+  const nodes = groups.flatten(snapshot.nodes);
+  const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
+  const category = resolveRendererSceneCategory(snapshot, names);
+  const sceneRadius = nodes.reduce((radius, node) => {
+    const position: AuraVec3 = "position" in node && Array.isArray(node.position)
+      ? node.position
+      : [0, 0, 0];
+    const nodeScale = "scale" in node ? node.scale : undefined;
+    const scale = typeof nodeScale === "number"
+      ? Math.abs(nodeScale)
+      : Array.isArray(nodeScale) ? Math.max(...nodeScale.map(Math.abs)) : 1;
+    return Math.max(radius, Math.hypot(...position) + scale);
+  }, 1);
+  const shadowCaster = collectedLights.find((light) => light.castsShadow);
+  const size = sceneRadius > 30 ? 4096 : sceneRadius > 10 ? 2048 : 1024;
+  const texelWorldSize = (sceneRadius * 2) / size;
+  return {
+    enabled: Boolean(shadowCaster),
+    size,
+    bias: clampNumber(texelWorldSize * 0.55, 0.00035, 0.004),
+    strength: category === "city-day" ? 0.38
+      : category === "material" || category === "product" ? 0.24
+        : 0.32,
+    pcfRadius: size >= 2048 ? 1.5 : 1.2,
+    pcfSamples: size >= 2048 ? 16 : 9,
+    filter: "pcf",
+    label: `aura3d-root-production-${category}-${size}px-shadow-map`
+  };
 }
 
 function createProductionRuntimePostprocessObservation(
@@ -10740,8 +10781,8 @@ function createProductionRuntimeRendererInput(
     frustumCulling: true,
     collectedLights,
     environmentLighting,
-    postprocess: createProductionRuntimePostprocess(),
-    shadow: createProductionRuntimeShadowOptions(),
+    postprocess: createProductionRuntimePostprocess(snapshot),
+    shadow: createProductionRuntimeShadowOptions(snapshot, collectedLights),
     cameraPosition
   };
   const cameraLike: CameraLike = { viewProjectionMatrix };

@@ -27,6 +27,8 @@ describe("createAuraApp production bridge boundary", () => {
     const runtimeRenderer = extractFunctionBody(source, "createProductionRuntimeSceneRenderer");
     const inputBuilder = extractFunctionBody(source, "createProductionRuntimeRendererInput");
     const collectedLights = extractFunctionBody(source, "createProductionRuntimeCollectedLights");
+    const postprocess = extractFunctionBody(source, "createProductionRuntimePostprocess");
+    const shadows = extractFunctionBody(source, "createProductionRuntimeShadowOptions");
 
     expect(sceneRenderer).toContain("analyzeProductionBridgeEligibility");
     expect(sceneRenderer).toContain("createProductionRuntimeSceneRenderer");
@@ -43,11 +45,24 @@ describe("createAuraApp production bridge boundary", () => {
     expect(inputBuilder).toContain("applyProductionActorAnimation");
     expect(inputBuilder).toContain("attachProductionActorEvidence");
     expect(inputBuilder).toContain("collectedLights,");
+    expect(inputBuilder).toContain("createProductionRuntimePostprocess(snapshot)");
+    expect(inputBuilder).toContain("createProductionRuntimeShadowOptions(snapshot, collectedLights)");
 
     expect(collectedLights).toContain("groups.flatten(snapshot.nodes)");
     expect(collectedLights).toContain("createProductionRuntimeLightDescriptors");
     expect(collectedLights).toContain("createProductionRuntimeFallbackLights");
     expect(collectedLights).toContain("createProductionRuntimeCollectedLight");
+
+    expect(postprocess).toContain("resolveRendererSceneCategory(snapshot, names)");
+    expect(postprocess).toContain("authoredBloom");
+    expect(postprocess).toContain("emissiveSubjects");
+    expect(postprocess).toContain("bloomRequested");
+    expect(shadows).toContain("resolveRendererSceneCategory(snapshot, names)");
+    expect(shadows).toContain("sceneRadius");
+    expect(shadows).toContain("collectedLights.find");
+    expect(shadows).toContain("sceneRadius > 30 ? 4096 : sceneRadius > 10 ? 2048 : 1024");
+    expect(source).not.toContain("PRODUCTION_RUNTIME_POSTPROCESS");
+    expect(source).not.toContain("PRODUCTION_RUNTIME_SHADOWS");
 
     for (const productionOnlyBody of [runtimeRenderer, inputBuilder]) {
       expect(productionOnlyBody).not.toContain("createWebGLSceneRenderer");
