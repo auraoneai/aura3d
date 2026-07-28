@@ -1,0 +1,21 @@
+{
+  "name": "@aura3d/showcase-blockfall-reactor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D falling-block reactor game with a catalog-sourced typed arcade cabinet, deterministic line-clear proof, runtime HUD, and cannon-es route fidelity evidence.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "evidence:route-health": "node scripts/write-route-health.mjs",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

@@ -262,7 +262,7 @@ async function writeRoutePrimaryProbe(
         relativeSuppressedScreenshotPath
       );
     } catch (error) {
-      if (route.id.includes("racing") || route.id.includes("platformer") || route.id.includes("turbo-drift") || route.id.includes("skyline-runner")) {
+      if (route.id.includes("racing") || route.id.includes("platformer") || route.id.includes("turbo-drift") || route.id.includes("skyline-runner") || route.id.includes("blockfall")) {
         failures.push(`composition-probe:${error instanceof Error ? error.message : String(error)}`);
       }
     }
@@ -399,7 +399,9 @@ async function measureCompositionProbe(
     };
   });
   if (!raw) return undefined;
-  if (raw.category !== "racing" && raw.category !== "platformer") throw new Error("invalid-category");
+  if (raw.category !== "racing" && raw.category !== "platformer" && raw.category !== "falling-blocks") {
+    throw new Error("invalid-category");
+  }
   const camera = readCompositionCamera(raw.camera);
   const subject = readCompositionSubject(raw.subject);
   const playSpacePoints = readVec3Array(raw.playSpacePoints, "play-space-points");

@@ -5,16 +5,37 @@ import {
   game,
   lights,
   material,
+  model,
   primitives,
   scene,
   ui,
-  type AuraMaterialSpec,
-  type AuraNodeInput,
   type AuraRuntimeNodeHandle,
   type GameFallingBlockAction,
   type GameFallingBlocksEvent,
   type GameFallingBlocksSnapshot
 } from "@aura3d/engine";
+import { assets } from "../../../src/aura-assets";
+import {
+  ACTIVE_BLOCK_SCALE,
+  BLOCK_SCALE,
+  BOARD_CENTER_Y,
+  CLEAR_FLASH_SCALE,
+  GHOST_BLOCK_SCALE,
+  HIDDEN_BLOCK_SCALE,
+  activeNodeId,
+  cellPosition,
+  clearFlashNodeId,
+  createActiveBlockNodes,
+  createBoardShell,
+  createClearFlashNodes,
+  createGhostNodes,
+  createLockedBlockNodes,
+  createReactorNodes,
+  ghostNodeId,
+  lockedNodeId,
+  lockedNodeKey,
+  pieceMaterials
+} from "./reactor-scene";
 import {
   BOARD_HEIGHT,
   BOARD_WIDTH,
@@ -46,34 +67,7 @@ const highContrast = mediaMatches("(prefers-contrast: more)");
 const reducedFlash = reducedMotion;
 const compactViewport = window.innerWidth <= 620;
 
-const CELL = 0.208;
-const BLOCK_SCALE = [0.138, 0.138, 0.12] as const;
-const HIDDEN_BLOCK_SCALE = [0.001, 0.001, 0.001] as const;
-const ACTIVE_BLOCK_SCALE = [0.158, 0.158, 0.13] as const;
-const GHOST_BLOCK_SCALE = [0.112, 0.112, 0.035] as const;
-const CLEAR_FLASH_SCALE = [1.03, 0.036, 0.016] as const;
-const BOARD_CENTER_Y = 2.24;
-const BOARD_LEFT_X = -((BOARD_WIDTH - 1) * CELL) / 2;
-const BOARD_BOTTOM_Y = BOARD_CENTER_Y - ((VISIBLE_HEIGHT - 1) * CELL) / 2;
 const REPLAY_FRAME_COUNT = Math.max(240, ...DEMO_REPLAY.map((event) => event.frame + 20));
-
-const pieceMaterials: Record<PieceKind, AuraMaterialSpec> = {
-  I: material.neon({ name: "ion cyan tetromino", color: "#1fc7d4", emissive: "#39f6ff", emissiveIntensity: 0.9, roughness: 0.24 }),
-  J: material.neon({ name: "cobalt J tetromino", color: "#3558ff", emissive: "#5c7dff", emissiveIntensity: 0.62, roughness: 0.28 }),
-  L: material.neon({ name: "amber L tetromino", color: "#f49a2d", emissive: "#ffc04f", emissiveIntensity: 0.68, roughness: 0.32 }),
-  O: material.neon({ name: "solar O tetromino", color: "#f2d94e", emissive: "#ffe866", emissiveIntensity: 0.7, roughness: 0.3 }),
-  S: material.neon({ name: "reactor green S tetromino", color: "#42d96b", emissive: "#65ff88", emissiveIntensity: 0.72, roughness: 0.3 }),
-  T: material.neon({ name: "magenta T tetromino", color: "#c858e9", emissive: "#e279ff", emissiveIntensity: 0.72, roughness: 0.25 }),
-  Z: material.neon({ name: "warning red Z tetromino", color: "#ef4f5d", emissive: "#ff6c78", emissiveIntensity: 0.7, roughness: 0.3 })
-};
-
-const panelMaterial = material.emissive({ name: "readable graphite board backplate", color: "#17312e", emissive: "#255651", emissiveIntensity: 0.48, roughness: 0.68 });
-const railMaterial = material.metal({ name: "brushed safety rail", color: "#a9b49d", roughness: 0.36, metallic: 0.62 });
-const gridMaterial = material.emissive({ name: "readable board grid", color: "#5f7770", emissive: "#8fb5a9", emissiveIntensity: 0.22, roughness: 0.72 });
-const ghostMaterial = material.glass({ name: "transparent ghost landing piece", color: "#dbe7d9", opacity: 0.26, transmission: 0.45, roughness: 0.12 });
-const flashMaterial = material.emissive({ name: "line clear flash", color: "#fff4b8", emissive: "#fff4b8", emissiveIntensity: 1.8 });
-const reactorMaterial = material.neon({ name: "reactor charge column", color: "#6dee8d", emissive: "#77ff96", emissiveIntensity: 1.1, roughness: 0.18 });
-const reactorCapMaterial = material.neon({ name: "reactor critical cap", color: "#ffb35a", emissive: "#ffd05d", emissiveIntensity: 0.9, roughness: 0.2 });
 
 ui.html(
   "#hud",
@@ -271,17 +265,19 @@ const sourceEvidence = {
   kind: "aura3d-showcase-blockfall-reactor-source" as const,
   route: window.location.pathname,
   appId: "showcase-blockfall-reactor",
-  claimBoundary: "procedural Aura3D falling-block board with public game.fallingBlocks gameplay state, a route-selected cannon-es fidelity proof, and retained gameplay proof.",
-  publicEngineApi: ["createGameApp", "scene", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
+  claimBoundary: "Aura3D falling-block development showcase with a catalog-sourced typed arcade cabinet, public game.fallingBlocks gameplay state, route-selected cannon-es fidelity proof, and retained gameplay proof.",
+  publicEngineApi: ["createGameApp", "scene", "model", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
   prohibitedApiAvoided: {
     importsThree: false,
     rawGlbUrls: false,
     stringAssetIds: false
   },
   assets: {
-    proceduralOnly: true,
-    typedAssetCount: 0,
-    typedRefs: []
+    proceduralOnly: false,
+    typedAssetCount: 1,
+    typedRefs: ["assets.showcaseBlockfallCabinet"],
+    primary: "showcaseBlockfallCabinet",
+    attribution: "Arcade Machine by Dmitry Blagodaryov, CC-BY-4.0, retained in the Aura3D catalog with release-grade render-probe evidence."
   },
   rules: {
     deterministicModule: "game.fallingBlocks",
@@ -314,8 +310,28 @@ const sourceEvidence = {
   lineClearProof
 };
 
+const reactorCamera = camera.perspective({
+  position: [0, 2.46, compactViewport ? 8.2 : 7.7],
+  target: [0, 2.02, -0.03],
+  fov: compactViewport ? 45 : 40
+});
+const cabinetPosition = [-1.3, 0.8, 0.45] as const;
+const cabinetTargetSize = 2.1;
 const reactorScene = scene()
   .background("#040608")
+  .add(
+    model(assets.showcaseBlockfallCabinet, {
+      name: "blockfall-reactor-cabinet",
+      role: "primaryWorld",
+      scaleMode: "fit",
+      targetMaxDimension: cabinetTargetSize
+    })
+      .position(...cabinetPosition)
+      .rotate(0, -Math.PI / 2, 0)
+      .runtime(game.runtimeNode("blockfall-reactor-cabinet", {
+        tags: ["typed-primary-asset", "arcade-cabinet", "release-probed"]
+      }))
+  )
   .addMany(createBoardShell())
   .addMany(createLockedBlockNodes())
   .addMany(createActiveBlockNodes())
@@ -332,7 +348,7 @@ const reactorScene = scene()
     lights.point({ name: "warning amber rim", color: "#ffc15b", intensity: 0.68 }).position(-2.6, 3.4, 2.2),
     lights.point({ name: "magenta arcade spill", color: "#f04cff", intensity: 0.08 }).position(0, 3.2, 2.1)
   ])
-  .camera(camera.perspective({ position: [0, 2.46, compactViewport ? 8.2 : 7.7], target: [0, 2.02, -0.03], fov: compactViewport ? 45 : 40 }));
+  .camera(reactorCamera);
 
 const gameApp = createGameApp("#app", {
   diagnostics: { overlay: false, performancePanel: false },
@@ -344,6 +360,25 @@ const gameApp = createGameApp("#app", {
 const app = gameApp.app;
 const input = gameApp.input!;
 if (!input) throw new Error("Blockfall Reactor failed to create Aura3D input.");
+
+const cabinetHandle = app.nodes.require("blockfall-reactor-cabinet") as AuraRuntimeNodeHandle;
+const lowerLeftCell = cellPosition(0, 0, 0);
+const upperRightCell = cellPosition(BOARD_WIDTH - 1, VISIBLE_HEIGHT - 1, 0);
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "falling-blocks",
+    camera: reactorCamera,
+    subject: { position: cabinetPosition, rotation: [0, -Math.PI / 2, 0], targetSize: cabinetTargetSize },
+    playSpacePoints: [lowerLeftCell, upperRightCell],
+    contactPoint: cellPosition(Math.floor(BOARD_WIDTH / 2), 0, 0),
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app.pause();
+      cabinetHandle.setScale(suppressed ? 0.0001 : 1);
+      app.step(0);
+    }
+  },
+  configurable: true
+});
 
 const lockedHandles = new Map<string, AuraRuntimeNodeHandle>();
 const activeHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(activeNodeId(index)) as AuraRuntimeNodeHandle);
@@ -740,7 +775,7 @@ function publishEvidence(): void {
         bounds: { width: BOARD_WIDTH, height: BOARD_HEIGHT, visibleHeight: VISIBLE_HEIGHT },
         warnings: []
       },
-      assets: { typedAssets: 0, missingAssets: [] },
+      assets: { typedAssets: 1, missingAssets: [] },
       source: {
         mode: "mounted-runtime",
         expectsGame: true,
@@ -975,139 +1010,6 @@ function startReplayPlayback(): void {
   syncAll(true);
 }
 
-function createBoardShell(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [
-    primitives.box({ name: "blockfall neutral evidence backdrop", material: material.emissive({ color: "#040608", emissive: "#040608", emissiveIntensity: 1 }) })
-      .position(0, 2.18, -1.32)
-      .scale([12, 8, 0.025]),
-    primitives.box({ name: "reactor board backplate", material: panelMaterial, receiveShadow: true }).position(0, BOARD_CENTER_Y, -0.035).scale([1.64, 4.42, 0.06]),
-    primitives.box({ name: "arcade reactor recessed cabinet wall", material: material.emissive({ color: "#101712", emissive: "#286046", emissiveIntensity: 0.18 }) })
-      .position(0, BOARD_CENTER_Y, -0.92)
-      .scale([2.05, 4.3, 0.03]),
-    primitives.torus({ name: "arcade reactor playfield halo", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.16, opacity: 0.12 }) })
-      .position(0, BOARD_CENTER_Y - 2.02, -0.04)
-      .rotate(1.5708, 0, 0)
-      .scale([0.78, 0.15, 0.018]),
-    primitives.box({ name: "blockfall reactor marquee beam", material: material.neon({ color: "#ffe866", emissive: "#ffe866", emissiveIntensity: 0.72 }) })
-      .position(0, BOARD_CENTER_Y + 2.08, 0.11)
-      .scale([1.46, 0.045, 0.045]),
-    primitives.box({ name: "blockfall lower cabinet glow shelf", material: material.neon({ color: "#74ff91", emissive: "#74ff91", emissiveIntensity: 0.54 }) })
-      .position(0, BOARD_CENTER_Y - 2.08, 0.11)
-      .scale([1.46, 0.04, 0.045]),
-    primitives.box({ name: "left load-bearing board rail", material: railMaterial, castShadow: true }).position(-1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
-    primitives.box({ name: "right load-bearing board rail", material: railMaterial, castShadow: true }).position(1.24, BOARD_CENTER_Y, 0.08).scale([0.05, 4.22, 0.11]),
-    primitives.box({ name: "top board rail", material: railMaterial, castShadow: true }).position(0, BOARD_CENTER_Y + 2.13, 0.08).scale([1.48, 0.052, 0.11]),
-    primitives.box({ name: "bottom board rail", material: railMaterial, castShadow: true }).position(0, BOARD_CENTER_Y - 2.13, 0.08).scale([1.48, 0.052, 0.11]),
-    primitives.box({ name: "reactor cabinet floor", material: material.emissive({ color: "#05080a", emissive: "#05080a", emissiveIntensity: 0.8 }), receiveShadow: true })
-      .position(0, -0.12, -0.32)
-      .scale([3.35, 0.045, 0.95]),
-    primitives.box({ name: "left cyan arcade light column", material: material.neon({ color: "#39f6ff", emissive: "#39f6ff", emissiveIntensity: 0.6 }) })
-      .position(-1.08, BOARD_CENTER_Y, 0.04)
-      .scale([0.018, 2.06, 0.022]),
-    primitives.box({ name: "right magenta arcade light column", material: material.neon({ color: "#e279ff", emissive: "#e279ff", emissiveIntensity: 0.56 }) })
-      .position(1.08, BOARD_CENTER_Y, 0.04)
-      .scale([0.018, 2.06, 0.022])
-  ];
-
-  for (let x = 0; x <= BOARD_WIDTH; x += 1) {
-    const px = BOARD_LEFT_X - CELL / 2 + x * CELL;
-    nodes.push(primitives.box({ name: `board vertical grid ${x}`, material: gridMaterial }).position(px, BOARD_CENTER_Y, 0.03).scale([0.008, VISIBLE_HEIGHT * CELL, 0.016]));
-  }
-  for (let y = 0; y <= VISIBLE_HEIGHT; y += 1) {
-    const py = BOARD_BOTTOM_Y - CELL / 2 + y * CELL;
-    nodes.push(primitives.box({ name: `board horizontal grid ${y}`, material: gridMaterial }).position(0, py, 0.03).scale([1.08, 0.008, 0.016]));
-  }
-
-  return nodes;
-}
-
-function createLockedBlockNodes(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [];
-  for (let y = 0; y < VISIBLE_HEIGHT; y += 1) {
-    for (let x = 0; x < BOARD_WIDTH; x += 1) {
-      const position = cellPosition(x, y, 0.18);
-      nodes.push(
-        primitives.box({
-          name: `locked block cell ${x} ${y}`,
-          material: pieceMaterials.I,
-          castShadow: true,
-          receiveShadow: true
-        })
-          .position(position[0], position[1], position[2])
-          .scale(HIDDEN_BLOCK_SCALE)
-          .runtime(game.runtimeNode(lockedNodeId(x, y), { tags: ["blockfall", "locked", "piece-material-runtime"] }))
-      );
-    }
-  }
-  return nodes;
-}
-
-function createActiveBlockNodes(): AuraNodeInput[] {
-  const nodes: AuraNodeInput[] = [];
-  for (let index = 0; index < 4; index += 1) {
-    nodes.push(
-      primitives.box({
-        name: `active block ${index}`,
-        material: pieceMaterials.T,
-        castShadow: true,
-        receiveShadow: true
-      })
-        .position(0, 0, 0.28)
-        .scale(HIDDEN_BLOCK_SCALE)
-        .runtime(game.runtimeNode(activeNodeId(index), { tags: ["blockfall", "active", "piece-material-runtime"] }))
-    );
-  }
-  return nodes;
-}
-
-function createGhostNodes(): AuraNodeInput[] {
-  return Array.from({ length: 4 }, (_, index) =>
-    primitives.box({
-      name: `ghost landing block ${index}`,
-      material: ghostMaterial
-    })
-      .position(0, 0, 0)
-      .scale(HIDDEN_BLOCK_SCALE)
-      .runtime(game.runtimeNode(ghostNodeId(index), { tags: ["blockfall", "ghost"] }))
-  );
-}
-
-function createClearFlashNodes(): AuraNodeInput[] {
-  return Array.from({ length: VISIBLE_HEIGHT }, (_, row) => {
-    const position = cellPosition(Math.floor(BOARD_WIDTH / 2), row, 0.18);
-    return primitives.box({ name: `line clear flash row ${row}`, material: flashMaterial })
-      .position(0, position[1], position[2])
-      .scale(HIDDEN_BLOCK_SCALE)
-      .runtime(game.runtimeNode(clearFlashNodeId(row), { tags: ["blockfall", "line-clear-flash"] }));
-  });
-}
-
-function createReactorNodes(): AuraNodeInput[] {
-  return [
-    primitives.cylinder({ name: "reactor charge glass tube", material: material.glass({ color: "#e7f7e7", opacity: 0.34, transmission: 0.55, roughness: 0.08 }) })
-      .position(1.52, 2.0, 0.16)
-      .scale([0.095, 0.68, 0.095]),
-    primitives.cylinder({ name: "reactor fill", material: reactorMaterial })
-      .position(1.52, 1.42, 0.2)
-      .scale([0.08, 0.18, 0.08])
-      .runtime(game.runtimeNode("blockfall-reactor-fill", { tags: ["blockfall", "reactor", "meter"] })),
-    primitives.sphere({ name: "reactor cap", material: reactorCapMaterial })
-      .position(1.52, 3.1, 0.2)
-      .scale(HIDDEN_BLOCK_SCALE)
-      .runtime(game.runtimeNode("blockfall-reactor-cap", { tags: ["blockfall", "reactor", "critical"] })),
-    primitives.box({ name: "left hold dock glow", material: material.emissive({ color: "#8b7a55", emissive: "#d3a23c", emissiveIntensity: 0.22 }) }).position(-1.45, 3.2, 0.02).scale([0.13, 0.025, 0.018]),
-    primitives.box({ name: "right queue dock glow", material: material.emissive({ color: "#55725a", emissive: "#69dd83", emissiveIntensity: 0.2 }) }).position(1.45, 1.04, 0.02).scale([0.13, 0.025, 0.018])
-  ];
-}
-
-function cellPosition(x: number, visibleY: number, z: number): readonly [number, number, number] {
-  return [
-    BOARD_LEFT_X + x * CELL,
-    BOARD_BOTTOM_Y + (VISIBLE_HEIGHT - 1 - visibleY) * CELL,
-    z
-  ];
-}
-
 function renderMiniPiece(kind: PieceKind | null): string {
   const occupied = new Set<CellPoint>();
   if (kind) {
@@ -1151,26 +1053,6 @@ function createRepeatGate(initialDelay: number, interval: number) {
       return false;
     }
   };
-}
-
-function lockedNodeId(x: number, y: number): string {
-  return `blockfall-locked-${x}-${y}`;
-}
-
-function activeNodeId(index: number): string {
-  return `blockfall-active-${index}`;
-}
-
-function ghostNodeId(index: number): string {
-  return `blockfall-ghost-${index}`;
-}
-
-function clearFlashNodeId(row: number): string {
-  return `blockfall-clear-flash-${row}`;
-}
-
-function lockedNodeKey(x: number, y: number): string {
-  return `${x}:${y}`;
 }
 
 function mediaMatches(query: string): boolean {

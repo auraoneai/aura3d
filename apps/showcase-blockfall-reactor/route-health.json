@@ -1,51 +1,66 @@
 {
   "schema": "aura3d-route-health/1.0",
-  "generatedAt": "2026-06-22",
+  "generatedAt": "2026-07-28T05:16:00.740Z",
   "appId": "showcase-blockfall-reactor",
   "route": "/apps/showcase-blockfall-reactor/",
-  "classification": "candidate",
+  "classification": "release-ready candidate",
   "publicShowcase": true,
-  "promotionStatus": "release-ready-candidate-bounded-to-falling-block-gameplay-proof",
+  "promotionStatus": "typed-cabinet-and-gameplay-evidence-bounded-candidate",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
     "nativeWebGPU": false,
     "productionRuntime": false
   },
-  "primaryAssets": [],
+  "primaryAssets": [
+    {
+      "typedRef": "assets.showcaseBlockfallCabinet",
+      "role": "primaryWorld",
+      "status": "typed-primary-asset",
+      "quality": "release"
+    }
+  ],
   "primitiveStatus": {
-    "sourceOccurrences": 31,
-    "role": "falling-block board, tetromino cells, rails, glows, HUD anchors, and collision visuals",
-    "status": "within-stated-abstract-game-role"
+    "sourceOccurrences": 24,
+    "primitiveBudget": 40,
+    "role": "falling-block cells, board rails, ghost guides, reactor indicators, and collision visuals inside the typed arcade cabinet",
+    "status": "gameplay-geometry-with-typed-primary-cabinet"
   },
   "claimStatus": {
     "status": "bounded",
+    "label": "createAuraApp",
     "allowed": [
-      "bounded standalone falling-block candidate",
-      "procedural Aura3D falling-block board",
-      "route-local deterministic TypeScript rules",
-      "keyboard interaction proof from Playwright",
-      "retained route-primary probe evidence for the playable falling-block board composition",
-      "source deploy validation for the procedural route"
+      "falling-block development showcase",
+      "catalog-sourced typed arcade-cabinet environment",
+      "public game.fallingBlocks gameplay state",
+      "keyboard and touch interaction proof",
+      "deterministic line-clear scoring proof",
+      "route-selected cannon-es fidelity proof"
     ],
     "notAllowed": [
       "reusable falling-block game kit",
       "commercial game launch readiness",
-      "typed GLB primary asset claim for the game board"
+      "generic collision-system claim"
     ]
   },
+  "blockers": [],
   "evidence": {
     "global": "window.__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
-    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-    "interactionReport": "tests/reports/showcase-game-interactions.json",
     "sourceReview": "apps/showcase-blockfall-reactor/src/main.ts",
     "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json",
     "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
+    "desktopScreenshot": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+    "mobileScreenshot": "tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
     "gameplayProof": "tests/reports/showcase-gameplay/showcase-blockfall-reactor.json",
-    "gameplayBeforeScreenshot": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before.png",
+    "gameplayBeforeScreenshot": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-before-input.png",
     "gameplayAfterInputScreenshot": "tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-    "releaseAssetProbes": [],
-    "deployCheck": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --source apps/showcase-blockfall-reactor/src --no-assets"
+    "releaseAssetProbes": {
+      "showcaseBlockfallCabinet": "tests/reports/showcase-release-asset-probes/showcaseBlockfallCabinet.json"
+    },
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset showcaseBlockfallCabinet"
+  },
+  "physics": {
+    "backend": "cannon-es",
+    "scope": "route-selected showcase fidelity proof"
   }
 }

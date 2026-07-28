@@ -148,10 +148,16 @@
       "globalName": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
       "published": true,
       "releaseClass": "release-ready candidate",
-      "primaryAssets": [],
+      "primaryAssets": [
+        "showcaseBlockfallCabinet"
+      ],
+      "primaryAssetRoles": {
+        "showcaseBlockfallCabinet": "arcade-cabinet-world"
+      },
+      "routePrimaryHeroAsset": "showcaseBlockfallCabinet",
       "secondaryPrimaryAssets": [],
       "primitiveBudget": 40,
-      "requiresTypedPrimaryAssets": false,
+      "requiresTypedPrimaryAssets": true,
       "requiresRoutePrimaryProbe": true,
       "requiresKeyboardDelta": true
     },
