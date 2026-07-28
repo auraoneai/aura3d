@@ -31,7 +31,7 @@ interface FlyControlsDelegate {
  * Supplying a camera mutates that camera. The no-argument compatibility form
  * uses `state.position`/`state.rotation` as a small in-memory camera, so it
  * still exercises the same yaw-relative movement and pitch-clamping engine
- * rather than a second placeholder math path.
+ * rather than duplicating the camera math path.
  */
 export class FlyControls {
   readonly state: ThreeCompatControlState = createDefaultControlState();

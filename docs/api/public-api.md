@@ -19,7 +19,7 @@ pnpm verify:api-docs
 | `@aura3d/assets` | `1.4.5` | `packages/assets/src/index.ts` | 83 |
 | `@aura3d/audio` | `1.4.5` | `packages/audio/src/index.ts` | 31 |
 | `@aura3d/cli` | `1.4.5` | `packages/aura3d-cli/src/index.ts` | 24 |
-| `@aura3d/controls` | `1.4.5` | `packages/controls/src/index.ts` | 21 |
+| `@aura3d/controls` | `1.4.5` | `packages/controls/src/index.ts` | 25 |
 | `@aura3d/core` | `1.4.5` | `packages/core/src/index.ts` | 14 |
 | `create-aura3d` | `1.4.5` | `packages/create-aura3d/src/index.ts` | 10 |
 | `@aura3d/debug` | `1.4.5` | `packages/debug/src/index.ts` | 30 |
@@ -34,7 +34,7 @@ pnpm verify:api-docs
 | `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 28 |
 | `@aura3d/product-studio` | `1.4.5` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.4.5` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 264 |
+| `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 266 |
 | `@aura3d/scene` | `1.4.5` | `packages/scene/src/index.ts` | 20 |
 | `@aura3d/scripting` | `1.4.5` | `packages/scripting/src/index.ts` | 53 |
 | `@aura3d/three-compat` | `1.4.5` | `packages/three-compat/src/index.ts` | 31 |
@@ -346,13 +346,17 @@ export { OrbitControls } from "./OrbitControls";
 export type { OrbitCameraLike, OrbitControlsOptions } from "./OrbitControls";
 export { TrackballControls } from "./TrackballControls";
 export { FlyControls } from "./FlyControls";
+export type { FlyCameraLike, FlyControlsOptions } from "./FlyControls";
 export { FirstPersonControls } from "./FirstPersonControls";
+export type { FirstPersonControlsOptions } from "./FirstPersonControls";
 export { MapControls } from "./MapControls";
 export { PointerLockControls } from "./PointerLockControls";
-export { DragControls } from "./DragControls";
-export { TransformControls } from "./TransformControls";
-export type { TransformControlMode } from "./TransformControls";
+export { DRAG_CONTROLS_DEPRECATION, DragControls } from "./DragControls";
+export type { DragControlsDeprecation, DragControlsOptions } from "./DragControls";
+export { TRANSFORM_CONTROLS_DEPRECATION, TransformControls } from "./TransformControls";
+export type { TransformControlMode, TransformControlsDeprecation } from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
+export type { SelectionManagerChange, SelectionManagerListener } from "./SelectionManager";
 export { InteractionControls } from "./InteractionControls";
 export type { HotspotHandler, InteractionControlMode, InteractionControlsEvent, InteractionControlsEventType, InteractionControlsListener, InteractionControlsOptions, InteractionControlsUpdate, InteractionRay, InteractionRayProvider, InteractionRootProvider } from "./InteractionControls";
 export { Picking } from "./Picking";
@@ -1037,6 +1041,8 @@ export { LightCollector } from "./LightCollector";
 export type { CollectedLight, CollectedLightKind, LightCollectorOptions } from "./LightCollector";
 export { LightUniforms, MAX_DIRECT_LIGHTS } from "./LightUniforms";
 export type { PackedLightUniforms } from "./LightUniforms";
+export { CLUSTER_TILE_SIZE, MAX_LIGHTS_PER_CLUSTER, createClusteredForwardLighting } from "./ClusteredForwardLighting";
+export type { ClusteredForwardLightingDiagnostics, ClusteredForwardLightingResources } from "./ClusteredForwardLighting";
 export { DepthMaterial, DepthPass } from "./DepthPass";
 export type { DepthPassOptions } from "./DepthPass";
 export { ShadowMap, computeShadowDepthBias, createPoissonDiskShadowKernel, createShadowAtlasLayout, createShadowFilterKernel } from "./ShadowMap";
