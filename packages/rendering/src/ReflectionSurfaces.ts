@@ -1,7 +1,11 @@
 import { Geometry } from "./Geometry";
 import { PBRMaterial } from "./PBRMaterial";
 import type { RenderItem } from "./ForwardPass";
-import { createReflectionProbe, type ReflectionProbe } from "./ReflectionProbe";
+import {
+  createReflectionProbe,
+  type CubeCameraReflectionCapture,
+  type ReflectionProbe
+} from "./ReflectionProbe";
 
 export type ReflectionSurfaceKind =
   | "planar-reflector"
@@ -11,7 +15,7 @@ export type ReflectionSurfaceKind =
   | "cube-probe"
   | "screen-space-reflection";
 
-export type ReflectionSurfaceSupportStatus = "helper" | "unsupported";
+export type ReflectionSurfaceSupportStatus = "implemented" | "helper" | "unsupported";
 
 export interface ReflectionSurfaceOptions {
   readonly id: string;
@@ -22,6 +26,7 @@ export interface ReflectionSurfaceOptions {
   readonly metallic?: number;
   readonly intensity?: number;
   readonly probe?: ReflectionProbe;
+  readonly capture?: CubeCameraReflectionCapture;
 }
 
 export interface ReflectionSurfaceReport {
@@ -40,6 +45,7 @@ export interface ReflectionSurface {
   readonly kind: ReflectionSurfaceKind;
   readonly item?: RenderItem;
   readonly probe?: ReflectionProbe;
+  readonly capture?: CubeCameraReflectionCapture;
   readonly report: ReflectionSurfaceReport;
 }
 
@@ -87,17 +93,22 @@ export function createReflectionSurface(options: ReflectionSurfaceOptions): Refl
       radius: 6,
       intensity: options.intensity ?? 1
     });
+    const capture = options.capture;
+    if (capture && capture.probe.id !== probe.id) {
+      throw new Error(`Cube reflection capture probe ${capture.probe.id} does not match surface probe ${probe.id}.`);
+    }
     return {
       id: options.id,
       kind,
       probe,
-      report: report(options.id, kind, "unsupported", "static probe descriptor only", false, [
-        "six-face-cube-camera-capture",
-        "probe-to-material-binding",
-        "probe-refresh-scheduling"
-      ], [
-        "Live cube-camera probes are unsupported; cube-probe descriptors validate metadata only and do not capture six scene faces."
-      ])
+      ...(capture ? { capture } : {}),
+      report: capture
+        ? report(options.id, kind, "implemented", "live six-face cube capture with PBR environment binding", true, [], [])
+        : report(options.id, kind, "helper", "probe descriptor awaiting a CubeCameraReflectionCapture", false, [
+          "CubeCameraReflectionCapture instance"
+        ], [
+          "This cube-probe surface has no capture owner; provide CubeCameraReflectionCapture before claiming live reflections."
+        ])
     };
   }
 
@@ -170,7 +181,7 @@ function unsupportedReflectionRequests(kind: ReflectionSurfaceKind): readonly st
     case "screen-space-reflection":
       return ["SSR is unsupported; no depth/normal ray-march pass is created."];
     case "cube-probe":
-      return ["Live cube-camera probes are unsupported; only static probe descriptors are validated."];
+      return ["Cube-probe descriptors require a CubeCameraReflectionCapture before claiming live reflections."];
     case "reflective-floor":
       return ["Reflective floor is staged PBR material only, not true mirror/reflection rendering."];
   }

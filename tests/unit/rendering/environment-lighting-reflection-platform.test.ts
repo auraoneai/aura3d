@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { PBRMaterial, Texture, TextureBinding, composeEnvironmentLighting } from "../../../packages/rendering/src";
+import {
+  CubeCameraReflectionCapture,
+  MockRenderDevice,
+  PBRMaterial,
+  Texture,
+  TextureBinding,
+  composeEnvironmentLighting
+} from "../../../packages/rendering/src";
 import {
   createEnvironmentPresetReport,
   createNamedEnvironmentPreset,
@@ -264,7 +271,7 @@ describe("reflection surface contracts", () => {
     expect(floor.report.claimBoundary).toMatch(/not proof of planar reflection/i);
   });
 
-  it("returns unsupported descriptors for SSR, refraction, planar reflector, and live cube-probe claims", () => {
+  it("returns unsupported descriptors for SSR, refraction, and planar reflector claims while requiring a capture owner for cube probes", () => {
     const ssr = createReflectionSurface({ id: "hero-ssr", kind: "screen-space-reflection" });
     const glass = createReflectionSurface({ id: "glass", kind: "refractor-glass" });
     const planar = createReflectionSurface({ id: "mirror", kind: "planar-reflector" });
@@ -276,8 +283,68 @@ describe("reflection surface contracts", () => {
     expect(glass.report.unsupportedRequests.join(" ")).toMatch(/scene-space refraction/i);
     expect(planar.report.requiresRendererPath).toContain("mirror-camera-render-target");
     expect(probe.probe).toEqual({ id: "unit-probe", position: [1, 2, 3], radius: 4, intensity: 0.8 });
-    expect(probe.report.unsupportedRequests.join(" ")).toMatch(/Live cube-camera probes are unsupported/i);
+    expect(probe.report.status).toBe("helper");
+    expect(probe.report.unsupportedRequests.join(" ")).toMatch(/provide CubeCameraReflectionCapture/i);
     expect(() => createReflectionSurface({ id: "", kind: "reflective-floor" })).toThrow(/id is required/);
     expect(() => createReflectiveFloorSurface("bad-floor", { size: [0, 2] })).toThrow(/width/);
+  });
+
+  it("captures six live faces, refreshes moving pixels, and binds the cubemap to a reflective PBR surface", () => {
+    const device = new MockRenderDevice();
+    const probe = { id: "live-probe", position: [0, 1, 0] as const, radius: 12, intensity: 0.85 };
+    const capture = new CubeCameraReflectionCapture(device, probe, {
+      resolution: 4,
+      sampleCount: 4
+    });
+    let movingObjectFace = 4;
+
+    const renderCapture = () => capture.capture((face) => {
+      const pixels = new Uint8Array(4 * 4 * 4);
+      for (let index = 0; index < 16; index += 1) {
+        const offset = index * 4;
+        pixels[offset] = face.index === movingObjectFace ? 240 : 8;
+        pixels[offset + 1] = face.index === movingObjectFace ? 64 : 12;
+        pixels[offset + 2] = face.index === movingObjectFace ? 24 : 16;
+        pixels[offset + 3] = 255;
+      }
+      device.writeRenderTargetPixels?.(face.renderTarget, pixels);
+    });
+
+    const first = renderCapture();
+    movingObjectFace = 0;
+    const second = renderCapture();
+    const surface = createReflectionSurface({ id: "live-surface", kind: "cube-probe", probe, capture });
+
+    expect(first.texture.dimension).toBe("cube");
+    expect(first.texture.cubeFaces.map((face) => face.face)).toEqual(["px", "nx", "py", "ny", "pz", "nz"]);
+    expect(first.capturedPixelCount).toBe(96);
+    expect(first.revision).toBe(1);
+    expect(first.changedFaceCount).toBe(6);
+    expect(first.texture.disposed).toBe(true);
+    expect(second.revision).toBe(2);
+    expect(second.changedFaceCount).toBe(2);
+    expect(second.binding.validate()).toEqual({ ok: true, diagnostics: [], warnings: [] });
+    expect(second.environmentLighting.environmentCubeMapTexture).toBe(second.binding);
+    expect(second.environmentLighting.environmentMapSpecularIntensity).toBe(0.85);
+    expect(surface.capture).toBe(capture);
+    expect(surface.report.status).toBe("implemented");
+    expect(surface.report.trueReflection).toBe(true);
+    expect(surface.report.requiresRendererPath).toEqual([]);
+    const mismatchedCapture = new CubeCameraReflectionCapture(
+      device,
+      { ...probe, id: "different-probe" },
+      { resolution: 1 }
+    );
+    expect(() => createReflectionSurface({
+      id: "mismatch",
+      kind: "cube-probe",
+      probe,
+      capture: mismatchedCapture
+    })).toThrow(/does not match/);
+    mismatchedCapture.dispose();
+
+    capture.dispose();
+    expect(second.texture.disposed).toBe(true);
+    expect(() => renderCapture()).toThrow(/disposed/);
   });
 });

@@ -275,7 +275,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Documented unsupported: Aura3D does not decode OpenEXR pixels. The diagnostic-only assets-package EXR loader shells were removed so file presence cannot be mistaken for decode support.",
     "Keep EXR loading and OpenEXR decode out of accepted claims; convert source environments to a supported format before ingestion."
   ),
-  capability("cube-camera-reflections", "Cube Camera Reflections", "missing", false, [], "ReflectionProbe is a descriptor helper; live six-direction capture is not implemented.", "Implement cube camera/probe capture and reflective material binding."),
+  capability("cube-camera-reflections", "Cube Camera Reflections", "implemented", true, [
+    "CubeCameraReflectionCapture owns and refreshes six canonical cubemap render targets.",
+    "Captured face pixels are assembled into a validated cube TextureBinding consumed by ForwardPass PBR environment lighting.",
+    "ReflectionSurfaces reports true live cube-probe support only when a matching capture owner is attached.",
+    "Browser pixel evidence moves scene geometry, refreshes the probe, and verifies the reflective PBR surface changes."
+  ], "Rendering-internal live cube probes are implemented; planar mirrors, SSR, recursive captures, automatic scheduling, and root createAuraApp exposure remain separate claims.", "Retain moving-object pixel evidence and keep reflective objects excluded from their own capture pass."),
   capability("dynamic-ocean-plane", "Dynamic Ocean Plane", "helper", true, [
     "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry.",
     "Gallery routes can build dynamic water meshes from reusable samples."
@@ -1046,7 +1051,7 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
         request,
         ["clean-void-backdrop", "cube-camera-reflections"],
         "staged floor/catch-plane geometry",
-        "Requested reflective floor falls back to staged geometry; planar reflector/cube-camera floor reflections are not implemented."
+        "This reflective floor preset falls back to staged geometry because it has no CubeCameraReflectionCapture; live cube-probe reflection is available through ReflectionSurfaces, while planar reflection remains unsupported."
       );
     case "terrain-heightfield":
       return unsupported(
@@ -1067,7 +1072,7 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
         request,
         ["cube-camera-reflections"],
         "static procedural environment lighting",
-        "Cube-camera reflection requests remain unsupported; live six-direction probe capture and reflective material binding are not implemented."
+        "Live six-direction capture and reflective PBR binding are available through CubeCameraReflectionCapture, but this preset request did not attach a capture owner or refresh schedule."
       );
     case "planar-reflection":
       return unsupported(
@@ -1146,7 +1151,7 @@ function unsupported(
 function stageLimitations(preset: EnvironmentStagePresetId): readonly string[] {
   const shared = [
     "Environment stage helpers are reusable A3D geometry/material systems, not proof of full Three.js environment parity.",
-    "Linear/exponential fog profiles are uniform-ready helpers; accepted shader integration, cube-camera reflections, and volumetric weather remain separate backlog items."
+    "Linear/exponential fog profiles remain separately scoped; cube-camera reflections require an attached capture owner, and volumetric weather remains a backlog item."
   ];
   if (preset === "indoor-studio") return [
     ...shared,

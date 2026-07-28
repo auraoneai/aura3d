@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(20);
-    expect(report.implementedCount).toBe(0);
+    expect(report.implementedCount).toBe(1);
     expect(report.partialCount).toBe(6);
     expect(report.helperCount).toBe(11);
-    expect(report.missingCount).toBe(1);
+    expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(0);
-    expect(report.nonProductionReadyCount).toBe(20);
-    expect(report.productionReady).toEqual([]);
-    expect(report.backlog).toHaveLength(20);
+    expect(report.productionReadyCount).toBe(1);
+    expect(report.nonProductionReadyCount).toBe(19);
+    expect(report.productionReady).toEqual(["cube-camera-reflections"]);
+    expect(report.backlog).toHaveLength(19);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -61,7 +61,7 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);
     expect(byId.get("exr-parser")?.status).toBe("unsupported");
     expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
-    expect(byId.get("cube-camera-reflections")?.status).toBe("missing");
+    expect(byId.get("cube-camera-reflections")?.status).toBe("implemented");
     expect(byId.get("linear-fog")?.status).toBe("partial");
     expect(byId.get("linear-fog")?.gap).toMatch(/no accepted gallery route\/screenshot/i);
     expect(byId.get("exponential-fog")?.status).toBe("partial");
