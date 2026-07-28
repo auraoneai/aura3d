@@ -7,6 +7,28 @@ export function readPngForegroundMetrics(path, crop) {
   return analyzeForegroundPng(readFileSync(path), crop);
 }
 
+export function readPngRenderedProbeMetrics(path) {
+  const decoded = decodePng(readFileSync(path));
+  let nonBlankPixels = 0;
+  const colorBuckets = new Set();
+  for (let offset = 0; offset < decoded.pixels.length; offset += decoded.channels) {
+    const red = decoded.pixels[offset] ?? 0;
+    const green = decoded.pixels[offset + 1] ?? 0;
+    const blue = decoded.pixels[offset + 2] ?? 0;
+    const alpha = decoded.channels === 4 ? decoded.pixels[offset + 3] ?? 255 : 255;
+    if (alpha > 8 && (red > 8 || green > 8 || blue > 8)) {
+      nonBlankPixels += 1;
+      colorBuckets.add(`${red >> 5}:${green >> 5}:${blue >> 5}`);
+    }
+  }
+  return {
+    width: decoded.width,
+    height: decoded.height,
+    nonBlankPixels,
+    colorBuckets: colorBuckets.size
+  };
+}
+
 
 export function readPngDifferenceMetrics(visiblePath, hiddenPath, cropInput, channelThreshold = 12) {
   const first = decodePng(readFileSync(visiblePath));

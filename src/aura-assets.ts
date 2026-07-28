@@ -10345,25 +10345,41 @@ export const assets = defineAuraAssets({
           "No morph target metadata detected."
         ]
       },
+      "hierarchy": {
+        "nodeCount": 5,
+        "meshCount": 1,
+        "materialCount": 1,
+        "textureCount": 4,
+        "animationClipCount": 0,
+        "skinCount": 0,
+        "morphTargetCount": 0,
+        "rootNodeNames": [
+          "Sketchfab_model"
+        ],
+        "maxDepth": 5,
+        "messages": [
+          "Detected 5 nodes across 1 root."
+        ]
+      },
       "provenance": {
         "sourcePath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
+        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
+        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
         "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
-        "license": "CC-BY-4.0",
-        "author": "Ankledot",
+        "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+        "licenseName": "CC-BY-4.0",
+        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+        "author": "Ankledot (https://sketchfab.com/Ankledot)",
         "sourceFamily": "objaverse",
         "attribution": "Ankledot",
         "sha256": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "retrievedAt": "2026-06-17T12:16:20.895Z",
-        "checkedAt": "2026-06-17T12:16:22.204Z",
-        "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
-        "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
-        "licenseName": "CC-BY-4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+        "checkedAt": "2026-07-28T06:11:30.526Z"
       },
       "sourcePath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
       "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
-      "license": "CC-BY-4.0",
-      "author": "Ankledot",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "author": "Ankledot (https://sketchfab.com/Ankledot)",
       "boundsMetadata": {
         "min": [
           -4.685,
@@ -10409,9 +10425,9 @@ export const assets = defineAuraAssets({
         "route": "/apps/showcase-product-configurator/",
         "renderedProbe": {
           "url": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-          "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
+          "sha256": "sha256-6e4446a555b4d1541ab08dc46dcdf82f479dc2f20797fc0fbc71268c93df35af",
           "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
-          "checkedAt": "2026-07-21T04:18:37.544Z",
+          "checkedAt": "2026-07-28T05:16:17.889Z",
           "route": "/apps/showcase-product-configurator/"
         }
       },
@@ -10438,13 +10454,13 @@ export const assets = defineAuraAssets({
         "kind": "browser-screenshot",
         "renderer": "@aura3d/engine createAuraApp route-primary probe",
         "route": "/apps/showcase-product-configurator/",
-        "sha256": "sha256-8a8b522bf21bf2f9d243a716385bcb247365133d898b855532f898e9c696dd63",
+        "sha256": "sha256-6e4446a555b4d1541ab08dc46dcdf82f479dc2f20797fc0fbc71268c93df35af",
         "assetHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
         "width": 1440,
         "height": 900,
-        "nonBlankPixels": 698311,
-        "colorBuckets": 54,
-        "checkedAt": "2026-07-21T04:18:37.544Z",
+        "nonBlankPixels": 703325,
+        "colorBuckets": 52,
+        "checkedAt": "2026-07-28T05:16:17.889Z",
         "foregroundBounds": {
           "x": 576,
           "y": 293,
@@ -12996,7 +13012,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
+          "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -13933,7 +13949,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
+          "routePrimaryScreenshotSha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14139,7 +14155,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-aef33fb88fa1d9fc9735373e900b2ef78d09726d8b20a97692e4bb2f28bf4127",
+          "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
           "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "visualReview": "pass",
           "assetPairPass": true,
@@ -14722,7 +14738,7 @@ export const assets = defineAuraAssets({
         "evidence": {
           "manifestHash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
           "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "routePrimaryScreenshotSha256": "sha256-d4047fb6a76f3094a9821b13e8141aa6768ba03d5c8a43a573b9094dd69251e8",
+          "routePrimaryScreenshotSha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
           "geometryReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
           "visualReview": "pass",
           "assetPairPass": true,
