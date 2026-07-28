@@ -31,11 +31,11 @@ pnpm verify:api-docs
 | `@aura3d/input` | `1.4.5` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.4.5` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.4.5` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 29 |
+| `@aura3d/physics` | `1.4.5` | `packages/physics/src/index.ts` | 30 |
 | `@aura3d/product-studio` | `1.4.5` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.4.5` | `packages/react/src/index.ts` | 14 |
 | `@aura3d/rendering` | `1.4.5` | `packages/rendering/src/index.ts` | 266 |
-| `@aura3d/scene` | `1.4.5` | `packages/scene/src/index.ts` | 20 |
+| `@aura3d/scene` | `1.4.5` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `1.4.5` | `packages/scripting/src/index.ts` | 53 |
 | `@aura3d/three-compat` | `1.4.5` | `packages/three-compat/src/index.ts` | 31 |
 | `@aura3d/workflows` | `1.4.5` | `packages/workflows/src/index.ts` | 12 |
@@ -789,6 +789,7 @@ export * from "./Constraint.js";
 export * from "./Constraints.js";
 export * from "./Raycast.js";
 export * from "./TimeOfImpact.js";
+export * from "./NarrowPhase.js";
 export * from "./PhysicsWorld.js";
 export * from "./PhysicsStepper.js";
 export * from "./ScenePhysicsBridge.js";
@@ -1159,6 +1160,7 @@ export * from "./Light.js";
 export * from "./DirectionalLight.js";
 export * from "./PointLight.js";
 export * from "./SpotLight.js";
+export * from "./RectAreaLight.js";
 export * from "./Layers.js";
 export * from "./Lights.js";
 export * from "./Renderable.js";

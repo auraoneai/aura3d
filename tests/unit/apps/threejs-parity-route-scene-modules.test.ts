@@ -65,7 +65,7 @@ describe("threejsParity route-owned scene modules", () => {
     expect(frame.environment.intensity).toBe(0.88);
     expect(frame.environment.proceduralMap.specularColor).toEqual([0.105, 0.093, 0.082]);
     expect(frame.environment.proceduralMap.specularIntensity).toBe(0.105);
-    expect(frame.approximations.join(" ")).toMatch(/true area lights/i);
+    expect(frame.approximations.join(" ")).toMatch(/finite rectangular emitters/i);
     expect(frame.items.some((item) => item.label === "overhead product strip light")).toBe(false);
     expect(frame.items.some((item) => item.label === "studio reflection streak")).toBe(false);
     expect(frame.items.some((item) => item.label === "indoor-studio floor/catch plane")).toBe(true);
