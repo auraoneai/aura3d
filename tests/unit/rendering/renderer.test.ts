@@ -294,6 +294,34 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
+  it("bypasses native presentation when deterministic CPU execution is explicit", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [0.58, 0.32, 0.14, 1] });
+    const nativeCalls: string[][] = [];
+    renderer.device.presentLdrPostprocess = (_source, options) => {
+      nativeCalls.push(options.passes.map((pass) => pass.name));
+    };
+
+    const diagnostics = renderer.render({
+      renderItems: [],
+      postprocess: {
+        execution: "cpu-deterministic",
+        targetFormat: "rgba8",
+        toneMapping: { exposure: 1.08, operator: "filmic" },
+        colorGrade: { contrast: 1.12 },
+        fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.55 }
+      }
+    });
+
+    expect(nativeCalls).toEqual([]);
+    expect(diagnostics.postprocessPlan).toMatchObject({
+      executionMode: "renderer-owned-fused-ldr-readback",
+      canFuseLdr: true,
+      readbackPassNames: ["tone-mapping", "color-grade", "fxaa"]
+    });
+    expect(renderer.device.captureState().get("renderTarget") ?? null).toBeNull();
+    renderer.dispose();
+  });
+
   it("routes LDR bloom before tone mapping through the device-native fused presentation path", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [0.9, 0.42, 0.12, 1] });
     const calls: { readonly passNames: readonly string[]; readonly sourceFormat: string }[] = [];

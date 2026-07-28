@@ -35,6 +35,28 @@ describe("renderer postprocess plan diagnostics", () => {
     expect(plan.claimBoundary).toContain("does not prove EffectComposer parity");
   });
 
+  it("keeps native-capable passes on the explicit deterministic CPU path", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      execution: "cpu-deterministic",
+      toneMapping: false,
+      colorGrade: { contrast: 1.08 },
+      taa: { history: new Uint8Array(3 * 2 * 4).fill(64), blend: 0.2 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["color-grade", "taa", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-readback",
+      canFuseLdr: true,
+      readbackPassNames: ["color-grade", "taa", "fxaa"]
+    });
+    expect(plan.passes.every((pass) => pass.usesReadback)).toBe(true);
+  });
+
   it("ranks LDR bloom before tone mapping in the native fused plan", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.72, intensity: 0.4, radius: 2 },

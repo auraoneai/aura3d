@@ -790,7 +790,7 @@ export class Renderer {
       }
       return;
     }
-    if (this.executeFusedLdrPostprocess(current, passes, outputTarget)) return;
+    if (this.executeFusedLdrPostprocess(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -865,10 +865,15 @@ export class Renderer {
     }
   }
 
-  private executeFusedLdrPostprocess(current: RenderTarget, passes: readonly RendererPostProcessPassPlan[], outputTarget?: RenderTarget): boolean {
+  private executeFusedLdrPostprocess(
+    current: RenderTarget,
+    passes: readonly RendererPostProcessPassPlan[],
+    outputTarget?: RenderTarget,
+    forceCpuDeterministic = false
+  ): boolean {
     if (!canFuseLdrPostprocess(current, passes)) return false;
-    if (!this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
-    if (this.device.presentLdrPostprocess) {
+    if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
+    if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
       this.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
           name: pass.name,
@@ -911,7 +916,7 @@ export class Renderer {
       }
       return;
     }
-    if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget)) return;
+    if (await this.executeFusedLdrPostprocessAsync(current, passes, outputTarget, postprocess.execution === "cpu-deterministic")) return;
     for (let index = 0; index < passes.length; index += 1) {
       const pass = passes[index]!;
       const nextPass = passes[index + 1];
@@ -983,10 +988,15 @@ export class Renderer {
     }
   }
 
-  private async executeFusedLdrPostprocessAsync(current: RenderTarget, passes: readonly RendererPostProcessPassPlan[], outputTarget?: RenderTarget): Promise<boolean> {
+  private async executeFusedLdrPostprocessAsync(
+    current: RenderTarget,
+    passes: readonly RendererPostProcessPassPlan[],
+    outputTarget?: RenderTarget,
+    forceCpuDeterministic = false
+  ): Promise<boolean> {
     if (!canFuseLdrPostprocess(current, passes)) return false;
-    if (!this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
-    if (this.device.presentLdrPostprocess) {
+    if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
+    if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
       this.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
           name: pass.name,

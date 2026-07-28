@@ -17,6 +17,12 @@ import type {
 export type RendererPostprocessTargetFormat = "rgba8" | "rgba16f" | "rgba32f";
 
 export interface RendererPostprocessPlanOptions {
+  /**
+   * `cpu-deterministic` keeps the public byte kernels as an explicit reference
+   * path for fixtures and reproducible diagnostics. `auto` prefers native GPU
+   * presentation when the active device supports every requested pass.
+   */
+  readonly execution?: "auto" | "cpu-deterministic";
   readonly toneMapping?: ToneMappingOptions | false;
   readonly colorGrade?: ColorGradeOptions | boolean;
   readonly bloom?: BloomOptions | boolean;
@@ -158,13 +164,14 @@ export function createRendererPostprocessPlanDiagnostics(
   const passes = createRendererPostprocessPasses(postprocess);
   const sourceTargetFormat = context.sourceTargetFormat ?? context.targetFormat ?? "rgba8";
   const targetFormat = context.targetFormat ?? sourceTargetFormat;
+  const forceCpuDeterministic = postprocess.execution === "cpu-deterministic";
   const requiresNativeSpatialPass = passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa");
   const canFuseLdr = canFuseLdrPostprocessPlan(sourceTargetFormat, passes)
-    && (context.nativeLdrPostprocess === true || !requiresNativeSpatialPass);
+    && (forceCpuDeterministic || context.nativeLdrPostprocess === true || !requiresNativeSpatialPass);
   const executionMode = passes.length === 0
     ? "none"
     : canFuseLdr
-      ? context.nativeLdrPostprocess
+      ? context.nativeLdrPostprocess && !forceCpuDeterministic
         ? "renderer-owned-fused-ldr-native"
         : "renderer-owned-fused-ldr-readback"
       : "renderer-owned-pass-chain-readback";
