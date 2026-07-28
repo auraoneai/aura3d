@@ -2,6 +2,11 @@
 
 This standard separates technical route evidence from public demo quality. A route-primary probe, deploy check, or gameplay proof can prove a lower-level gate while the browser view still fails as a public example.
 
+Current status (2026-07-27): Turbo Drift Circuit and Skyline Runner retain
+bounded geometry/gameplay evidence, but public-ready wording is held while the
+required retained racing visual-QA unit gate is non-passing. The configured
+7/7 route-library result does not override that failure.
+
 ## Global Acceptance Criteria
 
 - The typed primary asset is readable within 3 seconds at a desktop browser viewport.

@@ -29,6 +29,9 @@ routes, benchmark claims, or marketing copy.
 - [ ] `pnpm install` has been run for the current lockfile.
 - [ ] `pnpm typecheck` passes.
 - [ ] `pnpm test:unit` passes.
+- [ ] No focused retained-evidence test is failing; a stale superseded-route
+  screenshot hash still fails the release if the test remains in the required
+  unit suite.
 - [ ] `pnpm test:integration` passes when integration behavior changed.
 - [ ] `pnpm test:browser` passes when browser routes changed.
 - [ ] `pnpm build` passes.
@@ -77,6 +80,9 @@ routes, benchmark claims, or marketing copy.
 - [ ] Data Galaxy and WebGPU Particle Lab remain internal diagnostics unless
   their public visual/release evidence passes.
 - [ ] Turbo Drift Circuit and Skyline Runner are counted as public only while current certified geometry, pair composition, gameplay, automated visual QA, manual review, and deploy evidence all pass.
+- [ ] A 7/7 route-library build/check result is described as a technical
+  sub-gate, not an overall public-ready verdict, unless the full required test
+  and evidence chain also passes.
 
 ## Game Gates
 
@@ -104,6 +110,9 @@ routes, benchmark claims, or marketing copy.
   only public `@aura3d/engine` and the pixels prove the deformation.
 - [ ] WebGPU claims include adapter/backend, dispatch/render, fallback state,
   telemetry, and screenshot evidence.
+- [ ] Performance or parity wording is absent unless the comparative report has
+  every required input and passes; a feature inventory is not performance
+  evidence.
 
 ## Docs And Copy Gates
 

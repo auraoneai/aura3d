@@ -998,12 +998,23 @@ exists.
       transitions and lower-level physics are described at package scope. The focused docs
       tests, API-doc verifier, full build/public-export audit, agent-doc check, codeblock
       check, and claim registry all pass.
-- [ ] **4.3** Status / release: `docs/project/current-state.md` — it fixes 7/7 public
+- [!] **4.3** Status / release: `docs/project/current-state.md` — it fixes 7/7 public
       route-library count, 2 internal diagnostics, 2 game-layer harnesses, 0
       prototype-blocked; **do not silently break those numbers**. Plus `CHANGELOG.md`,
       `GoLiveCheckList.md`, `docs/project/release-checklist.md`,
       `showcase-quality-gates.md`, `showcase-visual-quality-standard.md`,
       `library-gap-roadmap.md`, `docs/project/apps-classification.md`
+      Audited every named file without changing the configured 7/7, 2, 2, and 0
+      inventory. The docs now distinguish that route-library sub-gate from the held
+      overall release, preserve 2026-07-23 deployment receipts as historical, lower
+      Turbo/Skyline to blocked while the retained racing screenshot hash is stale, and
+      prohibit performance/parity promotion with six missing report inputs. Governance
+      and version tests, docs-site browser checks, agent docs, codeblocks, claims, and
+      marketing-truth all pass. Blocked under Rule 0 after
+      `production-runtime:truth` failed twice: its legacy failure-audit still requires
+      eight retired exact phrases across status docs (canvas-painted/mock-renderer/
+      hardcoded-score/`page.setContent` terminology and related strings). No third
+      wording/tool variation was attempted.
 - [ ] **4.4** Per-game: root `README.md`, each `apps/*/README.md`,
       `docs/project/aura-clash-showcase.md`, `docs/agents/game-showcase-build.md`,
       `docs/examples/fighting-game.md`, `docs/guides/build-a-browser-game.md`

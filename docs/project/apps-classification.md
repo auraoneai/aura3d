@@ -1,6 +1,6 @@
 # Apps Classification
 
-Date: 2026-07-19
+Date: 2026-07-27
 Status: current classification policy
 
 App classification controls what public copy may say. A route can be useful and
@@ -44,8 +44,8 @@ still not be a public release candidate.
 | `showcase-platformer-game-layer-proof` | game-layer diagnostic | Retained geometry-contract/debug harness; not public showcase material. |
 | `showcase-data-galaxy` | internal diagnostic | Retained diagnostic route; abstract/data claims are not public showcase claims. |
 | `showcase-webgpu-particle-lab` | internal diagnostic | Retained diagnostic route; native WebGPU is not claimed. |
-| `showcase-skyline-runner` | release-ready candidate | Public bounded platformer presentation with certified mesh-derived surfaces, typed character/world binding, gameplay proof, and visual QA. |
-| `showcase-turbo-drift-circuit` | release-ready candidate | Public bounded racing presentation with certified topology, typed car/track binding, gameplay proof, and visual QA. |
+| `showcase-skyline-runner` | blocked | Retains bounded mesh-derived surface, typed character/world, and gameplay evidence; public-ready wording is held while the required retained racing visual-QA unit gate is non-passing and world-level proof remains fixture-bounded. |
+| `showcase-turbo-drift-circuit` | blocked | Retains bounded topology, typed car/track, and gameplay evidence; public-ready wording is held while the required retained racing visual-QA unit gate is non-passing. |
 | `showcase-index` | index route | Catalog/index route only; not deploy-asset or route-primary checked as a 3D app. |
 
 ## Retained Engine Evidence
@@ -59,4 +59,7 @@ only public root APIs and pass current evidence gates.
 
 Marketing may embed a route only when it labels the route with the correct
 classification. `prototype`, `prototype-blocked`, `internal diagnostic`, and
-`blocked` routes cannot be presented as public showcase examples.
+`blocked` routes cannot be presented as public showcase examples. The configured
+route-library inventory still contains seven candidate entries, two internal
+diagnostics, two game-layer diagnostic harnesses, and zero prototype-blocked
+routes; classification and current promotion eligibility are separate.

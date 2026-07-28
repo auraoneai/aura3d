@@ -81,6 +81,11 @@ Public racing and platformer routes also need retained game-geometry evidence:
 Route-primary, deploy, and gameplay state changes are necessary. They are not
 enough to make a public game example release-ready.
 
+All required retained-evidence tests must also pass. A stale screenshot,
+source, route-health, or composition hash in a required visual-QA test blocks
+the overall release even when the configured route-library build/check sub-gate
+reports 7/7.
+
 ## Animation And Effects Gate
 
 - Animation claims require pixel deltas in the animated subject region.

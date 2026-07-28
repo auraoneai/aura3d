@@ -1,11 +1,15 @@
 # Library Gap Roadmap
 
-Date: 2026-06-18
-Status: durable roadmap for PRD library work
+Date: 2026-07-27
+Status: durable roadmap with evidence-bounded progress notes
 
 This roadmap names the library work required before Aura3D can ask agents to
 build "Three.js quality" games and polished showcases through the public safe
 API.
+
+Items below are targets, not shipped claims. A target may have bounded package
+or named-route proof without being complete for arbitrary root
+`createAuraApp` scenes.
 
 ## P0: Root Production Renderer Bridge
 
@@ -21,14 +25,16 @@ Primary files to inspect or change:
 - `packages/rendering/src/ForwardPass.ts`
 - `packages/rendering/src/index.ts`
 
-Required work:
+Current bounded progress and remaining work:
 
-- adapt `createAuraApp` scene descriptors into production-runtime render sources;
+- a production bridge exists for eligible typed-GLB sources, with named root
+  bridge tests; broaden the supported descriptor/feature matrix before treating
+  it as root-default renderer parity;
 - decide default production runtime versus explicit `renderer: "production"`;
 - preserve typed asset safety and reject raw string asset IDs;
-- expose typed GLB actors as public route objects;
+- keep typed GLB actor exposure and route evidence asset-specific;
 - document fallback behavior;
-- add browser tests that import only `@aura3d/engine`.
+- add root-only browser tests for each renderer feature being claimed.
 
 Acceptance:
 
@@ -50,19 +56,22 @@ Primary files/docs to inspect or change:
 - `docs/animation/runtime-support.md`
 - `docs/rendering/skinning-and-morphs.md`
 
-Required work:
+Current bounded progress and remaining work:
 
-- public typed animation API for `model(assets.character)`;
-- skinned glTF rendering in the public bridge;
+- named root-only browser routes now prove skinned pose deltas and morph
+  deformation for their tested assets; they do not establish arbitrary-rig
+  support;
+- retain the public typed animation and morph controls used by those fixtures;
 - clip playback controls: play, pause, loop, crossfade, speed, seek;
 - locomotion state helpers;
-- morph target support where advertised;
-- screenshot tests proving pose/morph changes in the model region.
+- broaden rig, skin, clip, and morph fixtures only where public claims need it;
+- keep screenshot tests proving pose/morph changes in the model region.
 
-Acceptance:
+Acceptance for broad closure:
 
-- root `createAuraApp` route visibly animates a real skinned GLB;
-- screenshots at two times differ meaningfully on the character;
+- more than one representative root `createAuraApp` fixture visibly animates a
+  real skinned GLB and exercises the advertised controls;
+- screenshots at two times differ meaningfully on each tested character;
 - docs distinguish public, experimental, internal, and planned support.
 
 ## P0/P1: Asset CLI Provenance And Quality Gates
@@ -117,14 +126,13 @@ Primary files/docs/apps to inspect or change:
 - `apps/showcase-skyline-runner/src/main.ts`
 - `apps/showcase-turbo-drift-circuit/src/main.ts`
 
-Required work:
+Current bounded progress and remaining work:
 
 - generic collision/sensor world;
-- platformer kit;
-- racing kit;
-- falling-block kit;
+- platformer, racing, and falling-block helpers exist as bounded deterministic
+  presentation/runtime surfaces; they are not generic game engines;
 - generic HUD/event/evidence bindings;
-- playable `mini-game` replacement;
+- keep the `mini-game` scaffold aligned with exports and its declared scope;
 - docs that reference only real exports.
 
 Acceptance:
@@ -151,8 +159,13 @@ Primary files/docs/apps to inspect or change:
 
 Required work:
 
-- public quality profiles (`renderer.qualityProfiles()` and `createAuraApp({ renderer })` diagnostics implemented; production bridge exists for eligible typed-GLB scenes, while renderer feature parity proof remains pending);
-- material capability diagnostics (`material.capabilityDiagnostics(...)` implemented for root createAuraApp claim boundaries; production-runtime material integration still pending);
+- public quality profiles (`renderer.qualityProfiles()` and
+  `createAuraApp({ renderer })` diagnostics are implemented; a production
+  bridge exists for eligible typed-GLB scenes, while root feature-parity proof
+  remains pending);
+- material capability diagnostics (`material.capabilityDiagnostics(...)` is
+  implemented for root claim boundaries; rendering-internal RGBE/PMREM and
+  bounded transmission proof does not establish root material parity);
 - exact material support matrix;
 - environment lighting and shadows only when pixel-backed;
 - postprocess only when screenshot-backed;
@@ -194,3 +207,8 @@ Acceptance:
 - no game passes without visible input impact;
 - no showcase passes if the main subject is tiny, hidden, clipped, or
   primitive-only.
+
+Current gate note: these acceptance rules exist, but the required retained
+racing visual-QA unit test is non-passing because its screenshot hash is stale.
+Until that evidence is regenerated or the retained-test policy is deliberately
+changed, the overall showcase release is held.

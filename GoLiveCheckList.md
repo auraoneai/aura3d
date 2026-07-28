@@ -17,7 +17,7 @@ partially complete or environment-dependent.
 
 ## Current Verdict
 
-- [x] **Public developer-product distribution is LIVE**: 26 npm packages resolve to
+- [x] **The 2026-07-23 public developer-product distribution went live**: 26 npm packages resolved to
   version **1.4.5**, GitHub release `v1.4.5` is public, and
   `https://aura3d.auraone.ai` serves the production marketing/docs/showcase build.
 - [x] This is an npm SDK, CLI, scaffold, documentation, and showcase launch. It is
@@ -27,13 +27,18 @@ partially complete or environment-dependent.
 - [x] Claim-safe public API scope remains bounded by
   `docs/project/current-state.md`, `docs/project/known-limits.md`, and the automated
   claim registry.
+- [~] **Current repo revalidation (2026-07-27) is held**: the focused retained
+  racing visual-QA unit test has two failing assertions because its screenshot
+  hash is stale. The historical publication and deployment receipts below are
+  not evidence that the current worktree is release-ready.
 
-## Current Code-Level Score
+## 2026-07-23 Go-Live Snapshot Score
 
 **100 / 100**
 
-Repo-local release gates and external production-distribution gates are green as of
-2026-07-23.
+Repo-local release gates and external production-distribution gates were green
+for the recorded 2026-07-23 snapshot. This score is not the current worktree
+verdict.
 
 ## Repo-Local Completion
 
@@ -56,6 +61,10 @@ Repo-local release gates and external production-distribution gates are green as
 - [x] `pnpm --dir marketing build` — pass
 - [x] Published-package engine, `create-aura3d`, and CLI verification — pass against
   npm registry artifacts at version 1.4.5
+
+These checked items are dated receipts. Current release promotion additionally
+requires a fresh passing full unit suite and current performance evidence for
+any performance/parity wording.
 
 ## External / Live Go-Live Gates
 

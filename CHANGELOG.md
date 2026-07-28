@@ -4,6 +4,14 @@ Version: 1.4.5
 
 All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.4.5` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
 
+Current evidence note (2026-07-27): release entries below record what shipped
+and the evidence accepted for that release. They are not a current-worktree
+verdict. The configured showcase sub-gate still reports 7/7 candidates, but
+current public-ready promotion of Turbo Drift Circuit and Skyline Runner is
+held while the required retained racing visual-QA unit test is non-passing.
+Performance/parity wording is also blocked while six comparative-report inputs
+are missing.
+
 ## 1.4.5 (2026-07-20)
 
 Maintenance release for the public game runtime, production showcase, and release infrastructure. The package and route claim boundaries remain unchanged: the named presentations are evidence-bounded examples, not a claim of production game-engine or renderer parity.
