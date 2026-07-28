@@ -135,11 +135,22 @@ function renderEvidenceConsole(): string {
     <section class="ac-proof-console" aria-labelledby="aura-clash-proof-title">
       <div class="ac-proof-console__header">
         <span>Developer evidence</span>
-        <h2 id="aura-clash-proof-title">Aura Clash implementation proof</h2>
+        <h2 id="aura-clash-proof-title">Aura Clash runtime evidence</h2>
         <p>
           This route exposes the exact typed assets, provenance records, gameplay systems, route surface, accessibility controls,
           and incomplete visual QA gates behind the showcase.
         </p>
+      </div>
+
+      <div class="ac-route-evidence-grid" aria-label="Runtime evidence source map">
+        <article class="ac-route-evidence-card">
+          <strong>Hitbox route source</strong>
+          <p><code>src/playable/combat/AuraClashFighterController.ts</code> and the live arena proof expose input-driven combat events.</p>
+        </article>
+        <article class="ac-route-evidence-card">
+          <strong>Physics body source</strong>
+          <p><code>src/playable/AuraClashArenaApp.ts</code> owns the persistent fighter positions, velocity, grounding, and collision response.</p>
+        </article>
       </div>
 
       <div class="ac-proof-card-grid">
@@ -206,8 +217,9 @@ function renderPosterConsole(): string {
     <section class="ac-proof-console ac-poster-console" aria-labelledby="aura-clash-poster-title">
       <div class="ac-proof-console__header">
         <span>Capture plan</span>
-        <h2 id="aura-clash-poster-title">${escapeHtml(scenario.title)}</h2>
+        <h2 id="aura-clash-poster-title">Aura Clash — ${escapeHtml(scenario.title)}</h2>
         <p>${escapeHtml(scenario.composition)}</p>
+        <p>Captured in the Quaternius Downtown City MegaKit arena with Aura3D typed GLB assets.</p>
       </div>
 
       <div class="ac-poster-selected">

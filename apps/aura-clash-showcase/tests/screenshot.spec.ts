@@ -1,17 +1,23 @@
 import { expect, test, type Page } from "@playwright/test";
 
-type AuraClashDebugEvidence = {
-  camera?: { active: boolean; position: readonly number[]; target: readonly number[] };
-  collisionHitbox?: {
-    hitboxEventCount: number;
-    producedFromGameplayInput: boolean;
+type AuraClashArenaEvidence = {
+  status?: string;
+  frame?: number;
+  totalHits?: number;
+  controls?: {
+    lastInput?: string;
   };
-  runtimeMutation?: {
-    noSceneReconstructionProof?: {
-      automatedSourceHook: boolean;
-      proofStatus: string;
-      sceneRebuildsDuringFrameUpdates: number;
-    };
+  runtime?: {
+    frameLoop?: boolean;
+    input?: boolean;
+    hitWindows?: boolean;
+    evidence?: boolean;
+  };
+  fighterController?: {
+    combatSource?: string;
+    routeMayQueueMoves?: boolean;
+    routeMayCalculateHits?: boolean;
+    routeMayCalculateDamage?: boolean;
   };
 };
 
@@ -28,11 +34,23 @@ test("evidence route exposes debug overlay capture source hooks", async ({ page 
   await expect(page.getByText(/Hitbox route source/i)).toBeVisible();
   await expect(page.getByText(/Physics body source/i)).toBeVisible();
 
-  const evidence = await readAuraClashDebugEvidence(page);
-  expect(evidence?.camera?.active).toBe(true);
-  expect(evidence?.collisionHitbox?.hitboxEventCount ?? 0).toBeGreaterThan(0);
-  expect(evidence?.runtimeMutation?.noSceneReconstructionProof?.automatedSourceHook).toBe(true);
-  expect(evidence?.runtimeMutation?.noSceneReconstructionProof?.sceneRebuildsDuringFrameUpdates).toBe(0);
+  await expect.poll(async () => (await readAuraClashArenaEvidence(page))?.status).toBe("running");
+  await expect.poll(async () => (await readAuraClashArenaEvidence(page))?.frame ?? 0).toBeGreaterThan(0);
+  const evidence = await readAuraClashArenaEvidence(page);
+  expect(evidence?.status).toBe("running");
+  expect(evidence?.frame ?? 0).toBeGreaterThan(0);
+  expect(evidence?.runtime).toMatchObject({
+    frameLoop: true,
+    input: true,
+    hitWindows: true,
+    evidence: true,
+  });
+  expect(evidence?.fighterController).toMatchObject({
+    combatSource: "engine.combatWorld",
+    routeMayQueueMoves: true,
+    routeMayCalculateHits: false,
+    routeMayCalculateDamage: false,
+  });
 
   await testInfo.attach("aura-clash-debug-overlay-source-hook", {
     body: await page.screenshot({ fullPage: true }),
@@ -40,8 +58,8 @@ test("evidence route exposes debug overlay capture source hooks", async ({ page 
   });
 });
 
-async function readAuraClashDebugEvidence(page: Page): Promise<AuraClashDebugEvidence | undefined> {
+async function readAuraClashArenaEvidence(page: Page): Promise<AuraClashArenaEvidence | undefined> {
   return page.evaluate(() => {
-    return (window as Window & { __AURA_CLASH_RUNTIME_EVIDENCE__?: AuraClashDebugEvidence }).__AURA_CLASH_RUNTIME_EVIDENCE__;
+    return (window as Window & { __AURA_CLASH_ARENA_PROOF__?: AuraClashArenaEvidence }).__AURA_CLASH_ARENA_PROOF__;
   });
 }
