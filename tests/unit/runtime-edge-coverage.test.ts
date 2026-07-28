@@ -259,7 +259,6 @@ describe("runtime edge-case coverage audit", () => {
       "packages/engine/src/runtime/ResourceManager.ts:if (typeof fetch !== \"function\") throw new Error(`Resource \"${descriptor.id}\" cannot load because fetch is unavailable.`);",      "packages/rendering/src/RendererTiming.ts:this.fallbackReason = options.fallbackReason ?? this.gpuBackend.unavailableReason ?? \"GPU timing unavailable; using CPU timing fallback.\";",
       "packages/rendering/src/RendererTiming.ts:unavailableReason = \"GPU timing unavailable; using CPU timing fallback.\"",
       "packages/rendering/src/RendererTiming.ts:return createCpuFallbackGpuTimingBackend(\"EXT_disjoint_timer_query_webgl2 unavailable; using CPU timing fallback.\");",
-      "packages/rendering/src/EnvironmentPlatform.ts:\"Requested terrain ground falls back to outdoor backdrop geometry; reusable terrain/heightfield generation is not implemented.\"",
       "packages/rendering/src/EnvironmentPlatform.ts:\"Softbox preset uses emissive panels and environment lighting; true rectangular area-light shading is not implemented.\"",
       "packages/rendering/src/ReflectionSurfaces.ts:return [\"Planar reflector helper is not implemented; no mirror render target or clip-plane path exists in this contract.\"];",
       "packages/rendering/src/ReflectionSurfaces.ts:return [\"Glass/refractor helper is not implemented; material alpha/transmission must not be claimed as scene-space refraction.\"];",

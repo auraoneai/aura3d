@@ -1,3 +1,8 @@
+import { Geometry } from "./Geometry";
+import { IndexBuffer } from "./IndexBuffer";
+import { VertexBuffer } from "./VertexBuffer";
+import { VertexFormat } from "./VertexFormat";
+
 export type TerrainFixtureBiome = "water" | "beach" | "grassland" | "forest" | "rock" | "snow";
 
 export interface TerrainHeightfieldFixtureOptions {
@@ -32,6 +37,31 @@ export interface TerrainHeightfieldFixture {
   readonly riverCellCount: number;
   readonly hash: string;
   readonly source: "origin-master-terrain-generator-adapted";
+  readonly claimBoundary: string;
+}
+
+export interface TerrainHeightfieldGeometryOptions {
+  readonly sizeX?: number;
+  readonly sizeZ?: number;
+  readonly heightScale?: number;
+  readonly yOffset?: number;
+}
+
+export interface TerrainHeightfieldColliderDescriptor {
+  readonly kind: "heightfield";
+  readonly columns: number;
+  readonly rows: number;
+  readonly heights: Float32Array;
+  readonly cellSizeX: number;
+  readonly cellSizeZ: number;
+  readonly origin: readonly [number, number, number];
+}
+
+export interface TerrainHeightfieldGeometry {
+  readonly geometry: Geometry;
+  readonly collider: TerrainHeightfieldColliderDescriptor;
+  readonly vertexCount: number;
+  readonly triangleCount: number;
   readonly claimBoundary: string;
 }
 
@@ -110,6 +140,82 @@ export function sampleTerrainHeightfield(fixture: TerrainHeightfieldFixture, u: 
   return { x, y, height: Number(height.toFixed(4)), moisture: Number(moisture.toFixed(4)), temperature: Number(temperature.toFixed(4)), biome: biomeFor(normalized, moisture, temperature, 0) };
 }
 
+export function createTerrainHeightfieldGeometry(
+  fixture: TerrainHeightfieldFixture,
+  options: TerrainHeightfieldGeometryOptions = {}
+): TerrainHeightfieldGeometry {
+  validateFixture(fixture);
+  const sizeX = positiveFinite(options.sizeX ?? 12, "geometry sizeX");
+  const sizeZ = positiveFinite(options.sizeZ ?? 12, "geometry sizeZ");
+  const heightScale = positiveFinite(options.heightScale ?? 1, "geometry heightScale");
+  const yOffset = finite(options.yOffset ?? 0, "geometry yOffset");
+  const columns = fixture.width;
+  const rows = fixture.height;
+  const vertexCount = columns * rows;
+  const vertices = new VertexBuffer(VertexFormat.P3N3T4T2, vertexCount);
+  const scaledHeights = new Float32Array(vertexCount);
+  const cellSizeX = sizeX / (columns - 1);
+  const cellSizeZ = sizeZ / (rows - 1);
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const index = row * columns + column;
+      scaledHeights[index] = yOffset + (fixture.data[index] ?? 0) * heightScale;
+    }
+  }
+
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const index = row * columns + column;
+      const u = column / (columns - 1);
+      const v = row / (rows - 1);
+      const left = scaledHeights[row * columns + Math.max(0, column - 1)]!;
+      const right = scaledHeights[row * columns + Math.min(columns - 1, column + 1)]!;
+      const down = scaledHeights[Math.max(0, row - 1) * columns + column]!;
+      const up = scaledHeights[Math.min(rows - 1, row + 1) * columns + column]!;
+      const slopeX = (right - left) / (column === 0 || column === columns - 1 ? cellSizeX : cellSizeX * 2);
+      const slopeZ = (up - down) / (row === 0 || row === rows - 1 ? cellSizeZ : cellSizeZ * 2);
+      const normal = normalize3([
+        -slopeX,
+        1,
+        -slopeZ
+      ]);
+      const tangent = normalize3([1, slopeX, 0]);
+      vertices.setAttribute(index, "position", [(u - 0.5) * sizeX, scaledHeights[index]!, (v - 0.5) * sizeZ]);
+      vertices.setAttribute(index, "normal", normal);
+      vertices.setAttribute(index, "tangent", [tangent[0], tangent[1], tangent[2], 1]);
+      vertices.setAttribute(index, "uv", [u, v]);
+    }
+  }
+
+  const indices: number[] = [];
+  for (let row = 0; row < rows - 1; row += 1) {
+    for (let column = 0; column < columns - 1; column += 1) {
+      const a = row * columns + column;
+      const b = a + 1;
+      const c = a + columns;
+      const d = c + 1;
+      indices.push(a, c, b, b, c, d);
+    }
+  }
+  const geometry = new Geometry(vertices, new IndexBuffer(indices, vertexCount));
+  return {
+    geometry,
+    collider: {
+      kind: "heightfield",
+      columns,
+      rows,
+      heights: scaledHeights.slice(),
+      cellSizeX,
+      cellSizeZ,
+      origin: [-sizeX * 0.5, 0, -sizeZ * 0.5]
+    },
+    vertexCount,
+    triangleCount: indices.length / 3,
+    claimBoundary: "Reusable indexed rendering heightfield with generated normals, tangents, UVs, bounds, and a native-physics-ready collider descriptor; collision response, terrain streaming, erosion, and clipmap LOD remain separate capabilities."
+  };
+}
+
 function biomeFor(height: number, moisture: number, temperature: number, river: number): TerrainFixtureBiome {
   if (height < 0.18 || river > 0.62) return "water";
   if (height < 0.24) return "beach";
@@ -169,6 +275,30 @@ function hashFloat32(values: Float32Array): string {
 function finite(value: number, label: string): number {
   if (!Number.isFinite(value)) throw new RangeError(`Terrain heightfield fixture ${label} must be finite.`);
   return value;
+}
+
+function positiveFinite(value: number, label: string): number {
+  const result = finite(value, label);
+  if (result <= 0) throw new RangeError(`Terrain heightfield fixture ${label} must be greater than zero.`);
+  return result;
+}
+
+function validateFixture(fixture: TerrainHeightfieldFixture): void {
+  if (!Number.isInteger(fixture.width) || fixture.width < 2 || !Number.isInteger(fixture.height) || fixture.height < 2) {
+    throw new RangeError("Terrain heightfield geometry fixture dimensions must be integer values >= 2.");
+  }
+  if (fixture.data.length !== fixture.width * fixture.height) {
+    throw new RangeError("Terrain heightfield geometry data length must equal width * height.");
+  }
+  if (!Array.from(fixture.data).every(Number.isFinite)) {
+    throw new RangeError("Terrain heightfield geometry data must contain only finite heights.");
+  }
+}
+
+function normalize3(value: readonly [number, number, number]): readonly [number, number, number] {
+  const length = Math.hypot(value[0], value[1], value[2]);
+  if (length <= 0.000001) return [0, 1, 0];
+  return [value[0] / length, value[1] / length, value[2] / length];
 }
 
 function lerp(left: number, right: number, amount: number): number {

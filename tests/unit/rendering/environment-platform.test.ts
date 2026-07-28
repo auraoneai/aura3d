@@ -19,15 +19,15 @@ describe("environment platform capability inventory", () => {
   it("keeps the requested Three.js-style environment backlog explicit", () => {
     const report = createEnvironmentCapabilityReport();
 
-    expect(report.requestedCount).toBe(20);
-    expect(report.implementedCount).toBe(5);
+    expect(report.requestedCount).toBe(21);
+    expect(report.implementedCount).toBe(6);
     expect(report.partialCount).toBe(2);
     expect(report.helperCount).toBe(11);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(5);
+    expect(report.productionReadyCount).toBe(6);
     expect(report.nonProductionReadyCount).toBe(15);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "rgbe-hdr-parser", "cube-camera-reflections"]);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "rgbe-hdr-parser", "cube-camera-reflections", "terrain-heightfield"]);
     expect(report.backlog).toHaveLength(15);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
@@ -46,6 +46,7 @@ describe("environment platform capability inventory", () => {
       "infinite-ground-grid",
       "indoor-studio-stage",
       "outdoor-nature-backdrop",
+      "terrain-heightfield",
       "urban-city-shell",
       "industrial-warehouse-void",
       "deep-space-box",
@@ -63,6 +64,8 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("atmospheric-scattering")?.status).toBe("unsupported");
     expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);
+    expect(byId.get("terrain-heightfield")?.status).toBe("implemented");
+    expect(byId.get("terrain-heightfield")?.gap).toMatch(/native heightfield collision response.*separate/i);
     expect(byId.get("exr-parser")?.status).toBe("unsupported");
     expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
     expect(byId.get("cube-camera-reflections")?.status).toBe("implemented");
@@ -321,12 +324,15 @@ describe("environment stage helpers", () => {
     expect(studio.unsupportedRequests.join(" ")).toMatch(/rectangular area-light/i);
     expect(ocean.preset).toBe("outdoor-nature");
     expect(ocean.capabilityIds).toContain("dynamic-ocean-plane");
+    expect(ocean.capabilityIds).toContain("terrain-heightfield");
     expect(ocean.capabilityIds).toContain("equirectangular-projection");
     expect(ocean.fog?.preset).toBe("marine-layer");
     expect(ocean.capabilityIds).toContain("exponential-fog");
     expect(ocean.systems).toContain("environment fog profile");
     expect(ocean.unsupportedRequests.join(" ")).toMatch(/FFT\/WebGPU water/i);
-    expect(ocean.unsupportedRequests.join(" ")).toMatch(/terrain\/heightfield/i);
+    expect(ocean.systems).toContain("terrain heightfield geometry");
+    expect(ocean.items.some((item) => item.label === "environment terrain heightfield")).toBe(true);
+    expect(ocean.unsupportedRequests.join(" ")).not.toMatch(/terrain\/heightfield/i);
     expect(ocean.unsupportedRequests).toEqual(ocean.unsupportedRequestDetails.map((request) => request.disclosure));
     expect(ocean.unsupportedRequestDetails.every((request) => request.supported === false)).toBe(true);
   });

@@ -8,6 +8,7 @@ import {
   createProductTurntableFixture,
   createProductTurntableRenderKit,
   createTerrainHeightfieldFixture,
+  createTerrainHeightfieldGeometry,
   normalFromHeightMap,
   proceduralTextureFixtureKinds,
   sampleCullingFixture,
@@ -239,6 +240,45 @@ describe("procedural texture fixtures", () => {
     expect(terrain.claimBoundary).toContain("not full terrain ECS");
     expect(() => createTerrainHeightfieldFixture({ width: 4 })).toThrow(/dimensions/);
     expect(() => createTerrainHeightfieldFixture({ minHeight: 1, maxHeight: 1 })).toThrow(/maxHeight/);
+  });
+
+  it("builds reusable indexed terrain geometry and a cell-aligned collider descriptor", () => {
+    const fixture = createTerrainHeightfieldFixture({ width: 12, height: 10, seed: 2718 });
+    const terrain = createTerrainHeightfieldGeometry(fixture, {
+      sizeX: 22,
+      sizeZ: 9,
+      heightScale: 3,
+      yOffset: 1
+    });
+
+    expect(terrain.vertexCount).toBe(120);
+    expect(terrain.triangleCount).toBe(11 * 9 * 2);
+    expect(terrain.geometry.vertexBuffer.vertexCount).toBe(120);
+    expect(terrain.geometry.indexBuffer?.count).toBe(terrain.triangleCount * 3);
+    expect(terrain.geometry.vertexBuffer.format).toBeDefined();
+    const firstPosition = terrain.geometry.vertexBuffer.getAttribute(0, "position");
+    expect(firstPosition[0]).toBe(-11);
+    expect(firstPosition[1]).toBeCloseTo(1 + fixture.data[0]! * 3, 5);
+    expect(firstPosition[2]).toBe(-4.5);
+    const centerNormal = terrain.geometry.vertexBuffer.getAttribute(5 * 12 + 6, "normal");
+    expect(Math.hypot(...centerNormal)).toBeCloseTo(1, 5);
+    expect(centerNormal[1]).toBeGreaterThan(0);
+    expect(terrain.geometry.bounds.min[0]).toBe(-11);
+    expect(terrain.geometry.bounds.max[0]).toBe(11);
+    expect(terrain.geometry.bounds.min[2]).toBe(-4.5);
+    expect(terrain.geometry.bounds.max[2]).toBe(4.5);
+    expect(terrain.collider).toMatchObject({
+      kind: "heightfield",
+      columns: 12,
+      rows: 10,
+      cellSizeX: 2,
+      cellSizeZ: 1,
+      origin: [-11, 0, -4.5]
+    });
+    expect(terrain.collider.heights).not.toBe(fixture.data);
+    expect(terrain.collider.heights[0]).toBeCloseTo(1 + fixture.data[0]! * 3, 5);
+    expect(terrain.claimBoundary).toMatch(/collision response.*separate capabilities/i);
+    expect(() => createTerrainHeightfieldGeometry(fixture, { sizeX: 0 })).toThrow(/sizeX/);
   });
 
   it("samples deterministic weather telemetry adapted from the old weather system", () => {

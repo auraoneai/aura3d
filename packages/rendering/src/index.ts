@@ -781,8 +781,16 @@ export type {
   LightingRigPreset,
   LightingRigUnsupportedFeature
 } from "./LightingRig";
-export { createTerrainHeightfieldFixture, sampleTerrainHeightfield } from "./TerrainFixtures";
-export type { TerrainFixtureBiome, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldSample } from "./TerrainFixtures";
+export { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry, sampleTerrainHeightfield } from "./TerrainFixtures";
+export type {
+  TerrainFixtureBiome,
+  TerrainHeightfieldColliderDescriptor,
+  TerrainHeightfieldFixture,
+  TerrainHeightfieldFixtureOptions,
+  TerrainHeightfieldGeometry,
+  TerrainHeightfieldGeometryOptions,
+  TerrainHeightfieldSample
+} from "./TerrainFixtures";
 export { sampleWeatherFixture } from "./WeatherFixtures";
 export type { WeatherFixtureOptions, WeatherFixtureSample, WeatherFixtureType, WeatherPuddlePatch, WeatherVisualDrop } from "./WeatherFixtures";
 export { sampleVegetationFixture } from "./VegetationFixtures";

@@ -3,6 +3,7 @@ import { type EnvironmentLightingOptions, type RenderItem } from "./ForwardPass"
 import { PBRMaterial, type PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { createExternalParityContactShadowPlan, type ExternalParityContactShadowPlan } from "./shadows/ContactShadows";
+import { createTerrainHeightfieldFixture, createTerrainHeightfieldGeometry } from "./TerrainFixtures";
 
 export type EnvironmentCapabilityId =
   | "cubemap-renderer"
@@ -24,7 +25,8 @@ export type EnvironmentCapabilityId =
   | "urban-city-shell"
   | "industrial-warehouse-void"
   | "deep-space-box"
-  | "clean-void-backdrop";
+  | "clean-void-backdrop"
+  | "terrain-heightfield";
 
 export type EnvironmentCapabilityStatus = "implemented" | "partial" | "helper" | "missing" | "unsupported";
 
@@ -306,6 +308,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   capability("outdoor-nature-backdrop", "Outdoor Nature Backdrop", "helper", true, [
     "createEnvironmentStage(\"outdoor-nature\") creates reusable sky, ground, horizon, and ambient palette."
   ], "No terrain streaming, vegetation lighting, or physical atmosphere is accepted.", "Add route proof and keep outdoor claims bounded to backdrop/lighting."),
+  capability("terrain-heightfield", "Terrain Heightfield Geometry", "implemented", true, [
+    "createTerrainHeightfieldGeometry converts deterministic height samples into indexed PBR-ready geometry with generated normals, tangents, UVs, and bounds.",
+    "The generated mesh includes a cell-aligned heightfield collider descriptor reserved for the native narrow-phase work in 2B.14.",
+    "createEnvironmentPreset({ ground: \"terrain\" }) attaches the reusable generated terrain instead of reporting an unsupported fallback.",
+    "Browser evidence renders the generated heightfield and verifies non-background terrain pixels."
+  ], "Rendering heightfields are implemented; native heightfield collision response, streaming, erosion, and clipmap LOD remain separate capabilities.", "Retain deterministic geometry, descriptor, preset integration, and browser pixel gates; add native collision proof in 2B.14."),
   capability("urban-city-shell", "Urban City Shell", "helper", true, [
     "createEnvironmentStage(\"urban-city\") creates reusable neon shell panels and lighting colors."
   ], "This is a reusable shell, not a city renderer or instancing proof.", "Use with Smart City/data routes while keeping scale claims separate."),
@@ -570,6 +578,7 @@ export function createEnvironmentPreset(options: EnvironmentPresetOptions = {}):
     includeStageShell: options.includeStageShell,
     includeGroundGrid: ground === "grid"
   });
+  const terrain = ground === "terrain" ? createEnvironmentTerrainGround(options.size ?? 18) : undefined;
   const unsupportedRequestDetails = createEnvironmentUnsupportedRequestDisclosures({
     type,
     lighting: lightingPreset,
@@ -581,6 +590,7 @@ export function createEnvironmentPreset(options: EnvironmentPresetOptions = {}):
   const unsupportedRequests = unsupportedRequestDetails.map((request) => request.disclosure);
   return {
     ...stage,
+    items: terrain ? [...stage.items, terrain] : stage.items,
     type,
     lightingPreset,
     background,
@@ -593,7 +603,11 @@ export function createEnvironmentPreset(options: EnvironmentPresetOptions = {}):
       ...unsupportedRequestDetails.flatMap((request) => request.capabilityIds),
       ...(type === "ocean" ? ["dynamic-ocean-plane" as const] : [])
     ]),
-    systems: fog ? [...stage.systems, "environment fog profile"] : stage.systems,
+    systems: [
+      ...stage.systems,
+      ...(terrain ? ["terrain heightfield geometry"] : []),
+      ...(fog ? ["environment fog profile"] : [])
+    ],
     limitations: [
       ...stage.limitations,
       ...(fog ? fog.limitations : []),
@@ -632,6 +646,7 @@ export function createEnvironmentUnsupportedRequestDisclosures(
   }
   if (fog?.mode === "linear") requested.delete("linear-fog");
   if (fog?.mode === "exponential" || fog?.mode === "exponential-squared") requested.delete("exponential-fog");
+  requested.delete("terrain-heightfield");
 
   return [...requested].map((request) => unsupportedRequestDisclosure(request));
 }
@@ -917,8 +932,28 @@ function groundCapabilities(ground: EnvironmentPresetGround): readonly Environme
   if (ground === "grid") return ["infinite-ground-grid"];
   if (ground === "reflective-floor") return ["clean-void-backdrop", "cube-camera-reflections"];
   if (ground === "shadow-catcher") return ["clean-void-backdrop"];
-  if (ground === "terrain") return ["outdoor-nature-backdrop"];
+  if (ground === "terrain") return ["outdoor-nature-backdrop", "terrain-heightfield"];
   return [];
+}
+
+function createEnvironmentTerrainGround(size: number): RenderItem {
+  const terrain = createTerrainHeightfieldGeometry(
+    createTerrainHeightfieldFixture({ width: 32, height: 32, seed: 0x7434_2025 }),
+    { sizeX: size * 1.65, sizeZ: size * 1.65, heightScale: size * 0.42, yOffset: 0.03 }
+  );
+  return {
+    geometry: terrain.geometry,
+    material: new PBRMaterial({
+      name: "environment terrain heightfield",
+      baseColor: [0.13, 0.28, 0.11, 1],
+      roughness: 0.91,
+      metallic: 0,
+      environmentColor: [0.28, 0.38, 0.24],
+      environmentIntensity: 0.62
+    }),
+    includeInAutoFrame: false,
+    label: "environment terrain heightfield"
+  };
 }
 
 function uniqueCapabilities(values: readonly EnvironmentCapabilityId[]): readonly EnvironmentCapabilityId[] {
@@ -1060,12 +1095,7 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
         "This reflective floor preset falls back to staged geometry because it has no CubeCameraReflectionCapture; live cube-probe reflection is available through ReflectionSurfaces, while planar reflection remains unsupported."
       );
     case "terrain-heightfield":
-      return unsupported(
-        request,
-        ["outdoor-nature-backdrop"],
-        "outdoor backdrop and finite stage shell",
-        "Requested terrain ground falls back to outdoor backdrop geometry; reusable terrain/heightfield generation is not implemented."
-      );
+      throw new Error("Terrain heightfield is supported and must be removed before unsupported request disclosure.");
     case "rectangular-area-light":
       return unsupported(
         request,
