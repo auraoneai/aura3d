@@ -1,15 +1,40 @@
-import { createDefaultControlState, type ThreeCompatControlState } from "./ControlState";
+import {
+  PointerLockControls as InputPointerLockControls,
+  type FirstPersonControlsOptions
+} from "@aura3d/input";
+import { FirstPersonControls } from "./FirstPersonControls";
+import type { FlyCameraLike } from "./FlyControls";
 
-export class PointerLockControls {
-  readonly state: ThreeCompatControlState = createDefaultControlState();
-  locked = false;
+/**
+ * Pointer-lock navigation delegated to `@aura3d/input`. `lock()` and
+ * `unlock()` gate both snapshot updates and compatibility `look()` deltas.
+ */
+export class PointerLockControls extends FirstPersonControls {
+  private readonly pointerLockDelegate: InputPointerLockControls;
 
-  lock(): void { this.locked = true; }
-  unlock(): void { this.locked = false; }
+  constructor(camera?: FlyCameraLike, options: FirstPersonControlsOptions = {}) {
+    super(camera, options);
+    this.pointerLockDelegate = new InputPointerLockControls(this.controlledCamera, {
+      ...options,
+      moveSpeed: 1
+    });
+    this.replaceDelegate(this.pointerLockDelegate, options.lookSpeed ?? 0.002);
+  }
 
-  look(deltaX: number, deltaY: number): void {
-    if (!this.locked) return;
-    this.state.rotation.y += deltaX;
-    this.state.rotation.x += deltaY;
+  get locked(): boolean {
+    return this.pointerLockDelegate.locked;
+  }
+
+  set locked(value: boolean) {
+    if (value) this.lock();
+    else this.unlock();
+  }
+
+  lock(): void {
+    this.pointerLockDelegate.lock();
+  }
+
+  unlock(): void {
+    this.pointerLockDelegate.unlock();
   }
 }

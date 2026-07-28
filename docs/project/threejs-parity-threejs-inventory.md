@@ -39,7 +39,7 @@ Generated inventory for the first Three.js parity code backlog.
 | `webgl_effects_stereo` | `effects` | `high` | `matched` | `/apps/stereo-effects/` | `H` `K` |
 | `misc_controls_orbit` | `controls` | `high` | `matched` | `/apps/controls-orbit/` | `F` `K` |
 | `misc_controls_trackball` | `controls` | `medium` | `matched` | `/apps/controls-trackball/` | `F` `K` |
-| `misc_controls_transform` | `controls` | `high` | `matched` | `/apps/controls-transform/` | `F` `K` |
+| `misc_controls_transform` | `controls` | `high` | `partial` | `/apps/controls-transform/` | `F` `K` |
 | `webgl_interactive_raycasting_points` | `raycasting-picking` | `medium` | `matched` | `/apps/interactive-picking/` | `F` `G` `K` |
 | `webgl_interactive_cubes` | `raycasting-picking` | `high` | `matched` | `/apps/interactive-picking/` | `F` `K` |
 | `webgl_decals` | `decals` | `high` | `matched` | `/apps/decals/` | `F` `G` `K` |

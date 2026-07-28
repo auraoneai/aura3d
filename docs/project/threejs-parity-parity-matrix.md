@@ -7,7 +7,7 @@ This matrix is generated from the current inventory. `partial` means some route 
 | `animation` | 0 | 0 | 3 | 0 |
 | `asset-loaders` | 0 | 0 | 5 | 0 |
 | `camera` | 0 | 0 | 2 | 0 |
-| `controls` | 0 | 0 | 3 | 0 |
+| `controls` | 0 | 1 | 2 | 0 |
 | `decals` | 0 | 0 | 1 | 0 |
 | `effects` | 0 | 0 | 3 | 0 |
 | `geometry` | 0 | 0 | 1 | 0 |

@@ -10,7 +10,7 @@ export interface ThreeCompatControlState {
   readonly position: ControlVector3;
   readonly rotation: ControlVector3;
   readonly zoom: number;
-  readonly enabled: boolean;
+  enabled: boolean;
 }
 
 export function createDefaultControlState(): ThreeCompatControlState {

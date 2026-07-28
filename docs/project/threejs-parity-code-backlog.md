@@ -7,10 +7,17 @@ It is a construction backlog. It does not prove parity. Work items below must be
 ## Summary
 
 - Total inventoried examples: 54
-- High-priority open examples: 0
-- Status counts: matched=54
+- High-priority open examples: 1
+- Status counts: matched=53, partial=1
 
 ## Next Implementation Targets
+
+### misc_controls_transform
+
+- Category: `controls`
+- Current status: `partial`
+- Construction tracks: `F: Controls, Picking, Transform Tools, Interaction`, `K: Product Apps, Examples, Templates, Docs`
+- Blocking features: `Rendered gizmo handles, pointer picking and drag lifecycle, axis/plane constraints, snapping, and local/world transform spaces are not implemented; use @aura3d/editor-runtime transform gizmos for the supported editor path.`
 
 ## Backlog By Construction Track
 

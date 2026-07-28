@@ -14,9 +14,9 @@ A3D is not yet a full Three.js replacement. This inventory is a code backlog, no
 
 ## Why
 
-- High-priority open examples: 0
+- High-priority open examples: 1
 - Unsupported examples: 0
-- Partial examples: 0
+- Partial examples: 1
 
 Claims can advance only after construction tracks A through K produce real package/runtime code and Track L verification proves the result.
 
