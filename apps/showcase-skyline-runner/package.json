@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/showcase-skyline-runner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aura3D certified-surface platformer with typed character/world assets, checkpoint progression, collection chains, flow scoring, retries, and finish evidence.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@aura3d/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

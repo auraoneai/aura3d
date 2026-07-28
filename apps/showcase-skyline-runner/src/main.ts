@@ -1,6 +1,7 @@
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { gameGeometryContract } from "./generated/game-geometry";
+import { createRunnerChallenge } from "./runner-challenge";
 
 const input = game.input({
   actions: {
@@ -41,6 +42,8 @@ const hazards = level.hazards ?? [];
 const characterScaleRatio = level.assetBinding.characterScaleRatio ?? 1;
 const platformerState = game.platformer(level);
 let state = platformerState.snapshot();
+const runnerChallenge = createRunnerChallenge(level.assetBinding.authoredPlayableSeconds);
+let challengeEvidence = runnerChallenge.evidence();
 const initialPlayerPose = platformerScene.toScenePlayer(state.player);
 let playerFacing = 1;
 const playerYawForFacing = (facing: number) => facing >= 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -142,7 +145,8 @@ const hud = {
   score: requireElement("score-value"),
   deaths: requireElement("death-value"),
   checkpoint: requireElement("checkpoint-value"),
-  surface: requireElement("surface-value")
+  surface: requireElement("surface-value"),
+  challenge: requireElement("challenge-value")
 };
 function readAnimationState(): string {
   if (state.events.some((event) => event.type === "hazard")) return "hit";
@@ -204,6 +208,7 @@ const mountedEvidence = {
   coins: state.collected.length,
   deaths: state.deaths,
   checkpointId: state.checkpointId,
+  challenge: challengeEvidence,
   animation: {
     stateHistory: animationStateHistory.slice(),
     sampleFrame: frameCount
@@ -260,6 +265,7 @@ function publishPlatformerEvidence(): void {
   mountedEvidence.coins = state.collected.length;
   mountedEvidence.deaths = state.deaths;
   mountedEvidence.checkpointId = state.checkpointId;
+  mountedEvidence.challenge = challengeEvidence;
   mountedEvidence.animation = {
     stateHistory: animationStateHistory.slice(),
     sampleFrame: frameCount
@@ -273,6 +279,7 @@ app.onFrame(({ dt }) => {
   input.update(step);
   if (input.pressed("reset")) {
     state = platformerState.reset();
+    challengeEvidence = runnerChallenge.reset();
     playerFacing = 1;
     frameCount += 1;
     mountedEvidence.gameplay.resetWorks = true;
@@ -286,6 +293,7 @@ app.onFrame(({ dt }) => {
     jumpPressed: input.pressed("jump"),
     jumpHeld: input.held("jump")
   });
+  challengeEvidence = runnerChallenge.step(step, previous, state);
   frameCount += 1;
   mountedEvidence.gameplay.moveChangesX ||= Math.abs(state.player.x - previous.player.x) > 0.001;
   mountedEvidence.gameplay.jumpChangesY ||= Math.abs(state.player.y - previous.player.y) > 0.001;
@@ -301,7 +309,7 @@ app.onFrame(({ dt }) => {
 function setupPlatformerPanel(): void {
   const panel = document.getElementById("panel");
   if (!panel) return;
-  panel.innerHTML = "<span class=\"label\">Certified surface route</span>\n<h1>Skyline Runner</h1>\n<p class=\"claim\">Run across a mesh-derived verdant course with checkpoints, collectibles, a hazard retry, and a finish state.</p>\n<section class=\"panel-metrics\" aria-label=\"Live runner metrics\"><div class=\"metrics-row\"><article><span>X</span><strong id=\"x-value\">0.00</strong></article><article><span>Score</span><strong id=\"score-value\">0</strong></article><article><span>Deaths</span><strong id=\"death-value\">0</strong></article><article><span>Checkpoint</span><strong id=\"checkpoint-value\">start</strong></article></div><div class=\"objective\" id=\"surface-value\">Finding surface…</div></section>\n<section aria-label=\"Runner controls\"><h2>Run the route</h2><div class=\"button-grid\"><button id=\"left-control\" type=\"button\">Move left</button><button id=\"right-control\" type=\"button\">Move right</button><button id=\"jump-control\" type=\"button\">Jump</button><button id=\"reset-control\" type=\"button\">Reset</button></div><ul class=\"controls-list\"><li>Use A / D or arrow keys to move.</li><li>Press W, Up, or Space to jump.</li><li>Press R to restart from the beginning.</li></ul></section>\n<section aria-label=\"Geometry contract\"><h2>Surface contract</h2><p class=\"claim\">The visible world and player contacts share the same hash-bound mesh extraction transform.</p></section>";
+  panel.innerHTML = "<span class=\"label\">Certified surface route</span>\n<h1>Skyline Runner</h1>\n<p class=\"claim\">Build flow through jumps and collection chains, bank checkpoint split bonuses, and finish the mesh-derived course.</p>\n<section class=\"panel-metrics\" aria-label=\"Live runner metrics\"><div class=\"metrics-row\"><article><span>X</span><strong id=\"x-value\">0.00</strong></article><article><span>Score</span><strong id=\"score-value\">0</strong></article><article><span>Flow</span><strong id=\"challenge-value\">0</strong></article><article><span>Deaths</span><strong id=\"death-value\">0</strong></article><article><span>Checkpoint</span><strong id=\"checkpoint-value\">start</strong></article></div><div class=\"objective\" id=\"surface-value\">Finding surface…</div></section>\n<section aria-label=\"Runner controls\"><h2>Run the route</h2><div class=\"button-grid\"><button id=\"left-control\" type=\"button\">Move left</button><button id=\"right-control\" type=\"button\">Move right</button><button id=\"jump-control\" type=\"button\">Jump</button><button id=\"reset-control\" type=\"button\">Reset</button></div><ul class=\"controls-list\"><li>Use A / D or arrow keys to move.</li><li>Press W, Up, or Space to jump.</li><li>Chain collectibles before the finish for the challenge objective.</li><li>Press R to restart from the beginning.</li></ul></section>\n<section aria-label=\"Geometry contract\"><h2>Surface contract</h2><p class=\"claim\">The visible world and player contacts share the same hash-bound mesh extraction transform.</p></section>";
   bindHoldControl("left-control", "KeyA");
   bindHoldControl("right-control", "KeyD");
   document.getElementById("jump-control")?.addEventListener("click", () => pulseKey("Space"));
@@ -322,11 +330,13 @@ function pulseKey(code: string): void {
 }
 function updatePlatformerHud(): void {
   hud.x.textContent = round(state.player.x).toFixed(2);
-  hud.score.textContent = String(state.score);
+  hud.score.textContent = String(challengeEvidence.challengeScore);
   hud.deaths.textContent = String(state.deaths);
   hud.checkpoint.textContent = state.checkpointId;
+  hud.challenge.textContent = `${Math.round(challengeEvidence.flow)} · x${Math.max(1, challengeEvidence.collectionChain)}`;
   const alignment = playerSurfaceAlignment();
-  hud.surface.textContent = alignment.feetOnSurface ? "Grounded on " + alignment.surfaceId : "Airborne";
+  const objective = challengeEvidence.objectiveMet ? "Flow objective complete" : "Chain 3 collectibles, then finish";
+  hud.surface.textContent = `${alignment.feetOnSurface ? "Grounded on " + alignment.surfaceId : "Airborne"} · ${objective}`;
 }
 function requireElement(id: string): HTMLElement {
   const element = document.getElementById(id);

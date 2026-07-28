@@ -9,6 +9,7 @@ import {
 import { gameGeometryContract as skylineGeometry } from "../../../apps/showcase-skyline-runner/src/generated/game-geometry";
 import { gameGeometryContract as turboGeometry } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
 import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
+import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
 
 describe("public showcase gameplay regressions", () => {
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
@@ -87,6 +88,45 @@ describe("public showcase gameplay regressions", () => {
     expect(source).toContain("player.setRotation(0, playerYawForFacing(playerFacing), 0)");
   });
 
+  it("scores Skyline flow, collection chains, checkpoint splits, retries, and reset", () => {
+    const challenge = createRunnerChallenge(40);
+    const initial = runnerChallengeSnapshot();
+    const moving = {
+      ...initial,
+      player: { vx: 1.2, vy: 2.4 },
+      collected: ["coin-1", "coin-2"],
+      activatedCheckpoints: ["asset-checkpoint-01"],
+      checkpointId: "asset-checkpoint-01",
+      score: 200
+    };
+    const afterChain = challenge.step(1, initial, moving);
+    expect(afterChain.flow).toBeGreaterThan(0);
+    expect(afterChain.collectionChain).toBe(2);
+    expect(afterChain.maxCollectionChain).toBe(2);
+    expect(afterChain.checkpointSplits["asset-checkpoint-01"]).toBe(0.1);
+    expect(afterChain.challengeScore).toBeGreaterThan(moving.score);
+
+    const retried = challenge.step(0.5, moving, { ...moving, deaths: 1 });
+    expect(retried.deathless).toBe(false);
+    expect(retried.collectionChain).toBe(0);
+    expect(retried.flow).toBe(0);
+
+    const completed = challenge.step(0.5, { ...moving, deaths: 1 }, {
+      ...moving,
+      deaths: 1,
+      collected: ["coin-1", "coin-2", "coin-3"],
+      status: "completed"
+    });
+    expect(completed.completed).toBe(true);
+    expect(completed.objectiveMet).toBe(true);
+
+    const reset = challenge.reset();
+    expect(reset.elapsedSeconds).toBe(0);
+    expect(reset.challengeScore).toBe(0);
+    expect(reset.resets).toBe(1);
+    expect(reset.recentEvents).toContain("challenge-reset");
+  });
+
   it("runs Turbo Drift at an arcade pace above the certified evidence baseline", () => {
     const route = createGameAssetBoundRacingRoute({
       vehicleAsset: "showcaseKenneyRaceCarRed",
@@ -162,6 +202,18 @@ describe("public showcase gameplay regressions", () => {
     expect(opponent.snapshot().speed).toBe(0);
   });
 });
+
+function runnerChallengeSnapshot() {
+  return {
+    player: { vx: 0, vy: 0 },
+    collected: [] as readonly string[],
+    activatedCheckpoints: [] as readonly string[],
+    deaths: 0,
+    checkpointId: "start",
+    status: "playing",
+    score: 0
+  };
+}
 
 function rectsOverlap(
   a: { readonly x: number; readonly y: number; readonly width: number; readonly height: number },

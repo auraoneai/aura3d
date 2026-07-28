@@ -89,6 +89,16 @@ interface SkylineEvidence {
   readonly coins: number;
   readonly deaths: number;
   readonly checkpointId: string;
+  readonly challenge?: {
+    readonly kind: string;
+    readonly elapsedSeconds: number;
+    readonly flow: number;
+    readonly maxFlow: number;
+    readonly collectionChain: number;
+    readonly maxCollectionChain: number;
+    readonly challengeScore: number;
+    readonly resets: number;
+  };
   readonly animation?: {
     readonly state: string;
     readonly stateHistory: readonly { readonly state: string }[];
@@ -307,6 +317,10 @@ test.describe("showcase gameplay proof", () => {
     check(beforeContact?.feetOnSurface === true, blockers, "runner initial feet are not proven on a visible playable surface");
     check(Math.abs(beforeContact?.verticalGap ?? Number.POSITIVE_INFINITY) <= 0.12, blockers, "runner surface contact gap exceeds playable-surface tolerance");
     check((beforeContact?.playerTargetHeight ?? 0) > 0, blockers, "runner visible target height is missing from surface binding evidence");
+    check(after.challenge?.kind === "skyline-runner-flow-challenge", blockers, "runner flow challenge evidence is missing");
+    check((after.challenge?.elapsedSeconds ?? 0) > (before.challenge?.elapsedSeconds ?? 0), blockers, "runner challenge clock did not advance");
+    check((after.challenge?.maxFlow ?? 0) > 0, blockers, "movement and jumping did not build runner flow");
+    check((reset.challenge?.resets ?? 0) > (before.challenge?.resets ?? 0), blockers, "reset did not restart the flow challenge");
     check(reset.checkpointId === "start" && reset.coins === 0, blockers, "reset did not restore the start checkpoint");
     writeRouteReport("showcase-skyline-runner", blockers, errors, beforePng, afterPng, { before, after, reset });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
