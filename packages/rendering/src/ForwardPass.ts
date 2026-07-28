@@ -65,6 +65,7 @@ export interface ForwardPassOptions {
   readonly inputColorResource?: string;
   readonly shadowMap?: ForwardShadowMapOptions;
   readonly cameraPosition?: readonly [number, number, number];
+  readonly cameraViewMatrix?: Float32Array | readonly number[];
   readonly outputColorSpace?: "linear" | "srgb";
   readonly shaderLibrary?: ShaderLibrary;
 }
@@ -114,6 +115,14 @@ export interface ForwardShadowMapOptions {
   readonly texelSize?: readonly [number, number];
   readonly filterKernel?: ShadowFilterKernel;
   readonly pointLight?: ForwardPointShadowMapOptions;
+  readonly cascades?: readonly ForwardShadowCascadeOptions[];
+}
+
+export interface ForwardShadowCascadeOptions {
+  readonly index: number;
+  readonly near: number;
+  readonly far: number;
+  readonly shadowMap: Omit<ForwardShadowMapOptions, "cascades">;
 }
 
 export interface ForwardPointShadowMapOptions {
@@ -190,7 +199,12 @@ export class ForwardPass extends BaseRenderPass {
     const uniforms = new Map<string, UniformValue>(binding.uniforms);
     applyEnvironmentLightingUniforms(this.options.environmentLighting, item, shader, uniforms);
     applyEnvironmentFogUniforms(this.options.environmentFog, item, shader, uniforms);
-    applyForwardShadowMapUniforms(this.options.shadowMap, item, shader, uniforms);
+    applyForwardShadowMapUniforms(
+      selectForwardShadowMap(this.options.shadowMap, item, this.options.cameraViewMatrix, this.options.cameraPosition),
+      item,
+      shader,
+      uniforms
+    );
     applyOutputColorSpaceUniform(this.options.outputColorSpace ?? "srgb", item, shader, uniforms);
     applyCameraUniforms(this.options.cameraPosition, item, shader, uniforms);
     applyAlphaCutoffUniform(item, shader, uniforms);
@@ -614,6 +628,44 @@ function invertMat4(matrix: Mat4): Mat4 {
     (a00 * b09 - a01 * b07 + a02 * b06) * invDet,
     (a31 * b01 - a30 * b03 - a32 * b00) * invDet,
     (a20 * b03 - a21 * b01 + a22 * b00) * invDet
+  ];
+}
+
+export function selectForwardShadowMap(
+  shadowMap: ForwardShadowMapOptions | undefined,
+  item: RenderItem,
+  cameraViewMatrix?: Float32Array | readonly number[],
+  cameraPosition?: readonly [number, number, number]
+): ForwardShadowMapOptions | undefined {
+  const cascades = shadowMap?.cascades;
+  if (!shadowMap || !cascades || cascades.length === 0) return shadowMap;
+  const center = renderItemWorldCenter(item);
+  const depth = cameraViewMatrix && cameraViewMatrix.length >= 16
+    ? Math.max(0, -(
+        cameraViewMatrix[2]! * center[0]
+        + cameraViewMatrix[6]! * center[1]
+        + cameraViewMatrix[10]! * center[2]
+        + cameraViewMatrix[14]!
+      ))
+    : cameraPosition
+      ? Math.hypot(center[0] - cameraPosition[0], center[1] - cameraPosition[1], center[2] - cameraPosition[2])
+      : cascades[0]!.near;
+  const selected = cascades.find((cascade) => depth <= cascade.far) ?? cascades[cascades.length - 1]!;
+  return selected.shadowMap;
+}
+
+function renderItemWorldCenter(item: RenderItem): readonly [number, number, number] {
+  const local = item.boundingBoxCenter ?? [
+    (item.geometry.bounds.min[0] + item.geometry.bounds.max[0]) / 2,
+    (item.geometry.bounds.min[1] + item.geometry.bounds.max[1]) / 2,
+    (item.geometry.bounds.min[2] + item.geometry.bounds.max[2]) / 2
+  ] as const;
+  const matrix = item.modelMatrix;
+  if (!matrix || matrix.length < 16) return local;
+  return [
+    matrix[0]! * local[0] + matrix[4]! * local[1] + matrix[8]! * local[2] + matrix[12]!,
+    matrix[1]! * local[0] + matrix[5]! * local[1] + matrix[9]! * local[2] + matrix[13]!,
+    matrix[2]! * local[0] + matrix[6]! * local[1] + matrix[10]! * local[2] + matrix[14]!
   ];
 }
 

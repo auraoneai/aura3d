@@ -1,6 +1,6 @@
 import { DirectionalLight, Light } from "@aura3d/scene";
 import { type Bounds3 } from "./Geometry";
-import { type RenderItem } from "./ForwardPass";
+import { type ForwardShadowMapOptions, type RenderItem } from "./ForwardPass";
 import { type RenderDeviceDiagnostics } from "./RenderDevice";
 import { type RenderPassContext } from "./RenderPass";
 import { ShadowMap } from "./ShadowMap";
@@ -389,6 +389,7 @@ export interface CascadedShadowPassOptions {
   readonly casters: readonly RenderItem[];
   readonly cascades: CascadedShadowMaps;
   readonly shaderLibrary?: ShaderLibrary;
+  readonly viewProjectionMatrices?: readonly (Float32Array | readonly number[])[];
 }
 
 export interface CascadeShadowPassResult {
@@ -409,17 +410,23 @@ export interface CascadedShadowPassResult {
 
 export class CascadedShadowPass {
   private lastResult: CascadedShadowPassResult | null = null;
+  private shadowPasses: ShadowPass[] = [];
 
   constructor(private readonly options: CascadedShadowPassOptions) {}
 
   execute(context: RenderPassContext): CascadedShadowPassResult {
+    this.disposeShadowPasses();
     const cascadeResults = this.options.cascades.getCascades().map((cascade) => {
       const shadowPass = new ShadowPass({
         light: this.options.light,
         casters: this.options.casters,
         shadowMap: cascade.shadowMap,
+        ...(this.options.viewProjectionMatrices?.[cascade.index]
+          ? { viewProjectionMatrix: this.options.viewProjectionMatrices[cascade.index] }
+          : {}),
         ...(this.options.shaderLibrary ? { shaderLibrary: this.options.shaderLibrary } : {})
       });
+      this.shadowPasses.push(shadowPass);
       const result = shadowPass.execute(context);
       return {
         index: cascade.index,
@@ -442,6 +449,74 @@ export class CascadedShadowPass {
   getLastResult(): CascadedShadowPassResult | null {
     return this.lastResult;
   }
+
+  getForwardShadowMaps(options: Omit<ForwardShadowMapOptions, "texture" | "lightMatrix" | "cascades"> & {
+    readonly lightMatrices: readonly (Float32Array | readonly number[])[];
+  }): readonly ForwardShadowMapOptions[] {
+    return this.shadowPasses.flatMap((shadowPass, index) => {
+      const lightMatrix = options.lightMatrices[index];
+      if (!lightMatrix) return [];
+      const binding = shadowPass.getForwardShadowMap({
+        lightMatrix,
+        strength: options.strength,
+        slopeBias: options.slopeBias,
+        texelSize: options.texelSize,
+        bias: options.bias,
+        filterKernel: options.filterKernel
+      });
+      return binding ? [binding] : [];
+    });
+  }
+
+  dispose(): void {
+    this.disposeShadowPasses();
+  }
+
+  private disposeShadowPasses(): void {
+    for (const shadowPass of this.shadowPasses) shadowPass.dispose();
+    this.shadowPasses = [];
+  }
+}
+
+export function shadowCameraFitViewProjectionMatrix(fit: ShadowCameraFit): Float32Array {
+  const { right, up, forward } = fit.basis;
+  const view = [
+    right[0], up[0], forward[0], 0,
+    right[1], up[1], forward[1], 0,
+    right[2], up[2], forward[2], 0,
+    0, 0, 0, 1
+  ];
+  const projection = orthographicMatrix(fit.orthographic);
+  return multiplyMatrix(projection, view);
+}
+
+function orthographicMatrix(bounds: ShadowCameraFit["orthographic"]): readonly number[] {
+  const width = bounds.right - bounds.left;
+  const height = bounds.top - bounds.bottom;
+  const depth = bounds.far - bounds.near;
+  return [
+    2 / width, 0, 0, 0,
+    0, 2 / height, 0, 0,
+    0, 0, -2 / depth, 0,
+    -(bounds.right + bounds.left) / width,
+    -(bounds.top + bounds.bottom) / height,
+    -(bounds.far + bounds.near) / depth,
+    1
+  ];
+}
+
+function multiplyMatrix(left: readonly number[], right: readonly number[]): Float32Array {
+  const result = new Float32Array(16);
+  for (let column = 0; column < 4; column += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      result[column * 4 + row] =
+        left[row]! * right[column * 4]!
+        + left[4 + row]! * right[column * 4 + 1]!
+        + left[8 + row]! * right[column * 4 + 2]!
+        + left[12 + row]! * right[column * 4 + 3]!;
+    }
+  }
+  return result;
 }
 
 export function supportsCascadedShadowLight(light: Light | null): light is DirectionalLight {

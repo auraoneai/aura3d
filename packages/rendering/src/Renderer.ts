@@ -3,6 +3,7 @@ import {
   Camera,
   DirectionalLight,
   Light,
+  PerspectiveCamera,
   PointLight,
   Scene,
   SpotLight,
@@ -22,6 +23,7 @@ import { createRenderDevice, type RenderBackendOptions } from "./RenderBackend";
 import { type LdrPostprocessPassDescriptor, type RenderDevice, RenderDeviceError, type RenderDeviceDiagnostics, type RenderTarget, type RenderTargetDescriptor } from "./RenderDevice";
 import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, EnvironmentBackgroundPass, type EnvironmentBackgroundOptions } from "./EnvironmentBackgroundPass";
 import { ForwardPass, type EnvironmentLightingOptions, type ForwardEnvironmentFogOptions, type ForwardShadowMapOptions, type RenderItem, type RenderMaterial, type SkinningPaletteBinding } from "./ForwardPass";
+import { CascadedShadowMaps, CascadedShadowPass, shadowCameraFitViewProjectionMatrix } from "./CascadedShadowMaps";
 import { type CollectedLight, LightCollector } from "./LightCollector";
 import { Geometry, type Bounds3 } from "./Geometry";
 import { type MorphTargetDelta } from "./MorphTarget";
@@ -320,6 +322,9 @@ export interface RendererShadowOptions extends ShadowMapOptions {
   readonly slopeBias?: number;
   readonly texelSize?: readonly [number, number];
   readonly filterKernel?: ShadowFilterKernel;
+  readonly cascadeCount?: number;
+  readonly cascadeLambda?: number;
+  readonly cascadePadding?: number;
 }
 
 export interface RendererPostProcessOptions extends RendererPostprocessPlanOptions {
@@ -485,7 +490,7 @@ export class Renderer {
     }
     const postprocess = collectPostprocess(source);
     const ownedTargets: RenderTarget[] = [];
-    const ownedShadowPasses: ShadowPass[] = [];
+    const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
@@ -532,7 +537,8 @@ export class Renderer {
         items,
         lights,
         ownedTargets,
-        ownedShadowPasses
+        ownedShadowPasses,
+        camera: resolvedCamera?.camera
       });
       if (postprocess) {
         const forwardTarget = ownedTargets[0];
@@ -560,6 +566,7 @@ export class Renderer {
         inputColorResource: environmentBackground ? ENVIRONMENT_BACKGROUND_COLOR_RESOURCE : undefined,
         shadowMap: rendererShadowMap,
         cameraPosition,
+        cameraViewMatrix: resolvedCamera?.viewMatrix,
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));
@@ -622,7 +629,7 @@ export class Renderer {
     }
     const postprocess = collectPostprocess(source);
     const ownedTargets: RenderTarget[] = [];
-    const ownedShadowPasses: ShadowPass[] = [];
+    const ownedShadowPasses: Array<{ dispose(): void }> = [];
     this.graph.clear();
     let postprocessTargetFormat: Extract<RenderTargetDescriptor["format"], "rgba8" | "rgba16f" | "rgba32f"> | undefined;
     if (postprocess) {
@@ -669,7 +676,8 @@ export class Renderer {
         items,
         lights,
         ownedTargets,
-        ownedShadowPasses
+        ownedShadowPasses,
+        camera: resolvedCamera?.camera
       });
       if (postprocess) {
         const forwardTarget = ownedTargets[0];
@@ -697,6 +705,7 @@ export class Renderer {
         inputColorResource: environmentBackground ? ENVIRONMENT_BACKGROUND_COLOR_RESOURCE : undefined,
         shadowMap: rendererShadowMap,
         cameraPosition,
+        cameraViewMatrix: resolvedCamera?.viewMatrix,
         outputColorSpace: postprocess ? "linear" : "srgb",
         shaderLibrary: this.shaderLibrary
       }));
@@ -1133,7 +1142,8 @@ export class Renderer {
     readonly items: readonly RenderItem[];
     readonly lights: readonly CollectedLight[];
     readonly ownedTargets: RenderTarget[];
-    readonly ownedShadowPasses: ShadowPass[];
+    readonly ownedShadowPasses: Array<{ dispose(): void }>;
+    readonly camera?: Camera;
   }): ForwardShadowMapOptions | undefined {
     if (!options.shadowOptions || options.shadowOptions.enabled === false) {
       return undefined;
@@ -1157,6 +1167,19 @@ export class Renderer {
       throw new RenderDeviceError("Renderer-owned shadow maps require directional, spot, or point lights.", "SHADOW_LIGHT_TYPE_UNSUPPORTED", {
         lightName: light.name,
         lightType: light.constructor.name
+      });
+    }
+    if (
+      light instanceof DirectionalLight
+      && options.camera instanceof PerspectiveCamera
+      && (options.shadowOptions.cascadeCount ?? 1) > 1
+    ) {
+      return this.executeRendererCascadedShadowMap({
+        shadowOptions: options.shadowOptions,
+        items: options.items,
+        ownedShadowPasses: options.ownedShadowPasses,
+        light,
+        camera: options.camera
       });
     }
     const lightMatrix = options.shadowOptions.lightMatrix
@@ -1198,11 +1221,87 @@ export class Renderer {
     }) ?? undefined;
   }
 
+  private executeRendererCascadedShadowMap(options: {
+    readonly shadowOptions: RendererShadowOptions;
+    readonly items: readonly RenderItem[];
+    readonly ownedShadowPasses: Array<{ dispose(): void }>;
+    readonly light: DirectionalLight;
+    readonly camera: PerspectiveCamera;
+  }): ForwardShadowMapOptions | undefined {
+    const cascadeCount = options.shadowOptions.cascadeCount ?? 4;
+    if (!Number.isInteger(cascadeCount) || cascadeCount < 2 || cascadeCount > 4) {
+      throw new RenderDeviceError("Renderer cascadeCount must be an integer in [2, 4].", "SHADOW_CASCADE_CONTRACT", { cascadeCount });
+    }
+    options.camera.transform.updateWorld(undefined, true);
+    const position = cameraWorldPosition(options.camera);
+    const world = options.camera.transform.worldMatrix;
+    const target: Vec3 = [
+      position[0] - (world[8] ?? 0),
+      position[1] - (world[9] ?? 0),
+      position[2] - (world[10] ?? 1)
+    ];
+    const cascades = new CascadedShadowMaps({
+      cascadeCount,
+      near: options.camera.near,
+      far: options.camera.far,
+      lambda: options.shadowOptions.cascadeLambda ?? 0.6,
+      size: options.shadowOptions.size,
+      bias: options.shadowOptions.bias,
+      filter: options.shadowOptions.filter,
+      pcfRadius: options.shadowOptions.pcfRadius,
+      pcfSamples: options.shadowOptions.pcfSamples,
+      label: options.shadowOptions.label ?? "renderer-csm"
+    });
+    const fits = cascades.computeStableCameraFits({
+      camera: {
+        position,
+        target,
+        fovYRadians: options.camera.fovYRadians,
+        aspect: options.camera.aspect
+      },
+      lightDirection: options.light.getDirection(),
+      casters: [],
+      receivers: [],
+      padding: options.shadowOptions.cascadePadding ?? 0.25,
+      stabilize: true
+    });
+    const lightMatrices = fits.map(shadowCameraFitViewProjectionMatrix);
+    const cascadePass = new CascadedShadowPass({
+      light: options.light,
+      casters: options.items,
+      cascades,
+      viewProjectionMatrices: lightMatrices,
+      shaderLibrary: this.shaderLibrary
+    });
+    const result = cascadePass.execute({ device: this.device, width: this.width, height: this.height });
+    options.ownedShadowPasses.push(cascadePass);
+    if (!result.rendered) return undefined;
+    const maps = cascadePass.getForwardShadowMaps({
+      lightMatrices,
+      strength: options.shadowOptions.strength,
+      slopeBias: options.shadowOptions.slopeBias,
+      texelSize: options.shadowOptions.texelSize,
+      bias: options.shadowOptions.bias,
+      filterKernel: options.shadowOptions.filterKernel
+    });
+    const first = maps[0];
+    if (!first || maps.length !== result.cascades.length) return undefined;
+    return {
+      ...first,
+      cascades: result.cascades.map((cascade, index) => ({
+        index: cascade.index,
+        near: cascade.split.near,
+        far: cascade.split.far,
+        shadowMap: maps[index]!
+      }))
+    };
+  }
+
   private executeRendererPointShadowMap(options: {
     readonly shadowOptions: RendererShadowOptions;
     readonly items: readonly RenderItem[];
     readonly ownedTargets: RenderTarget[];
-    readonly ownedShadowPasses: ShadowPass[];
+    readonly ownedShadowPasses: Array<{ dispose(): void }>;
     readonly light: PointLight;
   }): ForwardShadowMapOptions | undefined {
     if (!this.device.writeRenderTargetPixels) {
@@ -2550,7 +2649,7 @@ function resolveCamera(
   camera?: CameraLike,
   viewport?: { readonly width: number; readonly height: number },
   options: { readonly allowSceneCamera?: boolean } = {}
-): { readonly viewProjectionMatrix: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number] } | undefined {
+): { readonly viewProjectionMatrix: Mat4; readonly viewMatrix?: Mat4; readonly camera?: Camera; readonly cameraPosition?: readonly [number, number, number] } | undefined {
   const resolved = camera ?? (options.allowSceneCamera === false ? undefined : resolveSceneCamera(source));
   if (!resolved) {
     return undefined;
@@ -2564,6 +2663,7 @@ function resolveCamera(
     const viewMatrix = resolved.viewMatrix ? toMat4(resolved.viewMatrix, "viewMatrix") : undefined;
     return {
       viewProjectionMatrix: toMat4(resolved.viewProjectionMatrix, "viewProjectionMatrix"),
+      ...(viewMatrix ? { viewMatrix } : {}),
       ...(resolved instanceof Camera
         ? { camera: resolved, cameraPosition: cameraWorldPosition(resolved) }
         : viewMatrix
@@ -2575,6 +2675,7 @@ function resolveCamera(
     const viewMatrix = toMat4(resolved.viewMatrix, "viewMatrix");
     return {
       viewProjectionMatrix: multiplyMat4(toMat4(resolved.projectionMatrix, "projectionMatrix"), viewMatrix),
+      viewMatrix,
       ...(resolved instanceof Camera
         ? { camera: resolved, cameraPosition: cameraWorldPosition(resolved) }
         : { cameraPosition: cameraPositionFromViewMatrix(viewMatrix) })

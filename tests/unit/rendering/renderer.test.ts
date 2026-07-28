@@ -53,7 +53,7 @@ import {
   toneMapPixels,
   type FusedLdrPostProcessPass
 } from "../../../packages/rendering/src/PostProcessPass";
-import { DirectionalLight, PointLight, Renderable, Scene, SpotLight, quatFromEuler } from "../../../packages/scene/src";
+import { DirectionalLight, PerspectiveCamera, PointLight, Renderable, Scene, SpotLight, quatFromEuler } from "../../../packages/scene/src";
 
 interface FakeWebGPUBuffer extends WebGPUBufferLike {
   data: Uint8Array;
@@ -874,6 +874,60 @@ describe("Renderer", () => {
     expect(forwardUniforms?.get("u_shadowMapStrength")).toBe(0.7);
     expect(forwardUniforms?.get("u_shadowMapBias")).toBe(0.002);
     expect(forwardUniforms?.get("u_shadowMapTexture")).toBeInstanceOf(TextureBinding);
+    renderer.dispose();
+  });
+
+  it("renders and selects live cascaded shadow maps by camera-space depth", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 16 });
+    const light = new DirectionalLight("renderer-cascade-light");
+    light.castsShadow = true;
+    const camera = new PerspectiveCamera({ near: 0.1, far: 80, aspect: 1, fovYRadians: Math.PI / 3 });
+    const material = new PBRMaterial({ name: "cascade-pbr" });
+
+    const diagnostics = renderer.render({
+      renderItems: [
+        { geometry: Geometry.litCube(1), material, modelMatrix: translationMatrix(0, 0, -2), label: "near-cascade-cube" },
+        { geometry: Geometry.litCube(1), material, modelMatrix: translationMatrix(0, 0, -45), label: "far-cascade-cube" }
+      ],
+      collectedLights: [{
+        kind: "directional",
+        color: [1, 1, 1],
+        intensity: 1,
+        position: [0, 8, 8],
+        direction: [0.35, -0.8, -0.48],
+        range: 0,
+        spotAngle: 0,
+        penumbra: 0,
+        castsShadow: true,
+        layerMask: 0xffffffff,
+        source: light
+      }],
+      shadow: {
+        light,
+        size: 64,
+        cascadeCount: 4,
+        cascadeLambda: 0.6,
+        strength: 0.7,
+        bias: 0.002
+      }
+    }, camera);
+
+    const commands = (renderer.device as MockRenderDevice).drawCommands;
+    const forward = commands.slice(-2);
+    const nearTexture = forward[0]?.uniforms?.get("u_shadowMapTexture") as TextureBinding;
+    const farTexture = forward[1]?.uniforms?.get("u_shadowMapTexture") as TextureBinding;
+    const nearMatrix = Array.from(forward[0]?.uniforms?.get("u_shadowMapMatrix") as Float32Array);
+    const farMatrix = Array.from(forward[1]?.uniforms?.get("u_shadowMapMatrix") as Float32Array);
+    expect(diagnostics.drawCalls).toBe(10);
+    expect(commands.slice(0, 8).map((command) => command.label)).toEqual([
+      "near-cascade-cube", "far-cascade-cube",
+      "near-cascade-cube", "far-cascade-cube",
+      "near-cascade-cube", "far-cascade-cube",
+      "near-cascade-cube", "far-cascade-cube"
+    ]);
+    expect(nearTexture.texture?.label).toContain("renderer-csm-cascade-0");
+    expect(farTexture.texture?.label).toContain("renderer-csm-cascade-3");
+    expect(nearMatrix).not.toEqual(farMatrix);
     renderer.dispose();
   });
 
