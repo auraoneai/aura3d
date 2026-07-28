@@ -1049,8 +1049,10 @@ exists.
       comparative verdicts remain non-passing, and the 54/54 inventory is not a
       performance measurement. Per the task condition, no comparison or
       benchmark prose was raised or refreshed.
-- [ ] **4.7** `pnpm check:agent-docs && pnpm check:docs-codeblocks &&
+- [x] **4.7** `pnpm check:agent-docs && pnpm check:docs-codeblocks &&
       pnpm check:marketing-truth && pnpm check:marketing-links && pnpm verify:claims`
+      Exact command chain passes. The claim registry scanned 51 governed files
+      with 0 violations.
 - [ ] **4.8** Closing summary: every claim raised with its proof, every claim lowered with why
 
 ### Standing Phase 4 obligations carried from Phase 1 and 2
