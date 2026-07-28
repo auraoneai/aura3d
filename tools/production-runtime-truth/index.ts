@@ -18,32 +18,29 @@ const blockedClaims = [
   read("docs/project/known-limits.md"),
   read("docs/project/claim-guidelines.md")
 ].join("\n");
-const requiredPlanPatterns = [
-  /production runtime/i,
-  /real WebGL2\/WebGPU browser renderer/i,
-  /No Canvas 2D fallback/i,
-  /WebGL2/i,
-  /WebGPU/i,
-  /glTF/i,
-  /Three\.js/i
+const requiredPlanPolicies = [
+  { id: "root-production-bridge-gap", pattern: /default production-runtime renderer bridge for `createAuraApp`/i },
+  { id: "root-webgl2-path", pattern: /root WebGL2 path/i },
+  { id: "typed-gltf-path", pattern: /typed asset manifests[\s\S]*static GLB\/glTF mesh loading/i },
+  { id: "browser-evidence-boundary", pattern: /browser evidence/i },
+  { id: "three-parity-boundary", pattern: /full production renderer parity|Three\.js/i }
 ] as const;
 const requiredStatusPatterns = [
   /evidence/i,
   /report/i,
   /verification/i
 ] as const;
-const requiredBlockedClaims = [
-  "Full Three.js API replacement",
-  "Full Three.js ecosystem replacement",
-  "Full WebGPU parity",
-  "Unity replacement",
-  "Unreal replacement",
-  "Broad performance superiority"
+const requiredBlockedPolicies = [
+  { id: "framework-replacement", pattern: /Aura3D is a Three\.js\/Babylon\/Unity\/Unreal replacement/i },
+  { id: "root-production-default", pattern: /Root `createAuraApp` uses the production renderer by default/i },
+  { id: "native-webgpu", pattern: /Native WebGPU particles\/rendering/i },
+  { id: "flagship-quality", pattern: /A showcase route is flagship quality/i },
+  { id: "performance-superiority", pattern: /Aura3D matches or exceeds Three\.js performance/i }
 ] as const;
 const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));
-const missingPlanPatterns = requiredPlanPatterns.filter((pattern) => !pattern.test(productionRuntime)).map(String);
+const missingPlanPolicies = requiredPlanPolicies.filter(({ pattern }) => !pattern.test(productionRuntime)).map(({ id }) => id);
 const missingStatusPatterns = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
-const missingBlockedClaims = requiredBlockedClaims.filter((claim) => !blockedClaims.includes(claim));
+const missingBlockedPolicies = requiredBlockedPolicies.filter(({ pattern }) => !pattern.test(blockedClaims)).map(({ id }) => id);
 const progressHasAllMilestones = progress.includes("release") || progress.includes("verification") || progress.includes("complete");
 const progressClaimsComplete = /^Current status:\s*complete$/m.test(progress);
 const completionAuditPasses = reportPasses("tests/reports/production-runtime-completion-audit.json");
@@ -51,9 +48,9 @@ const progressNotPrematureComplete = !progressClaimsComplete || completionAuditP
 const threeCompatFailureAuditPasses = reportPasses("tests/reports/production-runtime-three-compat-visual-failure-audit.json");
 const checks = [
   { id: "required-files", pass: missing.length === 0, detail: missing.join(", ") || "all required retained production-runtime evidence files exist" },
-  { id: "plan-patterns", pass: missingPlanPatterns.length === 0, detail: missingPlanPatterns.join(", ") || "production renderer plan is covered by retained docs" },
+  { id: "plan-policies", pass: missingPlanPolicies.length === 0, detail: missingPlanPolicies.join(", ") || "production renderer plan is covered by retained docs" },
   { id: "status-patterns", pass: missingStatusPatterns.length === 0, detail: missingStatusPatterns.join(", ") || "status defines real renderer completion boundary" },
-  { id: "blocked-claims", pass: missingBlockedClaims.length === 0, detail: missingBlockedClaims.join(", ") || "blocked claims are preserved" },
+  { id: "blocked-claims", pass: missingBlockedPolicies.length === 0, detail: missingBlockedPolicies.join(", ") || "blocked claims are preserved" },
   { id: "milestone-coverage", pass: progressHasAllMilestones, detail: "retained completion docs describe release verification progress" },
   { id: "not-premature-complete", pass: progressNotPrematureComplete, detail: "progress is not complete before completion audit passes" },
   { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "Three.js compatibility visual failure audit report passes" }

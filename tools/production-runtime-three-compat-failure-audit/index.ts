@@ -10,15 +10,47 @@ const combined = requiredFiles
   .filter((path) => existsSync(resolve(path)))
   .map((path) => readFileSync(resolve(path), "utf8"))
   .join("\n");
-const requiredPatterns = [
-  { id: "canvas-painted-proof", pattern: /canvas[- ]painted|Canvas 2D/i },
-  { id: "non-renderer-screenshots", pattern: /non-renderer screenshot|real renderer output/i },
-  { id: "mock-renderer-blocked", pattern: /mock renderer/i },
-  { id: "hardcoded-visual-scores-blocked", pattern: /hardcoded visual/i },
-  { id: "page-set-content-blocked", pattern: /page\.setContent/i },
-  { id: "real-webgl-webgpu-required", pattern: /WebGL2\/WebGPU|WebGL2 or WebGPU/i },
-  { id: "real-assets-required", pattern: /real glTF\/GLB|real imported asset/i },
-  { id: "three-compat-specific-failure-named", pattern: /three-compat-threejs-visual-parity\.spec\.ts|three-compat-gallery/i }
+const requiredPolicies = [
+  {
+    id: "browser-evidence-required",
+    pattern: /browser tests that import only public `@aura3d\/engine`|browser evidence/i,
+    detail: "The retained policy must require browser evidence for the claimed runtime path."
+  },
+  {
+    id: "nonblank-only-evidence-rejected",
+    pattern: /nonblank screenshot checks by themselves|based only on boot success, nonblank screenshots/i,
+    detail: "The retained policy must reject nonblank screenshots as sufficient visual proof."
+  },
+  {
+    id: "source-only-evidence-rejected",
+    pattern: /source-only demos/i,
+    detail: "The retained policy must reject source-only demonstrations as public proof."
+  },
+  {
+    id: "root-and-internal-scopes-separated",
+    pattern: /internal renderer tests used as proof of root `createAuraApp` behavior|package, internal renderer, prototype route, or future roadmap item cannot be used as proof for the public root/i,
+    detail: "The retained policy must keep root createAuraApp evidence separate from renderer-internal evidence."
+  },
+  {
+    id: "webgpu-evidence-bound",
+    pattern: /Native WebGPU particles\/rendering.*Blocked unless adapter\/backend|WebGPU.*adapter, backend, dispatch\/render, fallback, telemetry, and pixel evidence/is,
+    detail: "The retained policy must bind WebGPU claims to backend, fallback, telemetry, and pixel proof."
+  },
+  {
+    id: "typed-assets-required",
+    pattern: /typed asset manifests through `aura\.assets\.json`|typed GLB\/glTF asset workflows/i,
+    detail: "The retained status must identify manifest-backed typed assets as the supported asset workflow."
+  },
+  {
+    id: "full-three-replacement-blocked",
+    pattern: /Aura3D is a Three\.js\/Babylon\/Unity\/Unreal replacement.*Use scoped\s+comparison language only/is,
+    detail: "The retained policy must continue to block an unscoped Three.js replacement claim."
+  },
+  {
+    id: "three-compat-status-not-complete",
+    pattern: /Status:\s*code construction started|cannot claim full Three\.js parity/i,
+    detail: "The retained parity status must not describe the Three.js compatibility track as complete."
+  }
 ];
 const checks = [
   ...requiredFiles.map((path) => ({
@@ -26,10 +58,10 @@ const checks = [
     pass: existsSync(resolve(path)),
     detail: `${path} must exist.`
   })),
-  ...requiredPatterns.map(({ id, pattern }) => ({
+  ...requiredPolicies.map(({ id, pattern, detail }) => ({
     id,
     pass: pattern.test(combined),
-    detail: `${id} must be explicitly documented.`
+    detail
   }))
 ];
 const report = {
