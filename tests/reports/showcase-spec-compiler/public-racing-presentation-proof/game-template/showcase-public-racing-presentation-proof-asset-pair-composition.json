@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-    "sha256": "sha256-0fa0829372a8dd424e0fd23306f0383b5d4e9703ba4f2952229f8091b07174d2",
+    "sha256": "sha256-cb74b908464689ce69b393964c12f803036e6ed200e4d60f80670a59cf92c2c7",
     "width": 1440,
     "height": 900
   },
@@ -69,8 +69,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0,
-        "screenContactDistance": 5.124033177097898,
-        "screenContactDistanceRatio": 0.0351
+        "screenContactDistance": 3.235949474265616,
+        "screenContactDistanceRatio": 0.0222
       },
       "blockers": []
     },
@@ -81,14 +81,16 @@
         "minPlaySpaceAreaRatio": 0.04,
         "maxPlaySpaceAreaRatio": 0.78,
         "clippedAllowed": false,
-        "requiresSubjectFollow": true
+        "requiresSubjectFollow": true,
+        "acceptedRacingModes": "chase|top-down"
       },
       "measured": {
-        "playSpaceAreaRatio": 0.2247,
+        "playSpaceAreaRatio": 0.2274,
         "foregroundClipped": false,
         "subjectClipped": false,
         "cameraMode": "follow",
-        "followsSubject": true
+        "followsSubject": true,
+        "selectedMode": "chase"
       },
       "blockers": []
     },
@@ -102,8 +104,10 @@
       },
       "measured": {
         "subjectWorldRatio": 0.2209,
-        "certifiedRatio": "not-required",
-        "scaleDelta": 0
+        "characterScaleRatio": "not-required",
+        "projectedTargetHeight": "not-required",
+        "renderedSubjectHeight": 146,
+        "scaleDelta": "missing"
       },
       "blockers": []
     },

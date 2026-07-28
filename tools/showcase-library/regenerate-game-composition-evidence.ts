@@ -12,6 +12,12 @@ interface RouteConfig {
 
 const routes: readonly RouteConfig[] = [
   {
+    routeId: "showcase-public-racing-presentation-proof",
+    category: "racing",
+    reportDir: "public-racing-presentation-proof",
+    geometrySuffix: "racing-track-topology"
+  },
+  {
     routeId: "showcase-turbo-drift-circuit",
     category: "racing",
     reportDir: "turbo-drift-circuit",
@@ -55,7 +61,10 @@ function regenerate(route: RouteConfig): void {
     throw new Error(`${route.routeId} composition failed: ${report.blockers.join(", ")}`);
   }
 
-  writeJson(`${appDir}/game-template/${route.routeId}-asset-pair-composition.json`, report);
+  const appCompositionPath = `${appDir}/game-template/${route.routeId}-asset-pair-composition.json`;
+  if (existsSync(resolve(root, `${appDir}/game-template`))) {
+    writeJson(appCompositionPath, report);
+  }
   const screenshotHash = report.screenshot.sha256;
   const modulePath = `${appDir}/src/generated/game-geometry.ts`;
   const moduleSource = readFile(modulePath);
