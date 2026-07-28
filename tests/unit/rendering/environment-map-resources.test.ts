@@ -39,7 +39,7 @@ describe("environment map resource helpers", () => {
     expect(() => generateRgba8EnvironmentMipLevels({ width: 1, height: 1, data: new Uint8Array(4) }, { blurRadius: -1 })).toThrow(/blurRadius/);
   });
 
-  it("generates a bounded approximate BRDF LUT with roughness and view dependence", () => {
+  it("generates a bounded deterministic BRDF LUT with roughness and view dependence", () => {
     const lut = generateApproximateBrdfLutPixels({ width: 4, height: 4 });
     const grazingSmoothBias = lut.data[(0 * 4 + 0) * 4 + 1]!;
     const facingSmoothBias = lut.data[(0 * 4 + 3) * 4 + 1]!;
@@ -53,6 +53,51 @@ describe("environment map resource helpers", () => {
     expect(grazingSmoothBias).toBeGreaterThan(facingSmoothBias);
     expect(midSmoothScale).not.toBe(midRoughScale);
     expect(lut.data[3]).toBe(255);
+  });
+
+  it("matches independent split-sum scale and bias reference values", () => {
+    const descriptor = { width: 5, height: 5, sampleCount: 16_384 };
+    const lut = generateApproximateBrdfLutPixels(descriptor);
+    const repeated = generateApproximateBrdfLutPixels(descriptor);
+
+    // These floating-point references were calculated by independent
+    // midpoint quadrature over light directions (2048 z slices x 2048
+    // azimuth slices). That oracle integrates D * V * NdotL directly and does
+    // not importance-sample half vectors like the implementation under test.
+    const references = [
+      { x: 1, y: 2, scale: 0.759254386, bias: 0.080827565, bytes: [194, 21] },
+      { x: 2, y: 2, scale: 0.834916176, bias: 0.022347300, bytes: [213, 6] },
+      { x: 3, y: 2, scale: 0.888814221, bias: 0.002718729, bytes: [227, 1] },
+      { x: 2, y: 3, scale: 0.654692849, bias: 0.008483012, bytes: [167, 2] },
+      { x: 1, y: 4, scale: 0.586764302, bias: 0.010876258, bytes: [150, 3] }
+    ] as const;
+    // One UNORM8 quantization step plus one step for the finite Hammersley
+    // integration error. The exact bytes below also lock determinism.
+    const tolerance = 2 / 255;
+
+    expect(repeated.data).toEqual(lut.data);
+    for (const reference of references) {
+      const offset = (reference.y * lut.width + reference.x) * 4;
+      const scale = lut.data[offset]! / 255;
+      const bias = lut.data[offset + 1]! / 255;
+      expect(Math.abs(scale - reference.scale)).toBeLessThanOrEqual(tolerance);
+      expect(Math.abs(bias - reference.bias)).toBeLessThanOrEqual(tolerance);
+      expect([lut.data[offset], lut.data[offset + 1]]).toEqual(reference.bytes);
+    }
+  });
+
+  it("uses the shader's minimum GGX roughness for the smooth LUT edge", () => {
+    // y = 9 in a 201-row LUT is roughness 0.045, the runtime PBR minimum.
+    // Values below that limit must integrate the same distribution and
+    // visibility term instead of sampling an artificially narrower lobe.
+    const lut = generateApproximateBrdfLutPixels({ width: 3, height: 201, sampleCount: 256 });
+    for (let x = 0; x < lut.width; x += 1) {
+      const zeroRoughnessOffset = x * 4;
+      const minimumRoughnessOffset = (9 * lut.width + x) * 4;
+      expect(Array.from(lut.data.slice(zeroRoughnessOffset, zeroRoughnessOffset + 2))).toEqual(
+        Array.from(lut.data.slice(minimumRoughnessOffset, minimumRoughnessOffset + 2))
+      );
+    }
   });
 
   // The independent 256^2 reference quadrature runs for every compared cell,

@@ -11,6 +11,7 @@ export type EnvironmentTextureEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
 export type EnvironmentToneMappingOperator = "linear" | "reinhard";
 
 const A3D_EPSILON_NUMBER = 0.00001;
+const A3D_MIN_PBR_ROUGHNESS = 0.045;
 
 export interface Rgba8EnvironmentMapSource {
   readonly width: number;
@@ -574,6 +575,17 @@ export function createEnvironmentMapResourceSet(
   };
 }
 
+/**
+ * Generates the deterministic GGX split-sum DFG lookup texture used by the
+ * environment-lighting shaders. The historical `Approximate` export name is
+ * retained for API compatibility; each texel is numerically integrated rather
+ * than evaluated from an analytic fit.
+ *
+ * The red channel stores the coefficient multiplied by F0 and the green
+ * channel stores the grazing-angle Fresnel bias:
+ *
+ * `environmentSpecular * (F0 * red + green)`
+ */
 export function generateApproximateBrdfLutPixels(descriptor: BrdfLutDescriptor = {}): Rgba8EnvironmentMapSource {
   const width = descriptor.width ?? 32;
   const height = descriptor.height ?? 32;
@@ -589,7 +601,7 @@ export function generateApproximateBrdfLutPixels(descriptor: BrdfLutDescriptor =
     const roughness = clamp(y / Math.max(1, height - 1), 0, 1);
     for (let x = 0; x < width; x += 1) {
       const nDotV = clamp(x / Math.max(1, width - 1), 0.001, 1);
-      const brdf = integrateGgxEnvironmentBrdf(nDotV, roughness, sampleCount);
+      const brdf = integrateSplitSumGgxEnvironmentBrdf(nDotV, roughness, sampleCount);
       const index = (y * width + x) * 4;
       data[index] = encodeColorByte(brdf[0], "linear");
       data[index + 1] = encodeColorByte(brdf[1], "linear");
@@ -600,7 +612,7 @@ export function generateApproximateBrdfLutPixels(descriptor: BrdfLutDescriptor =
   return { width, height, data };
 }
 
-function integrateGgxEnvironmentBrdf(
+function integrateSplitSumGgxEnvironmentBrdf(
   nDotV: number,
   roughness: number,
   sampleCount: number
@@ -660,7 +672,11 @@ function importanceSampleGgx(
   xi: readonly [number, number],
   roughness: number
 ): readonly [number, number, number] {
-  const alpha = Math.max(roughness, 0.001) * Math.max(roughness, 0.001);
+  // Match the minimum perceptual roughness used by the PBR shader's GGX
+  // distribution. Using a narrower proposal than the evaluated lobe biases the
+  // first LUT row even though the runtime shader clamps that row to this value.
+  const clampedRoughness = Math.max(roughness, A3D_MIN_PBR_ROUGHNESS);
+  const alpha = clampedRoughness * clampedRoughness;
   const alpha2 = alpha * alpha;
   const phi = 2 * Math.PI * xi[0];
   const cosTheta = Math.sqrt((1 - xi[1]) / Math.max(1 + (alpha2 - 1) * xi[1], A3D_EPSILON_NUMBER));
@@ -673,7 +689,7 @@ function importanceSampleGgx(
 }
 
 function ggxGeometrySmithCorrelated(nDotV: number, nDotL: number, roughness: number): number {
-  const alpha = Math.max(roughness, 0.045);
+  const alpha = Math.max(roughness, A3D_MIN_PBR_ROUGHNESS);
   const alpha2 = alpha * alpha * alpha * alpha;
   const lambdaV = nDotL * Math.sqrt(Math.max((nDotV - alpha2 * nDotV) * nDotV + alpha2, A3D_EPSILON_NUMBER));
   const lambdaL = nDotV * Math.sqrt(Math.max((nDotL - alpha2 * nDotL) * nDotL + alpha2, A3D_EPSILON_NUMBER));
