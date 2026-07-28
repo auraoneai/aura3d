@@ -46,6 +46,11 @@ test.describe("runtime PMREM parity artifact", () => {
       error?: string;
       schema?: string;
       parity?: { claim?: string; reason?: string };
+      scene?: {
+        type?: string;
+        hdrUri?: string;
+        swatches?: readonly { readonly id: string; readonly roughness: number }[];
+      };
       a3d?: {
         diagnostics: { drawCalls: number; lastError: string | null };
         pixelStats: { nonBlackPixels: number; uniqueColorBuckets: number; averageLuma: number; maxLuma: number };
@@ -132,6 +137,14 @@ test.describe("runtime PMREM parity artifact", () => {
     expect(result.status, result.error).toBe("ready");
     expect(result.schema).toBe("a3d-runtime-pmrem-parity");
     expect(result.parity?.claim).toBe("bounded-threejs-cubemap-pmrem-parity");
+    expect(result.scene?.type).toBe("metallic-roughness-sphere-row");
+    expect(result.scene?.hdrUri).toBe("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
+    expect(result.scene?.swatches?.map(({ id, roughness }) => ({ id, roughness }))).toEqual([
+      { id: "mirror", roughness: 0.02 },
+      { id: "low-roughness", roughness: 0.16 },
+      { id: "medium-roughness", roughness: 0.42 },
+      { id: "high-roughness", roughness: 0.74 }
+    ]);
     expect(result.a3d?.cubemapPMREMModel).toBe("equirectangular-to-cubemap-ggx-importance-sampled-prefilter");
     expect(result.a3d?.cubemapPMREMShaderSampling).toBe("webgl2-sampler-cube");
     expect(result.a3d?.cubemapFaceSize).toBeGreaterThanOrEqual(128);

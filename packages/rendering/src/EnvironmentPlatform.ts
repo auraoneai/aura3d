@@ -238,10 +238,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Renderer schedules EnvironmentBackgroundPass for camera-correct equirect panorama backgrounds.",
     "The advanced gallery panorama proof renders one directional 2:1 texture from three camera yaws and records distinct backbuffer pixels plus a full-page screenshot."
   ], "Rendering-internal equirectangular backgrounds have accepted directional panorama evidence; HDR decoding, physical sky, and root createAuraApp exposure remain separate claims.", "Retain the multi-view panorama pixel and screenshot gate."),
-  capability("pmrem-generator", "PMREM Generator", "partial", true, [
+  capability("pmrem-generator", "PMREM Generator", "implemented", true, [
     "generateCubemapPMREMResources creates GGX-prefiltered cubemap mip levels.",
-    "createCubemapPMREMShaderContract documents sampler-cube material bindings."
-  ], "Current PMREM audit is explicitly bounded and not Three.js parity.", "Prove material roughness response against stable HDR route screenshots."),
+    "createCubemapPMREMShaderContract documents sampler-cube material bindings.",
+    "The runtime PMREM parity route renders four metallic roughness swatches from 0.02 through 0.74 under a retained real Radiance HDR fixture.",
+    "The browser gate compares A3D against Three.js PMREMGenerator, validates declining cubemap mip variance, and writes stable sphere, skybox, atlas, and diff screenshots."
+  ], "Bounded rendering-internal GGX PMREM behavior has accepted HDR roughness evidence; this does not claim every Three.js environment-map edge case or root createAuraApp exposure.", "Retain the real-HDR roughness row, mip-variance, screenshot, and bounded Three.js delta gates."),
   capability(
     "atmospheric-scattering",
     "Atmospheric Scattering Shader",
