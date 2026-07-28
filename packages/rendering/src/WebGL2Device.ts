@@ -2,6 +2,7 @@ import {
   type BufferUsage,
   type DrawCommand,
   type InstanceVertexAttribute,
+  type LdrPostprocessPassDescriptor,
   type LdrPostprocessPresentationOptions,
   type RenderBuffer,
   type RenderDevice,
@@ -655,9 +656,6 @@ export class WebGL2Device implements RenderDevice {
 
     const colorPass = options.passes.find((pass) => pass.name === "color-grade");
     const fxaaPass = options.passes.find((pass) => pass.name === "fxaa");
-    const toneOptions = { ...(options.toneMappingDefaults ?? {}), ...(tonePass?.options ?? {}) };
-    const colorOptions = colorPass?.options ?? {};
-    const fxaaOptions = fxaaPass?.options ?? {};
     const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
@@ -676,46 +674,51 @@ export class WebGL2Device implements RenderDevice {
     const previousState = this.prepareFullscreenPresentation(webglOutputTarget?.framebuffer ?? null, outputWidth, outputHeight);
     try {
       let ldrSourceHandle = source.colorHandle;
+      let temporarySourceIndex: -1 | 0 | 1 = -1;
       if (bloomOptions && bloomResources) {
         ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
+        temporarySourceIndex = 1;
       }
       if (outlineOptions && bloomResources) {
+        if (tonePass || colorPass) {
+          const baseTargetIndex = 0 as const;
+          this.drawNativeLdrStage(
+            ldrSourceHandle,
+            bloomResources.framebuffers[baseTargetIndex],
+            source.width,
+            source.height,
+            program,
+            vertexArray,
+            tonePass,
+            colorPass,
+            undefined,
+            options.toneMappingDefaults
+          );
+          ldrSourceHandle = bloomResources.textures[baseTargetIndex];
+          temporarySourceIndex = baseTargetIndex;
+        }
+        const outlineTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
         ldrSourceHandle = this.executeNativeOutlinePasses(
           ldrSourceHandle,
           bloomResources,
           outlineOptions,
           vertexArray,
-          0
+          outlineTargetIndex
         );
+        temporarySourceIndex = outlineTargetIndex;
       }
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, webglOutputTarget?.framebuffer ?? null);
-      this.gl.viewport(0, 0, outputWidth, outputHeight);
-      this.gl.useProgram(program);
-      this.gl.bindVertexArray(vertexArray);
-      this.gl.activeTexture(this.gl.TEXTURE0);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, ldrSourceHandle);
-      this.gl.bindSampler(0, null);
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
-      this.gl.uniform2f(this.gl.getUniformLocation(program, "u_texelSize"), 1 / source.width, 1 / source.height);
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasToneMapping"), tonePass ? 1 : 0);
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_toneOperator"), toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard")));
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_inputColorSpace"), colorSpaceId(stringOption(toneOptions, "inputColorSpace", "linear")));
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_outputColorSpace"), colorSpaceId(stringOption(toneOptions, "outputColorSpace", "linear")));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_exposure"), numberOption(toneOptions, "exposure", 1));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_whitePoint"), Math.max(0.0001, numberOption(toneOptions, "whitePoint", 1)));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_gamma"), Math.max(0.0001, numberOption(toneOptions, "gamma", 2.2)));
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasColorGrade"), colorPass ? 1 : 0);
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_contrast"), numberOption(colorOptions, "contrast", 1));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_temperature"), numberOption(colorOptions, "temperature", 0));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_tint"), numberOption(colorOptions, "tint", 0));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_saturation"), numberOption(colorOptions, "saturation", 1));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_vibrance"), numberOption(colorOptions, "vibrance", 0));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_vignette"), numberOption(colorOptions, "vignette", 0));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_sharpening"), numberOption(colorOptions, "sharpening", 0));
-      this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasFxaa"), fxaaPass ? 1 : 0);
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_edgeThreshold"), numberOption(fxaaOptions, "edgeThreshold", 0.125));
-      this.gl.uniform1f(this.gl.getUniformLocation(program, "u_subpixelBlend"), numberOption(fxaaOptions, "subpixelBlend", 0.75));
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+      this.drawNativeLdrStage(
+        ldrSourceHandle,
+        webglOutputTarget?.framebuffer ?? null,
+        outputWidth,
+        outputHeight,
+        program,
+        vertexArray,
+        outlineOptions ? undefined : tonePass,
+        outlineOptions ? undefined : colorPass,
+        fxaaPass,
+        options.toneMappingDefaults
+      );
       this.gl.flush();
     } finally {
       this.restoreFullscreenPresentationState(previousState, outputWidth, outputHeight);
@@ -1347,6 +1350,49 @@ export class WebGL2Device implements RenderDevice {
       this.restoreTextureUnit0(textureUnit0);
       this.stateCache.invalidate();
     }
+  }
+
+  private drawNativeLdrStage(
+    sourceTexture: WebGLTexture,
+    framebuffer: WebGLFramebuffer | null,
+    width: number,
+    height: number,
+    program: WebGLProgram,
+    vertexArray: WebGLVertexArrayObject,
+    tonePass: LdrPostprocessPassDescriptor | undefined,
+    colorPass: LdrPostprocessPassDescriptor | undefined,
+    fxaaPass: LdrPostprocessPassDescriptor | undefined,
+    toneMappingDefaults: Readonly<Record<string, unknown>> | undefined
+  ): void {
+    const toneOptions = { ...(toneMappingDefaults ?? {}), ...(tonePass?.options ?? {}) };
+    const colorOptions = colorPass?.options ?? {};
+    const fxaaOptions = fxaaPass?.options ?? {};
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+    this.gl.viewport(0, 0, width, height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform2f(this.gl.getUniformLocation(program, "u_texelSize"), 1 / width, 1 / height);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasToneMapping"), tonePass ? 1 : 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_toneOperator"), toneMappingOperatorId(stringOption(toneOptions, "operator", "reinhard")));
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_inputColorSpace"), colorSpaceId(stringOption(toneOptions, "inputColorSpace", "linear")));
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_outputColorSpace"), colorSpaceId(stringOption(toneOptions, "outputColorSpace", "linear")));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_exposure"), numberOption(toneOptions, "exposure", 1));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_whitePoint"), Math.max(0.0001, numberOption(toneOptions, "whitePoint", 1)));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_gamma"), Math.max(0.0001, numberOption(toneOptions, "gamma", 2.2)));
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasColorGrade"), colorPass ? 1 : 0);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_contrast"), numberOption(colorOptions, "contrast", 1));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_temperature"), numberOption(colorOptions, "temperature", 0));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_tint"), numberOption(colorOptions, "tint", 0));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_saturation"), numberOption(colorOptions, "saturation", 1));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_vibrance"), numberOption(colorOptions, "vibrance", 0));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_vignette"), numberOption(colorOptions, "vignette", 0));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_sharpening"), numberOption(colorOptions, "sharpening", 0));
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_hasFxaa"), fxaaPass ? 1 : 0);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_edgeThreshold"), numberOption(fxaaOptions, "edgeThreshold", 0.125));
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_subpixelBlend"), numberOption(fxaaOptions, "subpixelBlend", 0.75));
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
   }
 
   private executeNativeBloomPasses(
