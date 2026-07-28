@@ -1,16 +1,19 @@
 # Aura3D Showcase Material and Asset Inspector
 
-Bounded material and asset inspection candidate for the Aura3D showcase build.
+Retained material and asset inspection route for the Aura3D showcase build.
 
 ## Remediation Status
 
-- Classification: candidate; public-showcase ready under the current route-primary and deploy evidence.
+- Classification: removed-from-public-showcase; retained as a typed-asset
+  inspection tool because Product Configurator already promotes the same
+  headphone hero.
 - Route health: `apps/showcase-material-asset-inspector/route-health.json`.
 - Asset status: inspected subject is the typed GLB
   `assets.showcaseHeadphones`.
 - Current proof: retained route-primary evidence passes for
   `assets.showcaseHeadphones`, and launch deploy/release validation passes for
-  the same typed product asset.
+  the same typed product asset. Those lower-level proofs do not override the
+  unpromoted classification.
 - Primitive status: comparison samples, rails, layer proxies, and inspection
   guides are diagnostic staging only.
 - Claim status: bounded to generated asset/material metadata. Do not claim full
@@ -59,7 +62,8 @@ only product asset in the route.
 
 ## Claim Boundary
 
-This route is a bounded public candidate because the current retained
-route-primary probe and deploy/release asset validation pass for
-`assets.showcaseHeadphones`. It must not be presented as production PBR parity,
-a DCC replacement, or a native renderer/material parity proof.
+This route retains a passing route-primary probe and deploy/release asset
+validation for `assets.showcaseHeadphones`, but it is unpromoted to avoid
+duplicating Product Configurator's hero. It must not be presented as a current
+public candidate, production PBR parity, a DCC replacement, or a native
+renderer/material parity proof.

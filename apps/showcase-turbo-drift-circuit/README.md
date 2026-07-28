@@ -1,9 +1,11 @@
 # Turbo Drift Circuit
 
-Status: release-ready candidate
+Status: blocked from current public-ready promotion
 
 Claim label: createAuraApp
 
 Primary asset: showcaseKenneyRaceCarRed
 
-Release evidence is present for this bounded generated route.
+Bounded topology, typed car/track, gameplay, route-primary, and deploy evidence
+is retained for this generated route. Public-ready wording is held while the
+required retained racing visual-QA unit gate is non-passing.

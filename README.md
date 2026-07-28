@@ -103,8 +103,9 @@ Node 22 and pnpm 11.
 - **Playable showcase polish:** Skyline Runner gains safer hazards, grounded
   respawns, readable character scale and facing; Turbo Drift Circuit gains a
   faster bounded pace and km/h HUD; Aura Clash uses production-safe nested links.
-- **Curated production showcase:** seven route-library candidates plus Aura Clash
-  are promoted with complete production preview imagery. Superseded proof routes
+- **Curated showcase snapshot:** the 2026-07-23 release promoted seven
+  route-library candidates plus Aura Clash with production preview imagery.
+  Current promotion eligibility remains evidence-gated; superseded proof routes
   and the duplicate headphone inspector remain accessible but unpromoted.
 - **Current release tooling:** all 26 public package manifests and template pins
   are aligned at 1.4.5, while GitHub Actions uses Node 22, pnpm 11.1.3, and current
@@ -152,7 +153,10 @@ the current package release that carries it forward:
 - `prompt animation`: `npx create-aura3d@latest my-episode --template prompt-animation-channel` scaffolds structured episode plans, storyboards, shot timelines, captions, visemes, render queues, and evidence for prompt-authored animation/video workflows. The shorter `animation-channel` template name remains supported.
 - `AuraVoice bridge`: AuraVoice owns script/audio/caption/viseme timing; Aura3D owns typed scene generation, character performance, camera choreography, rendering, screenshots, and visual evidence.
 
-Aura Clash requires Aura3D 1.1.0 runtime and animation evidence before it should be marketed as a polished public game showcase. Until the runtime, screenshot, route, GLB, package-smoke, and visual approval gates pass, Aura Clash remains a development showcase proving the direction of the public API.
+Aura Clash remains a development showcase, not a polished flagship claim.
+Historical runtime, screenshot, route, GLB, package-smoke, and deployment
+receipts do not replace current gameplay, visual, asset, audio, performance,
+and documentation gates.
 
 ## Install
 
@@ -189,7 +193,8 @@ import { createAuraApp, sceneKits } from "@aura3d/engine";
 - Typed GLB/glTF product viewers, product configurators, and model showcases.
 - Browser-native game prototypes with playable routes, HUDs, input, evidence, tests, and deploy-ready output. Public racing/platformer examples require the certified game-geometry layer described in `docs/project/aura3d-game-layer-rebuild-plan.md`.
 - Prompt-to-3D workflows for AI coding agents, Cursor, Claude, Codex, and other assistants.
-- WebGL/WebGPU-ready examples with maintained scene kits and diagnostics.
+- WebGL examples plus bounded WebGPU package/diagnostic routes whose backend and
+  device evidence is named explicitly.
 - Vite 3D starter apps with route health, screenshot tests, and deploy checks.
 - Static-deployed 3D websites where proof, screenshots, and reliability matter.
 
@@ -197,7 +202,10 @@ import { createAuraApp, sceneKits } from "@aura3d/engine";
 
 Aura Clash Arena is the active Aura3D game-runtime proof target: a 1v1 browser arena-fighter development showcase built with `@aura3d/engine` public APIs.
 
-The showcase proves Aura3D's runtime, animation, and combat systems end to end on a live, deterministic route — built with starter-grade fighter assets so it stays focused on the engine rather than the art.
+The showcase exercises scoped Aura3D runtime, animation, and combat packages on
+a deterministic route. Because it imports advanced-runtime,
+production-runtime, rendering, scene, and animation subpaths in addition to the
+root package, it is not blanket proof of root `createAuraApp` capability.
 
 The showcase currently targets:
 
@@ -597,7 +605,13 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.4.5 baseline, and the release-candidate showcase gate passes 7/7 current route-library examples, with Aura Clash promoted separately as the flagship game experience while retaining two internal diagnostics and two game-layer diagnostic harnesses outside the public count.
+Expected current state — The scoped package gates pass for the 1.4.5 baseline,
+and the latest route-library build/check sub-gate reports 7/7 configured
+candidates. Overall public-ready promotion is held while the required retained
+racing visual-QA unit test is non-passing. Aura Clash is tracked separately as a
+development showcase; two internal diagnostics and two game-layer diagnostic
+harnesses remain outside the configured public count, with zero
+prototype-blocked routes.
 
 ## Contributing
 

@@ -4,7 +4,12 @@ Version: 1.1.0
 
 Use this guide when editing, reviewing, or documenting the active Aura3D game showcase in `apps/aura-clash-showcase`.
 
-Aura Clash Arena is the current browser-game development showcase for Aura3D. It proves a scoped runtime foundation: typed GLB assets, a public game lifecycle, input, animation state, engine combat evidence, HUD updates, screenshots, deployment checks, and npm/CLI proof.
+Aura Clash Arena is the current browser-game development showcase for Aura3D.
+It exercises a scoped runtime foundation across root and lower-level Aura3D
+package surfaces: typed GLB assets, a game lifecycle, input, animation state,
+engine combat evidence, HUD updates, screenshots, deployment checks, and
+npm/CLI proof. It is not blanket root `createAuraApp` or flagship-quality
+evidence.
 
 It is a development showcase built with starter-grade fighter assets, focused on proving the engine's runtime, animation, and combat systems.
 

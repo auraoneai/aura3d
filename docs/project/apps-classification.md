@@ -50,10 +50,49 @@ still not be a public release candidate.
 
 ## Retained Engine Evidence
 
-Older `wow-*` and advanced routes may remain as retained engine evidence only
-when their READMEs and route labels name the exact package/path they prove. They
-must not be treated as starter templates or root API proof unless they import
-only public root APIs and pass current evidence gates.
+| Route directory | Classification |
+| --- | --- |
+| `advanced-examples-gallery` | retained lower-level engine evidence |
+| `v9-advanced-examples-gallery` | retained legacy gallery evidence |
+| `animation-studio-web` | local development control surface |
+| `aura-clash-showcase` | development showcase |
+| `showcase-asset-audition` | internal asset diagnostic |
+| `showcase-orbital-defense` | blocked primitive-only prototype |
+| `world-war-x-showcase` | blocked legacy showcase |
+| `wow-additional-cesium-man-animation` | retained engine evidence |
+| `wow-additional-transmission-sample` | retained engine evidence |
+| `wow-additional-variant-product` | retained engine evidence |
+| `wow-antique-camera-viewer` | retained engine evidence |
+| `wow-avocado-pbr-study` | retained engine evidence |
+| `wow-boombox-texture-lab` | retained engine evidence |
+| `wow-cesium-milk-truck-viewer` | retained engine evidence |
+| `wow-clearcoat-material-sample` | retained engine evidence |
+| `wow-concept-car-cinema` | retained engine evidence |
+| `wow-damaged-helmet-pbr-detail` | retained engine evidence |
+| `wow-duck-prop-studio` | retained engine evidence |
+| `wow-robot-expressive-rig` | retained engine evidence |
+| `wow-sheen-material-grid` | retained engine evidence |
+| `wow-simple-material-lighting` | retained engine evidence |
+| `wow-simple-points-lines` | retained engine evidence |
+| `wow-simple-transforms` | retained engine evidence |
+| `wow-simple-triangle` | retained engine evidence |
+| `wow-soldier-animation-viewer` | retained engine evidence |
+| `wow-standard-animated-cube` | retained engine evidence |
+| `wow-standard-material-spheres` | retained engine evidence |
+| `wow-standard-product-camera` | retained engine evidence |
+| `wow-tokyo-keyframes` | retained engine evidence |
+| `wow-webgpu-compute-particles` | retained lower-level WebGPU evidence |
+| `wow-webgpu-instancing` | retained lower-level WebGPU evidence |
+| `wow-webgpu-pbr-asset` | retained lower-level WebGPU evidence |
+| `wow-webgpu-product-viewer` | retained lower-level WebGPU evidence |
+| `wow-webgpu-render-target` | retained lower-level WebGPU evidence |
+| `wow-webgpu-triangle` | retained lower-level WebGPU evidence |
+| `wow-common` | support-only shared code; not a route |
+
+These routes may remain only when their READMEs and route labels name the exact
+package/path they prove. They must not be treated as starter templates or root
+API proof unless they import only public root APIs and pass current evidence
+gates.
 
 ## Policy
 

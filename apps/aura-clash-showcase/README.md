@@ -2,20 +2,24 @@
 
 Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.
 
-The live route uses production-runtime render resources with the advanced-runtime `A3DRenderer`; it does not make a root `createAuraApp` capability claim.
+The route uses production-runtime render resources with the advanced-runtime
+`A3DRenderer`; it does not make a root `createAuraApp` capability claim or a
+current flagship-quality claim.
 
 ## Routes
 
-- Final public route: `/showcase/aura-clash/`
+- Promoted route path from the 2026-07-23 release snapshot: `/showcase/aura-clash/`
 - `/playable/` launches the playable fighting route with HUD, combat controls, typed GLB scene composition, AI pressure, timer, result states, GitHub link, and npm link.
 - `/evidence/` shows developer proof for typed assets, Quaternius provenance, route coverage, controls, animation states, and acceptance gates.
 - `/accessibility/` exposes reduced motion, reduced flash, and high contrast controls.
 - `/deploy-check/` documents the route and asset readiness checks needed before public promotion.
 - `/poster/` defines screenshot and Open Graph capture scenarios.
 
-## Built with the public Aura3D API
+## Aura3D package surfaces
 
-Aura Clash uses normal TypeScript against `@aura3d/engine`:
+Aura Clash uses normal TypeScript and includes root `@aura3d/engine` APIs, but
+the complete app also imports scoped advanced-runtime, production-runtime,
+rendering, scene, and animation package surfaces:
 
 ```ts
 import { camera, createAuraApp, effects, lights, model, scene } from "@aura3d/engine";

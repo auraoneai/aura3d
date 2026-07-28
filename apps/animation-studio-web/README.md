@@ -1,6 +1,8 @@
 # Aura3D Animation Studio — Web Shell
 
-The production 3-pane NLE web shell (PRD §7). Vite + React + TypeScript.
+The local 3-pane NLE web shell for the Animation Studio workflow (PRD §7).
+Vite + React + TypeScript. This is a development control surface, not a claim
+of a complete hosted production NLE.
 
 This is the **local studio control surface**. It hydrates from the REAL working
 EpisodeDocument and drives the REAL agent-native Scene-Tool CLI + render pipeline

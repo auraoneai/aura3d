@@ -4,7 +4,12 @@ Version: 1.1.0 planning alignment
 Status: Active development-showcase documentation
 Replaces: `GameShowCasePRD.md`
 
-Aura Clash Arena is the active browser-game development showcase for Aura3D. It exists to prove the public Aura3D SDK can support a typed-asset, browser-native fighting-game route with runtime nodes, input, movement, combat, animation state, HUD updates, evidence, screenshots, and static deployment checks.
+Aura Clash Arena is the active browser-game development showcase for Aura3D. It
+exercises a typed-asset, browser-native fighting-game route across root and
+scoped advanced-runtime, production-runtime, rendering, scene, and animation
+package surfaces. Its runtime nodes, input, movement, combat, animation state,
+HUD, screenshots, and deployment checks are route evidence, not blanket root
+`createAuraApp` or flagship-quality proof.
 
 It is a development showcase built with starter-grade fighter assets, focused on proving the engine's runtime, animation, and combat systems rather than shipping finished game art.
 

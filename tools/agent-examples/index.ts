@@ -34,7 +34,35 @@ const retainedEvidence = [
   "wow-webgpu-triangle"
 ] as const;
 const supportOnly = ["wow-common"] as const;
-const classified = new Set([...examples, ...retainedEvidence, ...supportOnly]);
+const classifiedAppRoutes = [
+  "animation-studio-web",
+  "aura-clash-showcase",
+  "showcase-asset-audition",
+  "showcase-blockfall-reactor",
+  "showcase-cinematic-architecture",
+  "showcase-data-galaxy",
+  "showcase-digital-twin-ops",
+  "showcase-index",
+  "showcase-material-asset-inspector",
+  "showcase-orbital-defense",
+  "showcase-platformer-game-layer-proof",
+  "showcase-product-configurator",
+  "showcase-public-platformer-presentation-proof",
+  "showcase-public-racing-presentation-proof",
+  "showcase-racing-game-layer-proof",
+  "showcase-skyline-runner",
+  "showcase-smart-city-control",
+  "showcase-turbo-drift-circuit",
+  "showcase-webgpu-particle-lab",
+  "v9-advanced-examples-gallery",
+  "world-war-x-showcase",
+] as const;
+const classified = new Set([
+  ...examples,
+  ...classifiedAppRoutes,
+  ...retainedEvidence,
+  ...supportOnly,
+]);
 const actualAppDirs = readdirSync("apps", { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)

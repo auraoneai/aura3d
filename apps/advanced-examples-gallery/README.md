@@ -79,7 +79,7 @@ The current authored-asset layer loads GLB content for water-lab, ocean-observat
 | Capability area | Native A3D / repo capability used here | Gallery helper approximation | Not claimed as native | Primary risk |
 | --- | --- | --- | --- | --- |
 | Rendering | WebGL2 render path, render items, geometry, materials, lights, depth, transparency, diagnostics, screenshot readback. | Route-specific camera presets, scene composition helpers, dashboard overlays. | Film-quality renderer parity from smoke tests alone. | All routes. |
-| WebGPU / compute | First-class root WebGPU routes now exist for triangle, render target, PBR asset, product viewer, instancing, and compute particles. | The advanced gallery currently uses WebGL2-oriented showcase routes. | WebGPU water/ocean inside the advanced gallery, or GPU compute particles inside the gallery data-galaxy route. | Water, ocean, data galaxy. |
+| WebGPU / compute | Named lower-level routes have bounded backend/dispatch/render evidence for specific triangle, render-target, asset, instancing, and compute fixtures. | The advanced gallery currently uses WebGL2-oriented showcase routes. | Root-default or universal WebGPU, WebGPU water/ocean inside the advanced gallery, or GPU compute particles inside the gallery data-galaxy route. | Water, ocean, data galaxy. |
 | Materials | PBR-style material properties, emissive, metallic/roughness, clearcoat/transmission where loader/material path supports them. | Route-side material correction for assets that render poorly in the current path. | Perfect glass/transmission sorting or premium configurator material response. | Product, reactor, fog, ocean. |
 | glTF / GLB assets | Browser GLB loading, authored fixture layering, material variants where supported by the imported asset path. | Asset exclusions, route-side material overrides, camera framing, local Blender fixtures. | Any imported asset as accepted evidence until screenshot-reviewed. | Product, robotics, smart city, fog. |
 | Instancing / scale | Instancing and batching exist in the codebase and are represented by route stress concepts. | District/traffic overlays and procedural scene systems. | Accepted high-scale city parity without a separate stress proof and screenshot review. | Smart city, digital twin. |
@@ -91,7 +91,10 @@ The current authored-asset layer loads GLB content for water-lab, ocean-observat
 | Review evidence | Playwright screenshots, runtime JSON, contact sheet, visual review report. | Human review metadata and screenshot-hash promotion rules. | Smoke/runtime pass as showcase acceptance. | All routes. |
 
 - Water and ocean demos use CPU/procedural wave geometry. A3D does not currently expose a complete native GPGPU water solver.
-- Particle demos in this gallery use A3D point geometry and animated transforms. Native WebGPU compute particles are proven separately by `/apps/wow-webgpu-compute-particles/` and are not claimed by the gallery data-galaxy route.
+- Particle demos in this gallery use A3D point geometry and animated transforms.
+  `/apps/wow-webgpu-compute-particles/` carries separate route-specific,
+  lower-level WebGPU evidence; it does not establish root-default WebGPU and is
+  not claimed by the gallery data-galaxy route.
 - Fog and light shafts are translucent geometry and particle approximations. A true volumetric raymarch pass is not exposed; the active fog-cathedral route uses curated Sponza/cathedral staging and needs current screenshot/review/audit evidence before any accepted claim is reused.
 - The robotics character demo now layers imported Soldier and Robot Expressive GLBs over authored lab context; XBot remains available as a fixture but is not active in this route because it did not meet the accepted screenshot-quality bar.
 - The physics playground now uses `@aura3d/physics` rigid bodies and contacts for runtime objects; mesh-derived colliders and full articulated robotics dynamics remain out of scope for this gallery route.

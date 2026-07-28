@@ -1015,9 +1015,20 @@ exists.
       eight retired exact phrases across status docs (canvas-painted/mock-renderer/
       hardcoded-score/`page.setContent` terminology and related strings). No third
       wording/tool variation was attempted.
-- [ ] **4.4** Per-game: root `README.md`, each `apps/*/README.md`,
+- [!] **4.4** Per-game: root `README.md`, each `apps/*/README.md`,
       `docs/project/aura-clash-showcase.md`, `docs/agents/game-showcase-build.md`,
       `docs/examples/fighting-game.md`, `docs/guides/build-a-browser-game.md`
+      Audited the root README, all present app READMEs, and all four named game
+      docs. Aura Clash now names its root plus lower-level package surfaces;
+      Turbo/Skyline are held; Material Inspector is unpromoted; retained
+      WebGPU/gallery claims stay lower-level; and the app classification catalog
+      names every current directory literally. `game-runtime:docs` passes with
+      `releaseReady: false`. Blocked under Rule 0 after two app-registry
+      verification attempts: the first inner-check invocation lacked its
+      Playwright report and exposed the incomplete literal catalog; after that
+      catalog was corrected, the proper `check:examples` wrapper failed because
+      the `hello-world-typed-asset` screenshot measured `cyanPixels: 0` where
+      `>16` is required. No third visual/threshold variation was attempted.
 - [ ] **4.5** Marketing **last**, only after evidence lands: `marketing/index.html`
       (~lines 178, 234-280, 511, 564-575 carry the version claim, the Aura Clash pitch, the
       "seven distinct route-library examples" count, per-game tiles),
