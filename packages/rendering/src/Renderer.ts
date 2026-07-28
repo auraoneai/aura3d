@@ -1784,7 +1784,7 @@ function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPo
   const sourceIsHdr = isHdrRenderTarget(source);
   return passes.length > 1
     && (!sourceIsHdr || passes[0]?.name === "tone-mapping")
-    && passes.every((pass) => pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "fxaa")
+    && passes.every((pass) => pass.name === "bloom" || pass.name === "tone-mapping" || pass.name === "color-grade" || pass.name === "fxaa")
     && passes.every((pass, index) => {
       const previousRank = index === 0 ? -1 : ldrFusionPassRank(passes[index - 1]!.name);
       return ldrFusionPassRank(pass.name) >= previousRank;
@@ -1792,6 +1792,7 @@ function canFuseLdrPostprocess(source: RenderTarget, passes: readonly RendererPo
 }
 
 function ldrFusionPassRank(name: RendererPostProcessPassName): number {
+  if (name === "bloom") return -1;
   if (name === "tone-mapping") return 0;
   if (name === "color-grade") return 1;
   if (name === "fxaa") return 2;

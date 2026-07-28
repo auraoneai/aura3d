@@ -299,11 +299,11 @@ export interface FXAAResult {
   readonly edgeMask: Uint8Array;
 }
 
-export type FusedLdrPostProcessPassName = "tone-mapping" | "color-grade" | "fxaa";
+export type FusedLdrPostProcessPassName = "bloom" | "tone-mapping" | "color-grade" | "fxaa";
 
 export interface FusedLdrPostProcessPass {
   readonly name: FusedLdrPostProcessPassName;
-  readonly options: ToneMappingOptions | ColorGradeOptions | FXAAOptions;
+  readonly options: BloomOptions | ToneMappingOptions | ColorGradeOptions | FXAAOptions;
 }
 
 export interface FusedLdrPostProcessScratch {
@@ -1841,6 +1841,7 @@ export function fusedLdrPostprocessPixels(
   options: FusedLdrPostProcessOptions = {}
 ): Uint8Array {
   validatePixelBuffer(pixels, width, height, "Fused LDR postprocess");
+  const bloom = passes.find((pass) => pass.name === "bloom");
   const toneMapping = passes.find((pass) => pass.name === "tone-mapping");
   const colorGrade = passes.find((pass) => pass.name === "color-grade");
   const fxaa = passes.find((pass) => pass.name === "fxaa");
@@ -1855,7 +1856,9 @@ export function fusedLdrPostprocessPixels(
     : undefined;
   const colorGradeSettings = colorGrade ? normalizeColorGradeOptions(colorGrade.options as ColorGradeOptions) : undefined;
   const byteLength = pixels.byteLength;
-  let current = pixels;
+  let current = bloom
+    ? bloomPixels(pixels, width, height, bloom.options as BloomOptions).pixels
+    : pixels;
 
   if (toneMappingLookup || colorGradeSettings) {
     const target = options.mutateInput
@@ -1864,7 +1867,7 @@ export function fusedLdrPostprocessPixels(
     const vignetteFactors = colorGradeSettings && colorGradeSettings.vignette > 0
       ? getVignetteFactors(width, height, colorGradeSettings.vignette, options.scratch)
       : undefined;
-    applyToneMappingAndColorGrade(pixels, target, width, height, toneMappingLookup, colorGradeSettings, vignetteFactors);
+    applyToneMappingAndColorGrade(current, target, width, height, toneMappingLookup, colorGradeSettings, vignetteFactors);
     current = target;
   }
 

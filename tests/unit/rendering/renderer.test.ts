@@ -46,6 +46,7 @@ import {
   type UniformValue
 } from "../../../packages/rendering/src";
 import {
+  bloomPixels,
   colorGradePixels,
   fusedLdrPostprocessPixels,
   fxaaPixels,
@@ -139,12 +140,12 @@ describe("Renderer", () => {
     expect(diagnostics.postprocessPasses).toBe(3);
     expect(diagnostics.postprocessPassNames).toEqual(["bloom", "tone-mapping", "fxaa"]);
     expect(diagnostics.postprocessTargetFormat).toBe("rgba8");
-    expect(diagnostics.postprocessRenderTargets).toBe(3);
-    expect(diagnostics.postprocessTextures).toBe(3);
+    expect(diagnostics.postprocessRenderTargets).toBe(1);
+    expect(diagnostics.postprocessTextures).toBe(1);
     expect(diagnostics.postprocessTargetWidth).toBe(4);
     expect(diagnostics.postprocessTargetHeight).toBe(4);
-    expect(native.device.textureCopies.length).toBeGreaterThanOrEqual(3);
-    expect(native.device.textureWrites.length).toBeGreaterThanOrEqual(2);
+    expect(native.device.textureCopies.length).toBeGreaterThanOrEqual(1);
+    expect(native.device.textureWrites.length).toBeGreaterThanOrEqual(1);
     expect(native.device.textureWrites.map((write) => write.format)).toEqual(expect.arrayContaining(["rgba8unorm"]));
     expect(renderer.device.info.capabilities).toContain("native-texture-readback");
     expect(Array.from(renderer.device.readPixels(0, 0, 1, 1))).not.toEqual([170, 85, 0, 255]);
@@ -293,6 +294,40 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
+  it("routes LDR bloom before tone mapping through the device-native fused presentation path", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [0.9, 0.42, 0.12, 1] });
+    const calls: { readonly passNames: readonly string[]; readonly sourceFormat: string }[] = [];
+    renderer.device.presentLdrPostprocess = (source, options) => {
+      calls.push({
+        passNames: options.passes.map((pass) => pass.name),
+        sourceFormat: source.colorTexture.format
+      });
+      renderer.device.presentRenderTarget?.(source);
+    };
+
+    const diagnostics = renderer.render({
+      renderItems: [],
+      postprocess: {
+        targetFormat: "rgba8",
+        bloom: { threshold: 0.74, intensity: 0.4, radius: 2 },
+        toneMapping: { exposure: 1.08, whitePoint: 1.34, gamma: 2.2, operator: "filmic" },
+        fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.55 }
+      }
+    });
+
+    expect(calls).toEqual([{
+      passNames: ["bloom", "tone-mapping", "fxaa"],
+      sourceFormat: "rgba8"
+    }]);
+    expect(diagnostics.postprocessPlan).toMatchObject({
+      passNames: ["bloom", "tone-mapping", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+    renderer.dispose();
+  });
+
   it("matches the sequential helper output for fused LDR tone, grade, sharpen, and FXAA", () => {
     const width = 5;
     const height = 4;
@@ -319,6 +354,43 @@ describe("Renderer", () => {
         width,
         height,
         colorGrade
+      ).pixels,
+      width,
+      height,
+      fxaa
+    ).pixels;
+    const fused = fusedLdrPostprocessPixels(new Uint8Array(source), width, height, passes, {
+      mutateInput: true,
+      scratch: {},
+      toneMappingDefaults: { outputColorSpace: "srgb" }
+    });
+
+    expect(Array.from(fused)).toEqual(Array.from(sequential));
+  });
+
+  it("matches the sequential helper output when fused LDR bloom is ranked before tone mapping", () => {
+    const width = 4;
+    const height = 3;
+    const source = new Uint8Array([
+      8, 12, 18, 255, 245, 220, 180, 255, 20, 24, 30, 255, 16, 20, 26, 255,
+      10, 14, 20, 255, 22, 28, 36, 255, 35, 42, 50, 255, 18, 22, 28, 255,
+      6, 10, 16, 255, 14, 18, 24, 255, 28, 34, 42, 255, 12, 16, 22, 255
+    ]);
+    const bloom = { threshold: 0.7, intensity: 0.45, radius: 1 };
+    const toneMapping = { exposure: 1.05, whitePoint: 1.2, gamma: 2.2, operator: "filmic" as const };
+    const fxaa = { edgeThreshold: 0.08, subpixelBlend: 0.5 };
+    const passes: readonly FusedLdrPostProcessPass[] = [
+      { name: "bloom", options: bloom },
+      { name: "tone-mapping", options: toneMapping },
+      { name: "fxaa", options: fxaa }
+    ];
+
+    const sequential = fxaaPixels(
+      toneMapPixels(
+        bloomPixels(source, width, height, bloom).pixels,
+        width,
+        height,
+        { outputColorSpace: "srgb", ...toneMapping }
       ).pixels,
       width,
       height,

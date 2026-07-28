@@ -380,6 +380,68 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.textureBindings.get(2)).toBe(sentinelTexture);
   });
 
+  it("runs LDR bloom as bright, ping-pong blur, and LUT composite fullscreen stages", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 4, height: 2, label: "native-bloom-source" });
+    const output = device.createRenderTarget({ width: 4, height: 2, label: "native-bloom-output" });
+    const sentinelUnit1 = { id: "sentinel-unit-1" };
+    const sentinelUnit2 = { id: "sentinel-unit-2" };
+    const sentinelUnit4 = { id: "sentinel-unit-4" };
+
+    gl.activeTexture(gl.TEXTURE0 + 1);
+    gl.bindTexture(gl.TEXTURE_2D, sentinelUnit1 as WebGLTexture);
+    gl.activeTexture(gl.TEXTURE0 + 2);
+    gl.bindTexture(gl.TEXTURE_2D, sentinelUnit2 as WebGLTexture);
+    gl.activeTexture(gl.TEXTURE0 + 4);
+    gl.bindTexture(gl.TEXTURE_2D, sentinelUnit4 as WebGLTexture);
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "bloom", options: { threshold: 0.73, intensity: 0.45, radius: 2 } },
+        { name: "tone-mapping", options: { exposure: 1.08, operator: "filmic" } }
+      ],
+      outputTarget: output,
+      toneMappingDefaults: { outputColorSpace: "srgb" }
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources).toHaveLength(5);
+    expect(drawSources[0]).toContain("u_brightLut");
+    expect(drawSources[1]).toContain("u_horizontal");
+    expect(drawSources[2]).toContain("u_horizontal");
+    expect(drawSources[3]).toContain("u_compositeLut");
+    expect(drawSources[4]).toContain("u_hasToneMapping");
+    expect(gl.state.fullscreenDraws[0]?.framebuffer).toBe(gl.state.fullscreenDraws[2]?.framebuffer);
+    expect(gl.state.fullscreenDraws[1]?.framebuffer).toBe(gl.state.fullscreenDraws[3]?.framebuffer);
+    expect(gl.state.fullscreenDraws[0]?.framebuffer).not.toBe(gl.state.fullscreenDraws[1]?.framebuffer);
+    expect(gl.state.fullscreenDraws[4]?.framebuffer).toBe(gl.state.framebuffer);
+
+    expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
+      internalFormat: gl.RGBA8,
+      width: 2048,
+      height: 256,
+      dataLength: 2048 * 256 * 4
+    }));
+    expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
+      internalFormat: gl.RGBA8,
+      width: 256,
+      height: 256,
+      dataLength: 256 * 256 * 4
+    }));
+    expect(gl.state.activeTextureUnit).toBe(4);
+    expect(gl.state.textureBindings.get(1)).toBe(sentinelUnit1);
+    expect(gl.state.textureBindings.get(2)).toBe(sentinelUnit2);
+    expect(gl.state.textureBindings.get(4)).toBe(sentinelUnit4);
+
+    device.dispose();
+    expect(gl.state.deletions.programs).toBeGreaterThanOrEqual(4);
+    expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(6);
+    expect(gl.state.deletions.framebuffers).toBeGreaterThanOrEqual(4);
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
@@ -461,13 +523,20 @@ interface FakeWebGL2State {
   clearDepth: number;
   enabled: Set<number>;
   textureBindings: Map<number, unknown>;
+  samplerBindings: Map<number, unknown>;
   uniformSamplers: Map<string, number>;
   viewport: [number, number, number, number];
   framebufferTextureAttachments: { readonly attachment: number; readonly texture: unknown }[];
   framebufferRenderbufferAttachments: { readonly attachment: number; readonly renderbuffer: unknown }[];
-  textureUploads: { readonly internalFormat: number }[];
+  textureUploads: {
+    readonly internalFormat: number;
+    readonly width: number | null;
+    readonly height: number | null;
+    readonly dataLength: number | null;
+  }[];
   textureParameters: { readonly parameter: number; readonly value: number }[];
   samplerParameters: { readonly parameter: number; readonly value: number }[];
+  fullscreenDraws: { readonly program: FakeProgram | null; readonly framebuffer: unknown }[];
   depthTextureUploadAttempts: number;
   deletions: {
     buffers: number;
@@ -519,6 +588,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     clearDepth: 1,
     enabled: new Set<number>(),
     textureBindings: new Map<number, unknown>(),
+    samplerBindings: new Map<number, unknown>(),
     uniformSamplers: new Map<string, number>(),
     viewport: [0, 0, 0, 0],
     framebufferTextureAttachments: [],
@@ -526,6 +596,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     textureUploads: [],
     textureParameters: [],
     samplerParameters: [],
+    fullscreenDraws: [],
     depthTextureUploadAttempts: 0,
     deletions: {
       buffers: 0,
@@ -552,6 +623,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     COMPILE_STATUS: 0x8b81,
     CULL_FACE: 0x0b44,
     CURRENT_PROGRAM: 0x8b8d,
+    COLOR_WRITEMASK: 0x0c23,
     DECR: 0x1e03,
     DECR_WRAP: 0x8508,
     DEPTH_BUFFER_BIT: 0x0100,
@@ -560,6 +632,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     DEPTH_COMPONENT16: 0x81a5,
     DEPTH_COMPONENT24: 0x81a6,
     DEPTH_TEST: 0x0b71,
+    DEPTH_WRITEMASK: 0x0b72,
     DYNAMIC_DRAW: 0x88e8,
     ELEMENT_ARRAY_BUFFER: 0x8893,
     ELEMENT_ARRAY_BUFFER_BINDING: 0x8895,
@@ -599,6 +672,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     RENDERBUFFER_BINDING: 0x8ca7,
     REPEAT: 0x2901,
     RGBA: 0x1908,
+    RGBA8: 0x8058,
     POLYGON_OFFSET_FILL: 0x8037,
     REPLACE: 0x1e01,
     SCISSOR_TEST: 0x0c11,
@@ -608,6 +682,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     TEXTURE0: 0x84c0,
     TEXTURE_2D: 0x0de1,
     TEXTURE_BINDING_2D: 0x8069,
+    SAMPLER_BINDING: 0x8919,
     TEXTURE_MAG_FILTER: 0x2800,
     TEXTURE_MIN_FILTER: 0x2801,
     TEXTURE_WRAP_S: 0x2802,
@@ -620,7 +695,11 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     UNSIGNED_INT: 0x1405,
     UNSIGNED_SHORT: 0x1403,
     VENDOR: 0x1f00,
+    VERTEX_ARRAY_BINDING: 0x85b5,
     VERTEX_SHADER: 0x8b31,
+    VIEWPORT: 0x0ba2,
+    drawingBufferWidth: 4,
+    drawingBufferHeight: 2,
     state,
     getParameter(parameter: number) {
       if (parameter === this.MAX_VERTEX_ATTRIBS) return 8;
@@ -633,6 +712,11 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       if (parameter === this.RENDERBUFFER_BINDING) return state.renderbuffer;
       if (parameter === this.ACTIVE_TEXTURE) return this.TEXTURE0 + state.activeTextureUnit;
       if (parameter === this.TEXTURE_BINDING_2D) return state.textureBindings.get(state.activeTextureUnit) ?? null;
+      if (parameter === this.SAMPLER_BINDING) return state.samplerBindings.get(state.activeTextureUnit) ?? null;
+      if (parameter === this.VERTEX_ARRAY_BINDING) return state.vertexArray;
+      if (parameter === this.VIEWPORT) return state.viewport;
+      if (parameter === this.COLOR_WRITEMASK) return state.colorMask;
+      if (parameter === this.DEPTH_WRITEMASK) return state.depthMask;
       return null;
     },
     getExtension() {
@@ -713,7 +797,9 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     createSampler() {
       return { id: nextId++ };
     },
-    bindSampler() {},
+    bindSampler(unit: number, sampler: unknown) {
+      state.samplerBindings.set(unit, sampler);
+    },
     samplerParameteri(_sampler: unknown, parameter: number, value: number) {
       state.samplerParameters.push({ parameter, value });
     },
@@ -721,8 +807,12 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       state.samplerParameters.push({ parameter, value });
     },
     deleteSampler() {},
-    texImage2D(_target: number, _level: number, internalFormat: number) {
-      state.textureUploads.push({ internalFormat });
+    texImage2D(_target: number, _level: number, internalFormat: number, ...args: unknown[]) {
+      const width = typeof args[0] === "number" ? args[0] : null;
+      const height = typeof args[1] === "number" ? args[1] : null;
+      const data = args[5];
+      const dataLength = ArrayBuffer.isView(data) ? data.byteLength : null;
+      state.textureUploads.push({ internalFormat, width, height, dataLength });
       if (internalFormat === this.DEPTH_COMPONENT24) state.depthTextureUploadAttempts += 1;
     },
     texSubImage2D() {},
@@ -804,6 +894,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       return program.uniforms.includes(name.replace(/\[0\]$/, "")) ? { name: name.replace(/\[0\]$/, "") } : null;
     },
     uniform1f() {},
+    uniform2f() {},
+    uniform2i() {},
     uniformMatrix4fv() {},
     uniform4fv() {},
     uniform3fv() {},
@@ -835,11 +927,14 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
       state.stencilOp = [fail, depthFail, depthPass];
     },
     blendFunc() {},
-    drawArrays() {},
+    drawArrays() {
+      state.fullscreenDraws.push({ program: state.currentProgram, framebuffer: state.framebuffer });
+    },
     drawElements() {},
     drawArraysInstanced() {},
     drawElementsInstanced() {},
     readPixels() {},
+    flush() {},
     getError() {
       return this.NO_ERROR;
     }

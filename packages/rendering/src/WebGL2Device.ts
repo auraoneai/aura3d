@@ -19,6 +19,13 @@ import { TextureBinding } from "./TextureBinding";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { type VertexAttribute, type VertexFormat } from "./VertexFormat";
 import { WebGL2StateCache } from "./WebGL2StateCache";
+import {
+  BLOOM_BRIGHT_LUT_HEIGHT,
+  BLOOM_BRIGHT_LUT_WIDTH,
+  BLOOM_COMPOSITE_LUT_SIZE,
+  createBloomBrightThresholdLut,
+  createBloomCompositeLut
+} from "./postprocess/NativeLdrEffectLuts";
 
 interface TextureFilterAnisotropicExtension {
   readonly TEXTURE_MAX_ANISOTROPY_EXT: GLenum;
@@ -119,10 +126,17 @@ interface WebGL2TextureUnit0Snapshot {
   readonly sampler: WebGLSampler | null;
 }
 
+interface WebGL2TextureUnitBindingSnapshot {
+  readonly texture2d: WebGLTexture | null;
+  readonly sampler: WebGLSampler | null;
+}
+
 interface WebGL2FullscreenPresentationStateSnapshot {
   readonly framebuffer: WebGLFramebuffer | null;
   readonly program: WebGLProgram | null;
   readonly textureUnit0: WebGL2TextureUnit0Snapshot;
+  readonly textureUnit1: WebGL2TextureUnitBindingSnapshot;
+  readonly textureUnit2: WebGL2TextureUnitBindingSnapshot;
   readonly vertexArray: WebGLVertexArrayObject | null;
   readonly viewport: Int32Array | readonly number[];
   readonly colorMask: readonly boolean[];
@@ -133,6 +147,19 @@ interface WebGL2FullscreenPresentationStateSnapshot {
   readonly stencilTestEnabled: boolean;
   readonly polygonOffsetFillEnabled: boolean;
   readonly depthMask: boolean;
+}
+
+interface WebGL2BloomPingPongResources {
+  readonly width: number;
+  readonly height: number;
+  readonly textures: readonly [WebGLTexture, WebGLTexture];
+  readonly framebuffers: readonly [WebGLFramebuffer, WebGLFramebuffer];
+}
+
+interface NativeBloomOptions {
+  readonly threshold: number;
+  readonly intensity: number;
+  readonly radius: number;
 }
 
 export class WebGL2Device implements RenderDevice {
@@ -154,6 +181,14 @@ export class WebGL2Device implements RenderDevice {
   private readonly samplerObjectCache = new Map<string, WebGLSampler>();
   private presentationProgram: WebGLProgram | null = null;
   private ldrPostprocessProgram: WebGLProgram | null = null;
+  private bloomBrightExtractProgram: WebGLProgram | null = null;
+  private bloomBlurProgram: WebGLProgram | null = null;
+  private bloomCompositeProgram: WebGLProgram | null = null;
+  private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
+  private bloomBrightLutTexture: WebGLTexture | null = null;
+  private bloomBrightLutThreshold: number | null = null;
+  private bloomCompositeLutTexture: WebGLTexture | null = null;
+  private bloomCompositeLutIntensity: number | null = null;
   private depthReadbackProgram: WebGLProgram | null = null;
   private readonly uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
   private readonly textureSamplerParameterCache = new WeakMap<WebGLTexture, Map<GLenum, GLenum | number>>();
@@ -560,10 +595,18 @@ export class WebGL2Device implements RenderDevice {
       });
     }
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
+    const bloomPass = options.passes.find((pass) => pass.name === "bloom");
     if (source.colorTexture.format !== "rgba8" && !tonePass) {
       throw new RenderDeviceError("WebGL2 HDR postprocess presentation requires a tone-mapping pass before LDR output.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
         format: source.colorTexture.format
+      });
+    }
+    if (source.colorTexture.format !== "rgba8" && bloomPass) {
+      throw new RenderDeviceError("WebGL2 native LUT bloom accepts rgba8 input; HDR bloom must use the renderer float-bloom path before tone mapping.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
+        targetId: source.id,
+        format: source.colorTexture.format,
+        pass: "bloom"
       });
     }
     const outputTarget = options.outputTarget;
@@ -593,16 +636,26 @@ export class WebGL2Device implements RenderDevice {
     const toneOptions = { ...(options.toneMappingDefaults ?? {}), ...(tonePass?.options ?? {}) };
     const colorOptions = colorPass?.options ?? {};
     const fxaaOptions = fxaaPass?.options ?? {};
+    const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
+    const bloomResources = bloomOptions ? this.ensureBloomPingPongResources(source.width, source.height) : undefined;
+    if (bloomOptions) {
+      this.ensureBloomLutTextures(bloomOptions);
+    }
     const outputWidth = webglOutputTarget?.width ?? (this.viewportWidth || this.gl.drawingBufferWidth);
     const outputHeight = webglOutputTarget?.height ?? (this.viewportHeight || this.gl.drawingBufferHeight);
     const previousState = this.prepareFullscreenPresentation(webglOutputTarget?.framebuffer ?? null, outputWidth, outputHeight);
     try {
+      const ldrSourceHandle = bloomOptions && bloomResources
+        ? this.executeNativeBloomPasses(source.colorHandle, bloomResources, bloomOptions, vertexArray)
+        : source.colorHandle;
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, webglOutputTarget?.framebuffer ?? null);
+      this.gl.viewport(0, 0, outputWidth, outputHeight);
       this.gl.useProgram(program);
       this.gl.bindVertexArray(vertexArray);
       this.gl.activeTexture(this.gl.TEXTURE0);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, source.colorHandle);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, ldrSourceHandle);
       this.gl.bindSampler(0, null);
       this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
       this.gl.uniform2f(this.gl.getUniformLocation(program, "u_texelSize"), 1 / source.width, 1 / source.height);
@@ -961,6 +1014,29 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteProgram(this.ldrPostprocessProgram);
       this.ldrPostprocessProgram = null;
     }
+    if (this.bloomBrightExtractProgram) {
+      this.gl.deleteProgram(this.bloomBrightExtractProgram);
+      this.bloomBrightExtractProgram = null;
+    }
+    if (this.bloomBlurProgram) {
+      this.gl.deleteProgram(this.bloomBlurProgram);
+      this.bloomBlurProgram = null;
+    }
+    if (this.bloomCompositeProgram) {
+      this.gl.deleteProgram(this.bloomCompositeProgram);
+      this.bloomCompositeProgram = null;
+    }
+    this.disposeBloomPingPongResources();
+    if (this.bloomBrightLutTexture) {
+      this.gl.deleteTexture(this.bloomBrightLutTexture);
+      this.bloomBrightLutTexture = null;
+      this.bloomBrightLutThreshold = null;
+    }
+    if (this.bloomCompositeLutTexture) {
+      this.gl.deleteTexture(this.bloomCompositeLutTexture);
+      this.bloomCompositeLutTexture = null;
+      this.bloomCompositeLutIntensity = null;
+    }
     if (this.presentationVertexArray) {
       this.gl.deleteVertexArray(this.presentationVertexArray);
       this.presentationVertexArray = null;
@@ -1067,6 +1143,202 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
+  private ensureBloomPingPongResources(width: number, height: number): WebGL2BloomPingPongResources {
+    const current = this.bloomPingPongResources;
+    if (current && current.width === width && current.height === height) {
+      return current;
+    }
+    this.disposeBloomPingPongResources();
+
+    const textureUnit0 = this.captureTextureUnit0();
+    const previousFramebuffer = this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null;
+    const textures: WebGLTexture[] = [];
+    const framebuffers: WebGLFramebuffer[] = [];
+    try {
+      for (let index = 0; index < 2; index += 1) {
+        const texture = this.gl.createTexture();
+        const framebuffer = this.gl.createFramebuffer();
+        if (!texture || !framebuffer) {
+          if (texture) this.gl.deleteTexture(texture);
+          if (framebuffer) this.gl.deleteFramebuffer(framebuffer);
+          throw new RenderDeviceError("Failed to allocate WebGL2 bloom ping-pong resources", "WEBGL_ALLOCATION_FAILED", {
+            width,
+            height,
+            index
+          });
+        }
+        textures.push(texture);
+        framebuffers.push(framebuffer);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA8, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer);
+        this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, texture, 0);
+        const status = this.gl.checkFramebufferStatus(this.gl.FRAMEBUFFER);
+        if (status !== this.gl.FRAMEBUFFER_COMPLETE) {
+          throw new RenderDeviceError("WebGL2 bloom ping-pong framebuffer status is invalid", "FRAMEBUFFER_INVALID", {
+            width,
+            height,
+            index,
+            status
+          });
+        }
+      }
+      const resources: WebGL2BloomPingPongResources = {
+        width,
+        height,
+        textures: [textures[0]!, textures[1]!],
+        framebuffers: [framebuffers[0]!, framebuffers[1]!]
+      };
+      this.bloomPingPongResources = resources;
+      return resources;
+    } catch (error) {
+      for (const texture of textures) this.gl.deleteTexture(texture);
+      for (const framebuffer of framebuffers) this.gl.deleteFramebuffer(framebuffer);
+      throw error;
+    } finally {
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, previousFramebuffer);
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
+  }
+
+  private ensureBloomLutTextures(options: NativeBloomOptions): void {
+    const updateBright = this.bloomBrightLutThreshold !== options.threshold;
+    const updateComposite = this.bloomCompositeLutIntensity !== options.intensity;
+    if (this.bloomBrightLutTexture && this.bloomCompositeLutTexture && !updateBright && !updateComposite) {
+      return;
+    }
+
+    const textureUnit0 = this.captureTextureUnit0();
+    try {
+      if (!this.bloomBrightLutTexture) {
+        this.bloomBrightLutTexture = this.createNativeBloomDataTexture();
+      }
+      if (updateBright) {
+        const pixels = createBloomBrightThresholdLut(options.threshold);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bloomBrightLutTexture);
+        this.gl.texImage2D(
+          this.gl.TEXTURE_2D,
+          0,
+          this.gl.RGBA8,
+          BLOOM_BRIGHT_LUT_WIDTH,
+          BLOOM_BRIGHT_LUT_HEIGHT,
+          0,
+          this.gl.RGBA,
+          this.gl.UNSIGNED_BYTE,
+          pixels
+        );
+        this.bloomBrightLutThreshold = options.threshold;
+      }
+
+      if (!this.bloomCompositeLutTexture) {
+        this.bloomCompositeLutTexture = this.createNativeBloomDataTexture();
+      }
+      if (updateComposite) {
+        const pixels = createBloomCompositeLut(options.intensity);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.bloomCompositeLutTexture);
+        this.gl.texImage2D(
+          this.gl.TEXTURE_2D,
+          0,
+          this.gl.RGBA8,
+          BLOOM_COMPOSITE_LUT_SIZE,
+          BLOOM_COMPOSITE_LUT_SIZE,
+          0,
+          this.gl.RGBA,
+          this.gl.UNSIGNED_BYTE,
+          pixels
+        );
+        this.bloomCompositeLutIntensity = options.intensity;
+      }
+    } finally {
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
+  }
+
+  private createNativeBloomDataTexture(): WebGLTexture {
+    const texture = this.gl.createTexture();
+    if (!texture) {
+      throw new RenderDeviceError("Failed to allocate WebGL2 bloom lookup texture", "WEBGL_ALLOCATION_FAILED");
+    }
+    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+    return texture;
+  }
+
+  private executeNativeBloomPasses(
+    sourceTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeBloomOptions,
+    vertexArray: WebGLVertexArrayObject
+  ): WebGLTexture {
+    const brightLut = this.bloomBrightLutTexture;
+    const compositeLut = this.bloomCompositeLutTexture;
+    if (!brightLut || !compositeLut) {
+      throw new RenderDeviceError("WebGL2 bloom lookup textures were not initialized", "WEBGL_ALLOCATION_FAILED");
+    }
+    const [textureA, textureB] = resources.textures;
+    const [framebufferA, framebufferB] = resources.framebuffers;
+
+    const brightProgram = this.ensureBloomBrightExtractProgram();
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebufferA);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(brightProgram);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, brightLut);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(brightProgram, "u_brightLut"), 1);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+    const blurProgram = this.ensureBloomBlurProgram();
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebufferB);
+    this.gl.useProgram(blurProgram);
+    this.bindFullscreenTexture(0, textureA);
+    this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_source"), 0);
+    this.gl.uniform2i(this.gl.getUniformLocation(blurProgram, "u_size"), resources.width, resources.height);
+    this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_radius"), options.radius);
+    this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 1);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebufferA);
+    this.bindFullscreenTexture(0, textureB);
+    this.gl.uniform1i(this.gl.getUniformLocation(blurProgram, "u_horizontal"), 0);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+    const compositeProgram = this.ensureBloomCompositeProgram();
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebufferB);
+    this.gl.useProgram(compositeProgram);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, textureA);
+    this.bindFullscreenTexture(2, compositeLut);
+    this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_blurred"), 1);
+    this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_compositeLut"), 2);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return textureB;
+  }
+
+  private bindFullscreenTexture(unit: number, texture: WebGLTexture): void {
+    this.gl.activeTexture(this.gl.TEXTURE0 + unit);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+    this.gl.bindSampler(unit, null);
+  }
+
+  private disposeBloomPingPongResources(): void {
+    if (!this.bloomPingPongResources) return;
+    for (const texture of this.bloomPingPongResources.textures) this.gl.deleteTexture(texture);
+    for (const framebuffer of this.bloomPingPongResources.framebuffers) this.gl.deleteFramebuffer(framebuffer);
+    this.bloomPingPongResources = null;
+  }
+
   private captureTextureUnit0(): WebGL2TextureUnit0Snapshot {
     const activeTexture = this.gl.getParameter(this.gl.ACTIVE_TEXTURE) as GLenum;
     this.gl.activeTexture(this.gl.TEXTURE0);
@@ -1084,11 +1356,31 @@ export class WebGL2Device implements RenderDevice {
     this.gl.activeTexture(snapshot.activeTexture);
   }
 
+  private captureTextureUnitBinding(unit: number): WebGL2TextureUnitBindingSnapshot {
+    this.gl.activeTexture(this.gl.TEXTURE0 + unit);
+    return {
+      texture2d: this.gl.getParameter(this.gl.TEXTURE_BINDING_2D) as WebGLTexture | null,
+      sampler: this.gl.getParameter(this.gl.SAMPLER_BINDING) as WebGLSampler | null
+    };
+  }
+
+  private restoreTextureUnitBinding(unit: number, snapshot: WebGL2TextureUnitBindingSnapshot): void {
+    this.gl.activeTexture(this.gl.TEXTURE0 + unit);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, snapshot.texture2d);
+    this.gl.bindSampler(unit, snapshot.sampler);
+  }
+
   private prepareFullscreenPresentation(framebuffer: WebGLFramebuffer | null, outputWidth: number, outputHeight: number): WebGL2FullscreenPresentationStateSnapshot {
+    const textureUnit0 = this.captureTextureUnit0();
+    const textureUnit1 = this.captureTextureUnitBinding(1);
+    const textureUnit2 = this.captureTextureUnitBinding(2);
+    this.gl.activeTexture(textureUnit0.activeTexture);
     const snapshot: WebGL2FullscreenPresentationStateSnapshot = {
       framebuffer: this.gl.getParameter(this.gl.FRAMEBUFFER_BINDING) as WebGLFramebuffer | null,
       program: this.gl.getParameter(this.gl.CURRENT_PROGRAM) as WebGLProgram | null,
-      textureUnit0: this.captureTextureUnit0(),
+      textureUnit0,
+      textureUnit1,
+      textureUnit2,
       vertexArray: this.gl.getParameter(this.gl.VERTEX_ARRAY_BINDING) as WebGLVertexArrayObject | null,
       viewport: this.gl.getParameter(this.gl.VIEWPORT) as Int32Array | readonly number[],
       colorMask: this.gl.getParameter(this.gl.COLOR_WRITEMASK) as readonly boolean[],
@@ -1115,6 +1407,8 @@ export class WebGL2Device implements RenderDevice {
 
   private restoreFullscreenPresentationState(snapshot: WebGL2FullscreenPresentationStateSnapshot, fallbackWidth: number, fallbackHeight: number): void {
     this.gl.bindVertexArray(snapshot.vertexArray);
+    this.restoreTextureUnitBinding(2, snapshot.textureUnit2);
+    this.restoreTextureUnitBinding(1, snapshot.textureUnit1);
     this.restoreTextureUnit0(snapshot.textureUnit0);
     this.gl.useProgram(snapshot.program);
     if (snapshot.depthTestEnabled) this.gl.enable(this.gl.DEPTH_TEST);
@@ -1235,6 +1529,150 @@ void main() {
       throw new RenderDeviceError("WebGL presentation shader link failed", "SHADER_LINK_FAILED", { log });
     }
     this.presentationProgram = program;
+    return program;
+  }
+
+  private ensureBloomBrightExtractProgram(): WebGLProgram {
+    if (this.bloomBrightExtractProgram) {
+      return this.bloomBrightExtractProgram;
+    }
+    this.bloomBrightExtractProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_brightLut;
+out vec4 outColor;
+
+uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
+  return uvec4(texelFetch(source, coordinate, 0) * 255.0 + 0.5);
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  uvec4 source = byteTexel(u_source, pixel);
+  uint colorIndex = (source.r << 16u) | (source.g << 8u) | source.b;
+  uint byteIndex = colorIndex >> 3u;
+  uint texelIndex = byteIndex >> 2u;
+  ivec2 lutCoordinate = ivec2(
+    int(texelIndex % ${BLOOM_BRIGHT_LUT_WIDTH}u),
+    int(texelIndex / ${BLOOM_BRIGHT_LUT_WIDTH}u)
+  );
+  uvec4 packed = byteTexel(u_brightLut, lutCoordinate);
+  uint component = byteIndex & 3u;
+  uint packedByte = component == 0u
+    ? packed.r
+    : component == 1u
+      ? packed.g
+      : component == 2u
+        ? packed.b
+        : packed.a;
+  bool bright = ((packedByte >> (colorIndex & 7u)) & 1u) == 1u;
+  outColor = bright ? vec4(source) / 255.0 : vec4(0.0);
+}
+`, "webgl2-bloom-bright-extract");
+    return this.bloomBrightExtractProgram;
+  }
+
+  private ensureBloomBlurProgram(): WebGLProgram {
+    if (this.bloomBlurProgram) {
+      return this.bloomBlurProgram;
+    }
+    this.bloomBlurProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform ivec2 u_size;
+uniform int u_radius;
+uniform int u_horizontal;
+out vec4 outColor;
+
+uvec4 sourceByte(ivec2 coordinate) {
+  ivec2 bounded = clamp(coordinate, ivec2(0), u_size - ivec2(1));
+  return uvec4(texelFetch(u_source, bounded, 0) * 255.0 + 0.5);
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  uvec4 sum = uvec4(0u);
+  for (int offset = -16; offset <= 16; offset += 1) {
+    if (abs(offset) > u_radius) {
+      continue;
+    }
+    ivec2 sampleCoordinate = pixel + (
+      u_horizontal == 1
+        ? ivec2(offset, 0)
+        : ivec2(0, offset)
+    );
+    sum += sourceByte(sampleCoordinate);
+  }
+  uint kernelSize = uint(u_radius * 2 + 1);
+  uvec4 rounded = (sum * 2u + uvec4(kernelSize)) / uvec4(kernelSize * 2u);
+  outColor = vec4(rounded) / 255.0;
+}
+`, "webgl2-bloom-blur");
+    return this.bloomBlurProgram;
+  }
+
+  private ensureBloomCompositeProgram(): WebGLProgram {
+    if (this.bloomCompositeProgram) {
+      return this.bloomCompositeProgram;
+    }
+    this.bloomCompositeProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_blurred;
+uniform sampler2D u_compositeLut;
+out vec4 outColor;
+
+uvec4 byteTexel(sampler2D source, ivec2 coordinate) {
+  return uvec4(texelFetch(source, coordinate, 0) * 255.0 + 0.5);
+}
+
+float compositeChannel(uint source, uint blurred) {
+  return texelFetch(u_compositeLut, ivec2(int(source), int(blurred)), 0).r;
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  uvec4 source = byteTexel(u_source, pixel);
+  uvec4 blurred = byteTexel(u_blurred, pixel);
+  outColor = vec4(
+    compositeChannel(source.r, blurred.r),
+    compositeChannel(source.g, blurred.g),
+    compositeChannel(source.b, blurred.b),
+    float(source.a) / 255.0
+  );
+}
+`, "webgl2-bloom-composite");
+    return this.bloomCompositeProgram;
+  }
+
+  private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
+    const vertex = this.compileShader(this.gl.VERTEX_SHADER, `#version 300 es
+precision highp float;
+void main() {
+  vec2 position = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+  gl_Position = vec4(position * 2.0 - 1.0, 0.0, 1.0);
+}
+`, label);
+    const fragment = this.compileShader(this.gl.FRAGMENT_SHADER, fragmentSource, label);
+    const program = this.gl.createProgram();
+    if (!program) {
+      this.gl.deleteShader(vertex);
+      this.gl.deleteShader(fragment);
+      throw new RenderDeviceError("Failed to allocate WebGL2 fullscreen shader program", "WEBGL_ALLOCATION_FAILED", { label });
+    }
+    this.gl.attachShader(program, vertex);
+    this.gl.attachShader(program, fragment);
+    this.gl.linkProgram(program);
+    this.gl.deleteShader(vertex);
+    this.gl.deleteShader(fragment);
+    if (!this.gl.getProgramParameter(program, this.gl.LINK_STATUS)) {
+      const log = this.gl.getProgramInfoLog(program) ?? "Unknown fullscreen shader link error";
+      this.gl.deleteProgram(program);
+      throw new RenderDeviceError("WebGL2 fullscreen shader link failed", "SHADER_LINK_FAILED", { label, log });
+    }
     return program;
   }
 
@@ -2233,6 +2671,31 @@ void main() {
 function numberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>): NativeBloomOptions {
+  const threshold = bloomNumberOption(options, "threshold", 0.75);
+  const intensity = bloomNumberOption(options, "intensity", 0.35);
+  const radius = bloomNumberOption(options, "radius", 1);
+  if (threshold < 0 || threshold > 1) {
+    throw new RenderDeviceError("Bloom threshold must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { threshold });
+  }
+  if (intensity < 0) {
+    throw new RenderDeviceError("Bloom intensity must be finite and non-negative.", "INVALID_POSTPROCESS_OPTIONS", { intensity });
+  }
+  if (!Number.isInteger(radius) || radius < 0 || radius > 16) {
+    throw new RenderDeviceError("Bloom radius must be an integer in [0, 16].", "INVALID_POSTPROCESS_OPTIONS", { radius });
+  }
+  return { threshold, intensity, radius };
+}
+
+function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`Bloom ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
 }
 
 function stringOption(options: Readonly<Record<string, unknown>>, key: string, fallback: string): string {

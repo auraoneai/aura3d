@@ -35,6 +35,51 @@ describe("renderer postprocess plan diagnostics", () => {
     expect(plan.claimBoundary).toContain("does not prove EffectComposer parity");
   });
 
+  it("ranks LDR bloom before tone mapping in the native fused plan", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      bloom: { threshold: 0.72, intensity: 0.4, radius: 2 },
+      toneMapping: { exposure: 1.08, whitePoint: 1.34, gamma: 2.2, operator: "filmic" },
+      colorGrade: { contrast: 1.08, saturation: 1.02 },
+      fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.55 }
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["bloom", "tone-mapping", "color-grade", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+    expect(plan.passes).toEqual([
+      expect.objectContaining({ name: "bloom", usesReadback: false }),
+      expect.objectContaining({ name: "tone-mapping", usesReadback: false }),
+      expect.objectContaining({ name: "color-grade", usesReadback: false }),
+      expect.objectContaining({ name: "fxaa", usesReadback: false })
+    ]);
+  });
+
+  it("keeps HDR bloom out of the LDR native fusion contract", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      bloom: { threshold: 0.72, intensity: 0.4, radius: 2 },
+      toneMapping: { exposure: 1.08, operator: "filmic" },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba16f",
+      targetFormat: "rgba16f",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["bloom", "tone-mapping", "fxaa"],
+      executionMode: "renderer-owned-pass-chain-readback",
+      canFuseLdr: false,
+      readbackPassNames: ["bloom", "tone-mapping", "fxaa"]
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },
