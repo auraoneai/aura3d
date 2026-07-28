@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(20);
-    expect(report.implementedCount).toBe(1);
-    expect(report.partialCount).toBe(6);
+    expect(report.implementedCount).toBe(2);
+    expect(report.partialCount).toBe(5);
     expect(report.helperCount).toBe(11);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(1);
-    expect(report.nonProductionReadyCount).toBe(19);
-    expect(report.productionReady).toEqual(["cube-camera-reflections"]);
-    expect(report.backlog).toHaveLength(19);
+    expect(report.productionReadyCount).toBe(2);
+    expect(report.nonProductionReadyCount).toBe(18);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "cube-camera-reflections"]);
+    expect(report.backlog).toHaveLength(18);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -56,6 +56,8 @@ describe("environment platform capability inventory", () => {
   it("does not mask missing production systems as implemented helpers", () => {
     const byId = new Map(listEnvironmentCapabilities().map((capability) => [capability.id, capability]));
 
+    expect(byId.get("cubemap-renderer")?.status).toBe("implemented");
+    expect(byId.get("cubemap-renderer")?.evidence.join(" ")).toMatch(/six-face proof route/i);
     expect(byId.get("atmospheric-scattering")?.status).toBe("unsupported");
     expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);

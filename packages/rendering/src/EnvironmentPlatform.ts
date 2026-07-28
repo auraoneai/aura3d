@@ -225,12 +225,13 @@ type Rgba = readonly [number, number, number, number];
 type Vec3 = readonly [number, number, number];
 
 const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
-  capability("cubemap-renderer", "Cubemap Renderer", "partial", true, [
+  capability("cubemap-renderer", "Cubemap Renderer", "implemented", true, [
     "Texture supports six cube faces.",
     "WebGL2Device binds cubemap faces.",
     "Production environment lighting resources create PMREM cube textures.",
-    "Renderer schedules EnvironmentBackgroundPass for camera-correct cubemap backgrounds."
-  ], "Renderer cubemap background path exists, but no accepted gallery route/screenshot proves six-face visual sampling yet.", "Add visible six-face skybox/background rendering and screenshot gates."),
+    "Renderer schedules EnvironmentBackgroundPass for camera-correct cubemap backgrounds.",
+    "The advanced gallery six-face proof route renders all canonical camera directions and the browser gate records distinct face pixels plus a full-page screenshot."
+  ], "Rendering-internal cubemap backgrounds have accepted six-face visual evidence; live probes, planar reflection, and root createAuraApp exposure remain separate claims.", "Retain the six-face gallery pixel and screenshot gate."),
   capability("equirectangular-projection", "Equirectangular Projection Engine", "partial", true, [
     "PBR shader includes equirectangular UV sampling.",
     "PMREM generator projects equirectangular HDR into cube faces.",

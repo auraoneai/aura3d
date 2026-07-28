@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Aura3D Cubemap Six-Face Renderer Proof</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+      body { margin: 0; min-height: 100vh; background: #05070d; color: #eef4ff; }
+      main { width: min(980px, calc(100% - 40px)); margin: 0 auto; padding: 32px 0 44px; }
+      header { margin-bottom: 24px; }
+      h1 { margin: 0 0 8px; font-size: clamp(24px, 4vw, 40px); letter-spacing: -0.03em; }
+      p { margin: 0; max-width: 760px; color: #aab7cb; line-height: 1.55; }
+      .faces { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+      figure { margin: 0; overflow: hidden; border: 1px solid #27344a; border-radius: 14px; background: #0b101c; }
+      canvas { display: block; width: 100%; aspect-ratio: 1; }
+      figcaption { display: flex; justify-content: space-between; padding: 10px 12px; color: #d9e5f7; }
+      code { color: #8ee7ff; }
+      @media (max-width: 700px) { .faces { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Renderer cubemap: all six sampled faces</h1>
+        <p>Six camera orientations render the same cube texture through
+          <code>Renderer.environmentBackground → EnvironmentBackgroundPass</code>.
+          Each colored frame is GPU output from one canonical cubemap direction.</p>
+      </header>
+      <section class="faces" aria-label="Six rendered cubemap faces">
+        <figure><canvas data-face="px" width="256" height="256"></canvas><figcaption><span>+X</span><code>px</code></figcaption></figure>
+        <figure><canvas data-face="nx" width="256" height="256"></canvas><figcaption><span>−X</span><code>nx</code></figcaption></figure>
+        <figure><canvas data-face="py" width="256" height="256"></canvas><figcaption><span>+Y</span><code>py</code></figcaption></figure>
+        <figure><canvas data-face="ny" width="256" height="256"></canvas><figcaption><span>−Y</span><code>ny</code></figcaption></figure>
+        <figure><canvas data-face="pz" width="256" height="256"></canvas><figcaption><span>+Z</span><code>pz</code></figcaption></figure>
+        <figure><canvas data-face="nz" width="256" height="256"></canvas><figcaption><span>−Z</span><code>nz</code></figcaption></figure>
+      </section>
+    </main>
+    <script type="module" src="/apps/advanced-examples-gallery/src/cubemapSixFaceProof.ts"></script>
+  </body>
+</html>
