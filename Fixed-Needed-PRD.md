@@ -15,9 +15,9 @@ Source: Six parallel audit passes over renderer/runtime, asset CLI, game runtime
   friction, but oriented narrow-phase and angular contact remain blocked.
 - Broad root skinned/morph wording remains blocked; only named typed-asset
   routes with root-only pose/morph pixel proof may make the narrower claim.
-- Turbo Drift Circuit and Skyline Runner must not be called public-ready while
-  the current retained racing visual-QA unit gate is non-passing. Skyline also
-  retains its world-level release-probe blocker below.
+- Turbo Drift Circuit and Skyline Runner retain bounded release-ready-candidate
+  status while their current automated and accepted manual visual evidence
+  remains passing. This status applies only to their certified asset pairs.
 - Performance parity remains unclaimable while the comparative report is
   missing all six required evidence inputs.
 
@@ -51,18 +51,12 @@ The practical conclusion:
   with `showcase-smart-city-control` passing. The route remains bounded: no GIS,
   traffic-simulation, production digital-twin, or city-scale asset-backed
   flagship claim is allowed.
-- [ ] Skyline Runner remains blocked despite route-primary and gameplay pass:
-  the platformer spec compiler now generates a bounded `game-platformer`
-  artifact set for Skyline and `showcaseSideScrollerWorld` has release
-  quality/role/suitability, a hash-bound world-view orientation override, and
-  retained root release-probe evidence. Skyline is still not public-ready
-  because `showcasePlatformerWorldLevel` cannot be certified: its retained root
-  release probe renders draw calls but no readable foreground
-  (`non-background:0`, `color-buckets:0`, `foreground-width:0`,
-  `foreground-height:0`), so deploy/release validation still fails on that
-  asset. Do not mark Skyline public-ready until `showcasePlatformerWorldLevel`
-  is replaced through the resolver/ranking pipeline or proven through a
-  nonblank retained root-rendered release probe.
+- [x] Skyline Runner replaced the blocked `showcasePlatformerWorldLevel` path
+  with the certified `showcaseKenneyVerdantPlatformerWorld` asset. Current
+  route-health binds it with `showcaseKenneyOobiPlatformerHero`; the canonical
+  route-primary probe passes, the asset-pair composition reports five passing
+  checks with no blockers, and automated/manual visual evidence accepts the
+  grounded typed character and verdant world. Claims remain pair-specific.
 
 ## Implementation Reality Update - 2026-06-19
 
@@ -74,9 +68,9 @@ The earlier checklist marked several items complete while the screenshots still 
 - [x] Added production-bridge primitive render items so mixed typed-GLB + Aura primitive scenes do not automatically drop to the old fallback path only because they contain gameplay markers.
 - [x] Migrated `showcase-turbo-drift-circuit` away from route-local locator rings, checkpoint sticks, speed trails, and broken asset scale math. It now uses typed car, ghost, and beach race map GLBs plus `camera.follow`.
 - [x] Migrated `showcase-skyline-runner` away from raw-bounds placement to render-normalized placement for the runner, stage, and backdrop.
-- [ ] Capture fresh Playwright screenshots for Turbo and Skyline and reject the pass if the primary subject is not readable on first load and after keyboard input.
+- [x] Capture fresh Playwright screenshots for Turbo and Skyline and reject the pass if the primary subject is not readable on first load and after keyboard input. Current route-primary, before/after gameplay, desktop, and mobile captures are retained and accepted; the automated visual-QA gate passes.
 - [ ] Re-run the full 10-showcase visual pass and demote or rebuild any route whose primary subject/world is still primitive-dominant, visually unreadable, or not materially changed from the failed screenshots.
-- [ ] Update every public docs/readme claim touched by this pass to name the exact path: root safe API, production runtime bridge, CLI asset pipeline, or prototype.
+- [x] Update every public docs/readme claim touched by this pass to name the exact path: root safe API, production runtime bridge, CLI asset pipeline, or prototype. The 2026-07-28 remediation reconciles Turbo/Skyline candidate wording, Aura Clash development-showcase scope, lower-level rendering claims, and performance limitations.
 
 ## Authoritative Recovery Reopen - 2026-06-20
 

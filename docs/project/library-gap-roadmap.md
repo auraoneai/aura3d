@@ -208,7 +208,8 @@ Acceptance:
 - no showcase passes if the main subject is tiny, hidden, clipped, or
   primitive-only.
 
-Current gate note: these acceptance rules exist, but the required retained
-racing visual-QA unit test is non-passing because its screenshot hash is stale.
-Until that evidence is regenerated or the retained-test policy is deliberately
-changed, the overall showcase release is held.
+Current gate note: the retained racing route-primary screenshot and dependent
+composition hashes were regenerated through the canonical producers. The
+six-check racing visual-QA unit gate now passes, as do the complete 336-file
+unit suite and starter-example screenshot checks. Comparative performance
+promotion remains separately blocked on six missing reports.

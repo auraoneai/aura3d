@@ -63,12 +63,11 @@ packaging, and install smoke checks pass. That does not automatically make any
 showcase route public-ready.
 
 The latest `node tools/showcase-library/build-and-check.mjs` report passes its
-configured 7/7 route-library candidates. That is a technical sub-gate, not a
-current public-ready verdict: the repository-wide unit gate is non-passing
-because the retained racing visual-QA fixture has a stale screenshot hash. Aura
-Clash is tracked separately as a promoted game route, without a current
-flagship-quality claim. Two internal diagnostics and two game-layer diagnostic
-harnesses remain outside the configured public count.
+configured 7/7 route-library candidates. The repository-wide unit gate also
+passes all 336 files and 2,160 tests, including the retained racing visual-QA
+checks. Aura Clash is tracked separately as a promoted development-showcase
+route, without a current flagship-quality claim. Two internal diagnostics and
+two game-layer diagnostic harnesses remain outside the configured public count.
 
 Current retained result:
 
@@ -79,11 +78,11 @@ Current retained result:
 - prototype-blocked routes: 0;
 - showcase index: handled as an index/catalog route.
 
-Current overall release status: held. `pnpm test:unit` fails two assertions in
-`tests/unit/tools/game-visual-qa.test.ts` because
-`showcase-public-racing-presentation-proof` has stale screenshot evidence.
-Performance/parity promotion is also unavailable while the comparative
-performance report lacks six required inputs.
+Current route-library release status: 7/7 configured release candidates pass,
+including the current automated and accepted manual visual evidence for Turbo
+Drift Circuit and Skyline Runner. Performance/parity promotion is still
+unavailable while the comparative performance report lacks six required inputs;
+the route result does not imply engine parity.
 
 ## Showcase Reality
 
@@ -96,11 +95,10 @@ Particle Lab remain internal diagnostics. Racing Game Layer Proof and
 Platformer Game Layer Proof remain diagnostic harnesses.
 
 Turbo Drift and Skyline retain bounded certified asset-geometry, pair,
-gameplay, contact, camera, scale, route-primary, and deploy evidence. They are
-not currently public-ready claims while the retained racing visual-QA unit gate
-is non-passing and Skyline's world-level release proof remains fixture-bounded.
-This evidence does not establish arbitrary GLB-to-game conversion or production
-game-engine parity.
+gameplay, contact, camera, scale, route-primary, automated visual-QA, accepted
+manual screenshot, and deploy evidence. They are release-ready candidates with
+claims bounded to their certified asset pairs. This evidence does not establish
+arbitrary GLB-to-game conversion or production game-engine parity.
 
 No route may move to public-ready based only on boot success, nonblank screenshots, route-local claims, deploy metadata, or gameplay state changes. Public game routes require current certified geometry, pair composition, route-primary, gameplay, automated visual QA, manual downward-only review, and deploy evidence.
 

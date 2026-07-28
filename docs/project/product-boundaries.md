@@ -87,11 +87,10 @@ They are not public release candidates until they pass
 `docs/project/showcase-visual-review.json`.
 
 Turbo Drift Circuit and Skyline Runner have bounded certified game-geometry and
-gameplay evidence, but they are not currently public-ready claims: the retained
-racing visual-QA unit gate is non-passing, and Skyline's world-level release
-probe remains blocked in `Fixed-Needed-PRD.md`. They are not evidence that
-arbitrary GLBs become production games. Racing Game Layer Proof and Platformer
-Game Layer Proof remain diagnostic-only routes.
+gameplay evidence plus current automated and accepted manual visual review.
+They are release-ready candidates only for their certified asset pairs, not
+evidence that arbitrary GLBs become production games. Racing Game Layer Proof
+and Platformer Game Layer Proof remain diagnostic-only routes.
 
 ## Prompt Boundary
 

@@ -36,11 +36,11 @@ Completed and committed:
 Phase 1, Phase 2, and the Phase 3 game work have been executed. Phase 2B has also been
 executed under Rule 0. The follow-on remediation has since completed fog pixels,
 rectangular area lights, native oriented/convex/mesh/heightfield narrow-phase, and native
-angular contact. The final full-unit
-exit gate is blocked only on two retained racing visual-QA assertions. The 2B-specific
-documentation pass and the general Phase 4 claim audit are complete. Remaining
-non-passing gates and Rule 0 blockers are summarized in **4.8**; they were not
-converted into broader claims.
+angular contact. The follow-on full-unit run now passes all 336 files and 2,160 tests,
+including the retained racing visual-QA assertions. The 2B-specific documentation pass and
+the general Phase 4 claim audit are complete. The comparative performance baseline remains
+honestly non-passing on six missing evidence inputs and is not converted into a broader
+claim.
 
 Scope note: Phases 2-4 close the nine audited gaps and ship the four games. **Phase 2B** covers
 the remaining distance to three.js feature coverage — the entries `EnvironmentPlatform.ts`
@@ -791,29 +791,29 @@ until the games work.
 
 - [x] **2B.19** Every ledger entry touched has its status flipped **and** proof attached in
       the same commit. Every entry left unimplemented has an accurate `gap` string.
-      Audited the Phase 2B commits and current capability table. Every promotion or explicit
-      unsupported decision shipped with its unit/browser proof. The fog entries remain
-      `"partial"` with visual-proof gaps, area lighting remains disclosed unsupported, and
-      the terrain entry now explicitly records that 2B.14 did not land native heightfield
-      collision response. The 24 focused ledger/reflection/volumetric checks and typecheck
-      pass.
+      Audited the Phase 2B commits and current capability table after remediation. Every
+      promotion or explicit unsupported decision ships with its unit/browser proof. Linear
+      and exponential fog now have deterministic WebGL2 object-pixel evidence, the
+      analytical studio box uses a finite rectangular key emitter with one-sided and
+      dimension-dependent pixel proof, and terrain names the separately proven native
+      triangle-backed heightfield contacts while keeping automatic collider attachment out
+      of scope. Physical atmosphere and EXR remain explicitly unsupported.
 - [x] **2B.20** `createEnvironmentCapabilityReport()` counts (`:299-310`) move in the expected
       direction. `implementedCount` rising with no new pixel tests is a red flag, not
       progress.
-      Verified the source report and its exact unit assertion: 22 requested, 8 implemented,
-      2 partial, 10 helper, 0 missing, and 2 explicitly unsupported. Relative to the original
-      20-entry baseline, implemented moved 0→8, missing 3→0, partial 6→2, helper 11→10, and
-      unsupported 0→2. Every implemented promotion has browser pixels; the two additions are
-      the separately scoped transmission and terrain capabilities.
-- [!] **2B.21** Re-run the Phase 2 exit gate commands (2.26-2.31).
-      Re-run twice. `typecheck:raw`, 81/81 package tests, exports, imports, boundaries, and
-      public-API checks pass. The full unit suite reaches 333/334 files and 2,148/2,150
-      tests; both failures are the same retained racing visual-QA assertions in
-      `tests/unit/tools/game-visual-qa.test.ts`. Per Rule 0 this exit gate is recorded
-      blocked rather than attempting a third variation. The four Phase 1 commands were also
-      re-run: inventory remains 54 entries/53 matched/1 partial, same-scene remains 54/0/0,
-      performance remains honestly non-passing with the same six missing reports, and
-      visual-quality remains green on the same retained capture metrics.
+      Verified the source report and its exact unit assertion: 22 requested, 11 implemented,
+      0 partial, 9 helper, 0 missing, and 2 explicitly unsupported. Relative to the original
+      20-entry baseline, implemented moved 0→11, missing 3→0, partial 6→0, helper 11→9, and
+      unsupported 0→2. Every implemented promotion has browser pixels or the explicitly
+      named lower-level diagnostic proof; the two additions remain separately scoped
+      transmission and terrain capabilities.
+- [x] **2B.21** Re-run the Phase 2 exit gate commands (2.26-2.31).
+      `typecheck:raw`, all 336 unit files / 2,160 tests, all 81 package tests, exports,
+      imports, 1,100-file boundaries, build, and public-API checks pass. The four Phase 1
+      commands were also re-run: inventory remains 54 entries/53 matched/1 partial,
+      same-scene remains 54 candidates/0 missing, performance remains honestly non-passing
+      with the same six missing reports, and visual-quality remains green on four retained
+      captures with no failures.
 - [x] **2B.22** Phase 4 doc pass for anything 2B changed — in particular, remove the native
       physics disclosure from 2.22b **only** if 2B.14-2B.17 actually landed.
       Updated the canonical known limits, audit, physics concept/runtime docs, and lower-level
@@ -917,12 +917,15 @@ state, save state), `src/rendering/` (lighting, postprocess, `HitSparkVfx.ts`), 
       "Unreal competitor", "Babylon.js parity", "The AI prompt catalog always finds
       production-ready fighters." Keep "development showcase" / "runtime proof" scoping until
       gameplay, asset, art, audio, performance, deployment, and visual-approval gates pass.
-- [!] **3.12** Regenerate `launch-evidence/` (~30 scripts). Two complete local-workflow
-      attempts were made on 2026-07-27. The second passed all 22 playable browser tests, then
-      stopped because the legacy `/poster/` route has no heading matching `Aura Clash` and
-      the legacy `/evidence/` route has no `Runtime evidence` text. Per Rule 0, the failed
-      `local-gates.json` and `workflow.json` retain the exact command evidence; do not attempt
-      a third variation in this task.
+- [x] **3.12** Regenerate `launch-evidence/` (~30 scripts).
+      The follow-on remediation restored accessible Aura Clash headings and evidence/deploy
+      route copy, corrected the screenshot script to import the declared Playwright package,
+      isolated its self-managed Vite server from unrelated port 5173 processes, and published
+      explicit source-backed visual-review declarations without manufacturing human approval.
+      `launch:proof-local` now passes all eight workflow steps: local asset/build gates,
+      22 playable tests, 2 screenshot tests, 6 route-health tests, deploy check, three
+      nonblank first-frame compositions, command-plan validation, evidence wiring, PRD
+      coverage, readiness generation, and dry-run reconciliation.
 
 ## 3C — Turbo Drift Circuit
 
@@ -1012,9 +1015,9 @@ exists.
       `.cursor/rules/aura3d.mdc`, `AGENTS.md`, `Fixed-Needed-PRD.md`
       Audited every named file. Root, production-runtime, rendering, physics-package, game,
       and performance scopes now remain distinct. Broad skinned/morph support stays blocked
-      while named root routes may cite their exact pixels; native physics additions do not
-      erase oriented/angular gaps; and Turbo/Skyline public-ready wording is lowered while
-      current racing visual QA is non-passing. The two `llms.txt` copies are byte-identical.
+      while named root routes may cite their exact pixels; native physics additions remain
+      bounded to their focused package proof; and Turbo/Skyline public-ready wording follows
+      their current automated and manual visual evidence. The two `llms.txt` copies are byte-identical.
       Agent-doc, codeblock, claims, and docs-site checks pass.
 - [x] **4.2** Rendering / API: `docs/rendering/postprocess.md`, `environment-lighting.md`,
       `skinning-and-morphs.md`, `material-matrix.md`, `renderer-lifecycle.md`,
@@ -1030,37 +1033,29 @@ exists.
       transitions and lower-level physics are described at package scope. The focused docs
       tests, API-doc verifier, full build/public-export audit, agent-doc check, codeblock
       check, and claim registry all pass.
-- [!] **4.3** Status / release: `docs/project/current-state.md` — it fixes 7/7 public
+- [x] **4.3** Status / release: `docs/project/current-state.md` — it fixes 7/7 public
       route-library count, 2 internal diagnostics, 2 game-layer harnesses, 0
       prototype-blocked; **do not silently break those numbers**. Plus `CHANGELOG.md`,
       `GoLiveCheckList.md`, `docs/project/release-checklist.md`,
       `showcase-quality-gates.md`, `showcase-visual-quality-standard.md`,
       `library-gap-roadmap.md`, `docs/project/apps-classification.md`
-      Audited every named file without changing the configured 7/7, 2, 2, and 0
-      inventory. The docs now distinguish that route-library sub-gate from the held
-      overall release, preserve 2026-07-23 deployment receipts as historical, lower
-      Turbo/Skyline to blocked while the retained racing screenshot hash is stale, and
-      prohibit performance/parity promotion with six missing report inputs. Governance
-      and version tests, docs-site browser checks, agent docs, codeblocks, claims, and
-      marketing-truth all pass. Blocked under Rule 0 after
-      `production-runtime:truth` failed twice: its legacy failure-audit still requires
-      eight retired exact phrases across status docs (canvas-painted/mock-renderer/
-      hardcoded-score/`page.setContent` terminology and related strings). No third
-      wording/tool variation was attempted.
-- [!] **4.4** Per-game: root `README.md`, each `apps/*/README.md`,
+      Audited every named file without changing the configured 7/7, 2, 2, and 0 inventory.
+      Status docs now reflect the current passing retained racing visual-QA chain while
+      preserving diagnostic-route vetoes and the 2026-07-23 deployment receipts as
+      historical. Performance/parity promotion remains prohibited with six missing report
+      inputs. The production-runtime truth gate now audits current semantic policies rather
+      than retired exact phrases and passes together with governance/version tests,
+      docs-site browser checks, agent docs, codeblocks, claims, and marketing truth.
+- [x] **4.4** Per-game: root `README.md`, each `apps/*/README.md`,
       `docs/project/aura-clash-showcase.md`, `docs/agents/game-showcase-build.md`,
       `docs/examples/fighting-game.md`, `docs/guides/build-a-browser-game.md`
-      Audited the root README, all present app READMEs, and all four named game
-      docs. Aura Clash now names its root plus lower-level package surfaces;
-      Turbo/Skyline are held; Material Inspector is unpromoted; retained
-      WebGPU/gallery claims stay lower-level; and the app classification catalog
-      names every current directory literally. `game-runtime:docs` passes with
-      `releaseReady: false`. Blocked under Rule 0 after two app-registry
-      verification attempts: the first inner-check invocation lacked its
-      Playwright report and exposed the incomplete literal catalog; after that
-      catalog was corrected, the proper `check:examples` wrapper failed because
-      the `hello-world-typed-asset` screenshot measured `cyanPixels: 0` where
-      `>16` is required. No third visual/threshold variation was attempted.
+      Audited the root README, all present app READMEs, and all four named game docs. Aura
+      Clash names its root plus lower-level package surfaces; Turbo/Skyline follow their
+      current bounded release-ready-candidate evidence; Material Inspector remains
+      unpromoted; retained WebGPU/gallery claims stay lower-level; and the app classification
+      catalog names every current directory literally. `check:examples` passes with current
+      browser screenshots: hello-world cyan 264 / amber 137, material-lighting cyan 248 /
+      amber 167 / magenta 58, and camera-path cyan 32 / amber 362.
 - [x] **4.5** Marketing **last**, only after evidence lands: `marketing/index.html`
       (~lines 178, 234-280, 511, 564-575 carry the version claim, the Aura Clash pitch, the
       "seven distinct route-library examples" count, per-game tiles),
@@ -1126,11 +1121,10 @@ exists.
         focused proof. Arbitrary off-diagonal body-inertia input remains
         conditional.
         Game docs name `cannon-es` where route fidelity depends on it.
-      - **Turbo Drift Circuit and Skyline Runner public-ready status** is held:
-        the required retained racing visual-QA unit test is red on a stale
-        screenshot hash, and Skyline's world-level proof remains
-        fixture-bounded. Their topology/geometry/gameplay evidence is retained,
-        not erased.
+      - **Turbo Drift Circuit and Skyline Runner claims** remain bounded to the
+        certified asset pairs, current route-primary/gameplay/automated visual-QA chain, and
+        accepted manual screenshots. This is release-ready-candidate evidence, not arbitrary
+        GLB conversion or production game-engine parity.
       - **Aura Clash flagship quality** is lowered to development showcase:
         its route uses root plus advanced-runtime, production-runtime,
         rendering, scene, and animation subpaths, and the complete current
@@ -1139,16 +1133,15 @@ exists.
         `threejs-parity:performance` is `pass: false` with six missing inputs,
         both retained comparative verdicts are non-passing, and 54/54 is a
         feature inventory rather than a performance measurement.
-      - **Current worktree/public promotion** is held even though the
-        2026-07-23 npm/deployment receipts remain valid historical records.
-        `test:unit` still fails the two retained racing visual-QA assertions,
-        and `check:examples` currently measures zero cyan pixels for the
-        hello-world screenshot.
+      - **Current code verification** is green while the 2026-07-23 npm/deployment receipts
+        remain valid historical records. All 2,160 unit tests and the current starter-example
+        browser screenshot gate pass. This does not fill the six missing comparative
+        performance inputs or authorize a performance/parity promotion.
 
       Closing claim gates pass: agent docs, codeblocks, marketing truth,
       marketing links, and the claim registry (51 governed files, 0
-      violations). Two separate legacy/visual verification blockers remain
-      recorded at 4.3 and 4.4 under Rule 0.
+      violations). The legacy truth-audit and starter/racing visual blockers recorded at
+      4.3 and 4.4 are closed by the follow-on remediation.
 
 ### Standing Phase 4 obligations carried from Phase 1 and 2
 
@@ -1209,8 +1202,8 @@ scripts; prefer named narrow ones over ad hoc checks.
 1. `docs/project/engine-parity-gap-audit.md` — **done**
 2. Engine fixes, P0 first, each with a pixel-or-diagnostic test — **executed;
    remaining Rule 0 blocks are recorded**
-3. Four rebuilt games with regenerated evidence — **executed; current
-   Turbo/Skyline promotion is held by the retained visual-QA gate**
+3. Four rebuilt games with regenerated evidence — **executed; Turbo/Skyline retain current
+   bounded release-ready-candidate visual-QA evidence**
 4. Doc updates whose labels match the evidence that actually exists — **done**
 5. Closing summary: every claim raised with its proof, every claim lowered with why — **done**
 

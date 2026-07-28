@@ -607,11 +607,12 @@ pnpm aura3d110:readiness
 
 Expected current state — The scoped package gates pass for the 1.4.5 baseline,
 and the latest route-library build/check sub-gate reports 7/7 configured
-candidates. Overall public-ready promotion is held while the required retained
-racing visual-QA unit test is non-passing. Aura Clash is tracked separately as a
-development showcase; two internal diagnostics and two game-layer diagnostic
-harnesses remain outside the configured public count, with zero
-prototype-blocked routes.
+candidates. Turbo Drift Circuit and Skyline Runner retain current bounded
+automated and manual visual-QA evidence as release-ready candidates. Aura Clash
+is tracked separately as a development showcase; two internal diagnostics and
+two game-layer diagnostic harnesses remain outside the configured public count,
+with zero prototype-blocked routes. Comparative performance/parity promotion
+remains unavailable while six required performance reports are missing.
 
 ## Contributing
 
