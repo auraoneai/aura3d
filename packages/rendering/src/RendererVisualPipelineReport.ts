@@ -22,7 +22,8 @@ import {
   type ToneMappingCalibration,
   type ToneMappingOperator,
   type ToneMappingOptions,
-  type ToneMappingPresetName
+  type ToneMappingPresetName,
+  type VolumetricLightOptions
 } from "./PostProcessPass";
 import {
   createRendererPostprocessPlanDiagnostics,
@@ -45,6 +46,7 @@ export type RendererVisualPostprocessPassName =
   | "bloom"
   | "chromatic-aberration"
   | "film-grain"
+  | "volumetric-light"
   | "depth-of-field"
   | "motion-blur"
   | "contact-shadow"
@@ -67,6 +69,7 @@ export interface RendererVisualPostprocessDescriptor {
   readonly bloom?: BloomOptions | boolean;
   readonly chromaticAberration?: ChromaticAberrationOptions | boolean;
   readonly filmGrain?: FilmGrainOptions | boolean;
+  readonly volumetricLight?: VolumetricLightOptions | false;
   readonly depthOfField?: DepthOfFieldOptions | false;
   readonly motionBlur?: MotionBlurOptions | false;
   readonly contactShadow?: ContactShadowPostProcessOptions | false;
@@ -582,6 +585,7 @@ function collectPostprocessPassNames(postprocess: RendererVisualPostprocessDescr
   const passes: RendererVisualPostprocessPassName[] = [];
   if (postprocess.bloom) passes.push("bloom");
   if (postprocess.toneMapping !== false) passes.push("tone-mapping");
+  if (postprocess.volumetricLight) passes.push("volumetric-light");
   if (postprocess.colorGrade) passes.push("color-grade");
   if (postprocess.chromaticAberration) passes.push("chromatic-aberration");
   if (postprocess.filmGrain) passes.push("film-grain");

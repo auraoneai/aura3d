@@ -302,9 +302,11 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   capability("procedural-sky-dome", "Procedural Sky Dome", "helper", true, [
     "createEnvironmentStage can emit an infinite-ish sky dome item and procedural environment lighting."
   ], "The helper is color-gradient geometry, not physical sun/atmosphere scattering.", "Add sun/moon/day-night controls and shader-backed sky model before parity claims."),
-  capability("volumetric-weather-enclosure", "Volumetric Weather Enclosure", "helper", true, [
-    "Weather and gallery fog helpers expose deterministic mist/dust/particle telemetry."
-  ], "No volumetric cloud, participating-media, or native god-ray pass is implemented.", "Implement volumetric/layered weather or keep route claims bounded."),
+  capability("volumetric-weather-enclosure", "Depth-aware Volumetric Light", "implemented", true, [
+    "Renderer.postprocess accepts volumetricLight and routes a renderer-owned sampleable depth texture into the pass.",
+    "volumetricLightPixels performs deterministic radial participating-media integration from a screen-space light source with depth occlusion.",
+    "Browser proof renders the pass through WebGL2 and records changed warm scattering pixels plus depth-backed occluder contrast."
+  ], "A bounded depth-aware radial god-ray pass is implemented; volumetric clouds, froxel lighting, shadow-volume integration, multiple scattering, and physical atmosphere remain unsupported.", "Retain renderer-owned depth diagnostics and pixel evidence; keep cloud and physical-atmosphere claims excluded."),
   capability("infinite-ground-grid", "Infinite Ground Grid", "helper", true, [
     "createInfiniteGroundGrid returns reusable line geometry and material."
   ], "Grid is finite helper geometry, not a renderer-level infinite grid with shadow catch.", "Add fade/shadow/catch-plane controls and route evidence."),
@@ -497,7 +499,7 @@ export function createEnvironmentFogProfile(options: EnvironmentFogPresetId | En
   };
   const limitations = [
     "Environment fog profiles are reusable uniform payloads and CPU reference math, not proof that every renderer shader path applies fog.",
-    "Volumetric fog, participating media, god rays, cloud scattering, and water caustic/refraction effects remain unsupported."
+    "Depth-aware radial volumetric light is available as an explicit postprocess pass; volumetric clouds, froxel media, physical atmosphere, and water caustic effects remain unsupported."
   ];
   const profileBase = {
     preset,
@@ -1148,8 +1150,8 @@ function unsupportedRequestDisclosure(request: EnvironmentFeatureRequest): Envir
       return unsupported(
         request,
         ["volumetric-weather-enclosure"],
-        "deterministic mist/dust helper geometry",
-        "Volumetric fog remains helper-only; no participating-media, volumetric cloud, or native god-ray pass is implemented."
+        "explicit Renderer.postprocess.volumetricLight plus linear/exponential fog profiles",
+        "A depth-aware radial participating-media/god-ray pass is implemented, but environment presets do not attach it automatically; volumetric clouds, froxel lighting, multiple scattering, and physical atmosphere remain unsupported."
       );
     case "fft-webgpu-water":
       return unsupported(
@@ -1193,7 +1195,7 @@ function unsupported(
 function stageLimitations(preset: EnvironmentStagePresetId): readonly string[] {
   const shared = [
     "Environment stage helpers are reusable A3D geometry/material systems, not proof of full Three.js environment parity.",
-    "Linear/exponential fog profiles remain separately scoped; cube-camera reflections require an attached capture owner, and volumetric weather remains a backlog item."
+    "Linear/exponential fog profiles remain separately scoped; cube-camera reflections and depth-aware volumetric light require explicit renderer configuration."
   ];
   if (preset === "indoor-studio") return [
     ...shared,

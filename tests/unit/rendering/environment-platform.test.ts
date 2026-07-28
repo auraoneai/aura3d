@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(22);
-    expect(report.implementedCount).toBe(7);
+    expect(report.implementedCount).toBe(8);
     expect(report.partialCount).toBe(2);
-    expect(report.helperCount).toBe(11);
+    expect(report.helperCount).toBe(10);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(7);
-    expect(report.nonProductionReadyCount).toBe(15);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "rgbe-hdr-parser", "cube-camera-reflections", "terrain-heightfield"]);
-    expect(report.backlog).toHaveLength(15);
+    expect(report.productionReadyCount).toBe(8);
+    expect(report.nonProductionReadyCount).toBe(14);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "pmrem-generator", "transmission-refraction", "rgbe-hdr-parser", "cube-camera-reflections", "volumetric-weather-enclosure", "terrain-heightfield"]);
+    expect(report.backlog).toHaveLength(14);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -69,6 +69,8 @@ describe("environment platform capability inventory", () => {
     expect(byId.get("terrain-heightfield")?.gap).toMatch(/native heightfield collision response.*separate/i);
     expect(byId.get("transmission-refraction")?.status).toBe("implemented");
     expect(byId.get("transmission-refraction")?.gap).toMatch(/depth ray marching.*not claimed/i);
+    expect(byId.get("volumetric-weather-enclosure")?.status).toBe("implemented");
+    expect(byId.get("volumetric-weather-enclosure")?.gap).toMatch(/multiple scattering.*unsupported/i);
     expect(byId.get("exr-parser")?.status).toBe("unsupported");
     expect(byId.get("exr-parser")?.gap).toMatch(/loader shells were removed/i);
     expect(byId.get("cube-camera-reflections")?.status).toBe("implemented");
@@ -423,7 +425,8 @@ describe("environment stage helpers", () => {
     expect(byRequest.get("transmission-refraction")?.disclosure).toMatch(/physical caustic projection remain unsupported/i);
     expect(byRequest.has("linear-fog")).toBe(false);
     expect(byRequest.get("exponential-fog")?.disclosure).toMatch(/Renderer exponential fog support exists/i);
-    expect(byRequest.get("volumetric-fog")?.fallback).toMatch(/mist\/dust helper geometry/i);
+    expect(byRequest.get("volumetric-fog")?.fallback).toMatch(/Renderer\.postprocess\.volumetricLight/i);
+    expect(byRequest.get("volumetric-fog")?.disclosure).toMatch(/god-ray pass is implemented/i);
     expect(byRequest.get("fft-webgpu-water")?.disclosure).toMatch(/does not provide FFT\/WebGPU water/i);
     expect(byRequest.get("water-caustics")?.disclosure).toMatch(/caustic projection/i);
     expect(byRequest.get("underwater-volume")?.disclosure).toMatch(/Underwater volume rendering remains unsupported/i);

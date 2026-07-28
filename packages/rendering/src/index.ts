@@ -671,6 +671,7 @@ export {
   toneMapFloatPixels,
   toneMapPixels,
   toneMappingPresets,
+  volumetricLightPixels,
   resolveToneMappingPreset,
   visualizeDepthTexture
 } from "./PostProcessPass";
@@ -720,7 +721,9 @@ export type {
   ToneMappingPreset,
   ToneMappingPresetName,
   ToneMappingPresetResult,
-  ToneMappingResult
+  ToneMappingResult,
+  VolumetricLightOptions,
+  VolumetricLightResult
 } from "./PostProcessPass";
 export {
   architecturalMaterialCatalogSummary,

@@ -11,7 +11,8 @@ import type {
   SSAOOptions,
   SSROptions,
   TAAOptions,
-  ToneMappingOptions
+  ToneMappingOptions,
+  VolumetricLightOptions
 } from "./PostProcessPass";
 
 export type RendererPostprocessTargetFormat = "rgba8" | "rgba16f" | "rgba32f";
@@ -28,6 +29,7 @@ export interface RendererPostprocessPlanOptions {
   readonly bloom?: BloomOptions | boolean;
   readonly chromaticAberration?: ChromaticAberrationOptions | boolean;
   readonly filmGrain?: FilmGrainOptions | boolean;
+  readonly volumetricLight?: VolumetricLightOptions | false;
   readonly depthOfField?: DepthOfFieldOptions | false;
   readonly motionBlur?: MotionBlurOptions | false;
   readonly contactShadow?: ContactShadowPostProcessOptions | false;
@@ -44,6 +46,7 @@ export type RendererPostProcessPassName =
   | "bloom"
   | "chromatic-aberration"
   | "film-grain"
+  | "volumetric-light"
   | "depth-of-field"
   | "motion-blur"
   | "contact-shadow"
@@ -61,6 +64,7 @@ export interface RendererPostProcessPassPlan {
     | BloomOptions
     | ChromaticAberrationOptions
     | FilmGrainOptions
+    | VolumetricLightOptions
     | DepthOfFieldOptions
     | MotionBlurOptions
     | ContactShadowPostProcessOptions
@@ -121,6 +125,9 @@ export function createRendererPostprocessPasses(postprocess: RendererPostprocess
   if (postprocess.toneMapping !== false) {
     passes.push({ name: "tone-mapping", options: postprocess.toneMapping ?? {} });
   }
+  if (postprocess.volumetricLight) {
+    passes.push({ name: "volumetric-light", options: postprocess.volumetricLight });
+  }
   if (postprocess.colorGrade) {
     passes.push({ name: "color-grade", options: postprocess.colorGrade === true ? {} : postprocess.colorGrade });
   }
@@ -165,7 +172,7 @@ export function createRendererPostprocessPlanDiagnostics(
   const sourceTargetFormat = context.sourceTargetFormat ?? context.targetFormat ?? "rgba8";
   const targetFormat = context.targetFormat ?? sourceTargetFormat;
   const forceCpuDeterministic = postprocess.execution === "cpu-deterministic";
-  const requiresNativeSpatialPass = passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa");
+  const requiresNativeSpatialPass = passes.some((pass) => pass.name === "volumetric-light" || pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa");
   const canFuseLdr = canFuseLdrPostprocessPlan(sourceTargetFormat, passes)
     && (forceCpuDeterministic || context.nativeLdrPostprocess === true || !requiresNativeSpatialPass);
   const executionMode = passes.length === 0
@@ -238,7 +245,7 @@ function ldrFusionPassRank(name: RendererPostProcessPassName): number {
 }
 
 function isDepthPostprocessPassName(name: RendererPostProcessPassName): boolean {
-  return name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
+  return name === "volumetric-light" || name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
 }
 
 function postprocessPassHasDepth(options: RendererPostProcessPassPlan["options"]): boolean {

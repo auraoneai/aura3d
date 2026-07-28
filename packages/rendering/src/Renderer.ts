@@ -50,6 +50,7 @@ import {
   taaPixels,
   toneMapFloatPixels,
   toneMapPixels,
+  volumetricLightPixels,
   writePostProcessPixels,
   type BloomOptions,
   type ChromaticAberrationOptions,
@@ -66,7 +67,8 @@ import {
   type SSAOOptions,
   type SSROptions,
   type TAAOptions,
-  type ToneMappingOptions
+  type ToneMappingOptions,
+  type VolumetricLightOptions
 } from "./PostProcessPass";
 import {
   createRendererPostprocessPasses,
@@ -1050,6 +1052,8 @@ export class Renderer {
           ? filmGrainPixels(input, source.width, source.height, pass.options as FilmGrainOptions).pixels
           : pass.name === "depth-of-field"
           ? depthOfFieldPixels(input, source.width, source.height, withRendererDepth(pass.options as DepthOfFieldOptions, rendererDepth)).pixels
+          : pass.name === "volumetric-light"
+            ? volumetricLightPixels(input, source.width, source.height, withRendererDepth(pass.options as VolumetricLightOptions, rendererDepth)).pixels
           : pass.name === "motion-blur"
             ? motionBlurPixels(input, source.width, source.height, pass.options as MotionBlurOptions).pixels
             : pass.name === "contact-shadow"
@@ -1084,6 +1088,8 @@ export class Renderer {
           ? filmGrainPixels(input, source.width, source.height, pass.options as FilmGrainOptions).pixels
           : pass.name === "depth-of-field"
           ? depthOfFieldPixels(input, source.width, source.height, withRendererDepth(pass.options as DepthOfFieldOptions, rendererDepth)).pixels
+          : pass.name === "volumetric-light"
+            ? volumetricLightPixels(input, source.width, source.height, withRendererDepth(pass.options as VolumetricLightOptions, rendererDepth)).pixels
           : pass.name === "motion-blur"
             ? motionBlurPixels(input, source.width, source.height, pass.options as MotionBlurOptions).pixels
             : pass.name === "contact-shadow"
@@ -1889,6 +1895,7 @@ function collectCameraPolicy(source: RenderSource | Iterable<RenderItem> | Scene
 
 function postprocessRequiresDepthTexture(postprocess: RendererPostProcessOptions): boolean {
   return Boolean(
+    (postprocess.volumetricLight && !postprocess.volumetricLight.depth) ||
     (postprocess.depthOfField && !postprocess.depthOfField.depth) ||
     (postprocess.contactShadow && !postprocess.contactShadow.depth) ||
     (postprocess.ssao && !postprocess.ssao.depth) ||
@@ -1921,15 +1928,15 @@ function ldrFusionPassRank(name: RendererPostProcessPassName): number {
   return Number.POSITIVE_INFINITY;
 }
 
-function isDepthPostprocessPass(name: RendererPostProcessPassName): name is "depth-of-field" | "contact-shadow" | "ssao" | "ssr" {
-  return name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
+function isDepthPostprocessPass(name: RendererPostProcessPassName): name is "volumetric-light" | "depth-of-field" | "contact-shadow" | "ssao" | "ssr" {
+  return name === "volumetric-light" || name === "depth-of-field" || name === "contact-shadow" || name === "ssao" || name === "ssr";
 }
 
 function postprocessPassHasDepth(options: RendererPostProcessPassPlan["options"]): boolean {
   return typeof options === "object" && options !== null && "depth" in options && Boolean((options as { readonly depth?: unknown }).depth);
 }
 
-function withRendererDepth<T extends DepthOfFieldOptions | ContactShadowPostProcessOptions | SSAOOptions | SSROptions>(options: T, depth: DepthTextureBinding | undefined): T {
+function withRendererDepth<T extends VolumetricLightOptions | DepthOfFieldOptions | ContactShadowPostProcessOptions | SSAOOptions | SSROptions>(options: T, depth: DepthTextureBinding | undefined): T {
   return depth && !options.depth ? { ...options, depth } : options;
 }
 

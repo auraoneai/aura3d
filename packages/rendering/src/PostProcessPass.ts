@@ -167,6 +167,29 @@ export interface DepthOfFieldResult {
   readonly focusRange: number;
 }
 
+export interface VolumetricLightOptions {
+  readonly depth?: DepthTextureBinding;
+  readonly lightPosition?: readonly [number, number];
+  readonly color?: readonly [number, number, number];
+  readonly density?: number;
+  readonly decay?: number;
+  readonly weight?: number;
+  readonly exposure?: number;
+  readonly samples?: number;
+  readonly occlusionThreshold?: number;
+}
+
+export interface VolumetricLightResult {
+  readonly width: number;
+  readonly height: number;
+  readonly pixels: Uint8Array;
+  readonly changedPixels: number;
+  readonly occludedSamples: number;
+  readonly maxScattering: number;
+  readonly sampleCount: number;
+  readonly method: "depth-aware-radial-participating-media";
+}
+
 export interface MotionBlurOptions {
   readonly velocity: Float32Array;
   readonly samples?: number;
@@ -1125,6 +1148,86 @@ export function depthOfFieldPixels(
     }
   }
   return { width, height, pixels: output, blurredPixels, maxBlurRadius: maxRadius, focusDepth, focusRange };
+}
+
+export function volumetricLightPixels(
+  pixels: Uint8Array,
+  width: number,
+  height: number,
+  options: VolumetricLightOptions = {}
+): VolumetricLightResult {
+  validatePixelBuffer(pixels, width, height, "Volumetric light");
+  const depth = requireDepthTextureBinding(options.depth, "Volumetric light");
+  if (depth.width !== width || depth.height !== height) {
+    throw new Error("Volumetric light depth texture dimensions must match source pixels.");
+  }
+  const lightPosition = options.lightPosition ?? [0.5, 0.18];
+  if (lightPosition.length !== 2 || !lightPosition.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)) {
+    throw new RangeError("Volumetric light position must contain two finite normalized coordinates.");
+  }
+  const color = options.color ?? [1, 0.88, 0.62];
+  if (color.length !== 3 || !color.every((value) => Number.isFinite(value) && value >= 0 && value <= 1)) {
+    throw new RangeError("Volumetric light color must contain three finite values within [0, 1].");
+  }
+  const density = numberInRange(options.density ?? 0.9, 0.01, 2, "Volumetric light density");
+  const decay = numberInRange(options.decay ?? 0.96, 0, 1, "Volumetric light decay");
+  const weight = numberInRange(options.weight ?? 0.18, 0, 2, "Volumetric light weight");
+  const exposure = numberInRange(options.exposure ?? 0.72, 0, 4, "Volumetric light exposure");
+  const samples = integerNumberInRange(options.samples ?? 32, 4, 128, "Volumetric light samples");
+  const occlusionThreshold = numberInRange(options.occlusionThreshold ?? 0.985, 0, 1, "Volumetric light occlusionThreshold");
+  const output = new Uint8Array(pixels);
+  const lightX = lightPosition[0] * (width - 1);
+  const lightY = lightPosition[1] * (height - 1);
+  let changedPixels = 0;
+  let occludedSamples = 0;
+  let maxScattering = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const deltaX = ((lightX - x) / samples) * density;
+      const deltaY = ((lightY - y) / samples) * density;
+      let sampleX = x;
+      let sampleY = y;
+      let illuminationDecay = 1;
+      let scattering = 0;
+      for (let sample = 0; sample < samples; sample += 1) {
+        sampleX += deltaX;
+        sampleY += deltaY;
+        const sx = clampInt(Math.round(sampleX), 0, width - 1);
+        const sy = clampInt(Math.round(sampleY), 0, height - 1);
+        const offset = (sy * width + sx) * 4;
+        const luminance = ((pixels[offset] ?? 0) * 0.2126 + (pixels[offset + 1] ?? 0) * 0.7152 + (pixels[offset + 2] ?? 0) * 0.0722) / 255;
+        const source = Math.max(0, luminance - 0.42) / 0.58;
+        const sampleDepth = depthAt(depth, sx, sy);
+        const visible = sampleDepth >= occlusionThreshold || source > 0.05 ? 1 : 0;
+        if (visible === 0) occludedSamples += 1;
+        scattering += source * visible * illuminationDecay * weight;
+        illuminationDecay *= decay;
+      }
+      const boost = scattering * exposure;
+      maxScattering = Math.max(maxScattering, boost);
+      const offset = (y * width + x) * 4;
+      const beforeR = pixels[offset] ?? 0;
+      const beforeG = pixels[offset + 1] ?? 0;
+      const beforeB = pixels[offset + 2] ?? 0;
+      output[offset] = clampByte(beforeR + color[0] * boost * 255);
+      output[offset + 1] = clampByte(beforeG + color[1] * boost * 255);
+      output[offset + 2] = clampByte(beforeB + color[2] * boost * 255);
+      if (output[offset] !== beforeR || output[offset + 1] !== beforeG || output[offset + 2] !== beforeB) {
+        changedPixels += 1;
+      }
+    }
+  }
+  return {
+    width,
+    height,
+    pixels: output,
+    changedPixels,
+    occludedSamples,
+    maxScattering: Number(maxScattering.toFixed(5)),
+    sampleCount: samples,
+    method: "depth-aware-radial-participating-media"
+  };
 }
 
 export function motionBlurPixels(
@@ -2487,6 +2590,17 @@ function validateRange(value: number, min: number, max: number, label: string): 
   if (!Number.isFinite(value) || value < min || value > max) {
     throw new Error(`${label} must be finite and within [${min}, ${max}].`);
   }
+}
+
+function numberInRange(value: number, min: number, max: number, label: string): number {
+  validateRange(value, min, max, label);
+  return value;
+}
+
+function integerNumberInRange(value: number, min: number, max: number, label: string): number {
+  validateRange(value, min, max, label);
+  if (!Number.isInteger(value)) throw new Error(`${label} must be an integer.`);
+  return value;
 }
 
 function clampByte(value: number): number {
