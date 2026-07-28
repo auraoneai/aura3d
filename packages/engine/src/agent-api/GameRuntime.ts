@@ -854,6 +854,7 @@ export interface GameCollisionSweepHit {
 
 export interface GameCollisionWorldSnapshot {
   readonly kind: "aura-game-collision-world";
+  readonly backend: PhysicsSnapshot["backend"];
   readonly bodies: readonly GameCollisionBodySnapshot[];
   readonly contacts: readonly GameCollisionContact[];
   readonly stats: PhysicsSnapshot["stats"];
@@ -2379,6 +2380,7 @@ export function createGameCollisionWorld(descriptor: PhysicsWorldDescriptor = {}
       const physicsSnapshot = world.snapshot();
       return {
         kind: "aura-game-collision-world",
+        backend: physicsSnapshot.backend,
         bodies: Array.from(handlesById.values()).map((handle) => handle.snapshot()),
         contacts: currentContacts(),
         stats: physicsSnapshot.stats

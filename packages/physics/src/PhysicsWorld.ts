@@ -13,7 +13,41 @@ import { CollisionEventQueue, type CollisionEvent, type Contact } from "./Collis
 import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
-import { cloneVec3, dotVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
+import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
+
+export type PhysicsContinuousCollisionDescriptor = {
+  /**
+   * cannon-es 0.20.0 has no native swept/TOI solver. This wrapper bounds the
+   * travel of every moving collider by splitting a requested step.
+   */
+  readonly mode: "adaptive-substeps";
+  /**
+   * Maximum internal Cannon steps allowed for one public `step()` call.
+   * The default overflow policy throws rather than silently losing the CCD
+   * guarantee.
+   */
+  readonly maxSubSteps?: number;
+  /**
+   * Maximum travel per internal step as a fraction of the smallest finite
+   * collider feature in the world. Defaults to 0.5.
+   */
+  readonly motionThreshold?: number;
+  readonly onSubstepLimit?: "error" | "clamp";
+};
+
+export type PhysicsContinuousCollisionSelection = {
+  readonly active: boolean;
+  readonly mode: "disabled" | "adaptive-substeps";
+  readonly provider: "none" | "aura3d-adaptive-substep-wrapper";
+  readonly maxSubSteps: number;
+  readonly motionThreshold: number;
+  readonly onSubstepLimit: "error" | "clamp";
+  readonly lastSubSteps: number;
+  readonly lastRequiredSubSteps: number;
+  readonly lastMaxMotion: number;
+  readonly lastMinColliderFeature?: number;
+  readonly limitExceeded: boolean;
+};
 
 export type PhysicsWorldDescriptor = {
   readonly backend?: PhysicsBackendPreference;
@@ -23,6 +57,7 @@ export type PhysicsWorldDescriptor = {
   readonly enableSleeping?: boolean;
   readonly sleepVelocityThreshold?: number;
   readonly sleepDelay?: number;
+  readonly continuousCollision?: PhysicsContinuousCollisionDescriptor;
 };
 
 export type PhysicsBackend = "cannon-es" | "aura-js";
@@ -34,6 +69,7 @@ export type PhysicsBackendSelection = {
   readonly fallback?: string;
   readonly deterministic: boolean;
   readonly jsFallbackAvailable: boolean;
+  readonly continuousCollision: PhysicsContinuousCollisionSelection;
 };
 
 export type PhysicsStepStats = {
@@ -68,6 +104,7 @@ export class PhysicsWorld {
   private readonly enableSleeping: boolean;
   private readonly sleepVelocityThreshold: number;
   private readonly sleepDelay: number;
+  private readonly continuousCollision: NormalizedContinuousCollisionDescriptor;
   private readonly bodiesById = new Map<number, RigidBody>();
   private readonly collidersById = new Map<number, Collider>();
   private readonly constraintsList: Constraint[] = [];
@@ -82,6 +119,7 @@ export class PhysicsWorld {
   private lastEvents: readonly CollisionEvent[] = [];
   private lastBroadphasePairs = 0;
   private lastBroadphaseProfile: BroadphaseProfile = emptyBroadphaseProfile();
+  private lastContinuousCollisionStep: ContinuousCollisionStepPlan = emptyContinuousCollisionStepPlan();
   private steps = 0;
 
   constructor(descriptor: PhysicsWorldDescriptor = {}) {
@@ -92,6 +130,7 @@ export class PhysicsWorld {
     this.enableSleeping = descriptor.enableSleeping ?? true;
     this.sleepVelocityThreshold = descriptor.sleepVelocityThreshold ?? 0.02;
     this.sleepDelay = descriptor.sleepDelay ?? 0.5;
+    this.continuousCollision = normalizeContinuousCollisionDescriptor(descriptor.continuousCollision);
     if (!Number.isFinite(this.fixedDelta) || this.fixedDelta <= 0) {
       throw new Error("fixedDelta must be a finite positive number.");
     }
@@ -108,7 +147,8 @@ export class PhysicsWorld {
       requested: this.requestedBackend,
       active: this.requestedBackend === "aura-js" ? "aura-js" : "cannon-es",
       deterministic: true,
-      jsFallbackAvailable: true
+      jsFallbackAvailable: true,
+      continuousCollision: this.continuousCollisionSelection(this.requestedBackend !== "aura-js")
     };
     if (this.backendSelection.active === "cannon-es") {
       this.cannonWorld = new CannonWorld({
@@ -299,7 +339,10 @@ export class PhysicsWorld {
     const contacts = this.eventQueue.snapshotContacts();
     const bodies = this.bodies();
     return {
-      backend: this.backendSelection,
+      backend: {
+        ...this.backendSelection,
+        continuousCollision: this.continuousCollisionSelection(this.backendSelection.active === "cannon-es")
+      },
       bodies: bodies.map((body) => body.snapshot()),
       contacts,
       stats: {
@@ -542,7 +585,8 @@ export class PhysicsWorld {
       active: "aura-js",
       fallback: reason,
       deterministic: true,
-      jsFallbackAvailable: true
+      jsFallbackAvailable: true,
+      continuousCollision: this.continuousCollisionSelection(false)
     };
   }
 
@@ -553,7 +597,20 @@ export class PhysicsWorld {
       const cannonBody = this.cannonBodiesByAuraId.get(body.id);
       if (cannonBody) syncCannonFromAura(body, cannonBody);
     }
-    this.cannonWorld.step(dt);
+    const continuousStep = this.planContinuousCollisionStep(dt);
+    this.lastContinuousCollisionStep = continuousStep;
+    if (continuousStep.limitExceeded && this.continuousCollision.onSubstepLimit === "error") {
+      throw new Error(
+        `PhysicsWorld adaptive-substep CCD requires ${continuousStep.requiredSubSteps} substeps, ` +
+        `above maxSubSteps ${this.continuousCollision.maxSubSteps}. Increase maxSubSteps, reduce dt, ` +
+        "or use a swept movement query; the step was rejected so tunneling is not silently accepted."
+      );
+    }
+    const subSteps = continuousStep.subSteps;
+    const subDelta = dt / subSteps;
+    for (let index = 0; index < subSteps; index += 1) {
+      this.cannonWorld.step(subDelta);
+    }
     for (const body of this.bodyValues()) {
       const cannonBody = this.cannonBodiesByAuraId.get(body.id);
       if (cannonBody) syncAuraFromCannon(cannonBody, body);
@@ -564,6 +621,146 @@ export class PhysicsWorld {
     this.steps += 1;
     return this.lastEvents;
   }
+
+  private planContinuousCollisionStep(dt: number): ContinuousCollisionStepPlan {
+    if (!this.continuousCollision.active) {
+      return emptyContinuousCollisionStepPlan();
+    }
+    let maxMotion = 0;
+    for (const body of this.bodyValues()) {
+      if (body.type === "static" || body.sleeping) continue;
+      const bodyRadius = this.bodyBoundingRadius(body.id);
+      const linearMotion = lengthVec3(body.velocity) * dt;
+      const angularMotion = lengthVec3(body.angularVelocity) * bodyRadius * dt;
+      maxMotion = Math.max(maxMotion, linearMotion + angularMotion);
+    }
+    const minColliderFeature = this.smallestFiniteColliderFeature();
+    if (maxMotion <= 0 || minColliderFeature === undefined) {
+      return {
+        subSteps: 1,
+        requiredSubSteps: 1,
+        maxMotion,
+        minColliderFeature,
+        limitExceeded: false
+      };
+    }
+    const maxMotionPerSubstep = minColliderFeature * this.continuousCollision.motionThreshold;
+    const requiredSubSteps = Math.max(1, Math.ceil(maxMotion / maxMotionPerSubstep));
+    const limitExceeded = requiredSubSteps > this.continuousCollision.maxSubSteps;
+    return {
+      subSteps: Math.min(requiredSubSteps, this.continuousCollision.maxSubSteps),
+      requiredSubSteps,
+      maxMotion,
+      minColliderFeature,
+      limitExceeded
+    };
+  }
+
+  private smallestFiniteColliderFeature(): number | undefined {
+    let smallest: number | undefined;
+    for (const collider of this.colliderValues()) {
+      const feature = colliderFeatureSize(collider.shape);
+      if (feature === undefined) continue;
+      smallest = smallest === undefined ? feature : Math.min(smallest, feature);
+    }
+    return smallest;
+  }
+
+  private bodyBoundingRadius(bodyId: number): number {
+    let radius = 0;
+    for (const colliderId of this.bodyColliders.get(bodyId) ?? []) {
+      const collider = this.collidersById.get(colliderId);
+      if (collider) radius = Math.max(radius, colliderBoundingRadius(collider.shape));
+    }
+    return radius;
+  }
+
+  private continuousCollisionSelection(backendSupportsWrapper: boolean): PhysicsContinuousCollisionSelection {
+    const active = this.continuousCollision.active && backendSupportsWrapper;
+    return {
+      active,
+      mode: active ? "adaptive-substeps" : "disabled",
+      provider: active ? "aura3d-adaptive-substep-wrapper" : "none",
+      maxSubSteps: this.continuousCollision.maxSubSteps,
+      motionThreshold: this.continuousCollision.motionThreshold,
+      onSubstepLimit: this.continuousCollision.onSubstepLimit,
+      lastSubSteps: active ? this.lastContinuousCollisionStep.subSteps : 1,
+      lastRequiredSubSteps: active ? this.lastContinuousCollisionStep.requiredSubSteps : 1,
+      lastMaxMotion: active ? this.lastContinuousCollisionStep.maxMotion : 0,
+      ...(active && this.lastContinuousCollisionStep.minColliderFeature !== undefined
+        ? { lastMinColliderFeature: this.lastContinuousCollisionStep.minColliderFeature }
+        : {}),
+      limitExceeded: active && this.lastContinuousCollisionStep.limitExceeded
+    };
+  }
+}
+
+type NormalizedContinuousCollisionDescriptor = {
+  readonly active: boolean;
+  readonly maxSubSteps: number;
+  readonly motionThreshold: number;
+  readonly onSubstepLimit: "error" | "clamp";
+};
+
+type ContinuousCollisionStepPlan = {
+  readonly subSteps: number;
+  readonly requiredSubSteps: number;
+  readonly maxMotion: number;
+  readonly minColliderFeature?: number;
+  readonly limitExceeded: boolean;
+};
+
+function normalizeContinuousCollisionDescriptor(
+  descriptor: PhysicsContinuousCollisionDescriptor | undefined
+): NormalizedContinuousCollisionDescriptor {
+  if (!descriptor) {
+    return {
+      active: false,
+      maxSubSteps: 1,
+      motionThreshold: 0.5,
+      onSubstepLimit: "error"
+    };
+  }
+  const maxSubSteps = descriptor.maxSubSteps ?? 256;
+  const motionThreshold = descriptor.motionThreshold ?? 0.5;
+  const onSubstepLimit = descriptor.onSubstepLimit ?? "error";
+  if (!Number.isInteger(maxSubSteps) || maxSubSteps < 1) {
+    throw new Error("continuousCollision.maxSubSteps must be a positive integer.");
+  }
+  if (!Number.isFinite(motionThreshold) || motionThreshold <= 0 || motionThreshold > 1) {
+    throw new Error("continuousCollision.motionThreshold must be finite and in the range (0, 1].");
+  }
+  return {
+    active: true,
+    maxSubSteps,
+    motionThreshold,
+    onSubstepLimit
+  };
+}
+
+function emptyContinuousCollisionStepPlan(): ContinuousCollisionStepPlan {
+  return {
+    subSteps: 1,
+    requiredSubSteps: 1,
+    maxMotion: 0,
+    limitExceeded: false
+  };
+}
+
+function colliderFeatureSize(shape: PhysicsShape): number | undefined {
+  if (shape.kind === "box") return Math.min(shape.halfExtents[0], shape.halfExtents[1], shape.halfExtents[2]);
+  if (shape.kind === "sphere" || shape.kind === "capsule") return shape.radius;
+  return undefined;
+}
+
+function colliderBoundingRadius(shape: PhysicsShape): number {
+  if (shape.kind === "box") return Math.hypot(shape.halfExtents[0], shape.halfExtents[1], shape.halfExtents[2]);
+  if (shape.kind === "sphere") return shape.radius;
+  if (shape.kind === "capsule") return shape.radius + shape.halfHeight;
+  if (shape.kind === "mesh") {
+    return shape.vertices.reduce((radius, vertex) => Math.max(radius, lengthVec3(vertex)), 0);
+  }
+  return 0;
 }
 
 function toCannonVec3(value: Vec3): CannonVec3 {

@@ -33,6 +33,7 @@ import {
   type CellPoint,
   type PieceKind
 } from "./rules";
+import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
 import "./styles.css";
 
 type BlockfallWindow = Window & {
@@ -265,12 +266,13 @@ const touchLayout = game.touchControls({
 const replayEvidence = createPublicReplayEvidence();
 const lineClearProof = createPublicLineClearProof();
 const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
+const physicsProof = createShowcaseCannonPhysicsProof("blockfall-reactor");
 const sourceEvidence = {
   kind: "aura3d-showcase-blockfall-reactor-source" as const,
   route: window.location.pathname,
   appId: "showcase-blockfall-reactor",
-  claimBoundary: "procedural Aura3D falling-block board with public game.fallingBlocks gameplay state and retained gameplay proof.",
-  publicEngineApi: ["createGameApp", "scene", "primitives", "material", "lights", "effects", "camera", "game.input", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
+  claimBoundary: "procedural Aura3D falling-block board with public game.fallingBlocks gameplay state, a route-selected cannon-es fidelity proof, and retained gameplay proof.",
+  publicEngineApi: ["createGameApp", "scene", "primitives", "material", "lights", "effects", "camera", "game.input", "game.collisionWorld", "game.runtimeNode", "game.hud", "game.accessibility", "ui"],
   prohibitedApiAvoided: {
     importsThree: false,
     rawGlbUrls: false,
@@ -729,6 +731,7 @@ function publishEvidence(): void {
     },
     runtimeEvidence: app.evidence({
       input,
+      collisionWorld: physicsProof.collisionWorld,
       hud: hudBindings,
       accessibility: accessibilitySources,
       stage: {
@@ -751,6 +754,7 @@ function publishEvidence(): void {
         { subsystem: "accessibility", owner: "app", configured: true, evidence: "Pause, focus, and motion preferences are declared through game.accessibility." }
       ]
     }),
+    physics: physicsProof.evidence,
     hudSnapshot
   };
 }

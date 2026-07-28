@@ -1,5 +1,6 @@
 import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
+import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
 import { gameGeometryContract } from "./generated/game-geometry";
 
 const trackTopology = gameGeometryContract.topology;
@@ -70,6 +71,7 @@ const ghostState = game.racing({
   drag: 0.28,
   steerRate: 0.62
 });
+const physicsProof = createShowcaseCannonPhysicsProof("turbo-drift-circuit");
 
 let raceSnapshot = racingState.snapshot();
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
@@ -200,8 +202,8 @@ const mountedEvidence = {
   appId: "showcase-turbo-drift-circuit",
   status: "ready",
   controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyR"] },
-  systems: { input: "game.input", simulation: "game.racing", geometry: "certified-racing-topology", camera: "game.racingCameraRig" },
-  claimBoundary: "Bounded asset-topology racing presentation; no physics engine, AI-opponent, or automatic GLB-to-game claim.",
+  systems: { input: "game.input", simulation: "game.racing", physics: "game.collisionWorld:cannon-es", geometry: "certified-racing-topology", camera: "game.racingCameraRig" },
+  claimBoundary: "Bounded asset-topology racing presentation with route-selected cannon-es collision fidelity proof; no full vehicle dynamics, AI-opponent, or automatic GLB-to-game claim.",
   frameCount: 0,
   speed: raceSnapshot.speed,
   lap: raceSnapshot.lap,
@@ -255,6 +257,15 @@ const mountedEvidence = {
     noDebugLocatorDisk: true,
     carAlignedToVisibleRoad: initialRaceStateEvidence.roadAlignment.onRoad
   },
+  physics: physicsProof.evidence,
+  runtimeEvidence: app.evidence({
+    collisionWorld: physicsProof.collisionWorld,
+    source: {
+      mode: "mounted-runtime",
+      expectsGame: true,
+      label: "Turbo Drift Circuit mounted Aura3D racing route"
+    }
+  }),
   diagnostics: app.diagnostics()
 };
 Object.defineProperty(window, "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__", { value: mountedEvidence, configurable: true, writable: true });

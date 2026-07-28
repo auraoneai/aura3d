@@ -72,6 +72,7 @@ interface TurboEvidence {
     readonly carAlignedToVisibleRoad?: boolean;
     readonly visualReviewPass: boolean;
   };
+  readonly physics?: PhysicsRouteEvidence;
 }
 
 interface SkylineEvidence {
@@ -134,6 +135,17 @@ interface BlockfallEvidence {
     readonly resetRestoresStart?: boolean;
   };
   readonly lineClearProof?: { readonly passed?: boolean; readonly clearedLines?: number };
+  readonly physics?: PhysicsRouteEvidence;
+}
+
+interface PhysicsRouteEvidence {
+  readonly selection: string;
+  readonly angularContactResponse: boolean;
+  readonly continuousCollisionActive: boolean;
+  readonly continuousCollisionProvider: string;
+  readonly continuousCollisionSubSteps: number;
+  readonly fastMoverDidNotTunnel: boolean;
+  readonly nativeAuraJsLimit: string;
 }
 
 const REPORT_DIR = resolve("tests/reports/showcase-gameplay");
@@ -187,6 +199,7 @@ test.describe("showcase gameplay proof", () => {
     check(after.raceDesign?.carAlignedToVisibleRoad === true, blockers, "racing car is not proven aligned to the visible road surface");
     check(after.raceState?.roadAlignment?.onRoad === true, blockers, "racing car is not proven on retained road topology after input");
     check((after.raceState?.roadAlignment?.normalizedOffset ?? Number.POSITIVE_INFINITY) <= 1, blockers, "racing car drifted outside the retained road width");
+    checkPhysicsBackend(after.physics, blockers, "turbo drift");
     writeRouteReport("showcase-turbo-drift-circuit", blockers, errors, beforePng, afterPng, { before, after, reset });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
@@ -336,10 +349,33 @@ test.describe("showcase gameplay proof", () => {
     check(after.current?.checksum !== before.current?.checksum, blockers, "game state checksum did not change after input");
     check(after.lineClearProof?.passed === true && after.lineClearProof.clearedLines === 1, blockers, "line-clear scoring proof is missing");
     check(reset.current?.score === 0 && reset.current.lines === 0 && reset.current.hold === null && reset.current.piecesPlaced === 0, blockers, "reset did not clear score, lines, hold, and placed pieces");
+    checkPhysicsBackend(after.physics, blockers, "blockfall");
     writeRouteReport("showcase-blockfall-reactor", blockers, errors, beforePng, afterPng, { before, movedLeft, movedRight, rotated, after, reset });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 });
+
+function checkPhysicsBackend(
+  physics: PhysicsRouteEvidence | undefined,
+  blockers: string[],
+  label: string
+): void {
+  check(physics?.selection === "cannon-es", blockers, `${label} did not select cannon-es`);
+  check(physics?.angularContactResponse === true, blockers, `${label} did not prove angular contact response`);
+  check(physics?.continuousCollisionActive === true, blockers, `${label} did not activate continuous-collision protection`);
+  check(
+    physics?.continuousCollisionProvider === "aura3d-adaptive-substep-wrapper",
+    blockers,
+    `${label} mislabeled the CCD provider`
+  );
+  check((physics?.continuousCollisionSubSteps ?? 0) > 1, blockers, `${label} did not exercise CCD substeps`);
+  check(physics?.fastMoverDidNotTunnel === true, blockers, `${label} fast mover tunneled`);
+  check(
+    physics?.nativeAuraJsLimit.includes("without box-box") === true,
+    blockers,
+    `${label} did not disclose the native aura-js limit`
+  );
+}
 
 async function proveRacingRoute(
   page: Page,

@@ -142,6 +142,7 @@ export interface GameRuntimeEvidence {
   };
   readonly collision: {
     readonly collisionWorld: boolean;
+    readonly backend?: GameCollisionWorldSnapshot["backend"];
     readonly combatWorld: boolean;
     readonly bodies: number;
     readonly contacts: number;
@@ -361,6 +362,7 @@ export function collectGameRuntimeEvidence(
     },
     collision: {
       collisionWorld: Boolean(options.collisionWorld),
+      backend: collisionSnapshot?.backend,
       combatWorld: Boolean(options.combat),
       bodies: collisionSnapshot?.bodies.length ?? 0,
       contacts: collisionSnapshot?.contacts.length ?? 0,
