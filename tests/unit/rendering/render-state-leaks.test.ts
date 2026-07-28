@@ -529,6 +529,29 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
   });
 
+  it("runs depth-of-field as a depth-texture circular blur stage", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-dof-source", depth: "texture" });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-dof-output", depth: false });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "depth-of-field", options: { focusDepth: 0.5, focusRange: 0.1, maxRadius: 3 } },
+        { name: "fxaa", options: {} }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources[0]).toContain("u_focusDepth");
+    expect(drawSources[0]).toContain("offsetX * offsetX + offsetY * offsetY");
+    expect(drawSources[1]).toContain("u_hasFxaa");
+    device.dispose();
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });

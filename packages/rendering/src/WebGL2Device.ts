@@ -185,6 +185,12 @@ interface NativeSsrOptions {
   readonly maxDistance: number;
 }
 
+interface NativeDepthOfFieldOptions {
+  readonly focusDepth: number;
+  readonly focusRange: number;
+  readonly maxRadius: number;
+}
+
 export class WebGL2Device implements RenderDevice {
   public readonly kind = "webgl2";
   public readonly info: RenderDeviceInfo;
@@ -210,6 +216,7 @@ export class WebGL2Device implements RenderDevice {
   private outlineProgram: WebGLProgram | null = null;
   private ssaoProgram: WebGLProgram | null = null;
   private ssrProgram: WebGLProgram | null = null;
+  private depthOfFieldProgram: WebGLProgram | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
@@ -624,6 +631,7 @@ export class WebGL2Device implements RenderDevice {
     }
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
+    const depthOfFieldPass = options.passes.find((pass) => pass.name === "depth-of-field");
     const ssaoPass = options.passes.find((pass) => pass.name === "ssao");
     const ssrPass = options.passes.find((pass) => pass.name === "ssr");
     const outlinePass = options.passes.find((pass) => pass.name === "outline");
@@ -640,17 +648,17 @@ export class WebGL2Device implements RenderDevice {
         pass: "bloom"
       });
     }
-    if (source.colorTexture.format !== "rgba8" && (ssaoPass || ssrPass || outlinePass) && !tonePass) {
+    if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || ssaoPass || ssrPass || outlinePass) && !tonePass) {
       throw new RenderDeviceError("WebGL2 byte-kernel postprocess requires rgba8 input or a preceding tone-mapping pass.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
         format: source.colorTexture.format,
-        pass: ssaoPass ? "ssao" : ssrPass ? "ssr" : "outline"
+        pass: depthOfFieldPass ? "depth-of-field" : ssaoPass ? "ssao" : ssrPass ? "ssr" : "outline"
       });
     }
-    if ((ssaoPass || ssrPass) && !source.depthTextureHandle) {
+    if ((depthOfFieldPass || ssaoPass || ssrPass) && !source.depthTextureHandle) {
       throw new RenderDeviceError("WebGL2 native depth postprocess requires a renderer-owned sampleable depth texture.", "WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED", {
         targetId: source.id,
-        pass: ssaoPass ? "ssao" : "ssr"
+        pass: depthOfFieldPass ? "depth-of-field" : ssaoPass ? "ssao" : "ssr"
       });
     }
     const outputTarget = options.outputTarget;
@@ -678,12 +686,13 @@ export class WebGL2Device implements RenderDevice {
     const colorPass = options.passes.find((pass) => pass.name === "color-grade");
     const fxaaPass = options.passes.find((pass) => pass.name === "fxaa");
     const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
+    const depthOfFieldOptions = depthOfFieldPass ? normalizeNativeDepthOfFieldOptions(depthOfFieldPass.options) : undefined;
     const ssaoOptions = ssaoPass ? normalizeNativeSsaoOptions(ssaoPass.options) : undefined;
     const ssrOptions = ssrPass ? normalizeNativeSsrOptions(ssrPass.options) : undefined;
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
-    const bloomResources = bloomOptions || ssaoOptions || ssrOptions || outlineOptions
+    const bloomResources = bloomOptions || depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions
       ? this.ensureBloomPingPongResources(source.width, source.height)
       : undefined;
     if (bloomOptions) {
@@ -702,7 +711,7 @@ export class WebGL2Device implements RenderDevice {
         ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
         temporarySourceIndex = 1;
       }
-      if ((ssaoOptions || ssrOptions || outlineOptions) && bloomResources) {
+      if ((depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions) && bloomResources) {
         if (tonePass || colorPass) {
           const baseTargetIndex = 0 as const;
           this.drawNativeLdrStage(
@@ -719,6 +728,18 @@ export class WebGL2Device implements RenderDevice {
           );
           ldrSourceHandle = bloomResources.textures[baseTargetIndex];
           temporarySourceIndex = baseTargetIndex;
+        }
+        if (depthOfFieldOptions && source.depthTextureHandle) {
+          const depthOfFieldTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
+          ldrSourceHandle = this.executeNativeDepthOfFieldPass(
+            ldrSourceHandle,
+            source.depthTextureHandle,
+            bloomResources,
+            depthOfFieldOptions,
+            vertexArray,
+            depthOfFieldTargetIndex
+          );
+          temporarySourceIndex = depthOfFieldTargetIndex;
         }
         if (ssaoOptions && source.depthTextureHandle) {
           const ssaoTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
@@ -763,8 +784,8 @@ export class WebGL2Device implements RenderDevice {
         outputHeight,
         program,
         vertexArray,
-        ssaoOptions || ssrOptions || outlineOptions ? undefined : tonePass,
-        ssaoOptions || ssrOptions || outlineOptions ? undefined : colorPass,
+        depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : tonePass,
+        depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : colorPass,
         fxaaPass,
         options.toneMappingDefaults
       );
@@ -1127,6 +1148,10 @@ export class WebGL2Device implements RenderDevice {
     if (this.ssrProgram) {
       this.gl.deleteProgram(this.ssrProgram);
       this.ssrProgram = null;
+    }
+    if (this.depthOfFieldProgram) {
+      this.gl.deleteProgram(this.depthOfFieldProgram);
+      this.depthOfFieldProgram = null;
     }
     this.disposeBloomPingPongResources();
     if (this.bloomBrightLutTexture) {
@@ -1583,6 +1608,32 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_intensity"), options.intensity);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxDistance"), options.maxDistance);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return targetTexture;
+  }
+
+  private executeNativeDepthOfFieldPass(
+    sourceTexture: WebGLTexture,
+    depthTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeDepthOfFieldOptions,
+    vertexArray: WebGLVertexArrayObject,
+    targetIndex: 0 | 1
+  ): WebGLTexture {
+    const program = this.ensureDepthOfFieldProgram();
+    const targetTexture = resources.textures[targetIndex];
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, depthTexture);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_depth"), 1);
+    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusDepth"), options.focusDepth);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusRange"), options.focusRange);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxRadius"), options.maxRadius);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -2073,6 +2124,47 @@ void main() {
 }
 `, "webgl2-ssr");
     return this.ssrProgram;
+  }
+
+  private ensureDepthOfFieldProgram(): WebGLProgram {
+    if (this.depthOfFieldProgram) return this.depthOfFieldProgram;
+    this.depthOfFieldProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_depth;
+uniform ivec2 u_size;
+uniform float u_focusDepth;
+uniform float u_focusRange;
+uniform int u_maxRadius;
+out vec4 outColor;
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  vec4 source = texelFetch(u_source, pixel, 0);
+  float depth = texelFetch(u_depth, pixel, 0).r;
+  float normalizedBlur = max(0.0, abs(depth - u_focusDepth) - u_focusRange)
+    / max(u_focusRange, 0.001) * float(u_maxRadius);
+  int radius = min(u_maxRadius, int(round(normalizedBlur)));
+  if (radius == 0) {
+    outColor = source;
+    return;
+  }
+  vec3 sum = vec3(0.0);
+  float samples = 0.0;
+  for (int offsetY = -8; offsetY <= 8; offsetY += 1) {
+    for (int offsetX = -8; offsetX <= 8; offsetX += 1) {
+      if (abs(offsetX) > radius || abs(offsetY) > radius) continue;
+      if (offsetX * offsetX + offsetY * offsetY > radius * radius) continue;
+      ivec2 samplePixel = clamp(pixel + ivec2(offsetX, offsetY), ivec2(0), u_size - ivec2(1));
+      sum += texelFetch(u_source, samplePixel, 0).rgb;
+      samples += 1.0;
+    }
+  }
+  outColor = vec4(sum / max(1.0, samples), source.a);
+}
+`, "webgl2-depth-of-field");
+    return this.depthOfFieldProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -3175,6 +3267,22 @@ function normalizeNativeSsrOptions(options: Readonly<Record<string, unknown>>): 
   return { intensity, maxDistance };
 }
 
+function normalizeNativeDepthOfFieldOptions(options: Readonly<Record<string, unknown>>): NativeDepthOfFieldOptions {
+  const focusDepth = depthOfFieldNumberOption(options, "focusDepth", 0.5);
+  const focusRange = depthOfFieldNumberOption(options, "focusRange", 0.12);
+  const maxRadius = depthOfFieldNumberOption(options, "maxRadius", 2);
+  if (focusDepth < 0 || focusDepth > 1) {
+    throw new RenderDeviceError("Depth-of-field focusDepth must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { focusDepth });
+  }
+  if (focusRange < 0.001 || focusRange > 1) {
+    throw new RenderDeviceError("Depth-of-field focusRange must be finite and in [0.001, 1].", "INVALID_POSTPROCESS_OPTIONS", { focusRange });
+  }
+  if (!Number.isInteger(maxRadius) || maxRadius < 0 || maxRadius > 8) {
+    throw new RenderDeviceError("Depth-of-field maxRadius must be an integer in [0, 8].", "INVALID_POSTPROCESS_OPTIONS", { maxRadius });
+  }
+  return { focusDepth, focusRange, maxRadius };
+}
+
 function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   if (value === undefined) return fallback;
@@ -3207,6 +3315,15 @@ function ssrNumberOption(options: Readonly<Record<string, unknown>>, key: string
   if (value === undefined) return fallback;
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RenderDeviceError(`SSR ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
+}
+
+function depthOfFieldNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`Depth-of-field ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
   }
   return value;
 }

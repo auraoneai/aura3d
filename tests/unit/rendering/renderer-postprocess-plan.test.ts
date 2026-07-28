@@ -181,6 +181,33 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
+  it("routes renderer-depth depth-of-field through native fusion with no readback", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      depthOfField: { focusDepth: 0.5, focusRange: 0.1, maxRadius: 3 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      rendererDepthAvailable: true,
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["depth-of-field", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      missingInputs: [],
+      readbackPassNames: []
+    });
+    expect(plan.passes[0]).toMatchObject({
+      name: "depth-of-field",
+      requiresDepth: true,
+      usesRendererOwnedDepth: true,
+      usesReadback: false
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },

@@ -1,4 +1,4 @@
-import { bloomPixels, createDepthTextureBinding, createRenderDevice, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
+import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -16,6 +16,9 @@ declare global {
       readonly ssrMaxChannelDelta?: number;
       readonly ssrChangedChannelCount?: number;
       readonly ssrEffectChangedChannelCount?: number;
+      readonly depthOfFieldMaxChannelDelta?: number;
+      readonly depthOfFieldChangedChannelCount?: number;
+      readonly depthOfFieldEffectChangedChannelCount?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -107,6 +110,21 @@ async function run(): Promise<void> {
     const ssrComparison = comparePixels(actualSsr, expectedSsr);
     const ssrEffect = comparePixels(expectedSsr, sourcePixels);
 
+    const depthOfFieldOptions = { focusDepth: 0.5, focusRange: 0.1, maxRadius: 3 };
+    const expectedDepthOfField = depthOfFieldPixels(sourcePixels, width, height, {
+      ...depthOfFieldOptions,
+      depth: createDepthTextureBinding({ label: "native-dof-depth-fixture", width, height, data: depth })
+    }).pixels;
+    device.writeRenderTargetPixels(source, sourcePixels);
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "depth-of-field", options: depthOfFieldOptions }],
+      outputTarget: output
+    });
+    device.setRenderTarget(output);
+    const actualDepthOfField = device.readPixels(0, 0, width, height);
+    const depthOfFieldComparison = comparePixels(actualDepthOfField, expectedDepthOfField);
+    const depthOfFieldEffect = comparePixels(expectedDepthOfField, sourcePixels);
+
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
       width,
@@ -121,6 +139,9 @@ async function run(): Promise<void> {
       ssrMaxChannelDelta: ssrComparison.maxChannelDelta,
       ssrChangedChannelCount: ssrComparison.changedChannelCount,
       ssrEffectChangedChannelCount: ssrEffect.changedChannelCount,
+      depthOfFieldMaxChannelDelta: depthOfFieldComparison.maxChannelDelta,
+      depthOfFieldChangedChannelCount: depthOfFieldComparison.changedChannelCount,
+      depthOfFieldEffectChangedChannelCount: depthOfFieldEffect.changedChannelCount,
       gpu: [...actual],
       cpu: [...expected]
     };
