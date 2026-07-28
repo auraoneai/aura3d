@@ -39,12 +39,12 @@ import {
   type TimelineRuntimeAnimationApplication,
   type TimelineRuntimeSignalDispatch
 } from "../src/index";
-import { createAudioWaveformReviewData, type AudioWaveformData } from "../../audio/src/index";
+import { createAudioWaveformReviewData, type AudioWaveformData } from "@aura3d/audio";
 import {
   createAuraVoiceVisemeTrack,
   createVisemeTimelineTrack,
   sampleVisemeTimelineTrack
-} from "../../engine/src/agent-api/index";
+} from "@aura3d/engine";
 
 test("CommandHistory executes undo and redo deterministically", async () => {
   const target = { position: { x: 0, y: 0, z: 0 } };

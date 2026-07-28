@@ -1,4 +1,7 @@
-import type { SkinningPaletteBinding } from "@aura3d/rendering";
+export interface MeshSkinningPaletteBinding {
+  readonly jointCount: number;
+  readonly matrices: Float32Array;
+}
 
 /**
  * Renderable geometry + material binding for an ECS entity.
@@ -11,7 +14,7 @@ export class MeshComponent {
   material: string;
   castShadow = true;
   receiveShadow = true;
-  skinning?: SkinningPaletteBinding;
+  skinning?: MeshSkinningPaletteBinding;
   morphWeights?: readonly number[];
   instanceTransforms?: Float32Array;
   instanceColors?: Float32Array;

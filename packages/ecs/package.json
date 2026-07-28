@@ -13,8 +13,7 @@
   "sideEffects": false,
   "dependencies": {
     "@aura3d/core": "workspace:*",
-    "@aura3d/math": "workspace:*",
-    "@aura3d/rendering": "workspace:*"
+    "@aura3d/math": "workspace:*"
   },
   "description": "Entity identity, components, sparse-set and archetype storage, queries, command buffers, systems, scheduling, serialization, and transform components.",
   "keywords": [
