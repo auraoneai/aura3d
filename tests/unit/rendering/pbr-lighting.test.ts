@@ -1238,6 +1238,113 @@ describe("PBR material and direct light contracts", () => {
     }
   });
 
+  it("keeps all 16 direct lights at the exact interim boundary without degradation", () => {
+    const scene = new Scene();
+    for (let index = 1; index <= MAX_DIRECT_LIGHTS; index += 1) {
+      const light = scene.createLight("point", `boundary-light-${index.toString().padStart(2, "0")}`) as PointLight;
+      light.intensity = index;
+      scene.root.addChild(light);
+    }
+
+    const collected = new LightCollector().collect(scene);
+    const packed = LightUniforms.pack([...collected].reverse());
+
+    expect(MAX_DIRECT_LIGHTS).toBe(16);
+    expect(packed.lightCount).toBe(MAX_DIRECT_LIGHTS);
+    expect(packed.diagnostics).toMatchObject({
+      source: "LightUniforms.pack",
+      strategy: "intensity-times-relative-luminance",
+      order: "input",
+      requestedMaxLights: MAX_DIRECT_LIGHTS,
+      maxLights: MAX_DIRECT_LIGHTS,
+      capacityClamped: false,
+      requestedCount: MAX_DIRECT_LIGHTS,
+      selectedCount: MAX_DIRECT_LIGHTS,
+      droppedCount: 0,
+      degraded: false,
+      dropped: []
+    });
+    expect(packed.diagnostics.selected.map((entry) => entry.sourceName)).toEqual(
+      Array.from(
+        { length: MAX_DIRECT_LIGHTS },
+        (_unused, index) => `boundary-light-${(index + 1).toString().padStart(2, "0")}`
+      )
+    );
+    expect(packed.diagnostics.selected.map((entry) => entry.contribution)).toEqual(
+      Array.from({ length: MAX_DIRECT_LIGHTS }, (_unused, index) => index + 1)
+    );
+    expect(packed.diagnostics.message).toContain("dropped 0");
+  });
+
+  it("degrades above 16 lights by deterministically retaining the highest contributors", () => {
+    const scene = new Scene();
+    const highIntensityDark = scene.createLight("point", "high-intensity-dark") as PointLight;
+    highIntensityDark.intensity = 100;
+    highIntensityDark.color = [0, 0, 0];
+    scene.root.addChild(highIntensityDark);
+    for (let contribution = 1; contribution <= MAX_DIRECT_LIGHTS + 1; contribution += 1) {
+      const light = scene.createLight("point", `contribution-${contribution.toString().padStart(2, "0")}`) as PointLight;
+      light.intensity = contribution;
+      light.color = contribution === 1 ? [0, 0, 0] : [1, 1, 1];
+      scene.root.addChild(light);
+    }
+
+    const collected = new LightCollector().collect(scene);
+    const packed = LightUniforms.pack(collected);
+    const repackedFromReverseOrder = LightUniforms.pack([...collected].reverse());
+    const packedWithRequestedCapacityAboveCap = LightUniforms.pack(collected, MAX_DIRECT_LIGHTS + 2);
+    const expectedSelectedNames = Array.from(
+      { length: MAX_DIRECT_LIGHTS },
+      (_unused, index) => `contribution-${(MAX_DIRECT_LIGHTS + 1 - index).toString().padStart(2, "0")}`
+    );
+
+    expect(collected).toHaveLength(MAX_DIRECT_LIGHTS + 2);
+    expect(packed.lightCount).toBe(MAX_DIRECT_LIGHTS);
+    expect(packed.diagnostics).toMatchObject({
+      source: "LightUniforms.pack",
+      strategy: "intensity-times-relative-luminance",
+      order: "contribution-descending",
+      requestedMaxLights: MAX_DIRECT_LIGHTS,
+      maxLights: MAX_DIRECT_LIGHTS,
+      capacityClamped: false,
+      requestedCount: MAX_DIRECT_LIGHTS + 2,
+      selectedCount: MAX_DIRECT_LIGHTS,
+      droppedCount: 2,
+      degraded: true
+    });
+    expect(packed.diagnostics.selected.map((entry) => entry.sourceName)).toEqual(expectedSelectedNames);
+    expect(packed.diagnostics.selected.map((entry) => entry.contribution)).toEqual(
+      Array.from({ length: MAX_DIRECT_LIGHTS }, (_unused, index) => MAX_DIRECT_LIGHTS + 1 - index)
+    );
+    expect(packed.diagnostics.dropped.map((entry) => [entry.sourceName, entry.contribution])).toEqual([
+      ["contribution-01", 0],
+      ["high-intensity-dark", 0]
+    ]);
+    expect(repackedFromReverseOrder.diagnostics.selected).toEqual(packed.diagnostics.selected);
+    expect(repackedFromReverseOrder.diagnostics.dropped).toEqual(packed.diagnostics.dropped);
+    expect(repackedFromReverseOrder.data).toEqual(packed.data);
+    expect(packedWithRequestedCapacityAboveCap.data).toEqual(packed.data);
+    expect(packedWithRequestedCapacityAboveCap.diagnostics).toMatchObject({
+      requestedMaxLights: MAX_DIRECT_LIGHTS + 2,
+      maxLights: MAX_DIRECT_LIGHTS,
+      capacityClamped: true,
+      requestedCount: MAX_DIRECT_LIGHTS + 2,
+      selectedCount: MAX_DIRECT_LIGHTS,
+      droppedCount: 2,
+      degraded: true
+    });
+    expect(packedWithRequestedCapacityAboveCap.diagnostics.message).toContain(
+      `Requested capacity ${MAX_DIRECT_LIGHTS + 2} was clamped to the interim limit ${MAX_DIRECT_LIGHTS}`
+    );
+    expect(packed.diagnostics.message).toContain("dropped 2");
+    expect(packed.diagnostics.message).toContain(`Selected: ${expectedSelectedNames.join(", ")}`);
+    expect(Array.from(packed.data.slice(0, 4))).toEqual([1, 1, 1, MAX_DIRECT_LIGHTS + 1]);
+    expect(Array.from(packed.data.slice(
+      (MAX_DIRECT_LIGHTS - 1) * LightUniforms.floatsPerLight,
+      (MAX_DIRECT_LIGHTS - 1) * LightUniforms.floatsPerLight + 4
+    ))).toEqual([1, 1, 1, 2]);
+  });
+
   it("filters disabled and layer-mismatched lights while enforcing max light ordering", () => {
     const scene = new Scene();
     const key = scene.createLight("directional", "key");
