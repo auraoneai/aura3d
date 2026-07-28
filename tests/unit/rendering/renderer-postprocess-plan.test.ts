@@ -80,6 +80,50 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
+  it("routes LDR outline through native fusion after color grading without readback", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      colorGrade: { contrast: 1.05 },
+      outline: { color: [255, 188, 64, 255], width: 2, threshold: 0.22, opacity: 0.85 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["color-grade", "outline", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+    expect(plan.passes).toEqual([
+      expect.objectContaining({ name: "color-grade", usesReadback: false }),
+      expect.objectContaining({ name: "outline", usesReadback: false }),
+      expect.objectContaining({ name: "fxaa", usesReadback: false })
+    ]);
+  });
+
+  it("keeps HDR outline out of byte-exact native fusion until an LDR intermediate exists", () => {
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: { operator: "filmic" },
+      outline: true,
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba16f",
+      targetFormat: "rgba16f",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["tone-mapping", "outline", "fxaa"],
+      executionMode: "renderer-owned-pass-chain-readback",
+      canFuseLdr: false,
+      readbackPassNames: ["tone-mapping", "outline", "fxaa"]
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },

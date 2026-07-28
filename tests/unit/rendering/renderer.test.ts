@@ -328,6 +328,36 @@ describe("Renderer", () => {
     renderer.dispose();
   });
 
+  it("routes LDR outline after color grading through the device-native fused presentation path", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 3, height: 2, clearColor: [0.9, 0.42, 0.12, 1] });
+    const calls: readonly string[][] = [];
+    const recorded = calls as string[][];
+    renderer.device.presentLdrPostprocess = (source, options) => {
+      recorded.push(options.passes.map((pass) => pass.name));
+      renderer.device.presentRenderTarget?.(source);
+    };
+
+    const diagnostics = renderer.render({
+      renderItems: [],
+      postprocess: {
+        targetFormat: "rgba8",
+        toneMapping: false,
+        colorGrade: { contrast: 1.05 },
+        outline: { color: [255, 188, 64, 255], width: 2, threshold: 0.22, opacity: 0.85 },
+        fxaa: { edgeThreshold: 0.08, subpixelBlend: 0.55 }
+      }
+    });
+
+    expect(recorded).toEqual([["color-grade", "outline", "fxaa"]]);
+    expect(diagnostics.postprocessPlan).toMatchObject({
+      passNames: ["color-grade", "outline", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      readbackPassNames: []
+    });
+    renderer.dispose();
+  });
+
   it("matches the sequential helper output for fused LDR tone, grade, sharpen, and FXAA", () => {
     const width = 5;
     const height = 4;

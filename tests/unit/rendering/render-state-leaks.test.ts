@@ -442,6 +442,46 @@ describe("WebGL2 render-state isolation", () => {
     expect(gl.state.deletions.framebuffers).toBeGreaterThanOrEqual(4);
   });
 
+  it("runs LDR outline as an integer Sobel, circular dilation, and LUT blend stage", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-outline-source" });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-outline-output" });
+    const sentinelUnit3 = { id: "sentinel-outline-unit-3" };
+    gl.activeTexture(gl.TEXTURE0 + 3);
+    gl.bindTexture(gl.TEXTURE_2D, sentinelUnit3 as WebGLTexture);
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "outline", options: { color: [240, 90, 30, 192], width: 3, threshold: 0.21, opacity: 0.7 } },
+        { name: "fxaa", options: { edgeThreshold: 0.1 } }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources).toHaveLength(2);
+    expect(drawSources[0]).toContain("u_boundHigh");
+    expect(drawSources[0]).toContain("squareWords");
+    expect(drawSources[0]).toContain("u_blendLut");
+    expect(drawSources[0]).toContain("offsetX * offsetX + offsetY * offsetY");
+    expect(drawSources[1]).toContain("u_hasFxaa");
+    expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
+      internalFormat: gl.RGBA8,
+      width: 256,
+      height: 1,
+      dataLength: 256 * 4
+    }));
+    expect(gl.state.activeTextureUnit).toBe(3);
+    expect(gl.state.textureBindings.get(3)).toBe(sentinelUnit3);
+
+    device.dispose();
+    expect(gl.state.deletions.programs).toBeGreaterThanOrEqual(2);
+    expect(gl.state.deletions.textures).toBeGreaterThanOrEqual(5);
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });

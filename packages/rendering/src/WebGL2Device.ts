@@ -23,6 +23,10 @@ import {
   BLOOM_BRIGHT_LUT_HEIGHT,
   BLOOM_BRIGHT_LUT_WIDTH,
   BLOOM_COMPOSITE_LUT_SIZE,
+  OUTLINE_BLEND_LUT_WIDTH,
+  OUTLINE_LIMB_RADIX,
+  createOutlineBlendLut,
+  createOutlineGradientBound,
   createBloomBrightThresholdLut,
   createBloomCompositeLut
 } from "./postprocess/NativeLdrEffectLuts";
@@ -162,6 +166,13 @@ interface NativeBloomOptions {
   readonly radius: number;
 }
 
+interface NativeOutlineOptions {
+  readonly width: number;
+  readonly threshold: number;
+  readonly opacity: number;
+  readonly color: readonly [number, number, number, number];
+}
+
 export class WebGL2Device implements RenderDevice {
   public readonly kind = "webgl2";
   public readonly info: RenderDeviceInfo;
@@ -184,11 +195,14 @@ export class WebGL2Device implements RenderDevice {
   private bloomBrightExtractProgram: WebGLProgram | null = null;
   private bloomBlurProgram: WebGLProgram | null = null;
   private bloomCompositeProgram: WebGLProgram | null = null;
+  private outlineProgram: WebGLProgram | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
   private bloomCompositeLutTexture: WebGLTexture | null = null;
   private bloomCompositeLutIntensity: number | null = null;
+  private outlineBlendLutTexture: WebGLTexture | null = null;
+  private outlineBlendLutKey: string | null = null;
   private depthReadbackProgram: WebGLProgram | null = null;
   private readonly uniformLocationCache = new WeakMap<WebGL2ShaderProgram, Map<string, WebGLUniformLocation | null>>();
   private readonly textureSamplerParameterCache = new WeakMap<WebGLTexture, Map<GLenum, GLenum | number>>();
@@ -596,6 +610,7 @@ export class WebGL2Device implements RenderDevice {
     }
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
+    const outlinePass = options.passes.find((pass) => pass.name === "outline");
     if (source.colorTexture.format !== "rgba8" && !tonePass) {
       throw new RenderDeviceError("WebGL2 HDR postprocess presentation requires a tone-mapping pass before LDR output.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
@@ -607,6 +622,13 @@ export class WebGL2Device implements RenderDevice {
         targetId: source.id,
         format: source.colorTexture.format,
         pass: "bloom"
+      });
+    }
+    if (source.colorTexture.format !== "rgba8" && outlinePass) {
+      throw new RenderDeviceError("WebGL2 native LUT outline accepts rgba8 input; HDR sources must be tone-mapped to an intermediate LDR target first.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
+        targetId: source.id,
+        format: source.colorTexture.format,
+        pass: "outline"
       });
     }
     const outputTarget = options.outputTarget;
@@ -637,19 +659,35 @@ export class WebGL2Device implements RenderDevice {
     const colorOptions = colorPass?.options ?? {};
     const fxaaOptions = fxaaPass?.options ?? {};
     const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
+    const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
-    const bloomResources = bloomOptions ? this.ensureBloomPingPongResources(source.width, source.height) : undefined;
+    const bloomResources = bloomOptions || outlineOptions
+      ? this.ensureBloomPingPongResources(source.width, source.height)
+      : undefined;
     if (bloomOptions) {
       this.ensureBloomLutTextures(bloomOptions);
+    }
+    if (outlineOptions) {
+      this.ensureOutlineBlendLutTexture(outlineOptions);
     }
     const outputWidth = webglOutputTarget?.width ?? (this.viewportWidth || this.gl.drawingBufferWidth);
     const outputHeight = webglOutputTarget?.height ?? (this.viewportHeight || this.gl.drawingBufferHeight);
     const previousState = this.prepareFullscreenPresentation(webglOutputTarget?.framebuffer ?? null, outputWidth, outputHeight);
     try {
-      const ldrSourceHandle = bloomOptions && bloomResources
-        ? this.executeNativeBloomPasses(source.colorHandle, bloomResources, bloomOptions, vertexArray)
-        : source.colorHandle;
+      let ldrSourceHandle = source.colorHandle;
+      if (bloomOptions && bloomResources) {
+        ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
+      }
+      if (outlineOptions && bloomResources) {
+        ldrSourceHandle = this.executeNativeOutlinePasses(
+          ldrSourceHandle,
+          bloomResources,
+          outlineOptions,
+          vertexArray,
+          0
+        );
+      }
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, webglOutputTarget?.framebuffer ?? null);
       this.gl.viewport(0, 0, outputWidth, outputHeight);
       this.gl.useProgram(program);
@@ -1026,6 +1064,10 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteProgram(this.bloomCompositeProgram);
       this.bloomCompositeProgram = null;
     }
+    if (this.outlineProgram) {
+      this.gl.deleteProgram(this.outlineProgram);
+      this.outlineProgram = null;
+    }
     this.disposeBloomPingPongResources();
     if (this.bloomBrightLutTexture) {
       this.gl.deleteTexture(this.bloomBrightLutTexture);
@@ -1036,6 +1078,11 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteTexture(this.bloomCompositeLutTexture);
       this.bloomCompositeLutTexture = null;
       this.bloomCompositeLutIntensity = null;
+    }
+    if (this.outlineBlendLutTexture) {
+      this.gl.deleteTexture(this.outlineBlendLutTexture);
+      this.outlineBlendLutTexture = null;
+      this.outlineBlendLutKey = null;
     }
     if (this.presentationVertexArray) {
       this.gl.deleteVertexArray(this.presentationVertexArray);
@@ -1273,6 +1320,35 @@ export class WebGL2Device implements RenderDevice {
     return texture;
   }
 
+  private ensureOutlineBlendLutTexture(options: NativeOutlineOptions): void {
+    const combinedAlpha = options.opacity * (options.color[3] / 255);
+    const key = `${options.color.join(",")}|${combinedAlpha}`;
+    if (this.outlineBlendLutTexture && this.outlineBlendLutKey === key) return;
+
+    const textureUnit0 = this.captureTextureUnit0();
+    try {
+      if (!this.outlineBlendLutTexture) {
+        this.outlineBlendLutTexture = this.createNativeBloomDataTexture();
+      }
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.outlineBlendLutTexture);
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
+        0,
+        this.gl.RGBA8,
+        OUTLINE_BLEND_LUT_WIDTH,
+        1,
+        0,
+        this.gl.RGBA,
+        this.gl.UNSIGNED_BYTE,
+        createOutlineBlendLut(options.color, combinedAlpha)
+      );
+      this.outlineBlendLutKey = key;
+    } finally {
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
+  }
+
   private executeNativeBloomPasses(
     sourceTexture: WebGLTexture,
     resources: WebGL2BloomPingPongResources,
@@ -1324,6 +1400,37 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1i(this.gl.getUniformLocation(compositeProgram, "u_compositeLut"), 2);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return textureB;
+  }
+
+  private executeNativeOutlinePasses(
+    sourceTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeOutlineOptions,
+    vertexArray: WebGLVertexArrayObject,
+    targetIndex: 0 | 1
+  ): WebGLTexture {
+    const blendLut = this.outlineBlendLutTexture;
+    if (!blendLut) {
+      throw new RenderDeviceError("WebGL2 outline lookup texture was not initialized", "WEBGL_ALLOCATION_FAILED");
+    }
+    const program = this.ensureOutlineProgram();
+    const targetTexture = resources.textures[targetIndex];
+    const targetFramebuffer = resources.framebuffers[targetIndex];
+    const bound = createOutlineGradientBound(options.threshold);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, targetFramebuffer);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, blendLut);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_blendLut"), 1);
+    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_width"), options.width);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_boundHigh"), bound.highWord);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_boundLow"), bound.lowWord);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return targetTexture;
   }
 
   private bindFullscreenTexture(unit: number, texture: WebGLTexture): void {
@@ -1646,6 +1753,95 @@ void main() {
 }
 `, "webgl2-bloom-composite");
     return this.bloomCompositeProgram;
+  }
+
+  private ensureOutlineProgram(): WebGLProgram {
+    if (this.outlineProgram) return this.outlineProgram;
+    this.outlineProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_blendLut;
+uniform ivec2 u_size;
+uniform int u_width;
+uniform float u_boundHigh;
+uniform float u_boundLow;
+out vec4 outColor;
+
+uvec4 sourceByte(ivec2 coordinate) {
+  ivec2 bounded = clamp(coordinate, ivec2(0), u_size - ivec2(1));
+  return uvec4(texelFetch(u_source, bounded, 0) * 255.0 + 0.5);
+}
+
+uint lumaNumerator(ivec2 coordinate) {
+  uvec3 source = sourceByte(coordinate).rgb;
+  return 2126u * source.r + 7152u * source.g + 722u * source.b;
+}
+
+uvec2 squareWords(int signedValue) {
+  uint value = uint(abs(signedValue));
+  uint high = value >> 12u;
+  uint low = value & 4095u;
+  uint middle = 2u * high * low;
+  uint lowWord = low * low + (middle & 4095u) * 4096u;
+  uint highWord = high * high + (middle >> 12u);
+  highWord += lowWord / ${OUTLINE_LIMB_RADIX}u;
+  lowWord %= ${OUTLINE_LIMB_RADIX}u;
+  return uvec2(highWord, lowWord);
+}
+
+bool edgeAt(ivec2 pixel) {
+  int nw = int(lumaNumerator(pixel + ivec2(-1, -1)));
+  int n = int(lumaNumerator(pixel + ivec2(0, -1)));
+  int ne = int(lumaNumerator(pixel + ivec2(1, -1)));
+  int w = int(lumaNumerator(pixel + ivec2(-1, 0)));
+  int e = int(lumaNumerator(pixel + ivec2(1, 0)));
+  int sw = int(lumaNumerator(pixel + ivec2(-1, 1)));
+  int s = int(lumaNumerator(pixel + ivec2(0, 1)));
+  int se = int(lumaNumerator(pixel + ivec2(1, 1)));
+  int gx = -nw - 2 * w - sw + ne + 2 * e + se;
+  int gy = -nw - 2 * n - ne + sw + 2 * s + se;
+  uvec2 x = squareWords(gx);
+  uvec2 y = squareWords(gy);
+  uint low = x.y + y.y;
+  uint high = x.x + y.x;
+  if (low >= ${OUTLINE_LIMB_RADIX}u) {
+    low -= ${OUTLINE_LIMB_RADIX}u;
+    high += 1u;
+  }
+  uint boundHigh = uint(u_boundHigh);
+  uint boundLow = uint(u_boundLow);
+  return high != boundHigh ? high > boundHigh : low >= boundLow;
+}
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  bool outlined = false;
+  for (int offsetY = -6; offsetY <= 6 && !outlined; offsetY += 1) {
+    for (int offsetX = -6; offsetX <= 6; offsetX += 1) {
+      if (abs(offsetX) > u_width || abs(offsetY) > u_width) continue;
+      if (offsetX * offsetX + offsetY * offsetY > u_width * u_width) continue;
+      ivec2 candidate = clamp(pixel + ivec2(offsetX, offsetY), ivec2(0), u_size - ivec2(1));
+      if (edgeAt(candidate)) {
+        outlined = true;
+        break;
+      }
+    }
+  }
+  uvec4 source = sourceByte(pixel);
+  if (!outlined) {
+    outColor = vec4(source) / 255.0;
+    return;
+  }
+  outColor = vec4(
+    texelFetch(u_blendLut, ivec2(int(source.r), 0), 0).r,
+    texelFetch(u_blendLut, ivec2(int(source.g), 0), 0).g,
+    texelFetch(u_blendLut, ivec2(int(source.b), 0), 0).b,
+    float(source.a) / 255.0
+  );
+}
+`, "webgl2-outline");
+    return this.outlineProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -2689,11 +2885,51 @@ function normalizeNativeBloomOptions(options: Readonly<Record<string, unknown>>)
   return { threshold, intensity, radius };
 }
 
+function normalizeNativeOutlineOptions(options: Readonly<Record<string, unknown>>): NativeOutlineOptions {
+  const width = outlineNumberOption(options, "width", 1);
+  const threshold = outlineNumberOption(options, "threshold", 0.22);
+  const opacity = outlineNumberOption(options, "opacity", 0.85);
+  const value = options.color;
+  const sourceColor = value === undefined ? [255, 188, 64, 255] : value;
+  if (
+    !Array.isArray(sourceColor)
+    || (sourceColor.length !== 3 && sourceColor.length !== 4)
+    || sourceColor.some((channel) => typeof channel !== "number" || !Number.isFinite(channel) || channel < 0 || channel > 255)
+  ) {
+    throw new RenderDeviceError("Outline color must contain three or four finite channels in [0, 255].", "INVALID_POSTPROCESS_OPTIONS", { color: value });
+  }
+  if (!Number.isInteger(width) || width < 1 || width > 6) {
+    throw new RenderDeviceError("Outline width must be an integer in [1, 6].", "INVALID_POSTPROCESS_OPTIONS", { width });
+  }
+  if (threshold < 0 || threshold > 4) {
+    throw new RenderDeviceError("Outline threshold must be finite and in [0, 4].", "INVALID_POSTPROCESS_OPTIONS", { threshold });
+  }
+  if (opacity < 0 || opacity > 1) {
+    throw new RenderDeviceError("Outline opacity must be finite and in [0, 1].", "INVALID_POSTPROCESS_OPTIONS", { opacity });
+  }
+  const color: readonly [number, number, number, number] = [
+    sourceColor[0] as number,
+    sourceColor[1] as number,
+    sourceColor[2] as number,
+    (sourceColor[3] ?? 255) as number
+  ];
+  return { width, threshold, opacity, color };
+}
+
 function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   if (value === undefined) return fallback;
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RenderDeviceError(`Bloom ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
+}
+
+function outlineNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`Outline ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
   }
   return value;
 }
