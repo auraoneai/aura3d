@@ -552,6 +552,34 @@ describe("WebGL2 render-state isolation", () => {
     device.dispose();
   });
 
+  it("uploads an explicit velocity field and runs motion blur as a fullscreen stage", () => {
+    const { canvas, gl } = createFakeWebGL2Canvas();
+    const device = WebGL2Device.create({ canvas });
+    const source = device.createRenderTarget({ width: 5, height: 4, label: "native-motion-source", depth: false });
+    const output = device.createRenderTarget({ width: 5, height: 4, label: "native-motion-output", depth: false });
+
+    device.presentLdrPostprocess(source, {
+      passes: [
+        { name: "motion-blur", options: { velocity: new Float32Array(5 * 4 * 2).fill(1), samples: 5, scale: 1 } },
+        { name: "fxaa", options: {} }
+      ],
+      outputTarget: output
+    });
+
+    const drawSources = gl.state.fullscreenDraws.map((draw) =>
+      draw.program?.shaders.map((shader) => shader.source).join("\n") ?? ""
+    );
+    expect(drawSources[0]).toContain("uniform sampler2D u_velocity");
+    expect(drawSources[0]).toContain("sampleIndex >= u_samples");
+    expect(gl.state.textureUploads).toContainEqual(expect.objectContaining({
+      internalFormat: gl.RG32F,
+      width: 5,
+      height: 4,
+      dataLength: 5 * 4 * 2 * Float32Array.BYTES_PER_ELEMENT
+    }));
+    device.dispose();
+  });
+
   it("restores depth writes before clearing a new frame", () => {
     const { canvas, gl } = createFakeWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
@@ -747,6 +775,8 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     ELEMENT_ARRAY_BUFFER: 0x8893,
     ELEMENT_ARRAY_BUFFER_BINDING: 0x8895,
     FLOAT: 0x1406,
+    RG: 0x8227,
+    RG32F: 0x8230,
     FRAGMENT_SHADER: 0x8b30,
     FRAMEBUFFER: 0x8d40,
     FRAMEBUFFER_BINDING: 0x8ca6,

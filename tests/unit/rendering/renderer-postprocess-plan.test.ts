@@ -208,6 +208,33 @@ describe("renderer postprocess plan diagnostics", () => {
     });
   });
 
+  it("routes explicit velocity motion blur through native fusion with no readback", () => {
+    const velocity = new Float32Array(3 * 2 * 2).fill(1);
+    const plan = createRendererPostprocessPlanDiagnostics({
+      toneMapping: false,
+      motionBlur: { velocity, samples: 5, scale: 1 },
+      fxaa: true
+    }, {
+      sourceTargetFormat: "rgba8",
+      targetFormat: "rgba8",
+      nativeLdrPostprocess: true
+    });
+
+    expect(plan).toMatchObject({
+      passNames: ["motion-blur", "fxaa"],
+      executionMode: "renderer-owned-fused-ldr-native",
+      canFuseLdr: true,
+      missingInputs: [],
+      readbackPassNames: []
+    });
+    expect(plan.passes[0]).toMatchObject({
+      name: "motion-blur",
+      requiresVelocity: true,
+      hasVelocityInput: true,
+      usesReadback: false
+    });
+  });
+
   it("flags noisy bloom settings and missing depth input instead of hiding postprocess gaps", () => {
     const plan = createRendererPostprocessPlanDiagnostics({
       bloom: { threshold: 0.46, intensity: 0.22, radius: 2 },

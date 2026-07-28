@@ -191,6 +191,12 @@ interface NativeDepthOfFieldOptions {
   readonly maxRadius: number;
 }
 
+interface NativeMotionBlurOptions {
+  readonly samples: number;
+  readonly scale: number;
+  readonly velocity: Float32Array;
+}
+
 export class WebGL2Device implements RenderDevice {
   public readonly kind = "webgl2";
   public readonly info: RenderDeviceInfo;
@@ -217,6 +223,8 @@ export class WebGL2Device implements RenderDevice {
   private ssaoProgram: WebGLProgram | null = null;
   private ssrProgram: WebGLProgram | null = null;
   private depthOfFieldProgram: WebGLProgram | null = null;
+  private motionBlurProgram: WebGLProgram | null = null;
+  private motionBlurVelocityTexture: WebGLTexture | null = null;
   private bloomPingPongResources: WebGL2BloomPingPongResources | null = null;
   private bloomBrightLutTexture: WebGLTexture | null = null;
   private bloomBrightLutThreshold: number | null = null;
@@ -632,6 +640,7 @@ export class WebGL2Device implements RenderDevice {
     const tonePass = options.passes.find((pass) => pass.name === "tone-mapping");
     const bloomPass = options.passes.find((pass) => pass.name === "bloom");
     const depthOfFieldPass = options.passes.find((pass) => pass.name === "depth-of-field");
+    const motionBlurPass = options.passes.find((pass) => pass.name === "motion-blur");
     const ssaoPass = options.passes.find((pass) => pass.name === "ssao");
     const ssrPass = options.passes.find((pass) => pass.name === "ssr");
     const outlinePass = options.passes.find((pass) => pass.name === "outline");
@@ -648,11 +657,11 @@ export class WebGL2Device implements RenderDevice {
         pass: "bloom"
       });
     }
-    if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || ssaoPass || ssrPass || outlinePass) && !tonePass) {
+    if (source.colorTexture.format !== "rgba8" && (depthOfFieldPass || motionBlurPass || ssaoPass || ssrPass || outlinePass) && !tonePass) {
       throw new RenderDeviceError("WebGL2 byte-kernel postprocess requires rgba8 input or a preceding tone-mapping pass.", "WEBGL_LDR_POSTPROCESS_FORMAT_UNSUPPORTED", {
         targetId: source.id,
         format: source.colorTexture.format,
-        pass: depthOfFieldPass ? "depth-of-field" : ssaoPass ? "ssao" : ssrPass ? "ssr" : "outline"
+        pass: depthOfFieldPass ? "depth-of-field" : motionBlurPass ? "motion-blur" : ssaoPass ? "ssao" : ssrPass ? "ssr" : "outline"
       });
     }
     if ((depthOfFieldPass || ssaoPass || ssrPass) && !source.depthTextureHandle) {
@@ -687,12 +696,15 @@ export class WebGL2Device implements RenderDevice {
     const fxaaPass = options.passes.find((pass) => pass.name === "fxaa");
     const bloomOptions = bloomPass ? normalizeNativeBloomOptions(bloomPass.options) : undefined;
     const depthOfFieldOptions = depthOfFieldPass ? normalizeNativeDepthOfFieldOptions(depthOfFieldPass.options) : undefined;
+    const motionBlurOptions = motionBlurPass
+      ? normalizeNativeMotionBlurOptions(motionBlurPass.options, source.width, source.height)
+      : undefined;
     const ssaoOptions = ssaoPass ? normalizeNativeSsaoOptions(ssaoPass.options) : undefined;
     const ssrOptions = ssrPass ? normalizeNativeSsrOptions(ssrPass.options) : undefined;
     const outlineOptions = outlinePass ? normalizeNativeOutlineOptions(outlinePass.options) : undefined;
     const program = this.ensureLdrPostprocessProgram();
     const vertexArray = this.ensurePresentationVertexArray();
-    const bloomResources = bloomOptions || depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions
+    const bloomResources = bloomOptions || depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions
       ? this.ensureBloomPingPongResources(source.width, source.height)
       : undefined;
     if (bloomOptions) {
@@ -700,6 +712,9 @@ export class WebGL2Device implements RenderDevice {
     }
     if (outlineOptions) {
       this.ensureOutlineBlendLutTexture(outlineOptions);
+    }
+    if (motionBlurOptions) {
+      this.ensureMotionBlurVelocityTexture(source.width, source.height, motionBlurOptions.velocity);
     }
     const outputWidth = webglOutputTarget?.width ?? (this.viewportWidth || this.gl.drawingBufferWidth);
     const outputHeight = webglOutputTarget?.height ?? (this.viewportHeight || this.gl.drawingBufferHeight);
@@ -711,7 +726,7 @@ export class WebGL2Device implements RenderDevice {
         ldrSourceHandle = this.executeNativeBloomPasses(ldrSourceHandle, bloomResources, bloomOptions, vertexArray);
         temporarySourceIndex = 1;
       }
-      if ((depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions) && bloomResources) {
+      if ((depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions) && bloomResources) {
         if (tonePass || colorPass) {
           const baseTargetIndex = 0 as const;
           this.drawNativeLdrStage(
@@ -740,6 +755,17 @@ export class WebGL2Device implements RenderDevice {
             depthOfFieldTargetIndex
           );
           temporarySourceIndex = depthOfFieldTargetIndex;
+        }
+        if (motionBlurOptions) {
+          const motionBlurTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
+          ldrSourceHandle = this.executeNativeMotionBlurPass(
+            ldrSourceHandle,
+            bloomResources,
+            motionBlurOptions,
+            vertexArray,
+            motionBlurTargetIndex
+          );
+          temporarySourceIndex = motionBlurTargetIndex;
         }
         if (ssaoOptions && source.depthTextureHandle) {
           const ssaoTargetIndex: 0 | 1 = temporarySourceIndex === 0 ? 1 : 0;
@@ -784,8 +810,8 @@ export class WebGL2Device implements RenderDevice {
         outputHeight,
         program,
         vertexArray,
-        depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : tonePass,
-        depthOfFieldOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : colorPass,
+        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : tonePass,
+        depthOfFieldOptions || motionBlurOptions || ssaoOptions || ssrOptions || outlineOptions ? undefined : colorPass,
         fxaaPass,
         options.toneMappingDefaults
       );
@@ -1153,6 +1179,14 @@ export class WebGL2Device implements RenderDevice {
       this.gl.deleteProgram(this.depthOfFieldProgram);
       this.depthOfFieldProgram = null;
     }
+    if (this.motionBlurProgram) {
+      this.gl.deleteProgram(this.motionBlurProgram);
+      this.motionBlurProgram = null;
+    }
+    if (this.motionBlurVelocityTexture) {
+      this.gl.deleteTexture(this.motionBlurVelocityTexture);
+      this.motionBlurVelocityTexture = null;
+    }
     this.disposeBloomPingPongResources();
     if (this.bloomBrightLutTexture) {
       this.gl.deleteTexture(this.bloomBrightLutTexture);
@@ -1434,6 +1468,30 @@ export class WebGL2Device implements RenderDevice {
     }
   }
 
+  private ensureMotionBlurVelocityTexture(width: number, height: number, velocity: Float32Array): void {
+    const textureUnit0 = this.captureTextureUnit0();
+    try {
+      if (!this.motionBlurVelocityTexture) {
+        this.motionBlurVelocityTexture = this.createNativeBloomDataTexture();
+      }
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.motionBlurVelocityTexture);
+      this.gl.texImage2D(
+        this.gl.TEXTURE_2D,
+        0,
+        this.gl.RG32F,
+        width,
+        height,
+        0,
+        this.gl.RG,
+        this.gl.FLOAT,
+        velocity
+      );
+    } finally {
+      this.restoreTextureUnit0(textureUnit0);
+      this.stateCache.invalidate();
+    }
+  }
+
   private drawNativeLdrStage(
     sourceTexture: WebGLTexture,
     framebuffer: WebGLFramebuffer | null,
@@ -1634,6 +1692,34 @@ export class WebGL2Device implements RenderDevice {
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusDepth"), options.focusDepth);
     this.gl.uniform1f(this.gl.getUniformLocation(program, "u_focusRange"), options.focusRange);
     this.gl.uniform1i(this.gl.getUniformLocation(program, "u_maxRadius"), options.maxRadius);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    return targetTexture;
+  }
+
+  private executeNativeMotionBlurPass(
+    sourceTexture: WebGLTexture,
+    resources: WebGL2BloomPingPongResources,
+    options: NativeMotionBlurOptions,
+    vertexArray: WebGLVertexArrayObject,
+    targetIndex: 0 | 1
+  ): WebGLTexture {
+    const velocityTexture = this.motionBlurVelocityTexture;
+    if (!velocityTexture) {
+      throw new RenderDeviceError("WebGL2 motion-blur velocity texture was not initialized", "WEBGL_ALLOCATION_FAILED");
+    }
+    const program = this.ensureMotionBlurProgram();
+    const targetTexture = resources.textures[targetIndex];
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, resources.framebuffers[targetIndex]);
+    this.gl.viewport(0, 0, resources.width, resources.height);
+    this.gl.useProgram(program);
+    this.gl.bindVertexArray(vertexArray);
+    this.bindFullscreenTexture(0, sourceTexture);
+    this.bindFullscreenTexture(1, velocityTexture);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_source"), 0);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_velocity"), 1);
+    this.gl.uniform2i(this.gl.getUniformLocation(program, "u_size"), resources.width, resources.height);
+    this.gl.uniform1i(this.gl.getUniformLocation(program, "u_samples"), options.samples);
+    this.gl.uniform1f(this.gl.getUniformLocation(program, "u_scale"), options.scale);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
     return targetTexture;
   }
@@ -2165,6 +2251,40 @@ void main() {
 }
 `, "webgl2-depth-of-field");
     return this.depthOfFieldProgram;
+  }
+
+  private ensureMotionBlurProgram(): WebGLProgram {
+    if (this.motionBlurProgram) return this.motionBlurProgram;
+    this.motionBlurProgram = this.createFullscreenProgram(`#version 300 es
+precision highp float;
+precision highp int;
+uniform sampler2D u_source;
+uniform sampler2D u_velocity;
+uniform ivec2 u_size;
+uniform int u_samples;
+uniform float u_scale;
+out vec4 outColor;
+
+void main() {
+  ivec2 pixel = ivec2(gl_FragCoord.xy);
+  vec4 source = texelFetch(u_source, pixel, 0);
+  vec2 velocity = texelFetch(u_velocity, pixel, 0).rg * u_scale;
+  if (length(velocity) < 0.01) {
+    outColor = source;
+    return;
+  }
+  vec3 sum = vec3(0.0);
+  for (int sampleIndex = 0; sampleIndex < 16; sampleIndex += 1) {
+    if (sampleIndex >= u_samples) continue;
+    float t = float(sampleIndex) / float(u_samples - 1) - 0.5;
+    ivec2 samplePixel = ivec2(floor(vec2(pixel) - velocity * t + vec2(0.5)));
+    samplePixel = clamp(samplePixel, ivec2(0), u_size - ivec2(1));
+    sum += texelFetch(u_source, samplePixel, 0).rgb;
+  }
+  outColor = vec4(sum / float(u_samples), source.a);
+}
+`, "webgl2-motion-blur");
+    return this.motionBlurProgram;
   }
 
   private createFullscreenProgram(fragmentSource: string, label: string): WebGLProgram {
@@ -3283,6 +3403,33 @@ function normalizeNativeDepthOfFieldOptions(options: Readonly<Record<string, unk
   return { focusDepth, focusRange, maxRadius };
 }
 
+function normalizeNativeMotionBlurOptions(
+  options: Readonly<Record<string, unknown>>,
+  width: number,
+  height: number
+): NativeMotionBlurOptions {
+  const samples = motionBlurNumberOption(options, "samples", 5);
+  const scale = motionBlurNumberOption(options, "scale", 1);
+  const value = options.velocity;
+  if (!(value instanceof Float32Array) && !Array.isArray(value)) {
+    throw new RenderDeviceError("Motion blur requires a velocity Float32Array or number array.", "WEBGL_LDR_POSTPROCESS_VELOCITY_REQUIRED");
+  }
+  const velocity = value instanceof Float32Array ? value : new Float32Array(value as number[]);
+  if (velocity.length !== width * height * 2) {
+    throw new RenderDeviceError("Motion blur velocity must contain width * height * 2 float samples.", "INVALID_POSTPROCESS_OPTIONS", {
+      expectedLength: width * height * 2,
+      actualLength: velocity.length
+    });
+  }
+  if (!Number.isInteger(samples) || samples < 2 || samples > 16) {
+    throw new RenderDeviceError("Motion blur samples must be an integer in [2, 16].", "INVALID_POSTPROCESS_OPTIONS", { samples });
+  }
+  if (scale < 0 || scale > 8) {
+    throw new RenderDeviceError("Motion blur scale must be finite and in [0, 8].", "INVALID_POSTPROCESS_OPTIONS", { scale });
+  }
+  return { samples, scale, velocity };
+}
+
 function bloomNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
   const value = options[key];
   if (value === undefined) return fallback;
@@ -3324,6 +3471,15 @@ function depthOfFieldNumberOption(options: Readonly<Record<string, unknown>>, ke
   if (value === undefined) return fallback;
   if (typeof value !== "number" || !Number.isFinite(value)) {
     throw new RenderDeviceError(`Depth-of-field ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
+  }
+  return value;
+}
+
+function motionBlurNumberOption(options: Readonly<Record<string, unknown>>, key: string, fallback: number): number {
+  const value = options[key];
+  if (value === undefined) return fallback;
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new RenderDeviceError(`Motion blur ${key} must be a finite number.`, "INVALID_POSTPROCESS_OPTIONS", { key, value });
   }
   return value;
 }

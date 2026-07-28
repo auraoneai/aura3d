@@ -1,4 +1,4 @@
-import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
+import { bloomPixels, createDepthTextureBinding, createRenderDevice, depthOfFieldPixels, motionBlurPixels, outlinePixels, ssaoPixels, ssrPixels } from "@aura3d/rendering";
 
 declare global {
   interface Window {
@@ -19,6 +19,9 @@ declare global {
       readonly depthOfFieldMaxChannelDelta?: number;
       readonly depthOfFieldChangedChannelCount?: number;
       readonly depthOfFieldEffectChangedChannelCount?: number;
+      readonly motionBlurMaxChannelDelta?: number;
+      readonly motionBlurChangedChannelCount?: number;
+      readonly motionBlurEffectChangedChannelCount?: number;
       readonly gpu?: readonly number[];
       readonly cpu?: readonly number[];
       readonly error?: string;
@@ -125,6 +128,19 @@ async function run(): Promise<void> {
     const depthOfFieldComparison = comparePixels(actualDepthOfField, expectedDepthOfField);
     const depthOfFieldEffect = comparePixels(expectedDepthOfField, sourcePixels);
 
+    const velocity = createVelocityFixture(width, height);
+    const motionBlurOptions = { velocity, samples: 5, scale: 1 };
+    const expectedMotionBlur = motionBlurPixels(sourcePixels, width, height, motionBlurOptions).pixels;
+    device.writeRenderTargetPixels(source, sourcePixels);
+    device.presentLdrPostprocess(source, {
+      passes: [{ name: "motion-blur", options: motionBlurOptions }],
+      outputTarget: output
+    });
+    device.setRenderTarget(output);
+    const actualMotionBlur = device.readPixels(0, 0, width, height);
+    const motionBlurComparison = comparePixels(actualMotionBlur, expectedMotionBlur);
+    const motionBlurEffect = comparePixels(expectedMotionBlur, sourcePixels);
+
     window.__AURA3D_NATIVE_OUTLINE_PIXEL__ = {
       status: "ready",
       width,
@@ -142,6 +158,9 @@ async function run(): Promise<void> {
       depthOfFieldMaxChannelDelta: depthOfFieldComparison.maxChannelDelta,
       depthOfFieldChangedChannelCount: depthOfFieldComparison.changedChannelCount,
       depthOfFieldEffectChangedChannelCount: depthOfFieldEffect.changedChannelCount,
+      motionBlurMaxChannelDelta: motionBlurComparison.maxChannelDelta,
+      motionBlurChangedChannelCount: motionBlurComparison.changedChannelCount,
+      motionBlurEffectChangedChannelCount: motionBlurEffect.changedChannelCount,
       gpu: [...actual],
       cpu: [...expected]
     };
@@ -229,4 +248,13 @@ function uploadDepthFixture(canvas: HTMLCanvasElement, texture: WebGLTexture, de
     gl.UNSIGNED_INT,
     encoded
   );
+}
+
+function createVelocityFixture(width: number, height: number): Float32Array {
+  const velocity = new Float32Array(width * height * 2);
+  for (let index = 0; index < width * height; index += 1) {
+    velocity[index * 2] = index % 3 === 0 ? 2.4 : -1.6;
+    velocity[index * 2 + 1] = index % 2 === 0 ? 0.8 : -0.6;
+  }
+  return velocity;
 }

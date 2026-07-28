@@ -25,6 +25,9 @@ test("native WebGL2 bloom and outline match their CPU byte kernels", async ({ pa
     expect(result?.depthOfFieldMaxChannelDelta).toBeLessThanOrEqual(1);
     expect(result?.depthOfFieldChangedChannelCount).toBeLessThanOrEqual(8);
     expect(result?.depthOfFieldEffectChangedChannelCount).toBeGreaterThan(0);
+    expect(result?.motionBlurMaxChannelDelta).toBeLessThanOrEqual(1);
+    expect(result?.motionBlurChangedChannelCount).toBeLessThanOrEqual(8);
+    expect(result?.motionBlurEffectChangedChannelCount).toBeGreaterThan(0);
   } finally {
     await server.close();
   }
