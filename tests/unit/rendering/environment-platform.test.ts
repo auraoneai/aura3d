@@ -20,15 +20,15 @@ describe("environment platform capability inventory", () => {
     const report = createEnvironmentCapabilityReport();
 
     expect(report.requestedCount).toBe(20);
-    expect(report.implementedCount).toBe(2);
-    expect(report.partialCount).toBe(5);
+    expect(report.implementedCount).toBe(3);
+    expect(report.partialCount).toBe(4);
     expect(report.helperCount).toBe(11);
     expect(report.missingCount).toBe(0);
     expect(report.unsupportedCount).toBe(2);
-    expect(report.productionReadyCount).toBe(2);
-    expect(report.nonProductionReadyCount).toBe(18);
-    expect(report.productionReady).toEqual(["cubemap-renderer", "cube-camera-reflections"]);
-    expect(report.backlog).toHaveLength(18);
+    expect(report.productionReadyCount).toBe(3);
+    expect(report.nonProductionReadyCount).toBe(17);
+    expect(report.productionReady).toEqual(["cubemap-renderer", "equirectangular-projection", "cube-camera-reflections"]);
+    expect(report.backlog).toHaveLength(17);
     expect(report.capabilities.map((capability) => capability.id)).toEqual([
       "cubemap-renderer",
       "equirectangular-projection",
@@ -58,6 +58,8 @@ describe("environment platform capability inventory", () => {
 
     expect(byId.get("cubemap-renderer")?.status).toBe("implemented");
     expect(byId.get("cubemap-renderer")?.evidence.join(" ")).toMatch(/six-face proof route/i);
+    expect(byId.get("equirectangular-projection")?.status).toBe("implemented");
+    expect(byId.get("equirectangular-projection")?.evidence.join(" ")).toMatch(/three camera yaws/i);
     expect(byId.get("atmospheric-scattering")?.status).toBe("unsupported");
     expect(byId.get("atmospheric-scattering")?.gap).toMatch(/documented unsupported/i);
     expect(byId.get("atmospheric-scattering")?.requiredForAcceptedClaim).toMatch(/out of accepted claims/i);

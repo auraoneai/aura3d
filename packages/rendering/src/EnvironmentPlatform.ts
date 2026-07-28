@@ -232,11 +232,12 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Renderer schedules EnvironmentBackgroundPass for camera-correct cubemap backgrounds.",
     "The advanced gallery six-face proof route renders all canonical camera directions and the browser gate records distinct face pixels plus a full-page screenshot."
   ], "Rendering-internal cubemap backgrounds have accepted six-face visual evidence; live probes, planar reflection, and root createAuraApp exposure remain separate claims.", "Retain the six-face gallery pixel and screenshot gate."),
-  capability("equirectangular-projection", "Equirectangular Projection Engine", "partial", true, [
+  capability("equirectangular-projection", "Equirectangular Projection Engine", "implemented", true, [
     "PBR shader includes equirectangular UV sampling.",
     "PMREM generator projects equirectangular HDR into cube faces.",
-    "Renderer schedules EnvironmentBackgroundPass for camera-correct equirect panorama backgrounds."
-  ], "Renderer equirect background path exists, but no accepted gallery route/screenshot proves panorama background rendering yet.", "Add equirect panorama background rendering and route proof."),
+    "Renderer schedules EnvironmentBackgroundPass for camera-correct equirect panorama backgrounds.",
+    "The advanced gallery panorama proof renders one directional 2:1 texture from three camera yaws and records distinct backbuffer pixels plus a full-page screenshot."
+  ], "Rendering-internal equirectangular backgrounds have accepted directional panorama evidence; HDR decoding, physical sky, and root createAuraApp exposure remain separate claims.", "Retain the multi-view panorama pixel and screenshot gate."),
   capability("pmrem-generator", "PMREM Generator", "partial", true, [
     "generateCubemapPMREMResources creates GGX-prefiltered cubemap mip levels.",
     "createCubemapPMREMShaderContract documents sampler-cube material bindings."
