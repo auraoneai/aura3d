@@ -6,7 +6,7 @@ describe("docs version alignment", () => {
     const report = validateDocsVersionAlignment(process.cwd());
 
     expect(report.ok).toBe(true);
-    expect(report.version).toBe("1.4.5");
+    expect(report.version).toBe("1.5.0");
     expect(report.violations).toEqual([]);
     expect(report.checkedFiles).toEqual(expect.arrayContaining([
       "package.json",
@@ -17,7 +17,7 @@ describe("docs version alignment", () => {
       "docs/api/public-api.md",
       "docs/project/site-map.md",
       "docs/project/compatibility.md",
-      "docs/project/release-checklist.md",
+      "docs/project/release/release-checklist.md",
       "docs/project/release-process.md",
       "docs/project/tutorials-getting-started-real-scene.md",
       "docs/project/tutorials-product-configurator.md",

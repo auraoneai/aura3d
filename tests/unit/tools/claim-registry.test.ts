@@ -6,7 +6,7 @@ import { validateClaimRegistry, writeClaimRegistryReport } from "../../../tools/
 
 function fixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "a3d-claims-"));
-  mkdirSync(join(root, "docs", "project"), { recursive: true });
+  mkdirSync(join(root, "docs", "project", "status"), { recursive: true });
   writeFileSync(join(root, "docs", "project", "product-studio-claim-registry.md"), registry());
   return root;
 }
@@ -35,14 +35,14 @@ function registry(evidence = "Existing package surface and internal tests."): st
 describe("claim registry verifier", () => {
   it("allows scoped known-limits language while scanning public docs", () => {
     const root = fixtureRoot();
-    writeFileSync(join(root, "docs", "project", "known-limits.md"), "No better than Three.js or production-ready claim is currently supported.\n");
+    writeFileSync(join(root, "docs", "project", "status", "known-limits.md"), "No better than Three.js or production-ready claim is currently supported.\n");
 
     const report = validateClaimRegistry(root);
 
     expect(report.ok).toBe(true);
     expect(report.allowedOccurrences).toEqual(expect.arrayContaining([
-      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Aura3D is better than Three.js.", scoped: true }),
-      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Aura3D is production-ready.", scoped: true })
+      expect.objectContaining({ path: "docs/project/status/known-limits.md", claim: "Aura3D is better than Three.js.", scoped: true }),
+      expect.objectContaining({ path: "docs/project/status/known-limits.md", claim: "Aura3D is production-ready.", scoped: true })
     ]));
   });
 

@@ -33,8 +33,8 @@ const checks = [
   },
   {
     id: "engine-readiness-status-doc",
-    ok: readFileIfExists("docs/project/current-state.md").includes("pnpm engine-readiness:root"),
-    evidence: "docs/project/current-state.md"
+    ok: readFileIfExists("docs/project/status/current-state.md").includes("pnpm engine-readiness:root"),
+    evidence: "docs/project/status/current-state.md"
   },
   {
     id: "stale-external-parity-completion-report-removed",

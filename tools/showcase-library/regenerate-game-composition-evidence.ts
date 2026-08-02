@@ -12,12 +12,6 @@ interface RouteConfig {
 
 const routes: readonly RouteConfig[] = [
   {
-    routeId: "showcase-public-racing-presentation-proof",
-    category: "racing",
-    reportDir: "public-racing-presentation-proof",
-    geometrySuffix: "racing-track-topology"
-  },
-  {
     routeId: "showcase-turbo-drift-circuit",
     category: "racing",
     reportDir: "turbo-drift-circuit",

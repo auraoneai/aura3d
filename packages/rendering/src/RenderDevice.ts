@@ -191,6 +191,13 @@ export interface RenderDeviceDiagnostics {
   readonly nativeMorphSubmissions?: number;
   readonly nativeEnvironmentBindings?: number;
   readonly nativeShadowMapBindings?: number;
+  /**
+   * Cumulative count of shadow depth render targets this device allocated. Live
+   * `renderTargets` cannot answer "was a shadow map rendered?" because a shadow
+   * pass may allocate and release its target within a frame, leaving zero live
+   * targets behind.
+   */
+  readonly shadowRenderTargetsAllocated?: number;
   readonly samplerAnisotropyUploads?: number;
   readonly maxTextureAnisotropy?: number;
   readonly stateCacheIssued?: number;

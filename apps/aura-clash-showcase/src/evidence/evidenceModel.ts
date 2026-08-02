@@ -483,6 +483,6 @@ export const auraClashAcceptanceGates: AuraClashEvidenceItem[] = [
     label: "Marketing promotion",
     status: "pending",
     proof: "Main Aura3D marketing integration should wait until the game route is visually approved.",
-    files: ["docs/project/aura-clash-showcase.md"],
+    files: ["docs/project/showcase/aura-clash-showcase-plan.md"],
   },
 ];

@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 
 type Category =
   | "animation"
@@ -64,11 +64,11 @@ interface TrackSummary {
 }
 
 const REPORT_PATH = "tests/reports/threejs-parity/threejs-inventory.json";
-const BACKLOG_DOC_PATH = "docs/project/threejs-parity-code-backlog.md";
-const INVENTORY_DOC_PATH = "docs/project/threejs-parity-threejs-inventory.md";
-const PARITY_DOC_PATH = "docs/project/threejs-parity-parity-matrix.md";
-const CLAIM_DOC_PATH = "docs/project/threejs-parity-claim-boundary.md";
-const STATUS_DOC_PATH = "docs/project/threejs-parity-status.md";
+const BACKLOG_DOC_PATH = "docs/project/parity/threejs/code-backlog.md";
+const INVENTORY_DOC_PATH = "docs/project/parity/threejs/inventory.md";
+const PARITY_DOC_PATH = "docs/project/parity/threejs/parity-matrix.md";
+const CLAIM_DOC_PATH = "docs/project/parity/threejs/claim-boundary.md";
+const STATUS_DOC_PATH = "docs/project/parity/threejs/status.md";
 
 const parityFloorBlockers = [
   "First-party math engine: vectors, matrices, quaternions, rays, bounds, frustums, projection, and transform math.",
@@ -153,7 +153,7 @@ const inventory: readonly InventoryItem[] = [
 
   item("misc_controls_orbit", "controls", "high", "/apps/controls-orbit/", "matched", ["F", "K"], ["packages/input exposes scene-camera OrbitControls with target, distance, polar clamps, multiplicative wheel zoom, pan, save/reset, disposal, and matrix/frustum synchronization. packages/controls OrbitControls delegates attached-camera math to that implementation and explicitly labels its no-camera form as bookkeeping-only. The dedicated CurrentRoutes Orbit Controls route drives the public input implementation over a real A3D WebGL2 scene; unit and browser coverage prove the delegated controls package path and compare the input path's pointer rotation and wheel dolly sequence against actual Three.js OrbitControls."], [], ["tests/unit/controls/orbit-controls-delegation.test.ts", "tests/unit/input/orbit-controls-three-parity.test.ts", "tests/unit/input/camera-controls.test.ts", "tests/browser/threejs-parity-orbit-controls.spec.ts"], ["tests/reports/threejs-parity/orbit-controls/orbit-controls.png"]),
   item("misc_controls_trackball", "controls", "medium", "/apps/controls-trackball/", "matched", ["F", "K"], ["@aura3d/controls exports TrackballControls and the CurrentRoutes trackball route proves rotate, pan, dolly, and roll state driving a A3D-rendered camera example. TrackballControls now includes bounded damping plus keyboard pan, roll, and dolly handling through public control methods, with unit coverage for the damped update path and browser coverage proving the rendered interaction route stays live beyond a one-click smoke test."], [], ["tests/unit/controls/three-compat-controls.test.ts", "tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/controls/trackball.png"]),
-  item("misc_controls_transform", "controls", "high", "/apps/controls-transform/", "partial", ["F", "K"], ["@aura3d/controls retains an explicitly deprecated TransformControls compatibility class that applies programmatic translate/rotate/scale deltas. The route and tests prove only those bounded mutation semantics; they do not prove an interactive Three.js TransformControls equivalent."], ["Rendered gizmo handles, pointer picking and drag lifecycle, axis/plane constraints, snapping, and local/world transform spaces are not implemented; use @aura3d/editor-runtime transform gizmos for the supported editor path."], ["tests/unit/controls/exported-controls-resolution.test.ts", "tests/unit/controls/transform-controls-three-parity.test.ts", "tests/unit/controls/three-compat-controls.test.ts", "tests/browser/threejs-parity-transform-controls.spec.ts"], ["tests/reports/threejs-parity/transform-controls/transform-controls.png"]),
+  item("misc_controls_transform", "controls", "high", "/apps/controls-transform/", "matched", ["F", "K"], ["@aura3d/controls TransformControls is interactive: it exposes rendered gizmo handle geometry (three axis arms plus three plane quads for translate, three rings for rotate, and an additional uniform handle for scale), ray picking that prioritizes axis handles over plane quads and keeps ring interiors unpickable, a pointer down/move/up drag lifecycle that returns false on a miss so viewport selection still works, axis and plane constrained mutation, position/rotation/scale snapping, and distinct local/world handle orientation. @aura3d/editor-runtime additionally exports InteractiveTransformGizmo for command-history-backed editor use. Browser evidence renders all three gizmo modes and drives full drags: an X-arm drag moves position to [0.5, 0, 0] leaving Y and Z untouched, a Z-ring drag rotates 0.785 rad on Z only, an X scale drag reaches [1.5, 1, 1], and a raw 0.68 movement snaps to 0.5."], [], ["tests/unit/controls/exported-controls-resolution.test.ts", "tests/unit/controls/transform-controls-three-parity.test.ts", "tests/unit/controls/interactive-transform-gizmo.test.ts", "tests/unit/controls/three-compat-controls.test.ts", "tests/browser/threejs-parity-transform-controls.spec.ts"], ["tests/reports/threejs-parity-transform-controls/transform-controls.png", "tests/reports/threejs-parity-transform-controls/transform-controls.json"]),
   item("webgl_interactive_raycasting_points", "raycasting-picking", "medium", "/apps/interactive-picking/", "matched", ["F", "G", "K"], ["The CurrentRoutes interactive picking route uses public scene picking with a point-cloud threshold over real scene geometry, focused browser coverage proves point hits are reported, and Three.js parity unit parity compares A3D point-radius picking against actual Three.js Raycaster Points.threshold behavior for the same point cloud, hit rays, miss rays, and bounded distance deltas."], [], ["tests/unit/rendering/interactive-points-three-parity.test.ts", "tests/unit/rendering/renderer.test.ts", "tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/interactive/picking.png"]),
   item("webgl_interactive_cubes", "raycasting-picking", "high", "/apps/interactive-picking/", "matched", ["F", "K"], ["The CurrentRoutes interactive picking route uses public pickingRayFromCamera and scene renderable ray hits for transformed cubes, while focused browser coverage proves live pointer-hover cube hits. Three.js parity interactive-cubes parity compares the route's cube scene against Three.js Raycaster nearest-hit results for the same cube transforms and miss ray, with distance deltas bounded."], [], ["tests/unit/rendering/interactive-cubes-three-parity.test.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/threejs-parity-interactive-cubes.spec.ts"], ["tests/reports/current-routes/interactive/picking.png"]),
   item("webgl_decals", "decals", "high", "/apps/decals/", "matched", ["F", "G", "K"], ["ProjectedDecalGeometry is exported from @aura3d/rendering, unit-tested for box and ellipse clipping, and the CurrentRoutes decals route builds surface decals through createRaycastProjectedDecalGeometry with projected triangle/vertex diagnostics. Decal materials use transparent alpha blending, disabled depth writes, no culling, and polygon offset. Three.js parity decals parity now renders the same sphere/stage/placement set in A3D and an actual THREE.WebGLRenderer using Three.js DecalGeometry, gates same-scene screenshot artifacts, and verifies projector/pointer hit semantics against Three.js raycasting."], [], ["tests/unit/rendering/projected-decal-geometry.test.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/threejs-parity-decals-parity.spec.ts"], ["tests/reports/current-routes/decals/decals.png", "tests/reports/threejs-parity/decals-parity/a3d-decals.png", "tests/reports/threejs-parity/decals-parity/threejs-decals.png", "tests/reports/threejs-parity/decals-parity/side-by-side.png"]),
@@ -162,13 +162,13 @@ const inventory: readonly InventoryItem[] = [
   item("webgl_instancing_performance", "instancing", "high", "/apps/instancing-performance/", "matched", ["G", "I", "B"], ["WebGL2Device binds per-instance attributes with vertexAttribDivisor, ForwardPass uses the public render queue sorter for opaque front-to-back and transparent back-to-front ordering, Scene.createInstancedMesh carries per-instance color data, and the CurrentRoutes route browser-gates 4096 public-scene instances in one indexed instanced draw through A3DRenderer. The instancing parity report verifies descriptor equivalence, one-draw route evidence, screenshot diff pass, draw-call tie, and frame-time tie against Three.js for this scoped instancing workload. Bundle bytes are reported as measured evidence, not as a scoped win claim."], [], ["tests/browser/current-routes-route-health.spec.ts", "tests/unit/scene/hierarchy-serialization.test.ts", "tests/unit/rendering/renderer.test.ts", "tools/threejs-parity-instancing-parity/index.ts"], ["tests/reports/current-routes/instancing/performance.png", "tests/reports/comparison-rendered-screenshots/aura3d-instancing.png", "tests/reports/comparison-rendered-screenshots/threejs-instancing.png", "tests/reports/comparison-diffs/threejs-instancing.png"]),
   item("webgl_buffergeometry_drawrange", "geometry", "medium", "/apps/geometry-drawrange/", "matched", ["G", "B", "C", "K"], ["RenderItem drawRange is honored by the WebGL2 forward and depth passes for indexed drawElements offsets and array drawArrays first/count routing. BufferGeometryCompat exposes setDrawRange(), getAttribute(), and deleteAttribute() mutation APIs, with unit coverage for drawRange state and attribute lifecycle plus a dedicated CurrentRoutes browser route for rendered evidence."], []),
   item("webgl_points_sprites", "lines-points-sprites", "medium", "/apps/interactive-picking/", "matched", ["G", "C", "K"], ["Geometry.points(), render-item point topology, point-radius picking, and WebGL/WebGPU point topology are covered by renderer tests and browser evidence. The Three.js compatibility layer now exposes PointsCompat, SpriteCompat, SpriteBatchCompat screen-aligned billboard instance data, PointsMaterialCompat.size/sizeAttenuation, and SpriteMaterialCompat.rotation/sizeAttenuation, with unit coverage. Three.js parity point-picking parity compares the same point cloud against actual Three.js Raycaster Points.threshold behavior."], [], ["tests/unit/three-compat/three-compat-material-geometry-compat.test.ts", "tests/unit/rendering/interactive-points-three-parity.test.ts", "tests/unit/rendering/renderer.test.ts", "tests/browser/three-compat-vfx.spec.ts", "tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/interactive/picking.png"]),
-  item("webgl_lines_fat", "lines-points-sprites", "medium", "/apps/lines-helpers/", "matched", ["G", "K"], ["Geometry.lineSegments() and @aura3d/debug helper line builders have a browser route that renders line-segment helper geometry through WebGL2. Geometry.wideLineSegments() now expands arbitrary 3D line segments into indexed triangle quads with finite bounds and validation, giving A3D renderer-owned fat-line semantics without relying on implementation-defined WebGL lineWidth behavior."], [], ["tests/unit/rendering/geometry-primitives.test.ts", "tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/geometry/lines-helpers.png"]),
-  item("misc_helpers", "lines-points-sprites", "medium", "/apps/lines-helpers/", "matched", ["G", "C", "K"], ["@aura3d/debug exports buildAxesHelper, buildGridHelper, buildBoundsHelper, buildCameraFrustumHelper, buildDirectionalLightHelper, and buildSkeletonHelper. The Three.js compatibility layer now exposes AxesHelperCompat, GridHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, and SkeletonHelperCompat as scene-addable HelperLineSegmentsCompat objects with BufferGeometryCompat line attributes and LineBasicMaterialCompat materials, with unit coverage and a browser route rendering the helper output as A3D line-segment geometry."], []),
+  item("webgl_lines_fat", "lines-points-sprites", "medium", "/apps/lines-helpers/", "matched", ["G", "K"], ["Geometry.screenSpaceLineSegments() plus ScreenSpaceLineMaterial implement true screen-space fat lines: both endpoints and a corner selector travel per vertex so the vertex stage projects them and expands the quad in device pixels. Browser evidence measures an 8 CSS-pixel request rendering at exactly 8 CSS pixels across camera distance 4 and 16, FOV 20/50/80, viewports 240/400/640, and device pixel ratios 1 and 2 (maximum deviation 0). Butt, square, and round caps and world-unit dashes are supported, and the same measurement shows the older world-space quad thinning from 10px to 4px over the same distance change."], [], ["tests/unit/rendering/geometry-primitives.test.ts", "tests/browser/threejs-parity-fat-lines.spec.ts"], ["tests/reports/threejs-parity-fat-lines/fat-lines.png", "tests/reports/threejs-parity-fat-lines/fat-lines.json"]),
+  item("misc_helpers", "lines-points-sprites", "medium", "/apps/lines-helpers/", "matched", ["G", "C", "K"], ["@aura3d/debug exports buildAxesHelper, buildGridHelper, buildBoundsHelper, buildCameraFrustumHelper, buildDirectionalLightHelper, and buildSkeletonHelper. The Three.js compatibility layer now exposes AxesHelperCompat, GridHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, and SkeletonHelperCompat as scene-addable HelperLineSegmentsCompat objects with BufferGeometryCompat line attributes and LineBasicMaterialCompat materials, with unit coverage and a browser route rendering the helper output as A3D line-segment geometry."], [], ["tests/unit/debug/debug-runtime.test.ts", "tests/unit/three-compat/three-compat-core-compat.test.ts"], ["tests/reports/current-route-health/screenshots/apps-lines-helpers.png"]),
   item("webgl_multiple_elements", "camera", "medium", "/apps/camera-multiple-views/", "matched", ["A", "B", "K"], ["The CurrentRoutes camera multiple views route renders one shared A3D scene definition into three independent WebGL-backed DOM canvas elements with per-view camera diagnostics, route-health coverage, and browser screenshot evidence. Resize and layout semantics are handled by each route canvas while preserving shared scene/render-item definitions."], [], ["tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/camera/multiple-views.png"]),
   item("webgl_multiple_views", "camera", "medium", "/apps/camera-multiple-views/", "matched", ["A", "B", "K"], ["The CurrentRoutes camera multiple views route renders hero, top, and detail camera perspectives from shared render items and reports distinct camera/view diagnostics; package scene code exposes Object3D, Group, Mesh, SkinnedMesh, InstancedMesh, and manual matrixAutoUpdate controls over the same transform tree."], [], ["tests/browser/current-routes-route-health.spec.ts", "tests/unit/scene/camera-frustum.test.ts"], ["tests/reports/current-routes/camera/multiple-views.png"]),
 
   item("webgpu_rtt", "webgpu", "medium", "/apps/wow-webgpu-render-target/", "matched", ["B", "H", "K"], ["The CurrentRoutes WebGPU render-target route uses the public WebGPU render device and WebGPU render-to-texture proof helper to create an offscreen render target, draw into it, read it back, present it, and dispose resources. Hardware evidence now includes a real Chromium `navigator.gpu` adapter/device probe, and route evidence covers the scoped WebGPU render-target workflow without counting fallback rendering as native WebGPU proof."], [], ["tests/unit/rendering/webgpu-render-to-texture-proof.test.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/webgpu-real-device.spec.ts"], ["tests/reports/current-route-health/screenshots/apps-wow-webgpu-render-target.png", "tests/reports/webgpu-hardware-matrix.json"]),
-  item("webgpu_compute", "webgpu", "medium", "/apps/wow-webgpu-compute-particles/", "matched", ["B", "K"], ["The CurrentRoutes WebGPU compute route uses public WebGPUParticleBackend with storage buffers, compute dispatch, readback buffers, and CPU reference parity for particle integration. The scoped compute example is backed by route screenshot evidence, WebGPU particle backend tests, and a real Chromium `navigator.gpu` adapter/device hardware probe."], [], ["tests/unit/rendering/gpu-particle-backend.test.ts", "tests/browser/gpu-particle-backend.spec.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/webgpu-real-device.spec.ts"], ["tests/reports/current-route-health/screenshots/apps-wow-webgpu-compute-particles.png", "tests/reports/webgpu-hardware-matrix.json"]),
+  item("webgpu_compute", "webgpu", "medium", "/apps/wow-webgpu-compute-particles/", "matched", ["B", "K"], ["The CurrentRoutes WebGPU compute route uses public WebGPUParticleBackend with storage buffers, compute dispatch, readback buffers, and CPU reference parity for particle integration. The scoped compute example is backed by route screenshot evidence, WebGPU particle backend tests, and a real Chromium `navigator.gpu` adapter/device hardware probe."], [], ["tests/browser/gpu-particle-backend.spec.ts", "tests/browser/webgpu-parity.spec.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/webgpu-real-device.spec.ts"], ["tests/reports/current-route-health/screenshots/apps-wow-webgpu-compute-particles.png", "tests/reports/webgpu-hardware-matrix.json"]),
   item("webgpu_materials", "webgpu", "medium", "/apps/wow-webgpu-pbr-asset/", "matched", ["B", "C", "K"], ["The CurrentRoutes WebGPU PBR asset route renders imported textured PBR materials through the WebGPU backend, reporting native PBR submissions, texture bindings, and non-dark/color-bucket output. The implementation covers the scoped WebGPU PBR/textured-material route with route screenshot evidence and real Chromium `navigator.gpu` adapter/device hardware evidence."], [], ["tests/unit/rendering/renderer.test.ts", "tests/unit/rendering/production-runtime-webgpu-renderer.test.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/webgpu-real-device.spec.ts"], ["tests/reports/current-route-health/screenshots/apps-wow-webgpu-pbr-asset.png", "tests/reports/webgpu-hardware-matrix.json"]),
   item("webgpu_instance_uniform", "webgpu", "medium", "/apps/wow-webgpu-instancing/", "matched", ["B", "G", "K"], ["The CurrentRoutes WebGPU instancing route renders repeated public PBRMaterial render items through WebGPU, reports native submissions and deterministic workload metrics, and keeps route-health screenshot evidence for this scoped repeated-geometry workflow."], [], ["tests/unit/rendering/renderer.test.ts", "tests/unit/rendering/current-routes-webgl2-hot-path.test.ts", "tests/browser/current-routes-route-health.spec.ts", "tests/browser/webgpu-real-device.spec.ts"], ["tests/reports/current-route-health/screenshots/apps-wow-webgpu-instancing.png", "tests/reports/webgpu-hardware-matrix.json"]),
 
@@ -177,26 +177,27 @@ const inventory: readonly InventoryItem[] = [
   item("webxr_ar_cones", "webxr", "low", "/apps/webxr-interactions/", "matched", ["A", "K"], ["The WebXR interactions route starts injected immersive-ar, samples hit-test results through WebXRSessionController, and maps hit-test matrices to AR cone placements in the A3D rendered scene. Unit and browser coverage prove the scoped AR hit-test sample path and rendered evidence route without treating it as physical-device camera/light-estimation proof."], [], ["tests/unit/input/webxr-session-controller.test.ts", "tests/browser/current-routes-route-health.spec.ts"], ["tests/reports/current-routes/webxr/interactions.png"])
 ];
 
-const tracks = summarizeTracks(inventory);
-const highPriorityOpen = inventory.filter((entry) => entry.priority === "high" && (entry.a3dStatus === "unsupported" || entry.a3dStatus === "internal-only" || entry.a3dStatus === "partial"));
-const statusCounts = countBy(inventory, (item) => item.a3dStatus);
-const categoryCounts = countBy(inventory, (item) => item.category);
+const verifiedInventory = inventory.map(verifyDeclaredRoute).map(verifyMatchedRowHasNamedTests);
+const tracks = summarizeTracks(verifiedInventory);
+const highPriorityOpen = verifiedInventory.filter((entry) => entry.priority === "high" && (entry.a3dStatus === "unsupported" || entry.a3dStatus === "internal-only" || entry.a3dStatus === "partial"));
+const statusCounts = countBy(verifiedInventory, (item) => item.a3dStatus);
+const categoryCounts = countBy(verifiedInventory, (item) => item.category);
 
 const report = {
   schema: "a3d-threejs-parity-threejs-inventory",
   generatedAt: new Date().toISOString(),
-  pass: inventory.every((entry) => entry.constructionTracks.length > 0),
+  pass: verifiedInventory.every((entry) => entry.constructionTracks.length > 0),
   claimBoundary: "This inventory creates a code backlog. It does not prove parity and must not be used as a completion signal.",
   totals: {
-    examples: inventory.length,
-    highPriority: inventory.filter((item) => item.priority === "high").length,
+    examples: verifiedInventory.length,
+    highPriority: verifiedInventory.filter((item) => item.priority === "high").length,
     highPriorityOpen: highPriorityOpen.length,
     byStatus: statusCounts,
     byCategory: categoryCounts
   },
   statuses: ["unsupported", "internal-only", "partial", "matched", "exceeded"] satisfies readonly Status[],
   tracks,
-  items: inventory,
+  items: verifiedInventory,
   nextImplementationTargets: highPriorityOpen.slice(0, 10).map((entry) => ({
     threeExampleId: entry.threeExampleId,
     category: entry.category,
@@ -259,6 +260,49 @@ function item(
   };
 }
 
+function verifyDeclaredRoute(entry: InventoryItem): InventoryItem {
+  if (!entry.a3dRoute?.startsWith("/apps/")) return entry;
+  const routeDirectory = resolve(process.cwd(), entry.a3dRoute.replace(/^\/+|\/+$/g, ""));
+  if (existsSync(routeDirectory)) return entry;
+  const missingRoute = `Declared A3D route ${entry.a3dRoute} is absent from the current source tree; retained tooling or stale screenshots cannot substitute for a mounted public route.`;
+  return {
+    ...entry,
+    a3dStatus: entry.a3dStatus === "matched" || entry.a3dStatus === "exceeded" ? "partial" : entry.a3dStatus,
+    sameSceneAvailable: false,
+    visualStatus: "needs-review",
+    blockingFeatures: entry.blockingFeatures.includes(missingRoute)
+      ? entry.blockingFeatures
+      : [...entry.blockingFeatures, missingRoute]
+  };
+}
+
+/**
+ * Demotes any `matched`/`exceeded` row that names no test.
+ *
+ * FS-502 requires named tests for every matched row, but nothing enforced it: `misc_helpers`
+ * was declared `matched` with an empty `tests` array and the inventory still reported
+ * `pass: true`. A prose justification in `knownDeltas` is an assertion, not evidence, so a row
+ * that cannot name a test now fails closed to `partial` the same way a missing route does.
+ *
+ * The referenced files must also exist, otherwise a row could name a test that was deleted.
+ */
+function verifyMatchedRowHasNamedTests(entry: InventoryItem): InventoryItem {
+  if (entry.a3dStatus !== "matched" && entry.a3dStatus !== "exceeded") return entry;
+  const missingTestFiles = entry.tests.filter((test) => !existsSync(resolve(process.cwd(), test)));
+  if (entry.tests.length > 0 && missingTestFiles.length === 0) return entry;
+  const blocker = entry.tests.length === 0
+    ? `Row is declared ${entry.a3dStatus} but names no test; a matched row requires named test evidence rather than a prose justification.`
+    : `Row names test files that are absent from the current source tree: ${missingTestFiles.join(", ")}.`;
+  return {
+    ...entry,
+    a3dStatus: "partial",
+    visualStatus: "needs-review",
+    blockingFeatures: entry.blockingFeatures.includes(blocker)
+      ? entry.blockingFeatures
+      : [...entry.blockingFeatures, blocker]
+  };
+}
+
 function summarizeTracks(items: readonly InventoryItem[]): readonly TrackSummary[] {
   return (Object.keys(trackTitles) as Track[]).map((track) => ({
     track,
@@ -289,7 +333,7 @@ function writeText(path: string, value: string): void {
 
 function renderBacklogDoc(input: typeof report): string {
   const lines = [
-    "# Three.js parity Code Backlog",
+    "# Three.js Parity Code Backlog",
     "",
     "This file is generated by `tools/threejs-parity-threejs-inventory/index.ts`.",
     "",
@@ -328,7 +372,7 @@ function renderBacklogDoc(input: typeof report): string {
 
 function renderInventoryDoc(input: typeof report): string {
   const lines = [
-    "# Three.js parity Three.js Inventory",
+    "# Three.js Parity Inventory",
     "",
     "Generated inventory for the first Three.js parity code backlog.",
     "",
@@ -343,7 +387,7 @@ function renderInventoryDoc(input: typeof report): string {
 
 function renderParityDoc(input: typeof report): string {
   const lines = [
-    "# Three.js parity Parity Matrix",
+    "# Three.js Parity Matrix",
     "",
     "This matrix is generated from the current inventory. `partial` means some route or infrastructure exists, but the implementation is not yet accepted as full parity.",
     "",
@@ -360,9 +404,9 @@ function renderParityDoc(input: typeof report): string {
 
 function renderClaimBoundaryDoc(input: typeof report): string {
   const lines = [
-    "# Three.js parity Claim Boundary",
+    "# Three.js Parity Claim Boundary",
     "",
-    "Generated from the Three.js parity Three.js inventory.",
+    "Generated from the Three.js parity inventory.",
     "",
     "## Current Claim",
     "",
@@ -399,7 +443,7 @@ function renderClaimBoundaryDoc(input: typeof report): string {
 
 function renderStatusDoc(input: typeof report): string {
   return [
-    "# Three.js parity Status",
+    "# Three.js Parity Status",
     "",
     "Status: code construction started.",
     "",
@@ -427,8 +471,8 @@ function renderStatusDoc(input: typeof report): string {
     "- ForwardPass now has a per-frame skinning palette upload manager and tests proving distinct palettes bind for multiple skinned characters in one frame: `packages/rendering/src/ForwardPass.ts`, `tests/unit/rendering/renderer.test.ts`",
     "- Imported renderables can share one glTF skin and animated joint tree while receiving refreshed per-renderable palettes: `packages/assets/src/GLTFAnimationRuntime.ts`, `tests/assets/gltf-animation-runtime.test.ts`",
     "- Skinned shader variants perform weighted joint-matrix vertex transforms and normal/tangent skinning through GPU uniforms: `packages/rendering/src/ShaderLibrary.ts`",
-    "- Morph target and skinning composition is documented in the retained parity matrix and tested as morph-then-skin, including renderer draw submission, picking/culling bounds, and GLTF framing bounds: `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/SkinningBounds.ts`, `packages/assets/src/GLTFRenderResources.ts`, `tests/unit/rendering/renderer.test.ts`, `docs/project/threejs-parity-parity-matrix.md`",
-    "- Hardware skinning limits are documented honestly in the retained claim boundary: current uniform-array palettes support 64 joints, over-limit glTF skins report `skinning-palette-limit-fallback`, data-texture skinning remains open, and extra influence sets are diagnostic-only: `docs/project/threejs-parity-claim-boundary.md`",
+    "- Morph target and skinning composition is documented in the retained parity matrix and tested as morph-then-skin, including renderer draw submission, picking/culling bounds, and GLTF framing bounds: `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/SkinningBounds.ts`, `packages/assets/src/GLTFRenderResources.ts`, `tests/unit/rendering/renderer.test.ts`, `docs/project/parity/threejs/parity-matrix.md`",
+    "- Hardware skinning: uniform-array palettes cover 96 joints and skins above that upload their palette as an RGBA32F data texture (ceiling 1024 joints), with the active path published in renderer diagnostics. glTF `JOINTS_1`/`WEIGHTS_1` are parsed, retained, and rendered through eight-influence shader variants. Browser evidence at `tests/reports/skinning-over-cap/skinning-over-cap.json` deforms a mesh through joint index 135 of 136 and through a second influence set whose first four weights are zero.",
     "- Additive skinning route now uses public mixer sample blending: `apps/skinning-additive/src/main.ts`",
     "- Additive skinning route publishes motion samples, time range, pose diversity, and healthy-motion diagnostics: `apps/skinning-additive/src/main.ts`",
     "- IK route now uses the public imported skeleton IK controller: `apps/skinning-ik/src/main.ts`",
@@ -439,13 +483,13 @@ function renderStatusDoc(input: typeof report): string {
     "- Walk route publishes motion samples, time range, pose diversity, and healthy-motion diagnostics: `apps/animation-walk/src/main.ts`",
     "- Morph target route now uses the public imported morph target controller: `apps/skinning-morph/src/main.ts`",
     "- Morph target route publishes motion samples, time range, pose diversity, and healthy-motion diagnostics: `apps/skinning-morph/src/main.ts`",
-    "- Math and scene foundation support is documented in the retained parity matrix and tested across first-party vectors, matrices, quaternions, Euler compatibility, projection, look-at, TRS decompose, frustum/ray/bounds math, Object3D-style hierarchy, matrix auto-update, manual local matrix mode, camera projection, and renderer transform uniforms: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/math/vector-matrix.test.ts`, `tests/unit/scene/hierarchy-serialization.test.ts`, `tests/unit/rendering/scene-transform-uniforms.test.ts`",
-    "- Geometry and buffer management support is documented in the retained parity matrix and tested across public vertex descriptors, interleaved vertex buffers, finite attribute validation, typed index buffers, usage hints, dynamic dirty-range updates, geometry bounds, primitive builders, morph/skinning bounds, and explicit buffer disposal: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/rendering/geometry-primitives.test.ts`, `tests/unit/rendering/vertex-buffer.test.ts`, `tests/unit/rendering/index-buffer.test.ts`",
-    "- Shader, material, and WebGL state foundations are documented in the retained parity matrix and tested across shader source variants, GLSL compile/link diagnostics, shader reflection, material schemas, material instances, uniform/attribute/texture binding diagnostics, render-state descriptors, WebGL2 state caching, and renderer draw-state leak coverage: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/rendering/material-binding.test.ts`, `tests/unit/rendering/shader-library.test.ts`, `tests/unit/rendering/webgl2-state-cache.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`, `tests/unit/rendering/renderer.test.ts`",
-    "- Render loop, camera, culling, and draw-path foundations are documented in the retained parity matrix and tested across resize/DPR, animation loops, camera projection/view-projection, scene traversal, world-matrix updates before culling, frustum rejection, render-list construction, drawElements/drawArrays/instanced submissions, queue sorting, BVH broad-phase queries, and diagnostics: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/rendering/renderer.test.ts`, `tests/unit/rendering/camera-framing.test.ts`, `tests/unit/rendering/scene-optimization.test.ts`, `tests/unit/scene/camera-frustum.test.ts`, `tests/unit/rendering/render-queue-sorting.test.ts`",
-    "- Advanced render management is documented in the retained parity matrix and tested across opaque front-to-back sorting, transparent back-to-front sorting, batch diagnostics, WebGL2 native instanced draws, per-instance matrix attributes, divisor binding/reset behavior, state-cache diagnostics, and instancing limits: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/rendering/render-queue-sorting.test.ts`, `tests/unit/rendering/current-routes-webgl2-hot-path.test.ts`, `tests/unit/rendering/scene-optimization.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`",
-    "- PBR and IBL implementation boundaries are documented against concrete shader/resource files in the retained parity matrix, including Cook-Torrance BRDF, GGX/Smith/Fresnel, physical material lobes, HDR decode, diffuse irradiance, specular prefiltering, BRDF LUTs, environment rotation/intensity, and current approximation limits: `docs/project/threejs-parity-parity-matrix.md`",
-    "- Postprocess pipeline support is documented against concrete render-target, renderer, WebGL2, composer, and pass code in the retained parity matrix, including FBO color/depth attachments, fullscreen presentation, renderer-owned ordered target chains, public reusable ping-pong composer targets, depth bindings, explicit bloom bright/horizontal/vertical/composite stages, per-backend unsupported-effect diagnostics, and remaining boundaries: `docs/project/threejs-parity-parity-matrix.md`",
+    "- Math and scene foundation support is documented in the retained parity matrix and tested across first-party vectors, matrices, quaternions, Euler compatibility, projection, look-at, TRS decompose, frustum/ray/bounds math, Object3D-style hierarchy, matrix auto-update, manual local matrix mode, camera projection, and renderer transform uniforms: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/math/vector-matrix.test.ts`, `tests/unit/scene/hierarchy-serialization.test.ts`, `tests/unit/rendering/scene-transform-uniforms.test.ts`",
+    "- Geometry and buffer management support is documented in the retained parity matrix and tested across public vertex descriptors, interleaved vertex buffers, finite attribute validation, typed index buffers, usage hints, dynamic dirty-range updates, geometry bounds, primitive builders, morph/skinning bounds, and explicit buffer disposal: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/rendering/geometry-primitives.test.ts`, `tests/unit/rendering/vertex-buffer.test.ts`, `tests/unit/rendering/index-buffer.test.ts`",
+    "- Shader, material, and WebGL state foundations are documented in the retained parity matrix and tested across shader source variants, GLSL compile/link diagnostics, shader reflection, material schemas, material instances, uniform/attribute/texture binding diagnostics, render-state descriptors, WebGL2 state caching, and renderer draw-state leak coverage: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/rendering/material-binding.test.ts`, `tests/unit/rendering/shader-library.test.ts`, `tests/unit/rendering/webgl2-state-cache.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`, `tests/unit/rendering/renderer.test.ts`",
+    "- Render loop, camera, culling, and draw-path foundations are documented in the retained parity matrix and tested across resize/DPR, animation loops, camera projection/view-projection, scene traversal, world-matrix updates before culling, frustum rejection, render-list construction, drawElements/drawArrays/instanced submissions, queue sorting, BVH broad-phase queries, and diagnostics: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/rendering/renderer.test.ts`, `tests/unit/rendering/camera-framing.test.ts`, `tests/unit/rendering/scene-optimization.test.ts`, `tests/unit/scene/camera-frustum.test.ts`, `tests/unit/rendering/render-queue-sorting.test.ts`",
+    "- Advanced render management is documented in the retained parity matrix and tested across opaque front-to-back sorting, transparent back-to-front sorting, batch diagnostics, WebGL2 native instanced draws, per-instance matrix attributes, divisor binding/reset behavior, state-cache diagnostics, and instancing limits: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/rendering/render-queue-sorting.test.ts`, `tests/unit/rendering/current-routes-webgl2-hot-path.test.ts`, `tests/unit/rendering/scene-optimization.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`",
+    "- PBR and IBL implementation boundaries are documented against concrete shader/resource files in the retained parity matrix, including Cook-Torrance BRDF, GGX/Smith/Fresnel, physical material lobes, HDR decode, diffuse irradiance, specular prefiltering, BRDF LUTs, environment rotation/intensity, and current approximation limits: `docs/project/parity/threejs/parity-matrix.md`",
+    "- Postprocess pipeline support is documented against concrete render-target, renderer, WebGL2, composer, and pass code in the retained parity matrix, including FBO color/depth attachments, fullscreen presentation, renderer-owned ordered target chains, public reusable ping-pong composer targets, depth bindings, explicit bloom bright/horizontal/vertical/composite stages, per-backend unsupported-effect diagnostics, and remaining boundaries: `docs/project/parity/threejs/parity-matrix.md`",
     "- Asset loader pipeline support is tested across GLTF/GLB buffers, accessors, meshes, nodes, skins, animations, cameras, lights, material extensions, KTX2/Basis hooks, HDR/EXR/OBJ loaders, asset caches, render-resource conversion, auto-bounds/framing metadata, and public renderable-scene APIs: `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/loadRenderableAsset.ts`, `packages/assets/src/createRenderableScene.ts`, `tests/assets/current-routes-gltf-loader-corpus.test.ts`, `tests/assets/foundation-render-resources.test.ts`",
     "- GLTFLoader normalizes imported `WEIGHTS_0` rows before GPU skinning, matching Three.js-style loader behavior and preventing malformed-but-common GLB skin data from tripping the renderer contract: `packages/assets/src/GLTFLoader.ts`, `tests/assets/current-routes-gltf-loader-corpus.test.ts`",
     "- glTF loader extension support matrix is public package code: `packages/assets/src/GLTFExtensionSupport.ts`",
@@ -459,7 +503,7 @@ function renderStatusDoc(input: typeof report): string {
     "- Public render queue sorter drives ForwardPass opaque front-to-back and transparent back-to-front ordering with focused tests: `packages/rendering/src/performance/RenderItemSorting.ts`",
     "- Public render queue plans now report object count, estimated draw calls, total instances, batchable groups, largest batch, material switches, and pipeline transitions: `packages/rendering/src/performance/RenderItemSorting.ts`, `tests/unit/rendering/render-queue-sorting.test.ts`",
     "- Renderer scene collection now reports submitted, visible, culled, and frustum-tested object counts in RenderDeviceDiagnostics for sync and async render paths: `packages/rendering/src/Renderer.ts`, `tests/unit/rendering/renderer.test.ts`",
-    "- Resource lifecycle support is documented in the retained parity matrix and tested across material disposal, render-target texture accounting, renderer/device disposal, WebGL delete calls, and repeated renderer load/unload cycles: `docs/project/threejs-parity-parity-matrix.md`, `tests/unit/rendering/resource-lifetime.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`",
+    "- Resource lifecycle support is documented in the retained parity matrix and tested across material disposal, render-target texture accounting, renderer/device disposal, WebGL delete calls, and repeated renderer load/unload cycles: `docs/project/parity/threejs/parity-matrix.md`, `tests/unit/rendering/resource-lifetime.test.ts`, `tests/unit/rendering/render-state-leaks.test.ts`",
     "- ForwardPass now routes oversized instanced render items through per-instance matrix vertex attributes while WebGL2Device issues native drawElementsInstanced/drawArraysInstanced calls with divisor-bound attributes and reports nativeInstancedSubmissions diagnostics: `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/ShaderLibrary.ts`, `packages/rendering/src/WebGL2Device.ts`, `tests/unit/rendering/renderer.test.ts`, `tests/unit/rendering/current-routes-webgl2-hot-path.test.ts`",
     "- WebGL2Device now uses the public WebGL2StateCache on the hot path for program, VAO, framebuffer, viewport, scissor, buffer, texture, sampler, depth, cull, blend, stencil, color-write, and polygon-offset state, caches VAO setup for repeated draws, caches WebGL sampler objects by public Sampler descriptors, deletes cached VAOs and samplers on device disposal, and publishes state-cache diagnostics through RenderDeviceDiagnostics: `packages/rendering/src/WebGL2StateCache.ts`, `packages/rendering/src/WebGL2Device.ts`",
     "- Renderer-owned postprocess now returns pass count, renderer-owned render-target count, texture count, and target dimensions in RenderDeviceDiagnostics: `packages/rendering/src/Renderer.ts`, `packages/rendering/src/RenderDevice.ts`, `tests/unit/rendering/renderer.test.ts`",
@@ -471,7 +515,7 @@ function renderStatusDoc(input: typeof report): string {
     "- Decals route now builds ellipse-clipped surface decals through public ProjectedDecalGeometry and createRaycastProjectedDecalGeometry instead of route-local cylinder/rectangle stand-ins, its decal PBR materials use alpha blending, disabled depth writes, no culling, and polygon offset with browser diagnostics, and `tests/browser/threejs-parity-decals-parity.spec.ts` compares the same scene against actual Three.js DecalGeometry projector output: `apps/decals/src/main.ts`",
     "- Trackball controls route proves public TrackballControls rotate/pan/dolly/roll state in a rendered browser example: `apps/controls-trackball/src/main.ts`",
     "- Geometry drawRange route proves indexed and array draw ranges through public RenderItem drawRange code: `apps/geometry-drawrange/src/main.ts`",
-    "- Geometry, lines, points, sprites, and helper scope is explicit in the retained claim boundary: generated primitives, line/point topology, point-threshold parity, Three-compatible sprite/point objects, instancing, and debug helper line builders are supported, while fat-line parity remains scoped: `packages/rendering/src/Geometry.ts`, `packages/three-compat/src/core/Object3DCompat.ts`, `packages/debug/src/SceneHelpers.ts`, `docs/project/threejs-parity-claim-boundary.md`",
+    "- Geometry, lines, points, sprites, and helper scope is explicit in the retained claim boundary: generated primitives, line/point topology, point-threshold parity, Three-compatible sprite/point objects, instancing, and debug helper line builders are supported, while fat-line parity remains scoped: `packages/rendering/src/Geometry.ts`, `packages/three-compat/src/core/Object3DCompat.ts`, `packages/debug/src/SceneHelpers.ts`, `docs/project/parity/threejs/claim-boundary.md`",
     "- Scene package exports Object3D, Group, Mesh, SkinnedMesh, InstancedMesh, and manual matrixAutoUpdate controls over the existing transform/renderable tree: `packages/scene/src/Object3D.ts`",
     "- Materials transmission route proves PBRMaterial transmission/IOR/volume uniforms through renderer-owned WebGL2 shading: `apps/materials-transmission/src/main.ts`",
     "- Spotlight route proves Scene SpotLight collection, local PBR lighting uniforms, and renderer-owned shadow request: `apps/lights-spotlight/src/main.ts`",

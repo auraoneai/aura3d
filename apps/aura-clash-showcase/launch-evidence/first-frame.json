@@ -1,7 +1,7 @@
 {
   "ok": true,
-  "generatedAt": "2026-07-28T10:09:39.634Z",
-  "startedAt": "2026-07-28T10:09:20.989Z",
+  "generatedAt": "2026-08-01T23:38:18.761Z",
+  "startedAt": "2026-08-01T23:36:59.165Z",
   "targetUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
   "finalUrl": "http://127.0.0.1:5178/playable/?capture=first-frame",
   "status": 200,
@@ -23,22 +23,22 @@
     "x": 0,
     "y": 0,
     "width": 1440,
-    "height": 1436.625
+    "height": 1200
   },
-  "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay plu",
+  "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\nIDLE - 360 HP\n98\nFIGHT\nRIVAL AI\nNYX CIRCUIT\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
   "nonblank": true,
   "imageEvidence": {
     "kind": "aura-clash-screenshot-image-evidence",
     "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
-    "byteLength": 495979,
-    "sha256": "ada8c1d6337bc3c47e2adcf035e833279716d704340618142f94f7e583d7f789",
-    "sampleStride": 121,
-    "sampledBytes": 4099,
+    "byteLength": 904144,
+    "sha256": "fcbf51784c65e7243a55d2141bb53801727d1c3dd6e9c9ad15d07784ac0410ca",
+    "sampleStride": 220,
+    "sampledBytes": 4110,
     "uniqueByteValues": 256,
     "minByte": 0,
     "maxByte": 255,
-    "meanByte": 131.631,
-    "standardDeviation": 74.768,
+    "meanByte": 127.789,
+    "standardDeviation": 73.968,
     "nonblank": true
   },
   "visualReviewContract": {
@@ -301,9 +301,14 @@
         "id": "debug-overlays",
         "label": "Debug overlays",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": false,
+        "diagnosticSignal": true,
+        "domBackedArea": false,
         "hasPageDeclaration": true,
         "hasVisibleDomSignal": false,
         "hasTextSignal": true,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "debug overlay visible or explicitly declared",
           "hitbox, hurtbox, collider, camera, runtime, or frame diagnostic evidence"
@@ -375,9 +380,14 @@
         "id": "readable-fighters",
         "label": "Readable fighters",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": true,
+        "diagnosticSignal": true,
+        "domBackedArea": false,
         "hasPageDeclaration": true,
-        "hasVisibleDomSignal": false,
+        "hasVisibleDomSignal": true,
         "hasTextSignal": true,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "both fighters visible or explicitly declared",
           "fighter names, sides, poses, silhouettes, or bounds readable"
@@ -391,9 +401,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -401,7 +444,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -413,9 +456,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -423,7 +499,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -435,9 +511,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -445,7 +554,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           }
@@ -455,9 +564,14 @@
         "id": "effects",
         "label": "Effects",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": true,
+        "diagnosticSignal": true,
+        "domBackedArea": false,
         "hasPageDeclaration": true,
         "hasVisibleDomSignal": false,
         "hasTextSignal": false,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "combat effects, particles, impact flashes, bloom, trails, or shader effects visible or explicitly declared",
           "effect state named with non-empty intensity/count/timing details when available"
@@ -523,9 +637,14 @@
         "id": "hud",
         "label": "HUD",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": false,
+        "diagnosticSignal": false,
+        "domBackedArea": true,
         "hasPageDeclaration": true,
-        "hasVisibleDomSignal": false,
+        "hasVisibleDomSignal": true,
         "hasTextSignal": true,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "health, timer, round, combo, or control HUD visible or explicitly declared",
           "HUD text readable in captured viewport"
@@ -539,15 +658,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "98 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "98 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -559,15 +775,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "85 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "85 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -579,15 +892,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "83 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "83 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           }
@@ -597,9 +1007,14 @@
         "id": "stage-depth",
         "label": "Stage depth",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": true,
+        "diagnosticSignal": true,
+        "domBackedArea": false,
         "hasPageDeclaration": true,
         "hasVisibleDomSignal": true,
         "hasTextSignal": true,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "foreground, midground, and background/depth cues visible or explicitly declared",
           "arena boundaries, parallax, floor grid, shadows, or city/stage layers named when available"
@@ -627,9 +1042,9 @@
                 "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -640,12 +1055,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -659,9 +1074,9 @@
                 "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -693,12 +1108,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -709,12 +1124,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -725,12 +1140,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -762,12 +1177,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -778,12 +1193,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -794,12 +1209,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -818,9 +1233,14 @@
         "id": "lighting-materials",
         "label": "Lighting and materials",
         "status": "pass",
+        "machineBacked": true,
+        "screenshotSignal": true,
+        "diagnosticSignal": true,
+        "domBackedArea": false,
         "hasPageDeclaration": true,
         "hasVisibleDomSignal": false,
         "hasTextSignal": true,
+        "declarationAloneIsInsufficient": true,
         "requiredEvidence": [
           "key/fill/rim, bloom, shadows, reflections, emissive, metal, glass, cloth, or material contrast visible or explicitly declared",
           "lighting/material checks named with non-empty values when available"
@@ -1039,12 +1459,17 @@
       },
       {
         "id": "review-area-evidence",
-        "label": "Required visual review areas have declarations or visible DOM evidence",
+        "label": "Required visual review areas are backed by screenshot-derived signals or verified renderer diagnostics (declarations alone cannot pass)",
         "ok": true
       },
       {
         "id": "three-composition-evidence",
         "label": "Three screenshot compositions are captured and nonblank",
+        "ok": true
+      },
+      {
+        "id": "fighters-composed",
+        "label": "Both fighters are visible, grounded, separated, clip-driven, and skinning-bound in every required composition",
         "ok": true
       }
     ],
@@ -1080,16 +1505,104 @@
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
-        "byteLength": 495979,
-        "sha256": "ada8c1d6337bc3c47e2adcf035e833279716d704340618142f94f7e583d7f789",
-        "sampleStride": 121,
-        "sampledBytes": 4099,
+        "byteLength": 904144,
+        "sha256": "fcbf51784c65e7243a55d2141bb53801727d1c3dd6e9c9ad15d07784ac0410ca",
+        "sampleStride": 220,
+        "sampledBytes": 4110,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 131.631,
-        "standardDeviation": 74.768,
+        "meanByte": 127.789,
+        "standardDeviation": 73.968,
         "nonblank": true
+      },
+      "canvasRegions": {
+        "kind": "aura-clash-canvas-region-evidence",
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.png",
+        "imageWidth": 1440,
+        "imageHeight": 1200,
+        "canvasScale": null,
+        "whole": {
+          "sampledPixels": 432000,
+          "meanLuminance": 37.33,
+          "luminanceStdDev": 40.56,
+          "colorBuckets": 425,
+          "saturatedRatio": 0.5592,
+          "brightRatio": 0.0357
+        },
+        "upperThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 32.66,
+          "luminanceStdDev": 43.89,
+          "colorBuckets": 195,
+          "saturatedRatio": 0.6667,
+          "brightRatio": 0.0481
+        },
+        "middleBand": {
+          "sampledPixels": 144000,
+          "meanLuminance": 55.32,
+          "luminanceStdDev": 36.93,
+          "colorBuckets": 345,
+          "saturatedRatio": 0.2746,
+          "brightRatio": 0.0481
+        },
+        "lowerThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 24.01,
+          "luminanceStdDev": 33.49,
+          "colorBuckets": 92,
+          "saturatedRatio": 0.7362,
+          "brightRatio": 0.0107
+        },
+        "centerStage": {
+          "sampledPixels": 155520,
+          "meanLuminance": 54.27,
+          "luminanceStdDev": 38.6,
+          "colorBuckets": 342,
+          "saturatedRatio": 0.293,
+          "brightRatio": 0.0486
+        }
+      },
+      "rendererDiagnostics": {
+        "kind": "aura-clash-renderer-diagnostics",
+        "backend": "webgl2",
+        "rendererSurface": "aura3d-production-gltf-animation",
+        "drawCalls": 91,
+        "frameTimeMs": 16.67,
+        "fps": 60,
+        "stageEvidenceSource": "observed-render-items",
+        "stageObservedRenderLabelCount": 56,
+        "stageEvidenceBacked": true,
+        "stageMissingElementIds": [],
+        "fighters": {
+          "player": {
+            "name": "Flux Vanta",
+            "grounded": true,
+            "health": 360,
+            "x": -1.25,
+            "y": 0,
+            "activeClip": "Idle_Loop",
+            "action": "idle"
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "grounded": true,
+            "health": 360,
+            "x": 0.015,
+            "y": 0,
+            "activeClip": "Idle_FoldArms_Loop",
+            "action": "idle"
+          },
+          "separation": 1.265,
+          "bothGrounded": true,
+          "bothClipped": true,
+          "separated": true,
+          "bothAlive": true,
+          "skinningBound": true
+        },
+        "lightingReadable": true,
+        "postProcessGameplayVisible": true,
+        "noPrimitiveFighters": true
       },
       "reviewIntent": null,
       "pageEvidence": {
@@ -1098,9 +1611,9 @@
           "x": 0,
           "y": 0,
           "width": 1440,
-          "height": 1436.625
+          "height": 1200
         },
-        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay plu",
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\nIDLE - 360 HP\n98\nFIGHT\nRIVAL AI\nNYX CIRCUIT\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
         "canvas": [
           {
             "index": 0,
@@ -1108,9 +1621,9 @@
             "ariaLabel": "Aura3D production renderer canvas",
             "testId": null,
             "width": 1358,
-            "height": 598,
+            "height": 658,
             "clientWidth": 1358,
-            "clientHeight": 598,
+            "clientHeight": 658,
             "visible": true
           }
         ],
@@ -1180,9 +1693,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -1190,7 +1736,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1220,15 +1766,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "98 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "98 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1254,9 +1897,9 @@
                 "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -1267,12 +1910,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 98 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -1286,9 +1929,9 @@
                 "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -1337,16 +1980,104 @@
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
-        "byteLength": 496606,
-        "sha256": "87e733989e67bd566999b0d0ca9a497d420b836ce6a90a6de84da04bc10d64ab",
-        "sampleStride": 121,
-        "sampledBytes": 4105,
+        "byteLength": 903363,
+        "sha256": "f3533cd719172490a95aaa68e2fa3761831cb4c1d342606b000a31a8b84362b8",
+        "sampleStride": 220,
+        "sampledBytes": 4107,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 130.137,
-        "standardDeviation": 74.786,
+        "meanByte": 128.003,
+        "standardDeviation": 74.744,
         "nonblank": true
+      },
+      "canvasRegions": {
+        "kind": "aura-clash-canvas-region-evidence",
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.fighter-readability.png",
+        "imageWidth": 1440,
+        "imageHeight": 1200,
+        "canvasScale": null,
+        "whole": {
+          "sampledPixels": 432000,
+          "meanLuminance": 37.34,
+          "luminanceStdDev": 40.53,
+          "colorBuckets": 411,
+          "saturatedRatio": 0.5593,
+          "brightRatio": 0.0354
+        },
+        "upperThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 32.65,
+          "luminanceStdDev": 43.87,
+          "colorBuckets": 195,
+          "saturatedRatio": 0.6667,
+          "brightRatio": 0.048
+        },
+        "middleBand": {
+          "sampledPixels": 144000,
+          "meanLuminance": 55.37,
+          "luminanceStdDev": 36.84,
+          "colorBuckets": 329,
+          "saturatedRatio": 0.2748,
+          "brightRatio": 0.0475
+        },
+        "lowerThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 24.01,
+          "luminanceStdDev": 33.49,
+          "colorBuckets": 92,
+          "saturatedRatio": 0.7362,
+          "brightRatio": 0.0107
+        },
+        "centerStage": {
+          "sampledPixels": 155520,
+          "meanLuminance": 54.3,
+          "luminanceStdDev": 38.48,
+          "colorBuckets": 329,
+          "saturatedRatio": 0.2932,
+          "brightRatio": 0.0479
+        }
+      },
+      "rendererDiagnostics": {
+        "kind": "aura-clash-renderer-diagnostics",
+        "backend": "webgl2",
+        "rendererSurface": "aura3d-production-gltf-animation",
+        "drawCalls": 91,
+        "frameTimeMs": 16.67,
+        "fps": 60,
+        "stageEvidenceSource": "observed-render-items",
+        "stageObservedRenderLabelCount": 56,
+        "stageEvidenceBacked": true,
+        "stageMissingElementIds": [],
+        "fighters": {
+          "player": {
+            "name": "Flux Vanta",
+            "grounded": true,
+            "health": 360,
+            "x": -1.25,
+            "y": 0,
+            "activeClip": "Idle_Loop",
+            "action": "idle"
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "grounded": true,
+            "health": 360,
+            "x": 0.015,
+            "y": 0,
+            "activeClip": "Idle_FoldArms_Loop",
+            "action": "idle"
+          },
+          "separation": 1.265,
+          "bothGrounded": true,
+          "bothClipped": true,
+          "separated": true,
+          "bothAlive": true,
+          "skinningBound": true
+        },
+        "lightingReadable": true,
+        "postProcessGameplayVisible": true,
+        "noPrimitiveFighters": true
       },
       "reviewIntent": "Both typed fighter GLBs grounded on the combat lane with readable HUD and stage depth.",
       "pageEvidence": {
@@ -1355,9 +2086,9 @@
           "x": 0,
           "y": 0,
           "width": 1440,
-          "height": 1436.625
+          "height": 1200
         },
-        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nWALK - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Zombie_Walk_Fwd_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay p",
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\nIDLE - 360 HP\n86\nFIGHT\nRIVAL AI\nNYX CIRCUIT\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
         "canvas": [
           {
             "index": 0,
@@ -1365,9 +2096,9 @@
             "ariaLabel": "Aura3D production renderer canvas",
             "testId": null,
             "width": 1358,
-            "height": 598,
+            "height": 658,
             "clientWidth": 1358,
-            "clientHeight": 598,
+            "clientHeight": 658,
             "visible": true
           }
         ],
@@ -1437,9 +2168,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -1447,7 +2211,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1477,15 +2241,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "85 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "85 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1508,12 +2369,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -1524,12 +2385,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 85 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -1540,12 +2401,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -1594,16 +2455,104 @@
       "imageEvidence": {
         "kind": "aura-clash-screenshot-image-evidence",
         "path": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
-        "byteLength": 496606,
-        "sha256": "87e733989e67bd566999b0d0ca9a497d420b836ce6a90a6de84da04bc10d64ab",
-        "sampleStride": 121,
+        "byteLength": 903081,
+        "sha256": "875d72e82397a771ec4e6746cfa37f792b3ab6c78498693a90b198ec61338bbf",
+        "sampleStride": 220,
         "sampledBytes": 4105,
         "uniqueByteValues": 256,
         "minByte": 0,
         "maxByte": 255,
-        "meanByte": 130.137,
-        "standardDeviation": 74.786,
+        "meanByte": 127.146,
+        "standardDeviation": 73.657,
         "nonblank": true
+      },
+      "canvasRegions": {
+        "kind": "aura-clash-canvas-region-evidence",
+        "screenshot": "/Users/gurbakshchahal/platforms/aura3d/apps/aura-clash-showcase/launch-evidence/first-frame.effects-hud-debug.png",
+        "imageWidth": 1440,
+        "imageHeight": 1200,
+        "canvasScale": null,
+        "whole": {
+          "sampledPixels": 432000,
+          "meanLuminance": 37.29,
+          "luminanceStdDev": 40.42,
+          "colorBuckets": 408,
+          "saturatedRatio": 0.5594,
+          "brightRatio": 0.0352
+        },
+        "upperThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 32.5,
+          "luminanceStdDev": 43.55,
+          "colorBuckets": 192,
+          "saturatedRatio": 0.6673,
+          "brightRatio": 0.0474
+        },
+        "middleBand": {
+          "sampledPixels": 144000,
+          "meanLuminance": 55.37,
+          "luminanceStdDev": 36.84,
+          "colorBuckets": 326,
+          "saturatedRatio": 0.2747,
+          "brightRatio": 0.0475
+        },
+        "lowerThird": {
+          "sampledPixels": 144000,
+          "meanLuminance": 24.01,
+          "luminanceStdDev": 33.49,
+          "colorBuckets": 92,
+          "saturatedRatio": 0.7362,
+          "brightRatio": 0.0107
+        },
+        "centerStage": {
+          "sampledPixels": 155520,
+          "meanLuminance": 54.31,
+          "luminanceStdDev": 38.49,
+          "colorBuckets": 325,
+          "saturatedRatio": 0.293,
+          "brightRatio": 0.0479
+        }
+      },
+      "rendererDiagnostics": {
+        "kind": "aura-clash-renderer-diagnostics",
+        "backend": "webgl2",
+        "rendererSurface": "aura3d-production-gltf-animation",
+        "drawCalls": 91,
+        "frameTimeMs": 20.6,
+        "fps": 48.5,
+        "stageEvidenceSource": "observed-render-items",
+        "stageObservedRenderLabelCount": 56,
+        "stageEvidenceBacked": true,
+        "stageMissingElementIds": [],
+        "fighters": {
+          "player": {
+            "name": "Flux Vanta",
+            "grounded": true,
+            "health": 360,
+            "x": -1.25,
+            "y": 0,
+            "activeClip": "Idle_Loop",
+            "action": "idle"
+          },
+          "rival": {
+            "name": "Nyx Circuit",
+            "grounded": true,
+            "health": 360,
+            "x": 0.015,
+            "y": 0,
+            "activeClip": "Idle_FoldArms_Loop",
+            "action": "idle"
+          },
+          "separation": 1.265,
+          "bothGrounded": true,
+          "bothClipped": true,
+          "separated": true,
+          "bothAlive": true,
+          "skinningBound": true
+        },
+        "lightingReadable": true,
+        "postProcessGameplayVisible": false,
+        "noPrimitiveFighters": true
       },
       "reviewIntent": "Combat-impact frame with VFX, HUD state, debug evidence, and readable silhouettes.",
       "pageEvidence": {
@@ -1612,9 +2561,9 @@
           "x": 0,
           "y": 0,
           "width": 1440,
-          "height": 1436.625
+          "height": 1200
         },
-        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\n\nSkinned GLB fighter driven by Aura3D production animation runtime.\n\nIDLE - 360 HP\n99\nFIGHT\nRIVAL AI\nNYX CIRCUIT\n\nIndependent second GLB instance with its own clips, spacing, and hit windows.\n\nWALK - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Zombie_Walk_Fwd_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nScope\nAura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.\nRenderer\nProduction-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.\nFighters\nTwo distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.\nAnimation\nJab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.\nProof\nDeterministic combat replay p",
+        "textSample": "Aura Clash Arena\nPlayable\nEvidence\nDeploy check\nGitHub\nnpm\nTweaks\nPLAYER ONE\nFLUX VANTA\nIDLE - 360 HP\n83\nFIGHT\nRIVAL AI\nNYX CIRCUIT\nIDLE - 360 HP\nAura3D production GLB animation runtime ready\nIdle_Loop / Idle_FoldArms_Loop\nAura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.\nA / Left\nD / Right\nS / Down\nW Jump\nSpace Dash\nShift / Q Block\nJ Light\nK Heavy\nL Special\nP Pause\nR Reset\nAura3D evidence & scope",
         "canvas": [
           {
             "index": 0,
@@ -1622,9 +2571,9 @@
             "ariaLabel": "Aura3D production renderer canvas",
             "testId": null,
             "width": 1358,
-            "height": 598,
+            "height": 658,
             "clientWidth": 1358,
-            "clientHeight": 598,
+            "clientHeight": 658,
             "visible": true
           }
         ],
@@ -1694,9 +2643,42 @@
                 "The playable frame renders distinct typed player and rival GLB actors with independent transforms and animation state."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 2,
+            "visibleSelectorMatchCount": 2,
+            "selectorMatches": [
+              {
+                "selector": "[data-testid*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='player' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              }
+            ],
             "textMatches": [
               "fighter",
               "player",
@@ -1704,7 +2686,7 @@
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1734,15 +2716,112 @@
                 "The visible fight HUD publishes health, meter, round timer, callout, and current action for both fighters."
               ]
             },
-            "selectorMatchCount": 0,
-            "visibleSelectorMatchCount": 0,
-            "selectorMatches": [],
+            "selectorMatchCount": 6,
+            "visibleSelectorMatchCount": 6,
+            "selectorMatches": [
+              {
+                "selector": "[data-hud]",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[data-testid*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[data-testid*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "83 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              },
+              {
+                "selector": "[role='status']",
+                "tagName": "section",
+                "id": null,
+                "role": "status",
+                "ariaLabel": "Fight HUD",
+                "testId": null,
+                "visible": true,
+                "text": "Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Rival AI Nyx Circuit Independent second GLB instance with its own cl",
+                "bounds": {
+                  "x": 40,
+                  "y": 95,
+                  "width": 1360,
+                  "height": 163
+                }
+              },
+              {
+                "selector": "[aria-label*='health' i]",
+                "tagName": "div",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Player health",
+                "testId": "player-health",
+                "visible": true,
+                "text": "",
+                "bounds": {
+                  "x": 69,
+                  "y": 182,
+                  "width": 575,
+                  "height": 8
+                }
+              },
+              {
+                "selector": "[aria-label*='timer' i]",
+                "tagName": "article",
+                "id": null,
+                "role": null,
+                "ariaLabel": "Round timer",
+                "testId": "round-timer",
+                "visible": true,
+                "text": "83 FIGHT",
+                "bounds": {
+                  "x": 672,
+                  "y": 96,
+                  "width": 96,
+                  "height": 161
+                }
+              }
+            ],
             "textMatches": [
               "pause"
             ],
             "evidenceSources": {
               "pageDeclaration": true,
-              "visibleDomSignal": false,
+              "visibleDomSignal": true,
               "textSignal": true
             }
           },
@@ -1765,12 +2844,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               },
               {
@@ -1781,12 +2860,12 @@
                 "ariaLabel": "Aura Clash Arena playable game",
                 "testId": null,
                 "visible": true,
-                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 99 FIGHT Ri",
+                "text": "Aura Clash Arena Playable Evidence Deploy check GitHub npm Tweaks Player one Flux Vanta Skinned GLB fighter driven by Aura3D production animation runtime. IDLE - 360 HP 83 FIGHT Ri",
                 "bounds": {
                   "x": 0,
                   "y": 0,
                   "width": 1440,
-                  "height": 1437
+                  "height": 1200
                 }
               },
               {
@@ -1797,12 +2876,12 @@
                 "ariaLabel": "Aura Clash Arena production GLB stage",
                 "testId": null,
                 "visible": true,
-                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Zombie_Walk_Fwd_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
+                "text": "Aura3D production GLB animation runtime ready Idle_Loop / Idle_FoldArms_Loop Aura Clash Arena loaded: skinned GLB fighters, real clip playback, deterministic combat.",
                 "bounds": {
                   "x": 40,
-                  "y": 399,
+                  "y": 272,
                   "width": 1360,
-                  "height": 600
+                  "height": 660
                 }
               }
             ],
@@ -1888,22 +2967,6 @@
     },
     {
       "type": "warning",
-      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
-    },
-    {
-      "type": "warning",
-      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
-    },
-    {
-      "type": "warning",
-      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels"
-    },
-    {
-      "type": "warning",
-      "text": "[.WebGL-0x13c001d6800]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)"
-    },
-    {
-      "type": "warning",
       "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
     },
     {
@@ -1949,6 +3012,10 @@
     {
       "type": "warning",
       "text": "<link rel=preload> uses an unsupported `as` value"
+    },
+    {
+      "type": "warning",
+      "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio"
     },
     {
       "type": "warning",

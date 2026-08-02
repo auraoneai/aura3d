@@ -202,6 +202,16 @@ export function bytesPerPixel(format: TextureFormat): number {
   }
 }
 
+/**
+ * Floating-point colour formats.
+ *
+ * These are not guaranteed mipmap- or linear-filterable in WebGL2 without
+ * `OES_texture_float_linear`, so callers must not call `generateMipmap` on them.
+ */
+export function isFloatColorTextureFormat(format: TextureFormat): boolean {
+  return format === "rgba16f" || format === "rgba32f";
+}
+
 export function isCompressedTextureFormat(format: TextureFormat): format is TextureCompressedFormat {
   return format === "bc1-rgba-unorm" || format === "bc3-rgba-unorm" || format === "etc2-rgba8unorm" || format === "astc-4x4-rgba-unorm";
 }

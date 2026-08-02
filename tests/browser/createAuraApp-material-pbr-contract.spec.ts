@@ -19,6 +19,12 @@ interface VariantPixelMetrics {
   };
   readonly meanRgb: readonly [number, number, number];
   readonly meanLuma: number;
+  /** Mean absolute luma delta between adjacent foreground pixels. */
+  readonly localLumaVariation: number;
+  /** `localLumaVariation` normalized by mean foreground luma. */
+  readonly relativeLumaVariation: number;
+  /** Mean per-pixel max-minus-min RGB spread across the foreground. */
+  readonly meanChroma: number;
   readonly hash: string;
 }
 
@@ -39,6 +45,7 @@ interface VariantComparison {
   readonly variantA: string;
   readonly variantB: string;
   readonly pixelDelta: number;
+  readonly changedPixelFraction: number;
   readonly meanLumaDelta: number;
   readonly foregroundBounds: VariantPixelMetrics["foregroundBounds"];
 }
@@ -70,6 +77,7 @@ interface FeatureEvidence {
   readonly hashA?: string;
   readonly hashB?: string;
   readonly pixelDelta?: number;
+  readonly measurements?: Readonly<Record<string, number>>;
   readonly reason: string;
 }
 
@@ -217,6 +225,58 @@ test.describe("createAuraApp root material/PBR contract", () => {
     });
     captures.set("typed-textured-asset", typedTextureCapture.capture);
 
+    // FS-302: controlled texture on/off proof. Both variants render the same
+    // typed asset with the same camera and lighting; only the material differs.
+    const textureOn = await captureVariant(page, "typed-texture-on", { minNonBackgroundPixels: 900 });
+    captures.set("typed-texture-on", textureOn.capture);
+    const textureOff = await captureVariant(page, "typed-texture-off", { minNonBackgroundPixels: 900 });
+    captures.set("typed-texture-off", textureOff.capture);
+    const textureComparison = await compareVariants(page, "typed-texture-on", "typed-texture-off");
+    // A sampled texture must change a substantial fraction of the model region
+    // AND carry colour information the achromatic flat override cannot produce
+    // AND show more brightness-normalized local detail. Requiring only a mean
+    // colour delta would pass for any material swap, which is exactly the weak
+    // proof this replaces.
+    //
+    // Absolute local luma variation is deliberately NOT the gate: it is
+    // brightness-confounded. The flat grey override is brighter than the dark
+    // textured robot, so it shows larger absolute adjacent differences from
+    // shading gradients alone while carrying no texture detail. Normalizing by
+    // mean foreground luma is what makes the two comparable.
+    const textureMetrics = {
+      changedPixelFraction: textureComparison.changedPixelFraction,
+      relativeLumaVariationOn: textureOn.capture.pixels.relativeLumaVariation,
+      relativeLumaVariationOff: textureOff.capture.pixels.relativeLumaVariation,
+      meanChromaOn: textureOn.capture.pixels.meanChroma,
+      meanChromaOff: textureOff.capture.pixels.meanChroma,
+      colorBucketsOn: textureOn.capture.pixels.colorBuckets,
+      colorBucketsOff: textureOff.capture.pixels.colorBuckets
+    };
+    const controlledTextureChecks = {
+      regionChanged: textureMetrics.changedPixelFraction >= 0.2,
+      chromaFromTexture: textureMetrics.meanChromaOn >= textureMetrics.meanChromaOff * 2 && textureMetrics.meanChromaOn >= 8,
+      moreRelativeDetail: textureMetrics.relativeLumaVariationOn > textureMetrics.relativeLumaVariationOff * 1.15,
+      moreColorBuckets: textureMetrics.colorBucketsOn > textureMetrics.colorBucketsOff
+    };
+    const controlledTexturePass = Object.values(controlledTextureChecks).every(Boolean);
+    const failedTextureChecks = Object.entries(controlledTextureChecks)
+      .filter(([, passed]) => !passed)
+      .map(([name]) => name);
+    const textureMeasurementSummary = `changed-pixel fraction ${textureMetrics.changedPixelFraction} of the compared region, mean chroma ${textureMetrics.meanChromaOn} textured vs ${textureMetrics.meanChromaOff} flat, relative luma variation ${textureMetrics.relativeLumaVariationOn} textured vs ${textureMetrics.relativeLumaVariationOff} flat, ${textureMetrics.colorBucketsOn} vs ${textureMetrics.colorBucketsOff} colour buckets`;
+    features.push({
+      feature: "base-color-texture-controlled",
+      status: controlledTexturePass ? "pass" : "partial",
+      screenshotA: textureOn.screenshotPath,
+      hashA: textureOn.screenshotHash,
+      screenshotB: textureOff.screenshotPath,
+      hashB: textureOff.screenshotHash,
+      pixelDelta: textureComparison.pixelDelta,
+      measurements: textureMetrics,
+      reason: controlledTexturePass
+        ? `Controlled texture on/off comparison on typed assets.${runnerInfo.typedTextureAsset.id}: ${textureMeasurementSummary}. Root createAuraApp samples base-color textures.`
+        : `Controlled texture on/off comparison did not clear its thresholds (${failedTextureChecks.join(", ")}): ${textureMeasurementSummary}.`
+    });
+
     features.push(...runnerInfo.unsupportedFeatures);
 
     const rendererCapture = captures.get("base-color-a") ?? typedTextureCapture.capture;
@@ -244,12 +304,41 @@ test.describe("createAuraApp root material/PBR contract", () => {
     expect(evidence.imports).toEqual(["@aura3d/engine", "../../src/aura-assets"]);
     expect(evidence.renderer.backend).toBe("webgl2");
     expect(evidence.renderer.drawCalls).toBeGreaterThan(0);
+    // Regression guard: `resize: false` on a container target used to leave the
+    // engine-created canvas at the HTML default 300x150 backing store, so every
+    // material measurement was taken from a tiny blurry upscale. The stage is
+    // 720x480 CSS pixels at pixelRatio 1, so the backing store must be in that
+    // range rather than the spec default.
+    expect(evidence.renderer.renderSize?.[0]).toBeGreaterThan(600);
+    expect(evidence.renderer.renderSize?.[1]).toBeGreaterThan(400);
     expect(evidence.typedTextureAsset.textureCount).toBeGreaterThan(0);
     expect(featureStatus(evidence, "base-color")).toBe("pass");
     expect(featureStatus(evidence, "metallic-roughness")).toBe("pass");
     expect(featureStatus(evidence, "emissive")).toBe("pass");
     expect(featureStatus(evidence, "alpha")).toBe("partial");
     expect(featureStatus(evidence, "base-color-texture")).toBe("partial");
+    // Negative control: the same metric applied to the base-color pair must NOT
+    // report a texture. Those two variants are an untextured sphere in two flat
+    // colours, so a metric that any material swap could satisfy would wrongly
+    // pass here. This is what makes the texture claim above discriminating
+    // rather than merely a "the pixels changed" check.
+    // The comparison is read from the captures recorded earlier in this run
+    // rather than re-measured, because navigating to the typed-asset harness
+    // discards the page-side capture store.
+    const flatControlChromaA = captures.get("base-color-a")?.pixels.meanChroma ?? 0;
+    const flatControlChromaB = captures.get("base-color-b")?.pixels.meanChroma ?? 0;
+    const flatControlChromaRatioPasses = flatControlChromaA >= flatControlChromaB * 2 && flatControlChromaA >= 8;
+    const flatControlRelativeDetailPasses =
+      (captures.get("base-color-a")?.pixels.relativeLumaVariation ?? 0)
+      > (captures.get("base-color-b")?.pixels.relativeLumaVariation ?? 0) * 1.15;
+    expect(flatControlChromaRatioPasses && flatControlRelativeDetailPasses).toBe(false);
+
+    // The controlled on/off comparison is the strong texture claim.
+    expect(failedTextureChecks).toEqual([]);
+    expect(featureStatus(evidence, "base-color-texture-controlled")).toBe("pass");
+    expect(textureMetrics.changedPixelFraction).toBeGreaterThanOrEqual(0.2);
+    expect(textureMetrics.meanChromaOn).toBeGreaterThanOrEqual(textureMetrics.meanChromaOff * 2);
+    expect(textureMetrics.relativeLumaVariationOn).toBeGreaterThan(textureMetrics.relativeLumaVariationOff * 1.15);
     expect(featureStatus(evidence, "normal-map")).toBe("unsupported");
     expect(featureStatus(evidence, "glass-transmission")).toBe("partial");
     expect(evidence.publicHelpers).toEqual(expect.arrayContaining([

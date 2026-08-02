@@ -48,8 +48,8 @@ const requiredReports = [
 const reports = requiredReports.map((path) => ({ path, exists: existsSync(resolve(path)), report: json(path) }));
 const gallery = json("tests/reports/production-runtime-gallery/manifest.json");
 const galleryEntries = Array.isArray(gallery.entries) ? gallery.entries.map(obj) : [];
-const knownGaps = read("docs/project/known-limits.md");
-const blocked = read("docs/project/known-limits.md");
+const knownGaps = read("docs/project/status/known-limits.md");
+const blocked = read("docs/project/status/known-limits.md");
 const checks = [
   { id: "reports-exist", pass: reports.every((item) => item.exists), detail: reports.filter((item) => !item.exists).map((item) => item.path).join(", ") },
   { id: "reports-pass", pass: reports.every((item) => item.path.endsWith("/manifest.json") || item.report.pass === true), detail: reports.filter((item) => !item.path.endsWith("/manifest.json") && item.report.pass !== true).map((item) => item.path).join(", ") },

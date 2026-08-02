@@ -110,6 +110,7 @@ function evaluateCandidate(options: {
   if (options.rejectedHash && asset.hash === options.rejectedHash) penalties.push("same content hash as rejected asset");
   if (baseScore <= 0) penalties.push("no resolver ranking match for replacement query");
   penalties.push(...gameAssetPenalties(role, asset, options.query));
+  penalties.push(...surfaceDetailPenalties(role, asset));
   const geometryGate = gameGeometryGate(options.spec, role, asset, { projectDir: options.projectDir });
   reasons.push(...geometryGate.reasons);
   penalties.push(...geometryGate.penalties);
@@ -119,6 +120,7 @@ function evaluateCandidate(options: {
     if (penalty.includes("provenance") || penalty.includes("release probe")) return total + 50;
     if (penalty.includes("quality") || penalty.includes("role mismatch")) return total + 20;
     if (penalty.includes("game asset")) return total + 18;
+    if (penalty.includes("surface detail")) return total + 40;
     return total + 8;
   }, 0);
   const score = Math.max(0, roundScore(baseScore + qualityBonus(asset) + evidenceBonus(releaseProbePasses) + gameAssetBonus(role, asset, options.query) - penaltyCost));
@@ -237,6 +239,28 @@ function gameAssetBonus(role: string, asset: ManifestAsset, query: string): numb
   if (role === "character") return hasAny(tokens, ["runner", "character", "animated", "walk", "hero"]) ? 20 : 0;
   if (role === "world" || role === "stage" || role === "level") return hasAny(tokens, ["platform", "platformer", "side", "scroller", "level", "stage", "world"]) ? 20 : 0;
   return 0;
+}
+
+/**
+ * Rejects a primary game asset that carries no texture data.
+ *
+ * Every other penalty here reads names, provenance, quality flags, or geometry. None of them looked at
+ * whether the mesh has any surface detail, and `textureCount` was recorded on the candidate but never
+ * scored. That is how the four promoted showcase routes ended up bound to untextured primaries:
+ * measured, six of seven carry **zero** textures (`showcaseKenneyRaceCarRed` 0,
+ * `showcaseKenneyNeonRaceCircuit` 0, `showcaseKenneyVerdantPlatformerWorld` 0, `auraClashPlayerRig` 0,
+ * `arenaRooftopBuilding` 0), so their materials are flat colour factors and every capture reads as flat
+ * untextured geometry no matter how the scene is lit, framed, or composed.
+ *
+ * A hero/primary role therefore requires at least one texture. Set dressing and abstract visualisation
+ * are exempt, because a flat-shaded prop or debug guide is a legitimate choice.
+ */
+function surfaceDetailPenalties(role: string, asset: ManifestAsset): readonly string[] {
+  const primaryRoles = new Set(["vehicle", "track", "character", "world", "stage", "level", "hero", "product"]);
+  if (!primaryRoles.has(role)) return [];
+  const textureCount = asset.textures?.length ?? 0;
+  if (textureCount > 0) return [];
+  return [`surface detail: ${role} primary asset carries no textures, so its materials are flat colour factors`];
 }
 
 function gameAssetPenalties(role: string, asset: ManifestAsset, query: string): readonly string[] {

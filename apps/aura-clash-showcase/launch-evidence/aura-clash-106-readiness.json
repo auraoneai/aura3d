@@ -1,7 +1,7 @@
 {
   "schema": "aura-clash-106-readiness",
-  "generatedAt": "2026-06-06T22:52:36.268Z",
-  "ok": true,
+  "generatedAt": "2026-07-31T16:53:51.780Z",
+  "ok": false,
   "route": "/playable/",
   "release": "1.0.6",
   "contextualRoute": "Aura Clash Arena",
@@ -12,24 +12,24 @@
         "ok": true,
         "source": "launch-evidence/aura-clash-arena-first-frame.png",
         "output": "launch-evidence/playable-106-first-frame.png",
-        "sourceBytes": 712867,
-        "outputBytes": 712867
+        "sourceBytes": 278238,
+        "outputBytes": 278238
       },
       {
         "id": "combat-frame",
         "ok": true,
         "source": "launch-evidence/aura-clash-arena-combat-frame.png",
         "output": "launch-evidence/playable-106-combat-frame.png",
-        "sourceBytes": 714594,
-        "outputBytes": 714594
+        "sourceBytes": 270237,
+        "outputBytes": 270237
       },
       {
         "id": "ko-reset",
         "ok": true,
         "source": "launch-evidence/aura-clash-visual-ko-reset.png",
         "output": "launch-evidence/playable-106-ko-reset.png",
-        "sourceBytes": 710372,
-        "outputBytes": 710372
+        "sourceBytes": 271274,
+        "outputBytes": 271274
       }
     ],
     "deployedProof": "launch-evidence/deployed-106-proof.json",
@@ -40,18 +40,18 @@
     "flagshipGates": {
       "ok": true,
       "status": "flagship-ready",
-      "generatedAt": "2026-06-06T13:50:06.504Z",
+      "generatedAt": "2026-06-07T20:10:37.904Z",
       "commandCount": 8,
       "failedCount": 0
     },
     "flagshipReadiness": {
       "ok": true,
       "status": "flagship-ready",
-      "generatedAt": "2026-06-06T13:48:02.865Z",
+      "generatedAt": "2026-06-07T20:09:20.786Z",
       "gateCount": 14
     },
     "deployedProof": {
-      "ok": true,
+      "ok": false,
       "source": "collect-launch-evidence-probes"
     }
   },

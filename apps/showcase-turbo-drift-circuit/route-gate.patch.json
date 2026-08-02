@@ -5,18 +5,18 @@
     "label": "Turbo Drift Circuit",
     "path": "/apps/showcase-turbo-drift-circuit/",
     "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
-    "published": true,
+    "published": false,
     "primaryAssets": [
-      "showcaseKenneyRaceCarRed",
-      "showcaseKenneyNeonRaceCircuit"
+      "showcaseTexturedSportsCar",
+      "showcaseTsukubaCircuit"
     ],
     "primaryAssetRoles": {
-      "showcaseKenneyRaceCarRed": "vehicle",
-      "showcaseKenneyNeonRaceCircuit": "track"
+      "showcaseTexturedSportsCar": "vehicle",
+      "showcaseTsukubaCircuit": "track"
     },
-    "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+    "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
     "secondaryPrimaryAssets": [
-      "showcaseKenneyNeonRaceCircuit"
+      "showcaseTsukubaCircuit"
     ],
     "primitiveBudget": 0,
     "requiresTypedPrimaryAssets": true

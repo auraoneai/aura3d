@@ -1,7 +1,7 @@
 {
   "name": "Aura Clash PRD evidence coverage",
   "version": "1.0.0",
-  "prd": "../../docs/project/aura-clash-showcase.md",
+  "prd": "../../docs/project/showcase/aura-clash-showcase-plan.md",
   "output": "launch-evidence/prd-evidence-coverage.json",
   "activeScopeEndHeading": "# Legacy World War X PRD Archive",
   "purpose": "Maps every remaining unchecked Aura Clash showcase item to the durable evidence or manual approval artifact required before that checkbox can be marked complete.",

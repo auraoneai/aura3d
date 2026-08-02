@@ -8,7 +8,7 @@ import { dirname } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const appRoot = resolve(__dirname, "..");
 const repoRoot = resolve(appRoot, "../..");
-const prdPath = resolve(repoRoot, "docs/project/aura-clash-showcase.md");
+const prdPath = resolve(repoRoot, "docs/project/showcase/aura-clash-showcase-plan.md");
 
 const localGatesPath = resolve(
   appRoot,
@@ -69,7 +69,7 @@ const requirePrdEvidenceCoverage =
 
 if (requirePrdEvidenceCoverage && !prdEvidenceCoverageOk) {
   throw new Error(
-    `Refusing to update docs/project/aura-clash-showcase.md without passing PRD evidence coverage: ${prdEvidenceCoveragePath}`
+    `Refusing to update docs/project/showcase/aura-clash-showcase-plan.md without passing PRD evidence coverage: ${prdEvidenceCoveragePath}`
   );
 }
 

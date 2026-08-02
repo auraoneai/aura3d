@@ -4,6 +4,70 @@ import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../ch
 const examples = ["hello-world-typed-asset", "material-lighting", "camera-path"];
 const retainedEvidence = [
   "advanced-examples-gallery",
+  "loader-compression",
+  "loader-instancing",
+  "loader-ktx2",
+  "materials-transmission",
+  // Three.js-parity and product-surface routes restored from git history (defect 67).
+  // Classified `retained engine evidence` in docs/project/showcase/apps-classification.md.
+  "animation-keyframes",
+  "animation-multiple",
+  "animation-studio-pro",
+  "animation-walk",
+  "architecture-viewer",
+  "asset-inspector",
+  "asset-lab",
+  "asset-studio-pro",
+  "automotive-configurator",
+  "character-viewer",
+  "cinematic-postprocess",
+  "controls-orbit",
+  "decals",
+  "editor",
+  "flagship-viewer",
+  "game-lab",
+  "interactive-picking",
+  "interactive-showcase-pro",
+  "large-scene-lab",
+  "lights-spotlight",
+  "loader-material-extensions",
+  "material-lab",
+  "material-studio",
+  "material-studio-pro",
+  "parallax-barrier",
+  "postprocessing-bloom",
+  "product-configurator",
+  "product-studio",
+  "product-studio-pro",
+  "public-scene",
+  "regression-animation-keyframes",
+  "scene-lab",
+  "scene-studio-pro",
+  "shadowmap-viewer",
+  "skinning-additive",
+  "skinning-blending",
+  "skinning-ik",
+  "skinning-morph",
+  "stereo-effects",
+  "three-compat-animation-studio-pro",
+  "three-compat-asset-studio-pro",
+  "three-compat-controls-lab",
+  "three-compat-large-scene-lab",
+  "three-compat-material-studio-pro",
+  "three-compat-postprocess-studio-pro",
+  "three-compat-product-studio-pro",
+  "three-compat-scene-studio-pro",
+  "three-compat-shader-lab-pro",
+  "three-compat-threejs-migration-lab",
+  "threejs-parity-lab",
+  "webgpu-lab",
+  // Diagnostic evidence routes classified in docs/project/showcase/apps-classification.md.
+  "controls-transform",
+  "instancing-performance",
+  "flagship-ibl-states",
+  "hdr-render-target-check",
+  "lines-helpers",
+  "shadow-cascade-evidence",
   "wow-additional-cesium-man-animation",
   "wow-additional-transmission-sample",
   "wow-additional-variant-product",
@@ -33,7 +97,13 @@ const retainedEvidence = [
   "wow-webgpu-render-target",
   "wow-webgpu-triangle"
 ] as const;
-const supportOnly = ["wow-common"] as const;
+/*
+ * Shared support directories: no `index.html`, so they are not routes and must not be counted as
+ * public examples. `apps/common` provides `src/runtime.ts` and `src/styles.css` to 25 restored
+ * `apps/*` routes; it was recovered alongside them and had no classification, which failed
+ * `all-apps-classified`.
+ */
+const supportOnly = ["wow-common", "common"] as const;
 const classifiedAppRoutes = [
   "animation-studio-web",
   "aura-clash-showcase",
@@ -47,8 +117,6 @@ const classifiedAppRoutes = [
   "showcase-orbital-defense",
   "showcase-platformer-game-layer-proof",
   "showcase-product-configurator",
-  "showcase-public-platformer-presentation-proof",
-  "showcase-public-racing-presentation-proof",
   "showcase-racing-game-layer-proof",
   "showcase-skyline-runner",
   "showcase-smart-city-control",
@@ -69,7 +137,7 @@ const actualAppDirs = readdirSync("apps", { withFileTypes: true })
   .sort();
 const rootHtml = readFileSync("index.html", "utf8");
 const marketingHtml = readFileSync("marketing/index.html", "utf8");
-const auditDoc = readFileSync("docs/project/apps-classification.md", "utf8");
+const auditDoc = readFileSync("docs/project/showcase/apps-classification.md", "utf8");
 const routeHealth = readRouteHealthReport();
 const registryRoutes = Array.from(rootHtml.matchAll(/data-route-path="([^"]+)"/g)).map((match) => match[1]);
 const expectedRegistryRoutes = examples.map((example) => `/apps/${example}/`);
@@ -80,7 +148,7 @@ const checks: ReleaseCheck[] = [
     existsCheck(`apps/${example}/src/main.ts`, `${example} source`),
     fileIncludes("index.html", [`/apps/${example}/`, `/apps/${example}/src/main.ts`, "/docs/agents/api-surface.md"], `${example} root source/docs links`)
   ]),
-  existsCheck("docs/project/apps-classification.md", "apps classification"),
+  existsCheck("docs/project/showcase/apps-classification.md", "apps classification"),
   existsCheck("tests/reports/agent-examples-playwright.json", "example route health screenshot report"),
   {
     id: "starter-example-screenshots-written",
@@ -108,7 +176,7 @@ const checks: ReleaseCheck[] = [
   {
     id: "classification-doc-classifies-all-apps",
     pass: actualAppDirs.every((dir) => auditDoc.includes(dir)),
-    detail: actualAppDirs.filter((dir) => !auditDoc.includes(dir)).join(", ") || "all app directories appear in docs/project/apps-classification.md"
+    detail: actualAppDirs.filter((dir) => !auditDoc.includes(dir)).join(", ") || "all app directories appear in docs/project/showcase/apps-classification.md"
   },
   {
     id: "root-registry-only-starter-examples",

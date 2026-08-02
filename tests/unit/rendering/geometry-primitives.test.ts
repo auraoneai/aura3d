@@ -283,3 +283,56 @@ function cross(left: readonly number[], right: readonly number[]): readonly [num
 function dot(left: readonly number[], right: readonly number[]): number {
   return (left[0] ?? 0) * (right[0] ?? 0) + (left[1] ?? 0) * (right[1] ?? 0) + (left[2] ?? 0) * (right[2] ?? 0);
 }
+
+describe("screen-space line geometry", () => {
+  it("carries both endpoints and a corner selector per vertex so the shader can expand in pixel space", () => {
+    const geometry = Geometry.screenSpaceLineSegments([{ start: [0, 0, 0], end: [0, 2, 0] }]);
+    expect(geometry.vertexBuffer.vertexCount).toBe(4);
+    expect(geometry.vertexBuffer.format.hasAttribute("lineStart")).toBe(true);
+    expect(geometry.vertexBuffer.format.hasAttribute("lineEnd")).toBe(true);
+    expect(geometry.vertexBuffer.format.hasAttribute("lineCorner")).toBe(true);
+    expect(geometry.vertexBuffer.format.hasAttribute("lineDistance")).toBe(true);
+
+    // Every vertex sees the whole segment, which is what allows the vertex stage to
+    // project both endpoints and derive a screen-space direction.
+    for (let vertex = 0; vertex < 4; vertex += 1) {
+      expect(Array.from(geometry.vertexBuffer.getAttribute(vertex, "lineStart")).slice(0, 3)).toEqual([0, 0, 0]);
+      expect(Array.from(geometry.vertexBuffer.getAttribute(vertex, "lineEnd")).slice(0, 3)).toEqual([0, 2, 0]);
+    }
+
+    // Corners must cover both sides at both ends.
+    const corners = [0, 1, 2, 3].map((vertex) => Array.from(geometry.vertexBuffer.getAttribute(vertex, "lineCorner")).slice(0, 2));
+    expect(corners).toEqual(expect.arrayContaining([[1, 0], [-1, 0], [-1, 1], [1, 1]]));
+  });
+
+  it("accumulates arc length across segments so dashes are measured in world units", () => {
+    const geometry = Geometry.screenSpaceLineSegments([
+      { start: [0, 0, 0], end: [3, 0, 0] },
+      { start: [3, 0, 0], end: [3, 4, 0] }
+    ]);
+    // First segment spans 0..3, second continues 3..7 rather than restarting at zero.
+    expect(geometry.vertexBuffer.getAttribute(0, "lineDistance")[0]).toBeCloseTo(0, 5);
+    expect(geometry.vertexBuffer.getAttribute(2, "lineDistance")[0]).toBeCloseTo(3, 5);
+    expect(geometry.vertexBuffer.getAttribute(4, "lineDistance")[0]).toBeCloseTo(3, 5);
+    expect(geometry.vertexBuffer.getAttribute(6, "lineDistance")[0]).toBeCloseTo(7, 5);
+  });
+
+  it("winds triangles counter-clockwise on screen so the quad is not backface culled", () => {
+    // The shader expands along normal = (-dir.y, dir.x). Starting the corner walk on
+    // the -1 side produces clockwise triangles that are culled away entirely, which
+    // presents as a line that silently does not render.
+    const geometry = Geometry.screenSpaceLineSegments([{ start: [0, -1, 0], end: [0, 1, 0] }]);
+    const firstCorner = Array.from(geometry.vertexBuffer.getAttribute(0, "lineCorner")).slice(0, 2);
+    expect(firstCorner).toEqual([1, 0]);
+  });
+
+  it("rejects zero-length segments that have no direction to expand along", () => {
+    expect(() => Geometry.screenSpaceLineSegments([{ start: [1, 1, 1], end: [1, 1, 1] }]))
+      .toThrow(/non-zero length/);
+  });
+
+  it("rejects non-finite endpoints", () => {
+    expect(() => Geometry.screenSpaceLineSegments([{ start: [0, 0, 0], end: [Number.NaN, 1, 0] }]))
+      .toThrow(/three finite components/);
+  });
+});

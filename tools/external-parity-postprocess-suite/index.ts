@@ -190,6 +190,13 @@ function stringArray(value: unknown): string[] {
 
 function hasRootPostprocessSuiteEvidence(root: string, rootQuality: Record<string, unknown> | null): boolean {
   const renderer = readText(root, "packages/rendering/src/Renderer.ts");
+  // Pass construction was extracted from Renderer.ts into RendererPostprocessPlan.ts,
+  // which is where the `name: "<pass>"` literals now live. Greping only Renderer.ts made
+  // every required-pass check fail and reported "0 real-scene effects proven" even when
+  // the root quality report listed all seventeen effects as true. The audit reads both
+  // files so it tracks the implementation rather than one historical file layout.
+  const rendererPostprocessPlan = readText(root, "packages/rendering/src/RendererPostprocessPlan.ts");
+  const rendererSources = `${renderer}\n${rendererPostprocessPlan}`;
   const test = readText(root, "tests/browser/rendering-root-quality-gate.spec.ts");
   const requiredRendererPasses = [
     "bloom",
@@ -227,7 +234,7 @@ function hasRootPostprocessSuiteEvidence(root: string, rootQuality: Record<strin
     renderer.includes("withRendererDepth(pass.options as DepthOfFieldOptions, rendererDepth)") &&
     renderer.includes("withRendererDepth(pass.options as SSAOOptions, rendererDepth)") &&
     renderer.includes("withRendererDepth(pass.options as SSROptions, rendererDepth)") &&
-    requiredRendererPasses.every((passName) => renderer.includes(`name: "${passName}"`)) &&
+    requiredRendererPasses.every((passName) => rendererSources.includes(`name: "${passName}"`)) &&
     test.includes("proves the full postprocess suite on root renderer real-scene pixels without example coupling") &&
     test.includes("postprocess: {") &&
     test.includes("depthOfField: { focusDepth: 0.48") &&

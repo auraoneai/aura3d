@@ -69,6 +69,36 @@ export interface LightingRigOptions {
   readonly intensityScale?: number;
   readonly shadows?: boolean;
   readonly includeUnsupportedDiagnostics?: boolean;
+  /**
+   * Scale light *placements* to the rendered subject, keeping the rig's geometry across asset swaps.
+   *
+   * ## Why this exists
+   *
+   * Preset positions are authored for a subject about 1 unit tall. Every showcase route therefore ignored
+   * them and hand-authored its own coordinates: Turbo as `SCENE_SIZE` multiples, Blockfall and Aura Clash as
+   * bare numbers. The *structure* those routes built was identical -- ambient, key, opposing rims -- and only
+   * the coordinates differed, because each route re-derived where a rim belongs for its own subject size.
+   *
+   * That is the same defect class as the framing constants: a coordinate correct for one subject reads as a
+   * design decision, survives an asset swap, and is then silently wrong. Turbo's `CAR_SCENE_HEIGHT` and its
+   * hand-tuned chase height both outlived their assets exactly this way.
+   *
+   * Supplying `subject` multiplies each preset position by `subjectHeight` (and lateral placement by the
+   * subject's widest horizontal extent, since a rim must reach the silhouette edge to do anything), then
+   * lifts the rig onto `floorY`. Intensities are untouched: a rig that dimmed with subject size would make
+   * large subjects dark for no photographic reason.
+   */
+  readonly subject?: LightingRigSubject;
+}
+
+/** Rendered subject measurements a rig scales its placements to. */
+export interface LightingRigSubject {
+  /** Rendered subject height in world units. Pair with `resolveSubjectRenderedSize` so it is derived. */
+  readonly height: number;
+  /** Widest horizontal extent, used for lateral rim placement. Defaults to `height`. */
+  readonly width?: number;
+  /** World Y of the surface the subject stands on. Defaults to 0. */
+  readonly floorY?: number;
 }
 
 export function createLightingRig(options: LightingRigOptions = {}): LightingRig {
@@ -78,6 +108,7 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
   const lights = lightingRigDescriptors(preset).map((light) => ({
     ...light,
     intensity: round3(light.intensity * intensityScale),
+    position: scaleRigPosition(light.position, options.subject),
     castsShadow: shadows && light.castsShadow
   }));
   const softboxes = lightingRigSoftboxes(preset).map((softbox) => ({
@@ -100,6 +131,89 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
       claimBoundary: "Lighting rigs are reusable direct-light descriptors for A3D ForwardPass, including finite rectangular emitters in studio presets; IES profiles, GI, contact shadows, cascaded shadows, and rectangular-light shadow maps require separate renderer evidence."
     }
   };
+}
+
+/** Placement for a rim light that follows a moving subject. */
+export interface SubjectRimPlacement {
+  /** World position for the rim light. */
+  readonly position: readonly [number, number, number];
+  /** Point-light range, sized so falloff keeps the rim on the subject rather than the backdrop. */
+  readonly range: number;
+}
+
+export interface SubjectRimPlacementOptions {
+  /** Subject's current world position (its ground contact point). */
+  readonly subjectPosition: readonly [number, number, number];
+  /** Rendered subject height in world units. Everything below is a fraction of it. */
+  readonly subjectHeight: number;
+  /** Which side of the subject the rim sits on. */
+  readonly side: "left" | "right";
+  /**
+   * Depth offset behind the subject, as a fraction of subject height.
+   *
+   * Negative values sit behind a subject viewed down -z, which is what makes the light graze the silhouette
+   * edge instead of front-lighting the body.
+   */
+  readonly depthFraction?: number | undefined;
+  /** Height above the subject's contact point, as a fraction of subject height. */
+  readonly heightFraction?: number | undefined;
+  /** Lateral offset, as a fraction of subject height. */
+  readonly lateralFraction?: number | undefined;
+  /** Range as a fraction of subject height. */
+  readonly rangeFraction?: number | undefined;
+}
+
+/**
+ * Place a rim light relative to a moving subject.
+ *
+ * ## Why this is reusable rather than route-local
+ *
+ * Aura Clash computes per-fighter rim placement inline as
+ * `(fighter.x ± 0.34, fighter.y + 1.22, -0.72)` with `range = 1.5`. Against its 1.829-unit fighter rig those
+ * are 0.186x, 0.667x, -0.394x and 0.820x of subject height respectively — clean photographic ratios written as
+ * absolute literals. Any fighter rig of a different height silently breaks them: the rim drifts off the
+ * silhouette and stops separating the subject from the backdrop, which is the one thing a rim exists to do.
+ *
+ * That is the same defect class as the framing constants removed earlier in this work: a coordinate correct
+ * for one asset reads as a design decision, survives a swap, and is then wrong. Expressing the ratios keeps
+ * the intent ("upper-torso height, slightly outboard, behind the subject") and lets the numbers follow the rig.
+ *
+ * The defaults are Aura Clash's measured values, so adopting this helper is a no-op for its current rig.
+ */
+export function resolveSubjectRimPlacement(options: SubjectRimPlacementOptions): SubjectRimPlacement {
+  const height = Math.max(1e-6, options.subjectHeight);
+  const lateral = height * (options.lateralFraction ?? 0.1859);
+  const sign = options.side === "left" ? -1 : 1;
+  return {
+    position: [
+      round3((options.subjectPosition[0] ?? 0) + sign * lateral),
+      round3((options.subjectPosition[1] ?? 0) + height * (options.heightFraction ?? 0.667)),
+      round3((options.subjectPosition[2] ?? 0) + height * (options.depthFraction ?? -0.3937))
+    ],
+    range: round3(height * (options.rangeFraction ?? 0.8201))
+  };
+}
+
+/**
+ * Scale a preset placement onto a subject.
+ *
+ * Lateral (X) placement follows the subject's widest horizontal extent so a rim actually reaches the
+ * silhouette edge; height and depth follow subject height so the rig's vertical geometry is preserved.
+ * Returns the authored position unchanged when no subject is supplied, so existing callers are unaffected.
+ */
+function scaleRigPosition(
+  position: readonly [number, number, number],
+  subject: LightingRigSubject | undefined
+): readonly [number, number, number] {
+  if (!subject) return position;
+  const height = Math.max(1e-6, subject.height);
+  const lateral = Math.max(height, subject.width ?? height);
+  const floorY = subject.floorY ?? 0;
+  return [
+    round3(position[0] * lateral),
+    round3(floorY + position[1] * height),
+    round3(position[2] * height)
+  ];
 }
 
 export function listLightingRigPresets(): readonly LightingRigPreset[] {

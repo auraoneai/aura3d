@@ -1,0 +1,60 @@
+{
+  "schema": "aura3d-showcase-release-asset-probe/1.0",
+  "generatedAt": "2026-08-02T01:51:21.417Z",
+  "screenshotPath": "tests/reports/showcase-release-asset-probes/turboRaceCar.png",
+  "renderedProbe": {
+    "url": "tests/reports/showcase-release-asset-probes/turboRaceCar.png",
+    "kind": "browser-screenshot",
+    "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboRaceCar",
+    "width": 752,
+    "height": 600,
+    "checkedAt": "2026-08-02T01:51:21.417Z",
+    "sha256": "sha256-13f6f1436ad089db36550a2bc8638fbb47f1117654378b645ea8dc29c0afbda7",
+    "assetHash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e",
+    "nonBlankPixels": 450980,
+    "colorBuckets": 78,
+    "foregroundBounds": {
+      "x": 253,
+      "y": 208,
+      "width": 246,
+      "height": 234
+    }
+  },
+  "evidence": {
+    "imports": [
+      "@aura3d/engine",
+      "../../src/aura-assets"
+    ],
+    "renderer": "createAuraApp",
+    "route": "tests/browser/showcase-release-asset-probe-harness?asset=turboRaceCar",
+    "asset": {
+      "id": "turboRaceCar",
+      "typed": "assets.turboRaceCar",
+      "url": "/aura-assets/turboRaceCar.f566084b.glb",
+      "hash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e"
+    },
+    "diagnostics": {
+      "runtimeBackend": "production-runtime",
+      "drawCalls": 10,
+      "renderSize": [
+        752,
+        600
+      ]
+    },
+    "pixels": {
+      "canvasWidth": 752,
+      "canvasHeight": 600,
+      "nonBackgroundPixels": 28636,
+      "colorBuckets": 243,
+      "foregroundBounds": {
+        "x": 253,
+        "y": 208,
+        "width": 246,
+        "height": 234
+      }
+    },
+    "pass": true,
+    "failures": []
+  }
+}

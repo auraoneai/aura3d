@@ -27,6 +27,28 @@ interface VariantPixelMetrics {
   readonly foregroundBounds: PixelBounds;
   readonly meanRgb: readonly [number, number, number];
   readonly meanLuma: number;
+  /**
+   * Mean absolute luma difference between horizontally adjacent foreground
+   * pixels. A flat untextured material varies only with shading gradients, so a
+   * sampled base-color texture measurably increases local detail. This is what
+   * separates "the colour changed" from "a texture is actually sampled".
+   */
+  readonly localLumaVariation: number;
+  /**
+   * `localLumaVariation` divided by mean foreground luma. Absolute variation is
+   * brightness-confounded: a bright flat material shows larger absolute adjacent
+   * differences than a dark textured one purely from shading gradients, which is
+   * why the absolute form produced a false negative here. Normalizing by mean
+   * luma makes "how much detail per unit brightness" comparable across variants.
+   */
+  readonly relativeLumaVariation: number;
+  /**
+   * Mean per-pixel chroma (max RGB channel minus min RGB channel) across the
+   * foreground. An achromatic flat override is near zero by construction, while
+   * a sampled base-color texture carries real hue spread. This is the metric a
+   * material swap cannot fake without actually sampling colour data.
+   */
+  readonly meanChroma: number;
   readonly hash: string;
 }
 
@@ -47,7 +69,15 @@ interface VariantComparison {
   readonly feature: string;
   readonly variantA: string;
   readonly variantB: string;
+  /** Mean absolute per-channel difference over the compared region, 0-255. */
   readonly pixelDelta: number;
+  /**
+   * Fraction of compared-region pixels whose summed channel difference exceeds a
+   * visible threshold. A mean alone can be dragged down by the large background
+   * area inside the union bounds, so the fraction records how much of the region
+   * actually changed rather than by how much on average.
+   */
+  readonly changedPixelFraction: number;
   readonly meanLumaDelta: number;
   readonly foregroundBounds: PixelBounds;
 }
@@ -81,7 +111,7 @@ interface InternalCapture {
   readonly pixels: Uint8Array;
 }
 
-type VariantKind = "material" | "typed-textured-asset";
+type VariantKind = "material" | "typed-textured-asset" | "typed-texture-off";
 
 interface MaterialVariantDefinition {
   readonly id: string;
@@ -203,6 +233,32 @@ const variants: readonly MaterialVariantDefinition[] = [
     id: "typed-textured-asset",
     feature: "base-color-texture",
     kind: "typed-textured-asset"
+  },
+  // Controlled texture on/off pair. Both variants render the same typed asset at
+  // the same camera and lighting; the only difference is whether the asset's
+  // authored base-color textures are used or replaced by a flat, deliberately
+  // achromatic untextured material. A real sampled texture must change a
+  // substantial fraction of the model region, carry real hue spread the
+  // achromatic override cannot produce, and show more brightness-normalized
+  // local detail.
+  {
+    id: "typed-texture-on",
+    feature: "base-color-texture-controlled",
+    kind: "typed-textured-asset"
+  },
+  {
+    id: "typed-texture-off",
+    feature: "base-color-texture-controlled",
+    kind: "typed-texture-off",
+    material: material.pbr({
+      // Deliberately neutral grey: an achromatic override makes the chroma check
+      // meaningful, because any measured hue spread must then come from sampled
+      // texture data rather than from the override colour itself.
+      name: "root-contract-texture-off-flat",
+      color: "#909090",
+      roughness: 0.55,
+      metallic: 0
+    })
   }
 ];
 
@@ -304,6 +360,26 @@ async function run(): Promise<void> {
 }
 
 function sceneForVariant(variant: MaterialVariantDefinition) {
+  if (variant.kind === "typed-texture-off") {
+    // Identical framing and lighting to the textured variant. Only the material
+    // changes, so any pixel delta is attributable to texture sampling.
+    return scene()
+      .background("#05070d")
+      .camera(camera.frameAsset(assets.robotcand, {
+        targetHeight: 2.2,
+        padding: 1.4,
+        fov: 34,
+        azimuth: 0.62,
+        elevation: 0.26
+      }))
+      .add(model(assets.robotcand, {
+        targetHeight: 2.2,
+        name: "root material typed texture-off probe",
+        material: variant.material
+      }).runtime({ id: "typed-texture-off" }))
+      .add(lights.studio());
+  }
+
   if (variant.kind === "typed-textured-asset") {
     return scene()
       .background("#05070d")
@@ -373,6 +449,7 @@ function readPixelMetrics(pixels: Uint8Array, width: number, height: number): Va
   let greenSum = 0;
   let blueSum = 0;
   let lumaSum = 0;
+  let chromaSum = 0;
 
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
@@ -392,15 +469,44 @@ function readPixelMetrics(pixels: Uint8Array, width: number, height: number): Va
       greenSum += green;
       blueSum += blue;
       lumaSum += luma(red, green, blue);
+      chromaSum += Math.max(red, green, blue) - Math.min(red, green, blue);
+    }
+  }
+
+  // Second pass: local luma variation across horizontally adjacent foreground
+  // pixels inside the model region.
+  let variationSum = 0;
+  let variationSamples = 0;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x + 1 < width; x += 1) {
+      const left = (y * width + x) * 4;
+      const right = (y * width + x + 1) * 4;
+      const leftForeground = isForegroundPixel(
+        pixels[left] ?? 0, pixels[left + 1] ?? 0, pixels[left + 2] ?? 0, pixels[left + 3] ?? 0, background
+      );
+      const rightForeground = isForegroundPixel(
+        pixels[right] ?? 0, pixels[right + 1] ?? 0, pixels[right + 2] ?? 0, pixels[right + 3] ?? 0, background
+      );
+      if (!leftForeground || !rightForeground) continue;
+      variationSum += Math.abs(
+        luma(pixels[left] ?? 0, pixels[left + 1] ?? 0, pixels[left + 2] ?? 0)
+        - luma(pixels[right] ?? 0, pixels[right + 1] ?? 0, pixels[right + 2] ?? 0)
+      );
+      variationSamples += 1;
     }
   }
 
   const denominator = Math.max(1, nonBackgroundPixels);
+  const meanLuma = lumaSum / denominator;
+  const localLumaVariation = variationSum / Math.max(1, variationSamples);
   return {
     width,
     height,
     nonBackgroundPixels,
     colorBuckets: buckets.size,
+    localLumaVariation: Number(localLumaVariation.toFixed(4)),
+    relativeLumaVariation: Number((localLumaVariation / Math.max(1, meanLuma)).toFixed(4)),
+    meanChroma: Number((chromaSum / denominator).toFixed(4)),
     foregroundBounds: maxX >= minX && maxY >= minY
       ? { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
       : { x: 0, y: 0, width: 0, height: 0 },
@@ -409,7 +515,7 @@ function readPixelMetrics(pixels: Uint8Array, width: number, height: number): Va
       Number((greenSum / denominator).toFixed(3)),
       Number((blueSum / denominator).toFixed(3))
     ],
-    meanLuma: Number((lumaSum / denominator).toFixed(3)),
+    meanLuma: Number(meanLuma.toFixed(3)),
     hash: hashPixels(pixels)
   };
 }
@@ -420,14 +526,19 @@ function compareVariants(variantA: string, variantB: string): VariantComparison 
   const bounds = unionBounds(first.publicCapture.pixels.foregroundBounds, second.publicCapture.pixels.foregroundBounds);
   let totalDelta = 0;
   let samples = 0;
+  let changedPixels = 0;
+  let comparedPixels = 0;
   const width = first.publicCapture.pixels.width;
   for (let y = bounds.y; y < bounds.y + bounds.height; y += 1) {
     for (let x = bounds.x; x < bounds.x + bounds.width; x += 1) {
       const index = (y * width + x) * 4;
-      totalDelta += Math.abs((first.pixels[index] ?? 0) - (second.pixels[index] ?? 0));
-      totalDelta += Math.abs((first.pixels[index + 1] ?? 0) - (second.pixels[index + 1] ?? 0));
-      totalDelta += Math.abs((first.pixels[index + 2] ?? 0) - (second.pixels[index + 2] ?? 0));
+      const redDelta = Math.abs((first.pixels[index] ?? 0) - (second.pixels[index] ?? 0));
+      const greenDelta = Math.abs((first.pixels[index + 1] ?? 0) - (second.pixels[index + 1] ?? 0));
+      const blueDelta = Math.abs((first.pixels[index + 2] ?? 0) - (second.pixels[index + 2] ?? 0));
+      totalDelta += redDelta + greenDelta + blueDelta;
       samples += 3;
+      comparedPixels += 1;
+      if (redDelta + greenDelta + blueDelta > CHANGED_PIXEL_THRESHOLD) changedPixels += 1;
     }
   }
   return {
@@ -435,10 +546,14 @@ function compareVariants(variantA: string, variantB: string): VariantComparison 
     variantA,
     variantB,
     pixelDelta: Number((totalDelta / Math.max(1, samples)).toFixed(3)),
+    changedPixelFraction: Number((changedPixels / Math.max(1, comparedPixels)).toFixed(4)),
     meanLumaDelta: Number(Math.abs(first.publicCapture.pixels.meanLuma - second.publicCapture.pixels.meanLuma).toFixed(3)),
     foregroundBounds: bounds
   };
 }
+
+/** Summed per-channel difference above which a pixel counts as visibly changed. */
+const CHANGED_PIXEL_THRESHOLD = 24;
 
 function isForegroundPixel(
   red: number,

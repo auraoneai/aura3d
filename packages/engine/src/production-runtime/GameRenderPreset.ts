@@ -17,8 +17,50 @@ export interface SideViewGameRenderPreset {
   readonly debugOverlays: SideViewGameDebugOverlayPreset;
   readonly shadow: RendererShadowOptions;
   readonly postprocess: RendererPostProcessOptions;
+  readonly performanceBudget: SideViewGamePerformanceBudget;
   readonly debugVolumesEnabled: boolean;
 }
+
+/**
+ * The frame budget that admits exactly the features this preset enables.
+ *
+ * The preset previously declared shadows, bloom, colour grading, fog and 128 particles without
+ * declaring what any of it was allowed to cost, so the numbers admitting those features lived as
+ * literals in three unrelated places: the consuming route's `createPerformanceProof`
+ * (`frameTimeMs <= 16.7 && fps >= 55 && drawCalls <= 160`) and again in
+ * `performance-budget.spec.ts`. A feature could be enabled here while the budget proving it
+ * affordable drifted somewhere else.
+ *
+ * `enabledFeatures` is the important field: it is the explicit list of passes this budget was measured
+ * *with*. It exists so the reverse mistake is visible too -- enabling a feature merely to make
+ * diagnostics report it, without re-measuring, now means the enabled set and the budget disagree.
+ */
+export interface SideViewGamePerformanceBudget {
+  /** Frame-time ceiling for a 60fps-class route, in milliseconds. */
+  readonly maxFrameTimeMs: number;
+  /** Sustained-FPS floor, allowing a small margin under 60 for headless capture jitter. */
+  readonly minFps: number;
+  /**
+   * Draw-call ceiling.
+   *
+   * Sized for a side-view stage carrying two skinned GLB fighters plus a consolidated multi-building
+   * typed arena. Aura Clash measures **91** against this with the textured downtown arena, shadows and
+   * postprocess all active.
+   */
+  readonly maxDrawCalls: number;
+  /** The renderer passes this budget was measured with, so an unmeasured addition is detectable. */
+  readonly enabledFeatures: readonly SideViewGameBudgetedFeature[];
+}
+
+export type SideViewGameBudgetedFeature =
+  | "shadow-map"
+  | "bloom"
+  | "color-grade"
+  | "environment-fog"
+  | "environment-lighting"
+  | "ambient-particles"
+  | "skinned-glb-fighters"
+  | "consolidated-typed-arena";
 
 export interface SideViewGameRenderPresetOptions {
   readonly debugVolumesEnabled?: boolean;
@@ -75,7 +117,18 @@ export function createSideViewGameRenderPreset(
       pitchRadians: -0.06,
       paddingRatio: 0.1,
       nearPadding: 0.24,
-      farPadding: 1.8
+      // The far plane is derived from the *framed* bounds, which deliberately contain only the
+      // gameplay subjects -- a large backdrop opts out of auto-framing so it cannot drag the frame
+      // volume out and push the subjects off-screen. But excluding it from framing also excluded it
+      // from the depth range: at 1.8 the far plane landed ~6.6 units out while the Aura Clash arena
+      // backdrop sits 6.7-9.0 units from the camera, so the typed arena was submitted every frame
+      // and then clipped in its entirety. It rendered nothing even with a fully emissive material,
+      // and only appeared once moved in front of the fighters -- which is how the clip was isolated.
+      //
+      // Padding a side-view stage generously costs depth precision, not draws: the geometry was
+      // already being submitted. 12 keeps a backdrop several times deeper than the fight plane
+      // inside the frustum while staying far below the 100-unit default projection range.
+      farPadding: 12
     },
     environmentLighting: {
       color: [0.58, 0.7, 0.82],
@@ -136,12 +189,36 @@ export function createSideViewGameRenderPreset(
       enabled: true,
       strength: 0.38
     },
+    /*
+     * Measured, not aspirational. Aura Clash holds 16.67 ms / 60 FPS / 91 draws with every feature in
+     * `enabledFeatures` active, including the shadow pass and full-frame postprocess that were once
+     * disabled here to keep the route responsive. That cost turned out to be per-operation
+     * `gl.getError()` stalls (~93% of frame time), not the passes themselves, so the passes are enabled
+     * and their real cost is measured rather than assumed.
+     */
+    performanceBudget: {
+      maxFrameTimeMs: 16.7,
+      // 55 rather than 60: headless capture jitter costs a frame or two, and failing the budget on
+      // capture noise would train the gate to be ignored.
+      minFps: 55,
+      maxDrawCalls: 160,
+      enabledFeatures: [
+        "shadow-map",
+        "bloom",
+        "color-grade",
+        "environment-fog",
+        "environment-lighting",
+        "ambient-particles",
+        "skinned-glb-fighters",
+        "consolidated-typed-arena"
+      ]
+    },
     postprocess: {
       targetFormat: "rgba8",
       bloom: {
         threshold: 0.78,
         intensity: reducedMotion ? 0.18 : 0.32,
-        radius: 0.44
+        radius: 2
       },
       colorGrade: {
         contrast: 1.08,

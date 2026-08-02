@@ -50,8 +50,22 @@ test.describe("createAuraApp camera frameAsset contract", () => {
       expect(frameCase.camera.distance).toBeGreaterThan(0);
       expect(frameCase.pixels.nonBackgroundPixels).toBeGreaterThan(1200);
       expect(frameCase.pixels.colorBuckets).toBeGreaterThan(5);
-      expect(frameCase.pixels.clipped).toBe(false);
-      expect(frameCase.pass).toBe(true);
+      // Every sizing option must frame without clipping, including `targetLength`.
+      //
+      // `targetLength` used to clip because `camera.frameAsset` is synchronous and can
+      // only read manifest `boundsMetadata`, while the production bridge sizes models
+      // from the bounds computed from the loaded GLB. Those disagreed non-uniformly
+      // because the CLI recorded bounds in mesh-local space and ignored node
+      // transforms: for `robotcand` it reported an extent of [30.3, 24.1, 15.3] against
+      // a real [15.9, 25.1, 10.0]. Height nearly agreed, so height-based framing looked
+      // fine, but `targetLength` divides by max(x, z) and was off by ~1.9x.
+      //
+      // Both halves are now fixed — the CLI computes scene-space bounds and the
+      // manifests were regenerated — so framing and rendering agree and no case is
+      // allowed to clip. `auraProductionBoundsProbes()` still exposes the per-asset
+      // metadata-versus-loaded comparison at runtime if they ever diverge again.
+      expect(frameCase.pixels.clipped, `${frameCase.id} clipped`).toBe(false);
+      expect(frameCase.pass, `${frameCase.id} failed`).toBe(true);
     }
     expect(evidence?.pass).toBe(true);
     expect(errors).toEqual([]);

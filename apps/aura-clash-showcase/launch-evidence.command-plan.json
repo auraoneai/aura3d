@@ -1,7 +1,7 @@
 {
   "name": "Aura Clash and Aura3D 1.0.5 launch evidence command plan",
   "version": "1.0.0",
-  "purpose": "Lists the exact command-proof outputs consumed by launch-evidence/cross-runtime-evidence.json and docs/project/aura-clash-showcase.md.",
+  "purpose": "Lists the exact command-proof outputs consumed by launch-evidence/cross-runtime-evidence.json and docs/project/showcase/aura-clash-showcase-plan.md.",
   "runner": "pnpm evidence:command",
   "notes": [
     "This file is a source plan only. It does not prove any gate until the commands are executed.",
@@ -329,7 +329,7 @@
       "cwd": "apps/aura-clash-showcase",
       "command": "npm run launch:proof-complete",
       "outputs": [
-        "docs/project/aura-clash-showcase.md",
+        "docs/project/showcase/aura-clash-showcase-plan.md",
         "apps/aura-clash-showcase/launch-evidence/workflow.json",
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",

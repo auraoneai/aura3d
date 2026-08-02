@@ -914,6 +914,23 @@ Public racing and platformer presentation routes should bind gameplay to certifi
 
 Both kits expose their reusable certified-surface queries. `racing.surfaceQuery.query(point)` reports road contact/off-track distance against the bound route. `platformer.surfaceQuery.groundContact(...)` resolves landings against the certified base surfaces and optional runtime moving surfaces; callers cannot replace the certified base map with route-local geometry. The kits themselves use these same query objects for off-track and ground-contact behavior.
 
+Lateral position is reported twice, and the difference matters for anything that steers:
+
+- `trackOffset` is an **unsigned** distance from the racing line. Use it for on-track/off-track decisions and for scaling effects by how far off-line the car is.
+- `signedTrackOffset` is the same distance **signed positive to the left of the direction of travel**. Use it to steer back onto the line.
+
+A controller that reads only `trackOffset` cannot tell which side of the line it is on, so its correction is a coin flip: measured on the certified Turbo circuit, a proportional controller steering on the unsigned value pinned the car against the track edge, drove `progress` backwards, and spent 2,105 of 3,600 frames off-track. Both fields appear on `GameRacingSurfaceContact` and on the `game.racing(...)` snapshot.
+
+### What is reusable, and what stays route-local
+
+The kits above are reusable package surface. Opponent behaviour, level layout, art direction, challenge scoring, and duration proofs are **route-local** and are not part of the public package:
+
+- `apps/showcase-turbo-drift-circuit/src/opponent-ai.ts` is a route-local deterministic opponent controller. Its contract is `step(dt, playerProgress)` — the second argument is required, and omitting it leaves the AI with an undefined gap so it never accelerates. There is no reusable production racing AI in the package.
+- `apps/showcase-turbo-drift-circuit/src/race-proof.ts` and `apps/showcase-skyline-runner/src/level-proof.ts` are route-local duration proofs. They simulate the public kits to prove authored playable duration and both publish `provesMountedKitPlayback: false`, because a planned input sequence is not evidence of mounted browser playback.
+- `apps/showcase-skyline-runner/src/runner-challenge.ts` holds route-local flow/challenge scoring, not a reusable platformer challenge system.
+
+Reading these route-local modules as package capability would overstate the library. The reusable claim is the kit plus its certified-surface query, nothing more.
+
 Racing presentation cameras use `game.racingCameraRig(...)`. Its `mode` is `"chase"` or `"top-down"`, and the supplied composition evidence must include a passing asset-pair report, a passing `camera-readability` check, and the same validator-selected mode. A mismatch throws; camera choice is therefore retained composition evidence, not an arbitrary route preference.
 
 These contracts prove bounded deterministic game state, certified pacing, category-specific contact queries, and evidence-bound camera selection for the current racing/platformer routes. They do **not** prove a production physics engine, rigid-body simulation, arbitrary mesh collision, AI opponents, netcode, automatic GLB-to-game conversion, or production game-engine parity. Browser input, gameplay, route-primary, composition, automated visual QA, manual downward review, and deploy evidence remain separate release gates.

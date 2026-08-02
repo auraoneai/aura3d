@@ -1,7 +1,7 @@
 import { statSync, readFileSync } from "node:fs";
 import { fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
 
-const files = ["README.md", "marketing/index.html", "docs/project/current-state.md", "docs/project/go-to-market-strategy.md"];
+const files = ["README.md", "marketing/index.html", "docs/project/status/current-state.md", "docs/project/go-to-market-strategy.md"];
 const publicSiteFiles = ["index.html", "marketing/index.html", "marketing/src/main.ts", "marketing/src/styles.css"];
 const marketingHtml = readFileSync("marketing/index.html", "utf8");
 const marketingCss = readFileSync("marketing/src/styles.css", "utf8");

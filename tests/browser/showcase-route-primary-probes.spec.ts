@@ -7,6 +7,8 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 import { analyzeForegroundPng, analyzePngDifferenceBounds, type PngCrop } from "./showcase-visual-quality";
 import { projectScenePoint, resolveCompositionCamera, type CompositionCameraProjectionInput } from "./showcase-composition-projection";
+// @ts-expect-error -- .mjs evidence tooling has no type declarations; it is validated by its own tests.
+import { createConfigFingerprint, writeJsonArtifactAtomically } from "../../tools/evidence-freshness/index.mjs";
 
 const EVIDENCE_TIMEOUT_MS = 30_000;
 const VIEWPORT = { width: 1440, height: 900 } as const;
@@ -28,6 +30,9 @@ const UI_EVIDENCE_SELECTOR = [
   "[class*='telemetry']",
   "[class*='console']"
 ].join(",");
+// Deliberately handled mounted-route statuses; see
+// tools/showcase-library/route-evidence-status.mjs for the shared policy.
+const ACCEPTED_ROUTE_EVIDENCE_STATUSES = ["ready", "running", "playing", "completed", "unsupported"] as const;
 const ROUTE_GATE_CONFIG_TEXT = readFileSync(ROUTE_GATE_CONFIG_PATH, "utf8");
 const ROUTE_GATE_CONFIG_HASH = createHash("sha256").update(ROUTE_GATE_CONFIG_TEXT).digest("hex");
 const ROUTE_GATE_CONFIG = JSON.parse(ROUTE_GATE_CONFIG_TEXT) as ShowcaseRouteGateConfig;
@@ -35,11 +40,21 @@ const ROUTE_FILTER = new Set((process.env.A3D_ROUTE_PRIMARY_IDS ?? "")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean));
+// `retainedEvidenceFrozen` routes are superseded historical certification records. They stay
+// published so their build/deploy/classification gates still run, but a sweep must not rewrite
+// their retained probes: doing so churns artifacts and rebinds shared asset evidence to
+// screenshots no promoted route reviews. An explicit A3D_ROUTE_PRIMARY_IDS request still runs
+// them, so a frozen route can be deliberately refreshed when that is actually intended.
 const ROUTES = ROUTE_GATE_CONFIG.routes.filter((route) =>
   route.published &&
   (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true) &&
-  (ROUTE_FILTER.size === 0 || ROUTE_FILTER.has(route.id))
+  (ROUTE_FILTER.size === 0
+    ? route.retainedEvidenceFrozen !== true
+    : ROUTE_FILTER.has(route.id))
 );
+// Targeted runs (A3D_ROUTE_PRIMARY_IDS) retain a distinct summary path so a
+// partial artifact can never be read as the full-suite release summary.
+const RUN_SCOPE: "full" | "targeted" = ROUTE_FILTER.size === 0 ? "full" : "targeted";
 
 interface ShowcaseRouteGateConfig {
   readonly schema: string;
@@ -59,6 +74,7 @@ interface ShowcaseRouteGateDefinition {
   readonly primitiveBudget: number;
   readonly requiresTypedPrimaryAssets: boolean;
   readonly requiresRoutePrimaryProbe?: boolean;
+  readonly retainedEvidenceFrozen?: boolean;
 }
 
 interface RoutePrimaryProbeContext {
@@ -67,6 +83,10 @@ interface RoutePrimaryProbeContext {
   readonly appId: string;
   readonly sourceHash: string;
   readonly routeGateHash: string;
+  readonly rendererFingerprint: string;
+  readonly producerFingerprint: string;
+  readonly producerId: string;
+  readonly producerVersion: string;
   readonly routeHealthHash?: string;
   readonly routePrimaryHeroAsset?: string;
   readonly secondaryPrimaryAssets: readonly string[];
@@ -93,6 +113,28 @@ interface RoutePrimaryProbeModule {
   routePrimaryProbeScreenshotPath(routeId: string, root?: string): string;
   routePrimaryProbeRelativeEvidencePath(routeId: string): string;
   routePrimaryProbeRelativeScreenshotPath(routeId: string): string;
+  routePrimaryProbeSummaryPath(runScope: "full" | "targeted", root?: string): string;
+  createRoutePrimaryProbeSummary(input: {
+    readonly runScope: "full" | "targeted";
+    readonly routes: readonly ShowcaseRouteGateDefinition[];
+    readonly selectedRouteIds: readonly string[];
+    readonly outcomes: readonly ProbeOutcome[];
+    readonly routeGateConfig: ShowcaseRouteGateConfig;
+    readonly routeGateConfigHash: string;
+  }): RoutePrimaryProbeSummary;
+}
+
+interface RoutePrimaryProbeSummary {
+  readonly schema: string;
+  readonly runScope: string;
+  readonly summaryPath: string;
+  readonly pass: boolean;
+  readonly expectedRouteIds: readonly string[];
+  readonly executedRouteIds: readonly string[];
+  readonly executedRouteCount: number;
+  readonly missingRouteIds: readonly string[];
+  readonly failingRouteIds: readonly string[];
+  readonly blockingRouteIds: readonly string[];
 }
 
 interface ProbeOutcome {
@@ -173,22 +215,26 @@ test.describe("showcase route-primary probe generation", () => {
       }
     }
 
+    const summary = routePrimaryProbe.createRoutePrimaryProbeSummary({
+      runScope: RUN_SCOPE,
+      routes: ROUTE_GATE_CONFIG.routes,
+      selectedRouteIds: ROUTES.map((route) => route.id),
+      outcomes,
+      routeGateConfig: ROUTE_GATE_CONFIG,
+      routeGateConfigHash: ROUTE_GATE_CONFIG_HASH
+    });
     writeFileSync(
-      resolve(REPORT_DIR, "_summary.json"),
-      `${JSON.stringify({
-        schema: "aura3d-route-primary-probe-summary/1.0",
-        generatedAt: new Date().toISOString(),
-        routeGateConfig: {
-          path: "tools/showcase-library/route-gates.json",
-          schema: ROUTE_GATE_CONFIG.schema,
-          hash: ROUTE_GATE_CONFIG_HASH
-        },
-        pass: outcomes.every((outcome) => outcome.pass),
-        routes: outcomes
-      }, null, 2)}\n`
+      routePrimaryProbe.routePrimaryProbeSummaryPath(RUN_SCOPE),
+      `${JSON.stringify(summary, null, 2)}\n`
     );
 
     expect(outcomes.length).toBe(ROUTES.length);
+    expect(summary.executedRouteCount, "executed route count").toBe(ROUTES.length);
+    expect(summary.missingRouteIds, "selected routes without a retained result").toEqual([]);
+    if (RUN_SCOPE === "full") {
+      expect(summary.executedRouteIds.slice().sort(), "full run must execute every probe-required route")
+        .toEqual(summary.expectedRouteIds.slice().sort());
+    }
     for (const outcome of outcomes) {
       expect(existsSync(outcome.evidencePath), `${outcome.routeId} probe JSON`).toBe(true);
       expect(existsSync(outcome.screenshotPath), `${outcome.routeId} probe screenshot`).toBe(true);
@@ -197,6 +243,9 @@ test.describe("showcase route-primary probe generation", () => {
       expect(outcome.failures.length, `${outcome.routeId} failed route-primary evidence details`).toBeGreaterThan(0);
       expect(routeAllowsFailingProbe(outcome.routeId), `${outcome.routeId} failed while public-ready`).toBe(true);
     }
+    // A producer command may not report success while its retained summary is red.
+    expect(summary.blockingRouteIds, "routes failing route-primary evidence while still promoted").toEqual([]);
+    expect(summary.pass, `retained route-primary summary ${summary.summaryPath} must pass`).toBe(true);
   });
 });
 
@@ -224,6 +273,7 @@ async function writeRoutePrimaryProbe(
   let canvasCrop: PngCrop | undefined;
   let analysisCrop: PngCrop | undefined;
   let uiOccluded = false;
+  let controlsInViewport = true;
   const thresholds = routePrimaryProbe.routePrimaryProbeThresholds;
 
   page.removeAllListeners("pageerror");
@@ -242,7 +292,14 @@ async function writeRoutePrimaryProbe(
     await page.waitForTimeout(500);
     canvasCrop = await largestCanvasCrop(page);
     if (!canvasCrop) failures.push("missing-visible-canvas");
-    analysisCrop = canvasCrop ? await routePrimaryAnalysisCrop(page, canvasCrop) : undefined;
+    analysisCrop = canvasCrop
+      ? route.id === "showcase-product-configurator"
+        ? canvasCrop
+        : await routePrimaryAnalysisCrop(page, canvasCrop)
+      : undefined;
+    // Settle an animated subject into its declared neutral pose before anything is captured, so the
+    // retained screenshot and the scale-contract measurement taken from it describe the same pose.
+    await settleCompositionSubjectPose(page);
     renderer = await waitForRendererDiagnostics(page, route.globalName);
     failures.push(...rendererDiagnosticFailures(renderer));
   } catch (error) {
@@ -257,10 +314,11 @@ async function writeRoutePrimaryProbe(
         page,
         screenshot,
         canvasCrop,
-        analysisCrop ?? canvasCrop,
+        canvasCrop,
         suppressedScreenshotPath,
         relativeSuppressedScreenshotPath
       );
+      if (compositionProbe) analysisCrop = canvasCrop;
     } catch (error) {
       if (route.id.includes("racing") || route.id.includes("platformer") || route.id.includes("turbo-drift") || route.id.includes("skyline-runner") || route.id.includes("blockfall")) {
         failures.push(`composition-probe:${error instanceof Error ? error.message : String(error)}`);
@@ -289,6 +347,8 @@ async function writeRoutePrimaryProbe(
     if (foreground.readabilityScore < thresholds.minReadabilityScore) failures.push(`primary-readability-score:${foreground.readabilityScore}`);
     uiOccluded = foreground.foregroundBounds ? await foregroundOccludedByUi(page, foreground.foregroundBounds) : false;
     if (uiOccluded) failures.push("primary-foreground-occluded-by-ui");
+    controlsInViewport = await interactiveControlsInViewport(page);
+    if (isPublicGameRouteId(route.id) && !controlsInViewport) failures.push("interactive-controls-outside-viewport");
   } catch (error) {
     failures.push(`screenshot-analysis:${error instanceof Error ? error.message : String(error)}`);
   }
@@ -323,6 +383,7 @@ async function writeRoutePrimaryProbe(
     visible: Boolean(foreground.foregroundBounds) && foreground.nonBlankPixels >= 2500,
     clipped: foreground.clipped,
     occludedByUi: uiOccluded,
+    controlsInViewport,
     readabilityScore: foreground.readabilityScore,
     ...(compositionProbe ? {
       subjectSuppressedScreenshotPath: compositionProbe.subjectSuppressedScreenshotPath,
@@ -341,6 +402,38 @@ async function writeRoutePrimaryProbe(
     routePrimaryHeroAsset: context.routePrimaryHeroAsset,
     secondaryPrimaryAssets: context.secondaryPrimaryAssets,
     ...(context.routeHealthHash ? { routeHealthHash: context.routeHealthHash } : {}),
+    /*
+     * Dependency-bound freshness.
+     *
+     * The probe already recorded route source, gate config and route-health hashes. It did not record
+     * the renderer fingerprint, the producer identity, or the viewport contract -- so a screenshot
+     * rendered by different renderer code, or by an older producer, still read as current.
+     * `tools/evidence-freshness/explain-staleness.mjs` reported all three as `unbound`, which is what
+     * prompted binding them here rather than relying on modification time.
+     */
+    freshness: {
+      schema: "aura3d-evidence-freshness/1.0",
+      artifact: `tests/reports/showcase-route-primary-probes/${route.id}.json`,
+      producer: {
+        id: context.producerId,
+        version: context.producerVersion,
+        fingerprint: context.producerFingerprint
+      },
+      generatedAt: new Date().toISOString(),
+      dependencies: [
+        { kind: "route-source", id: route.id, hash: context.sourceHash },
+        { kind: "route-gate-config", id: "route-gates.json", hash: context.routeGateHash },
+        ...(context.routeHealthHash
+          ? [{ kind: "route-health", id: `${route.id}/route-health.json`, hash: context.routeHealthHash }]
+          : []),
+        ...context.primaryAssets
+          .filter((asset) => asset.manifestHash)
+          .map((asset) => ({ kind: "primary-asset", id: asset.id, hash: asset.manifestHash as string })),
+        { kind: "renderer-fingerprint", id: "agent-api+assets", hash: context.rendererFingerprint },
+        { kind: "producer-version", id: context.producerId, hash: context.producerFingerprint },
+        { kind: "viewport-contract", id: route.id, hash: createConfigFingerprint(viewport) }
+      ].sort((a, b) => (a.kind === b.kind ? a.id.localeCompare(b.id) : a.kind.localeCompare(b.kind)))
+    },
     generatedAt: new Date().toISOString(),
     viewport,
     mountedEvidence,
@@ -361,7 +454,8 @@ async function writeRoutePrimaryProbe(
     failures
   };
 
-  writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  // Atomic: a half-written probe JSON parses as garbage while looking like evidence.
+  writeJsonArtifactAtomically(evidencePath, evidence);
   return {
     routeId: route.id,
     pass,
@@ -371,6 +465,19 @@ async function writeRoutePrimaryProbe(
   };
 }
 
+
+/**
+ * Ask the route to put its composition subject into the neutral pose its `targetSize` describes.
+ *
+ * No-op for routes that do not implement it, which is every route with a static subject.
+ */
+async function settleCompositionSubjectPose(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const probe = (window as unknown as { __AURA3D_COMPOSITION_PROBE__?: { settleSubjectPose?: () => unknown } })
+      .__AURA3D_COMPOSITION_PROBE__;
+    probe?.settleSubjectPose?.();
+  });
+}
 
 async function measureCompositionProbe(
   page: Page,
@@ -388,8 +495,30 @@ async function measureCompositionProbe(
       playSpacePoints?: unknown;
       contactPoint?: unknown;
       setSubjectSuppressed?: (suppressed: boolean) => unknown;
+      settleSubjectPose?: () => unknown;
     } }).__AURA3D_COMPOSITION_PROBE__;
     if (!probe || typeof probe.setSubjectSuppressed !== "function") return undefined;
+    /*
+     * Settle an animated subject into its declared pose before measuring.
+     *
+     * The scale-contract check compares the subject's *measured* pixel height against the height projected
+     * from `subject.targetSize`. When the route animates its subject through a scale cycle, those two
+     * quantities describe different things: Skyline's hero locomotion applies `1 +/- 0.14`, a 28%
+     * peak-to-peak swing, so the measured height varied 119-154px across four consecutive captures and
+     * `scaleDelta` straddled the 0.18 threshold -- one run legitimately failed while nothing about the
+     * route had changed.
+     *
+     * That is the gate measuring animation phase rather than scale correctness. `settleSubjectPose` lets a
+     * route put its subject into the neutral pose its `targetSize` actually describes. It is optional, so
+     * routes with a static subject are unaffected, and it is the route's own code that decides what
+     * "neutral" means -- this spec cannot know.
+     *
+     * Deliberately *not* solved by widening the threshold: that would have hidden a real contract
+     * mismatch and weakened the check for every route, including ones whose subject does not animate.
+     *
+     * Invoked before the primary screenshot (see `settleCompositionSubjectPose`), so the retained image and
+     * every measurement taken from it describe the same pose.
+     */
     return {
       category: probe.category,
       camera: probe.camera,
@@ -524,12 +653,13 @@ async function importRoutePrimaryProbeModule(): Promise<RoutePrimaryProbeModule>
 }
 
 async function waitForMountedRouteEvidence(page: Page, globalName: string): Promise<EvidenceRecord> {
-  await page.waitForFunction((name) => {
-    const evidence = (window as unknown as Record<string, EvidenceRecord | undefined>)[name as string];
+  await page.waitForFunction((input) => {
+    const { name, statuses } = input as { name: string; statuses: readonly string[] };
+    const evidence = (window as unknown as Record<string, EvidenceRecord | undefined>)[name];
     if (!evidence) return false;
     const status = typeof evidence.status === "string" ? evidence.status : "";
-    return /^(ready|running|unsupported)$/.test(status);
-  }, globalName, { timeout: EVIDENCE_TIMEOUT_MS });
+    return statuses.includes(status);
+  }, { name: globalName, statuses: ACCEPTED_ROUTE_EVIDENCE_STATUSES }, { timeout: EVIDENCE_TIMEOUT_MS });
   return page.evaluate((name) => {
     return (window as unknown as Record<string, EvidenceRecord>)[name as string];
   }, globalName);
@@ -614,92 +744,64 @@ async function largestCanvasCrop(page: Page): Promise<PngCrop | undefined> {
 async function routePrimaryAnalysisCrop(page: Page, canvasCrop: PngCrop): Promise<PngCrop> {
   return page.evaluate(({ crop, selector }) => {
     type Rect = { x: number; y: number; width: number; height: number };
-
-    const minWidth = 180;
-    const minHeight = 140;
-    const cropInset = 10;
-    const viewport: Rect = {
-      x: 0,
-      y: 0,
-      width: window.innerWidth,
-      height: window.innerHeight
+    const viewport: Rect = { x: 0, y: 0, width: window.innerWidth, height: window.innerHeight };
+    const area = (rect: Rect) => Math.max(0, rect.width) * Math.max(0, rect.height);
+    const normalize = (rect: Rect): Rect => {
+      const x = Math.max(0, Math.floor(rect.x));
+      const y = Math.max(0, Math.floor(rect.y));
+      return {
+        x,
+        y,
+        width: Math.max(0, Math.floor(Math.min(rect.x + rect.width, viewport.width) - x)),
+        height: Math.max(0, Math.floor(Math.min(rect.y + rect.height, viewport.height) - y))
+      };
     };
-    const area = (rect: Rect): number => Math.max(0, rect.width) * Math.max(0, rect.height);
-    const normalize = (rect: Rect): Rect => ({
-      x: Math.max(viewport.x, Math.floor(rect.x)),
-      y: Math.max(viewport.y, Math.floor(rect.y)),
-      width: Math.max(0, Math.floor(Math.min(rect.x + rect.width, viewport.x + viewport.width) - Math.max(viewport.x, rect.x))),
-      height: Math.max(0, Math.floor(Math.min(rect.y + rect.height, viewport.y + viewport.height) - Math.max(viewport.y, rect.y)))
-    });
-    const intersection = (left: Rect, right: Rect): Rect | undefined => {
+    const intersect = (left: Rect, right: Rect) => {
       const x = Math.max(left.x, right.x);
       const y = Math.max(left.y, right.y);
       const width = Math.min(left.x + left.width, right.x + right.width) - x;
       const height = Math.min(left.y + left.height, right.y + right.height) - y;
       return width > 0 && height > 0 ? { x, y, width, height } : undefined;
     };
-    const usable = (rect: Rect): boolean => rect.width >= minWidth && rect.height >= minHeight;
-    const pushUsable = (list: Rect[], rect: Rect): void => {
-      const normalized = normalize(rect);
-      if (usable(normalized)) list.push(normalized);
-    };
-    const inset = (rect: Rect): Rect => {
-      const maxInset = Math.max(0, Math.min(cropInset, Math.floor((rect.width - minWidth) / 2), Math.floor((rect.height - minHeight) / 2)));
-      return {
-        x: rect.x + maxInset,
-        y: rect.y + maxInset,
-        width: rect.width - maxInset * 2,
-        height: rect.height - maxInset * 2
-      };
-    };
-    const isVisible = (element: HTMLElement): boolean => {
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return rect.width >= 2 && rect.height >= 2 && style.display !== "none" &&
-        style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01;
-    };
-    const canvas = normalize(crop);
-    if (!usable(canvas)) return canvas;
-
+    const usable = (rect: Rect) => rect.width >= 180 && rect.height >= 140;
     const blockers = Array.from(document.querySelectorAll<HTMLElement>(selector))
-      .filter((element) => !element.querySelector("canvas") && isVisible(element))
+      .filter((element) => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return !element.querySelector("canvas") && rect.width >= 2 && rect.height >= 2 &&
+          style.display !== "none" && style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01;
+      })
       .map((element) => {
         const rect = element.getBoundingClientRect();
         return normalize({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
       })
-      .filter((rect) => area(rect) > 0 && Boolean(intersection(canvas, rect)))
-      .sort((left, right) => area(right) - area(left));
-
-    let candidates: Rect[] = [canvas];
+      .filter((rect) => area(rect) > 0 && Boolean(intersect(crop, rect)));
+    let candidates: Rect[] = [normalize(crop)];
     for (const blocker of blockers) {
       const next: Rect[] = [];
       for (const candidate of candidates) {
-        const overlap = intersection(candidate, blocker);
-        if (!overlap) {
+        if (!intersect(candidate, blocker)) {
           next.push(candidate);
           continue;
         }
-        pushUsable(next, { x: candidate.x, y: candidate.y, width: blocker.x - candidate.x, height: candidate.height });
-        pushUsable(next, {
-          x: blocker.x + blocker.width,
-          y: candidate.y,
-          width: candidate.x + candidate.width - (blocker.x + blocker.width),
-          height: candidate.height
-        });
-        pushUsable(next, { x: candidate.x, y: candidate.y, width: candidate.width, height: blocker.y - candidate.y });
-        pushUsable(next, {
-          x: candidate.x,
-          y: blocker.y + blocker.height,
-          width: candidate.width,
-          height: candidate.y + candidate.height - (blocker.y + blocker.height)
-        });
+        const slices = [
+          { x: candidate.x, y: candidate.y, width: blocker.x - candidate.x, height: candidate.height },
+          { x: blocker.x + blocker.width, y: candidate.y, width: candidate.x + candidate.width - blocker.x - blocker.width, height: candidate.height },
+          { x: candidate.x, y: candidate.y, width: candidate.width, height: blocker.y - candidate.y },
+          { x: candidate.x, y: blocker.y + blocker.height, width: candidate.width, height: candidate.y + candidate.height - blocker.y - blocker.height }
+        ].map(normalize).filter(usable);
+        next.push(...slices);
       }
-      if (next.length > 0) {
-        candidates = next.sort((left, right) => area(right) - area(left)).slice(0, 32);
-      }
+      if (next.length > 0) candidates = next.sort((left, right) => area(right) - area(left)).slice(0, 32);
     }
-
-    return inset((candidates[0] ?? canvas));
+    const selected = candidates.sort((left, right) => area(right) - area(left))[0] ?? normalize(crop);
+    const inset = Math.max(0, Math.min(10, Math.floor((selected.width - 180) / 2), Math.floor((selected.height - 140) / 2)));
+    return {
+      x: selected.x + inset,
+      y: selected.y + inset,
+      width: selected.width - inset * 2,
+      height: selected.height - inset * 2
+    };
   }, { crop: canvasCrop, selector: UI_EVIDENCE_SELECTOR });
 }
 
@@ -721,6 +823,30 @@ async function foregroundOccludedByUi(page: Page, foregroundBounds: PngCrop): Pr
       .filter((element) => !element.querySelector("canvas") && isVisible(element))
       .some((element) => intersectionArea(element.getBoundingClientRect()) / foregroundArea > 0.08);
   }, { bounds: foregroundBounds, selector: UI_EVIDENCE_SELECTOR });
+}
+
+async function interactiveControlsInViewport(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    const controls = Array.from(document.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), [role='button'], input:not([type='hidden']), select"
+    )).filter((element) => {
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return rect.width >= 2 && rect.height >= 2 && style.display !== "none" &&
+        style.visibility !== "hidden" && Number(style.opacity || "1") > 0.01;
+    });
+    return controls.every((element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.left >= 0 && rect.top >= 0 &&
+        rect.right <= window.innerWidth && rect.bottom <= window.innerHeight;
+    });
+  });
+}
+
+function isPublicGameRouteId(routeId: string): boolean {
+  return routeId.includes("blockfall") || routeId.includes("turbo-drift") ||
+    routeId.includes("skyline-runner") || routeId.includes("racing") ||
+    routeId.includes("platformer");
 }
 
 function findPrimitivePrimaryCandidates(route: ShowcaseRouteGateDefinition): readonly string[] {

@@ -85,7 +85,7 @@ Game apps additionally need:
 
 ## Related Docs
 
-- Quality gates: `docs/project/showcase-quality-gates.md`
-- App classification: `docs/project/apps-classification.md`
+- Quality gates: `docs/project/showcase/quality-gates.md`
+- App classification: `docs/project/showcase/apps-classification.md`
 - Launch positioning: `docs/project/launch-positioning.md`
 - Evidence policy: `docs/project/verification-evidence.md`

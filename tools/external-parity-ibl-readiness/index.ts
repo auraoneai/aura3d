@@ -14,9 +14,9 @@ const requiredFiles = [
   "packages/rendering/src/IBL.ts",
   "packages/rendering/src/PMREM.ts",
   "packages/rendering/src/BRDFLut.ts",
-  "fixtures/external-parity/environments/manifest.json",
+  "fixtures/environment-corpus/manifest.json",
   "tests/unit/rendering/external-parity-ibl.test.ts",
-  "tests/browser/external-parity-ibl-visual.spec.ts",
+  "tests/browser/external-parity-ibl-evidence.spec.ts",
   "tools/external-parity-ibl-readiness/index.ts",
   "tests/reports/external-parity-ibl-browser.json"
 ] as const;
@@ -121,14 +121,19 @@ check(
   "BRDF LUT wrapper must generate a non-empty LUT with roughness response diagnostics."
 );
 
-const manifest = readJson("fixtures/external-parity/environments/manifest.json");
-const targets = Array.isArray(manifest?.targets) ? manifest.targets.filter(isRecord) : [];
+// The HDR environment corpus lives at fixtures/environment-corpus, which is also the
+// path the public `createExternalParityEnvironmentLighting` bundle reports as its
+// manifestPath. The previous `fixtures/external-parity/environments/manifest.json` path
+// never existed in this repository, so these checks could never pass and their blockers
+// were unfalsifiable rather than true.
+const manifest = readJson("fixtures/environment-corpus/manifest.json");
+const targets = Array.isArray(manifest?.environments) ? manifest.environments.filter(isRecord) : [];
 check("environment-manifest-target-count", targets.length >= 5, "Environment manifest must include five HDR targets.");
 check(
   "environment-manifest-bootstrap-boundary",
-  typeof manifest?.bootstrapOnlyRule === "string" &&
-    manifest.bootstrapOnlyRule.includes("Generated local fixtures cannot satisfy flagship proof"),
-  "Environment manifest must state generated local fixtures cannot satisfy flagship proof."
+  typeof manifest?.claimBoundary === "string" &&
+    manifest.claimBoundary.includes("do not prove renderer quality without rendered visual gates"),
+  "Environment manifest must state that pinned fixtures alone do not prove renderer quality."
 );
 
 const browser = readJson("tests/reports/external-parity-ibl-browser.json");
@@ -146,7 +151,7 @@ check(
     Number(environmentResources.specularMipCount) >= 4 &&
     externalParityDiagnostics.hdrSource === true &&
     externalParityDiagnostics.notFlagshipProof === true,
-  "Browser report must prove material-showroom environment reflections and External parity generated linear HDR IBL resources."
+  "Browser report must prove environment-driven reflections and External parity generated linear HDR IBL resources."
 );
 check(
   "browser-ibl-validation",

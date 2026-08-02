@@ -49,7 +49,7 @@ const defaultRegistryPath = "docs/project/product-studio-claim-registry.md";
 const defaultReportPath = "tests/reports/claim-registry.json";
 const canonicalPathFallbacks: Record<string, readonly string[]> = {
   "docs/project/product-studio-claim-registry.md": ["docs/product-studio/claim-registry.md"],
-  "docs/project/known-limits.md": ["docs/known-limits.md"]
+  "docs/project/status/known-limits.md": ["docs/known-limits.md"]
 };
 const strongerClaimPatterns = [
   { claim: "Aura3D is better than Three.js.", pattern: /\bbetter\s+than\s+three\.?js\b/i },
@@ -219,7 +219,7 @@ function listPublicClaimFiles(root: string): readonly string[] {
     if (path === "package.json" || path === "README.md" || path === "CHANGELOG.md" || /^RELEASE[^/]*\.md$/i.test(path)) return true;
     if (/^packages\/[^/]+\/package\.json$/.test(path)) return true;
     if (/^examples\/[^/]+\/README\.md$/.test(path)) return true;
-    return /^docs\/(?:api|tutorials|examples|benchmarks)\//.test(path) || path === "docs/project/known-limits.md";
+    return /^docs\/(?:api|tutorials|examples|benchmarks)\//.test(path) || path === "docs/project/status/known-limits.md";
   }).sort((left, right) => left.localeCompare(right));
 }
 
@@ -277,7 +277,7 @@ function normalizePath(path: string): string {
 }
 
 function canonicalizePublicClaimPath(path: string): string {
-  if (path === "docs/known-limits.md") return "docs/project/known-limits.md";
+  if (path === "docs/known-limits.md") return "docs/project/status/known-limits.md";
   if (path === "docs/product-studio/claim-registry.md") return "docs/project/product-studio-claim-registry.md";
   return path;
 }

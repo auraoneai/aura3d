@@ -6,8 +6,6 @@ import "./write-established-racing-speed-contracts.mjs";
 
 const root = resolve(process.cwd());
 const routes = [
-  ["showcase-public-racing-presentation-proof", "public-racing-presentation-proof", "racing-track-topology"],
-  ["showcase-public-platformer-presentation-proof", "public-platformer-presentation-proof", "platformer-playable-surfaces"],
   ["showcase-racing-game-layer-proof", "racing-game-layer-proof", "racing-track-topology"],
   ["showcase-platformer-game-layer-proof", "platformer-game-layer-proof", "platformer-playable-surfaces"]
 ];

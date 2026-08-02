@@ -134,6 +134,28 @@ export function applyGeneratedGameTemplateEvidence(
   return { spec, artifacts: {} };
 }
 
+/**
+ * The single route width that best represents a whole lap.
+ *
+ * The route contract carries one width for the entire lap, so taking the *first*
+ * sample makes the whole circuit as narrow as whichever corner happened to be sampled
+ * first. On `showcaseTsukubaCircuit` that produced 0.388 against a real median of 0.439
+ * and a maximum of 1.207, and the resulting route was too narrow to drive: at the
+ * certified pace the car crossed the full road width in about 0.09 s and was off-track
+ * within 1.6 s of plain throttle, so off-track drag cancelled its own acceleration.
+ * The median is representative of the lap and is not skewed by one chicane.
+ */
+function representativeRoadWidth(
+  centerline: readonly { readonly width?: number }[]
+): number {
+  const widths = centerline
+    .map((point) => point.width)
+    .filter((width): width is number => typeof width === "number" && width > 0)
+    .sort((a, b) => a - b);
+  if (widths.length === 0) return 0.18;
+  return widths[Math.floor(widths.length / 2)]!;
+}
+
 export function createRacingTemplatePlan(
   racing: ShowcaseRacingSpec,
   options: ShowcaseGameTemplateEvidenceOptions = {}
@@ -148,7 +170,7 @@ export function createRacingTemplatePlan(
     const points = topology.roadCenterline.map((point) => ({ x: point.x, y: point.z }));
     const routeLength = topology.lapLengthMeters ?? measureRouteLength(points);
     return {
-      width: topology.roadCenterline.find((point) => point.width !== undefined)?.width ?? 0.18,
+      width: representativeRoadWidth(topology.roadCenterline),
       points,
       checkpoints: topology.checkpoints.map((checkpoint) => checkpoint.progress),
       routeLength,
@@ -163,7 +185,7 @@ export function createRacingTemplatePlan(
     const points = topology.roadCenterline.map((point) => ({ x: point.x, y: point.z }));
     const routeLength = topology.lapLengthMeters ?? measureRouteLength(points);
     return {
-      width: topology.roadCenterline.find((point) => point.width !== undefined)?.width ?? 0.18,
+      width: representativeRoadWidth(topology.roadCenterline),
       points,
       checkpoints: topology.checkpoints.map((checkpoint) => checkpoint.progress),
       routeLength,

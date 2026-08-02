@@ -15,6 +15,13 @@ Environment lighting is implemented through renderer environment resources, envi
 
 ## Current Behavior
 
+- The ambient term (`environmentLighting.color * environmentLighting.intensity`) is **added** to the
+  indirect contribution, and the procedural sky gradient and a sampled environment map are
+  alternatives to each other. Previously a `mix(...)` discarded ambient outright whenever a
+  procedural map was present — the normal case — so raising ambient intensity from 0.18 to 3.0
+  produced a byte-identical frame, and the sampled-map branch then attenuated any survivor to 18%.
+  Applied to all six lit shader variants and guarded by
+  `tests/unit/rendering/environment-ambient-additive.test.ts`.
 - Rendering-internal cubemap and equirectangular backgrounds have directional browser-pixel evidence.
 - GGX PMREM and the split-sum BRDF LUT have roughness-response and energy-conservation evidence.
 - The production-runtime RGBE path loads URL or Blob Radiance HDR files into disposable renderer-ready environment resources.

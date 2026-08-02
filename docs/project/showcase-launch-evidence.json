@@ -1,38 +1,81 @@
 {
   "schema": "aura3d-showcase-build-deploy/1.0",
-  "generatedAt": "2026-07-28T06:13:03.141Z",
+  "generatedAt": "2026-08-02T09:16:48.349Z",
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
-    "hash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f"
+    "hash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f"
   },
   "visualReview": {
     "path": "docs/project/showcase-visual-review.json",
-    "ok": true,
+    "ok": false,
     "allRoutesOk": false,
-    "fileOk": true,
-    "reviewer": "kiro-current-retained-screenshot-review",
-    "reviewedAt": "2026-07-19T21:03:32Z",
-    "overallVerdict": "fail",
+    "fileOk": false,
+    "reviewer": "Pending independent human review",
+    "reviewedAt": "2026-07-30T05:35:13.677Z",
+    "overallVerdict": "needs-work",
     "failures": [
-      "visual-review-overall-verdict:fail"
+      "route-visual-review-stale-source:showcase-product-configurator",
+      "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+      "route-visual-review-stale-source:showcase-smart-city-control",
+      "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+      "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+      "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+      "route-visual-review-stale-source:showcase-cinematic-architecture",
+      "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+      "route-visual-review-stale-source:showcase-digital-twin-ops",
+      "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+      "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+      "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+      "route-visual-review-source-hash:showcase-blockfall-reactor",
+      "route-visual-review-stale-source:showcase-blockfall-reactor",
+      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+      "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+      "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+      "route-visual-review-source-hash:showcase-skyline-runner",
+      "route-visual-review-route-health-hash:showcase-skyline-runner",
+      "route-visual-review-stale-source:showcase-skyline-runner",
+      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+      "route-visual-review-source-hash:showcase-turbo-drift-circuit",
+      "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
+      "route-visual-review-stale-source:showcase-turbo-drift-circuit",
+      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+      "visual-review-overall-verdict:needs-work"
     ]
   },
-  "ok": true,
-  "publicReleaseOk": true,
-  "publicVisualReviewOk": true,
+  "ok": false,
+  "publicReleaseOk": false,
+  "publicVisualReviewOk": false,
   "allRoutesOk": false,
   "classificationOk": true,
-  "routeCount": 15,
-  "appCount": 14,
-  "releaseCandidateCount": 7,
-  "releaseCandidatePassed": 7,
+  "routeCount": 13,
+  "appCount": 12,
+  "releaseCandidateCount": 4,
+  "releaseCandidatePassed": 0,
   "internalDiagnosticCount": 2,
   "gameLayerDiagnosticCount": 2,
   "diagnosticRouteCount": 4,
-  "prototypeBlockedCount": 0,
+  "prototypeBlockedCount": 3,
   "indexRouteCount": 1,
-  "removedFromPublicShowcaseCount": 3,
+  "removedFromPublicShowcaseCount": 1,
   "diagnostics": [
     {
       "id": "showcase-data-galaxy",
@@ -53,7 +96,11 @@
         "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
         "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
         "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
-        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
+        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
       ]
     },
     {
@@ -67,6 +114,10 @@
         "route-primary:route-primary-probe-failure:primary-foreground-clipped",
         "route-primary:probe-clipped:showcaseParticleCore:true",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-clipped",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
         "capability:native-webgpu-proof-absent"
       ]
     },
@@ -74,26 +125,30 @@
       "id": "showcase-racing-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": true,
+      "ok": false,
       "blockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-scene-not-polished-game-presentation"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e"
       ]
     },
     {
       "id": "showcase-platformer-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": true,
+      "ok": false,
       "blockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-world-composition-not-public-quality"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale."
       ]
     }
   ],
@@ -102,26 +157,30 @@
       "id": "showcase-racing-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": true,
+      "ok": false,
       "blockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-scene-not-polished-game-presentation"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e"
       ]
     },
     {
       "id": "showcase-platformer-game-layer-proof",
       "classification": "game-layer-diagnostic",
       "publicReleaseCounted": false,
-      "ok": true,
+      "ok": false,
       "blockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-world-composition-not-public-quality"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale."
       ]
     }
   ],
@@ -203,8 +262,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 183,
-        "totalBytes": 652159060,
+        "fileCount": 197,
+        "totalBytes": 672859628,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -220,11 +279,11 @@
       "globalName": "__AURA3D_SHOWCASE_PRODUCT_CONFIGURATOR__",
       "releaseClass": "release-ready candidate",
       "publicReleaseCounted": true,
-      "publicReleaseOk": true,
+      "publicReleaseOk": false,
       "classificationOk": true,
       "classificationFailures": [],
       "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "finalStatus": "release-blocked",
       "source": "apps/showcase-product-configurator/index.html",
       "distDir": "apps/showcase-product-configurator/dist",
       "gate": {
@@ -246,15 +305,63 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": true,
-        "ok": true,
+        "ok": false,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-stale-source:showcase-product-configurator",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "route-visual-review-stale-source:showcase-smart-city-control",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-source:showcase-cinematic-architecture",
+          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "route-visual-review-stale-source:showcase-digital-twin-ops",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-source-hash:showcase-blockfall-reactor",
+          "route-visual-review-stale-source:showcase-blockfall-reactor",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-source-hash:showcase-skyline-runner",
+          "route-visual-review-route-health-hash:showcase-skyline-runner",
+          "route-visual-review-stale-source:showcase-skyline-runner",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-source-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-stale-source:showcase-turbo-drift-circuit",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "visual-review-overall-verdict:needs-work",
+          "route-visual-review-stale-source:showcase-product-configurator",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -277,7 +384,7 @@
           "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
           "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
@@ -313,12 +420,12 @@
           "routeId": "showcase-product-configurator",
           "routePath": "/apps/showcase-product-configurator/",
           "appId": "showcase-product-configurator",
-          "sourceHash": "sha256-dba0f07c491674f648e71cd67f73f381e4621d6d15a05a6404670e02a7ff3c15",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-6c20619be6263549cbae23b5df4cff157e3a3c7946cceb371dcdacd0dad83dde",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-4d3041af91ce97c0efb46c8ed0e6a17f3003c3f67523a0e7398649a0e66bf305",
-          "generatedAt": "2026-07-28T05:16:17.889Z",
+          "generatedAt": "2026-08-02T02:00:26.129Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -363,16 +470,17 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-            "sha256": "sha256-6e4446a555b4d1541ab08dc46dcdf82f479dc2f20797fc0fbc71268c93df35af",
+            "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
-              "x": 398,
-              "y": 224,
-              "width": 1032,
-              "height": 520
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 900,
+              "area": 1296000
             },
-            "nonBlankPixels": 54766,
+            "nonBlankPixels": 54775,
             "colorBuckets": 31,
             "foregroundBounds": {
               "x": 576,
@@ -383,7 +491,8 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
-            "readabilityScore": 100,
+            "controlsInViewport": true,
+            "readabilityScore": 95,
             "failures": []
           },
           "primaryAssets": [
@@ -396,16 +505,17 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-product-configurator.png",
-                "sha256": "sha256-6e4446a555b4d1541ab08dc46dcdf82f479dc2f20797fc0fbc71268c93df35af",
+                "sha256": "sha256-8aabfcf1d9389f7db319f8f4896e10c4f9e3e6d575ce1adc67766149072095dc",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
-                  "x": 398,
-                  "y": 224,
-                  "width": 1032,
-                  "height": 520
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 900,
+                  "area": 1296000
                 },
-                "nonBlankPixels": 54766,
+                "nonBlankPixels": 54775,
                 "colorBuckets": 31,
                 "foregroundBounds": {
                   "x": 576,
@@ -416,7 +526,8 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
-                "readabilityScore": 100,
+                "controlsInViewport": true,
+                "readabilityScore": 95,
                 "failures": []
               }
             }
@@ -430,8 +541,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 662955429,
+        "fileCount": 206,
+        "totalBytes": 684157363,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -480,7 +591,7 @@
         "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
+        "verdict": "skipped",
         "failures": []
       },
       "gameVisualQa": {
@@ -504,7 +615,7 @@
           "outputPath": "public/aura-assets/showcaseHeadphones.40b1fdf7.glb",
           "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-039/4e902017e4624547b440da0a6658a689.glb",
@@ -540,12 +651,12 @@
           "routeId": "showcase-material-asset-inspector",
           "routePath": "/apps/showcase-material-asset-inspector/",
           "appId": "showcase-material-asset-inspector",
-          "sourceHash": "sha256-a0fc78bc19877328fdd3706a3164d53c18fe5f6c4dea2d2a258ae06504c05e89",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-d5541b96e3692d666fa263d454020265071f98688258e2f1c019299b8caf18a7",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseHeadphones",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-f5f2458769e70a9ab242d71ea0d0c362904bf9db30554e40f8e9af0a94f03368",
-          "generatedAt": "2026-07-28T05:16:20.675Z",
+          "generatedAt": "2026-08-02T02:00:29.006Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -591,17 +702,17 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-            "sha256": "sha256-dcc970b4984763b74456fa9616e735a4fda4e3845fdd056be1ec13e7243603f0",
+            "sha256": "sha256-8b2acea1871e6bbc012f3f0b8f76c31244894030c38b28df1af3ba618cf6174f",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
               "x": 378,
               "y": 10,
               "width": 1052,
-              "height": 564
+              "height": 543
             },
-            "nonBlankPixels": 41300,
-            "colorBuckets": 29,
+            "nonBlankPixels": 40914,
+            "colorBuckets": 30,
             "foregroundBounds": {
               "x": 576,
               "y": 114,
@@ -611,6 +722,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 100,
             "failures": []
           },
@@ -624,17 +736,17 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-                "sha256": "sha256-dcc970b4984763b74456fa9616e735a4fda4e3845fdd056be1ec13e7243603f0",
+                "sha256": "sha256-8b2acea1871e6bbc012f3f0b8f76c31244894030c38b28df1af3ba618cf6174f",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
                   "x": 378,
                   "y": 10,
                   "width": 1052,
-                  "height": 564
+                  "height": 543
                 },
-                "nonBlankPixels": 41300,
-                "colorBuckets": 29,
+                "nonBlankPixels": 40914,
+                "colorBuckets": 30,
                 "foregroundBounds": {
                   "x": 576,
                   "y": 114,
@@ -644,6 +756,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 100,
                 "failures": []
               }
@@ -658,8 +771,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 662939455,
+        "fileCount": 206,
+        "totalBytes": 684141389,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -692,7 +805,11 @@
         "route-primary:probe-failure:showcaseParticleCore:primary-readability-score:34",
         "route-primary:probe-primary-foreground-too-small:showcaseParticleCore:620",
         "route-primary:probe-primary-foreground-width:showcaseParticleCore:51",
-        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13"
+        "route-primary:probe-primary-foreground-height:showcaseParticleCore:13",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
       ],
       "finalStatus": "internal-diagnostic-retained",
       "source": "apps/showcase-data-galaxy/index.html",
@@ -745,14 +862,14 @@
           "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
           "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
           "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "sourceFamily": "objaverse",
-          "author": "Yewon Kim",
+          "author": "Yewon Kim (https://sketchfab.com/yewonkim0621)",
           "attribution": "Yewon Kim",
           "retrievedAt": "2026-06-17T21:19:42.916Z",
           "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
@@ -799,11 +916,11 @@
           "routePath": "/apps/showcase-data-galaxy/",
           "appId": "showcase-data-galaxy",
           "sourceHash": "sha256-0cea1739e0413a774b90b8f4c4ccd87f81c7c0a4d3627b6801b14c4e3bb76efb",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-7f96f6965ec1106cab7e9411337d5552c5377ef08b7e6970c0aaffd3a946ff77",
-          "generatedAt": "2026-07-28T05:16:23.532Z",
+          "generatedAt": "2026-08-02T02:00:31.948Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -841,7 +958,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-9253aa1b5b91e88152a4941f4d29e6beefba5806701f250a624c3b60a79aafa6",
+            "sha256": "sha256-0f6e97a0f8fd1fdbbf74c30c49936feb1d572a0e16eaf9a0f699182976197979",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -861,6 +978,7 @@
             "visible": false,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 34,
             "failures": [
               "primary-foreground-too-small:620",
@@ -879,7 +997,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-9253aa1b5b91e88152a4941f4d29e6beefba5806701f250a624c3b60a79aafa6",
+                "sha256": "sha256-0f6e97a0f8fd1fdbbf74c30c49936feb1d572a0e16eaf9a0f699182976197979",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -899,6 +1017,7 @@
                 "visible": false,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 34,
                 "failures": [
                   "primary-foreground-too-small:620",
@@ -920,18 +1039,24 @@
         }
       },
       "buildOk": true,
-      "deployCheckOk": true,
+      "deployCheckOk": false,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663405416,
+        "fileCount": 206,
+        "totalBytes": 684609581,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
       "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
       "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-data-galaxy/dist --release --source apps/showcase-data-galaxy/src --asset showcaseParticleCore",
-      "deployWarnings": [],
-      "deployFailures": []
+      "deployWarnings": [
+        "showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
+      ],
+      "deployFailures": [
+        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
+      ]
     },
     {
       "id": "showcase-smart-city-control",
@@ -940,11 +1065,11 @@
       "globalName": "__AURA3D_SHOWCASE_SMART_CITY_CONTROL__",
       "releaseClass": "release-ready candidate",
       "publicReleaseCounted": true,
-      "publicReleaseOk": true,
+      "publicReleaseOk": false,
       "classificationOk": true,
       "classificationFailures": [],
       "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "finalStatus": "release-blocked",
       "source": "apps/showcase-smart-city-control/index.html",
       "distDir": "apps/showcase-smart-city-control/dist",
       "gate": {
@@ -966,15 +1091,65 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": true,
-        "ok": true,
+        "ok": false,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-stale-source:showcase-product-configurator",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "route-visual-review-stale-source:showcase-smart-city-control",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-source:showcase-cinematic-architecture",
+          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "route-visual-review-stale-source:showcase-digital-twin-ops",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-source-hash:showcase-blockfall-reactor",
+          "route-visual-review-stale-source:showcase-blockfall-reactor",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-source-hash:showcase-skyline-runner",
+          "route-visual-review-route-health-hash:showcase-skyline-runner",
+          "route-visual-review-stale-source:showcase-skyline-runner",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-source-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-stale-source:showcase-turbo-drift-circuit",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "visual-review-overall-verdict:needs-work",
+          "route-visual-review-stale-source:showcase-smart-city-control",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -995,14 +1170,14 @@
           "hash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
           "source": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
           "outputPath": "public/aura-assets/showcaseCityVehicle.15552b57.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-092/31a96b6599a04e698d06cc88ce6f6b18.glb",
           "sourceFamily": "objaverse",
-          "author": "Lee Alex Johansson",
+          "author": "Lee Alex Johansson (https://sketchfab.com/lee.johansson)",
           "attribution": "Lee Alex Johansson",
           "retrievedAt": "2026-06-17T19:03:07.418Z",
           "thumbnailUrl": "/aura-assets/showcaseCityVehicle.thumb.svg"
@@ -1034,11 +1209,11 @@
           "routePath": "/apps/showcase-smart-city-control/",
           "appId": "showcase-smart-city-control",
           "sourceHash": "sha256-d8f46929d79d5a0f25bd03124200d49d7f75554651e2ee9b53feb34e36555ff0",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseCityVehicle",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-5ac1cebd681c5214dffc7ca4847eb4e7c2b219273c39e97d885f1abf9bf417ee",
-          "generatedAt": "2026-07-28T05:16:26.468Z",
+          "generatedAt": "2026-08-02T02:00:34.898Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1075,7 +1250,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-            "sha256": "sha256-af52b14dc334ae1b18f85f56dfbeb4b267a6189b0ecdb4a88ff15998f8f6ff31",
+            "sha256": "sha256-269c2a2744622d3e2b0e4d173dacadd7759ac08ddb4dfe61b3e6e355ae118384",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1095,6 +1270,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 69,
             "failures": []
           },
@@ -1108,7 +1284,7 @@
               "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-                "sha256": "sha256-af52b14dc334ae1b18f85f56dfbeb4b267a6189b0ecdb4a88ff15998f8f6ff31",
+                "sha256": "sha256-269c2a2744622d3e2b0e4d173dacadd7759ac08ddb4dfe61b3e6e355ae118384",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1128,6 +1304,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 69,
                 "failures": []
               }
@@ -1142,8 +1319,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 192,
-        "totalBytes": 664148816,
+        "fileCount": 208,
+        "totalBytes": 685360418,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1159,11 +1336,11 @@
       "globalName": "__AURA3D_SHOWCASE_CINEMATIC_ARCHITECTURE__",
       "releaseClass": "release-ready candidate",
       "publicReleaseCounted": true,
-      "publicReleaseOk": true,
+      "publicReleaseOk": false,
       "classificationOk": true,
       "classificationFailures": [],
       "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "finalStatus": "release-blocked",
       "source": "apps/showcase-cinematic-architecture/index.html",
       "distDir": "apps/showcase-cinematic-architecture/dist",
       "gate": {
@@ -1185,15 +1362,64 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": true,
-        "ok": true,
+        "ok": false,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-stale-source:showcase-product-configurator",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "route-visual-review-stale-source:showcase-smart-city-control",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-source:showcase-cinematic-architecture",
+          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "route-visual-review-stale-source:showcase-digital-twin-ops",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-source-hash:showcase-blockfall-reactor",
+          "route-visual-review-stale-source:showcase-blockfall-reactor",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-source-hash:showcase-skyline-runner",
+          "route-visual-review-route-health-hash:showcase-skyline-runner",
+          "route-visual-review-stale-source:showcase-skyline-runner",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-source-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-stale-source:showcase-turbo-drift-circuit",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "visual-review-overall-verdict:needs-work",
+          "route-visual-review-stale-source:showcase-cinematic-architecture",
+          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -1216,7 +1442,7 @@
           "outputPath": "public/aura-assets/showcaseSkylineCity.2f6624cd.glb",
           "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-149/4a72d39a88264d02af6dde464bbcbb5c.glb",
@@ -1252,12 +1478,12 @@
           "routeId": "showcase-cinematic-architecture",
           "routePath": "/apps/showcase-cinematic-architecture/",
           "appId": "showcase-cinematic-architecture",
-          "sourceHash": "sha256-6dd91b8e6c94afe26de52e04aa154d05bb60d67d6c8c2e6db1eee21c8f2b7e7b",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-6e09c550995b65c346ec6695aeacb242650a5f19a94191447f48ee1e9a775b5d",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseSkylineCity",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-8f3852397e93e3bc0f62986b14ce2174bd1d3a91076268b2ee5afca0a317093a",
-          "generatedAt": "2026-07-28T05:16:29.534Z",
+          "generatedAt": "2026-08-02T02:00:37.918Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1288,7 +1514,7 @@
           },
           "renderer": {
             "backend": "scene-plan",
-            "drawCalls": 773,
+            "drawCalls": 776,
             "renderSize": [
               1080,
               900
@@ -1296,7 +1522,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-            "sha256": "sha256-30401ec0b072764ad33605568499d7c605d6caa6816b314676911261a9d4c2ce",
+            "sha256": "sha256-0a1fffc6215e9c18f184c3ea6880b219934695e3b4b37427ee64ce7ae7454bf8",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1306,7 +1532,7 @@
               "height": 880
             },
             "nonBlankPixels": 391510,
-            "colorBuckets": 451,
+            "colorBuckets": 466,
             "foregroundBounds": {
               "x": 147,
               "y": 26,
@@ -1316,6 +1542,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 100,
             "failures": []
           },
@@ -1329,7 +1556,7 @@
               "manifestHash": "sha256-2f6624cdd44b88b4c9b612bf0b9062451c5ade91ed243e0c595672d79dd13338",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-cinematic-architecture.png",
-                "sha256": "sha256-30401ec0b072764ad33605568499d7c605d6caa6816b314676911261a9d4c2ce",
+                "sha256": "sha256-0a1fffc6215e9c18f184c3ea6880b219934695e3b4b37427ee64ce7ae7454bf8",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1339,7 +1566,7 @@
                   "height": 880
                 },
                 "nonBlankPixels": 391510,
-                "colorBuckets": 451,
+                "colorBuckets": 466,
                 "foregroundBounds": {
                   "x": 147,
                   "y": 26,
@@ -1349,6 +1576,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 100,
                 "failures": []
               }
@@ -1363,8 +1591,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 662736869,
+        "fileCount": 206,
+        "totalBytes": 683968502,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1380,11 +1608,11 @@
       "globalName": "__AURA3D_SHOWCASE_DIGITAL_TWIN_OPS__",
       "releaseClass": "release-ready candidate",
       "publicReleaseCounted": true,
-      "publicReleaseOk": true,
+      "publicReleaseOk": false,
       "classificationOk": true,
       "classificationFailures": [],
       "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "finalStatus": "release-blocked",
       "source": "apps/showcase-digital-twin-ops/index.html",
       "distDir": "apps/showcase-digital-twin-ops/dist",
       "gate": {
@@ -1406,15 +1634,65 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": true,
-        "ok": true,
+        "ok": false,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-stale-source:showcase-product-configurator",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
+          "route-visual-review-stale-source:showcase-smart-city-control",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
+          "route-visual-review-stale-source:showcase-cinematic-architecture",
+          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
+          "route-visual-review-stale-source:showcase-digital-twin-ops",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-source-hash:showcase-blockfall-reactor",
+          "route-visual-review-stale-source:showcase-blockfall-reactor",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
+          "route-visual-review-source-hash:showcase-skyline-runner",
+          "route-visual-review-route-health-hash:showcase-skyline-runner",
+          "route-visual-review-stale-source:showcase-skyline-runner",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
+          "route-visual-review-source-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
+          "route-visual-review-stale-source:showcase-turbo-drift-circuit",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
+          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
+          "visual-review-overall-verdict:needs-work",
+          "route-visual-review-stale-source:showcase-digital-twin-ops",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
+          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
+          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -1474,11 +1752,11 @@
           "routePath": "/apps/showcase-digital-twin-ops/",
           "appId": "showcase-digital-twin-ops",
           "sourceHash": "sha256-a64755951ad6bf6967aa3c6c5aa47a95ef108e6d8b9dbe028f2447a9bd4c6278",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseRoboticWeldingWorkcell",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-2b44e7dd99f530ded316a745fea597209c8084ae52b0e0aee063499aaff66cb9",
-          "generatedAt": "2026-07-28T05:16:33.390Z",
+          "generatedAt": "2026-08-02T02:00:40.851Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1521,7 +1799,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-            "sha256": "sha256-59c5ef0ea90e2b38ecb62c6673fc1e77c20006689c81a17cfa95b364ebd015e2",
+            "sha256": "sha256-f2cbc22b20dc8e302822f655f31853a5a709a15d077929ccb49e1aa675145cc6",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1530,8 +1808,8 @@
               "width": 1084,
               "height": 785
             },
-            "nonBlankPixels": 289338,
-            "colorBuckets": 272,
+            "nonBlankPixels": 289347,
+            "colorBuckets": 271,
             "foregroundBounds": {
               "x": 216,
               "y": 121,
@@ -1541,6 +1819,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 100,
             "failures": []
           },
@@ -1554,7 +1833,7 @@
               "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-                "sha256": "sha256-59c5ef0ea90e2b38ecb62c6673fc1e77c20006689c81a17cfa95b364ebd015e2",
+                "sha256": "sha256-f2cbc22b20dc8e302822f655f31853a5a709a15d077929ccb49e1aa675145cc6",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1563,8 +1842,8 @@
                   "width": 1084,
                   "height": 785
                 },
-                "nonBlankPixels": 289338,
-                "colorBuckets": 272,
+                "nonBlankPixels": 289347,
+                "colorBuckets": 271,
                 "foregroundBounds": {
                   "x": 216,
                   "y": 121,
@@ -1574,6 +1853,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 100,
                 "failures": []
               }
@@ -1588,8 +1868,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663231855,
+        "fileCount": 206,
+        "totalBytes": 684436381,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1614,6 +1894,10 @@
         "route-primary:route-primary-probe-failure:primary-foreground-clipped",
         "route-primary:probe-clipped:showcaseParticleCore:true",
         "route-primary:probe-failure:showcaseParticleCore:primary-foreground-clipped",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseParticleCore: release primary model renderedProbe color bucket count is stale.",
         "capability:native-webgpu-proof-absent"
       ],
       "finalStatus": "internal-diagnostic-retained",
@@ -1669,14 +1953,14 @@
           "hash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
           "source": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
           "outputPath": "public/aura-assets/showcaseParticleCore.5443d9a9.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-021/a996292bc068406590b4ddd045f7bd19.glb",
           "sourceFamily": "objaverse",
-          "author": "Yewon Kim",
+          "author": "Yewon Kim (https://sketchfab.com/yewonkim0621)",
           "attribution": "Yewon Kim",
           "retrievedAt": "2026-06-17T21:19:42.916Z",
           "thumbnailUrl": "/aura-assets/showcaseParticleCore.thumb.svg"
@@ -1713,11 +1997,11 @@
           "routePath": "/apps/showcase-webgpu-particle-lab/",
           "appId": "showcase-webgpu-particle-lab",
           "sourceHash": "sha256-5eb644e50b9381edcc96bc7a6c25995e060fa256dc5440a533be10b89b9c4fda",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseParticleCore",
           "secondaryPrimaryAssets": [],
           "routeHealthHash": "sha256-8f9462a81592bc747aa147af35408a5ae1c135ab23fa31de487dcade0c84bcaa",
-          "generatedAt": "2026-07-28T05:16:36.256Z",
+          "generatedAt": "2026-08-02T02:00:43.803Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1753,7 +2037,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-abd375425852071bbcf82ec9684e6e48544a78a6d306aa72dabba7ec1b5880ea",
+            "sha256": "sha256-69f3a8402d3c5c9653c49119fd5fad1294ffdaa8e9ec79f0f3265a5a99bb42c7",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1762,7 +2046,7 @@
               "width": 1045,
               "height": 880
             },
-            "nonBlankPixels": 637875,
+            "nonBlankPixels": 638301,
             "colorBuckets": 123,
             "foregroundBounds": {
               "x": 10,
@@ -1773,6 +2057,7 @@
             "visible": true,
             "clipped": true,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 85,
             "failures": [
               "primary-foreground-clipped"
@@ -1788,7 +2073,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-abd375425852071bbcf82ec9684e6e48544a78a6d306aa72dabba7ec1b5880ea",
+                "sha256": "sha256-69f3a8402d3c5c9653c49119fd5fad1294ffdaa8e9ec79f0f3265a5a99bb42c7",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1797,7 +2082,7 @@
                   "width": 1045,
                   "height": 880
                 },
-                "nonBlankPixels": 637875,
+                "nonBlankPixels": 638301,
                 "colorBuckets": 123,
                 "foregroundBounds": {
                   "x": 10,
@@ -1808,6 +2093,7 @@
                 "visible": true,
                 "clipped": true,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 85,
                 "failures": [
                   "primary-foreground-clipped"
@@ -1823,35 +2109,49 @@
         }
       },
       "buildOk": true,
-      "deployCheckOk": true,
+      "deployCheckOk": false,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 662771204,
+        "fileCount": 206,
+        "totalBytes": 683973051,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
       "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
       "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-webgpu-particle-lab/dist --release --source apps/showcase-webgpu-particle-lab/src --asset showcaseParticleCore",
-      "deployWarnings": [],
-      "deployFailures": []
+      "deployWarnings": [
+        "showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
+      ],
+      "deployFailures": [
+        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe image sha256 mismatch.",
+        "Release validation warning is blocking: showcaseParticleCore: release primary model renderedProbe color bucket count is stale."
+      ]
     },
     {
       "id": "showcase-blockfall-reactor",
       "label": "Blockfall Reactor",
       "path": "/apps/showcase-blockfall-reactor/",
       "globalName": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
-      "releaseClass": "release-ready candidate",
-      "publicReleaseCounted": true,
+      "releaseClass": "prototype-blocked",
+      "publicReleaseCounted": false,
       "publicReleaseOk": true,
       "classificationOk": true,
       "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "diagnosticBlockers": [
+        "deploy:Release validation warning is blocking: showcaseBlockfallCabinet: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseBlockfallCabinet: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseBlockfallCabinet: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseBlockfallCabinet: release primary model renderedProbe color bucket count is stale.",
+        "visual-review:route-visual-review-blocker:showcase-blockfall-reactor:visual:cabinet-and-board-do-not-read-as-one-arcade-subject",
+        "visual-review:route-visual-review-blocker:showcase-blockfall-reactor:visual:fresh-first-load-progression-game-over-and-reset-captures-required",
+        "visual-review:route-visual-review-blocker:showcase-blockfall-reactor:review:independent-human-approval-pending"
+      ],
+      "finalStatus": "prototype-blocked",
       "source": "apps/showcase-blockfall-reactor/index.html",
       "distDir": "apps/showcase-blockfall-reactor/dist",
       "gate": {
-        "releaseClass": "release-ready candidate",
+        "releaseClass": "prototype-blocked",
         "primaryAssets": [
           "showcaseBlockfallCabinet"
         ],
@@ -1869,15 +2169,19 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
-        "required": true,
+        "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-blocker:showcase-blockfall-reactor:visual:cabinet-and-board-do-not-read-as-one-arcade-subject",
+          "route-visual-review-blocker:showcase-blockfall-reactor:visual:fresh-first-load-progression-game-over-and-reset-captures-required",
+          "route-visual-review-blocker:showcase-blockfall-reactor:review:independent-human-approval-pending"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -1898,14 +2202,14 @@
           "hash": "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36",
           "source": "public/aura-assets/showcaseBlockfallCabinet.679d52fe.glb",
           "outputPath": "public/aura-assets/showcaseBlockfallCabinet.679d52fe.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-012/f73986356b6e4d72b7a889279837aec2.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-012/f73986356b6e4d72b7a889279837aec2.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-012/f73986356b6e4d72b7a889279837aec2.glb",
           "sourceFamily": "objaverse",
-          "author": "Dmitry Blagodaryov",
+          "author": "Dmitry Blagodaryov (https://sketchfab.com/blagodaryov.art)",
           "attribution": "Dmitry Blagodaryov",
           "retrievedAt": "2026-06-18T02:23:42.436Z",
           "thumbnailUrl": "/aura-assets/showcaseBlockfallCabinet.thumb.svg"
@@ -1917,8 +2221,8 @@
         "failures": [],
         "appId": "showcase-blockfall-reactor",
         "route": "/apps/showcase-blockfall-reactor/",
-        "classification": "release-ready candidate",
-        "publicShowcase": true,
+        "classification": "prototype-blocked",
+        "publicShowcase": false,
         "primaryAssets": [
           "showcaseBlockfallCabinet"
         ],
@@ -1936,12 +2240,59 @@
           "routeId": "showcase-blockfall-reactor",
           "routePath": "/apps/showcase-blockfall-reactor/",
           "appId": "showcase-blockfall-reactor",
-          "sourceHash": "sha256-c791e9234560b37e60cbe98ed0478807091caebadc59b55a723dbdfd0f0d7cae",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-ae2a418ba4b3e4b0105f7a9876a25f58a43ab967c4cf909267039d7435b0b4a3",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseBlockfallCabinet",
           "secondaryPrimaryAssets": [],
-          "routeHealthHash": "sha256-254cec3ee3b2f64cfc5385ab726768005ae79200c3b9f52dce463ad228880655",
-          "generatedAt": "2026-07-28T05:16:39.864Z",
+          "routeHealthHash": "sha256-e9a7de51c4406f4e7e7961b4f60a5615e4648901b10eabd5df8acb66c82051ca",
+          "freshness": {
+            "schema": "aura3d-evidence-freshness/1.0",
+            "artifact": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.json",
+            "producer": {
+              "id": "route-primary-probes",
+              "version": "1.1",
+              "fingerprint": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+            },
+            "generatedAt": "2026-08-02T09:02:08.569Z",
+            "dependencies": [
+              {
+                "kind": "primary-asset",
+                "id": "showcaseBlockfallCabinet",
+                "hash": "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36"
+              },
+              {
+                "kind": "producer-version",
+                "id": "route-primary-probes",
+                "hash": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+              },
+              {
+                "kind": "renderer-fingerprint",
+                "id": "agent-api+assets",
+                "hash": "sha256-5d6d5f21bf1f49e486b87b7ba6ea47394ab8b5f2b9229342a4a2e1f9768fbc54"
+              },
+              {
+                "kind": "route-gate-config",
+                "id": "route-gates.json",
+                "hash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f"
+              },
+              {
+                "kind": "route-health",
+                "id": "showcase-blockfall-reactor/route-health.json",
+                "hash": "sha256-e9a7de51c4406f4e7e7961b4f60a5615e4648901b10eabd5df8acb66c82051ca"
+              },
+              {
+                "kind": "route-source",
+                "id": "showcase-blockfall-reactor",
+                "hash": "sha256-ae2a418ba4b3e4b0105f7a9876a25f58a43ab967c4cf909267039d7435b0b4a3"
+              },
+              {
+                "kind": "viewport-contract",
+                "id": "showcase-blockfall-reactor",
+                "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
+              }
+            ]
+          },
+          "generatedAt": "2026-08-02T09:02:08.570Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1963,13 +2314,16 @@
               "kitContractProof",
               "lineClearProof",
               "live",
+              "observedGameplayProof",
               "physics",
               "prohibitedApiAvoided",
               "publicEngineApi",
+              "renderedBeatProof",
               "replay",
               "route",
               "rules",
               "runtimeEvidence",
+              "sixtySecondReplayProof",
               "startState",
               "status",
               "systems"
@@ -1982,7 +2336,7 @@
           },
           "renderer": {
             "backend": "webgl2",
-            "drawCalls": 280,
+            "drawCalls": 296,
             "renderSize": [
               1440,
               900
@@ -1990,58 +2344,60 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-            "sha256": "sha256-e6c565803c6894e5d09865f72c51cace69022e797d61ffacbbffb04df93856b0",
+            "sha256": "sha256-d28e02bf0f3a0467cb1ce4b2e4ca5e387a9bbeac9c30a69262b1af339246675b",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
-              "x": 346,
-              "y": 10,
-              "width": 768,
-              "height": 880
+              "x": 0,
+              "y": 0,
+              "width": 1440,
+              "height": 900,
+              "area": 1296000
             },
-            "nonBlankPixels": 67753,
-            "colorBuckets": 242,
+            "nonBlankPixels": 3723,
+            "colorBuckets": 81,
             "foregroundBounds": {
-              "x": 389,
-              "y": 305,
-              "width": 204,
-              "height": 370
+              "x": 103,
+              "y": 31,
+              "width": 794,
+              "height": 820
             },
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
-            "readabilityScore": 100,
+            "controlsInViewport": true,
+            "readabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-792b808e5f77b7446b53fbc003732a039cb2fdbdd12f6a7251a600798bbc512e",
+            "subjectSuppressedScreenshotSha256": "sha256-2b1454594634a237d8e1c5e71564f0f28ae4ce574f3a961878e11a24c37ecd11",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "falling-blocks",
             "subjectBounds": {
-              "x": 389,
-              "y": 305,
-              "width": 204,
-              "height": 370
+              "x": 103,
+              "y": 31,
+              "width": 794,
+              "height": 820
             },
-            "subjectPixels": 67753,
-            "subjectColorBuckets": 242,
+            "subjectPixels": 3723,
+            "subjectColorBuckets": 81,
             "subjectClipped": false,
-            "subjectReadabilityScore": 100,
+            "subjectReadabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-792b808e5f77b7446b53fbc003732a039cb2fdbdd12f6a7251a600798bbc512e",
+            "subjectSuppressedScreenshotSha256": "sha256-2b1454594634a237d8e1c5e71564f0f28ae4ce574f3a961878e11a24c37ecd11",
             "projectedPlaySpaceBounds": {
-              "x": 567,
-              "y": 93,
-              "width": 302,
-              "height": 635
+              "x": 572,
+              "y": 72,
+              "width": 296,
+              "height": 623
             },
             "projectedContactPoint": {
-              "x": 736.946,
-              "y": 93.036
+              "x": 736.388,
+              "y": 72.361
             },
-            "projectedSubjectHeight": 350.118,
-            "subjectTargetSize": 2.1,
+            "projectedSubjectHeight": 651.529,
+            "subjectTargetSize": 5.15,
             "cameraMode": "perspective"
           },
           "primaryAssets": [
@@ -2054,29 +2410,31 @@
               "manifestHash": "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-                "sha256": "sha256-e6c565803c6894e5d09865f72c51cace69022e797d61ffacbbffb04df93856b0",
+                "sha256": "sha256-d28e02bf0f3a0467cb1ce4b2e4ca5e387a9bbeac9c30a69262b1af339246675b",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
-                  "x": 346,
-                  "y": 10,
-                  "width": 768,
-                  "height": 880
+                  "x": 0,
+                  "y": 0,
+                  "width": 1440,
+                  "height": 900,
+                  "area": 1296000
                 },
-                "nonBlankPixels": 67753,
-                "colorBuckets": 242,
+                "nonBlankPixels": 3723,
+                "colorBuckets": 81,
                 "foregroundBounds": {
-                  "x": 389,
-                  "y": 305,
-                  "width": 204,
-                  "height": 370
+                  "x": 103,
+                  "y": 31,
+                  "width": 794,
+                  "height": 820
                 },
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
-                "readabilityScore": 100,
+                "controlsInViewport": true,
+                "readabilityScore": 67,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-792b808e5f77b7446b53fbc003732a039cb2fdbdd12f6a7251a600798bbc512e",
+                "subjectSuppressedScreenshotSha256": "sha256-2b1454594634a237d8e1c5e71564f0f28ae4ce574f3a961878e11a24c37ecd11",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2088,732 +2446,24 @@
         }
       },
       "buildOk": true,
-      "deployCheckOk": true,
+      "deployCheckOk": false,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663358546,
+        "fileCount": 206,
+        "totalBytes": 684630555,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
       "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
       "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-blockfall-reactor/dist --release --source apps/showcase-blockfall-reactor/src --asset showcaseBlockfallCabinet",
-      "deployWarnings": [],
-      "deployFailures": []
-    },
-    {
-      "id": "showcase-public-racing-presentation-proof",
-      "label": "Public Racing Presentation Proof",
-      "path": "/apps/showcase-public-racing-presentation-proof/",
-      "globalName": "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
-      "releaseClass": "removed-from-public-showcase",
-      "publicReleaseCounted": false,
-      "publicReleaseOk": true,
-      "classificationOk": true,
-      "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "removed-from-public-showcase",
-      "source": "apps/showcase-public-racing-presentation-proof/index.html",
-      "distDir": "apps/showcase-public-racing-presentation-proof/dist",
-      "gate": {
-        "releaseClass": "removed-from-public-showcase",
-        "primaryAssets": [
-          "showcaseTexturedSportsCar",
-          "showcaseTsukubaCircuit"
-        ],
-        "primaryAssetRoles": {
-          "showcaseTexturedSportsCar": "vehicle",
-          "showcaseTsukubaCircuit": "track-topology"
-        },
-        "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
-        "secondaryPrimaryAssets": [
-          "showcaseTsukubaCircuit"
-        ],
-        "primitiveBudget": 12,
-        "requiresTypedPrimaryAssets": true,
-        "requiresRoutePrimaryProbe": false,
-        "requiresKeyboardDelta": true,
-        "requiresAnimationSubjectDelta": false,
-        "gameTemplateStatus": {
-          "category": "racing",
-          "publicTemplateReady": true,
-          "evidence": [
-            "packages/engine/src/agent-api/index.ts exposes game.publicRacingPresentation, game.racingRoadMesh, game.racingCheckpointGate, game.racingStartFinish, game.racingCameraRig, and game.certifyRacingPresentation.",
-            "apps/showcase-public-racing-presentation-proof/src/main.ts renders a typed sports car on certified public racing presentation geometry.",
-            "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png retains the public route-primary screenshot.",
-            "tests/reports/showcase-gameplay/showcase-public-racing-presentation-proof.json proves throttle, steering, checkpoint, lap, and reset behavior.",
-            "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json retains hash-bound racing topology evidence.",
-            "docs/project/showcase-visual-review.json records the public racing visual review pass."
-          ]
-        },
-        "requiresAuraParticles": false,
-        "nativeWebGpuAllowed": null
-      },
-      "ok": true,
-      "staticGateOk": true,
-      "staticGateFailures": [],
-      "visualReview": {
-        "required": false,
-        "ok": true,
-        "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
-      },
-      "gameVisualQa": {
-        "schema": "aura3d-game-visual-qa/1.0",
-        "routeId": "showcase-public-racing-presentation-proof",
-        "category": "racing",
-        "verdict": "skipped",
-        "pass": true,
-        "checks": [],
-        "blockers": []
-      },
-      "primaryAssetEvidence": [
-        {
-          "id": "showcaseTexturedSportsCar",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
-          "hash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
-          "source": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
-          "outputPath": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
-          "license": "CC-BY-4.0",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
-          "sourceFamily": "objaverse",
-          "author": "Samize",
-          "attribution": "Samize",
-          "retrievedAt": "2026-06-20T05:40:45.025Z",
-          "thumbnailUrl": "/aura-assets/showcaseTexturedSportsCar.thumb.svg"
-        },
-        {
-          "id": "showcaseTsukubaCircuit",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-          "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
-          "source": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-          "outputPath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-          "license": "CC-BY-4.0",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
-          "sourceFamily": "objaverse",
-          "author": "Linnaeus",
-          "attribution": "Linnaeus",
-          "retrievedAt": "2026-06-18T07:12:45.970Z",
-          "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg"
-        }
+      "deployWarnings": [
+        "showcaseBlockfallCabinet: release primary model renderedProbe image sha256 mismatch.",
+        "showcaseBlockfallCabinet: release primary model renderedProbe color bucket count is stale."
       ],
-      "routeHealth": {
-        "ok": true,
-        "path": "apps/showcase-public-racing-presentation-proof/route-health.json",
-        "failures": [],
-        "appId": "showcase-public-racing-presentation-proof",
-        "route": "/apps/showcase-public-racing-presentation-proof/",
-        "classification": "removed-from-public-showcase",
-        "publicShowcase": false,
-        "primaryAssets": [
-          "showcaseTexturedSportsCar",
-          "showcaseTsukubaCircuit"
-        ],
-        "evidenceGlobal": "window.__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
-        "gameAssetPairEvidence": {
-          "category": "racing",
-          "assets": [
-            "showcaseTexturedSportsCar",
-            "showcaseTsukubaCircuit"
-          ],
-          "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-          "verdict": "pass",
-          "notes": "Derived from the retained asset-pair composition validator report; manual review cannot upgrade a validator failure.",
-          "blockers": [],
-          "geometryEvidence": {
-            "category": "racing",
-            "kind": "racing-track-topology",
-            "source": "compiler-authored-overlay-validated",
-            "report": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
-            "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-            "routePrimaryScreenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
-            "assets": [
-              {
-                "id": "showcaseTexturedSportsCar",
-                "hash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935"
-              },
-              {
-                "id": "showcaseTsukubaCircuit",
-                "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
-              }
-            ]
-          },
-          "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.json",
-          "screenshotSha256": "sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
-          "compositionReport": "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-asset-pair-composition.json",
-          "cameraMode": "chase",
-          "checks": [
-            {
-              "id": "binding-overlap",
-              "verdict": "pass"
-            },
-            {
-              "id": "contact",
-              "verdict": "pass"
-            },
-            {
-              "id": "camera-readability",
-              "verdict": "pass"
-            },
-            {
-              "id": "scale-contract",
-              "verdict": "pass"
-            },
-            {
-              "id": "debug-guide-absence",
-              "verdict": "pass"
-            }
-          ]
-        }
-      },
-      "routePrimaryProbe": {
-        "ok": true,
-        "required": true,
-        "path": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.json",
-        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-        "failures": [],
-        "evidence": {
-          "schema": "aura3d-route-primary-probe/1.0",
-          "routeId": "showcase-public-racing-presentation-proof",
-          "routePath": "/apps/showcase-public-racing-presentation-proof/",
-          "appId": "showcase-public-racing-presentation-proof",
-          "sourceHash": "sha256-64fe79f7d4b89513d8acc3a61807a09a0bac03a5fe81ee383e192520efdea202",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
-          "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
-          "secondaryPrimaryAssets": [
-            "showcaseTsukubaCircuit"
-          ],
-          "routeHealthHash": "sha256-a29bddb9b795969ec9acf919f80ca5e423c439974f982528559493e06c50071e",
-          "generatedAt": "2026-07-28T05:16:43.090Z",
-          "viewport": {
-            "width": 1440,
-            "height": 900,
-            "deviceScaleFactor": 1
-          },
-          "mountedEvidence": {
-            "present": true,
-            "status": "ready",
-            "evidenceKeys": [
-              "appId",
-              "checkpoint",
-              "diagnostics",
-              "frameCount",
-              "gameplay",
-              "geometryCertification",
-              "kitContractProof",
-              "lap",
-              "primaryAssetRecords",
-              "primaryAssets",
-              "raceDesign",
-              "raceState",
-              "racing",
-              "schema",
-              "sourceGate",
-              "speed",
-              "status"
-            ],
-            "primaryAssets": [
-              "showcaseTexturedSportsCar",
-              "showcaseTsukubaCircuit"
-            ],
-            "missingPrimaryAssets": [],
-            "hasRendererDiagnostics": true
-          },
-          "renderer": {
-            "backend": "webgl2",
-            "drawCalls": 202,
-            "renderSize": [
-              1440,
-              900
-            ]
-          },
-          "renderedProbe": {
-            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-            "sha256": "sha256-cb74b908464689ce69b393964c12f803036e6ed200e4d60f80670a59cf92c2c7",
-            "width": 1440,
-            "height": 900,
-            "analysisCrop": {
-              "x": 10,
-              "y": 183,
-              "width": 1420,
-              "height": 661
-            },
-            "nonBlankPixels": 9135,
-            "colorBuckets": 80,
-            "foregroundBounds": {
-              "x": 656,
-              "y": 387,
-              "width": 134,
-              "height": 146
-            },
-            "visible": true,
-            "clipped": false,
-            "occludedByUi": false,
-            "readabilityScore": 57,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-e30cb72213e935ec1a69f58163f38ec609b7065e0260dab3323278386d07cf9a",
-            "evidenceMethod": "runtime-bound-subject-pixel-difference",
-            "failures": []
-          },
-          "compositionProbe": {
-            "category": "racing",
-            "subjectBounds": {
-              "x": 656,
-              "y": 387,
-              "width": 134,
-              "height": 146
-            },
-            "subjectPixels": 9135,
-            "subjectColorBuckets": 80,
-            "subjectClipped": false,
-            "subjectReadabilityScore": 57,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-e30cb72213e935ec1a69f58163f38ec609b7065e0260dab3323278386d07cf9a",
-            "projectedPlaySpaceBounds": {
-              "x": 174,
-              "y": 351,
-              "width": 546,
-              "height": 391
-            },
-            "projectedContactPoint": {
-              "x": 720,
-              "y": 534.213
-            },
-            "projectedSubjectHeight": 212.912,
-            "subjectTargetSize": 1.15,
-            "cameraMode": "follow"
-          },
-          "primaryAssets": [
-            {
-              "id": "showcaseTexturedSportsCar",
-              "role": "vehicle",
-              "expectedTypedRef": "assets.showcaseTexturedSportsCar",
-              "routePrimaryEvidenceTarget": true,
-              "evidenceMode": "route-primary-foreground",
-              "manifestHash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
-              "renderedProbe": {
-                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-                "sha256": "sha256-cb74b908464689ce69b393964c12f803036e6ed200e4d60f80670a59cf92c2c7",
-                "width": 1440,
-                "height": 900,
-                "analysisCrop": {
-                  "x": 10,
-                  "y": 183,
-                  "width": 1420,
-                  "height": 661
-                },
-                "nonBlankPixels": 9135,
-                "colorBuckets": 80,
-                "foregroundBounds": {
-                  "x": 656,
-                  "y": 387,
-                  "width": 134,
-                  "height": 146
-                },
-                "visible": true,
-                "clipped": false,
-                "occludedByUi": false,
-                "readabilityScore": 57,
-                "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-e30cb72213e935ec1a69f58163f38ec609b7065e0260dab3323278386d07cf9a",
-                "evidenceMethod": "runtime-bound-subject-pixel-difference",
-                "failures": []
-              }
-            },
-            {
-              "id": "showcaseTsukubaCircuit",
-              "role": "track-topology",
-              "expectedTypedRef": "assets.showcaseTsukubaCircuit",
-              "routePrimaryEvidenceTarget": false,
-              "evidenceMode": "secondary-present",
-              "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
-            }
-          ],
-          "primitivePrimaryCandidates": [],
-          "pass": true,
-          "failures": []
-        }
-      },
-      "buildOk": true,
-      "deployCheckOk": true,
-      "dist": {
-        "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663221349,
-        "hasIndexHtml": true,
-        "hasAuraAssets": true
-      },
-      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
-      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-public-racing-presentation-proof/dist --release --source apps/showcase-public-racing-presentation-proof/src --asset showcaseTexturedSportsCar --asset showcaseTsukubaCircuit",
-      "deployWarnings": [],
-      "deployFailures": []
-    },
-    {
-      "id": "showcase-public-platformer-presentation-proof",
-      "label": "Public Platformer Presentation Proof",
-      "path": "/apps/showcase-public-platformer-presentation-proof/",
-      "globalName": "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
-      "releaseClass": "removed-from-public-showcase",
-      "publicReleaseCounted": false,
-      "publicReleaseOk": true,
-      "classificationOk": true,
-      "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "removed-from-public-showcase",
-      "source": "apps/showcase-public-platformer-presentation-proof/index.html",
-      "distDir": "apps/showcase-public-platformer-presentation-proof/dist",
-      "gate": {
-        "releaseClass": "removed-from-public-showcase",
-        "primaryAssets": [
-          "showcaseWalkAnimatedGirl",
-          "showcaseSideScrollerWorld"
-        ],
-        "primaryAssetRoles": {
-          "showcaseWalkAnimatedGirl": "character",
-          "showcaseSideScrollerWorld": "world"
-        },
-        "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
-        "secondaryPrimaryAssets": [
-          "showcaseSideScrollerWorld"
-        ],
-        "primitiveBudget": 14,
-        "requiresTypedPrimaryAssets": true,
-        "requiresRoutePrimaryProbe": false,
-        "requiresKeyboardDelta": true,
-        "requiresAnimationSubjectDelta": false,
-        "gameTemplateStatus": null,
-        "requiresAuraParticles": false,
-        "nativeWebGpuAllowed": null
-      },
-      "ok": true,
-      "staticGateOk": true,
-      "staticGateFailures": [],
-      "visualReview": {
-        "required": false,
-        "ok": true,
-        "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
-      },
-      "gameVisualQa": {
-        "schema": "aura3d-game-visual-qa/1.0",
-        "routeId": "showcase-public-platformer-presentation-proof",
-        "category": null,
-        "verdict": "skipped",
-        "pass": true,
-        "checks": [],
-        "blockers": []
-      },
-      "primaryAssetEvidence": [
-        {
-          "id": "showcaseWalkAnimatedGirl",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-          "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
-          "source": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-          "outputPath": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-          "license": "CC-BY-4.0",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
-          "sourceFamily": "objaverse",
-          "author": "Unity  (shehab house)",
-          "attribution": "Unity  (shehab house)",
-          "retrievedAt": "2026-06-20T05:52:50.321Z",
-          "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg"
-        },
-        {
-          "id": "showcaseSideScrollerWorld",
-          "presentInManifest": true,
-          "presentInTypegen": true,
-          "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
-          "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4",
-          "source": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
-          "outputPath": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
-          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-          "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
-          "sourceFamily": "objaverse",
-          "author": "Lowpolyprincipal (https://sketchfab.com/Lowpolyprincipal)",
-          "attribution": "Lowpolyprincipal",
-          "retrievedAt": "2026-06-20T05:38:40.968Z",
-          "thumbnailUrl": "/aura-assets/showcaseSideScrollerWorld.thumb.svg"
-        }
-      ],
-      "routeHealth": {
-        "ok": true,
-        "path": "apps/showcase-public-platformer-presentation-proof/route-health.json",
-        "failures": [],
-        "appId": "showcase-public-platformer-presentation-proof",
-        "route": "/apps/showcase-public-platformer-presentation-proof/",
-        "classification": "removed-from-public-showcase",
-        "publicShowcase": false,
-        "primaryAssets": [
-          "showcaseWalkAnimatedGirl",
-          "showcaseSideScrollerWorld"
-        ],
-        "evidenceGlobal": "window.__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
-        "gameAssetPairEvidence": {
-          "category": "platformer",
-          "assets": [
-            "showcaseWalkAnimatedGirl",
-            "showcaseSideScrollerWorld"
-          ],
-          "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-          "verdict": "pass",
-          "notes": "Derived from the retained asset-pair composition validator report; manual review cannot upgrade a validator failure.",
-          "blockers": [],
-          "geometryEvidence": {
-            "category": "platformer",
-            "kind": "platformer-playable-surface-map",
-            "source": "compiler-authored-overlay-validated",
-            "report": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
-            "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-            "routePrimaryScreenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
-            "assets": [
-              {
-                "id": "showcaseWalkAnimatedGirl",
-                "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6"
-              },
-              {
-                "id": "showcaseSideScrollerWorld",
-                "hash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
-              }
-            ]
-          },
-          "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.json",
-          "screenshotSha256": "sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
-          "compositionReport": "tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-asset-pair-composition.json",
-          "checks": [
-            {
-              "id": "binding-overlap",
-              "verdict": "pass"
-            },
-            {
-              "id": "contact",
-              "verdict": "pass"
-            },
-            {
-              "id": "camera-readability",
-              "verdict": "pass"
-            },
-            {
-              "id": "scale-contract",
-              "verdict": "pass"
-            },
-            {
-              "id": "debug-guide-absence",
-              "verdict": "pass"
-            }
-          ]
-        }
-      },
-      "routePrimaryProbe": {
-        "ok": true,
-        "required": true,
-        "path": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.json",
-        "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-        "failures": [],
-        "evidence": {
-          "schema": "aura3d-route-primary-probe/1.0",
-          "routeId": "showcase-public-platformer-presentation-proof",
-          "routePath": "/apps/showcase-public-platformer-presentation-proof/",
-          "appId": "showcase-public-platformer-presentation-proof",
-          "sourceHash": "sha256-8afb73a7da74cf6d4e5dcc04f28d11b5d02a2377645375c0ea9342802a6dd2c8",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
-          "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
-          "secondaryPrimaryAssets": [
-            "showcaseSideScrollerWorld"
-          ],
-          "routeHealthHash": "sha256-cc832fb5b4d75c0443cf7b08c3b273804e2c5c11004b149950376039363bda22",
-          "generatedAt": "2026-07-28T05:16:46.205Z",
-          "viewport": {
-            "width": 1440,
-            "height": 900,
-            "deviceScaleFactor": 1
-          },
-          "mountedEvidence": {
-            "present": true,
-            "status": "ready",
-            "evidenceKeys": [
-              "animation",
-              "appId",
-              "checkpointId",
-              "coins",
-              "deaths",
-              "diagnostics",
-              "frameCount",
-              "gameplay",
-              "geometryCertification",
-              "kitContractProof",
-              "levelDesign",
-              "platformer",
-              "platformerStateStatus",
-              "primaryAssetRecords",
-              "primaryAssets",
-              "schema",
-              "score",
-              "sourceGate",
-              "status"
-            ],
-            "primaryAssets": [
-              "showcaseWalkAnimatedGirl",
-              "showcaseSideScrollerWorld"
-            ],
-            "missingPrimaryAssets": [],
-            "hasRendererDiagnostics": true
-          },
-          "renderer": {
-            "backend": "webgl2",
-            "drawCalls": 28,
-            "renderSize": [
-              1440,
-              900
-            ]
-          },
-          "renderedProbe": {
-            "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-            "sha256": "sha256-aa8d0c41022cdab1878ce1369cd1044d632111ae1ea98e007b028577514b2592",
-            "width": 1440,
-            "height": 900,
-            "analysisCrop": {
-              "x": 10,
-              "y": 183,
-              "width": 1420,
-              "height": 661
-            },
-            "nonBlankPixels": 6457,
-            "colorBuckets": 81,
-            "foregroundBounds": {
-              "x": 406,
-              "y": 321,
-              "width": 110,
-              "height": 210
-            },
-            "visible": true,
-            "clipped": false,
-            "occludedByUi": false,
-            "readabilityScore": 57,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-c0e6fef85ffb3352e66dcc5cddd058d549b193f9cadcd672cc7aba8d7a09a419",
-            "evidenceMethod": "runtime-bound-subject-pixel-difference",
-            "failures": []
-          },
-          "compositionProbe": {
-            "category": "platformer",
-            "subjectBounds": {
-              "x": 406,
-              "y": 321,
-              "width": 110,
-              "height": 210
-            },
-            "subjectPixels": 6457,
-            "subjectColorBuckets": 81,
-            "subjectClipped": false,
-            "subjectReadabilityScore": 57,
-            "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-c0e6fef85ffb3352e66dcc5cddd058d549b193f9cadcd672cc7aba8d7a09a419",
-            "projectedPlaySpaceBounds": {
-              "x": 383,
-              "y": 492,
-              "width": 1057,
-              "height": 54
-            },
-            "projectedContactPoint": {
-              "x": 464.115,
-              "y": 541.867
-            },
-            "projectedSubjectHeight": 202.055,
-            "subjectTargetSize": 0.86,
-            "cameraMode": "follow"
-          },
-          "primaryAssets": [
-            {
-              "id": "showcaseWalkAnimatedGirl",
-              "role": "character",
-              "expectedTypedRef": "assets.showcaseWalkAnimatedGirl",
-              "routePrimaryEvidenceTarget": true,
-              "evidenceMode": "route-primary-foreground",
-              "manifestHash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
-              "renderedProbe": {
-                "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-                "sha256": "sha256-aa8d0c41022cdab1878ce1369cd1044d632111ae1ea98e007b028577514b2592",
-                "width": 1440,
-                "height": 900,
-                "analysisCrop": {
-                  "x": 10,
-                  "y": 183,
-                  "width": 1420,
-                  "height": 661
-                },
-                "nonBlankPixels": 6457,
-                "colorBuckets": 81,
-                "foregroundBounds": {
-                  "x": 406,
-                  "y": 321,
-                  "width": 110,
-                  "height": 210
-                },
-                "visible": true,
-                "clipped": false,
-                "occludedByUi": false,
-                "readabilityScore": 57,
-                "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-c0e6fef85ffb3352e66dcc5cddd058d549b193f9cadcd672cc7aba8d7a09a419",
-                "evidenceMethod": "runtime-bound-subject-pixel-difference",
-                "failures": []
-              }
-            },
-            {
-              "id": "showcaseSideScrollerWorld",
-              "role": "world",
-              "expectedTypedRef": "assets.showcaseSideScrollerWorld",
-              "routePrimaryEvidenceTarget": false,
-              "evidenceMode": "secondary-present",
-              "manifestHash": "sha256-68e115700a600bb3cfee70d0e0f75083c07cb6e38f29379aa935d871681a59b4"
-            }
-          ],
-          "primitivePrimaryCandidates": [],
-          "pass": true,
-          "failures": []
-        }
-      },
-      "buildOk": true,
-      "deployCheckOk": true,
-      "dist": {
-        "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663227890,
-        "hasIndexHtml": true,
-        "hasAuraAssets": true
-      },
-      "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
-      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-public-platformer-presentation-proof/dist --release --source apps/showcase-public-platformer-presentation-proof/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
-      "deployWarnings": [],
-      "deployFailures": []
+      "deployFailures": [
+        "Release validation warning is blocking: showcaseBlockfallCabinet: release primary model renderedProbe image sha256 mismatch.",
+        "Release validation warning is blocking: showcaseBlockfallCabinet: release primary model renderedProbe color bucket count is stale."
+      ]
     },
     {
       "id": "showcase-racing-game-layer-proof",
@@ -2827,10 +2477,7 @@
       "classificationFailures": [],
       "diagnosticBlockers": [
         "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
-        "visual-review:route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-scene-not-polished-game-presentation"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e"
       ],
       "finalStatus": "game-layer-diagnostic-retained",
       "source": "apps/showcase-racing-game-layer-proof/index.html",
@@ -2874,20 +2521,15 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "fail",
-        "failures": [
-          "route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-proof-reads-as-diagnostic-harness",
-          "route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-track-scale-and-camera-not-public-quality",
-          "route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-debug-gates-visible",
-          "route-visual-review-blocker:showcase-racing-game-layer-proof:visual:racing-scene-not-polished-game-presentation"
-        ]
+        "verdict": "skipped",
+        "failures": []
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -2908,14 +2550,14 @@
           "hash": "sha256-2cb94499492c96cbe6414206c292871cdf8b6c883b5389a4f4c96a05c2ebc935",
           "source": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
           "outputPath": "public/aura-assets/showcaseTexturedSportsCar.2cb94499.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-013/1eee26c0b72342ddbec8601a6d05620d.glb",
           "sourceFamily": "objaverse",
-          "author": "Samize",
+          "author": "Samize (https://sketchfab.com/samize)",
           "attribution": "Samize",
           "retrievedAt": "2026-06-20T05:40:45.025Z",
           "thumbnailUrl": "/aura-assets/showcaseTexturedSportsCar.thumb.svg"
@@ -2929,14 +2571,14 @@
           "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
           "source": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
           "outputPath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
           "sourceFamily": "objaverse",
-          "author": "Linnaeus",
+          "author": "Linnaeus (https://sketchfab.com/bordres)",
           "attribution": "Linnaeus",
           "retrievedAt": "2026-06-18T07:12:45.970Z",
           "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg"
@@ -2991,24 +2633,26 @@
         }
       },
       "routePrimaryProbe": {
-        "ok": true,
+        "ok": false,
         "required": true,
         "path": "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.json",
         "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
-        "failures": [],
+        "failures": [
+          "route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e"
+        ],
         "evidence": {
           "schema": "aura3d-route-primary-probe/1.0",
           "routeId": "showcase-racing-game-layer-proof",
           "routePath": "/apps/showcase-racing-game-layer-proof/",
           "appId": "showcase-racing-game-layer-proof",
-          "sourceHash": "sha256-5eabdeb34ce945e97bc0c2c7a88fa3b694bbbfbf6bf02af16e84d1326114fa57",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-f2ef0d1a4e8855a7411d4e627a3b821174390730206a5a4aff3a90bb3703a4b4",
+          "routeGateHash": "02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e",
           "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
           "secondaryPrimaryAssets": [
             "showcaseTsukubaCircuit"
           ],
           "routeHealthHash": "sha256-2db670bfb8a7bb7e3aaec5acb0b2052a4ed4cef2d11c44af54106719d6993e43",
-          "generatedAt": "2026-07-28T05:16:49.342Z",
+          "generatedAt": "2026-07-31T00:46:53.106Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3020,6 +2664,8 @@
             "evidenceKeys": [
               "appId",
               "checkpoint",
+              "claimBoundary",
+              "controls",
               "diagnostics",
               "frameCount",
               "gameplay",
@@ -3034,7 +2680,8 @@
               "schema",
               "sourceGate",
               "speed",
-              "status"
+              "status",
+              "systems"
             ],
             "primaryAssets": [
               "showcaseTexturedSportsCar",
@@ -3073,6 +2720,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 100,
             "failures": []
           },
@@ -3106,6 +2754,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 100,
                 "failures": []
               }
@@ -3128,8 +2777,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663212638,
+        "fileCount": 206,
+        "totalBytes": 684417448,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3150,10 +2799,17 @@
       "classificationFailures": [],
       "diagnosticBlockers": [
         "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
-        "visual-review:route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-world-composition-not-public-quality"
+        "route-primary:route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy:Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy:Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "deploy-warning:showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "deploy-warning:showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale."
       ],
       "finalStatus": "game-layer-diagnostic-retained",
       "source": "apps/showcase-platformer-game-layer-proof/index.html",
@@ -3197,20 +2853,15 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
+      "ok": false,
       "staticGateOk": true,
       "staticGateFailures": [],
       "visualReview": {
         "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "fail",
-        "failures": [
-          "route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:platformer-proof-reads-as-diagnostic-harness",
-          "route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-not-visibly-grounded-on-platform",
-          "route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:debug-surface-guides-visible",
-          "route-visual-review-blocker:showcase-platformer-game-layer-proof:visual:character-world-composition-not-public-quality"
-        ]
+        "verdict": "skipped",
+        "failures": []
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
@@ -3231,15 +2882,15 @@
           "hash": "sha256-93872fc24240a071b6195d6f1339f40b09b3308dc998311252d21ebd9042d8c6",
           "source": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
           "outputPath": "public/aura-assets/showcaseWalkAnimatedGirl.93872fc2.glb",
-          "license": "CC-BY-4.0",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-084/266d11aace6843809d62a1a3ceb9876a.glb",
           "sourceFamily": "objaverse",
-          "author": "Unity  (shehab house)",
-          "attribution": "Unity  (shehab house)",
+          "author": "Unity  (shehab house) (https://sketchfab.com/shahabahmed)",
+          "attribution": "Unity",
           "retrievedAt": "2026-06-20T05:52:50.321Z",
           "thumbnailUrl": "/aura-assets/showcaseWalkAnimatedGirl.thumb.svg"
         },
@@ -3254,7 +2905,7 @@
           "outputPath": "public/aura-assets/showcaseSideScrollerWorld.68e11570.glb",
           "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
           "licenseName": "CC-BY-4.0",
-          "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
           "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
           "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
           "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-102/2745b94fc57145069c122d18a07e845d.glb",
@@ -3314,24 +2965,26 @@
         }
       },
       "routePrimaryProbe": {
-        "ok": true,
+        "ok": false,
         "required": true,
         "path": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.json",
         "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
-        "failures": [],
+        "failures": [
+          "route-gate-hash:02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e"
+        ],
         "evidence": {
           "schema": "aura3d-route-primary-probe/1.0",
           "routeId": "showcase-platformer-game-layer-proof",
           "routePath": "/apps/showcase-platformer-game-layer-proof/",
           "appId": "showcase-platformer-game-layer-proof",
-          "sourceHash": "sha256-f6c85a21a4932e2670f92ccb20d150a940d27edab2beed8454631a0b4846b66f",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-c61443d56641a7bfd013ef0d1f32ddaf10d8a3837162c38cea9cd37af3f786e5",
+          "routeGateHash": "02eb40a3423f87d339daaf188c843ef8c31bd0239dd1a9b660dee8b3600b864e",
           "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
           "secondaryPrimaryAssets": [
             "showcaseSideScrollerWorld"
           ],
           "routeHealthHash": "sha256-66edcee2132b45118af24757d6b441972f6d7b5bc97bc73b3d37edba2bc6a288",
-          "generatedAt": "2026-07-28T05:16:52.284Z",
+          "generatedAt": "2026-07-31T00:46:57.032Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3344,7 +2997,9 @@
               "animation",
               "appId",
               "checkpointId",
+              "claimBoundary",
               "coins",
+              "controls",
               "deaths",
               "diagnostics",
               "frameCount",
@@ -3358,7 +3013,8 @@
               "schema",
               "score",
               "sourceGate",
-              "status"
+              "status",
+              "systems"
             ],
             "primaryAssets": [
               "showcaseWalkAnimatedGirl",
@@ -3397,6 +3053,7 @@
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
+            "controlsInViewport": true,
             "readabilityScore": 100,
             "failures": []
           },
@@ -3430,6 +3087,7 @@
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
+                "controlsInViewport": true,
                 "readabilityScore": 100,
                 "failures": []
               }
@@ -3449,35 +3107,55 @@
         }
       },
       "buildOk": true,
-      "deployCheckOk": true,
+      "deployCheckOk": false,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663219498,
+        "fileCount": 206,
+        "totalBytes": 684424300,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
       "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
       "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-platformer-game-layer-proof/dist --release --source apps/showcase-platformer-game-layer-proof/src --asset showcaseWalkAnimatedGirl --asset showcaseSideScrollerWorld",
-      "deployWarnings": [],
-      "deployFailures": []
+      "deployWarnings": [
+        "showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale."
+      ],
+      "deployFailures": [
+        "Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe image sha256 mismatch.",
+        "Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe nonblank pixel count is stale.",
+        "Release validation warning is blocking: showcaseSideScrollerWorld: release primary model renderedProbe color bucket count is stale.",
+        "Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe image sha256 mismatch.",
+        "Release validation warning is blocking: showcaseWalkAnimatedGirl: release primary model renderedProbe color bucket count is stale."
+      ]
     },
     {
       "id": "showcase-skyline-runner",
       "label": "Skyline Runner",
       "path": "/apps/showcase-skyline-runner/",
       "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
-      "releaseClass": "release-ready candidate",
-      "publicReleaseCounted": true,
+      "releaseClass": "prototype-blocked",
+      "publicReleaseCounted": false,
       "publicReleaseOk": true,
       "classificationOk": true,
       "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "diagnosticBlockers": [
+        "visual-review:skyline-runner-independent-review-pending",
+        "static:route-health:game-asset-pair-verdict:pass",
+        "static:route-health:missing-game-asset-pair-blockers",
+        "static:route-health:missing-route-health-blocker:evidence:platformer-asset-pair:verdict-not-pass:fail",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:visual:hero-and-immediate-traversal-path-need-stronger-framing",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:visual:world-depth-and-gameplay-state-feedback-need-reconstruction",
+        "visual-review:route-visual-review-blocker:showcase-skyline-runner:review:independent-human-approval-pending"
+      ],
+      "finalStatus": "prototype-blocked",
       "source": "apps/showcase-skyline-runner/index.html",
       "distDir": "apps/showcase-skyline-runner/dist",
       "gate": {
-        "releaseClass": "release-ready candidate",
+        "releaseClass": "prototype-blocked",
         "primaryAssets": [
           "showcaseKenneyOobiPlatformerHero",
           "showcaseKenneyVerdantPlatformerWorld"
@@ -3497,7 +3175,13 @@
         "requiresAnimationSubjectDelta": true,
         "gameTemplateStatus": {
           "category": "platformer",
-          "publicTemplateReady": true,
+          "publicTemplateReady": false,
+          "blocker": "visual-review:skyline-runner-independent-review-pending",
+          "requiredBeforePublic": [
+            "Obtain explicit user approval of the exact hash-bound Skyline Runner screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
+            "Resolve the visual-rebuild blocker recorded in apps/showcase-skyline-runner/route-health.json.",
+            "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
+          ],
           "evidence": [
             "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json records five passing automated composition checks",
             "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png is the current retained route-primary screenshot",
@@ -3508,155 +3192,31 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
-      "staticGateOk": true,
-      "staticGateFailures": [],
+      "ok": false,
+      "staticGateOk": false,
+      "staticGateFailures": [
+        "route-health:game-asset-pair-verdict:pass",
+        "route-health:missing-game-asset-pair-blockers",
+        "route-health:missing-route-health-blocker:evidence:platformer-asset-pair:verdict-not-pass:fail"
+      ],
       "visualReview": {
-        "required": true,
+        "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-blocker:showcase-skyline-runner:visual:hero-and-immediate-traversal-path-need-stronger-framing",
+          "route-visual-review-blocker:showcase-skyline-runner:visual:world-depth-and-gameplay-state-feedback-need-reconstruction",
+          "route-visual-review-blocker:showcase-skyline-runner:review:independent-human-approval-pending"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
         "routeId": "showcase-skyline-runner",
         "category": "platformer",
-        "verdict": "pass",
+        "verdict": "skipped",
         "pass": true,
-        "compositionReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json",
-        "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-        "screenshot": {
-          "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-          "sha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
-          "metrics": {
-            "width": 1440,
-            "height": 900,
-            "crop": {
-              "x": 10,
-              "y": 10,
-              "width": 1088,
-              "height": 880
-            },
-            "nonBlankPixels": 1529,
-            "colorBuckets": 39,
-            "foregroundBounds": {
-              "x": 870,
-              "y": 408,
-              "width": 42,
-              "height": 53
-            },
-            "clipped": false,
-            "nonBackgroundRatio": 0.0016,
-            "readabilityScore": 42
-          }
-        },
-        "checks": [
-          {
-            "id": "subject-bound-to-surface",
-            "verdict": "pass",
-            "source": "binding-overlap",
-            "tolerance": {
-              "minOverlapRatio": 0.02,
-              "maxAverageBindingError": 0.06,
-              "requiresCurrentHashes": true,
-              "requiresZeroPresentationOffset": true
-            },
-            "measured": {
-              "overlapRatio": 1,
-              "averageBindingError": 0,
-              "modelAnchorCount": 3,
-              "sceneAssetHashMatches": true,
-              "overlayMatches": true,
-              "zeroPresentationOffset": true
-            },
-            "blockers": []
-          },
-          {
-            "id": "contact",
-            "verdict": "pass",
-            "source": "contact",
-            "tolerance": {
-              "maxNormalizedOffset": 1,
-              "maxScreenContactDistanceRatio": 0.35
-            },
-            "measured": {
-              "contactProven": true,
-              "normalizedOffset": 0,
-              "screenContactDistance": 6.354370543177356,
-              "screenContactDistanceRatio": 0.0432
-            },
-            "blockers": []
-          },
-          {
-            "id": "camera-readability",
-            "verdict": "pass",
-            "source": "camera-readability",
-            "tolerance": {
-              "minPlaySpaceAreaRatio": 0.04,
-              "maxPlaySpaceAreaRatio": 0.78,
-              "clippedAllowed": false,
-              "requiresSubjectFollow": true,
-              "acceptedRacingModes": "chase|top-down"
-            },
-            "measured": {
-              "playSpaceAreaRatio": 0.0813,
-              "foregroundClipped": false,
-              "subjectClipped": false,
-              "cameraMode": "follow",
-              "followsSubject": true
-            },
-            "blockers": []
-          },
-          {
-            "id": "scale-contract",
-            "verdict": "pass",
-            "source": "scale-contract",
-            "tolerance": {
-              "minSubjectWorldRatio": 0.08,
-              "maxSubjectWorldRatio": 0.78,
-              "maxPlatformerScaleDelta": 0.18
-            },
-            "measured": {
-              "subjectWorldRatio": 0.167,
-              "characterScaleRatio": 0.42,
-              "projectedTargetHeight": 138.266,
-              "renderedSubjectHeight": 147,
-              "scaleDelta": 0.06316809627818849
-            },
-            "blockers": []
-          },
-          {
-            "id": "debug-guide-absence",
-            "verdict": "pass",
-            "source": "debug-guide-absence",
-            "tolerance": {
-              "visibleDebugGuidesAllowed": false
-            },
-            "measured": {
-              "debugGuidesAbsent": true
-            },
-            "blockers": []
-          },
-          {
-            "id": "hud-occlusion-budget",
-            "verdict": "pass",
-            "source": "route-primary-subject-isolation",
-            "tolerance": {
-              "occludedByUi": false,
-              "clipped": false,
-              "minReadabilityScore": 30,
-              "maxForegroundAreaRatio": 0.78
-            },
-            "measured": {
-              "occludedByUi": false,
-              "clipped": false,
-              "readabilityScore": 55,
-              "foregroundAreaRatio": 0.0155
-            },
-            "blockers": []
-          }
-        ],
+        "checks": [],
         "blockers": []
       },
       "primaryAssetEvidence": [
@@ -3667,7 +3227,7 @@
           "typedAssetUsedInSource": true,
           "url": "/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
           "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
-          "source": "assets/source/kenney-game-kits/kenney-oobi-platformer-hero.glb",
+          "source": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
           "outputPath": "public/aura-assets/showcaseKenneyOobiPlatformerHero.3f821141.glb",
           "license": "CC0-1.0",
           "licenseName": "Creative Commons CC0 1.0 Universal",
@@ -3688,7 +3248,7 @@
           "typedAssetUsedInSource": true,
           "url": "/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
           "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd",
-          "source": "assets/source/kenney-game-kits/kenney-verdant-platformer-world.glb",
+          "source": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
           "outputPath": "public/aura-assets/showcaseKenneyVerdantPlatformerWorld.9f7c2b49.glb",
           "license": "CC0-1.0",
           "licenseName": "Creative Commons CC0 1.0 Universal",
@@ -3704,13 +3264,17 @@
         }
       ],
       "routeHealth": {
-        "ok": true,
+        "ok": false,
         "path": "apps/showcase-skyline-runner/route-health.json",
-        "failures": [],
+        "failures": [
+          "game-asset-pair-verdict:pass",
+          "missing-game-asset-pair-blockers",
+          "missing-route-health-blocker:evidence:platformer-asset-pair:verdict-not-pass:fail"
+        ],
         "appId": "showcase-skyline-runner",
         "route": "/apps/showcase-skyline-runner/",
-        "classification": "release-ready candidate",
-        "publicShowcase": true,
+        "classification": "prototype-blocked",
+        "publicShowcase": false,
         "primaryAssets": [
           "showcaseKenneyOobiPlatformerHero",
           "showcaseKenneyVerdantPlatformerWorld"
@@ -3724,14 +3288,14 @@
           ],
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
           "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "screenshotSha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
+          "screenshotSha256": "sha256-0c7d0e3cb3330b24e8d67c9dd646a6edb131f1258b79c06b521fc595a1c5ff44",
           "geometryEvidence": {
             "category": "platformer",
             "kind": "platformer-playable-surface-map",
             "source": "asset-mesh-extracted",
             "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
             "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "routePrimaryScreenshotSha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
+            "routePrimaryScreenshotSha256": "sha256-0c7d0e3cb3330b24e8d67c9dd646a6edb131f1258b79c06b521fc595a1c5ff44",
             "assets": [
               {
                 "id": "showcaseKenneyOobiPlatformerHero",
@@ -3782,14 +3346,66 @@
           "routeId": "showcase-skyline-runner",
           "routePath": "/apps/showcase-skyline-runner/",
           "appId": "showcase-skyline-runner",
-          "sourceHash": "sha256-edc8abeeb05172b3bbd982cf9ef772f3e5f22885919880b60b0ad566008becf3",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
+          "sourceHash": "sha256-54330bcea57b49c57305ba5952b114595ee279b7f781a176735c573f8a50d4e1",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
           "routePrimaryHeroAsset": "showcaseKenneyOobiPlatformerHero",
           "secondaryPrimaryAssets": [
             "showcaseKenneyVerdantPlatformerWorld"
           ],
-          "routeHealthHash": "sha256-77ce34db7c4b5f6a1e142bbcb49b57c19c0ed8ffeae57396c755009664f12a5f",
-          "generatedAt": "2026-07-28T05:28:29.323Z",
+          "routeHealthHash": "sha256-1a478cb50894371629c60eeb335f20ecda6830289b858c0491de507d76a37182",
+          "freshness": {
+            "schema": "aura3d-evidence-freshness/1.0",
+            "artifact": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
+            "producer": {
+              "id": "route-primary-probes",
+              "version": "1.1",
+              "fingerprint": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+            },
+            "generatedAt": "2026-08-02T09:02:44.679Z",
+            "dependencies": [
+              {
+                "kind": "primary-asset",
+                "id": "showcaseKenneyOobiPlatformerHero",
+                "hash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5"
+              },
+              {
+                "kind": "primary-asset",
+                "id": "showcaseKenneyVerdantPlatformerWorld",
+                "hash": "sha256-9f7c2b49b14458be84aa5509b1c623466b8e468af4414f7ab76adc328d291bdd"
+              },
+              {
+                "kind": "producer-version",
+                "id": "route-primary-probes",
+                "hash": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+              },
+              {
+                "kind": "renderer-fingerprint",
+                "id": "agent-api+assets",
+                "hash": "sha256-5d6d5f21bf1f49e486b87b7ba6ea47394ab8b5f2b9229342a4a2e1f9768fbc54"
+              },
+              {
+                "kind": "route-gate-config",
+                "id": "route-gates.json",
+                "hash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f"
+              },
+              {
+                "kind": "route-health",
+                "id": "showcase-skyline-runner/route-health.json",
+                "hash": "sha256-1a478cb50894371629c60eeb335f20ecda6830289b858c0491de507d76a37182"
+              },
+              {
+                "kind": "route-source",
+                "id": "showcase-skyline-runner",
+                "hash": "sha256-54330bcea57b49c57305ba5952b114595ee279b7f781a176735c573f8a50d4e1"
+              },
+              {
+                "kind": "viewport-contract",
+                "id": "showcase-skyline-runner",
+                "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
+              }
+            ]
+          },
+          "generatedAt": "2026-08-02T09:02:44.679Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3797,11 +3413,12 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "animation",
               "appId",
               "challenge",
+              "challengeFeedback",
               "checkpointId",
               "claimBoundary",
               "coins",
@@ -3815,6 +3432,7 @@
               "platformer",
               "platformerStateStatus",
               "primaryAssets",
+              "rootRendererIntegration",
               "schema",
               "score",
               "status",
@@ -3829,66 +3447,68 @@
           },
           "renderer": {
             "backend": "webgl2",
-            "drawCalls": 167,
+            "drawCalls": 318,
             "renderSize": [
-              1108,
-              900
+              1662,
+              1350
             ]
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "sha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
+            "sha256": "sha256-2ff8b62af86bdd2906cb9f0237755609d8746c334bcbcc4c5ee777dffe6166c9",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
-              "x": 10,
-              "y": 10,
-              "width": 1088,
-              "height": 880
+              "x": 0,
+              "y": 0,
+              "width": 1108,
+              "height": 900,
+              "area": 997200
             },
-            "nonBlankPixels": 9591,
-            "colorBuckets": 52,
+            "nonBlankPixels": 9357,
+            "colorBuckets": 167,
             "foregroundBounds": {
-              "x": 279,
-              "y": 415,
-              "width": 101,
-              "height": 147
+              "x": 237,
+              "y": 419,
+              "width": 108,
+              "height": 119
             },
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
-            "readabilityScore": 55,
+            "controlsInViewport": true,
+            "readabilityScore": 53,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-63660abb3bf4c80e3f1f0647d02e617359afa83e3582a599206bbe4d212b2a5c",
+            "subjectSuppressedScreenshotSha256": "sha256-fde8f4c245f08a27bc7d576e78a09cc991d136fc48cf3cfc7f9dcb0379f9ba53",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "platformer",
             "subjectBounds": {
-              "x": 279,
-              "y": 415,
-              "width": 101,
-              "height": 147
+              "x": 237,
+              "y": 419,
+              "width": 108,
+              "height": 119
             },
-            "subjectPixels": 9591,
-            "subjectColorBuckets": 52,
+            "subjectPixels": 9357,
+            "subjectColorBuckets": 167,
             "subjectClipped": false,
-            "subjectReadabilityScore": 55,
+            "subjectReadabilityScore": 53,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-63660abb3bf4c80e3f1f0647d02e617359afa83e3582a599206bbe4d212b2a5c",
+            "subjectSuppressedScreenshotSha256": "sha256-fde8f4c245f08a27bc7d576e78a09cc991d136fc48cf3cfc7f9dcb0379f9ba53",
             "projectedPlaySpaceBounds": {
-              "x": 233,
-              "y": 471,
-              "width": 875,
-              "height": 89
+              "x": 213,
+              "y": 469,
+              "width": 895,
+              "height": 67
             },
             "projectedContactPoint": {
-              "x": 329.912,
-              "y": 555.659
+              "x": 288.681,
+              "y": 531.815
             },
-            "projectedSubjectHeight": 138.266,
-            "subjectTargetSize": 0.44,
+            "projectedSubjectHeight": 129.504,
+            "subjectTargetSize": 0.52,
             "cameraMode": "follow"
           },
           "primaryAssets": [
@@ -3901,29 +3521,31 @@
               "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-                "sha256": "sha256-060203b9c49d320f1ca56fe13023c3b39e7ad9407e7caf9939df2ccd1163d923",
+                "sha256": "sha256-2ff8b62af86bdd2906cb9f0237755609d8746c334bcbcc4c5ee777dffe6166c9",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
-                  "x": 10,
-                  "y": 10,
-                  "width": 1088,
-                  "height": 880
+                  "x": 0,
+                  "y": 0,
+                  "width": 1108,
+                  "height": 900,
+                  "area": 997200
                 },
-                "nonBlankPixels": 9591,
-                "colorBuckets": 52,
+                "nonBlankPixels": 9357,
+                "colorBuckets": 167,
                 "foregroundBounds": {
-                  "x": 279,
-                  "y": 415,
-                  "width": 101,
-                  "height": 147
+                  "x": 237,
+                  "y": 419,
+                  "width": 108,
+                  "height": 119
                 },
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
-                "readabilityScore": 55,
+                "controlsInViewport": true,
+                "readabilityScore": 53,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-63660abb3bf4c80e3f1f0647d02e617359afa83e3582a599206bbe4d212b2a5c",
+                "subjectSuppressedScreenshotSha256": "sha256-fde8f4c245f08a27bc7d576e78a09cc991d136fc48cf3cfc7f9dcb0379f9ba53",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -3946,8 +3568,8 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663264128,
+        "fileCount": 206,
+        "totalBytes": 684547647,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3961,28 +3583,36 @@
       "label": "Turbo Drift Circuit",
       "path": "/apps/showcase-turbo-drift-circuit/",
       "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
-      "releaseClass": "release-ready candidate",
-      "publicReleaseCounted": true,
+      "releaseClass": "prototype-blocked",
+      "publicReleaseCounted": false,
       "publicReleaseOk": true,
       "classificationOk": true,
       "classificationFailures": [],
-      "diagnosticBlockers": [],
-      "finalStatus": "release-ready candidate",
+      "diagnosticBlockers": [
+        "visual-review:turbo-drift-circuit-independent-review-pending",
+        "static:route-health:game-asset-pair-verdict:pass",
+        "static:route-health:missing-game-asset-pair-blockers",
+        "static:route-health:missing-route-health-blocker:evidence:racing-asset-pair:verdict-not-pass:fail",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:visual:proof-camera-does-not-read-as-a-finished-racing-view",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:visual:player-and-independent-ai-opponent-need-clear-visual-separation",
+        "visual-review:route-visual-review-blocker:showcase-turbo-drift-circuit:review:independent-human-approval-pending"
+      ],
+      "finalStatus": "prototype-blocked",
       "source": "apps/showcase-turbo-drift-circuit/index.html",
       "distDir": "apps/showcase-turbo-drift-circuit/dist",
       "gate": {
-        "releaseClass": "release-ready candidate",
+        "releaseClass": "prototype-blocked",
         "primaryAssets": [
-          "showcaseKenneyRaceCarRed",
-          "showcaseKenneyNeonRaceCircuit"
+          "turboRaceCar",
+          "showcaseTsukubaCircuit"
         ],
         "primaryAssetRoles": {
-          "showcaseKenneyRaceCarRed": "vehicle",
-          "showcaseKenneyNeonRaceCircuit": "track"
+          "turboRaceCar": "vehicle",
+          "showcaseTsukubaCircuit": "track"
         },
-        "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+        "routePrimaryHeroAsset": "turboRaceCar",
         "secondaryPrimaryAssets": [
-          "showcaseKenneyNeonRaceCircuit"
+          "showcaseTsukubaCircuit"
         ],
         "primitiveBudget": 10,
         "requiresTypedPrimaryAssets": true,
@@ -3991,7 +3621,14 @@
         "requiresAnimationSubjectDelta": false,
         "gameTemplateStatus": {
           "category": "racing",
-          "publicTemplateReady": true,
+          "publicTemplateReady": false,
+          "blocker": "visual-review:turbo-drift-circuit-independent-review-pending",
+          "requiredBeforePublic": [
+            "Obtain explicit user approval of the exact hash-bound Turbo Drift Circuit screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
+            "Give the opponent a genuinely distinct supported asset or material variant and prove the distinction in action captures.",
+            "Clear the racing gameplay-proof and deploy-artifact blockers recorded in apps/showcase-turbo-drift-circuit/route-health.json.",
+            "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
+          ],
           "evidence": [
             "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json records five passing automated composition checks",
             "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png is the current retained route-primary screenshot",
@@ -4002,239 +3639,119 @@
         "requiresAuraParticles": false,
         "nativeWebGpuAllowed": null
       },
-      "ok": true,
-      "staticGateOk": true,
-      "staticGateFailures": [],
+      "ok": false,
+      "staticGateOk": false,
+      "staticGateFailures": [
+        "route-health:game-asset-pair-verdict:pass",
+        "route-health:missing-game-asset-pair-blockers",
+        "route-health:missing-route-health-blocker:evidence:racing-asset-pair:verdict-not-pass:fail"
+      ],
       "visualReview": {
-        "required": true,
+        "required": false,
         "ok": true,
         "path": "docs/project/showcase-visual-review.json",
-        "verdict": "pass",
-        "failures": []
+        "verdict": "needs-work",
+        "failures": [
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:visual:proof-camera-does-not-read-as-a-finished-racing-view",
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:visual:player-and-independent-ai-opponent-need-clear-visual-separation",
+          "route-visual-review-blocker:showcase-turbo-drift-circuit:review:independent-human-approval-pending"
+        ]
       },
       "gameVisualQa": {
         "schema": "aura3d-game-visual-qa/1.0",
         "routeId": "showcase-turbo-drift-circuit",
         "category": "racing",
-        "verdict": "pass",
+        "verdict": "skipped",
         "pass": true,
-        "compositionReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
-        "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-        "screenshot": {
-          "path": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "sha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
-          "metrics": {
-            "width": 1440,
-            "height": 900,
-            "crop": {
-              "x": 10,
-              "y": 10,
-              "width": 1102,
-              "height": 880
-            },
-            "nonBlankPixels": 410898,
-            "colorBuckets": 207,
-            "foregroundBounds": {
-              "x": 10,
-              "y": 10,
-              "width": 1102,
-              "height": 880
-            },
-            "clipped": true,
-            "nonBackgroundRatio": 0.4237,
-            "readabilityScore": 85
-          }
-        },
-        "checks": [
-          {
-            "id": "subject-bound-to-surface",
-            "verdict": "pass",
-            "source": "binding-overlap",
-            "tolerance": {
-              "minOverlapRatio": 0.02,
-              "maxAverageBindingError": 0.06,
-              "requiresCurrentHashes": true,
-              "requiresZeroPresentationOffset": true
-            },
-            "measured": {
-              "overlapRatio": 0.6228,
-              "averageBindingError": 0,
-              "modelAnchorCount": 3,
-              "sceneAssetHashMatches": true,
-              "overlayMatches": true,
-              "zeroPresentationOffset": true
-            },
-            "blockers": []
-          },
-          {
-            "id": "contact",
-            "verdict": "pass",
-            "source": "contact",
-            "tolerance": {
-              "maxNormalizedOffset": 1,
-              "maxScreenContactDistanceRatio": 0.35
-            },
-            "measured": {
-              "contactProven": true,
-              "normalizedOffset": 0,
-              "screenContactDistance": 28.450592682754436,
-              "screenContactDistanceRatio": 0.2995
-            },
-            "blockers": []
-          },
-          {
-            "id": "camera-readability",
-            "verdict": "pass",
-            "source": "camera-readability",
-            "tolerance": {
-              "minPlaySpaceAreaRatio": 0.04,
-              "maxPlaySpaceAreaRatio": 0.78,
-              "clippedAllowed": false,
-              "requiresSubjectFollow": true,
-              "acceptedRacingModes": "chase|top-down"
-            },
-            "measured": {
-              "playSpaceAreaRatio": 0.212,
-              "foregroundClipped": false,
-              "subjectClipped": false,
-              "cameraMode": "follow",
-              "followsSubject": true,
-              "selectedMode": "chase"
-            },
-            "blockers": []
-          },
-          {
-            "id": "scale-contract",
-            "verdict": "pass",
-            "source": "scale-contract",
-            "tolerance": {
-              "minSubjectWorldRatio": 0.08,
-              "maxSubjectWorldRatio": 0.78,
-              "maxPlatformerScaleDelta": 0.18
-            },
-            "measured": {
-              "subjectWorldRatio": 0.108,
-              "characterScaleRatio": "not-required",
-              "projectedTargetHeight": "not-required",
-              "renderedSubjectHeight": 95,
-              "scaleDelta": "missing"
-            },
-            "blockers": []
-          },
-          {
-            "id": "debug-guide-absence",
-            "verdict": "pass",
-            "source": "debug-guide-absence",
-            "tolerance": {
-              "visibleDebugGuidesAllowed": false
-            },
-            "measured": {
-              "debugGuidesAbsent": true
-            },
-            "blockers": []
-          },
-          {
-            "id": "hud-occlusion-budget",
-            "verdict": "pass",
-            "source": "route-primary-subject-isolation",
-            "tolerance": {
-              "occludedByUi": false,
-              "clipped": false,
-              "minReadabilityScore": 30,
-              "maxForegroundAreaRatio": 0.78
-            },
-            "measured": {
-              "occludedByUi": false,
-              "clipped": false,
-              "readabilityScore": 52,
-              "foregroundAreaRatio": 0.0112
-            },
-            "blockers": []
-          }
-        ],
+        "checks": [],
         "blockers": []
       },
       "primaryAssetEvidence": [
         {
-          "id": "showcaseKenneyRaceCarRed",
+          "id": "turboRaceCar",
           "presentInManifest": true,
           "presentInTypegen": true,
           "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
-          "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
-          "source": "assets/source/kenney-game-kits/kenney-race-car-red.glb",
-          "outputPath": "public/aura-assets/showcaseKenneyRaceCarRed.2beaa142.glb",
-          "license": "CC0-1.0",
-          "licenseName": "Creative Commons CC0 1.0 Universal",
-          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-          "sourcePage": "https://kenney.nl/assets/racing-kit",
-          "downloadUrl": "https://kenney.nl/media/pages/assets/racing-kit/cf6b19f341-1775122158/kenney_racing-kit.zip",
-          "sourceUrl": "https://kenney.nl/assets/racing-kit",
-          "sourceFamily": "Kenney game kits",
-          "author": "Kenney",
-          "attribution": "Kenney",
-          "retrievedAt": "2026-07-19T09:32:32.000Z",
-          "thumbnailUrl": "/aura-assets/showcaseKenneyRaceCarRed.thumb.svg"
+          "url": "/aura-assets/turboRaceCar.f566084b.glb",
+          "hash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e",
+          "source": "assets/source/vehicles/turbo-race-car.glb",
+          "outputPath": "public/aura-assets/turboRaceCar.f566084b.glb",
+          "license": "CC-BY-4.0",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+          "licenseRaw": "CC-BY-4.0",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-085/d597c8aa778a4f49ab1a38ba31872704.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-085/d597c8aa778a4f49ab1a38ba31872704.glb",
+          "sourceFamily": "objaverse",
+          "author": "DJMaesen",
+          "attribution": "DJMaesen",
+          "retrievedAt": "2026-08-02T01:03:12.733Z",
+          "thumbnailUrl": "/aura-assets/turboRaceCar.thumb.svg"
         },
         {
-          "id": "showcaseKenneyNeonRaceCircuit",
+          "id": "showcaseTsukubaCircuit",
           "presentInManifest": true,
           "presentInTypegen": true,
           "typedAssetUsedInSource": true,
-          "url": "/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
-          "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
-          "source": "assets/source/kenney-game-kits/kenney-neon-race-circuit.glb",
-          "outputPath": "public/aura-assets/showcaseKenneyNeonRaceCircuit.272e9eac.glb",
-          "license": "CC0-1.0",
-          "licenseName": "Creative Commons CC0 1.0 Universal",
-          "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-          "sourcePage": "https://kenney.nl/assets/racing-kit",
-          "downloadUrl": "https://kenney.nl/media/pages/assets/racing-kit/cf6b19f341-1775122158/kenney_racing-kit.zip",
-          "sourceUrl": "https://kenney.nl/assets/racing-kit",
-          "sourceFamily": "Kenney game kits",
-          "author": "Kenney",
-          "attribution": "Kenney",
-          "retrievedAt": "2026-07-19T09:32:32.000Z",
-          "thumbnailUrl": "/aura-assets/showcaseKenneyNeonRaceCircuit.thumb.svg"
+          "url": "/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
+          "source": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "outputPath": "public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb",
+          "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+          "licenseName": "CC-BY-4.0",
+          "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+          "sourcePage": "https://huggingface.co/datasets/allenai/objaverse/blob/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "downloadUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "sourceUrl": "https://huggingface.co/datasets/allenai/objaverse/resolve/main/glbs/000-000/d7a6d63a9f874355a680017e9e14d15a.glb",
+          "sourceFamily": "objaverse",
+          "author": "Linnaeus (https://sketchfab.com/bordres)",
+          "attribution": "Linnaeus",
+          "retrievedAt": "2026-06-18T07:12:45.970Z",
+          "thumbnailUrl": "/aura-assets/showcaseTsukubaCircuit.thumb.svg"
         }
       ],
       "routeHealth": {
-        "ok": true,
+        "ok": false,
         "path": "apps/showcase-turbo-drift-circuit/route-health.json",
-        "failures": [],
+        "failures": [
+          "game-asset-pair-verdict:pass",
+          "missing-game-asset-pair-blockers",
+          "missing-route-health-blocker:evidence:racing-asset-pair:verdict-not-pass:fail"
+        ],
         "appId": "showcase-turbo-drift-circuit",
         "route": "/apps/showcase-turbo-drift-circuit/",
-        "classification": "release-ready candidate",
-        "publicShowcase": true,
+        "classification": "prototype-blocked",
+        "publicShowcase": false,
         "primaryAssets": [
-          "showcaseKenneyRaceCarRed",
-          "showcaseKenneyNeonRaceCircuit"
+          "turboRaceCar",
+          "showcaseTsukubaCircuit"
         ],
         "evidenceGlobal": "window.__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
         "gameAssetPairEvidence": {
           "category": "racing",
           "assets": [
-            "showcaseKenneyRaceCarRed",
-            "showcaseKenneyNeonRaceCircuit"
+            "turboRaceCar",
+            "showcaseTsukubaCircuit"
           ],
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
           "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-          "screenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
+          "screenshotSha256": "sha256-d93950912b37c3d0b79ed6871b7d61ca4d848dd753cdd408b8f6ec7b19a6c713",
           "geometryEvidence": {
             "category": "racing",
             "kind": "racing-track-topology",
             "source": "asset-mesh-extracted",
             "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
             "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
+            "routePrimaryScreenshotSha256": "sha256-d93950912b37c3d0b79ed6871b7d61ca4d848dd753cdd408b8f6ec7b19a6c713",
             "assets": [
               {
-                "id": "showcaseKenneyRaceCarRed",
-                "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
+                "id": "turboRaceCar",
+                "hash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e"
               },
               {
-                "id": "showcaseKenneyNeonRaceCircuit",
-                "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+                "id": "showcaseTsukubaCircuit",
+                "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
               }
             ]
           },
@@ -4278,14 +3795,66 @@
           "routeId": "showcase-turbo-drift-circuit",
           "routePath": "/apps/showcase-turbo-drift-circuit/",
           "appId": "showcase-turbo-drift-circuit",
-          "sourceHash": "sha256-c2ffc59c87173e1481ba0cb4cb009f0a0f6bbdbe418d2a81ddd255e4152d6332",
-          "routeGateHash": "a7d4f9da961ca85549f4ea4ff90dbd2b78bee6c6e2d63fd6b457587d5b3e871f",
-          "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+          "sourceHash": "sha256-c90bcc39e63eb413289dc73c477468ad2c28eef289f94559a1504903aed446f6",
+          "routeGateHash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f",
+          "routePrimaryHeroAsset": "turboRaceCar",
           "secondaryPrimaryAssets": [
-            "showcaseKenneyNeonRaceCircuit"
+            "showcaseTsukubaCircuit"
           ],
-          "routeHealthHash": "sha256-4198695c864f34ba052bad9fd2e60b61d415aebb2cf9ea00726e4a52488d52d3",
-          "generatedAt": "2026-07-28T05:24:02.714Z",
+          "routeHealthHash": "sha256-516b15fcfbb3e31ab0ea83ef0d8124c7bc59ef9c60c3b7ed66697513a2debead",
+          "freshness": {
+            "schema": "aura3d-evidence-freshness/1.0",
+            "artifact": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
+            "producer": {
+              "id": "route-primary-probes",
+              "version": "1.1",
+              "fingerprint": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+            },
+            "generatedAt": "2026-08-02T09:12:05.543Z",
+            "dependencies": [
+              {
+                "kind": "primary-asset",
+                "id": "showcaseTsukubaCircuit",
+                "hash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
+              },
+              {
+                "kind": "primary-asset",
+                "id": "turboRaceCar",
+                "hash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e"
+              },
+              {
+                "kind": "producer-version",
+                "id": "route-primary-probes",
+                "hash": "sha256-fd117fc7f7a6bda3de98c380fca6baadd488eb810728d6ff32717a544564df19"
+              },
+              {
+                "kind": "renderer-fingerprint",
+                "id": "agent-api+assets",
+                "hash": "sha256-6b7581c3000d733a0868a288696d2dbc09158c791676548878f714306e7accff"
+              },
+              {
+                "kind": "route-gate-config",
+                "id": "route-gates.json",
+                "hash": "0dd53bdffdce2ed37440aa5f1b532e2b14e00c47b89e990417f0fb55ea15b68f"
+              },
+              {
+                "kind": "route-health",
+                "id": "showcase-turbo-drift-circuit/route-health.json",
+                "hash": "sha256-516b15fcfbb3e31ab0ea83ef0d8124c7bc59ef9c60c3b7ed66697513a2debead"
+              },
+              {
+                "kind": "route-source",
+                "id": "showcase-turbo-drift-circuit",
+                "hash": "sha256-c90bcc39e63eb413289dc73c477468ad2c28eef289f94559a1504903aed446f6"
+              },
+              {
+                "kind": "viewport-contract",
+                "id": "showcase-turbo-drift-circuit",
+                "hash": "sha256-90ad7da245d73082ab66525828f95b666a6c0ffe254e336e9618a52503fec355"
+              }
+            ]
+          },
+          "generatedAt": "2026-08-02T09:12:05.543Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -4293,9 +3862,10 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "running",
+            "status": "ready",
             "evidenceKeys": [
               "appId",
+              "camera",
               "checkpoint",
               "claimBoundary",
               "controls",
@@ -4304,28 +3874,32 @@
               "gameplay",
               "kitContractProof",
               "lap",
+              "observedRenderedFeedback",
               "opponent",
+              "opponentDistinction",
               "physics",
               "primaryAssets",
               "raceDesign",
               "raceState",
               "racing",
+              "renderedFeedback",
               "runtimeEvidence",
               "schema",
               "speed",
               "status",
+              "subjectFraming",
               "systems"
             ],
             "primaryAssets": [
-              "showcaseKenneyRaceCarRed",
-              "showcaseKenneyNeonRaceCircuit"
+              "turboRaceCar",
+              "showcaseTsukubaCircuit"
             ],
             "missingPrimaryAssets": [],
             "hasRendererDiagnostics": true
           },
           "renderer": {
             "backend": "webgl2",
-            "drawCalls": 303,
+            "drawCalls": 78,
             "renderSize": [
               1122,
               900
@@ -4333,104 +3907,108 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-            "sha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
+            "sha256": "sha256-d93950912b37c3d0b79ed6871b7d61ca4d848dd753cdd408b8f6ec7b19a6c713",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
-              "x": 10,
-              "y": 10,
-              "width": 1102,
-              "height": 880
+              "x": 0,
+              "y": 0,
+              "width": 1122,
+              "height": 900,
+              "area": 1009800
             },
-            "nonBlankPixels": 8671,
-            "colorBuckets": 45,
+            "nonBlankPixels": 39770,
+            "colorBuckets": 81,
             "foregroundBounds": {
-              "x": 508,
-              "y": 425,
-              "width": 114,
-              "height": 95
+              "x": 437,
+              "y": 336,
+              "width": 283,
+              "height": 213
             },
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
-            "readabilityScore": 52,
+            "controlsInViewport": true,
+            "readabilityScore": 93,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-5be9de53ff9c5e1124dcf40aee5b33f67aca95e796ed103e8862f0a84e6c39e6",
+            "subjectSuppressedScreenshotSha256": "sha256-2bc3526f2823a46e785c0f60493eabb58ea0c54f2a9754966a95e4ca3c2b9cc7",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "racing",
             "subjectBounds": {
-              "x": 508,
-              "y": 425,
-              "width": 114,
-              "height": 95
+              "x": 437,
+              "y": 336,
+              "width": 283,
+              "height": 213
             },
-            "subjectPixels": 8671,
-            "subjectColorBuckets": 45,
+            "subjectPixels": 39770,
+            "subjectColorBuckets": 81,
             "subjectClipped": false,
-            "subjectReadabilityScore": 52,
+            "subjectReadabilityScore": 93,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-5be9de53ff9c5e1124dcf40aee5b33f67aca95e796ed103e8862f0a84e6c39e6",
+            "subjectSuppressedScreenshotSha256": "sha256-2bc3526f2823a46e785c0f60493eabb58ea0c54f2a9754966a95e4ca3c2b9cc7",
             "projectedPlaySpaceBounds": {
-              "x": 551,
-              "y": 321,
-              "width": 571,
-              "height": 360
+              "x": 0,
+              "y": 313,
+              "width": 561,
+              "height": 252
             },
             "projectedContactPoint": {
               "x": 561,
-              "y": 548.168
+              "y": 509.617
             },
-            "projectedSubjectHeight": 166.454,
-            "subjectTargetSize": 0.9,
+            "projectedSubjectHeight": 167.971,
+            "subjectTargetSize": 0.513276481125261,
             "cameraMode": "follow"
           },
           "primaryAssets": [
             {
-              "id": "showcaseKenneyRaceCarRed",
+              "id": "turboRaceCar",
               "role": "vehicle",
-              "expectedTypedRef": "assets.showcaseKenneyRaceCarRed",
+              "expectedTypedRef": "assets.turboRaceCar",
               "routePrimaryEvidenceTarget": true,
               "evidenceMode": "route-primary-foreground",
-              "manifestHash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a",
+              "manifestHash": "sha256-f566084b9be74dee48e26cb3ada922e75769e4f331321cc48d227ce3c273476e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-                "sha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
+                "sha256": "sha256-d93950912b37c3d0b79ed6871b7d61ca4d848dd753cdd408b8f6ec7b19a6c713",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
-                  "x": 10,
-                  "y": 10,
-                  "width": 1102,
-                  "height": 880
+                  "x": 0,
+                  "y": 0,
+                  "width": 1122,
+                  "height": 900,
+                  "area": 1009800
                 },
-                "nonBlankPixels": 8671,
-                "colorBuckets": 45,
+                "nonBlankPixels": 39770,
+                "colorBuckets": 81,
                 "foregroundBounds": {
-                  "x": 508,
-                  "y": 425,
-                  "width": 114,
-                  "height": 95
+                  "x": 437,
+                  "y": 336,
+                  "width": 283,
+                  "height": 213
                 },
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
-                "readabilityScore": 52,
+                "controlsInViewport": true,
+                "readabilityScore": 93,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-5be9de53ff9c5e1124dcf40aee5b33f67aca95e796ed103e8862f0a84e6c39e6",
+                "subjectSuppressedScreenshotSha256": "sha256-2bc3526f2823a46e785c0f60493eabb58ea0c54f2a9754966a95e4ca3c2b9cc7",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
             },
             {
-              "id": "showcaseKenneyNeonRaceCircuit",
+              "id": "showcaseTsukubaCircuit",
               "role": "track",
-              "expectedTypedRef": "assets.showcaseKenneyNeonRaceCircuit",
+              "expectedTypedRef": "assets.showcaseTsukubaCircuit",
               "routePrimaryEvidenceTarget": false,
               "evidenceMode": "secondary-present",
-              "manifestHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
+              "manifestHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031"
             }
           ],
           "primitivePrimaryCandidates": [],
@@ -4442,13 +4020,13 @@
       "deployCheckOk": true,
       "dist": {
         "exists": true,
-        "fileCount": 190,
-        "totalBytes": 663262606,
+        "fileCount": 206,
+        "totalBytes": 684526979,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
       "buildCommand": "pnpm exec vite build --config tools/showcase-library/vite.config.ts",
-      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseKenneyRaceCarRed --asset showcaseKenneyNeonRaceCircuit",
+      "deployCheckCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset turboRaceCar --asset showcaseTsukubaCircuit",
       "deployWarnings": [],
       "deployFailures": []
     }

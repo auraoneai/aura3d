@@ -25,7 +25,8 @@ export { WebGL2Device } from "./WebGL2Device";
 export type { WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
-export { WebGPUDevice, MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUDevice";
+export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
+export { WebGPUDevice } from "./WebGPUDevice";
 export type {
   WebGPUAdapterLike,
   WebGPUBufferDescriptorLike,
@@ -52,7 +53,7 @@ export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttribut
 export { VertexBuffer } from "./VertexBuffer";
 export { IndexBuffer } from "./IndexBuffer";
 export { Geometry, computeBounds } from "./Geometry";
-export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, UVSphereGeometryOptions } from "./Geometry";
+export type { Bounds3, CapsuleGeometryOptions, CylinderGeometryOptions, ScreenSpaceLineSegment, UVSphereGeometryOptions } from "./Geometry";
 export { applyMorphTargets, computeMorphTargetEnvelopeBounds, computeMorphTargetWeightedBounds } from "./MorphTarget";
 export type { MorphTargetDelta } from "./MorphTarget";
 export { computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
@@ -471,8 +472,14 @@ export {
   DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
   DEFAULT_SKINNED_LIT_SHADER_MARKER,
+  DEFAULT_SCREEN_SPACE_LINE_SHADER_MARKER,
+  DEFAULT_SCREEN_SPACE_LINE_SHADER_NAME,
+  DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_MARKER,
+  DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME,
   DEFAULT_SKINNED_LIT_SHADER_NAME,
   DEFAULT_SKINNED_UNLIT_SHADER_MARKER,
+  DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_MARKER,
+  DEFAULT_SKINNED_UNLIT_EIGHT_INFLUENCE_SHADER_NAME,
   DEFAULT_SKINNED_UNLIT_SHADER_NAME,
   DEFAULT_TEXTURED_UNLIT_SHADER_MARKER,
   DEFAULT_TEXTURED_UNLIT_SHADER_NAME,
@@ -483,7 +490,7 @@ export {
 } from "./ShaderLibrary";
 export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";
-export { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
+export { MAX_UNIFORM_SKINNING_JOINTS, SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
 export type { ShaderChunk } from "./ShaderChunks";
 
 export { DEFAULT_RENDER_STATE, Material, validateRenderState } from "./Material";
@@ -506,7 +513,9 @@ export { InstancedPBRMaterial, MAX_INSTANCED_PBR_INSTANCES } from "./InstancedPB
 export type { InstancedPBRMaterialOptions } from "./InstancedPBRMaterial";
 export { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
 export type { TexturedUnlitMaterialOptions } from "./TexturedUnlitMaterial";
-export { SkinnedUnlitMaterial } from "./SkinnedUnlitMaterial";
+export { ScreenSpaceLineMaterial } from "./ScreenSpaceLineMaterial";
+export type { ScreenSpaceLineCap, ScreenSpaceLineMaterialOptions } from "./ScreenSpaceLineMaterial";
+export { MAX_DATA_TEXTURE_SKINNING_JOINTS, SkinnedUnlitMaterial } from "./SkinnedUnlitMaterial";
 export type { SkinnedUnlitMaterialOptions } from "./SkinnedUnlitMaterial";
 export { SkinnedLitMaterial } from "./SkinnedLitMaterial";
 export type { SkinnedLitMaterialOptions } from "./SkinnedLitMaterial";
@@ -571,7 +580,7 @@ export type {
   RendererTimingSnapshot
 } from "./RendererTiming";
 export { ForwardPass } from "./ForwardPass";
-export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES } from "./ForwardPass";
+export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES, MAX_SKINNING_JOINTS } from "./ForwardPass";
 export {
   createMorphTargetPlan,
   planMorphTargets,
@@ -580,8 +589,10 @@ export {
   MORPH_UNIFORM_MAX_VERTICES
 } from "./MorphTargetPlan";
 export type { MorphDeviceLimits, MorphPlanDecision, MorphPlanMode, MorphTargetPlan } from "./MorphTargetPlan";
-export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding } from "./ForwardPass";
+export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding, SkinningPaletteDiagnostics, SkinningPalettePath } from "./ForwardPass";
 export { batchStaticRenderItems, buildStaticBoundsBvh, queryStaticBoundsBvh, raycastStaticBoundsBvh, selectLodLevel, updateStaticBoundsBvh } from "./SceneOptimization";
+export { consolidateStaticMeshes } from "./MeshConsolidation";
+export type { MeshConsolidationInput, MeshConsolidationOptions, MeshConsolidationResult } from "./MeshConsolidation";
 export type {
   LodLevel,
   LodSelection,
@@ -782,10 +793,21 @@ export { createCanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
 export type { CanonicalProductSceneFixture, CanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
 export { createLightingDefault } from "./LightingDefaults";
 export type { LightingDefault, LightingDefaultPreset } from "./LightingDefaults";
-export { createLightingRig, listLightingRigPresets } from "./LightingRig";
+export { auditPrimitiveSubmission, formatPrimitiveSubmissionAudit } from "./PrimitiveSubmissionAudit";
+export type {
+  PrimitiveFrustumVerdict,
+  PrimitiveSubmissionAudit,
+  PrimitiveSubmissionAuditOptions,
+  PrimitiveSubmissionBlocker,
+  PrimitiveSubmissionRecord
+} from "./PrimitiveSubmissionAudit";
+export { createLightingRig, listLightingRigPresets, resolveSubjectRimPlacement } from "./LightingRig";
 export type {
   LightingRig,
   LightingRigDiagnostics,
+  LightingRigSubject,
+  SubjectRimPlacement,
+  SubjectRimPlacementOptions,
   LightingRigLightDescriptor,
   LightingRigOptions,
   LightingRigPreset,

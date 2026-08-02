@@ -34,6 +34,7 @@ import {
   type CameraLike,
   type CollectedLight,
   type EnvironmentLightingOptions,
+  type ForwardEnvironmentFogOptions,
   type ProductionImportedAssetRenderMetadata,
   type ProductionRendererFeature,
   type ProductionRendererInput,
@@ -115,6 +116,9 @@ export * from "./CloudRenderAdapter.js";
 export * from "./BatchEpisodeRenderer.js";
 export * from "./AnimationAssetManifest.js";
 export * from "./SceneGroundingUtils.js";
+export * from "./SubjectFramingUtils.js";
+export * from "./LayeredSceneComposition.js";
+export * from "./TouchControlBinding.js";
 export * from "./AssetLibraryBrowser.js";
 export * from "./DialogueAlignment.js";
 export * from "./PerformancePoseEditor.js";
@@ -691,6 +695,9 @@ export * from "./AnimationPerformance.js";
 export * from "./AnimationRenderQueue.js";
 export * from "./AnimationAssetManifest.js";
 export * from "./SceneGroundingUtils.js";
+export * from "./SubjectFramingUtils.js";
+export * from "./LayeredSceneComposition.js";
+export * from "./TouchControlBinding.js";
 export * from "./AssetLibraryBrowser.js";
 
 export type AuraVec3 = readonly [number, number, number];
@@ -1369,7 +1376,18 @@ export interface AuraRendererDiagnosticReport {
     readonly antiBlowout: boolean;
   };
   readonly shadows: {
+    /** True only when a mounted runtime actually sampled a shadow map. */
     readonly enabled: boolean;
+    /** The scene asked for shadows: a shadow-casting light was collected. */
+    readonly requested: boolean;
+    /** A shadow depth target was allocated and rendered by the device. */
+    readonly mapRendered: boolean;
+    /** A shader actually bound and sampled the shadow map. */
+    readonly mapSampled: boolean;
+    readonly mapSize?: number;
+    readonly label?: string;
+    readonly nativeShadowMapBindings: number;
+    readonly shadowRenderTargetsAllocated: number;
     readonly contactShadows: number;
     readonly mapType: "pcf-soft";
   };
@@ -3182,6 +3200,21 @@ interface AuraRendererRuntimeObservation {
     readonly intensity?: number;
     readonly evidence: string;
   };
+  /**
+   * Device-observed shadow-map activity. This exists because the root report
+   * previously published `shadows.enabled: true` unconditionally, which is a
+   * source-authored boolean rather than evidence that any shadow map was
+   * rendered or sampled.
+   */
+  readonly shadow?: {
+    readonly requested: boolean;
+    readonly mapRendered: boolean;
+    readonly mapSampled: boolean;
+    readonly mapSize?: number;
+    readonly label?: string;
+    readonly nativeShadowMapBindings?: number;
+    readonly shadowRenderTargetsAllocated?: number;
+  };
   readonly warnings?: readonly string[];
 }
 
@@ -3269,7 +3302,17 @@ function createRendererDiagnosticReport(
       antiBlowout: bloom?.antiBlowout ?? true
     },
     shadows: {
-      enabled: true,
+      // Never a source-authored `true`. When the runtime is mounted this is the
+      // device-observed shadow-map state; when it is not mounted the scene has
+      // only requested shadows and nothing has been proven yet.
+      enabled: runtime?.mounted ? Boolean(runtime.shadow?.mapSampled) : false,
+      requested: runtime?.shadow?.requested ?? false,
+      mapRendered: runtime?.shadow?.mapRendered ?? false,
+      mapSampled: runtime?.shadow?.mapSampled ?? false,
+      mapSize: runtime?.shadow?.mapSize,
+      label: runtime?.shadow?.label,
+      nativeShadowMapBindings: runtime?.shadow?.nativeShadowMapBindings ?? 0,
+      shadowRenderTargetsAllocated: runtime?.shadow?.shadowRenderTargetsAllocated ?? 0,
       contactShadows,
       mapType: "pcf-soft"
     },
@@ -5793,6 +5836,7 @@ export interface AuraPlatformerPresentationSurfaceOptions {
   readonly guideVisibility?: "public" | "evidence" | "full";
   readonly platformColor?: AuraColor;
   readonly platformTrimColor?: AuraColor;
+  readonly checkpointColor?: AuraColor;
   readonly hazardColor?: AuraColor;
   readonly collectibleColor?: AuraColor;
   readonly finishColor?: AuraColor;
@@ -6605,7 +6649,12 @@ export function createGamePlatformerPresentationSurfaceNodes(options: AuraPlatfo
     nodes.push(
       primitives.box({
         name: `scene-bound platformer checkpoint ${checkpoint.id}`,
-        material: material.emissive({ color: "#d7f9ff", emissive: "#a6f4ff", emissiveIntensity: 0.48, roughness: 0.4 })
+        material: material.emissive({
+          color: options.checkpointColor ?? "#d7f9ff",
+          emissive: options.checkpointColor ?? "#a6f4ff",
+          emissiveIntensity: 0.48,
+          roughness: 0.4
+        })
       })
         .position(point[0], point[1], point[2] + (isGameLevel ? 0.29 : 0.19))
         .scale([0.026, 0.22, 0.034])
@@ -10184,6 +10233,34 @@ function createProductionRuntimeEnvironment(snapshot: AuraSceneSnapshot): {
   };
 }
 
+/**
+ * Translates a public `effects.fog(...)` node into renderer forward-pass fog.
+ *
+ * Without this the root bridge never set `environmentFog`, so `effects.fog()` was
+ * accepted by the scene builder, reported as `fog.enabled` in diagnostics, and
+ * changed exactly zero pixels through `createAuraApp`. Returning `false` when no
+ * fog node is authored keeps the unfogged path unchanged.
+ */
+function createProductionRuntimeEnvironmentFog(snapshot: AuraSceneSnapshot): ForwardEnvironmentFogOptions | false {
+  const fog = groups.flatten(snapshot.nodes).find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "fog"
+  );
+  if (!fog) return false;
+  const density = clampNumber(fog.density ?? 0.12, 0, 1);
+  const intensity = clampNumber(fog.intensity ?? 0.5, 0, 1);
+  const color = colorToRgb(fog.color ?? "#9fb7d9");
+  return {
+    // Exponential-squared reads as depth haze rather than a hard linear band, which
+    // matches what the public helper documents.
+    mode: "exponential-squared",
+    color: [color[0], color[1], color[2]],
+    near: 1,
+    far: 60,
+    density,
+    maxOpacity: clampNumber(0.25 + intensity * 0.55, 0, 0.92)
+  };
+}
+
 function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): RendererPostProcessOptions {
   const nodes = groups.flatten(snapshot.nodes);
   const names = nodes.map((node) => "name" in node ? node.name?.toLowerCase() ?? "" : "");
@@ -10195,6 +10272,18 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
   }).length;
   const darkScene = ["neon", "city-night", "space", "game"].includes(category);
   const bloomRequested = Boolean(authoredBloom) || (darkScene && emissiveSubjects > 0);
+  // Root previously advertised `ssao` in `requestedPasses` whenever a scene added
+  // effects.ambientOcclusion() or effects.contactOcclusion(), but never submitted
+  // an `ssao` option to the renderer. The advertised pass could therefore never
+  // run, and `ambientOcclusionPass` was permanently false. Submit the real option
+  // so the request and the rendered pass agree.
+  const authoredAmbientOcclusion = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "ambient-occlusion"
+  );
+  const authoredContactOcclusion = nodes.find(
+    (node): node is AuraEffectNode => node.kind === "effect" && node.effect === "contact-occlusion"
+  );
+  const authoredOcclusion = authoredAmbientOcclusion ?? authoredContactOcclusion;
   const exposure = category === "city-day" ? 1.02
     : category === "material" || category === "product" ? 1.08
       : category === "space" ? 1.18
@@ -10209,6 +10298,18 @@ function createProductionRuntimePostprocess(snapshot: AuraSceneSnapshot): Render
         threshold: clampNumber(authoredBloom?.threshold ?? (darkScene ? 0.68 : 0.78), 0, 1),
         intensity: clampNumber(authoredBloom?.intensity ?? Math.min(0.5, 0.24 + emissiveSubjects * 0.035), 0, 2),
         radius: Math.max(1, Math.min(4, Math.round(authoredBloom?.radius ?? (category === "space" ? 3 : 2))))
+      }
+    } : {}),
+    ...(authoredOcclusion ? {
+      ssao: {
+        // The renderer's SSAO radius is an integer sample-kernel size in pixels
+        // (1-8), while the public effect `radius` is a world-space extent whose
+        // default is 0.42. Passing the authored value straight through threw
+        // "SSAO radius must be an integer in [1, 8]" and left the route with zero
+        // draw calls, so it is mapped onto the kernel range instead.
+        radius: Math.max(1, Math.min(8, Math.round((authoredOcclusion.radius ?? 0.42) * 8))),
+        intensity: clampNumber(authoredOcclusion.intensity ?? 0.32, 0, 1),
+        bias: 0.025
       }
     } : {}),
     toneMapping: {
@@ -10263,6 +10364,30 @@ function createProductionRuntimeShadowOptions(
     pcfSamples: size >= 2048 ? 16 : 9,
     filter: "pcf",
     label: `aura3d-root-production-${category}-${size}px-shadow-map`
+  };
+}
+
+/**
+ * Device-observed shadow state. `requested` comes from the submitted shadow
+ * options, but `mapRendered`/`mapSampled` come only from what the device
+ * actually did: a shadow depth target has to exist and a shader has to bind and
+ * sample it. This is what stops the root report from publishing an unconditional
+ * `shadows.enabled: true`.
+ */
+function createProductionRuntimeShadowObservation(
+  shadowOptions: RendererShadowOptions,
+  diagnostics: RenderDeviceDiagnostics
+): NonNullable<AuraRendererRuntimeObservation["shadow"]> {
+  const nativeShadowMapBindings = diagnostics.nativeShadowMapBindings ?? 0;
+  const mapRendered = Boolean(shadowOptions.enabled) && (diagnostics.shadowRenderTargetsAllocated ?? 0) > 0;
+  return {
+    requested: Boolean(shadowOptions.enabled),
+    mapRendered,
+    mapSampled: mapRendered && nativeShadowMapBindings > 0,
+    mapSize: shadowOptions.size,
+    label: shadowOptions.label,
+    nativeShadowMapBindings,
+    shadowRenderTargetsAllocated: diagnostics.shadowRenderTargetsAllocated ?? 0
   };
 }
 
@@ -10672,6 +10797,10 @@ async function createProductionRuntimeSceneRenderer(
       mounted: true,
       backend: "production-runtime",
       postprocess: createProductionRuntimePostprocessObservation(latestDeviceDiagnostics),
+      shadow: createProductionRuntimeShadowObservation(
+        createProductionRuntimeShadowOptions(snapshot, productionRuntimeLights),
+        latestDeviceDiagnostics
+      ),
       environment: {
         enabled: true,
         preset: productionEnvironment.preset,
@@ -10756,7 +10885,12 @@ function createProductionRuntimeRendererInput(
     if (currentNode.visible === false) continue;
     applyProductionActorAnimation(entry, currentNode, currentState.animationBinding, time, runtimeWarnings);
     applyProductionActorMorphTargets(entry, currentState.morphTargets, runtimeWarnings);
-    const modelMatrix = [...createModelMatrix(currentNode, boundsFromAuraAsset(currentNode.asset), shouldNormalizeModelNode(currentNode), time)];
+    const modelMatrix = [...createModelMatrix(
+      currentNode,
+      productionActorModelBounds(currentNode.asset, entry.actor),
+      shouldNormalizeModelNode(currentNode),
+      time
+    )];
     const actorItems = entry.actor.collectRenderItems({ modelMatrix });
     items.push(...actorItems);
     attachProductionActorEvidence(currentNode, entry.actor, actorItems, runtimeNodes);
@@ -10783,6 +10917,7 @@ function createProductionRuntimeRendererInput(
     environmentLighting,
     postprocess: createProductionRuntimePostprocess(snapshot),
     shadow: createProductionRuntimeShadowOptions(snapshot, collectedLights),
+    environmentFog: createProductionRuntimeEnvironmentFog(snapshot),
     cameraPosition
   };
   const cameraLike: CameraLike = { viewProjectionMatrix };
@@ -11006,6 +11141,81 @@ function sumProductionMetadata(
   key: keyof Pick<ProductionImportedAssetRenderMetadata, "meshCount" | "primitiveCount" | "materialCount" | "textureCount" | "imageCount" | "animationCount" | "skinCount" | "morphTargetCount">
 ): number {
   return metadata.reduce((total, item) => total + item[key], 0);
+}
+
+/**
+ * Bounds used to size a typed model in the production bridge.
+ *
+ * Order matters and is deliberate:
+ *
+ * 1. The actor's actually-loaded GLB bounds. These are what the geometry really
+ *    occupies, so the bridge stays correct even if a manifest is stale or was written
+ *    by an older CLI. Preferring metadata here once caused whole levels to disappear:
+ *    a world recorded with an ~8x-too-small X extent was sized far too large and
+ *    frustum-culled out of frame.
+ * 2. Manifest `boundsMetadata` min/max, when loaded bounds are unavailable.
+ * 3. The flat `bounds` size triple, only if neither is available. This assumes a
+ *    min-Y-at-zero box that the mesh may not match, so it is a last resort.
+ *
+ * `camera.frameAsset` is synchronous and can only read manifest metadata, so framing
+ * and rendering agree only while the manifest matches the geometry. Both are correct
+ * as of the scene-space bounds fix and manifest regeneration;
+ * `auraProductionBoundsProbes()` records any per-asset disagreement at runtime so a
+ * future divergence is observable rather than silent.
+ */
+function productionActorModelBounds(asset: AuraAssetRef<"model">, actor: TypedGLBActor): GltfBounds {
+  const loaded = typedGLBActorLoadedBounds(actor);
+  const metadataBounds = asset.metadata?.boundsMetadata;
+  const metadataMin = vec3FromReadonly(metadataBounds?.min);
+  const metadataMax = vec3FromReadonly(metadataBounds?.max);
+  if (loaded) {
+    if (metadataMin && metadataMax) {
+      productionBoundsProbes.set(asset.id, {
+        assetId: asset.id,
+        metadata: { min: metadataMin, max: metadataMax },
+        loaded: { min: [...loaded.min], max: [...loaded.max] }
+      });
+    }
+    return loaded;
+  }
+  if (metadataMin && metadataMax) return { min: metadataMin, max: metadataMax };
+  return boundsFromAuraAsset(asset);
+}
+
+interface ProductionBoundsProbe {
+  readonly assetId: string;
+  readonly metadata: { readonly min: readonly number[]; readonly max: readonly number[] };
+  readonly loaded: { readonly min: readonly number[]; readonly max: readonly number[] };
+}
+
+const productionBoundsProbes = new Map<string, ProductionBoundsProbe>();
+
+/**
+ * Diagnostic: manifest `boundsMetadata` versus the bounds actually computed from the
+ * loaded GLB, per typed asset routed through the production bridge.
+ *
+ * The bridge sizes models from loaded bounds because those are what the geometry
+ * really occupies. This accessor exists so a disagreement with manifest metadata —
+ * which `camera.frameAsset` must use, being synchronous — is observable instead of
+ * silently producing mismatched framing.
+ */
+export function auraProductionBoundsProbes(): readonly ProductionBoundsProbe[] {
+  return [...productionBoundsProbes.values()];
+}
+
+/**
+ * Real bounds of the loaded GLB scene, as computed from its geometry. Returns
+ * undefined when the actor cannot supply them, so callers fall back to manifest
+ * metadata rather than silently using a zeroed box.
+ */
+function typedGLBActorLoadedBounds(actor: TypedGLBActor): GltfBounds | undefined {
+  const bounds = actor.pipeline?.resources?.bounds;
+  const min = vec3FromReadonly(bounds?.min);
+  const max = vec3FromReadonly(bounds?.max);
+  if (!min || !max) return undefined;
+  // A degenerate box would produce a divide-by-near-zero fit scale.
+  if (max[0] - min[0] <= 0 && max[1] - min[1] <= 0 && max[2] - min[2] <= 0) return undefined;
+  return { min, max };
 }
 
 function boundsFromAuraAsset(asset: AuraAssetRef<"model">): GltfBounds {
@@ -12543,7 +12753,13 @@ function createPlaneGeometry(): { readonly positions: Float32Array; readonly nor
       0, 1, 0,
       0, 1, 0
     ]),
-    indices: new Uint16Array([0, 1, 2, 0, 2, 3]),
+    // Counter-clockwise when viewed from +Y, so the triangle winding agrees with
+    // the [0, 1, 0] vertex normals. The previous [0, 1, 2, 0, 2, 3] order wound
+    // the opposite way: its geometric normal was [0, -1, 0], so `gl_FrontFacing`
+    // was false for a camera above the plane and the two-sided shader flipped the
+    // up-normal downward. The plane then faced away from every overhead light and
+    // received no direct lighting or visible cast shadows.
+    indices: new Uint16Array([0, 2, 1, 0, 3, 2]),
     bounds: { min: [-0.5, 0, -0.5], max: [0.5, 0, 0.5] }
   };
 }
@@ -13302,6 +13518,23 @@ function appendCanvas(target: HTMLElement): HTMLCanvasElement {
   return canvas;
 }
 
+/**
+ * `resize: false` means "do not take over sizing", not "render at the HTML
+ * default backing store". A canvas element always reports `width === 300` and
+ * `height === 150` until something assigns them, so a truthiness check on those
+ * properties can never tell an author-chosen size from the spec default. Only an
+ * explicit `width`/`height` attribute, or a backing store that was already
+ * assigned to something other than the default pair, counts as author intent.
+ */
+function hasAuthoredBackingStore(canvas: HTMLCanvasElement): boolean {
+  if (canvas.dataset.aura3dCanvas === "true") return false;
+  if (canvas.hasAttribute("width") || canvas.hasAttribute("height")) return true;
+  return canvas.width !== DEFAULT_CANVAS_BACKING_WIDTH || canvas.height !== DEFAULT_CANVAS_BACKING_HEIGHT;
+}
+
+const DEFAULT_CANVAS_BACKING_WIDTH = 300;
+const DEFAULT_CANVAS_BACKING_HEIGHT = 150;
+
 function applyDefaultCanvasMountLayout(target: HTMLElement): void {
   if (typeof window === "undefined") return;
   if (target.parentElement === document.body && !target.hasAttribute("data-aura3d-preserve-page-layout")) {
@@ -13331,8 +13564,9 @@ function configureCanvas(canvas: HTMLCanvasElement, pixelRatio: number, resize: 
   canvas.style.height = `${cssHeight}px`;
   const width = Math.max(320, Math.round(cssWidth * pixelRatio));
   const height = Math.max(220, Math.round(cssHeight * pixelRatio));
-  canvas.width = resize ? width : canvas.width || width;
-  canvas.height = resize ? height : canvas.height || height;
+  const keepAuthoredSize = !resize && hasAuthoredBackingStore(canvas);
+  canvas.width = keepAuthoredSize ? canvas.width : width;
+  canvas.height = keepAuthoredSize ? canvas.height : height;
 }
 
 function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadState[]): void {

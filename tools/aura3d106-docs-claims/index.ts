@@ -200,10 +200,10 @@ function forbiddenClaimsGate(root: string): DocsClaimGate {
     "llms.txt",
     "marketing/index.html",
     "marketing/sections/aura-clash-homepage.html",
-    "docs/project/current-state.md",
-    "docs/project/product-boundaries.md",
-    "docs/project/known-limits.md",
-    "docs/project/aura-clash-showcase.md"
+    "docs/project/status/current-state.md",
+    "docs/project/status/product-boundaries.md",
+    "docs/project/status/known-limits.md",
+    "docs/project/showcase/aura-clash-showcase-plan.md"
   ];
   const blockers: string[] = [];
   const patterns: readonly (readonly [RegExp, string])[] = [

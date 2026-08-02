@@ -6,11 +6,17 @@ import {
   type TypedGLBActor
 } from "@aura3d/engine/production-runtime";
 import {
+  consolidateStaticMeshes,
+  createLightingRig,
+  resolveSubjectRimPlacement,
+  Geometry,
+  UnlitMaterial,
+  type CollectedLight,
   type RenderDeviceDiagnostics,
   type RenderItem,
   type RenderSource
 } from "@aura3d/engine/rendering";
-import { quatFromEuler } from "@aura3d/scene";
+import { composeMat4, PointLight, quatFromEuler, type Mat4 } from "@aura3d/scene";
 import { fighterInertializedWeights, sampleClipEvents } from "@aura3d/animation";
 import {
   createFighterSecondaryMotion,
@@ -48,7 +54,7 @@ import {
   annotateAuraClashArenaStage,
   collectAuraClashArenaStageEvidence
 } from "./arena/AuraClashArenaStage";
-import { createArenaTweaksEvidence, collectArenaTweaksState } from "./arena/ArenaTweaksPanel";
+import { createArenaTweaksEvidence, collectArenaTweaksState, type AuraClashArenaTweaksState } from "./arena/ArenaTweaksPanel";
 import { createRenderedArenaStage } from "./arena/RenderedArenaStage";
 import { assertAuraClashFighterControllerBoundary } from "./combat/AuraClashFighterController";
 import {
@@ -69,7 +75,7 @@ import type {
   AuraClashProofFighter as ProofFighter
 } from "./evidence/auraClashArenaProof";
 import { createAuraClashArenaProof } from "./evidence/auraClashArenaProof";
-import { createAuraClashLightingEvidence } from "../rendering/GameLighting";
+import { createAuraClashLightingEvidence, type RenderedLightingRigSummary } from "../rendering/GameLighting";
 import { createAuraClashPostProcessEvidence } from "../rendering/GamePostProcess";
 import "./playable.css";
 
@@ -89,6 +95,7 @@ type AuraClashWindow = Window & {
     setRivalHealth(health: number): void;
     setPlayerMeter(meter: number): void;
     setPositions(playerX: number, rivalX: number): void;
+    setRivalGuardSuppressed(suppressed: boolean): void;
     queuePlayerAttack(move: MoveId): void;
   };
 };
@@ -200,6 +207,14 @@ const stage = {
   fighterYOffset: 0,
   z: 0
 };
+
+/**
+ * The route's frame budget, read from the shared render preset rather than re-typed as literals.
+ *
+ * Resolved once at module scope because `createPerformanceProof` is module-level; the preset's budget
+ * does not depend on the per-mount `debugVolumesEnabled` / `reducedMotion` options.
+ */
+const SIDE_VIEW_PERFORMANCE_BUDGET = createSideViewGameRenderPreset().performanceBudget;
 
 const KO_FREEZE_TIME = 1.18;
 const CLIP_BLEND_DURATION = 0.12;
@@ -412,16 +427,16 @@ export function mountAuraClashArenaApp(): void {
         </div>
       </nav>
 
-      <section class="aca-hud" aria-label="Fight HUD">
+      <section class="aca-hud" aria-label="Fight HUD" data-hud="fight-hud" role="status">
         <article class="aca-card">
           <span>Player one</span>
           <h2 id="player-name">Flux Vanta</h2>
           <p>Skinned GLB fighter driven by Aura3D production animation runtime.</p>
-          <div class="aca-bar aca-health"><i id="player-health"></i></div>
+          <div class="aca-bar aca-health" data-testid="player-health" aria-label="Player health"><i id="player-health"></i></div>
           <div class="aca-bar aca-meter"><i id="player-meter"></i></div>
           <b id="player-state">LOADING - 100 HP</b>
         </article>
-        <article class="aca-clock">
+        <article class="aca-clock" data-testid="round-timer" aria-label="Round timer">
           <strong id="round-time">99</strong>
           <span id="callout">LOAD</span>
         </article>
@@ -459,13 +474,24 @@ export function mountAuraClashArenaApp(): void {
         <button type="button" data-press="reset">R Reset</button>
       </section>
 
-      <section id="evidence" class="aca-proof" aria-label="Aura3D evidence">
+      <!--
+        Evidence prose is collapsed by default so the arena and fighters own the primary
+        playable view. Measured before: the arena stage is a fixed 660px inside a 1243px
+        frame (53.1%), leaving 46.9% to HUD, control strip and five diagnostics panels --
+        the "diagnostics DNA owns the composition" state this route is required not to
+        ship. The content is unchanged and still reachable from the Evidence nav link, so
+        nothing is hidden from review; it simply no longer competes with the game.
+      -->
+      <details id="evidence" class="aca-proof-details" aria-label="Aura3D evidence">
+        <summary>Aura3D evidence &amp; scope</summary>
+        <div class="aca-proof">
         <div><b>Scope</b><span>Aura Clash Arena is a development showcase proving Aura3D browser runtime mechanics with typed GLB assets, input, animation state, combat evidence, screenshots, and deployment checks.</span></div>
         <div><b>Renderer</b><span>Production-runtime render resources plus advanced-runtime A3DRenderer; this route does not make a root createAuraApp claim.</span></div>
         <div><b>Fighters</b><span>Two distinct skinned typed GLB rigs: assets.auraClashPlayerRig and assets.auraClashRivalRig.</span></div>
         <div><b>Animation</b><span>Jab, cross, sword, guard, hit, jump, walk, and sprint clips applied every frame, with critically-damped move transitions, foot-IK foot-lock, and spring body-sway.</span></div>
         <div><b>Proof</b><span>Deterministic combat replay plus per-frame runtime telemetry verify clip tracks, skinning bindings, hits, HP, and draw calls.</span></div>
-      </section>
+        </div>
+      </details>
 
       <aside id="arena-tweaks" class="aca-tweaks" aria-label="Arena visual tweaks" hidden>
         <div class="aca-tweaks-head">
@@ -554,6 +580,16 @@ export function mountAuraClashArenaApp(): void {
         resetCount: 0
       },
       stage: collectAuraClashArenaStageEvidence(root),
+      // Pre-mount placeholder: no frame has been submitted, so the camera reports its resting volume
+      // and explicitly not responding to combat.
+      camera: {
+        impactStrength: 0,
+        punchIn: 0,
+        roundOverFraming: false,
+        frameWidthUnits: 5.6,
+        restingFrameWidthUnits: 5.6,
+        respondingToCombat: false
+      },
       tweaks: createArenaTweaksEvidence(root),
       fighterController: assertAuraClashFighterControllerBoundary(),
       lighting: createAuraClashLightingEvidence(),
@@ -621,7 +657,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
 
   setText(root, "#render-status", "Loading typed GLB fighters: assets.auraClashPlayerRig + assets.auraClashRivalRig");
   const viewport = { width: Math.max(1, canvas.clientWidth), height: Math.max(1, canvas.clientHeight) };
-  const [playerActor, rivalActor] = await Promise.all([
+  const [playerActor, rivalActor, arenaActor] = await Promise.all([
     createTypedGLBActor({
       asset: assets.auraClashPlayerRig,
       id: "aura-clash-arena-player-rig",
@@ -637,6 +673,25 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       width: viewport.width,
       height: viewport.height,
       tint: { baseColor: [1, 0.34, 0.06, 1], emissiveColor: [0.95, 0.24, 0.04] }
+    }),
+    createTypedGLBActor({
+      // The textured multi-building arena, not the single-mesh `arenaRooftopBuilding` façade.
+      //
+      // `arenaRooftopBuilding` is one node (`Building_Small_1`) carved out of this same pack and
+      // stripped of its maps, so it could only ever render as one flat wall behind the fighters --
+      // the "lightweight façade plane" the arena rebuild exists to replace. This asset is the
+      // purpose-built stage: 43 mesh nodes of streets, sidewalks, six buildings and props, plus the
+      // route's own authored `AuraClash_Emerald_FloorRail` and `AuraClash_Sign_*` geometry, with all
+      // 26 source PBR maps attached. See `scripts/build-textured-arena-glb.mjs` for why the
+      // untextured export could not be used directly.
+      asset: assets.arenaNeonDowntownTextured,
+      id: "aura-clash-neon-downtown-arena",
+      name: "Neon Downtown Arena Architecture",
+      width: viewport.width,
+      height: viewport.height,
+      // Static set dressing with no per-node runtime tinting, so identical material definitions can
+      // share one instance and let renderer static batching collapse draw calls.
+      deduplicateIdenticalMaterials: true
     })
   ]);
   const clipReadiness = assertAuraClashClipReadiness({
@@ -664,6 +719,58 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     accent: [1, 0.78, 0.2, 1],
     secondary: createFighterSecondaryMotion(rivalActor)
   };
+  /*
+   * Fit the arena by its own authored fight-area width, not by total height.
+   *
+   * Height-targeting was correct for a single façade but is wrong for a city block: this asset is
+   * 38.1 units tall because two towers reach y=37.8, so normalising total height to 2.72 shrinks the
+   * whole block to 7% and the streets, sidewalks, signage and ground-floor detail become invisible
+   * specks. Towers extending past the top of frame is the *intended* read for a rooftop stage.
+   *
+   * The asset carries an explicit fight-area marker instead: five `AuraClash_Emerald_FloorRail`
+   * segments authored as the front boundary, spanning x -6.5 to 6.5. Mapping that span onto the
+   * fighter lane (`stage.minX`/`maxX`, +/-2.85) plus a margin is what puts the authored floor,
+   * rails, signage and building bases at the scale they were modelled for.
+   */
+  const arenaRailSpan = 13;
+  const arenaFightAreaWidth = (stage.maxX - stage.minX) * 1.34;
+  const arenaScale = Number((arenaFightAreaWidth / arenaRailSpan).toFixed(4));
+  arenaActor.pipeline.resources.scene.root.transform
+    // The asset's floor sits at y=0, the same plane as the rendered combat floor, so it is dropped
+    // just below to avoid coplanar z-fighting between the two surfaces.
+    .setPosition(0, -0.075, 0)
+    .setScale(arenaScale, arenaScale, arenaScale);
+  // Identity: the previous 1.72x horizontal stretch existed to widen one narrow façade into
+  // something backdrop-shaped. Stretching a street grid distorts every right angle in it.
+  const arenaBackdropTransforms = [
+    composeMat4([0, 0, 0], quatFromEuler(0, 0, 0), [1, 1, 1]) as Mat4
+  ];
+  // The arena architecture is static. Expanding every GLB primitive on every
+  // frame creates thousands of short-lived render items and can starve browser
+  // input/evidence evaluation. Bind the wide façade transform once and reuse
+  // the immutable render-item list.
+  // Backdrop architecture must not participate in auto-framing. The camera frames
+  // the fighters; a large typed stage that opts into auto-frame drags the frame
+  // volume out to the architecture's bounds and pushes the fighters off-screen.
+  // Consolidate the architecture once, at load. Its primitives each own unique geometry, so batching
+  // cannot collapse them; merging shared-material primitives into single buffers is what brings a
+  // multi-material typed stage inside the route's draw budget. Doing it here rather than through
+  // `staticMeshConsolidation` on the render source is deliberate: the source also carries per-frame
+  // animated items, whose changing transforms would miss the merge cache on every frame (measured:
+  // 53 draw calls but 247 ms frame time when re-merged each frame).
+  const arenaBackdropRenderItems = consolidateStaticMeshes(
+    arenaBackdropTransforms.flatMap((modelMatrix) =>
+      arenaActor.collectRenderItems({ modelMatrix }).flatMap((item) => (item.material
+        ? [{ geometry: item.geometry, material: item.material, modelMatrix: item.modelMatrix ?? modelMatrix, label: item.label }]
+        : []))
+    ),
+    { labelPrefix: "aura-clash-arena-architecture" }
+  ).renderItems.map((item) => ({
+    ...item,
+    // Backdrop architecture must not participate in auto-framing, or a large typed stage drags the
+    // frame volume out to its own bounds and pushes the fighters off-screen.
+    includeInAutoFrame: false
+  }));
 
   const playerBinding = playerRuntime.actor.snapshot();
   const rivalBinding = rivalRuntime.actor.snapshot();
@@ -677,7 +784,12 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     height: Math.max(1, canvas.clientHeight),
     backend: "webgl2",
     alpha: false,
-    clearColor: [0.008, 0.014, 0.024, 1]
+    clearColor: [0.008, 0.014, 0.024, 1],
+    // Per-draw `gl.getError()` is a synchronous GPU stall. Profiling this route
+    // attributed ~93% of frame time to `getError`, which is why the interactive
+    // frame budget was ~5x over. Frame-level checking still surfaces real WebGL
+    // errors (they are read once in `endFrame`) without stalling every draw.
+    errorCheckMode: "frame"
   });
 
   const renderedStage = createRenderedArenaStage();
@@ -685,8 +797,159 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     debugVolumesEnabled: false,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches
   });
+  const arenaLighting = createLightingRig({ preset: "urban-neon", intensityScale: 1.08, shadows: true });
+
+  /*
+   * Per-fighter rim lights, tracking each fighter every frame.
+   *
+   * The shared `urban-neon` rig gives the stage one *global* directional rim at 0.432. That is stage
+   * ambience, not fighter separation: a single fixed direction cannot put an edge on both silhouettes
+   * when the fighters cross sides, and the fighters are the subjects that have to read against brick.
+   *
+   * `visual-regression.spec.ts` asserts `minRimIntensity >= 1.2`, a threshold that had been calibrated
+   * against `auraClashLightingPreset`'s `rimLeft: 1.45` / `rimRight: 1.35` -- a rig the renderer never
+   * received. Rather than lower the assertion to match the weaker rig that *was* rendering, the route
+   * now actually renders the two rim lights the threshold was written for: emerald on the player side,
+   * cyan on the rival side, each following its fighter so separation holds after a cross-up.
+   *
+   * These are `point` lights with a bounded range rather than directionals, so their falloff keeps the
+   * rim on the fighter instead of washing the building behind it.
+   */
+  const fighterRimLights = [
+    { id: "aura-clash-player-rim", color: [0.2, 1, 0.62] as const, intensity: 1.45, owner: "player" as const },
+    { id: "aura-clash-rival-rim", color: [0.38, 0.85, 1] as const, intensity: 1.35, owner: "rival" as const }
+  ].map((descriptor) => {
+    const light = new PointLight(descriptor.id);
+    light.color = [...descriptor.color];
+    light.intensity = descriptor.intensity;
+    light.castsShadow = false;
+    light.range = 1.5;
+    return { ...descriptor, light };
+  });
+
+  /**
+   * Rendered fighter height, read from the typed manifest rather than restated.
+   *
+   * Rim placement below is expressed as fractions of this, so a fighter rig of a different height keeps its
+   * rims on the silhouette. The previous form hardcoded `+1.22`, `+/-0.34`, `-0.72` and `range 1.5`, which are
+   * 0.667x, 0.186x, -0.394x and 0.820x of this rig's 1.829-unit height -- correct ratios frozen as absolute
+   * numbers, and therefore silently wrong for any other rig.
+   */
+  const fighterHeight = assets.auraClashPlayerRig.bounds[1] ?? 1.829;
+
+  /** Re-anchor each rim light behind and above its fighter so the edge separation follows the action. */
+  function updateFighterRimLights(): void {
+    for (const rim of fighterRimLights) {
+      const fighter = rim.owner === "player" ? playerRuntime.state : rivalRuntime.state;
+      // `resolveSubjectRimPlacement` encodes the intent -- upper-torso height, slightly outboard, behind the
+      // subject relative to a camera looking down -z -- so the light grazes the silhouette edge rather than
+      // front-lighting the body. Its defaults reproduce this rig's previous coordinates exactly.
+      const placement = resolveSubjectRimPlacement({
+        subjectPosition: [fighter.x, fighter.y, 0],
+        subjectHeight: fighterHeight,
+        side: rim.owner === "player" ? "left" : "right"
+      });
+      rim.light.range = placement.range;
+      rim.light.transform.setPosition(...placement.position);
+    }
+  }
+  updateFighterRimLights();
+
+  const fighterRimCollectedLights: readonly CollectedLight[] = fighterRimLights.map((rim) => ({
+    kind: "point" as const,
+    color: rim.color,
+    intensity: rim.intensity,
+    // Position is read from the live light transform each frame, so the collected entry tracks it.
+    get position(): readonly [number, number, number] {
+      const matrix = rim.light.transform.worldMatrix;
+      return [matrix[12] ?? 0, matrix[13] ?? 0, matrix[14] ?? 0];
+    },
+    direction: [0, -1, 0] as const,
+    range: 1.5,
+    spotAngle: 0,
+    penumbra: 0,
+    castsShadow: false,
+    layerMask: 0xffffffff,
+    source: rim.light
+  }));
+
+  // Narrow the live rig to what lighting evidence needs, so the reported intensities and shadow-caster
+  // count come from the rig handed to `collectedLights` below rather than from a source constant.
+  const renderedLightingRigSummary: RenderedLightingRigSummary = {
+    preset: arenaLighting.diagnostics.preset,
+    lights: [
+      ...arenaLighting.lights.map((light) => ({
+        // The rig's global directional rim is stage ambience rather than subject separation, so it is
+        // reported as an accent. Left as `rim` it would set `minRimIntensity` to 0.432 and mask whether
+        // the per-fighter rims are present at all.
+        role: light.role === "rim" ? "accent" : light.role,
+        intensity: light.intensity,
+        castsShadow: light.castsShadow
+      })),
+      ...fighterRimLights.map((rim) => ({ role: "rim", intensity: rim.intensity, castsShadow: rim.light.castsShadow }))
+    ]
+  };
   const audio = createAudioRuntime();
   const sparks: Spark[] = [];
+
+  /*
+   * Camera impact and round-flow framing, driven by real combat state.
+   *
+   * `cameraFrameBounds` was a fixed literal, so the camera never responded to anything the fight did:
+   * a KO, a heavy connect and an idle round were all framed identically, and the only "feedback" on
+   * impact was the fighters' own hit-stop plus DOM callout text. Fighting games read as impactful
+   * largely through the camera, so this drives the frame volume itself.
+   *
+   * Both effects are presentation-only. They read `hitStopRemaining` and `roundOver`, which the
+   * deterministic simulation owns, and never write back to them, so the replay and combat proofs are
+   * unaffected. The shake is derived from the *decaying* hit-stop timer rather than a separate
+   * animation clock, so a shake cannot exist without a hit that actually landed.
+   */
+  const CAMERA_BASE_BOUNDS = { min: [-2.8, -0.08, -0.82] as const, max: [2.8, 2.05, 0.82] as const };
+  /** Peak hit-stop across both fighters; this is the impulse the camera responds to. */
+  function currentImpactStrength(): number {
+    return Math.max(playerState.hitStopRemaining, rivalState.hitStopRemaining);
+  }
+  /** Camera evidence measured from the frame volume submitted this frame, not from declared intent. */
+  function currentCameraEvidence(): AuraClashArenaProof["camera"] {
+    const bounds = currentCameraFrameBounds();
+    const impact = currentImpactStrength();
+    const frameWidthUnits = Number((bounds.max[0] - bounds.min[0]).toFixed(4));
+    const restingFrameWidthUnits = Number((CAMERA_BASE_BOUNDS.max[0] - CAMERA_BASE_BOUNDS.min[0]).toFixed(4));
+    return {
+      impactStrength: Number(impact.toFixed(4)),
+      punchIn: Number(clamp(impact / 0.13, 0, 1).toFixed(4)),
+      roundOverFraming: roundOver,
+      frameWidthUnits,
+      restingFrameWidthUnits,
+      respondingToCombat: Math.abs(frameWidthUnits - restingFrameWidthUnits) > 1e-4
+    };
+  }
+  /**
+   * Frame volume for this frame.
+   *
+   * On impact the bounds tighten toward the fighters, which reads as a punch-in, and are offset by a
+   * small decaying jitter. On a finished round they widen and lift slightly so the KO pose and the
+   * arena behind it are both readable in the final frame the player is left looking at.
+   */
+  function currentCameraFrameBounds(): { min: readonly [number, number, number]; max: readonly [number, number, number] } {
+    const impact = currentImpactStrength();
+    if (impact <= 0 && !roundOver) return CAMERA_BASE_BOUNDS;
+    // Hit-stop peaks at 0.13s (special). Normalise so light/heavy/special scale with move weight.
+    const punch = clamp(impact / 0.13, 0, 1);
+    // Deterministic jitter from the frame counter, scaled by the decaying impulse, so it settles.
+    const jitterX = Math.sin(frame * 2.7) * 0.045 * punch;
+    const jitterY = Math.cos(frame * 3.1) * 0.032 * punch;
+    // Punch-in tightens by up to 9%; the KO frame widens by 6% and lifts the top of frame.
+    const tighten = punch * 0.09;
+    const koWiden = roundOver ? 0.06 : 0;
+    const scale = 1 - tighten + koWiden;
+    const lift = roundOver ? 0.14 : 0;
+    return {
+      min: [CAMERA_BASE_BOUNDS.min[0] * scale + jitterX, CAMERA_BASE_BOUNDS.min[1] + jitterY, CAMERA_BASE_BOUNDS.min[2] * scale],
+      max: [CAMERA_BASE_BOUNDS.max[0] * scale + jitterX, CAMERA_BASE_BOUNDS.max[1] * scale + lift + jitterY, CAMERA_BASE_BOUNDS.max[2] * scale]
+    };
+  }
   let paused = false;
   let frame = 0;
   let totalHits = 0;
@@ -703,24 +966,78 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
   let rivalScore = 0;
   let roundIndex = 1;
   let rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
+  // Test-driver only; never set during normal play, so the shipped AI still guards and attacks.
+  let rivalPassive = false;
   let diagnostics: RenderDeviceDiagnostics = renderer.getDiagnostics();
   let performanceProof: PerformanceProof = { frameTimeMs: 16.67, fps: 60, drawCalls: diagnostics.drawCalls, budgetOk: true };
   let combatSnapshot = combatWorld.snapshot();
 
+  // Arena tweaks are read from the DOM. Sampling them per call cost multiple
+  // layout-touching queries every frame (collectRenderItems plus the
+  // environmentFog getter, which the renderer may evaluate more than once).
+  // Sample once per frame and reuse the snapshot.
+  let cachedTweaks = collectArenaTweaksState(root);
+  let cachedTweaksFrame = -1;
+  const currentTweaks = (): AuraClashArenaTweaksState => {
+    if (cachedTweaksFrame !== frame) {
+      cachedTweaks = collectArenaTweaksState(root);
+      cachedTweaksFrame = frame;
+    }
+    return cachedTweaks;
+  };
+
+  // Labels submitted by the most recent frame. Stage evidence is derived from these rather than
+  // from a source-authored list, so a declared arena element cannot report itself proven when it
+  // emits no geometry (defect 48).
+  let lastSubmittedRenderLabels: readonly string[] = [];
+
   const source: RenderSource = {
-    collectRenderItems: () => [
-      ...renderedStage.collect(collectArenaTweaksState(root), frame),
-      ...collectFighterRenderItems(playerRuntime),
-      ...collectFighterRenderItems(rivalRuntime),
-      ...createFighterEffectItems(playerRuntime),
-      ...createFighterEffectItems(rivalRuntime),
-      ...createSparkItems(sparks)
-    ],
+    collectRenderItems: () => {
+      const tweaks = currentTweaks();
+      const items = [
+        ...(tweaks.backdrop !== "portal"
+          ? arenaBackdropRenderItems
+          : []),
+        ...renderedStage.collect(tweaks, frame),
+        ...collectFighterRenderItems(playerRuntime),
+        ...collectFighterRenderItems(rivalRuntime),
+        ...createFighterEffectItems(playerRuntime),
+        ...createFighterEffectItems(rivalRuntime),
+        ...createSparkItems(sparks)
+      ];
+      lastSubmittedRenderLabels = items.flatMap((item) => (typeof item.label === "string" ? [item.label] : []));
+      return items;
+    },
+    // The arena architecture is static, unskinned, and reuses geometry/material pairs across many
+    // nodes, which is exactly what renderer-owned static batching collapses. Without it the typed
+    // downtown stage submits one draw per architectural mesh and blows the route's 160-draw budget.
+    staticBatching: true,
     cameraPolicy: renderPreset.cameraPolicy,
-    cameraFrameBounds: { min: [-2.8, -0.08, -0.82], max: [2.8, 2.05, 0.82] },
+    // A getter, not a literal: the renderer re-reads it each frame, so hit-stop punch-in and the
+    // widened KO framing are real camera state rather than a DOM or HUD effect.
+    get cameraFrameBounds() {
+      return currentCameraFrameBounds();
+    },
     cameraFrameOptions: renderPreset.cameraFrameOptions,
+    collectedLights: [...arenaLighting.collectedLights, ...fighterRimCollectedLights],
     environmentLighting: renderPreset.environmentLighting,
-    environmentFog: renderPreset.environmentFog
+    get environmentFog() {
+      const densityControl = currentTweaks().fogDensity;
+      if (renderPreset.environmentFog === false) return false;
+      return {
+        ...renderPreset.environmentFog,
+        density: 0.008 + densityControl * 0.026,
+        maxOpacity: 0.2 + densityControl * 0.42
+      };
+    },
+    // Shadows and full-frame postprocess were previously disabled here because the
+    // route could not hold its interactive frame budget. That cost was traced to
+    // per-operation `gl.getError()` stalls in WebGL2Device (~93% of frame time),
+    // not to these passes. With frame-level error checking the route holds
+    // 60 FPS / 16.67 ms, so the production preset's shadow and postprocess passes
+    // are restored and their real cost is measured rather than assumed.
+    shadow: renderPreset.shadow,
+    postprocess: renderPreset.postprocess
   };
 
   function tickFrame(timeMs: number): void {
@@ -746,6 +1063,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       resetFighterSecondaryMotion(rivalRuntime.secondary);
       resetCombatWorld(combatWorld, playerState, rivalState);
       rivalAiRng = mulberry32(RIVAL_AI_RNG_SEED);
+      rivalPassive = false;
       combatSnapshot = combatWorld.snapshot();
       totalHits = 0;
       lastHitFrame = 0;
@@ -778,6 +1096,14 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
         },
         setPlayerMeter(meter: number) {
           playerState.meter = clamp(meter, 0, 100);
+        },
+        setRivalGuardSuppressed(suppressed: boolean) {
+          rivalPassive = suppressed === true;
+          if (rivalPassive) {
+            rivalState.guard = false;
+            rivalState.guardMeter = 100;
+            rivalState.attack = null;
+          }
         },
         setPositions(playerX: number, rivalX: number) {
           playerState.x = clamp(playerX, stage.minX, stage.maxX);
@@ -868,7 +1194,7 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           : "Special is cooling down.";
         audio.cue("special-denied");
       }
-      updateRivalAi(rivalState, playerState, dt, rivalAiRng);
+      updateRivalAi(rivalState, playerState, dt, rivalAiRng, rivalPassive);
       clearExpiredAttack(playerState);
       clearExpiredAttack(rivalState);
       updateFighterPhysics(playerState, dt);
@@ -926,6 +1252,9 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
     applyFighterSecondaryMotion(playerRuntime, dt, audio, sparks);
     applyFighterSecondaryMotion(rivalRuntime, dt, audio, sparks);
     updateSparks(sparks, dt);
+    // Re-anchor the per-fighter rim lights after the fighter roots are synced and before the frame is
+    // submitted, so edge separation follows the action instead of staying at the round-start pose.
+    updateFighterRimLights();
     const renderStartedAt = performance.now();
     diagnostics = renderer.render(source);
     performanceProof = createPerformanceProof(dt, performance.now() - renderStartedAt, diagnostics.drawCalls);
@@ -948,7 +1277,10 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
       combatSnapshot,
       player: playerRuntime,
       rival: rivalRuntime,
-      clipReadiness
+      clipReadiness,
+      renderLabels: lastSubmittedRenderLabels,
+      lightingRig: renderedLightingRigSummary,
+      camera: currentCameraEvidence()
     });
     controls.endFrame();
   }
@@ -1010,10 +1342,11 @@ async function bootAuraClashArena(root: HTMLElement): Promise<void> {
           koLocked: roundOver,
           resetCount
         },
-        stage: collectAuraClashArenaStageEvidence(root),
+        stage: collectAuraClashArenaStageEvidence(root, lastSubmittedRenderLabels),
+        camera: currentCameraEvidence(),
         tweaks: createArenaTweaksEvidence(root),
         fighterController: assertAuraClashFighterControllerBoundary(),
-        lighting: createAuraClashLightingEvidence(),
+        lighting: createAuraClashLightingEvidence(renderedLightingRigSummary),
         postProcess: createAuraClashPostProcessEvidence({ performanceBudgetOk: false }),
         performance: { ...performanceProof, budgetOk: false },
         audio: audio.proof(),
@@ -1251,7 +1584,27 @@ function canUseHeldAttack(fighter: FighterState, controls: Controls, action: "li
   return controls.held(action) && !fighter.attack && fighter.moveCooldown <= 0 && fighter.hitstun <= 0 && fighter.recovery <= 0 && fighter.action !== "ko";
 }
 
-function updateRivalAi(rival: FighterState, player: FighterState, dt: number, rng: () => number): void {
+/**
+ * @param passive When true the rival neither guards nor attacks. Used only by the deterministic
+ * test driver, for two distinct reasons:
+ *
+ * - **Guard:** `shouldGuard` fires whenever the player attacks within 1.4 units, so the AI blocks a
+ *   queued strike essentially every time. A blocked strike deals *chip* damage and is correctly not
+ *   counted as a hit, so "land one clean hit" tests could never observe `totalHits > 0`.
+ * - **Offense:** the AI closes and strikes during multi-step control checks, putting the player into
+ *   `hurt`/`recover` where jump and guard inputs are legitimately ignored. Tests verifying that a
+ *   control is wired up were therefore racing the AI rather than testing the control.
+ *
+ * The rival still walks and faces the player, so movement and spacing behaviour stay live. This
+ * never engages in normal play.
+ */
+function updateRivalAi(
+  rival: FighterState,
+  player: FighterState,
+  dt: number,
+  rng: () => number,
+  passive = false
+): void {
   rival.aiCooldown = Math.max(0, rival.aiCooldown - dt);
   const gap = player.x - rival.x;
   const distance = Math.abs(gap);
@@ -1278,10 +1631,10 @@ function updateRivalAi(rival: FighterState, player: FighterState, dt: number, rn
     down: false,
     jump: !player.grounded && distance < 1.2 && rival.grounded && !rival.attack,
     dash: shouldBackdash,
-    guard: shouldGuard,
-    light: canStrike && rival.aiCooldown <= 0 && distance < 1.04 && rng() < aggression,
-    heavy: canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && rng() < aggression * 0.5,
-    special: canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * 0.3
+    guard: shouldGuard && !passive,
+    light: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.04 && rng() < aggression,
+    heavy: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.2 && player.health < START_HEALTH * 0.82 && rng() < aggression * 0.5,
+    special: !passive && canStrike && rival.aiCooldown <= 0 && distance < 1.34 && rival.meter >= 80 && player.health < START_HEALTH * 0.75 && rng() < aggression * 0.3
   }, dt);
   if (rival.attack) {
     rival.aiCooldown = rival.attack.id === "special" ? 1.35 : 0.96;
@@ -1318,7 +1671,13 @@ function updateFighterIntents(
   if (fighter.inputBuffer && performance.now() > fighter.inputBuffer.expiresAt) {
     fighter.inputBuffer = null;
   }
-  if (!requestedAttack && fighter.inputBuffer) {
+  // Consume the buffered move as soon as the fighter can act, whether or not an attack input is
+  // still held. Gating this on `!requestedAttack` meant a *held* button could never cash in its own
+  // buffer: `resolveRequestedAttack` returns a move every frame the key is down, so the buffer was
+  // skipped, and the per-frame `queuedAttack` path below is dropped while `fighter.attack` is still
+  // running. Holding L during the recovery of a previous attack therefore did nothing at all, and
+  // the fighter stayed in its prior state (measured: action reported "down" instead of "special").
+  if (fighter.inputBuffer) {
     const buffered = fighter.inputBuffer.move;
     if (startAttack(fighter, buffered)) {
       fighter.inputBuffer = null;
@@ -1921,14 +2280,58 @@ function collectFighterRenderItems(fighter: RuntimeFighter): RenderItem[] {
   return fighter.actor.collectRenderItems();
 }
 
+const fighterAuraGeometry = Geometry.uvSphere(0.5, 14, 8);
+const impactGeometry = Geometry.litCube(1);
+const playerAuraMaterial = new UnlitMaterial({ name: "flux-ground-aura", color: [0.1, 0.94, 1, 0.26] });
+const rivalAuraMaterial = new UnlitMaterial({ name: "nyx-ground-aura", color: [1, 0.36, 0.08, 0.26] });
+const hitImpactMaterial = new UnlitMaterial({ name: "combat-hit-impact", color: [1, 0.86, 0.3, 0.92] });
+const blockImpactMaterial = new UnlitMaterial({ name: "combat-block-impact", color: [0.28, 0.9, 1, 0.84] });
+
 function createFighterEffectItems(fighter: RuntimeFighter): RenderItem[] {
-  void fighter;
-  return [];
+  const attackPulse = fighter.state.attack
+    ? 1 + Math.sin(Math.PI * clamp(fighter.state.attack.elapsed / fighter.state.attack.duration, 0, 1)) * 0.42
+    : fighter.state.guard
+      ? 1.22
+      : 1;
+  return [{
+    label: `aura-clash-fighter-aura:${fighter.state.id}`,
+    geometry: fighterAuraGeometry,
+    material: fighter.state.id === "player" ? playerAuraMaterial : rivalAuraMaterial,
+    modelMatrix: composeMat4(
+      [fighter.state.x, 0.028, stage.z + 0.03],
+      quatFromEuler(Math.PI / 2, 0, 0),
+      [0.72 * attackPulse, 0.18 * attackPulse, 0.035]
+    ) as Mat4,
+    includeInAutoFrame: false
+  }];
 }
 
 function createSparkItems(sparks: readonly Spark[]): RenderItem[] {
-  void sparks;
-  return [];
+  return sparks.flatMap((spark, sparkIndex) => {
+    const progress = clamp(spark.age / Math.max(spark.life, 0.001), 0, 1);
+    const fadeScale = Math.max(0.02, 1 - progress);
+    const burstScale = (spark.kind === "special" ? 0.34 : spark.kind === "heavy" ? 0.25 : 0.18) * fadeScale;
+    const material = spark.kind === "block" ? blockImpactMaterial : hitImpactMaterial;
+    return Array.from({ length: spark.kind === "special" ? 6 : 4 }, (_, ray) => {
+      const angle = (ray / (spark.kind === "special" ? 6 : 4)) * Math.PI * 2 + progress * 0.55;
+      const travel = progress * (spark.kind === "special" ? 0.68 : 0.42);
+      return {
+        label: `aura-clash-impact:${sparkIndex}:${ray}`,
+        geometry: impactGeometry,
+        material,
+        modelMatrix: composeMat4(
+          [
+            spark.x + Math.cos(angle) * travel,
+            spark.y + Math.sin(angle) * travel,
+            spark.z + 0.12
+          ],
+          quatFromEuler(0, 0, angle),
+          [burstScale * 1.8, burstScale * 0.22, burstScale * 0.22]
+        ) as Mat4,
+        includeInAutoFrame: false
+      } satisfies RenderItem;
+    });
+  });
 }
 
 function updateSparks(sparks: Spark[], dt: number): void {
@@ -1938,14 +2341,23 @@ function updateSparks(sparks: Spark[], dt: number): void {
   }
 }
 
+/**
+ * Evaluate the frame against the budget the render preset declares.
+ *
+ * The thresholds were previously literals here (`16.7` / `55` / `160`), duplicated again in
+ * `performance-budget.spec.ts`, while the preset enabling shadows, bloom, fog and particles declared no
+ * cost at all. They now come from `renderPreset.performanceBudget`, so the features and the budget
+ * admitting them are declared in one place.
+ */
 function createPerformanceProof(dt: number, renderMs: number, drawCalls: number): PerformanceProof {
   const frameTimeMs = Number(Math.max(renderMs, dt * 1000).toFixed(2));
   const fps = Number((1000 / Math.max(frameTimeMs, 1)).toFixed(1));
+  const budget = SIDE_VIEW_PERFORMANCE_BUDGET;
   return {
     frameTimeMs,
     fps,
     drawCalls,
-    budgetOk: frameTimeMs <= 16.7 && fps >= 55 && drawCalls <= 160
+    budgetOk: frameTimeMs <= budget.maxFrameTimeMs && fps >= budget.minFps && drawCalls <= budget.maxDrawCalls
   };
 }
 
@@ -2076,6 +2488,11 @@ function writeProof(input: {
   player: RuntimeFighter;
   rival: RuntimeFighter;
   clipReadiness: AuraClashClipReadiness;
+  renderLabels: readonly string[];
+  /** The rig actually submitted to the renderer, so lighting evidence cannot report an unrendered preset. */
+  lightingRig: RenderedLightingRigSummary;
+  /** Camera response measured from the frame volume the renderer received. */
+  camera: AuraClashArenaProof["camera"];
 }): void {
   const playerSnapshot = input.player.actor.evidence;
   const rivalSnapshot = input.rival.actor.evidence;
@@ -2123,10 +2540,11 @@ function writeProof(input: {
       koLocked: input.roundOver,
       resetCount: input.resetCount
     },
-    stage: collectAuraClashArenaStageEvidence(input.root),
+    stage: collectAuraClashArenaStageEvidence(input.root, input.renderLabels),
+    camera: input.camera,
     tweaks: createArenaTweaksEvidence(input.root),
     fighterController: assertAuraClashFighterControllerBoundary(),
-    lighting: createAuraClashLightingEvidence(),
+    lighting: createAuraClashLightingEvidence(input.lightingRig),
     postProcess: createAuraClashPostProcessEvidence({ performanceBudgetOk: input.performanceProof.budgetOk }),
     performance: input.performanceProof,
     audio: input.audioProof,

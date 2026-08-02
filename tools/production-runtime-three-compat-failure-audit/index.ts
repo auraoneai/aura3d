@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const requiredFiles = [
-  "docs/project/threejs-parity-status.md",
+  "docs/project/parity/threejs/status.md",
   "docs/project/claim-guidelines.md",
-  "docs/project/current-state.md"
+  "docs/project/status/current-state.md"
 ] as const;
 const combined = requiredFiles
   .filter((path) => existsSync(resolve(path)))

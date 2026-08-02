@@ -83,6 +83,7 @@ import { createDefaultShaderLibrary, type ShaderLibrary } from "./ShaderLibrary"
 import { ShadowMap, type ShadowFilterKernel, type ShadowMapOptions } from "./ShadowMap";
 import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
+import { type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { computePerspectiveCameraFrame, type PerspectiveCameraFrameOptions } from "./CameraFraming";
 import {
@@ -92,6 +93,7 @@ import {
   type RendererFeatureReport
 } from "./RendererFeatureGates";
 import { batchStaticRenderItems, type StaticBatchOptions, type StaticBatchInput } from "./SceneOptimization";
+import { createStaticMeshConsolidationCache, type MeshConsolidationInput, type MeshConsolidationOptions } from "./MeshConsolidation";
 
 export interface RendererOptions extends RenderBackendOptions {
   readonly width?: number;
@@ -258,6 +260,17 @@ export interface RenderSource {
   readonly morphTargetLibrary?: RenderResourceLookup<readonly MorphTargetDelta[]>;
   readonly frustumCulling?: boolean;
   readonly staticBatching?: boolean | StaticBatchOptions;
+  /**
+   * Merge distinct static geometries that share a material into single buffers.
+   *
+   * Complements `staticBatching`, which instances one geometry many times and therefore cannot help
+   * when every mesh owns unique geometry — the normal case for architecture exported from level
+   * editors. Consolidation bakes each source model matrix into vertex positions, so it is only valid
+   * for geometry that never moves, deforms, or needs independent culling.
+   *
+   * Applied before batching, so any geometry left unmerged can still be instanced.
+   */
+  readonly staticMeshConsolidation?: boolean | MeshConsolidationOptions;
 }
 
 export interface RendererInput {
@@ -381,6 +394,23 @@ export class Renderer {
   public readonly device: RenderDevice;
   private readonly graph = new RenderGraph();
   private readonly shaderLibrary: ShaderLibrary;
+  /**
+   * Depth target reused by the renderer-owned shadow pass across frames.
+   *
+   * A new `ShadowPass` is constructed per frame, so letting the pass own its target reallocated
+   * textures and re-ran `checkFramebufferStatus` every frame. Keyed by size so a shadow-size change
+   * still reallocates exactly once.
+   */
+  private shadowDepthTarget: RenderTarget | null = null;
+  /**
+   * Forward-color target reused by the postprocess path across frames.
+   *
+   * This was allocated fresh inside every `render()` call and pushed onto `ownedTargets`, which
+   * disposes it at end of frame. Creating a render target allocates textures and runs
+   * `checkFramebufferStatus` — both synchronous GPU operations — so an animating postprocess route
+   * paid a full target build-and-teardown every frame.
+   */
+  private forwardColorTarget: { readonly target: RenderTarget; readonly key: string } | null = null;
   private readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
   private width: number;
   private height: number;
@@ -522,14 +552,11 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const forwardTarget = this.device.createRenderTarget({
-        width: this.width,
-        height: this.height,
-        label: "renderer-forward-color",
-        format,
-        depth: requiresDepthTexture ? "texture" : true,
-        sampleCount: postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4)
-      });
+      const sampleCount = postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
+      // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
+      // the diagnostics builder both read the forward target from that slot; the end-of-frame
+      // disposal loop skips it via `isReusedTarget` so the reuse is safe.
+      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
     }
@@ -585,6 +612,9 @@ export class Renderer {
         shadowPass.dispose();
       }
       for (const target of ownedTargets) {
+        // The reused forward-color target outlives the frame; disposing it here would reintroduce a
+        // per-frame allocation.
+        if (this.isReusedTarget(target)) continue;
         target.dispose();
       }
     }
@@ -663,14 +693,11 @@ export class Renderer {
           backend: this.device.kind
         });
       }
-      const forwardTarget = this.device.createRenderTarget({
-        width: this.width,
-        height: this.height,
-        label: "renderer-forward-color",
-        format,
-        depth: requiresDepthTexture ? "texture" : true,
-        sampleCount: postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4)
-      });
+      const sampleCount = postprocess.sampleCount ?? (this.device.kind === "webgpu" && requiresDepthTexture ? 1 : 4);
+      // Reused across frames. It still occupies `ownedTargets[0]`, because the postprocess chain and
+      // the diagnostics builder both read the forward target from that slot; the end-of-frame
+      // disposal loop skips it via `isReusedTarget` so the reuse is safe.
+      const forwardTarget = this.ensureForwardColorTarget(format, requiresDepthTexture, sampleCount);
       ownedTargets.push(forwardTarget);
       this.device.setRenderTarget(forwardTarget);
     }
@@ -726,6 +753,9 @@ export class Renderer {
         shadowPass.dispose();
       }
       for (const target of ownedTargets) {
+        // The reused forward-color target outlives the frame; disposing it here would reintroduce a
+        // per-frame allocation.
+        if (this.isReusedTarget(target)) continue;
         target.dispose();
       }
     }
@@ -770,8 +800,51 @@ export class Renderer {
   dispose(): void {
     this.animationLoop?.stop();
     this.animationLoop = null;
+    this.shadowDepthTarget?.dispose();
+    this.shadowDepthTarget = null;
+    this.forwardColorTarget?.target.dispose();
+    this.forwardColorTarget = null;
     this.device.dispose();
     this.disposed = true;
+  }
+
+  /** True for renderer-lifetime targets that must survive end-of-frame disposal. */
+  private isReusedTarget(target: RenderTarget): boolean {
+    return target === this.forwardColorTarget?.target || target === this.shadowDepthTarget;
+  }
+
+  /** Allocates the shared forward-color target once per distinct configuration. */
+  private ensureForwardColorTarget(format: Extract<TextureFormat, "rgba8" | "rgba16f" | "rgba32f">, requiresDepthTexture: boolean, sampleCount: number): RenderTarget {
+    const key = `${this.width}x${this.height}:${format}:${requiresDepthTexture ? "depth-texture" : "depth"}:${sampleCount}`;
+    const cached = this.forwardColorTarget;
+    if (cached && cached.key === key && !cached.target.disposed) return cached.target;
+    cached?.target.dispose();
+    const target = this.device.createRenderTarget({
+      width: this.width,
+      height: this.height,
+      label: "renderer-forward-color",
+      format,
+      depth: requiresDepthTexture ? "texture" : true,
+      sampleCount
+    });
+    this.forwardColorTarget = { target, key };
+    return target;
+  }
+
+  /** Allocates the shared shadow depth target once, reallocating only when the size changes. */
+  private ensureShadowDepthTarget(size: number): RenderTarget {
+    const existing = this.shadowDepthTarget;
+    if (existing && !existing.disposed && existing.width === size && existing.height === size) return existing;
+    existing?.dispose();
+    const target = this.device.createRenderTarget({
+      width: size,
+      height: size,
+      label: "renderer-shadow-depth-color",
+      format: "rgba8",
+      depth: this.device.info.capabilities?.includes("depth-textures") ? "texture" : true
+    });
+    this.shadowDepthTarget = target;
+    return target;
   }
 
   private assertAlive(): void {
@@ -889,6 +962,14 @@ export class Renderer {
   ): boolean {
     if (!canFuseLdrPostprocess(current, passes)) return false;
     if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
+    // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
+    // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
+    // sampleable depth texture when the renderer has to generate the depth itself. The
+    // backend's fused path samples `depthTextureHandle` regardless and used to throw
+    // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
+    // back. Declining fusion here routes those passes through the per-pass CPU path, which
+    // consumes the caller's depth directly and is the behaviour the options already imply.
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
     if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
       this.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
@@ -1012,6 +1093,14 @@ export class Renderer {
   ): Promise<boolean> {
     if (!canFuseLdrPostprocess(current, passes)) return false;
     if (!forceCpuDeterministic && !this.device.presentLdrPostprocess && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "motion-blur" || pass.name === "ssao" || pass.name === "ssr" || pass.name === "taa")) return false;
+    // A caller that supplies its own `depth` array for depth-of-field/SSAO/SSR gets a plain
+    // depth renderbuffer, because `postprocessRequiresDepthTexture` only requests a
+    // sampleable depth texture when the renderer has to generate the depth itself. The
+    // backend's fused path samples `depthTextureHandle` regardless and used to throw
+    // `WEBGL_LDR_POSTPROCESS_DEPTH_REQUIRED`, failing the whole render rather than falling
+    // back. Declining fusion here routes those passes through the per-pass CPU path, which
+    // consumes the caller's depth directly and is the behaviour the options already imply.
+    if (!forceCpuDeterministic && !current.depthTexture && passes.some((pass) => pass.name === "depth-of-field" || pass.name === "ssao" || pass.name === "ssr")) return false;
     if (!forceCpuDeterministic && this.device.presentLdrPostprocess) {
       this.device.presentLdrPostprocess(current, {
         passes: passes.map((pass) => ({
@@ -1210,7 +1299,8 @@ export class Renderer {
       casters: options.items,
       shadowMap,
       viewProjectionMatrix: lightMatrix,
-      shaderLibrary: this.shaderLibrary
+      shaderLibrary: this.shaderLibrary,
+      renderTarget: this.ensureShadowDepthTarget(shadowMap.size)
     });
     options.ownedShadowPasses.push(shadowPass);
     const result = shadowPass.execute({ device: this.device, width: this.width, height: this.height });
@@ -1757,7 +1847,7 @@ function lookAtMatrix(eye: Vec3, target: Vec3, up: Vec3): Mat4 {
 }
 
 function createDirectionalShadowMatrix(items: readonly RenderItem[], lightDirection: readonly [number, number, number]): Mat4 {
-  const bounds = collectRenderItemBounds(items);
+  const bounds = collectShadowCoverageBounds(items);
   if (!bounds || bounds.isEmpty()) {
     return identityMat4();
   }
@@ -2002,7 +2092,7 @@ function collectRenderItemsWithDiagnostics(
   if (explicitItems.length > 0) {
     const cullingFrustum = explicitCullingFrustum(source, cameraViewProjection, camera);
     const visibleItems = cullExplicitRenderItems(explicitItems, cullingFrustum, diagnostics);
-    const optimizedItems = applyRendererOwnedStaticBatching(source, visibleItems);
+    const optimizedItems = applyRendererOwnedStaticBatching(source, applyRendererOwnedStaticMeshConsolidation(source, visibleItems));
     const projectedItems = applyViewProjection(optimizedItems, cameraViewProjection);
     items.push(...projectedItems);
   }
@@ -2110,6 +2200,48 @@ function float32ArraysEqual(left: Float32Array, right: Float32Array): boolean {
 const staticBatchGeometryIds = new WeakMap<Geometry, number>();
 const staticBatchMaterialIds = new WeakMap<object, number>();
 let nextStaticBatchResourceId = 1;
+
+/**
+ * Merges shared-material static geometry, then hands the result to batching.
+ *
+ * Consolidation runs first because it reduces distinct geometries; whatever it leaves unmerged (single
+ * items, oversized meshes, non-indexed topology) can still be instanced by batching afterwards.
+ */
+const staticMeshConsolidationCaches = new WeakMap<object, ReturnType<typeof createStaticMeshConsolidationCache>>();
+
+function applyRendererOwnedStaticMeshConsolidation(source: RenderSource, items: readonly RenderItem[]): readonly RenderItem[] {
+  if (!source.staticMeshConsolidation) return items;
+  const mergeable: MeshConsolidationInput[] = [];
+  const passthrough: RenderItem[] = [];
+  for (const item of items) {
+    // The same eligibility rule as batching: anything skinned, morphed, instanced, or draw-ranged is
+    // not static geometry and must not have a transform baked into it.
+    if (isStaticBatchCandidate(item)) {
+      mergeable.push({
+        geometry: item.geometry,
+        material: item.material,
+        modelMatrix: item.modelMatrix ?? identityMat4(),
+        ...(item.label ? { label: item.label } : {})
+      });
+    } else {
+      passthrough.push(item);
+    }
+  }
+  if (mergeable.length === 0) return items;
+  const options = source.staticMeshConsolidation === true ? {} : source.staticMeshConsolidation;
+  // Cached per render source: merging walks every vertex, so repeating it each frame costs far more
+  // than the draw calls it saves.
+  let cache = staticMeshConsolidationCaches.get(source as unknown as object);
+  if (!cache) {
+    cache = createStaticMeshConsolidationCache();
+    staticMeshConsolidationCaches.set(source as unknown as object, cache);
+  }
+  const consolidated = cache.consolidate(mergeable, {
+    labelPrefix: "renderer-consolidated-mesh",
+    ...options
+  });
+  return [...passthrough, ...consolidated.renderItems];
+}
 
 function applyRendererOwnedStaticBatching(source: RenderSource, items: readonly RenderItem[]): readonly RenderItem[] {
   if (!source.staticBatching) return items;
@@ -2621,9 +2753,28 @@ function createAutoFrameCamera(
 }
 
 function collectRenderItemBounds(items: readonly RenderItem[]): SceneBounds3 | undefined {
+  return collectItemBounds(items, true);
+}
+
+/**
+ * Bounds over every render item, including those excluded from camera
+ * auto-framing.
+ *
+ * `includeInAutoFrame` answers "should the camera frame this?", which is a
+ * composition choice. It must not decide which geometry a shadow frustum covers:
+ * a large ground plane or backdrop is commonly excluded from auto-framing while
+ * still being the surface that receives shadows. Fitting the light frustum to the
+ * auto-frame subset shrinks it to the caster alone, so the receiver falls outside
+ * the shadow map and no shadow is ever visible.
+ */
+function collectShadowCoverageBounds(items: readonly RenderItem[]): SceneBounds3 | undefined {
+  return collectItemBounds(items, false);
+}
+
+function collectItemBounds(items: readonly RenderItem[], respectAutoFrameExclusion: boolean): SceneBounds3 | undefined {
   let bounds: SceneBounds3 | undefined;
   for (const item of items) {
-    if (item.includeInAutoFrame === false) continue;
+    if (respectAutoFrameExclusion && item.includeInAutoFrame === false) continue;
     const itemBounds = renderableWorldBounds(item.geometry, toMat4(item.modelMatrix ?? identityMat4(), "modelMatrix", item.label), item.instanceTransforms, item.morphTargets, item.morphWeights, item.skinning);
     bounds = bounds ? bounds.union(itemBounds) : itemBounds;
   }

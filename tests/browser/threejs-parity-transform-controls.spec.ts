@@ -1,12 +1,44 @@
-import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const SCREENSHOT_PATH = "tests/reports/threejs-parity/transform-controls/transform-controls.png";
+interface Capture {
+  readonly id: string;
+  readonly label: string;
+  readonly handleCount: number;
+  readonly strokePixels: number;
+  readonly colorBuckets: number;
+}
 
-test.describe("ThreejsParity TransformControls route evidence", () => {
-  test.setTimeout(60_000);
+interface DragProof {
+  readonly mode: string;
+  readonly pickedHandle: string | undefined;
+  readonly startPosition: readonly [number, number, number];
+  readonly endPosition: readonly [number, number, number];
+  readonly startScale: readonly [number, number, number];
+  readonly endScale: readonly [number, number, number];
+  readonly startRotation: readonly [number, number, number];
+  readonly endRotation: readonly [number, number, number];
+  readonly totalDelta: number;
+  readonly constrainedToAxis: boolean;
+}
+
+interface GizmoEvidence {
+  readonly captures: readonly Capture[];
+  readonly translateDrag: DragProof;
+  readonly rotateDrag: DragProof;
+  readonly scaleDrag: DragProof;
+  readonly snappedDrag: { readonly requestedRaw: number; readonly committed: number; readonly snapIncrement: number };
+  readonly missedPointerFallsThrough: boolean;
+  readonly localSpaceDiffersFromWorld: boolean;
+  readonly pass: boolean;
+}
+
+const reportDir = "tests/reports/threejs-parity-transform-controls";
+
+test.describe("interactive transform controls", () => {
+  test.setTimeout(180_000);
 
   let server: ExampleDevServer;
 
@@ -18,55 +50,58 @@ test.describe("ThreejsParity TransformControls route evidence", () => {
     await server.close();
   });
 
-  test("public TransformControls route applies translate, rotate, and scale to rendered geometry", async ({ page }) => {
-    const pageErrors: string[] = [];
-    page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
-    page.on("console", (message) => {
-      if (message.type() === "error") pageErrors.push(message.text());
-    });
-    page.on("response", (response) => {
-      if (response.status() >= 400 && !/\/favicon\.ico$/.test(response.url())) {
-        pageErrors.push(`${response.status()} ${response.url()}`);
-      }
-    });
-
-    const response = await page.goto(`${server.origin}/apps/controls-transform/`, { waitUntil: "domcontentloaded" });
-    expect(response?.status()).toBe(200);
+  test("renders gizmos and drives a full pointer drag with constraints and snapping", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${server.origin}/tests/browser/threejs-parity-transform-controls-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => {
-      const runtime = window.__a3dCurrentRoutesTransformControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
-      return (runtime?.status === "ready" || runtime?.status === "running") && (runtime.drawCalls ?? 0) > 0;
-    }, undefined, { timeout: 20_000 });
+      const scope = window as unknown as Record<string, unknown>;
+      return Boolean(scope.__AURA3D_GIZMO__ || scope.__AURA3D_GIZMO_ERROR__);
+    }, undefined, { timeout: 120_000 });
 
-    await page.locator("#translate-x").click();
-    await page.locator("#translate-y").click();
-    await page.locator("#rotate-y").click();
-    await page.locator("#scale-up").click();
-    await page.waitForFunction(() => {
-      const runtime = window.__a3dCurrentRoutesTransformControls as {
-        readonly translateSamples?: number;
-        readonly rotateSamples?: number;
-        readonly scaleSamples?: number;
-      } | undefined;
-      return (runtime?.translateSamples ?? 0) >= 2 && (runtime?.rotateSamples ?? 0) >= 1 && (runtime?.scaleSamples ?? 0) >= 1;
-    }, undefined, { timeout: 10_000 });
+    const harnessError = await page.evaluate(() => (window as unknown as Record<string, string | undefined>).__AURA3D_GIZMO_ERROR__);
+    if (harnessError) throw new Error(harnessError);
 
-    const runtime = await page.evaluate(() => window.__a3dCurrentRoutesTransformControls) as {
-      readonly controls?: string;
-      readonly renderer?: string;
-      readonly attached?: boolean;
-      readonly position?: readonly number[];
-      readonly rotation?: readonly number[];
-      readonly scale?: readonly number[];
-    };
-    expect(runtime.controls).toBe("public-controls-TransformControls");
-    expect(runtime.renderer).toBe("a3d-webgl2");
-    expect(runtime.attached).toBe(true);
-    expect(runtime.position?.[0]).toBeCloseTo(0.25);
-    expect(runtime.position?.[1]).toBeCloseTo(0.25);
-    expect(runtime.rotation?.[1]).toBeCloseTo(0.25);
-    expect(runtime.scale?.[0]).toBeCloseTo(1.15);
-    mkdirSync(dirname(resolve(SCREENSHOT_PATH)), { recursive: true });
-    await page.screenshot({ path: SCREENSHOT_PATH, fullPage: false });
-    expect(pageErrors).toEqual([]);
+    const evidence: GizmoEvidence = await page.evaluate(() => (window as unknown as Record<string, GizmoEvidence>).__AURA3D_GIZMO__);
+
+    mkdirSync(resolve(reportDir), { recursive: true });
+    await page.screenshot({ path: `${reportDir}/transform-controls.png`, fullPage: true });
+    writeFileSync(resolve(`${reportDir}/transform-controls.json`), `${JSON.stringify({
+      schema: "aura3d-interactive-transform-controls/1.0",
+      generatedAt: new Date().toISOString(),
+      claimBoundary: "Proves rendered gizmo handles, ray picking, a pointer down/move/up drag lifecycle, axis and plane constraints, snapping, and distinct local/world handle orientation. Does not claim a pixel-identical image match against Three.js TransformControls.",
+      ...evidence
+    }, null, 2)}\n`);
+
+    // Rendered gizmos: real pixels, not a data structure.
+    expect(evidence.captures.length).toBe(3);
+    for (const capture of evidence.captures) {
+      expect(capture.handleCount, `${capture.id} handle count`).toBeGreaterThanOrEqual(3);
+      expect(capture.strokePixels, `${capture.id} drew no gizmo`).toBeGreaterThan(200);
+      // Distinct per-axis colours must survive to the framebuffer.
+      expect(capture.colorBuckets, `${capture.id} colour variety`).toBeGreaterThanOrEqual(3);
+    }
+    // Translate and scale expose axis + plane handles; scale adds uniform.
+    expect(evidence.captures.find((entry) => entry.id === "translate")?.handleCount).toBe(6);
+    expect(evidence.captures.find((entry) => entry.id === "scale")?.handleCount).toBe(7);
+    expect(evidence.captures.find((entry) => entry.id === "rotate")?.handleCount).toBe(3);
+
+    // Drag lifecycle mutates the attached object, constrained to the picked axis.
+    expect(evidence.translateDrag.pickedHandle).toBe("x");
+    expect(evidence.translateDrag.constrainedToAxis, JSON.stringify(evidence.translateDrag)).toBe(true);
+    expect(evidence.rotateDrag.constrainedToAxis, JSON.stringify(evidence.rotateDrag)).toBe(true);
+    expect(evidence.scaleDrag.constrainedToAxis, JSON.stringify(evidence.scaleDrag)).toBe(true);
+
+    // Snapping quantizes the committed value to the configured grid.
+    expect(evidence.snappedDrag.committed).toBeCloseTo(0.5, 6);
+    expect(evidence.snappedDrag.committed).not.toBeCloseTo(evidence.snappedDrag.requestedRaw, 3);
+
+    // A missed pointer must not be swallowed, so viewport selection still works.
+    expect(evidence.missedPointerFallsThrough).toBe(true);
+    // Local and world spaces must orient handles differently.
+    expect(evidence.localSpaceDiffersFromWorld).toBe(true);
+
+    expect(evidence.pass).toBe(true);
+    expect(errors).toEqual([]);
   });
 });

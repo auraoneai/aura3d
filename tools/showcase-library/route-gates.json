@@ -147,7 +147,7 @@
       "path": "/apps/showcase-blockfall-reactor/",
       "globalName": "__AURA3D_SHOWCASE_BLOCKFALL_REACTOR__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "showcaseBlockfallCabinet"
       ],
@@ -162,70 +162,13 @@
       "requiresKeyboardDelta": true
     },
     {
-      "id": "showcase-public-racing-presentation-proof",
-      "label": "Public Racing Presentation Proof",
-      "path": "/apps/showcase-public-racing-presentation-proof/",
-      "globalName": "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__",
-      "published": true,
-      "releaseClass": "removed-from-public-showcase",
-      "primaryAssets": [
-        "showcaseTexturedSportsCar",
-        "showcaseTsukubaCircuit"
-      ],
-      "primaryAssetRoles": {
-        "showcaseTexturedSportsCar": "vehicle",
-        "showcaseTsukubaCircuit": "track-topology"
-      },
-      "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
-      "secondaryPrimaryAssets": [
-        "showcaseTsukubaCircuit"
-      ],
-      "primitiveBudget": 12,
-      "requiresTypedPrimaryAssets": true,
-      "requiresKeyboardDelta": true,
-      "gameTemplateStatus": {
-        "category": "racing",
-        "publicTemplateReady": true,
-        "evidence": [
-          "packages/engine/src/agent-api/index.ts exposes game.publicRacingPresentation, game.racingRoadMesh, game.racingCheckpointGate, game.racingStartFinish, game.racingCameraRig, and game.certifyRacingPresentation.",
-          "apps/showcase-public-racing-presentation-proof/src/main.ts renders a typed sports car on certified public racing presentation geometry.",
-          "tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png retains the public route-primary screenshot.",
-          "tests/reports/showcase-gameplay/showcase-public-racing-presentation-proof.json proves throttle, steering, checkpoint, lap, and reset behavior.",
-          "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json retains hash-bound racing topology evidence.",
-          "docs/project/showcase-visual-review.json records the public racing visual review pass."
-        ]
-      }
-    },
-    {
-      "id": "showcase-public-platformer-presentation-proof",
-      "label": "Public Platformer Presentation Proof",
-      "path": "/apps/showcase-public-platformer-presentation-proof/",
-      "globalName": "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__",
-      "published": true,
-      "releaseClass": "removed-from-public-showcase",
-      "primaryAssets": [
-        "showcaseWalkAnimatedGirl",
-        "showcaseSideScrollerWorld"
-      ],
-      "primaryAssetRoles": {
-        "showcaseWalkAnimatedGirl": "character",
-        "showcaseSideScrollerWorld": "world"
-      },
-      "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
-      "secondaryPrimaryAssets": [
-        "showcaseSideScrollerWorld"
-      ],
-      "primitiveBudget": 14,
-      "requiresTypedPrimaryAssets": true,
-      "requiresKeyboardDelta": true
-    },
-    {
       "id": "showcase-racing-game-layer-proof",
       "label": "Racing Game Layer Proof",
       "path": "/apps/showcase-racing-game-layer-proof/",
       "globalName": "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__",
       "published": true,
       "releaseClass": "game-layer-diagnostic",
+      "retainedEvidenceFrozen": true,
       "primaryAssets": [
         "showcaseTexturedSportsCar",
         "showcaseTsukubaCircuit"
@@ -266,6 +209,7 @@
       "globalName": "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__",
       "published": true,
       "releaseClass": "game-layer-diagnostic",
+      "retainedEvidenceFrozen": true,
       "primaryAssets": [
         "showcaseWalkAnimatedGirl",
         "showcaseSideScrollerWorld"
@@ -305,7 +249,7 @@
       "path": "/apps/showcase-skyline-runner/",
       "globalName": "__AURA3D_SHOWCASE_SKYLINE_RUNNER__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "prototype-blocked",
       "primaryAssets": [
         "showcaseKenneyOobiPlatformerHero",
         "showcaseKenneyVerdantPlatformerWorld"
@@ -323,7 +267,13 @@
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
         "category": "platformer",
-        "publicTemplateReady": true,
+        "publicTemplateReady": false,
+        "blocker": "visual-review:skyline-runner-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain explicit user approval of the exact hash-bound Skyline Runner screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
+          "Resolve the visual-rebuild blocker recorded in apps/showcase-skyline-runner/route-health.json.",
+          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
+        ],
         "evidence": [
           "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-asset-pair-composition.json records five passing automated composition checks",
           "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png is the current retained route-primary screenshot",
@@ -334,10 +284,10 @@
       "requiresAnimationSubjectDelta": true,
       "animationSubjectDelta": {
         "relativeCrop": {
-          "x": 0.34,
-          "y": 0.34,
-          "width": 0.22,
-          "height": 0.3
+          "x": 0.17,
+          "y": 0.42,
+          "width": 0.222,
+          "height": 0.271
         },
         "minChangedRatio": 0.035,
         "minStrongChangedRatio": 0.015,
@@ -350,25 +300,32 @@
       "path": "/apps/showcase-turbo-drift-circuit/",
       "globalName": "__AURA3D_SHOWCASE_TURBO_DRIFT_CIRCUIT__",
       "published": true,
-      "releaseClass": "release-ready candidate",
+      "releaseClass": "prototype-blocked",
       "primaryAssets": [
-        "showcaseKenneyRaceCarRed",
-        "showcaseKenneyNeonRaceCircuit"
+        "turboRaceCar",
+        "showcaseTsukubaCircuit"
       ],
       "primaryAssetRoles": {
-        "showcaseKenneyRaceCarRed": "vehicle",
-        "showcaseKenneyNeonRaceCircuit": "track"
+        "turboRaceCar": "vehicle",
+        "showcaseTsukubaCircuit": "track"
       },
-      "routePrimaryHeroAsset": "showcaseKenneyRaceCarRed",
+      "routePrimaryHeroAsset": "turboRaceCar",
       "secondaryPrimaryAssets": [
-        "showcaseKenneyNeonRaceCircuit"
+        "showcaseTsukubaCircuit"
       ],
       "primitiveBudget": 10,
       "requiresTypedPrimaryAssets": true,
       "requiresKeyboardDelta": true,
       "gameTemplateStatus": {
         "category": "racing",
-        "publicTemplateReady": true,
+        "publicTemplateReady": false,
+        "blocker": "visual-review:turbo-drift-circuit-independent-review-pending",
+        "requiredBeforePublic": [
+          "Obtain explicit user approval of the exact hash-bound Turbo Drift Circuit screenshots; the retained review records verdict needs-work with reviewer pending-user-review.",
+          "Give the opponent a genuinely distinct supported asset or material variant and prove the distinction in action captures.",
+          "Clear the racing gameplay-proof and deploy-artifact blockers recorded in apps/showcase-turbo-drift-circuit/route-health.json.",
+          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after approval."
+        ],
         "evidence": [
           "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json records five passing automated composition checks",
           "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png is the current retained route-primary screenshot",

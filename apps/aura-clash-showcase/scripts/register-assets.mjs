@@ -17,6 +17,12 @@ const requiredAssets = [
   ["fighterSableIron", "assets/source/fighters/fighter-sable-iron.glb"],
   ["fighterJinFlux", "assets/source/fighters/fighter-jin-flux.glb"],
   ["arenaNeonDowntown", "assets/source/arenas/arena-neon-downtown.glb"],
+  // The textured build of the same arena, produced by `assets:build-textured-arena`. The untextured
+  // export above ships zero images and leaves 84 materials without metallic/roughness factors, which
+  // glTF defaults to 1.0 -- fully metallic, no diffuse, renders black. This is the variant the
+  // playable route binds.
+  ["arenaNeonDowntownTextured", "assets/source/arenas/arena-neon-downtown-textured.glb"],
+  ["arenaRooftopBuilding", "assets/source/arenas/arena-rooftop-building.glb"],
   ["auraClashDuelStage", "assets/source/scenes/aura-clash-duel-stage.glb"],
   ["auraClashPlayableScene", "assets/source/scenes/aura-clash-playable-scene.glb"],
 ];

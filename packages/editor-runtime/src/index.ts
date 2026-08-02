@@ -30,6 +30,15 @@ export type {
 export { Gizmo } from "./Gizmo";
 export { DEFAULT_GIZMO_SETTINGS, normalizeGizmoSettings } from "./Gizmo";
 export type { GizmoAxis, GizmoDrag, GizmoHandle, GizmoHit, GizmoPivotMode, GizmoPlaneAxis, GizmoSettings, GizmoSpaceMode } from "./Gizmo";
+export { InteractiveTransformGizmo } from "./InteractiveTransformGizmo";
+export type {
+  GizmoDragUpdate,
+  GizmoHandleGeometry,
+  GizmoPickResult,
+  InteractiveGizmoMode,
+  InteractiveGizmoState,
+  InteractiveTransformGizmoOptions
+} from "./InteractiveTransformGizmo";
 export { HierarchyModel } from "./HierarchyModel";
 export type { HierarchyLikeNode, HierarchyNodeDescriptor } from "./HierarchyModel";
 export { InspectorModel } from "./InspectorModel";

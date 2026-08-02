@@ -63,7 +63,7 @@ Not allowed from this track alone:
 
 Required gates:
 
-- `docs/project/showcase-quality-gates.md`
+- `docs/project/showcase/quality-gates.md`
 - source scan for unsafe asset/rendering patterns;
 - per-route primitive budget;
 - route-health JSON;
@@ -120,7 +120,7 @@ Allowed claims:
 
 Required gates before promotion:
 
-- library acceptance checks in `docs/project/library-gap-roadmap.md`;
+- library acceptance checks in `docs/project/roadmaps/library-gap-roadmap.md`;
 - public root API tests when the claim targets root `@aura3d/engine`;
 - docs updates that explain fallback behavior and limitations.
 

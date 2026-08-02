@@ -270,3 +270,100 @@ function toVec3(value: readonly number[] | undefined): Vec3 | undefined {
   const vec: Vec3 = [Number(value[0]), Number(value[1]), Number(value[2])];
   return vec.every((component) => Number.isFinite(component)) ? vec : undefined;
 }
+
+/**
+ * Derived subject facts the brief's WS4 list names that had no reusable derivation.
+ *
+ * ## Why these are here rather than in each route
+ *
+ * WS4 lists 15 values a reusable typed helper should derive so "route code does not know raw asset dimensions".
+ * Ten existed. Five did not, and each is a value a route would otherwise compute inline from bounds -- which is
+ * exactly how `CAR_SCENE_HEIGHT` came to be hardcoded to one asset's ratio and survive two hero swaps.
+ *
+ * All five are derived from a scaled `SceneBounds`, so a route states intent and reads back facts.
+ */
+export interface SubjectPlacementFacts {
+  /** World-space point where the subject's lowest geometry meets the floor. */
+  readonly groundContact: Vec3;
+  /** Centre of the subject's bounds after placement, i.e. what a camera should look at. */
+  readonly visualCenter: Vec3;
+  /**
+   * Volume-weighted centroid approximation.
+   *
+   * Deliberately an approximation from the bounding box, not a mesh integral: a route framing a vehicle wants
+   * "roughly where the mass sits" for camera pitch and lean, and computing a true centre of mass would need
+   * per-triangle volume the typed manifest does not carry. Named `approximation` so no caller mistakes it for one.
+   */
+  readonly centerOfMassApproximation: Vec3;
+  /** Placed world bounds, for framing tests that must not clip the subject. */
+  readonly framingBounds: SceneBounds;
+  /**
+   * Forward axis, or `undefined` when the asset declares none.
+   *
+   * Never inferred. A symmetric body has no intrinsic front, and guessing produces a vehicle facing backwards --
+   * the same reason admission reports orientation as evidence rather than derivation.
+   */
+  readonly forwardAxis: Vec3 | undefined;
+  /** Contact patch the subject's lower silhouette occupies, for wheel/foot readability checks. */
+  readonly contactRegion: { readonly min: Vec3; readonly max: Vec3; readonly depth: number };
+}
+
+export interface SubjectPlacementRequest {
+  /** Rendered scale applied to the asset's raw bounds. */
+  readonly scale: number;
+  /** Floor position, defaulting to the origin. */
+  readonly x?: number | undefined;
+  readonly z?: number | undefined;
+  readonly floorY?: number | undefined;
+  /** Declared forward axis from manifest evidence. Omit when the asset declares none. */
+  readonly forwardAxis?: Vec3 | undefined;
+  /**
+   * Fraction of subject height treated as the contact region, for wheel or foot readability.
+   * Defaults to 0.3, matching the wheel-band fraction the vehicle visibility probe measures.
+   */
+  readonly contactRegionFraction?: number | undefined;
+}
+
+/**
+ * Derive placement facts for a subject from its raw bounds and an intended scale.
+ *
+ * Pure: no renderer, no asset loading. A route passes bounds it already has typed access to and reads back the
+ * five WS4 values instead of computing them from dimensions it should not need to know.
+ */
+export function resolveSubjectPlacementFacts(
+  bounds: SceneBounds,
+  request: SubjectPlacementRequest
+): SubjectPlacementFacts {
+  const scale = Number.isFinite(request.scale) && request.scale > 0 ? request.scale : 1;
+  const x = request.x ?? 0;
+  const z = request.z ?? 0;
+  const floorY = request.floorY ?? 0;
+  const size = boundsSize(bounds).map((value) => value * scale) as unknown as Vec3;
+
+  // Scaled bounds, translated so the lowest point rests on the floor at (x, z).
+  const min: Vec3 = [x - size[0] / 2, floorY, z - size[2] / 2];
+  const max: Vec3 = [x + size[0] / 2, floorY + size[1], z + size[2] / 2];
+
+  const fraction = Math.min(1, Math.max(0.01, request.contactRegionFraction ?? 0.3));
+  const contactDepth = size[1] * fraction;
+
+  return {
+    groundContact: [x, floorY, z],
+    visualCenter: [x, floorY + size[1] / 2, z],
+    /*
+     * Biased below the geometric centre.
+     *
+     * A vehicle or character carries most of its mass low -- drivetrain and floorpan, legs and torso -- so the
+     * bounding-box centre sits above the real centroid. 0.42 of height is a standard approximation for wheeled
+     * subjects and keeps camera pitch from looking down on a subject that should read as planted.
+     */
+    centerOfMassApproximation: [x, floorY + size[1] * 0.42, z],
+    framingBounds: { min, max },
+    forwardAxis: request.forwardAxis,
+    contactRegion: {
+      min,
+      max: [max[0], floorY + contactDepth, max[2]],
+      depth: contactDepth
+    }
+  };
+}

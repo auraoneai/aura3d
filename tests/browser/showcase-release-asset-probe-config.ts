@@ -1,6 +1,12 @@
 import type { AuraVec3 } from "@aura3d/engine";
 
 export type ProbeAssetId =
+  | "turboRaceCar"
+  | "propPineTree"
+  | "propBoulder"
+  | "propRockA"
+  | "propRockB"
+  | "propConifer"
   | "showcaseDetailedRaceCircuit"
   | "showcaseRaceGameEnvironment"
   | "showcaseIsometricRaceTrack"
@@ -74,7 +80,13 @@ export const PROBE_ASSETS = [
   "showcaseKenneyNeonRaceCircuit",
   "showcaseKenneyRaceCarRed",
   "showcaseKenneyVerdantPlatformerWorld",
-  "showcaseKenneyOobiPlatformerHero"
+  "showcaseKenneyOobiPlatformerHero",
+  "turboRaceCar",
+  "propPineTree",
+  "propBoulder",
+  "propRockA",
+  "propRockB",
+  "propConifer"
 ] as const satisfies readonly ProbeAssetId[];
 
 const propView = {
@@ -128,6 +140,23 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
   },
   showcaseBlockfallCabinet: { ...propView, rotation: [0, 0.58, 0] },
   showcaseCityVehicle: {
+    targetHeight: 2.9,
+    padding: 1.18,
+    fov: 32,
+    azimuth: 0.82,
+    elevation: 0.18,
+    rotation: [0, 0.82, 0],
+    minForegroundWidth: 150,
+    minForegroundHeight: 100
+  },
+  // Candidate midground/background props for the platformer composition layer. Screened, not adopted:
+  // an isolated render is required before either can be used as set dressing.
+  propPineTree: propView,
+  propBoulder: propView,
+  propRockA: propView,
+  propRockB: propView,
+  propConifer: propView,
+  turboRaceCar: {
     targetHeight: 2.9,
     padding: 1.18,
     fov: 32,
@@ -314,9 +343,21 @@ export const PROBE_CONFIGS: Readonly<Record<ProbeAssetId, ProbeConfig>> = {
     minForegroundHeight: 70
   },
   showcaseKenneyVerdantPlatformerWorld: {
-    targetMaxDimension: 5.4,
-    cameraTargetMaxDimension: 5.4,
-    padding: 1.14,
+    // Sized by height, not max dimension. This asset is a wide platformer strip whose
+    // real scene-space extent is roughly 91.5 x 14.4 x 10.9, so fitting the largest
+    // dimension fits its *width* and leaves the mesh only ~0.85 units tall — a sliver
+    // in frame. The previous max-dimension config only looked correct because the
+    // manifest recorded an ~8x-too-small X extent before scene-space bounds were fixed.
+    // targetHeight and cameraTargetHeight move together, so raising both only rescales
+    // camera and model in lockstep and changes nothing on screen. Framing is controlled
+    // by padding below.
+    targetHeight: 4.6,
+    cameraTargetHeight: 4.6,
+    // Padding below 1 deliberately crops the extreme horizontal ends of this strip so
+    // the playable band is large enough to inspect. At 1.02 the subject measured
+    // 510x135 px against a 150 px minimum height; 0.86 brings the height above the
+    // minimum while the width stays inside the probe canvas.
+    padding: 0.86,
     fov: 34,
     azimuth: 0.45,
     elevation: 0.24,

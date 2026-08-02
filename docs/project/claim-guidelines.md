@@ -1,6 +1,6 @@
 # Aura3D Claim Guidelines
 
-Version: 1.4.5
+Version: 1.5.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -83,7 +83,7 @@ Do not claim these until the named gates pass:
   comparison language only after
   `docs/project/superiority-evidence-workflow.md` passes.
 - "Root `createAuraApp` uses the production renderer by default." Blocked by
-  `docs/project/library-gap-roadmap.md`.
+  `docs/project/roadmaps/library-gap-roadmap.md`.
 - "Public examples have full PBR, HDR/IBL, production shadows, or cinematic
   postprocess." Blocked unless exact route screenshots prove those pixels.
 - "Root examples generically support skinned GLB animation or morph targets."
@@ -92,7 +92,7 @@ Do not claim these until the named gates pass:
 - "Native WebGPU particles/rendering." Blocked unless adapter/backend,
   dispatch/render, fallback state, telemetry, and pixels are all verified.
 - "A showcase route is flagship quality." Blocked until
-  `docs/project/showcase-quality-gates.md` passes for that route.
+  `docs/project/showcase/quality-gates.md` passes for that route.
 - "A game route is production playable." Blocked unless keyboard input changes
   visible state and tests prove movement, objective/scoring/fail state, reset,
   and genre mechanics.
@@ -126,5 +126,5 @@ Use wording like:
 - [ ] The cited evidence exists, is current, and matches the scope.
 - [ ] The claim does not rely on nonblank screenshots or local-only report names.
 - [ ] The claim does not imply root API support from internal renderer evidence.
-- [ ] The claim is consistent with `docs/project/known-limits.md` and
+- [ ] The claim is consistent with `docs/project/status/known-limits.md` and
   `docs/project/launch-positioning.md`.

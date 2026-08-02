@@ -85,14 +85,21 @@ describe("glTF animation corpus fixture", () => {
     }
   });
 
-  it("reports unsupported secondary skin influence sets instead of silently claiming full skinning import", async () => {
+  it("parses and retains secondary skin influence sets instead of discarding them", async () => {
+    // JOINTS_1/WEIGHTS_1 used to be reported as unsupported and dropped, so vertices
+    // bound to more than four joints lost their extra influences. They are now parsed,
+    // retained on the mesh, and rendered by the eight-influence shaders.
     const { url } = createInlineSkinnedAnimationFixture({ extraInfluences: true });
     const asset = await new GLTFLoader().load({ url }, new LoadContext());
 
     expect(asset.meshes[0]?.joints[0]).toEqual([0, 1, 0, 0]);
-    expect(asset.loaderDiagnostics.features).toContain("unsupported:skinning-extra-influences:JOINTS_1/WEIGHTS_1");
-    expect(asset.loaderDiagnostics.unsupportedFeatures).toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
-    expect(asset.toJSON().loaderDiagnostics.unsupportedFeatures).toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+    expect(asset.meshes[0]?.joints1).toBeDefined();
+    expect(asset.meshes[0]?.weights1).toBeDefined();
+    expect(asset.meshes[0]?.joints1).toHaveLength(asset.meshes[0]?.joints.length ?? 0);
+    expect(asset.meshes[0]?.weights1).toHaveLength(asset.meshes[0]?.weights.length ?? 0);
+    expect(asset.loaderDiagnostics.features).toContain("skinning-eight-influences");
+    expect(asset.loaderDiagnostics.unsupportedFeatures).not.toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+    expect(asset.toJSON().loaderDiagnostics.unsupportedFeatures).not.toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
   });
 
   it("reports identity inverse-bind fallback when a glTF skin omits inverseBindMatrices", async () => {

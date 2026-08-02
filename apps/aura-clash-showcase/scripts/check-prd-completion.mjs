@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const appRoot = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(appRoot, "../..");
 
-const prdPath = path.resolve(repoRoot, "docs/project/aura-clash-showcase.md");
+const prdPath = path.resolve(repoRoot, "docs/project/showcase/aura-clash-showcase-plan.md");
 const readinessPath = path.resolve(
   appRoot,
   process.env.AURA_CLASH_READINESS_OUT ?? "launch-evidence/readiness.json"

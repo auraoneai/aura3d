@@ -1,6 +1,6 @@
 # Release Process
 
-Version: 1.4.5
+Version: 1.5.0
 
 Public claims and release wording are governed by `docs/project/product-studio-claim-registry.md`.
 
@@ -14,7 +14,7 @@ different evidence requirements.
 ## Process
 
 1. Select a track in `docs/project/release-tracks.md`.
-2. Read `docs/project/current-state.md`, `docs/project/known-limits.md`, and
+2. Read `docs/project/status/current-state.md`, `docs/project/status/known-limits.md`, and
    `docs/project/claim-guidelines.md`.
 3. Update `README.md`, package/template READMEs, route READMEs, and release
    docs so public copy matches the selected track.
@@ -22,7 +22,7 @@ different evidence requirements.
 5. Regenerate any generated docs, route-health files, screenshots, reports, or
    package artifacts affected by the change.
 6. Run focused tests for the touched packages/routes.
-7. Run the selected track's release gates from `docs/project/release-checklist.md`.
+7. Run the selected track's release gates from `docs/project/release/release-checklist.md`.
 8. Review public copy against `docs/project/launch-positioning.md`.
 9. Record evidence paths, command names, dates, and environment in release notes.
 10. Do not widen claims beyond the evidence that passed.
@@ -86,7 +86,7 @@ The release notes must record:
 - route/asset HTTP status checks;
 - screenshot or route-health evidence generated from the hosted origin.
 
-Use `docs/project/deployment-rollback.md` for rollback steps.
+Use `docs/project/release/deployment-rollback.md` for rollback steps.
 
 ## Report Storage
 
@@ -106,6 +106,6 @@ Before public release, every claim must answer:
 - Which command/test/screenshot/report proves it?
 - Does the evidence import only public `@aura3d/engine` when the claim targets
   the root API?
-- Does `docs/project/known-limits.md` list any limitation that narrows the claim?
+- Does `docs/project/status/known-limits.md` list any limitation that narrows the claim?
 
 If any answer is missing, keep the claim internal or prototype-only.

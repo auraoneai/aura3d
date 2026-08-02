@@ -40,7 +40,7 @@ Stop treating showcase screenshots as the place to improvise fixes. Broken
 showcases are symptoms. Before any more example polish, swapping assets, camera
 nudging, primitive hiding, CSS effects, or route-local gameplay patches, trace
 each symptom to a root Aura3D gap, write the file-level task in
-`Fixed-Needed-PRD.md`, fix the root library/tool/docs/proof path, and prove it
+`docs/project/plans/recovery-remediation-prd.md`, fix the root library/tool/docs/proof path, and prove it
 with public `@aura3d/engine` browser evidence. Only after that gate passes may
 the ten examples be rebuilt from validated patterns.
 
@@ -62,8 +62,8 @@ passes. The only valid pre-showcase work is:
   `packages/create-aura3d`, `tools`, `tests`, `docs`, and public apps used for
   evidence;
 - Markdown audits across every guidance or claim surface, including `README.md`,
-  `llms.txt`, `AGENTS.md`, `Fixed-Needed-PRD.md`, and `docs/**/*.md`;
-- file-level `Fixed-Needed-PRD.md` updates that name exact files, root causes,
+  `llms.txt`, `AGENTS.md`, `docs/project/plans/recovery-remediation-prd.md`, and `docs/**/*.md`;
+- file-level `docs/project/plans/recovery-remediation-prd.md` updates that name exact files, root causes,
   API boundaries, acceptance tests, screenshot or pixel proof, diagnostics,
   claim labels, and blocking status;
 - root public API fixes, CLI validation fixes, renderer/material fixes,
@@ -74,7 +74,7 @@ passes. The only valid pre-showcase work is:
   verifies pixels or runtime state, and writes reports under `tests/reports/`.
 
 Use parallel audit agents when useful, but consolidate their findings into one
-truth source: `Fixed-Needed-PRD.md`. A subagent finding is not complete until it
+truth source: `docs/project/plans/recovery-remediation-prd.md`. A subagent finding is not complete until it
 is turned into a file-level task or a proven closed item with evidence.
 
 Phase 8 showcase work remains blocked until Phases 1-7 have passing evidence.
@@ -113,7 +113,7 @@ example-specific patch.
 The only acceptable path is:
 
 1. Audit Aura3D completely.
-2. Update `Fixed-Needed-PRD.md` with exact file-level gaps, tests, diagnostics,
+2. Update `docs/project/plans/recovery-remediation-prd.md` with exact file-level gaps, tests, diagnostics,
    screenshot proof requirements, docs updates, and blocking status.
 3. Fix public root APIs, renderer/material proof, asset validation, particle
    proof, game runtime proof, route-health, launch evidence, and docs.
@@ -145,13 +145,13 @@ library/tooling/docs/proof audit.
 The correct operating order is:
 
 1. Stop cycling on showcase examples.
-2. Read `llms.txt`, `AGENTS.md`, `README.md`, `Fixed-Needed-PRD.md`, and
+2. Read `llms.txt`, `AGENTS.md`, `README.md`, `docs/project/plans/recovery-remediation-prd.md`, and
    `docs/agents/claims-and-boundaries.md`.
 3. Audit Aura3D in full before touching showcase presentation work.
 4. Classify each failure as a root library, renderer/material, asset pipeline,
    camera/grounding, particle/effects, game runtime, diagnostics, docs, or proof
    harness gap.
-5. Record every gap in `Fixed-Needed-PRD.md` as a file-level P0/P1 task with:
+5. Record every gap in `docs/project/plans/recovery-remediation-prd.md` as a file-level P0/P1 task with:
    exact files, API boundary, tests, screenshot or pixel proof, diagnostics,
    docs updates, and blocking status.
 6. Fix root public APIs, validation tools, docs, and proof harnesses before
@@ -186,7 +186,7 @@ public `@aura3d/engine` API before public examples claim those capabilities.
 ## Immediate Audit Gate
 
 Before any further showcase work, complete a full audit pass and update
-`Fixed-Needed-PRD.md` with file-level tasks. This gate blocks route polishing,
+`docs/project/plans/recovery-remediation-prd.md` with file-level tasks. This gate blocks route polishing,
 new game ideas, GLB swapping, CSS effect work, and visual redesign.
 
 This gate is mandatory even if an example can be made to look better quickly.
@@ -225,7 +225,7 @@ Do not proceed to Phase 8 while any required route capability is
 
 Audit exit ticket:
 
-- `Fixed-Needed-PRD.md` has a current P0/P1 task matrix with exact files,
+- `docs/project/plans/recovery-remediation-prd.md` has a current P0/P1 task matrix with exact files,
   owners/areas, tests, screenshot proof, docs updates, and blocking status.
 - Every old completed checkbox contradicted by screenshots or missing proof is
   explicitly reopened or marked historical.
@@ -276,7 +276,7 @@ Allowed before the audit gate passes:
 - CLI asset-quality/provenance tests;
 - focused root-only browser tests;
 - screenshot proof for validation apps;
-- updating `prompt.md`, `Fixed-Needed-PRD.md`, and docs so future agents do not
+- updating `prompt.md`, `docs/project/plans/recovery-remediation-prd.md`, and docs so future agents do not
   repeat the same failure mode.
 
 ## Six-Audit Findings Are Now Binding
@@ -284,7 +284,7 @@ Allowed before the audit gate passes:
 The six 2026-06-20 audit workstreams are authoritative inputs for the next
 implementation pass. Do not treat them as suggestions, and do not start showcase
 polish until their P0 findings are either fixed or explicitly blocked in
-`Fixed-Needed-PRD.md`.
+`docs/project/plans/recovery-remediation-prd.md`.
 
 The current binding findings are:
 
@@ -356,9 +356,9 @@ Read these before editing code:
 1. `llms.txt`
 2. `AGENTS.md`
 3. `README.md`
-4. `Fixed-Needed-PRD.md`
+4. `docs/project/plans/recovery-remediation-prd.md`
 5. `docs/agents/claims-and-boundaries.md`
-6. `docs/project/showcase-quality-gates.md`
+6. `docs/project/showcase/quality-gates.md`
 7. All `*.md` files that define public example, asset, rendering, game, or agent behavior.
 
 Use the public Aura3D API for examples:
@@ -411,8 +411,8 @@ Required checkmark format after completion:
 Current status:
 
 - [ ] Mandatory reads are complete: `llms.txt`, `AGENTS.md`, `README.md`,
-  `Fixed-Needed-PRD.md`, `docs/agents/claims-and-boundaries.md`,
-  `docs/project/showcase-quality-gates.md`, and every Markdown file that defines
+  `docs/project/plans/recovery-remediation-prd.md`, `docs/agents/claims-and-boundaries.md`,
+  `docs/project/showcase/quality-gates.md`, and every Markdown file that defines
   public example, asset, rendering, game, or agent behavior.
 ~~- [x] Six focused audit passes produced current findings for renderer/PBR,
   asset quality, grounding/camera, particles/effects, game runtime, and
@@ -427,16 +427,16 @@ Current status:
   `tests/reports/aura3d-recovery-baseline/contact-sheet.png` and
   `tests/reports/aura3d-recovery-baseline/visual-verdict.md`; current verdict
   is failure/review, not showcase acceptance.~~
-- [ ] Phase 1 library capability audit is reflected in `Fixed-Needed-PRD.md`
+- [ ] Phase 1 library capability audit is reflected in `docs/project/plans/recovery-remediation-prd.md`
   with false-complete sections reopened and unambiguous public-root vs internal
   vs metadata vs prototype boundaries.
 ~~- [x] Phase 1 partial proof: the six 2026-06-20 audit workstreams are now
   binding in `prompt.md` and mirrored as a file-level P0 task matrix in
-  `Fixed-Needed-PRD.md`, including renderer/material, asset CLI, game runtime,
+  `docs/project/plans/recovery-remediation-prd.md`, including renderer/material, asset CLI, game runtime,
   particles/effects, docs/claims, and route-health/launch-evidence gaps. This
   does **not** close Phase 1 because the implementation fixes, all Markdown
   corrections, and root browser proof still remain open. Proof: `prompt.md`
-  `Six-Audit Findings Are Now Binding`; `Fixed-Needed-PRD.md` `Current
+  `Six-Audit Findings Are Now Binding`; `docs/project/plans/recovery-remediation-prd.md` `Current
   Six-Workstream P0 Task Matrix - 2026-06-20`.~~
 - [ ] Phase 2 renderer/material proof is complete: root-only browser tests import
   `@aura3d/engine`, typed assets render through `createAuraApp`, and reports show
@@ -466,7 +466,7 @@ Current status:
   `pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts tests/unit/aura3d-cli/deployment.test.ts tests/unit/asset-index/cli-pull-bridge.test.ts tests/unit/package-dist --reporter=dot`
   passed;
   `pnpm typecheck:raw` passed;
-  `git diff --check -- packages/engine/src/agent-api/index.ts tests/browser/createAuraApp-material-pbr-contract.spec.ts tests/browser/createAuraApp-material-pbr-contract-harness.ts tests/browser/createAuraApp-material-pbr-contract-harness.html tests/unit/docs docs/rendering/material-matrix.md docs/concepts/rendering.md docs/project/createAuraApp-production-bridge-architecture.md README.md llms.txt prompt.md Fixed-Needed-PRD.md tests/reports/createAuraApp-material-pbr-contract`
+  `git diff --check -- packages/engine/src/agent-api/index.ts tests/browser/createAuraApp-material-pbr-contract.spec.ts tests/browser/createAuraApp-material-pbr-contract-harness.ts tests/browser/createAuraApp-material-pbr-contract-harness.html tests/unit/docs docs/rendering/material-matrix.md docs/concepts/rendering.md docs/project/architecture/create-aura-app-production-bridge.md README.md llms.txt prompt.md docs/project/plans/recovery-remediation-prd.md tests/reports/createAuraApp-material-pbr-contract`
   passed.~~
 - [ ] Phase 3 asset pipeline proof is complete: CLI search/resolve/add/validate,
   generated assets, provenance, texture/material/animation/bounds/orientation
@@ -489,7 +489,7 @@ Current status:
   release/source/asset filters and forward them into asset validation for
   selected typed assets. Proof:
   `pnpm exec vitest run tests/unit/aura3d-cli/deployment.test.ts tests/unit/aura3d-cli/assets.test.ts --reporter=dot`
-  passed 24/24; `pnpm typecheck:raw` passed; `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tools/showcase-library/build-and-check.mjs tests/unit/aura3d-cli/deployment.test.ts Fixed-Needed-PRD.md prompt.md`
+  passed 24/24; `pnpm typecheck:raw` passed; `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tools/showcase-library/build-and-check.mjs tests/unit/aura3d-cli/deployment.test.ts docs/project/plans/recovery-remediation-prd.md prompt.md`
   passed.~~
 ~~- [x] Phase 3 partial proof: showcase route gates now have one canonical JSON
   config consumed by `tools/showcase-library/build-and-check.mjs`,
@@ -501,7 +501,7 @@ Current status:
   `tools/showcase-library/route-gates.mjs`,
   `tests/unit/tools/showcase-route-gates.test.ts`;
   `pnpm exec vitest run tests/unit/tools/showcase-route-gates.test.ts --reporter=dot`
-  passed 3/3; `pnpm typecheck:raw` passed; `git diff --check -- prompt.md Fixed-Needed-PRD.md tools/showcase-library/route-gates.mjs tools/showcase-library/build-and-check.mjs tools/showcase-library/vite.config.ts tests/browser/showcase-library.spec.ts tests/unit/tools/showcase-route-gates.test.ts`
+  passed 3/3; `pnpm typecheck:raw` passed; `git diff --check -- prompt.md docs/project/plans/recovery-remediation-prd.md tools/showcase-library/route-gates.mjs tools/showcase-library/build-and-check.mjs tools/showcase-library/vite.config.ts tests/browser/showcase-library.spec.ts tests/unit/tools/showcase-route-gates.test.ts`
   passed.~~
 ~~- [x] Phase 3 partial proof: static route-health and showcase-index route
   metadata now agree with the canonical route gate for published routes. The
@@ -566,7 +566,7 @@ Current status:
   Proof:
   `pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts tests/unit/aura3d-cli/deployment.test.ts --reporter=dot`
   passed 48/48; `pnpm typecheck:raw` passed; and
-  `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tests/unit/aura3d-cli/assets.test.ts prompt.md Fixed-Needed-PRD.md`
+  `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tests/unit/aura3d-cli/assets.test.ts prompt.md docs/project/plans/recovery-remediation-prd.md`
   passed. This does not fix Turbo Drift, Skyline Runner, or public showcase
   readiness.~~
 ~~- [x] Phase 3 partial proof: asset resolve/ranking preservation now keeps
@@ -583,7 +583,7 @@ Current status:
   passed 156/156;
   `pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts tests/unit/aura3d-cli/deployment.test.ts --reporter=dot`
   passed 48/48; `pnpm typecheck:raw` passed; and
-  `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts packages/aura3d-cli/src/pull-bridge.ts packages/aura3d-cli/package.json pnpm-lock.yaml packages/asset-index/src/CanonicalAsset.ts packages/asset-index/src/adapters/aura-index.ts packages/asset-index/src/federate.ts tests/unit/aura3d-cli/assets.test.ts prompt.md Fixed-Needed-PRD.md`
+  `git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts packages/aura3d-cli/src/pull-bridge.ts packages/aura3d-cli/package.json pnpm-lock.yaml packages/asset-index/src/CanonicalAsset.ts packages/asset-index/src/adapters/aura-index.ts packages/asset-index/src/federate.ts tests/unit/aura3d-cli/assets.test.ts prompt.md docs/project/plans/recovery-remediation-prd.md`
   passed. This does not fix Turbo Drift, Skyline Runner, public showcase
   readiness, or Phase 3 as a whole.~~
 ~~- [x] Phase 3 partial proof: package/dist parity for CLI and root gates is
@@ -602,7 +602,7 @@ Current status:
   `node packages/aura3d-cli/dist/cli.js assets add --help` passed;
   `pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts tests/unit/aura3d-cli/deployment.test.ts tests/unit/asset-index/cli-pull-bridge.test.ts --reporter=dot`
   passed 95/95; `pnpm typecheck:raw` passed; and
-  `git diff --check -- packages/aura3d-cli packages/asset-index packages/engine packages/assets tests/unit/package-dist tests/unit/aura3d-cli tests/unit/asset-index prompt.md Fixed-Needed-PRD.md`
+  `git diff --check -- packages/aura3d-cli packages/asset-index packages/engine packages/assets tests/unit/package-dist tests/unit/aura3d-cli tests/unit/asset-index prompt.md docs/project/plans/recovery-remediation-prd.md`
   passed. This does not fix Turbo Drift, Skyline Runner, public showcase
   readiness, route-primary probe generation, or Phase 3 as a whole.~~
 ~~- [x] Phase 3 partial proof: route-primary probe generation and strict
@@ -628,7 +628,7 @@ Current status:
   `ok:false` build/launch evidence with route-primary probe blockers for all
   non-index showcase routes;
   `pnpm typecheck:raw` passed; and
-  `git diff --check -- tools/showcase-library tests/browser tests/unit/tools packages/engine/src/testing packages/aura3d-cli/src prompt.md Fixed-Needed-PRD.md docs/project/showcase-launch-evidence.json tests/reports/showcase-route-primary-probes`
+  `git diff --check -- tools/showcase-library tests/browser tests/unit/tools packages/engine/src/testing packages/aura3d-cli/src prompt.md docs/project/plans/recovery-remediation-prd.md docs/project/showcase-launch-evidence.json tests/reports/showcase-route-primary-probes`
   passed.~~
 ~~- [x] Full showcase recovery batch updated shared route-primary evidence and
   route status without fake-green results. `showcase-product-configurator` and
@@ -830,14 +830,14 @@ For each subsystem, answer with code evidence:
 - What is claimed in docs but not proven?
 - What failure modes caused the broken examples?
 
-The audit must produce a tracked checklist in `Fixed-Needed-PRD.md` and must reopen any section that was previously marked complete but is contradicted by screenshots, source code, route-health evidence, or missing browser proof.
+The audit must produce a tracked checklist in `docs/project/plans/recovery-remediation-prd.md` and must reopen any section that was previously marked complete but is contradicted by screenshots, source code, route-health evidence, or missing browser proof.
 
 Phase 1 acceptance criteria:
 
 - no “complete” label remains for a claim without proof;
 - every public API claim is labeled as root safe API, production-runtime, internal rendering package, CLI pipeline, template-only, prototype, or roadmap;
 - every broken showcase symptom is mapped to a root cause or an explicitly unknown gap;
-- `Fixed-Needed-PRD.md` contains file-level tasks, tests, screenshots, and docs updates for every P0/P1 recovery item.
+- `docs/project/plans/recovery-remediation-prd.md` contains file-level tasks, tests, screenshots, and docs updates for every P0/P1 recovery item.
 
 ### Phase 2: Renderer And PBR Fixes
 
@@ -969,7 +969,7 @@ set-dressing assets cannot satisfy primary release gates without an explicit
 non-primary rationale. Proof:
 `pnpm exec vitest run tests/unit/aura3d-cli/assets.test.ts tests/unit/aura3d-cli/deployment.test.ts --reporter=dot`
 passed 36/36; `pnpm typecheck:raw` passed; and
-`git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tests/unit/aura3d-cli/assets.test.ts prompt.md Fixed-Needed-PRD.md`
+`git diff --check -- packages/aura3d-cli/src/index.ts packages/aura3d-cli/src/cli.ts tests/unit/aura3d-cli/assets.test.ts prompt.md docs/project/plans/recovery-remediation-prd.md`
 passed. This does not fix Turbo Drift, Skyline Runner, or public showcase
 readiness.
 
@@ -1122,9 +1122,9 @@ Required files to update or create:
 - `README.md`
 - `llms.txt`
 - `AGENTS.md`
-- `Fixed-Needed-PRD.md`
+- `docs/project/plans/recovery-remediation-prd.md`
 - `docs/agents/claims-and-boundaries.md`
-- `docs/project/showcase-quality-gates.md`
+- `docs/project/showcase/quality-gates.md`
 - `docs/agents/asset-selection.md`
 - `docs/agents/no-hackjob-rules.md`
 - `docs/agents/game-example-standards.md`
@@ -1201,7 +1201,7 @@ For every library fix and every example rebuild:
 6. Inspect screenshots with `view_image`.
 7. Collect console errors and diagnostics.
 8. Save reports under `tests/reports/`.
-9. Update `Fixed-Needed-PRD.md` with pass/fail status.
+9. Update `docs/project/plans/recovery-remediation-prd.md` with pass/fail status.
 
 Do not end with “looks fixed” unless screenshots prove it.
 

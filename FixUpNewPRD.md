@@ -14,7 +14,7 @@ Scope: The remaining Aura3D library work required so racing and platformer game
 examples are generated from certified game geometry, validated by
 evidence-backed composition gates, and rebuilt through the spec compiler — not
 hand-authored route overlays.
-Supersedes: nothing. This PRD continues `Fixed-Needed-PRD.md`,
+Supersedes: nothing. This PRD continues `docs/project/plans/recovery-remediation-prd.md`,
 `finalfixesatlibrarylevel.md`, `AURA3D_KILL_OR_REPAIR_AUDIT.md`,
 `aura3d-game-examples-stop-decision.md`, and
 `docs/project/aura3d-game-layer-rebuild-plan.md`.

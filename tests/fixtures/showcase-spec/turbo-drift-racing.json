@@ -8,11 +8,11 @@
   "claimLabel": "createAuraApp",
   "publicStatus": "release-ready candidate",
   "layout": {
-    "heroAsset": "showcaseTexturedSportsCar",
+    "heroAsset": "turboRaceCar",
     "uiPlacement": "right-panel"
   },
   "racing": {
-    "vehicleAsset": "showcaseTexturedSportsCar",
+    "vehicleAsset": "turboRaceCar",
     "trackAsset": "showcaseTsukubaCircuit",
     "cameraIntent": "track-overview",
     "layoutConstraints": {
@@ -49,9 +49,9 @@
   },
   "primaryAssets": [
     {
-      "id": "showcaseTexturedSportsCar",
+      "id": "turboRaceCar",
       "role": "vehicle",
-      "typedRef": "assets.showcaseTexturedSportsCar",
+      "typedRef": "assets.turboRaceCar",
       "quality": "release",
       "hasDurableProvenance": true,
       "hasRenderedProbe": true,
@@ -73,13 +73,13 @@
     "routePrimaryProbe": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
     "routePrimaryScreenshot": "tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
     "gameplayProof": "tests/fixtures/showcase-spec/evidence/showcase-gameplay/showcase-turbo-drift-circuit.json",
-    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset showcaseTexturedSportsCar --asset showcaseTsukubaCircuit",
+    "deployCommand": "pnpm exec tsx --tsconfig tsconfig.base.json packages/aura3d-cli/src/cli.ts check-deploy --dist apps/showcase-turbo-drift-circuit/dist --release --source apps/showcase-turbo-drift-circuit/src --asset turboRaceCar --asset showcaseTsukubaCircuit",
     "deployEvidence": "docs/project/showcase-launch-evidence.json",
     "deployPassed": true,
     "routePrimaryPassed": true,
     "gameplayPassed": true,
     "releaseAssetProbes": {
-      "showcaseTexturedSportsCar": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTexturedSportsCar.json",
+      "turboRaceCar": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/turboRaceCar.json",
       "showcaseTsukubaCircuit": "tests/fixtures/showcase-spec/evidence/showcase-release-asset-probes/showcaseTsukubaCircuit.json"
     }
   },

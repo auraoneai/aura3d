@@ -214,6 +214,7 @@ interface MutablePlatformerState {
   score: number;
   lives: number;
   deaths: number;
+  respawnControlLock: number;
   checkpointId: string;
   collected: Set<string>;
   activatedCheckpoints: Set<string>;
@@ -581,7 +582,10 @@ export interface GameRacingSnapshot {
   readonly offTrack: boolean;
   readonly progress: number;
   readonly distance: number;
+  /** Unsigned distance from the racing line. */
   readonly trackOffset: number;
+  /** Lateral offset signed positive to the left of travel; use this to steer back onto the line. */
+  readonly signedTrackOffset: number;
   readonly position: GameKitVec2;
   readonly heading: number;
   readonly status: "running" | "finished";
@@ -599,7 +603,15 @@ export interface GameRacingSurfaceContact {
   readonly onTrack: boolean;
   readonly progress: number;
   readonly distance: number;
+  /** Unsigned distance from the racing line. */
   readonly trackOffset: number;
+  /**
+   * Lateral offset from the racing line, signed positive to the left of the direction of travel.
+   *
+   * `trackOffset` is a magnitude, so it cannot be used to steer back onto the line. Controllers and
+   * opponent AI should read this field instead.
+   */
+  readonly signedTrackOffset: number;
   readonly roadHalfWidth: number;
 }
 
@@ -808,6 +820,10 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
       dashCooldown: 0,
       ridingPlatformId: undefined
     };
+    // Ignore held directional input briefly after a death so a key that caused
+    // the miss cannot immediately carry the fresh spawn off its supporting
+    // surface before the player or an automated driver can react.
+    state.respawnControlLock = 0.3;
     emit("respawn", state.checkpointId);
   };
 
@@ -835,13 +851,15 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
         state.player.y += platformTop(carried) - platformTop(carriedPrevious);
       }
 
-      const moveX = clampNumber(input.moveX ?? 0, -1, 1);
+      state.respawnControlLock = Math.max(0, state.respawnControlLock - step);
+      const controlsLocked = state.respawnControlLock > 0;
+      const moveX = controlsLocked ? 0 : clampNumber(input.moveX ?? 0, -1, 1);
       if (Math.abs(moveX) > 0.01) state.player.facing = moveX >= 0 ? 1 : -1;
       state.player.vx = moveX * config.moveSpeed;
       state.player.coyote = state.player.grounded ? config.coyoteMs / 1000 : Math.max(0, state.player.coyote - step);
       state.player.jumpBuffer = input.jumpPressed ? config.jumpBufferMs / 1000 : Math.max(0, state.player.jumpBuffer - step);
       state.player.dashCooldown = Math.max(0, state.player.dashCooldown - step);
-      if (input.dashPressed && state.player.dashCooldown <= 0) {
+      if (!controlsLocked && input.dashPressed && state.player.dashCooldown <= 0) {
         state.player.vx = state.player.facing * config.dashSpeed;
         state.player.dashCooldown = 0.38;
         emit("dash");
@@ -1035,6 +1053,7 @@ export function createGameRacingSurfaceQuery(route: GameRacingRoute): GameRacing
         progress: nearest.progress,
         distance: nearest.distance,
         trackOffset: nearest.offset,
+        signedTrackOffset: nearest.signedOffset,
         roadHalfWidth
       };
     }
@@ -1081,6 +1100,7 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       progress: normalizeProgress(progress),
       distance: normalizeProgress(progress) * length,
       trackOffset: 0,
+      signedTrackOffset: 0,
       position: { x: sample.x, y: sample.y },
       heading: sample.heading,
       status: "running"
@@ -1106,6 +1126,7 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
       progress: normalizeProgress(progress),
       distance: normalizeProgress(progress) * length,
       trackOffset: Math.abs(offset),
+      signedTrackOffset: offset,
       position: { x: sample.x + normal.x * offset, y: sample.y + normal.y * offset },
       heading: sample.heading
     };
@@ -1163,6 +1184,7 @@ export function createGameRacingKit(options: GameRacingOptions): GameRacingKit {
         progress: contact.progress,
         distance: contact.distance,
         trackOffset: contact.trackOffset,
+        signedTrackOffset: contact.signedTrackOffset,
         offTrack
       };
       const target = checkpoints[state.checkpoint] ?? 1;
@@ -1526,6 +1548,7 @@ function createPlatformerState(config: Required<Omit<GamePlatformerLevel, "id">>
     score: 0,
     lives: config.lives,
     deaths: 0,
+    respawnControlLock: 0,
     checkpointId,
     collected: new Set<string>(),
     activatedCheckpoints: checkpointId === "start" ? new Set<string>() : new Set([checkpointId])
@@ -1889,8 +1912,8 @@ function sampleRaceRoute(segments: readonly RaceSegment[], length: number, progr
   };
 }
 
-function nearestRacePoint(segments: readonly RaceSegment[], length: number, point: GameKitVec2): { readonly distance: number; readonly progress: number; readonly offset: number } {
-  let best = { distance: 0, offset: Number.POSITIVE_INFINITY };
+function nearestRacePoint(segments: readonly RaceSegment[], length: number, point: GameKitVec2): { readonly distance: number; readonly progress: number; readonly offset: number; readonly signedOffset: number } {
+  let best = { distance: 0, offset: Number.POSITIVE_INFINITY, signedOffset: 0 };
   for (const segment of segments) {
     const dx = segment.to.x - segment.from.x;
     const dy = segment.to.y - segment.from.y;
@@ -1898,12 +1921,24 @@ function nearestRacePoint(segments: readonly RaceSegment[], length: number, poin
     const x = segment.from.x + dx * t;
     const y = segment.from.y + dy * t;
     const offset = Math.hypot(point.x - x, point.y - y);
-    if (offset < best.offset) best = { distance: segment.start + segment.length * t, offset };
+    if (offset < best.offset) {
+      // Signed lateral offset, positive to the left of travel direction. The magnitude alone cannot
+      // tell a controller which way to steer back, so a route or AI that only sees `trackOffset`
+      // has no way to correct its line: full opposite lock is a coin flip. The sign comes from the
+      // 2D cross product of the segment direction with the vector to the car.
+      const cross = dx * (point.y - segment.from.y) - dy * (point.x - segment.from.x);
+      best = {
+        distance: segment.start + segment.length * t,
+        offset,
+        signedOffset: cross >= 0 ? offset : -offset
+      };
+    }
   }
   return {
     distance: best.distance,
     progress: normalizeProgress(best.distance / length),
-    offset: best.offset
+    offset: best.offset,
+    signedOffset: best.signedOffset
   };
 }
 

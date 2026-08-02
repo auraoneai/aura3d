@@ -2,7 +2,7 @@
   "ok": true,
   "generatedAt": "2026-07-28T10:09:40.275Z",
   "manifest": "apps/aura-clash-showcase/launch-evidence.coverage.json",
-  "prd": "docs/project/aura-clash-showcase.md",
+  "prd": "docs/project/showcase/aura-clash-showcase-plan.md",
   "activeScopeEndHeading": "# Legacy World War X PRD Archive",
   "activeScopeLineCount": 191,
   "totalUnchecked": 0,

@@ -3,8 +3,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(process.cwd());
+// `showcase-public-racing-presentation-proof` was deleted (superseded by Turbo Drift Circuit), so the
+// only remaining route with an established speed contract is the racing game-layer diagnostic.
 const routes = [
-  "showcase-public-racing-presentation-proof",
   "showcase-racing-game-layer-proof"
 ];
 

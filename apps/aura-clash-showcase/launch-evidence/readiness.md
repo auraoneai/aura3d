@@ -1,27 +1,27 @@
 # Aura Clash Launch Readiness
 
-Generated: 2026-07-28T10:09:40.396Z
+Generated: 2026-08-02T03:44:02.156Z
 
 This report classifies readiness only. It does not mark PRD checkboxes and does not replace generated evidence, deployed proof, or explicit user approval.
 
 ## Summary
 
-- Gates ready: 6/9
-- Gates open: 3
+- Gates ready: 4/9
+- Gates open: 5
 
 ## Remaining gates
 
 | Gate | Status | Missing artifacts | Command path |
 | --- | --- | --- | --- |
 | Quaternius-derived fighter visual validation proof: fighters visible, grounded, oriented, readable, and no detached accessories. | OPEN | visualApproval, launchAssetEvidence | `npm run launch:proof, then review launch-evidence/review-package.md, then record visual approval after explicit user approval.` |
-| Source manifests and typed assets are separated from screenshot approval, deployed GLB reachability, and human visual approval. | OPEN | visualApproval | `Generate screenshot/review evidence, deployed route evidence, and explicit visual approval evidence.` |
+| Source manifests and typed assets are separated from screenshot approval, deployed GLB reachability, and human visual approval. | OPEN | deployedRoutes, visualApproval | `Generate screenshot/review evidence, deployed route evidence, and explicit visual approval evidence.` |
 | Capture and review first-frame screenshot. | READY | none | `npm run launch:screenshot && npm run launch:review-package` |
 | Build app and marketing site. | READY | none | `npm run launch:local-gates` |
 | Deploy to Vercel. | READY | none | `AURA_CLASH_RUN_VERCEL_DEPLOY=1 npm run launch:proof` |
-| Confirm deployed route and GLB URLs return 200. | READY | none | `AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof` |
+| Confirm deployed route and GLB URLs return 200. | OPEN | deployedRoutes | `AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof` |
 | Gameplay smoke passes. | READY | none | `npm run launch:local-gates` |
 | Visual screenshot approved by user. | OPEN | visualApproval | `AURA_CLASH_APPROVED_BY='<name>' AURA_CLASH_VISUAL_APPROVAL_CONFIRMED=1 npm run launch:approve-visual` |
-| Deployed route confirmed. | READY | none | `AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof` |
+| Deployed route confirmed. | OPEN | deployedRoutes | `AURA_CLASH_RUN_DEPLOYED_EVIDENCE=1 npm run launch:proof` |
 
 ## Artifact status
 
@@ -32,7 +32,7 @@ This report classifies readiness only. It does not mark PRD checkboxes and does 
 | firstFramePng | OK | apps/aura-clash-showcase/launch-evidence/first-frame.png |
 | reviewPackage | OK | apps/aura-clash-showcase/launch-evidence/review-package.md |
 | vercelDeploy | OK | apps/aura-clash-showcase/launch-evidence/vercel-deploy.json |
-| deployedRoutes | OK | apps/aura-clash-showcase/launch-evidence/deployed-routes.json |
+| deployedRoutes | MISSING / NOT OK | apps/aura-clash-showcase/launch-evidence/deployed-routes.json |
 | visualApproval | MISSING / NOT OK | apps/aura-clash-showcase/launch-evidence/visual-approval.json |
 | launchAssetEvidence | MISSING / NOT OK | apps/aura-clash-showcase/assets/source/aura-clash-launch-asset-evidence.json |
 | prdCoverage | OK | apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json |

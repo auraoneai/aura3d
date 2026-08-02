@@ -12,10 +12,10 @@ claims.
 
 For current showcase/library remediation, use:
 
-- `Fixed-Needed-PRD.md`
+- `docs/project/plans/recovery-remediation-prd.md`
 - `docs/agents/claims-and-boundaries.md`
-- `docs/project/showcase-quality-gates.md`
-- `docs/project/library-gap-roadmap.md`
+- `docs/project/showcase/quality-gates.md`
+- `docs/project/roadmaps/library-gap-roadmap.md`
 - `docs/project/claim-guidelines.md`
 
 Source: full review of all changes in the last 36 hours — the 22 commits since `v1.3.2` (last npm publish, tagged 2026-06-08 23:00) **plus** the 3 in-window commits before the tag (`d584fbe7` Studio prompt-driven scene generation, `199ec20d` 1.3.2 release, `f74ebe76` 1.3.1 release), whose code already shipped in 1.3.2.
@@ -221,7 +221,7 @@ Extension-texture support is inert and still crashes for real assets.
 - [x] **`README.md:18`** — "`@aura3d/engine@1.3.2` is the **prepared** release" → published wording (the same README's line 28 says it's live).
 - [x] **`CHANGELOG.md`** — fix the matching "28 packages" claim in the 1.3.2 entry.
 - [x] **`docs/project/release-tracks.md:3`** — header still reads `Version: 1.2.0` → `1.3.2` (the body was fixed in `f4b70739`, the header was missed).
-- [x] **`docs/project/current-state.md:35`** — 1.3 track still marked "(version bump publish-pending)" → published.
+- [x] **`docs/project/status/current-state.md:35`** — 1.3 track still marked "(version bump publish-pending)" → published.
 - [x] **`llms.txt:347-348`** — claim rules still reference **1.3.1** ("Treat 1.3.1 as a scoped runtime-foundation release…") → update to 1.3.2. This is the agent-facing instructions file, so staleness here propagates into LLM behavior.
 
 ### `apps/animation-studio-web/src/components/Timeline.tsx`
@@ -282,7 +282,7 @@ This phase releases everything that landed since 1.3.2 — the ECS components/sy
 - [x] **`CHANGELOG.md`** — add a full `1.3.3` entry covering: ECS camera/light/mesh components + Transform/Camera systems + `ECSRenderSource` render bridge; 14-clip standard humanoid vocabulary; Aura Clash combat systems (combo, guard break, knockdown/recovery, input buffering — as fixed); Studio prompt-driven scene generation + SSE render progress (as fixed); 12 agent-api prefab/character features (with corrected GLB metadata); physics constraint/shape fixes; 8 three-compat templates (now functional); KTX2/SkinnedLitMaterial fixes; restored test gates; corrected package count (26).
 - [x] **`README.md`** — version references → 1.3.3, "published" wording, package count 26.
 - [x] **`llms.txt`** — claim rules → 1.3.3 (currently stale at 1.3.1; this file steers LLM behavior).
-- [x] **`docs/project/*`** — `release-checklist.md`, `release-process.md`, `release-tracks.md` (incl. the line-3 header), `current-state.md` (drop "publish-pending"), `support-policy.md`, `security-policy.md`, `compatibility.md`, `migration.md`, `site-map.md`, `claim-guidelines.md`, `known-limits.md`, `aura-clash-showcase.md`, `aura3d-109-release-gates.md` → 1.3.3.
+- [x] **`docs/project/*`** — `docs/project/release/release-checklist.md`, `docs/project/release-process.md`, `docs/project/release-tracks.md` (incl. the line-3 header), `docs/project/status/current-state.md` (drop "publish-pending"), `docs/project/support-policy.md`, `docs/project/security-policy.md`, `docs/project/compatibility.md`, `docs/project/migration.md`, `docs/project/site-map.md`, `docs/project/claim-guidelines.md`, `docs/project/status/known-limits.md`, `docs/project/showcase/aura-clash-showcase-plan.md`, `docs/project/aura3d-109-release-gates.md` → 1.3.3.
 - [x] **`docs/concepts/*`** (animation, assets, editor-runtime, engine-lifecycle, physics, rendering, scene-vs-ecs) — version headers → 1.3.3; update `scene-vs-ecs.md` ECS parity inventory to reflect the fixed ECS render bridge (normal matrix, shadow-light support, ambient handling).
 - [x] **`docs/api/public-api.md`** — regenerate via the api-docs tool after all source fixes (the test asserts exact file equality).
 - [x] **`docs/agents/*`** + `CONTRIBUTING.md` — version references → 1.3.3.

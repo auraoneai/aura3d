@@ -87,6 +87,22 @@ export interface GLTFRenderResourceOptions {
    * `baseColorFactor` and the rest of the asset still loads.
    */
   readonly failOnMissingTexture?: boolean;
+  /**
+   * Share a single runtime material instance across glTF materials whose definitions are identical
+   * apart from their name.
+   *
+   * Architectural GLBs exported from level editors routinely carry `.001`/`.002` duplicates of the
+   * same material: measured on `auraClashDuelStage`, **77 material slots are only 13 distinct
+   * definitions**, and on `arenaNeonDowntown`, 131 slots are 14. Because the renderer's static
+   * batching keys on material *identity*, those duplicates prevent batching and force one draw call
+   * per slot.
+   *
+   * Deduplication is opt-in and compares the full glTF material definition, so two materials are only
+   * merged when every factor, texture reference, and extension matches. A material that differs in any
+   * respect keeps its own instance. Names remain individually addressable in `materialLibrary`, so
+   * override queries and diagnostics are unaffected; only the underlying instance is shared.
+   */
+  readonly deduplicateIdenticalMaterials?: boolean;
 }
 
 export interface GLTFMaterialRenderStateOverride {
@@ -438,16 +454,37 @@ export async function createGLTFRenderResources(
       });
     }
     const materialTasks: Promise<void>[] = [];
+    // When deduplication is enabled, materials with identical definitions share one runtime instance
+    // so renderer static batching (which keys on material identity) can collapse them.
+    const sharedMaterials = options.deduplicateIdenticalMaterials
+      ? new Map<string, Promise<Material>>()
+      : null;
+    const buildMaterial = (
+      material: (typeof asset.materials)[number],
+      contract: Parameters<typeof createMaterial>[3]
+    ): Promise<Material> => {
+      if (!sharedMaterials) {
+        return createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides);
+      }
+      // The contract participates in the key: the same glTF material under two different runtime
+      // contracts (skinned vs instanced, for example) must not collapse into one instance.
+      const key = identicalMaterialKey(material, contract);
+      const existing = sharedMaterials.get(key);
+      if (existing) return existing;
+      const created = createMaterial(asset, material, getTexture, contract, options.materialRenderStateOverrides);
+      sharedMaterials.set(key, created);
+      return created;
+    };
     for (const material of asset.materials) {
       const runtimeKeys = [...runtimeMaterialContracts.entries()].filter(([, runtime]) => runtime.material === material.name);
       if (runtimeKeys.length === 0) {
-        materialTasks.push(createMaterial(asset, material, getTexture, {}, options.materialRenderStateOverrides).then((runtimeMaterial) => {
+        materialTasks.push(buildMaterial(material, {}).then((runtimeMaterial) => {
           materialLibrary.set(material.name, runtimeMaterial);
         }));
         continue;
       }
       for (const [key, runtime] of runtimeKeys) {
-        materialTasks.push(createMaterial(asset, material, getTexture, runtime.contract, options.materialRenderStateOverrides).then((runtimeMaterial) => {
+        materialTasks.push(buildMaterial(material, runtime.contract).then((runtimeMaterial) => {
           materialLibrary.set(key, runtimeMaterial);
         }));
       }
@@ -1373,6 +1410,29 @@ function vertexFormatForGLTFMesh(needsNormal: boolean, needsUv: boolean, needsTa
     offset += 16;
   }
   return new VertexFormat(attributes, offset);
+}
+
+/**
+ * A stable key identifying a glTF material definition, ignoring only its name.
+ *
+ * Two materials share a runtime instance only when this key matches, so every factor, texture
+ * reference, alpha mode, and extension must agree. The runtime contract is folded in because the same
+ * definition under a different contract (skinned versus instanced, for example) compiles differently.
+ */
+function identicalMaterialKey(material: { readonly name?: string }, contract: unknown): string {
+  const definition = { ...(material as Record<string, unknown>) };
+  delete definition.name;
+  return `${stableJson(definition)}|${stableJson(contract)}`;
+}
+
+/** JSON with deterministically ordered keys, so key equality does not depend on property order. */
+function stableJson(value: unknown): string {
+  return JSON.stringify(value, (_key, nested) => {
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      return Object.fromEntries(Object.entries(nested as Record<string, unknown>).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+    }
+    return nested;
+  });
 }
 
 async function createMaterial(

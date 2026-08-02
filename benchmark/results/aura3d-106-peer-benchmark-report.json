@@ -17,20 +17,20 @@
   "screenshots": [
     {
       "path": "tests/reports/current-route-health/screenshots/apps-hello-world-typed-asset.png",
-      "sha256": "86a0cd80a904412964b32e3530df2f3e60437d2e22b59efe208372d13a82ca40",
-      "byteSize": 76063,
+      "sha256": "b9e60dfec3063b1fec5f530f53e3b796e9e9e8e2110185446bf13007745a68ff",
+      "byteSize": 107786,
       "role": "typed asset route visual evidence"
     },
     {
       "path": "tests/reports/current-route-health/screenshots/apps-camera-path.png",
-      "sha256": "93b6946c86d0f691bfa6f0f0c5d83d19c00b58135887046c159992fd70d81899",
-      "byteSize": 72172,
+      "sha256": "a2f2e50a1a5cb1ef524bc4f0ee3cab558f3aa0bdb595ab1491bb3e936600408b",
+      "byteSize": 75979,
       "role": "camera path route visual evidence"
     },
     {
       "path": "tests/reports/current-route-health/screenshots/apps-material-lighting.png",
-      "sha256": "efc8d801e1b161c561337e05ee727fd26b19928e64726f0aa9e511bad85568bf",
-      "byteSize": 81887,
+      "sha256": "370b75416c05192ab972fa6875c6d465efc5b6f804ae668978067ec9d9615d79",
+      "byteSize": 88479,
       "role": "material and lighting route visual evidence"
     }
   ],

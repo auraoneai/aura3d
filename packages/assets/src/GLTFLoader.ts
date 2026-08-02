@@ -27,7 +27,14 @@ type GLTFAccessorType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
 const DEFAULT_GLTF_MATERIAL_NAME = "default-material";
 const RUNTIME_MATERIAL_KEY_MARKER = "#aura3d-runtime:";
 const DISPOSE_GLTF_ASSET = Symbol("disposeGLTFAsset");
-const MAX_RENDERABLE_SKIN_JOINTS = 96;
+/**
+ * Joints addressable through a uniform-array palette. Skins above this still render:
+ * the palette is uploaded as an RGBA32F data texture instead.
+ */
+const MAX_UNIFORM_ARRAY_SKIN_JOINTS = 96;
+
+/** Absolute ceiling, bounded by the data-texture palette size. */
+const MAX_RENDERABLE_SKIN_JOINTS = 1024;
 
 interface GLTFBuffer {
   readonly uri?: string;
@@ -367,6 +374,10 @@ export interface GLTFMeshAsset {
   readonly colors: readonly (readonly [number, number, number, number])[];
   readonly joints: readonly (readonly [number, number, number, number])[];
   readonly weights: readonly (readonly [number, number, number, number])[];
+  /** Second influence set from `JOINTS_1`, present only for eight-influence meshes. */
+  readonly joints1?: readonly (readonly [number, number, number, number])[];
+  /** Second influence set from `WEIGHTS_1`, present only for eight-influence meshes. */
+  readonly weights1?: readonly (readonly [number, number, number, number])[];
   readonly morphTargets: readonly GLTFMorphTargetAsset[];
   readonly morphWeights: readonly number[];
   readonly indices?: readonly number[];
@@ -827,6 +838,10 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         const colors = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "COLOR_0", accessorCache);
         const joints = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "JOINTS_0", accessorCache);
         const weights = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "WEIGHTS_0", accessorCache);
+        // Second influence set. glTF allows vertices bound to more than four joints;
+        // dropping these silently mis-deforms densely weighted areas.
+        const joints1 = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "JOINTS_1", accessorCache);
+        const weights1 = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "WEIGHTS_1", accessorCache);
         const indices = dracoPrimitive
           ? dracoPrimitive.indices?.map((index) => [index])
           : primitive.indices === undefined ? undefined : readAccessor(json, buffers, primitive.indices, accessorCache);
@@ -835,6 +850,13 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         validateAttributeCount("COLOR_0", colors, positions.length, meshIndex, primitiveIndex);
         validateAttributeCount("JOINTS_0", joints, positions.length, meshIndex, primitiveIndex);
         validateAttributeCount("WEIGHTS_0", weights, positions.length, meshIndex, primitiveIndex);
+        validateAttributeCount("JOINTS_1", joints1, positions.length, meshIndex, primitiveIndex);
+        validateAttributeCount("WEIGHTS_1", weights1, positions.length, meshIndex, primitiveIndex);
+        if ((joints1.length > 0) !== (weights1.length > 0)) {
+          throw new Error(
+            `glTF mesh ${meshIndex} primitive ${primitiveIndex} declares only one of JOINTS_1/WEIGHTS_1; both are required for eight-influence skinning`
+          );
+        }
         const primitiveMaterialIndex = resolvePrimitiveMaterialIndex(primitive, materials, meshIndex, primitiveIndex);
         const primitiveMaterial = primitiveMaterialIndex === undefined ? undefined : materials[primitiveMaterialIndex];
         const primitiveMaterialVariants = resolvePrimitiveMaterialVariants(primitive, materialVariants, materials, meshIndex, primitiveIndex);
@@ -852,6 +874,11 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
           weight[3] ?? 0
         ], weightNormalization));
         reportSkinWeightNormalization(meshIndex, primitiveIndex, weightNormalization);
+        const typedJoints1 = joints1.map((joint) => [joint[0] ?? 0, joint[1] ?? 0, joint[2] ?? 0, joint[3] ?? 0] as const);
+        // The second set is intentionally NOT independently renormalized: glTF weights
+        // are normalized across all influences together, so rescaling one half in
+        // isolation would corrupt the combined sum.
+        const typedWeights1 = weights1.map((weight) => [weight[0] ?? 0, weight[1] ?? 0, weight[2] ?? 0, weight[3] ?? 0] as const);
         const morphTargets = readMorphTargets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, accessorCache, readMorphTargetNames(mesh));
         const resolvedPrimitive = resolvePrimitiveMode(primitive, indices?.map((index) => index[0] ?? 0), positions.length, meshIndex, primitiveIndex);
         const geometry = createGeometryAsset(typedPositions, resolvedPrimitive.indices);
@@ -869,6 +896,8 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
           colors: typedColors,
           joints: typedJoints,
           weights: typedWeights,
+          ...(typedJoints1.length > 0 ? { joints1: typedJoints1 } : {}),
+          ...(typedWeights1.length > 0 ? { weights1: typedWeights1 } : {}),
           morphTargets,
           morphWeights: resolveMorphWeights(mesh, meshIndex, primitiveIndex, morphTargets.length),
           indices: resolvedPrimitive.indices,
@@ -1041,7 +1070,18 @@ function createGLTFLoaderDiagnostics(
   if (asset.meshes.some((mesh) => mesh.texcoordSets.length > 1)) features.add("multi-uv");
   if (asset.meshes.some((mesh) => mesh.morphTargets.length > 0)) features.add("morph-targets");
   if (asset.meshes.some((mesh) => mesh.skinIndex !== undefined || mesh.joints.length > 0 || mesh.weights.length > 0)) features.add("skinning");
-  if (asset.skins.some((skin) => skin.joints.length > MAX_RENDERABLE_SKIN_JOINTS)) features.add("skinning-palette-limit-fallback");
+  // Over-cap skins are no longer a fallback: they render through the data-texture
+  // palette path. The feature name now records which path a skin will take so the
+  // information is still available without implying a downgrade.
+  if (asset.skins.some((skin) => skin.joints.length > MAX_UNIFORM_ARRAY_SKIN_JOINTS)) {
+    features.add("skinning-data-texture-palette");
+  }
+  if (asset.meshes.some((mesh) => (mesh.joints1?.length ?? 0) > 0)) {
+    features.add("skinning-eight-influences");
+  }
+  if (asset.skins.some((skin) => skin.joints.length > MAX_RENDERABLE_SKIN_JOINTS)) {
+    features.add("skinning-palette-limit-fallback");
+  }
   if ((json.skins ?? []).some((skin) => skin.inverseBindMatrices === undefined)) features.add("skinning-default-inverse-bind-matrices");
   for (const unsupportedFeature of unsupportedFeatures) features.add(`unsupported:${unsupportedFeature}`);
   if (asset.animations.length > 0) features.add("animations");
@@ -1080,8 +1120,11 @@ function collectUnsupportedFeatureDiagnostics(json: GLTFJson): readonly string[]
   const unsupported = new Set<string>();
   for (const mesh of json.meshes ?? []) {
     for (const primitive of mesh.primitives) {
-      if (primitive.attributes.JOINTS_1 !== undefined || primitive.attributes.WEIGHTS_1 !== undefined) {
-        unsupported.add("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+      // JOINTS_1/WEIGHTS_1 are now parsed and rendered through the eight-influence
+      // shaders, so they are no longer reported as unsupported. A third set
+      // (JOINTS_2 and beyond) still is: nothing consumes it.
+      if (primitive.attributes.JOINTS_2 !== undefined || primitive.attributes.WEIGHTS_2 !== undefined) {
+        unsupported.add("skinning-extra-influences:JOINTS_2+/WEIGHTS_2+");
       }
     }
   }

@@ -116,8 +116,8 @@ for (const stalePattern of [/launch-evidence\/[^"]*v5/i, /launch-evidence\/[^"]*
   }
 }
 
-if (!manifest.prd || !manifest.prd.endsWith("docs/project/aura-clash-showcase.md")) {
-  failures.push("Manifest prd must point at docs/project/aura-clash-showcase.md");
+if (!manifest.prd || !manifest.prd.endsWith("docs/project/showcase/aura-clash-showcase-plan.md")) {
+  failures.push("Manifest prd must point at docs/project/showcase/aura-clash-showcase-plan.md");
 }
 
 for (const [entryName, requiredFiles] of Object.entries(requiredSourceEvidence)) {

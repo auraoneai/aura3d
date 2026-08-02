@@ -135,28 +135,6 @@ const apps = [
     notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof."
   },
   {
-    id: "showcase-public-racing-presentation-proof",
-    route: "/apps/showcase-public-racing-presentation-proof/",
-    routeHealth: "/apps/showcase-public-racing-presentation-proof/route-health.json",
-    classification: "removed-from-public-showcase",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "bounded",
-    notes: "Superseded by Turbo Drift Circuit. This route remains available as historical certification evidence but is no longer promoted or counted as a current racer."
-  },
-  {
-    id: "showcase-public-platformer-presentation-proof",
-    route: "/apps/showcase-public-platformer-presentation-proof/",
-    routeHealth: "/apps/showcase-public-platformer-presentation-proof/route-health.json",
-    classification: "removed-from-public-showcase",
-    publicShowcase: false,
-    primaryAssetStatus: "retained-historical-evidence",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "demoted",
-    notes: "Superseded by Skyline Runner. This route remains available as historical certification evidence but is no longer promoted or counted as a public platformer."
-  },
-  {
     id: "showcase-racing-game-layer-proof",
     route: "/apps/showcase-racing-game-layer-proof/",
     routeHealth: "/apps/showcase-racing-game-layer-proof/route-health.json",

@@ -16,9 +16,12 @@ writeJson(outputPath, {
   schema: "a3d-threejs-parity-performance",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0,
+  claimStatus: missing.length === 0 ? "bounded-evidence-ready" : "blocked-missing-comparable-inputs",
   evidence,
   missing,
   issues,
-  claim: "A3D matches or exceeds Three.js on the current measured Three.js parity performance evidence set where the evidence supports it: equivalent benchmark scaffolds tie frame-time and draw-call outcomes, instancing parity has one-draw runtime evidence, culling/instancing/raycast baselines pass, and the 100-reload resource lifecycle gate passes. Bundle bytes are measured and retained as evidence, not used as a blanket superiority claim."
+  claim: missing.length === 0
+    ? "The retained reports form a complete bounded comparison set. Read the individual scene, environment, variance, lifecycle, and bundle measurements; this report does not support a blanket superiority claim."
+    : `No Aura3D-versus-Three.js performance claim is available: ${missing.length} of ${evidence.length} canonical comparable inputs are missing.`
 });
 console.log(`Three.js parity performance report written: ${outputPath}`);

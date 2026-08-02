@@ -47,7 +47,7 @@ Commands:
   aura3d assets certify-game-geometry --assets <id,id,...> --category racing|platformer
   aura3d assets thumbnail
   aura3d assets search <query> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated] [--json]
-  aura3d assets resolve <query> --name <name> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated]
+  aura3d assets resolve <query> --name <name> [--profile ${profileUsage}] [--license cc0|cc-by] [--max-tris N] [--animated] [--index N] [--candidate-id ID]
   aura3d animation plan|preview|render|package|review|verify [--dry-run]
   aura3d animation scene <new|show|cast add|prop add|set|block|camera|shot|dialogue|render|...>  (agent-native Scene-Tool CLI)
   aura3d doctor

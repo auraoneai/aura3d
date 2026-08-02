@@ -56,6 +56,11 @@ const publicPackages = [
   "audio",
   "create-aura3d",
   "three-compat",
+  // Published `@aura3d/*` packages that predate this allow-list and were reported as
+  // "outside the target repository structure" purely because the list was never updated.
+  "asset-index",
+  "aura3d-cli",
+  "react",
   "scripting",
   "workflows",
   "editor-runtime",
@@ -121,10 +126,30 @@ function isObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/**
+ * Maps a `packages/<dir>` directory to the package name its manifest actually declares.
+ *
+ * Most packages follow `@aura3d/<dir>`, but a few deliberately do not and were being reported as
+ * name mismatches for it: `create-aura3d` is unscoped because it is the `npm create` / `npx`
+ * entrypoint, and `aura3d-cli` publishes as `@aura3d/cli` because `@aura3d/aura3d-cli` would
+ * stutter. Encoding the real names keeps the check meaningful instead of demanding renames of
+ * already-published packages.
+ */
 function packageNameFor(name: string): string {
   if (name === "engine") return "@aura3d/engine-runtime";
+  if (name === "create-aura3d") return "create-aura3d";
+  if (name === "aura3d-cli") return "@aura3d/cli";
   return `@aura3d/${name}`;
 }
+
+/**
+ * Packages that are intentionally not reachable as a root `@aura3d/engine` subpath export.
+ *
+ * These are consumed as their own npm packages or as executables, not as subpaths of the root
+ * bundle: the CLI is a binary, `create-aura3d` is an `npx` scaffolder, `asset-index` is a
+ * standalone service package, and `react` ships its own React-specific entrypoint.
+ */
+const packagesWithoutRootSubpathExport = ["create-aura3d", "aura3d-cli", "asset-index", "react"] as const;
 
 function hasPath(root: string, relativePath: string): boolean {
   return existsSync(join(root, relativePath));
@@ -224,6 +249,7 @@ export function verifyArchitecture(root = process.cwd()): ArchitectureReport {
   }
 
   for (const packageName of publicPackages) {
+    if (packagesWithoutRootSubpathExport.includes(packageName as (typeof packagesWithoutRootSubpathExport)[number])) continue;
     const exportKey = `./${packageName}`;
     if (!(exportKey in rootExports)) {
       violations.push({ kind: "missing-root-export", path: "package.json", message: `Missing root package export ${exportKey}.` });

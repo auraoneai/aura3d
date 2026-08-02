@@ -25,7 +25,7 @@ describe("governance documentation", () => {
       "CONTRIBUTING.md",
       "CHANGELOG.md",
       "docs/project/release-process.md",
-      "docs/project/release-checklist.md",
+      "docs/project/release/release-checklist.md",
       "docs/project/claim-guidelines.md",
       "docs/project/migration.md",
       "docs/project/compatibility.md"
@@ -44,7 +44,7 @@ describe("governance documentation", () => {
       "CONTRIBUTING.md",
       "CHANGELOG.md",
       "docs/project/release-process.md",
-      "docs/project/release-checklist.md",
+      "docs/project/release/release-checklist.md",
       "docs/project/claim-guidelines.md",
       "docs/project/migration.md",
       "docs/project/compatibility.md"

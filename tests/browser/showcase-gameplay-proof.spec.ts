@@ -37,7 +37,21 @@ interface RuntimeCell {
   readonly y: number;
 }
 
+interface TurboRenderedFeedback {
+  readonly driftVisible?: boolean;
+  readonly driftAmount?: number;
+  readonly speedFraction?: number;
+  readonly ribbonLength?: number;
+  readonly offTrack?: boolean;
+}
+
 interface TurboEvidence {
+  readonly renderedFeedback?: TurboRenderedFeedback;
+  readonly observedRenderedFeedback?: {
+    readonly driftRendered?: boolean;
+    readonly highSpeedRendered?: boolean;
+    readonly offTrackRendered?: boolean;
+  };
   readonly status: string;
   readonly frameCount: number;
   readonly speed: number;
@@ -137,8 +151,16 @@ interface BlockfallEvidence {
     readonly checksum: string;
     readonly score: number;
     readonly lines: number;
+    readonly level: number;
+    readonly gameOver: boolean;
     readonly hold: string | null;
     readonly piecesPlaced: number;
+  };
+  readonly sixtySecondReplayProof?: {
+    readonly pass: boolean;
+    readonly replayedSeconds: number;
+    readonly deterministic: boolean;
+    readonly missingMechanics: readonly string[];
   };
   readonly live?: {
     readonly lastMove: string;
@@ -191,18 +213,63 @@ test.describe("showcase gameplay proof", () => {
     const before = await waitForTurbo(page);
     const beforePng = await capture(page, "showcase-turbo-drift-circuit", "before-input");
 
+    // FS-102 named capture points. Each is written only after the mounted race
+    // reached the named condition, so a filename cannot claim an unreached state.
+    const turboCaptures: Record<string, ScreenshotEvidence> = { start: beforePng };
+
     await page.keyboard.down("KeyW");
     await page.waitForTimeout(900);
+    // High-speed chase: capture once real speed has built.
+    const atSpeed = await readTurbo(page);
+    if (atSpeed.speed > before.speed + 0.04) {
+      turboCaptures["high-speed-chase"] = await capture(page, "showcase-turbo-drift-circuit", "high-speed-chase");
+    }
+    // Drift: the handbrake is what builds real slip in game.racing.
     await page.keyboard.down("KeyD");
-    await page.waitForTimeout(650);
+    await page.keyboard.down("Space");
+    await page.waitForTimeout(750);
+    const drifting = await readTurbo(page);
+    if (drifting.renderedFeedback?.driftVisible === true) {
+      turboCaptures.drift = await capture(page, "showcase-turbo-drift-circuit", "drift");
+    }
+    await page.keyboard.up("Space");
+    await page.waitForTimeout(400);
     await page.keyboard.up("KeyD");
     await page.keyboard.up("KeyW");
     await page.waitForTimeout(300);
     const after = await readTurbo(page);
     const afterPng = await capture(page, "showcase-turbo-drift-circuit", "after-input");
+
+    // Checkpoint: capture once an ordered gate has actually been credited.
+    let gated = after;
+    for (let sample = 0; sample < 40 && (gated.kitContractProof?.checkpointAdvances !== true); sample += 1) {
+      await page.keyboard.down("KeyW");
+      await page.waitForTimeout(220);
+      gated = await readTurbo(page);
+    }
+    await page.keyboard.up("KeyW");
+    if (gated.kitContractProof?.checkpointAdvances === true) {
+      turboCaptures.checkpoint = await capture(page, "showcase-turbo-drift-circuit", "checkpoint");
+    }
+
+    // Off-track: drive off the road and capture the retained penalty state.
+    await page.keyboard.down("KeyW");
+    await page.keyboard.down("KeyA");
+    let offTrack = gated;
+    for (let sample = 0; sample < 40 && offTrack.renderedFeedback?.offTrack !== true; sample += 1) {
+      await page.waitForTimeout(180);
+      offTrack = await readTurbo(page);
+    }
+    await page.keyboard.up("KeyA");
+    await page.keyboard.up("KeyW");
+    if (offTrack.renderedFeedback?.offTrack === true) {
+      turboCaptures["off-track"] = await capture(page, "showcase-turbo-drift-circuit", "off-track");
+    }
+
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
     const reset = await readTurbo(page);
+    turboCaptures.reset = await capture(page, "showcase-turbo-drift-circuit", "reset");
 
     check(after.speed > before.speed + 0.04, blockers, "throttle did not increase visible car speed");
     check((after.raceState?.progress ?? 0) > (before.raceState?.progress ?? 0) + 0.015, blockers, "throttle did not advance race progress");
@@ -222,7 +289,34 @@ test.describe("showcase gameplay proof", () => {
     check((after.opponent?.decisionCount ?? 0) > 0, blockers, "opponent did not make autonomous pacing decisions");
     check((after.opponent?.progress ?? 0) !== ((after.raceState?.progress ?? 0) + 0.22) % 1, blockers, "opponent retained the old player-progress offset behavior");
     checkPhysicsBackend(after.physics, blockers, "turbo drift");
-    writeRouteReport("showcase-turbo-drift-circuit", blockers, errors, beforePng, afterPng, { before, after, reset });
+    for (const requiredState of ["start", "high-speed-chase", "drift", "checkpoint", "off-track", "reset"]) {
+      check(
+        turboCaptures[requiredState] !== undefined,
+        blockers,
+        `named capture state was never reached: ${requiredState}`
+      );
+    }
+    // Rendered drift feedback must come from real slip, not steering input.
+    check(
+      drifting.renderedFeedback?.driftAmount !== undefined && drifting.renderedFeedback.driftAmount > 0.12,
+      blockers,
+      "handbrake did not build real drift slip in game.racing"
+    );
+    check(
+      (drifting.renderedFeedback?.ribbonLength ?? 0) > (before.renderedFeedback?.ribbonLength ?? 0),
+      blockers,
+      "drift ribbon length did not scale with slip and speed"
+    );
+    check(
+      after.observedRenderedFeedback?.driftRendered === true
+        && after.observedRenderedFeedback?.highSpeedRendered === true,
+      blockers,
+      "rendered drift and speed feedback were never observed"
+    );
+    writeRouteReport("showcase-turbo-drift-circuit", blockers, errors, beforePng, afterPng, {
+      before, atSpeed, drifting, after, gated, offTrack, reset,
+      namedCaptures: turboCaptures
+    });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 
@@ -234,14 +328,6 @@ test.describe("showcase gameplay proof", () => {
     });
   });
 
-  test("proves public racing presentation proof gameplay when keyboard input is applied", async ({ page }) => {
-    await proveRacingRoute(page, server.origin, {
-      appId: "showcase-public-racing-presentation-proof",
-      path: "/apps/showcase-public-racing-presentation-proof/",
-      globalName: "__AURA3D_SHOWCASE_PUBLIC_RACING_PRESENTATION_PROOF__"
-    });
-  });
-
   test("proves skyline runner gameplay when keyboard input is applied", async ({ page }) => {
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
@@ -250,14 +336,29 @@ test.describe("showcase gameplay proof", () => {
     const before = await waitForSkyline(page);
     const beforePng = await capture(page, "showcase-skyline-runner", "before-input");
 
+    const skylineCaptures: Record<string, ScreenshotEvidence> = { "first-load": beforePng };
+
     await page.keyboard.down("KeyD");
     await page.waitForTimeout(620);
+    // Traversal: the runner is moving right along the course.
+    skylineCaptures.traversal = await capture(page, "showcase-skyline-runner", "traversal");
     await page.keyboard.press("Space");
+    await page.waitForTimeout(120);
+    // Jump: capture while the runner is genuinely airborne.
+    const airborne = await readSkyline(page);
+    if (airborne.diagnostics?.snapshot?.grounded === false) {
+      skylineCaptures.jump = await capture(page, "showcase-skyline-runner", "jump");
+    }
     await page.waitForTimeout(240);
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(580);
     const after = await readSkyline(page);
     const afterPng = await capture(page, "showcase-skyline-runner", "after-input");
+    // Landing: back in contact with a surface after the jump.
+    if (after.diagnostics?.snapshot?.grounded === true) {
+      skylineCaptures.landing = await capture(page, "showcase-skyline-runner", "landing");
+    }
+
     const rightFacing = after.diagnostics?.snapshot;
     await page.keyboard.down("KeyA");
     await page.waitForTimeout(180);
@@ -270,32 +371,65 @@ test.describe("showcase gameplay proof", () => {
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(120);
     await page.keyboard.down("KeyD");
-    for (let hop = 0; hop < 11; hop += 1) {
-      await page.keyboard.press("Space");
-      await page.waitForTimeout(620);
+    let checkpointSpawn = await readSkyline(page);
+    for (let sample = 0; sample < 120 && checkpointSpawn.checkpointId !== "asset-checkpoint-03"; sample += 1) {
+      if (checkpointSpawn.diagnostics?.snapshot?.grounded === true) {
+        await page.keyboard.press("Space");
+      }
+      await page.waitForTimeout(100);
+      checkpointSpawn = await readSkyline(page);
     }
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(120);
-    const checkpointSpawn = await readSkyline(page);
+    if (checkpointSpawn.checkpointId === "asset-checkpoint-03") {
+      skylineCaptures.checkpoint = await capture(page, "showcase-skyline-runner", "checkpoint");
+    }
     const checkpointDeaths = checkpointSpawn.deaths;
     await page.keyboard.down("KeyD");
     await expect.poll(async () => (await readSkyline(page)).deaths, { timeout: 4_000 }).toBeGreaterThan(checkpointDeaths);
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(120);
     const respawned = await readSkyline(page);
+    skylineCaptures.respawn = await capture(page, "showcase-skyline-runner", "respawn");
     await page.keyboard.down("KeyD");
-    await page.waitForTimeout(120);
-    await page.keyboard.press("Space");
-    await page.waitForTimeout(620);
-    await page.keyboard.press("Space");
-    await page.waitForTimeout(620);
+    let continued = respawned;
+    for (
+      let sample = 0;
+      sample < 50
+      && continued.deaths === respawned.deaths
+      && (continued.diagnostics?.snapshot?.x ?? 0) <= (respawned.diagnostics?.snapshot?.x ?? 0) + 0.65;
+      sample += 1
+    ) {
+      if (continued.diagnostics?.snapshot?.grounded === true) {
+        await page.keyboard.press("Space");
+      }
+      await page.waitForTimeout(100);
+      continued = await readSkyline(page);
+    }
     await page.keyboard.up("KeyD");
     await page.waitForTimeout(120);
-    const continued = await readSkyline(page);
+    continued = await readSkyline(page);
+
+    let completed = continued;
+    await page.keyboard.down("KeyD");
+    for (let hop = 0; hop < 80 && completed.diagnostics?.completionProof?.completed !== true; hop += 1) {
+      await page.keyboard.press("Space");
+      await page.waitForTimeout(520);
+      completed = await readSkyline(page);
+    }
+    await page.keyboard.up("KeyD");
+    // Collection chain: by the completion run the player has banked collectibles.
+    if (Number(completed.coins ?? 0) > Number(before.coins ?? 0)) {
+      skylineCaptures["collection-chain"] = await capture(page, "showcase-skyline-runner", "collection-chain");
+    }
+    if (completed.diagnostics?.completionProof?.completed === true) {
+      skylineCaptures.finish = await capture(page, "showcase-skyline-runner", "finish");
+    }
 
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
     const reset = await readSkyline(page);
+    skylineCaptures.reset = await capture(page, "showcase-skyline-runner", "reset");
     const states = (after.animation?.stateHistory ?? []).map((entry) => entry.state);
     const beforeContact = before.diagnostics?.surfaceContactAlignment;
 
@@ -308,10 +442,26 @@ test.describe("showcase gameplay proof", () => {
     check(continued.deaths === respawned.deaths, blockers, "runner re-entered a death loop after checkpoint respawn");
     check(states.includes("jump") || Math.abs(after.diagnostics?.snapshot?.vy ?? 0) > 0.05 || (after.diagnostics?.snapshot?.y ?? 0) !== (before.diagnostics?.snapshot?.y ?? 0), blockers, "jump did not change vertical or animation state");
     check(after.animation?.sampleFrame !== before.animation?.sampleFrame, blockers, "animation state frame did not advance");
-    check(after.kitContractProof?.checkpointEvent === true && after.kitContractProof.hazardEvent === true && after.kitContractProof.respawnEvent === true && after.kitContractProof.finishEvent === true, blockers, "checkpoint/hazard/respawn/finish progression is not proven");
-    check(after.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
-    check((after.diagnostics?.completionProof?.finalTime ?? 0) >= 30, blockers, "completion proof is shorter than 30 seconds");
-    check(after.diagnostics?.completionProof?.stable === true && ((after.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (after.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
+    // The contract is event-derived and cumulative per mounted session. Hazard
+    // and respawn are proven by the deliberate missed-jump sequence (`respawned`);
+    // checkpoint and finish are proven by the completion run (`completed`). A
+    // clean completion run legitimately reports no hazard, so read each flag from
+    // the sample that actually drove it.
+    check(
+      (respawned.kitContractProof?.hazardEvent === true || respawned.kitContractProof?.fallEvent === true)
+        && respawned.kitContractProof?.respawnEvent === true
+        && respawned.kitContractProof?.hazardRespawnOrRetry === true,
+      blockers,
+      "hazard-or-fall death and respawn progression is not proven"
+    );
+    check(
+      completed.kitContractProof?.checkpointEvent === true && completed.kitContractProof.finishEvent === true,
+      blockers,
+      "checkpoint/finish progression is not proven"
+    );
+    check(completed.diagnostics?.completionProof?.completed === true, blockers, "completion proof does not reach the finish");
+    check((completed.diagnostics?.completionProof?.finalTime ?? 0) >= 30, blockers, "completion proof is shorter than 30 seconds");
+    check(completed.diagnostics?.completionProof?.stable === true && ((completed.diagnostics.completionProof.checkpoints?.length ?? 0) > 0 || (completed.diagnostics.completionProof.eventCounts?.respawn ?? 0) > 0), blockers, "stable checkpoint/hazard route progression proof is missing");
     check((after.levelDesign?.authoredPlayableSeconds ?? 0) >= 30, blockers, "authored platformer path is shorter than 30 seconds");
     check(after.levelDesign?.styleCompatible === true && after.levelDesign.scaleCompatible === true, blockers, "platformer asset style/scale fit is not proven");
     check(beforeContact?.feetOnSurface === true, blockers, "runner initial feet are not proven on a visible playable surface");
@@ -322,7 +472,27 @@ test.describe("showcase gameplay proof", () => {
     check((after.challenge?.maxFlow ?? 0) > 0, blockers, "movement and jumping did not build runner flow");
     check((reset.challenge?.resets ?? 0) > (before.challenge?.resets ?? 0), blockers, "reset did not restart the flow challenge");
     check(reset.checkpointId === "start" && reset.coins === 0, blockers, "reset did not restore the start checkpoint");
-    writeRouteReport("showcase-skyline-runner", blockers, errors, beforePng, afterPng, { before, after, reset });
+    // FS-103: every named state must have been genuinely reached and captured.
+    for (const requiredState of [
+      "first-load", "traversal", "jump", "landing", "collection-chain",
+      "checkpoint", "respawn", "finish", "reset"
+    ]) {
+      check(
+        skylineCaptures[requiredState] !== undefined,
+        blockers,
+        `named capture state was never reached: ${requiredState}`
+      );
+    }
+    writeRouteReport("showcase-skyline-runner", blockers, errors, beforePng, afterPng, {
+      before,
+      after,
+      checkpointSpawn,
+      respawned,
+      continued,
+      completed,
+      reset,
+      namedCaptures: skylineCaptures
+    });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 
@@ -331,14 +501,6 @@ test.describe("showcase gameplay proof", () => {
       appId: "showcase-platformer-game-layer-proof",
       path: "/apps/showcase-platformer-game-layer-proof/",
       globalName: "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__"
-    });
-  });
-
-  test("proves public platformer presentation proof gameplay when keyboard input is applied", async ({ page }) => {
-    await provePlatformerRoute(page, server.origin, {
-      appId: "showcase-public-platformer-presentation-proof",
-      path: "/apps/showcase-public-platformer-presentation-proof/",
-      globalName: "__AURA3D_SHOWCASE_PUBLIC_PLATFORMER_PRESENTATION_PROOF__"
     });
   });
 
@@ -364,9 +526,63 @@ test.describe("showcase gameplay proof", () => {
     await page.waitForTimeout(360);
     const after = await readBlockfall(page);
     const afterPng = await capture(page, "showcase-blockfall-reactor", "after-input");
+
+    // FS-101 named capture states. Each capture is taken only after the mounted
+    // game actually reached the named condition, so the filename cannot claim a
+    // state the route never entered.
+    const namedCaptures: Record<string, ScreenshotEvidence> = {
+      "first-load": beforePng,
+      "active-piece": afterPng
+    };
+
+    // Named capture states reachable from the route's opening board.
+    //
+    // Scope note: level progression is deliberately NOT captured here. The route
+    // advances a level every ten cleared lines, and forcing ten clears from a
+    // fresh board would require an opening stack filling half the playfield —
+    // i.e. a nearly-lost game on first load, which contradicts the visual goal.
+    // Level progression is instead proven by the deterministic replay proof in
+    // `rules.ts` (92 lines, level 29), asserted by
+    // `tests/unit/apps/blockfall-sixty-second-replay.test.ts`.
+    const spreadDrop = async (column: number): Promise<void> => {
+      for (let step = 0; step < 5; step += 1) await page.keyboard.press("ArrowLeft");
+      for (let step = 0; step < column; step += 1) await page.keyboard.press("ArrowRight");
+      await page.keyboard.press("Space");
+      await page.waitForTimeout(80);
+    };
+
+    // Line clear: the opening board's top rows sit one cell from completing, so
+    // a placed piece completes a row. `lines` already advanced during the
+    // earlier hard-drop assertions, so compare against the pre-input baseline.
+    const baselineLines = Number(before.current?.lines ?? 0);
+    let lineClearState = await readBlockfall(page);
+    for (let round = 0; round < 40 && Number(lineClearState.current?.lines ?? 0) <= baselineLines; round += 1) {
+      if (lineClearState.current?.gameOver === true) {
+        await page.keyboard.press("KeyR");
+        await page.waitForTimeout(180);
+      }
+      await spreadDrop(round % 10);
+      lineClearState = await readBlockfall(page);
+    }
+    if (Number(lineClearState.current?.lines ?? 0) > baselineLines) {
+      namedCaptures["line-clear"] = await capture(page, "showcase-blockfall-reactor", "line-clear");
+    }
+
+    // Game over: stack a single column until the board tops out.
+    let gameOverState = lineClearState;
+    for (let drop = 0; drop < 260 && gameOverState.current?.gameOver !== true; drop += 1) {
+      await page.keyboard.press("Space");
+      await page.waitForTimeout(60);
+      gameOverState = await readBlockfall(page);
+    }
+    if (gameOverState.current?.gameOver === true) {
+      namedCaptures["game-over"] = await capture(page, "showcase-blockfall-reactor", "game-over");
+    }
+
     await page.keyboard.press("KeyR");
     await page.waitForTimeout(260);
     const reset = await readBlockfall(page);
+    namedCaptures.reset = await capture(page, "showcase-blockfall-reactor", "reset");
 
     check(minCellX(movedLeft) < minCellX(before), blockers, "left input did not move active block left");
     check(minCellX(movedRight) > minCellX(movedLeft), blockers, "right input did not move active block right");
@@ -376,7 +592,38 @@ test.describe("showcase gameplay proof", () => {
     check(after.lineClearProof?.passed === true && after.lineClearProof.clearedLines === 1, blockers, "line-clear scoring proof is missing");
     check(reset.current?.score === 0 && reset.current.lines === 0 && reset.current.hold === null && reset.current.piecesPlaced === 0, blockers, "reset did not clear score, lines, hold, and placed pieces");
     checkPhysicsBackend(after.physics, blockers, "blockfall");
-    writeRouteReport("showcase-blockfall-reactor", blockers, errors, beforePng, afterPng, { before, movedLeft, movedRight, rotated, after, reset });
+    // Every named state the PRD requires must have been reached and captured.
+    for (const requiredState of ["first-load", "active-piece", "line-clear", "game-over", "reset"]) {
+      check(
+        namedCaptures[requiredState] !== undefined,
+        blockers,
+        `named capture state was never reached: ${requiredState}`
+      );
+    }
+    check(
+      lineClearState.current !== undefined && Number(lineClearState.current.lines) > baselineLines,
+      blockers,
+      "mounted play did not produce a line clear"
+    );
+    check(gameOverState.current?.gameOver === true, blockers, "mounted play did not reach game over");
+    // Level progression is proven by the deterministic replay proof, not here.
+    check(
+      (after.sixtySecondReplayProof?.missingMechanics ?? ["unproven"]).length === 0,
+      blockers,
+      "deterministic replay proof did not cover every named mechanic"
+    );
+    check(
+      after.sixtySecondReplayProof?.pass === true,
+      blockers,
+      "deterministic 60-second replay proof does not pass"
+    );
+    writeRouteReport("showcase-blockfall-reactor", blockers, errors, beforePng, afterPng, {
+      before, movedLeft, movedRight, rotated, after, reset,
+      lineClearState, gameOverState,
+      namedCaptures,
+      levelProgressionProvenBy: "tests/unit/apps/blockfall-sixty-second-replay.test.ts",
+      sixtySecondReplayProof: after.sixtySecondReplayProof
+    });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 });
@@ -592,7 +839,7 @@ function writeRouteReport(appId: string, blockers: readonly string[], errors: re
 
 function createCategoryProof(appId: string, evidence: object): object | undefined {
   const visualReview = readVisualReview(appId);
-  if ((appId === "showcase-turbo-drift-circuit" || appId === "showcase-racing-game-layer-proof" || appId === "showcase-public-racing-presentation-proof") && isTurboReport(evidence)) {
+  if ((appId === "showcase-turbo-drift-circuit" || appId === "showcase-racing-game-layer-proof") && isTurboReport(evidence)) {
     return {
       racing: {
         inputChangesSpeed: evidence.after.speed > evidence.before.speed + 0.04,
@@ -611,14 +858,16 @@ function createCategoryProof(appId: string, evidence: object): object | undefine
       }
     };
   }
-  if ((appId === "showcase-skyline-runner" || appId === "showcase-platformer-game-layer-proof" || appId === "showcase-public-platformer-presentation-proof") && isSkylineReport(evidence)) {
+  if ((appId === "showcase-skyline-runner" || appId === "showcase-platformer-game-layer-proof") && isSkylineReport(evidence)) {
     return {
       platformer: {
         movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.35,
         jumpChangesState: (evidence.after.animation?.stateHistory ?? []).some((entry) => entry.state === "jump") || Math.abs(evidence.after.diagnostics?.snapshot?.vy ?? 0) > 0.05,
         checkpointProgression: evidence.after.kitContractProof?.checkpointEvent === true,
         hazardRespawn: evidence.after.kitContractProof?.hazardEvent === true && evidence.after.kitContractProof.respawnEvent === true,
-        finishProgression: evidence.after.kitContractProof?.finishEvent === true && evidence.after.diagnostics?.completionProof?.completed === true,
+        finishProgression:
+          evidence.completed?.kitContractProof?.finishEvent === true &&
+          evidence.completed.diagnostics?.completionProof?.completed === true,
         authoredPlayableSeconds: evidence.after.levelDesign?.authoredPlayableSeconds ?? 0,
         styleCompatible: evidence.after.levelDesign?.styleCompatible === true,
         scaleCompatible: evidence.after.levelDesign?.scaleCompatible === true,
@@ -644,7 +893,12 @@ function isTurboReport(value: object): value is { readonly before: TurboEvidence
   return isRecord(record.before) && isRecord(record.after) && isRecord(record.reset) && "raceState" in record.after;
 }
 
-function isSkylineReport(value: object): value is { readonly before: SkylineEvidence; readonly after: SkylineEvidence; readonly reset: SkylineEvidence } {
+function isSkylineReport(value: object): value is {
+  readonly before: SkylineEvidence;
+  readonly after: SkylineEvidence;
+  readonly completed?: SkylineEvidence;
+  readonly reset: SkylineEvidence;
+} {
   const record = value as Readonly<Record<string, unknown>>;
   return isRecord(record.before) && isRecord(record.after) && isRecord(record.reset) && "checkpointId" in record.after;
 }

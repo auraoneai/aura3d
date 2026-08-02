@@ -36,9 +36,14 @@ function writePackage(root: string, name: string, source: string): void {
   }));
 }
 
+/** Mirrors `packageNameFor` in tools/verify-architecture, including its deliberate exceptions. */
 function expectedPackageName(packageName: string): string {
-  return packageName === "engine" ? "@aura3d/engine-runtime" : `@aura3d/${packageName}`;
+  if (packageName === "engine") return "@aura3d/engine-runtime";
+  if (packageName === "create-aura3d") return "create-aura3d";
+  if (packageName === "aura3d-cli") return "@aura3d/cli";
+  return `@aura3d/${packageName}`;
 }
+
 
 describe("verification tools", () => {
   it("boundary verifier passes valid imports and fails invalid/private imports", () => {
@@ -120,6 +125,9 @@ describe("verification tools", () => {
       "audio",
       "create-aura3d",
       "three-compat",
+      "asset-index",
+      "aura3d-cli",
+      "react",
       "scripting",
       "workflows",
       "editor-runtime",
@@ -225,6 +233,9 @@ describe("verification tools", () => {
       "audio",
       "create-aura3d",
       "three-compat",
+      "asset-index",
+      "aura3d-cli",
+      "react",
       "scripting",
       "workflows",
       "editor-runtime",
@@ -687,7 +698,18 @@ describe("verification tools", () => {
     expect(broken.violations.some((violation) => /sha256/.test(violation))).toBe(true);
   });
 
-  it("external demo exporter reports pruned legacy static demo pages honestly", async () => {
+  /*
+   * This case used to assert `report.demos` equals `[]` under the title "reports pruned legacy static
+   * demo pages honestly". Nothing had been pruned: `tools/external-demo-export/index.ts` builds its
+   * list by reading `examples/<id>/`, and all five directories had been deleted, so the empty array
+   * was **recording an outage as an expectation**. With the routes restored the exporter exports them,
+   * and the old assertion failed for the right reason.
+   *
+   * Rewritten to assert the exporter's real contract: every declared demo id is exported, each with a
+   * bundled script and content hashes. That is a claim that can fail if a route regresses, whereas
+   * `demos == []` passed most loudly precisely when the demos were missing.
+   */
+  it("external demo exporter exports every declared demo with hashed sources", async () => {
     const outputDir = join(fixtureRoot(), "external-demos");
     const reportPath = join(process.cwd(), "tests", "reports", "external-demo-static-export.json");
     const previousReport = existsSync(reportPath) ? readFileSync(reportPath) : null;
@@ -695,14 +717,22 @@ describe("verification tools", () => {
       const report = await buildExternalDemoExport(process.cwd(), outputDir);
 
       expect(report).toMatchObject({
-        ok: false,
+        ok: true,
         command: "pnpm build:external-demos",
         deploymentCommandPlanPath: expect.stringContaining("deployment-command-plan.json")
       });
-      expect(report.demos).toEqual([]);
-      expect(report.violations).toEqual(expect.arrayContaining([
-        expect.stringContaining("Missing source entry for product-configurator")
-      ]));
+      expect(report.violations, "a fully exported set must report no violations").toEqual([]);
+      expect(
+        report.demos.map((demo) => demo.id).sort(),
+        "all five declared example demos must export, including product-configurator whose entry lives at src/main.ts"
+      ).toEqual(["architecture-viewer", "game-slice", "large-world-streaming", "product-configurator", "racing-showcase"]);
+      for (const demo of report.demos) {
+        expect(demo.outputHtml, `${demo.id} must emit a page`).toContain(`${demo.id}/index.html`);
+        expect(demo.outputScript, `${demo.id} must emit a bundled script`).toContain(`${demo.id}/main.js`);
+        // Hashes are what make the deployment plan verifiable rather than declarative.
+        expect(demo.sha256.html, `${demo.id} page must be hashed`).toMatch(/^[0-9a-f]{64}$/);
+        expect(demo.sha256.script, `${demo.id} bundle must be hashed`).toMatch(/^[0-9a-f]{64}$/);
+      }
       const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
       expect(deploymentCommandPlan).toMatchObject({
         schemaVersion: "a3d-public-demo-deployment-command-plan",

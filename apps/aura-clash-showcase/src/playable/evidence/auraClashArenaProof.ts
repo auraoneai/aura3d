@@ -138,6 +138,28 @@ export interface AuraClashArenaProof {
     readonly resetCount: number;
   };
   readonly stage: AuraClashArenaStageEvidence;
+  /**
+   * Camera response to combat, read from the frame volume the renderer actually received.
+   *
+   * `cameraFrameBounds` used to be a fixed literal, so a KO, a heavy connect and an idle round were
+   * framed identically. These fields exist so "camera feedback" is a measurable claim: `punchIn` and
+   * `frameWidthUnits` can only differ from their resting values while a hit-stop the simulation set is
+   * still decaying.
+   */
+  readonly camera: {
+    /** Peak `hitStopRemaining` across both fighters this frame, in seconds. */
+    readonly impactStrength: number;
+    /** Normalised punch-in, 0 at rest and 1 at the 0.13s special-move hit-stop peak. */
+    readonly punchIn: number;
+    /** Whether the widened, lifted round-over framing is active. */
+    readonly roundOverFraming: boolean;
+    /** Horizontal extent of the frame volume, so a punch-in is verifiable rather than declared. */
+    readonly frameWidthUnits: number;
+    /** Resting horizontal extent, for comparison against `frameWidthUnits`. */
+    readonly restingFrameWidthUnits: number;
+    /** Whether the camera is responding to combat rather than sitting at its resting volume. */
+    readonly respondingToCombat: boolean;
+  };
   readonly tweaks: AuraClashArenaTweaksEvidence;
   readonly fighterController: AuraClashFighterControllerBoundary;
   readonly lighting: AuraClashLightingEvidence;
@@ -188,6 +210,7 @@ export function createAuraClashArenaProof(input: AuraClashArenaProofInput): Aura
     runtime: input.runtime,
     controls: input.controls,
     stage: input.stage,
+    camera: input.camera,
     tweaks: input.tweaks,
     fighterController: input.fighterController,
     lighting: input.lighting,

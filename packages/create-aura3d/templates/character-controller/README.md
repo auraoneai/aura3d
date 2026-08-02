@@ -30,4 +30,4 @@ locomotion kit. That requires a physics world + a rigged GLB character (see
 ## Non-goals
 
 Not a Unity Mecanim / Unreal Control Rig replacement; no motion matching, no full-body IK, no
-ragdoll. See `docs/project/known-limits.md`.
+ragdoll. See `docs/project/status/known-limits.md`.

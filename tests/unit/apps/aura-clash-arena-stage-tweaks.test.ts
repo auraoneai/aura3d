@@ -70,9 +70,15 @@ describe("Aura Clash arena stage evidence", () => {
     const root = createStageRoot();
 
     annotateAuraClashArenaStage(root);
-    const evidence = collectAuraClashArenaStageEvidence(root);
+    // Defect 48: stage evidence is derived from render labels a frame actually submitted, so this
+    // must supply them. Passing none is the "nothing observed" case and correctly reports
+    // `evidenceBacked: false` -- see tests/unit/apps/aura-clash-stage-evidence.test.ts.
+    const observedRenderLabels = auraClashArenaStageElements
+      .map((entry) => `aura-clash-rendered-stage:${entry.renderLabel}0`);
+    const evidence = collectAuraClashArenaStageEvidence(root, observedRenderLabels);
 
     expect(evidence.evidenceBacked).toBe(true);
+    expect(evidence.evidenceSource).toBe("observed-render-items");
     expect(evidence.missingElementIds).toEqual([]);
     expect(evidence.domSceneElementCount).toBe(0);
     expect(evidence.rendererOwner).toBe("production-runtime");

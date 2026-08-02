@@ -90,7 +90,7 @@ const visuallyInvalidScreenshots = screenshotVisualValidations.filter((entry) =>
 const reviewText = existsSync(resolve("docs/project/claim-guidelines.md")) ? readFileSync(resolve("docs/project/claim-guidelines.md"), "utf8") : "";
 const matrix = readJson<MatrixReport>("tests/reports/three-compat-threejs-compatibility-matrix.json");
 const weakCoverage = matrix.coverage.filter((coverage) => coverage.category === "overall" ? coverage.percent < 60 : ["core", "math", "cameras", "lights", "materials", "geometries", "textures"].includes(coverage.category) && coverage.percent < 80);
-const blockedClaims = existsSync(resolve("docs/project/known-limits.md")) ? readFileSync(resolve("docs/project/known-limits.md"), "utf8") : "";
+const blockedClaims = existsSync(resolve("docs/project/status/known-limits.md")) ? readFileSync(resolve("docs/project/status/known-limits.md"), "utf8") : "";
 const progress = readFileSync(resolve("docs/project/completion-audit.md"), "utf8");
 const release = readJson<GenericReport>("tests/reports/three-compat-release-readiness.json");
 const checks = [

@@ -535,8 +535,18 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  float slopeReceiverBias = (1.0 - normalDotLight) * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
-  float receiverDepth = projected.z * 0.5 + 0.5 - u_shadowMapBias - slopeReceiverBias;
+  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
+  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
+  // depth difference proportional to N, so a centre-only bias under-compensates every outer
+  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
+  // wide kernels acne-free without inflating the constant bias into peter-panning.
+  // The depth gradient across one shadow texel is tan(angle between receiver normal and
+  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
+  // gradient grows, so it under-biases exactly the grazing angles that need the most
+  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias * max(u_shadowMapTexelSize.x, u_shadowMapTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_shadowPcfSampleCount), 1, 32);
@@ -546,6 +556,8 @@ float a3dForwardShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirectio
     float weight = max(sampleData.z, 0.0);
     vec2 offset = sampleData.xy * u_shadowMapTexelSize;
     float storedDepth = texture(u_shadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_shadowMapBias - slopeTexelBias * sampleTexelDistance;
     shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
     totalWeight += weight;
   }
@@ -573,8 +585,18 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
   vec3 receiverNormal = normalize(normal);
   vec3 receiverLightDirection = lightDirection / max(length(lightDirection), 0.0001);
   float normalDotLight = clamp(abs(dot(receiverNormal, receiverLightDirection)), 0.0, 1.0);
-  float slopeReceiverBias = (1.0 - normalDotLight) * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
-  float receiverDepth = projected.z * 0.5 + 0.5 - u_pointShadowBias - slopeReceiverBias;
+  // Slope-scaled depth bias must be evaluated per PCF sample, not once for the kernel
+  // centre. A sample offset N texels away on a receiver sloped relative to the light sees a
+  // depth difference proportional to N, so a centre-only bias under-compensates every outer
+  // tap and the receiver shadows itself. Scaling by each sample's own texel distance keeps
+  // wide kernels acne-free without inflating the constant bias into peter-panning.
+  // The depth gradient across one shadow texel is tan(angle between receiver normal and
+  // light), not (1 - N.L). The linear form collapses toward zero far faster than the real
+  // gradient grows, so it under-biases exactly the grazing angles that need the most
+  // compensation. Clamped so a near-perpendicular receiver cannot demand unbounded bias.
+  float slopeTangent = min(sqrt(max(1.0 - normalDotLight * normalDotLight, 0.0)) / max(normalDotLight, 0.05), 8.0);
+  float slopeTexelBias = slopeTangent * u_pointShadowSlopeBias * max(u_pointShadowTexelSize.x, u_pointShadowTexelSize.y);
+  float projectedDepth = projected.z * 0.5 + 0.5;
   float shadowed = 0.0;
   float totalWeight = 0.0;
   int sampleCount = clamp(int(u_pointShadowPcfSampleCount), 1, 32);
@@ -584,6 +606,8 @@ float a3dPointShadowFactor(vec3 worldPosition, vec3 normal, vec3 lightDirection)
     float weight = max(sampleData.z, 0.0);
     vec2 offset = sampleData.xy * u_pointShadowTexelSize;
     float storedDepth = texture(u_pointShadowMapTexture, uv + offset).r;
+    float sampleTexelDistance = max(1.0, length(sampleData.xy));
+    float receiverDepth = projectedDepth - u_pointShadowBias - slopeTexelBias * sampleTexelDistance;
     shadowed += (receiverDepth > storedDepth ? 1.0 : 0.0) * weight;
     totalWeight += weight;
   }
@@ -631,11 +655,16 @@ void main() {
   float horizonBlend = 1.0 - abs(normal.y);
   vec3 proceduralDiffuse = mix(u_environmentGroundColor, u_environmentSkyColor, skyBlend);
   proceduralDiffuse = mix(proceduralDiffuse, u_environmentHorizonColor, clamp(horizonBlend, 0.0, 1.0) * 0.55);
-  vec3 environmentDiffuse = mix(ambientEnvironment, proceduralDiffuse * u_environmentMapIntensity, proceduralEnvironmentWeight);
+  // The ambient term must be added to the procedural contribution, not replaced by it. A mix
+  // here discarded u_environmentColor * u_environmentIntensity entirely whenever a procedural
+  // map was present, which is the normal case: raising ambient intensity from 0.18 to 3.0 on
+  // the product-turntable kit produced a byte-identical frame. Ambient and a sky gradient are
+  // separate physical contributions, so they sum.
+  vec3 environmentDiffuse = ambientEnvironment + proceduralDiffuse * u_environmentMapIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureIntensity);
   float diffuseEnvironmentLod = max(u_environmentMapTextureMipCount - 1.0, 0.0);
   vec3 sampledDiffuse = a3dPbrDecodeEnvironmentSample(a3dPbrEnvironmentSampleRaw(normal, diffuseEnvironmentLod));
-  environmentDiffuse = mix(environmentDiffuse, environmentDiffuse * 0.18 + sampledDiffuse * u_environmentMapTextureIntensity * 0.92, sampledEnvironmentWeight);
+  environmentDiffuse = mix(environmentDiffuse, ambientEnvironment + sampledDiffuse * u_environmentMapTextureIntensity, sampledEnvironmentWeight);
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float roughness = clamp(u_roughness, 0.0, 1.0);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, roughness));

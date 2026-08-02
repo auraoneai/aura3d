@@ -129,6 +129,14 @@ test.describe("authored WOW showcase screenshots", () => {
     try {
       for (const route of CURRENT_WOW_ROUTES) {
         const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1.25 });
+        // Serve fixtures locally rather than from `cdn.jsdelivr.net/gh/auraoneai/aura3d@main`.
+        // Without this the route fetched `robot-expressive.glb` from whatever is published on
+        // `main`, so a worktree ahead of the remote failed with `glTF request failed with 404` for a
+        // fixture that exists locally. `AURA3D_PUBLIC_ASSET_ORIGIN` is the override the route code
+        // already honours, and the dev server serves the repo root.
+        await page.addInitScript((origin) => {
+          (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN = origin;
+        }, server.origin);
         try {
           const result = await captureWowRoute(page, route, server.origin);
           results.push(result);

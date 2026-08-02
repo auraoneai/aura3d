@@ -45,7 +45,7 @@ export function validateFoundationClaimGates(root = process.cwd()): FoundationCl
     "README.md",
     "package.json",
     "docs/project",
-    "docs/project/known-limits.md",
+    "docs/project/status/known-limits.md",
     "docs/project/claim-guidelines.md",
     "docs/comparisons",
     "docs/benchmarks",

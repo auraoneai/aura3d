@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aura3D Root Shadow Contract</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        background: #05070d;
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      /*
+       * min-height and position are set explicitly because the engine's default
+       * canvas mount layout applies `min-height: 100vh` to an unstyled container,
+       * which would override the intended stage height and make the resize/DPR
+       * measurements meaningless.
+       */
+      #shadow-contract-stage {
+        width: 720px;
+        height: 480px;
+        min-height: 0;
+        position: relative;
+        overflow: hidden;
+        background: #05070d;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="shadow-contract-stage"></div>
+    <script type="module" src="./createAuraApp-shadow-contract-harness.ts"></script>
+  </body>
+</html>

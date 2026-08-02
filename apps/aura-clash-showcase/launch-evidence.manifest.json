@@ -1,7 +1,7 @@
 {
   "name": "Aura Clash launch evidence manifest",
   "version": "1.0.0",
-  "prd": "../../docs/project/aura-clash-showcase.md",
+  "prd": "../../docs/project/showcase/aura-clash-showcase-plan.md",
   "purpose": "Defines the evidence files and commands required before remaining Aura Clash showcase launch checkboxes may be marked complete.",
   "activePrdGateSourceReadiness": {
     "463": {
@@ -285,7 +285,7 @@
       "command": "npm run launch:coverage-check",
       "cwd": "apps/aura-clash-showcase",
       "inputs": [
-        "docs/project/aura-clash-showcase.md",
+        "docs/project/showcase/aura-clash-showcase-plan.md",
         "apps/aura-clash-showcase/launch-evidence.coverage.json"
       ],
       "output": "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",
@@ -365,7 +365,7 @@
       "command": "npm run launch:completion-check",
       "cwd": "apps/aura-clash-showcase",
       "inputs": [
-        "docs/project/aura-clash-showcase.md",
+        "docs/project/showcase/aura-clash-showcase-plan.md",
         "apps/aura-clash-showcase/launch-evidence/readiness.json"
       ],
       "output": "apps/aura-clash-showcase/launch-evidence/completion-audit.json",
@@ -429,7 +429,7 @@
         "Set AURA_CLASH_RUN_COMPLETION_AUDIT=1 when the workflow should fail unless active Aura Clash showcase checkboxes are all checked.",
         "Set AURA_CLASH_RUN_CROSS_RUNTIME_EVIDENCE=1 after Aura3D package-smoke and AuraVoice prompt-animation proof artifacts have been generated.",
         "Set AURA_CLASH_RUN_PRD_EVIDENCE_COVERAGE=1 when the workflow should write prd-evidence-coverage.json before the PRD updater runs.",
-        "Set AURA_CLASH_UPDATE_PRD=1 only when evidence should update docs/project/aura-clash-showcase.md."
+        "Set AURA_CLASH_UPDATE_PRD=1 only when evidence should update docs/project/showcase/aura-clash-showcase-plan.md."
       ]
     },
     "localProofAlias": {
@@ -457,7 +457,7 @@
       "command": "npm run launch:proof-complete",
       "cwd": "apps/aura-clash-showcase",
       "outputs": [
-        "docs/project/aura-clash-showcase.md",
+        "docs/project/showcase/aura-clash-showcase-plan.md",
         "apps/aura-clash-showcase/launch-evidence/workflow.json",
         "apps/aura-clash-showcase/launch-evidence/cross-runtime-evidence.json",
         "apps/aura-clash-showcase/launch-evidence/prd-evidence-coverage.json",

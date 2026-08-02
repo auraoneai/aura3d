@@ -819,7 +819,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     }
   }
 
-  if (row.sourceDocument === "docs/project/release-checklist.md") {
+  if (row.sourceDocument === "docs/project/release/release-checklist.md") {
     if (/`pnpm install` has been run/i.test(row.requirement) && existsSync(join(root, "node_modules", ".pnpm"))) {
       return evidence("node_modules/.pnpm exists for the current workspace install");
     }

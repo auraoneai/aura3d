@@ -2,20 +2,20 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const requiredFiles = [
-  "docs/project/current-state.md",
-  "docs/project/threejs-parity-status.md",
-  "docs/project/known-limits.md",
+  "docs/project/status/current-state.md",
+  "docs/project/parity/threejs/status.md",
+  "docs/project/status/known-limits.md",
   "docs/project/claim-guidelines.md",
   "docs/project/verification-evidence.md",
   "tools/production-runtime-truth/index.ts",
   "tools/production-runtime-progress/index.ts",
   "tools/production-runtime-three-compat-failure-audit/index.ts"
 ] as const;
-const productionRuntime = read("docs/project/current-state.md");
+const productionRuntime = read("docs/project/status/current-state.md");
 const status = read("docs/project/verification-evidence.md");
 const progress = read("docs/project/completion-audit.md");
 const blockedClaims = [
-  read("docs/project/known-limits.md"),
+  read("docs/project/status/known-limits.md"),
   read("docs/project/claim-guidelines.md")
 ].join("\n");
 const requiredPlanPolicies = [

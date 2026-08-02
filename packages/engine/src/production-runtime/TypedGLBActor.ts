@@ -26,6 +26,14 @@ export interface TypedGLBActorOptions {
   readonly width: number;
   readonly height: number;
   readonly tint?: TypedGLBActorTintOptions;
+  /**
+   * Share one runtime material instance across identical glTF material definitions.
+   *
+   * Architectural GLBs commonly carry `.001`/`.002` duplicates of the same material, which defeat
+   * renderer static batching because it keys on material identity. Opt in for static set dressing;
+   * leave off for actors whose materials are individually tinted at runtime.
+   */
+  readonly deduplicateIdenticalMaterials?: boolean;
 }
 
 export interface TypedGLBActorTintOptions {
@@ -103,7 +111,8 @@ export async function createTypedGLBActor(options: TypedGLBActorOptions): Promis
     assetId: options.id,
     assetName: options.name ?? options.id,
     width: options.width,
-    height: options.height
+    height: options.height,
+    ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
   pipeline.resources.scene.root.name = `${options.id}-scene-root`;
   const animation = createGLTFSceneAnimationRuntime({

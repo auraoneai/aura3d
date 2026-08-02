@@ -1187,3 +1187,290 @@ function minimalGlb(): Buffer {
   chunkHeader.write("JSON", 4, "utf8");
   return Buffer.concat([header, chunkHeader, padded]);
 }
+
+/**
+ * Deterministic candidate selection (WS2).
+ *
+ * ## Why these exist
+ *
+ * `assets resolve` used to always pull the top-ranked candidate. There was no way to reach the
+ * 2nd/3rd/Nth result that `assets search` had reported, which made the whole
+ * search -> pull -> screen -> select loop impossible to script: resolving three differently-worded
+ * "race car" queries returned byte-identical assets. That is the direct reason three unusable hero
+ * vehicles shipped in turn -- each replacement was chosen by re-wording a query and hoping.
+ *
+ * The measured proof that selection now works: pulling indices 0-3 of "race car" and auditing each
+ * gave NO-WHEELS, NO-WHEELS, NO-WHEELS, WHEELS-VISIBLE.
+ *
+ * These tests use the injected resolver and downloader, so they are offline and deterministic and do
+ * not depend on a mutable live provider response.
+ */
+describe("runResolve deterministic candidate selection", () => {
+  /** Four distinguishable pullable candidates in a known rank order. */
+  function fourCandidates(): readonly ResolveCandidate[] {
+    return [
+      candidate(asset({ id: "os3a:first", title: "First", url: "https://example.test/first.glb" }), 40),
+      candidate(asset({ id: "os3a:second", title: "Second", url: "https://example.test/second.glb" }), 30),
+      candidate(asset({ id: "os3a:third", title: "Third", url: "https://example.test/third.glb" }), 20),
+      candidate(asset({ id: "os3a:fourth", title: "Fourth", url: "https://example.test/fourth.glb" }), 10),
+    ];
+  }
+
+  /** Records which URLs were fetched so "which candidate was actually pulled" is observable. */
+  function recordingDownload(downloaded: string[]) {
+    return async (url: string, dest: string) => {
+      downloaded.push(url);
+      writeFileSync(dest, minimalGlb());
+    };
+  }
+
+  it("selects a different candidate for index 0 than for index 3", async () => {
+    const first: string[] = [];
+    const firstReport = await runResolve({
+      query: "race car",
+      name: "carIndex0",
+      projectDir: makeProject(),
+      candidateIndex: 0,
+      makeResolver: () => stubResolver(fourCandidates()) as never,
+      download: recordingDownload(first),
+    });
+
+    const fourth: string[] = [];
+    const fourthReport = await runResolve({
+      query: "race car",
+      name: "carIndex3",
+      projectDir: makeProject(),
+      candidateIndex: 3,
+      makeResolver: () => stubResolver(fourCandidates()) as never,
+      download: recordingDownload(fourth),
+    });
+
+    expect(firstReport.ok).toBe(true);
+    expect(fourthReport.ok).toBe(true);
+    expect(first).toEqual(["https://example.test/first.glb"]);
+    expect(fourth).toEqual(["https://example.test/fourth.glb"]);
+    // The whole point: the two indices are not the same asset.
+    expect(first).not.toEqual(fourth);
+    expect(firstReport.asset?.id).toBe("os3a:first");
+    expect(fourthReport.asset?.id).toBe("os3a:fourth");
+  });
+
+  it("selects the exact candidate by id independent of rank", async () => {
+    const downloaded: string[] = [];
+    const report = await runResolve({
+      query: "race car",
+      name: "carById",
+      projectDir: makeProject(),
+      candidateId: "os3a:third",
+      makeResolver: () => stubResolver(fourCandidates()) as never,
+      download: recordingDownload(downloaded),
+    });
+    expect(report.ok).toBe(true);
+    expect(report.asset?.id).toBe("os3a:third");
+    // Only the requested candidate is fetched; the higher-ranked ones are not touched.
+    expect(downloaded).toEqual(["https://example.test/third.glb"]);
+  });
+
+  it("resolves the same candidate deterministically across repeated runs", async () => {
+    const runOnce = async (name: string) => {
+      const downloaded: string[] = [];
+      const report = await runResolve({
+        query: "race car",
+        name,
+        projectDir: makeProject(),
+        candidateId: "os3a:second",
+        retrievedAt: "2026-08-01T00:00:00.000Z",
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: recordingDownload(downloaded),
+      });
+      return { id: report.asset?.id, downloaded };
+    };
+    const a = await runOnce("carDetA");
+    const b = await runOnce("carDetB");
+    expect(a).toEqual(b);
+    expect(a.id).toBe("os3a:second");
+  });
+
+  it("fails loudly on an out-of-range index, without downloading anything", async () => {
+    let downloads = 0;
+    await expect(
+      runResolve({
+        query: "race car",
+        name: "carOutOfRange",
+        projectDir: makeProject(),
+        candidateIndex: 9,
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: async () => {
+          downloads += 1;
+        },
+      }),
+    ).rejects.toThrow(/--index 9 is out of range; only 4 pullable candidate\(s\)/);
+    // A refusal must not have side effects.
+    expect(downloads).toBe(0);
+  });
+
+  it("fails loudly on a negative or non-integer index", async () => {
+    await expect(
+      runResolve({
+        query: "race car",
+        name: "carNegative",
+        projectDir: makeProject(),
+        candidateIndex: -1,
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: async () => undefined,
+      }),
+    ).rejects.toThrow(/--index must be a non-negative integer/);
+
+    await expect(
+      runResolve({
+        query: "race car",
+        name: "carFractional",
+        projectDir: makeProject(),
+        candidateIndex: 1.5,
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: async () => undefined,
+      }),
+    ).rejects.toThrow(/--index must be a non-negative integer/);
+  });
+
+  it("fails loudly on an unknown explicit candidate id, listing what was available", async () => {
+    let downloads = 0;
+    await expect(
+      runResolve({
+        query: "race car",
+        name: "carUnknownId",
+        projectDir: makeProject(),
+        candidateId: "objaverse:does-not-exist",
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: async () => {
+          downloads += 1;
+        },
+      }),
+    ).rejects.toThrow(/--candidate-id "objaverse:does-not-exist" is not among the 4 pullable candidate\(s\)/);
+    expect(downloads).toBe(0);
+  });
+
+  it("never silently substitutes another candidate for an explicit id", async () => {
+    // The failure mode this guards: falling back to candidate 0 would make a screening loop believe it
+    // had tried N distinct assets when it had really tried the same one N times.
+    const downloaded: string[] = [];
+    await expect(
+      runResolve({
+        query: "race car",
+        name: "carNoFallback",
+        projectDir: makeProject(),
+        candidateId: "os3a:missing",
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: recordingDownload(downloaded),
+      }),
+    ).rejects.toThrow(/is not among/);
+    expect(downloaded).toEqual([]);
+  });
+
+  it("keeps remaining candidates as fallbacks when an indexed pull fails", async () => {
+    // `--index` selects a starting point, not an exclusive choice: a download failure on the requested
+    // candidate must degrade to the next one rather than aborting, which is how an auth-gated provider
+    // (observed: a Sketchfab 401) falls through to a pullable alternative.
+    const attempted: string[] = [];
+    const report = await runResolve({
+      query: "race car",
+      name: "carFallback",
+      projectDir: makeProject(),
+      candidateIndex: 2,
+      makeResolver: () => stubResolver(fourCandidates()) as never,
+      download: async (url, dest) => {
+        attempted.push(url);
+        if (url.includes("third")) throw new Error("HTTP 401 Unauthorized");
+        writeFileSync(dest, minimalGlb());
+      },
+    });
+    expect(report.ok).toBe(true);
+    // Started at index 2, failed, fell through to index 3 -- and never reached indices 0 or 1.
+    expect(attempted).toEqual(["https://example.test/third.glb", "https://example.test/fourth.glb"]);
+    expect(report.asset?.id).toBe("os3a:fourth");
+    // The skip is reported rather than hidden.
+    expect(report.warnings.join(" ")).toContain("os3a:third");
+  });
+
+  it("retains full provenance for an explicitly selected candidate", async () => {
+    const projectDir = makeProject();
+    const report = await runResolve({
+      query: "race car",
+      name: "carProvenance",
+      projectDir,
+      candidateId: "src:selected",
+      makeResolver: () => stubResolver([
+        candidate(asset({ id: "os3a:decoy", url: "https://example.test/decoy.glb" }), 90),
+        candidate(asset({
+          id: "src:selected",
+          title: "Selected Car",
+          url: "https://example.test/selected.glb",
+          license: normalizeLicense("CC-BY-4.0", "https://example.test/selected"),
+          attribution: "DJMaesen",
+          sourcePage: "https://example.test/selected",
+        }), 10),
+      ]) as never,
+      download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+    });
+
+    expect(report.ok).toBe(true);
+    const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+      assets: Array<{ id: string; source?: string; provenance?: Record<string, unknown> }>;
+    };
+    const entry = manifest.assets.find((asset) => asset.id === "carProvenance");
+    // `sourceUrl` records the license/source page the candidate declared, not the download URL.
+    expect(entry?.provenance).toMatchObject({
+      license: "CC-BY-4.0",
+      sourceUrl: "https://example.test/selected",
+    });
+    // Provenance must not point at a deleted temporary directory.
+    expect(String(entry?.source ?? "")).not.toContain(tmpdir());
+  });
+
+  it("stages the source durably inside the project and generates deterministic typed bindings", async () => {
+    const runOnce = async () => {
+      const projectDir = makeProject();
+      const report = await runResolve({
+        query: "race car",
+        name: "carStaged",
+        projectDir,
+        candidateIndex: 1,
+        retrievedAt: "2026-08-01T00:00:00.000Z",
+        makeResolver: () => stubResolver(fourCandidates()) as never,
+        download: async (_url, dest) => writeFileSync(dest, minimalGlb()),
+      });
+      expect(report.ok).toBe(true);
+      const manifest = JSON.parse(readFileSync(join(projectDir, "aura.assets.json"), "utf8")) as {
+        assets: Array<{ id: string; outputPath?: string; hash?: string; url?: string }>;
+      };
+      const entry = manifest.assets.find((asset) => asset.id === "carStaged");
+      // Durable, project-relative staging rather than a temp path.
+      expect(entry?.outputPath ?? "").not.toContain(tmpdir());
+      expect(entry?.outputPath ?? "").toContain("aura-assets");
+      const typed = readFileSync(join(projectDir, "src", "aura-assets.ts"), "utf8");
+      expect(typed).toContain('"carStaged"');
+      return { hash: entry?.hash, url: entry?.url, typed };
+    };
+
+    const first = await runOnce();
+    const second = await runOnce();
+    // Same candidate and same bytes must produce identical hash, url and typegen output.
+    expect(second.hash).toBe(first.hash);
+    expect(second.url).toBe(first.url);
+    expect(second.typed).toBe(first.typed);
+  });
+
+  it("preserves top-candidate behaviour when no explicit selection is given", async () => {
+    const downloaded: string[] = [];
+    const report = await runResolve({
+      query: "race car",
+      name: "carDefault",
+      projectDir: makeProject(),
+      makeResolver: () => stubResolver(fourCandidates()) as never,
+      download: recordingDownload(downloaded),
+    });
+    expect(report.ok).toBe(true);
+    expect(report.asset?.id).toBe("os3a:first");
+    expect(downloaded).toEqual(["https://example.test/first.glb"]);
+  });
+});

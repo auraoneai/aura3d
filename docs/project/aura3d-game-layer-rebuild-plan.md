@@ -1,10 +1,16 @@
 # Aura3D Game Layer Rebuild Plan
 
-Status: completed on 2026-07-19
+Status: historical 2026-07-19 implementation snapshot; current visual and
+release work is governed by
+`docs/project/plans/final-remaining-work-prd.md`
 
 ## Result
 
-The game-layer rebuild is complete for the current certified racing/platformer asset set. Turbo Drift Circuit and Skyline Runner are bounded public release-ready candidates. Racing Game Layer Proof and Platformer Game Layer Proof remain internal diagnostic harnesses. Current aggregate evidence passes 9/9 current public release candidates, with the earlier public platformer proof retained as superseded historical evidence, two internal diagnostics, two game-layer diagnostics, zero prototype-blocked routes, and one separate index route.
+This document records the certified racing/platformer implementation completed
+on 2026-07-19. It does not describe current promotion status. Turbo Drift
+Circuit and Skyline Runner are now prototype-blocked until their visual rebuild
+and hash-bound independent review pass. Racing Game Layer Proof and Platformer
+Game Layer Proof remain internal diagnostic harnesses.
 
 ## Shipped Layers
 

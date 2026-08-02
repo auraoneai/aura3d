@@ -96,7 +96,7 @@ const visemeSrc = read("packages/engine/src/agent-api/VisemeController.ts");
 check("viseme-morph-wired", visemeSrc.includes("applyVisemeMorphInfluences") && visemeSrc.includes("visemeSampleToMorphInfluences"), "viseme -> morph helpers present");
 
 // 8. known-limits honestly updated (morph line reflects the lifted cap + normals).
-const knownLimits = read("docs/project/known-limits.md");
+const knownLimits = read("docs/project/status/known-limits.md");
 check("known-limits-updated", /morph/i.test(knownLimits) && /(texture-backed|normal)/i.test(knownLimits), "known-limits morph entry reflects texture-backed path + normals");
 
 const pass = checks.every((c) => c.pass);

@@ -1,10 +1,105 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 
 const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
+/**
+ * Content-keyed memo for PNG analysis.
+ *
+ * ## Why this is keyed on bytes rather than on path
+ *
+ * Release and visual-QA tooling analyses the *same* retained frames repeatedly: `validateGameVisualQa` reads the
+ * composed frame twice with two different analyses plus desktop and mobile, and callers invoke it several times in
+ * one process while walking progressive certification states. That is 1.3M pixels per frame per pass, and it made
+ * `showcase-game-release-gates` fail on a 5s timeout under full-suite load -- a load-only failure, which the brief
+ * requires be diagnosed rather than retried.
+ *
+ * Keying on `path` + `mtime` would reintroduce exactly the staleness class this repository exists to prevent: a
+ * producer that rewrites a frame within the same millisecond would serve a stale measurement. The key is therefore
+ * the SHA-256 of the actual bytes plus the analysis name and crop. Hashing 1.1MB costs a few milliseconds against
+ * ~100ms to decode and scan it, and it is impossible for identical bytes with an identical crop to have a different
+ * correct answer.
+ */
+const analysisCache = new Map();
+const ANALYSIS_CACHE_LIMIT = 64;
+
+function memoizeAnalysis(name, buffer, crop, compute) {
+  const key = `${name}|${createHash("sha256").update(buffer).digest("hex")}|${crop ? `${crop.x},${crop.y},${crop.width},${crop.height}` : "full"}`;
+  const cached = analysisCache.get(key);
+  // Return a copy: callers spread and extend these records, and a shared mutable object would leak between them.
+  if (cached) return { ...cached, crop: { ...cached.crop } };
+  const value = compute();
+  if (analysisCache.size >= ANALYSIS_CACHE_LIMIT) analysisCache.delete(analysisCache.keys().next().value);
+  analysisCache.set(key, value);
+  return { ...value, crop: { ...value.crop } };
+}
+
 export function readPngForegroundMetrics(path, crop) {
-  return analyzeForegroundPng(readFileSync(path), crop);
+  const buffer = readFileSync(path);
+  return memoizeAnalysis("foreground", buffer, crop, () => analyzeForegroundPng(buffer, crop));
+}
+
+export function readPngVisualCompositionMetrics(path, crop) {
+  const buffer = readFileSync(path);
+  return memoizeAnalysis("visual-composition", buffer, crop, () => analyzeVisualCompositionPng(buffer, crop));
+}
+
+/**
+ * Measure flat, unbroken colour dominance in a retained frame.
+ *
+ * ## Why this is a separate check rather than part of composition metrics
+ *
+ * `analyzeVisualCompositionPng` measures the frame relative to its *background colour*: it answers "how
+ * much of this frame is not-background". That cannot see the defect Skyline actually has. An expanse of
+ * flat sky is background by definition, so a frame can pass every coverage, edge and balance budget while
+ * still being mostly two flat washes -- which is precisely how "excessive empty sky" survived a green
+ * visual-QA report.
+ *
+ * This measures the opposite property: how concentrated the frame is into its largest quantised colour
+ * buckets. `dominantBucketFraction` is the single largest wash (typically sky), and `flatFraction` the two
+ * largest (sky plus ground). Both are independent of what the tool considers "background", so an
+ * empty-sky regression is detectable.
+ *
+ * Quantisation matches `measureFlatRegionFraction` in `@aura3d/engine`'s composition layer (4-bit shift
+ * per channel) so a route can plan against the same measure the gate enforces.
+ */
+export function readPngFlatRegionMetrics(path, crop, quantiseBits = 4) {
+  const image = decodePng(readFileSync(path));
+  const resolved = resolveCrop(image, crop);
+  const shift = Math.max(0, Math.min(7, quantiseBits));
+  // Dense histogram over the quantised space; see the note on `flatCounts` in analyzeVisualCompositionPng.
+  const perChannel = 1 << (8 - shift);
+  const counts = new Uint32Array(perChannel * perChannel * perChannel);
+  for (let y = resolved.y; y < resolved.y + resolved.height; y += 1) {
+    for (let x = resolved.x; x < resolved.x + resolved.width; x += 1) {
+      const pixel = pixelAt(image, x, y);
+      counts[((pixel.r >> shift) * perChannel + (pixel.g >> shift)) * perChannel + (pixel.b >> shift)] += 1;
+    }
+  }
+  let top = 0;
+  let second = 0;
+  let distinct = 0;
+  for (const count of counts) {
+    if (count === 0) continue;
+    distinct += 1;
+    if (count > top) {
+      second = top;
+      top = count;
+    } else if (count > second) {
+      second = count;
+    }
+  }
+  const total = Math.max(1, resolved.width * resolved.height);
+  return {
+    width: image.width,
+    height: image.height,
+    crop: resolved,
+    quantiseBits: shift,
+    dominantBucketFraction: ratio(top, total),
+    flatFraction: ratio(top + second, total),
+    distinctBuckets: distinct
+  };
 }
 
 export function readPngRenderedProbeMetrics(path) {
@@ -31,8 +126,19 @@ export function readPngRenderedProbeMetrics(path) {
 
 
 export function readPngDifferenceMetrics(visiblePath, hiddenPath, cropInput, channelThreshold = 12) {
-  const first = decodePng(readFileSync(visiblePath));
-  const second = decodePng(readFileSync(hiddenPath));
+  const visibleBytes = readFileSync(visiblePath);
+  const hiddenBytes = readFileSync(hiddenPath);
+  return memoizeAnalysis(
+    `difference:${channelThreshold}:${createHash("sha256").update(hiddenBytes).digest("hex")}`,
+    visibleBytes,
+    cropInput,
+    () => computePngDifferenceMetrics(visibleBytes, hiddenBytes, cropInput, channelThreshold)
+  );
+}
+
+function computePngDifferenceMetrics(visibleBytes, hiddenBytes, cropInput, channelThreshold) {
+  const first = decodePng(visibleBytes);
+  const second = decodePng(hiddenBytes);
   if (first.width !== second.width || first.height !== second.height) {
     throw new Error("PNG dimensions must match for subject difference metrics.");
   }
@@ -80,6 +186,7 @@ export function readPngDifferenceMetrics(visiblePath, hiddenPath, cropInput, cha
     ...(foregroundBounds ? { foregroundBounds } : {}),
     clipped,
     nonBackgroundRatio,
+    foregroundAreaRatio,
     readabilityScore
   };
 }
@@ -87,18 +194,20 @@ export function readPngDifferenceMetrics(visiblePath, hiddenPath, cropInput, cha
 function analyzeForegroundPng(buffer, cropInput) {
   const image = decodePng(buffer);
   const crop = resolveCrop(image, cropInput);
-  const background = averageCornerColor(image, crop);
+  const rowBackground = perRowBackgroundColors(image, crop);
   const mask = new Uint8Array(crop.width * crop.height);
 
   for (let y = crop.y; y < crop.y + crop.height; y += 1) {
+    const localY = y - crop.y;
+    const backgroundR = rowBackground[localY * 3];
+    const backgroundG = rowBackground[localY * 3 + 1];
+    const backgroundB = rowBackground[localY * 3 + 2];
     for (let x = crop.x; x < crop.x + crop.width; x += 1) {
       const pixel = pixelAt(image, x, y);
-      const backgroundDistance = Math.abs(pixel.r - background.r) + Math.abs(pixel.g - background.g) + Math.abs(pixel.b - background.b);
+      const backgroundDistance = Math.abs(pixel.r - backgroundR) + Math.abs(pixel.g - backgroundG) + Math.abs(pixel.b - backgroundB);
       const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
       if (pixel.a <= 8 || backgroundDistance <= 30 || luma <= 7) continue;
-      const localX = x - crop.x;
-      const localY = y - crop.y;
-      mask[localY * crop.width + localX] = 1;
+      mask[localY * crop.width + (x - crop.x)] = 1;
     }
   }
 
@@ -127,7 +236,96 @@ function analyzeForegroundPng(buffer, cropInput) {
     ...(foregroundBounds ? { foregroundBounds } : {}),
     clipped,
     nonBackgroundRatio,
+    foregroundAreaRatio,
     readabilityScore
+  };
+}
+
+function analyzeVisualCompositionPng(buffer, cropInput) {
+  const image = decodePng(buffer);
+  const crop = resolveCrop(image, cropInput);
+  const rowBackground = perRowBackgroundColors(image, crop);
+  const mask = new Uint8Array(crop.width * crop.height);
+  let foregroundPixels = 0;
+  let edgeForegroundPixels = 0;
+  const edgeWidth = Math.max(4, Math.floor(Math.min(crop.width, crop.height) * 0.06));
+  /*
+   * Flat-region buckets are accumulated in this same pass.
+   *
+   * Measuring them via a separate `readPngFlatRegionMetrics` call decoded and re-scanned every frame a
+   * second time. On the visual-QA path that is three frames per route (composed, desktop, mobile) and
+   * pushed `showcase-route-gates` past its 20s timeout. The two measurements need the same pixels, so
+   * they share the traversal.
+   */
+  /*
+   * Fixed 4096-entry histogram rather than a Map.
+   *
+   * 4-bit-per-channel quantisation has exactly 2^12 possible buckets, so the histogram is small and dense.
+   * A per-pixel `Map.set` over 1.3M pixels x 3 frames per route was measurably slow enough to push
+   * `showcase-game-release-gates` past its 5s timeout under full-suite load -- a load-only failure, which is
+   * the class that must be diagnosed rather than retried.
+   */
+  const flatCounts = new Uint32Array(4096);
+  for (let y = crop.y; y < crop.y + crop.height; y += 1) {
+    const localRow = y - crop.y;
+    const backgroundR = rowBackground[localRow * 3];
+    const backgroundG = rowBackground[localRow * 3 + 1];
+    const backgroundB = rowBackground[localRow * 3 + 2];
+    for (let x = crop.x; x < crop.x + crop.width; x += 1) {
+      const pixel = pixelAt(image, x, y);
+      flatCounts[(((pixel.r >> 4) << 8) | ((pixel.g >> 4) << 4) | (pixel.b >> 4)) & 0xfff] += 1;
+      const distance = Math.abs(pixel.r - backgroundR) +
+        Math.abs(pixel.g - backgroundG) +
+        Math.abs(pixel.b - backgroundB);
+      const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
+      if (pixel.a <= 8 || distance <= 30 || luma <= 7) continue;
+      const localX = x - crop.x;
+      const localY = y - crop.y;
+      mask[localY * crop.width + localX] = 1;
+      foregroundPixels += 1;
+      if (localX < edgeWidth || localY < edgeWidth ||
+          localX >= crop.width - edgeWidth || localY >= crop.height - edgeWidth) {
+        edgeForegroundPixels += 1;
+      }
+    }
+  }
+  // Only the two largest buckets and the occupied-bucket count are needed, so scan rather than sort.
+  let flatTop = 0;
+  let flatSecond = 0;
+  let flatDistinct = 0;
+  for (const count of flatCounts) {
+    if (count === 0) continue;
+    flatDistinct += 1;
+    if (count > flatTop) {
+      flatSecond = flatTop;
+      flatTop = count;
+    } else if (count > flatSecond) {
+      flatSecond = count;
+    }
+  }
+  const flatTotal = Math.max(1, crop.width * crop.height);
+  const component = selectForegroundComponent(image, crop, mask);
+  const cropArea = crop.width * crop.height;
+  const largestComponentAreaRatio = component
+    ? ratio(component.foregroundBounds.width * component.foregroundBounds.height, cropArea)
+    : 0;
+  const foregroundCoverageRatio = ratio(foregroundPixels, cropArea);
+  return {
+    width: image.width,
+    height: image.height,
+    crop,
+    foregroundPixels,
+    foregroundCoverageRatio,
+    backgroundCoverageRatio: Number((1 - foregroundCoverageRatio).toFixed(4)),
+    edgeOccupancyRatio: ratio(edgeForegroundPixels, Math.max(1, foregroundPixels)),
+    largestComponentAreaRatio,
+    foregroundBounds: component?.foregroundBounds,
+    clipped: component?.clipped ?? false,
+    // Same-pass flat-region measurement; see the comment on `flatCounts` above.
+    quantiseBits: 4,
+    dominantBucketFraction: ratio(flatTop, flatTotal),
+    flatFraction: ratio(flatTop + flatSecond, flatTotal),
+    distinctBuckets: flatDistinct
   };
 }
 
@@ -331,18 +529,54 @@ function pixelAt(image, x, y) {
   };
 }
 
-function averageCornerColor(image, crop) {
-  const points = [
-    pixelAt(image, crop.x, crop.y),
-    pixelAt(image, crop.x + crop.width - 1, crop.y),
-    pixelAt(image, crop.x, crop.y + crop.height - 1),
-    pixelAt(image, crop.x + crop.width - 1, crop.y + crop.height - 1)
-  ];
-  return {
-    r: Math.round(points.reduce((sum, pixel) => sum + pixel.r, 0) / points.length),
-    g: Math.round(points.reduce((sum, pixel) => sum + pixel.g, 0) / points.length),
-    b: Math.round(points.reduce((sum, pixel) => sum + pixel.b, 0) / points.length)
-  };
+/**
+ * Per-row background reference, for frames whose backdrop is a vertical gradient.
+ *
+ * ## Why a single colour is not enough
+ *
+ * The previous corner-average reference assumed the backdrop is one flat colour, which was true of every frame in this
+ * repository until Skyline Runner replaced its flat sky plane with a graded one. With a gradient, no single
+ * colour represents the backdrop: sampling Skyline's four corners yields rgb(119,175,194), and the sky bands
+ * measure 23-98 away from it down a backdrop-only column. Everything past the 30 threshold is classified as
+ * *foreground*, so 89% of the frame counted as subject, `largestComponentAreaRatio` reached 0.8644 against a
+ * 0.72 budget, and the component touched the frame edge and reported as clipped.
+ *
+ * That is the measurement being wrong, not the frame: those pixels are unambiguously backdrop. Fixing it by
+ * loosening the 0.72 budget would have hidden a broken classifier and weakened the check for every route.
+ *
+ * ## How this works
+ *
+ * The left and right margins of a game frame are backdrop in any composition where the subject is not
+ * clipped -- which the probe independently gates. Sampling both margins **per row** tracks a vertical
+ * gradient exactly, and taking the median of a small sample makes it robust to a prop that intrudes into one
+ * margin. When the backdrop is flat this returns the same colour for every row, so existing behaviour is
+ * preserved; there is a test asserting that on a real flat-sky frame.
+ */
+function perRowBackgroundColors(image, crop) {
+  const margin = Math.max(2, Math.min(24, Math.floor(crop.width * 0.02)));
+  const rows = new Uint8Array(crop.height * 3);
+  const samples = [];
+  for (let localY = 0; localY < crop.height; localY += 1) {
+    const y = crop.y + localY;
+    samples.length = 0;
+    for (let offset = 0; offset < margin; offset += 1) {
+      samples.push(pixelAt(image, crop.x + offset, y));
+      samples.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
+    }
+    // Median per channel: robust to a prop or HUD edge intruding into one margin.
+    rows[localY * 3] = medianChannel(samples, "r");
+    rows[localY * 3 + 1] = medianChannel(samples, "g");
+    rows[localY * 3 + 2] = medianChannel(samples, "b");
+  }
+  return rows;
+}
+
+function medianChannel(samples, channel) {
+  const values = samples.map((sample) => sample[channel]).sort((left, right) => left - right);
+  const middle = values.length >> 1;
+  return values.length % 2 === 0
+    ? Math.round((values[middle - 1] + values[middle]) / 2)
+    : values[middle];
 }
 
 function ratio(count, total) {

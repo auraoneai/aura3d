@@ -49,7 +49,7 @@ const skinnedLitWired = deviceSrc.includes("skinned-unlit") && webgl2Src.include
 check("skinned-materials-wired", skinnedLitWired, "skinned materials drive the joint-palette path");
 
 // 7. known-limits honestly updated (WebGPU skinning at 96-joint parity).
-const knownLimits = read("docs/project/known-limits.md");
+const knownLimits = read("docs/project/status/known-limits.md");
 check("known-limits-updated", /webgpu skinning/i.test(knownLimits) && /96/.test(knownLimits), "known-limits reflects WebGPU 96-joint skinning parity");
 
 const pass = checks.every((c) => c.pass);

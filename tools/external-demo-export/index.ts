@@ -92,7 +92,11 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
 
   for (const id of demoIds) {
     const sourceHtml = join(root, "examples", id, "index.html");
-    const sourceEntry = join(root, "examples", id, "main.ts");
+    // Resolve the entry from the page's own <script src>, not from a fixed `main.ts` guess. The
+    // example routes do not share one layout: four use a flat `./main.ts` or `./main.js`, while
+    // `product-configurator` uses `./src/main.ts`. Hardcoding `main.ts` reported that route as
+    // "Missing source entry" even though its entry exists exactly where its HTML says.
+    const sourceEntry = resolveDemoEntry(root, id, sourceHtml);
     const demoOutputDir = join(resolvedOutputDir, id);
     const outputHtml = join(demoOutputDir, "index.html");
     const outputScript = join(demoOutputDir, "main.js");
@@ -146,7 +150,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
     version: packageVersion,
     gitSha: gitSha(root),
     outputDir: relativeOutputDir,
-    rollbackPlan: "docs/project/deployment-rollback.md",
+    rollbackPlan: "docs/project/release/deployment-rollback.md",
     files: [
       {
         path: relative(root, join(resolvedOutputDir, "index.html")),
@@ -177,7 +181,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
     integrityManifestPath: relative(root, integrityManifestPath),
     publicDeploymentManifestPath: relative(root, publicDeploymentManifestPath),
     deploymentCommandPlanPath: relative(root, deploymentCommandPlanPath),
-    rollbackPlanPath: "docs/project/deployment-rollback.md",
+    rollbackPlanPath: "docs/project/release/deployment-rollback.md",
     sourceFileHashes,
     environment: {
       platform: platform(),
@@ -269,8 +273,34 @@ function deploymentFile(root: string, id: string, localPath: string, publicPath:
   };
 }
 
+/**
+ * Resolve a demo's script entry from its HTML, falling back to the flat `main.ts` convention.
+ *
+ * The exported page always loads a bundled `./main.js` beside it (see `rewriteDemoHtml`), so the
+ * source entry only has to be found, not preserved in place.
+ */
+function resolveDemoEntry(root: string, id: string, sourceHtml: string): string {
+  const demoRoot = join(root, "examples", id);
+  if (existsSync(sourceHtml)) {
+    const declared = /<script[^>]+src="([^"]+)"/.exec(readFileSync(sourceHtml, "utf8"))?.[1];
+    if (declared) {
+      const normalized = declared.replace(/^\.\//, "");
+      // The page may reference a built `.js` name whose source is TypeScript.
+      const candidates = normalized.endsWith(".js")
+        ? [normalized.replace(/\.js$/, ".ts"), normalized]
+        : [normalized];
+      for (const candidate of candidates) {
+        const resolved = join(demoRoot, candidate);
+        if (existsSync(resolved)) return resolved;
+      }
+    }
+  }
+  return join(demoRoot, "main.ts");
+}
+
+/** Point the exported page at the bundle emitted beside it, whatever the source entry was named. */
 function rewriteDemoHtml(source: string): string {
-  return source.replace("./main.ts", "./main.js").replace("./main.js", "./main.js");
+  return source.replace(/<script([^>]+)src="[^"]+"/, '<script$1src="./main.js"');
 }
 
 function buildIndexHtml(version: string | null, demos: readonly ExternalDemoExportEntry[]): string {

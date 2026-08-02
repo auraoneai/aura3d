@@ -54,9 +54,9 @@ const checks = [
   },
   {
     id: "parity-claims-blocked",
-    ok: readFileIfExists("docs/project/current-state.md").includes("broad Three.js replacement") &&
-      readFileIfExists("docs/project/current-state.md").includes("Unity replacement"),
-    evidence: "docs/project/current-state.md"
+    ok: readFileIfExists("docs/project/status/current-state.md").includes("broad Three.js replacement") &&
+      readFileIfExists("docs/project/status/current-state.md").includes("Unity replacement"),
+    evidence: "docs/project/status/current-state.md"
   },
   {
     id: "visual-quality-pass-report",

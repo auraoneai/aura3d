@@ -14,6 +14,7 @@ import {
   type UniformValue,
   viewBytes
 } from "./RenderDevice";
+import { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
 import { reflectShaderSources } from "./ShaderReflection";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { Texture, bytesPerPixel, isCompressedTextureFormat, type TextureFormat } from "./Texture";
@@ -369,8 +370,7 @@ class WebGPURenderTarget implements RenderTarget {
   }
 }
 
-/** Joint-palette capacity of the WebGPU skinning path — parity with the WebGL2 `u_jointMatrices[96]`. */
-export const MAX_WEBGPU_SKINNING_JOINTS = 96;
+export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
 
 export class WebGPUDevice implements RenderDevice {
   public readonly kind = "webgpu";

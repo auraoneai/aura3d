@@ -1,7 +1,9 @@
 import { Material, type RenderState } from "./Material";
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import type { PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
-import { DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibrary";
+import { MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
+import { DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME, DEFAULT_SKINNED_LIT_SHADER_NAME } from "./ShaderLibrary";
+import { MAX_DATA_TEXTURE_SKINNING_JOINTS } from "./SkinnedUnlitMaterial";
 import { TextureBinding } from "./TextureBinding";
 
 export interface SkinnedLitMaterialOptions {
@@ -67,10 +69,16 @@ export interface SkinnedLitMaterialOptions {
   readonly fillLightColor?: readonly [number, number, number];
   readonly lightIntensity?: number;
   readonly maxJoints?: number;
+  /**
+   * Use the eight-influence shader, reading a second `joints1`/`weights1` attribute
+   * set. Required for glTF meshes that ship `JOINTS_1`/`WEIGHTS_1`.
+   */
+  readonly extraInfluences?: boolean;
 }
 
 export class SkinnedLitMaterial extends Material {
   public readonly maxJoints: number;
+  public readonly extraInfluences: boolean;
 
   constructor(options: SkinnedLitMaterialOptions = {}) {
     const baseColor = options.baseColor ?? options.color ?? [1, 1, 1, 1];
@@ -119,10 +127,13 @@ export class SkinnedLitMaterial extends Material {
     validateNonNegative(options.iridescenceThicknessMaximum ?? 400, "iridescenceThicknessMaximum");
     validateNonNegative(options.dispersion ?? 0, "dispersion");
     validatePositive(options.ior ?? 1.5, "ior");
-    const maxJoints = options.maxJoints ?? 96;
-    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > 96) {
-      throw new Error("SkinnedLitMaterial maxJoints must be an integer in [1, 96]");
+    // Joints above the uniform-array limit are legal: the palette is uploaded as a
+    // data texture instead. Only the absolute data-texture ceiling is rejected.
+    const maxJoints = options.maxJoints ?? MAX_UNIFORM_SKINNING_JOINTS;
+    if (!Number.isInteger(maxJoints) || maxJoints <= 0 || maxJoints > MAX_DATA_TEXTURE_SKINNING_JOINTS) {
+      throw new Error(`SkinnedLitMaterial maxJoints must be an integer in [1, ${MAX_DATA_TEXTURE_SKINNING_JOINTS}]`);
     }
+    const extraInfluences = options.extraInfluences === true;
 
     // The skinned-lit shader supports glTF extension scalar factors only
     // (u_clearcoatFactor, u_sheenColorFactor, ...); it declares no extension
@@ -132,7 +143,7 @@ export class SkinnedLitMaterial extends Material {
     // MaterialBinding fail validation against the shader.
     super({
       name: options.name ?? "skinned-lit",
-      shaderKey: DEFAULT_SKINNED_LIT_SHADER_NAME,
+      shaderKey: extraInfluences ? DEFAULT_SKINNED_LIT_EIGHT_INFLUENCE_SHADER_NAME : DEFAULT_SKINNED_LIT_SHADER_NAME,
       renderState: options.renderState,
       parameters: {
         u_baseColor: baseColor,
@@ -211,7 +222,10 @@ export class SkinnedLitMaterial extends Material {
         u_normalMatrix: identityMatrix(),
         u_modelViewProjection: identityMatrix(),
         u_jointCount: 1,
-        u_jointMatrices: identityMatrix()
+        u_jointMatrices: identityMatrix(),
+        u_jointPaletteMode: 0,
+        u_jointPaletteTexture: new TextureBinding({ name: "u_jointPaletteTexture", required: false }),
+        u_jointPaletteTextureSize: [1, 1]
       },
       requiredAttributes: [
         "a_position",
@@ -219,7 +233,8 @@ export class SkinnedLitMaterial extends Material {
         ...(usesTextureCoordinates(options) ? ["a_uv"] : []),
         ...(options.normalTexture ? ["a_tangent"] : []),
         "a_joints",
-        "a_weights"
+        "a_weights",
+        ...(extraInfluences ? ["a_joints1", "a_weights1"] : [])
       ],
       uniformSchema: [
         { name: "u_baseColor", kind: "vec4" },
@@ -298,10 +313,14 @@ export class SkinnedLitMaterial extends Material {
         { name: "u_normalMatrix", kind: "mat4" },
         { name: "u_modelViewProjection", kind: "mat4" },
         { name: "u_jointCount", kind: "float" },
-        { name: "u_jointMatrices", kind: "any" }
+        { name: "u_jointMatrices", kind: "any" },
+        { name: "u_jointPaletteMode", kind: "float" },
+        { name: "u_jointPaletteTexture", kind: "any" },
+        { name: "u_jointPaletteTextureSize", kind: "vec2" }
       ]
     });
     this.maxJoints = maxJoints;
+    this.extraInfluences = extraInfluences;
   }
 }
 

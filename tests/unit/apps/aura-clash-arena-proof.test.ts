@@ -6,9 +6,13 @@ import {
   createAuraClashArenaProof,
   type AuraClashArenaProofInput
 } from "../../../apps/aura-clash-showcase/src/playable/evidence/auraClashArenaProof";
-import { collectAuraClashArenaStageEvidence } from "../../../apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage";
+import {
+  auraClashArenaStageElements,
+  collectAuraClashArenaStageEvidence
+} from "../../../apps/aura-clash-showcase/src/playable/arena/AuraClashArenaStage";
 import { createArenaTweaksEvidence } from "../../../apps/aura-clash-showcase/src/playable/arena/ArenaTweaksPanel";
 import { assertAuraClashFighterControllerBoundary } from "../../../apps/aura-clash-showcase/src/playable/combat/AuraClashFighterController";
+import { createAuraClashLightingEvidence } from "../../../apps/aura-clash-showcase/src/rendering/GameLighting";
 
 function createProofRoot(): ParentNode {
   const selectors = [
@@ -115,20 +119,34 @@ const baseProofInput: AuraClashArenaProofInput = {
     koLocked: false,
     resetCount: 0
   },
-  stage: collectAuraClashArenaStageEvidence(createProofRoot()),
+  // Defect 48: stage evidence is only `evidenceBacked` when render labels from a real frame are
+  // supplied, so this fixture models an observed frame rather than a declared-only record.
+  stage: collectAuraClashArenaStageEvidence(
+    createProofRoot(),
+    auraClashArenaStageElements.map((entry) => `aura-clash-rendered-stage:${entry.renderLabel}0`)
+  ),
+  // Camera evidence models a mid-hit frame: a decaying special-move hit-stop tightening the frame
+  // volume below its 5.6-unit resting width, which is what makes `respondingToCombat` meaningful.
+  camera: {
+    impactStrength: 0.104,
+    punchIn: 0.8,
+    roundOverFraming: false,
+    frameWidthUnits: 5.1968,
+    restingFrameWidthUnits: 5.6,
+    respondingToCombat: true
+  },
   tweaks: createArenaTweaksEvidence(createProofRoot()),
   fighterController: assertAuraClashFighterControllerBoundary(),
-  lighting: {
-    contractId: "aura-clash-lighting-review-v1",
-    presetId: "aura-clash-neon-night",
-    readable: true,
-    validatedStates: ["first", "action", "ko"],
-    ambientIntensity: 0.36,
-    keyIntensity: 1.15,
-    minRimIntensity: 1.35,
-    silhouetteSeparation: "rim-and-key",
-    backgroundSeparation: "dark-stage-with-cyan-emerald-rim"
-  },
+  // Lighting evidence is derived from the rig the renderer actually received, so this fixture models
+  // a rendered `urban-neon` rig rather than restating the unrendered `auraClashLightingPreset`.
+  lighting: createAuraClashLightingEvidence({
+    preset: "urban-neon",
+    lights: [
+      { role: "key", intensity: 1.103, castsShadow: true },
+      { role: "accent", intensity: 0.788, castsShadow: false },
+      { role: "rim", intensity: 0.42, castsShadow: false }
+    ]
+  }),
   postProcess: {
     contractId: "aura-clash-material-postprocess-review-v1",
     presetId: "aura-clash-cinematic-readable",

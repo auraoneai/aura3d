@@ -2,7 +2,15 @@ import { readFileSync } from "node:fs";
 import { fileExists, reportIssue, writeJson } from "../threejs-parity-common";
 
 const outputPath = "tests/reports/threejs-parity/package-smoke.json";
-const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { files?: readonly string[]; exports?: Record<string, string> };
+/**
+ * `exports` entries are either a bare path string or a conditional-exports object
+ * (`{ types, browser, import, default }`). The audit previously typed every value as a string
+ * and called `entry.startsWith(...)` on it, which threw `entry.startsWith is not a function`
+ * on the first conditional entry — so this gate crashed instead of running and had never
+ * actually verified any entrypoint.
+ */
+type PackageExportEntry = string | Record<string, string>;
+const packageJson = JSON.parse(readFileSync("package.json", "utf8")) as { files?: readonly string[]; exports?: Record<string, PackageExportEntry> };
 const requiredFiles = ["README.md", "templates/production-product-viewer", "templates/production-product-configurator", "templates/production-asset-inspector", "templates/production-material-studio"] as const;
 const requiredContextualExports = [
   "./advanced-runtime",
@@ -15,7 +23,17 @@ const requiredContextualExports = [
 ] as const;
 const missingFiles = requiredFiles.filter((entry) => !(packageJson.files ?? []).includes(entry));
 const missingContextualExports = requiredContextualExports.filter((entry) => !(entry in (packageJson.exports ?? {})));
-const missingDistEntrypoints = Object.values(packageJson.exports ?? {}).filter((entry) => !entry.startsWith("./dist/"));
+/** Flattens an export entry to every concrete path it can resolve to. */
+function exportTargets(entry: PackageExportEntry): readonly string[] {
+  return typeof entry === "string" ? [entry] : Object.values(entry);
+}
+// Every resolvable target of every export must be a dist entrypoint, including each condition
+// of a conditional export. Checking only the string form would let a conditional entry ship a
+// non-dist `browser` or `types` path unnoticed.
+const missingDistEntrypoints = Object.entries(packageJson.exports ?? {})
+  .flatMap(([specifier, entry]) => exportTargets(entry)
+    .filter((target) => !target.startsWith("./dist/"))
+    .map((target) => `${specifier} -> ${target}`));
 const issues = [
   ...missingFiles.map((entry) => reportIssue(`missing-package-file:${entry}`, `package.json files does not include ${entry}.`, "blocker")),
   ...missingContextualExports.map((entry) => reportIssue(`missing-contextual-export:${entry}`, `package.json exports does not include contextual alias ${entry}.`, "blocker")),

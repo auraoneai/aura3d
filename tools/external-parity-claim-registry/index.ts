@@ -24,13 +24,13 @@ const claims = [
     id: "broad-threejs-replacement",
     status: "blocked",
     claim: "A3D is a broad Three.js replacement.",
-    evidence: ["docs/project/claim-guidelines.md", "docs/project/known-limits.md"]
+    evidence: ["docs/project/claim-guidelines.md", "docs/project/status/known-limits.md"]
   },
   {
     id: "unity-unreal-replacement",
     status: "blocked",
     claim: "A3D replaces Unity or Unreal.",
-    evidence: ["docs/project/claim-guidelines.md", "docs/project/known-limits.md"]
+    evidence: ["docs/project/claim-guidelines.md", "docs/project/status/known-limits.md"]
   }
 ] as const;
 
@@ -41,7 +41,7 @@ const checks = claims.flatMap((claim) => claim.evidence.map((path) => ({
 })));
 
 const blockedClaims = read("docs/project/claim-guidelines.md");
-const knownGaps = read("docs/project/known-limits.md");
+const knownGaps = read("docs/project/status/known-limits.md");
 checks.push({
   id: "blocked-claims-preserved",
   pass: ["Broad Three.js replacement", "Unity replacement", "Unreal replacement", "Full game engine replacement"].every((phrase) => blockedClaims.includes(phrase) && knownGaps.includes(phrase)),

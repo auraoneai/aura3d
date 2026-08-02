@@ -5,7 +5,7 @@ morph-influence API in `@aura3d/engine`. Each is pure/deterministic where it can
 (`pnpm animation-engine:believable-motion`), and integrated into Aura Clash source/tests.
 
 Each runtime is a real, gate-backed engine feature. Foot IK is per-limb two-bone; spring bones are
-secondary dynamics. See `docs/project/known-limits.md` for the precise capability boundaries.
+secondary dynamics. See `docs/project/status/known-limits.md` for the precise capability boundaries.
 
 ## 1. Critically-damped, momentum-preserving transitions
 

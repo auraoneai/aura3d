@@ -46,6 +46,20 @@ describe("production runtime side-view game render preset", () => {
       throw new Error("side-view game preset should provide concrete bloom options.");
     }
 
+    // The budget has to accompany the features the preset turns on; a preset that enables a shadow
+    // pass and full-frame postprocess without declaring their cost is how the thresholds ended up
+    // duplicated as literals in the consuming route and its spec.
+    expect(normal.performanceBudget).toMatchObject({
+      maxFrameTimeMs: 16.7,
+      minFps: 55,
+      maxDrawCalls: 160
+    });
+    for (const feature of ["shadow-map", "bloom", "color-grade", "environment-fog", "ambient-particles"] as const) {
+      expect(normal.performanceBudget.enabledFeatures, `${feature} is enabled by this preset and must be budgeted`).toContain(feature);
+    }
+    // The budget is a property of the preset's feature set, not of a per-mount option.
+    expect(debug.performanceBudget).toEqual(normal.performanceBudget);
+
     expect(debug.debugOverlays.enabled).toBe(true);
     expect(debug.debugOverlays.normalPassVisible).toBe(false);
     expect(debug.particles.count).toBe(debug.particles.reducedMotionCount);

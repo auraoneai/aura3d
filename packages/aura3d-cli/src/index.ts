@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSyn
 import { createHash } from "node:crypto";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { inflateSync } from "node:zlib";
+import { admitAssetForRole } from "./asset-role-admission.js";
 import {
   DEFAULT_AURA_ASSET_MANIFEST,
   DEFAULT_AURA_ASSET_OUTPUT_DIR,
@@ -93,6 +94,55 @@ export type {
   AuraCliAnimationAssetProfile,
   AuraCliAnimationAssetProfileDefinition
 } from "./animation-asset-profiles.js";
+export { formatScreeningReport, screenAssetCandidates } from "./asset-screening-pipeline.js";
+export { createRetainedRenderProbe, createScreeningEffects, hashStagedFile, inspectGlbGeometry } from "./asset-screening-effects.js";
+export type { ScreeningEffectsOptions } from "./asset-screening-effects.js";
+export type {
+  ScreeningCandidate,
+  ScreeningCandidateOutcome,
+  ScreeningEffects,
+  ScreeningOptions,
+  ScreeningPullResult,
+  ScreeningRenderCost,
+  ScreeningReport,
+  ScreeningStage
+} from "./asset-screening-pipeline.js";
+export {
+  admissionRequirementForIntent,
+  licensesForPolicy,
+  licenseSatisfiesPolicy,
+  searchQueriesForIntent,
+  validateAssetIntent,
+  MIN_INTENT_HERO_AZIMUTHS
+} from "./asset-intent.js";
+export type {
+  AssetCameraExpectation,
+  AssetGeometryBudget,
+  AssetIntent,
+  FallbackPolicy,
+  LicensePolicy,
+  NormalizationPolicy,
+  OrientationRequirement,
+  RequiredVisibleFeature
+} from "./asset-intent.js";
+export {
+  admitAssetForRole,
+  rankAssetCandidatesForRole,
+  HERO_MIN_RENDERED_AZIMUTHS,
+  HERO_MIN_TRIANGLES,
+  MIN_VEHICLE_WHEEL_CORNERS
+} from "./asset-role-admission.js";
+export type {
+  AssetAdmissionCheck,
+  AssetAdmissionInput,
+  AssetAdmissionReport,
+  AssetAdmissionRole,
+  AssetAdmissionVerdict,
+  AssetGeometryFacts,
+  AssetProvenanceFacts,
+  AssetRenderedFacts,
+  AssetRoleRequirement
+} from "./asset-role-admission.js";
 export {
   DEFAULT_AURA_ASSET_MANIFEST,
   DEFAULT_AURA_ASSET_OUTPUT_DIR,
@@ -283,7 +333,22 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     id: options.name,
     type,
     format,
-    source: normalizeRelativePath(relative(projectDir, sourcePath)),
+    /*
+     * Record a source path that still exists after the command finishes.
+     *
+     * `assets resolve` downloads into `mkdtempSync(...)` and hands that path to `addAsset`, so a naive
+     * `relative(projectDir, sourcePath)` stored something like
+     * `../aura3d-resolve-PAzWRU/carStaged.glb` -- a directory that is deleted moments later. That
+     * makes the manifest reference unresolvable provenance, and because the temp segment is random it
+     * also makes typegen output differ between two byte-identical resolves, which defeats content-hash
+     * comparison of generated artifacts.
+     *
+     * When the source lives outside the project, the durable record is the staged output the pipeline
+     * just wrote inside the project. In-project sources keep their real relative path.
+     */
+    source: normalizeRelativePath(
+      relative(projectDir, sourcePath).startsWith("..") ? outputPath : relative(projectDir, sourcePath)
+    ),
     outputPath: normalizeRelativePath(outputPath),
     url: `${publicPath}${outputFileName}`,
     hash: `sha256-${hash}`,
@@ -298,7 +363,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     skeleton: inspection.skeleton,
     morphTargets: inspection.morphTargets,
     hierarchy: inspection.hierarchy,
-    provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance)),
+    provenance: createAssetProvenance(projectDir, sourcePath, options, mergeDetectedProvenance(existing?.provenance, inspection.provenance), outputPath),
     textures: inspection.textures,
     dependencies: inspection.dependencies,
     orientation: options.orientation ?? (
@@ -662,7 +727,75 @@ function retainedGameSubjectCertificationBlockers(
   if (createRoleAwareRenderedProbeWarnings(asset, role).length > 0) {
     blockers.push(`asset-certification:${label}-probe-readability-failed:${asset.id}`);
   }
+  blockers.push(...roleAdmissionCertificationBlockers(asset, role, label));
   return blockers;
+}
+
+/**
+ * Additional certification blockers from role-aware asset admission.
+ *
+ * ## Why this is wired in here
+ *
+ * Every check above measures the *probe artifact*: its hash, dimensions, pixel counts and readability.
+ * None measures the *model*. A 792-triangle body shell with no wheels modelled passes all of them,
+ * because it is a large, well-lit, correctly-framed subject that produces a perfectly valid probe PNG.
+ * That is exactly how three unusable hero vehicles were certified in succession.
+ *
+ * `admitAssetForRole` is the single place that answers "is this model fit for this role?". Calling it
+ * here means certification and the standalone auditor cannot disagree about the same asset.
+ *
+ * ## Why it only *adds* blockers
+ *
+ * Admission is a strictly additional gate: it never clears an existing blocker. A vehicle that fails
+ * probe-hash freshness must still fail, whatever its geometry says.
+ *
+ * ## Why `unproven` is not a blocker here
+ *
+ * Manifest geometry metadata does not record wheel-corner counts or silhouette relationships, so
+ * admission legitimately reports those as `unproven` rather than failing. Treating `unproven` as a
+ * blocker would fail every currently-certified asset for missing metadata rather than for being unfit --
+ * a gate that fires on everything is a gate nobody can act on. Hard `blockers` are enforced; the
+ * `unproven` set is surfaced by `assets audit-geometry` and the screening pipeline, which do have
+ * rendered evidence to supply.
+ */
+function roleAdmissionCertificationBlockers(
+  asset: AuraCliAssetEntry,
+  role: "vehicle" | "character",
+  label: "racing-vehicle" | "platformer-character"
+): readonly string[] {
+  const bounds = asset.bounds;
+  if (!bounds || bounds.length < 3) return [];
+  const admission = admitAssetForRole({
+    assetId: asset.id,
+    requirement: {
+      role: role === "vehicle" ? "hero-vehicle" : "playable-character",
+      // A release-quality hero must be textured; both roles are hero subjects.
+      requireTextured: true,
+      requireProvenance: true
+    },
+    geometry: {
+      partCount: Math.max(1, asset.nodeNames?.length ?? 1),
+      /*
+       * The manifest does not record a triangle count, so no triangle floor or budget is asserted here.
+       *
+       * Passing `0` would make every asset fail a hero triangle floor for *missing metadata* rather than
+       * for being unfit, so the requirement above deliberately omits `minTriangles`/`maxTriangles` and
+       * this value is only a placeholder for the part/material/texture checks that the manifest can
+       * actually support. Triangle-budget enforcement belongs to the screening pipeline, which inspects
+       * the pulled file directly.
+       */
+      triangles: 0,
+      bounds: [Number(bounds[0]), Number(bounds[1]), Number(bounds[2])],
+      materialCount: asset.materials?.length ?? 0,
+      textureCount: asset.textures?.length ?? 0,
+      ...(asset.boundsMetadata?.min?.[1] !== undefined ? { minY: Number(asset.boundsMetadata.min[1]) } : {})
+    },
+    provenance: {
+      ...(asset.provenance?.license ? { license: asset.provenance.license } : {}),
+      ...(asset.provenance?.author ? { author: asset.provenance.author } : {})
+    }
+  });
+  return admission.blockers.map((blocker: string) => `asset-certification:${label}-admission:${asset.id}:${blocker}`);
 }
 
 export function scanAssets(options: { readonly projectDir?: string; readonly directory: string }): AssetCliResult {
@@ -756,6 +889,7 @@ export function validateAssets(options: AssetValidationOptions = {}): AssetValid
       failures.push(`Missing license/provenance evidence for "${asset.id}". Add it with assets add --license ... --source-url ... or pass --provenance <evidence.json>.`);
     }
     if (release) warnings.push(...createDurableReleaseProvenanceWarnings(asset, provenance));
+    warnings.push(...createDerivedMetadataDriftWarnings(outputPath, asset));
     if (release) warnings.push(...createReleaseStructuredQualityWarnings(asset));
     if (release) warnings.push(...createReleaseAssetQualityWarnings(asset));
     if (release) warnings.push(...createReleaseRenderedProbeWarnings(projectDir, manifest, asset));
@@ -1862,13 +1996,27 @@ interface GltfJson {
   readonly buffers?: readonly { readonly uri?: string }[];
   readonly scene?: number;
   readonly scenes?: readonly { readonly name?: string; readonly nodes?: readonly number[] }[];
-  readonly nodes?: readonly { readonly name?: string; readonly mesh?: number; readonly skin?: number; readonly children?: readonly number[]; readonly extras?: unknown }[];
+  readonly nodes?: readonly {
+    readonly name?: string;
+    readonly mesh?: number;
+    readonly skin?: number;
+    readonly children?: readonly number[];
+    readonly extras?: unknown;
+    readonly matrix?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+  }[];
   readonly skins?: readonly { readonly name?: string; readonly joints?: readonly number[]; readonly skeleton?: number }[];
   readonly meshes?: readonly {
     readonly name?: string;
     readonly weights?: readonly number[];
     readonly extras?: unknown;
-    readonly primitives?: readonly { readonly targets?: readonly unknown[]; readonly extras?: unknown }[];
+    readonly primitives?: readonly {
+      readonly targets?: readonly unknown[];
+      readonly extras?: unknown;
+      readonly attributes?: Readonly<Record<string, number>>;
+    }[];
   }[];
 }
 
@@ -2190,13 +2338,170 @@ function uniqueNumbers(values: readonly number[]): readonly number[] {
   return [...new Set(values)];
 }
 
-function extractBoundsDetails(json: GltfJson): AuraCliAssetBoundsInspection | undefined {
+type Mat4Tuple = readonly number[];
+
+function positionAccessors(json: GltfJson): readonly NonNullable<GltfJson["accessors"]>[number][] {
+  const accessors = json.accessors ?? [];
+  const indices = new Set<number>();
+  for (const mesh of json.meshes ?? []) {
+    for (const primitive of mesh.primitives ?? []) {
+      const position = primitive.attributes?.POSITION;
+      if (typeof position === "number") indices.add(position);
+    }
+  }
+  // No mesh table: fall back to every accessor rather than reporting nothing.
+  if (indices.size === 0) return accessors.filter((accessor) => accessor.min && accessor.max);
+  return [...indices].map((index) => accessors[index]).filter((accessor): accessor is NonNullable<typeof accessor> => Boolean(accessor));
+}
+
+function extractGltfSceneBounds(json: GltfJson): { readonly min: [number, number, number]; readonly max: [number, number, number] } | undefined {
+  const nodes = json.nodes ?? [];
+  const meshes = json.meshes ?? [];
+  const accessors = json.accessors ?? [];
+  if (nodes.length === 0 || meshes.length === 0) return undefined;
+
   let min: [number, number, number] | undefined;
   let max: [number, number, number] | undefined;
-  for (const accessor of json.accessors ?? []) {
-    if (!accessor.min || !accessor.max || accessor.min.length < 3 || accessor.max.length < 3) continue;
-    min = min ? [Math.min(min[0], accessor.min[0]), Math.min(min[1], accessor.min[1]), Math.min(min[2], accessor.min[2])] : [accessor.min[0], accessor.min[1], accessor.min[2]];
-    max = max ? [Math.max(max[0], accessor.max[0]), Math.max(max[1], accessor.max[1]), Math.max(max[2], accessor.max[2])] : [accessor.max[0], accessor.max[1], accessor.max[2]];
+
+  const visit = (nodeIndex: number, parentMatrix: Mat4Tuple, seen: ReadonlySet<number>): void => {
+    if (seen.has(nodeIndex)) return;
+    const node = nodes[nodeIndex];
+    if (!node) return;
+    const worldMatrix = multiplyGltfMat4(parentMatrix, localGltfNodeMatrix(node));
+    if (typeof node.mesh === "number") {
+      for (const primitive of meshes[node.mesh]?.primitives ?? []) {
+        const positionIndex = primitive.attributes?.POSITION;
+        if (typeof positionIndex !== "number") continue;
+        const accessor = accessors[positionIndex];
+        if (!accessor?.min || !accessor?.max || accessor.min.length < 3 || accessor.max.length < 3) continue;
+        // Transform all eight corners: transforming only min/max is wrong under
+        // rotation, because the transformed min is not necessarily the new minimum.
+        for (const corner of boxCorners(accessor.min, accessor.max)) {
+          const world = transformGltfPoint(worldMatrix, corner);
+          min = min ? [Math.min(min[0], world[0]), Math.min(min[1], world[1]), Math.min(min[2], world[2])] : [...world];
+          max = max ? [Math.max(max[0], world[0]), Math.max(max[1], world[1]), Math.max(max[2], world[2])] : [...world];
+        }
+      }
+    }
+    const nextSeen = new Set(seen);
+    nextSeen.add(nodeIndex);
+    for (const child of node.children ?? []) visit(child, worldMatrix, nextSeen);
+  };
+
+  const sceneRoots = json.scenes?.[json.scene ?? 0]?.nodes;
+  const roots = sceneRoots && sceneRoots.length > 0 ? sceneRoots : gltfImplicitRootNodes(nodes);
+  for (const root of roots) visit(root, identityGltfMat4(), new Set());
+
+  return min && max ? { min, max } : undefined;
+}
+
+function gltfImplicitRootNodes(nodes: NonNullable<GltfJson["nodes"]>): readonly number[] {
+  const children = new Set<number>();
+  for (const node of nodes) {
+    for (const child of node.children ?? []) children.add(child);
+  }
+  const roots = nodes.map((_node, index) => index).filter((index) => !children.has(index));
+  return roots.length > 0 ? roots : nodes.map((_node, index) => index);
+}
+
+function boxCorners(min: readonly number[], max: readonly number[]): readonly (readonly [number, number, number])[] {
+  const xs = [min[0] ?? 0, max[0] ?? 0];
+  const ys = [min[1] ?? 0, max[1] ?? 0];
+  const zs = [min[2] ?? 0, max[2] ?? 0];
+  const corners: (readonly [number, number, number])[] = [];
+  for (const x of xs) for (const y of ys) for (const z of zs) corners.push([x, y, z]);
+  return corners;
+}
+
+function identityGltfMat4(): Mat4Tuple {
+  return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+}
+
+/** Column-major, matching the glTF spec. */
+function localGltfNodeMatrix(node: NonNullable<GltfJson["nodes"]>[number]): Mat4Tuple {
+  if (node.matrix && node.matrix.length === 16) return node.matrix;
+  const translation = node.translation ?? [0, 0, 0];
+  const rotation = node.rotation ?? [0, 0, 0, 1];
+  const scale = node.scale ?? [1, 1, 1];
+  const rotationMatrix = gltfQuaternionMatrix(rotation);
+  const scaled = rotationMatrix.map((value, index) => {
+    const column = Math.floor(index / 4);
+    return column < 3 ? value * (scale[column] ?? 1) : value;
+  });
+  return [
+    scaled[0] ?? 1, scaled[1] ?? 0, scaled[2] ?? 0, 0,
+    scaled[4] ?? 0, scaled[5] ?? 1, scaled[6] ?? 0, 0,
+    scaled[8] ?? 0, scaled[9] ?? 0, scaled[10] ?? 1, 0,
+    translation[0] ?? 0, translation[1] ?? 0, translation[2] ?? 0, 1
+  ];
+}
+
+function gltfQuaternionMatrix(quaternion: readonly number[]): Mat4Tuple {
+  const length = Math.hypot(quaternion[0] ?? 0, quaternion[1] ?? 0, quaternion[2] ?? 0, quaternion[3] ?? 1) || 1;
+  const x = (quaternion[0] ?? 0) / length;
+  const y = (quaternion[1] ?? 0) / length;
+  const z = (quaternion[2] ?? 0) / length;
+  const w = (quaternion[3] ?? 1) / length;
+  return [
+    1 - 2 * (y * y + z * z), 2 * (x * y + z * w), 2 * (x * z - y * w), 0,
+    2 * (x * y - z * w), 1 - 2 * (x * x + z * z), 2 * (y * z + x * w), 0,
+    2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y), 0,
+    0, 0, 0, 1
+  ];
+}
+
+function multiplyGltfMat4(left: Mat4Tuple, right: Mat4Tuple): Mat4Tuple {
+  const out = new Array<number>(16).fill(0);
+  for (let column = 0; column < 4; column += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      out[column * 4 + row] =
+        (left[row] ?? 0) * (right[column * 4] ?? 0)
+        + (left[4 + row] ?? 0) * (right[column * 4 + 1] ?? 0)
+        + (left[8 + row] ?? 0) * (right[column * 4 + 2] ?? 0)
+        + (left[12 + row] ?? 0) * (right[column * 4 + 3] ?? 0);
+    }
+  }
+  return out;
+}
+
+function transformGltfPoint(matrix: Mat4Tuple, point: readonly [number, number, number]): [number, number, number] {
+  return [
+    (matrix[0] ?? 0) * point[0] + (matrix[4] ?? 0) * point[1] + (matrix[8] ?? 0) * point[2] + (matrix[12] ?? 0),
+    (matrix[1] ?? 0) * point[0] + (matrix[5] ?? 0) * point[1] + (matrix[9] ?? 0) * point[2] + (matrix[13] ?? 0),
+    (matrix[2] ?? 0) * point[0] + (matrix[6] ?? 0) * point[1] + (matrix[10] ?? 0) * point[2] + (matrix[14] ?? 0)
+  ];
+}
+
+/**
+ * Scene-space bounds of a glTF asset.
+ *
+ * This walks the scene graph and transforms each mesh primitive's POSITION accessor
+ * bounds into scene space before unioning them.
+ *
+ * The previous implementation unioned the raw `min`/`max` of *every* accessor in
+ * mesh-local space. That was wrong twice over: it mixed in non-POSITION accessors
+ * (normals, tangents, UVs, joint weights) whose ranges are unrelated to geometry
+ * extent, and it ignored node transforms entirely. For a GLB whose meshes carry
+ * non-identity node transforms the result did not describe the asset at all — for the
+ * `robotcand` fixture it reported an extent of [30.3, 24.1, 15.3] against a real
+ * scene-space extent of [15.9, 25.1, 10.0], a non-uniform ~1.9x/0.96x/1.5x error.
+ *
+ * Consumers rely on these bounds for framing and sizing (`camera.frameAsset`,
+ * `targetHeight`/`targetLength`/`targetMaxDimension`), so a wrong value silently
+ * mis-sizes or clips models.
+ */
+function extractBoundsDetails(json: GltfJson): AuraCliAssetBoundsInspection | undefined {
+  const sceneBounds = extractGltfSceneBounds(json);
+  let min = sceneBounds?.min;
+  let max = sceneBounds?.max;
+  if (!min || !max) {
+    // Fall back to POSITION accessors in mesh-local space. Still better than mixing
+    // in unrelated accessors, and it keeps assets without a usable scene graph working.
+    for (const accessor of positionAccessors(json)) {
+      if (!accessor.min || !accessor.max || accessor.min.length < 3 || accessor.max.length < 3) continue;
+      min = min ? [Math.min(min[0], accessor.min[0]), Math.min(min[1], accessor.min[1]), Math.min(min[2], accessor.min[2])] : [accessor.min[0], accessor.min[1], accessor.min[2]];
+      max = max ? [Math.max(max[0], accessor.max[0]), Math.max(max[1], accessor.max[1]), Math.max(max[2], accessor.max[2])] : [accessor.max[0], accessor.max[1], accessor.max[2]];
+    }
   }
   if (!min || !max) return undefined;
   const size = [round(max[0] - min[0]), round(max[1] - min[1]), round(max[2] - min[2])] as const;
@@ -2341,11 +2646,25 @@ function createAssetProvenance(
   projectDir: string,
   sourcePath: string,
   options: Pick<AddAssetOptions, "sourcePage" | "downloadUrl" | "sourceUrl" | "license" | "licenseName" | "licenseUrl" | "licenseRaw" | "author" | "sourceFamily" | "attribution" | "sha256" | "provenanceEvidence" | "retrievedAt" | "resolveCandidate">,
-  detected?: Partial<AuraCliAssetProvenance>
+  detected?: Partial<AuraCliAssetProvenance>,
+  /**
+   * Durable in-project path the asset was staged to.
+   *
+   * Used instead of `sourcePath` when the source is outside the project. `assets resolve` downloads
+   * into a `mkdtempSync` directory that is removed once the command returns, so recording that path
+   * produced provenance pointing at a directory that no longer exists -- and because the temp segment
+   * is random, two byte-identical resolves generated different typed output, defeating content-hash
+   * comparison of generated artifacts.
+   */
+  durableOutputPath?: string
 ): AuraCliAssetProvenance {
   const evidence = [...new Set([...(options.provenanceEvidence ?? []), ...(detected?.evidence ?? [])].map((entry) => entry.trim()).filter(Boolean))];
   return {
-    sourcePath: normalizeRelativePath(relative(projectDir, sourcePath)),
+    sourcePath: normalizeRelativePath(
+      relative(projectDir, sourcePath).startsWith("..") && durableOutputPath
+        ? durableOutputPath
+        : relative(projectDir, sourcePath)
+    ),
     ...(options.sourcePage ?? detected?.sourcePage ? { sourcePage: options.sourcePage ?? detected?.sourcePage } : {}),
     ...(options.downloadUrl ?? detected?.downloadUrl ? { downloadUrl: options.downloadUrl ?? detected?.downloadUrl } : {}),
     ...(options.sourceUrl ?? detected?.sourceUrl ? { sourceUrl: options.sourceUrl ?? detected?.sourceUrl } : {}),
@@ -2360,7 +2679,16 @@ function createAssetProvenance(
     ...(options.retrievedAt ?? detected?.retrievedAt ? { retrievedAt: options.retrievedAt ?? detected?.retrievedAt } : {}),
     ...(options.resolveCandidate ?? detected?.resolveCandidate ? { resolveCandidate: options.resolveCandidate ?? detected?.resolveCandidate } : {}),
     ...(evidence.length > 0 ? { evidence } : {}),
-    checkedAt: new Date().toISOString()
+    /*
+     * Honour the injectable `retrievedAt` so a deterministic resolve produces deterministic output.
+     *
+     * This was `new Date().toISOString()` unconditionally, which meant two byte-identical resolves of
+     * the same candidate differed by a millisecond in generated typed output. `retrievedAt` already
+     * exists precisely so a caller can pin the retrieval instant; using the wall clock here defeated it
+     * and made generated artifacts non-comparable by content hash. Falls back to the wall clock when no
+     * retrieval instant was supplied.
+     */
+    checkedAt: options.retrievedAt ?? detected?.retrievedAt ?? new Date().toISOString()
   };
 }
 
@@ -2379,22 +2707,74 @@ function mergeDetectedProvenance(
 ): Partial<AuraCliAssetProvenance> | undefined {
   if (!existing) return detected;
   const evidence = [...(detected?.evidence ?? []), ...(existing.evidence ?? [])];
+  // Licence identity fields merge as one group, not independently.
+  //
+  // Detected values come from the asset's own embedded metadata and are authoritative.
+  // A GLB commonly embeds `license` without `licenseName`, so merging field-by-field
+  // let a stale hand-recorded `licenseName` survive next to a corrected `license` and
+  // produced self-contradictory licence metadata — for example `license:
+  // "CC-BY-SA-4.0"` alongside `licenseName: "CC-BY-4.0"`, which understates a
+  // share-alike obligation. When detection supplies a licence identity at all, the
+  // whole group is taken from detection and any field it does not supply is derived or
+  // dropped rather than inherited from the stale record.
+  const detectedLicenseIdentity = nonEmpty(detected?.license) || nonEmpty(detected?.licenseName);
+  const licenseFields = detectedLicenseIdentity
+    ? {
+      license: detected?.license,
+      licenseName: detected?.licenseName ?? licenseNameFromLicense(detected?.license),
+      licenseUrl: detected?.licenseUrl ?? licenseUrlFromLicense(detected?.license) ?? existing.licenseUrl,
+      licenseRaw: detected?.licenseRaw ?? existing.licenseRaw
+    }
+    : {
+      license: existing.license,
+      licenseName: existing.licenseName,
+      licenseUrl: existing.licenseUrl,
+      licenseRaw: existing.licenseRaw
+    };
+  // Attribution belongs with the author it credits, for the same reason.
+  const detectedAuthorIdentity = nonEmpty(detected?.author) || nonEmpty(detected?.attribution);
+  const authorFields = detectedAuthorIdentity
+    ? {
+      author: detected?.author,
+      attribution: detected?.attribution ?? attributionFromAuthor(detected?.author)
+    }
+    : { author: existing.author, attribution: existing.attribution };
   return {
     sourcePage: detected?.sourcePage ?? existing.sourcePage,
     downloadUrl: detected?.downloadUrl ?? existing.downloadUrl,
     sourceUrl: detected?.sourceUrl ?? existing.sourceUrl,
-    license: detected?.license ?? existing.license,
-    licenseName: detected?.licenseName ?? existing.licenseName,
-    licenseUrl: detected?.licenseUrl ?? existing.licenseUrl,
-    licenseRaw: detected?.licenseRaw ?? existing.licenseRaw,
-    author: detected?.author ?? existing.author,
+    ...licenseFields,
+    ...authorFields,
     sourceFamily: detected?.sourceFamily ?? existing.sourceFamily,
-    attribution: detected?.attribution ?? existing.attribution,
     sha256: detected?.sha256 ?? existing.sha256,
     retrievedAt: detected?.retrievedAt ?? existing.retrievedAt,
     resolveCandidate: detected?.resolveCandidate ?? existing.resolveCandidate,
     ...(evidence.length > 0 ? { evidence: [...new Set(evidence)] } : {})
   };
+}
+
+/** Extracts the SPDX-style identifier from a `"NAME (url)"` licence string. */
+function licenseNameFromLicense(license: string | undefined): string | undefined {
+  const trimmed = license?.trim();
+  if (!trimmed) return undefined;
+  const match = /^([^(]+)/.exec(trimmed);
+  return match ? match[1]!.trim() : trimmed;
+}
+
+/** Extracts the licence URL from a `"NAME (url)"` licence string. */
+function licenseUrlFromLicense(license: string | undefined): string | undefined {
+  const trimmed = license?.trim();
+  if (!trimmed) return undefined;
+  const match = /\((https?:\/\/[^)]+)\)/.exec(trimmed);
+  return match ? match[1] : undefined;
+}
+
+/** Extracts the display name from an `"Author (profile url)"` string. */
+function attributionFromAuthor(author: string | undefined): string | undefined {
+  const trimmed = author?.trim();
+  if (!trimmed) return undefined;
+  const match = /^([^(]+)/.exec(trimmed);
+  return match ? match[1]!.trim() : trimmed;
 }
 
 function readExternalProvenance(projectDir: string, provenanceFile?: string): ReadonlyMap<string, AuraCliAssetProvenance> {
@@ -2480,6 +2860,64 @@ function createDurableReleaseProvenanceWarnings(asset: AuraCliAssetEntry, proven
   if (!nonEmpty(provenance.licenseUrl)) warnings.push(`${asset.id}: durable provenance missing licenseUrl.`);
   if (!nonEmpty(provenance.author) && !nonEmpty(provenance.attribution)) warnings.push(`${asset.id}: durable provenance missing author or attribution.`);
   if (!nonEmpty(provenance.retrievedAt)) warnings.push(`${asset.id}: durable provenance missing acquisition timestamp (retrievedAt).`);
+  return warnings;
+}
+
+/**
+ * Re-derive geometry metadata from the asset file and report drift.
+ *
+ * `assets validate` already proves the *file* is unchanged via its content hash, but nothing
+ * proved that the metadata *derived* from that file still matches it. Those are different
+ * claims: metadata written by an older inspector, or hand-edited, survives a green hash check
+ * forever. A repo-wide audit found 79 assets whose manifest `bounds` disagreed with their own
+ * GLB and 62 with no `hierarchy` block at all, many with Y and Z transposed because a Z-up
+ * source was never normalized.
+ *
+ * That is not cosmetic. `bounds`/`boundsMetadata.grounded` feed grounding and auto-fit
+ * decisions, and a transposed height is exactly the class of error behind defect 45, where a
+ * vehicle was floating above its track because a height was read from the wrong axis.
+ *
+ * Reported as warnings rather than failures because release validation already promotes
+ * warnings to blocking failures for release candidates, while non-release callers keep working.
+ */
+function createDerivedMetadataDriftWarnings(outputPath: string, asset: AuraCliAssetEntry): readonly string[] {
+  if (asset.type !== "model") return [];
+  if (asset.format !== "glb" && asset.format !== "gltf") return [];
+  if (!existsSync(outputPath)) return [];
+  let inspection: AssetInspection;
+  try {
+    inspection = inspectAssetFile(outputPath, asset.format);
+  } catch {
+    // A file we cannot inspect is already reported by the hash and dependency checks.
+    return [];
+  }
+  const warnings: string[] = [];
+  const actualSize = inspection.boundsMetadata?.size ?? inspection.bounds;
+  const storedSize = asset.boundsMetadata?.size ?? asset.bounds;
+  if (actualSize && storedSize) {
+    const drifted = actualSize.some((value, index) => Math.abs(value - (storedSize[index] ?? 0)) > 0.01);
+    if (drifted) {
+      warnings.push(
+        `${asset.id}: manifest bounds [${storedSize.map((value) => value.toFixed(3)).join(", ")}] do not match the asset file [${actualSize.map((value) => value.toFixed(3)).join(", ")}]. Re-add the asset through the CLI to refresh derived metadata.`
+      );
+    }
+  } else if (actualSize && !storedSize) {
+    warnings.push(`${asset.id}: manifest is missing bounds metadata that the asset file provides.`);
+  }
+  const actualGrounded = inspection.boundsMetadata?.grounded;
+  const storedGrounded = asset.boundsMetadata?.grounded;
+  if (typeof actualGrounded === "boolean" && typeof storedGrounded === "boolean" && actualGrounded !== storedGrounded) {
+    warnings.push(`${asset.id}: manifest records grounded=${storedGrounded} but the asset file is grounded=${actualGrounded}.`);
+  }
+  if (inspection.hierarchy && !asset.hierarchy) {
+    warnings.push(`${asset.id}: manifest is missing the scene hierarchy inspection that the asset file provides.`);
+  } else if (inspection.hierarchy && asset.hierarchy) {
+    for (const key of ["nodeCount", "meshCount", "materialCount", "textureCount", "animationClipCount", "skinCount"] as const) {
+      if (inspection.hierarchy[key] !== asset.hierarchy[key]) {
+        warnings.push(`${asset.id}: manifest hierarchy.${key}=${String(asset.hierarchy[key])} but the asset file reports ${String(inspection.hierarchy[key])}.`);
+      }
+    }
+  }
   return warnings;
 }
 

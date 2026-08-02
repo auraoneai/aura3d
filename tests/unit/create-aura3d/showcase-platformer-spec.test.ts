@@ -564,6 +564,9 @@ describe("showcase platformer spec compiler", () => {
             url: "/aura-assets/showcaseSideScrollerWorld.glb",
             role: "world",
             quality: "release",
+            // Real catalog asset carries 17 textures; modelled so the
+            // surface-detail gate sees representative data.
+            textures: [{ uri: "showcaseSideScrollerWorld-texture-0.png" }, { uri: "showcaseSideScrollerWorld-texture-1.png" }, { uri: "showcaseSideScrollerWorld-texture-2.png" }],
             hash: surfaceMap.assetHash,
             provenance: {
               sourcePage: "https://huggingface.co/datasets/aura3d/fixture-side-scroller-world",

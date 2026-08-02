@@ -19,7 +19,10 @@ interface ShadowVisualRender {
     readonly drawCalls: number;
     readonly casterCount: number;
     readonly receiverCount: number;
+    /** Pixels the shadow pass darkened, measured against a shadows-off render of the same scene. */
     readonly shadowEvidencePixels: number;
+    readonly meanShadowDarkening: number;
+    readonly maxShadowDarkening: number;
   };
 }
 
@@ -251,12 +254,11 @@ function sharedBrowserHelpers(): string {
   return String.raw`
     function pixelStats(canvas) {
       const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
-      if (!gl) return { nonBlankPixels: 0, colorBuckets: 0, shadowEvidencePixels: 0 };
+      if (!gl) return { nonBlankPixels: 0, colorBuckets: 0, pixels: new Uint8Array(0) };
       const pixels = new Uint8Array(canvas.width * canvas.height * 4);
       gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
       const buckets = new Set();
       let nonBlankPixels = 0;
-      let shadowEvidencePixels = 0;
       for (let index = 0; index < pixels.length; index += 4) {
         const r = pixels[index] || 0;
         const g = pixels[index + 1] || 0;
@@ -265,19 +267,52 @@ function sharedBrowserHelpers(): string {
           nonBlankPixels += 1;
           buckets.add(String(r >> 5) + ":" + String(g >> 5) + ":" + String(b >> 5));
         }
-        if (r < 90 && g < 100 && b < 105) shadowEvidencePixels += 1;
       }
-      return { nonBlankPixels, colorBuckets: buckets.size, shadowEvidencePixels };
+      return { nonBlankPixels, colorBuckets: buckets.size, pixels };
     }
     function nextFrame() {
       return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    }
+    /**
+     * Counts pixels that the shadow pass darkened, by comparing two renders of the identical
+     * scene with shadows enabled and disabled.
+     *
+     * An absolute luminance threshold cannot do this: it cannot tell a shadowed receiver pixel
+     * from a legitimately darker object, and it silently reported "shadow evidence" for the
+     * receiver strip and the blue box in engines that cast no shadow at all. Differencing the
+     * same scene attributes the darkening to the shadow pass and nothing else.
+     */
+    function shadowDarkeningStats(shadowedPixels, unshadowedPixels) {
+      if (shadowedPixels.length === 0 || shadowedPixels.length !== unshadowedPixels.length) {
+        return { shadowEvidencePixels: 0, meanShadowDarkening: 0, maxShadowDarkening: 0 };
+      }
+      let shadowEvidencePixels = 0;
+      let darkeningSum = 0;
+      let maxDarkening = 0;
+      for (let index = 0; index < shadowedPixels.length; index += 4) {
+        const litLuma = 0.2126 * (unshadowedPixels[index] || 0) + 0.7152 * (unshadowedPixels[index + 1] || 0) + 0.0722 * (unshadowedPixels[index + 2] || 0);
+        const shadowedLuma = 0.2126 * (shadowedPixels[index] || 0) + 0.7152 * (shadowedPixels[index + 1] || 0) + 0.0722 * (shadowedPixels[index + 2] || 0);
+        const darkening = litLuma - shadowedLuma;
+        // Above 8-bit quantisation and antialiasing noise on silhouette edges.
+        if (darkening > 6) {
+          shadowEvidencePixels += 1;
+          darkeningSum += darkening;
+          if (darkening > maxDarkening) maxDarkening = darkening;
+        }
+      }
+      return {
+        shadowEvidencePixels,
+        meanShadowDarkening: Number((darkeningSum / Math.max(1, shadowEvidencePixels)).toFixed(3)),
+        maxShadowDarkening: Number(maxDarkening.toFixed(3))
+      };
     }
   `;
 }
 
 function aura3dBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { DirectionalLight } from "./packages/scene/src/index.ts";
     ${sharedBrowserHelpers()}
     export async function renderShadowVisualParity(canvas) {
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.62, 0.72, 0.8, 1], antialias: true, preserveDrawingBuffer: true });
@@ -285,18 +320,50 @@ function aura3dBundleSource(): string {
       const receiver = new PBRMaterial({ name: "shadow-receiver", baseColor: [0.58, 0.68, 0.58, 1], metallic: 0, roughness: 0.78 });
       const casterBlue = new PBRMaterial({ name: "shadow-caster-blue", baseColor: [0.2, 0.46, 0.86, 1], metallic: 0.05, roughness: 0.42, renderState: { cullMode: "none" } });
       const casterGold = new PBRMaterial({ name: "shadow-caster-gold", baseColor: [0.92, 0.64, 0.18, 1], metallic: 0.22, roughness: 0.36, renderState: { cullMode: "none" } });
-      const shadow = new UnlitMaterial({ name: "bounded-shadow-projection", color: [0.03, 0.04, 0.05, 0.52], renderState: { blend: true, depthWrite: false, cullMode: "none" } });
+      // Real renderer-owned shadow map. This scene previously drew two dark translucent boxes
+      // labelled "bounded-shadow-1/2" onto the receiver and never enabled the shadow pass at
+      // all, so the retained "shadow reference" screenshot contained no rendered shadow. That
+      // is fake-shadow geometry, not shadow evidence, and it cannot support a shadow claim.
+      const key = new DirectionalLight("aura3d-shadow-key");
+      key.castsShadow = true;
+      key.color = [1, 0.94, 0.81];
+      key.intensity = 2;
+      const lightDirection = [-0.5, -0.78, -0.38];
+      const length = Math.hypot(lightDirection[0], lightDirection[1], lightDirection[2]);
       const items = [
         { geometry: cube, material: receiver, modelMatrix: ${matrix(0, -0.48, -0.08, 1.8, 0.08, 0.46)}, label: "aura3d-shadow-receiver" },
-        { geometry: cube, material: shadow, modelMatrix: ${matrix(-0.17, -0.405, 0.0, 0.82, 0.08, 0.2)}, label: "aura3d-bounded-shadow-1" },
-        { geometry: cube, material: shadow, modelMatrix: ${matrix(0.42, -0.398, 0.0, 0.54, 0.07, 0.15)}, label: "aura3d-bounded-shadow-2" },
         { geometry: cube, material: casterBlue, modelMatrix: ${matrix(-0.28, -0.08, 0.08, 0.28, 0.36, 0.28)}, label: "aura3d-caster-blue" },
         { geometry: cube, material: casterGold, modelMatrix: ${matrix(0.38, 0.02, 0.06, 0.22, 0.44, 0.22)}, label: "aura3d-caster-gold" },
       ];
-      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createExternalParityEnvironmentLighting("daylight").lighting });
+      const renderPass = (castShadow) => renderer.render({
+        renderItems: items,
+        environmentLighting: createExternalParityEnvironmentLighting("daylight").lighting,
+        collectedLights: [{
+          kind: "directional",
+          color: [1, 0.94, 0.81],
+          intensity: 2,
+          position: [-1.4, 2.4, 2.2],
+          direction: [lightDirection[0] / length, lightDirection[1] / length, lightDirection[2] / length],
+          range: 0,
+          spotAngle: 0,
+          penumbra: 0,
+          castsShadow: castShadow,
+          layerMask: 0xffffffff,
+          source: key
+        }],
+        shadow: castShadow ? { size: 1024, strength: 0.62, filter: "pcf", pcfRadius: 1.25, pcfSamples: 16 } : false
+      });
+      // Shadows-off control first, so the retained canvas ends on the shadowed frame.
+      key.castsShadow = false;
+      renderPass(false);
+      await nextFrame();
+      const unshadowed = pixelStats(canvas).pixels.slice();
+      key.castsShadow = true;
+      const diagnostics = renderPass(true);
       await nextFrame();
       const stats = pixelStats(canvas);
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: diagnostics.drawCalls, casterCount: 2, receiverCount: 1 };
+      const shadowStats = shadowDarkeningStats(stats.pixels, unshadowed);
+      return { width: canvas.width, height: canvas.height, nonBlankPixels: stats.nonBlankPixels, colorBuckets: stats.colorBuckets, ...shadowStats, drawCalls: diagnostics.drawCalls, casterCount: 2, receiverCount: 1 };
     }
   `;
 }
@@ -311,37 +378,69 @@ function threeBundleSource(): string {
       renderer.setClearColor(0x9eb8cc, 1);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       const scene = new THREE.Scene();
+      // The camera must look *down* onto the receiver. At y=0 looking along -Z the receiver's
+      // top face - the only surface a shadow lands on - is exactly edge-on, so no shadow could
+      // ever be visible regardless of how the shadow map is configured. Aura3D's auto-frame
+      // camera already looks down, which is why only Aura3D reported shadow pixels.
       const camera = new THREE.OrthographicCamera(-1, 1, 0.67, -0.67, 0.1, 10);
-      camera.position.set(0, 0, 4);
-      camera.lookAt(0, 0, 0);
+      camera.position.set(0, 1.15, 3.2);
+      camera.lookAt(0, -0.3, 0);
       scene.add(new THREE.HemisphereLight(0xdceeff, 0x506050, 1.2));
+      // Real Three.js shadow map, matching the Aura3D side. Both engines previously drew
+      // hardcoded dark quads instead of casting shadows.
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFShadowMap;
       const key = new THREE.DirectionalLight(0xffefcf, 2.0);
       key.position.set(-1.4, 2.4, 2.2);
+      key.castShadow = true;
+      key.shadow.mapSize.set(1024, 1024);
+      key.shadow.camera.left = -1.2;
+      key.shadow.camera.right = 1.2;
+      key.shadow.camera.top = 1.2;
+      key.shadow.camera.bottom = -1.2;
+      key.shadow.camera.near = 0.1;
+      key.shadow.camera.far = 10;
+      // Three.js caches the shadow camera's projection matrix, so frustum edits after
+      // construction require an explicit update or the shadow map is rendered with the default
+      // 5-unit frustum and this ~2-unit scene lands outside the depth range it samples.
+      key.shadow.camera.updateProjectionMatrix();
+      key.shadow.bias = -0.0015;
+      key.target.position.set(0, -0.48, -0.08);
+      scene.add(key.target);
       scene.add(key);
       const cube = new THREE.BoxGeometry(1, 1, 1);
       const receiver = new THREE.Mesh(cube, new THREE.MeshStandardMaterial({ color: 0x94ad94, roughness: 0.78, metalness: 0 }));
       receiver.position.set(0, -0.48, -0.08);
       receiver.scale.set(1.8, 0.08, 0.46);
+      receiver.receiveShadow = true;
       scene.add(receiver);
-      const shadowMaterial = new THREE.MeshBasicMaterial({ color: 0x080a0d, transparent: true, opacity: 0.52, depthWrite: false });
-      [[-0.17, -0.405, 0.0, 0.82, 0.08, 0.2], [0.42, -0.398, 0.0, 0.54, 0.07, 0.15]].forEach((values) => {
-        const mesh = new THREE.Mesh(cube, shadowMaterial);
-        mesh.position.set(values[0], values[1], values[2]);
-        mesh.scale.set(values[3], values[4], values[5]);
-        scene.add(mesh);
-      });
       const blue = new THREE.Mesh(cube, new THREE.MeshStandardMaterial({ color: 0x3375db, roughness: 0.42, metalness: 0.05 }));
       blue.position.set(-0.28, -0.08, 0.08);
       blue.scale.set(0.28, 0.36, 0.28);
+      blue.castShadow = true;
       scene.add(blue);
       const gold = new THREE.Mesh(cube, new THREE.MeshStandardMaterial({ color: 0xeba32e, roughness: 0.36, metalness: 0.22 }));
       gold.position.set(0.38, 0.02, 0.06);
       gold.scale.set(0.22, 0.44, 0.22);
+      gold.castShadow = true;
       scene.add(gold);
+      // Toggle receiver opt-in rather than renderer.shadowMap.enabled: flipping the renderer
+      // flag between passes changes material program defines and needs a recompile, which made
+      // the shadowed pass render identically to the control and reported zero shadow pixels.
+      key.shadow.needsUpdate = true;
+      receiver.receiveShadow = false;
+      receiver.material.needsUpdate = true;
+      renderer.render(scene, camera);
+      await nextFrame();
+      const unshadowed = pixelStats(canvas).pixels.slice();
+      receiver.receiveShadow = true;
+      receiver.material.needsUpdate = true;
+      key.shadow.needsUpdate = true;
       renderer.render(scene, camera);
       await nextFrame();
       const stats = pixelStats(canvas);
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: 5, casterCount: 2, receiverCount: 1 };
+      const shadowStats = shadowDarkeningStats(stats.pixels, unshadowed);
+      return { width: canvas.width, height: canvas.height, nonBlankPixels: stats.nonBlankPixels, colorBuckets: stats.colorBuckets, ...shadowStats, drawCalls: 3, casterCount: 2, receiverCount: 1 };
     }
   `;
 }
@@ -355,13 +454,16 @@ function babylonBundleSource(): string {
       engine.setSize(canvas.width, canvas.height);
       const scene = new BABYLON.Scene(engine);
       scene.clearColor = new BABYLON.Color4(0.62, 0.72, 0.8, 1);
-      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, -4), scene);
+      // Same downward view as the Three.js and Aura3D cameras, so the receiver's top face is
+      // visible and a cast shadow can actually be seen. Babylon is left-handed here, so the
+      // camera sits on -Z.
+      const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 1.15, -3.2), scene);
       camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
       camera.orthoLeft = -1;
       camera.orthoRight = 1;
       camera.orthoTop = 0.67;
       camera.orthoBottom = -0.67;
-      camera.setTarget(BABYLON.Vector3.Zero());
+      camera.setTarget(new BABYLON.Vector3(0, -0.3, 0));
       new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene).intensity = 1.2;
       const key = new BABYLON.DirectionalLight("key", new BABYLON.Vector3(-0.5, -0.8, 0.6), scene);
       key.intensity = 2.0;
@@ -377,15 +479,7 @@ function babylonBundleSource(): string {
       receiver.position = new BABYLON.Vector3(0, -0.48, 0.08);
       receiver.scaling = new BABYLON.Vector3(1.8, 0.08, 0.46);
       receiver.material = makePbr("receiver-material", [0.58, 0.68, 0.58], 0, 0.78);
-      const shadow = new BABYLON.StandardMaterial("bounded-shadow", scene);
-      shadow.diffuseColor = new BABYLON.Color3(0.03, 0.04, 0.05);
-      shadow.alpha = 0.52;
-      [[-0.17, -0.405, 0.0, 0.82, 0.08, 0.2], [0.42, -0.398, 0.0, 0.54, 0.07, 0.15]].forEach((values, index) => {
-        const mesh = BABYLON.MeshBuilder.CreateBox("shadow-" + index, { size: 1 }, scene);
-        mesh.position = new BABYLON.Vector3(values[0], values[1], -values[2]);
-        mesh.scaling = new BABYLON.Vector3(values[3], values[4], values[5]);
-        mesh.material = shadow;
-      });
+      receiver.receiveShadows = true;
       const blue = BABYLON.MeshBuilder.CreateBox("blue-caster", { size: 1 }, scene);
       blue.position = new BABYLON.Vector3(-0.28, -0.08, -0.08);
       blue.scaling = new BABYLON.Vector3(0.28, 0.36, 0.28);
@@ -394,13 +488,29 @@ function babylonBundleSource(): string {
       gold.position = new BABYLON.Vector3(0.38, 0.02, -0.06);
       gold.scaling = new BABYLON.Vector3(0.22, 0.44, 0.22);
       gold.material = makePbr("gold-caster-material", [0.92, 0.64, 0.18], 0.22, 0.36);
+      // Real Babylon shadow generator, matching the Aura3D and Three.js sides. This scene also
+      // used hardcoded dark boxes rather than casting shadows.
+      const shadowGenerator = new BABYLON.ShadowGenerator(1024, key);
+      shadowGenerator.usePercentageCloserFiltering = false;
+      shadowGenerator.usePoissonSampling = true;
+      shadowGenerator.addShadowCaster(blue);
+      shadowGenerator.addShadowCaster(gold);
       scene.render();
       await scene.whenReadyAsync();
+      receiver.receiveShadows = false;
+      receiver.material.markDirty();
+      scene.render();
+      await nextFrame();
+      scene.render();
+      const unshadowed = pixelStats(canvas).pixels.slice();
+      receiver.receiveShadows = true;
+      receiver.material.markDirty();
       scene.render();
       await nextFrame();
       scene.render();
       const stats = pixelStats(canvas);
-      return { width: canvas.width, height: canvas.height, ...stats, drawCalls: 5, casterCount: 2, receiverCount: 1 };
+      const shadowStats = shadowDarkeningStats(stats.pixels, unshadowed);
+      return { width: canvas.width, height: canvas.height, nonBlankPixels: stats.nonBlankPixels, colorBuckets: stats.colorBuckets, ...shadowStats, drawCalls: 3, casterCount: 2, receiverCount: 1 };
     }
   `;
 }

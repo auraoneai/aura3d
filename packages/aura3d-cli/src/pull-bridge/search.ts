@@ -39,6 +39,10 @@ export interface SearchCandidateLine {
   readonly autoPullable: boolean;
   readonly access: AuraCanonicalAsset["access"];
   readonly sourcePage?: string;
+  /** Directly fetchable asset URL, when the provider exposes one. */
+  readonly downloadUrl?: string;
+  /** Attribution author, needed to satisfy an attribution-bearing licence policy. */
+  readonly author?: string;
   readonly profile?: {
     readonly name: Exclude<CliAssetSearchProfile, "general">;
     readonly suitable: boolean;
@@ -69,6 +73,8 @@ export function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfi
     autoPullable: boolean;
     access: AuraCanonicalAsset["access"];
     sourcePage?: string;
+    downloadUrl?: string;
+    author?: string;
     profile?: SearchCandidateLine["profile"];
   } = {
     id: asset.id,
@@ -79,6 +85,26 @@ export function toLine(candidate: ResolveCandidate, profile: CliAssetSearchProfi
     access: asset.access,
   };
   if (asset.sourcePage) line.sourcePage = asset.sourcePage;
+  /*
+   * Surface the fetchable URL.
+   *
+   * Previously a search line carried only `sourcePage` -- a human-facing landing page, not a file. Any
+   * programmatic consumer therefore had to re-run a resolve to obtain the actual URL, and the screening
+   * pipeline rejected every candidate with "candidate has no download URL" despite the resolver knowing it.
+   * Exposing it here keeps `assets search --json` sufficient for an automated screening loop, which is the
+   * whole point of the search -> screen -> select flow.
+   */
+  const fetchable = asset.downloadUrl ?? asset.url;
+  if (fetchable) line.downloadUrl = fetchable;
+  /*
+   * Surface attribution too.
+   *
+   * A CC-BY candidate without a recorded author cannot satisfy an attribution-bearing licence policy, and
+   * omitting it here made the screening pipeline reject perfectly usable candidates for
+   * `provenance-complete: author missing` when the provider had in fact supplied one.
+   */
+  const attribution = asset.author ?? asset.attribution;
+  if (attribution) line.author = attribution;
   if (profile !== "general") {
     const evaluation = evaluateAssetProfile(asset, profile);
     line.profile = {

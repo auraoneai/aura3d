@@ -3,8 +3,8 @@
 Version: 1.0.9
 Status: Historical scoped release gate; not a current showcase-quality waiver
 Current release baseline: `@aura3d/engine@1.4.5` and `create-aura3d@1.4.5`
-Related: `docs/project/current-state.md`, `docs/project/library-gap-roadmap.md`,
-`docs/project/showcase-quality-gates.md`
+Related: `docs/project/status/current-state.md`, `docs/project/roadmaps/library-gap-roadmap.md`,
+`docs/project/showcase/quality-gates.md`
 
 This file records the scoped Aura Clash/runtime-foundation release posture for
 1.0.9. It must not be used to claim that current showcase apps, new templates,
@@ -12,7 +12,7 @@ or root `createAuraApp` routes have production renderer parity, full game-engine
 quality, skinned animation, WebGPU compute, or Three.js/Babylon visual parity.
 Current public examples must also pass route-health, source validation, typed
 asset, screenshot, primitive-budget, and claim-boundary gates from
-`Fixed-Needed-PRD.md` and `docs/project/showcase-quality-gates.md`.
+`docs/project/plans/recovery-remediation-prd.md` and `docs/project/showcase/quality-gates.md`.
 
 Aura3D 1.0.9 must not be published or marketed as a mature game engine until the gates in this document pass with current, reproducible evidence.
 

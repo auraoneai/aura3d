@@ -24,7 +24,7 @@ const retainedDocs: readonly RetainedDoc[] = [
     requiredTerms: ["Three.js", "migration", "packages/three-compat"]
   },
   {
-    path: "docs/project/threejs-parity-status.md",
+    path: "docs/project/parity/threejs/status.md",
     requiredTerms: ["Three.js", "parity", "tests/reports/threejs-parity"]
   },
   {

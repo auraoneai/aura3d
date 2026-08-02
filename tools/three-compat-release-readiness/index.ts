@@ -45,15 +45,15 @@ const requiredReports = [
   "tests/reports/three-compat-claim-registry.json"
 ];
 const requiredDocs = [
-  "docs/project/threejs-parity-status.md",
-  "docs/project/threejs-parity-parity-matrix.md",
-  "docs/project/threejs-parity-threejs-inventory.md",
-  "docs/project/threejs-parity-claim-boundary.md",
-  "docs/project/known-limits.md",
+  "docs/project/parity/threejs/status.md",
+  "docs/project/parity/threejs/parity-matrix.md",
+  "docs/project/parity/threejs/inventory.md",
+  "docs/project/parity/threejs/claim-boundary.md",
+  "docs/project/status/known-limits.md",
   "docs/project/claim-guidelines.md",
   "docs/project/compatibility.md",
   "docs/project/migration.md",
-  "docs/project/current-state.md",
+  "docs/project/status/current-state.md",
   "docs/project/verification-evidence.md",
   "docs/api/public-api.md",
   "docs/api/readme.md"
@@ -89,8 +89,8 @@ const copiedScreenshots = copyFinalScreenshots(screenshots);
 const missingDocs = requiredDocs.filter((path) => !existsSync(resolve(path)));
 const claimBoundaryText = [
   "docs/project/claim-guidelines.md",
-  "docs/project/known-limits.md",
-  "docs/project/threejs-parity-claim-boundary.md"
+  "docs/project/status/known-limits.md",
+  "docs/project/parity/threejs/claim-boundary.md"
 ].map((path) => existsSync(resolve(path)) ? readFileSync(resolve(path), "utf8") : "").join("\n");
 const emptyScreenshots = screenshots.filter((entry) => !existsSync(resolve(entry.target)) || statSync(resolve(entry.target)).size < 1024).map((entry) => entry.target);
 const screenshotVisualValidations = screenshots.map((entry) => ({

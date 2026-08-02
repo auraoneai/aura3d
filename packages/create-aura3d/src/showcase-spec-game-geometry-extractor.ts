@@ -77,6 +77,8 @@ interface GltfMesh {
 interface GltfPrimitive {
   readonly attributes?: Readonly<Record<string, number>>;
   readonly material?: number;
+  readonly indices?: number;
+  readonly mode?: number;
 }
 
 interface GltfMaterial {
@@ -115,6 +117,14 @@ interface PrimitiveGeometry {
   readonly center: Vec3;
   readonly size: Vec3;
   readonly vertices: readonly Vec3[];
+  readonly triangles: readonly RoadTriangle[];
+}
+
+/** A world-space triangle in the XZ plane, retained so road containment can be tested exactly. */
+interface RoadTriangle {
+  readonly a: Vec3;
+  readonly b: Vec3;
+  readonly c: Vec3;
 }
 
 interface AssetGeometry {
@@ -164,9 +174,31 @@ const IDENTITY_MATRIX: Mat4 = [
 
 const RACING_CERTIFIED_GAME_UNITS_PER_SECOND = 1.1;
 const RACING_MAX_AUTHORED_LAP_SECONDS = 60;
+/**
+ * Maximum share of a derived racing centreline permitted to sit off the road
+ * surface. Small excursions are tolerated where kerb triangles are modelled with
+ * gaps; a route that is mostly off-road is rejected outright.
+ */
+const RACING_MAX_OFF_ROAD_RATIO = 0.08;
+/**
+ * Maximum ratio between the widest and tightest radius of a derived racing loop.
+ * Real circuits vary; a route that bulges out across an attached apron does not.
+ */
+const RACING_MAX_LOOP_RADIUS_RATIO = 2;
 
-const ROAD_PATTERN = /\b(asph|asphalt|road|track|circuit|route|lane|kerb|curb)\b/i;
-const ROAD_EXCLUDE_PATTERN = /\b(grass|water|lake|mount|terrain|wall|fence|tree|building|sky)\b/i;
+/**
+ * Road-surface material/node naming.
+ *
+ * The trailing boundary is `(?![a-z])` rather than `\b` on purpose: real assets name
+ * their primary driving surface with numbered variants such as `ASPH2`, `Asphalt_01`,
+ * or `ROAD2`, and `\b` does not match between `H` and `2` because a digit is a word
+ * character. Defect 32 was exactly that — Tsukuba's largest driving surface (`ASPH2`,
+ * 2,264 vertices) was silently dropped, so the loop tracer circled the paddock service
+ * road instead of the circuit. A leading `(?<![a-z])` keeps `Grass` from matching
+ * nothing while still rejecting words that merely contain a token (`broadway`).
+ */
+const ROAD_PATTERN = /(?<![a-z])(asph|asphalt|road|track|circuit|route|lane|kerb|curb|tarmac)(?![a-z])/i;
+const ROAD_EXCLUDE_PATTERN = /(?<![a-z])(grass|water|lake|mount|terrain|wall|fence|tree|building|sky|barrier|warehouse|forest|foliage|foilage|aqua)(?![a-z])/i;
 const PLATFORM_PATTERN = /\b(platform|walkway|ground|floor|level|ledge|bridge|runway|road|grass|rock|terrain)\b/i;
 const PLATFORM_EXCLUDE_PATTERN = /\b(wall|cloud|sky|tree|character|prop|rail|pole)\b/i;
 const PLATFORMER_TARGET_GAME_LENGTH = 38;
@@ -183,11 +215,42 @@ const PLATFORMER_MAX_UPWARD_TRAVERSAL_STEP = 2.5;
 const PLATFORMER_MAX_RETAINED_MESH_SURFACES = 16;
 const PLATFORMER_DECORATIVE_PATTERN = /\b(column|pillar|tower|decor|background|backdrop)\b/i;
 
+/**
+ * Memoizes racing extraction per asset. Ranking a replacement candidate list calls
+ * this once per candidate, and exact road containment plus the raster loop trace is
+ * far more work than the old radius estimate, so repeated calls are cached.
+ */
+const racingTopologyCache = new Map<string, GeometryExtractionResult<ShowcaseRacingTrackTopology>>();
+
 export function extractRacingTrackTopologyFromAsset(
   assetId: string,
   options: ExtractOptions = {}
 ): GeometryExtractionResult<ShowcaseRacingTrackTopology> {
-  const geometry = loadAssetGeometry(assetId, options.projectDir ?? process.cwd());
+  const projectDir = options.projectDir ?? process.cwd();
+  const cacheKey = JSON.stringify([
+    projectDir,
+    assetId,
+    options.renderedProbePath ?? "",
+    options.routeOverlayPath ?? ""
+  ]);
+  const cached = racingTopologyCache.get(cacheKey);
+  if (cached) return cached;
+  const computed = computeRacingTrackTopology(assetId, options, projectDir);
+  racingTopologyCache.set(cacheKey, computed);
+  return computed;
+}
+
+/** Clears the racing extraction memo. Exposed for tests that rewrite asset files in place. */
+export function clearRacingTrackTopologyCache(): void {
+  racingTopologyCache.clear();
+}
+
+function computeRacingTrackTopology(
+  assetId: string,
+  options: ExtractOptions,
+  projectDir: string
+): GeometryExtractionResult<ShowcaseRacingTrackTopology> {
+  const geometry = loadAssetGeometry(assetId, projectDir);
   if (!geometry.ok) return geometry;
   const roadPrimitives = geometry.value.primitives.filter(isRoadPrimitive);
   if (roadPrimitives.length === 0) {
@@ -204,11 +267,34 @@ export function extractRacingTrackTopologyFromAsset(
       [`Road candidate footprint ${formatSize(roadSize)} is not large enough to derive a public racing route.`]
     );
   }
-  const centerline = createRoadCenterline(roadPrimitives, roadBounds);
+  const roadSurface = createRoadSurface(roadPrimitives);
+  if (roadSurface.triangleCount === 0) {
+    return failure(
+      [`asset-extraction:racing-road-triangles-unreadable:${assetId}`],
+      [`Road primitives in ${assetId} have no readable indexed triangles, so road containment cannot be proven.`]
+    );
+  }
+  // Radial sweep first: it is cheap and exact for star-convex circuits. Fall back to
+  // a rasterized loop trace for circuits that double back on themselves.
+  const sweptCenterline = createRoadCenterline(roadPrimitives, roadBounds, roadSurface);
+  const sweptUsable = sweptCenterline.length >= 8
+    && measureOffRoadRatio(sweptCenterline, roadSurface) <= RACING_MAX_OFF_ROAD_RATIO
+    && isPlausibleRacingLoop(sweptCenterline);
+  const centerline = sweptUsable ? sweptCenterline : traceRoadLoop(roadPrimitives, roadSurface);
+  const centerlineMethod = sweptUsable ? "radial-band-sweep" : "raster-loop-trace";
   if (centerline.length < 8) {
     return failure(
       [`asset-extraction:racing-road-centerline-ambiguous:${assetId}`],
       [`Road mesh in ${assetId} produced only ${centerline.length} reliable centerline samples.`]
+    );
+  }
+  // A route that leaves the asphalt is not a certified racing line, regardless of
+  // how confident the surrounding metrics look. See defect 31.
+  const offRoadRatio = measureOffRoadRatio(centerline, roadSurface);
+  if (offRoadRatio > RACING_MAX_OFF_ROAD_RATIO) {
+    return failure(
+      [`asset-extraction:racing-road-centerline-off-road:${assetId}`],
+      [`Derived centreline leaves the road surface for ${(offRoadRatio * 100).toFixed(1)}% of its length (max ${(RACING_MAX_OFF_ROAD_RATIO * 100).toFixed(0)}%).`]
     );
   }
   const lapLength = measureClosedRouteLength(centerline.map((point) => ({ x: point.x, y: point.z })));
@@ -234,12 +320,18 @@ export function extractRacingTrackTopologyFromAsset(
     modelAlignment: {
       source: "asset-mesh-extracted",
       modelBounds: geometry.value.bounds,
-      modelPoint: [center(roadBounds, 0), roadBounds.min[1], center(roadBounds, 2)],
+      // The fallback single anchor is also surface-sampled: it is used when fewer than two
+      // anchor pairs survive, and a bounding-box floor would mis-seat the car there too.
+      modelPoint: [
+        center(roadBounds, 0),
+        round3(roadSurface.elevationAt(center(roadBounds, 0), center(roadBounds, 2)) ?? roadSurface.medianElevation),
+        center(roadBounds, 2)
+      ],
       gamePoint: {
         x: center(roadBounds, 0),
         z: center(roadBounds, 2)
       },
-      anchorPairs: createRacingAnchorPairs(centerline, roadBounds),
+      anchorPairs: createRacingAnchorPairs(centerline, roadSurface),
       evidence: {
         ...(options.routeOverlayPath ? { routeOverlay: options.routeOverlayPath } : {}),
         notes: "Mesh-derived anchors are computed from road/asphalt/kerb primitives in the current GLB and bind the racing route to the visible track asset."
@@ -258,7 +350,10 @@ export function extractRacingTrackTopologyFromAsset(
     reasons: [
       `mesh-derived racing topology from ${roadPrimitives.length} road primitive(s)`,
       `lapLengthMeters:${topology.lapLengthMeters}`,
-      `estimatedLapSeconds:${topology.estimatedLapSeconds}`
+      `estimatedLapSeconds:${topology.estimatedLapSeconds}`,
+      `centerlineMethod:${centerlineMethod}`,
+      `centerlineOffRoadRatio:${offRoadRatio.toFixed(4)}`,
+      `roadTriangles:${roadSurface.triangleCount}`
     ]
   };
 }
@@ -697,7 +792,8 @@ function collectMeshPrimitives(document: GltfDocument, meshIndex: number, transf
       bounds,
       center: [center(bounds, 0), center(bounds, 1), center(bounds, 2)] as const,
       size,
-      vertices: vertices.length > 800 ? decimateVertices(vertices, 800) : vertices
+      vertices: vertices.length > 800 ? decimateVertices(vertices, 800) : vertices,
+      triangles: readTriangles(document, primitive, vertices)
     } satisfies PrimitiveGeometry];
   });
 }
@@ -724,6 +820,48 @@ function readPositionAccessor(document: GltfDocument, accessorIndex: number): re
     ]);
   }
   return vertices;
+}
+
+/**
+ * Reads a primitive's triangle list in world space. Triangles are what make an
+ * exact point-on-road test possible; a vertex cloud alone cannot distinguish the
+ * interior of a ring road from the hole in its middle.
+ */
+function readTriangles(document: GltfDocument, primitive: GltfPrimitive, vertices: readonly Vec3[]): readonly RoadTriangle[] {
+  const mode = primitive.mode ?? 4;
+  if (mode !== 4) return [];
+  const indices = primitive.indices === undefined
+    ? vertices.map((_vertex, index) => index)
+    : readIndexAccessor(document, primitive.indices);
+  const triangles: RoadTriangle[] = [];
+  for (let index = 0; index + 2 < indices.length; index += 3) {
+    const a = vertices[indices[index]!];
+    const b = vertices[indices[index + 1]!];
+    const c = vertices[indices[index + 2]!];
+    if (a && b && c) triangles.push({ a, b, c });
+  }
+  return triangles;
+}
+
+function readIndexAccessor(document: GltfDocument, accessorIndex: number): readonly number[] {
+  const accessor = document.json.accessors?.[accessorIndex];
+  const binaryChunk = document.binaryChunk;
+  if (!accessor || !binaryChunk || accessor.bufferView === undefined) return [];
+  const view = document.json.bufferViews?.[accessor.bufferView];
+  if (!view || view.buffer !== 0) return [];
+  const componentSize = accessor.componentType === 5125 ? 4 : accessor.componentType === 5123 ? 2 : accessor.componentType === 5121 ? 1 : 0;
+  if (componentSize === 0) return [];
+  const start = (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+  const count = accessor.count ?? 0;
+  const indices: number[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const offset = start + index * componentSize;
+    if (offset + componentSize > binaryChunk.length) break;
+    indices.push(componentSize === 4
+      ? binaryChunk.readUInt32LE(offset)
+      : componentSize === 2 ? binaryChunk.readUInt16LE(offset) : binaryChunk.readUInt8(offset));
+  }
+  return indices;
 }
 
 function isRoadPrimitive(primitive: PrimitiveGeometry): boolean {
@@ -776,32 +914,659 @@ function sortPlayableSurfaceCandidate(a: PrimitiveGeometry, b: PrimitiveGeometry
   return a.bounds.min[0] - b.bounds.min[0];
 }
 
-function createRoadCenterline(primitives: readonly PrimitiveGeometry[], bounds: ShowcaseGeometryModelBounds): ShowcaseRacingTrackTopology["roadCenterline"] {
-  const allVertices = primitives.flatMap((primitive) => primitive.vertices);
-  const centerX = center(bounds, 0);
-  const centerZ = center(bounds, 2);
-  const bins = 20;
-  const samples = Array.from({ length: bins }, (_unused, bin) => {
-    const minAngle = -Math.PI + (bin / bins) * Math.PI * 2;
-    const maxAngle = -Math.PI + ((bin + 1) / bins) * Math.PI * 2;
-    const vertices = allVertices.filter((vertex) => {
-      const angle = Math.atan2(vertex[2] - centerZ, vertex[0] - centerX);
-      return angle >= minAngle && angle < maxAngle;
+/**
+ * A road-surface occupancy test built from the road primitives' actual triangles.
+ *
+ * This exists because a radial "average radius" estimate cannot tell the road
+ * surface apart from the empty infield it encircles. Defect 31 was exactly that:
+ * the previous implementation emitted `averageRadius * 0.68`, which for a ring
+ * road lands inside the inner edge, so 100% of the certified centreline sat on
+ * grass rather than asphalt.
+ */
+interface RoadSurface {
+  readonly contains: (x: number, z: number) => boolean;
+  /**
+   * Local-space Y of the drivable surface directly under `(x, z)`, or `undefined` when the point is
+   * off the road.
+   *
+   * Anchor elevation must be sampled from the surface itself, not taken from the road family's
+   * bounding box. `roadBounds.min[1]` is the lowest vertex anywhere in the road/kerb/asphalt family,
+   * which on a real circuit belongs to a kerb underside, a drainage lip, or a banked far corner --
+   * not to the tarmac under the start line. Binding an anchor to that floor tells the route solver
+   * the road sits lower than it does, and the whole vehicle is then seated below the visible tarmac.
+   *
+   * Returns the *highest* triangle under the point: where a kerb or apron overlaps the racing
+   * surface in plan view, the drivable surface is the top one.
+   */
+  readonly elevationAt: (x: number, z: number) => number | undefined;
+  /**
+   * Median Y across the drivable surface's vertices.
+   *
+   * Used when a specific point has no surface triangle under it -- most importantly the road family's
+   * bounding-box *centre*, which on any circuit that encloses an infield is a hole rather than tarmac.
+   * A median is the right fallback because it is a real elevation taken from the drivable surface,
+   * unlike `bounds.min[1]`, and it is robust to a minority of banked or stepped triangles.
+   */
+  readonly medianElevation: number;
+  readonly triangleCount: number;
+}
+
+function createRoadSurface(primitives: readonly PrimitiveGeometry[]): RoadSurface {
+  const triangles = primitives.flatMap((primitive) => primitive.triangles);
+  if (triangles.length === 0) {
+    return { contains: () => false, elevationAt: () => undefined, medianElevation: 0, triangleCount: 0 };
+  }
+  const cells = new Map<string, RoadTriangle[]>();
+  const bounds = boundsForPrimitives(primitives);
+  const size = boundsSize(bounds);
+  const cellSize = Math.max(1e-6, Math.max(size[0], size[2]) / 96);
+  const keyFor = (x: number, z: number): string => `${Math.floor(x / cellSize)}:${Math.floor(z / cellSize)}`;
+  for (const triangle of triangles) {
+    const minX = Math.min(triangle.a[0], triangle.b[0], triangle.c[0]);
+    const maxX = Math.max(triangle.a[0], triangle.b[0], triangle.c[0]);
+    const minZ = Math.min(triangle.a[2], triangle.b[2], triangle.c[2]);
+    const maxZ = Math.max(triangle.a[2], triangle.b[2], triangle.c[2]);
+    for (let cx = Math.floor(minX / cellSize); cx <= Math.floor(maxX / cellSize); cx += 1) {
+      for (let cz = Math.floor(minZ / cellSize); cz <= Math.floor(maxZ / cellSize); cz += 1) {
+        const key = `${cx}:${cz}`;
+        const bucket = cells.get(key);
+        if (bucket) bucket.push(triangle);
+        else cells.set(key, [triangle]);
+      }
+    }
+  }
+  const elevations = triangles
+    .flatMap((triangle) => [triangle.a[1], triangle.b[1], triangle.c[1]])
+    .sort((a, b) => a - b);
+  const medianElevation = elevations.length > 0
+    ? round3(elevations[Math.floor(elevations.length / 2)] ?? 0)
+    : 0;
+  return {
+    triangleCount: triangles.length,
+    medianElevation,
+    contains: (x, z) => {
+      const bucket = cells.get(keyFor(x, z));
+      if (!bucket) return false;
+      return bucket.some((triangle) => triangleContainsXZ(triangle, x, z));
+    },
+    elevationAt: (x, z) => {
+      const bucket = cells.get(keyFor(x, z));
+      if (!bucket) return undefined;
+      let highest: number | undefined;
+      for (const triangle of bucket) {
+        if (!triangleContainsXZ(triangle, x, z)) continue;
+        const y = triangleElevationAtXZ(triangle, x, z);
+        if (y === undefined) continue;
+        if (highest === undefined || y > highest) highest = y;
+      }
+      return highest;
+    }
+  };
+}
+
+/**
+ * Interpolate a triangle's Y at `(x, z)` using barycentric weights.
+ *
+ * Returns `undefined` for a triangle that is degenerate in plan view (a vertical wall seen edge-on),
+ * which carries no usable surface elevation.
+ */
+function triangleElevationAtXZ(triangle: RoadTriangle, x: number, z: number): number | undefined {
+  const { a, b, c } = triangle;
+  const denominator = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]);
+  if (Math.abs(denominator) < 1e-12) return undefined;
+  const u = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / denominator;
+  const v = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / denominator;
+  const w = 1 - u - v;
+  return u * a[1] + v * b[1] + w * c[1];
+}
+
+function triangleContainsXZ(triangle: RoadTriangle, x: number, z: number): boolean {
+  const { a, b, c } = triangle;
+  const denominator = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]);
+  if (Math.abs(denominator) < 1e-12) return false;
+  const u = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / denominator;
+  const v = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / denominator;
+  return u >= 0 && v >= 0 && u + v <= 1;
+}
+
+/**
+ * Rejects an on-road polyline that is not plausibly a racing line.
+ *
+ * Staying on asphalt is necessary but not sufficient: a circuit with an attached
+ * paddock or pit apron gives the radial sweep somewhere legal but wrong to bulge into,
+ * producing a lap that drives out across the apron and back. A racing line has a
+ * roughly consistent distance from the centre it encircles, so a route whose radius
+ * more than doubles between its tightest and widest point is not one. (Defect 32.)
+ */
+function isPlausibleRacingLoop(centerline: readonly { readonly x: number; readonly z: number }[]): boolean {
+  if (centerline.length < 8) return false;
+  const centerX = average(centerline.map((point) => point.x));
+  const centerZ = average(centerline.map((point) => point.z));
+  const radii = centerline.map((point) => Math.hypot(point.x - centerX, point.z - centerZ));
+  const minRadius = Math.min(...radii);
+  const maxRadius = Math.max(...radii);
+  if (minRadius <= 0) return false;
+  return maxRadius / minRadius <= RACING_MAX_LOOP_RADIUS_RATIO;
+}
+
+/** Fraction of a closed polyline that lies off the road surface, sampled uniformly. */
+function measureOffRoadRatio(
+  centerline: readonly { readonly x: number; readonly z: number }[],
+  surface: RoadSurface
+): number {
+  if (centerline.length < 2 || surface.triangleCount === 0) return 1;
+  let off = 0;
+  let total = 0;
+  for (let index = 0; index < centerline.length; index += 1) {
+    const from = centerline[index]!;
+    const to = centerline[(index + 1) % centerline.length]!;
+    const samples = 12;
+    for (let step = 0; step < samples; step += 1) {
+      const t = step / samples;
+      total += 1;
+      if (!surface.contains(from.x + (to.x - from.x) * t, from.z + (to.z - from.z) * t)) off += 1;
+    }
+  }
+  return total === 0 ? 1 : off / total;
+}
+
+/**
+ * A rasterized view of the road surface, used to trace a centreline on circuits
+ * whose shape is not star-convex about the centroid (a hairpin or an S-complex
+ * doubles back, so a single ray crosses several unrelated road bands).
+ */
+interface RoadRaster {
+  readonly width: number;
+  readonly height: number;
+  readonly cellSize: number;
+  readonly originX: number;
+  readonly originZ: number;
+  readonly occupied: Uint8Array;
+  readonly toWorld: (cell: number) => { readonly x: number; readonly z: number };
+}
+
+function createRoadRaster(primitives: readonly PrimitiveGeometry[], surface: RoadSurface): RoadRaster {
+  const bounds = boundsForPrimitives(primitives);
+  const size = boundsSize(bounds);
+  const target = 200;
+  const cellSize = Math.max(1e-6, Math.max(size[0], size[2]) / target);
+  const width = Math.ceil(size[0] / cellSize) + 3;
+  const height = Math.ceil(size[2] / cellSize) + 3;
+  const originX = bounds.min[0] - cellSize;
+  const originZ = bounds.min[2] - cellSize;
+  const occupied = new Uint8Array(width * height);
+  for (let z = 0; z < height; z += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (surface.contains(originX + x * cellSize, originZ + z * cellSize)) occupied[z * width + x] = 1;
+    }
+  }
+  return {
+    width,
+    height,
+    cellSize,
+    originX,
+    originZ,
+    occupied,
+    toWorld: (cell) => {
+      const x = cell % width;
+      const z = (cell - x) / width;
+      return { x: originX + x * cellSize, z: originZ + z * cellSize };
+    }
+  };
+}
+
+/** Chamfer distance from each road cell to the nearest off-road cell. */
+function roadDistanceField(raster: RoadRaster): Float64Array {
+  const { width, height, occupied } = raster;
+  const distance = new Float64Array(occupied.length);
+  const INFINITE = 1e9;
+  for (let index = 0; index < occupied.length; index += 1) distance[index] = occupied[index] ? INFINITE : 0;
+  const forward: readonly (readonly [number, number, number])[] = [[-1, 0, 1], [0, -1, 1], [-1, -1, 1.4142], [1, -1, 1.4142]];
+  const backward: readonly (readonly [number, number, number])[] = [[1, 0, 1], [0, 1, 1], [1, 1, 1.4142], [-1, 1, 1.4142]];
+  const relax = (x: number, z: number, offsets: readonly (readonly [number, number, number])[]): void => {
+    const index = z * width + x;
+    if (distance[index] === 0) return;
+    for (const [dx, dz, cost] of offsets) {
+      const nx = x + dx;
+      const nz = z + dz;
+      const neighbour = (nx < 0 || nx >= width || nz < 0 || nz >= height) ? 0 : distance[nz * width + nx]!;
+      distance[index] = Math.min(distance[index]!, neighbour + cost);
+    }
+  };
+  for (let z = 0; z < height; z += 1) for (let x = 0; x < width; x += 1) relax(x, z, forward);
+  for (let z = height - 1; z >= 0; z -= 1) for (let x = width - 1; x >= 0; x -= 1) relax(x, z, backward);
+  return distance;
+}
+
+/** All connected road regions, largest first. */
+function largestRoadComponents(raster: RoadRaster): readonly (readonly number[])[] {
+  const { width, height, occupied } = raster;
+  const seen = new Uint8Array(occupied.length);
+  const components: number[][] = [];
+  for (let start = 0; start < occupied.length; start += 1) {
+    if (!occupied[start] || seen[start]) continue;
+    const stack = [start];
+    const component: number[] = [];
+    seen[start] = 1;
+    while (stack.length > 0) {
+      const cell = stack.pop()!;
+      component.push(cell);
+      const x = cell % width;
+      const z = (cell - x) / width;
+      for (let dz = -1; dz <= 1; dz += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          const nx = x + dx;
+          const nz = z + dz;
+          if (nx < 0 || nx >= width || nz < 0 || nz >= height) continue;
+          const neighbour = nz * width + nx;
+          if (occupied[neighbour] && !seen[neighbour]) {
+            seen[neighbour] = 1;
+            stack.push(neighbour);
+          }
+        }
+      }
+    }
+    components.push(component);
+  }
+  return components.sort((a, b) => b.length - a.length);
+}
+
+/** Background regions fully enclosed by road, largest first. These are infields. */
+function roadInteriorHoles(raster: RoadRaster, road: Uint8Array): readonly (readonly number[])[] {
+  const inverted = Uint8Array.from(road, (value) => (value ? 0 : 1));
+  const { width, height } = raster;
+  const regions = largestRoadComponents({ ...raster, occupied: inverted });
+  return regions
+    .filter((region) => !region.some((cell) => {
+      const x = cell % width;
+      const z = (cell - x) / width;
+      return x === 0 || z === 0 || x === width - 1 || z === height - 1;
+    }))
+    .sort((a, b) => b.length - a.length);
+}
+
+/** Signed area of a closed polyline, used to pick the loop that encloses the most track. */
+function polygonArea(points: readonly { readonly x: number; readonly z: number }[]): number {
+  let total = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    const from = points[index]!;
+    const to = points[(index + 1) % points.length]!;
+    total += from.x * to.z - to.x * from.z;
+  }
+  return Math.abs(total) / 2;
+}
+
+/** Turning number of a closed polyline about a point; ±1 means the loop encircles it. */
+function windsAround(points: readonly { readonly x: number; readonly z: number }[], x: number, z: number): boolean {
+  let total = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    const from = points[index]!;
+    const to = points[(index + 1) % points.length]!;
+    let delta = Math.atan2(to.z - z, to.x - x) - Math.atan2(from.z - z, from.x - x);
+    while (delta > Math.PI) delta -= Math.PI * 2;
+    while (delta < -Math.PI) delta += Math.PI * 2;
+    total += delta;
+  }
+  return Math.abs(total) > Math.PI;
+}
+
+/**
+ * Traces a closed racing line for circuits the radial sweep cannot handle.
+ *
+ * The racing line is the road ribbon that *encircles the infield*, so the seam is cut
+ * from an enclosed background region (the infield) outward across the ribbon, and the
+ * loop is the cheapest road-only path from one side of that seam back to the other.
+ * Cutting the seam at the widest road cell instead — as an earlier version did — put
+ * the seam in Tsukuba's paddock apron and traced a loop around the service road rather
+ * than the circuit (defect 32). Candidate infields are tried largest-first and the
+ * result must actually wind around the infield it was cut from.
+ */
+function traceRoadLoop(
+  primitives: readonly PrimitiveGeometry[],
+  surface: RoadSurface
+): ShowcaseRacingTrackTopology["roadCenterline"] {
+  const raster = createRoadRaster(primitives, surface);
+  const { width, height } = raster;
+  const components = largestRoadComponents(raster);
+  const component = components[0];
+  if (!component || component.length < 64) return [];
+  const road = new Uint8Array(raster.occupied.length);
+  for (const cell of component) road[cell] = 1;
+  const distance = roadDistanceField({ ...raster, occupied: road });
+  let maxDistance = 0;
+  for (const value of distance) if (value > maxDistance) maxDistance = value;
+  if (maxDistance <= 0) return [];
+
+  const holes = roadInteriorHoles(raster, road);
+  let best: { points: readonly { x: number; z: number; width: number }[]; area: number } | undefined;
+  for (const hole of holes.slice(0, 4)) {
+    let holeX = 0;
+    let holeZ = 0;
+    for (const cell of hole) {
+      const x = cell % width;
+      holeX += x;
+      holeZ += (cell - x) / width;
+    }
+    holeX = Math.round(holeX / hole.length);
+    holeZ = Math.round(holeZ / hole.length);
+
+    // Cut a complete seam: every road cell on the ray running from the infield centroid
+    // outward to the edge of the raster. Stopping at the first gap only nicks the nearest
+    // ribbon, which leaves a way around and collapses the "loop" to a few cells.
+    const seam: number[] = [];
+    for (let x = holeX; x < width; x += 1) {
+      if (road[holeZ * width + x]) seam.push(holeZ * width + x);
+    }
+    if (seam.length === 0) continue;
+    const loop = shortestRoadLoop(raster, road, distance, maxDistance, seam);
+    if (loop.length < 24) continue;
+    const points = loop.map((cell) => {
+      const point = raster.toWorld(cell);
+      return { x: point.x, z: point.z, width: Math.max(0.12, distance[cell]! * raster.cellSize * 2) };
     });
-    if (vertices.length < 4) return undefined;
-    const averageRadius = average(vertices.map((vertex) => Math.hypot(vertex[0] - centerX, vertex[2] - centerZ))) * 0.68;
-    const angle = (minAngle + maxAngle) / 2;
-    return {
-      x: round3(centerX + Math.cos(angle) * averageRadius),
-      z: round3(centerZ + Math.sin(angle) * averageRadius),
-      width: averageRoadWidth(boundsSize(bounds))
-    };
-  }).filter((point): point is NonNullable<typeof point> => Boolean(point));
-  if (samples.length > 0) {
-    const first = samples[0];
-    if (first) return [...samples, first];
+    const holeWorld = raster.toWorld(holeZ * width + holeX);
+    if (!windsAround(points, holeWorld.x, holeWorld.z)) continue;
+    const area = polygonArea(points);
+    if (!best || area > best.area) best = { points, area };
+  }
+  if (!best) return [];
+
+  // Resampling a traced loop chords across corners, and on a tight hairpin that chord can
+  // clip the apex. Take the densest count that still keeps every emitted point and every
+  // interpolated step on the road, rather than loosening the off-road gate.
+  for (const count of [32, 28, 24, 20]) {
+    const resampled = resampleLoop(best.points, count);
+    if (resampled.length < 8) continue;
+    if (resampled.some((point) => !surface.contains(point.x, point.z))) continue;
+    const centerline = resampled.map((point) => ({
+      x: round3(point.x),
+      z: round3(point.z),
+      width: round3(point.width)
+    }));
+    if (measureOffRoadRatio(centerline, surface) > RACING_MAX_OFF_ROAD_RATIO) continue;
+    const first = centerline[0]!;
+    return [...centerline, { x: first.x, z: first.z, width: first.width }];
   }
   return [];
+}
+
+/**
+ * Cheapest road-only cycle through a seam: Dijkstra from the cells on one side of the
+ * seam to the cells on the other, with the seam itself forbidden so the path is forced
+ * the long way around. Cost prefers cells far from the road edge, which keeps the
+ * result near the middle of the ribbon.
+ */
+function shortestRoadLoop(
+  raster: RoadRaster,
+  road: Uint8Array,
+  distance: Float64Array,
+  maxDistance: number,
+  seam: readonly number[]
+): readonly number[] {
+  const { width, height } = raster;
+  const blocked = new Uint8Array(road.length);
+  for (const cell of seam) blocked[cell] = 1;
+  // Also block the full raster row outward from the seam, so a path cannot slip around
+  // the seam's far end. Without this the "loop" degenerates to a few cells that hop
+  // straight over the seam tip (observed on showcaseMiniRaceTrack: seam 33, loop 4).
+  const seamRow = seam.length > 0 ? Math.floor(seam[0]! / width) : -1;
+  const seamStartX = Math.min(...seam.map((cell) => cell % width));
+  if (seamRow >= 0) {
+    for (let x = seamStartX; x < width; x += 1) blocked[seamRow * width + x] = 1;
+  }
+  // Start and finish must be the *same* crossing of the ribbon, otherwise the cheapest
+  // "loop" is a two-cell hop between opposite faces of the seam near its inner end.
+  // Anchor both to the widest point of the seam (the middle of the road band) and force
+  // the search to travel all the way around.
+  let anchor = seam[0]!;
+  for (const cell of seam) if (distance[cell]! > distance[anchor]!) anchor = cell;
+  const anchorX = anchor % width;
+  const anchorZ = (anchor - anchorX) / width;
+  const above = (anchorZ - 1) * width + anchorX;
+  const below = (anchorZ + 1) * width + anchorX;
+  if (anchorZ - 1 < 0 || anchorZ + 1 >= height) return [];
+  if (!road[above] || blocked[above] || !road[below] || blocked[below]) return [];
+  const starts = [above];
+  const goals = new Set<number>([below]);
+
+  const cellCost = (cell: number): number => {
+    const openness = Math.min(1, distance[cell]! / maxDistance);
+    return 1 + 8 * (1 - openness) ** 2;
+  };
+  const best = new Float64Array(road.length).fill(Number.POSITIVE_INFINITY);
+  const previous = new Int32Array(road.length).fill(-1);
+  const heap: { cell: number; cost: number }[] = [];
+  const push = (cell: number, cost: number): void => {
+    heap.push({ cell, cost });
+    let index = heap.length - 1;
+    while (index > 0) {
+      const parent = (index - 1) >> 1;
+      if (heap[parent]!.cost <= heap[index]!.cost) break;
+      [heap[parent], heap[index]] = [heap[index]!, heap[parent]!];
+      index = parent;
+    }
+  };
+  const pop = (): { cell: number; cost: number } | undefined => {
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length > 0 && last) {
+      heap[0] = last;
+      let index = 0;
+      for (;;) {
+        const left = index * 2 + 1;
+        const right = left + 1;
+        let smallest = index;
+        if (left < heap.length && heap[left]!.cost < heap[smallest]!.cost) smallest = left;
+        if (right < heap.length && heap[right]!.cost < heap[smallest]!.cost) smallest = right;
+        if (smallest === index) break;
+        [heap[smallest], heap[index]] = [heap[index]!, heap[smallest]!];
+        index = smallest;
+      }
+    }
+    return top;
+  };
+  for (const start of starts) {
+    best[start] = cellCost(start);
+    push(start, best[start]!);
+  }
+  let goalCell = -1;
+  while (heap.length > 0) {
+    const entry = pop();
+    if (!entry) break;
+    if (entry.cost > best[entry.cell]!) continue;
+    if (goals.has(entry.cell)) {
+      goalCell = entry.cell;
+      break;
+    }
+    const x = entry.cell % width;
+    const z = (entry.cell - x) / width;
+    for (let dz = -1; dz <= 1; dz += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        if (dx === 0 && dz === 0) continue;
+        const nx = x + dx;
+        const nz = z + dz;
+        if (nx < 0 || nx >= width || nz < 0 || nz >= height) continue;
+        const neighbour = nz * width + nx;
+        if (!road[neighbour] || blocked[neighbour]) continue;
+        const step = dx !== 0 && dz !== 0 ? 1.4142 : 1;
+        const cost = entry.cost + step * cellCost(neighbour);
+        if (cost < best[neighbour]!) {
+          best[neighbour] = cost;
+          previous[neighbour] = entry.cell;
+          push(neighbour, cost);
+        }
+      }
+    }
+  }
+  if (goalCell < 0) return [];
+  const path: number[] = [];
+  for (let cell = goalCell; cell >= 0; cell = previous[cell]!) path.push(cell);
+  path.reverse();
+  path.push(seam[Math.floor(seam.length / 2)]!);
+  return path;
+}
+
+/** Resamples a closed polyline to `count` evenly spaced points. */
+function resampleLoop(
+  points: readonly { readonly x: number; readonly z: number; readonly width: number }[],
+  count: number
+): readonly { readonly x: number; readonly z: number; readonly width: number }[] {
+  if (points.length < 2) return [];
+  const loop = [...points, points[0]!];
+  const cumulative = [0];
+  for (let index = 1; index < loop.length; index += 1) {
+    cumulative.push(cumulative[index - 1]! + Math.hypot(loop[index]!.x - loop[index - 1]!.x, loop[index]!.z - loop[index - 1]!.z));
+  }
+  const total = cumulative[cumulative.length - 1]!;
+  if (total <= 0) return [];
+  const output: { x: number; z: number; width: number }[] = [];
+  for (let step = 0; step < count; step += 1) {
+    const target = (step / count) * total;
+    let index = 1;
+    while (index < cumulative.length && cumulative[index]! < target) index += 1;
+    const from = loop[index - 1]!;
+    const to = loop[Math.min(index, loop.length - 1)]!;
+    const span = cumulative[index]! - cumulative[index - 1]!;
+    const t = span > 1e-9 ? (target - cumulative[index - 1]!) / span : 0;
+    output.push({
+      x: from.x + (to.x - from.x) * t,
+      z: from.z + (to.z - from.z) * t,
+      width: from.width + (to.width - from.width) * t
+    });
+  }
+  return output;
+}
+
+/**
+ * Derives a drivable centreline by sweeping rays from the road centroid and taking
+ * the midpoint of the road *band* the ray crosses, then verifying every emitted
+ * point and every interpolated step actually lands on road geometry.
+ */
+function createRoadCenterline(
+  primitives: readonly PrimitiveGeometry[],
+  bounds: ShowcaseGeometryModelBounds,
+  surface: RoadSurface
+): ShowcaseRacingTrackTopology["roadCenterline"] {
+  const roadBounds = boundsForPrimitives(primitives);
+  const centerX = center(roadBounds, 0);
+  const centerZ = center(roadBounds, 2);
+  const size = boundsSize(roadBounds);
+  const maxRadius = Math.hypot(size[0], size[2]) / 2;
+  const bins = 72;
+  const radialStep = Math.max(1e-4, maxRadius / 400);
+  const samples: { x: number; z: number; width: number }[] = [];
+  for (let bin = 0; bin < bins; bin += 1) {
+    const angle = -Math.PI + ((bin + 0.5) / bins) * Math.PI * 2;
+    const dirX = Math.cos(angle);
+    const dirZ = Math.sin(angle);
+    // Collect contiguous on-road spans along the ray, then keep the widest one.
+    const spans: { from: number; to: number }[] = [];
+    let spanStart: number | undefined;
+    for (let radius = radialStep; radius <= maxRadius; radius += radialStep) {
+      const on = surface.contains(centerX + dirX * radius, centerZ + dirZ * radius);
+      if (on && spanStart === undefined) spanStart = radius;
+      if (!on && spanStart !== undefined) {
+        spans.push({ from: spanStart, to: radius - radialStep });
+        spanStart = undefined;
+      }
+    }
+    if (spanStart !== undefined) spans.push({ from: spanStart, to: maxRadius });
+    const widest = spans.reduce<{ from: number; to: number } | undefined>(
+      (best, span) => (!best || span.to - span.from > best.to - best.from ? span : best),
+      undefined
+    );
+    if (!widest) continue;
+    const radius = (widest.from + widest.to) / 2;
+    const x = centerX + dirX * radius;
+    const z = centerZ + dirZ * radius;
+    if (!surface.contains(x, z)) continue;
+    samples.push({
+      x: round3(x),
+      z: round3(z),
+      width: round3(Math.max(0.12, widest.to - widest.from))
+    });
+  }
+  if (samples.length < 8) return [];
+  const simplified = simplifyRoadCenterline(samples, surface);
+  if (simplified.length < 8) return [];
+  const first = simplified[0]!;
+  return [...simplified, { x: first.x, z: first.z, width: first.width }];
+}
+
+/**
+ * Reduces the dense ray-swept samples to a compact route. A point is dropped only
+ * when the shortcut it creates still lies entirely on the road *and* the shortcut
+ * does not materially lengthen the straight-line step, which keeps the emitted
+ * route evenly spaced instead of collapsing whole corners into one long chord.
+ */
+function simplifyRoadCenterline(
+  samples: readonly { readonly x: number; readonly z: number; readonly width: number }[],
+  surface: RoadSurface
+): readonly { readonly x: number; readonly z: number; readonly width: number }[] {
+  const minPoints = 16;
+  const maxPoints = 24;
+  const kept = [...samples];
+  const spacing = (points: typeof kept): number => {
+    let total = 0;
+    for (let index = 0; index < points.length; index += 1) {
+      const from = points[index]!;
+      const to = points[(index + 1) % points.length]!;
+      total += Math.hypot(to.x - from.x, to.z - from.z);
+    }
+    return total / points.length;
+  };
+  // Drop the point whose removal costs the least deviation, until the route is compact.
+  while (kept.length > maxPoints) {
+    let bestIndex = -1;
+    let bestCost = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < kept.length; index += 1) {
+      const previous = kept[(index - 1 + kept.length) % kept.length]!;
+      const candidate = kept[index]!;
+      const next = kept[(index + 1) % kept.length]!;
+      if (!segmentStaysOnRoad(previous, next, surface)) continue;
+      const cost = perpendicularDistance(candidate, previous, next);
+      if (cost < bestCost) {
+        bestCost = cost;
+        bestIndex = index;
+      }
+    }
+    if (bestIndex < 0) break;
+    kept.splice(bestIndex, 1);
+  }
+  const averageSpacing = spacing(kept);
+  // Reject any remaining chord that is wildly longer than the typical step; such a
+  // chord means the sweep skipped a section of track rather than simplifying it.
+  for (let index = 0; index < kept.length && kept.length > minPoints; index += 1) {
+    const from = kept[index]!;
+    const to = kept[(index + 1) % kept.length]!;
+    if (Math.hypot(to.x - from.x, to.z - from.z) > averageSpacing * 4) return [];
+  }
+  return kept;
+}
+
+function perpendicularDistance(
+  point: { readonly x: number; readonly z: number },
+  from: { readonly x: number; readonly z: number },
+  to: { readonly x: number; readonly z: number }
+): number {
+  const dx = to.x - from.x;
+  const dz = to.z - from.z;
+  const length = Math.hypot(dx, dz);
+  if (length < 1e-9) return Math.hypot(point.x - from.x, point.z - from.z);
+  return Math.abs(dz * (point.x - from.x) - dx * (point.z - from.z)) / length;
+}
+
+function segmentStaysOnRoad(
+  from: { readonly x: number; readonly z: number },
+  to: { readonly x: number; readonly z: number },
+  surface: RoadSurface
+): boolean {
+  const samples = 16;
+  for (let step = 0; step <= samples; step += 1) {
+    const t = step / samples;
+    if (!surface.contains(from.x + (to.x - from.x) * t, from.z + (to.z - from.z) * t)) return false;
+  }
+  return true;
 }
 
 function createPlayableSurfaces(primitives: readonly PrimitiveGeometry[], bounds: ShowcaseGeometryModelBounds): readonly ExtractedPlatformerPlayableSurface[] {
@@ -909,20 +1674,35 @@ function uniquePlayableSurfacePrimitives(primitives: readonly PrimitiveGeometry[
   });
 }
 
+/**
+ * Build route-to-model anchors whose Y is the *measured drivable surface* under each anchor point.
+ *
+ * Previously every anchor used `bounds.min[1]` -- the lowest vertex in the entire road/kerb/asphalt
+ * family. On Tsukuba that floor is 0.05 model units below the tarmac at the anchor points, which the
+ * 2.55x track fit scale magnifies to 0.128 scene units. The route solver then placed the track so its
+ * *bounding-box floor* met the car's contact plane, seating the car 0.128 units below the visible
+ * road: about 77% of the hero car's wheel diameter, which reads as a car with no wheels sliced off at
+ * the tarmac line.
+ *
+ * Sampling `surface.elevationAt` makes the anchor describe the surface the car actually drives on, so
+ * grounding is correct for any track asset regardless of what stray geometry sits in its road family.
+ * When a point has no surface triangle beneath it the median drivable elevation is used, which is
+ * still a real measurement of the tarmac rather than a bounding-box artefact.
+ */
 function createRacingAnchorPairs(
   centerline: ShowcaseRacingTrackTopology["roadCenterline"],
-  bounds: ShowcaseGeometryModelBounds
+  surface: RoadSurface
 ): NonNullable<ShowcaseRacingTrackTopology["modelAlignment"]["anchorPairs"]> {
   const indices = [0, Math.floor(centerline.length / 3), Math.floor((centerline.length * 2) / 3)];
   return indices.flatMap((index, anchorIndex) => {
     const point = centerline[index];
-    return point
-      ? [{
-        id: `mesh-road-anchor-${anchorIndex + 1}`,
-        modelPoint: [point.x, bounds.min[1], point.z] as const,
-        gamePoint: { x: point.x, z: point.z }
-      }]
-      : [];
+    if (!point) return [];
+    const elevation = surface.elevationAt(point.x, point.z) ?? surface.medianElevation;
+    return [{
+      id: `mesh-road-anchor-${anchorIndex + 1}`,
+      modelPoint: [point.x, round3(elevation), point.z] as const,
+      gamePoint: { x: point.x, z: point.z }
+    }];
   });
 }
 
@@ -1218,7 +1998,10 @@ function average(values: readonly number[]): number {
 }
 
 function round3(value: number): number {
-  return Math.round(value * 1000) / 1000;
+  const rounded = Math.round(value * 1000) / 1000;
+  // Normalise negative zero: `-0` survives JSON.stringify as `-0`, which makes otherwise identical
+  // regenerated evidence differ byte-for-byte and breaks content-hash comparisons.
+  return rounded === 0 ? 0 : rounded;
 }
 
 function formatSize(size: Vec3): string {

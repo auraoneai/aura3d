@@ -42,6 +42,8 @@ export interface CurrentRouteHealthResult {
   readonly drawCalls: number | null;
   readonly frameCount: number | null;
   readonly runtimeKey: string | null;
+  /** The route's own published runtime record, for route-specific parity audits. */
+  readonly runtime?: Record<string, unknown>;
   readonly errorText: string | null;
   readonly consoleErrors: readonly string[];
   readonly pageErrors: readonly string[];
@@ -135,6 +137,15 @@ interface RuntimeProbe {
   readonly frameCount: number | null;
   readonly errorText: string | null;
   readonly visible: boolean;
+  /**
+   * The route's own published runtime record, forwarded verbatim.
+   *
+   * Downstream parity audits read route-specific evidence out of this (for example the
+   * instancing audit's `publicSceneInstancedMesh`, `instanceCount`, and instance-attribute
+   * counts). Without it those audits can only see the fixed fields above and fail closed with
+   * `undefined`, which is indistinguishable from a route that publishes nothing.
+   */
+  readonly runtime: Record<string, unknown> | null;
 }
 
 export async function discoverCurrentRootLinks(page: Page, origin = CURRENT_ROUTE_HEALTH_ORIGIN): Promise<{
@@ -337,6 +348,7 @@ export async function evaluateCurrentRoute(
     drawCalls: probe.drawCalls,
     frameCount: probe.frameCount,
     runtimeKey: probe.runtimeKey,
+    ...(probe.runtime ? { runtime: probe.runtime } : {}),
     errorText: probe.errorText,
     consoleErrors,
     pageErrors,
@@ -465,7 +477,11 @@ async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
       drawCalls,
       frameCount,
       errorText,
-      visible
+      visible,
+      // Forward the route's own record so route-specific parity audits can read the evidence
+      // the route publishes. Cloned through JSON so only serialisable values cross the
+      // page boundary.
+      runtime: runtime ? (JSON.parse(JSON.stringify(runtime)) as Record<string, unknown>) : null
     };
 
     function isRuntimeRecord(value: unknown): value is RuntimeRecord {

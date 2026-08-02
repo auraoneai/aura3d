@@ -9,7 +9,6 @@ import {
   MapControls,
   PointerLockControls,
   SelectionManager,
-  TRANSFORM_CONTROLS_DEPRECATION,
   TransformControls,
   type ControlObject3DLike
 } from "../../../packages/controls/src";
@@ -202,10 +201,13 @@ describe("task 2.23 exported controls resolution", () => {
     expect(target.position).toEqual(new ControlVector3(1, 2, 3));
     expect(target.rotation).toEqual(new ControlVector3(0.1, 0.2, 0.3));
     expect(target.scale).toEqual(new ControlVector3(2, 2, 2));
-    expect(TRANSFORM_CONTROLS_DEPRECATION).toMatchObject({
-      status: "deprecated",
-      replacement: "@aura3d/editor-runtime transform gizmos"
-    });
+    // TransformControls is no longer a deprecated explicit-delta shim: it now exposes
+    // rendered gizmo handles and a pointer drag lifecycle alongside the delta API, so
+    // the deprecation constant was removed rather than left describing stale behaviour.
+    expect(transforms.handles().length).toBeGreaterThan(0);
+    expect(typeof transforms.pointerDown).toBe("function");
+    expect(typeof transforms.pointerMove).toBe("function");
+    expect(typeof transforms.pointerUp).toBe("function");
 
     const dragTarget = object("drag-target");
     const drag = new DragControls();

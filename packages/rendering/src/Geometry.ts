@@ -30,6 +30,12 @@ export interface WideLineSegment {
   readonly width: number;
 }
 
+/** A polyline for screen-space fat-line rendering. */
+export interface ScreenSpaceLineSegment {
+  readonly start: readonly [number, number, number];
+  readonly end: readonly [number, number, number];
+}
+
 export interface UVSphereGeometryOptions {
   readonly textured?: boolean;
 }
@@ -62,6 +68,61 @@ export class Geometry {
       vertices.setAttribute(index, "position", position);
     });
     return new Geometry(vertices, null, "lines");
+  }
+
+  /**
+   * Geometry for true screen-space fat lines.
+   *
+   * Unlike `wideLineSegments`, which bakes a world-space half-width offset into vertex
+   * positions, this carries both endpoints and a corner selector per vertex so the
+   * *vertex shader* can project the endpoints and expand the quad in pixel space. That
+   * is what makes the rendered width independent of distance, field of view, viewport
+   * size, and device pixel ratio — the property world-space quads cannot provide,
+   * because a world-space offset shrinks with perspective.
+   *
+   * `lineDistance` accumulates arc length along the polyline so the fragment stage can
+   * apply dash patterns in world units.
+   */
+  static screenSpaceLineSegments(segments: readonly ScreenSpaceLineSegment[]): Geometry {
+    if (segments.length === 0) {
+      throw new Error("Screen-space line geometry requires at least one segment");
+    }
+    const vertices = new VertexBuffer(VertexFormat.SCREEN_SPACE_LINE, segments.length * 4);
+    const indices: number[] = [];
+    let accumulatedDistance = 0;
+
+    segments.forEach((segment, segmentIndex) => {
+      validateScreenSpaceLineSegment(segment, segmentIndex);
+      const start = segment.start;
+      const end = segment.end;
+      const segmentLength = Math.hypot(end[0] - start[0], end[1] - start[1], end[2] - start[2]);
+      const startDistance = accumulatedDistance;
+      const endDistance = accumulatedDistance + segmentLength;
+      accumulatedDistance = endDistance;
+
+      // Four corners: (side, alongSegment). Position is set to the corresponding
+      // endpoint so world-space bounds stay meaningful for culling and framing even
+      // though the shader recomputes placement.
+      //
+      // Order matters: the shader expands along normal = (-dir.y, dir.x), so a
+      // (-1, 0), (+1, 0), (+1, 1), (-1, 1) walk winds clockwise on screen and is
+      // backface-culled. Starting from the +1 side yields counter-clockwise triangles.
+      const corners: readonly (readonly [number, number])[] = [[1, 0], [-1, 0], [-1, 1], [1, 1]];
+      const base = segmentIndex * 4;
+      corners.forEach((corner, cornerIndex) => {
+        const atEnd = corner[1] === 1;
+        const anchor = atEnd ? end : start;
+        const index = base + cornerIndex;
+        vertices.setAttribute(index, "position", [anchor[0], anchor[1], anchor[2]]);
+        vertices.setAttribute(index, "lineStart", [start[0], start[1], start[2]]);
+        vertices.setAttribute(index, "lineEnd", [end[0], end[1], end[2]]);
+        vertices.setAttribute(index, "lineCorner", [corner[0], corner[1]]);
+        vertices.setAttribute(index, "lineDistance", [atEnd ? endDistance : startDistance]);
+      });
+      indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+    });
+
+    return new Geometry(vertices, new IndexBuffer(indices, segments.length * 4), "triangles");
   }
 
   static wideLineSegments(segments: readonly WideLineSegment[]): Geometry {
@@ -373,6 +434,24 @@ export class Geometry {
   dispose(): void {
     this.vertexBuffer.dispose();
     this.indexBuffer?.dispose();
+  }
+}
+
+function validateScreenSpaceLineSegment(segment: ScreenSpaceLineSegment, index: number): void {
+  for (const [label, point] of [["start", segment.start], ["end", segment.end]] as const) {
+    if (point.length !== 3 || point.some((component) => !Number.isFinite(component))) {
+      throw new Error(`Screen-space line segment ${index} ${label} must contain three finite components`);
+    }
+  }
+  const length = Math.hypot(
+    segment.end[0] - segment.start[0],
+    segment.end[1] - segment.start[1],
+    segment.end[2] - segment.start[2]
+  );
+  // A zero-length segment has no direction, so the shader cannot derive a perpendicular
+  // to expand along and would emit a degenerate quad.
+  if (length <= 1e-6) {
+    throw new Error(`Screen-space line segment ${index} must have non-zero length`);
   }
 }
 

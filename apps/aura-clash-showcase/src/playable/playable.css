@@ -143,7 +143,15 @@ input {
 .aca-hud,
 .aca-stage-shell,
 .aca-controls,
-.aca-proof {
+.aca-proof,
+/*
+ * `.aca-proof-details` is the element that actually renders since the evidence panels moved inside a
+ * collapsed `<details>`; `.aca-proof` is now its child. Omitting it from this shared width rule left
+ * the drawer to size itself from its 4-column grid content, and it measured **1388px against a
+ * 1360px stage shell** -- the widest element on the page, visually framing the arena rather than
+ * sitting under it.
+ */
+.aca-proof-details {
   inline-size: min(1360px, calc(100vw - 32px));
   margin-inline: auto;
 }
@@ -238,7 +246,7 @@ input {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
   gap: 0;
-  margin-block: 14px 22px;
+  margin-block: 10px 14px;
   border: 1px solid var(--aca-line);
   border-radius: 18px;
   background: linear-gradient(180deg, color-mix(in oklab, var(--aca-panel) 92%, transparent), color-mix(in oklab, var(--aca-void-1) 90%, transparent));
@@ -249,15 +257,15 @@ input {
 
 .aca-card,
 .aca-clock {
-  min-block-size: 186px;
-  padding: clamp(22px, 2.3vw, 30px);
+  min-block-size: 124px;
+  padding: clamp(14px, 1.5vw, 20px);
 }
 
 .aca-card {
   border: 1px solid rgba(120, 200, 210, 0.1);
   border-radius: 12px;
   background: linear-gradient(115deg, color-mix(in oklab, var(--aca-teal) 10%, transparent), transparent 38%);
-  margin: 10px;
+  margin: 7px;
 }
 
 .aca-rival-card {
@@ -267,7 +275,7 @@ input {
 
 .aca-card span {
   display: block;
-  margin-block-end: 8px;
+  margin-block-end: 5px;
   color: var(--aca-faint);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.72rem;
@@ -281,7 +289,7 @@ input {
   margin: 0;
   color: #fff;
   font-family: "Saira Condensed", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: clamp(2.5rem, 4vw, 4.7rem);
+  font-size: clamp(2rem, 3vw, 3.5rem);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: 0;
@@ -290,7 +298,8 @@ input {
 }
 
 .aca-card p {
-  margin: 10px 0 16px;
+  display: none;
+  margin: 6px 0 9px;
   color: var(--aca-muted);
   font-size: clamp(0.78rem, 1vw, 0.94rem);
   font-weight: 800;
@@ -330,7 +339,7 @@ input {
 
 .aca-card b {
   display: block;
-  margin-block-start: 14px;
+  margin-block-start: 8px;
   color: color-mix(in oklab, var(--aca-text) 88%, transparent);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.76rem;
@@ -351,7 +360,7 @@ input {
 .aca-clock strong {
   font-family: "Saira Condensed", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
   color: #fff;
-  font-size: clamp(2.7rem, 4.3vw, 4.9rem);
+  font-size: clamp(2.4rem, 3.4vw, 4rem);
   font-weight: 900;
   line-height: 0.95;
   text-shadow: 0 0 24px color-mix(in oklab, var(--aca-teal) 60%, transparent);
@@ -369,7 +378,7 @@ input {
 .aca-stage-shell {
   position: relative;
   overflow: hidden;
-  block-size: 600px;
+  block-size: 660px;
   border: 1px solid var(--aca-line);
   border-radius: 20px;
   background: #030507;
@@ -501,6 +510,50 @@ input {
 .aca-proof {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/*
+ * Collapsed evidence shell. The panels themselves are unchanged; only their default
+ * visibility is. Closed, this costs one summary row instead of a 96px-tall four-column
+ * grid, so the arena keeps the composition without removing any evidence from the page.
+ */
+.aca-proof-details {
+  position: relative;
+  z-index: 2;
+  margin-block-start: 14px;
+  border: 1px solid var(--aca-line);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--aca-panel) 70%, transparent);
+  /* Keep the grid's own cell padding inside the declared width set by the shared rule above. */
+  box-sizing: border-box;
+  max-inline-size: 100%;
+}
+
+.aca-proof-details > .aca-proof,
+.aca-proof-details .aca-proof div {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+}
+
+.aca-proof-details > summary {
+  padding: 10px 14px;
+  color: var(--aca-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.aca-proof-details > summary:focus-visible {
+  border-radius: 12px;
+  outline: 2px solid var(--aca-amber);
+}
+
+.aca-proof-details[open] > summary {
+  border-block-end: 1px solid var(--aca-line);
+}
+
+.aca-proof-details > .aca-proof {
+  margin-block-start: 0;
+  padding: 12px;
 }
 
 .aca-proof div {
@@ -643,7 +696,8 @@ input {
   .aca-hud,
   .aca-stage-shell,
   .aca-controls,
-  .aca-proof {
+  .aca-proof,
+  .aca-proof-details {
     inline-size: calc(100vw - 20px);
   }
 
@@ -653,9 +707,21 @@ input {
     border-radius: 18px;
   }
 
+  /*
+   * Mobile composition: the fight has to own the frame.
+   *
+   * Measured at 390x844 before this block, on a 1309px page: HUD **405px (31%)**, nav 107px,
+   * controls 198px, and the arena canvas only **488px (37%)**. The HUD stacks its three cards
+   * vertically at that width, each inheriting `min-block-size: 124px`, and `13vw` headline type made
+   * the fighter names the largest elements on the page. That is a diagnostics-first composition, not
+   * a fighting game.
+   *
+   * Every rule below cuts *chrome*, not information: both fighter names, both health/meter bars, the
+   * round clock, all eleven controls and the whole evidence drawer are still present and legible.
+   */
   .aca-stage-shell {
-    block-size: 58vh;
-    min-block-size: 420px;
+    block-size: 62vh;
+    min-block-size: 460px;
   }
 
   .aca-topline {
@@ -663,9 +729,76 @@ input {
     flex-direction: column;
   }
 
+  /* Names stay prominent but stop being the tallest thing on the page. */
   .aca-card h1,
   .aca-card h2 {
-    font-size: clamp(2.1rem, 13vw, 3.5rem);
+    font-size: clamp(1.5rem, 8vw, 2.2rem);
+    line-height: 1.05;
+  }
+
+  /* The 124px desktop floor is what made three stacked cards cost 405px. */
+  .aca-card,
+  .aca-clock {
+    min-block-size: 0;
+    padding: 8px 10px;
+  }
+
+  /*
+   * Restore the side-by-side fighting-game HUD on mobile.
+   *
+   * The 1080px breakpoint collapses `.aca-hud` to a single column, which mobile inherited: player
+   * card, then clock, then rival card, stacked. Even after trimming each card to its real content
+   * (121px of name, health bar, meter bar and state readout) that is 336px of chrome above a starved
+   * canvas -- and it is not how a fighting game reads. Both fighters' vitals belong on screen
+   * simultaneously with the round clock between them.
+   *
+   * Two columns with the clock spanning underneath keeps all the same information while removing one
+   * full card's height from the stack.
+   */
+  .aca-hud {
+    margin-block: 8px 10px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "player rival"
+      "clock clock";
+  }
+
+  .aca-hud > .aca-card:first-child {
+    grid-area: player;
+  }
+
+  .aca-hud > .aca-rival-card {
+    grid-area: rival;
+  }
+
+  /* The clock is a single number and a label; it does not need a band of its own. */
+  .aca-clock {
+    grid-area: clock;
+    min-block-size: 0;
+    padding-block: 4px;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  /* Names must fit two-up at 390px without truncating either fighter. */
+  .aca-card h1,
+  .aca-card h2 {
+    font-size: clamp(1.05rem, 5.2vw, 1.5rem);
+  }
+
+  .aca-card {
+    margin: 4px;
+  }
+
+  /* Controls remain fully reachable, just denser. */
+  .aca-controls {
+    gap: 6px;
+  }
+
+  /* The route nav wrapped onto three rows at this width; it is secondary to the fight. */
+  .aca-nav {
+    gap: 6px;
+    padding: 10px 12px;
   }
 
   .aca-proof {

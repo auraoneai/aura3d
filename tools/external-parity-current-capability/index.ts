@@ -12,13 +12,13 @@ const reportPath = "tests/reports/external-parity-current-capability.json";
 
 export function createExternalParityCurrentCapabilityReport(root = process.cwd()) {
   const retainedDocs = new Set([
-    "docs/project/current-state.md",
-    "docs/project/threejs-parity-status.md",
-    "docs/project/threejs-parity-claim-boundary.md",
-    "docs/project/threejs-parity-parity-matrix.md",
+    "docs/project/status/current-state.md",
+    "docs/project/parity/threejs/status.md",
+    "docs/project/parity/threejs/claim-boundary.md",
+    "docs/project/parity/threejs/parity-matrix.md",
     "docs/project/verification-evidence.md",
     "docs/project/claim-guidelines.md",
-    "docs/project/known-limits.md"
+    "docs/project/status/known-limits.md"
   ]);
   const docs = listFiles(root, ["docs/project"], [".md"]).filter((path) => retainedDocs.has(path));
   const docsText = docs.map((path) => readFileSync(`${root}/${path}`, "utf8")).join("\n");

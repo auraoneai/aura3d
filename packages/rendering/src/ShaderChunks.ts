@@ -4,6 +4,14 @@ export interface ShaderChunk {
   readonly includes?: readonly string[];
 }
 
+/**
+ * Joints addressable through the uniform-array palette path.
+ *
+ * A mat4 uniform costs four vec4 slots, so 96 joints already consume 384 of the
+ * MAX_VERTEX_UNIFORM_VECTORS budget. Rigs above this switch to the data-texture path.
+ */
+export const MAX_UNIFORM_SKINNING_JOINTS = 96;
+
 export const SHADER_CHUNKS: readonly ShaderChunk[] = [
   {
     name: "lighting_common",
@@ -415,6 +423,67 @@ float a3dEnvironmentFogFactor(vec3 worldPosition) {
 vec3 a3dApplyEnvironmentFog(vec3 linearColor, vec3 worldPosition) {
   float fogFactor = a3dEnvironmentFogFactor(worldPosition);
   return mix(linearColor, u_environmentFogColor, fogFactor);
+}
+`
+  },
+  {
+    name: "skinning_common",
+    source: `
+// Joint palette source selection.
+//
+// Uniform-array palettes are fast but bounded by MAX_VERTEX_UNIFORM_VECTORS: a mat4
+// costs four vec4 slots, so a 96-joint palette already consumes 384 of them. Rigs
+// above that limit upload their palette as a float data texture instead, sampled
+// four texels per matrix. u_jointPaletteMode selects the active path so a single
+// shader serves both without recompiling per rig.
+//
+// 0 = uniform array, 1 = data texture.
+uniform float u_jointPaletteMode;
+uniform mat4 u_jointMatrices[${MAX_UNIFORM_SKINNING_JOINTS}];
+uniform float u_jointCount;
+uniform highp sampler2D u_jointPaletteTexture;
+uniform vec2 u_jointPaletteTextureSize;
+
+mat4 a3dJointMatrixFromTexture(int jointIndex) {
+  // Each matrix occupies four consecutive RGBA32F texels (one per column).
+  int baseTexel = jointIndex * 4;
+  int width = int(u_jointPaletteTextureSize.x);
+  int row = baseTexel / width;
+  int column = baseTexel - row * width;
+  vec4 c0 = texelFetch(u_jointPaletteTexture, ivec2(column, row), 0);
+  vec4 c1 = texelFetch(u_jointPaletteTexture, ivec2(column + 1, row), 0);
+  vec4 c2 = texelFetch(u_jointPaletteTexture, ivec2(column + 2, row), 0);
+  vec4 c3 = texelFetch(u_jointPaletteTexture, ivec2(column + 3, row), 0);
+  return mat4(c0, c1, c2, c3);
+}
+
+mat4 a3dJointMatrix(float rawJointIndex) {
+  float maxJoint = max(u_jointCount - 1.0, 0.0);
+  int jointIndex = int(clamp(rawJointIndex, 0.0, maxJoint));
+  if (u_jointPaletteMode > 0.5) {
+    return a3dJointMatrixFromTexture(jointIndex);
+  }
+  // Uniform arrays require a constant-safe index bound.
+  int clamped = jointIndex < ${MAX_UNIFORM_SKINNING_JOINTS} ? jointIndex : ${MAX_UNIFORM_SKINNING_JOINTS} - 1;
+  return u_jointMatrices[clamped];
+}
+
+/** Four-influence skin matrix. */
+mat4 a3dSkinMatrix4(vec4 joints, vec4 weights) {
+  return
+    a3dJointMatrix(joints.x) * weights.x +
+    a3dJointMatrix(joints.y) * weights.y +
+    a3dJointMatrix(joints.z) * weights.z +
+    a3dJointMatrix(joints.w) * weights.w;
+}
+
+/**
+ * Eight-influence skin matrix. glTF allows a second JOINTS_1/WEIGHTS_1 set; without
+ * it, vertices weighted to more than four joints lose their remaining influences and
+ * deform incorrectly where weighting is dense.
+ */
+mat4 a3dSkinMatrix8(vec4 joints0, vec4 weights0, vec4 joints1, vec4 weights1) {
+  return a3dSkinMatrix4(joints0, weights0) + a3dSkinMatrix4(joints1, weights1);
 }
 `
   }

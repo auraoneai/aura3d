@@ -4,7 +4,7 @@ Date: 2026-06-18
 
 Scope reviewed:
 
-- `Fixed-Needed-PRD.md`
+- `docs/project/plans/recovery-remediation-prd.md`
 - `llms.txt`
 - `docs/project/showcase-launch-evidence.json`
 - `apps/showcase-index/src/main.ts`
@@ -55,8 +55,9 @@ Accepted scoped wording:
 
 - "Local showcase route" for any route with a published evidence global and
   successful local smoke evidence.
-- "Candidate" only for Product Configurator, Material Asset Inspector, and
-  Blockfall Reactor, with the limitations in their route-health JSON files.
+- "Candidate" only for routes whose current route-health, hash-bound visual
+  review, and aggregate release gate all pass. Blockfall Reactor, Turbo Drift
+  Circuit, and Skyline Runner currently do not meet that condition.
 - "Prototype" or "rebuild required" for routes whose primary experience still
   relies on procedural primary scenes, weak data mapping, route-local game
   systems, or unproven renderer features.

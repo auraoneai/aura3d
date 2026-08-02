@@ -9,11 +9,11 @@ interface Finding {
 }
 
 const requiredFiles = [
-  "docs/project/threejs-parity-status.md",
-  "docs/project/threejs-parity-parity-matrix.md",
-  "docs/project/threejs-parity-threejs-inventory.md",
-  "docs/project/threejs-parity-claim-boundary.md",
-  "docs/project/known-limits.md",
+  "docs/project/parity/threejs/status.md",
+  "docs/project/parity/threejs/parity-matrix.md",
+  "docs/project/parity/threejs/inventory.md",
+  "docs/project/parity/threejs/claim-boundary.md",
+  "docs/project/status/known-limits.md",
   "docs/project/claim-guidelines.md",
   "docs/project/compatibility.md",
   "docs/project/migration.md"
@@ -47,7 +47,7 @@ const safeLinePatterns = [
 
 const publicDocRoots = [
   "README.md",
-  "docs/project/threejs-parity-status.md",
+  "docs/project/parity/threejs/status.md",
   "docs/project"
 ] as const;
 
@@ -70,13 +70,13 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = readIfExists("docs/project/threejs-parity-status.md");
+const status = readIfExists("docs/project/parity/threejs/status.md");
 const progress = readIfExists("docs/project/completion-audit.md");
-const parityMatrix = readIfExists("docs/project/threejs-parity-parity-matrix.md");
-const threeCompat = readIfExists("docs/project/threejs-parity-status.md");
+const parityMatrix = readIfExists("docs/project/parity/threejs/parity-matrix.md");
+const threeCompat = readIfExists("docs/project/parity/threejs/status.md");
 const retainedClaimBoundary = [
-  readIfExists("docs/project/threejs-parity-claim-boundary.md"),
-  readIfExists("docs/project/known-limits.md"),
+  readIfExists("docs/project/parity/threejs/claim-boundary.md"),
+  readIfExists("docs/project/status/known-limits.md"),
   readIfExists("docs/project/claim-guidelines.md")
 ].join("\n");
 const requiredStatusPatterns = [

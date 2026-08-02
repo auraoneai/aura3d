@@ -33,7 +33,7 @@ const sourceFiles = [
   "docs/project/security-policy.md",
   "docs/project/support-policy.md",
   "docs/project/compatibility.md",
-  "docs/project/deployment-rollback.md",
+  "docs/project/release/deployment-rollback.md",
   "docs/project/release-process.md",
   "docs/project/product-studio-decision-gates.md",
   "docs/project/documentation-index.md",
@@ -76,7 +76,7 @@ export function createExternalParityProductionReadinessReport(root = process.cwd
     "docs/project/security-policy.md",
     "docs/project/support-policy.md",
     "docs/project/compatibility.md",
-    "docs/project/deployment-rollback.md",
+    "docs/project/release/deployment-rollback.md",
     "docs/project/release-process.md",
   ] as const;
   const operationalPolicyBlockers = operationalPolicyFiles

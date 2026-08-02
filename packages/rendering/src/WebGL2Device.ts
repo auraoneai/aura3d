@@ -15,7 +15,7 @@ import {
   type ShaderReflection,
   type ShaderSources,
 } from "./RenderDevice";
-import { Texture, isCompressedTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TexturePixelData } from "./Texture";
+import { Texture, isCompressedTextureFormat, isFloatColorTextureFormat, type TextureCompressedFormat, type TextureCubeFace, type TexturePixelData } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import type { Sampler, TextureMagFilter, TextureMinFilter } from "./Sampler";
 import { type VertexAttribute, type VertexFormat } from "./VertexFormat";
@@ -266,6 +266,7 @@ export class WebGL2Device implements RenderDevice {
   private releasedTextureHandles = 0;
   private nativeEnvironmentBindings = 0;
   private nativeShadowMapBindings = 0;
+  private shadowRenderTargetsAllocated = 0;
   private lastError: string | null = null;
   private frameActive = false;
   private viewportWidth = 0;
@@ -286,7 +287,17 @@ export class WebGL2Device implements RenderDevice {
     if (!gl) {
       throw new RenderDeviceError("WebGL2 is not available for the provided canvas", "WEBGL2_UNAVAILABLE");
     }
-    return new WebGL2Device(gl as WebGL2RenderingContext, options.canvas, options.errorCheckMode ?? "strict");
+    // Default to frame-level error checking.
+    //
+    // `strict` calls `gl.getError()` after every uniform upload, vertex-format
+    // bind, and draw. `gl.getError()` forces a synchronous CPU/GPU sync, so on a
+    // scene with a few dozen draws and many uniforms per draw it dominates frame
+    // time: profiling Aura Clash attributed ~93% of frame time to `getError`,
+    // holding the route at ~11 FPS on an Apple M4 Max. Frame-level checking still
+    // reports real WebGL errors (read once in `endFrame` and surfaced through
+    // `lastError`); callers that need per-operation attribution can still opt into
+    // `strict` explicitly.
+    return new WebGL2Device(gl as WebGL2RenderingContext, options.canvas, options.errorCheckMode ?? "frame");
   }
 
   private constructor(
@@ -596,6 +607,9 @@ export class WebGL2Device implements RenderDevice {
       this.gl
     );
     this.renderTargets.add(target);
+    // Shadow passes label their depth target after the shadow map texture, so the
+    // label is the device-side signal that a shadow depth target was allocated.
+    if ((descriptor.label ?? "").toLowerCase().includes("shadow")) this.shadowRenderTargetsAllocated += 1;
     this.textures.set(target.colorTexture, colorHandle);
     this.textureUploadModes.set(target.colorTexture, "rgba8");
     if (depthTexture && depthTextureHandle) {
@@ -1209,6 +1223,7 @@ export class WebGL2Device implements RenderDevice {
       textureFallbackBytes: fallbackTextures.reduce((total, texture) => total + texture.fallbackByteLength, 0),
       nativeEnvironmentBindings: this.nativeEnvironmentBindings,
       nativeShadowMapBindings: this.nativeShadowMapBindings,
+      shadowRenderTargetsAllocated: this.shadowRenderTargetsAllocated,
       nativeInstancedSubmissions: this.nativeInstancedSubmissions,
       samplerAnisotropyUploads: this.samplerAnisotropyUploadCount,
       maxTextureAnisotropy: this.maxTextureAnisotropy,
@@ -3039,7 +3054,19 @@ void main() {
         uploadFormat.type,
         texture.data ? texturePixelUploadData(texture.data, texture.format) : null
       );
-      this.gl.generateMipmap(this.gl.TEXTURE_2D);
+      // Float colour formats are not guaranteed mipmap-filterable in WebGL2:
+      // RGBA32F/RGBA16F are only linear-filterable with OES_texture_float_linear, and
+      // generateMipmap on a non-filterable format raises INVALID_OPERATION. Data
+      // textures such as joint palettes are point-sampled with texelFetch and never
+      // need mips, so skip generation and pin the level range instead.
+      if (isFloatColorTextureFormat(texture.format)) {
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_BASE_LEVEL, 0);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAX_LEVEL, 0);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
+        this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+      } else {
+        this.gl.generateMipmap(this.gl.TEXTURE_2D);
+      }
     }
     this.textureUploadModes.set(texture, texture.format);
     this.textures.set(texture, handle);

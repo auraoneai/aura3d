@@ -10,7 +10,7 @@ const repoRoot = path.resolve(appRoot, "../..");
 
 const manifestPath = path.join(appRoot, "launch-evidence.coverage.json");
 const manifest = readJson(manifestPath);
-const prdPath = path.resolve(appRoot, manifest.prd ?? "../../docs/project/aura-clash-showcase.md");
+const prdPath = path.resolve(appRoot, manifest.prd ?? "../../docs/project/showcase/aura-clash-showcase-plan.md");
 const outputPath = path.resolve(appRoot, manifest.output ?? "launch-evidence/prd-evidence-coverage.json");
 
 const prd = readFile(prdPath);

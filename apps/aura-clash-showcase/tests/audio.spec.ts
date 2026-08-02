@@ -5,15 +5,20 @@ test("Aura Clash unlocks audio and publishes gameplay cue proof", async ({ page 
   await loadAuraClashArena(page, "?auraTestDriver=1");
   await page.mouse.click(120, 120);
   await holdKey(page, "KeyW", 120);
-  await expect.poll(async () => (await readAuraClashProof(page)).audio?.lastCue, {
+  // Assert against the cue *history*, not `lastCue`. `lastCue` is a single mutable slot, and
+  // ambient cues legitimately overwrite it: a jump lands, the foot plants, and `footstep` fires.
+  // Verified live — immediately after the input `lastCue` is "jump" and `recentCues` ends
+  // [..., "jump"], but a few frames later `lastCue` is "footstep". Polling `lastCue` was therefore
+  // racing the landing rather than testing whether the jump published a cue at all.
+  await expect.poll(async () => (await readAuraClashProof(page)).audio?.recentCues ?? [], {
     message: "jump input should publish an audio cue"
-  }).toBe("jump");
+  }).toContain("jump");
   await loadAuraClashArena(page, "?auraTestDriver=1");
   await page.mouse.click(120, 120);
   await holdKey(page, "ShiftLeft", 180);
-  await expect.poll(async () => (await readAuraClashProof(page)).audio?.lastCue, {
+  await expect.poll(async () => (await readAuraClashProof(page)).audio?.recentCues ?? [], {
     message: "guard input should publish an audio cue"
-  }).toBe("guard");
+  }).toContain("guard");
   let proof = await readAuraClashProof(page);
   expect(proof.audio?.enabled, "audio context should initialize after a user gesture").toBe(true);
   expect(proof.audio?.musicReady).toBe(true);
@@ -24,7 +29,9 @@ test("Aura Clash unlocks audio and publishes gameplay cue proof", async ({ page 
   expect(proof.audio?.assetUrls.every((url) => /\/aura-assets\/auraClash.*Sfx\.[a-f0-9]{8}\.ogg$/.test(url))).toBe(true);
   expect(proof.audio?.audioErrors).toEqual([]);
 
-  await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100 });
+  // Suppress rival guard: the AI blocks a queued strike almost every time, and a blocked strike is
+  // chip damage rather than a hit, so `totalHits` could never advance here.
+  await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
   const beforeHits = proof.totalHits;
   await queuePlayerAttack(page, "heavy");
   await expect.poll(async () => (await readAuraClashProof(page)).totalHits, {
@@ -33,7 +40,7 @@ test("Aura Clash unlocks audio and publishes gameplay cue proof", async ({ page 
   proof = await readAuraClashProof(page);
   expect(proof.audio?.lastCue, "landed attacks should publish a cue").toMatch(/hit|guard|special|player-hit|rival-hit/i);
 
-  await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100 });
+  await setFighterTestState(page, { playerX: -0.86, rivalX: 0.44, rivalHealth: 300, playerMeter: 100, suppressRivalGuard: true });
   await holdKey(page, "KeyL", 220);
   await expect.poll(async () => (await readAuraClashProof(page)).audio?.recentCues ?? [], {
     message: "accepted special input should publish a dedicated special cue"

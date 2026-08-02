@@ -1,0 +1,10 @@
+{
+  "id": "platformer-midground-prop",
+  "role": "prop",
+  "style": "low poly conifer tree",
+  "materialRequirement": "any",
+  "licensePolicy": "commercial-attribution-allowed",
+  "geometryBudget": { "maxTriangles": 8000, "maxDrawCallsPerInstance": 8 },
+  "normalizationPolicy": "fit-and-ground",
+  "fallbackPolicy": "reject-and-fail"
+}

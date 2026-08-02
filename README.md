@@ -87,36 +87,55 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.4.5
+## Current Release: Aura3D 1.5.0
 
-Aura3D 1.4.5 is the current source release across all 26 public packages. This
-maintenance release turns the 1.4.4 game-geometry work into a tighter public
-showcase: gameplay pacing and spawn behavior are corrected, obsolete duplicate
-routes are unpromoted, production previews are complete, and CI is aligned to
-Node 22 and pnpm 11.
+Aura3D 1.5.0 is the current source release across all 26 public packages. This is
+an **architectural release**: scene composition, subject framing, on-screen
+controls and role-aware asset admission moved out of per-route authoring and into
+reusable engine APIs.
 
-### What shipped in 1.4.5
+### What shipped in 1.5.0
 
-- **Game-runtime corrections:** certified racing routes support bounded gameplay
-  pace multipliers; platformer checkpoint respawns resolve onto valid supporting
-  surfaces; finish surfaces participate in public playable-surface validation.
-- **Playable showcase polish:** Skyline Runner gains safer hazards, grounded
-  respawns, readable character scale and facing; Turbo Drift Circuit gains a
-  faster bounded pace and km/h HUD; Aura Clash uses production-safe nested links.
-- **Curated showcase snapshot:** the 2026-07-23 release promoted seven
-  route-library candidates plus Aura Clash with production preview imagery.
-  Current promotion eligibility remains evidence-gated; superseded proof routes
-  and the duplicate headphone inspector remain accessible but unpromoted.
-- **Current release tooling:** all 26 public package manifests and template pins
-  are aligned at 1.4.5, while GitHub Actions uses Node 22, pnpm 11.1.3, and current
-  artifact actions.
+- **Layered scene composition:** `planLayeredSceneComposition` and
+  `platformerCompositionSpec` plan deterministic foreground / midground /
+  far-background prop distribution from declarative intent — span, gameplay
+  depth, prop vocabulary, protected zones, density scale. Seeded, so retained
+  screenshots reproduce frame-for-frame.
+- **Graded sky backdrops:** `planSkyBackdrop`, `blendSkyBandColor` and
+  `skyBandCountForRamp` replace hand-authored sky planes, grade both sides of the
+  horizon, and derive band count from the colour ramp so a gradient cannot read
+  as a visible stair.
+- **Typed subject placement:** `resolveSubjectPlacementFacts` derives ground
+  contact, visual centre, framing bounds and a wheel/foot contact region from
+  typed manifest bounds, so route code no longer restates asset dimensions.
+- **Reusable touch controls:** `bindGameTouchControls` replaces
+  pointer-to-keyboard wiring that had been duplicated between routes; idempotent
+  per element, releases held keys on teardown, reports missing element ids.
+- **Role-aware asset admission:** 21 distinct recorded checks against a requested
+  role rather than one global pass/fail, including normalization requirement,
+  orientation evidence, origin/pivot sanity and material completeness.
+  Orientation is never inferred — absent evidence is reported, not guessed.
+- **Deterministic candidate selection:** `assets resolve --index <n>` and
+  `--candidate-id <provider:id>`, with loud failure on out-of-range or unknown
+  ids and no silent fallback to the top search result.
+- **Per-primitive submission diagnostics:** `auditPrimitiveSubmission` records 18
+  fields per primitive — index component type, alpha mode / cutoff / effective
+  opacity, texture readiness, frustum verdict, optional glTF provenance — so a
+  missing part is attributable rather than inferred.
+- **Freshness-bound evidence:** `pnpm explain:staleness` retains its own audit
+  artifact, declared in the producer registry, with a machine-readable reason
+  required for every stale verdict.
+
+Measured: reusable visual-layer ratio **9.33x → 6.08x** (2.16x excluding the
+Aura Clash outlier); repeated cross-route code clusters **6 → 0**;
+route-specific exceptions in engine code **0**.
 
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.4.5
+npm install @aura3d/engine@1.5.0
 # or scaffold an app
-npx create-aura3d@1.4.5 my-product --template product-viewer
+npx create-aura3d@1.5.0 my-product --template product-viewer
 ```
 
 Detailed release notes are in
@@ -145,7 +164,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.4.5 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.0 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -605,13 +624,14 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.4.5 baseline,
-and the latest route-library build/check sub-gate reports 7/7 configured
-candidates. Turbo Drift Circuit and Skyline Runner retain current bounded
-automated and manual visual-QA evidence as release-ready candidates. Aura Clash
-is tracked separately as a development showcase; two internal diagnostics and
-two game-layer diagnostic harnesses remain outside the configured public count,
-with zero prototype-blocked routes. Comparative performance/parity promotion
+Expected current state — The scoped package gates pass for the 1.5.0 baseline,
+but the current route-library gate is deliberately non-passing until independent
+review is current. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
+prototype-blocked during visual reconstruction; their typed assets, mounted
+gameplay, and bounded route evidence are technical proof, not current visual
+approval. Aura Clash is tracked separately as a development showcase; two
+internal diagnostics and two game-layer diagnostic harnesses remain outside
+the configured public count. Comparative performance/parity promotion
 remains unavailable while six required performance reports are missing.
 
 ## Contributing

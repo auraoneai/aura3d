@@ -9,6 +9,7 @@ export interface ThreeJsParityInventoryReport {
   };
   readonly items: readonly {
     readonly threeExampleId: string;
+    readonly a3dRoute?: string;
     readonly category: string;
     readonly priority: string;
     readonly a3dStatus: string;
@@ -39,7 +40,7 @@ export function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function listUncheckedChecklist(path = "docs/project/threejs-parity-status.md"): readonly string[] {
+export function listUncheckedChecklist(path = "docs/project/parity/threejs/status.md"): readonly string[] {
   if (!existsSync(path)) return [];
   return readText(path)
     .split(/\r?\n/)
@@ -47,7 +48,7 @@ export function listUncheckedChecklist(path = "docs/project/threejs-parity-statu
     .map((line) => line.slice("- [ ] ".length).trim());
 }
 
-export function countChecklist(path = "docs/project/threejs-parity-status.md"): { readonly checked: number; readonly unchecked: number } {
+export function countChecklist(path = "docs/project/parity/threejs/status.md"): { readonly checked: number; readonly unchecked: number } {
   if (!existsSync(path)) return { checked: 0, unchecked: 0 };
   const text = readText(path);
   return {

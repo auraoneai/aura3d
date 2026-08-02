@@ -1,7 +1,7 @@
 # Docs Matrix Tracking
 
 Status: active prevention ledger  
-Source: `Fixed-Needed-PRD.md` docs matrix
+Source: `docs/project/plans/recovery-remediation-prd.md` docs matrix
 
 Every Markdown file listed in the PRD matrix is either fixed in the current
 claim-boundary pass or tracked here as blocked by a named library/workstream
@@ -37,7 +37,7 @@ next required action so future agents do not paper over missing capabilities.
 | `docs/api/app-api.md` | P1 | app API | Fixed with renderer/fallback language. |
 | `docs/api/readme.md` | P1 | API index | Fixed with capability labels. |
 | `docs/api/animation-runtime-events.md` | P1 | animation docs | Fixed with actual support boundaries. |
-| `docs/project/public-api-contract.md` | P1 | API contract | Fixed as export proof plus current capability labels. |
+| `docs/api/contracts/public-api-contract.md` | P1 | API contract | Fixed as export proof plus current capability labels. |
 | `docs/concepts/rendering.md` | P0 | rendering docs | Fixed with root/production boundary. |
 | `docs/rendering/skinning-and-morphs.md` | P0 | rendering docs | Fixed with current support and proof criteria. |
 | `docs/rendering/material-matrix.md` | P0 | rendering docs | Fixed with root/production support matrix. |
@@ -45,27 +45,27 @@ next required action so future agents do not paper over missing capabilities.
 | `docs/animation/runtime-support.md` | P0 | animation docs | Fixed with implemented/public/render-backed labels. |
 | `docs/rendering/animation-render-preset.md` | P1 | rendering docs | Fixed with renderer-mode/test ties. |
 | `docs/concepts/engine-lifecycle.md` | P1 | lifecycle docs | Fixed with frame-loop and fallback language. |
-| `docs/project/current-state.md` | P0 | project status | Fixed with honest capability state. |
+| `docs/project/status/current-state.md` | P0 | project status | Fixed with honest capability state. |
 | `docs/project/claim-guidelines.md` | P0 | claims | Fixed with proven/partial/prototype/internal/planned labels. |
 | `docs/project/release-tracks.md` | P0 | release | Fixed with package/runtime versus showcase split. |
-| `docs/project/release-checklist.md` | P0 | release | Fixed with asset, screenshot, route-health, claim, and input gates. |
+| `docs/project/release/release-checklist.md` | P0 | release | Fixed with asset, screenshot, route-health, claim, and input gates. |
 | `docs/project/release-process.md` | P0 | release | Fixed with docs/showcase evidence gates. |
 | `docs/project/verification-evidence.md` | P0 | verification | Fixed with current screenshot and route-health requirements. |
 | `docs/project/showcase-application-plan.md` | P0 | showcase | Fixed with Aura Clash exclusion and app rebuild gates. |
-| `docs/project/known-limits.md` | P0 | project status | Fixed as canonical limitations doc. |
-| `docs/project/product-boundaries.md` | P0 | claims | Fixed with strengthened boundaries. |
+| `docs/project/status/known-limits.md` | P0 | project status | Fixed as canonical limitations doc. |
+| `docs/project/status/product-boundaries.md` | P0 | claims | Fixed with strengthened boundaries. |
 | `docs/project/game-runtime-release.md` | P1 | game runtime | Fixed with source-level game kits and remaining browser-starter gates. |
 | `docs/project/aura3d-109-release-gates.md` | P1 | release | Fixed as historical/scoped gate, not current showcase waiver. |
 | `docs/project/documentation-index.md` | P1 | docs index | Fixed with missing docs and links. |
 | `docs/project/requirements-trace.md` | P1 | traceability | Fixed with current test/doc mapping. |
-| `docs/project/apps-classification.md` | P1 | showcase | Fixed with honest classifications. |
+| `docs/project/showcase/apps-classification.md` | P1 | showcase | Fixed with honest classifications. |
 | `docs/project/site-map.md` | P1 | docs index | Fixed with status/capability pages. |
 | `docs/project/completion-audit.md` | P1 | audit | Fixed with gate-by-gate status. |
 | `docs/project/getting-started.md` | P2 | onboarding | Fixed with public safe-API first path. |
 | `docs/project/frozen-benchmark-release-gates.md` | P0 | release | Created. |
 | `docs/project/launch-positioning.md` | P0 | claims | Created. |
-| `docs/project/showcase-quality-gates.md` | P0 | showcase | Created. |
-| `docs/project/library-gap-roadmap.md` | P0 | roadmap | Created. |
+| `docs/project/showcase/quality-gates.md` | P0 | showcase | Created. |
+| `docs/project/roadmaps/library-gap-roadmap.md` | P0 | roadmap | Created. |
 | `docs/project/marketing-site.md` | P1 | marketing | Created. |
 | `docs/project/superiority-evidence-workflow.md` | P1 | evidence | Created. |
 | `docs/templates/create-aura3d-templates.md` | P0 | templates | Fixed with mini-game playable-starter status and typed-asset starter rules. |

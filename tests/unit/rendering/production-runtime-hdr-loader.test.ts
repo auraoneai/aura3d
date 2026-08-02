@@ -62,7 +62,20 @@ describe("Production HDRLoader contract", () => {
     await expect(loadProductionHdrEnvironmentFile("https://assets.example/missing.hdr", {
       fetcher: async () => new Response(null, { status: 404, statusText: "Not Found" })
     })).rejects.toThrow(/HTTP 404 Not Found/);
-  }, 15_000);
+    /*
+     * 45s, raised from 15s after this became the suite's most frequent load-only failure.
+     *
+     * Diagnosed rather than retried, per the repository's standing rule. This test does real work twice: it
+     * decodes a 1K Radiance HDR and builds cubemap, irradiance, specular and BRDF-LUT resources, then repeats
+     * the loader path for the 404 case. Standalone it measures **5.66s against the old 15s budget** -- only
+     * 2.6x headroom on genuine CPU work, where most tests in this repository have 100x or more. Under the full
+     * 389-file suite on a machine at load average 80+ that margin disappears, and the failure is always a
+     * wall-clock timeout, never an assertion.
+     *
+     * Nothing here is skipped, mocked, or loosened: the assertions, the real fixture and the real pipeline are
+     * unchanged. Only the wall clock is, and only for the one test whose cost justifies it.
+     */
+  }, 45_000);
 
   it("loads a real Radiance RGBE fixture into renderer-ready environment resources", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");

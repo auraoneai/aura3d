@@ -10,7 +10,7 @@ interface Finding {
 
 const requiredFiles = [
   "docs/project/implementation-plan.md",
-  "docs/project/current-state.md",
+  "docs/project/status/current-state.md",
   "docs/project/verification-evidence.md",
   "docs/project/claim-guidelines.md"
 ] as const;
@@ -44,11 +44,11 @@ const publicDocRoots = [
   "README.md",
   "docs/api",
   "docs/tutorials",
-  "docs/project/current-state.md",
+  "docs/project/status/current-state.md",
   "docs/project/competitive-positioning.md",
-  "docs/project/threejs-parity-status.md",
+  "docs/project/parity/threejs/status.md",
   "docs/project/compatibility.md",
-  "docs/project/known-limits.md"
+  "docs/project/status/known-limits.md"
 ] as const;
 const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));
 const findings: Finding[] = [];
@@ -70,8 +70,8 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = existsSync(resolve("docs/project/current-state.md"))
-  ? readFileSync(resolve("docs/project/current-state.md"), "utf8")
+const status = existsSync(resolve("docs/project/status/current-state.md"))
+  ? readFileSync(resolve("docs/project/status/current-state.md"), "utf8")
   : "";
 const progress = existsSync(resolve("docs/project/verification-evidence.md"))
   ? readFileSync(resolve("docs/project/verification-evidence.md"), "utf8")

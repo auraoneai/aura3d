@@ -35,11 +35,11 @@ function hasSupportedNicheAdvantage(report: unknown): boolean {
 
 export function createFoundationCurrentCapabilityReport(root = process.cwd()): FoundationCurrentCapabilityReport {
   const retainedDocs = new Set([
-    "docs/project/current-state.md",
+    "docs/project/status/current-state.md",
     "docs/project/implementation-plan.md",
     "docs/project/verification-evidence.md",
     "docs/project/compatibility.md",
-    "docs/project/known-limits.md",
+    "docs/project/status/known-limits.md",
     "docs/project/claim-guidelines.md"
   ]);
   const docs = listFiles(root, ["docs/project"], [".md"]).filter((path) => retainedDocs.has(path));

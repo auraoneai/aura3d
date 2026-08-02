@@ -12,7 +12,7 @@ support them.
 
 - First-read policy: `llms.txt` and `AGENTS.md`.
 - Current prompt: `prompt.md`.
-- Current remediation PRD: `Fixed-Needed-PRD.md`.
+- Current remediation PRD: `docs/project/plans/recovery-remediation-prd.md`.
 - Baseline evidence capture:
   `tests/reports/aura3d-recovery-baseline/summary.json`.
 - Baseline screenshots:
@@ -210,12 +210,12 @@ Required fixes:
 
 Findings:
 
-- `Fixed-Needed-PRD.md` marks many root rendering, game, asset, and showcase
+- `docs/project/plans/recovery-remediation-prd.md` marks many root rendering, game, asset, and showcase
   gates complete even though current docs and screenshots contradict them.
 - README, route-health, launch evidence, and app source disagree on route names,
   renderer mode, asset keys, and status.
 - Aura Clash wording in README is stronger than the bounded status in
-  `llms.txt` and `docs/project/aura-clash-showcase.md`.
+  `llms.txt` and `docs/project/showcase/aura-clash-showcase-plan.md`.
 - Release/version docs mix older release artifact metadata with newer README
   positioning.
 - Prompt Phase 7 references docs that must either be created or replaced with

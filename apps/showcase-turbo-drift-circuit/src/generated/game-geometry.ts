@@ -6,203 +6,263 @@ export const gameGeometryContract = {
   "geometrySource": "asset-mesh-extracted",
   "sourceReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
   "topology": {
-    "assetId": "showcaseKenneyNeonRaceCircuit",
-    "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+    "assetId": "showcaseTsukubaCircuit",
+    "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
     "source": "asset-mesh-extracted",
     "roadCenterline": [
       {
-        "x": -9.098,
-        "z": -1.441,
-        "width": 1.792
+        "x": 7.256,
+        "z": 1.694,
+        "width": 0.388
       },
       {
-        "x": -7.588,
-        "z": -3.867,
-        "width": 1.792
+        "x": 7.739,
+        "z": 0.627,
+        "width": 0.406
       },
       {
-        "x": -5.087,
-        "z": -5.087,
-        "width": 1.792
+        "x": 8.14,
+        "z": -0.473,
+        "width": 0.391
       },
       {
-        "x": -3.037,
-        "z": -5.96,
-        "width": 1.792
+        "x": 8.623,
+        "z": -1.54,
+        "width": 0.439
       },
       {
-        "x": -0.967,
-        "z": -6.102,
-        "width": 1.792
+        "x": 9.024,
+        "z": -2.64,
+        "width": 0.393
       },
       {
-        "x": 0.966,
-        "z": -6.102,
-        "width": 1.792
+        "x": 9.507,
+        "z": -3.706,
+        "width": 0.442
       },
       {
-        "x": 3.037,
-        "z": -5.96,
-        "width": 1.792
+        "x": 9.958,
+        "z": -4.786,
+        "width": 0.455
       },
       {
-        "x": 5.087,
-        "z": -5.087,
-        "width": 1.792
+        "x": 10.391,
+        "z": -5.873,
+        "width": 0.478
       },
       {
-        "x": 7.588,
-        "z": -3.867,
-        "width": 1.792
+        "x": 10.551,
+        "z": -7.073,
+        "width": 0.48
       },
       {
-        "x": 9.097,
-        "z": -1.441,
-        "width": 1.792
+        "x": 9.566,
+        "z": -7.608,
+        "width": 0.388
       },
       {
-        "x": 9.098,
-        "z": 1.441,
-        "width": 1.792
+        "x": 9.105,
+        "z": -6.533,
+        "width": 0.482
       },
       {
-        "x": 7.588,
-        "z": 3.867,
-        "width": 1.792
+        "x": 9.105,
+        "z": -5.267,
+        "width": 0.321
       },
       {
-        "x": 5.087,
-        "z": 5.087,
-        "width": 1.792
+        "x": 8.864,
+        "z": -4.1,
+        "width": 0.455
       },
       {
-        "x": 3.037,
-        "z": 5.96,
-        "width": 1.792
+        "x": 8.542,
+        "z": -2.967,
+        "width": 0.455
       },
       {
-        "x": 0.967,
-        "z": 6.106,
-        "width": 1.792
+        "x": 8.044,
+        "z": -1.907,
+        "width": 0.473
       },
       {
-        "x": -0.967,
-        "z": 6.105,
-        "width": 1.792
+        "x": 7.433,
+        "z": -0.893,
+        "width": 0.615
       },
       {
-        "x": -3.037,
-        "z": 5.96,
-        "width": 1.792
+        "x": 6.406,
+        "z": -0.315,
+        "width": 0.427
       },
       {
-        "x": -5.087,
-        "z": 5.087,
-        "width": 1.792
+        "x": 5.306,
+        "z": 0.087,
+        "width": 0.691
       },
       {
-        "x": -7.588,
-        "z": 3.867,
-        "width": 1.792
+        "x": 4.158,
+        "z": 0.372,
+        "width": 0.388
       },
       {
-        "x": -9.097,
-        "z": 1.441,
-        "width": 1.792
+        "x": 3.479,
+        "z": 1.311,
+        "width": 0.482
       },
       {
-        "x": -9.098,
-        "z": -1.441,
-        "width": 1.792
+        "x": 3.479,
+        "z": 2.577,
+        "width": 0.322
+      },
+      {
+        "x": 3.64,
+        "z": 3.777,
+        "width": 0.482
+      },
+      {
+        "x": 3.72,
+        "z": 5.01,
+        "width": 0.321
+      },
+      {
+        "x": 3.242,
+        "z": 6.034,
+        "width": 0.485
+      },
+      {
+        "x": 2.18,
+        "z": 6.529,
+        "width": 1.207
+      },
+      {
+        "x": 2.73,
+        "z": 7.48,
+        "width": 0.213
+      },
+      {
+        "x": 3.896,
+        "z": 7.721,
+        "width": 0.477
+      },
+      {
+        "x": 4.881,
+        "z": 7.042,
+        "width": 0.388
+      },
+      {
+        "x": 5.379,
+        "z": 5.982,
+        "width": 0.658
+      },
+      {
+        "x": 5.97,
+        "z": 4.96,
+        "width": 0.411
+      },
+      {
+        "x": 6.375,
+        "z": 3.861,
+        "width": 0.39
+      },
+      {
+        "x": 6.854,
+        "z": 2.794,
+        "width": 0.409
+      },
+      {
+        "x": 7.256,
+        "z": 1.694,
+        "width": 0.388
       }
     ],
     "checkpoints": [
       {
         "progress": 0.167,
-        "width": 1.792
+        "width": 0.388
       },
       {
         "progress": 0.333,
-        "width": 1.792
+        "width": 0.406
       },
       {
         "progress": 0.5,
-        "width": 1.792
+        "width": 0.391
       },
       {
         "progress": 0.667,
-        "width": 1.792
+        "width": 0.439
       },
       {
         "progress": 0.833,
-        "width": 1.792
+        "width": 0.393
       },
       {
         "progress": 1,
-        "width": 1.792
+        "width": 0.442
       }
     ],
-    "lapLengthMeters": 49.404,
-    "estimatedLapSeconds": 45,
+    "lapLengthMeters": 37.741,
+    "estimatedLapSeconds": 35,
     "confidence": 0.76,
     "modelAlignment": {
       "source": "asset-mesh-extracted",
       "modelBounds": {
         "min": [
-          -24.111,
-          -0.67,
-          -17.726
+          -9.676,
+          -0.332,
+          -22.391
         ],
         "max": [
-          23.14,
-          4.08,
-          17.726
+          25.773,
+          3.054,
+          11.481
         ]
       },
       "modelPoint": [
-        0,
-        0.03,
-        0
+        5.237,
+        0.009,
+        0.086
       ],
       "gamePoint": {
-        "x": 0,
-        "z": 0
+        "x": 5.237,
+        "z": 0.086
       },
       "anchorPairs": [
         {
           "id": "mesh-road-anchor-1",
           "modelPoint": [
-            -9.098,
-            0.03,
-            -1.441
+            7.256,
+            0,
+            1.694
           ],
           "gamePoint": {
-            "x": -9.098,
-            "z": -1.441
+            "x": 7.256,
+            "z": 1.694
           }
         },
         {
           "id": "mesh-road-anchor-2",
           "modelPoint": [
-            5.087,
-            0.03,
-            -5.087
+            9.105,
+            0,
+            -5.267
           ],
           "gamePoint": {
-            "x": 5.087,
-            "z": -5.087
+            "x": 9.105,
+            "z": -5.267
           }
         },
         {
           "id": "mesh-road-anchor-3",
           "modelPoint": [
-            0.967,
-            0.03,
-            6.106
+            3.72,
+            0,
+            5.01
           ],
           "gamePoint": {
-            "x": 0.967,
-            "z": 6.106
+            "x": 3.72,
+            "z": 5.01
           }
         }
       ],
@@ -211,97 +271,145 @@ export const gameGeometryContract = {
       }
     },
     "evidence": {
-      "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
-      "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+      "sourceAsset": "assets.showcaseTsukubaCircuit",
+      "notes": "Road topology extracted from 8 GLB primitive(s) with road/track material names and bound to the current asset hash."
     }
   },
   "route": {
     "id": "showcase-turbo-drift-circuit-generated-track-route",
-    "width": 1.792,
+    "width": 0.439,
     "points": [
       {
-        "x": -9.098,
-        "y": -1.441
+        "x": 7.256,
+        "y": 1.694
       },
       {
-        "x": -7.588,
-        "y": -3.867
+        "x": 7.739,
+        "y": 0.627
       },
       {
-        "x": -5.087,
-        "y": -5.087
+        "x": 8.14,
+        "y": -0.473
       },
       {
-        "x": -3.037,
-        "y": -5.96
+        "x": 8.623,
+        "y": -1.54
       },
       {
-        "x": -0.967,
-        "y": -6.102
+        "x": 9.024,
+        "y": -2.64
       },
       {
-        "x": 0.966,
-        "y": -6.102
+        "x": 9.507,
+        "y": -3.706
       },
       {
-        "x": 3.037,
-        "y": -5.96
+        "x": 9.958,
+        "y": -4.786
       },
       {
-        "x": 5.087,
-        "y": -5.087
+        "x": 10.391,
+        "y": -5.873
       },
       {
-        "x": 7.588,
-        "y": -3.867
+        "x": 10.551,
+        "y": -7.073
       },
       {
-        "x": 9.097,
-        "y": -1.441
+        "x": 9.566,
+        "y": -7.608
       },
       {
-        "x": 9.098,
-        "y": 1.441
+        "x": 9.105,
+        "y": -6.533
       },
       {
-        "x": 7.588,
-        "y": 3.867
+        "x": 9.105,
+        "y": -5.267
       },
       {
-        "x": 5.087,
-        "y": 5.087
+        "x": 8.864,
+        "y": -4.1
       },
       {
-        "x": 3.037,
-        "y": 5.96
+        "x": 8.542,
+        "y": -2.967
       },
       {
-        "x": 0.967,
-        "y": 6.106
+        "x": 8.044,
+        "y": -1.907
       },
       {
-        "x": -0.967,
-        "y": 6.105
+        "x": 7.433,
+        "y": -0.893
       },
       {
-        "x": -3.037,
-        "y": 5.96
+        "x": 6.406,
+        "y": -0.315
       },
       {
-        "x": -5.087,
-        "y": 5.087
+        "x": 5.306,
+        "y": 0.087
       },
       {
-        "x": -7.588,
-        "y": 3.867
+        "x": 4.158,
+        "y": 0.372
       },
       {
-        "x": -9.097,
-        "y": 1.441
+        "x": 3.479,
+        "y": 1.311
       },
       {
-        "x": -9.098,
-        "y": -1.441
+        "x": 3.479,
+        "y": 2.577
+      },
+      {
+        "x": 3.64,
+        "y": 3.777
+      },
+      {
+        "x": 3.72,
+        "y": 5.01
+      },
+      {
+        "x": 3.242,
+        "y": 6.034
+      },
+      {
+        "x": 2.18,
+        "y": 6.529
+      },
+      {
+        "x": 2.73,
+        "y": 7.48
+      },
+      {
+        "x": 3.896,
+        "y": 7.721
+      },
+      {
+        "x": 4.881,
+        "y": 7.042
+      },
+      {
+        "x": 5.379,
+        "y": 5.982
+      },
+      {
+        "x": 5.97,
+        "y": 4.96
+      },
+      {
+        "x": 6.375,
+        "y": 3.861
+      },
+      {
+        "x": 6.854,
+        "y": 2.794
+      },
+      {
+        "x": 7.256,
+        "y": 1.694
       }
     ],
     "checkpoints": [
@@ -313,31 +421,29 @@ export const gameGeometryContract = {
       1
     ]
   },
-  "authoredSeconds": 45,
+  "authoredSeconds": 35,
   "speedModel": {
     "kind": "route-length-over-authored-lap-seconds",
-    "routeLength": 49.404,
-    "authoredLapSeconds": 45,
-    "gameUnitsPerSecond": 1.098,
-    "sceneUnitsPerGameUnit": 0.297,
-    "sceneUnitsPerSecond": 0.326106,
+    "routeLength": 37.741,
+    "authoredLapSeconds": 35,
+    "gameUnitsPerSecond": 1.078,
+    "sceneUnitsPerGameUnit": 0.352,
+    "sceneUnitsPerSecond": 0.379456,
     "units": "game-and-scene-units-per-second"
   },
   "cameraRig": {
     "selectedMode": "chase",
-    "compositionReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
-    "cameraReadabilityVerdict": "pass"
+    "compositionReport": "tests/fixtures/showcase-spec/evidence/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
+    "cameraReadabilityVerdict": "fail"
   },
   "cameraBounds": {
-    "minX": -12.682,
-    "maxX": 12.682,
-    "minZ": -9.686,
-    "maxZ": 9.69
+    "minX": 1.302,
+    "maxX": 11.429,
+    "minZ": -8.485999999999999,
+    "maxZ": 8.599
   },
   "evidence": {
-    "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "routePrimaryScreenshot": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-    "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb"
+    "geometryReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
   },
   "design": {
     "minCheckpoints": 6,
@@ -346,203 +452,263 @@ export const gameGeometryContract = {
     "routeAlignedToTrackAsset": true,
     "visibleTrackTopology": "asset-bound-road-topology",
     "trackTopology": {
-      "assetId": "showcaseKenneyNeonRaceCircuit",
-      "assetHash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065",
+      "assetId": "showcaseTsukubaCircuit",
+      "assetHash": "sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031",
       "source": "asset-mesh-extracted",
       "roadCenterline": [
         {
-          "x": -9.098,
-          "z": -1.441,
-          "width": 1.792
+          "x": 7.256,
+          "z": 1.694,
+          "width": 0.388
         },
         {
-          "x": -7.588,
-          "z": -3.867,
-          "width": 1.792
+          "x": 7.739,
+          "z": 0.627,
+          "width": 0.406
         },
         {
-          "x": -5.087,
-          "z": -5.087,
-          "width": 1.792
+          "x": 8.14,
+          "z": -0.473,
+          "width": 0.391
         },
         {
-          "x": -3.037,
-          "z": -5.96,
-          "width": 1.792
+          "x": 8.623,
+          "z": -1.54,
+          "width": 0.439
         },
         {
-          "x": -0.967,
-          "z": -6.102,
-          "width": 1.792
+          "x": 9.024,
+          "z": -2.64,
+          "width": 0.393
         },
         {
-          "x": 0.966,
-          "z": -6.102,
-          "width": 1.792
+          "x": 9.507,
+          "z": -3.706,
+          "width": 0.442
         },
         {
-          "x": 3.037,
-          "z": -5.96,
-          "width": 1.792
+          "x": 9.958,
+          "z": -4.786,
+          "width": 0.455
         },
         {
-          "x": 5.087,
-          "z": -5.087,
-          "width": 1.792
+          "x": 10.391,
+          "z": -5.873,
+          "width": 0.478
         },
         {
-          "x": 7.588,
-          "z": -3.867,
-          "width": 1.792
+          "x": 10.551,
+          "z": -7.073,
+          "width": 0.48
         },
         {
-          "x": 9.097,
-          "z": -1.441,
-          "width": 1.792
+          "x": 9.566,
+          "z": -7.608,
+          "width": 0.388
         },
         {
-          "x": 9.098,
-          "z": 1.441,
-          "width": 1.792
+          "x": 9.105,
+          "z": -6.533,
+          "width": 0.482
         },
         {
-          "x": 7.588,
-          "z": 3.867,
-          "width": 1.792
+          "x": 9.105,
+          "z": -5.267,
+          "width": 0.321
         },
         {
-          "x": 5.087,
-          "z": 5.087,
-          "width": 1.792
+          "x": 8.864,
+          "z": -4.1,
+          "width": 0.455
         },
         {
-          "x": 3.037,
-          "z": 5.96,
-          "width": 1.792
+          "x": 8.542,
+          "z": -2.967,
+          "width": 0.455
         },
         {
-          "x": 0.967,
-          "z": 6.106,
-          "width": 1.792
+          "x": 8.044,
+          "z": -1.907,
+          "width": 0.473
         },
         {
-          "x": -0.967,
-          "z": 6.105,
-          "width": 1.792
+          "x": 7.433,
+          "z": -0.893,
+          "width": 0.615
         },
         {
-          "x": -3.037,
-          "z": 5.96,
-          "width": 1.792
+          "x": 6.406,
+          "z": -0.315,
+          "width": 0.427
         },
         {
-          "x": -5.087,
-          "z": 5.087,
-          "width": 1.792
+          "x": 5.306,
+          "z": 0.087,
+          "width": 0.691
         },
         {
-          "x": -7.588,
-          "z": 3.867,
-          "width": 1.792
+          "x": 4.158,
+          "z": 0.372,
+          "width": 0.388
         },
         {
-          "x": -9.097,
-          "z": 1.441,
-          "width": 1.792
+          "x": 3.479,
+          "z": 1.311,
+          "width": 0.482
         },
         {
-          "x": -9.098,
-          "z": -1.441,
-          "width": 1.792
+          "x": 3.479,
+          "z": 2.577,
+          "width": 0.322
+        },
+        {
+          "x": 3.64,
+          "z": 3.777,
+          "width": 0.482
+        },
+        {
+          "x": 3.72,
+          "z": 5.01,
+          "width": 0.321
+        },
+        {
+          "x": 3.242,
+          "z": 6.034,
+          "width": 0.485
+        },
+        {
+          "x": 2.18,
+          "z": 6.529,
+          "width": 1.207
+        },
+        {
+          "x": 2.73,
+          "z": 7.48,
+          "width": 0.213
+        },
+        {
+          "x": 3.896,
+          "z": 7.721,
+          "width": 0.477
+        },
+        {
+          "x": 4.881,
+          "z": 7.042,
+          "width": 0.388
+        },
+        {
+          "x": 5.379,
+          "z": 5.982,
+          "width": 0.658
+        },
+        {
+          "x": 5.97,
+          "z": 4.96,
+          "width": 0.411
+        },
+        {
+          "x": 6.375,
+          "z": 3.861,
+          "width": 0.39
+        },
+        {
+          "x": 6.854,
+          "z": 2.794,
+          "width": 0.409
+        },
+        {
+          "x": 7.256,
+          "z": 1.694,
+          "width": 0.388
         }
       ],
       "checkpoints": [
         {
           "progress": 0.167,
-          "width": 1.792
+          "width": 0.388
         },
         {
           "progress": 0.333,
-          "width": 1.792
+          "width": 0.406
         },
         {
           "progress": 0.5,
-          "width": 1.792
+          "width": 0.391
         },
         {
           "progress": 0.667,
-          "width": 1.792
+          "width": 0.439
         },
         {
           "progress": 0.833,
-          "width": 1.792
+          "width": 0.393
         },
         {
           "progress": 1,
-          "width": 1.792
+          "width": 0.442
         }
       ],
-      "lapLengthMeters": 49.404,
-      "estimatedLapSeconds": 45,
+      "lapLengthMeters": 37.741,
+      "estimatedLapSeconds": 35,
       "confidence": 0.76,
       "modelAlignment": {
         "source": "asset-mesh-extracted",
         "modelBounds": {
           "min": [
-            -24.111,
-            -0.67,
-            -17.726
+            -9.676,
+            -0.332,
+            -22.391
           ],
           "max": [
-            23.14,
-            4.08,
-            17.726
+            25.773,
+            3.054,
+            11.481
           ]
         },
         "modelPoint": [
-          0,
-          0.03,
-          0
+          5.237,
+          0.009,
+          0.086
         ],
         "gamePoint": {
-          "x": 0,
-          "z": 0
+          "x": 5.237,
+          "z": 0.086
         },
         "anchorPairs": [
           {
             "id": "mesh-road-anchor-1",
             "modelPoint": [
-              -9.098,
-              0.03,
-              -1.441
+              7.256,
+              0,
+              1.694
             ],
             "gamePoint": {
-              "x": -9.098,
-              "z": -1.441
+              "x": 7.256,
+              "z": 1.694
             }
           },
           {
             "id": "mesh-road-anchor-2",
             "modelPoint": [
-              5.087,
-              0.03,
-              -5.087
+              9.105,
+              0,
+              -5.267
             ],
             "gamePoint": {
-              "x": 5.087,
-              "z": -5.087
+              "x": 9.105,
+              "z": -5.267
             }
           },
           {
             "id": "mesh-road-anchor-3",
             "modelPoint": [
-              0.967,
-              0.03,
-              6.106
+              3.72,
+              0,
+              5.01
             ],
             "gamePoint": {
-              "x": 0.967,
-              "z": 6.106
+              "x": 3.72,
+              "z": 5.01
             }
           }
         ],
@@ -551,67 +717,12 @@ export const gameGeometryContract = {
         }
       },
       "evidence": {
-        "sourceAsset": "assets.showcaseKenneyNeonRaceCircuit",
-        "notes": "Road topology extracted from 108 GLB primitive(s) with road/track material names and bound to the current asset hash."
+        "sourceAsset": "assets.showcaseTsukubaCircuit",
+        "notes": "Road topology extracted from 8 GLB primitive(s) with road/track material names and bound to the current asset hash."
       }
     },
     "carTrackScaleCompatible": true,
     "noDebugLocatorDisk": true,
-    "trackTopologyEvidence": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-    "assetPairEvidence": {
-      "category": "racing",
-      "assets": [
-        "showcaseKenneyRaceCarRed",
-        "showcaseKenneyNeonRaceCircuit"
-      ],
-      "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-      "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-      "screenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
-      "geometryEvidence": {
-        "category": "racing",
-        "kind": "racing-track-topology",
-        "source": "asset-mesh-extracted",
-        "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-        "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-        "routePrimaryScreenshotSha256": "sha256-8c6d7648eaa06b84dbcd5a101d9f2dac221b58d90f3b610512443c173c82f6eb",
-        "assets": [
-          {
-            "id": "showcaseKenneyRaceCarRed",
-            "hash": "sha256-2beaa14236fee91768fb109ea876c9b8b52d90ac0b0dc1cc8e9264684406e89a"
-          },
-          {
-            "id": "showcaseKenneyNeonRaceCircuit",
-            "hash": "sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065"
-          }
-        ]
-      },
-      "compositionReport": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-asset-pair-composition.json",
-      "cameraMode": "chase",
-      "checks": [
-        {
-          "id": "binding-overlap",
-          "verdict": "pass"
-        },
-        {
-          "id": "contact",
-          "verdict": "pass"
-        },
-        {
-          "id": "camera-readability",
-          "verdict": "pass"
-        },
-        {
-          "id": "scale-contract",
-          "verdict": "pass"
-        },
-        {
-          "id": "debug-guide-absence",
-          "verdict": "pass"
-        }
-      ],
-      "verdict": "pass",
-      "notes": "Derived by the asset-pair composition validator from retained screenshot, gameplay, geometry, camera, and manifest evidence.",
-      "blockers": []
-    }
+    "trackTopologyEvidence": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
   }
 } as const;

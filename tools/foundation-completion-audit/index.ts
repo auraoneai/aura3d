@@ -23,7 +23,7 @@ const requiredBuildFiles = [
   "benchmarks/foundation/aura3d/asset-scene.ts",
   "benchmarks/foundation/threejs/asset-scene.ts",
   "docs/project/competitive-positioning.md",
-  "docs/project/known-limits.md"
+  "docs/project/status/known-limits.md"
 ] as const;
 const progress = existsSync(resolve("docs/project/verification-evidence.md")) ? readFileSync(resolve("docs/project/verification-evidence.md"), "utf8") : "";
 const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { readonly scripts?: Record<string, string> };

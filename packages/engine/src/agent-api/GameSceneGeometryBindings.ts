@@ -185,6 +185,18 @@ export interface GamePlatformerSceneBinding {
   readonly sceneContractVersion: "1.0";
   readonly surfaceAssetHash: string;
   readonly transform: GameSceneTransform;
+  /**
+   * Scene depth of the world plane, including any world-model scene offset.
+   *
+   * Surfaced because `worldZ` is an *input* option and was not readable back from the binding, so any second
+   * consumer had to keep its own copy of the same number. Skyline Runner did exactly that: a route-local
+   * `WORLD_DEPTH_Z = -0.46` duplicating what it had just passed in, which two values could then drift apart.
+   * That is a public API gap rather than a route defect -- the binding knows the answer and was not telling.
+   *
+   * Depth-layered set dressing needs this to place layers relative to the play plane, which is precisely the
+   * second consumer that made the duplication necessary.
+   */
+  readonly worldZ: number;
   readonly worldModel: {
     readonly position: Vec3;
     readonly rotation: Euler3;
@@ -497,6 +509,8 @@ export function createGamePlatformerSceneBinding(options: GamePlatformerSceneBin
     sceneContractVersion: "1.0",
     surfaceAssetHash: surfaceMap.assetHash,
     transform,
+    // Same value handed to the world-model fit, so a second consumer reads it instead of copying it.
+    worldZ: roundScene(worldZ + worldModelSceneOffset.z),
     worldModel: {
       position: worldModelPosition,
       rotation: worldModelFit.anchorFit.rotation,

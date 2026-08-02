@@ -9,8 +9,18 @@ export { MapControls } from "./MapControls";
 export { PointerLockControls } from "./PointerLockControls";
 export { DRAG_CONTROLS_DEPRECATION, DragControls } from "./DragControls";
 export type { DragControlsDeprecation, DragControlsOptions } from "./DragControls";
-export { TRANSFORM_CONTROLS_DEPRECATION, TransformControls } from "./TransformControls";
-export type { TransformControlMode, TransformControlsDeprecation } from "./TransformControls";
+export { TransformControls } from "./TransformControls";
+export type {
+  TransformControlDragUpdate,
+  TransformControlHandle,
+  TransformControlHandleGeometry,
+  TransformControlMode,
+  TransformControlPick,
+  TransformControlRay,
+  TransformControlSnapSettings,
+  TransformControlSpace,
+  TransformControlsOptions
+} from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
 export type { SelectionManagerChange, SelectionManagerListener } from "./SelectionManager";
 export { InteractionControls } from "./InteractionControls";

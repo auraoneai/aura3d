@@ -1028,8 +1028,18 @@ async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackg
 function resolvePublicAssetUrl(url: string): string {
   if (/^https?:\/\//.test(url)) return url;
   const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
-  const origin = configured ?? PUBLIC_ASSET_ORIGIN;
-  return new URL(url, origin).href;
+  const base = configured ?? PUBLIC_ASSET_ORIGIN;
+  // `new URL("/fixtures/x.glb", "https://host/gh/owner/repo@main")` resolves to
+  // `https://host/fixtures/x.glb` — a leading slash resets to the origin root and silently discards
+  // the `/gh/owner/repo@main` path prefix. That produced 404s for every CDN-hosted fixture and made
+  // ten `advanced-examples-gallery` browser tests fail on unexpected console errors. Verified: the
+  // discarded form 404s while the joined form returns 200.
+  //
+  // Join on the base *path* instead, so a CDN base that carries a repo/ref prefix is preserved.
+  // Absolute URLs are returned above, so `url` here is always repo-relative.
+  const normalizedBase = base.endsWith("/") ? base.slice(0, -1) : base;
+  const normalizedPath = url.startsWith("/") ? url : `/${url}`;
+  return `${normalizedBase}${normalizedPath}`;
 }
 
 function normalizeHash(hash: string): string | null {

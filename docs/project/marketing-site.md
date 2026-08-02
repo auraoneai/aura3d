@@ -41,7 +41,7 @@ Data Galaxy and WebGPU Particle Lab remain Labs diagnostics. Racing Game Layer P
 - showcase page with route classifications;
 - evidence page explaining route-health, screenshots, asset validation, and
   release gates;
-- limitations page or prominent link to `docs/project/known-limits.md`;
+- limitations page or prominent link to `docs/project/status/known-limits.md`;
 - claims/release notes page tied to `docs/project/release-tracks.md`.
 
 ## Blocked Site Copy

@@ -27,9 +27,23 @@ export class DepthMaterial extends Material {
 }
 
 export class DepthPass extends BaseRenderPass {
+  /**
+   * Depth shader modules, shared across `DepthPass` instances and keyed by shader library.
+   *
+   * `ShadowPass` constructs a **new `DepthPass` every time it renders**, so an instance-field cache
+   * was discarded each frame and the depth shader was recompiled and relinked on every shadow pass.
+   * WebGL shader compilation is a synchronous GPU stall: measured on the Aura Clash playable route,
+   * that single per-frame recompile held the whole route at **2 FPS** with 97.8% of profiled time
+   * outside JS, which in turn made every timing-based browser test miss its window.
+   *
+   * A `WeakMap` keyed by the library keeps the entry alive exactly as long as the library is, so a
+   * long-lived renderer compiles the depth shader once while a disposed library is still collectable.
+   * This mirrors the per-device/per-library cache `ForwardPass` already uses.
+   */
+  private static readonly shaderModules = new WeakMap<ShaderLibrary, ShaderModule>();
+
   private readonly shaderLibrary: ShaderLibrary;
   private readonly material = new DepthMaterial();
-  private shaderModule: ShaderModule | null = null;
 
   constructor(private readonly options: DepthPassOptions) {
     super("depth", [], ["depth"]);
@@ -72,10 +86,12 @@ export class DepthPass extends BaseRenderPass {
   }
 
   private getShader(device: RenderDevice): RenderShaderProgram {
-    if (!this.shaderModule) {
-      this.shaderModule = ShaderModule.fromLibrary(this.shaderLibrary, this.material.shaderKey);
+    let module = DepthPass.shaderModules.get(this.shaderLibrary);
+    if (!module) {
+      module = ShaderModule.fromLibrary(this.shaderLibrary, this.material.shaderKey);
+      DepthPass.shaderModules.set(this.shaderLibrary, module);
     }
-    return this.shaderModule.compile(device);
+    return module.compile(device);
   }
 }
 

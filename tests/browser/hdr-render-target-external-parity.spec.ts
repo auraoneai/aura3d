@@ -19,7 +19,7 @@ test.describe("ExternalParity HDR render target browser evidence", () => {
 
   test("creates an rgba32f WebGL2 render target and reads overbright float pixels", async ({ page }) => {
     const errors = captureErrors(page);
-    await page.goto(`${server.origin}/examples/hdr-render-target-check/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/apps/hdr-render-target-check/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__?.status === "ready", undefined, { timeout: 30_000 });
 
     const state = await page.evaluate(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__);

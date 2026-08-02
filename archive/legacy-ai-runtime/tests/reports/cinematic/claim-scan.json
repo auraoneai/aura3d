@@ -60,14 +60,14 @@
     },
     {
       "id": "docs-project-current-state-md",
-      "path": "docs/project/current-state.md",
+      "path": "docs/project/status/current-state.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
     },
     {
       "id": "docs-project-deployment-rollback-md",
-      "path": "docs/project/deployment-rollback.md",
+      "path": "docs/project/release/deployment-rollback.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
@@ -102,7 +102,7 @@
     },
     {
       "id": "docs-project-known-limits-md",
-      "path": "docs/project/known-limits.md",
+      "path": "docs/project/status/known-limits.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
@@ -137,7 +137,7 @@
     },
     {
       "id": "docs-project-release-checklist-md",
-      "path": "docs/project/release-checklist.md",
+      "path": "docs/project/release/release-checklist.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
@@ -186,35 +186,35 @@
     },
     {
       "id": "docs-project-threejs-parity-claim-boundary-md",
-      "path": "docs/project/threejs-parity-claim-boundary.md",
+      "path": "docs/project/parity/threejs/claim-boundary.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
     },
     {
       "id": "docs-project-threejs-parity-code-backlog-md",
-      "path": "docs/project/threejs-parity-code-backlog.md",
+      "path": "docs/project/parity/threejs/code-backlog.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
     },
     {
       "id": "docs-project-threejs-parity-parity-matrix-md",
-      "path": "docs/project/threejs-parity-parity-matrix.md",
+      "path": "docs/project/parity/threejs/parity-matrix.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
     },
     {
       "id": "docs-project-threejs-parity-status-md",
-      "path": "docs/project/threejs-parity-status.md",
+      "path": "docs/project/parity/threejs/status.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."
     },
     {
       "id": "docs-project-threejs-parity-threejs-inventory-md",
-      "path": "docs/project/threejs-parity-threejs-inventory.md",
+      "path": "docs/project/parity/threejs/inventory.md",
       "present": true,
       "status": "present",
       "detail": "Scanned for cinematic release claims that are blocked until renderer quality gates pass."

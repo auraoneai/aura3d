@@ -36,7 +36,7 @@ const requiredFiles = [
   "packages/three-compat/src/controls/index.ts",
   "tests/unit/controls/three-compat-controls.test.ts",
   "tests/browser/three-compat-controls.spec.ts",
-  "docs/project/threejs-parity-status.md"
+  "docs/project/parity/threejs/status.md"
 ] as const;
 
 function check(name: string, pass: boolean, detail: string): ThreeCompatControlsCheck {
@@ -80,7 +80,7 @@ const checks: ThreeCompatControlsCheck[] = [
   check("pointer-lock", pointerLock.locked, "pointer lock state is active"),
   check("drag-transform", mesh.position.x === 1 && mesh.scale.x === 2, JSON.stringify({ position: mesh.position, scale: mesh.scale })),
   check("picking-selection", hit?.object === mesh && selection.selected.has(mesh), `${selection.selected.size} selected`),
-  check("docs", existsSync(resolve("docs/project/threejs-parity-status.md")), "controls guide exists")
+  check("docs", existsSync(resolve("docs/project/parity/threejs/status.md")), "controls guide exists")
 ];
 
 const pass = checks.every((item) => item.pass);

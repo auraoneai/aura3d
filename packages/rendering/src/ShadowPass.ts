@@ -16,6 +16,16 @@ export interface ShadowPassOptions {
   readonly shadowMap?: ShadowMap;
   readonly shaderLibrary?: ShaderLibrary;
   readonly viewProjectionMatrix?: Float32Array | readonly number[];
+  /**
+   * A depth render target owned by the caller and reused across passes.
+   *
+   * `Renderer` constructs a new `ShadowPass` every frame, so a pass-owned target is allocated and
+   * destroyed once per frame. Creating a render target allocates textures and runs
+   * `checkFramebufferStatus`, both synchronous GPU operations: measured on the Aura Clash playable
+   * route that was 3 `createTexture` + 3 `checkFramebufferStatus` calls per frame. When supplied,
+   * the pass renders into this target and never disposes it, leaving lifetime to the owner.
+   */
+  readonly renderTarget?: RenderTarget;
 }
 
 export interface ShadowPassResult {
@@ -134,12 +144,18 @@ export class ShadowPass {
   }
 
   dispose(): void {
-    this.renderTarget?.dispose();
+    // A caller-supplied target outlives this pass, so only dispose one we allocated ourselves.
+    if (!this.options.renderTarget) this.renderTarget?.dispose();
     this.renderTarget = null;
     this.shadowMap.dispose();
   }
 
   private ensureRenderTarget(context: RenderPassContext): RenderTarget {
+    const supplied = this.options.renderTarget;
+    if (supplied && !supplied.disposed && supplied.width === this.shadowMap.size && supplied.height === this.shadowMap.size) {
+      this.renderTarget = supplied;
+      return supplied;
+    }
     if (this.renderTarget && !this.renderTarget.disposed && this.renderTarget.width === this.shadowMap.size && this.renderTarget.height === this.shadowMap.size) {
       return this.renderTarget;
     }

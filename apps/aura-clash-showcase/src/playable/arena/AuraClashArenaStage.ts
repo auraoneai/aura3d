@@ -1,5 +1,3 @@
-import { auraClashRenderedStageLabels } from "./RenderedArenaStage";
-
 export type AuraClashArenaStageLayer =
   | "typed-asset"
   | "platform"
@@ -26,6 +24,9 @@ export interface AuraClashArenaStageEvidence {
   readonly togglableElementCount: number;
   readonly missingElementIds: readonly string[];
   readonly evidenceBacked: boolean;
+  /** Whether `evidenceBacked` was decided by observed render items or is merely declared. */
+  readonly evidenceSource: "declared-only" | "observed-render-items";
+  readonly observedRenderLabelCount: number;
   readonly elements: readonly AuraClashArenaStageElement[];
   readonly toggleGroups: readonly string[];
 }
@@ -46,16 +47,32 @@ const element = (
   implementation: "production-runtime-render-item"
 });
 
+/**
+ * Declared stage elements, each bound to the render label *prefix* its geometry emits.
+ *
+ * `renderLabel` is matched as a prefix because indexed families emit
+ * `practical-post-0..3` and `atmospheric-mote-0..7` rather than one label. Before defect 48
+ * these were declared as `portal-segments` / `atmospheric-motes` / `side-banners` /
+ * `light-pillars`, which matched *nothing* emitted -- and the mismatch was invisible because
+ * `evidenceBacked` compared this list against another hardcoded list instead of against real
+ * render items.
+ *
+ * The former `side-banners` / `light-pillars` / `portal-segments` elements are gone rather than
+ * renamed: they were unlit slabs and a ring of loose bars authored against an empty void, and once
+ * the typed textured arena rendered behind them they read as debris over real architecture. The
+ * replacements are grounded stage practicals and the lane-boundary markers, which is furniture a
+ * generic city block genuinely cannot supply.
+ */
 export const auraClashArenaStageElements: readonly AuraClashArenaStageElement[] = [
   element("combat-floor", "rendered combat floor", "combat-floor", "platform", null),
+  element("stage-riser", "rendered stage riser under the fight plane", "stage-riser", "platform", null),
   element("arena-rims", "rendered arena rim lights", "front-rim", "lighting", "reflections"),
   element("center-line", "rendered center-line marker", "center-line", "platform", null),
-  element("portal-segments", "rendered segmented energy portal", "portal-segments", "lighting", "backdrop"),
-  element("portal-motion", "rendered portal motion", "portal-segments", "lighting", "motion"),
-  element("skyline-buildings", "rendered downtown skyline geometry", "skyline-buildings", "backdrop", "backdrop"),
-  element("side-banners", "rendered side banners", "side-banners", "backdrop", null),
-  element("light-pillars", "rendered arena light pillars", "light-pillars", "lighting", null),
-  element("atmospheric-motes", "rendered atmospheric motes", "atmospheric-motes", "atmosphere", "particles"),
+  element("lane-markers", "rendered lane-boundary markers at the fighter clamp", "lane-marker-", "platform", null),
+  element("stage-practicals", "rendered grounded stage-light practicals", "practical-post-", "lighting", "backdrop"),
+  element("practical-motion", "rendered practical brightness pulse", "practical-glow-", "lighting", "motion"),
+  element("typed-arena-environment", "typed Neon Downtown arena environment", "aura-clash-arena-architecture", "typed-asset", "backdrop"),
+  element("atmospheric-motes", "rendered atmospheric motes", "atmospheric-mote-", "atmosphere", "particles"),
   element("floor-sheen", "rendered floor sheen", "floor-sheen", "platform", "reflections")
 ];
 
@@ -67,11 +84,29 @@ export function annotateAuraClashArenaStage(root: ParentNode): void {
   canvas.dataset.stageEvidence = "renderedStage.productionRuntimeCanvas";
 }
 
-export function collectAuraClashArenaStageEvidence(_root: ParentNode): AuraClashArenaStageEvidence {
-  const renderedLabels = new Set<string>(auraClashRenderedStageLabels);
-  const missingElementIds = auraClashArenaStageElements
-    .filter((entry) => !renderedLabels.has(entry.renderLabel as (typeof auraClashRenderedStageLabels)[number]))
-    .map((entry) => entry.id);
+/**
+ * Build stage evidence from the render labels a frame actually emitted.
+ *
+ * Defect 48: this previously computed `missingElementIds` by comparing
+ * `auraClashArenaStageElements` against `auraClashRenderedStageLabels` -- two hardcoded lists in
+ * the same source tree. A declared element with **zero geometry** therefore reported
+ * `evidenceBacked: true`, which is precisely the "source-authored boolean substitutes for
+ * rendered proof" pattern this repo forbids. Five of ten declared labels were in that state.
+ *
+ * `observedRenderLabels` must come from a real `collectRenderItems()` result, so an element can
+ * only be evidence-backed if geometry carrying its label prefix was submitted to the renderer.
+ */
+export function collectAuraClashArenaStageEvidence(
+  _root: ParentNode,
+  observedRenderLabels?: readonly string[]
+): AuraClashArenaStageEvidence {
+  const observed = observedRenderLabels === undefined ? undefined : normalizeStageLabels(observedRenderLabels);
+  // With no observed frame nothing is proven, so every element is missing.
+  const missingElementIds = observed === undefined
+    ? auraClashArenaStageElements.map((entry) => entry.id)
+    : auraClashArenaStageElements
+      .filter((entry) => !hasObservedLabel(observed, entry.renderLabel))
+      .map((entry) => entry.id);
   const toggleGroups = Array.from(new Set(auraClashArenaStageElements.flatMap((entry) => entry.toggleGroup ? [entry.toggleGroup] : []))).sort();
   return {
     schemaVersion: "aura-clash-arena-stage/v2",
@@ -81,8 +116,25 @@ export function collectAuraClashArenaStageEvidence(_root: ParentNode): AuraClash
     namedElementCount: auraClashArenaStageElements.length,
     togglableElementCount: auraClashArenaStageElements.filter((entry) => entry.toggleGroup !== null).length,
     missingElementIds,
-    evidenceBacked: missingElementIds.length === 0,
+    // Unproven until a frame is observed. An evidence record built without render labels reports
+    // `false` rather than inheriting a source-authored `true`.
+    evidenceBacked: observed !== undefined && missingElementIds.length === 0,
+    evidenceSource: observed === undefined ? "declared-only" : "observed-render-items",
+    observedRenderLabelCount: observed?.size ?? 0,
     elements: auraClashArenaStageElements,
     toggleGroups
   };
+}
+
+/** Strip the shared render-item namespace so declared prefixes can be matched directly. */
+function normalizeStageLabels(labels: readonly string[]): ReadonlySet<string> {
+  const prefix = "aura-clash-rendered-stage:";
+  return new Set(labels.map((label) => label.startsWith(prefix) ? label.slice(prefix.length) : label));
+}
+
+function hasObservedLabel(observed: ReadonlySet<string>, renderLabel: string): boolean {
+  for (const label of observed) {
+    if (label === renderLabel || label.startsWith(renderLabel)) return true;
+  }
+  return false;
 }

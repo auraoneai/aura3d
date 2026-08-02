@@ -12,8 +12,15 @@ import {
 import { validateReleaseGameAssetPairEvidence } from "./showcase-game-release-gates.mjs";
 import { validateGameGeometryContract } from "./game-geometry-contracts.mjs";
 import { GAME_VISUAL_QA_CHECKS, writeGameVisualQaReport } from "./game-visual-qa.mjs";
-import { applyDownwardOnlyManualReview } from "./showcase-manual-review-gate.mjs";
-import { validateRoutePrimaryProbeEvidence } from "./route-primary-probes.mjs";
+import {
+  applyDownwardOnlyManualReview,
+  loadAndValidateShowcaseVisualReview
+} from "./showcase-manual-review-gate.mjs";
+import {
+  routePrimaryProbeFullSummaryRelativePath,
+  validateRoutePrimaryProbeEvidence,
+  validateRoutePrimaryProbeSummary
+} from "./route-primary-probes.mjs";
 
 const toolDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(toolDir, "../..");
@@ -34,7 +41,11 @@ const routeReports = [];
 const generatedAssetKeys = readGeneratedAssetKeys();
 const manifestAssets = readManifestAssets();
 const manifestAssetKeys = new Set(manifestAssets.keys());
-const showcaseVisualReview = readShowcaseVisualReview();
+const showcaseVisualReview = loadAndValidateShowcaseVisualReview({
+  root: repoRoot,
+  path: showcaseVisualReviewRelativePath,
+  routes
+});
 
 for (const route of routes) {
   const distDir = join("apps", route.id, "dist");
@@ -103,6 +114,19 @@ for (const route of routes) {
   });
 }
 
+// FS-005: the retained full-run summary must cover every promoted route. A
+// targeted or partial summary is rejected rather than treated as final evidence.
+const promotedRouteIds = routes
+  .filter((route) => routeReleaseClass(route) === RELEASE_READY_CANDIDATE)
+  .filter((route) => route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true)
+  .map((route) => route.id);
+const routePrimarySummary = validateRoutePrimaryProbeSummary({
+  root: repoRoot,
+  path: routePrimaryProbeFullSummaryRelativePath,
+  requiredRouteIds: promotedRouteIds,
+  routeGateConfigHash
+});
+
 const publicReleaseRoutes = routeReports.filter((route) => route.publicReleaseCounted);
 const releaseCandidatePassed = publicReleaseRoutes.filter((route) => route.publicReleaseOk).length;
 const publicVisualReviewOk = publicReleaseRoutes.every((route) => route.visualReview.ok);
@@ -139,8 +163,20 @@ const report = {
     overallVerdict: showcaseVisualReview.overallVerdict,
     failures: showcaseVisualReview.failures
   },
-  ok: publicReleaseOk && classificationOk,
+  routePrimarySummary: {
+    path: routePrimarySummary.path,
+    ok: routePrimarySummary.ok,
+    runScope: routePrimarySummary.summary?.runScope ?? null,
+    expectedRouteCount: routePrimarySummary.summary?.expectedRouteCount ?? null,
+    executedRouteCount: routePrimarySummary.summary?.executedRouteCount ?? null,
+    requiredRouteIds: routePrimarySummary.requiredRouteIds,
+    evidenceLabel: "structural/image QA pass",
+    humanVisualApproval: false,
+    failures: routePrimarySummary.failures
+  },
+  ok: publicReleaseOk && classificationOk && routePrimarySummary.ok,
   publicReleaseOk,
+  routePrimarySummaryOk: routePrimarySummary.ok,
   publicVisualReviewOk,
   allRoutesOk,
   classificationOk,
@@ -175,13 +211,15 @@ if (!report.ok) {
     .map((route) => route.id);
   const details = [
     failedPublic.length > 0 ? `public release failed: ${failedPublic.join(", ")}` : "",
-    failedClassifications.length > 0 ? `classification failed: ${failedClassifications.join(", ")}` : ""
+    failedClassifications.length > 0 ? `classification failed: ${failedClassifications.join(", ")}` : "",
+    routePrimarySummary.ok ? "" : `route-primary summary rejected: ${routePrimarySummary.failures.join(", ")}`
   ].filter(Boolean).join("; ");
   console.error(`Showcase public release evidence failed${details ? ` (${details})` : ""}.`);
   process.exitCode = 1;
 } else {
   console.log(
-    `Showcase public release evidence passed for ${report.releaseCandidatePassed}/${report.releaseCandidateCount} release candidates; ` +
+    "Showcase structural/image QA pass (not human visual approval) for " +
+    `${report.releaseCandidatePassed}/${report.releaseCandidateCount} release candidates; ` +
     `${report.internalDiagnosticCount} internal diagnostics retained; ` +
     `${report.gameLayerDiagnosticCount} game-layer diagnostics retained; ${report.indexRouteCount} index route handled separately.`
   );
@@ -404,10 +442,12 @@ function readShowcaseVisualReview() {
 }
 
 function validateRouteVisualReview(route, releaseClass, review) {
+  const validated = review.routeResults.get(route.id);
   if (releaseClass !== RELEASE_READY_CANDIDATE) {
     const routeReview = review.routeReviews.get(route.id);
-    const verdict = typeof routeReview?.verdict === "string" ? routeReview.verdict : "skipped";
-    const blockingIssues = Array.isArray(routeReview?.blockingIssues) ? routeReview.blockingIssues : [];
+    const verdict = validated?.verdict ?? (typeof routeReview?.verdict === "string" ? routeReview.verdict : "skipped");
+    const blockingIssues = validated?.blockingIssues ??
+      (Array.isArray(routeReview?.blockingIssues) ? routeReview.blockingIssues : []);
     return {
       required: false,
       ok: true,
@@ -418,7 +458,7 @@ function validateRouteVisualReview(route, releaseClass, review) {
   }
 
   const failures = [];
-  failures.push(...review.failures.filter((failure) => !failure.startsWith("visual-review-overall-verdict:")));
+  failures.push(...review.failures);
   const routeReview = review.routeReviews.get(route.id);
   if (!routeReview) {
     failures.push(`missing-route-visual-review:${route.id}`);
@@ -431,28 +471,13 @@ function validateRouteVisualReview(route, releaseClass, review) {
     };
   }
 
-  const verdict = typeof routeReview.verdict === "string" ? routeReview.verdict : "";
-  if (verdict !== "pass") failures.push(`route-visual-review-verdict:${route.id}:${String(verdict || "missing")}`);
-  if (!isSubstantiveText(routeReview.subject)) failures.push(`route-visual-review-subject:${route.id}`);
-  if (!isSubstantiveText(routeReview.compositionNotes)) failures.push(`route-visual-review-composition:${route.id}`);
-  if (!isSubstantiveText(routeReview.notes)) failures.push(`route-visual-review-notes:${route.id}`);
-  if (!Array.isArray(routeReview.screenshotEvidence) || routeReview.screenshotEvidence.length === 0) {
-    failures.push(`route-visual-review-screenshot-evidence:${route.id}`);
-  }
-  if (!Array.isArray(routeReview.blockingIssues)) failures.push(`route-visual-review-blocking-issues:${route.id}`);
-  if (route.gameTemplateStatus?.category === "racing" || route.gameTemplateStatus?.category === "platformer") {
-    const automatedChecks = Array.isArray(routeReview.automatedChecks) ? routeReview.automatedChecks : [];
-    for (const check of GAME_VISUAL_QA_CHECKS) {
-      if (!automatedChecks.includes(check)) failures.push(`route-visual-review-automated-check:${route.id}:${check}`);
-    }
-  }
-  if (verdict === "pass" && Array.isArray(routeReview.blockingIssues) && routeReview.blockingIssues.length > 0) {
-    failures.push(`route-visual-review-pass-has-blockers:${route.id}`);
-  }
+  const verdict = validated?.verdict ?? (typeof routeReview.verdict === "string" ? routeReview.verdict : "");
+  if (!validated) failures.push(`missing-route-visual-review-validation:${route.id}`);
+  else failures.push(...validated.failures);
 
   return {
     required: true,
-    ok: failures.length === 0,
+    ok: failures.length === 0 && validated?.ok === true && review.ok === true,
     path: review.relativePath,
     verdict: verdict || null,
     failures

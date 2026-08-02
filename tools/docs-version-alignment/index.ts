@@ -25,7 +25,7 @@ const versionedDocs = [
   "docs/project/claim-guidelines.md",
   "docs/project/compatibility.md",
   "docs/project/migration.md",
-  "docs/project/release-checklist.md",
+  "docs/project/release/release-checklist.md",
   "docs/project/release-process.md",
   "docs/project/site-map.md"
 ] as const;

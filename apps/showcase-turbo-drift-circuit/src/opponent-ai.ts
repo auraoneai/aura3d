@@ -2,6 +2,13 @@ export interface TurboOpponentSnapshot {
   readonly progress: number;
   readonly speed: number;
   readonly trackOffset: number;
+  /**
+   * Signed distance from the racing line. Required, not optional: `trackOffset` is an
+   * unsigned magnitude, so a controller reading only that cannot tell which way to
+   * correct and drives itself into the track edge (this is defect 26, which was fixed
+   * for the player and then found again here).
+   */
+  readonly signedTrackOffset: number;
   readonly lap: number;
   readonly checkpoint: number;
   readonly status: string;
@@ -25,6 +32,11 @@ export interface TurboOpponentAiConfig {
   readonly maxSpeed: number;
   readonly cruiseRatio?: number;
   readonly catchUpStrength?: number;
+  /**
+   * Proportional gain for returning to the racing line. Scale this with the route's
+   * width: a gain tuned for a wide kart circuit under-corrects on a narrow one.
+   */
+  readonly steeringGain?: number;
 }
 
 export interface TurboOpponentAiEvidence {
@@ -53,6 +65,7 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
 ): TurboOpponentAi<TSnapshot> {
   const cruiseRatio = config.cruiseRatio ?? 0.78;
   const catchUpStrength = config.catchUpStrength ?? 0.2;
+  const steeringGain = config.steeringGain ?? 1.7;
   let snapshot = state.snapshot();
   let elapsed = 0;
   let decisionCount = 0;
@@ -64,12 +77,15 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
     const signedPlayerGap = wrappedGap(playerProgress, snapshot.progress);
     const paceAdjustment = clamp(signedPlayerGap * catchUpStrength, -0.12, 0.16);
     lastTargetSpeed = config.maxSpeed * clamp(cruiseRatio + paceAdjustment, 0.62, 0.94);
-    const steeringCorrection = -snapshot.trackOffset * 1.7;
+    const steeringCorrection = -snapshot.signedTrackOffset * steeringGain;
     const racingLineVariation = Math.sin(elapsed * 0.82) * 0.075;
     return {
       throttle: Math.abs(snapshot.speed) < lastTargetSpeed - 0.025,
       brake: Math.abs(snapshot.speed) > lastTargetSpeed + 0.1,
-      steer: round(clamp(steeringCorrection + racingLineVariation, -0.72, 0.72))
+      // Full lock must be reachable. The previous +/-0.72 clamp existed to keep the AI
+      // looking smooth on a wide kart circuit, but on a real circuit it cannot get
+      // through a 95-degree hairpin and the car stalls against the outside wall.
+      steer: round(clamp(steeringCorrection + racingLineVariation, -1, 1))
     };
   }
 

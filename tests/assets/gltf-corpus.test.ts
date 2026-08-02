@@ -11,7 +11,7 @@ import {
 
 const manifestPath = resolve("tests/assets/corpus/gltf-corpus.manifest.json");
 const reportPath = resolve("tests/reports/gltf-corpus.json");
-const knownLimitsPath = resolve("docs/project/known-limits.md");
+const knownLimitsPath = resolve("docs/project/status/known-limits.md");
 
 describe("glTF external corpus manifest", () => {
   it("validates pinned external asset entries and emits a current corpus report", () => {

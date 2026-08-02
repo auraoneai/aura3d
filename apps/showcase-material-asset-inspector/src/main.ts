@@ -107,7 +107,7 @@ const inspectedAsset = assets.showcaseHeadphones;
 const assetMetadata = inspectedAsset.metadata;
 const assetProvenance = assetMetadata.provenance;
 const materialMetadata = assetMetadata.materialMetadata;
-const previewScale = normalizedAssetScale(inspectedAsset.bounds, 2.84);
+const previewScale = normalizedModelScale(0.4583);
 
 const materialCards: readonly MaterialCard[] = [
   {
@@ -350,9 +350,21 @@ function extensionItems(): readonly ExtensionItem[] {
   ];
 }
 
-function normalizedAssetScale(bounds: readonly number[] | undefined, targetMaxDimension: number): number {
-  const maxDimension = Math.max(0.001, ...(bounds ?? [1, 1, 1]));
-  return Number(Math.max(0.04, Math.min(0.5, targetMaxDimension / maxDimension)).toFixed(4));
+/**
+ * Multiplier that lands an already-normalized typed model at a target world size.
+ *
+ * `model(asset)` normalizes a typed GLB to a fixed max dimension before applying
+ * `.scale()`, so the multiplier must NOT be derived from the asset's raw bounds. The
+ * previous helper divided a target by the raw max bound, which only appeared to work
+ * because the manifest bounds were themselves wrong: once bounds were corrected to real
+ * scene space, an asset carrying a 100x node scale reported ~937 units and the derived
+ * multiplier collapsed, rendering the product as a dot. This route uses a fixed
+ * perspective camera rather than auto-framing, so the rendered world size has to be
+ * stated directly.
+ */
+function normalizedModelScale(targetWorldSize: number): number {
+  const normalizedMaxDimension = 1.55;
+  return Number((targetWorldSize / normalizedMaxDimension).toPrecision(6));
 }
 
 function bindControls(): void {

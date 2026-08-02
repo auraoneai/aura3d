@@ -164,7 +164,18 @@ export async function holdKey(page: Page, code: string, ms: number): Promise<voi
 
 export async function setFighterTestState(
   page: Page,
-  options: { playerX?: number; rivalX?: number; rivalHealth?: number; playerMeter?: number } = {}
+  options: {
+    playerX?: number;
+    rivalX?: number;
+    rivalHealth?: number;
+    playerMeter?: number;
+    /**
+     * Stop the rival raising guard. The AI guards whenever the player attacks within 1.4 units, so
+     * a queued strike is blocked nearly every time — and a blocked strike deals only chip damage,
+     * which correctly does not count as a hit. Tests that must observe one clean connect set this.
+     */
+    suppressRivalGuard?: boolean;
+  } = {}
 ): Promise<void> {
   await page.waitForFunction(() => Boolean((window as Window & {
     __AURA_CLASH_ARENA_TEST_DRIVER__?: unknown;
@@ -175,6 +186,7 @@ export async function setFighterTestState(
         setRivalHealth(health: number): void;
         setPlayerMeter(meter: number): void;
         setPositions(playerX: number, rivalX: number): void;
+        setRivalGuardSuppressed(suppressed: boolean): void;
         queuePlayerAttack(move: AuraClashMoveId): void;
       };
     }).__AURA_CLASH_ARENA_TEST_DRIVER__;
@@ -182,6 +194,9 @@ export async function setFighterTestState(
     driver.setPositions(input.playerX ?? -0.86, input.rivalX ?? 0.44);
     driver.setRivalHealth(input.rivalHealth ?? 300);
     driver.setPlayerMeter(input.playerMeter ?? 100);
+    if (input.suppressRivalGuard !== undefined) {
+      driver.setRivalGuardSuppressed(input.suppressRivalGuard);
+    }
   }, options);
 }
 

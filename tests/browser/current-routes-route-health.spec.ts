@@ -14,7 +14,10 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const EXPECTED_STARTER_ROUTES = [
   "/apps/hello-world-typed-asset/",
   "/apps/material-lighting/",
-  "/apps/camera-path/"
+  "/apps/camera-path/",
+  // The Three.js instancing-parity audit reads this route's runtime evidence out of the
+  // generated route-health report, so it has to be evaluated here rather than only discovered.
+  "/apps/instancing-performance/"
 ] as const;
 
 test.describe("current route health", () => {

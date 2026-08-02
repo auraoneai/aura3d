@@ -102,6 +102,26 @@ export interface ResolveOptions {
    * builds can pin it; defaults to the wall clock at resolve time.
    */
   readonly retrievedAt?: string;
+  /**
+   * Zero-based index into the ranked, pullable candidate list.
+   *
+   * Without this, `resolve` always pulls the top-ranked candidate, so there is no way to reach the
+   * 2nd/3rd/Nth result that `assets search` reported. That made automated
+   * search -> pull -> inspect -> select impossible to script: resolving three different vehicle queries
+   * returned the same asset three times. Selecting an asset that passes a structural check (for
+   * example a vehicle whose wheels are actually modelled) requires trying candidates in turn.
+   *
+   * Out-of-range values fail loudly with the available count rather than silently falling back to the
+   * top candidate, so a script cannot mistake "index ignored" for "index honoured".
+   */
+  readonly candidateIndex?: number;
+  /**
+   * Exact catalog id to pull, e.g. `objaverse:ffca09fb...`.
+   *
+   * Preferred over `candidateIndex` when a caller already knows the id from `assets search --json`,
+   * because ranking can change between a search and a later resolve while an id cannot.
+   */
+  readonly candidateId?: string;
 }
 
 export interface ResolveReport {
@@ -119,6 +139,42 @@ export interface ResolveReport {
  * temp path, and run the EXISTING `addAsset` pipeline so it lands as a typed
  * `assets.<name>`. Refuses (throws) when no candidate is auto-pullable.
  */
+/**
+ * Resolve `candidateId` / `candidateIndex` against the ranked pullable candidates.
+ *
+ * Returns the full list when neither is supplied, preserving existing top-candidate behaviour.
+ */
+function selectRequestedCandidates<T extends { readonly asset: { readonly id: string } }>(
+  pullable: readonly T[],
+  options: Pick<ResolveOptions, "candidateId" | "candidateIndex">,
+): readonly T[] {
+  if (options.candidateId !== undefined) {
+    const match = pullable.find((candidate) => candidate.asset.id === options.candidateId);
+    if (!match) {
+      const available = pullable.map((candidate) => candidate.asset.id);
+      throw new Error(
+        `Aura3D resolve failed: --candidate-id "${options.candidateId}" is not among the ${available.length} pullable candidate(s): ${available.join(", ") || "none"}`,
+      );
+    }
+    return [match];
+  }
+  if (options.candidateIndex !== undefined) {
+    const index = options.candidateIndex;
+    if (!Number.isInteger(index) || index < 0) {
+      throw new Error(`Aura3D resolve failed: --index must be a non-negative integer (got "${String(index)}").`);
+    }
+    if (index >= pullable.length) {
+      throw new Error(
+        `Aura3D resolve failed: --index ${index} is out of range; only ${pullable.length} pullable candidate(s) available for this query.`,
+      );
+    }
+    // Start at the requested candidate but keep the remaining ones as fallbacks, so a download or
+    // inspection failure still degrades gracefully instead of aborting the resolve.
+    return pullable.slice(index);
+  }
+  return pullable;
+}
+
 export async function runResolve(options: ResolveOptions): Promise<ResolveReport> {
   const env = options.env ?? process.env;
   if (!options.name || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(options.name)) {
@@ -157,6 +213,16 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
     return evaluateAssetProfile(c.asset, profile).suitable;
   });
 
+  /*
+   * Narrow the ranked, pullable list to the caller's explicit selection, if any.
+   *
+   * This happens after the pullable filter so an index refers to the same list a caller sees from
+   * `assets search`, and it fails loudly on a miss: silently pulling the top candidate when an index
+   * or id does not match would make an automated screening loop believe it had tried N assets when it
+   * had really tried one, N times.
+   */
+  const selectedPullable = selectRequestedCandidates(pullable, options);
+
   const download = options.download ?? defaultDownloadFile;
   const tmpRoot = options.tmpRoot ?? tmpdir();
   const addFn = options.addAssetFn ?? addAsset;
@@ -164,7 +230,7 @@ export async function runResolve(options: ResolveOptions): Promise<ResolveReport
   const retrievedAt = options.retrievedAt ?? new Date().toISOString();
   const attemptWarnings: string[] = [];
 
-  for (const candidateChoice of pullable) {
+  for (const candidateChoice of selectedPullable) {
     const asset = candidateChoice.asset;
     try {
       const preDownloadWarnings = createPreDownloadCandidateBlockingWarnings(asset);

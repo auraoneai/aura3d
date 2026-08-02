@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { inflateSync } from "node:zlib";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,6 +28,9 @@ const viewport = {
 const timeoutMs = Number(process.env.AURA_CLASH_SCREENSHOT_TIMEOUT_MS ?? 30000);
 const defaultSettleMs = Number(process.env.AURA_CLASH_SCREENSHOT_SETTLE_MS ?? 1200);
 const compositionLimit = Number(process.env.AURA_CLASH_SCREENSHOT_COMPOSITION_LIMIT ?? 3);
+
+/** Areas whose evidence is legitimately DOM-based, where a visible element is real proof. */
+const DOM_BACKED_REVIEW_AREAS = new Set(["hud"]);
 
 const visualReviewContract = {
   version: "aura-clash-screenshot-review-v1",
@@ -267,8 +271,17 @@ const visualReviewContract = {
 
 const managedServer = await ensureScreenshotServer(targetUrl);
 const { chromium } = await import("@playwright/test");
+// Prefer a real GPU-backed browser, matching playwright.config.ts. Playwright's bundled Chromium
+// falls back to SwiftShader software rasterisation on this host, which cannot sustain this route's
+// 91 skinned/shadowed draw calls: it renders at ~2 FPS, and `page.screenshot` then times out
+// waiting for the first stable frame.
+const defaultMacChromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const screenshotBrowserPath = process.env.AURA_CLASH_BROWSER_EXECUTABLE
+  || (existsSync(defaultMacChromePath) ? defaultMacChromePath : undefined);
 const browser = await chromium.launch({
-  headless: process.env.AURA_CLASH_SCREENSHOT_HEADLESS !== "0"
+  headless: process.env.AURA_CLASH_SCREENSHOT_HEADLESS !== "0",
+  ...(screenshotBrowserPath ? { executablePath: screenshotBrowserPath } : {}),
+  args: ["--enable-unsafe-webgpu", "--ignore-gpu-blocklist"]
 });
 
 const pageErrors = [];
@@ -323,7 +336,8 @@ try {
   const primaryPageEvidence = primaryCapture.pageEvidence;
   const visualReviewEvidence = buildVisualReviewEvidence(
     visualReviewContract,
-    allCaptures.map((capture) => capture.pageEvidence)
+    allCaptures.map((capture) => capture.pageEvidence),
+    allCaptures
   );
   const compositionEvidence = buildCompositionEvidence({
     primaryCapture,
@@ -375,6 +389,9 @@ try {
       statusText: capture.statusText,
       screenshot: capture.screenshot,
       imageEvidence: capture.imageEvidence,
+      // Retained so a reviewer can audit which pixels and which runtime state backed each area.
+      canvasRegions: capture.canvasRegions,
+      rendererDiagnostics: capture.rendererDiagnostics,
       reviewIntent: capture.reviewIntent,
       pageEvidence: capture.pageEvidence
     })),
@@ -540,6 +557,10 @@ async function captureSnapshot(
 
   const pageEvidence = await collectPageEvidence(page, visualReviewContract);
   const imageEvidence = createImageEvidence(outPng);
+  // Screenshot-derived signal. `imageEvidence` samples compressed bytes and only proves the file
+  // is not blank; this decodes the frame so a required review area can be backed by pixels.
+  const canvasRegions = measureCanvasRegions(outPng, pageEvidence.canvas);
+  const rendererDiagnostics = await collectRendererDiagnostics(page);
 
   return {
     id,
@@ -552,9 +573,75 @@ async function captureSnapshot(
     statusText: response?.statusText() ?? null,
     screenshot: outPng,
     imageEvidence,
+    canvasRegions,
+    rendererDiagnostics,
     reviewIntent,
     pageEvidence
   };
+}
+
+/**
+ * Read renderer diagnostics from the mounted arena proof.
+ *
+ * Deliberately sourced from `__AURA_CLASH_ARENA_PROOF__`, which the runtime writes from live
+ * render state, *not* from `__AURA_CLASH_VISUAL_REVIEW__`, which is a hand-authored declaration.
+ * Keeping them separate is the point: a declaration can never satisfy a diagnostic requirement.
+ */
+async function collectRendererDiagnostics(page) {
+  return page.evaluate(() => {
+    const proof = window.__AURA_CLASH_ARENA_PROOF__;
+    if (!proof || typeof proof !== "object") return null;
+    return {
+      kind: "aura-clash-renderer-diagnostics",
+      backend: proof.renderer?.backend ?? proof.diagnostics?.backend ?? proof.performance?.backend ?? null,
+      rendererSurface: proof.renderer?.surface ?? null,
+      drawCalls: proof.renderer?.drawCalls ?? proof.performance?.drawCalls ?? proof.diagnostics?.drawCalls ?? null,
+      frameTimeMs: proof.performance?.frameTimeMs ?? null,
+      fps: proof.performance?.fps ?? null,
+      // Stage evidence is itself render-item derived (see AuraClashArenaStage), so it is a
+      // legitimate independent signal rather than a restated page declaration.
+      stageEvidenceSource: proof.stage?.evidenceSource ?? null,
+      stageObservedRenderLabelCount: proof.stage?.observedRenderLabelCount ?? 0,
+      stageEvidenceBacked: proof.stage?.evidenceBacked === true,
+      stageMissingElementIds: proof.stage?.missingElementIds ?? null,
+      // Per-composition fighter state, so "both fighters visible, grounded, oriented, readable,
+      // free of detached accessories" is checked in the frame that was actually captured rather
+      // than only during a gameplay test.
+      fighters: (() => {
+        const read = (fighter) => (fighter && typeof fighter === "object"
+          ? {
+            name: fighter.name ?? null,
+            grounded: fighter.grounded === true,
+            health: Number(fighter.health ?? 0),
+            x: Number(fighter.x ?? 0),
+            y: Number(fighter.y ?? 0),
+            activeClip: fighter.activeClip ?? null,
+            action: fighter.action ?? null
+          }
+          : null);
+        const player = read(proof.player);
+        const rival = read(proof.rival);
+        if (!player || !rival) return null;
+        const separation = Math.abs(player.x - rival.x);
+        return {
+          player,
+          rival,
+          separation: Number(separation.toFixed(4)),
+          // Both must be on the floor, apart (not overlapping into one silhouette), and playing a
+          // real clip. `noPrimitiveFighters` covers "not a primitive stand-in".
+          bothGrounded: player.grounded && rival.grounded,
+          bothClipped: Boolean(player.activeClip) && Boolean(rival.activeClip),
+          separated: separation >= 0.4,
+          bothAlive: player.health > 0 && rival.health > 0,
+          skinningBound: Number(proof.animation?.playerSkinningBindings ?? 0) > 0
+            && Number(proof.animation?.rivalSkinningBindings ?? 0) > 0
+        };
+      })(),
+      lightingReadable: proof.lighting?.readable === true,
+      postProcessGameplayVisible: proof.postProcess?.gameplayVisible === true,
+      noPrimitiveFighters: proof.noPrimitiveFighters === true
+    };
+  }).catch(() => null);
 }
 
 function createImageEvidence(path) {
@@ -604,6 +691,137 @@ function createImageEvidence(path) {
     meanByte: Number(mean.toFixed(3)),
     standardDeviation: Number(standardDeviation.toFixed(3)),
     nonblank
+  };
+}
+
+/**
+ * Decode a PNG to raw RGBA so review areas can be judged from the rendered image.
+ *
+ * The pre-existing `imageEvidence` only sampled *compressed* bytes, which proves a file is not
+ * blank but says nothing about what any region of the frame looks like. Pixel-level signals are
+ * what let a required visual area be backed by the screenshot instead of by a page declaration.
+ */
+function decodePngRgba(path) {
+  const bytes = readFileSync(path);
+  let offset = 8;
+  let width = 0;
+  let height = 0;
+  let colorType = 6;
+  let bitDepth = 8;
+  const idat = [];
+  while (offset < bytes.length) {
+    const length = bytes.readUInt32BE(offset);
+    const type = bytes.toString("ascii", offset + 4, offset + 8);
+    const data = bytes.subarray(offset + 8, offset + 8 + length);
+    if (type === "IHDR") {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      bitDepth = data[8];
+      colorType = data[9];
+    } else if (type === "IDAT") {
+      idat.push(data);
+    } else if (type === "IEND") {
+      break;
+    }
+    offset += 12 + length;
+  }
+  if (!width || !height || bitDepth !== 8 || (colorType !== 6 && colorType !== 2)) return null;
+  const channels = colorType === 6 ? 4 : 3;
+  const stride = width * channels;
+  const raw = inflateSync(Buffer.concat(idat));
+  const out = Buffer.alloc(height * stride);
+  let position = 0;
+  for (let y = 0; y < height; y += 1) {
+    const filter = raw[position];
+    position += 1;
+    const row = raw.subarray(position, position + stride);
+    position += stride;
+    const previous = y > 0 ? out.subarray((y - 1) * stride, y * stride) : Buffer.alloc(stride);
+    const current = out.subarray(y * stride, (y + 1) * stride);
+    for (let x = 0; x < stride; x += 1) {
+      const a = x >= channels ? current[x - channels] : 0;
+      const b = previous[x];
+      const c = x >= channels ? previous[x - channels] : 0;
+      let value = row[x];
+      if (filter === 1) value += a;
+      else if (filter === 2) value += b;
+      else if (filter === 3) value += (a + b) >> 1;
+      else if (filter === 4) {
+        const pa = Math.abs(b - c);
+        const pb = Math.abs(a - c);
+        const pc = Math.abs(a + b - 2 * c);
+        value += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      }
+      current[x] = value & 0xff;
+    }
+  }
+  return { width, height, channels, data: out };
+}
+
+/**
+ * Measure the rendered canvas region of a capture.
+ *
+ * Returns per-region luminance spread, saturated-pixel share, and distinct-colour counts. These
+ * are properties of the *image*, so they cannot be satisfied by a route declaring a string.
+ */
+function measureCanvasRegions(screenshotPath, canvasList) {
+  const image = decodePngRgba(screenshotPath);
+  if (!image) return null;
+  const canvas = (canvasList ?? []).find((entry) => entry.visible && entry.clientWidth > 0) ?? null;
+  const scale = canvas ? image.width / Math.max(1, canvas.clientWidth + canvas.clientLeft ?? image.width) : 1;
+  const analyze = (x0, y0, x1, y1) => {
+    const left = Math.max(0, Math.min(image.width - 1, Math.round(x0)));
+    const right = Math.max(left + 1, Math.min(image.width, Math.round(x1)));
+    const top = Math.max(0, Math.min(image.height - 1, Math.round(y0)));
+    const bottom = Math.max(top + 1, Math.min(image.height, Math.round(y1)));
+    const buckets = new Set();
+    let count = 0;
+    let sum = 0;
+    let sumSquares = 0;
+    let saturated = 0;
+    let bright = 0;
+    for (let y = top; y < bottom; y += 2) {
+      for (let x = left; x < right; x += 2) {
+        const index = (y * image.width + x) * image.channels;
+        const r = image.data[index];
+        const g = image.data[index + 1];
+        const b = image.data[index + 2];
+        const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        const maxChannel = Math.max(r, g, b);
+        const minChannel = Math.min(r, g, b);
+        const saturation = maxChannel === 0 ? 0 : (maxChannel - minChannel) / maxChannel;
+        buckets.add(((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4));
+        count += 1;
+        sum += luminance;
+        sumSquares += luminance * luminance;
+        if (saturation >= 0.35) saturated += 1;
+        if (luminance >= 140) bright += 1;
+      }
+    }
+    const mean = count ? sum / count : 0;
+    const variance = count ? Math.max(0, sumSquares / count - mean * mean) : 0;
+    return {
+      sampledPixels: count,
+      meanLuminance: Number(mean.toFixed(2)),
+      luminanceStdDev: Number(Math.sqrt(variance).toFixed(2)),
+      colorBuckets: buckets.size,
+      saturatedRatio: Number((count ? saturated / count : 0).toFixed(4)),
+      brightRatio: Number((count ? bright / count : 0).toFixed(4))
+    };
+  };
+  const width = image.width;
+  const height = image.height;
+  return {
+    kind: "aura-clash-canvas-region-evidence",
+    screenshot: screenshotPath,
+    imageWidth: width,
+    imageHeight: height,
+    canvasScale: Number(scale.toFixed(3)),
+    whole: analyze(0, 0, width, height),
+    upperThird: analyze(0, 0, width, height / 3),
+    middleBand: analyze(0, height / 3, width, (height * 2) / 3),
+    lowerThird: analyze(0, (height * 2) / 3, width, height),
+    centerStage: analyze(width * 0.2, height * 0.25, width * 0.8, height * 0.85)
   };
 }
 
@@ -902,7 +1120,62 @@ function safeCompositionId(id) {
     .slice(0, 64) || "composition";
 }
 
-function buildVisualReviewEvidence(contract, pageEvidenceList) {
+/**
+ * Decide whether a required review area is backed by the rendered frame or by verified renderer
+ * diagnostics, per area.
+ *
+ * Each predicate reads *measurements* (`canvasRegions`, taken from decoded pixels) or *runtime*
+ * state (`rendererDiagnostics`, read from the mounted proof). Neither can be satisfied by
+ * `__AURA_CLASH_VISUAL_REVIEW__`, which is hand-authored prose.
+ */
+function areaMachineSignals(areaId, captures) {
+  const regions = captures.map((capture) => capture?.canvasRegions).filter(Boolean);
+  const diagnostics = captures.map((capture) => capture?.rendererDiagnostics).filter(Boolean);
+  const anyRegion = (predicate) => regions.some(predicate);
+  const anyDiagnostic = (predicate) => diagnostics.some(predicate);
+
+  switch (areaId) {
+    case "effects":
+      // Effects must show saturated, high-contrast pixels somewhere in the stage, or a renderer
+      // that reports gameplay-visible postprocess.
+      return {
+        screenshotSignal: anyRegion((region) => region.centerStage.saturatedRatio >= 0.01 && region.centerStage.luminanceStdDev >= 8),
+        diagnosticSignal: anyDiagnostic((entry) => entry.postProcessGameplayVisible)
+      };
+    case "lighting-materials":
+      // Lighting/materials require tonal range and colour variety in the rendered stage.
+      return {
+        screenshotSignal: anyRegion((region) => region.centerStage.luminanceStdDev >= 10 && region.centerStage.colorBuckets >= 24),
+        diagnosticSignal: anyDiagnostic((entry) => entry.lightingReadable)
+      };
+    case "stage-depth":
+      // Depth requires the upper and lower bands to differ, i.e. the frame is not a flat field.
+      return {
+        screenshotSignal: anyRegion((region) => Math.abs(region.upperThird.meanLuminance - region.lowerThird.meanLuminance) >= 6),
+        diagnosticSignal: anyDiagnostic((entry) => entry.stageEvidenceBacked && entry.stageEvidenceSource === "observed-render-items")
+      };
+    case "readable-fighters":
+      // Fighters must be rendered typed actors, proven by the runtime rather than declared.
+      return {
+        screenshotSignal: anyRegion((region) => region.centerStage.colorBuckets >= 20 && region.centerStage.luminanceStdDev >= 8),
+        diagnosticSignal: anyDiagnostic((entry) => entry.noPrimitiveFighters)
+      };
+    case "debug-overlays":
+      // A renderer that reports a live backend and draw calls is an independent diagnostic.
+      return {
+        screenshotSignal: false,
+        diagnosticSignal: anyDiagnostic((entry) =>
+          typeof entry.backend === "string" && entry.backend !== "none" && Number(entry.drawCalls) > 0)
+      };
+    case "hud":
+      // The HUD is genuinely DOM, so visible DOM elements are the correct evidence for it.
+      return { screenshotSignal: false, diagnosticSignal: false };
+    default:
+      return { screenshotSignal: false, diagnosticSignal: false };
+  }
+}
+
+function buildVisualReviewEvidence(contract, pageEvidenceList, captureList = []) {
   const areaEvidence = contract.areas.map((area) => {
     const captures = pageEvidenceList.map((pageEvidence) =>
       pageEvidence.areas.find((candidate) => candidate.id === area.id)
@@ -910,15 +1183,31 @@ function buildVisualReviewEvidence(contract, pageEvidenceList) {
     const hasPageDeclaration = captures.some((capture) => capture?.evidenceSources.pageDeclaration);
     const hasVisibleDomSignal = captures.some((capture) => capture?.evidenceSources.visibleDomSignal);
     const hasTextSignal = captures.some((capture) => capture?.evidenceSources.textSignal);
-    const status = hasPageDeclaration || hasVisibleDomSignal ? "pass" : hasTextSignal ? "needs-review" : "missing";
+    const { screenshotSignal, diagnosticSignal } = areaMachineSignals(area.id, captureList);
+    // A page declaration is recorded but is NOT sufficient. A required area passes only with a
+    // screenshot-derived signal, an independently verified renderer diagnostic, or -- for areas
+    // that are genuinely DOM (the HUD) -- a visible DOM element.
+    const machineBacked = screenshotSignal
+      || diagnosticSignal
+      || (DOM_BACKED_REVIEW_AREAS.has(area.id) && hasVisibleDomSignal);
+    const status = machineBacked
+      ? "pass"
+      : hasPageDeclaration || hasVisibleDomSignal || hasTextSignal
+        ? "needs-review"
+        : "missing";
 
     return {
       id: area.id,
       label: area.label,
       status,
+      machineBacked,
+      screenshotSignal,
+      diagnosticSignal,
+      domBackedArea: DOM_BACKED_REVIEW_AREAS.has(area.id),
       hasPageDeclaration,
       hasVisibleDomSignal,
       hasTextSignal,
+      declarationAloneIsInsufficient: true,
       requiredEvidence: area.requiredEvidence,
       captures: captures.filter(Boolean)
     };
@@ -1022,13 +1311,27 @@ function buildVisualEvidenceGate({ allCaptures, visualReviewEvidence, compositio
     },
     {
       id: "review-area-evidence",
-      label: "Required visual review areas have declarations or visible DOM evidence",
+      label: "Required visual review areas are backed by screenshot-derived signals or verified renderer diagnostics (declarations alone cannot pass)",
       ok: visualReviewEvidence.ok
     },
     {
       id: "three-composition-evidence",
       label: "Three screenshot compositions are captured and nonblank",
       ok: compositionEvidence.threeCompositionEvidenceAvailable
+    },
+    {
+      id: "fighters-composed",
+      label: "Both fighters are visible, grounded, separated, clip-driven, and skinning-bound in every required composition",
+      ok: allCaptures.length >= requiredCaptureCount
+        && allCaptures.slice(0, requiredCaptureCount).every((capture) => {
+          const fighters = capture.rendererDiagnostics?.fighters;
+          return Boolean(fighters)
+            && fighters.bothGrounded
+            && fighters.bothClipped
+            && fighters.separated
+            && fighters.skinningBound
+            && capture.rendererDiagnostics?.noPrimitiveFighters === true;
+        })
     }
   ];
 

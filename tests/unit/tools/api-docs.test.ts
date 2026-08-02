@@ -52,7 +52,11 @@ describe("public API docs", () => {
 
     expect(docs).toContain("## @aura3d/rendering");
     expect(docs).toContain("export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from \"./Renderer\";");
-    expect(docs).toContain("export { WebGPUDevice, MAX_WEBGPU_SKINNING_JOINTS } from \"./WebGPUDevice\";");
+    // `MAX_WEBGPU_SKINNING_JOINTS` moved to its own leaf module so the barrel can export the
+    // constant without statically importing the ~139 KB `WebGPUDevice`, which was defeating the
+    // dynamic-import split in `createRenderDevice`. Both symbols remain public.
+    expect(docs).toContain("export { MAX_WEBGPU_SKINNING_JOINTS } from \"./WebGPUSkinningLimits\";");
+    expect(docs).toContain("export { WebGPUDevice } from \"./WebGPUDevice\";");
     expect(docs).toContain("## @aura3d/assets");
     expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights } from \"./GLTFLoader\";");
     expect(docs).toContain("createGLTFRenderResources");

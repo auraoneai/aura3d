@@ -16,7 +16,9 @@ template-only scaffold, prototype, or roadmap.
 | --- | --- | --- |
 | Agent rules | `agents/claims-and-boundaries.md`, `agents/asset-workflow.md`, `agents/templates.md` | Canonical public boundaries. |
 | API docs | `api/` | Match exported public symbols and tests. |
-| Release/process docs | `project/` | Release gates, current state, product boundaries, evidence. |
+| Release/process docs | `project/release/`, `project/status/`, `project/plans/` | Release gates, current state, product boundaries, plans, and evidence. |
+| Parity docs | `project/parity/` | Engine-comparison status, inventories, matrices, and bounded execution plans. |
+| Showcase governance | `project/showcase/` | App classifications, visual standards, route plans, and public quality gates. |
 | Rendering docs | `rendering/`, `concepts/rendering.md` | Internal/runtime wording must stay labeled. |
 | Examples docs | `examples/`, `guides/` | Public code snippets and route claims. |
 

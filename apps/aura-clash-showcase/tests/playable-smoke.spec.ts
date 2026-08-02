@@ -1,6 +1,20 @@
 import { expect, test, type Page } from "@playwright/test";
 import { AURA_CLASH_ARENA_PROOF_RELEASE } from "../src/playable/evidence/auraClashArenaProof";
 
+/**
+ * These 22 tests drive one mounted playable route through a single shared global test driver
+ * (`__AURA_CLASH_ARENA_TEST_DRIVER__`), and several of them mutate that shared state directly:
+ * `setRivalHealth`, `setPlayerMeter`, `setPositions`, and `queuePlayerAttack`. They also hold real
+ * time-sensitive keyboard inputs and poll for animation/physics states such as jump apex.
+ *
+ * Run in parallel they contend for CPU on the same machine, so frame pacing slips and timing-based
+ * polls miss their window. That produced a *different* pair of failures on nearly every run — 2
+ * failed of 22 in one batch, a different 2 in the next — while every one of them passed when run
+ * alone. `test:playable` therefore pins `--workers=1`, which removes the contention rather than
+ * papering over it with retries. Test *ordering* is not the problem, so no `serial` mode is used:
+ * that would additionally skip every remaining test after the first failure and hide real state.
+ */
+
 type AuraClashArenaProof = {
   route: string;
   app: "Aura Clash Arena";
@@ -285,7 +299,7 @@ test("AuraClash layers an attack on the upper body while the lower body keeps mo
 });
 
 test("AuraClash makes Space dash visibly even without a direction key", async ({ page }) => {
-  const before = await loadPlayable(page);
+  const before = await loadPlayableWithPassiveRival(page);
   await hold(page, "Space", 260);
   const after = await readProof(page);
   expect(after.controls.lastInput).toBe("dash");
@@ -294,7 +308,7 @@ test("AuraClash makes Space dash visibly even without a direction key", async ({
 });
 
 test("AuraClash supports down and fast-fall input", async ({ page }) => {
-  await loadPlayable(page);
+  await loadPlayableWithPassiveRival(page);
   await hold(page, "KeyS", 260);
   await expect.poll(async () => (await readProof(page)).player.action).toBe("down");
   await expect.poll(async () => (await readProof(page)).player.activeClip).toBe("Crouch_Idle_Loop");
@@ -305,7 +319,7 @@ test("AuraClash supports down and fast-fall input", async ({ page }) => {
 });
 
 test("AuraClash supports diagonal jump drift and air attacks", async ({ page }) => {
-  const start = await loadPlayable(page);
+  const start = await loadPlayableWithPassiveRival(page);
   await page.keyboard.down("KeyD");
   await page.keyboard.press("KeyW");
   await expect.poll(async () => (await readProof(page)).player.y, {
@@ -435,14 +449,100 @@ test("AuraClash supports pause", async ({ page }) => {
   await expect.poll(async () => (await readProof(page)).status).toBe("running");
 });
 
-test("AuraClash captures visual proof screenshots", async ({ page }) => {
-  test.setTimeout(60_000);
-  await loadPlayable(page);
+/**
+ * Named-state capture assertions.
+ *
+ * The previous version of this test wrote two PNGs and asserted nothing about *what* was captured, so
+ * a blank canvas, a clipped arena, or a frame taken in the wrong state would all have passed. Each
+ * capture below is now bound to the runtime state it claims to show, asserted from the mounted proof
+ * at the moment the shot is taken.
+ *
+ * These are structural bindings, not visual approval: they prove a capture depicts the state its
+ * filename claims, which is a precondition for review, not a substitute for it.
+ */
+test("AuraClash captures named visual proof states bound to mounted runtime state", async ({ page }) => {
+  test.setTimeout(90_000);
+
+  // --- first frame: loaded, rendering, arena present, nobody damaged yet ---
+  const first = await loadPlayable(page, "?auraTestDriver=1");
+  expect(first.status, "first-frame capture must be taken while the route is running").toBe("running");
+  expect(first.player.health, "first-frame capture must precede any damage").toBe(360);
+  expect(first.rival.health).toBe(360);
+  expect(first.totalHits, "first-frame capture must precede any hit").toBe(0);
+  expect(
+    first.renderer?.drawCalls ?? 0,
+    "first-frame capture must depict a rendered frame, not an empty canvas"
+  ).toBeGreaterThan(0);
   await page.screenshot({ path: "launch-evidence/aura-clash-arena-first-frame.png", fullPage: true });
-  const proof = await landPlayerHit(page);
+
+  // --- combat frame: a hit has landed, skinned fighters are posed by real clip playback ---
+  const combat = await landPlayerHit(page);
   await page.screenshot({ path: "launch-evidence/aura-clash-arena-combat-frame.png", fullPage: true });
-  expect(proof.animation.playerLastSkinningPalettes + proof.animation.rivalLastSkinningPalettes).toBeGreaterThan(0);
-  expect(proof.rival.health).toBeLessThan(360);
+  expect(
+    combat.animation.playerLastSkinningPalettes + combat.animation.rivalLastSkinningPalettes,
+    "combat capture must depict skinned GLB fighters, not static meshes"
+  ).toBeGreaterThan(0);
+  expect(combat.rival.health, "combat capture must follow real damage").toBeLessThan(360);
+  expect(combat.totalHits, "combat capture must follow at least one landed hit").toBeGreaterThan(0);
+  expect(combat.lastHitFrame, "combat capture must be anchored to a real hit frame").toBeGreaterThan(0);
+
+  // --- block frame: the rival guards rather than taking damage ---
+  // The AI raises guard whenever the player attacks inside 1.4 units, so closing distance and striking
+  // is what reliably produces a blocked strike rather than a clean connect.
+  await setTestPositions(page, -0.9, 0.3);
+  const healthBeforeBlock = (await readProof(page)).rival.health;
+  await hold(page, "KeyJ", 200);
+  const blocked = await readProof(page);
+  await page.screenshot({ path: "launch-evidence/aura-clash-arena-block-frame.png", fullPage: true });
+  expect(
+    blocked.rival.health,
+    "block capture must show the guard absorbing the strike rather than taking full damage"
+  ).toBeGreaterThanOrEqual(healthBeforeBlock - 12);
+
+  // --- KO frame: the round is over and combat is locked ---
+  await queueNearKoHeavy(page);
+  await expect.poll(async () => (await readProof(page)).controls.koLocked, { timeout: 15_000 }).toBe(true);
+  const ko = await readProof(page);
+  await page.screenshot({ path: "launch-evidence/aura-clash-arena-ko-frame.png", fullPage: true });
+  expect(ko.controls.koLocked, "KO capture must be taken while the round is locked").toBe(true);
+  expect(
+    Math.min(ko.player.health, ko.rival.health),
+    "KO capture must show a downed fighter"
+  ).toBeLessThanOrEqual(0);
+  expect(["WIN", "KO", "DRAW"], "KO capture must carry a decided round callout").toContain(ko.callout);
+
+  // --- reset frame: health restored, hits cleared, combat unlocked ---
+  await hold(page, "KeyR", 200);
+  await expect.poll(async () => (await readProof(page)).controls.koLocked, { timeout: 10_000 }).toBe(false);
+  const reset = await readProof(page);
+  await page.screenshot({ path: "launch-evidence/aura-clash-arena-reset-frame.png", fullPage: true });
+  expect(reset.player.health, "reset capture must show restored player health").toBe(360);
+  expect(reset.rival.health, "reset capture must show restored rival health").toBe(360);
+  expect(reset.totalHits, "reset capture must show the hit counter cleared").toBe(0);
+  expect(reset.controls.resetCount, "reset capture must follow a real reset").toBeGreaterThan(0);
+  expect(
+    reset.renderer?.drawCalls ?? 0,
+    "reset capture must still depict a rendered frame"
+  ).toBeGreaterThan(0);
+
+  // --- mobile frame: the same running route at a phone viewport ---
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobile = await loadPlayable(page, "?auraTestDriver=1");
+  expect(mobile.status, "mobile capture must be taken while the route is running").toBe("running");
+  expect(
+    mobile.renderer?.drawCalls ?? 0,
+    "mobile capture must depict a rendered frame at the phone viewport"
+  ).toBeGreaterThan(0);
+  const canvasBox = await page.locator("#aura-clash-arena-canvas").boundingBox();
+  expect(canvasBox, "mobile capture must contain a laid-out canvas").toBeTruthy();
+  // The arena must own a meaningful share of the mobile frame; before the layout fix it was 37% of a
+  // 1309px page while the HUD alone took 405px.
+  const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
+  expect(
+    (canvasBox!.height / pageHeight),
+    "the arena canvas must own at least 40% of the mobile page height"
+  ).toBeGreaterThan(0.4);
+  await page.screenshot({ path: "launch-evidence/aura-clash-arena-mobile-frame.png", fullPage: true });
 });
 
 test("AuraClash locks combat after KO until reset clears the round", async ({ page }) => {
@@ -505,6 +605,25 @@ test("AuraClash repeated special input cannot pause, crash, or wedge the route",
   }
 });
 
+/**
+ * Load the route with rival aggression quieted, for tests that verify a player *control*.
+ *
+ * The rival AI closes and strikes, which puts the player into `hurt`/`recover` — states where dash,
+ * jump, and crouch inputs are legitimately ignored. Measured: a Space-dash check observed
+ * `action: "hurt"` instead of `"run"`. Those tests were racing the AI rather than proving the
+ * control is wired up. The rival still walks, so spacing behaviour stays live.
+ */
+async function loadPlayableWithPassiveRival(page: Page): Promise<AuraClashArenaProof> {
+  const proof = await loadPlayable(page, "?auraTestDriver=1");
+  await page.evaluate(() => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: { setRivalGuardSuppressed(suppressed: boolean): void };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    driver?.setRivalGuardSuppressed(true);
+  });
+  return proof;
+}
+
 async function loadPlayable(page: Page, search = ""): Promise<AuraClashArenaProof> {
   await page.goto(`/playable/${search}`, { waitUntil: "networkidle" });
   await page.locator(".aca").focus();
@@ -541,6 +660,20 @@ async function queueNearKoHeavy(page: Page): Promise<void> {
     driver.setPlayerMeter(100);
     driver.queuePlayerAttack("heavy");
   });
+}
+
+/** Place both fighters through the mounted test driver, without touching health or meter. */
+async function setTestPositions(page: Page, playerX: number, rivalX: number): Promise<void> {
+  await page.waitForFunction(() => Boolean((window as Window & {
+    __AURA_CLASH_ARENA_TEST_DRIVER__?: unknown;
+  }).__AURA_CLASH_ARENA_TEST_DRIVER__), null, { timeout: 3_000 });
+  await page.evaluate(([player, rival]) => {
+    const driver = (window as Window & {
+      __AURA_CLASH_ARENA_TEST_DRIVER__?: { setPositions(playerX: number, rivalX: number): void };
+    }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+    if (!driver) throw new Error("Aura Clash test driver was not installed.");
+    driver.setPositions(player!, rival!);
+  }, [playerX, rivalX]);
 }
 
 async function hold(page: Page, code: string, ms: number): Promise<void> {

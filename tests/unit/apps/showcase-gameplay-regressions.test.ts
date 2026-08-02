@@ -12,6 +12,23 @@ import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/sh
 import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
 
 describe("public showcase gameplay regressions", () => {
+  it("does not self-author completion or visual approval before mounted interaction", () => {
+    const skyline = readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8");
+    const turbo = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
+    const blockfall = readFileSync("apps/showcase-blockfall-reactor/src/main.ts", "utf8");
+
+    expect(skyline).toContain("completed: false");
+    expect(skyline).toContain("state.status === \"completed\"");
+    expect(skyline).toContain("!completionProof.completed");
+    expect(skyline).toContain("challengeEvidence.elapsedSeconds >= level.assetBinding.authoredPlayableSeconds");
+    expect(skyline).not.toContain("visualReviewPass: true");
+    expect(turbo).not.toContain("visualReviewPass: true");
+    expect(turbo).toContain("opponentMovesIndependently");
+    expect(turbo).toContain("finishProgression");
+    expect(blockfall).toContain("observedGameplayProof");
+    expect(blockfall).toContain("observedGameplayProof.eventCounts.reset += 1");
+  });
+
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
     const level = createGameAssetBoundPlatformerLevel({
       characterAsset: "showcaseKenneyOobiPlatformerHero",
@@ -81,6 +98,32 @@ describe("public showcase gameplay regressions", () => {
     expect(continued.deaths).toBe(0);
   });
 
+  it("locks held movement briefly after a Skyline death to prevent checkpoint death loops", () => {
+    const level = createGameAssetBoundPlatformerLevel({
+      characterAsset: "showcaseKenneyOobiPlatformerHero",
+      worldAssetBindings: skylineGeometry.worldAssetBindings,
+      playableSurfaceMap: skylineGeometry.surfaceMap,
+      authoredPlayableSeconds: skylineGeometry.authoredSeconds,
+      minPlayableSeconds: 30,
+      minCheckpoints: 6,
+      level: skylineGeometry.level
+    });
+    const simulation = createGamePlatformerKit(level);
+    let snapshot = simulation.reset("asset-checkpoint-03");
+    const checkpointX = snapshot.player.x;
+    for (let frame = 0; frame < 240 && snapshot.deaths === 0; frame += 1) {
+      snapshot = simulation.step(1 / 60, { moveX: 1 });
+    }
+    expect(snapshot.deaths).toBe(1);
+    const respawnDeaths = snapshot.deaths;
+    for (let frame = 0; frame < 12; frame += 1) {
+      snapshot = simulation.step(1 / 60, { moveX: 1 });
+    }
+    expect(snapshot.deaths).toBe(respawnDeaths);
+    expect(snapshot.player.x).toBeCloseTo(checkpointX, 3);
+    expect(snapshot.player.grounded).toBe(true);
+  });
+
   it("faces the Skyline character along travel instead of toward the camera", () => {
     const source = readFileSync("apps/showcase-skyline-runner/src/main.ts", "utf8");
     expect(source).toContain("playerYawForFacing");
@@ -129,8 +172,8 @@ describe("public showcase gameplay regressions", () => {
 
   it("runs Turbo Drift at an arcade pace above the certified evidence baseline", () => {
     const route = createGameAssetBoundRacingRoute({
-      vehicleAsset: "showcaseKenneyRaceCarRed",
-      trackAsset: "showcaseKenneyNeonRaceCircuit",
+      vehicleAsset: "showcaseTexturedSportsCar",
+      trackAsset: "showcaseTsukubaCircuit",
       authoredLapSeconds: turboGeometry.authoredSeconds,
       minLapSeconds: 30,
       minCheckpoints: 6,
@@ -146,7 +189,13 @@ describe("public showcase gameplay regressions", () => {
       steerRate: 0.62
     });
 
-    expect(route.assetBinding.speedModel.certifiedSpeed).toBeCloseTo(1.098, 3);
+    // Derived from the generated geometry contract rather than hardcoded, so the
+    // assertion tracks the certified topology instead of pinning a stale lap length.
+    expect(route.assetBinding.speedModel.certifiedSpeed).toBeCloseTo(
+      turboGeometry.topology.lapLengthMeters / turboGeometry.authoredSeconds,
+      3
+    );
+    expect(route.assetBinding.speedModel.certifiedSpeed).toBeGreaterThan(0.9);
     expect(simulation.maxSpeed).toBeGreaterThan(4);
     expect(simulation.maxSpeed).toBeCloseTo(route.assetBinding.speedModel.certifiedSpeed * paceMultiplier, 6);
 
@@ -160,6 +209,9 @@ describe("public showcase gameplay regressions", () => {
       progress: 0.12,
       speed: 0,
       trackOffset: 0.08,
+      // Signed, because an unsigned magnitude cannot tell the controller which way to
+      // correct. The opponent used to read `trackOffset` and could not return to the line.
+      signedTrackOffset: 0.08,
       lap: 1,
       checkpoint: 0,
       status: "running",
@@ -171,10 +223,12 @@ describe("public showcase gameplay regressions", () => {
       step: (dt: number, input: TurboOpponentInput) => {
         inputs.push(input);
         const speed = Math.max(0, snapshot.speed + (input.throttle ? 2.4 * dt : 0) - (input.brake ? 3 * dt : 0));
+        const signedTrackOffset = snapshot.signedTrackOffset + input.steer * dt;
         snapshot = {
           ...snapshot,
           speed,
-          trackOffset: snapshot.trackOffset + input.steer * dt,
+          signedTrackOffset,
+          trackOffset: Math.abs(signedTrackOffset),
           progress: (snapshot.progress + speed * dt * 0.08) % 1,
           frame: snapshot.frame + 1
         };
@@ -194,6 +248,10 @@ describe("public showcase gameplay regressions", () => {
     expect(opponent.snapshot().progress).toBeGreaterThan(0.12);
     expect(inputs.some((input) => input.throttle)).toBe(true);
     expect(inputs.some((input) => Math.abs(input.steer) > 0.01)).toBe(true);
+    // Starting offset is +0.08, so a correcting controller must steer negative at least
+    // once. Reading the unsigned magnitude produced a controller that could only ever
+    // steer one way regardless of which side of the line it was on.
+    expect(inputs.some((input) => input.steer < 0)).toBe(true);
     expect(evidence.independentFromPlayerPlacement).toBe(true);
     expect(evidence.decisionCount).toBeGreaterThan(0);
     expect(evidence.recentDecisions.length).toBeGreaterThan(0);

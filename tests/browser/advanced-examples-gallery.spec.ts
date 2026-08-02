@@ -340,6 +340,18 @@ test.describe("ThreejsParity advanced examples gallery", () => {
       test.setTimeout(captureTimeoutMs(demo));
       const browser = await chromium.launch({ headless: true });
       const page = await browser.newPage({ viewport: { width: 1440, height: 920 }, deviceScaleFactor: 1.25 });
+      // Serve fixtures from the local dev server instead of the public CDN.
+      //
+      // `PUBLIC_ASSET_ORIGIN` points at `cdn.jsdelivr.net/gh/auraoneai/aura3d@main`, so these demos
+      // fetched fixtures from whatever is published on `main`. A worktree that leads the remote
+      // therefore failed on 404s for fixtures that exist locally but are not pushed yet — the suite
+      // was asserting on the state of a published branch rather than on the code under test.
+      // The dev server already serves the repo root, so every `/fixtures/...` path resolves here.
+      // `AURA3D_PUBLIC_ASSET_ORIGIN` is the override the route code already honours.
+      if (!server) throw new Error("Vite dev server was not initialized.");
+      await page.addInitScript((origin) => {
+        (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN = origin;
+      }, server.origin);
       const errors = collectPageErrors(page);
       try {
         if (!server) throw new Error("Vite dev server was not initialized.");

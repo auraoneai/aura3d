@@ -34,8 +34,14 @@ test("evidence route exposes debug overlay capture source hooks", async ({ page 
   await expect(page.getByText(/Hitbox route source/i)).toBeVisible();
   await expect(page.getByText(/Physics body source/i)).toBeVisible();
 
-  await expect.poll(async () => (await readAuraClashArenaEvidence(page))?.status).toBe("running");
-  await expect.poll(async () => (await readAuraClashArenaEvidence(page))?.frame ?? 0).toBeGreaterThan(0);
+  await expect.poll(
+    async () => (await readAuraClashArenaEvidence(page))?.status,
+    { timeout: 30_000, message: "evidence route should publish mounted Aura Clash runtime status" }
+  ).toBe("running");
+  await expect.poll(
+    async () => (await readAuraClashArenaEvidence(page))?.frame ?? 0,
+    { timeout: 30_000, message: "evidence route should publish an advancing mounted frame" }
+  ).toBeGreaterThan(0);
   const evidence = await readAuraClashArenaEvidence(page);
   expect(evidence?.status).toBe("running");
   expect(evidence?.frame ?? 0).toBeGreaterThan(0);

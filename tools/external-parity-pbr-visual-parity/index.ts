@@ -356,9 +356,23 @@ function aura3dBundleSource(): string {
         new PBRMaterial({ name: "dispersion-prism", baseColor: [0.64, 0.82, 1, 0.62], metallic: 0.02, roughness: 0.04, transmissionFactor: 0.62, volumeThicknessFactor: 0.28, volumeAttenuationDistance: 2.2, volumeAttenuationColor: [0.82, 0.92, 1], ior: 1.52, dispersion: 18 }),
       ];
       const labels = materials.map((material, index) => ({ material, x: -0.86 + index * 0.172 }));
+      // The identity camera policy maps clip space directly to the canvas, so a uniform model
+      // scale is stretched by the viewport aspect: on a 960x540 canvas the spheres rendered
+      // as 16:9 ellipsoids while the Three.js and Babylon lineups, which use aspect-correct
+      // cameras (an orthographic -1..1 by -0.56..0.56 frustum), rendered them circular. That
+      // is a harness framing error rather than a shading difference and it inflated the
+      // measured same-scene delta.
+      //
+      // Clip space spans -1..1 on both axes, so the correction scales *Y up* by the aspect
+      // ratio rather than shrinking X. Shrinking X also de-squashes the spheres but reduces
+      // the lineup to a fraction of the frame, which trips the producer's own coverage and
+      // framing checks; matching the comparison engines means keeping the same visible extent.
+      const aspect = canvas.width / canvas.height;
+      const sphereRadius = 0.13;
+      const sphereScaleY = sphereRadius * aspect;
       const items = [
-        { geometry: floor, material: new PBRMaterial({ name: "matte-floor", baseColor: [0.18, 0.19, 0.2, 1], metallic: 0, roughness: 0.84 }), modelMatrix: ${matrix(0, -0.46, -0.08, 2, 0.055, 0.28)}, label: "aura3d-floor" },
-        ...labels.map(({ material, x }, index) => ({ geometry: sphere, material, modelMatrix: new Float32Array([0.13,0,0,0,0,0.13,0,0,0,0,0.13,0,x, index % 2 === 0 ? -0.1 : 0.16, 0, 1]), label: "aura3d-pbr-" + material.name })),
+        { geometry: floor, material: new PBRMaterial({ name: "matte-floor", baseColor: [0.18, 0.19, 0.2, 1], metallic: 0, roughness: 0.84 }), modelMatrix: new Float32Array([2,0,0,0,0,0.055 * aspect,0,0,0,0,0.28,0,0,-0.46 * aspect,-0.08,1]), label: "aura3d-floor" },
+        ...labels.map(({ material, x }, index) => ({ geometry: sphere, material, modelMatrix: new Float32Array([sphereRadius,0,0,0,0,sphereScaleY,0,0,0,0,sphereRadius,0,x, (index % 2 === 0 ? -0.1 : 0.16) * aspect, 0, 1]), label: "aura3d-pbr-" + material.name })),
       ];
       const diagnostics = renderer.render({ renderItems: items, environmentLighting: lighting, cameraPolicy: "identity" });
       await nextFrame();

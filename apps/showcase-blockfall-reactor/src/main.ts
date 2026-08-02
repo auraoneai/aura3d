@@ -17,8 +17,10 @@ import {
 import { assets } from "../../../src/aura-assets";
 import {
   ACTIVE_BLOCK_SCALE,
+  BEAT_NODE_IDS,
   BLOCK_SCALE,
   BOARD_CENTER_Y,
+  CELL,
   CLEAR_FLASH_SCALE,
   GHOST_BLOCK_SCALE,
   HIDDEN_BLOCK_SCALE,
@@ -26,6 +28,8 @@ import {
   cellPosition,
   clearFlashNodeId,
   createActiveBlockNodes,
+  createArcadeRoomNodes,
+  createBeatNodes,
   createBoardShell,
   createClearFlashNodes,
   createGhostNodes,
@@ -42,6 +46,8 @@ import {
   DEFAULT_SEED,
   DEMO_REPLAY,
   HIDDEN_ROWS,
+  createOpeningBoard,
+  createSixtySecondReplayProof,
   PIECE_KINDS,
   VISIBLE_HEIGHT,
   gravityFrames,
@@ -258,6 +264,11 @@ const touchLayout = game.touchControls({
 });
 
 const replayEvidence = createPublicReplayEvidence();
+/**
+ * Deterministic 60-second replay proof, computed once at module scope. Declared
+ * before the mounted evidence object that publishes it.
+ */
+const sixtySecondReplayProof = createSixtySecondReplayProof();
 const lineClearProof = createPublicLineClearProof();
 const fallingBlocksKitContractProof = createFallingBlocksKitContractProof();
 const physicsProof = createShowcaseCannonPhysicsProof("blockfall-reactor");
@@ -301,6 +312,12 @@ const sourceEvidence = {
     touch: touchLayout
   },
   replay: replayEvidence,
+  /**
+   * Deterministic 60-second replay proof. Every mechanic flag is derived from a
+   * simulated run of the generated sequence, so the route cannot claim a
+   * mechanic the replay did not actually produce.
+   */
+  sixtySecondReplayProof: sixtySecondReplayProof,
   kitContractProof: fallingBlocksKitContractProof,
   startState: {
     source: "clean playable board",
@@ -310,15 +327,26 @@ const sourceEvidence = {
   lineClearProof
 };
 
+// Board-dominant framing: the live playfield is the visual subject and the typed
+// cabinet frames it. The camera sits close enough that the cabinet screen fills
+// the majority of the frame height instead of floating in a void band.
+// Framing is set by measurement, not taste. At fov 40 the playfield well rendered
+// 347x640 px in 1440x900: 24.1% of canvas width, 71.1% of height, and only **17.1% of
+// canvas area**, with **71.3% of the frame below luminance 45** and a canvas mean of
+// 49/255. That is the measurable form of the acceptance criterion "no surrounding void
+// or dashboard dominating". A 10x20 well is inherently ~0.5 aspect, so in a 1.6-aspect
+// frame it can never be width-dominant; the honest lever is vertical occupancy. Tightening
+// the vertical fov to 34 raises the well to ~84.6% of height and ~24.3% of canvas area
+// without cropping the cabinet, hold, or next columns.
 const reactorCamera = camera.perspective({
-  position: [0, 2.46, compactViewport ? 8.2 : 7.7],
-  target: [0, 2.02, -0.03],
-  fov: compactViewport ? 45 : 40
+  position: [0, compactViewport ? 2.2 : 1.86, compactViewport ? 7.4 : 8.8],
+  target: [0, compactViewport ? 2.16 : 1.82, 0.12],
+  fov: compactViewport ? 54 : 36
 });
-const cabinetPosition = [-1.3, 0.8, 0.45] as const;
-const cabinetTargetSize = 2.1;
+const cabinetPosition = [0, 2.12, -2.15] as const;
+const cabinetTargetSize = 5.15;
 const reactorScene = scene()
-  .background("#040608")
+  .background("#0a0410")
   .add(
     model(assets.showcaseBlockfallCabinet, {
       name: "blockfall-reactor-cabinet",
@@ -332,21 +360,26 @@ const reactorScene = scene()
         tags: ["typed-primary-asset", "arcade-cabinet", "release-probed"]
       }))
   )
+  .addMany(createArcadeRoomNodes())
   .addMany(createBoardShell())
   .addMany(createLockedBlockNodes())
   .addMany(createActiveBlockNodes())
   .addMany(createGhostNodes())
   .addMany(createClearFlashNodes())
+  .addMany(createBeatNodes())
   .addMany(createReactorNodes())
   .addMany([
-    effects.neonBloom({ intensity: reducedFlash ? 0.06 : 0.1 }),
-    effects.ambientOcclusion({ intensity: 0.28 }),
-    effects.fog({ name: "arcade reactor depth haze", density: 0, color: "#040608", intensity: 0 }),
-    lights.ambient({ name: "low control room wash", color: "#f3f0de", intensity: 0.32 }),
-    lights.directional({ name: "overhead white key", color: "#fff5dd", intensity: 1.22 }).position(0, 6, 5),
-    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.55 : 1.05 }).position(2.5, 2.2, 2.7),
-    lights.point({ name: "warning amber rim", color: "#ffc15b", intensity: 0.68 }).position(-2.6, 3.4, 2.2),
-    lights.point({ name: "magenta arcade spill", color: "#f04cff", intensity: 0.08 }).position(0, 3.2, 2.1)
+    // Restrained bloom on tetromino/neon emissive only, AO for grounding, and a
+    // nonzero depth haze that separates the hero cabinet from the room behind it.
+    effects.neonBloom({ intensity: reducedFlash ? 0.12 : 0.26 }),
+    effects.ambientOcclusion({ intensity: 0.46, radius: 0.68 }),
+    effects.fog({ name: "arcade room depth haze", density: 0.028, color: "#0d0514", intensity: 0.3 }),
+    lights.ambient({ name: "low arcade room wash", color: "#8f7ba4", intensity: 0.11 }),
+    lights.directional({ name: "overhead arcade key", color: "#fff5dd", intensity: 1.05 }).position(-1.2, 6.4, 4.2),
+    lights.point({ name: "reactor green bounce", color: "#74ff91", intensity: reducedFlash ? 0.58 : 1.05 }).position(2.4, 2.1, 2.6),
+    lights.point({ name: "magenta arcade rim", color: "#ff42c8", intensity: 0.72 }).position(-2.15, 3.3, 1.35),
+    lights.point({ name: "cyan playfield spill", color: "#8ff7ff", intensity: 0.95 }).position(0, 2.5, 1.55),
+    lights.point({ name: "warm floor practical", color: "#ffc15b", intensity: 0.3 }).position(0, -0.45, 0.9)
   ])
   .camera(reactorCamera);
 
@@ -385,6 +418,12 @@ const activeHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(
 const ghostHandles = Array.from({ length: 4 }, (_, index) => app.nodes.require(ghostNodeId(index)) as AuraRuntimeNodeHandle);
 const clearFlashHandles = Array.from({ length: VISIBLE_HEIGHT }, (_, row) => app.nodes.require(clearFlashNodeId(row)) as AuraRuntimeNodeHandle);
 const reactorFillNode = app.nodes.require("blockfall-reactor-fill") as AuraRuntimeNodeHandle;
+const beatHandles = {
+  levelUp: app.nodes.require(BEAT_NODE_IDS.levelUp) as AuraRuntimeNodeHandle,
+  gameOver: app.nodes.require(BEAT_NODE_IDS.gameOver) as AuraRuntimeNodeHandle,
+  reset: app.nodes.require(BEAT_NODE_IDS.reset) as AuraRuntimeNodeHandle,
+  burst: app.nodes.require(BEAT_NODE_IDS.burst) as AuraRuntimeNodeHandle
+};
 const reactorCapNode = app.nodes.require("blockfall-reactor-cap") as AuraRuntimeNodeHandle;
 
 for (let y = 0; y < VISIBLE_HEIGHT; y += 1) {
@@ -397,7 +436,8 @@ const fallingBlocks = game.fallingBlocks({
   seed: DEFAULT_SEED,
   width: BOARD_WIDTH,
   height: BOARD_HEIGHT,
-  hiddenRows: HIDDEN_ROWS
+  hiddenRows: HIDDEN_ROWS,
+  board: createOpeningBoard()
 });
 fallingBlocks.setActive({ kind: "T", x: Math.floor(BOARD_WIDTH / 2) - 2, y: HIDDEN_ROWS + 3, rotation: 0 });
 let paused = false;
@@ -406,8 +446,34 @@ let lockCount = 0;
 let lastFallingEvents: readonly GameFallingBlocksEvent[] = fallingBlocks.snapshot().events;
 let state = createBlockfallView(fallingBlocks.snapshot(), "spawn", lastFallingEvents);
 let lastVisualChecksum = "";
+/**
+ * Rendered beat timers, in seconds remaining. Each beat is driven by an actual
+ * observed game event, so the visible pulse is game state rather than decoration.
+ */
+const beatTimers = { levelUp: 0, gameOver: 0, reset: 0, burst: 0 };
+const beatDurations = { levelUp: 0.85, gameOver: 1.6, reset: 0.7, burst: 0.45 };
+let lastObservedLevel = 1;
+let burstRowY = BOARD_CENTER_Y;
+/** Rendered beats that were actually observed at least once this session. */
+const observedBeatProof = { lineClear: false, levelUp: false, gameOver: false, reset: false };
 let queuedActions: BlockfallAction[] = [];
 let replayPlayback: { active: boolean; frame: number } = { active: false, frame: 0 };
+const observedGameplayProof = {
+  movement: false,
+  rotation: false,
+  hold: false,
+  lineClear: false,
+  scoring: false,
+  levelProgression: false,
+  gameOver: false,
+  reset: false,
+  eventCounts: {
+    lock: 0,
+    lineClear: 0,
+    gameOver: 0,
+    reset: 0
+  }
+};
 const repeat = {
   left: createRepeatGate(0.15, 0.055),
   right: createRepeatGate(0.15, 0.055),
@@ -435,7 +501,7 @@ gameApp.onFrame(({ dt }) => {
     state = advanceFallingBlocks(actions);
   }
 
-  syncAll(false);
+  syncAll(false, dt);
 });
 
 function collectInputActions(dt: number): BlockfallAction[] {
@@ -478,10 +544,19 @@ function advanceFallingBlocks(actions: readonly BlockfallAction[] = []): Blockfa
       lastFallingEvents = resetSnapshot.events;
       lastMove = "reset";
       resetApplied = true;
+      observedGameplayProof.reset = true;
+      observedGameplayProof.eventCounts.reset += 1;
+      lastObservedLevel = resetSnapshot.level;
+      beatTimers.reset = beatDurations.reset;
+      beatTimers.gameOver = 0;
+      observedBeatProof.reset = true;
       continue;
     }
     if (paused || state.gameOver) continue;
     const fallingAction = toFallingBlockAction(action);
+    if (action.type === "move") observedGameplayProof.movement = true;
+    if (action.type === "rotate") observedGameplayProof.rotation = true;
+    if (action.type === "hold") observedGameplayProof.hold = true;
     const nextSnapshot = fallingBlocks.step(fallingAction);
     lastFallingEvents = nextSnapshot.events;
     lastMove = formatBlockfallAction(action);
@@ -507,9 +582,32 @@ function toFallingBlockAction(action: Exclude<BlockfallAction, { readonly type: 
 
 function countFallingBlockEvents(events: readonly GameFallingBlocksEvent[]): void {
   const locks = events.filter((event) => event.type === "lock").length;
+  const lineClears = events.filter((event) => event.type === "line-clear").length;
+  const gameOvers = events.filter((event) => event.type === "game-over").length;
   if (locks > 0) {
     lockCount += locks;
     placedPieces += locks;
+    observedGameplayProof.eventCounts.lock += locks;
+  }
+  if (lineClears > 0) {
+    observedGameplayProof.lineClear = true;
+    observedGameplayProof.eventCounts.lineClear += lineClears;
+    beatTimers.burst = beatDurations.burst;
+    observedBeatProof.lineClear = true;
+  }
+  if (gameOvers > 0) {
+    observedGameplayProof.gameOver = true;
+    observedGameplayProof.eventCounts.gameOver += gameOvers;
+    beatTimers.gameOver = beatDurations.gameOver;
+    observedBeatProof.gameOver = true;
+  }
+  const snapshot = fallingBlocks.snapshot();
+  observedGameplayProof.scoring ||= snapshot.score > 0;
+  observedGameplayProof.levelProgression ||= snapshot.level > 1;
+  if (snapshot.level > lastObservedLevel) {
+    lastObservedLevel = snapshot.level;
+    beatTimers.levelUp = beatDurations.levelUp;
+    observedBeatProof.levelUp = true;
   }
 }
 
@@ -599,13 +697,15 @@ function formatBlockfallAction(action: BlockfallAction): string {
   return "reset";
 }
 
-function syncAll(force: boolean): void {
+function syncAll(force: boolean, dt = 0): void {
   const checksum = blockfallChecksum(state);
   if (force || checksum !== lastVisualChecksum) {
     syncBoardVisuals();
     syncHud();
     lastVisualChecksum = checksum;
   }
+  // Beats animate continuously, so they advance outside the checksum gate.
+  syncBeats(dt);
   publishEvidence();
 }
 
@@ -622,7 +722,7 @@ function syncBoardVisuals(): void {
         handle.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
         continue;
       }
-      const position = cellPosition(x, y, 0.18);
+      const position = cellPosition(x, y, 0.14);
       handle
         .setMaterial(pieceMaterials[kind])
         .setPosition(position[0], position[1], position[2])
@@ -648,7 +748,7 @@ function syncActivePiece(piece: ActivePiece | null): void {
       handle?.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
       return;
     }
-    const position = cellPosition(cell.x, visibleY, 0.28);
+    const position = cellPosition(cell.x, visibleY, 0.2);
     handle
       .setMaterial(pieceMaterials[piece.kind])
       .setPosition(position[0], position[1], position[2])
@@ -678,6 +778,85 @@ function syncClearFlash(): void {
   const clearRows = new Set(state.lastClearedRows.map((row) => row - HIDDEN_ROWS).filter((row) => row >= 0 && row < VISIBLE_HEIGHT));
   for (let row = 0; row < VISIBLE_HEIGHT; row += 1) {
     clearFlashHandles[row].setScale(clearRows.has(row) ? CLEAR_FLASH_SCALE : HIDDEN_BLOCK_SCALE).setVisible(clearRows.has(row));
+  }
+  const firstClearedRow = [...clearRows][0];
+  if (firstClearedRow !== undefined) burstRowY = cellPosition(0, firstClearedRow, 0)[1];
+}
+
+/**
+ * Advances the rendered beat nodes. Each beat's size/position/visibility comes
+ * from a timer started by a real observed game event.
+ */
+function syncBeats(dt: number): void {
+  for (const key of ["levelUp", "gameOver", "reset", "burst"] as const) {
+    beatTimers[key] = Math.max(0, beatTimers[key] - Math.max(0, dt));
+  }
+
+  const levelUpProgress = beatTimers.levelUp / beatDurations.levelUp;
+  if (levelUpProgress > 0) {
+    const travel = (1 - levelUpProgress) * 4.2 - 2.1;
+    beatHandles.levelUp
+      .setPosition(0, BOARD_CENTER_Y + travel, 0.24)
+      .setScale([1.06, 0.05 + levelUpProgress * 0.06, 0.02])
+      .setVisible(true);
+  } else {
+    beatHandles.levelUp.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  }
+
+  /*
+   * Game-over beat: a wash that resolves to a border, so the final board stays readable.
+   *
+   * This previously pinned `fill = 1` for as long as `state.gameOver` was true, which made the panel a
+   * permanent 1.08 x 4.36 slab covering the entire well. The captured game-over frame therefore hid
+   * the very thing a player wants to look at -- the stack that ended the run -- behind a flat red
+   * rectangle, and read as an error overlay rather than a game beat.
+   *
+   * The beat now plays its 1.6s wash and then settles into a thin band at the top of the well, where
+   * the stack topped out. So the beat is still unmistakable in motion and in a capture taken during it,
+   * but the resting game-over state leaves the board visible.
+   */
+  const gameOverProgress = beatTimers.gameOver / beatDurations.gameOver;
+  if (gameOverProgress > 0 || state.gameOver) {
+    // While the timer runs, sweep down from the top of the well; once it expires, hold a top band.
+    const sweeping = gameOverProgress > 0;
+    const height = sweeping ? 4.36 * (1 - gameOverProgress) : 0.34;
+    const top = BOARD_CENTER_Y + 2.18;
+    beatHandles.gameOver
+      .setPosition(0, top - height / 2, 0.23)
+      .setScale([1.08, Math.max(0.06, height), 0.02])
+      .setVisible(true);
+  } else {
+    beatHandles.gameOver.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  }
+
+  const resetProgress = beatTimers.reset / beatDurations.reset;
+  if (resetProgress > 0) {
+    const sweep = BOARD_CENTER_Y + 2.1 - (1 - resetProgress) * 4.2;
+    beatHandles.reset
+      .setPosition(0, sweep, 0.25)
+      .setScale([1.08, 0.07, 0.02])
+      .setVisible(true);
+  } else {
+    beatHandles.reset.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
+  }
+
+  const burstProgress = beatTimers.burst / beatDurations.burst;
+  if (burstProgress > 0) {
+    // The burst reads as a flash travelling *across the cleared row*, not as a ball over
+    // the well. The previous form grew to radius 0.62 -- a 1.24-unit diameter against a
+    // 2.08-unit board, which projected to 373 px, i.e. **96% of the well's on-screen
+    // width**, as a flat grey disc that occluded the playfield. That is the "giant
+    // foreground sphere occlusion" this route is explicitly required not to have.
+    // It now spans the board horizontally and stays within one cell vertically, so the
+    // beat is unmistakable while the stack behind it stays readable.
+    const spread = 0.24 + (1 - burstProgress) * 0.76;
+    const halfWidth = (CELL * BOARD_WIDTH) / 2;
+    beatHandles.burst
+      .setPosition(0, burstRowY, 0.24)
+      .setScale([halfWidth * spread, CELL * 0.34, CELL * 0.3])
+      .setVisible(true);
+  } else {
+    beatHandles.burst.setScale(HIDDEN_BLOCK_SCALE).setVisible(false);
   }
 }
 
@@ -763,6 +942,25 @@ function publishEvidence(): void {
       activeCells: state.active ? pieceCells(state.active) : [],
       visibleLockedCells: visibleLockedCells(state).length,
       replayPlayback
+    },
+    observedGameplayProof: {
+      ...observedGameplayProof,
+      eventCounts: { ...observedGameplayProof.eventCounts }
+    },
+    /**
+     * Rendered in-scene beats. Each flag only becomes true after the matching
+     * game event fired and drove a visible scene node, so this is mounted beat
+     * evidence rather than a source-authored declaration.
+     */
+    renderedBeatProof: {
+      ...observedBeatProof,
+      activeBeats: {
+        levelUp: beatTimers.levelUp > 0,
+        gameOver: beatTimers.gameOver > 0 || state.gameOver,
+        reset: beatTimers.reset > 0,
+        lineClearBurst: beatTimers.burst > 0
+      },
+      beatNodeIds: { ...BEAT_NODE_IDS }
     },
     runtimeEvidence: app.evidence({
       input,

@@ -218,6 +218,15 @@ function assertBuiltRoutes() {
     throw new Error(`homepage Aura Clash playable route was not emitted: ${auraClashPlayable}`);
   }
 
+  /*
+   * Routes that must not appear in the published site.
+   *
+   * `showcase-public-racing-presentation-proof` and `showcase-public-platformer-presentation-proof`
+   * were deleted from `apps/` outright: they were superseded by Turbo Drift Circuit and Skyline Runner,
+   * and keeping them as "historical certification evidence" meant two low-quality public routes stayed
+   * shippable and kept consuming review, screenshot and gate budget. They stay listed here so a stale
+   * `dist/` from an older build is still pruned.
+   */
   const supersededPublicRoutes = [
     "showcase-material-asset-inspector",
     "showcase-public-racing-presentation-proof",

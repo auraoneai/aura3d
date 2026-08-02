@@ -4,9 +4,9 @@ import { dirname, resolve } from "node:path";
 const requiredFiles = [
   "README.md",
   "docs/project/competitive-positioning.md",
-  "docs/project/threejs-parity-status.md",
+  "docs/project/parity/threejs/status.md",
   "docs/project/compatibility.md",
-  "docs/project/known-limits.md",
+  "docs/project/status/known-limits.md",
   "docs/api/public-api.md",
   "docs/project/tutorials-basic-app.md",
   "docs/project/tutorials-asset-viewer.md",

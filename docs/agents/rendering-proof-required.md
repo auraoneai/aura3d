@@ -36,7 +36,7 @@ If the evidence is not root-only browser evidence, do not phrase it as a root
 | Texture/material rendering | Material/texture metadata plus visible screenshot difference or material-region pixel proof. |
 | PBR parity | Root-only material feature tests for metallic/roughness, normal, emissive, alpha, environment, and shadows as claimed. |
 | HDR/IBL | Typed or durable HDR/environment source, runtime resource diagnostics, browser pixel delta between environments. |
-| Shadows | Shadow receiver/occluder setup, on/off pixel delta in receiver region, diagnostics proving shadow resources were sampled. |
+| Shadows | Shadow receiver/occluder setup, on/off pixel delta in receiver region, diagnostics proving shadow resources were sampled, **plus a caster-free negative control**: the same scene with shadows enabled and no occluder must not darken the receiver. A shadow-on/off delta alone cannot distinguish a projected shadow from receiver self-shadowing (acne), and dark geometry standing in for a shadow is not shadow evidence. |
 | Postprocess | Before/after route pixels, active pass diagnostics, and no CSS/canvas stand-in. |
 | WebGPU | Adapter, backend, dispatch/workgroup/native submission fields, fallback state, rendered pixels, and hardware capability evidence. |
 | Skinned animation | Same subject changes pose over time; pixel delta is in the character region, not just camera/UI. |

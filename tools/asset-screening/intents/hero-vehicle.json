@@ -1,0 +1,13 @@
+{
+  "id": "turbo-hero-vehicle",
+  "role": "hero-vehicle",
+  "style": "modern road race car",
+  "requiredVisibleFeatures": ["wheels"],
+  "materialRequirement": "textured",
+  "licensePolicy": "commercial-attribution-allowed",
+  "geometryBudget": { "minTriangles": 3000, "maxTriangles": 120000, "maxDrawCallsPerInstance": 24 },
+  "heroCameraAngles": { "heroAzimuths": [0.55, 1.1, 1.5708], "elevation": 0.18 },
+  "orientationRequirement": "require-manifest-evidence",
+  "normalizationPolicy": "fit-and-ground",
+  "fallbackPolicy": "reject-and-fail"
+}

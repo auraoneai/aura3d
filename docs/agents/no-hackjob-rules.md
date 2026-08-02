@@ -36,7 +36,7 @@ or unplayable route:
    - docs/claim gap;
    - unknown gap.
 2. Map it to exact source files and public API boundaries.
-3. Add or update a task in `Fixed-Needed-PRD.md`.
+3. Add or update a task in `docs/project/plans/recovery-remediation-prd.md`.
 4. Prove the fix in a root-only validation app or test before touching showcase
    presentation code.
 5. Update docs and route evidence after the proof passes.

@@ -311,6 +311,8 @@ fixtures/
 !tests/fixtures/
 !tests/fixtures/showcase-spec/
 !tests/fixtures/showcase-spec/**
+# The fixture allow-list above must not re-include macOS metadata.
+tests/fixtures/showcase-spec/**/.DS_Store
 
 # ============================================================================
 # Keep These (Don't Ignore)
@@ -351,3 +353,4 @@ marketing/public/aura-assets/
 
 # Curated production marketing previews.
 !marketing/public/previews/showcase/*.png
+.visual-iter/

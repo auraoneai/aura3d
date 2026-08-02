@@ -117,7 +117,7 @@ export function categoriesPass(decisions: readonly SuperiorityCategoryDecision[]
 export function publicDocs(): readonly string[] {
   return [
     "README.md",
-    "docs/project/current-state.md",
+    "docs/project/status/current-state.md",
     "docs/project/competitive-positioning.md",
     "docs/project/go-to-market-strategy.md",
     "docs/project/threejs-superiority-status.md"

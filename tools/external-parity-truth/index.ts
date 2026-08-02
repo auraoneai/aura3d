@@ -10,7 +10,7 @@ interface Finding {
 
 const requiredFiles = [
   "docs/project/implementation-plan.md",
-  "docs/project/threejs-parity-status.md",
+  "docs/project/parity/threejs/status.md",
   "docs/project/verification-evidence.md",
   "docs/project/claim-guidelines.md",
   "docs/project/verification-evidence.md"
@@ -65,7 +65,7 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = readIfExists("docs/project/threejs-parity-status.md");
+const status = readIfExists("docs/project/parity/threejs/status.md");
 const progress = readIfExists("docs/project/verification-evidence.md");
 const visualFailures = readIfExists("docs/project/verification-evidence.md");
 const externalParity = readIfExists("docs/project/implementation-plan.md");

@@ -8,9 +8,12 @@ import { applyMorphTargets, type MorphTargetDelta } from "./MorphTarget";
 import { type DrawCommand, type InstanceVertexAttribute, type RenderBuffer, type RenderDevice, RenderDeviceError, type RenderShaderProgram, type UniformValue } from "./RenderDevice";
 import { RenderPipeline } from "./RenderPipeline";
 import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
+import { MAX_UNIFORM_SKINNING_JOINTS as SHADER_MAX_UNIFORM_SKINNING_JOINTS } from "./ShaderChunks";
 import { ShaderModule } from "./ShaderModule";
 import { createDefaultShaderLibrary, type ShaderLibrary } from "./ShaderLibrary";
 import { createShadowFilterKernel, type ShadowFilterKernel } from "./ShadowMap";
+import { Sampler } from "./Sampler";
+import { Texture } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { sortRenderQueueItems } from "./performance/RenderItemSorting";
@@ -52,7 +55,39 @@ export type RenderMaterial = Material | MaterialInstance;
 export interface SkinningPaletteBinding {
   readonly jointCount: number;
   readonly matrices: Float32Array;
+  /**
+   * Second influence set for eight-influence skinning. Only meaningful when the
+   * geometry carries `joints1`/`weights1` attributes and the material uses an
+   * eight-influence shader.
+   */
+  readonly extraInfluences?: boolean;
 }
+
+/** Which GPU path carried the joint palette for a submission. */
+export type SkinningPalettePath = "uniform-array" | "data-texture";
+
+export interface SkinningPaletteDiagnostics {
+  readonly submissions: number;
+  readonly jointsUploaded: number;
+  readonly maxJointCount: number;
+  readonly uniformArraySubmissions: number;
+  readonly dataTextureSubmissions: number;
+  readonly eightInfluenceSubmissions: number;
+  readonly maxUniformJoints: number;
+}
+
+/** Joints addressable through the uniform-array palette. Re-exported for shaders. */
+export const MAX_UNIFORM_SKINNING_JOINTS = SHADER_MAX_UNIFORM_SKINNING_JOINTS;
+
+/**
+ * Upper bound on joints per skin, using the data-texture palette path.
+ *
+ * Chosen to stay well inside a 1024-wide RGBA32F texture (1024 joints = 4096 texels =
+ * a 1024x4 texture) while covering rigs far beyond anything the uniform path allows.
+ */
+export const MAX_SKINNING_JOINTS = 1024;
+
+const SKINNING_PALETTE_TEXTURE_MAX_WIDTH = 1024;
 
 export const MAX_GPU_MORPH_VERTICES = 64;
 export const MAX_GPU_MORPH_TARGETS = 4;
@@ -305,11 +340,33 @@ class SkinningPaletteUploadManager {
   private submissions = 0;
   private jointsUploaded = 0;
   private maxJointCount = 0;
+  private uniformArraySubmissions = 0;
+  private dataTextureSubmissions = 0;
+  private eightInfluenceSubmissions = 0;
 
   beginFrame(): void {
     this.submissions = 0;
     this.jointsUploaded = 0;
     this.maxJointCount = 0;
+    this.uniformArraySubmissions = 0;
+    this.dataTextureSubmissions = 0;
+    this.eightInfluenceSubmissions = 0;
+  }
+
+  /**
+   * Which palette paths this frame actually used. Published rather than inferred so a
+   * claim about data-texture or eight-influence skinning rests on observed submissions.
+   */
+  diagnostics(): SkinningPaletteDiagnostics {
+    return {
+      submissions: this.submissions,
+      jointsUploaded: this.jointsUploaded,
+      maxJointCount: this.maxJointCount,
+      uniformArraySubmissions: this.uniformArraySubmissions,
+      dataTextureSubmissions: this.dataTextureSubmissions,
+      eightInfluenceSubmissions: this.eightInfluenceSubmissions,
+      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS
+    };
   }
 
   bind(
@@ -319,7 +376,12 @@ class SkinningPaletteUploadManager {
     shader: RenderShaderProgram,
     uniforms: Map<string, UniformValue>
   ): void {
-    applySkinningUniforms(skinning, material, shader, uniforms);
+    const path = applySkinningUniforms(skinning, material, shader, uniforms);
+    if (path === "data-texture") this.dataTextureSubmissions += 1;
+    else this.uniformArraySubmissions += 1;
+    const eightInfluence = item.geometry.vertexBuffer.format.hasAttribute("joints1")
+      && item.geometry.vertexBuffer.format.hasAttribute("weights1");
+    if (eightInfluence) this.eightInfluenceSubmissions += 1;
     const validatedJointCounts = SkinningPaletteUploadManager.validatedGeometryJointCounts.get(item.geometry) ?? new Set<number>();
     if (!validatedJointCounts.has(skinning.jointCount)) {
       validateSkinningGeometryContract(item, skinning);
@@ -1620,15 +1682,17 @@ function applySkinningUniforms(
   material: Material,
   shader: RenderShaderProgram,
   uniforms: Map<string, UniformValue>
-): void {
+): SkinningPalettePath {
   if (!shader.reflection.uniforms.has("u_jointMatrices") || !shader.reflection.uniforms.has("u_jointCount")) {
     throw new RenderDeviceError("Skinned render item requires a shader with joint palette uniforms", "SKINNING_SHADER_CONTRACT", {
       material: material.name
     });
   }
-  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > 96) {
-    throw new RenderDeviceError("Skinning jointCount must be an integer in [1, 96]", "INVALID_SKINNING_PALETTE", {
-      jointCount: skinning.jointCount
+  if (!Number.isInteger(skinning.jointCount) || skinning.jointCount <= 0 || skinning.jointCount > MAX_SKINNING_JOINTS) {
+    throw new RenderDeviceError(`Skinning jointCount must be an integer in [1, ${MAX_SKINNING_JOINTS}]`, "INVALID_SKINNING_PALETTE", {
+      jointCount: skinning.jointCount,
+      maxUniformJoints: MAX_UNIFORM_SKINNING_JOINTS,
+      maxJoints: MAX_SKINNING_JOINTS
     });
   }
   if (skinning.matrices.length !== skinning.jointCount * 16) {
@@ -1643,7 +1707,73 @@ function applySkinningUniforms(
     });
   }
   uniforms.set("u_jointCount", skinning.jointCount);
+  // Over the uniform-array limit the palette travels as an RGBA32F data texture, four
+  // texels per matrix. A mat4 uniform costs four vec4 slots, so a uniform array cannot
+  // be grown far enough for large rigs without exhausting MAX_VERTEX_UNIFORM_VECTORS.
+  const path: SkinningPalettePath = skinning.jointCount > MAX_UNIFORM_SKINNING_JOINTS ? "data-texture" : "uniform-array";
+  if (path === "data-texture") {
+    if (!shader.reflection.uniforms.has("u_jointPaletteTexture") || !shader.reflection.uniforms.has("u_jointPaletteMode")) {
+      throw new RenderDeviceError(
+        `Skinning palettes above ${MAX_UNIFORM_SKINNING_JOINTS} joints require a shader with data-texture palette uniforms`,
+        "SKINNING_SHADER_CONTRACT",
+        { material: material.name, jointCount: skinning.jointCount }
+      );
+    }
+    const texture = createSkinningPaletteTexture(skinning, material.name);
+    uniforms.set("u_jointPaletteMode", 1);
+    uniforms.set("u_jointPaletteTexture", new TextureBinding({
+      name: "u_jointPaletteTexture",
+      texture,
+      sampler: new Sampler({ minFilter: "nearest", magFilter: "nearest", addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
+      required: true
+    }));
+    uniforms.set("u_jointPaletteTextureSize", [texture.width, texture.height]);
+    // The uniform array is still declared by the shader, so give it a valid value.
+    uniforms.set("u_jointMatrices", new Float32Array(MAX_UNIFORM_SKINNING_JOINTS * 16));
+    return path;
+  }
+  if (shader.reflection.uniforms.has("u_jointPaletteMode")) {
+    uniforms.set("u_jointPaletteMode", 0);
+    if (shader.reflection.uniforms.has("u_jointPaletteTextureSize")) uniforms.set("u_jointPaletteTextureSize", [1, 1]);
+    if (shader.reflection.uniforms.has("u_jointPaletteTexture")) {
+      uniforms.set("u_jointPaletteTexture", new TextureBinding({ name: "u_jointPaletteTexture", required: false }));
+    }
+  }
   uniforms.set("u_jointMatrices", skinning.matrices);
+  return path;
+}
+
+/**
+ * Packs a joint palette into an RGBA32F texture, one texel per matrix column.
+ *
+ * Width is a multiple of four so no matrix straddles a row boundary, which keeps the
+ * shader's texel addressing a simple divide and avoids per-column row recomputation.
+ */
+function createSkinningPaletteTexture(skinning: SkinningPaletteBinding, materialName: string): Texture {
+  const texelsPerMatrix = 4;
+  const totalTexels = skinning.jointCount * texelsPerMatrix;
+  const width = Math.min(SKINNING_PALETTE_TEXTURE_MAX_WIDTH, Math.max(texelsPerMatrix, ceilToMultiple(Math.ceil(Math.sqrt(totalTexels)), texelsPerMatrix)));
+  const height = Math.ceil(totalTexels / width);
+  const data = new Float32Array(width * height * 4);
+  data.set(skinning.matrices.subarray(0, Math.min(skinning.matrices.length, data.length)));
+  if (skinning.matrices.length > data.length) {
+    throw new RenderDeviceError("Skinning palette does not fit the data texture", "INVALID_SKINNING_PALETTE", {
+      material: materialName,
+      jointCount: skinning.jointCount
+    });
+  }
+  return new Texture({
+    width,
+    height,
+    format: "rgba32f",
+    colorSpace: "linear",
+    label: `aura3d-skinning-palette-${skinning.jointCount}-joints`,
+    data
+  });
+}
+
+function ceilToMultiple(value: number, multiple: number): number {
+  return Math.ceil(value / multiple) * multiple;
 }
 
 function validateSkinningGeometryContract(item: RenderItem, skinning: SkinningPaletteBinding): void {
@@ -1671,10 +1801,63 @@ function validateSkinningGeometryContract(item: RenderItem, skinning: SkinningPa
     });
   }
 
+  // Eight-influence geometry must supply both halves of the second set, and both must
+  // be vec4. A half-declared second set would silently drop influences at draw time.
+  const hasJoints1 = format.hasAttribute("joints1");
+  const hasWeights1 = format.hasAttribute("weights1");
+  if (hasJoints1 !== hasWeights1) {
+    throw new RenderDeviceError("Eight-influence skinned geometry must declare both joints1 and weights1", "SKINNING_GEOMETRY_CONTRACT", {
+      label: item.label,
+      hasJoints1,
+      hasWeights1
+    });
+  }
+  const eightInfluence = hasJoints1 && hasWeights1;
+  if (eightInfluence) {
+    const joints1Attribute = format.getAttribute("joints1");
+    const weights1Attribute = format.getAttribute("weights1");
+    if (joints1Attribute.components !== 4 || weights1Attribute.components !== 4) {
+      throw new RenderDeviceError("Eight-influence skinned geometry must use four components per second-set attribute", "SKINNING_GEOMETRY_CONTRACT", {
+        label: item.label,
+        joints1Components: joints1Attribute.components,
+        weights1Components: weights1Attribute.components
+      });
+    }
+  }
+
   for (let vertex = 0; vertex < item.geometry.vertexBuffer.vertexCount; vertex += 1) {
     const joints = item.geometry.vertexBuffer.getAttribute(vertex, "joints");
     const weights = item.geometry.vertexBuffer.getAttribute(vertex, "weights");
     let weightSum = 0;
+    if (eightInfluence) {
+      // Validate the second set with the same rules, and fold it into the weight sum so
+      // a vertex whose influence is split across both sets is not reported as unweighted.
+      const joints1 = item.geometry.vertexBuffer.getAttribute(vertex, "joints1");
+      const weights1 = item.geometry.vertexBuffer.getAttribute(vertex, "weights1");
+      for (let influence = 0; influence < 4; influence += 1) {
+        const joint = joints1[influence] ?? 0;
+        const weight = weights1[influence] ?? 0;
+        if (!Number.isFinite(weight) || weight < 0) {
+          throw new RenderDeviceError("Skinned render item weights must be finite non-negative values", "SKINNING_GEOMETRY_CONTRACT", {
+            label: item.label,
+            jointCount: skinning.jointCount,
+            vertex,
+            influence: influence + 4,
+            weight
+          });
+        }
+        if (!Number.isInteger(joint) || joint < 0 || joint >= skinning.jointCount) {
+          throw new RenderDeviceError("Skinned render item joint indices must reference palette joints", "SKINNING_GEOMETRY_CONTRACT", {
+            label: item.label,
+            jointCount: skinning.jointCount,
+            vertex,
+            influence: influence + 4,
+            joint
+          });
+        }
+        weightSum += weight;
+      }
+    }
     for (let influence = 0; influence < 4; influence += 1) {
       const joint = joints[influence] ?? 0;
       const weight = weights[influence] ?? 0;

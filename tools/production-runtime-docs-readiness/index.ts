@@ -2,18 +2,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const docs = [
-  "current-state.md",
-  "threejs-parity-status.md",
-  "threejs-parity-parity-matrix.md",
-  "threejs-parity-claim-boundary.md",
-  "known-limits.md",
-  "claim-guidelines.md",
-  "compatibility.md",
-  "migration.md",
-  "getting-started.md",
-  "verification-evidence.md",
-  "release-process.md",
-  "release-checklist.md"
+  "docs/project/status/current-state.md",
+  "docs/project/parity/threejs/status.md",
+  "docs/project/parity/threejs/parity-matrix.md",
+  "docs/project/parity/threejs/claim-boundary.md",
+  "docs/project/status/known-limits.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/compatibility.md",
+  "docs/project/migration.md",
+  "docs/project/getting-started.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/release-process.md",
+  "docs/project/release/release-checklist.md"
 ];
 const requiredMarkers = [
   "real renderer",
@@ -27,7 +27,7 @@ const requiredMarkers = [
   "performance",
   "blocked"
 ];
-const docPath = (doc: string) => resolve("docs/project", doc);
+const docPath = (doc: string) => resolve(doc);
 const docReports = docs.map((doc) => {
   const path = docPath(doc);
   const content = existsSync(path) ? readFileSync(path, "utf8") : "";

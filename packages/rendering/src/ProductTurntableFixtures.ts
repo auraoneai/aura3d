@@ -359,7 +359,7 @@ export function createProductTurntableRenderKit(options: ProductTurntableRenderK
   ]);
   const angle = fixture.rotationRadians;
   const includeStage = options.includeStage !== false;
-  const collectedLights = createProductTurntableCollectedLights();
+  const collectedLights = createProductTurntableCollectedLights(fixture.lighting);
   const renderItems: RenderItem[] = [
     item(geometryLibrary, materialLibrary, "left-ear-shell", "ear-shell", "painted-shell", -0.56, 0.1, 0, 0.82, 1.08, 0.64, angle),
     item(geometryLibrary, materialLibrary, "right-ear-shell", "ear-shell", "painted-shell", 0.56, 0.1, 0, 0.82, 1.08, 0.64, angle),
@@ -525,16 +525,29 @@ export function createProductTurntableRenderKit(options: ProductTurntableRenderK
     cameraPolicy: "auto-frame",
     cameraFrameBounds: { min: [-1.35, -0.52, -0.38], max: [1.35, 1, 0.42] },
     collectedLights,
-    environmentLighting: environment.lighting,
+    // `ambientIntensity` and `environmentIntensity` are preset properties, so they must reach
+    // the frame the renderer actually samples. In this renderer the ambient term *is*
+    // `environmentLighting.intensity`, so the preset's ambient drives that directly rather
+    // than being approximated by an extra directional light. The bundle returned by
+    // `createExternalParityEnvironmentLighting` is cached and shared across callers, so both
+    // values are applied to a copy rather than mutated in place.
+    environmentLighting: applyPresetEnvironmentLighting(
+      environment.lighting,
+      fixture.lighting.ambientIntensity,
+      fixture.lighting.environmentIntensity
+    ),
     shadow: {
-      enabled: true,
+      // `shadowEnabled`/`shadowSoftness` are preset properties, so a preset that declares
+      // shadows off (soft) must actually render without them, and a hard-shadow preset
+      // (dramatic, softness 0.1) must not use the same PCF radius as a diffuse one.
+      enabled: fixture.lighting.shadowEnabled,
       light: collectedLights[0]?.source,
       size: 768,
       strength: 0.42,
       bias: 0.0025,
       slopeBias: 1.2,
       filter: "pcf",
-      pcfRadius: 1.25,
+      pcfRadius: Number((0.6 + fixture.lighting.shadowSoftness * 1.3).toFixed(4)),
       pcfSamples: 9
     },
     postprocess,
@@ -594,22 +607,90 @@ function appendTurntableStageDetails(
   }
 }
 
-function createProductTurntableCollectedLights(): readonly CollectedLight[] {
+/**
+ * Builds the turntable's three-point rig from the *active lighting preset*.
+ *
+ * These intensities used to be hardcoded, so `lightingPreset` changed only the reported
+ * `fixture.lighting` metadata while every preset rendered an identical frame. That made the
+ * preset a self-reported claim rather than a rendering input, and it left the studio preset
+ * measurably underlit: the kit reported `keyIntensity: 1.5` and `environmentIntensity: 1`
+ * while the rig actually submitted a fixed 2.35 key with no ambient term at all, and the
+ * root quality gate's `salientRatio` sat at 0.096 against its 0.105 floor.
+ *
+ * The preset's `keyIntensity`/`fillIntensity`/`rimIntensity` are relative weights, scaled by
+ * a shared gain so the default studio preset keeps its previously-tuned absolute key value.
+ * `ambientIntensity` is handled separately by `applyPresetEnvironmentLighting`, because in this
+ * renderer the ambient term is `environmentLighting.intensity` rather than a fourth
+ * directional light. Submitting it in both places would double-count it.
+ */
+/**
+ * Applies the active preset's ambient and environment intensities to an environment bundle.
+ *
+ * `ambientIntensity` sets the ambient colour term directly; `environmentIntensity` scales the
+ * sampled environment map and its specular contribution. Textures and samplers are shared by
+ * reference because they are immutable GPU resources, so only scalars differ per preset.
+ */
+function applyPresetEnvironmentLighting<T extends {
+  readonly intensity?: number;
+  readonly environmentMapIntensity?: number;
+  readonly environmentMapSpecularIntensity?: number;
+  readonly proceduralMap?: { readonly intensity?: number; readonly specularIntensity?: number };
+}>(lighting: T, ambientIntensity: number, environmentIntensity: number): T {
+  for (const [name, value] of [["ambientIntensity", ambientIntensity], ["environmentIntensity", environmentIntensity]] as const) {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new RangeError(`Product turntable ${name} must be finite and non-negative`);
+    }
+  }
+  const scaled = (value: number | undefined): number | undefined =>
+    typeof value === "number" ? Number((value * environmentIntensity).toFixed(4)) : value;
+  return {
+    ...lighting,
+    intensity: Number(ambientIntensity.toFixed(4)),
+    ...(typeof lighting.environmentMapIntensity === "number"
+      ? { environmentMapIntensity: scaled(lighting.environmentMapIntensity) }
+      : {}),
+    ...(typeof lighting.environmentMapSpecularIntensity === "number"
+      ? { environmentMapSpecularIntensity: scaled(lighting.environmentMapSpecularIntensity) }
+      : {}),
+    ...(lighting.proceduralMap
+      ? {
+        proceduralMap: {
+          ...lighting.proceduralMap,
+          ...(typeof lighting.proceduralMap.intensity === "number"
+            ? { intensity: scaled(lighting.proceduralMap.intensity) }
+            : {}),
+          ...(typeof lighting.proceduralMap.specularIntensity === "number"
+            ? { specularIntensity: scaled(lighting.proceduralMap.specularIntensity) }
+            : {})
+        }
+      }
+      : {})
+  } as T;
+}
+
+function createProductTurntableCollectedLights(
+  lighting: Pick<ProductTurntableLighting, "keyIntensity" | "fillIntensity" | "rimIntensity" | "shadowEnabled">
+): readonly CollectedLight[] {
+  // Chosen so studio (keyIntensity 1.5) reproduces the previously hardcoded 2.35 key.
+  const gain = 2.35 / 1.5;
+  const keyIntensity = Number((lighting.keyIntensity * gain).toFixed(4));
+  const fillIntensity = Number((lighting.fillIntensity * gain).toFixed(4));
+  const rimIntensity = Number((lighting.rimIntensity * gain).toFixed(4));
   const key = new DirectionalLight("turntable-key-shadow");
   const fill = new DirectionalLight("turntable-fill");
   const rim = new DirectionalLight("turntable-rim");
-  key.castsShadow = true;
+  key.castsShadow = lighting.shadowEnabled;
   key.color = [1, 0.92, 0.78];
-  key.intensity = 2.35;
+  key.intensity = keyIntensity;
   fill.color = [0.5, 0.64, 0.95];
-  fill.intensity = 0.52;
+  fill.intensity = fillIntensity;
   rim.color = [0.85, 0.92, 1];
-  rim.intensity = 0.92;
+  rim.intensity = rimIntensity;
   return [
     {
       kind: "directional",
       color: [1, 0.92, 0.78],
-      intensity: 2.35,
+      intensity: keyIntensity,
       position: [0, 0, 0],
       direction: [0.42, -0.64, -0.64],
       right: [1, 0, 0],
@@ -619,14 +700,14 @@ function createProductTurntableCollectedLights(): readonly CollectedLight[] {
       height: 0,
       spotAngle: 0,
       penumbra: 0,
-      castsShadow: true,
+      castsShadow: lighting.shadowEnabled,
       layerMask: 0xffffffff,
       source: key
     },
     {
       kind: "directional",
       color: [0.5, 0.64, 0.95],
-      intensity: 0.52,
+      intensity: fillIntensity,
       position: [0, 0, 0],
       direction: [-0.5, -0.3, -0.82],
       right: [1, 0, 0],
@@ -643,7 +724,7 @@ function createProductTurntableCollectedLights(): readonly CollectedLight[] {
     {
       kind: "directional",
       color: [0.85, 0.92, 1],
-      intensity: 0.92,
+      intensity: rimIntensity,
       position: [0, 0, 0],
       direction: [-0.15, -0.12, 0.98],
       right: [1, 0, 0],

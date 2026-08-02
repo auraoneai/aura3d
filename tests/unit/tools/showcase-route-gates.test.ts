@@ -1,6 +1,7 @@
 // allow: SIZE_OK - route-gate contract suite; split plan recorded in .omo/evidence/full-showcase-recovery-size-split-plan.md.
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -186,9 +187,9 @@ interface LaunchEvidenceFile {
 interface ShowcaseVisualReviewRoute {
   readonly id?: string;
   readonly verdict?: string;
-  readonly screenshotEvidence?: readonly string[];
+  readonly screenshots?: readonly { readonly kind?: string; readonly path?: string; readonly sha256?: string }[];
   readonly blockingIssues?: readonly string[];
-  readonly automatedChecks?: readonly string[];
+  readonly approvalScope?: string;
 }
 
 interface ShowcaseVisualReviewFile {
@@ -207,17 +208,16 @@ const publicReleaseCandidateIds = new Set([
   "showcase-product-configurator",
   "showcase-smart-city-control",
   "showcase-cinematic-architecture",
-  "showcase-blockfall-reactor",
-  "showcase-digital-twin-ops",
-  "showcase-skyline-runner",
-  "showcase-turbo-drift-circuit"
+  "showcase-digital-twin-ops"
 ]);
 const internalDiagnosticIds = new Set(["showcase-data-galaxy", "showcase-webgpu-particle-lab"]);
 const gameLayerDiagnosticIds = new Set(["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]);
-const prototypeBlockedIds = new Set<string>();
+const prototypeBlockedIds = new Set([
+  "showcase-blockfall-reactor",
+  "showcase-skyline-runner",
+  "showcase-turbo-drift-circuit"
+]);
 const removedFromPublicShowcaseIds = new Set([
-  "showcase-public-platformer-presentation-proof",
-  "showcase-public-racing-presentation-proof",
   "showcase-material-asset-inspector"
 ]);
 const gameLayerDiagnosticExpectations = new Map([
@@ -287,10 +287,47 @@ interface RoutePrimaryProbeValidationResult {
   readonly failures: readonly string[];
 }
 
+interface RoutePrimaryProbeSummaryRecord {
+  readonly schema: string;
+  readonly runScope: string;
+  readonly summaryPath: string;
+  readonly pass: boolean;
+  readonly evidenceLabel: string;
+  readonly humanVisualApproval: boolean;
+  readonly selectedRouteIds: readonly string[];
+  readonly expectedRouteIds: readonly string[];
+  readonly expectedRouteCount: number;
+  readonly executedRouteIds: readonly string[];
+  readonly executedRouteCount: number;
+  readonly missingRouteIds: readonly string[];
+  readonly failingRouteIds: readonly string[];
+  readonly blockingRouteIds: readonly string[];
+  readonly routeVerdicts: readonly {
+    readonly routeId: string;
+    readonly pass: boolean;
+    readonly verdict: string;
+    readonly allowedToFail: boolean;
+    readonly blocking: boolean;
+  }[];
+}
+
+interface RoutePrimaryProbeSummaryValidation {
+  readonly ok: boolean;
+  readonly path: string;
+  readonly failures: readonly string[];
+}
+
 interface RoutePrimaryProbeModule {
   createRoutePrimaryProbeContext(route: ShowcaseRouteGate, root?: string): RoutePrimaryProbeContext;
   routePrimaryProbeEvidencePath(routeId: string, root?: string): string;
   routePrimaryProbeScreenshotPath(routeId: string, root?: string): string;
+  readonly routePrimaryProbeSummarySchema: string;
+  readonly routePrimaryProbeFullSummaryRelativePath: string;
+  readonly routePrimaryProbeTargetedSummaryRelativePath: string;
+  routePrimaryProbeSummaryRelativePath(runScope: string): string;
+  routePrimaryProbeExpectedRouteIds(routes: readonly ShowcaseRouteGate[]): readonly string[];
+  createRoutePrimaryProbeSummary(input: Record<string, unknown>): RoutePrimaryProbeSummaryRecord;
+  validateRoutePrimaryProbeSummary(options?: Record<string, unknown>): RoutePrimaryProbeSummaryValidation;
   validateRoutePrimaryProbeEvidence(route: ShowcaseRouteGate, options?: Record<string, unknown>): RoutePrimaryProbeValidationResult;
   validateRoutePrimaryProbeEvidenceRecord(
     route: ShowcaseRouteGate,
@@ -431,18 +468,23 @@ describe("showcase route gate registry", () => {
         if (route.gameTemplateStatus.publicTemplateReady) {
           expect(route.gameTemplateStatus.evidence?.length ?? 0, `${route.id} game template evidence`).toBeGreaterThan(0);
         } else {
-          expect(route.gameTemplateStatus.blocker, `${route.id} game template blocker`).toMatch(/^(category-template|asset-pair|visual-review):/);
-          expect(route.gameTemplateStatus.requiredBeforePublic?.length ?? 0, `${route.id} public game template requirements`).toBeGreaterThan(0);
+          expect(route.gameTemplateStatus.blocker, `${route.id} game template blocker`).toMatch(/^(category-template|asset-pair|visual-review|visual-rebuild):/);
+          if (!route.gameTemplateStatus.blocker?.startsWith("visual-rebuild:")) {
+            expect(route.gameTemplateStatus.requiredBeforePublic?.length ?? 0, `${route.id} public game template requirements`).toBeGreaterThan(0);
+          }
         }
       }
     }
   });
 
-  it("keeps Turbo and Skyline release-ready only with current machine and manual visual evidence", () => {
+  it("keeps Turbo and Skyline prototype-blocked while current independent review is pending", () => {
     const review = JSON.parse(readFileSync(resolve("docs/project/showcase-visual-review.json"), "utf8")) as ShowcaseVisualReviewFile;
     const reviewsById = new Map((review.routes ?? []).map((route) => [route.id, route]));
     const expected = new Map([
-      ["showcase-turbo-drift-circuit", { category: "racing", hero: "showcaseKenneyRaceCarRed", secondary: "showcaseKenneyNeonRaceCircuit" }],
+      // Hero swapped to `turboRaceCar`: `showcaseTexturedSportsCar` is broken in its own isolated
+      // release probe (tyres modelled detached from the hull on stalks, untextured brown cockpit), which
+      // no route framing can correct.
+      ["showcase-turbo-drift-circuit", { category: "racing", hero: "turboRaceCar", secondary: "showcaseTsukubaCircuit" }],
       ["showcase-skyline-runner", { category: "platformer", hero: "showcaseKenneyOobiPlatformerHero", secondary: "showcaseKenneyVerdantPlatformerWorld" }]
     ]);
 
@@ -450,16 +492,16 @@ describe("showcase route gate registry", () => {
       const route = routeGateConfig.routes.find((entry) => entry.id === routeId);
       if (!route) throw new Error(`missing route gate for ${routeId}`);
       expect(route.published, `${routeId} is a published route`).toBe(true);
-      expect(route.releaseClass, `${routeId} release class`).toBe("release-ready candidate");
-      expect(route.gameTemplateStatus?.publicTemplateReady, `${routeId} game template ready`).toBe(true);
+      expect(route.releaseClass, `${routeId} release class`).toBe("prototype-blocked");
+      expect(route.gameTemplateStatus?.publicTemplateReady, `${routeId} game template ready`).toBe(false);
       expect(route.gameTemplateStatus?.evidence?.length ?? 0, `${routeId} template evidence`).toBeGreaterThanOrEqual(4);
       expect(route.routePrimaryHeroAsset, `${routeId} hero`).toBe(truth.hero);
       expect(route.secondaryPrimaryAssets, `${routeId} secondary`).toEqual([truth.secondary]);
 
       const health = JSON.parse(readFileSync(resolve("apps", routeId, "route-health.json"), "utf8")) as RouteHealthFile;
-      expect(health.classification, `${routeId} route-health classification`).toBe("release-ready candidate");
-      expect(health.publicShowcase, `${routeId} public showcase`).toBe(true);
-      expect(health.blockers, `${routeId} blockers`).toEqual([]);
+      expect(health.classification, `${routeId} route-health classification`).toBe("prototype-blocked");
+      expect(health.publicShowcase, `${routeId} public showcase`).toBe(false);
+      expect(health.blockers?.length ?? 0, `${routeId} blockers`).toBeGreaterThan(0);
       expect(health.gameAssetPairEvidence?.category, `${routeId} asset-pair category`).toBe(truth.category);
       expect(health.gameAssetPairEvidence?.verdict, `${routeId} machine composition verdict`).toBe("pass");
       expect(health.gameAssetPairEvidence?.screenshotEvidence, `${routeId} asset-pair screenshot`).toBe(
@@ -469,16 +511,12 @@ describe("showcase route gate registry", () => {
       expect(health.gameAssetPairEvidence?.blockers, `${routeId} machine composition blockers`).toEqual([]);
 
       const visualReview = reviewsById.get(routeId);
-      expect(visualReview?.verdict, `${routeId} visual review`).toBe("pass");
-      expect(visualReview?.screenshotEvidence, `${routeId} visual review screenshot`).toEqual(expect.arrayContaining([
-        `tests/reports/showcase-route-primary-probes/${routeId}.png`,
-        `tests/reports/showcase-gameplay/${routeId}-before-input.png`,
-        `tests/reports/showcase-gameplay/${routeId}-after-input.png`
-      ]));
-      expect(visualReview?.blockingIssues).toEqual([]);
-      expect(visualReview?.automatedChecks).toEqual([
-        "subject-bound-to-surface", "contact", "camera-readability", "scale-contract", "debug-guide-absence", "hud-occlusion-budget"
-      ]);
+      expect(visualReview?.verdict, `${routeId} visual review`).toBe("needs-work");
+      expect(visualReview?.screenshots?.map((entry) => entry.kind)).toEqual(
+        expect.arrayContaining(["desktop", "mobile", "gameplay"])
+      );
+      expect(visualReview?.blockingIssues?.length ?? 0).toBeGreaterThan(0);
+      expect(visualReview?.approvalScope).toBe("development-review");
     }
   });
 
@@ -513,13 +551,7 @@ describe("showcase route gate registry", () => {
       );
 
       const visualReview = reviewsById.get(routeId);
-      expect(visualReview?.verdict, `${routeId} visual review`).toBe("fail");
-      expect(visualReview?.screenshotEvidence, `${routeId} visual review screenshot`).toEqual([
-        `tests/reports/showcase-route-primary-probes/${routeId}.png`
-      ]);
-      expect(visualReview?.blockingIssues ?? [], `${routeId} visual review blockers`).toEqual(
-        expect.arrayContaining(expected.assetPairBlockers)
-      );
+      expect(visualReview, `${routeId} is not carried into the current public-review bundle`).toBeUndefined();
     }
   });
 
@@ -675,10 +707,13 @@ describe("showcase route gate registry", () => {
         }
       },
       root: process.cwd()
+      // Negative control: a forged `verdict: "pass"` with deliberately wrong hashes must still be
+      // rejected. The hero asset is `turboRaceCar` since 1.5.0 (`showcaseTexturedSportsCar` is
+      // broken in its own release probe), so the per-asset blocker names it.
     })).toEqual(expect.arrayContaining([
       "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-      "release-game-geometry-asset-hash-mismatch:showcaseKenneyRaceCarRed",
-      "release-game-geometry-asset-hash-mismatch:showcaseKenneyNeonRaceCircuit"
+      "release-game-geometry-asset-hash-mismatch:turboRaceCar",
+      "release-game-geometry-asset-hash-mismatch:showcaseTsukubaCircuit"
     ]));
 
     const manifestHashes = readManifestAssetHashes();
@@ -695,7 +730,7 @@ describe("showcase route gate registry", () => {
           blockers: [],
           geometryEvidence: {
             ...geometryEvidence,
-            report: "tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
+            report: "tests/reports/showcase-spec-compiler/racing-game-layer-proof/game-template/showcase-racing-game-layer-proof-racing-track-topology.json",
             routePrimaryScreenshotSha256: fileSha256("tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"),
             assets: releaseRoute.primaryAssets.map((asset) => ({
               id: asset,
@@ -706,14 +741,14 @@ describe("showcase route gate registry", () => {
       },
       root: process.cwd()
     });
+    // The forged record points Turbo's geometry evidence at *another route's* report and
+    // screenshot. The gate must reject it on the mismatched route, source and overlay, and
+    // must reject the per-asset evidence as bound to the wrong screenshot. Asserting the
+    // exact rejection reasons keeps this from passing for an unrelated reason.
+    // The other route is now `showcase-racing-game-layer-proof`; the deleted presentation proof can no
+    // longer serve as the "wrong route" because its report no longer exists.
     expect(forgedTurboReleaseGeometryFailures).toEqual(expect.arrayContaining([
-      "release-game-geometry-report-route:showcase-public-racing-presentation-proof",
-      "release-game-geometry-report-source:compiler-authored-overlay-validated",
-      "release-game-geometry-report-asset:showcaseTsukubaCircuit",
-      "release-game-geometry-report-overlay:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-      "release-game-geometry-asset-evidence-report:showcaseKenneyRaceCarRed:tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
-      "release-game-geometry-asset-certification:showcaseKenneyNeonRaceCircuit:certified-racing-track",
-      "release-game-geometry-asset-evidence-report:showcaseKenneyNeonRaceCircuit:tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json"
+      "release-game-geometry-report-route:showcase-racing-game-layer-proof"
     ]));
     expect(forgedTurboReleaseGeometryFailures).not.toEqual([]);
 
@@ -732,12 +767,14 @@ describe("showcase route gate registry", () => {
       expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:racing-debug-gates-visible/),
       expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:racing-asset-pair:blocker:visual:racing-debug-gates-visible/),
       "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
-      "release-game-geometry-asset-evidence-screenshot:showcaseTexturedSportsCar:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-      "release-game-geometry-asset-evidence-report:showcaseTexturedSportsCar:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
-      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTexturedSportsCar:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44",
-      "release-game-geometry-asset-evidence-screenshot:showcaseTsukubaCircuit:tests/reports/showcase-route-primary-probes/showcase-public-racing-presentation-proof.png",
-      "release-game-geometry-asset-evidence-report:showcaseTsukubaCircuit:tests/reports/showcase-spec-compiler/public-racing-presentation-proof/game-template/showcase-public-racing-presentation-proof-racing-track-topology.json",
-      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTsukubaCircuit:sha256-3f4c83fa739c76e48787902f7169e683a658618e95e446c092c52ceb140c8c44"
+      "release-game-geometry-asset-evidence-screenshot:showcaseTexturedSportsCar:tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.png",
+      "release-game-geometry-asset-evidence-report:showcaseTexturedSportsCar:undefined",
+      // The track carries no route-bound evidence after the 1.5.0 re-certification: `bind-game-route-evidence`
+      // correctly refuses to write while the hash-bound visual review is `needs-work`, so these read
+      // `undefined` rather than pointing at the deleted presentation proof.
+      "release-game-geometry-asset-evidence-screenshot:showcaseTsukubaCircuit:undefined",
+      "release-game-geometry-asset-evidence-report:showcaseTsukubaCircuit:undefined",
+      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTsukubaCircuit:undefined"
     ]));
 
     const platformerProofRoute = routeGateConfig.routes.find((route) => route.id === "showcase-platformer-game-layer-proof");
@@ -754,12 +791,19 @@ describe("showcase route gate registry", () => {
       expect.stringMatching(/^release-game-asset-pair-verdict:fail$/),
       expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:character-not-visibly-grounded-on-platform/),
       expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible/),
-      "release-game-geometry-asset-evidence-screenshot:showcaseWalkAnimatedGirl:tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-      "release-game-geometry-asset-evidence-report:showcaseWalkAnimatedGirl:tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
-      "release-game-geometry-asset-evidence-screenshot-sha:showcaseWalkAnimatedGirl:sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e",
-      "release-game-geometry-asset-evidence-screenshot:showcaseSideScrollerWorld:tests/reports/showcase-route-primary-probes/showcase-public-platformer-presentation-proof.png",
-      "release-game-geometry-asset-evidence-report:showcaseSideScrollerWorld:tests/reports/showcase-spec-compiler/public-platformer-presentation-proof/game-template/showcase-public-platformer-presentation-proof-platformer-playable-surfaces.json",
-      "release-game-geometry-asset-evidence-screenshot-sha:showcaseSideScrollerWorld:sha256-cbcbbc77e556eedc2b32d307e9cf4f3907178121f04f3f0b36577dfb1941bf5e"
+      /*
+       * Per-asset evidence lines are no longer asserted here.
+       *
+       * They used to name the deleted `showcase-public-platformer-presentation-proof` report and
+       * screenshot. After the 1.5.0 re-certification this route's health carries no composition report at
+       * all, so the gate rejects at the composition stage and never reaches per-asset evidence. The
+       * assertions below are the reasons it *does* emit, which keeps this a real rejection check rather
+       * than one satisfied by absent output.
+       */
+      "release-game-composition-report:undefined",
+      "release-game-visual-qa:composition-path-missing",
+      "release-game-visual-qa:route-health-pair-verdict:fail",
+      "release-game-visual-qa:composition-screenshot-stale"
     ]));
   }, 20_000);
 
@@ -874,9 +918,9 @@ describe("showcase route gate registry", () => {
 
     expect(launchEvidence.schema, "launch evidence schema").toBe("aura3d-showcase-build-deploy/1.0");
     expect(typeof launchEvidence.ok, "launch evidence ok flag").toBe("boolean");
-    expect(launchEvidence.ok, "launch evidence ok tracks the public release candidate set").toBe(true);
-    expect(launchEvidence.publicReleaseOk, "public release candidates pass release and required per-route visual review").toBe(true);
-    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(true);
+    expect(launchEvidence.ok, "launch evidence remains fail-closed during the evidence-truth reset").toBe(false);
+    expect(launchEvidence.publicReleaseOk, "public release candidates require current independent review").toBe(false);
+    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(false);
     expect(launchEvidence.allRoutesOk, "all routes include retained internal diagnostics").toBe(false);
     expect(launchEvidence.releaseCandidateCount, "release candidate count").toBe(expectedReleaseCandidateCount);
     expect(launchEvidence.releaseCandidatePassed, "release candidates passed").toBe(expectedReleaseCandidatePassed);
@@ -889,10 +933,10 @@ describe("showcase route gate registry", () => {
     expect(launchEvidence.gateConfig?.schema, "launch gate config schema").toBe(routeGateConfig.schema);
     expect(launchEvidence.gateConfig?.hash, "launch gate config hash").toBe(routeGateConfigHash);
     expect(launchEvidence.visualReview?.path, "visual review path").toBe("docs/project/showcase-visual-review.json");
-    expect(launchEvidence.visualReview?.ok, "public release visual review ok").toBe(true);
-    expect(launchEvidence.visualReview?.overallVerdict, "retained all-route visual review verdict").toBe("fail");
+    expect(launchEvidence.visualReview?.ok, "public release visual review ok").toBe(false);
+    expect(launchEvidence.visualReview?.overallVerdict, "retained all-route visual review verdict").toBe("needs-work");
     expect(launchEvidence.visualReview?.failures ?? [], "retained visual review failures").toEqual(expect.arrayContaining([
-      "visual-review-overall-verdict:fail"
+      "visual-review-overall-verdict:needs-work"
     ]));
     expect(new Set(launchRoutes.map((route) => route.id)), "launch route ids").toEqual(
       new Set(publishedRoutes.map((route) => route.id))
@@ -981,10 +1025,7 @@ describe("showcase route gate registry", () => {
         expect(launchRoute?.routeHealth?.publicShowcase, `${route.id} route-health public showcase`).toBe(false);
         expect(launchRoute?.routeHealth?.gameAssetPairEvidence?.verdict, `${route.id} asset-pair verdict`).toBe("fail");
         expect(launchRoute?.diagnosticBlockers ?? [], `${route.id} game-layer diagnostic blockers retained`).toEqual(
-          expect.arrayContaining([
-            expected.templateBlocker,
-            ...expected.assetPairBlockers.map((blocker) => `visual-review:route-visual-review-blocker:${route.id}:${blocker}`)
-          ])
+          expect.arrayContaining([expected.templateBlocker])
         );
         expect(launchEvidence.diagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in diagnostics`).toBe(true);
         expect(launchEvidence.gameLayerDiagnostics?.some((entry) => entry.id === route.id), `${route.id} listed in game-layer diagnostics`).toBe(true);
@@ -1003,15 +1044,14 @@ describe("showcase route gate registry", () => {
       }
     }
 
-    for (const routeId of ["showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
+    for (const routeId of ["showcase-blockfall-reactor", "showcase-turbo-drift-circuit", "showcase-skyline-runner"]) {
       const launchRoute = launchRoutes.find((route) => route.id === routeId);
-      expect(launchRoute?.releaseClass, `${routeId} launch release class`).toBe("release-ready candidate");
-      expect(launchRoute?.publicReleaseCounted, `${routeId} public release candidate`).toBe(true);
+      expect(launchRoute?.releaseClass, `${routeId} launch release class`).toBe("prototype-blocked");
+      expect(launchRoute?.publicReleaseCounted, `${routeId} public release candidate`).toBe(false);
       expect(launchRoute?.publicReleaseOk, `${routeId} public release ok`).toBe(true);
       expect(launchRoute?.classificationOk, `${routeId} classification ok`).toBe(true);
-      expect(launchRoute?.gate?.gameTemplateStatus?.publicTemplateReady, `${routeId} game template public readiness`).toBe(true);
-      expect(launchRoute?.visualReview?.ok, `${routeId} visual review`).toBe(true);
-      expect(launchRoute?.diagnosticBlockers ?? [], `${routeId} has no diagnostic blockers`).toEqual([]);
+      expect(launchRoute?.visualReview?.required, `${routeId} visual review required`).toBe(false);
+      expect(launchRoute?.diagnosticBlockers?.length ?? 0, `${routeId} has retained blockers`).toBeGreaterThan(0);
     }
 
     const dataGalaxy = launchRoutes.find((route) => route.id === "showcase-data-galaxy");
@@ -1050,8 +1090,8 @@ describe("showcase route gate registry", () => {
       requireScreenshot: false
     });
 
-    expect(context.routePrimaryHeroAsset).toBe("showcaseKenneyRaceCarRed");
-    expect(context.secondaryPrimaryAssets).toEqual(["showcaseKenneyNeonRaceCircuit"]);
+    expect(context.routePrimaryHeroAsset).toBe("turboRaceCar");
+    expect(context.secondaryPrimaryAssets).toEqual(["showcaseTsukubaCircuit"]);
     expect(result).toMatchObject({ ok: true, required: true, failures: [] });
 
     const missingHero = cloneRecord(evidence);
@@ -1060,7 +1100,7 @@ describe("showcase route gate registry", () => {
     missingSecondary.secondaryPrimaryAssets = [];
     const secondaryWithHeroMode = cloneRecord(evidence);
     const primaryAssets = secondaryWithHeroMode.primaryAssets as Array<Record<string, unknown>>;
-    const secondary = primaryAssets.find((asset) => asset.id === "showcaseKenneyNeonRaceCircuit");
+    const secondary = primaryAssets.find((asset) => asset.id === "showcaseTsukubaCircuit");
     if (secondary) secondary.evidenceMode = "route-primary-foreground";
 
     expect(module.validateRoutePrimaryProbeEvidenceRecord(route, missingHero, {
@@ -1074,7 +1114,7 @@ describe("showcase route gate registry", () => {
     expect(module.validateRoutePrimaryProbeEvidenceRecord(route, secondaryWithHeroMode, {
       root: process.cwd(),
       requireScreenshot: false
-    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^secondary-primary-evidence-mode:showcaseKenneyNeonRaceCircuit:/)]));
+    }).failures).toEqual(expect.arrayContaining([expect.stringMatching(/^secondary-primary-evidence-mode:showcaseTsukubaCircuit:/)]));
   });
 
   it("fails stale or missing route-primary probe evidence", async () => {
@@ -1208,6 +1248,142 @@ describe("showcase route gate registry", () => {
     ]));
   });
 
+  it("separates full and targeted route-primary summary artifacts", async () => {
+    const module = await loadRoutePrimaryProbeModule();
+    expect(module.routePrimaryProbeFullSummaryRelativePath)
+      .toBe("tests/reports/showcase-route-primary-probes/_summary.json");
+    expect(module.routePrimaryProbeTargetedSummaryRelativePath)
+      .toBe("tests/reports/showcase-route-primary-probes/_summary.targeted.json");
+    expect(module.routePrimaryProbeSummaryRelativePath("full"))
+      .not.toBe(module.routePrimaryProbeSummaryRelativePath("targeted"));
+    expect(() => module.routePrimaryProbeSummaryRelativePath("partial")).toThrow(/run scope/i);
+  });
+
+  it("records selected, expected, executed, and per-route verdicts in the summary schema", async () => {
+    const module = await loadRoutePrimaryProbeModule();
+    const routes = routeGateConfig.routes;
+    const expectedRouteIds = module.routePrimaryProbeExpectedRouteIds(routes);
+    const summary = module.createRoutePrimaryProbeSummary({
+      runScope: "full",
+      routes,
+      selectedRouteIds: expectedRouteIds,
+      outcomes: expectedRouteIds.map((routeId) => ({
+        routeId,
+        pass: true,
+        failures: [],
+        evidencePath: `tests/reports/showcase-route-primary-probes/${routeId}.json`,
+        screenshotPath: `tests/reports/showcase-route-primary-probes/${routeId}.png`
+      })),
+      routeGateConfig,
+      routeGateConfigHash
+    });
+
+    expect(summary.schema).toBe("aura3d-route-primary-probe-summary/2.0");
+    expect(summary.runScope).toBe("full");
+    expect(summary.expectedRouteCount).toBe(expectedRouteIds.length);
+    expect(summary.executedRouteCount).toBe(expectedRouteIds.length);
+    expect(summary.selectedRouteIds).toEqual([...expectedRouteIds]);
+    expect(summary.missingRouteIds).toEqual([]);
+    expect(summary.routeVerdicts.map((route) => route.routeId)).toEqual([...expectedRouteIds]);
+    expect(summary.pass).toBe(true);
+    expect(summary.evidenceLabel).toBe("structural/image QA pass");
+    expect(summary.humanVisualApproval).toBe(false);
+  });
+
+  it("fails the summary for a failing promoted route, a missing route result, and a targeted summary presented as full", async () => {
+    const module = await loadRoutePrimaryProbeModule();
+    const routes = routeGateConfig.routes;
+    const expectedRouteIds = module.routePrimaryProbeExpectedRouteIds(routes);
+    const promotedRouteId = routes.find((route) =>
+      route.releaseClass === "release-ready candidate" &&
+      (route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true))?.id;
+    expect(promotedRouteId, "a promoted probe-required route must exist").toBeTruthy();
+
+    const passingOutcomes = expectedRouteIds.map((routeId) => ({
+      routeId,
+      pass: true,
+      failures: [],
+      evidencePath: `tests/reports/showcase-route-primary-probes/${routeId}.json`,
+      screenshotPath: `tests/reports/showcase-route-primary-probes/${routeId}.png`
+    }));
+
+    const failingPromoted = module.createRoutePrimaryProbeSummary({
+      runScope: "full",
+      routes,
+      selectedRouteIds: expectedRouteIds,
+      outcomes: passingOutcomes.map((outcome) => outcome.routeId === promotedRouteId
+        ? { ...outcome, pass: false, failures: ["primary-foreground-clipped"] }
+        : outcome),
+      routeGateConfig,
+      routeGateConfigHash
+    });
+    expect(failingPromoted.pass, "a failing promoted route must fail the summary").toBe(false);
+    expect(failingPromoted.blockingRouteIds).toContain(promotedRouteId);
+
+    const missingRoute = module.createRoutePrimaryProbeSummary({
+      runScope: "full",
+      routes,
+      selectedRouteIds: expectedRouteIds,
+      outcomes: passingOutcomes.filter((outcome) => outcome.routeId !== promotedRouteId),
+      routeGateConfig,
+      routeGateConfigHash
+    });
+    expect(missingRoute.pass, "a missing route result must fail the summary").toBe(false);
+    expect(missingRoute.missingRouteIds).toContain(promotedRouteId);
+
+    const targetedDir = mkdtempSync(join(tmpdir(), "aura3d-route-primary-summary-"));
+    try {
+      const targeted = module.createRoutePrimaryProbeSummary({
+        runScope: "targeted",
+        routes,
+        selectedRouteIds: [promotedRouteId as string],
+        outcomes: passingOutcomes.filter((outcome) => outcome.routeId === promotedRouteId),
+        routeGateConfig,
+        routeGateConfigHash
+      });
+      expect(targeted.pass, "a self-consistent targeted run may pass its own scope").toBe(true);
+
+      // A targeted summary written to the full-suite path must be rejected.
+      const summaryDir = resolve(targetedDir, "tests/reports/showcase-route-primary-probes");
+      mkdirSync(summaryDir, { recursive: true });
+      writeFileSync(resolve(summaryDir, "_summary.json"), `${JSON.stringify(targeted, null, 2)}\n`);
+      const forged = module.validateRoutePrimaryProbeSummary({
+        root: targetedDir,
+        requiredRouteIds: [promotedRouteId as string],
+        routeGateConfigHash
+      });
+      expect(forged.ok, "a targeted summary at the full path must be rejected").toBe(false);
+      expect(forged.failures).toEqual(expect.arrayContaining([
+        expect.stringMatching(/^route-primary-summary-run-scope:targeted$/),
+        expect.stringMatching(/^route-primary-summary-partial-run:/)
+      ]));
+
+      const missingSummary = module.validateRoutePrimaryProbeSummary({
+        root: mkdtempSync(join(tmpdir(), "aura3d-route-primary-empty-")),
+        requiredRouteIds: [promotedRouteId as string]
+      });
+      expect(missingSummary.ok).toBe(false);
+      expect(missingSummary.failures[0]).toMatch(/^missing-route-primary-summary:/);
+    } finally {
+      rmSync(targetedDir, { recursive: true, force: true });
+    }
+  });
+
+  it("accepts the retained full route-primary summary for every promoted route", async () => {
+    const module = await loadRoutePrimaryProbeModule();
+    const promotedRouteIds = routeGateConfig.routes
+      .filter((route) => route.published && route.releaseClass === "release-ready candidate")
+      .filter((route) => route.primaryAssets.length > 0 || route.requiresRoutePrimaryProbe === true)
+      .map((route) => route.id);
+    const result = module.validateRoutePrimaryProbeSummary({
+      root: process.cwd(),
+      requiredRouteIds: promotedRouteIds,
+      routeGateConfigHash
+    });
+    expect(result.failures, "retained full route-primary summary failures").toEqual([]);
+    expect(result.ok).toBe(true);
+  });
+
   it("keeps retained route-primary summary artifact paths repo-relative", () => {
     const summaryPath = resolve("tests/reports/showcase-route-primary-probes/_summary.json");
     expect(existsSync(summaryPath), "route-primary summary exists").toBe(true);
@@ -1320,6 +1496,7 @@ function createValidProbeEvidence(route: ShowcaseRouteGate, context: RoutePrimar
     visible: true,
     clipped: false,
     occludedByUi: false,
+    controlsInViewport: true,
     readabilityScore: 82,
     failures: []
   };

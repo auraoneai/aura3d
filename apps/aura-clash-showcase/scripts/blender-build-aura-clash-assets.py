@@ -723,6 +723,7 @@ def build_duel_stage():
     bpy.context.object.data.size = 5.5
     export_glb(scene_out / "aura-clash-duel-stage.glb")
 
+
 load_animation_actions()
 
 for fighter in fighter_defs:

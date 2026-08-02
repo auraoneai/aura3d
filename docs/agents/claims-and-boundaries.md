@@ -210,7 +210,7 @@ Before marking a public example, doc, README, or release claim as ready, verify:
 - public wording does not exceed detected capability.
 
 This checklist mirrors the P0 boundary and static-source requirements in
-`Fixed-Needed-PRD.md`. If a required validation command does not exist yet,
+`docs/project/plans/recovery-remediation-prd.md`. If a required validation command does not exist yet,
 state that the route is blocked or prototype rather than weakening the claim.
 
 ## Allowed Short Claims

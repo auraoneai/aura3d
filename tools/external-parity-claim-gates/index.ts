@@ -27,7 +27,7 @@ export function validateExternalParityClaimGates(root = process.cwd()) {
     "README.md",
     "package.json",
     "docs/project",
-    "docs/project/known-limits.md",
+    "docs/project/status/known-limits.md",
     "docs/project/claim-guidelines.md",
     "docs/comparisons",
     "docs/benchmarks",

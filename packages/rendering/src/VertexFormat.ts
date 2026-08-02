@@ -1,4 +1,27 @@
-export type VertexAttributeSemantic = "position" | "normal" | "uv" | "uv1" | "tangent" | "color" | "joints" | "weights";
+export type VertexAttributeSemantic =
+  | "position"
+  | "normal"
+  | "uv"
+  | "uv1"
+  | "tangent"
+  | "color"
+  | "joints"
+  | "weights"
+  /** Second influence set, glTF `JOINTS_1`. Enables eight-influence skinning. */
+  | "joints1"
+  /** Second influence set, glTF `WEIGHTS_1`. */
+  | "weights1"
+  /** Screen-space line: world-space start point of the segment this vertex belongs to. */
+  | "lineStart"
+  /** Screen-space line: world-space end point of the segment. */
+  | "lineEnd"
+  /**
+   * Screen-space line corner selector. `x` is the side (-1 or +1) the vertex expands
+   * toward, `y` is the position along the segment (0 at start, 1 at end).
+   */
+  | "lineCorner"
+  /** Accumulated arc length at this vertex, in world units, for dash patterns. */
+  | "lineDistance";
 
 export type VertexAttributeType = "float32";
 
@@ -115,6 +138,55 @@ export class VertexFormat {
     56
   );
 
+  /**
+   * Eight-influence skinning, position only. glTF permits `JOINTS_1`/`WEIGHTS_1` for
+   * vertices bound to more than four joints; without a second influence set those
+   * extra bindings are silently dropped and the mesh deforms incorrectly at joints
+   * with dense weighting (shoulders, hips, face rigs).
+   */
+  static readonly P3J8W8 = new VertexFormat(
+    [
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "joints", components: 4, offset: 12 },
+      { semantic: "weights", components: 4, offset: 28 },
+      { semantic: "joints1", components: 4, offset: 44 },
+      { semantic: "weights1", components: 4, offset: 60 }
+    ],
+    76
+  );
+
+  /** Eight-influence skinning with normals, for lit skinned meshes. */
+  static readonly P3N3J8W8 = new VertexFormat(
+    [
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "joints", components: 4, offset: 24 },
+      { semantic: "weights", components: 4, offset: 40 },
+      { semantic: "joints1", components: 4, offset: 56 },
+      { semantic: "weights1", components: 4, offset: 72 }
+    ],
+    88
+  );
+
+  /**
+   * Screen-space fat-line format.
+   *
+   * `position` is unused by the shader for placement: both endpoints travel as
+   * `lineStart`/`lineEnd` so the vertex stage can project them independently and
+   * expand the quad in *pixel* space. It is retained so bounds computation and
+   * frustum culling see real world-space geometry.
+   */
+  static readonly SCREEN_SPACE_LINE = new VertexFormat(
+    [
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "lineStart", components: 3, offset: 12 },
+      { semantic: "lineEnd", components: 3, offset: 24 },
+      { semantic: "lineCorner", components: 2, offset: 36 },
+      { semantic: "lineDistance", components: 1, offset: 44 }
+    ],
+    48
+  );
+
   getAttribute(semantic: VertexAttributeSemantic): VertexAttribute {
     const attribute = this.attributes.find((candidate) => candidate.semantic === semantic);
     if (!attribute) {
@@ -146,6 +218,18 @@ function defaultShaderLocation(semantic: VertexAttributeSemantic): number {
       return 6;
     case "uv1":
       return 7;
+    case "joints1":
+      return 8;
+    case "weights1":
+      return 9;
+    case "lineStart":
+      return 10;
+    case "lineEnd":
+      return 11;
+    case "lineCorner":
+      return 12;
+    case "lineDistance":
+      return 13;
   }
 }
 
@@ -167,5 +251,17 @@ function defaultShaderName(semantic: VertexAttributeSemantic): string {
       return "a_joints";
     case "weights":
       return "a_weights";
+    case "joints1":
+      return "a_joints1";
+    case "weights1":
+      return "a_weights1";
+    case "lineStart":
+      return "a_lineStart";
+    case "lineEnd":
+      return "a_lineEnd";
+    case "lineCorner":
+      return "a_lineCorner";
+    case "lineDistance":
+      return "a_lineDistance";
   }
 }

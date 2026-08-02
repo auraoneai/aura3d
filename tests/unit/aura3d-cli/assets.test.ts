@@ -205,10 +205,7 @@ describe("@aura3d/cli assets", () => {
       role: "vehicle",
       suitabilityReason: "Release racing vehicle with readable meter-scale bounds, explicit orientation, stylized material rationale, normalized camera-fit placement, and retained browser-rendered vehicle proof.",
       foregroundBounds: { x: 120, y: 140, width: 360, height: 120 },
-      patch: {
-        bounds: [4.2, 1.4, 2.1],
-        boundsMetadata: { min: [-2.1, 0, -1.05], max: [2.1, 1.4, 1.05], size: [4.2, 1.4, 2.1], center: [0, 0.7, 0], maxDimension: 4.2, grounded: true }
-      }
+      extents: { min: [-2.1, 0, -1.05], max: [2.1, 1.4, 1.05] }
     });
 
     const certified = await certifyGameGeometry({ projectDir, category: "racing", assetId: "raceVehicle" });
@@ -660,10 +657,7 @@ describe("@aura3d/cli assets", () => {
       role: "vehicle",
       suitabilityReason: "Release vehicle candidate with meter-scale footprint, forward-axis orientation, texture evidence, readable materials, and retained screenshot proof for racing track use.",
       foregroundBounds: { x: 90, y: 120, width: 360, height: 120 },
-      patch: {
-        bounds: [4.3, 1.4, 2],
-        boundsMetadata: { min: [-2.15, 0, -1], max: [2.15, 1.4, 1], size: [4.3, 1.4, 2], center: [0, 0.7, 0], maxDimension: 4.3, grounded: true }
-      }
+      extents: { min: [-2.15, 0, -1], max: [2.15, 1.4, 1] }
     });
     writeFileSync(join(projectDir, "src", "main.ts"), `
       import { box, createAuraApp, model, scene } from "@aura3d/engine";
@@ -924,11 +918,10 @@ describe("@aura3d/cli assets", () => {
       name: "flatColorProduct",
       role: "product",
       suitabilityReason: "Release flat-color product with complete readable named materials, stable product bounds, explicit view evidence, and a hash-bound browser screenshot probe.",
+      // Real extents and a genuinely untextured source file, so derived metadata matches it.
+      extents: { min: [-0.8, 0, -0.4], max: [0.8, 0.9, 0.4] },
+      textured: false,
       patch: {
-        bounds: [1.6, 0.9, 0.8],
-        boundsMetadata: { min: [-0.8, 0, -0.4], max: [0.8, 0.9, 0.4], size: [1.6, 0.9, 0.8], center: [0, 0.45, 0], maxDimension: 1.6, grounded: true },
-        textures: [],
-        hierarchy: { nodeCount: 1, meshCount: 1, materialCount: 1, textureCount: 0, animationClipCount: 3, skinCount: 1, morphTargetCount: 0, rootNodeNames: ["FlatColorProduct"], maxDepth: 1, messages: [] },
         warnings: ["no texture references detected"]
       }
     });
@@ -958,9 +951,8 @@ describe("@aura3d/cli assets", () => {
       role: "vehicle",
       suitabilityReason: "Release vehicle candidate with readable material and texture proof, track-scale footprint, racing stance, and retained screenshot evidence for vehicle identity.",
       foregroundBounds: { x: 90, y: 120, width: 360, height: 110 },
+      extents: { min: [-2.05, 0, -1], max: [2.05, 1.5, 1] },
       patch: {
-        bounds: [4.1, 1.5, 2],
-        boundsMetadata: { min: [-2.05, 0, -1], max: [2.05, 1.5, 1], size: [4.1, 1.5, 2], center: [0, 0.75, 0], maxDimension: 4.1, grounded: true },
         orientation: { source: "unknown", messages: ["No orientation metadata detected."] }
       }
     });
@@ -1110,10 +1102,7 @@ describe("@aura3d/cli assets", () => {
       role: "vehicle",
       suitabilityReason: "Release vehicle candidate with track footprint, forward-axis orientation, texture proof, and retained screenshot evidence suitable for racing readability.",
       foregroundBounds: { x: 20, y: 20, width: 50, height: 24 },
-      patch: {
-        bounds: [4.4, 1.4, 2.1],
-        boundsMetadata: { min: [-2.2, 0, -1.05], max: [2.2, 1.4, 1.05], size: [4.4, 1.4, 2.1], center: [0, 0.7, 0], maxDimension: 4.4, grounded: true }
-      }
+      extents: { min: [-2.2, 0, -1.05], max: [2.2, 1.4, 1.05] }
     });
 
     const report = validateAssets({ projectDir, release: true });
@@ -1168,10 +1157,7 @@ describe("@aura3d/cli assets", () => {
         role: "track",
         suitabilityReason: "Release racing track with mesh-extracted route extent, normalized camera-fit placement, readable textured road materials, and retained browser proof.",
         foregroundBounds: { x: 90, y: 60, width: 460, height: 240 },
-        patch: {
-          bounds: [20, 2, 2],
-          boundsMetadata: { min: [-10, -1, -1], max: [10, 1, 1], size: [20, 2, 2], center: [0, 0, 0], maxDimension: 20, grounded: false }
-        }
+        extents: { min: [-10, -1, -1], max: [10, 1, 1] }
       });
       const asset = readAssetManifest(projectDir).assets[0];
       expect(asset).toBeDefined();
@@ -1208,10 +1194,7 @@ describe("@aura3d/cli assets", () => {
       role: "track",
       suitabilityReason: "Release track world candidate with a readable gameplay route, broad footprint, material proof, texture proof, and retained screenshot evidence.",
       foregroundBounds: { x: 90, y: 60, width: 460, height: 240 },
-      patch: {
-        bounds: [5000, 40, 4500],
-        boundsMetadata: { min: [-2500, 0, -2250], max: [2500, 40, 2250], size: [5000, 40, 4500], center: [0, 20, 0], maxDimension: 5000, grounded: true }
-      }
+      extents: { min: [-2500, 0, -2250], max: [2500, 40, 2250] }
     });
 
     const report = validateAssets({ projectDir, release: true });
@@ -1237,10 +1220,7 @@ describe("@aura3d/cli assets", () => {
         role: "world",
         suitabilityReason,
         foregroundBounds: { x: 60, y: 40, width: 500, height: 260 },
-        patch: {
-          bounds: [381.236, 309.576, 324.48],
-          boundsMetadata: { min: [-190.618, -154.788, -162.24], max: [190.618, 154.788, 162.24], size: [381.236, 309.576, 324.48], center: [0, 0, 0], maxDimension: 381.236, grounded: true }
-        }
+        extents: { min: [-190.618, -154.788, -162.24], max: [190.618, 154.788, 162.24] }
       });
 
       const report = validateAssets({ projectDir, release: true });
@@ -1257,10 +1237,7 @@ describe("@aura3d/cli assets", () => {
       role: "world",
       suitabilityReason: "Release world asset with gameplay-scale footprint, normalized camera-fit placement, readable material and texture proof, and retained screenshot evidence for route traversal.",
       foregroundBounds: { x: 60, y: 40, width: 500, height: 260 },
-      patch: {
-        bounds: [381.236, 309.576, 324.48],
-        boundsMetadata: { min: [-190.618, -154.788, -162.24], max: [190.618, 154.788, 162.24], size: [381.236, 309.576, 324.48], center: [0, 0, 0], maxDimension: 381.236, grounded: true }
-      }
+      extents: { min: [-190.618, -154.788, -162.24], max: [190.618, 154.788, 162.24] }
     });
 
     const report = validateAssets({ projectDir, release: true });
@@ -1291,10 +1268,7 @@ describe("@aura3d/cli assets", () => {
       role: "vehicle",
       suitabilityReason: "Release vehicle candidate with meter-scale footprint, forward-axis orientation, texture evidence, readable materials, and retained screenshot proof for racing track use.",
       foregroundBounds: { x: 90, y: 120, width: 360, height: 120 },
-      patch: {
-        bounds: [4.3, 1.4, 2],
-        boundsMetadata: { min: [-2.15, 0, -1], max: [2.15, 1.4, 1], size: [4.3, 1.4, 2], center: [0, 0.7, 0], maxDimension: 4.3, grounded: true }
-      }
+      extents: { min: [-2.15, 0, -1], max: [2.15, 1.4, 1] }
     });
 
     const report = validateAssets({ projectDir, release: true });
@@ -2053,10 +2027,17 @@ function addReleaseFixtureAsset(
     readonly suitabilityReason: string;
     readonly foregroundBounds?: { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
     readonly patch?: Record<string, unknown>;
+    /** Real geometry extents, so derived bounds match the fixture's own source file. */
+    readonly extents?: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+    /** Omit source image references, for fixtures that must genuinely have no textures. */
+    readonly textured?: boolean;
   }
 ): void {
   const sourceFile = join(projectDir, "assets", `${options.name}.gltf`);
-  writeFileSync(sourceFile, JSON.stringify(createAnimatedCharacterGltf()));
+  writeFileSync(sourceFile, JSON.stringify(createAnimatedCharacterGltf({
+    ...(options.extents ? { extents: options.extents } : {}),
+    ...(options.textured === false ? { textured: false } : {})
+  })));
   const renderedProbe = writeRenderedProbe(projectDir, `${options.name}.probe.png`, sourceFile, `${options.name}-role-fixture`, options.foregroundBounds);
   addAsset({
     projectDir,
@@ -2174,7 +2155,21 @@ function crc32(bytes: Buffer): number {
 }
 
 function createAnimatedCharacterGltf(
-  options: { readonly provenance?: boolean; readonly clips?: readonly string[] } = {},
+  options: {
+    readonly provenance?: boolean;
+    readonly clips?: readonly string[];
+    /**
+     * Real accessor extents for this fixture.
+     *
+     * `assets validate` re-derives bounds from the asset file and reports drift, so a test that
+     * needs large world bounds must declare them *here* rather than patching the manifest after
+     * `addAsset`. Patching produced metadata that contradicted its own source file - exactly the
+     * staleness the drift check exists to catch.
+     */
+    readonly extents?: { readonly min: readonly [number, number, number]; readonly max: readonly [number, number, number] };
+    /** Omit image references so an "untextured" fixture is untextured in its own source file. */
+    readonly textured?: boolean;
+  } = {},
   readiness: { readonly mouth?: boolean } = {}
 ): Record<string, unknown> {
   const includeProvenance = options.provenance !== false;
@@ -2225,8 +2220,11 @@ function createAnimatedCharacterGltf(
       channels: [{ sampler: 0, target: { node: 1, path: "rotation" } }],
       samplers: [{}]
     })),
-    images: [{ uri: "data:image/png;base64,AA==" }],
-    accessors: [{ min: [-1, 0, -1], max: [1, 2, 1] }]
+    ...(options.textured === false ? {} : { images: [{ uri: "data:image/png;base64,AA==" }] }),
+    accessors: [{
+      min: options.extents ? [...options.extents.min] : [-1, 0, -1],
+      max: options.extents ? [...options.extents.max] : [1, 2, 1]
+    }]
   };
 }
 

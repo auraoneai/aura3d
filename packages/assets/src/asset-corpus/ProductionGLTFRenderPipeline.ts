@@ -17,6 +17,12 @@ export interface ProductionGLTFRenderPipelineOptions {
   readonly rendererInput?: GLTFRendererInputOptions;
   readonly width?: number;
   readonly height?: number;
+  /**
+   * Share one runtime material instance across glTF materials whose definitions are identical apart
+   * from their name, so renderer static batching can collapse them. See
+   * `GLTFRenderResourceOptions.deduplicateIdenticalMaterials`.
+   */
+  readonly deduplicateIdenticalMaterials?: boolean;
 }
 
 export interface ProductionGLTFRenderMetadata {
@@ -76,7 +82,8 @@ export async function loadProductionGLTFRenderPipeline(options: ProductionGLTFRe
     ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
-    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {})
+    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
+    ...(options.deduplicateIdenticalMaterials ? { deduplicateIdenticalMaterials: true } : {})
   });
   const rendererInput = resources.toRendererInput(
     { width: options.width ?? 512, height: options.height ?? 512 },

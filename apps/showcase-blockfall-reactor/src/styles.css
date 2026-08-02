@@ -44,22 +44,24 @@ button {
 
 .overlay-shell {
   position: fixed;
-  inset: 16px;
+  inset: 14px;
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr) 300px;
+  /* Narrower side rails so the cabinet, not the dashboard, owns the frame. */
+  grid-template-columns: 232px minmax(0, 1fr) 196px;
   grid-template-rows: auto auto minmax(0, 1fr);
-  gap: 12px;
-  height: calc(100vh - 32px);
+  gap: 10px;
+  height: calc(100vh - 28px);
   pointer-events: none;
 }
 
 .hud-panel {
   min-width: 0;
-  border: 1px solid rgba(216, 230, 194, 0.22);
+  border: 1px solid rgba(216, 230, 194, 0.14);
   border-radius: 8px;
-  background: rgba(8, 12, 8, 0.78);
-  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(14px);
+  /* Lower-contrast chrome keeps the HUD supportive rather than dominant. */
+  background: rgba(8, 5, 14, 0.56);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(12px);
   pointer-events: auto;
 }
 
@@ -68,16 +70,25 @@ button {
 .hud-panel--preview,
 .hud-panel--actions,
 .hud-panel--evidence {
-  padding: 12px;
+  padding: 9px 10px;
+}
+
+.hud-panel--status {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: start;
 }
 
 .hud-panel--score {
   grid-column: 1;
+  grid-row: 2;
+  align-self: start;
 }
 
 .hud-panel--preview {
   grid-column: 3;
-  grid-row: 1 / span 2;
+  grid-row: 1;
+  align-self: start;
 }
 
 .hud-panel--actions {
@@ -344,31 +355,106 @@ h1 {
   }
 
   .hud-panel--status {
-    padding: 9px 10px;
+    padding: 7px 8px;
     background: rgba(8, 12, 8, 0.58);
   }
 
-  .brand-mark {
-    width: 26px;
-    height: 26px;
+  /*
+   * The stacked HUD measured 48.6% of mobile height, which pushed the well's top rows
+   * behind it. The keyboard-controls strip is redundant on a touch layout that already
+   * exposes every action through `.touch-root`, so it is dropped here and the title
+   * block tightened, which is what buys the vertical room for score/hold/next.
+   */
+  .hud-panel--status .controls-strip {
+    display: none;
+  }
+
+  .hud-panel--status .status-strip {
+    margin-top: 5px;
   }
 
   h1 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
-  .status-strip {
-    margin-top: 6px;
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  /*
+   * The acceptance criterion requires the full board, hold, next, score and controls
+   * to be readable "at desktop and mobile sizes". Hiding score and the hold/next bay
+   * outright satisfied the layout but not the criterion, so at this width they collapse
+   * into a single compact strip that sits beside the title block rather than over the
+   * well. Only the redundant duplicates are dropped: the evidence chips (checksum/replay
+   * ids, which are diagnostics rather than gameplay state) and the desktop action grid,
+   * whose controls are already reachable through `.touch-root`.
+   */
+  .hud-panel--evidence,
+  .hud-panel--actions {
+    display: none;
   }
 
   .hud-panel--score,
-  .hud-panel--preview,
-  .hud-panel--evidence {
+  .hud-panel--preview {
+    padding: 7px 8px;
+    background: rgba(8, 5, 14, 0.62);
+  }
+
+  .hud-panel--score .stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .hud-panel--score .stat-grid article {
+    padding: 5px 6px;
+  }
+
+  .hud-panel--score .stat-grid span {
+    font-size: 9px;
+  }
+
+  .hud-panel--score .stat-grid strong {
+    margin-top: 1px;
+    font-size: 14px;
+  }
+
+  /* The reactor meter is a progress readout the touch layout has no room for. */
+  .hud-panel--score .reactor-meter,
+  .hud-panel--score .reactor-meta {
     display: none;
   }
 
-  .hud-panel--actions {
-    display: none;
+  /* Hold and next sit side by side so the bay costs one short row, not two. */
+  .hud-panel--preview {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  .hud-panel--preview .piece-bay + .piece-bay {
+    margin-top: 0;
+  }
+
+  .hud-panel--preview .mini-piece {
+    grid-template-columns: repeat(4, 9px);
+    grid-auto-rows: 9px;
+    gap: 2px;
+    min-height: 0;
+  }
+
+  .hud-panel--preview .mini-piece span {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+  }
+
+  .hud-panel--preview .next-queue {
+    grid-auto-flow: column;
+    grid-auto-columns: min-content;
+    gap: 6px;
   }
 
   .touch-cluster {

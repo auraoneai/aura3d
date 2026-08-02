@@ -1,16 +1,142 @@
 # Changelog
 
-Version: 1.4.5
+Version: 1.5.0
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.4.5` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.0` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-07-27): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
-verdict. The configured showcase sub-gate still reports 7/7 candidates, but
-current public-ready promotion of Turbo Drift Circuit and Skyline Runner is
-held while the required retained racing visual-QA unit test is non-passing.
+verdict. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
+currently prototype-blocked while their visual rebuild and hash-bound
+independent review are pending. Their prior release receipts remain history,
+not approval of the current worktree.
 Performance/parity wording is also blocked while six comparative-report inputs
 are missing.
+
+## 1.5.0 (2026-08-01)
+
+Public showcase curation and asset-correctness release. Two superseded public game routes were
+**deleted**, the racing hero asset was replaced after its own release probe proved it structurally
+broken, and the Aura Clash arena now renders the purpose-built typed environment it always shipped
+with. Route and package claim boundaries are unchanged: the named presentations remain
+evidence-bounded examples, not a claim of production game-engine or renderer parity.
+
+### Removed
+
+- **Deleted `showcase-public-racing-presentation-proof` and
+  `showcase-public-platformer-presentation-proof`.** Both were superseded by Turbo Drift Circuit and
+  Skyline Runner and had been carried as `removed-from-public-showcase` "historical certification
+  evidence". Retaining them kept two low-quality routes shippable and consuming screenshot, review and
+  gate budget. Removed from `apps/`, `route-gates.json` (15 -> 13 routes), the showcase index,
+  `tools/agent-examples`, the geometry/composition/speed-contract producers, and their gameplay-proof
+  browser tests. The marketing build keeps them in its prune list so a stale `dist/` is still cleaned.
+
+### Fixed
+
+- **Turbo Drift Circuit hero asset was structurally broken and is replaced.**
+  `showcaseTexturedSportsCar` renders all four tyres detached from the hull on visible stalks at
+  roughly truck scale, with an untextured brown cockpit. This was confirmed in the asset's **own
+  isolated release probe**, so no route framing, lighting or scaling could correct it. Replaced with
+  `showcaseCityVehicle` (role `vehicle`, `quality: release`, CC-BY-4.0, Objaverse provenance, 4
+  textures, 2.10 length/width ratio). A prior release note claiming the tyres "read as complete
+  rounded wheels resting on the asphalt" was incorrect and is retracted.
+- **Aura Clash arena renders the typed multi-building environment.** `arenaNeonDowntown` -- authored
+  for this route, carrying its emerald floor rails, neon signage and arena lights alongside streets,
+  six buildings and props -- was unused because 84 of its 131 materials omit `metallicFactor`, which
+  glTF defaults to 1.0; with `kd = 1 - metallic` the whole block rendered as a black mirror. The prior
+  workaround averaged the textures into flat factors on a single-mesh cutout, producing the flat
+  facade. The real maps are now attached (`scripts/build-textured-arena-glb.mjs`, mapping read from the
+  source pack's own glTF), at 8.88 MB and 91 draw calls / 60 FPS.
+- **Two chase/follow cameras were zoomed to satisfy the wrong gate.** Turbo (1.15) and Skyline (3.2)
+  had been pulled in to clear `readabilityRuleForRole` floors, which are evaluated against each
+  asset's *isolated* probe, not the route camera. The zoom could never satisfy them and caused both
+  the "oversized mascot" and cropped-circuit framing. Both reframed against
+  `routePrimaryProbeThresholds`, the gate that does apply.
+- **Skyline Runner's typed world now carries the level.** Seven hand-authored primitives (a sky wall,
+  five rotated "peak" boxes, a valley occluder and a shadow shelf) sat in front of the typed world's
+  own 8 mountains, 18 clouds, 22 cliff rocks and 11 trees, so the flat boxes were the mountains a
+  viewer saw. Removed; draw calls fell 172 -> 162.
+- **Blockfall Reactor's game-over beat hid the final board.** The wash was pinned to full board height
+  for as long as the game-over state held, covering the stack that ended the run. It now plays its
+  sweep and settles into a top band.
+- **`lighting.readable` was a source-authored boolean.** It compared `auraClashLightingPreset`'s own
+  literals against fixed thresholds, so it could not be false -- and that preset is never rendered
+  (its only consumer has no callers). It is now derived from the rig actually submitted to the
+  renderer, with 6 negative controls proving it can fail.
+- **`performance-budget.spec.ts` measured the wrong things and had never passed.** The JS budget summed
+  every chunk on disk across all six routes; it now measures the eager graph a visitor downloads
+  (810 KB against a 1.4 MB budget) while still bounding the on-disk total. The heap budget compared raw
+  `usedJSHeapSize` readings, so it measured GC scheduling rather than retention; both ends now collect
+  first. Retained growth measured at +1.7 MB across ~54 interactions.
+- **The external demo exporter hardcoded `examples/<id>/main.ts`**, reporting `product-configurator`
+  as missing though its page declares `./src/main.ts`. The entry is now resolved from each page's own
+  `<script src>`.
+
+### Added
+
+- Aura Clash camera responds to combat: hit-stop punch-in and widened round-over framing as real
+  renderer state, published as measurable `camera` evidence and proven by a browser test that requires
+  an idle round to show zero response frames.
+- Per-fighter emerald/cyan rim lights that track each fighter, so edge separation survives a cross-up.
+- Grounded stage practicals and lane-boundary markers replacing floating banner slabs and a loose
+  portal ring; the lane markers sit exactly on the clamp the simulation enforces.
+- A declared `performanceBudget` on the side-view game render preset, naming the passes it was measured
+  with so an unmeasured addition is detectable.
+- Named-state capture assertions for Aura Clash (first frame, combat, block, KO, reset, mobile), each
+  bound to the mounted runtime state its filename claims.
+- Mobile fighting-game HUD for Aura Clash: both fighters' vitals side by side with the round clock,
+  cutting HUD chrome 405px -> 162px and raising the arena's share of the page 37% -> 48.6%.
+
+### Reusable engine layer (architectural remediation pass)
+
+The showcase games proved gameplay kits and evidence plumbing existed, but visual quality, asset fitness
+and art direction were still hand-authored per route. This pass moved that work into reusable packages.
+
+- **Layered scene composition** (`@aura3d/engine`): `planLayeredSceneComposition` and
+  `platformerCompositionSpec` plan deterministic foreground/midground/far-background prop distribution
+  from declarative intent -- span, gameplay depth, prop vocabulary, protected zones, density scale.
+  Seeded, so retained screenshots are reproducible frame-for-frame.
+- **Banded sky backdrop**: `planSkyBackdrop`, `blendSkyBandColor` and `skyBandCountForRamp` replace
+  hand-authored sky planes. Grades both sides of the horizon, and derives band count from the colour
+  ramp so a gradient cannot read as a visible stair. Proven across five generated scenes at materially
+  different scales, not only against its first consumer.
+- **Reusable touch controls**: `bindGameTouchControls` replaces pointer-to-keyboard wiring that had been
+  duplicated byte-for-byte between two routes. Idempotent per element, releases held keys on teardown,
+  and reports missing element ids instead of yielding a dead button.
+- **Typed subject placement**: `resolveSubjectPlacementFacts` derives ground contact, visual centre, a
+  named centre-of-mass *approximation*, framing bounds and a wheel/foot contact region from typed
+  manifest bounds, so route code no longer restates asset dimensions.
+- **Role-aware asset admission** (`@aura3d/cli`): 21 distinct recorded checks against a requested role
+  rather than one global pass/fail. Adds normalization requirement, orientation evidence, front/rear
+  inference, origin/pivot sanity and material completeness. Orientation is never inferred -- absent
+  evidence is reported, not guessed.
+- **Deterministic candidate selection**: `assets resolve --index <n>` and `--candidate-id <provider:id>`
+  with loud failure on out-of-range or unknown ids, and no silent fallback to the top result.
+- **Per-primitive submission diagnostics** (`@aura3d/rendering`): `auditPrimitiveSubmission` records 18
+  fields per primitive, including index component type, alpha mode/cutoff/effective opacity, texture
+  readiness and optional glTF provenance, so a missing part is attributable rather than inferred.
+- **Documented empty-flat-region budget**: a `flat-region-budget` visual-QA check measuring quantised
+  colour-bucket concentration. Existing image checks measure the frame relative to its background colour
+  and flat sky *is* the background, so they could not see this class of defect.
+- **Evidence freshness is now itself retained**: `pnpm explain:staleness` writes
+  `tests/reports/evidence-freshness/staleness-audit.json`, declared in the producer registry like every
+  other producer, with a machine-readable reason required for every stale verdict.
+- **Replicability metrics** (`pnpm report:replicability`) measure all 11 named dimensions, including
+  repeated code clusters, asset-admission pass/fail counts, average screening attempts per intent, and
+  evidence-freshness failures.
+
+Measured: reusable visual-layer ratio **9.33x -> 6.08x** (2.16x excluding the Aura Clash outlier);
+repeated cross-route code clusters **6 -> 0**; route-specific exceptions in engine code **0**.
+
+### Claim Boundary
+
+This release corrects asset, framing, evidence and measurement defects in the retained public routes.
+It does not establish arbitrary asset-to-game conversion, general collision or vehicle physics,
+reusable production game kits, AI opponents, netcode, production game-engine parity, or root-wide
+renderer parity. Blockfall Reactor, Turbo Drift Circuit and Skyline Runner remain
+**prototype-blocked**, and Aura Clash remains a **development showcase**: their hash-bound independent
+visual review is still pending and no machine gate may grant it. Comparative performance and
+Unity/Unreal parity wording remains blocked pending missing report inputs and real editor captures.
 
 ## 1.4.5 (2026-07-20)
 
@@ -105,7 +231,7 @@ The Animation Studio turns a natural-language prompt into a deterministic, rende
 - **T2.1 WebGPU 96-joint skinning parity (`@aura3d/rendering`):** the WebGPU path now carries a 96-joint palette (`MAX_WEBGPU_SKINNING_JOINTS = 96`, matching WebGL2 `u_jointMatrices[96]`) — the WGSL `DrawUniforms` carries `joints: array<mat4x4<f32>, 96>`, the draw uniform packing uploads the full palette, and the emulation rasterizer now skins the full palette (previously capped at 2 and not skinned in the rasterizer). Parity proof: a vertex bound to joint #80/#95 drives the render. Gate: `rendering:webgpu-skinning-parity`. Real-device WGSL execution stays evidence-bound.
 - **Aggregate gate:** `pnpm animation-engine:believable-motion` runs all six per-feature gates.
 
-Honest scope: Tier 3 stays a documented non-goal — no motion matching, no production ragdoll, no general full-body IK (FABRIK/CCD), no Mecanim/Control-Rig editor parity. `known-limits.md` is updated only for the items genuinely proven (morph cap + WebGPU 96-joint skinning).
+Honest scope: Tier 3 stays a documented non-goal — no motion matching, no production ragdoll, no general full-body IK (FABRIK/CCD), no Mecanim/Control-Rig editor parity. `docs/project/status/known-limits.md` is updated only for the items genuinely proven (morph cap + WebGPU 96-joint skinning).
 
 ## 1.2.0 — Animation Engine (shipped within 1.3.0)
 
@@ -127,7 +253,7 @@ The 1.2.0 work was never published as its own release; it shipped as part of 1.3
 ### 1.2.0 — Removed / housekeeping
 
 - Removed the dead `apps/aura-clash-showcase/src/fighters/{FighterController,FighterAI}.ts` and the legacy `packages/animation/src/Retargeting.ts` stub (its public export dropped; superseded by `HumanoidRetargeting`). A dead-code gate enforces no production import resolves to them.
-- Documented unsupported animation areas (motion matching, ragdoll, full-body IK, inertialization, no parity with Unity Mecanim or Unreal Control Rig, cloth/hair) in `docs/project/known-limits.md`, enforced by `animation-engine-docs-claims`.
+- Documented unsupported animation areas (motion matching, ragdoll, full-body IK, inertialization, no parity with Unity Mecanim or Unreal Control Rig, cloth/hair) in `docs/project/status/known-limits.md`, enforced by `animation-engine-docs-claims`.
 
 ### 1.2.0 — Honest scope
 

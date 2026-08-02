@@ -7,10 +7,10 @@ const materialClaimFiles = [
   "README.md",
   "llms.txt",
   "prompt.md",
-  "Fixed-Needed-PRD.md",
+  "docs/project/plans/recovery-remediation-prd.md",
   "docs/rendering/material-matrix.md",
   "docs/concepts/rendering.md",
-  "docs/project/createAuraApp-production-bridge-architecture.md"
+  "docs/project/architecture/create-aura-app-production-bridge.md"
 ] as const;
 
 const rootScopePattern = /\b(createauraapp|root|root webgl2|public root|public examples|public safe route|webgl2 path|material lab)\b/;

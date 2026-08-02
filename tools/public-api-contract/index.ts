@@ -286,7 +286,7 @@ function writePublicApiMarkdown(checks: readonly ReleaseCheck[], engineExports: 
     ""
   ];
   mkdirSync("docs/project", { recursive: true });
-  writeFileSync("docs/project/public-api-contract.md", lines.join("\n"));
+  writeFileSync("docs/api/contracts/public-api-contract.md", lines.join("\n"));
 }
 
 function escapeTable(value: string): string {

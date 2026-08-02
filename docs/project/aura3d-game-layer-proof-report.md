@@ -1,6 +1,6 @@
 # Aura3D Game Layer Proof Report
 
-> **Historical snapshot:** This document preserves the pre-presentation diagnostic proof snapshot. It is superseded for current classification and release counts by `docs/project/aura3d-144-release-notes.md`, `docs/project/showcase-launch-evidence.json`, and `tools/showcase-library/route-gates.json`. Current aggregate status is 9/9 public release candidates plus one superseded historical platformer route, two internal diagnostics, two game-layer diagnostics, and zero prototype-blocked routes.
+> **Historical snapshot:** This document preserves the pre-presentation diagnostic proof snapshot. It is not current classification or release evidence. Current authority is `docs/project/plans/final-remaining-work-prd.md`, `docs/project/showcase-launch-evidence.json`, and `tools/showcase-library/route-gates.json`.
 
 ## Scope
 

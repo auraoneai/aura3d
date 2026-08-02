@@ -1308,9 +1308,11 @@ describe("game runtime source gates", () => {
     const turboGeometry = readFileSync("apps/showcase-turbo-drift-circuit/src/generated/game-geometry.ts", "utf8");
     expect(turboMain).toContain('import { gameGeometryContract } from "./generated/game-geometry"');
     expect(turboMain).not.toContain('"source": "asset-mesh-extracted"');
+    // The certified track hash belongs in the generated contract, never inlined in route
+    // source. Turbo now binds showcaseTsukubaCircuit.
     expect(turboMain).not.toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
     expect(turboGeometry).toContain('"source": "asset-mesh-extracted"');
-    expect(turboGeometry).toContain("sha256-272e9eac6f213f2f226571559a417dee578387c100f9e103db8fc5c62d10e065");
+    expect(turboGeometry).toContain("sha256-8c139a570143ce20a415803d67a46e92d65e2c711a310ad3891f71a69f8ce031");
     expect(turboMain).toContain("sceneBinding: racingScene.evidence");
     expect(turboMain).toContain("checkpointScenePoints: racingScene.checkpointScenePoints");
     expect(turboMain).toContain("roadAlignment: roadAlignmentForSnapshot");

@@ -35,7 +35,7 @@ const screenshotResults = requiredScreenshots.map((path) => ({
   pass: existsSync(resolve(path))
 }));
 
-const uncheckedChecklistItems = readFileSync(resolve("docs/project/threejs-parity-status.md"), "utf8")
+const uncheckedChecklistItems = readFileSync(resolve("docs/project/parity/threejs/status.md"), "utf8")
   .split("\n")
   .map((line, index) => ({ line: index + 1, text: line.trim() }))
   .filter((entry) => entry.text.startsWith("- [ ]"));
@@ -49,7 +49,7 @@ const output = {
   schema: "a3d-current-routes-completion-audit",
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
-  claimBoundary: "This audit means the CurrentRoutes aggregate gate passes. It does not mean every strategic Three.js-replacement backlog item in docs/project/threejs-parity-status.md is complete.",
+  claimBoundary: "This audit means the CurrentRoutes aggregate gate passes. It does not mean every strategic Three.js-replacement backlog item in docs/project/parity/threejs/status.md is complete.",
   reports: reportResults,
   screenshots: screenshotResults,
   openBacklogItems: uncheckedChecklistItems,

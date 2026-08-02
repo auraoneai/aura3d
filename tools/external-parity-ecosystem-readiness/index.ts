@@ -42,7 +42,7 @@ const documentationFiles = [
   "docs/project/browser-hardware-matrix.md",
   "docs/project/site-map.md",
   "docs/project/claim-guidelines.md",
-  "docs/project/known-limits.md",
+  "docs/project/status/known-limits.md",
 ] as const;
 
 const accessibilityTargets: readonly AccessibilityTarget[] = [];

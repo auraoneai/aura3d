@@ -1,24 +1,23 @@
 # Blockfall Reactor
 
-Blockfall Reactor is a bounded Aura3D falling-block puzzle candidate. It is a
+Blockfall Reactor is a bounded Aura3D falling-block puzzle prototype currently
+under visual reconstruction. It is a
 new game direction for the showcase slate and is intentionally separate from
 pre-existing game work.
 
 ## Remediation Status
 
-- Classification: release-ready candidate, bounded to current route-primary,
-  source deploy, and gameplay evidence.
+- Classification: `visual-rebuild-in-progress`; it is not a public
+  release-ready candidate until a fresh hash-bound independent review passes.
 - Route health: `apps/showcase-blockfall-reactor/route-health.json`.
 - Asset status: no typed GLB is used as the public primary subject. The route
   is a procedural Aura3D falling-block game driven by `game.fallingBlocks`; the
   previous cabinet/controller props were removed because they confused the game
   composition.
-- Current blocker: none for the bounded public candidate claim. The retained
-  route-primary probe now shows a readable, unclipped falling-block board
-  composition, source deploy validation passes for the procedural route, and
-  Playwright gameplay proof covers move, rotate, drop, score/game-loop, and reset.
-  The deploy check is run with `--no-assets` because this route has no typed
-  GLB primary asset.
+- Current blocker: the cabinet/playfield composition and current screenshots
+  require reconstruction and fresh independent review. Existing route-primary,
+  source-deploy, typed-cabinet, and gameplay evidence remain technical proof;
+  they do not constitute visual approval.
 - Primitive status: the board, tetromino cells, rails, glows, HUD anchors, and
   collision visuals are valid procedural geometry for an abstract falling-block
   game.
@@ -55,8 +54,7 @@ part of the live public composition.
 
 ## Claim Boundary
 
-The candidate uses procedural Aura3D primitives and the public
+The prototype uses procedural Aura3D primitives and the public
 `game.fallingBlocks` kit. It does not use raw GLB paths, string asset ids,
 private renderer APIs, or a route-local reducer for live gameplay. It does not
-claim production puzzle-game launch quality beyond the retained route-primary,
-source deploy, and gameplay proof.
+claim production puzzle-game launch quality or current visual approval.

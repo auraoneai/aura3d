@@ -4,9 +4,24 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import {
   defaultRepoRoot,
+  routeGateConfigRelativePath,
   showcaseRouteGateHash
 } from "./route-gates.mjs";
 import { readPngDifferenceMetrics, readPngForegroundMetrics } from "./png-foreground.mjs";
+import {
+  createConfigFingerprint,
+  createProducerFingerprint,
+  createRendererFingerprint
+} from "../evidence-freshness/index.mjs";
+
+/**
+ * Producer identity for freshness binding.
+ *
+ * Bump when the retained shape or the measurement semantics change, so previously-generated artifacts
+ * are correctly reported as produced by an older producer rather than silently accepted.
+ */
+export const ROUTE_PRIMARY_PROBE_PRODUCER_ID = "route-primary-probes";
+export const ROUTE_PRIMARY_PROBE_PRODUCER_VERSION = "1.1";
 
 export const routePrimaryProbeSchema = "aura3d-route-primary-probe/1.0";
 export const routePrimaryProbeReportDirRelativePath = "tests/reports/showcase-route-primary-probes";
@@ -17,6 +32,242 @@ export const routePrimaryProbeThresholds = Object.freeze({
   minForegroundHeight: 72,
   minReadabilityScore: 35
 });
+
+export const routePrimaryProbeSummarySchema = "aura3d-route-primary-probe-summary/2.0";
+export const routePrimaryProbeFullSummaryRelativePath =
+  `${routePrimaryProbeReportDirRelativePath}/_summary.json`;
+export const routePrimaryProbeTargetedSummaryRelativePath =
+  `${routePrimaryProbeReportDirRelativePath}/_summary.targeted.json`;
+
+/**
+ * Retained route-primary summaries must state whether they came from a full run
+ * over every probe-required published route or from a targeted subset. Targeted
+ * runs write a distinct path so a partial artifact can never masquerade as the
+ * full-suite result that release tooling consumes.
+ */
+export function routePrimaryProbeSummaryRelativePath(runScope) {
+  if (runScope === "full") return routePrimaryProbeFullSummaryRelativePath;
+  if (runScope === "targeted") return routePrimaryProbeTargetedSummaryRelativePath;
+  throw new Error(`Unsupported route-primary summary run scope: ${String(runScope)}`);
+}
+
+export function routePrimaryProbeSummaryPath(runScope, root = defaultRepoRoot) {
+  return resolve(root, routePrimaryProbeSummaryRelativePath(runScope));
+}
+
+/**
+ * Every published route that requires a route-primary probe. This is the
+ * expected route set for a full run and the minimum executed route set that
+ * release tooling accepts.
+ */
+/**
+ * Routes a full producer sweep is expected to (re)generate.
+ *
+ * Excludes `retainedEvidenceFrozen` routes. Those are superseded historical certification
+ * records -- `showcase-public-{racing,platformer}-presentation-proof` and the two
+ * `*-game-layer-proof` diagnostics -- which stay `published` so their build, deploy, and
+ * classification gates keep running, but whose retained probes must not be rewritten by a
+ * sweep. Regenerating them churns gitignored artifacts and, worse, rebinds shared asset
+ * evidence to screenshots that no promoted route reviews (defect 44/46).
+ */
+export function routePrimaryProbeExpectedRouteIds(routes) {
+  return routes
+    .filter((route) => route.published !== false
+      && route.retainedEvidenceFrozen !== true
+      && routeRequiresPrimaryProbe(route))
+    .map((route) => route.id);
+}
+
+/** True when a route's retained evidence is frozen and producers must skip it. */
+export function routePrimaryProbeIsFrozen(route) {
+  return route?.retainedEvidenceFrozen === true;
+}
+
+export function createRoutePrimaryProbeSummary({
+  runScope,
+  routes,
+  selectedRouteIds,
+  outcomes,
+  routeGateConfig,
+  routeGateConfigHash,
+  generatedAt = new Date().toISOString(),
+  root = defaultRepoRoot
+}) {
+  const expectedRouteIds = routePrimaryProbeExpectedRouteIds(routes);
+  const executedRouteIds = outcomes.map((outcome) => outcome.routeId);
+  const selected = Array.isArray(selectedRouteIds) && selectedRouteIds.length > 0
+    ? [...selectedRouteIds]
+    : [...expectedRouteIds];
+  const missingRouteIds = selected.filter((routeId) => !executedRouteIds.includes(routeId));
+  const routeVerdicts = outcomes.map((outcome) => {
+    const pass = outcome.pass === true;
+    const allowedToFail = routeAllowsFailingRoutePrimaryProbe(outcome.routeId, root);
+    return {
+      routeId: outcome.routeId,
+      pass,
+      verdict: pass ? "pass" : "fail",
+      allowedToFail,
+      blocking: !pass && !allowedToFail,
+      failures: [...(outcome.failures ?? [])],
+      evidencePath: outcome.evidencePath,
+      screenshotPath: outcome.screenshotPath
+    };
+  });
+
+  return {
+    schema: routePrimaryProbeSummarySchema,
+    generatedAt,
+    runScope,
+    evidenceLabel: "structural/image QA pass",
+    humanVisualApproval: false,
+    humanVisualApprovalNote:
+      "Structural/image QA only. A passing route-primary summary is never human visual approval.",
+    summaryPath: routePrimaryProbeSummaryRelativePath(runScope),
+    routeGateConfig: {
+      path: routeGateConfigRelativePath,
+      schema: routeGateConfig?.schema,
+      hash: routeGateConfigHash
+    },
+    selectedRouteIds: selected,
+    expectedRouteIds,
+    expectedRouteCount: expectedRouteIds.length,
+    executedRouteIds,
+    executedRouteCount: executedRouteIds.length,
+    missingRouteIds,
+    failingRouteIds: routeVerdicts.filter((route) => !route.pass).map((route) => route.routeId),
+    blockingRouteIds: routeVerdicts.filter((route) => route.blocking).map((route) => route.routeId),
+    pass: missingRouteIds.length === 0 && routeVerdicts.every((route) => !route.blocking),
+    routeVerdicts,
+    routes: routeVerdicts
+  };
+}
+
+/**
+ * A route may retain a failing route-primary probe only while its own
+ * route-health demotes it out of the public showcase. Public/promoted routes may
+ * never retain a failing probe.
+ */
+export function routeAllowsFailingRoutePrimaryProbe(routeId, root = defaultRepoRoot) {
+  const healthPath = resolve(root, "apps", String(routeId), "route-health.json");
+  if (!existsSync(healthPath)) return false;
+  let health;
+  try {
+    health = JSON.parse(readFileSync(healthPath, "utf8"));
+  } catch {
+    return false;
+  }
+  if (health?.publicShowcase === false) return true;
+  const classification = String(health?.classification ?? "").toLowerCase();
+  const promotionStatus = String(health?.promotionStatus ?? "").toLowerCase();
+  const demoted = /blocked|prototype|diagnostic|internal|removed/;
+  return demoted.test(classification) || demoted.test(promotionStatus);
+}
+
+/**
+ * Release tooling entry point. A summary is only acceptable when it is a full
+ * run whose executed route set covers every promoted route and every executed
+ * route passed.
+ */
+export function validateRoutePrimaryProbeSummary(options = {}) {
+  const root = resolve(options.root ?? defaultRepoRoot);
+  const relativePath = options.path ?? routePrimaryProbeFullSummaryRelativePath;
+  const path = resolve(root, relativePath);
+  const requiredRouteIds = [...(options.requiredRouteIds ?? [])];
+  const failures = [];
+
+  if (!existsSync(path)) {
+    return {
+      ok: false,
+      path: relativePath,
+      summary: null,
+      requiredRouteIds,
+      failures: [`missing-route-primary-summary:${relativePath}`]
+    };
+  }
+
+  let summary;
+  try {
+    summary = JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    return {
+      ok: false,
+      path: relativePath,
+      summary: null,
+      requiredRouteIds,
+      failures: [`invalid-route-primary-summary-json:${error instanceof Error ? error.message : String(error)}`]
+    };
+  }
+
+  if (summary?.schema !== routePrimaryProbeSummarySchema) {
+    failures.push(`route-primary-summary-schema:${String(summary?.schema)}`);
+  }
+  if (summary?.runScope !== "full") {
+    failures.push(`route-primary-summary-run-scope:${String(summary?.runScope)}`);
+  }
+  if (summary?.humanVisualApproval !== false) {
+    failures.push(`route-primary-summary-human-approval-claim:${String(summary?.humanVisualApproval)}`);
+  }
+  if (!isValidTimestamp(summary?.generatedAt)) {
+    failures.push(`route-primary-summary-generated-at:${String(summary?.generatedAt)}`);
+  }
+  if (options.routeGateConfigHash && summary?.routeGateConfig?.hash !== options.routeGateConfigHash) {
+    failures.push(`route-primary-summary-route-gate-hash:${String(summary?.routeGateConfig?.hash)}`);
+  }
+
+  const executedRouteIds = Array.isArray(summary?.executedRouteIds) ? summary.executedRouteIds : [];
+  const routeVerdicts = Array.isArray(summary?.routeVerdicts) ? summary.routeVerdicts : [];
+  if (!Array.isArray(summary?.executedRouteIds)) failures.push("route-primary-summary-executed-route-ids");
+  if (!Array.isArray(summary?.routeVerdicts)) failures.push("route-primary-summary-route-verdicts");
+  if (!Array.isArray(summary?.expectedRouteIds)) failures.push("route-primary-summary-expected-route-ids");
+  if (summary?.executedRouteCount !== executedRouteIds.length) {
+    failures.push(`route-primary-summary-executed-count:${String(summary?.executedRouteCount)}`);
+  }
+  if (Array.isArray(summary?.expectedRouteIds) && summary?.expectedRouteCount !== summary.expectedRouteIds.length) {
+    failures.push(`route-primary-summary-expected-count:${String(summary?.expectedRouteCount)}`);
+  }
+  if (Array.isArray(summary?.expectedRouteIds) && executedRouteIds.length < summary.expectedRouteIds.length) {
+    failures.push(
+      `route-primary-summary-partial-run:${executedRouteIds.length}/${summary.expectedRouteIds.length}`
+    );
+  }
+  if (Array.isArray(summary?.missingRouteIds) && summary.missingRouteIds.length > 0) {
+    failures.push(`route-primary-summary-missing-routes:${summary.missingRouteIds.join(",")}`);
+  }
+
+  for (const routeId of requiredRouteIds) {
+    if (!executedRouteIds.includes(routeId)) {
+      failures.push(`route-primary-summary-route-not-executed:${routeId}`);
+      continue;
+    }
+    const verdict = routeVerdicts.find((route) => route?.routeId === routeId);
+    if (!verdict) {
+      failures.push(`route-primary-summary-route-verdict-missing:${routeId}`);
+    } else if (verdict.pass !== true) {
+      failures.push(`route-primary-summary-route-failed:${routeId}`);
+    }
+  }
+
+  for (const verdict of routeVerdicts) {
+    if (verdict?.pass === true) continue;
+    const allowedToFail = routeAllowsFailingRoutePrimaryProbe(verdict?.routeId, root);
+    if (verdict?.allowedToFail !== allowedToFail) {
+      failures.push(`route-primary-summary-allowed-to-fail-mismatch:${String(verdict?.routeId)}`);
+    }
+    if (!allowedToFail) {
+      failures.push(`route-primary-summary-failing-route:${String(verdict?.routeId)}`);
+    }
+  }
+
+  if (summary?.pass !== true) failures.push(`route-primary-summary-pass:${String(summary?.pass)}`);
+
+  return {
+    ok: failures.length === 0,
+    path: relativePath,
+    summary,
+    requiredRouteIds,
+    failures
+  };
+}
 
 export function routePrimaryProbeEvidencePath(routeId, root = defaultRepoRoot) {
   return resolve(root, routePrimaryProbeReportDirRelativePath, `${safeRouteId(routeId)}.json`);
@@ -45,7 +296,22 @@ export function createRoutePrimaryProbeContext(route, root = defaultRepoRoot) {
     appId: route.id,
     sourceHash: createRouteSourceHash(route.id, root),
     routeGateHash: showcaseRouteGateHash(root),
-    routeHealthHash: routeHealthPath && existsSync(routeHealthPath) ? `sha256-${hashFile(routeHealthPath)}` : undefined,
+    /*
+     * Freshness dimensions beyond source/gate/health.
+     *
+     * Without these, a retained probe could not be invalidated by a renderer change, a producer change,
+     * or a viewport-contract change -- so a screenshot rendered by different renderer code still read as
+     * current. `explain-staleness` reported all three as `unbound`, which is what prompted adding them.
+     */
+    rendererFingerprint: createRendererFingerprint(root),
+    producerFingerprint: createProducerFingerprint(
+      "tools/showcase-library/route-primary-probes.mjs",
+      ROUTE_PRIMARY_PROBE_PRODUCER_VERSION,
+      root
+    ),
+    producerId: ROUTE_PRIMARY_PROBE_PRODUCER_ID,
+    producerVersion: ROUTE_PRIMARY_PROBE_PRODUCER_VERSION,
+    routeHealthHash: routeHealthPath && existsSync(routeHealthPath) ? hashRouteHealthDependency(routeHealthPath) : undefined,
     routePrimaryHeroAsset: heroAssetId,
     secondaryPrimaryAssets: secondaryAssets,
     primaryAssets: route.primaryAssets.map((assetId) => ({
@@ -187,10 +453,98 @@ export function createRouteSourceHash(routeId, root = defaultRepoRoot) {
     const relativePath = relative(root, file).replace(/\\/g, "/");
     hash.update(relativePath);
     hash.update("\0");
-    hash.update(readFileSync(file));
+    hash.update(normalizeCompositionOwnedDigests(readFileSync(file, "utf8")));
     hash.update("\0");
   }
   return `sha256-${hash.digest("hex")}`;
+}
+
+/**
+ * Neutralise screenshot digests that the composition producer rewrites inside generated route sources.
+ *
+ * `regenerate-game-composition-evidence` rewrites every `routePrimaryScreenshotSha256` / `screenshotSha256` literal in
+ * `src/generated/game-geometry.ts` to match the screenshot *this probe just produced*. Hashing those bytes made the
+ * route-source binding self-invalidating in exactly the same way the route-health binding was: the probe bound a value
+ * the next producer was guaranteed to change.
+ *
+ * Replacing the digest value (not the field) keeps every other byte of the generated module in the hash, so a real
+ * geometry change still invalidates the probe. Only the one value composition owns is normalised away.
+ */
+function normalizeCompositionOwnedDigests(source) {
+  return source.replace(
+    /("(?:routePrimaryScreenshotSha256|screenshotSha256)":\s*")sha256-[a-f0-9]{64}(")/g,
+    "$1<composition-owned>$2"
+  );
+}
+
+/**
+ * Parts of `route-health.json` the composition producer owns, which this probe therefore does not depend on.
+ *
+ * `regenerate-game-composition-evidence` derives these *from this probe's own output*, so hashing them created a
+ * genuine ordering cycle: the probe bound values the next producer was guaranteed to change, leaving the probe's
+ * binding stale after every run and forcing a second probe run to close the loop.
+ *
+ * Two shapes had to be excluded, and finding the second one required checking rather than assuming. The top-level
+ * `gameAssetPairEvidence` block is the obvious one. Less obvious: `synchronizeScreenshotHashes` rewrites
+ * `screenshotSha256` / `routePrimaryScreenshotSha256` **anywhere in the document**, including under
+ * `racing.raceDesign.assetPairEvidence` and `platformer.levelDesign.assetPairEvidence`. Excluding only the top-level
+ * block left Skyline and Turbo still reporting stale, which is what surfaced the nested fields.
+ *
+ * Both lists are *exclusions*, not an allowlist of included keys: a new field added to route-health should invalidate
+ * this probe by default. Silence on new fields is how a binding quietly stops protecting anything.
+ */
+export const ROUTE_HEALTH_COMPOSITION_OWNED_FIELDS = Object.freeze(["gameAssetPairEvidence"]);
+
+/** Digest fields the composition producer rewrites at any depth, keyed on field name. */
+export const ROUTE_HEALTH_COMPOSITION_OWNED_DIGEST_FIELDS = Object.freeze([
+  "screenshotSha256",
+  "routePrimaryScreenshotSha256"
+]);
+
+/**
+ * Hash the part of `route-health.json` this probe actually depends on.
+ *
+ * Serialized with sorted keys so the digest is insensitive to key order, which a producer rewriting one block can
+ * otherwise change incidentally.
+ */
+export function hashRouteHealthDependency(path) {
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(path, "utf8"));
+  } catch {
+    // An unparseable route-health is a real problem, but not this function's to diagnose: fall back to raw bytes so
+    // the caller still gets a stable digest rather than a crash.
+    return `sha256-${hashFile(path)}`;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return `sha256-${hashFile(path)}`;
+  }
+  const dependency = {};
+  for (const key of Object.keys(parsed).sort()) {
+    if (ROUTE_HEALTH_COMPOSITION_OWNED_FIELDS.includes(key)) continue;
+    dependency[key] = stripCompositionOwnedDigests(parsed[key]);
+  }
+  return `sha256-${createHash("sha256").update(stableJson(dependency)).digest("hex")}`;
+}
+
+/** Recursively drop composition-owned digest fields, wherever they appear in the document. */
+function stripCompositionOwnedDigests(value) {
+  if (Array.isArray(value)) return value.map(stripCompositionOwnedDigests);
+  if (!value || typeof value !== "object") return value;
+  const out = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (ROUTE_HEALTH_COMPOSITION_OWNED_DIGEST_FIELDS.includes(key)) continue;
+    out[key] = stripCompositionOwnedDigests(entry);
+  }
+  return out;
+}
+
+/** Key-order-independent JSON serialization, so a rewrite that reorders keys does not read as a change. */
+function stableJson(value) {
+  if (value === null || typeof value !== "object") return JSON.stringify(value) ?? "null";
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  const keys = Object.keys(value).filter((key) => value[key] !== undefined).sort();
+  return `{${keys.map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(",")}}`;
 }
 
 export function hashFile(path) {
@@ -261,6 +615,9 @@ function validateRenderedProbe(route, asset, assetId, screenshotMetrics) {
   if (probe.visible !== true) failures.push(`probe-visible:${assetId}:${String(probe.visible)}`);
   if (probe.clipped !== false) failures.push(`probe-clipped:${assetId}:${String(probe.clipped)}`);
   if (probe.occludedByUi !== false) failures.push(`probe-ui-occluded:${assetId}:${String(probe.occludedByUi)}`);
+  if (probe.controlsInViewport !== true) {
+    failures.push(`probe-controls-outside-viewport:${assetId}:${String(probe.controlsInViewport)}`);
+  }
   if (typeof probe.readabilityScore !== "number") {
     failures.push(`probe-readability:${assetId}:${String(probe.readabilityScore)}`);
   } else if (probe.readabilityScore < routePrimaryProbeThresholds.minReadabilityScore) {

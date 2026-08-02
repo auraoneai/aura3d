@@ -4,7 +4,9 @@ import {
   createAuraApp,
   interactions,
   lights,
+  material,
   model,
+  primitives,
   renderer,
   scene,
   timeline
@@ -233,10 +235,39 @@ function buildArchitectureScene(nextControls: ArchitectureControls): ReturnType<
     .timeline(timeline.loop({ seconds: cameraPaths[nextControls.cameraPath].seconds, captureTime: 0.52 }));
 }
 
+/**
+ * Bounded haze-driven light shafts around the typed city asset.
+ *
+ * Deliberately minimal: this route's typed city is the subject and its
+ * route-primary probe requires an unclipped foreground, so background/midground
+ * staging masses are intentionally NOT added here. Depth comes from the fog
+ * effect and lighting hierarchy instead. `composition.*Nodes` counts therefore
+ * report zero, which is the honest value.
+ */
 function createArchitecturePresentation(mood: typeof moods[MoodId], haze: number) {
-  void mood;
-  void haze;
-  return [];
+  const compactViewport = window.innerWidth < 700;
+  const depth = compactViewport ? 0.82 : 1;
+  const shaftMaterial = material.emissive({
+    color: mood.key,
+    emissive: mood.key,
+    intensity: 0.3 + haze * 0.4,
+    opacity: 0.05 + haze * 0.12
+  });
+
+  return [
+    primitives.box({ name: "west light shaft", material: shaftMaterial })
+      .position(-0.42 * depth, 0.16, -0.5)
+      .rotate(0, 0.18, 0.22)
+      .scale([0.016, 0.44, 0.016]),
+    primitives.box({ name: "central light shaft", material: shaftMaterial })
+      .position(0.12, 0.2, -0.62)
+      .rotate(0, -0.08, 0.14)
+      .scale([0.018, 0.5, 0.018]),
+    primitives.box({ name: "east light shaft", material: shaftMaterial })
+      .position(0.5 * depth, 0.15, -0.44)
+      .rotate(0, -0.24, -0.18)
+      .scale([0.016, 0.42, 0.016])
+  ];
 }
 
 function bindControls(): void {

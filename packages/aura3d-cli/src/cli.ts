@@ -176,8 +176,22 @@ async function main(): Promise<void> {
     } else if (action === "resolve") {
       const query = args[2];
       const name = readOption("--name");
-      if (!query || query.startsWith("--") || !name) throw new Error(`Usage: aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated]`);
-      const report = await runResolve({ query, name, constraints: readResolveConstraints() });
+      if (!query || query.startsWith("--") || !name) throw new Error(`Usage: aura3d assets resolve <query> --name <name> [--profile ${profileUsage()}] [--license cc0|cc-by] [--max-tris N] [--animated] [--index N] [--candidate-id ID]`);
+      // `--index` / `--candidate-id` select which ranked candidate to pull. Without them `resolve`
+      // always pulls the top match, so an automated screening loop could not try the 2nd/3rd/Nth
+      // result that `assets search` reported.
+      const rawIndex = readOption("--index");
+      const candidateIndex = rawIndex === undefined ? undefined : Number(rawIndex);
+      if (candidateIndex !== undefined && !Number.isInteger(candidateIndex)) {
+        throw new Error(`Aura3D resolve failed: --index must be an integer (got "${rawIndex}").`);
+      }
+      const report = await runResolve({
+        query,
+        name,
+        constraints: readResolveConstraints(),
+        ...(candidateIndex === undefined ? {} : { candidateIndex }),
+        ...(readOption("--candidate-id") === undefined ? {} : { candidateId: readOption("--candidate-id")! }),
+      });
       if (hasFlag("--json")) {
         console.log(JSON.stringify(report, null, 2));
       } else {

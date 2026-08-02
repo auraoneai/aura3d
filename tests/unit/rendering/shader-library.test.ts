@@ -100,7 +100,12 @@ describe("ShaderLibrary", () => {
     expect(compiled.fragment).toContain("clamp(specularColorFactor, vec3(0.0), vec3(1.0))");
     expect(compiled.fragment).not.toContain("D * G * F * 0.25");
     expect(compiled.fragment).toContain("u_shadowMapSlopeBias");
-    expect(compiled.fragment).toContain("slopeReceiverBias");
+    // Slope-scaled bias is applied per PCF sample, scaled by that sample's own texel
+    // distance and by the tangent of the receiver/light angle. The former loop-invariant
+    // `slopeReceiverBias` under-biased every outer tap and made receivers shadow themselves.
+    expect(compiled.fragment).toContain("float slopeTexelBias = slopeTangent * u_shadowMapSlopeBias");
+    expect(compiled.fragment).toContain("slopeTexelBias * sampleTexelDistance");
+    expect(compiled.fragment).not.toContain("slopeReceiverBias");
     expect(compiled.fragment).toContain("u_shadowPcfSamples[32]");
     expect(compiled.fragment).toContain("u_shadowPcfSampleCount");
     expect(compiled.fragment).toContain("uniform vec3 u_cameraPosition;");

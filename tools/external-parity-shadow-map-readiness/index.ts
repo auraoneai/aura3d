@@ -28,7 +28,9 @@ const sourceFiles = [
   "packages/rendering/src/LightUniforms.ts",
   "packages/rendering/src/ShaderLibrary.ts",
   "packages/rendering/src/CascadedShadowMaps.ts",
-  "examples/shadow-lab/main.ts",
+  "apps/shadow-cascade-evidence/src/main.ts",
+  "tests/browser/external-parity-shadow-cascade-evidence.spec.ts",
+  "tests/reports/external-parity-shadow-cascade-browser.json",
   "examples/forward-shadow-map-check/main.ts",
   "tests/browser/rendering-external-parity-visuals.spec.ts",
   "tests/browser/rendering-root-quality-gate.spec.ts",
@@ -53,6 +55,12 @@ export function createExternalParityShadowMapReadinessReport(root = process.cwd(
   const forwardShadowMap = validations.find((entry) => isRecord(entry) && entry.name === "forward-pass-shadow-map-sampling");
   const shadowChecks = isRecord(shadowLab) && isRecord(shadowLab.checks) ? shadowLab.checks : {};
   const shadowMetrics = isRecord(shadowLab) && isRecord(shadowLab.metrics) ? shadowLab.metrics : {};
+  // The `shadow-lab-external-parity-preset` validation above came from
+  // `examples/_quarantine/shadow-lab`, which no longer exists in the source tree, so its
+  // three directional/cascade/PCF rows could not be earned by any renderer work. The
+  // mounted `apps/shadow-cascade-evidence` route republishes them from measured receiver
+  // pixels. Both sources are read so the audit does not depend on which producer ran.
+  const cascadeBrowser = readCascadeBrowserEvidence(root);
   const resizeChecks = isRecord(shadowResize) && isRecord(shadowResize.checks) ? shadowResize.checks : {};
   const forwardShadowChecks = isRecord(forwardShadowMap) && isRecord(forwardShadowMap.checks) ? forwardShadowMap.checks : {};
   const forwardShadowMetrics = isRecord(forwardShadowMap) && isRecord(forwardShadowMap.metrics) ? forwardShadowMap.metrics : {};
@@ -72,11 +80,12 @@ export function createExternalParityShadowMapReadinessReport(root = process.cwd(
   const rootPointSpotDirectionalDiagnostics = productionRootForwardSampling && productionSpotForwardSampling && productionPointLightForwardSampling;
 
   const supportedEvidence = [
-    ...(shadowChecks.shadowFeature === true ? ["directional-shadow-map-feature"] : []),
-    ...(shadowChecks.cascadesRendered === true && Number(shadowMetrics.cascadeCount) >= 3 ? ["cascaded-shadow-map-browser-evidence"] : []),
-    ...(shadowChecks.pcfPenumbra === true && Number(shadowMetrics.pcfSamples) >= 9 ? ["pcf-soft-shadow-browser-evidence"] : []),
+    ...(shadowChecks.shadowFeature === true || cascadeBrowser.shadowFeature ? ["directional-shadow-map-feature"] : []),
+    ...((shadowChecks.cascadesRendered === true && Number(shadowMetrics.cascadeCount) >= 3) || cascadeBrowser.cascadesRendered ? ["cascaded-shadow-map-browser-evidence"] : []),
+    ...((shadowChecks.pcfPenumbra === true && Number(shadowMetrics.pcfSamples) >= 9) || cascadeBrowser.pcfPenumbra ? ["pcf-soft-shadow-browser-evidence"] : []),
     ...(pointSpotShadowPassDiagnostics || rootPointSpotDirectionalDiagnostics ? ["point-spot-shadow-pass-diagnostic-evidence"] : []),
-    ...(shadowChecks.projectedShadowDarker === true ? ["lit-vs-shadowed-pixel-readback"] : []),
+    ...(shadowChecks.projectedShadowDarker === true || cascadeBrowser.projectedShadowDarker ? ["lit-vs-shadowed-pixel-readback"] : []),
+    ...(cascadeBrowser.acneFree ? ["receiver-self-shadow-acne-negative-control"] : []),
     ...(hasForwardShadowMapSamplingEvidence(forwardShadowChecks, forwardShadowMetrics) || productionRootForwardSampling ? ["production-forward-pass-shadow-map-sampling-evidence"] : []),
     ...(productionSpotForwardSampling ? ["production-spot-forward-shadow-map-sampling-evidence"] : []),
     ...(productionPointLightForwardSampling ? ["production-point-light-forward-shadow-map-sampling-evidence"] : []),
@@ -156,6 +165,66 @@ function validation(id: string, passed: boolean, evidence: string, blockers: rea
     passed,
     evidence,
     blockers: passed ? [] : blockers,
+  };
+}
+
+/**
+ * Reads the mounted cascaded/PCF shadow evidence report.
+ *
+ * Each row is gated on the report's measured numbers rather than on its own boolean, so a
+ * hand-edited `checks` block cannot raise an evidence row on its own. The acne row requires
+ * the report's caster-free negative control, which is what caught the PCF slope-bias defect:
+ * before that fix the receiver darkened by mean RGB-sum 15.3 with no occluder present.
+ */
+function readCascadeBrowserEvidence(root: string): {
+  readonly shadowFeature: boolean;
+  readonly cascadesRendered: boolean;
+  readonly pcfPenumbra: boolean;
+  readonly projectedShadowDarker: boolean;
+  readonly acneFree: boolean;
+} {
+  const report = readJson(root, "tests/reports/external-parity-shadow-cascade-browser.json");
+  const absent = {
+    shadowFeature: false,
+    cascadesRendered: false,
+    pcfPenumbra: false,
+    projectedShadowDarker: false,
+    acneFree: false
+  };
+  if (!isRecord(report) || report.status !== "ready") return absent;
+  if (Array.isArray(report.errors) && report.errors.length > 0) return absent;
+  const checks = isRecord(report.checks) ? report.checks : {};
+  const metrics = isRecord(report.metrics) ? report.metrics : {};
+  const acneControl = isRecord(report.acneControl) ? report.acneControl : {};
+
+  const splits = Array.isArray(metrics.cascadeSplits) ? metrics.cascadeSplits : [];
+  const splitsPartition = splits.length >= 3 && splits.every((entry, index) => {
+    if (!isRecord(entry)) return false;
+    const near = Number(entry.near);
+    const far = Number(entry.far);
+    if (!Number.isFinite(near) || !Number.isFinite(far) || far <= near) return false;
+    const previous = splits[index - 1];
+    if (index === 0 || !isRecord(previous)) return true;
+    return near >= Number(previous.near);
+  });
+
+  // A localized footprint, not a whole-receiver wash: the pre-fix renderer had these two
+  // means within 3% of each other because the "shadow" was self-shadowing.
+  const footprintDelta = Number(metrics.shadowDeltaRgb);
+  const regionDelta = Number(metrics.receiverRegionDeltaRgb);
+  const localizedFootprint = Number.isFinite(footprintDelta) &&
+    Number.isFinite(regionDelta) &&
+    footprintDelta > 30 &&
+    footprintDelta > regionDelta * 5 &&
+    Number(metrics.shadowFootprintFraction) > 0.02 &&
+    Number(metrics.shadowFootprintPixels) > 500;
+
+  return {
+    shadowFeature: checks.shadowFeature === true && localizedFootprint,
+    cascadesRendered: checks.cascadesRendered === true && splitsPartition && Number(metrics.cascadeCount) >= 3,
+    pcfPenumbra: checks.pcfPenumbra === true && Number(metrics.pcfSamples) >= 9 && Number(metrics.penumbraSteps) >= 4,
+    projectedShadowDarker: checks.projectedShadowDarker === true && localizedFootprint,
+    acneFree: Number(acneControl.meanDarkening) < 3 && Number(acneControl.comparedPixels) > 5_000
   };
 }
 

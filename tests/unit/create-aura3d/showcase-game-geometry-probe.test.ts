@@ -124,11 +124,19 @@ describe("showcase game geometry probe", () => {
     expect(result.extraction.ok).toBe(true);
     if (!result.extraction.ok) return;
     expect(result.extraction.value.source).toBe("asset-mesh-extracted");
-    expect(result.extraction.value.roadCenterline).toHaveLength(19);
+    // Tsukuba is not star-convex about its centroid, so it is traced by the raster
+    // loop tracer rather than the radial sweep. Assert a plausible resampled range
+    // rather than an exact count so the check survives resampling tweaks.
+    expect(result.extraction.value.roadCenterline.length).toBeGreaterThanOrEqual(16);
+    expect(result.extraction.value.roadCenterline.length).toBeLessThanOrEqual(40);
+    expect(result.extraction.reasons.join(" ")).toContain("centerlineMethod:raster-loop-trace");
     expect(result.extraction.value.checkpoints).toHaveLength(6);
     expect(result.extraction.value.lapLengthMeters).toBeGreaterThan(0);
     expect(result.extraction.value.estimatedLapSeconds).toBeGreaterThanOrEqual(30);
     expect(result.extraction.value.estimatedLapSeconds).toBeLessThanOrEqual(75);
+    // The traced loop must be the circuit, not the paddock apron the earlier seam
+    // selection latched onto (defect 32): the service-road loop measured 25.8 units.
+    expect(result.extraction.value.lapLengthMeters ?? 0).toBeGreaterThan(30);
     expect((result.extraction.value.lapLengthMeters ?? 0) / result.extraction.value.estimatedLapSeconds).toBeGreaterThanOrEqual(0.6);
   });
 });

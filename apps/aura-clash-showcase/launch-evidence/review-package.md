@@ -1,6 +1,6 @@
 # Aura Clash Launch Review Package
 
-Generated: 2026-07-28T10:09:39.859Z
+Generated: 2026-07-31T17:07:09.137Z
 
 This package is for release review. It summarizes generated launch evidence, but it does not approve the visual gate automatically. The visual approval gate still requires explicit human approval.
 
@@ -9,7 +9,7 @@ This package is for release review. It summarizes generated launch evidence, but
 | Gate | Status |
 | --- | --- |
 | Local gates | PASS |
-| 1.0.6 readiness evidence | PASS |
+| 1.0.6 readiness evidence | MISSING / NOT PASSING |
 | First-frame screenshot metadata | PASS |
 | First-frame screenshot file | PASS |
 | Combat screenshot file | PASS |
@@ -18,7 +18,7 @@ This package is for release review. It summarizes generated launch evidence, but
 | Screenshot compositions | THREE CAPTURED |
 | Launch asset visual source evidence | PRESENT FOR REVIEW |
 | Vercel deployment | PASS |
-| Deployed route and GLB URLs | PASS |
+| Deployed route and GLB URLs | MISSING / NOT PASSING |
 | Workflow evidence | MISSING / NOT PASSING |
 | Visual approval artifact | MISSING |
 | Launch evidence manifest | PRESENT FOR REVIEW |
@@ -59,9 +59,9 @@ Overall machine-readable status: PASS
 | Area | Status | Page declaration | Visible DOM signal | Text signal |
 | --- | --- | --- | --- | --- |
 | Debug overlays | PASS | yes | no | yes |
-| Readable fighters | PASS | yes | no | yes |
+| Readable fighters | PASS | yes | yes | yes |
 | Effects | PASS | yes | no | no |
-| HUD | PASS | yes | no | yes |
+| HUD | PASS | yes | yes | yes |
 | Stage depth | PASS | yes | yes | yes |
 | Lighting and materials | PASS | yes | no | yes |
 
@@ -142,8 +142,8 @@ npm run launch:update-prd
 
 ```json
 {
-  "ok": true,
-  "generatedAt": "2026-06-06T22:52:36.268Z",
+  "ok": false,
+  "generatedAt": "2026-07-31T16:53:51.780Z",
   "route": "/playable/",
   "release": "1.0.6",
   "contextualRoute": "Aura Clash Arena",
@@ -151,18 +151,18 @@ npm run launch:update-prd
     "flagshipGates": {
       "ok": true,
       "status": "flagship-ready",
-      "generatedAt": "2026-06-06T13:50:06.504Z",
+      "generatedAt": "2026-06-07T20:10:37.904Z",
       "commandCount": 8,
       "failedCount": 0
     },
     "flagshipReadiness": {
       "ok": true,
       "status": "flagship-ready",
-      "generatedAt": "2026-06-06T13:48:02.865Z",
+      "generatedAt": "2026-06-07T20:09:20.786Z",
       "gateCount": 14
     },
     "deployedProof": {
-      "ok": true,
+      "ok": false,
       "source": "collect-launch-evidence-probes"
     }
   }
@@ -187,14 +187,14 @@ npm run launch:update-prd
 
 ```json
 {
-  "ok": true,
+  "ok": false,
   "origin": "https://aura3d.auraone.ai",
   "canonicalBasePath": "/showcase/aura-clash",
   "routeCount": 6,
-  "manifestGlbCount": 11,
-  "targetCount": 32,
-  "failedCount": 0,
-  "generatedAt": "2026-06-06T22:52:36.265Z"
+  "manifestGlbCount": 12,
+  "targetCount": 33,
+  "failedCount": 1,
+  "generatedAt": "2026-07-31T16:53:51.756Z"
 }
 ```
 
@@ -203,9 +203,9 @@ npm run launch:update-prd
 ```json
 {
   "ok": false,
-  "stepCount": 8,
+  "stepCount": 4,
   "completedCount": 2,
   "failedCount": 1,
-  "generatedAt": "2026-07-28T10:02:27.090Z"
+  "generatedAt": "2026-07-30T08:16:09.097Z"
 }
 ```

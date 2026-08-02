@@ -95,7 +95,7 @@ unfiltered command when the whole manifest is intended to ship.
 ## Source and release validation
 
 Public examples must pass static source validation for unsafe asset use. The P0
-release gate from `Fixed-Needed-PRD.md` requires source scanning for:
+release gate from `docs/project/plans/recovery-remediation-prd.md` requires source scanning for:
 
 - `model("...")` raw string IDs;
 - raw `.glb` or `.gltf` URLs;

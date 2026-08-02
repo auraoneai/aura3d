@@ -1,6 +1,6 @@
 # Aura3D Go-Live Checklist
 
-Audit date: 2026-07-23
+Audit date: 2026-07-29
 
 Scope: `/Users/gurbakshchahal/platforms/aura3d` — browser-native TypeScript 3D SDK,
 npm packages, showcase apps, marketing site, and release evidence.
@@ -12,7 +12,7 @@ partially complete or environment-dependent.
 
 | Owns | Document |
 | --- | --- |
-| **Release-candidate package/showcase gates** | `docs/project/release-checklist.md`, `docs/project/release-tracks.md` |
+| **Release-candidate package/showcase gates** | `docs/project/release/release-checklist.md`, `docs/project/release-tracks.md` |
 | **External npm/deploy/marketing proof** | **This file (`GoLiveCheckList.md`)** |
 
 ## Current Verdict
@@ -25,12 +25,41 @@ partially complete or environment-dependent.
 - [x] Registry smoke, package provenance, public route health, desktop/mobile visual
   checks, promoted showcase canvas checks, DNS/TLS, and rollback evidence are recorded.
 - [x] Claim-safe public API scope remains bounded by
-  `docs/project/current-state.md`, `docs/project/known-limits.md`, and the automated
+  `docs/project/status/current-state.md`, `docs/project/status/known-limits.md`, and the automated
   claim registry.
-- [~] **Current repo revalidation (2026-07-27) is held**: the focused retained
-  racing visual-QA unit test has two failing assertions because its screenshot
-  hash is stale. The historical publication and deployment receipts below are
-  not evidence that the current worktree is release-ready.
+- [~] **Current repo revalidation (2026-07-29) is held**: compilation, unit,
+  claim, provenance, route-probe, build, and deploy-package checks pass, but the
+  current promoted showcase screenshots no longer match the last independent
+  hash-bound visual review. The historical publication and deployment receipts
+  below are not evidence that the current worktree is release-ready.
+- [x] **Composio is not applicable** to this product: Aura3D is a developer SDK,
+  CLI, package set, and static showcase surface rather than an end-user SaaS
+  integration flow.
+
+## Current Worktree Revalidation (2026-07-29)
+
+- [x] `pnpm typecheck:raw` — pass.
+- [x] `pnpm test:unit` — 355 files / 2,279 tests pass with no skips.
+- [x] Focused game visual-QA unit gate — 12 / 12 tests pass.
+- [x] `pnpm build:raw` — pass; distribution exports finalized for 27 packages.
+- [x] Public API documentation generator — pass; 26 packages and 979 export
+  declarations, with no violations.
+- [x] `pnpm verify:claims` — pass; 52 files scanned and 0 violations.
+- [x] `pnpm verify:package-provenance` — pass; the retained 1.4.5 package
+  artifact has a verified signature and no violations.
+- [x] `pnpm check:marketing-truth` and `pnpm check:marketing-links` — pass.
+- [~] `node tools/showcase-library/build-and-check.mjs` — all four promoted
+  routes build and pass static, primary-route, and deploy-package checks; 0 / 4
+  can be release-promoted because their screenshots are stale relative to the
+  retained independent visual-review hashes. The full route-primary summary
+  remains valid.
+- [ ] Rebuild the current desktop/mobile showcase evidence and obtain a fresh
+  independent hash-bound visual review before promoting the current worktree.
+
+Source-control boundary: this verification ran against a large pre-existing
+dirty worktree. Generated evidence and API documentation therefore remain
+worktree-local and must not be promoted independently of their corresponding
+source changes.
 
 ## 2026-07-23 Go-Live Snapshot Score
 
@@ -47,14 +76,16 @@ verdict.
 - [x] Release checklist and claim registry govern public copy (`docs/project/product-studio-claim-registry.md`).
 - [x] Extensive Vitest/Playwright/evidence tooling and release automation scripts.
 - [x] Public showcase route library passes technical gates (`node tools/showcase-library/build-and-check.mjs`).
-- [x] Game visual QA evidence hash sync fixed for `showcase-public-racing-presentation-proof`.
+- [x] Game visual QA evidence hash sync fixed for the retained public game routes. (`showcase-public-racing-presentation-proof`, the route this was originally recorded against, was deleted in 1.5.0 as superseded by Turbo Drift Circuit.)
 - [x] Platform-level external proof tracker exists in this file.
 
 ## Repo-Local Verification Evidence (2026-07-23)
 
 - [x] `pnpm typecheck:raw` — pass
 - [x] `pnpm test:unit` — 328 files / 2,072 tests pass
-- [x] `node tools/showcase-library/build-and-check.mjs` — 7/7 public release candidates pass
+- [ ] `node tools/showcase-library/build-and-check.mjs` — current public release
+  gate must be regenerated after Blockfall, Turbo, and Skyline visual rebuilds
+  and hash-bound independent review
 - [x] `pnpm check:marketing-truth` and `pnpm check:marketing-links` — pass
 - [x] `pnpm verify:claims` — pass with 0 violations
 - [x] `pnpm verify:package-provenance` — pass
@@ -82,7 +113,7 @@ any performance/parity wording.
 - [x] DNS/TLS/HTTPS — branded CNAME/A records resolve, certificate SAN matches,
   HTTP redirects to HTTPS, and HSTS is enabled.
 - [x] Rollback — previous Ready deployment is retained and an exact alias rollback
-  command is documented in `docs/project/deployment-rollback.md`.
+  command is documented in `docs/project/release/deployment-rollback.md`.
 - [x] Claim safety — `pnpm verify:claims` reports 0 violations after narrowing
   unsupported parity and validation wording.
 - [x] Public promotion state — npm `latest`, a non-draft/non-prerelease GitHub release,

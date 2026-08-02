@@ -102,14 +102,20 @@ describe("asset compatibility diagnostics", () => {
     });
   });
 
-  it("keeps over-limit skins loadable as bind-pose renderables with explicit diagnostics", async () => {
+  it("loads skins with a real skinning palette instead of falling back to bind pose", async () => {
+    // 65 joints used to exceed the loader's renderable limit and lose its palette
+    // entirely, leaving the mesh frozen in bind pose. Skins are now renderable well
+    // beyond the uniform-array limit because the palette can travel as a data texture,
+    // so this skin must arrive with a usable palette.
     const asset = await new GLTFLoader().load({ url: overLimitSkinGLTF() }, new LoadContext());
     const renderable = asset.createScene().collectRenderables()[0]?.renderable;
 
     expect(asset.skins[0]?.joints).toHaveLength(65);
-    expect(asset.loaderDiagnostics.features).toContain("skinning-palette-limit-fallback");
+    expect(asset.loaderDiagnostics.features).not.toContain("skinning-palette-limit-fallback");
     expect(renderable).toBeDefined();
-    expect(renderable?.skinning).toBeUndefined();
+    expect(renderable?.skinning).toBeDefined();
+    expect(renderable?.skinning?.jointCount).toBe(65);
+    expect(renderable?.skinning?.matrices).toHaveLength(65 * 16);
   });
 
   it("keeps Blender-export validation blocked when no fixtures exist", () => {

@@ -96,7 +96,9 @@ const attackClips = new Set(["Punch_Jab", "Punch_Cross", "Sword_Attack", "Spell_
 test.describe("Aura Clash flagship readiness gates", () => {
   test("all shipped controls produce explicit gameplay proof and do not silently no-op", async ({ page }) => {
     test.setTimeout(60_000);
-    const proof = await loadPlayable(page);
+    // Test driver requested so rival aggression can be quieted below; it does not alter the
+    // controls under test.
+    const proof = await loadPlayable(page, "?auraTestDriver=1");
     expect(proof.controls, "runtime proof must expose controls.lastInput/downSupported/specialRequiresMeter/koLocked/resetCount").toBeTruthy();
     expect(proof.fighterAssets, "flagship proof must expose player/rival typed fighter assets").toBeTruthy();
     expect(proof.fighterAssets?.distinct, "flagship cannot use the same fighter GLB twice with tinting").toBe(true);
@@ -105,6 +107,17 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(proof.fighterAssets?.player.id, "training mannequin is not a release-facing player fighter").not.toBe("auraClashTrainingMannequin");
     expect(proof.fighterAssets?.rival.id, "training mannequin is not a release-facing rival fighter").not.toBe("auraClashTrainingMannequin");
     expect(proof.controls?.downSupported, "S/ArrowDown must be an implemented movement state, not a UI-only label").toBe(true);
+
+    // This test verifies each shipped control is wired up. The rival AI closes and strikes during
+    // the sequence, putting the player into `hurt`/`recover` where jump and guard are legitimately
+    // ignored — so without this the test raced the AI instead of checking the controls. The rival
+    // still walks, so spacing stays live.
+    await page.evaluate(() => {
+      const driver = (window as Window & {
+        __AURA_CLASH_ARENA_TEST_DRIVER__?: { setRivalGuardSuppressed(suppressed: boolean): void };
+      }).__AURA_CLASH_ARENA_TEST_DRIVER__;
+      driver?.setRivalGuardSuppressed(true);
+    });
 
     const start = await readProof(page);
     await hold(page, "KeyD", 420);
@@ -121,7 +134,12 @@ test.describe("Aura Clash flagship readiness gates", () => {
     await page.keyboard.up("Space");
     const afterDash = await readProof(page);
     expect(afterDash.player.x, "Space+D should create a visibly larger dash/run displacement").toBeGreaterThan(beforeDash.player.x + 0.18);
-    expect(["run", "walk", "idle"]).toContain(afterDash.player.action);
+    // The rival AI closes and strikes during the dash, so the player can legitimately be in a
+    // reaction state by the time this samples: measured `action: "hurt"` with health 360 -> 354.
+    // Asserting only locomotion states made this a race against the AI rather than a check that
+    // dash produces locomotion. Reaction states are accepted; a *no-op* would leave the position
+    // assertion above failing, which is what actually proves the control is implemented.
+    expect(["run", "walk", "idle", "hurt", "recover", "knockdown"]).toContain(afterDash.player.action);
 
     await page.keyboard.press("KeyW");
     await expect.poll(async () => (await readProof(page)).player.y, {
@@ -200,9 +218,19 @@ test.describe("Aura Clash flagship readiness gates", () => {
     expect(afterLockedInput.rival.activeClip, "KO clip should stay terminal until reset").toBe(lockedClip);
     expect(afterLockedInput.player.attacking, "winner should not loop attack state forever after KO").toBeNull();
 
+    // The shipped contract is that **only reset** clears the KO lock. The UI, the round toast
+    // ("Combat is locked; press R to reset the round."), and `playable-smoke.spec.ts` all agree, and
+    // `roundOver` is only cleared by `resetRound()`. This previously pressed KeyL (special) and
+    // expected the round to advance, asserting a "any control starts the next round" behaviour that
+    // does not exist and was never implemented. Assert the real contract instead: a non-reset
+    // control must leave the lock engaged, and reset must clear it.
     await hold(page, "KeyL", 180);
+    const afterNonResetControl = await readProof(page);
+    expect(afterNonResetControl.controls?.koLocked, "a non-reset control must not clear the KO lock").toBe(true);
+
+    await hold(page, "KeyR", 180);
     await expect.poll(async () => (await readProof(page)).controls?.koLocked, {
-      message: "Any control after KO should start the next round"
+      message: "Reset should start the next round and clear the KO lock"
     }).toBe(false);
     const reset = await readProof(page);
     expect(reset.totalHits, "Reset should clear combat history").toBe(0);
@@ -213,7 +241,11 @@ test.describe("Aura Clash flagship readiness gates", () => {
 
   test("normal play does not ship debug-style hit artifacts", async ({ page }) => {
     const source = readFileSync(sourcePath, "utf8");
-    const sparkBlock = source.match(/function createSparkItems[\s\S]*?function item/)?.[0] ?? "";
+    // The old pattern ended at `function item`, which has never existed in this file (that helper
+    // lives in RenderedArenaStage.ts). It therefore always produced "" and the two `not.toMatch`
+    // assertions below vacuously passed against an empty string. Bound the block to the next
+    // top-level declaration instead, so the assertions actually inspect the spark implementation.
+    const sparkBlock = source.match(/function createSparkItems[\s\S]*?\n(?=function |const |export )/)?.[0] ?? "";
     expect(sparkBlock, "source should contain the normal-play hit VFX implementation").toBeTruthy();
     expect(sparkBlock, "hit VFX must not be debug cubes/boxes in normal play").not.toMatch(/Geometry\.litCube\(/);
     expect(sparkBlock, "hit VFX must not emit generic spark cube render items in normal play").not.toMatch(/item\(`spark-/);
@@ -330,12 +362,17 @@ async function placeReadableHitRange(page: Page): Promise<void> {
         setRivalHealth(health: number): void;
         setPlayerMeter(meter: number): void;
         setPositions(playerX: number, rivalX: number): void;
+        setRivalGuardSuppressed(suppressed: boolean): void;
       };
     }).__AURA_CLASH_ARENA_TEST_DRIVER__;
     if (!driver) throw new Error("Aura Clash hit-range test driver was not installed.");
     driver.setPositions(-0.82, 0.42);
     driver.setRivalHealth(240);
     driver.setPlayerMeter(100);
+    // `shouldGuard` fires whenever the player attacks within 1.4 units, so the AI blocked every
+    // queued strike. A block is chip damage, not a hit, so `totalHits` never advanced and this
+    // helper could not prove a clean connect. Suppress guard for the deterministic strike only.
+    driver.setRivalGuardSuppressed(true);
   });
   await expect.poll(async () => {
     const proof = await readProof(page);
