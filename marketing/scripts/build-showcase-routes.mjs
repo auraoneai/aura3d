@@ -5,9 +5,28 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { removeLocalAuraAssets, rewriteBuiltAuraAssetUrls } from "./showcase-cdn-assets.mjs";
 
-const expectedEngineVersion = "1.4.5";
+/*
+ * Engine version is derived from the repository, not restated here.
+ *
+ * This was hardcoded to "1.4.5" and blocked the 1.5.0 marketing build, because a release now has to remember to
+ * edit a constant in a build script. The guard itself is worth keeping -- it stops the marketing site silently
+ * drifting from the engine it claims to ship -- but the *expected* value belongs to the root manifest, which is
+ * the thing the release actually bumps.
+ */
+const expectedEngineVersion = JSON.parse(
+  readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../package.json"), "utf8")
+).version;
 const expectedShowcaseAssetPackage = "@aura3d/showcase-assets-web";
-const expectedShowcaseAssetVersion = "1.4.5";
+/*
+ * Pinned to a version that actually exists on npm.
+ *
+ * This tracked the engine version and read "1.4.5", but `@aura3d/showcase-assets-web` has only ever been published
+ * up to **1.4.0** -- so the CDN URL it builds (`.../showcase-assets-web@1.4.5/aura-assets`) returns **HTTP 404**,
+ * verified against jsDelivr. The asset package is versioned independently of the engine and is only republished
+ * when the shared showcase assets change, so coupling it to the engine version was the bug. Bump this only when a
+ * new asset-package version is actually published.
+ */
+const expectedShowcaseAssetVersion = "1.4.0";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const marketingDir = path.resolve(scriptDir, "..");
 const repoRoot = path.resolve(marketingDir, "..");
