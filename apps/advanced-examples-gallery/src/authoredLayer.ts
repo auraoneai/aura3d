@@ -219,6 +219,14 @@ interface ImportedItemCollection {
 
 const ZERO_OFFSET: readonly [number, number, number] = [0, 0, 0];
 const PUBLIC_ASSET_ORIGIN = "https://cdn.jsdelivr.net/gh/auraoneai/aura3d@main";
+/**
+ * Hosts that serve the repository's `fixtures/` tree directly.
+ *
+ * Local development and the test harness both serve the repo root, so a repo-relative fixture
+ * path resolves without a CDN round trip -- and without depending on a CDN copy that may not
+ * exist.
+ */
+const SAME_ORIGIN_FIXTURE_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "[::1]"]);
 
 
 export function expectedAuthoredAssetCountForDemo(demoId: DemoId): number {
@@ -477,6 +485,22 @@ async function loadAuthoredAsset(
 function resolvePublicAssetUrl(url: string): string {
   if (/^https?:\/\//.test(url)) return url;
   const configured = (window as unknown as { AURA3D_PUBLIC_ASSET_ORIGIN?: string }).AURA3D_PUBLIC_ASSET_ORIGIN;
+  /*
+   * Prefer the same-origin fixture when the host actually serves it.
+   *
+   * This route unconditionally rewrote every repo-relative fixture path onto a jsdelivr URL,
+   * including in local development and in CI. `water-cinematic-marina-blender.glb` exists in
+   * `fixtures/` and is served at its own path, but the CDN copy is not published, so the route
+   * emitted a hard 404 on every load. The interaction audit caught it the first time this
+   * route was audited at all -- it is publicly linked from the marketing site but was not in
+   * the route-gate registry, so nothing had ever exercised it.
+   *
+   * A CDN origin is still used when the page sets one explicitly, or when the page is served
+   * from a host that does not carry the fixtures.
+   */
+  if (!configured && typeof location !== "undefined" && SAME_ORIGIN_FIXTURE_HOSTS.has(location.hostname)) {
+    return url.startsWith("/") ? url : `/${url}`;
+  }
   const base = configured ?? PUBLIC_ASSET_ORIGIN;
   // `new URL("/fixtures/x.glb", "https://host/gh/owner/repo@main")` resolves to
   // `https://host/fixtures/x.glb` — a leading slash resets to the origin root and silently discards

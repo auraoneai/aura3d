@@ -49,6 +49,26 @@ const ROUTE_FILTER = new Set((process.env.A3D_INTERACTION_ROUTE_IDS ?? "")
   .filter(Boolean));
 
 /**
+ * Publicly linked routes that are not in the route-gate registry.
+ *
+ * The route-gate registry is not the same set as "routes the public can reach". The
+ * disposition audit found `advanced-examples-gallery` linked from the marketing site with
+ * eight interactive controls and no interaction coverage: not gated, therefore not audited,
+ * therefore never exercised. Excluding a route because it is not gated is the same mistake
+ * as excluding one because it is not on the homepage.
+ */
+const UNGATED_PUBLIC_ROUTES: readonly RouteGate[] = [
+  {
+    id: "advanced-examples-gallery",
+    label: "Advanced Examples Gallery",
+    path: "/apps/advanced-examples-gallery/",
+    globalName: "__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__",
+    published: true,
+    releaseClass: "ungated-public-route"
+  }
+];
+
+/**
  * Routes audited here.
  *
  * The index route has no scene controls, so it is covered by link checks
@@ -56,7 +76,7 @@ const ROUTE_FILTER = new Set((process.env.A3D_INTERACTION_ROUTE_IDS ?? "")
  * because it is not on the homepage is how Product Configurator and Digital Twin
  * Ops went unexercised.
  */
-const ROUTES = gateConfig.routes.filter((route) =>
+const ROUTES = [...gateConfig.routes, ...UNGATED_PUBLIC_ROUTES].filter((route) =>
   route.published
   && route.releaseClass !== "index-route"
   && (ROUTE_FILTER.size === 0 || ROUTE_FILTER.has(route.id))
