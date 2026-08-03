@@ -3,6 +3,7 @@ import {
   checkSpatialInvariants,
   collectAuraSceneEvidence,
   createAuraApp,
+  createDigitalTwinKit,
   distributeInRegion,
   effects,
   focusCameraIntent,
@@ -146,6 +147,25 @@ const conveyorRegion: SemanticRegion = {
 function conveyorLine() {
   return resolveSemanticRegion(workcellBounds(), conveyorRegion);
 }
+
+/**
+ * The reusable digital-twin kit this route now configures.
+ *
+ * Phase 12: the route declares its equipment zones, conveyor region and alarm anchor, and the
+ * kit owns selection state, focus framing, marker distribution, alarm state, the sensor
+ * timeline and the spatial invariants a gate checks.
+ */
+const digitalTwinKit = createDigitalTwinKit({
+  bounds: placedBoundsFromAsset(workcellAsset, {
+    targetMaxDimension: WORKCELL_TARGET_MAX_DIMENSION,
+    position: WORKCELL_POSITION,
+    floorY: WORKCELL_POSITION[1]
+  }),
+  equipment: zoneOrder.map((zone) => ({ ...zoneRegions[zone], sensors: { load: 56, temperature: 31.5 } })),
+  flowRegion: conveyorRegion,
+  markerCount: 4,
+  alarmAnchor: "top-left"
+});
 
 /** Workcell bounds as the route renders them, derived from the typed asset. */
 function workcellBounds() {
@@ -397,12 +417,37 @@ function spatialEvidence() {
     ...zoneOrder.map((zone) => ({ id: `${zone} zone centre`, position: zoneCenter(zone), relation: "inside" as const }))
   ];
   const report = checkSpatialInvariants(bounds, claims);
+  /*
+   * Kit frame, mirrored from route state.
+   *
+   * Published alongside the route's own spatial report so a gate can see that the route
+   * configures a reusable kit rather than reimplementing twin behaviour.
+   */
+  digitalTwinKit.reset();
+  digitalTwinKit.selectEquipment(selectedZone);
+  digitalTwinKit.setMode(mode);
+  if (focusedZone !== undefined) digitalTwinKit.toggleFocus();
+  const kitFrame = digitalTwinKit.frame();
   return {
     system: "engine.checkSpatialInvariants",
     routeUsesHardcodedHelperCoordinates: false,
     subjectBounds: report.subjectBounds,
     passes: report.passes,
-    checks: report.checks
+    checks: report.checks,
+    kit: {
+      kind: kitFrame.kind,
+      system: "engine.createDigitalTwinKit",
+      routeReimplementsTwinBehaviour: false,
+      capabilities: digitalTwinKit.capabilities,
+      selectedEquipmentId: kitFrame.selectedEquipmentId,
+      mode: kitFrame.mode,
+      focused: kitFrame.focused,
+      markerPlacements: kitFrame.markerPlacements.length,
+      alarmPosition: kitFrame.alarmPosition,
+      timeline: kitFrame.timeline,
+      spatialInvariants: kitFrame.spatialInvariants,
+      accessibilityLabel: kitFrame.accessibilityLabel
+    }
   };
 }
 

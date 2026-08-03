@@ -2,6 +2,7 @@ import {
   camera,
   checkSpatialInvariants,
   city,
+  createSmartCityKit,
   collectAuraSceneEvidence,
   createAuraApp,
   effects,
@@ -66,6 +67,26 @@ const districtRegions: Record<SmartCityDistrict, SemanticRegion> = {
   harbor: { id: "harbor", label: "Harbor", u: 0.18, v: 0.05, w: 0.85, extent: [0.36, 0.02, 0.31] },
   industrial: { id: "industrial", label: "Industrial", u: 0.85, v: 0.05, w: 0.85, extent: [0.36, 0.02, 0.31] }
 };
+
+/**
+ * The reusable smart-city kit this route now configures.
+ *
+ * Phase 12: the route declares its districts and data layers, and the kit owns district
+ * selection, layer toggles, overlay placement scaled by value, density reduction, temporal
+ * state and the spatial invariants a gate checks.
+ */
+const smartCityKit = createSmartCityKit({
+  bounds: placedBounds({ position: [0, 0, 0], size: [CITY_EXTENT, CITY_HEIGHT, CITY_EXTENT], floorY: 0 }),
+  districts: (["core", "north", "harbor", "industrial"] as const).map((district) => ({
+    ...districtRegions[district],
+    color: districtColor(district)
+  })),
+  layers: [
+    { id: "mobility", label: "Mobility", values: { core: 0.72, north: 0.48, harbor: 0.61, industrial: 0.35 } },
+    { id: "energy", label: "Energy", values: { core: 0.88, north: 0.4, harbor: 0.33, industrial: 0.7 } }
+  ],
+  temporalStates: ["day", "night"]
+});
 
 function districtRegion(district: SmartCityDistrict) {
   return resolveSemanticRegion(cityBounds(), districtRegions[district]);
@@ -233,6 +254,29 @@ function buildSmartCityScene(): SceneBuild {
        * Replaces judging helper placement by eye.
        */
       spatialInvariants: smartCitySpatialReport,
+      /*
+       * Kit frame, mirrored from route state. Published so a gate can see the route configures
+       * a reusable kit rather than reimplementing city-overlay behaviour.
+       */
+      kit: (() => {
+        smartCityKit.reset();
+        if (controls.district !== "all") smartCityKit.selectDistrict(controls.district);
+        smartCityKit.setTemporalState(controls.timeOfDay === "night" ? "night" : "day");
+        const kitFrame = smartCityKit.frame();
+        return {
+          kind: kitFrame.kind,
+          system: "engine.createSmartCityKit",
+          routeReimplementsCityBehaviour: false,
+          capabilities: smartCityKit.capabilities,
+          districtId: kitFrame.districtId,
+          activeLayerIds: kitFrame.activeLayerIds,
+          temporalState: kitFrame.temporalState,
+          overlays: kitFrame.overlays.length,
+          reducedDetailDistrictIds: kitFrame.reducedDetailDistrictIds,
+          spatialInvariants: kitFrame.spatialInvariants,
+          accessibilityLabel: kitFrame.accessibilityLabel
+        };
+      })(),
       nodeCount: snapshot.nodes.length,
       labelCount: snapshot.nodes.filter((node) => node.kind === "label").length,
       district: controls.district

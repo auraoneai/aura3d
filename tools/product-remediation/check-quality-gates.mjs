@@ -245,6 +245,50 @@ if (audits.length === 0) {
       : `${simulations.length - stillSimulations.length}/${simulations.length} simulations rendered motion`);
 }
 
+// --- Application kit adoption (Phase 12) ------------------------------------
+if (!existsSync(inventoryPath)) {
+  record("kits", "routes-configure-kits", "public application routes configure reusable kits", "unproven", "inventory report missing");
+} else {
+  const inventory = readJson(inventoryPath);
+  /*
+   * Adoption is measured from route source, not from a list.
+   *
+   * A kit nothing consumes is a claim rather than a capability, which is the standard the parity
+   * generator applies to every other row.
+   */
+  const KIT_FACTORIES = [
+    "createProductConfiguratorKit",
+    "createDigitalTwinKit",
+    "createArchitectureKit",
+    "createSmartCityKit",
+    "createCinematicKit"
+  ];
+  const adopters = new Map();
+  for (const app of inventory.apps) {
+    for (const file of app.sourceFiles ?? []) {
+      let text;
+      try {
+        text = readFileSync(join(root, file), "utf8");
+      } catch {
+        continue;
+      }
+      for (const factory of KIT_FACTORIES) {
+        if (new RegExp(`\\b${factory}\\b`).test(text)) {
+          if (!adopters.has(factory)) adopters.set(factory, new Set());
+          adopters.get(factory).add(app.routeId);
+        }
+      }
+    }
+  }
+  const unadopted = KIT_FACTORIES.filter((factory) => !adopters.has(factory));
+  record("kits", "routes-configure-kits",
+    "every reusable application kit has at least one route configuring it",
+    unadopted.length === 0 ? "pass" : "fail",
+    unadopted.length === 0
+      ? KIT_FACTORIES.map((factory) => `${factory}:${adopters.get(factory).size}`).join(", ")
+      : `unadopted: ${unadopted.join(", ")}`);
+}
+
 const byStatus = { pass: 0, fail: 0, unproven: 0 };
 for (const check of checks) byStatus[check.status] += 1;
 const byGroup = {};

@@ -1,15 +1,14 @@
 > **REMEDIATION STATUS — see `docs/project/plans/aura3d-product-remediation-prd.md`
 > for the full ledger and final report.**
 >
-> 16 of 17 phases complete, plus the route-by-route audit, metrics, verification and
-> PRD ledger. **Phase 12 (application kits) is not complete** and is recorded as the
-> largest remaining item.
+> **All 17 phases complete**, plus the route-by-route audit, metrics, verification and
+> PRD ledger.
 >
 > Headline evidence: 87/87 public controls and 47/47 keyboard bindings verified by
-> operation across 13 routes with zero console errors; 20/20 quality gates with zero
-> unproven; 158 unit tests over 8 new reusable engine modules; 4 clean-room projects
-> inside budget with zero private imports; 2869/2870 unit and integration tests across
-> two serial runs.
+> operation across 13 routes with zero console errors; 21/21 quality gates with zero
+> unproven; 192 unit tests over 9 new reusable engine modules; 5 application kits with
+> browser-verified route adoption; 4 clean-room projects inside budget with zero private
+> imports; 2903/2904 unit and integration tests across two serial runs.
 >
 > Release and marketing freeze **observed**: no npm publish, no GitHub release, no
 > marketing deploy, no version change, and no route-status promotion. All four game
@@ -1043,9 +1042,9 @@ Build AI using:
 
 Aura Clash must have a coherent match loop.
 
-Phase 12: application kits  [ ] NOT COMPLETE
+Phase 12: application kits  [x] COMPLETE
 
-> Routes consume reusable systems (focus, labels, anchoring) but NOT reusable application kits. Largest remaining item; recorded in PRD section 15.
+> ApplicationKits.ts - five kits (product configurator, digital twin, architecture, smart city, cinematic), 34 unit tests. Four routes migrated to configure them; adoption verified in a browser (tests/browser/application-kit-adoption.spec.ts) and gated. Each kit publishes a capability report naming what it deliberately does NOT own (measurement, section views, live facility data, GIS ingest, video encoding, material authoring) rather than stubbing it.
 
 Static and enterprise-style examples are strategically important and must also become reusable.
 

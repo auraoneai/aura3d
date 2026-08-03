@@ -1,11 +1,14 @@
 import {
   camera,
   collectAuraSceneEvidence,
+  createArchitectureKit,
   createAuraApp,
+  createCinematicKit,
   interactions,
   lights,
   material,
   model,
+  placedBounds,
   primitives,
   renderer,
   scene,
@@ -40,6 +43,8 @@ interface ArchitectureEvidence {
     readonly lightShafts: number;
     readonly drawCalls: number;
   };
+  /** Evidence for the reusable kits this route configures. */
+  readonly kits: unknown;
   readonly systems: readonly string[];
   readonly claimBoundary: {
     readonly accepted: readonly string[];
@@ -181,6 +186,45 @@ const cameraPaths: Record<CameraPathId, {
     }
   }
 };
+
+/**
+ * The reusable architecture and cinematic kits this route now configures.
+ *
+ * Phase 12: this route is both an architectural walkthrough and a camera-path cinematic, so it
+ * configures both kits. The architecture kit owns floor and room focus, sun direction derived
+ * from mood angles, material variants and spatial invariants. The cinematic kit owns shot
+ * sequencing, timing, transitions, animation coordination and a deterministic export plan.
+ *
+ * Camera composition stays with the route's existing `cameraPaths`, which are viewport-aware in
+ * a way the kit does not model; the kit's sequencing and export plan are published alongside so
+ * the shot structure is machine-readable.
+ */
+const DISTRICT_BOUNDS = placedBounds({ position: [0, -0.2, -0.62], size: [3.2, 1.6, 3.2], floorY: -0.2 });
+
+const architectureKit = createArchitectureKit({
+  bounds: DISTRICT_BOUNDS,
+  spaces: [
+    { id: "plaza", label: "Plaza", floor: 0, u: 0.5, v: 0.08, w: 0.62, extent: [0.4, 0.1, 0.3] },
+    { id: "atrium", label: "Atrium", floor: 1, u: 0.44, v: 0.42, w: 0.5, extent: [0.28, 0.24, 0.28] },
+    { id: "balcony", label: "Balcony", floor: 2, u: 0.28, v: 0.74, w: 0.44, extent: [0.24, 0.16, 0.22] }
+  ],
+  // Sun angles per mood, so the kit derives a direction rather than the route naming a vector.
+  moods: [
+    { id: "dawn", label: "Dawn", sunElevation: 14, sunAzimuth: 96 },
+    { id: "gallery", label: "Gallery", sunElevation: 52, sunAzimuth: 148 },
+    { id: "nocturne", label: "Nocturne", sunElevation: 4, sunAzimuth: 292 }
+  ],
+  materialVariants: [{ id: "stone", label: "Stone" }, { id: "glass", label: "Glass" }]
+});
+
+const cinematicKit = createCinematicKit({
+  shots: [
+    { id: "establish", seconds: 9, from: [1.74, 0.72, 2.72], to: [1.34, 0.58, 2.28], target: [0.08, -0.2, -0.62], transition: "ease" },
+    { id: "glide", seconds: 11, from: [1.62, 0.68, 2.62], to: [1.04, 0.52, 2.06], target: [0.08, -0.2, -0.62], transition: "linear" },
+    { id: "balcony", seconds: 8, from: [-1.36, 0.68, 2.62], to: [-0.82, 0.52, 2.08], target: [0.08, -0.2, -0.62], transition: "ease" }
+  ],
+  fov: 32
+});
 
 let controls: ArchitectureControls = {
   mood: "gallery",
@@ -341,8 +385,46 @@ function publishEvidence(forcedStatus?: RouteStatus): void {
       lightShafts: countMatching(nodeNames, "light shaft"),
       drawCalls: diagnostics.drawCalls
     },
+    /*
+     * Kit evidence for both kits this route configures. Published so a gate can see the route
+     * configures reusable kits rather than reimplementing walkthrough and sequencing behaviour.
+     */
+    kits: (() => {
+      architectureKit.reset();
+      architectureKit.setMood(controls.mood);
+      const architectureFrame = architectureKit.frame();
+      const shotBoundary = cinematicKit.shotBoundaries().find((boundary) => boundary.shotId === controls.cameraPath);
+      const cinematicFrame = cinematicKit.sampleAt(shotBoundary ? shotBoundary.start + 0.5 : 0);
+      return {
+        architecture: {
+          kind: architectureFrame.kind,
+          system: "engine.createArchitectureKit",
+          routeReimplementsWalkthroughBehaviour: false,
+          capabilities: architectureKit.capabilities,
+          moodId: architectureFrame.moodId,
+          sunDirection: architectureFrame.sunDirection,
+          visibleSpaceIds: architectureFrame.visibleSpaceIds,
+          spatialInvariants: architectureFrame.spatialInvariants,
+          accessibilityLabel: architectureFrame.accessibilityLabel
+        },
+        cinematic: {
+          kind: cinematicFrame.kind,
+          system: "engine.createCinematicKit",
+          routeReimplementsSequencingBehaviour: false,
+          capabilities: cinematicKit.capabilities,
+          activeShotId: cinematicFrame.shotId,
+          shotProgress: cinematicFrame.shotProgress,
+          transitioning: cinematicFrame.transitioning,
+          totalSeconds: cinematicKit.totalSeconds,
+          shotBoundaries: cinematicKit.shotBoundaries(),
+          exportPlanFrames: cinematicKit.exportPlan(30).length
+        }
+      };
+    })(),
     systems: [
       "createAuraApp",
+      "engine.createArchitectureKit floor/room focus, sun direction, material variants",
+      "engine.createCinematicKit shot sequencing, transitions, export plan",
       "typed architecture district model(assets.showcaseSkylineCity)",
       "bounded architecture district presentation",
       "camera choreography",

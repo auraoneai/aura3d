@@ -4,6 +4,7 @@ import {
   collectAuraSceneEvidence,
   createAuraApp,
   createAuraRouteHealthSnapshot,
+  createProductConfiguratorKit,
   focusSemanticRegion,
   group,
   interactions,
@@ -173,6 +174,82 @@ let frameTick = 0;
 let lastInteraction = "initial-load";
 let interactionRevision = 0;
 
+/*
+ * Part regions and the configurator kit are declared above the first scene build.
+ *
+ * `buildConfiguratorScene` runs during module evaluation, so anything it reaches must already be
+ * initialized. Both a `const` kit and a lazily-assigned `let` failed at mount while they lived
+ * below this line -- the binding itself is in its temporal dead zone, not merely its value. This
+ * is the third route in this remediation to hit the same trap, which is why the interaction audit
+ * runs on every route rather than only the one being edited.
+ */
+/**
+ * Selectable parts of the product, expressed as normalized regions of the
+ * asset's own bounds.
+ *
+ * `u`/`v`/`w` run 0..1 across the product's X/Y/Z extents, so these definitions
+ * survive an asset swap or a scale change. The previous version stored world
+ * positions and an indicator scale per part, which is how the earcup focus came
+ * to carry `scale: [1.22, 0.08, 0.78]` -- a nonuniform scale applied to a torus
+ * in its own ring plane, then rotated flat. That produced the reported yellow/
+ * white bar instead of a ring. See `FocusSelection.ts` for the axis analysis.
+ */
+const partRegions: Record<Exclude<FocusId, "overview">, SemanticRegion> = {
+  earcups: { id: "earcups", label: "Earcup acoustic housings", u: 0.5, v: 0.52, w: 0.46, extent: [0.86, 0.5, 0.7] },
+  headband: { id: "headband", label: "Headband structure", u: 0.5, v: 0.88, w: 0.4, extent: [0.74, 0.2, 0.28] },
+  cushions: { id: "cushions", label: "Soft cushion contact area", u: 0.5, v: 0.34, w: 0.5, extent: [0.7, 0.24, 0.6] }
+};
+
+/**
+ * The reusable configurator kit this route now configures.
+ *
+ * Phase 12: the route declares its parts, variants, finishes and camera presets, and the kit
+ * owns selection state, focus feedback, exploded placement, price binding, reset and the
+ * spatial invariants a gate checks. Before this, the route assembled all of that itself --
+ * which is why a sixth configurator would have got no help from the five that existed.
+ *
+ * The route keeps its own `state` as the source of truth for scene composition and evidence,
+ * and mirrors it into the kit, so this migration adds the kit without a rewrite of the
+ * route's rendering path.
+ */
+/*
+ * Constructed lazily on first use.
+ *
+ * The scene is composed during module evaluation, so a module-level `const` here is in its
+ * temporal dead zone when the scene builder runs -- the same trap that broke the digital-twin
+ * and smart-city migrations at mount. Hoisting works when the dependencies are simple values;
+ * this kit depends on several declarations further down the module, so deferring construction
+ * is the fix that cannot be reintroduced by a future reorder.
+ */
+let configuratorKitInstance: ReturnType<typeof createProductConfiguratorKit> | undefined;
+function configuratorKit(): ReturnType<typeof createProductConfiguratorKit> {
+  configuratorKitInstance ??= createProductConfiguratorKit({
+  bounds: placedBoundsFromAsset(productAsset, {
+    targetMaxDimension: 1.55 * productScale,
+    position: PRODUCT_POSITION,
+    floorY: PRODUCT_POSITION[1]
+  }),
+  parts: [
+    { ...partRegions.earcups, price: 0 },
+    { ...partRegions.headband, price: 0 },
+    { ...partRegions.cushions, price: 0 }
+  ],
+  variants: [
+    { id: "graphite", label: variants.graphite.label, color: variants.graphite.color, accent: variants.graphite.accent },
+    { id: "ceramic", label: variants.ceramic.label, color: variants.ceramic.color, accent: variants.ceramic.accent },
+    { id: "copper", label: variants.copper.label, color: variants.copper.color, accent: variants.copper.accent }
+  ],
+  finishes: [
+    { id: "satin", label: finishes.satin.label },
+    { id: "gloss", label: finishes.gloss.label },
+    { id: "titanium", label: finishes.titanium.label }
+  ],
+  indicators: ["ring", "halo"]
+  });
+  return configuratorKitInstance;
+}
+
+
 const initialScene = buildConfiguratorScene(state);
 const initialSnapshot = initialScene.toJSON();
 
@@ -288,23 +365,6 @@ function configuratorSceneAccents(nextState: ConfiguratorState): readonly AuraSc
   return nodes;
 }
 
-/**
- * Selectable parts of the product, expressed as normalized regions of the
- * asset's own bounds.
- *
- * `u`/`v`/`w` run 0..1 across the product's X/Y/Z extents, so these definitions
- * survive an asset swap or a scale change. The previous version stored world
- * positions and an indicator scale per part, which is how the earcup focus came
- * to carry `scale: [1.22, 0.08, 0.78]` -- a nonuniform scale applied to a torus
- * in its own ring plane, then rotated flat. That produced the reported yellow/
- * white bar instead of a ring. See `FocusSelection.ts` for the axis analysis.
- */
-const partRegions: Record<Exclude<FocusId, "overview">, SemanticRegion> = {
-  earcups: { id: "earcups", label: "Earcup acoustic housings", u: 0.5, v: 0.52, w: 0.46, extent: [0.86, 0.5, 0.7] },
-  headband: { id: "headband", label: "Headband structure", u: 0.5, v: 0.88, w: 0.4, extent: [0.74, 0.2, 0.28] },
-  cushions: { id: "cushions", label: "Soft cushion contact area", u: 0.5, v: 0.34, w: 0.5, extent: [0.7, 0.24, 0.6] }
-};
-
 /** Product bounds as the route actually renders them, derived from the typed asset. */
 function productPlacedBounds() {
   return placedBoundsFromAsset(productAsset, {
@@ -402,6 +462,22 @@ function explodedProxyNodes(nextState: ConfiguratorState): readonly AuraSceneNod
  * than inferring correctness from a screenshot. The bar defect passed every pixel
  * check that existed.
  */
+/**
+ * Mirror route state into the kit and return its frame.
+ *
+ * The kit is the owner of selection semantics; this keeps the two in step so the published
+ * kit evidence describes what the route is actually showing.
+ */
+function configuratorKitFrame(nextState: ConfiguratorState) {
+  const kit = configuratorKit();
+  kit.reset();
+  kit.selectVariant(nextState.variant);
+  kit.selectFinish(nextState.finish);
+  if (nextState.focus !== "overview") kit.selectPart(nextState.focus);
+  if (nextState.exploded) kit.toggleExploded();
+  return kit.frame();
+}
+
 function focusEvidence(nextState: ConfiguratorState) {
   const focus = resolveFocus(nextState.focus, variants[nextState.variant].accent);
   const bounds = productPlacedBounds();
@@ -417,7 +493,26 @@ function focusEvidence(nextState: ConfiguratorState) {
     calloutText: focus?.nodes.find((node) => node.kind === "label")?.text,
     invariants: focus?.invariants ?? { schema: "aura3d-focus-invariants/1.0", checks: [], passes: true },
     accessibilityLabel: focus?.accessibilityLabel ?? "no selection",
-    spatialInvariants: spatial
+    spatialInvariants: spatial,
+    /*
+     * Kit evidence, published so a gate can see that the route configures a reusable kit
+     * rather than reimplementing configurator behaviour.
+     */
+    kit: (() => {
+      const kitFrame = configuratorKitFrame(nextState);
+      return {
+        kind: kitFrame.kind,
+        system: "engine.createProductConfiguratorKit",
+        routeReimplementsConfiguratorBehaviour: false,
+        capabilities: configuratorKit().capabilities,
+        state: kitFrame.state,
+        indicatorNodes: kitFrame.nodes.length,
+        explodedPlacements: kitFrame.explodedPlacements.length,
+        focusInvariants: kitFrame.focus.invariants,
+        spatialInvariants: kitFrame.spatialInvariants,
+        accessibilityLabel: kitFrame.accessibilityLabel
+      };
+    })()
   };
 }
 

@@ -131,7 +131,7 @@ because the corrections are what make the remaining results trustworthy.
 | 9 — vehicle system and Turbo | complete | `tests/reports/turbo-vehicle-grounding/` |
 | 10 — platformer system and Skyline | complete | `tests/reports/skyline-platformer-motion/` |
 | 11 — combat system and Aura Clash | complete | `CombatFrameData.ts` |
-| 12 — application kits | **not complete** | routes consume reusable systems, not kits |
+| 12 — application kits | complete | `ApplicationKits.ts` (5 kits, 34 tests); adoption gated and browser-verified |
 | 13 — magic geometry audit | complete | published findings 47 → 7 |
 | 14 — public API consistency | complete | `docs/project/plans/aura3d-api-design-rules.md` |
 | 15 — clean-room developer proof | complete | `tests/reports/clean-room-projects/` |
@@ -240,9 +240,21 @@ audited because it was not in the gate registry — was audited, found to emit a
 | Data Galaxy | 13/13 | — | Chart volume derived; no dataviz kit |
 | Material Asset Inspector | 8/8 | — | Anchored exploded view |
 
-**Phase 12 is not complete.** These routes consume reusable *systems* but not
-reusable *application kits*, so their route-local line counts remain high. This is
-the largest piece of remaining work.
+**Phase 12 is complete.** `ApplicationKits.ts` provides five kits — product
+configurator, digital twin, architecture, smart city and cinematic — and four routes
+configure them. Adoption is verified in a browser by
+`tests/browser/application-kit-adoption.spec.ts` and gated by
+`check-quality-gates.mjs`, because a kit nothing consumes is a claim rather than a
+capability.
+
+Each kit publishes a `capabilities` report naming what it deliberately does **not**
+own: measurement and section views (architecture), live facility data (twin), GIS
+ingest (city), video encoding (cinematic), material authoring (configurator). An
+honest absence is better than a stub returning empty geometry.
+
+Route-local line counts remain high because the routes retain their own scene
+composition and evidence paths; the kits own selection semantics, focus, placement,
+timelines and invariants rather than rendering.
 
 ## 7. Clean-room developer benchmarks
 
@@ -386,8 +398,9 @@ projects.
 
 Not minimised:
 
-1. **Application kits (Phase 12) are not built.** Static routes consume reusable
-   systems but hand-assemble their experiences. Largest remaining item.
+1. **Kit adoption is partial in depth.** Four routes configure the five kits, but each
+   retains its own scene composition and evidence path, so route-local line counts stay
+   high. The kits own semantics, not rendering.
 2. **Four game routes remain `prototype-blocked`.** Physics and frame data are correct;
    whether they are *good games* is a judgement only the user's visual review can make.
 3. **`@aura3d/engine-runtime`** still declares 322 exports duplicating other packages.

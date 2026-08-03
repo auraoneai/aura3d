@@ -77,6 +77,7 @@ export * from "./VehicleDriverAi.js";
 export * from "./PlatformerMotion.js";
 export * from "./CombatFrameData.js";
 export * from "./SceneQueries.js";
+export * from "./ApplicationKits.js";
 
 export * from "./FrameEncoder.js";
 export * from "./BrowserFrameCaptureAdapter.js";
