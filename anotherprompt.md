@@ -11,8 +11,10 @@
 > imports; 2903/2904 unit and integration tests across two serial runs.
 >
 > Release and marketing freeze **observed**: no npm publish, no GitHub release, no
-> marketing deploy, no version change, and no route-status promotion. All four game
-> routes remain `prototype-blocked`.
+> marketing deploy, no version change, and no route-status promotion. The three
+> registered game routes remain `prototype-blocked`; Aura Clash is not in the route-gate
+> registry at all, so it is ungated rather than blocked, and adding it would itself be a
+> status change.
 >
 > Recommendation: **Aura3D has not earned another release.**
 

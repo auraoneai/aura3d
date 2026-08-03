@@ -123,7 +123,7 @@ const report = {
   },
 
   visibleUnresolvedDefects: [
-    "Four game routes remain prototype-blocked pending the user's visual review; their gate status is unchanged.",
+    "Three game routes remain prototype-blocked pending the user's visual review; their gate status is unchanged. Aura Clash is not in the route-gate registry at all, so the showcase-wide gates do not cover it -- a gap that should be closed deliberately rather than by quietly registering it.",
     "build-and-check reports release-route-primary for four release-candidate routes. Pre-existing: verified present at baseline f7381a15 with a byte-identical checker, which fails nine classifications against this tree's four.",
     "Application kits (Phase 12) are not built; static routes still hand-assemble their experiences, so route-local line counts remain high.",
     "@aura3d/engine-runtime still declares 322 exports duplicating other packages; consolidation is a breaking change and is documented rather than performed.",

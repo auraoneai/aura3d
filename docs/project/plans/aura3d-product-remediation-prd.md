@@ -224,10 +224,12 @@ audited because it was not in the gate registry — was audited, found to emit a
 | --- | --- | --- |
 | **Turbo Drift Circuit** | Car grounded for a full driving stint: `everUngrounded=false`, `maxContactGap=0`. Suspension travels, chassis pitches and rolls, wheels spin. Opponent driven by `aura-vehicle-driver-ai` with look-ahead racing line, curvature-based corner speeds and recovery. Still `prototype-blocked`. | `tests/reports/turbo-vehicle-grounding/` |
 | **Skyline Runner** | Jump apex-to-step ratio 5.76x → **1.9x**; airtime 0.673s → 0.52s. Landing reliability 48/60 sampled frames grounded, max airborne streak 2. Session length derived, with its gap-clearance limit reported rather than hidden. Still `prototype-blocked`. | `tests/reports/skyline-platformer-motion/` |
-| **Aura Clash** | Frame data was inverted (12–32 active frames against 4–5 recovery). Now derived: light neutral on block, heavy −7, special −49 with a 67-frame punish window. All 23 route specs pass including deterministic replay. Still `prototype-blocked`. | `apps/aura-clash-showcase/tests/` |
+| **Aura Clash** | Frame data was inverted (12–32 active frames against 4–5 recovery). Now derived: light neutral on block, heavy −7, special −49 with a 67-frame punish window. All 23 route specs pass including deterministic replay. **Not in the route-gate registry**, so it is ungated rather than blocked. | `apps/aura-clash-showcase/tests/` |
 | **Blockfall Reactor** | 10/10 controls and 12/12 keyboard bindings verified; mobile parity restored. Still `prototype-blocked`. | `tests/reports/showcase-interaction-audit/showcase-blockfall-reactor.json` |
 
-**No game route status was promoted.** All four remain `prototype-blocked`.
+**No game route status was promoted.** The three registered game routes remain
+`prototype-blocked`; Aura Clash remains outside the registry. Adding it to the registry
+would itself be a status change, so it was left alone.
 
 ## 6. Static application-kit results
 
@@ -406,8 +408,11 @@ Not minimised:
 1. **Kit adoption is partial in depth.** Four routes configure the five kits, but each
    retains its own scene composition and evidence path, so route-local line counts stay
    high. The kits own semantics, not rendering.
-2. **Four game routes remain `prototype-blocked`.** Physics and frame data are correct;
-   whether they are *good games* is a judgement only the user's visual review can make.
+2. **Three game routes remain `prototype-blocked`, and Aura Clash is ungated.** Physics
+   and frame data are correct; whether they are *good games* is a judgement only the
+   user's visual review can make. Aura Clash's absence from the route-gate registry means
+   the showcase-wide gates do not cover it at all, which should be closed deliberately
+   rather than by quietly adding it.
 3. **`@aura3d/engine-runtime`** still declares 322 exports duplicating other packages.
    51 symbol names have multiple owners.
 4. **Five physics capabilities unreachable from the public API**: penetration
@@ -434,8 +439,8 @@ tests behind them, vehicle grounding and platformer motion are correct and
 machine-checked, combat frame data is no longer inverted, and 20 quality gates pass
 with zero unproven.
 
-What has not changed is the thing that matters for a release: the four game routes are
-still `prototype-blocked`, and the package graph still has 51 duplicated symbol owners
+What has not changed is the thing that matters for a release: three game routes are
+still `prototype-blocked` and Aura Clash is still ungated, and the package graph still has 51 duplicated symbol owners
 concentrated in `@aura3d/engine-runtime`. A release now would ship correct physics
 inside games nobody has approved, and a public API whose largest package duplicates
 the rest of the workspace.
