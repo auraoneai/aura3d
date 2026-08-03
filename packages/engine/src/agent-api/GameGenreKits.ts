@@ -64,6 +64,15 @@ export interface GamePlatformerInput {
   readonly jumpHeld?: boolean;
   readonly dashPressed?: boolean;
   readonly fastFall?: boolean;
+  /**
+   * Restart the level from its start.
+   *
+   * Present because `GameRacingInput` has it and this did not: a clean-room platformer
+   * written against the public API had to reach for `kit.reset()` out-of-band while the
+   * racing kit accepts `reset` as input. Two kits in the same family disagreeing about
+   * where restart lives is an API-consistency defect, not a caller error.
+   */
+  readonly reset?: boolean;
 }
 
 export type GamePlatformerEventType =
@@ -75,7 +84,9 @@ export type GamePlatformerEventType =
   | "hazard"
   | "fall"
   | "respawn"
-  | "complete";
+  | "complete"
+  /** Level restarted. Emitted for `GamePlatformerInput.reset`, matching the racing kit. */
+  | "reset";
 
 export interface GamePlatformerEvent {
   readonly type: GamePlatformerEventType;
@@ -857,6 +868,14 @@ export function createGamePlatformerKit(level: GamePlatformerLevel = {}): GamePl
     step(dt, input = {}) {
       const step = Math.min(0.05, Math.max(0, dt || 0));
       events = [];
+      // Restart is handled before the completion guard, so a finished level can be
+      // restarted. Matching `GameRacingInput`, which handles `reset` the same way.
+      if (input.reset === true) {
+        events = [];
+        state = createPlatformerState(config);
+        emit("reset");
+        return snapshot();
+      }
       if (state.status === "completed") return snapshot();
       state.frame += 1;
       const previousTime = state.time;

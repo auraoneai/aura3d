@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><title>Clean-room digital twin</title>
+    <style>
+      body { margin: 0; background: #051011; color: #dff6f0; font: 14px system-ui; display: grid; grid-template-columns: 1fr 200px; height: 100vh; }
+      #stage { width: 100%; height: 100%; }
+      aside { padding: 12px; display: grid; gap: 8px; align-content: start; }
+      button { padding: 7px 10px; border-radius: 6px; border: 1px solid #1d3034; background: #0a181a; color: inherit; cursor: pointer; }
+      button[aria-pressed="true"] { border-color: #7ee8c4; }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <aside>
+      <button type="button" data-zone="assembly">Assembly</button>
+      <button type="button" data-zone="packaging">Packaging</button>
+      <button type="button" data-zone="energy">Energy</button>
+      <button type="button" id="alarm">Toggle alarm</button>
+      <button type="button" id="focus">Focus zone</button>
+    </aside>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>
