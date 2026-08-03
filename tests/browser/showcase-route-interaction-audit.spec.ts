@@ -450,11 +450,34 @@ for (const route of ROUTES) {
       await page.setViewportSize(VIEWPORT);
       await page.waitForTimeout(400);
 
+      /*
+       * Peak invariants, captured before the reload.
+       *
+       * `finalInvariants` is read after a restart, which is correct for restart recovery but
+       * wrong for judging label and focus rendering: a reload clears any selection, so a route
+       * whose callout only exists while a part is focused reports zero placed labels. The gate
+       * then read that as 'unproven' for a capability that demonstrably works. Invariants are
+       * therefore also captured at their peak, while state from the interaction sweep is still
+       * applied.
+       */
+      const peakInvariants = await readInvariants(page, route.globalName);
+
       // Restart: reloading must return the route to a mounted state.
       await page.reload({ waitUntil: "domcontentloaded" });
       await waitForMount(page, route.globalName);
       const afterReload = await evidenceSnapshot(page, route.globalName);
       const finalInvariants = await readInvariants(page, route.globalName);
+      /** Best evidence for each invariant group across the session. */
+      const observedInvariants: InvariantSummary = {
+        ...(peakInvariants.focus ?? finalInvariants.focus ? { focus: peakInvariants.focus ?? finalInvariants.focus! } : {}),
+        ...(peakInvariants.spatial ?? finalInvariants.spatial ? { spatial: peakInvariants.spatial ?? finalInvariants.spatial! } : {}),
+        // Labels: take whichever sample actually saw them placed.
+        ...((peakInvariants.labels?.visible ?? 0) > 0
+          ? { labels: peakInvariants.labels! }
+          : finalInvariants.labels
+            ? { labels: finalInvariants.labels }
+            : {})
+      };
 
       mkdirSync(REPORT_DIR, { recursive: true });
       const screenshotPath = join(REPORT_DIR, `${route.id}-final.png`);
@@ -479,7 +502,9 @@ for (const route of ROUTES) {
         mobileControlsDiscovered: mobileControls.length,
         restartRecovered: afterReload !== "absent",
         initialInvariants,
+        peakInvariants,
         finalInvariants,
+        observedInvariants,
         consoleErrors,
         trace,
         screenshot: `tests/reports/showcase-interaction-audit/${route.id}-final.png`
@@ -501,16 +526,16 @@ for (const route of ROUTES) {
 
       // Published invariants must hold. A route reporting a focus or spatial
       // invariant is asserting geometric correctness; it must be true.
-      if (finalInvariants.focus) {
-        expect(finalInvariants.focus.failing, `focus invariant failures on ${route.id}`).toEqual([]);
+      if (observedInvariants.focus) {
+        expect(observedInvariants.focus.failing, `focus invariant failures on ${route.id}`).toEqual([]);
       }
-      if (finalInvariants.spatial) {
-        expect(finalInvariants.spatial.failing, `spatial invariant failures on ${route.id}`).toEqual([]);
+      if (observedInvariants.spatial) {
+        expect(observedInvariants.spatial.failing, `spatial invariant failures on ${route.id}`).toEqual([]);
       }
       // A route that authors labels must have them on screen, not merely in the
       // scene graph. This is the check the missing-callout defect defeated.
-      if (finalInvariants.labels && finalInvariants.labels.total > 0) {
-        expect(finalInvariants.labels.visible, `labels present but none rendered on ${route.id}`).toBeGreaterThan(0);
+      if (observedInvariants.labels && observedInvariants.labels.total > 0) {
+        expect(observedInvariants.labels.visible, `labels present but none rendered on ${route.id}`).toBeGreaterThan(0);
       }
 
       expect(afterReload, `route did not republish evidence after reload: ${route.id}`).not.toBe("absent");

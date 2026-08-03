@@ -428,14 +428,28 @@ function explodedProxyClaims(nextState: ConfiguratorState, bounds: ReturnType<ty
     .map((node) => {
       const position = (node as { position?: readonly [number, number, number] }).position ?? [0, 0, 0];
       const name = (node as { name?: string }).name ?? "exploded proxy";
-      return {
-        id: name,
-        position,
-        // Exploded proxies deliberately sit beside the product; they must stay
-        // within reach of it, which is what the previous literals stopped doing.
-        relation: "outside" as const,
-        maxDistance: Math.max(...bounds.size) * 2.5
-      };
+      /*
+       * An exploded view has two kinds of part, and claiming they are all the same thing is a
+       * false claim rather than a lenient one.
+       *
+       * Shells, cushions, the strap and the offset guides are pulled *away* from the body, so
+       * they belong outside its bounds. The driver discs sit at 40% of the shell offset: they
+       * are the inner components, revealed in place rather than displaced, so they are legitimately
+       * inside. Declaring them `outside` made the spatial gate fail on correct geometry -- the
+       * claim was wrong, not the layout. Caught by reading invariants at their peak, while the
+       * exploded view was actually applied.
+       */
+      const revealedInPlace = /driver disc/.test(name);
+      return revealedInPlace
+        ? { id: name, position, relation: "inside" as const }
+        : {
+            id: name,
+            position,
+            // Displaced parts sit beside the product and must stay within reach of it, which is
+            // what the previous literal coordinates stopped doing.
+            relation: "outside" as const,
+            maxDistance: Math.max(...bounds.size) * 2.5
+          };
     });
 }
 

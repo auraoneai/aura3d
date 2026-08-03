@@ -546,7 +546,13 @@
     "animation-studio:fidelity": "tsx --tsconfig tsconfig.base.json tools/animation-studio-fidelity-report/index.ts --out tests/reports/animation-studio/fidelity.json",
     "animation-studio:clean-room": "tsx --tsconfig tsconfig.base.json tools/animation-studio-clean-room/index.ts --out tests/reports/animation-studio/clean-room.json",
     "animation-studio:clean-room:audits": "tsx --tsconfig tsconfig.base.json tools/animation-studio-clean-room/index.ts --audits-only --out tests/reports/animation-studio/clean-room.json",
-    "aura3d11:readiness": "tsx --tsconfig tsconfig.base.json tools/aura3d11-release-readiness/index.ts --package-dir packages/create-aura3d/templates/animation-studio/dist/episodes/moon-garden-001 --execute-template-smoke --out tests/reports/aura3d11/readiness.json"
+    "aura3d11:readiness": "tsx --tsconfig tsconfig.base.json tools/aura3d11-release-readiness/index.ts --package-dir packages/create-aura3d/templates/animation-studio/dist/episodes/moon-garden-001 --execute-template-smoke --out tests/reports/aura3d11/readiness.json",
+    "remediation:inventory": "node tools/product-remediation/build-product-inventory.mjs",
+    "remediation:parity": "node tools/product-remediation/build-threejs-parity.mjs",
+    "remediation:physics-audit": "node tools/product-remediation/build-physics-audit.mjs",
+    "remediation:route-disposition": "node tools/product-remediation/build-route-disposition.mjs",
+    "check:quality-gates": "node tools/product-remediation/check-quality-gates.mjs",
+    "remediation:reports": "pnpm remediation:inventory && pnpm remediation:parity && pnpm remediation:physics-audit && pnpm remediation:route-disposition && pnpm check:quality-gates"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",
