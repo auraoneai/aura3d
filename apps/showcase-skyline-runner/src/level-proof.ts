@@ -1,5 +1,6 @@
 import { game } from "@aura3d/engine";
 import { gameGeometryContract } from "./generated/game-geometry";
+import { createSkylineLevel } from "./level";
 
 /**
  * Deterministic 60-second level proof for FS-103.
@@ -54,17 +55,14 @@ export interface SkylineLevelProof {
   };
 }
 
-function createProofLevel() {
-  return game.assetBoundPlatformerLevel({
-    characterAsset: "showcaseKenneyOobiPlatformerHero",
-    worldAssetBindings: gameGeometryContract.worldAssetBindings,
-    playableSurfaceMap: gameGeometryContract.surfaceMap,
-    authoredPlayableSeconds: gameGeometryContract.authoredSeconds,
-    minPlayableSeconds: 30,
-    minCheckpoints: 6,
-    level: gameGeometryContract.level
-  });
-}
+/**
+ * The route's level, from its single owning module.
+ *
+ * This used to construct the level itself from `gameGeometryContract`, which meant
+ * retuning the jump in `main.ts` left this proof running the old floaty tuning. Sharing
+ * one definition is what makes this proof about the level the route actually ships.
+ */
+const createProofLevel = createSkylineLevel;
 
 /**
  * Runs the level for a full 60-second window and reports only observed values.

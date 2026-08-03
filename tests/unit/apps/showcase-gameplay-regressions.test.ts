@@ -10,6 +10,7 @@ import { gameGeometryContract as skylineGeometry } from "../../../apps/showcase-
 import { gameGeometryContract as turboGeometry } from "../../../apps/showcase-turbo-drift-circuit/src/generated/game-geometry";
 import { createTurboOpponentAi, type TurboOpponentInput } from "../../../apps/showcase-turbo-drift-circuit/src/opponent-ai";
 import { createRunnerChallenge } from "../../../apps/showcase-skyline-runner/src/runner-challenge";
+import { createSkylineLevel } from "../../../apps/showcase-skyline-runner/src/level";
 
 describe("public showcase gameplay regressions", () => {
   it("does not self-author completion or visual approval before mounted interaction", () => {
@@ -30,15 +31,15 @@ describe("public showcase gameplay regressions", () => {
   });
 
   it("keeps Skyline Runner traversable through its generated finish surface", () => {
-    const level = createGameAssetBoundPlatformerLevel({
-      characterAsset: "showcaseKenneyOobiPlatformerHero",
-      worldAssetBindings: skylineGeometry.worldAssetBindings,
-      playableSurfaceMap: skylineGeometry.surfaceMap,
-      authoredPlayableSeconds: skylineGeometry.authoredSeconds,
-      minPlayableSeconds: 30,
-      minCheckpoints: 6,
-      level: skylineGeometry.level
-    });
+    /*
+     * The route's own level, from the module that owns it.
+     *
+     * Reconstructing it here meant the test exercised a *different* level from the one the
+     * route ships: after motion was derived from the level geometry, this copy still
+     * carried the old floaty tuning and the new validator rejected it. Testing the shared
+     * definition is what makes these regressions about the shipped route.
+     */
+    const level = createSkylineLevel();
     const finishSurface = level.platforms?.find((surface) => surface.id === "asset-finish-run");
     const hazard = level.hazards?.find((surface) => surface.id === "asset-hazard-gap");
     expect(finishSurface, "finish must be retained as collision geometry").toBeDefined();
@@ -61,15 +62,15 @@ describe("public showcase gameplay regressions", () => {
   });
 
   it("respawns Skyline checkpoints on supporting surfaces instead of trigger-center heights", () => {
-    const level = createGameAssetBoundPlatformerLevel({
-      characterAsset: "showcaseKenneyOobiPlatformerHero",
-      worldAssetBindings: skylineGeometry.worldAssetBindings,
-      playableSurfaceMap: skylineGeometry.surfaceMap,
-      authoredPlayableSeconds: skylineGeometry.authoredSeconds,
-      minPlayableSeconds: 30,
-      minCheckpoints: 6,
-      level: skylineGeometry.level
-    });
+    /*
+     * The route's own level, from the module that owns it.
+     *
+     * Reconstructing it here meant the test exercised a *different* level from the one the
+     * route ships: after motion was derived from the level geometry, this copy still
+     * carried the old floaty tuning and the new validator rejected it. Testing the shared
+     * definition is what makes these regressions about the shipped route.
+     */
+    const level = createSkylineLevel();
     const checkpoint = level.checkpoints?.find((candidate) => candidate.id === "asset-checkpoint-03");
     const supportingSurface = [...(level.platforms ?? [])].sort((left, right) => {
       const leftDistance = Math.abs(checkpoint!.x - Math.min(Math.max(checkpoint!.x, left.x), left.x + left.width));
@@ -91,23 +92,34 @@ describe("public showcase gameplay regressions", () => {
     expect(respawned.player.y).not.toBeCloseTo(checkpoint!.y, 3);
 
     let continued = respawned;
-    for (let frame = 0; frame < 45; frame += 1) {
+    const frames = 45;
+    for (let frame = 0; frame < frames; frame += 1) {
       continued = simulation.step(1 / 60, { moveX: 1 });
     }
-    expect(continued.player.x).toBeGreaterThan(respawned.player.x + 0.75);
+    /*
+     * Expected travel is derived from the level's own move speed, not a literal.
+     *
+     * The previous `+ 0.75` was tuned against a hardcoded `moveSpeed: 1.15`, so deriving
+     * motion from the level geometry broke a test that was measuring the old constant
+     * rather than the behaviour. The behaviour under test is "the respawned player can walk
+     * forward off the checkpoint", which is a fraction of the distance the level's speed
+     * covers in the sampled window.
+     */
+    const expectedTravel = (level.moveSpeed ?? 1) * (frames / 60) * 0.7;
+    expect(continued.player.x).toBeGreaterThan(respawned.player.x + expectedTravel);
     expect(continued.deaths).toBe(0);
   });
 
   it("locks held movement briefly after a Skyline death to prevent checkpoint death loops", () => {
-    const level = createGameAssetBoundPlatformerLevel({
-      characterAsset: "showcaseKenneyOobiPlatformerHero",
-      worldAssetBindings: skylineGeometry.worldAssetBindings,
-      playableSurfaceMap: skylineGeometry.surfaceMap,
-      authoredPlayableSeconds: skylineGeometry.authoredSeconds,
-      minPlayableSeconds: 30,
-      minCheckpoints: 6,
-      level: skylineGeometry.level
-    });
+    /*
+     * The route's own level, from the module that owns it.
+     *
+     * Reconstructing it here meant the test exercised a *different* level from the one the
+     * route ships: after motion was derived from the level geometry, this copy still
+     * carried the old floaty tuning and the new validator rejected it. Testing the shared
+     * definition is what makes these regressions about the shipped route.
+     */
+    const level = createSkylineLevel();
     const simulation = createGamePlatformerKit(level);
     let snapshot = simulation.reset("asset-checkpoint-03");
     const checkpointX = snapshot.player.x;

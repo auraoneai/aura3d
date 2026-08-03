@@ -999,18 +999,30 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
   if (checkpoints.length < minCheckpoints) {
     throw new Error(`game.assetBoundPlatformerLevel requires at least ${minCheckpoints} checkpoints.`);
   }
+  /*
+   * Surface-map validation runs before the duration check.
+   *
+   * Both can fail for the same underlying cause -- too few real playable surfaces -- and
+   * duration is the *derived* quantity. Reporting a duration shortfall for a level that
+   * does not have enough surfaces names a symptom rather than the problem, which is what a
+   * caller then tries to fix.
+   */
+  const surfaceIds = new Set(platforms.map((platform) => platform.id));
+  const playableSurfaceMap = options.playableSurfaceMap;
+  if (playableSurfaceMap) {
+    validatePlatformerPlayableSurfaceMap(playableSurfaceMap, options.worldAssetBindings, surfaceIds, minPlayableSeconds);
+  }
   const traversalSeconds = roundGameMetric((finish.x - start.x) / moveSpeed);
   const authoredPlayableSeconds = roundGameMetric(options.authoredPlayableSeconds ?? traversalSeconds);
   if (!Number.isFinite(authoredPlayableSeconds) || authoredPlayableSeconds <= 0) {
     throw new Error("game.assetBoundPlatformerLevel authoredPlayableSeconds must be a positive finite duration.");
   }
   if (authoredPlayableSeconds < minPlayableSeconds) {
-    throw new Error(`game.assetBoundPlatformerLevel requires at least ${minPlayableSeconds}s of authored playable path.`);
-  }
-  const surfaceIds = new Set(platforms.map((platform) => platform.id));
-  const playableSurfaceMap = options.playableSurfaceMap;
-  if (playableSurfaceMap) {
-    validatePlatformerPlayableSurfaceMap(playableSurfaceMap, options.worldAssetBindings, surfaceIds, minPlayableSeconds);
+    throw new Error(
+      `game.assetBoundPlatformerLevel requires at least ${minPlayableSeconds}s of authored playable path; ` +
+      `traversal at moveSpeed ${moveSpeed} is ${traversalSeconds}s. Suggested fix: state authoredPlayableSeconds explicitly, ` +
+      "since raw traversal time is a lower bound on session length rather than an estimate of it."
+    );
   }
   const worldAssets = validatePlatformerWorldBindings(options.worldAssetBindings, surfaceIds);
   const worldAssetHashes = Object.fromEntries(options.worldAssetBindings

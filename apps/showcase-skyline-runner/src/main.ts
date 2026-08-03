@@ -12,11 +12,11 @@ import {
   skyBandCountForRamp,
   platformerCompositionSpec,
   primitives,
-  scene,
-  solvePlatformerMotion
+  scene
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { gameGeometryContract } from "./generated/game-geometry";
+import { createSkylineLevel, skylineMotion } from "./level";
 import { createRunnerChallenge } from "./runner-challenge";
 
 const input = game.input({
@@ -31,62 +31,15 @@ const input = game.input({
 });
 const authoredPlayableSeconds = gameGeometryContract.authoredSeconds;
 const playableSurfaceMap = gameGeometryContract.surfaceMap;
-/**
- * Motion derived from the level's own platform geometry.
- *
- * The contract shipped `jumpVelocity: 7.4` and inherited the kit default
- * `gravity: -22`, giving a 1.245-unit apex and 0.673s of airtime against platforms that
- * step up by 0.216 units. Every jump rose more than five times higher than the tallest
- * step it needed to clear, which is the reported floating, the late landings, and the
- * platforms reading as unrelated strips rather than a connected route.
- *
- * `solvePlatformerMotion` sizes the apex to the tallest step plus headroom, derives
- * gravity and jump velocity from that apex and a chosen rise time, and sets move speed
- * so a full jump clears the widest gap and the course takes the intended session
- * length. Nothing below is a hand-tuned number: change the level geometry and the
- * motion follows.
- */
-const solvedMotion = solvePlatformerMotion(gameGeometryContract.level.platforms ?? [], {
-  // A rise time in the snappy-but-not-twitchy band. This is the one genuine feel
-  // parameter; everything else follows from it and the geometry.
-  riseSeconds: 0.26,
-  // Comfortable clearance over the tallest step without floating above it.
-  apexHeadroom: 1.9,
-  gapMargin: 1.5,
-  /*
-   * Target session length.
-   *
-   * The reported session "ends in 20-30 seconds": the 16.6-unit course at the shipped
-   * 1.15 units/second crosses in 14 seconds of pure traversal. Sizing move speed from an
-   * intended multi-minute session is how a level gets its duration on purpose.
-   */
-  targetSessionSeconds: 180,
-  traversalFraction: 0.4
-});
+const solvedMotion = skylineMotion;
+const level = createSkylineLevel();
 
-const level = game.assetBoundPlatformerLevel({
-  characterAsset: "showcaseKenneyOobiPlatformerHero",
-  worldAssetBindings: gameGeometryContract.worldAssetBindings,
-  playableSurfaceMap,
-  authoredPlayableSeconds,
-  minPlayableSeconds: 30,
-  minCheckpoints: 6,
-  level: {
-    ...gameGeometryContract.level,
-    gravity: solvedMotion.gravity,
-    jumpVelocity: solvedMotion.jumpVelocity,
-    moveSpeed: solvedMotion.moveSpeed,
-    coyoteMs: solvedMotion.coyoteMs,
-    jumpBufferMs: solvedMotion.jumpBufferMs
-  }
-});
 /**
  * Scene depth of the typed world plane, as a design choice.
  *
  * This is the *input* to the scene binding. Downstream consumers read the resolved value back from
  * `platformerScene.worldZ` rather than reusing this constant, so a world-model scene offset cannot make the two
- * disagree. Before the binding surfaced `worldZ`, this route had to hardcode a second copy -- a public API gap,
- * now closed.
+ * disagree.
  */
 const WORLD_PLANE_DEPTH = -0.46;
 

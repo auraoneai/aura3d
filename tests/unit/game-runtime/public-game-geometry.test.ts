@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { game } from "../../../packages/engine/src";
+import { game, solvePlatformerMotion } from "../../../packages/engine/src";
 
 describe("public game geometry certification", () => {
   it("certifies racing geometry only with real route structure, certified assets, and retained proof", () => {
@@ -503,13 +503,37 @@ function createPlatformerPresentationFixture() {
     }],
     playableSurfaceMap,
     minPlayableSeconds: 30,
+    /*
+     * Authored duration must be stated once motion is derived.
+     *
+     * `authoredPlayableSeconds` defaults to raw traversal time (course length / move
+     * speed). Deriving a move speed fast enough to clear the fixture's 0.6-unit gaps makes
+     * that traversal shorter than the 30s floor, even though a real session -- jumping,
+     * retrying, collecting -- lasts far longer. Traversal time is a lower bound on session
+     * length, not an estimate of it, so the authored duration is stated explicitly.
+     */
+    authoredPlayableSeconds: 120,
     minCheckpoints: checkpoints.length,
     level: {
       id: "public-platformer-presentation-fixture",
       start: { x: 0.6, y: 0.4 },
       finish: { x: 21.8, y: 1.18 },
-      moveSpeed: 0.62,
-      jumpVelocity: 7.4,
+      /*
+       * Motion derived from the fixture's own surfaces.
+       *
+       * The hardcoded `moveSpeed: 0.62, jumpVelocity: 7.4` was rejected by the new
+       * motion validator for a real reason: a full jump reached 0.42 units against a
+       * 0.6-unit gap, so the fixture level was not traversable. It passed before only
+       * because nothing compared jump reach to gap width. Deriving the values makes the
+       * fixture a playable level, which is what a presentation fixture should be.
+       */
+      ...(() => {
+        const motion = solvePlatformerMotion(
+          surfaces.map((surface) => ({ id: surface.id, x: surface.x - surface.width / 2, y: surface.y, width: surface.width, height: surface.height })),
+          { riseSeconds: 0.28, targetSessionSeconds: 120 }
+        );
+        return { moveSpeed: motion.moveSpeed, jumpVelocity: motion.jumpVelocity, gravity: motion.gravity };
+      })(),
       lowerBound: -1.5,
       platforms: surfaces.map((surface) => ({ id: surface.id, x: surface.x - surface.width / 2, y: surface.y, width: surface.width, height: surface.height })),
       hazards: hazards.map((hazard) => ({ id: hazard.id, x: hazard.x - hazard.width / 2, y: hazard.y, width: hazard.width, height: hazard.height, respawn: true })),

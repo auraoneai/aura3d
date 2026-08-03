@@ -156,8 +156,16 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     // The *input* depth of the world plane. Consumers read the resolved value back from the binding.
     "WORLD_PLANE_DEPTH"
   ],
-  /** 2: Reusable genre defaults. Belong in a shared preset. */
-  "genre-default": [],
+  /**
+   * 2: Reusable genre defaults. Belong in a shared preset.
+   *
+   * `AURA_CLASH_FPS` is the frame rate the route's frame data is expressed in. It is a
+   * genre default rather than a design choice -- fighting-game frame data is universally
+   * quoted at 60fps -- and it exists in the route because `solveCombatFrameData` returns
+   * frames while the route's move table is in seconds. The engine could own the
+   * conversion; until it does, this is honestly a genre default sitting in a route.
+   */
+  "genre-default": ["AURA_CLASH_FPS"],
   /** 3: Asset-derived values that must be computed, never restated. */
   "asset-derived": [],
   /** 4: Temporary visual patches that should be removed. */

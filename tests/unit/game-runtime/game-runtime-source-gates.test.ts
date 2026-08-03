@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createAuraApp, createGameApp, defineAuraAssets, game, lights, model, scene } from "../../../packages/engine/src";
+import { createAuraApp, createGameApp, defineAuraAssets, game, lights, model, scene, solvePlatformerMotion } from "../../../packages/engine/src";
 
 type PackageJson = {
   readonly scripts?: Record<string, string>;
@@ -16,6 +16,21 @@ const assets = defineAuraAssets({
     hash: "sha256-fighter"
   }
 } as const);
+
+
+/**
+ * Motion for a fixture level, derived from its own platforms.
+ *
+ * Fixtures previously inherited the kit's default gravity and jump velocity, which the
+ * motion validator now rejects for real reasons: on these layouts the default jump
+ * overshoots the tallest step by up to 7.7x *and* cannot clear the widest gap. Both were
+ * true before; nothing compared the numbers. Deriving them makes each fixture a level that
+ * could actually be played.
+ */
+function fixtureMotion(platforms: readonly { readonly id: string; readonly x: number; readonly y: number; readonly width: number; readonly height: number }[]) {
+  const motion = solvePlatformerMotion(platforms, { riseSeconds: 0.28, targetSessionSeconds: 120 });
+  return { gravity: motion.gravity, jumpVelocity: motion.jumpVelocity, moveSpeed: motion.moveSpeed };
+}
 
 describe("game runtime source gates", () => {
   it("moves a typed model runtime node through the frame loop without scene recreation", () => {
@@ -276,6 +291,9 @@ describe("game runtime source gates", () => {
         { worldAsset: "showcaseSideScrollerWorld", surfaceIds: ["start", "bridge", "mid", "upper", "far"] }
       ],
       minPlayableSeconds: 30,
+      // Stated because derived motion makes raw traversal shorter than the floor; a real
+      // session including jumps, retries and collection lasts far longer.
+      authoredPlayableSeconds: 120,
       minCheckpoints: 3,
       minSurfaceCount: 5,
       level: {
@@ -283,6 +301,13 @@ describe("game runtime source gates", () => {
         start: { x: 0, y: 0.35 },
         finish: { x: 36, y: 0.35 },
         moveSpeed: 1,
+        ...fixtureMotion([
+          { id: "start", x: 0, y: 0, width: 8, height: 0.35 },
+          { id: "bridge", x: 8, y: 0.2, width: 8, height: 0.35 },
+          { id: "mid", x: 16, y: 0.35, width: 8, height: 0.35 },
+          { id: "upper", x: 24, y: 0.55, width: 5.5, height: 0.32 },
+          { id: "far", x: 31, y: 0.15, width: 7, height: 0.35 }
+        ]),
         platforms: [
           { id: "start", x: 0, y: 0, width: 8, height: 0.35 },
           { id: "bridge", x: 8, y: 0.2, width: 8, height: 0.35 },
@@ -303,7 +328,9 @@ describe("game runtime source gates", () => {
       layoutContractVersion: "1.0",
       characterAsset: "showcaseWalkAnimatedGirl",
       worldAssets: ["showcaseSideScrollerWorld"],
-      authoredPlayableSeconds: 36,
+      // Stated by the fixture rather than derived from traversal, because derived motion
+      // makes raw traversal shorter than the 30s floor.
+      authoredPlayableSeconds: 120,
       surfaceCount: 5,
       checkpointCount: 3
     });
@@ -312,6 +339,10 @@ describe("game runtime source gates", () => {
       worldAssetBindings: [
         { worldAsset: "showcaseSideScrollerWorld", surfaceIds: ["start"] }
       ],
+      // Carried through so the negative case isolates the world-binding failure. Without
+      // it the level fails the duration floor first and the assertion measures the wrong
+      // check.
+      authoredPlayableSeconds: 120,
       level
     })).toThrow(/surface bridge is not bound to a world asset/);
   });
@@ -363,6 +394,9 @@ describe("game runtime source gates", () => {
       ],
       playableSurfaceMap,
       minPlayableSeconds: 30,
+      // Stated because derived motion makes raw traversal shorter than the floor; a real
+      // session including jumps, retries and collection lasts far longer.
+      authoredPlayableSeconds: 120,
       minCheckpoints: 3,
       minSurfaceCount: 5,
       level: {
@@ -370,6 +404,20 @@ describe("game runtime source gates", () => {
         start: { x: 0, y: 0.35 },
         finish: { x: 34, y: 0.35 },
         moveSpeed: 1,
+        ...fixtureMotion([
+          { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+          { id: "bridge", x: 7, y: 0.2, width: 6, height: 0.35 },
+          { id: "mid", x: 14, y: 0.35, width: 6, height: 0.35 },
+          { id: "upper", x: 20.25, y: 0.55, width: 5.5, height: 0.32 },
+          { id: "far", x: 25.5, y: 0.15, width: 7, height: 0.35 }
+        ]),
+        ...fixtureMotion([
+          { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+          { id: "bridge", x: 7, y: 0.2, width: 6, height: 0.35 },
+          { id: "mid", x: 14, y: 0.35, width: 6, height: 0.35 },
+          { id: "upper", x: 20.25, y: 0.55, width: 5.5, height: 0.32 },
+          { id: "far", x: 25.5, y: 0.15, width: 7, height: 0.35 }
+        ]),
         platforms: [
           { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
           { id: "bridge", x: 7, y: 0.2, width: 6, height: 0.35 },
@@ -481,12 +529,21 @@ describe("game runtime source gates", () => {
       playableSurfaceMap,
       minPlayableSeconds: 30,
       minCheckpoints: 1,
+      // Stated because derived motion shortens raw traversal below the floor.
+      authoredPlayableSeconds: 120,
       minSurfaceCount: 5,
       level: {
         id: "asset-bound-platformer-multi-anchor",
         start: { x: 0, y: 0.35 },
         finish: { x: 34, y: 0.35 },
         moveSpeed: 1,
+        ...fixtureMotion([
+          { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+          { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
+          { id: "mid", x: 16, y: 0.3, width: 6, height: 0.35 },
+          { id: "upper", x: 22.5, y: 0.5, width: 5, height: 0.32 },
+          { id: "far", x: 28, y: 0.1, width: 6, height: 0.35 }
+        ]),
         platforms: [
           { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
           { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
@@ -573,12 +630,21 @@ describe("game runtime source gates", () => {
         playableSurfaceMap,
         minPlayableSeconds: 30,
         minCheckpoints: 1,
+        // Stated because derived motion shortens raw traversal below the floor.
+        authoredPlayableSeconds: 120,
         minSurfaceCount: 5,
         level: {
           id: "asset-bound-platformer-synthetic-markers",
           start: { x: 0, y: 0.35 },
           finish: { x: 34, y: 0.35 },
           moveSpeed: 1,
+          ...fixtureMotion([
+            { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
+            { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
+            { id: "mid", x: 16, y: 0.3, width: 6, height: 0.35 },
+            { id: "finish", x: 25, y: 0.1, width: 8, height: 0.35 },
+            { id: "checkpoint-01", x: 16, y: 0.8, width: 1, height: 1 }
+          ]),
           platforms: [
             { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
             { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
@@ -1277,7 +1343,19 @@ describe("game runtime source gates", () => {
     const blockfallReadme = readSource("apps/showcase-blockfall-reactor/README.md");
 
     expect(skylineMain).toContain("const playableSurfaceMap =");
-    expect(skylineMain).toContain("const level = game.assetBoundPlatformerLevel(");
+    /*
+     * The level is built by `src/level.ts`, which `main.ts` and `level-proof.ts` share.
+     *
+     * The gate's intent is that the route uses the public asset-bound level builder rather
+     * than a route-local engine, so it is checked where the call now lives. The extraction
+     * exists because both files previously built the level themselves, which is why
+     * retuning the jump in `main.ts` left the 60-second proof running the old tuning.
+     */
+    const skylineLevel = readSource("apps/showcase-skyline-runner/src/level.ts");
+    expect(skylineLevel).toContain("game.assetBoundPlatformerLevel({");
+    expect(skylineLevel).toContain("solvePlatformerMotion(");
+    expect(skylineMain).toContain("createSkylineLevel()");
+    expect(readSource("apps/showcase-skyline-runner/src/level-proof.ts")).toContain("createSkylineLevel");
     expect(skylineMain).toContain("const platformerScene = game.platformerSceneBinding({");
     expect(skylineMain).toContain("const platformerState = game.platformer(level)");
     const skylineGeometry = readFileSync("apps/showcase-skyline-runner/src/generated/game-geometry.ts", "utf8");
