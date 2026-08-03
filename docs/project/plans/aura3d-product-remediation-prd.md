@@ -312,8 +312,9 @@ that remains debt.
 ```
 tsc -p tsconfig.build.json --noEmit                      clean
 tsc -p tests/clean-room/tsconfig.json                    clean
-vitest run tests/unit tests/integration                  2869/2870 (two serial runs, identical)
+vitest run tests/unit tests/integration                  2903/2904 (two serial runs, identical)
 playwright showcase-route-interaction-audit.spec.ts      13/13
+playwright application-kit-adoption.spec.ts              4/4
 playwright turbo-vehicle-grounding.spec.ts               pass
 playwright skyline-platformer-motion.spec.ts             pass
 playwright clean-room-projects.spec.ts                   4/4
@@ -321,7 +322,7 @@ playwright showcase-route-primary-probes.spec.ts         pass
 apps/aura-clash-showcase playwright                      23/23
 regenerate-game-composition-evidence                     both game routes pass
 pnpm explain:staleness                                   0 of 10 stale
-node tools/product-remediation/check-quality-gates.mjs   20 pass, 0 fail, 0 unproven
+node tools/product-remediation/check-quality-gates.mjs   21 pass, 0 fail, 0 unproven
 ```
 
 The single unit failure is `showcase-route-gates.test.ts > binds generated launch
@@ -337,14 +338,19 @@ public-release routes and **nine** classifications against this tree's four.
 | Magic-geometry findings, total | 138 | 63 |
 | Magic-geometry findings, published routes | 47 | 7 |
 | Unambiguous defect classes (flattened indicator, unanchored callout) | present | **0, and gated** |
-| Reusable engine modules for focus/labels/layout/vehicle/platformer/combat/queries | 0 | 8 |
-| Unit tests over those modules | 0 | 158 |
+| Reusable engine modules for focus/labels/layout/vehicle/platformer/combat/queries/kits | 0 | 9 |
+| Unit tests over those modules | 0 | 192 |
+| Reusable application kits | 0 | 5, all with route adoption gated |
 | Physics capabilities unreachable from the public API | 7 | 5 |
 
 Remaining published findings are legitimate design values: Data Galaxy's three
 staging planes, Turbo's `TRACK_SURFACE_Y`, and the WebGPU lab's three decorative rings.
 
 ## 13. Public API changes
+
+**Added (kits):** `createProductConfiguratorKit`, `createDigitalTwinKit`,
+`createArchitectureKit`, `createSmartCityKit`, `createCinematicKit`, each with a
+`capabilities` report declaring what it does not own.
 
 **Added:** `focusObject`, `focusSemanticRegion`, `focusCameraIntent`, `clearFocus`,
 `AURA_PRIMITIVE_AXES`, `createWorldLabelLayer`, `projectWorldLabels`,
@@ -373,8 +379,8 @@ must use `groundedPosition`, not `position`.
 
 **Engine:** `FocusSelection.ts`, `WorldLabelRenderer.ts`, `SpatialAnchoring.ts`,
 `VehicleChassis.ts`, `VehicleDriverAi.ts`, `PlatformerMotion.ts`,
-`CombatFrameData.ts`, `SceneQueries.ts` (new); `index.ts`, `GameGenreKits.ts`,
-`GameSceneGeometryBindings.ts` (modified).
+`CombatFrameData.ts`, `SceneQueries.ts`, `ApplicationKits.ts` (new); `index.ts`,
+`GameGenreKits.ts`, `GameSceneGeometryBindings.ts` (modified).
 
 **Apps:** `showcase-product-configurator`, `showcase-digital-twin-ops`,
 `showcase-smart-city-control`, `showcase-data-galaxy`,
@@ -383,9 +389,8 @@ must use `groundedPosition`, not `position`.
 `showcase-platformer-game-layer-proof`, `aura-clash-showcase`,
 `advanced-examples-gallery`.
 
-**Tests:** 9 new unit suites (158 cases); 4 new browser suites
-(interaction audit, vehicle grounding, platformer motion, clean-room); 4 clean-room
-projects.
+**Tests:** 10 new unit suites (192 cases); 5 new browser suites (interaction audit,
+vehicle grounding, platformer motion, clean-room, kit adoption); 4 clean-room projects.
 
 **Tools:** `build-product-inventory.mjs`, `build-threejs-parity.mjs`,
 `build-physics-audit.mjs`, `build-route-disposition.mjs`,
@@ -429,11 +434,11 @@ tests behind them, vehicle grounding and platformer motion are correct and
 machine-checked, combat frame data is no longer inverted, and 20 quality gates pass
 with zero unproven.
 
-What has not changed is the thing that matters for a release: the four game routes
-are still `prototype-blocked`, static routes still lack application kits, and the
-package graph still has 51 duplicated symbol owners. A release now would ship
-correct physics inside games nobody has approved, and a public API whose largest
-package duplicates the rest of the workspace.
+What has not changed is the thing that matters for a release: the four game routes are
+still `prototype-blocked`, and the package graph still has 51 duplicated symbol owners
+concentrated in `@aura3d/engine-runtime`. A release now would ship correct physics
+inside games nobody has approved, and a public API whose largest package duplicates
+the rest of the workspace.
 
-The next release should follow application kits, a user visual review that clears the
-game gates, and the `engine-runtime` consolidation.
+The next release should follow a user visual review that clears the game gates and the
+`engine-runtime` consolidation.

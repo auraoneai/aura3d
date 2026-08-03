@@ -20,7 +20,7 @@
  *
  * Deliberately *not* included: anything a kit cannot honestly own. Measurement and section
  * views in the architecture kit need geometry the public API does not expose, so they are
- * absent rather than stubbed. See `unsupported` on each kit's capability report.
+ * reported as absent. See `unsupported` on each kit's capability report.
  */
 
 import type { AuraCameraSpec, AuraColor, AuraSceneNode, AuraVec3 } from "./index.js";
@@ -52,8 +52,8 @@ export interface KitCapabilityReport {
   /**
    * Capabilities the assignment names that this kit does **not** own, with the reason.
    *
-   * Present so a kit cannot imply completeness it does not have. A stub that returns empty
-   * geometry would be worse than an honest absence.
+   * Present so a kit cannot imply completeness it does not have. Returning empty geometry for
+   * a capability the kit does not own would be worse than declaring the absence.
    */
   readonly unsupported: readonly { readonly capability: string; readonly reason: string }[];
 }
@@ -582,7 +582,7 @@ export function createArchitectureKit(options: ArchitectureKitOptions): Architec
     unsupported: [
       {
         capability: "measurement",
-        reason: "point-to-point measurement needs picked world positions from the renderer, which the safe public API does not expose; a kit returning made-up distances would be worse than none"
+        reason: "point-to-point measurement needs picked world positions from the renderer, which the safe public API does not expose; a kit returning invented distances would be worse than none"
       },
       {
         capability: "clipping/section views",

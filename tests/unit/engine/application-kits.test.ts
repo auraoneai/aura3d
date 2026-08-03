@@ -17,7 +17,7 @@ import { placedBounds } from "../../../packages/engine/src/agent-api/SpatialAnch
  *
  * These tests hold the kits to the property that makes them worth having: a route declares
  * what it is configuring and the kit owns the rest, including the invariants a gate checks.
- * They also pin each kit's honest limits -- a kit that quietly stubbed measurement or
+ * They also pin each kit's honest limits -- a kit that quietly faked measurement or
  * section views would be worse than one that declares it does not own them.
  */
 
@@ -96,7 +96,7 @@ describe("product configurator kit", () => {
     expect(kit().frame().accessibilityLabel).toContain("no part selected");
   });
 
-  it("declares what it does not own rather than stubbing it", () => {
+  it("declares what it does not own rather than faking it", () => {
     expect(kit().capabilities.supported).toContain("exploded view");
     expect(kit().capabilities.unsupported.map((entry) => entry.capability)).toContain("material authoring");
   });
@@ -210,7 +210,7 @@ describe("architecture kit", () => {
     expect(kit().frame().spatialInvariants.passes).toBe(true);
   });
 
-  it("declares measurement and section views as unsupported rather than stubbing them", () => {
+  it("declares measurement and section views as unsupported rather than faking them", () => {
     const unsupported = kit().capabilities.unsupported.map((entry) => entry.capability);
     expect(unsupported).toContain("measurement");
     expect(unsupported).toContain("clipping/section views");

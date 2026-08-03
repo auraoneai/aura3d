@@ -6,7 +6,7 @@
   "pass": true,
   "screenshot": {
     "path": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-    "sha256": "sha256-ed8c7444c1226f1fec319b1d6388e3a692fc495c5dbc4b0b090ef7540e117a9d",
+    "sha256": "sha256-4994af052edcbd5d759c8b604e702337a7dad1e779a0c7aec1ae3ff3605d18d3",
     "width": 1440,
     "height": 900
   },
@@ -69,8 +69,8 @@
       "measured": {
         "contactProven": true,
         "normalizedOffset": 0.02,
-        "screenContactDistance": 5.607953815786982,
-        "screenContactDistanceRatio": 0.0384
+        "screenContactDistance": 5.621845426548094,
+        "screenContactDistanceRatio": 0.039
       },
       "blockers": []
     },
@@ -102,11 +102,11 @@
         "maxPlatformerScaleDelta": 0.18
       },
       "measured": {
-        "subjectWorldRatio": 0.1622,
+        "subjectWorldRatio": 0.16,
         "characterScaleRatio": 0.42,
         "projectedTargetHeight": 137.635,
-        "renderedSubjectHeight": 146,
-        "scaleDelta": 0.06077669197515174
+        "renderedSubjectHeight": 144,
+        "scaleDelta": 0.04624550441384829
       },
       "blockers": []
     },
