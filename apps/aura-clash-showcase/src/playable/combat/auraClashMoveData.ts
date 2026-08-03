@@ -1,4 +1,11 @@
 import { createAnimationEventTracks, type AnimationEventTrackContainer } from "@aura3d/animation";
+import {
+  combatFrameAdvantage,
+  solveCombatFrameData,
+  validateCombatFrameData,
+  type CombatFrameAdvantage,
+  type CombatFrameData
+} from "@aura3d/engine";
 
 export type AuraClashMoveId = "light" | "heavy" | "special";
 export type AuraClashMovementMoveId = "guard" | "jump" | "down" | "dash";
@@ -49,10 +56,74 @@ export const AURA_CLASH_SPECIAL_COOLDOWN = 0.48;
 export const AURA_CLASH_ATTACK_COOLDOWN = 0.06;
 export const AURA_CLASH_WALK_SPEED = 1.9;
 
+/** Frames per second the frame data is expressed in. */
+const AURA_CLASH_FPS = 60;
+
+/**
+ * Attack frame data, derived from each move's role by the reusable combat solver.
+ *
+ * ## Why this is no longer hand-authored
+ *
+ * The previous table declared active windows in seconds, and converting them to frames
+ * showed the shape was inverted:
+ *
+ * | move    | startup | active | recovery |
+ * | ------- | ------- | ------ | -------- |
+ * | light   | 4       | 12     | 4        |
+ * | heavy   | 6       | 17     | 5        |
+ * | special | 5       | 32     | 4        |
+ *
+ * Real fighting-game frame data is 2-5 active frames against 10-30 recovery frames.
+ * These active windows were 3-8x too long and the recoveries 3-6x too short, which
+ * produced exactly the reported symptoms: a hitbox live for over half a second cannot
+ * make damage correspond to the moment of contact, and a four-frame recovery means a
+ * whiff is free, so there is no spacing game and no punish window. Every move was
+ * heavily plus on block.
+ *
+ * `solveCombatFrameData` derives startup, active, recovery, hitstun, blockstun,
+ * hitstop and knockback from a move's role plus its reach and damage, and
+ * `validateCombatFrameData` refuses a table that drifts back to an unreadable shape.
+ */
+const AURA_CLASH_SOLVED_FRAMES = {
+  light: solveCombatFrameData({ id: "light", role: "light", range: 1.38, damage: 6 }),
+  heavy: solveCombatFrameData({ id: "heavy", role: "heavy", range: 1.62, damage: 10 }),
+  special: solveCombatFrameData({ id: "special", role: "special", range: 2.28, damage: 56 })
+} as const satisfies Record<AuraClashMoveId, CombatFrameData>;
+
+/**
+ * Frame-data consistency report for the roster's attacks.
+ *
+ * Exported so the route can publish it: the previous table's problems were invisible to
+ * every gate that existed, because nothing checked frame data as frame data.
+ */
+export const auraClashFrameDataReport = validateCombatFrameData(
+  Object.values(AURA_CLASH_SOLVED_FRAMES)
+);
+
+/** Convert solved frame data back into the route's seconds-based move spec. */
+function specFromFrames(frames: CombatFrameData): AuraClashMoveSpec {
+  const toSeconds = (value: number) => Number((value / AURA_CLASH_FPS).toFixed(4));
+  return {
+    duration: toSeconds(frames.startup + frames.active + frames.recovery),
+    activeStart: toSeconds(frames.startup),
+    activeEnd: toSeconds(frames.startup + frames.active),
+    range: frames.range,
+    damage: frames.damage,
+    knockback: frames.knockback
+  };
+}
+
 export const auraClashMoveTable: Record<AuraClashMoveId, AuraClashMoveSpec> = {
-  light: { duration: 0.34, activeStart: 0.07, activeEnd: 0.27, range: 1.38, damage: 6, knockback: 0.52 },
-  heavy: { duration: 0.46, activeStart: 0.1, activeEnd: 0.38, range: 1.62, damage: 10, knockback: 0.64 },
-  special: { duration: 0.68, activeStart: 0.08, activeEnd: 0.62, range: 2.28, damage: 56, knockback: 1.28 }
+  light: specFromFrames(AURA_CLASH_SOLVED_FRAMES.light),
+  heavy: specFromFrames(AURA_CLASH_SOLVED_FRAMES.heavy),
+  special: specFromFrames(AURA_CLASH_SOLVED_FRAMES.special)
+};
+
+/** Frame-accurate data for each attack, for HUD, evidence and AI use. */
+export const auraClashAttackFrames: Record<AuraClashMoveId, CombatFrameData & { readonly advantage: CombatFrameAdvantage }> = {
+  light: { ...AURA_CLASH_SOLVED_FRAMES.light, advantage: combatFrameAdvantage(AURA_CLASH_SOLVED_FRAMES.light) },
+  heavy: { ...AURA_CLASH_SOLVED_FRAMES.heavy, advantage: combatFrameAdvantage(AURA_CLASH_SOLVED_FRAMES.heavy) },
+  special: { ...AURA_CLASH_SOLVED_FRAMES.special, advantage: combatFrameAdvantage(AURA_CLASH_SOLVED_FRAMES.special) }
 };
 
 export const auraClashMovementMoveTable: Record<AuraClashMovementMoveId, AuraClashMovementMoveSpec> = {

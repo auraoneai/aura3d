@@ -44,6 +44,8 @@ import {
   AURA_CLASH_START_METER as START_METER,
   AURA_CLASH_START_HEALTH as START_HEALTH,
   AURA_CLASH_WALK_SPEED as WALK_SPEED,
+  auraClashAttackFrames,
+  auraClashFrameDataReport,
   auraClashMovementMoveTable as movementMoves,
   auraClashMoveTable as moves,
   auraClashMoveEventTracks as moveEventTracks,
@@ -2568,7 +2570,46 @@ function writeProof(input: {
       engine: proof.engineCombat,
       totalHits: proof.totalHits,
       playerHealth: proof.player.health,
-      rivalHealth: proof.rival.health
+      rivalHealth: proof.rival.health,
+      /*
+       * Frame data, and its consistency report.
+       *
+       * Published because the previous table's problems were invisible to every gate
+       * that existed: it declared 12-32 active frames against 4-5 recovery frames, which
+       * is inverted from real fighting-game frame data. A half-second active window
+       * cannot make damage correspond to contact, and a four-frame recovery makes every
+       * whiff free, so there was no spacing game and nothing to punish. Nothing checked
+       * frame data as frame data.
+       */
+      frameData: {
+        system: "engine.solveCombatFrameData",
+        routeHandAuthorsFrames: false,
+        moves: Object.fromEntries(Object.entries(auraClashAttackFrames).map(([id, frames]) => [id, {
+          startup: frames.startup,
+          active: frames.active,
+          recovery: frames.recovery,
+          hitstun: frames.hitstun,
+          blockstun: frames.blockstun,
+          hitstop: frames.hitstop,
+          onBlock: frames.advantage.onBlock,
+          onHit: frames.advantage.onHit,
+          whiffPunishWindow: frames.advantage.whiffPunishWindow
+        }])),
+        invariants: {
+          passes: auraClashFrameDataReport.passes,
+          failing: auraClashFrameDataReport.checks.filter((check) => !check.passes).map((check) => ({
+            moveId: check.moveId,
+            id: check.id,
+            detail: check.detail
+          }))
+        },
+        /* The shape this replaces, so the change is legible in evidence. */
+        previousFrameData: {
+          light: { startup: 4, active: 12, recovery: 4, onBlock: 2 },
+          heavy: { startup: 6, active: 17, recovery: 5, onBlock: 3 },
+          special: { startup: 5, active: 32, recovery: 4, onBlock: 8 }
+        }
+      }
     }
   };
   input.root.dataset.arenaStatus = proof.status;
