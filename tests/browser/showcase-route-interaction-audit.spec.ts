@@ -483,6 +483,106 @@ for (const route of ROUTES) {
       const screenshotPath = join(REPORT_DIR, `${route.id}-final.png`);
       await page.screenshot({ path: screenshotPath });
 
+      /*
+       * Phase 17 evidence: viewport variants and a frame sequence.
+       *
+       * A single screenshot proves one moment at one size. Capturing the same mounted route at
+       * desktop, tablet and phone widths, plus a short sequence of frames while it runs, is what
+       * distinguishes "this rendered once" from "this holds up while moving and resizing" -- the
+       * property the previous first-frame regime could not see.
+       */
+      const viewportVariants: { readonly label: string; readonly width: number; readonly height: number; readonly path: string; readonly sha256: string }[] = [];
+      for (const variant of [
+        { label: "desktop", width: 1440, height: 900 },
+        { label: "tablet", width: 834, height: 1112 },
+        { label: "phone", width: 390, height: 780 }
+      ]) {
+        await page.setViewportSize({ width: variant.width, height: variant.height });
+        await page.waitForTimeout(450);
+        const variantPath = join(REPORT_DIR, `${route.id}-${variant.label}.png`);
+        const bytes = await page.screenshot({ path: variantPath });
+        viewportVariants.push({
+          label: variant.label,
+          width: variant.width,
+          height: variant.height,
+          path: `tests/reports/showcase-interaction-audit/${route.id}-${variant.label}.png`,
+          sha256: `sha256-${createHash("sha256").update(bytes).digest("hex")}`
+        });
+      }
+      await page.setViewportSize(VIEWPORT);
+      await page.waitForTimeout(320);
+
+      /*
+       * Frame sequence, in place of a video file.
+       *
+       * A retained sequence of frames is deterministic, diffable and concurrency-safe in a way an
+       * encoded video is not, and it answers the same question: does the route keep rendering
+       * coherently while time passes. Each frame carries its own hash.
+       */
+      const frameSequence: { readonly index: number; readonly path: string; readonly sha256: string }[] = [];
+      /*
+       * Held input during capture.
+       *
+       * A game route is legitimately still when no input is held -- Turbo's car does not roll
+       * away on its own, which is correct behaviour, not a defect. Capturing a sequence that
+       * proves "the route keeps rendering coherently while time passes" therefore has to *drive*
+       * it. Routes with no declared keys are captured idle, since for them the question is
+       * whether an animation or timeline advances.
+       */
+      const driveKey = declaredKeys.find((key) => key === "KeyW" || key === "ArrowRight" || key === "KeyD")
+        ?? declaredKeys[0];
+      if (driveKey) await page.keyboard.down(driveKey);
+      try {
+        for (let index = 0; index < 6; index += 1) {
+          await page.waitForTimeout(260);
+          const framePath = join(REPORT_DIR, `${route.id}-frame-${String(index).padStart(2, "0")}.png`);
+          const bytes = await page.screenshot({ path: framePath });
+          frameSequence.push({
+            index,
+            path: `tests/reports/showcase-interaction-audit/${route.id}-frame-${String(index).padStart(2, "0")}.png`,
+            sha256: `sha256-${createHash("sha256").update(bytes).digest("hex")}`
+          });
+        }
+      } finally {
+        if (driveKey) await page.keyboard.up(driveKey);
+      }
+      // Frames must not all be identical, or the route is a still image with a claim.
+      const distinctFrames = new Set(frameSequence.map((frame) => frame.sha256)).size;
+
+      /*
+       * Fingerprints binding this evidence to the tree that produced it.
+       *
+       * Without these, a retained trace cannot be shown to describe the current source, which is
+       * how a stale artifact stays green after the code beneath it changes.
+       */
+      const routeSourceDir = resolve("apps", route.id, "src");
+      const sourceFingerprint = (() => {
+        const hash = createHash("sha256");
+        const walk = (dir: string) => {
+          let entries: string[];
+          try {
+            entries = readdirSync(dir).sort();
+          } catch {
+            return;
+          }
+          for (const entry of entries) {
+            const full = join(dir, entry);
+            if (statSync(full).isDirectory()) {
+              walk(full);
+              continue;
+            }
+            if (!/\.(ts|css|html)$/.test(entry)) continue;
+            hash.update(entry);
+            hash.update(readFileSync(full));
+          }
+        };
+        walk(routeSourceDir);
+        return `sha256-${hash.digest("hex")}`;
+      })();
+      const configurationFingerprint = `sha256-${createHash("sha256")
+        .update(JSON.stringify({ viewport: VIEWPORT, keys: declaredKeys, controls: controls.map((control) => control.selector) }))
+        .digest("hex")}`;
+
       const report = {
         schema: "aura3d-showcase-interaction-audit/1.0",
         routeId: route.id,
@@ -507,7 +607,19 @@ for (const route of ROUTES) {
         observedInvariants,
         consoleErrors,
         trace,
-        screenshot: `tests/reports/showcase-interaction-audit/${route.id}-final.png`
+        screenshot: `tests/reports/showcase-interaction-audit/${route.id}-final.png`,
+        // Phase 17 evidence set.
+        viewportVariants,
+        frameSequence,
+        distinctFrames,
+        /*
+         * Whether frame variation was required of this route. Recorded so a reader can see that a
+         * still sequence was accepted deliberately for a static route, not overlooked.
+         */
+        frameVariationRequired: declaredKeys.length > 0,
+        sourceFingerprint,
+        configurationFingerprint,
+        producerVersion: "aura3d-showcase-interaction-audit/1.1"
       };
       writeFileSync(join(REPORT_DIR, `${route.id}.json`), `${JSON.stringify(report, null, 2)}\n`);
 
@@ -545,6 +657,21 @@ for (const route of ROUTES) {
       expect(mobileControls.length, `controls lost on mobile viewport for ${route.id}`).toBeGreaterThanOrEqual(
         Math.floor(controls.length * 0.9)
       );
+
+      // Phase 17: the evidence set must be complete.
+      expect(viewportVariants, `viewport variants for ${route.id}`).toHaveLength(3);
+      expect(frameSequence, `frame sequence for ${route.id}`).toHaveLength(6);
+      /*
+       * Frame variation is required only where the route claims motion.
+       *
+       * A configurator at rest is *correctly* a still image: it has no timeline, no simulation and
+       * no held input, so demanding pixel change would be demanding a defect. Routes with declared
+       * keyboard controls are simulations, and a simulation that renders six identical frames while
+       * a movement key is held is broken.
+       */
+      if (declaredKeys.length > 0) {
+        expect(distinctFrames, `simulation ${route.id} rendered six identical frames while input was held`).toBeGreaterThan(1);
+      }
     } finally {
       page.off("console", onConsole);
       await server?.close();

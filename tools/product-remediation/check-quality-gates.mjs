@@ -211,6 +211,40 @@ if (!existsSync(freshnessPath)) {
     stale === 0 ? "pass" : "fail", `${stale} stale artifact(s)`);
 }
 
+// --- Evidence completeness (Phase 17) ---------------------------------------
+if (audits.length === 0) {
+  record("evidence", "evidence-set-complete", "each interactive route retains more than a screenshot", "unproven",
+    "no interaction-audit reports found");
+} else {
+  const incomplete = audits.filter((audit) =>
+    (audit.viewportVariants ?? []).length < 3
+    || (audit.frameSequence ?? []).length < 6
+    || !audit.sourceFingerprint
+    || !audit.configurationFingerprint
+    || !audit.trace);
+  record("evidence", "evidence-set-complete",
+    "each route retains an interaction trace, control coverage, console report, three viewport variants, a six-frame sequence, and source plus configuration fingerprints",
+    incomplete.length === 0 ? "pass" : "fail",
+    incomplete.length === 0
+      ? `${audits.length} routes with ${audits.reduce((total, audit) => total + (audit.viewportVariants ?? []).length, 0)} variants and ${audits.reduce((total, audit) => total + (audit.frameSequence ?? []).length, 0)} frames`
+      : incomplete.map((audit) => audit.routeId).join(", "));
+
+  /*
+   * Motion proof, required only of routes that claim motion.
+   *
+   * A configurator at rest is correctly a still image. A simulation that renders six identical
+   * frames while a movement key is held is broken.
+   */
+  const simulations = audits.filter((audit) => audit.frameVariationRequired === true);
+  const stillSimulations = simulations.filter((audit) => (audit.distinctFrames ?? 0) <= 1);
+  record("evidence", "simulations-render-motion",
+    "routes with declared keyboard controls produce visibly different frames while input is held",
+    simulations.length === 0 ? "unproven" : stillSimulations.length === 0 ? "pass" : "fail",
+    simulations.length === 0
+      ? "no route declared keyboard controls"
+      : `${simulations.length - stillSimulations.length}/${simulations.length} simulations rendered motion`);
+}
+
 const byStatus = { pass: 0, fail: 0, unproven: 0 };
 for (const check of checks) byStatus[check.status] += 1;
 const byGroup = {};
