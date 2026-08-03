@@ -135,18 +135,30 @@ export function analyzePng(buffer: Buffer, crop?: Partial<PngCrop>): PngVisualSt
 export function analyzeForegroundPng(buffer: Buffer, crop?: Partial<PngCrop>): PngForegroundStats {
   const image = decodePng(buffer);
   const resolvedCrop = resolveCrop(image, crop);
-  const background = averageCornerColor(image, resolvedCrop);
+  /*
+   * Background is estimated per row, matching `tools/showcase-library/png-foreground.mjs`.
+   *
+   * The verifier in tools/ re-derives these same metrics from the written PNG and compares them for
+   * exact equality, so the two implementations must agree pixel-for-pixel. A single four-corner
+   * average cannot describe a gradient sky: rows near the horizon get scored against a background
+   * sampled from the top of the frame, so sky is admitted as foreground and the measured subject
+   * silhouette is wrong. Sampling the left/right margins of each row and taking a per-channel median
+   * tracks the gradient and stays robust to a prop or HUD edge intruding into one margin.
+   */
+  const rowBackground = perRowBackgroundColors(image, resolvedCrop);
   const mask = new Uint8Array(resolvedCrop.width * resolvedCrop.height);
 
   for (let y = resolvedCrop.y; y < resolvedCrop.y + resolvedCrop.height; y += 1) {
+    const localY = y - resolvedCrop.y;
+    const backgroundR = rowBackground[localY * 3];
+    const backgroundG = rowBackground[localY * 3 + 1];
+    const backgroundB = rowBackground[localY * 3 + 2];
     for (let x = resolvedCrop.x; x < resolvedCrop.x + resolvedCrop.width; x += 1) {
       const pixel = pixelAt(image, x, y);
-      const backgroundDistance = Math.abs(pixel.r - background.r) + Math.abs(pixel.g - background.g) + Math.abs(pixel.b - background.b);
+      const backgroundDistance = Math.abs(pixel.r - backgroundR) + Math.abs(pixel.g - backgroundG) + Math.abs(pixel.b - backgroundB);
       const luma = 0.2126 * pixel.r + 0.7152 * pixel.g + 0.0722 * pixel.b;
       if (pixel.a <= 8 || backgroundDistance <= 30 || luma <= 7) continue;
-      const localX = x - resolvedCrop.x;
-      const localY = y - resolvedCrop.y;
-      mask[localY * resolvedCrop.width + localX] = 1;
+      mask[localY * resolvedCrop.width + (x - resolvedCrop.x)] = 1;
     }
   }
 
@@ -503,7 +515,14 @@ function resolveCrop(image: DecodedPng, crop?: Partial<PngCrop>): PngCrop {
   return { x, y, width, height };
 }
 
-function pixelAt(image: DecodedPng, x: number, y: number): { readonly r: number; readonly g: number; readonly b: number; readonly a: number } {
+interface PixelSample {
+  readonly r: number;
+  readonly g: number;
+  readonly b: number;
+  readonly a: number;
+}
+
+function pixelAt(image: DecodedPng, x: number, y: number): PixelSample {
   const index = (y * image.width + x) * image.channels;
   return {
     r: image.data[index] ?? 0,
@@ -513,18 +532,31 @@ function pixelAt(image: DecodedPng, x: number, y: number): { readonly r: number;
   };
 }
 
-function averageCornerColor(image: DecodedPng, crop: PngCrop): { readonly r: number; readonly g: number; readonly b: number } {
-  const points = [
-    pixelAt(image, crop.x, crop.y),
-    pixelAt(image, crop.x + crop.width - 1, crop.y),
-    pixelAt(image, crop.x, crop.y + crop.height - 1),
-    pixelAt(image, crop.x + crop.width - 1, crop.y + crop.height - 1)
-  ];
-  return {
-    r: Math.round(points.reduce((sum, pixel) => sum + pixel.r, 0) / points.length),
-    g: Math.round(points.reduce((sum, pixel) => sum + pixel.g, 0) / points.length),
-    b: Math.round(points.reduce((sum, pixel) => sum + pixel.b, 0) / points.length)
-  };
+function perRowBackgroundColors(image: DecodedPng, crop: PngCrop): Uint8Array {
+  const margin = Math.max(2, Math.min(24, Math.floor(crop.width * 0.02)));
+  const rows = new Uint8Array(crop.height * 3);
+  const samples: PixelSample[] = [];
+  for (let localY = 0; localY < crop.height; localY += 1) {
+    const y = crop.y + localY;
+    samples.length = 0;
+    for (let offset = 0; offset < margin; offset += 1) {
+      samples.push(pixelAt(image, crop.x + offset, y));
+      samples.push(pixelAt(image, crop.x + crop.width - 1 - offset, y));
+    }
+    // Median per channel: robust to a prop or HUD edge intruding into one margin.
+    rows[localY * 3] = medianChannel(samples, "r");
+    rows[localY * 3 + 1] = medianChannel(samples, "g");
+    rows[localY * 3 + 2] = medianChannel(samples, "b");
+  }
+  return rows;
+}
+
+function medianChannel(samples: readonly PixelSample[], channel: "r" | "g" | "b"): number {
+  const values = samples.map((sample) => sample[channel]).sort((left, right) => left - right);
+  const middle = values.length >> 1;
+  return values.length % 2 === 0
+    ? Math.round((values[middle - 1] + values[middle]) / 2)
+    : values[middle];
 }
 
 function hashPixel(hash: number, r: number, g: number, b: number, a: number): number {
