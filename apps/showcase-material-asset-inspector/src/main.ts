@@ -9,8 +9,10 @@ import {
   lights,
   material,
   model,
+  placedBoundsFromAsset,
   prefabs,
   primitives,
+  resolveBoundsAnchor,
   scene,
   timeline,
   type AuraApp,
@@ -104,10 +106,30 @@ interface MaterialCard {
 }
 
 const inspectedAsset = assets.showcaseHeadphones;
+
+const previewScale = normalizedModelScale(0.4583);
+/**
+ * Placed bounds of the inspected asset for the current view.
+ *
+ * The route renders the asset with `model(...).position(x, y, z).scale(scale)`, so the
+ * exploded layers must be anchored to that placement rather than to literals tuned against
+ * one view at one scale. `AURA_NORMALIZED_MODEL_MAX_DIMENSION` is the size the safe renderer
+ * normalizes a typed GLB to before node scale is applied.
+ */
+function inspectedAssetBounds(nextState: InspectorState) {
+  const previewX = nextState.view === "compare" ? -0.34 : 0.18;
+  const previewScaleFactor = nextState.view === "compare" ? 0.9 : 1.06;
+  const previewY = nextState.view === "exploded" ? 0.66 : 0.64;
+  return placedBoundsFromAsset(inspectedAsset, {
+    targetMaxDimension: 1.55 * previewScale * previewScaleFactor,
+    position: [previewX, previewY + 0.02, -0.34],
+    floorY: previewY + 0.02
+  });
+}
 const assetMetadata = inspectedAsset.metadata;
 const assetProvenance = assetMetadata.provenance;
 const materialMetadata = assetMetadata.materialMetadata;
-const previewScale = normalizedModelScale(0.4583);
+
 
 const materialCards: readonly MaterialCard[] = [
   {
@@ -241,7 +263,7 @@ function assetPreviewNodes(nextState: InspectorState): readonly AuraSceneNode[] 
   ];
 
   if (nextState.view === "exploded") {
-    nodes.push(group("procedural exploded asset inspection layers", explodedInspectionNodes(), {
+    nodes.push(group("procedural exploded asset inspection layers", explodedInspectionNodes(nextState), {
       animation: { clip: "explode-preview", duration: 2.6, captureTime: 1.5, easing: "easeInOut" }
     }).toJSON());
   }
@@ -278,17 +300,39 @@ function compactMaterialStrip(): readonly AuraSceneNode[] {
   );
 }
 
-function explodedInspectionNodes(): readonly AuraSceneNode[] {
+/**
+ * Exploded inspection layers, anchored to the inspected asset.
+ *
+ * Every proxy previously carried a literal world position tuned against one asset at one
+ * preview scale. Deriving them from the asset's placed bounds means an asset swap, a scale
+ * change, or a different preview position moves the whole exploded view together instead of
+ * leaving proxies stranded beside the product.
+ */
+function explodedInspectionNodes(nextState: InspectorState): readonly AuraSceneNode[] {
+  const bounds = inspectedAssetBounds(nextState);
+  const left = resolveBoundsAnchor(bounds, "left", { offset: bounds.size[0] * 0.35 }).position;
+  const right = resolveBoundsAnchor(bounds, "right", { offset: bounds.size[0] * 0.2 }).position;
+  const midY = bounds.center[1];
+  const rear = bounds.center[2] - bounds.size[2] * 0.3;
   return [
-    primitives.box({ name: "procedural material layer shell proxy", material: material.clearcoatPaint({ color: "#252627", roughness: 0.16, clearcoat: 0.78 }) }).position(-0.74, 0.7, -0.45).scale([0.22, 0.5, 0.1]).toJSON(),
-    primitives.box({ name: "procedural material layer inner foam proxy", material: material.blackRubber({ color: "#10100f", roughness: 0.98 }) }).position(-0.38, 0.54, -0.18).scale([0.2, 0.38, 0.08]).toJSON(),
-    primitives.cylinder({ name: "procedural material layer driver metal proxy", material: material.chrome({ color: "#dbe2e8", roughness: 0.04 }) }).position(0, 0.56, -0.04).rotate(1.5708, 0, 0).scale([0.21, 0.035, 0.21]).toJSON(),
-    primitives.box({ name: "procedural material layer cable strain relief proxy", material: material.blackRubber({ color: "#080807" }) }).position(0.42, 0.3, -0.12).scale([0.1, 0.3, 0.08]).toJSON(),
-    primitives.box({ name: "exploded inspection layer connector line one", material: material.emissive({ color: "#82d3bc", emissive: "#82d3bc" }) }).position(-0.55, 0.67, -0.33).rotate(0, -0.22, 0).scale([0.38, 0.018, 0.018]).toJSON(),
-    primitives.box({ name: "exploded inspection layer connector line two", material: material.emissive({ color: "#e7bd6c", emissive: "#e7bd6c" }) }).position(-0.2, 0.56, -0.12).rotate(0, -0.12, 0).scale([0.34, 0.018, 0.018]).toJSON(),
+    primitives.box({ name: "procedural material layer shell proxy", material: material.clearcoatPaint({ color: "#252627", roughness: 0.16, clearcoat: 0.78 }) })
+      .position(left[0], midY + bounds.size[1] * 0.1, rear).scale([bounds.size[0] * 0.2, bounds.size[1] * 0.46, bounds.size[2] * 0.14]).toJSON(),
+    primitives.box({ name: "procedural material layer inner foam proxy", material: material.blackRubber({ color: "#10100f", roughness: 0.98 }) })
+      .position(left[0] * 0.5, midY, bounds.center[2] - bounds.size[2] * 0.1).scale([bounds.size[0] * 0.18, bounds.size[1] * 0.35, bounds.size[2] * 0.11]).toJSON(),
+    primitives.cylinder({ name: "procedural material layer driver metal proxy", material: material.chrome({ color: "#dbe2e8", roughness: 0.04 }) })
+      .position(bounds.center[0], midY, bounds.center[2]).rotate(1.5708, 0, 0).scale([bounds.size[0] * 0.19, bounds.size[1] * 0.032, bounds.size[0] * 0.19]).toJSON(),
+    primitives.box({ name: "procedural material layer cable strain relief proxy", material: material.blackRubber({ color: "#080807" }) })
+      .position(right[0], midY - bounds.size[1] * 0.24, bounds.center[2] - bounds.size[2] * 0.06).scale([bounds.size[0] * 0.09, bounds.size[1] * 0.28, bounds.size[2] * 0.11]).toJSON(),
+    primitives.box({ name: "exploded inspection layer connector line one", material: material.emissive({ color: "#82d3bc", emissive: "#82d3bc" }) })
+      .position(left[0] * 0.75, midY + bounds.size[1] * 0.08, rear * 0.7).rotate(0, -0.22, 0).scale([bounds.size[0] * 0.34, 0.018, 0.018]).toJSON(),
+    primitives.box({ name: "exploded inspection layer connector line two", material: material.emissive({ color: "#e7bd6c", emissive: "#e7bd6c" }) })
+      .position(left[0] * 0.28, midY, bounds.center[2] - bounds.size[2] * 0.06).rotate(0, -0.12, 0).scale([bounds.size[0] * 0.31, 0.018, 0.018]).toJSON(),
     labels.callout("Authored GLB plus procedural layer proxies", "typed inspected headphones asset", {
       name: "exploded preview provenance callout",
-      position: [0.72, 1.14, -0.08],
+      position: [right[0] + bounds.size[0] * 0.2, bounds.max[1] + bounds.size[1] * 0.3, bounds.center[2]],
+      // Anchored to the asset, so the leader line points at the product rather than at the
+      // label's own position.
+      anchorWorldPosition: [bounds.center[0], bounds.center[1], bounds.center[2]],
       size: 0.15,
       collisionAvoidance: true,
       occlusionAware: true

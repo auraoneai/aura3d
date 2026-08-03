@@ -11,7 +11,9 @@ import {
   material,
   model,
   particles,
+  placedBounds,
   primitives,
+  resolveSemanticRegion,
   scene,
   timeline,
   ui
@@ -19,6 +21,41 @@ import {
 import type { AuraCameraSpec, AuraNodeInput, AuraSceneSnapshot } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
+
+/*
+ * Chart volume, declared once, above everything that consumes it.
+ *
+ * This is a data-visualisation route, so the *extent* of the chart is a legitimate
+ * level-design decision -- unlike an asset-relative marker, there is no asset whose bounds
+ * it should follow. What was not legitimate was restating that extent as two dozen
+ * unrelated literals: axis rails, crosshairs, orbits, the inference core and every label
+ * each carried their own numbers, so changing the chart size moved some of them and left
+ * the rest behind.
+ *
+ * Declared before use because the scene is composed during module evaluation; a `const`
+ * below the builder is in its temporal dead zone when the builder runs.
+ */
+const CHART_EXTENT = { width: 1.36, height: 0.9, depth: 0.82 } as const;
+/** Where the chart volume sits. */
+const CHART_ORIGIN = [0, 0.045, 0.08] as const;
+/** The chart volume as placed bounds, so helpers can be resolved as regions of it. */
+function chartBounds() {
+  return placedBounds({
+    position: [CHART_ORIGIN[0], CHART_ORIGIN[1], CHART_ORIGIN[2]],
+    size: [CHART_EXTENT.width, CHART_EXTENT.height, CHART_EXTENT.depth],
+    floorY: CHART_ORIGIN[1]
+  });
+}
+/** Named point inside the chart volume, in normalized 0..1 coordinates. */
+function chartPoint(u: number, v: number, w: number): readonly [number, number, number] {
+  const region = resolveSemanticRegion(chartBounds(), { id: "chart-point", u, v, w });
+  return [region.center[0], region.center[1], region.center[2]];
+}
+
+/** Named chart points, so several elements can share one location by name. */
+const CORE_POINT = chartPoint(0.5, 1.0, 0.21);
+const CONFIDENCE_POINT = chartPoint(0.5, 0.59, 0.26);
+const SELECTED_KPI_POINT = chartPoint(0.66, 0.91, 0.43);
 
 const APP_ID = "showcase-data-galaxy";
 const FORMATIONS = ["galaxy", "sphere", "vortex", "network", "wave"] as const;
@@ -289,25 +326,30 @@ function createCleanDataBarsNodes(dataset: number[][]): AuraNodeInput[] {
 function createGalaxyOverlayNodes(): AuraNodeInput[] {
   const nodes: AuraNodeInput[] = [
     ...createDataExplorerGuideNodes(),
+    // Core and its orbits all resolve to the same chart point, so they cannot drift apart.
     primitives.sphere({
       name: "data galaxy quiet inference core",
       material: material.neon({ color: "#f8fbff", emissive: "#64f4cf", emissiveIntensity: 1.55 })
-    }).position(0, 0.95, -0.16).scale(0.12).runtime(game.runtimeNode("data-galaxy-core")),
+    }).position(...CORE_POINT).scale(CHART_EXTENT.width * 0.088).runtime(game.runtimeNode("data-galaxy-core")),
+    // Orbit radii are fractions of the chart width and thinned on Z, the torus tube axis,
+    // so each stays a ring at any chart size.
     primitives.torus({
       name: "quiet inference orbit",
       material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.52, opacity: 0.34 })
-    }).position(0, 0.95, -0.16).rotate(1.5708, 0.18, 0).scale([0.72, 0.72, 0.014]),
+    }).position(...CORE_POINT).rotate(1.5708, 0.18, 0).scale([CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.529, CHART_EXTENT.width * 0.01]),
     primitives.torus({
       name: "data galaxy vortex evidence ring",
       material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.56, opacity: 0.32 })
-    }).position(0, 0.95, -0.16).rotate(1.22, 0.18, 0.22).scale([0.92, 0.92, 0.018]).runtime(game.runtimeNode("data-galaxy-vortex-ring")),
+    }).position(...CORE_POINT).rotate(1.22, 0.18, 0.22).scale([CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.676, CHART_EXTENT.width * 0.013]).runtime(game.runtimeNode("data-galaxy-vortex-ring")),
     primitives.torus({
       name: "subtle amber confidence orbit",
       material: material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.42, opacity: 0.24 })
-    }).position(0, 0.58, -0.12).rotate(1.5708, -0.14, 0).scale([0.42, 0.42, 0.01]),
+    }).position(...CONFIDENCE_POINT).rotate(1.5708, -0.14, 0).scale([CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.309, CHART_EXTENT.width * 0.007]),
     labels.callout("Inference Core", "data galaxy quiet inference core", {
       name: "data galaxy inference core label",
-      position: [0.32, 1.28, -0.12],
+      position: [CORE_POINT[0] + CHART_EXTENT.width * 0.235, CORE_POINT[1] + CHART_EXTENT.height * 0.37, CORE_POINT[2] + CHART_EXTENT.depth * 0.05],
+      // Anchored so the leader line tracks the core rather than a fixed world point.
+      anchorWorldPosition: CORE_POINT,
       size: 0.14,
       color: "#d9fff4"
     }),
@@ -355,34 +397,38 @@ function createDataExplorerGuideNodes(): AuraNodeInput[] {
   const riskMaterial = material.neon({ color: "#ff8ba7", emissive: "#ff8ba7", emissiveIntensity: 0.64, opacity: 0.48 });
   const retentionMaterial = material.neon({ color: "#ffd27d", emissive: "#ffd27d", emissiveIntensity: 0.9, opacity: 0.68 });
   const nodes: AuraNodeInput[] = [
+    // Base plane is the chart volume's own footprint.
     primitives.box({
       name: "semantic data explorer base plane",
       material: material.glass({ color: "#081416", opacity: 0.16, roughness: 0.14 })
-    }).position(0, 0.045, 0.08).scale([1.36, 0.016, 0.82]),
+    }).position(CHART_ORIGIN[0], CHART_ORIGIN[1], CHART_ORIGIN[2]).scale([CHART_EXTENT.width, 0.016, CHART_EXTENT.depth]),
+    // Axis rails sit on the chart's own edges rather than at literal coordinates that only
+    // happened to line up with the previous extent.
     primitives.box({
       name: "revenue x axis rail",
       material: revenueMaterial
-    }).position(0, 0.1, 0.54).scale([0.32, 0.008, 0.01]),
+    }).position(...chartPoint(0.5, 0.06, 1)).scale([CHART_EXTENT.width * 0.235, 0.008, CHART_EXTENT.depth * 0.012]),
     primitives.box({
       name: "risk y axis rail",
       material: riskMaterial
-    }).position(-0.72, 0.42, 0.08).scale([0.012, 0.32, 0.014]),
+    }).position(...chartPoint(0, 0.42, 0.5)).scale([CHART_EXTENT.width * 0.009, CHART_EXTENT.height * 0.356, CHART_EXTENT.depth * 0.017]),
     primitives.box({
       name: "retention z axis rail",
       material: retentionMaterial
-    }).position(-0.54, 0.1, 0.04).rotate(0, 0.84, 0).scale([0.52, 0.01, 0.014]),
+    }).position(...chartPoint(0.13, 0.06, 0.45)).rotate(0, 0.84, 0).scale([CHART_EXTENT.width * 0.382, 0.01, CHART_EXTENT.depth * 0.017]),
+    // Crosshairs and beacon share SELECTED_KPI_POINT, so they cannot separate.
     primitives.box({
       name: "selected KPI crosshair horizontal",
       material: axisMaterial
-    }).position(0.22, 0.86, 0.02).scale([0.28, 0.009, 0.012]),
+    }).position(...SELECTED_KPI_POINT).scale([CHART_EXTENT.width * 0.206, 0.009, CHART_EXTENT.depth * 0.015]),
     primitives.box({
       name: "selected KPI crosshair vertical",
       material: axisMaterial
-    }).position(0.22, 0.86, 0.02).rotate(0, 0, 1.5708).scale([0.2, 0.009, 0.012]),
+    }).position(...SELECTED_KPI_POINT).rotate(0, 0, 1.5708).scale([CHART_EXTENT.width * 0.147, 0.009, CHART_EXTENT.depth * 0.015]),
     primitives.sphere({
       name: "selected KPI beacon conversion lift",
       material: material.neon({ color: "#ffffff", emissive: "#64f4cf", emissiveIntensity: 1.4 })
-    }).position(0.22, 0.86, 0.02).scale(0.052).runtime(game.runtimeNode("data-galaxy-selected-kpi")),
+    }).position(...SELECTED_KPI_POINT).scale(CHART_EXTENT.width * 0.038).runtime(game.runtimeNode("data-galaxy-selected-kpi")),
     labels.anchor("Revenue", "revenue x axis rail", {
       name: "data explorer revenue axis label",
       position: [1.25, 0.18, 1.02],

@@ -163,8 +163,19 @@ function scanMagicGeometry(files) {
     for (const chain of chains) {
       const source = chain.text;
       const isTorus = /^primitives\.torus\s*\(/.test(source);
-      if (isTorus && /(halo|ring|focus|select|outline|highlight)/i.test(source)) {
-        record(chain.line, "manual-selection-ring", "focus/selection indicator constructed from a raw torus primitive", source);
+      /*
+       * A raw torus is a defect only when it is standing in for *selection feedback*.
+       *
+       * `focusObject`/`focusSemanticRegion` own selection indicators, so a route building
+       * one by hand is bypassing the reusable system. A decorative ring -- a reactor
+       * containment ring, a telemetry orbit, a planet's orbit path -- is scene content, and
+       * flagging it makes the count meaningless. Selection intent is what the word "select"
+       * or "focus" in the node name indicates; "orbit", "containment" and "induction" do not.
+       */
+      const selectionIntent = /(focus|select|highlight|outline)/i.test(source);
+      const decorativeRing = /(orbit|containment|induction|calibration|halo ring|tunnel|vortex|evidence ring|telemetry)/i.test(source);
+      if (isTorus && selectionIntent && !decorativeRing) {
+        record(chain.line, "manual-selection-ring", "focus/selection indicator constructed from a raw torus primitive instead of the reusable focus system", source);
       }
       const scaleMatch = source.match(/\.scale\(\s*\[\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)/);
       if (isTorus && /\.rotate\(/.test(source) && scaleMatch) {
@@ -181,10 +192,32 @@ function scanMagicGeometry(files) {
           source
         );
       }
-      if (/^labels\.callout\s*\(/.test(source)) {
-        record(chain.line, "callout-label-usage", "consumes labels.callout; requires a working world-anchored label render path", source);
+      /*
+       * `labels.callout` is now a working API, so *using* it is not a finding.
+       *
+       * What remains a finding is using it without `anchorWorldPosition`: the label then
+       * anchors to its own position, so its leader line points at itself rather than at the
+       * subject it annotates, and it drifts away from that subject as the camera moves.
+       */
+      if (/^labels\.callout\s*\(/.test(source) && !/anchorWorldPosition/.test(source)) {
+        record(chain.line, "callout-without-world-anchor", "labels.callout without anchorWorldPosition: the leader line points at the label, not at its subject", source);
       }
-      if (/\.position\(\s*-?[\d.]+\s*,\s*-?[\d.]+\s*,\s*-?[\d.]+\s*\)/.test(source)
+      /*
+       * Helper geometry at literal world coordinates.
+       *
+       * Reported only when *all three* components are bare literals. A chain positioned
+       * relative to a named datum -- `.position(0, BOARD_CENTER_Y, -0.06)` -- is already
+       * derived from something, so flagging it produced false findings against Blockfall's
+       * arcade cabinet, whose rails and shrouds are genuine level design measured from the
+       * board centre. Category 1 in the assignment's classification ("legitimate design
+       * value") must not be reported as category 5 ("accidental patch"), or the count stops
+       * meaning anything.
+       */
+      const literalPosition = /\.position\(\s*-?[\d.]+\s*,\s*-?[\d.]+\s*,\s*-?[\d.]+\s*\)/.test(source);
+      const derivedFromDatum = /\.position\([^)]*\b[A-Z][A-Z0-9_]{2,}\b/.test(source)
+        || /\.position\([^)]*\.\.\./.test(source)
+        || /\.position\([^)]*(?:center|bounds|anchor|region|Point|position)\b/.test(source);
+      if (literalPosition && !derivedFromDatum
         && /(marker|beacon|pulse|proxy|guide|sample|rail|workpiece|sweep|placeholder|prop|station|panel)/i.test(source)) {
         record(chain.line, "hardcoded-helper-placement", "helper/procedural geometry placed at literal world coordinates unrelated to asset bounds", source);
       }
