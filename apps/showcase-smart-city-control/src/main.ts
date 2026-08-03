@@ -1,5 +1,6 @@
 import {
   camera,
+  checkSpatialInvariants,
   city,
   collectAuraSceneEvidence,
   createAuraApp,
@@ -10,16 +11,75 @@ import {
   lights,
   material,
   model,
+  placedBounds,
   primitives,
+  resolveBoundsAnchor,
+  resolveSemanticRegion,
   sceneKits,
   timeline,
   ui
 } from "@aura3d/engine";
-import type { AuraCameraSpec, AuraNodeInput, AuraSceneSnapshot } from "@aura3d/engine";
+import type { AuraCameraSpec, AuraNodeInput, AuraSceneSnapshot, SemanticRegion } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
 
+/*
+ * City geometry and district regions are declared before anything that consumes them.
+ *
+ * The scene is composed during module evaluation, so a `const` declared further down is in
+ * its temporal dead zone when the overlay builder runs. That failed the route at mount
+ * (`Cannot access 'CITY_EXTENT' before initialization`) -- the same trap the digital-twin
+ * migration hit, which is why the interaction audit runs on every route rather than only on
+ * the one being changed.
+ */
+/**
+ * Extent of the procedural city, as a level-design decision.
+ *
+ * `sceneKits.cityBlock({ blocks: 8 })` lays out a city centred on the origin. This states
+ * the footprint the route stages against, once, so every district, overlay, telemetry
+ * pulse and label is derived from it rather than each carrying its own literal.
+ */
+const CITY_EXTENT = 3.8;
+const CITY_HEIGHT = 1.9;
+
+/** The city's placed bounds, so helpers can be anchored to it. */
+function cityBounds() {
+  return placedBounds({
+    position: [0, 0, 0],
+    size: [CITY_EXTENT, CITY_HEIGHT, CITY_EXTENT],
+    floorY: 0
+  });
+}
+
+/**
+ * Districts as normalized regions of the city footprint.
+ *
+ * These replace four hardcoded coordinate pairs. `u`/`v`/`w` run 0..1 across the city's
+ * extent, so changing `blocks` or `CITY_EXTENT` moves every district, overlay and label
+ * together instead of leaving them behind -- the defect class that put the digital twin's
+ * markers beside its workcell.
+ */
+const districtRegions: Record<SmartCityDistrict, SemanticRegion> = {
+  all: { id: "all", label: "All districts", u: 0.5, v: 0.05, w: 0.5, extent: [1, 0.02, 1] },
+  core: { id: "core", label: "Core", u: 0.5, v: 0.05, w: 0.5, extent: [0.36, 0.02, 0.31] },
+  north: { id: "north", label: "North", u: 0.5, v: 0.05, w: 0.13, extent: [0.36, 0.02, 0.31] },
+  harbor: { id: "harbor", label: "Harbor", u: 0.18, v: 0.05, w: 0.85, extent: [0.36, 0.02, 0.31] },
+  industrial: { id: "industrial", label: "Industrial", u: 0.85, v: 0.05, w: 0.85, extent: [0.36, 0.02, 0.31] }
+};
+
+function districtRegion(district: SmartCityDistrict) {
+  return resolveSemanticRegion(cityBounds(), districtRegions[district]);
+}
+
+function districtAnchor(district: SmartCityDistrict): readonly [number, number] {
+  const region = districtRegion(district);
+  return [region.center[0], region.center[2]];
+}
+
+
 const APP_ID = "showcase-smart-city-control";
+/** Latest spatial invariant report; rebuilt whenever the overlay is composed. */
+let smartCitySpatialReport: ReturnType<typeof checkSpatialInvariants> | undefined;
 const DISTRICTS = ["all", "core", "north", "harbor", "industrial"] as const;
 const CAMERA_MODES = ["command", "overview", "street", "flythrough"] as const;
 
@@ -168,6 +228,11 @@ function buildSmartCityScene(): SceneBuild {
       cityQA: qa,
       cityInstancing: city.instancing(kit.nodes),
       runtimeNodeIds,
+      /*
+       * Spatial invariants over every helper element, derived from the city footprint.
+       * Replaces judging helper placement by eye.
+       */
+      spatialInvariants: smartCitySpatialReport,
       nodeCount: snapshot.nodes.length,
       labelCount: snapshot.nodes.filter((node) => node.kind === "label").length,
       district: controls.district
@@ -176,53 +241,83 @@ function buildSmartCityScene(): SceneBuild {
 }
 
 function createSmartCityOverlayNodes(): AuraNodeInput[] {
+  /*
+   * Every element below is placed relative to the city's own footprint.
+   *
+   * Previously each carried a literal world coordinate chosen by eye. Deriving them means
+   * changing `blocks` or `CITY_EXTENT` moves the whole overlay together, and each label's
+   * leader line stays attached to the element it annotates.
+   */
+  const bounds = cityBounds();
+  const selectedRegion = districtRegion(controls.district);
   const selected = districtAnchor(controls.district);
   const highlightColor = controls.district === "all" ? "#50d891" : districtColor(controls.district);
+  // Telemetry landmarks as normalized regions of the city.
+  const eastCorridor = resolveSemanticRegion(bounds, { id: "east-corridor", u: 0.5, v: 0.08, w: 0.4, extent: [0.12, 0.02, 0.03] });
+  const northCorridor = resolveSemanticRegion(bounds, { id: "north-corridor", u: 0.41, v: 0.09, w: 0.5, extent: [0.11, 0.02, 0.03] });
+  const coreSpire = resolveSemanticRegion(bounds, { id: "core-spire", u: 0.5, v: 0.75, w: 0.5 });
+  const vehicleStation = resolveSemanticRegion(bounds, { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58 });
+  const dronePatrol = resolveSemanticRegion(bounds, { id: "drone-patrol", u: 0.89, v: 0.85, w: 0.82 });
   const nodes: AuraNodeInput[] = [
     primitives.box({
       name: `${controls.district} district control overlay`,
       material: material.emissive({ color: highlightColor, emissive: highlightColor, emissiveIntensity: 0.58, opacity: 0.22 })
-    }).position(selected[0], 0.09, selected[1]).scale(controls.district === "all" ? [3.8, 0.018, 3.8] : [1.38, 0.018, 1.18]),
+    }).position(selected[0], selectedRegion.center[1], selected[1])
+      .scale([Math.max(0.05, selectedRegion.size[0]), 0.018, Math.max(0.05, selectedRegion.size[2])]),
     primitives.box({
       name: "city traffic east pulse",
       material: material.neon({ color: "#50d891", emissive: "#50d891", emissiveIntensity: controls.traffic ? 1.5 : 0.42, opacity: 0.78 })
-    }).position(0, 0.16, -0.36).scale([0.46, 0.038, 0.12]).runtime(game.runtimeNode("city-traffic-east")),
+    }).position(...eastCorridor.center)
+      .scale([eastCorridor.size[0], 0.038, eastCorridor.size[2]])
+      .runtime(game.runtimeNode("city-traffic-east")),
     model(assets.showcaseCityVehicle, { name: "typed command vehicle route-primary hero" })
-      .position(-0.1, 1.02, 0.3)
+      .position(...vehicleStation.center)
       .rotate(-0.04, 1.5708, 0)
       .scale(1.58)
       .runtime(game.runtimeNode("city-vehicle-primary", { tags: ["traffic", "primary", "typed-asset"] })),
     primitives.box({
       name: "city traffic north pulse",
       material: material.neon({ color: "#4aa3ff", emissive: "#4aa3ff", emissiveIntensity: controls.traffic ? 1.42 : 0.38, opacity: 0.72 })
-    }).position(-0.34, 0.18, 0).rotate(0, 1.5708, 0).scale([0.42, 0.038, 0.12]).runtime(game.runtimeNode("city-traffic-north")),
+    }).position(...northCorridor.center)
+      .rotate(0, 1.5708, 0)
+      .scale([northCorridor.size[0], 0.038, northCorridor.size[2]])
+      .runtime(game.runtimeNode("city-traffic-north")),
     primitives.sphere({
       name: "core infrastructure data pulse",
       material: material.neon({ color: "#f4c35d", emissive: "#f4c35d", emissiveIntensity: 2.5 })
-    }).position(0, 1.42, 0).scale(0.14).runtime(game.runtimeNode("city-data-pulse-core")),
+    }).position(...coreSpire.center).scale(CITY_EXTENT * 0.037).runtime(game.runtimeNode("city-data-pulse-core")),
     primitives.sphere({
       name: "flythrough inspection drone",
       material: material.neon({ color: "#f8fbff", emissive: "#b7f7d1", emissiveIntensity: 1.8 })
-    }).position(1.5, 1.62, 1.2).scale(0.075).runtime(game.runtimeNode("city-flythrough-drone")),
+    }).position(...dronePatrol.center).scale(CITY_EXTENT * 0.02).runtime(game.runtimeNode("city-flythrough-drone")),
+    // Ring radius derived from the city footprint and thinned on Z, the torus tube axis, so
+    // it stays a ring at any city size rather than collapsing into a bar.
     primitives.torus({
       name: "city telemetry orbit ring",
       material: material.neon({ color: "#f4c35d", emissive: "#f4c35d", emissiveIntensity: 0.9, opacity: 0.48 })
-    }).position(0, 1.36, 0).rotate(1.35, 0.18, 0).scale([1.8, 1.8, 0.026]),
+    }).position(coreSpire.center[0], coreSpire.center[1] - CITY_HEIGHT * 0.03, coreSpire.center[2])
+      .rotate(1.35, 0.18, 0)
+      .scale([CITY_EXTENT * 0.474, CITY_EXTENT * 0.474, CITY_EXTENT * 0.007]),
+    // Callouts anchor to the world position of the element they describe, so the leader line
+    // tracks its subject as the camera moves.
     labels.callout(`${controls.district.toUpperCase()} DISTRICT`, `${controls.district} district control overlay`, {
       name: "selected city district label",
-      position: [selected[0], 0.62, selected[1]],
+      position: [selected[0], selectedRegion.center[1] + CITY_HEIGHT * 0.29, selected[1]],
+      anchorWorldPosition: [selected[0], selectedRegion.center[1], selected[1]],
       size: 0.18,
       color: "#f8fbff"
     }),
     labels.callout("Mobility", "city traffic east pulse", {
       name: "traffic telemetry label",
-      position: [1.55, 0.52, -0.62],
+      position: [eastCorridor.center[0] + CITY_EXTENT * 0.41, eastCorridor.center[1] + CITY_HEIGHT * 0.19, eastCorridor.center[2] - CITY_EXTENT * 0.07],
+      anchorWorldPosition: eastCorridor.center,
       size: 0.16,
       color: "#dfffee"
     }),
     labels.callout("Energy", "core infrastructure data pulse", {
       name: "energy telemetry label",
-      position: [0.34, 1.84, 0.2],
+      position: [coreSpire.center[0] + CITY_EXTENT * 0.09, coreSpire.center[1] + CITY_HEIGHT * 0.22, coreSpire.center[2] + CITY_EXTENT * 0.05],
+      anchorWorldPosition: coreSpire.center,
       size: 0.16,
       color: "#fff2c7"
     }),
@@ -240,29 +335,59 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     { district: "industrial" as const, label: "Industrial", color: "#ff7a59" }
   ];
 
+  // Mast height and label offset scale with the city, and each label anchors to its own
+  // mast so the leader line points at the mast rather than at a fixed world point.
+  const mastHeight = CITY_HEIGHT * 0.48 + controls.alertLevel * 0.003;
   for (const anchor of anchors) {
     const position = districtAnchor(anchor.district);
+    const mastCentreY = CITY_HEIGHT * 0.39;
     nodes.push(
       primitives.box({
         name: `${anchor.district} district status mast`,
         material: material.neon({ color: anchor.color, emissive: anchor.color, emissiveIntensity: controls.district === anchor.district ? 1.6 : 0.52, opacity: 0.74 })
-      }).position(position[0], 0.74, position[1]).scale([0.055, 0.92 + controls.alertLevel * 0.003, 0.055]),
+      }).position(position[0], mastCentreY, position[1]).scale([CITY_EXTENT * 0.014, mastHeight, CITY_EXTENT * 0.014]),
       labels.anchor(anchor.label, `${anchor.district} district status mast`, {
         name: `${anchor.district} district label`,
-        position: [position[0], 1.3, position[1]],
+        position: [position[0], mastCentreY + mastHeight * 0.75, position[1]],
+        anchorWorldPosition: [position[0], mastCentreY + mastHeight / 2, position[1]],
         size: 0.14
       })
     );
   }
 
   if (controls.cameraMode === "flythrough") {
+    // The corridor spans the city diagonally, sized from its footprint rather than a
+    // literal 4.4 that only happened to fit an 8-block layout.
+    const corridorCentre = resolveSemanticRegion(bounds, { id: "corridor", u: 0.54, v: 0.12, w: 0.53 });
     nodes.push(
       primitives.box({
         name: "flythrough route corridor",
         material: material.emissive({ color: "#b7f7d1", emissive: "#50d891", emissiveIntensity: 0.42, opacity: 0.28 })
-      }).position(0.32, 0.22, 0.1).rotate(0, -0.62, 0).scale([4.4, 0.024, 0.12])
+      }).position(...corridorCentre.center)
+        .rotate(0, -0.62, 0)
+        .scale([CITY_EXTENT * 1.16, 0.024, CITY_EXTENT * 0.032])
     );
   }
+
+  /*
+   * Spatial invariants for every helper element.
+   *
+   * Published so "no procedural geometry floating outside the scene" is verified against
+   * the city's footprint rather than judged by eye. District overlays, corridors, the core
+   * spire and the vehicle station must lie inside the city; the drone patrols above it.
+   */
+  smartCitySpatialReport = checkSpatialInvariants(bounds, [
+    ...DISTRICTS.filter((district) => district !== "all").map((district) => ({
+      id: `${district} district`,
+      position: districtRegion(district).center,
+      relation: "inside" as const
+    })),
+    { id: "core spire", position: coreSpire.center, relation: "inside" as const },
+    { id: "vehicle station", position: vehicleStation.center, relation: "inside" as const },
+    { id: "east corridor", position: eastCorridor.center, relation: "inside" as const },
+    { id: "north corridor", position: northCorridor.center, relation: "inside" as const },
+    { id: "drone patrol", position: dronePatrol.center, relation: "inside" as const }
+  ]);
 
   return nodes;
 }
@@ -285,14 +410,6 @@ function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDa
     });
   }
   return camera.perspective({ position: [-2.85, 1.92, 3.55], target: [-0.1, 1.02, 0.3], fov: 30 });
-}
-
-function districtAnchor(district: SmartCityDistrict): readonly [number, number] {
-  if (district === "north") return [0, -1.42];
-  if (district === "harbor") return [-1.36, 1.16];
-  if (district === "industrial") return [1.34, 1.16];
-  if (district === "core") return [0, 0];
-  return [0, 0];
 }
 
 function districtColor(district: SmartCityDistrict): string {

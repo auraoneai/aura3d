@@ -242,7 +242,18 @@ async function readInvariants(page: Page, globalName: string): Promise<Invariant
     };
     const focusEvidence = evidence.focusEvidence as { invariants?: unknown; spatialInvariants?: unknown } | undefined;
     const focusReport = focusEvidence?.invariants;
-    const spatialReport = evidence.spatialInvariants ?? focusEvidence?.spatialInvariants;
+    /*
+     * Spatial reports live in different places per route.
+     *
+     * Digital Twin publishes `spatialInvariants` at the top level; Smart City nests it under
+     * `diagnostics`. Reading only the top level silently reported "no invariants" for a route
+     * that publishes them, which would let a real spatial failure pass unnoticed -- the same
+     * blindness this audit exists to remove.
+     */
+    const diagnostics = evidence.diagnostics as Record<string, unknown> | undefined;
+    const spatialReport = evidence.spatialInvariants
+      ?? focusEvidence?.spatialInvariants
+      ?? diagnostics?.spatialInvariants;
     const labels = evidence.renderedLabels as readonly { visible: boolean }[] | undefined;
     return {
       ...(focusReport ? { focus: { passes: failing(focusReport).length === 0, failing: failing(focusReport) } } : {}),
