@@ -1,4 +1,4 @@
-import { createAuraApp, game, lights, model, scene } from "@aura3d/engine";
+import { createAuraApp, game, lights, model, scene, solvePlatformerMotion } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { gameGeometryContract } from "./generated/game-geometry";
 
@@ -22,9 +22,38 @@ const sourceGate = {
   systems: ["game.assetBoundPlatformerLevel", "game.platformer", "game.platformerSceneBinding", "game.certifyPlatformerGeometry"],
   claimBoundary: "createAuraApp root safe API platformer game-layer diagnostic route"
 } as const;
+/**
+ * Motion derived from this route's own platform geometry.
+ *
+ * The generated contract inherits the kit default `gravity: -22` with
+ * `jumpVelocity: 7.4`, giving a 1.245-unit apex over 0.16-unit steps -- a 7.8x
+ * overshoot. This is the same defect Skyline had, in a route that was never looked at,
+ * and it was invisible until the motion validator existed: the level is solvable, so
+ * every gate passed.
+ */
+const solvedMotion = solvePlatformerMotion(levelDefinition.platforms ?? [], {
+  riseSeconds: 0.26,
+  apexHeadroom: 1.9,
+  gapMargin: 1.5,
+  targetSessionSeconds: 120,
+  traversalFraction: 0.4
+});
 const level = game.assetBoundPlatformerLevel({
   characterAsset, worldAssetBindings, playableSurfaceMap, minPlayableSeconds: 30,
-  minCheckpoints: checkpointSurfaces.length, level: levelDefinition
+  /*
+   * Stated because derived motion makes raw traversal shorter than the 30s floor. Raw
+   * traversal is a lower bound on session length, not an estimate of it.
+   */
+  authoredPlayableSeconds: Math.max(authoredPlayableSeconds, 120),
+  minCheckpoints: checkpointSurfaces.length,
+  level: {
+    ...levelDefinition,
+    gravity: solvedMotion.gravity,
+    jumpVelocity: solvedMotion.jumpVelocity,
+    moveSpeed: solvedMotion.moveSpeed,
+    coyoteMs: solvedMotion.coyoteMs,
+    jumpBufferMs: solvedMotion.jumpBufferMs
+  }
 });
 const platformerScene = game.platformerSceneBinding({
   surfaceMap: playableSurfaceMap,
