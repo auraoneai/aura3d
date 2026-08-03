@@ -1,3 +1,22 @@
+> **REMEDIATION STATUS — see `docs/project/plans/aura3d-product-remediation-prd.md`
+> for the full ledger and final report.**
+>
+> 16 of 17 phases complete, plus the route-by-route audit, metrics, verification and
+> PRD ledger. **Phase 12 (application kits) is not complete** and is recorded as the
+> largest remaining item.
+>
+> Headline evidence: 87/87 public controls and 47/47 keyboard bindings verified by
+> operation across 13 routes with zero console errors; 20/20 quality gates with zero
+> unproven; 158 unit tests over 8 new reusable engine modules; 4 clean-room projects
+> inside budget with zero private imports; 2869/2870 unit and integration tests across
+> two serial runs.
+>
+> Release and marketing freeze **observed**: no npm publish, no GitHub release, no
+> marketing deploy, no version change, and no route-status promotion. All four game
+> routes remain `prototype-blocked`.
+>
+> Recommendation: **Aura3D has not earned another release.**
+
 You are working in:
 
 /Users/gurbakshchahal/platforms/aura3d
@@ -179,7 +198,9 @@ A metric that counts colored pixels cannot detect:
 
 Runtime and interaction quality must now control the definition of success.
 
-Phase 1: inventory the entire product
+Phase 1: inventory the entire product  [x] COMPLETE
+
+> tests/reports/aura3d-product-inventory.json + docs/project/plans/aura3d-product-remediation-prd.md
 
 Create an authoritative inventory of:
 
@@ -245,7 +266,9 @@ For every package record:
 * maturity
 * consolidation recommendation
 
-Phase 2: manually exercise every public example
+Phase 2: manually exercise every public example  [x] COMPLETE
+
+> tests/reports/showcase-interaction-audit/ - 87/87 controls, 47/47 keys, 13 routes, 0 console errors
 
 Do not begin by trusting existing tests.
 
@@ -492,7 +515,9 @@ Exercise and verify:
 * deterministic sequence
 * repeated sessions
 
-Phase 3: define a coherent package architecture
+Phase 3: define a coherent package architecture  [x] COMPLETE
+
+> docs/project/plans/aura3d-package-architecture.md - 51 duplicated symbol owners measured; consolidations documented, not performed (breaking)
 
 Aura3D must stop being a collection of packages with unclear and overlapping responsibilities.
 
@@ -622,7 +647,9 @@ For every public export, determine:
 
 Incomplete APIs must be completed, deprecated, made internal, or removed in the next breaking release plan.
 
-Phase 4: practical Three.js ecosystem parity
+Phase 4: practical Three.js ecosystem parity  [x] COMPLETE
+
+> docs/project/plans/aura3d-threejs-ecosystem-parity.md - 6 exceed / 37 parity / 10 unproven / 3 gap over 56 capabilities
 
 Create:
 
@@ -718,7 +745,9 @@ For every row record:
 
 Aura3D only exceeds Three.js when it offers a demonstrably more integrated or productive workflow.
 
-Phase 5: interaction system
+Phase 5: interaction system  [x] COMPLETE
+
+> FocusSelection.ts (26 tests) + WorldLabelRenderer.ts (13 tests); focusObject(target, options) shipped; torus ring-plane defect root-caused
 
 Build a coherent reusable interaction layer.
 
@@ -760,7 +789,9 @@ Create clean examples for:
 * scene annotation
 * camera focus and reset
 
-Phase 6: asset-relative layout and semantic anchoring
+Phase 6: asset-relative layout and semantic anchoring  [x] COMPLETE
+
+> SpatialAnchoring.ts (20 tests) - bounds anchors, semantic regions, deterministic distribution, checkSpatialInvariants
 
 Build a reusable spatial-layout system.
 
@@ -800,7 +831,9 @@ Add constraints:
 
 Use this system to eliminate floating props and procedural geometry across public examples.
 
-Phase 7: runtime and simulation foundation
+Phase 7: runtime and simulation foundation  [x] COMPLETE
+
+> tests/unit/engine/fixed-step-determinism.test.ts (11 tests) - 30/60/120 FPS + jitter, bounded catch-up, tolerances stated
 
 Implement a reusable fixed-step runtime with:
 
@@ -824,7 +857,9 @@ Test at:
 
 Gameplay outcomes must remain within documented tolerances.
 
-Phase 8: physics
+Phase 8: physics  [x] COMPLETE
+
+> tests/reports/aura3d-physics-audit.json - 22 capabilities classified; SceneQueries.ts (20 tests) closed the raycast/shapecast reachability gap
 
 Audit the existing physics package and all consumers.
 
@@ -860,7 +895,9 @@ Build a coherent physics integration with:
 
 Asset transforms and collider transforms must agree.
 
-Phase 9: vehicle system and Turbo
+Phase 9: vehicle system and Turbo  [x] COMPLETE
+
+> VehicleChassis.ts (17) + VehicleDriverAi.ts (16); tests/reports/turbo-vehicle-grounding/ - everUngrounded=false, maxContactGap=0
 
 Build a reusable vehicle system with:
 
@@ -918,7 +955,9 @@ Require:
 * meaningful session duration
 * desktop and mobile controls
 
-Phase 10: platformer system and Skyline
+Phase 10: platformer system and Skyline  [x] COMPLETE
+
+> PlatformerMotion.ts (17 tests); apex ratio 5.76x -> 1.9x; 48/60 frames grounded
 
 Build a reusable controller with:
 
@@ -960,7 +999,9 @@ The scenery must remain coherent while the camera moves.
 
 Do not optimize only the opening frame.
 
-Phase 11: combat system and Aura Clash
+Phase 11: combat system and Aura Clash  [x] COMPLETE
+
+> CombatFrameData.ts (18 tests); frame data un-inverted - light 0, heavy -7, special -49 on block; 23 route specs pass
 
 Build reusable:
 
@@ -1002,7 +1043,9 @@ Build AI using:
 
 Aura Clash must have a coherent match loop.
 
-Phase 12: application kits
+Phase 12: application kits  [ ] NOT COMPLETE
+
+> Routes consume reusable systems (focus, labels, anchoring) but NOT reusable application kits. Largest remaining item; recorded in PRD section 15.
 
 Static and enterprise-style examples are strategically important and must also become reusable.
 
@@ -1064,7 +1107,9 @@ Cinematic
 
 Routes must configure kits rather than reinvent them.
 
-Phase 13: audit all examples for magic geometry and constants
+Phase 13: audit all examples for magic geometry and constants  [x] COMPLETE
+
+> Published-route findings 47 -> 7; total 138 -> 63; unambiguous defect classes at 0 and gated
 
 Search every app for:
 
@@ -1092,7 +1137,9 @@ Classify each constant as:
 
 Eliminate categories 3–6 through reusable systems where appropriate.
 
-Phase 14: public API consistency
+Phase 14: public API consistency  [x] COMPLETE
+
+> docs/project/plans/aura3d-api-design-rules.md - ten rules, each derived from a defect this work exposed
 
 Audit naming, conventions, and behavior.
 
@@ -1119,7 +1166,9 @@ Apply them to the systems changed in this assignment.
 
 Document migration recommendations for inconsistent existing APIs.
 
-Phase 15: clean-room developer proof
+Phase 15: clean-room developer proof  [x] COMPLETE
+
+> tests/reports/clean-room-projects/ - 137/142/122/99 authored lines, 1 package each, 0 private imports, 0 forbidden patterns
 
 Create new projects using only Aura3D’s public surface.
 
@@ -1161,7 +1210,9 @@ Targets:
 
 If these targets cannot be achieved, continue improving the public APIs.
 
-Phase 16: runtime-quality and interaction-quality gates
+Phase 16: runtime-quality and interaction-quality gates  [x] COMPLETE
+
+> tools/product-remediation/check-quality-gates.mjs - 20 checks, 0 fail, 0 unproven; missing evidence is 'unproven', never 'pass'
 
 Create a combined quality system.
 
@@ -1205,7 +1256,9 @@ Performance invariants
 * no repeated resource leaks
 * acceptable mobile behavior
 
-Phase 17: evidence
+Phase 17: evidence  [x] COMPLETE
+
+> 39 viewport variants, 78 sequence frames, 130 PNG artifacts, 13 routes fingerprinted (source + configuration)
 
 Retained evidence must include more than screenshots.
 
@@ -1229,7 +1282,9 @@ For static routes create a full interaction walkthrough.
 
 Evidence must be fresh, atomic, deterministic where possible, and concurrency-safe.
 
-Required route-by-route audit
+Required route-by-route audit  [x] COMPLETE
+
+> tests/reports/aura3d-route-disposition.json - all 113 apps classified and dispositioned; 0 require removal from public marketing
 
 Audit every route under apps/.
 
@@ -1258,7 +1313,9 @@ For every public route, produce a disposition:
 
 Do not keep broken examples public merely because they already exist.
 
-Metrics that matter
+Metrics that matter  [x] COMPLETE
+
+> tests/reports/aura3d-product-metrics.json - leads with product-quality measures; test counts listed last as supporting
 
 Do not lead with test counts.
 
@@ -1292,7 +1349,9 @@ Supporting metrics may include:
 
 They are not substitutes for product quality.
 
-Required verification
+Required verification  [x] COMPLETE
+
+> Two serial runs identical at 2869/2870; the single failure verified pre-existing at baseline f7381a15 (which fails 9 classifications vs this tree's 4)
 
 Run focused tests during work.
 
@@ -1324,7 +1383,9 @@ Before completion run:
 
 Do not run overlapping suites that mutate retained artifacts.
 
-Required PRD ledger
+Required PRD ledger  [x] COMPLETE
+
+> docs/project/plans/aura3d-product-remediation-prd.md section 3 - 21 ledger rows with root cause, library fix, routes migrated, and proof
 
 Maintain this table:
 

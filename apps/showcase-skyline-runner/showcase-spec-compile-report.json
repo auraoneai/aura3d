@@ -46,7 +46,7 @@
   },
   "geometryContract": {
     "module": "src/generated/game-geometry.ts",
-    "contentHash": "sha256-146f5c729b0e156407f23651403135a9b1892777224c43d596dfa383626a639c",
+    "contentHash": "sha256-48a7bd90c34110328253402e6d91a6ca257d51bd96bc11822463aa7e25eb074b",
     "sourceReport": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
     "sourceReportHash": "sha256-9f6a83f2c8f5c3af17171aaea64e0049cc34305ca64d8e578499f1d663f8e8bf"
   }

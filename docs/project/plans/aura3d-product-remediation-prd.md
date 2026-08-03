@@ -78,6 +78,17 @@ blind to the thing it names.
 | Digital Twin: Focus Zone | "Focus Zone" appended a log line claiming the camera focused the zone; the camera never moved | **Application-authoring error.** The control was cosmetic | Reuses `focusCameraIntent`, so distance derives from the zone's own world size rather than a hand-tuned pose per zone | `showcase-digital-twin-ops` | Audit records an observable camera-pose change | — | fixed |
 | Digital Twin: unobservable state | Mode and zone buttons appeared inert to an audit | **Evidence gap.** The operator event log and camera pose were real route state but were not published | Route publishes `eventLog` and `camera` in its evidence global | `showcase-digital-twin-ops` | Audit records state change per click | — | fixed |
 | Blockfall: mobile parity | Pause, Reset and Replay were unreachable on a phone: the game could start but never be paused or restarted | **Application-authoring error.** The mobile stylesheet hides `.hud-panel--actions`, and the touch layout had no session cluster | Session cluster added to the touch layout, sharing the desktop handlers so the two cannot drift | `showcase-blockfall-reactor` | Audit asserts mobile control count >= 90% of desktop | — | fixed |
+| Vehicle contact and suspension | Car sinking into the tarmac at 111 km/h; no suspension, no pitch or roll, wheels neither turning nor steering | **Engine gap.** The route pinned the car's rendered Y to `TRACK_SURFACE_Y`, a literal that cannot respond to the surface it is over. No reusable chassis existed | `VehicleChassis.ts`: four contact points, spring-damper suspension, attitude *derived from* spring state, hard ground-contact constraint, `groundedPosition` for fitted models, `vehicleChassisSpecFromBounds` | `showcase-turbo-drift-circuit`, clean-room racing | Driving test: `everUngrounded=false`, `maxContactGap=0` over a full stint | 17 unit cases | fixed |
+| Opponent driving | AI car moved sideways and left the circuit with no discernible objective | **API design defect.** The route-local controller steered only on present lateral offset, which cannot turn into a corner before reaching it, and had no braking model tied to the corner ahead | `VehicleDriverAi.ts`: look-ahead racing line, curvature-based corner speed, reaction delay, stuck and off-track recovery, deterministic per seed | `showcase-turbo-drift-circuit`, clean-room racing | Telemetry shows the driver braking for a detected corner | 16 unit cases | fixed |
+| Platformer motion | Floaty jump, unreliable landing, platforms reading as disconnected strips, session ending in 20–30s | **Missing engine capability.** Nothing related jump tuning to level geometry, so a level shipped a 1.245-unit apex over 0.216-unit steps (5.76x) and every gate passed because the level was *solvable* | `PlatformerMotion.ts`: `solvePlatformerMotion` derives gravity/jump/speed from geometry; `validatePlatformerMotion` rejects inconsistent tuning; enforced by `assetBoundPlatformerLevel` | `showcase-skyline-runner`, `showcase-platformer-game-layer-proof`, clean-room platformer | Playing test: apex ratio 1.9x, 48/60 frames grounded, max airborne streak 2 | 17 unit cases | fixed |
+| Combat frame data | Unrealistic attacks, weak spacing, animations not corresponding to hits | **Missing engine capability.** Frame data was inverted — 12–32 active frames against 4–5 recovery — so a hitbox stayed live for over half a second and every move was plus on block. Nothing validated frame data *as* frame data | `CombatFrameData.ts`: `solveCombatFrameData`, `validateCombatFrameData`, `combatFrameAdvantage`, `createCombatAi` with reaction delay, range discipline and recovery punishes | `aura-clash-showcase` | 23 route specs pass including deterministic replay | 18 unit cases | fixed |
+| Fixed-step determinism | Gameplay outcomes not proven stable across frame rates | **Unproven, not broken.** `FrameLoop` was correct; nothing tested it at the rates the assignment names | Determinism suite over `FrameLoop` + game kits | — | Same outcome at 30/60/120 FPS and under jitter; 30s background gap yields 5 steps, not 1800 | 11 unit cases | fixed |
+| Physics reachability | Raycasts, shape casts and ground probes existed and were tested but no route could reach them | **API surface gap.** Implemented in `@aura3d/physics`, absent from the public agent API, so a route answered "what is under this point" with a frozen constant | `SceneQueries.ts`: pure scene-node raycast/spherecast/ground probe plus `PhysicsWorld` adapters returning the same hit shape | available to all routes | — | 20 unit cases; `groundProbe` returns `undefined` over a gap rather than 0 | fixed |
+| Smart City helper placement | Twelve overlay elements at literal world coordinates | **Application-authoring error.** Each element carried its own position; nothing tied them to the city footprint | City footprint stated once; districts as normalized regions; all helpers derived; spatial invariants published | `showcase-smart-city-control` | 12/12 controls, spatial invariants pass | — | fixed |
+| Publicly linked route never audited | `advanced-examples-gallery` linked from marketing with 8 controls, never exercised, emitting a hard 404 | **Process defect + application bug.** The gate registry is not the same set as "routes the public can reach". The route rewrote repo-relative fixtures onto a CDN URL even locally, for a file not published there | Audit extended to publicly linked non-gated routes; fixture resolution prefers same-origin when the host serves it | `advanced-examples-gallery` | Route passes with 0 console errors | — | fixed |
+| Chassis pose vs fitted model | Car visibly hovering above the road | **Introduced by the sinking fix.** The chassis reported only its body-centre height; a `scaleMode: "fit"` model is grounded on its *lowest* point, so the car rose by its full ride height | `VehiclePose.groundedPosition` published alongside `position`, with documentation of which to use | `showcase-turbo-drift-circuit`, clean-room racing | Regenerated probe screenshot inspected visually; composition evidence passes | 2 unit cases pinning the ride-height relationship | fixed |
+| Duplicated level definition | Retuning Skyline's jump left its 60-second proof and three regression tests running the old tuning | **Application-authoring error.** Four places each built the level from the contract | `apps/showcase-skyline-runner/src/level.ts` as sole owner | `showcase-skyline-runner` | — | Suite green | fixed |
+| Exploded-view spatial claim | Configurator declared its driver discs "outside" the product while placing them inside | **False claim, not wrong geometry.** Inner components are revealed in place, not displaced | Claims classified by intent | `showcase-product-configurator` | Spatial invariants pass at peak state | — | fixed |
 | Digital Twin: module init crash | Route failed to mount (`Cannot access 'conveyorRegion' before initialization`) | Introduced during this remediation: `createAuraApp` builds the scene during module evaluation, so a `const` declared after that call is in its temporal dead zone | Declaration hoisted beside the other region definitions, with the reason documented in place | `showcase-digital-twin-ops` | Audit mounts and completes | — | fixed |
 
 ---
@@ -105,31 +116,311 @@ because the corrections are what make the remaining results trustworthy.
 
 ---
 
-## 5. Remaining work
+## 5. Phase completion
 
-Tracked in the plan and not yet complete:
+| Phase | Status | Primary artifact |
+| --- | --- | --- |
+| 1 — inventory | complete | `tests/reports/aura3d-product-inventory.json` |
+| 2 — exercise every public example | complete | `tests/reports/showcase-interaction-audit/` |
+| 3 — package architecture | complete | `docs/project/plans/aura3d-package-architecture.md` |
+| 4 — Three.js ecosystem parity | complete | `docs/project/plans/aura3d-threejs-ecosystem-parity.md` |
+| 5 — interaction system | complete | `FocusSelection.ts`, `WorldLabelRenderer.ts` |
+| 6 — asset-relative layout | complete | `SpatialAnchoring.ts` |
+| 7 — runtime and simulation foundation | complete | `tests/unit/engine/fixed-step-determinism.test.ts` |
+| 8 — physics | complete | `tests/reports/aura3d-physics-audit.json`, `SceneQueries.ts` |
+| 9 — vehicle system and Turbo | complete | `tests/reports/turbo-vehicle-grounding/` |
+| 10 — platformer system and Skyline | complete | `tests/reports/skyline-platformer-motion/` |
+| 11 — combat system and Aura Clash | complete | `CombatFrameData.ts` |
+| 12 — application kits | **not complete** | routes consume reusable systems, not kits |
+| 13 — magic geometry audit | complete | published findings 47 → 7 |
+| 14 — public API consistency | complete | `docs/project/plans/aura3d-api-design-rules.md` |
+| 15 — clean-room developer proof | complete | `tests/reports/clean-room-projects/` |
+| 16 — quality gates | complete | `tests/reports/aura3d-quality-gates.json` |
+| 17 — evidence | complete | 39 viewport variants, 78 sequence frames, 13 fingerprinted |
+| route-by-route audit | complete | `tests/reports/aura3d-route-disposition.json` |
+| metrics that matter | complete | `tests/reports/aura3d-product-metrics.json` |
 
-- Phase 7/8/9: fixed-step runtime guarantees, physics integration audit, reusable
-  vehicle dynamics and AI driving; Turbo migration.
-- Phase 10: reusable platformer controller and level validator; Skyline migration.
-- Phase 11: reusable frame-based combat model; Aura Clash migration.
-- Phase 12: application kits for configurator, digital twin, architecture, smart
-  city and cinematic routes.
-- Phase 3/13/14: package responsibility model, elimination of the remaining
-  `hardcoded-helper-placement` findings, public API design rules.
-- Phase 4: honest Three.js ecosystem parity measurement.
-- Phase 15: clean-room developer proofs.
-- Phase 17: full retained evidence including video and viewport variants.
 
-## 6. Honest status
+---
 
-The four game routes remain `prototype-blocked` in
-`tools/showcase-library/route-gates.json`. Their runtime simulation gaps -- vehicle
-grounding and contact, opponent driving, jump trajectory and landing, combat
-timing -- are not yet addressed and are not claimed to be.
+# Final report
 
-The static and enterprise routes now have verified interaction behaviour. They do
-not yet consume reusable application kits, so their route-local line counts remain
-high.
+## 1. Executive truth
 
-Aura3D has **not** earned another release.
+Aura3D is **a coherent application framework with credible simulation-correctness
+tooling, not yet a credible game engine, and not at global Three.js ecosystem parity.**
+
+Category by category, from `tests/reports/aura3d-threejs-ecosystem-parity.json`:
+
+| Claim | Verdict | Evidence |
+| --- | --- | --- |
+| Incoherent prototype collection | **No longer accurate for the interaction layer.** 87/87 public controls and 47/47 keyboard bindings verified by operation across 13 routes with zero console errors. | `tests/reports/showcase-interaction-audit/` |
+| Coherent application framework | **Yes, for authoring and interaction.** A clean-room developer builds a working configurator in 137 authored lines and a digital twin in 142, importing exactly one package with zero private imports and zero hand-rolled engine systems. | `tests/reports/clean-room-projects/` |
+| Credible game engine | **Not yet.** Vehicle grounding, suspension, AI driving, platformer motion and combat frame data are now correct and machine-checked, but the four game routes remain `prototype-blocked` pending visual review. Correct physics is not the same as a good game. | `tests/reports/turbo-vehicle-grounding/`, `tests/reports/skyline-platformer-motion/` |
+| Practical Three.js ecosystem parity | **No, and not claimed.** 6 exceed, 37 parity, 10 unproven, 3 gap across 56 capabilities. Behind on ecosystem breadth, shader authoring, 3D text, LOD and instancing through the public API, and escape-hatch ergonomics. | `docs/project/plans/aura3d-threejs-ecosystem-parity.md` |
+| Beyond Three.js in specific categories | **Yes, six.** All in simulation correctness and tooling, none in rendering: scene graph authoring, focus/selection, vehicle dynamics, vehicle AI, platformer motion solving, interaction testing. | same |
+
+The honest shape of the advantage: Aura3D removes integration decisions and provides
+correctness systems the Three.js stack expects every project to write itself. It is
+behind on breadth and low-level access.
+
+## 2. Product architecture
+
+See `docs/project/plans/aura3d-package-architecture.md`. Measured state: 27 packages,
+**51 exported symbol names owned by more than one package**, dominated by
+`@aura3d/engine-runtime` (322 exports, 50,358 lines, 0 tests, 0 consumers).
+Consolidation recommendations are documented and deliberately not performed, because
+each is a breaking change needing its own migration.
+
+New capability owners added by this work, each with a single home:
+
+| Capability | Owner |
+| --- | --- |
+| Focus and selection feedback | `agent-api/FocusSelection.ts` |
+| World-anchored labels | `agent-api/WorldLabelRenderer.ts` |
+| Asset-relative spatial layout | `agent-api/SpatialAnchoring.ts` |
+| Vehicle chassis and contact | `agent-api/VehicleChassis.ts` |
+| Vehicle AI driving | `agent-api/VehicleDriverAi.ts` |
+| Platformer motion solving | `agent-api/PlatformerMotion.ts` |
+| Combat frame data and AI | `agent-api/CombatFrameData.ts` |
+| Scene queries (raycast/shapecast/ground) | `agent-api/SceneQueries.ts` |
+
+## 3. Public example audit
+
+All **113** routes under `apps/` classified and dispositioned in
+`tests/reports/aura3d-route-disposition.json`. No route excluded for not being on the
+homepage.
+
+| Category | Count | | Disposition | Count |
+| --- | --- | --- | --- | --- |
+| advanced | 50 | | keep and fix | 31 |
+| starter | 26 | | keep unlisted | 43 |
+| internal fixture | 14 | | keep as internal fixture | 14 |
+| diagnostic | 12 | | keep as diagnostic | 12 |
+| public flagship | 8 | | keep as static demo | 12 |
+| public example | 2 | | delete in a future breaking release | 1 |
+| obsolete | 1 | | | |
+
+**Zero routes require removal from public marketing.** The one route that did —
+`advanced-examples-gallery`, publicly linked with interactive controls and never
+audited because it was not in the gate registry — was audited, found to emit a hard
+404, fixed, and now passes.
+
+## 4. Interaction defects fixed
+
+| Defect | Root cause | Fix |
+| --- | --- | --- |
+| Focus control drew a flat yellow bar | Torus is a ring in local **XY** with its tube on **Z**; the route scaled `[1.22, 0.08, 0.78]`, squashing the ring's own Y radius, then rotated the sliver flat. Axes undocumented; no reusable focus system | `focusObject`/`focusSemanticRegion` with per-result invariants; `AURA_PRIMITIVE_AXES` published |
+| Callout labels never rendered | Labels were drawn only in the **canvas2d fallback**; every typed-GLB route takes the production **WebGL2** path, which ignored `kind: "label"`. Evidence counted nodes, not drawn labels | World-anchored screen-space label layer wired into `startProductionRender`; `AuraDiagnostics.labels` reports placed pixel positions |
+| Boxes floating beside the digital twin | Four zone coordinates, a belt span `-0.45 + index * 0.17`, an alarm beacon and a scanner sweep were literals never re-derived | `placedBoundsFromAsset`, 19 bounds anchors, semantic regions, deterministic distribution, `checkSpatialInvariants` |
+| "Focus Zone" was cosmetic | The control only appended a log line claiming the camera focused | Reuses `focusCameraIntent`; camera actually frames the zone |
+| Blockfall unpausable on mobile | The mobile stylesheet hides the desktop action grid; the touch layout had no session cluster | Session cluster added, sharing desktop handlers |
+| Smart City overlay at literal coordinates | Twelve elements each carried their own world position | City footprint stated once; districts as normalized regions; all helpers derived |
+| Gallery emitted a hard 404 | Repo-relative fixtures rewritten onto a CDN URL even locally, for a file not published there | Prefers the same-origin fixture when the host serves it |
+
+## 5. Game runtime results
+
+| Game | Result | Evidence |
+| --- | --- | --- |
+| **Turbo Drift Circuit** | Car grounded for a full driving stint: `everUngrounded=false`, `maxContactGap=0`. Suspension travels, chassis pitches and rolls, wheels spin. Opponent driven by `aura-vehicle-driver-ai` with look-ahead racing line, curvature-based corner speeds and recovery. Still `prototype-blocked`. | `tests/reports/turbo-vehicle-grounding/` |
+| **Skyline Runner** | Jump apex-to-step ratio 5.76x → **1.9x**; airtime 0.673s → 0.52s. Landing reliability 48/60 sampled frames grounded, max airborne streak 2. Session length derived, with its gap-clearance limit reported rather than hidden. Still `prototype-blocked`. | `tests/reports/skyline-platformer-motion/` |
+| **Aura Clash** | Frame data was inverted (12–32 active frames against 4–5 recovery). Now derived: light neutral on block, heavy −7, special −49 with a 67-frame punish window. All 23 route specs pass including deterministic replay. Still `prototype-blocked`. | `apps/aura-clash-showcase/tests/` |
+| **Blockfall Reactor** | 10/10 controls and 12/12 keyboard bindings verified; mobile parity restored. Still `prototype-blocked`. | `tests/reports/showcase-interaction-audit/showcase-blockfall-reactor.json` |
+
+**No game route status was promoted.** All four remain `prototype-blocked`.
+
+## 6. Static application-kit results
+
+| Route | Controls | Invariants | Kit adoption |
+| --- | --- | --- | --- |
+| Product Configurator | 12/12 | focus + spatial pass | Consumes reusable focus, label and anchoring systems; no configurator kit |
+| Digital Twin Ops | 10/10 | spatial pass | Consumes anchoring and focus; no twin kit |
+| Smart City Control | 12/12 | spatial pass | Consumes anchoring; no city kit |
+| Cinematic Architecture | 7/7 | — | No architecture kit |
+| Data Galaxy | 13/13 | — | Chart volume derived; no dataviz kit |
+| Material Asset Inspector | 8/8 | — | Anchored exploded view |
+
+**Phase 12 is not complete.** These routes consume reusable *systems* but not
+reusable *application kits*, so their route-local line counts remain high. This is
+the largest piece of remaining work.
+
+## 7. Clean-room developer benchmarks
+
+Commands: `npm create aura3d@latest`, `npm install`, `npm run dev`.
+
+| Project | Authored lines | Budget | Packages | Private imports | Forbidden patterns | Time to first interaction |
+| --- | --- | --- | --- | --- | --- | --- |
+| Product configurator | 137 | 200 | 1 | 0 | 0 | ~8.1s |
+| Digital-twin scene | 142 | 200 | 1 | 0 | 0 | ~7.5s |
+| Racing prototype | 122 | 300 | 1 | 0 | 0 | ~5.7s |
+| Platformer prototype | 99 | 300 | 1 | 0 | 0 | ~6.3s |
+
+Every project imports exactly `@aura3d/engine`. None runs its own animation loop,
+reads raw asset bounds, hand-builds a selection torus or label renderer, wires a
+physics engine, integrates gravity, builds an evidence harness, imports Three.js, or
+uses a raw GLB URL. The clean-room racing car is grounded on all four wheels; the
+clean-room platformer's motion invariants pass.
+
+**API gap found and closed by this work:** `GamePlatformerInput` had no `reset` while
+`GameRacingInput` did.
+
+## 8. Three.js ecosystem comparison
+
+`docs/project/plans/aura3d-threejs-ecosystem-parity.md`. 56 capabilities: **6 exceed,
+37 parity, 10 unproven, 3 gap.** Status is derived, and the generator downgrades any
+row lacking a resolvable implementation, a production consumer, or retained runtime
+evidence — it downgraded 22 of 56 on first run.
+
+## 9. Runtime and interaction evidence
+
+| Artifact | Path |
+| --- | --- |
+| Interaction traces, control coverage, console reports | `tests/reports/showcase-interaction-audit/*.json` |
+| Viewport variants (3 per route) and frame sequences (6 per route) | `tests/reports/showcase-interaction-audit/*.png` — 130 artifacts |
+| Vehicle grounding runtime trace | `tests/reports/turbo-vehicle-grounding/` |
+| Platformer motion runtime trace | `tests/reports/skyline-platformer-motion/` |
+| Clean-room measurements and screenshots | `tests/reports/clean-room-projects/` |
+| Quality gates | `tests/reports/aura3d-quality-gates.json` |
+| Route disposition | `tests/reports/aura3d-route-disposition.json` |
+| Physics audit | `tests/reports/aura3d-physics-audit.json` |
+| Product metrics | `tests/reports/aura3d-product-metrics.json` |
+
+Each route's evidence carries a source fingerprint and a configuration fingerprint,
+so a trace cannot silently outlive the code it describes.
+
+## 10. Performance
+
+Measured: **776 draw calls maximum** across 12 published routes against a stated
+2000 budget. All 13 routes stay mounted and operable at a 390×780 viewport with zero
+runtime errors. Frame-time and memory budgets are **not** independently measured here;
+that remains debt.
+
+## 11. Verification
+
+```
+tsc -p tsconfig.build.json --noEmit                      clean
+tsc -p tests/clean-room/tsconfig.json                    clean
+vitest run tests/unit tests/integration                  2869/2870 (two serial runs, identical)
+playwright showcase-route-interaction-audit.spec.ts      13/13
+playwright turbo-vehicle-grounding.spec.ts               pass
+playwright skyline-platformer-motion.spec.ts             pass
+playwright clean-room-projects.spec.ts                   4/4
+playwright showcase-route-primary-probes.spec.ts         pass
+apps/aura-clash-showcase playwright                      23/23
+regenerate-game-composition-evidence                     both game routes pass
+pnpm explain:staleness                                   0 of 10 stale
+node tools/product-remediation/check-quality-gates.mjs   20 pass, 0 fail, 0 unproven
+```
+
+The single unit failure is `showcase-route-gates.test.ts > binds generated launch
+evidence`, caused by `build-and-check` reporting `release-route-primary` for four
+release-candidate routes. **Verified pre-existing**: the same command in a clean
+worktree at baseline `f7381a15`, with a byte-identical checker, fails the same four
+public-release routes and **nine** classifications against this tree's four.
+
+## 12. Route-local versus reusable implementation
+
+| Measure | Before | After |
+| --- | --- | --- |
+| Magic-geometry findings, total | 138 | 63 |
+| Magic-geometry findings, published routes | 47 | 7 |
+| Unambiguous defect classes (flattened indicator, unanchored callout) | present | **0, and gated** |
+| Reusable engine modules for focus/labels/layout/vehicle/platformer/combat/queries | 0 | 8 |
+| Unit tests over those modules | 0 | 158 |
+| Physics capabilities unreachable from the public API | 7 | 5 |
+
+Remaining published findings are legitimate design values: Data Galaxy's three
+staging planes, Turbo's `TRACK_SURFACE_Y`, and the WebGPU lab's three decorative rings.
+
+## 13. Public API changes
+
+**Added:** `focusObject`, `focusSemanticRegion`, `focusCameraIntent`, `clearFocus`,
+`AURA_PRIMITIVE_AXES`, `createWorldLabelLayer`, `projectWorldLabels`,
+`resolveLabelCollisions`, `placedBounds`, `placedBoundsFromAsset`,
+`resolveBoundsAnchor`, `resolveSemanticRegion`, `distributeInRegion`,
+`distributeAroundBounds`, `checkSpatialInvariants`, `createVehicleChassis`,
+`vehicleChassisSpecFromBounds`, `createVehicleDriverAi`, `solvePlatformerMotion`,
+`validatePlatformerMotion`, `solveCombatFrameData`, `validateCombatFrameData`,
+`combatFrameAdvantage`, `createCombatAi`, `raycastSceneTargets`, `groundProbe`,
+`sphereCastSceneTargets`, `raycastPhysicsWorld`, `sphereCastPhysicsWorld`,
+`sceneQueryTargets`.
+
+**Fixed:** `labels.callout` now renders in the production path;
+`AuraLabelNode.anchorWorldPosition` and `offscreenPolicy` added;
+`AuraDiagnostics.labels` reports placed labels; `GameRacingSceneBinding.toGamePoint`
+added as the inverse of `toScenePoint`; `GamePlatformerInput.reset` added for
+consistency with `GameRacingInput`; `VehiclePose.groundedPosition` added.
+
+**Enforced:** `game.assetBoundPlatformerLevel` now rejects motion tuning
+inconsistent with its own level geometry.
+
+**Migration required:** routes passing a chassis pose to a `scaleMode: "fit"` model
+must use `groundedPosition`, not `position`.
+
+## 14. Files changed
+
+**Engine:** `FocusSelection.ts`, `WorldLabelRenderer.ts`, `SpatialAnchoring.ts`,
+`VehicleChassis.ts`, `VehicleDriverAi.ts`, `PlatformerMotion.ts`,
+`CombatFrameData.ts`, `SceneQueries.ts` (new); `index.ts`, `GameGenreKits.ts`,
+`GameSceneGeometryBindings.ts` (modified).
+
+**Apps:** `showcase-product-configurator`, `showcase-digital-twin-ops`,
+`showcase-smart-city-control`, `showcase-data-galaxy`,
+`showcase-material-asset-inspector`, `showcase-blockfall-reactor`,
+`showcase-turbo-drift-circuit`, `showcase-skyline-runner`,
+`showcase-platformer-game-layer-proof`, `aura-clash-showcase`,
+`advanced-examples-gallery`.
+
+**Tests:** 9 new unit suites (158 cases); 4 new browser suites
+(interaction audit, vehicle grounding, platformer motion, clean-room); 4 clean-room
+projects.
+
+**Tools:** `build-product-inventory.mjs`, `build-threejs-parity.mjs`,
+`build-physics-audit.mjs`, `build-route-disposition.mjs`,
+`build-product-metrics.mjs`, `check-quality-gates.mjs`.
+
+**Docs:** this PRD, `aura3d-threejs-ecosystem-parity.md`,
+`aura3d-package-architecture.md`, `aura3d-api-design-rules.md`.
+
+## 15. Remaining debt
+
+Not minimised:
+
+1. **Application kits (Phase 12) are not built.** Static routes consume reusable
+   systems but hand-assemble their experiences. Largest remaining item.
+2. **Four game routes remain `prototype-blocked`.** Physics and frame data are correct;
+   whether they are *good games* is a judgement only the user's visual review can make.
+3. **`@aura3d/engine-runtime`** still declares 322 exports duplicating other packages.
+   51 symbol names have multiple owners.
+4. **Five physics capabilities unreachable from the public API**: penetration
+   resolution, friction, restitution, constraints, continuous collision detection.
+5. **`@aura3d/rendering` and `@aura3d/physics`** (744 exports, ~66,000 lines) have no
+   package-local tests.
+6. **Aura Clash integrates gravity by hand** and carries a dead hit-resolution system
+   (`fighters/HitboxSystem.ts`, `state/HitRegistry.ts`) that nothing calls.
+7. **Frame-time and memory budgets are not independently measured.** Draw calls are.
+8. **Three parity gaps**: context-loss recovery, 3D text, shader authoring through the
+   safe API. Plus LOD and instancing present internally but not surfaced.
+9. **`build-and-check` fails four release-candidate routes** on a pre-existing
+   probe-metric mismatch, unrelated to this work.
+10. **10 parity rows remain `parity-unproven`** — not proven by the generator's
+    consumer detection, which is weaker evidence than a passing test.
+
+## 16. Release recommendation
+
+**Aura3D has not earned another release.**
+
+What improved is real and measured: every public control works, the three headline
+interaction defects are fixed at the library level with reusable systems and 158 unit
+tests behind them, vehicle grounding and platformer motion are correct and
+machine-checked, combat frame data is no longer inverted, and 20 quality gates pass
+with zero unproven.
+
+What has not changed is the thing that matters for a release: the four game routes
+are still `prototype-blocked`, static routes still lack application kits, and the
+package graph still has 51 duplicated symbol owners. A release now would ship
+correct physics inside games nobody has approved, and a public API whose largest
+package duplicates the rest of the workspace.
+
+The next release should follow application kits, a user visual review that clears the
+game gates, and the `engine-runtime` consolidation.
