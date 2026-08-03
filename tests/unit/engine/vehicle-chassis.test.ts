@@ -71,6 +71,40 @@ describe("vehicle grounding", () => {
     }
   });
 
+  it("distinguishes the body centre from the contact plane", () => {
+    /*
+     * Regression: the chassis reported only its body-centre height, and Turbo passed that
+     * to a `scaleMode: "fit"` model. The safe renderer grounds a fitted model's *lowest
+     * point* on its node position, so the car was lifted by its whole ride height and
+     * visibly hovered above the tarmac -- the sinking defect's mirror image, introduced
+     * while fixing the sinking. Both values are now published and their relationship is
+     * pinned.
+     */
+    const surfaceHeight = 0.5;
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(surfaceHeight));
+    const pose = chassis.reset(driving({ speed: 0, throttle: 0 }));
+    // The contact plane is the road; the body centre is a ride height above it.
+    expect(pose.groundedPosition[1]).toBeCloseTo(surfaceHeight, 6);
+    expect(pose.position[1]).toBeGreaterThan(pose.groundedPosition[1]);
+    expect(pose.position[1] - pose.groundedPosition[1]).toBeCloseTo(SPEC.rideHeight, 2);
+    // Both share the planar position.
+    expect(pose.groundedPosition[0]).toBe(pose.position[0]);
+    expect(pose.groundedPosition[2]).toBe(pose.position[2]);
+  });
+
+  it("keeps the contact plane on the road while driving", () => {
+    const surfaceHeight = 0.35;
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(surfaceHeight));
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    for (let step = 0; step < 180; step += 1) {
+      const pose = chassis.step(1 / 60, driving({
+        x: step * 0.4, speed: 26, steer: Math.sin(step / 11), brake: step % 50 < 12 ? 1 : 0, slip: 0.3
+      }));
+      // A fitted model placed here must never be above or below the road.
+      expect(pose.groundedPosition[1]).toBeCloseTo(surfaceHeight, 4);
+    }
+  });
+
   it("follows a sloped surface instead of a frozen plane", () => {
     const chassis = createVehicleChassis(SPEC, rampSurface(0.1));
     const low = chassis.reset(driving({ x: 0, speed: 0, throttle: 0 }));

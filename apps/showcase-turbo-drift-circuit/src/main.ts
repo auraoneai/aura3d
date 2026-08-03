@@ -938,9 +938,9 @@ app.onFrame(({ dt }) => {
     const opponentRest = opponentChassis.reset({
       x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponentPose.rotation[1], speed: 0, steer: 0
     });
-    playerCar.setPosition(playerRest.position[0], playerRest.position[1], playerRest.position[2]);
+    playerCar.setPosition(playerRest.groundedPosition[0], playerRest.groundedPosition[1], playerRest.groundedPosition[2]);
     playerCar.setRotation(playerRest.rotation[0], playerRest.rotation[1], playerRest.rotation[2]);
-    opponentCar.setPosition(opponentRest.position[0], opponentRest.position[1], opponentRest.position[2]);
+    opponentCar.setPosition(opponentRest.groundedPosition[0], opponentRest.groundedPosition[1], opponentRest.groundedPosition[2]);
     opponentCar.setRotation(opponentRest.rotation[0], opponentRest.rotation[1], opponentRest.rotation[2]);
     mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
@@ -975,7 +975,15 @@ app.onFrame(({ dt }) => {
     brake: input.held("brake") ? 1 : 0,
     slip: Math.min(1, Math.abs(raceSnapshot.drift))
   });
-  playerCar.setPosition(playerChassisPose.position[0], playerChassisPose.position[1], playerChassisPose.position[2]);
+  /*
+   * `groundedPosition`, not `position`.
+   *
+   * The car model is `scaleMode: "fit"`, and the safe renderer grounds a fitted model's
+   * lowest point on its node position. Passing the chassis *origin* (the body centre)
+   * lifted the whole car by its ride height, which renders as a car hovering above the
+   * tarmac -- the sinking defect's mirror image.
+   */
+  playerCar.setPosition(playerChassisPose.groundedPosition[0], playerChassisPose.groundedPosition[1], playerChassisPose.groundedPosition[2]);
   playerCar.setRotation(playerChassisPose.rotation[0], playerChassisPose.rotation[1], playerChassisPose.rotation[2]);
   // Drift feedback is driven by the kit's actual slip value plus real speed, not
   // by raw steering input: a stationary car turning its wheels must not smoke.
@@ -1017,7 +1025,7 @@ app.onFrame(({ dt }) => {
     brake: opponentDriverInput.brake ? 1 : 0,
     slip: Math.min(1, Math.abs(opponent.drift))
   });
-  opponentCar.setPosition(opponentChassisPose.position[0], opponentChassisPose.position[1], opponentChassisPose.position[2]);
+  opponentCar.setPosition(opponentChassisPose.groundedPosition[0], opponentChassisPose.groundedPosition[1], opponentChassisPose.groundedPosition[2]);
   opponentCar.setRotation(opponentChassisPose.rotation[0], opponentChassisPose.rotation[1], opponentChassisPose.rotation[2]);
   mountedEvidence.status = raceSnapshot.status;
   mountedEvidence.frameCount = raceSnapshot.frame;

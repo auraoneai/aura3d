@@ -123,7 +123,9 @@ app.onFrame(({ dt }) => {
       x: snap.position.x, z: snap.position.y, heading: -snap.heading + Math.PI / 2,
       speed: snap.speed, steer: 0, throttle: 1, brake: 0, slip: snap.drift
     });
-    node.setPosition(pose.position[0], pose.position[1], pose.position[2]);
+    // `groundedPosition`: the car model is `scaleMode: "fit"`, so its node position is
+    // its contact plane, not its body centre.
+    node.setPosition(pose.groundedPosition[0], pose.groundedPosition[1], pose.groundedPosition[2]);
     node.setRotation(pose.rotation[0], pose.rotation[1], pose.rotation[2]);
   }
 

@@ -124,8 +124,24 @@ export interface VehicleWheelPose {
 }
 
 export interface VehiclePose {
-  /** Chassis origin in world space, at the height the suspension resolves to. */
+  /**
+   * Chassis origin in world space: the body's centre height, as a rigid body would
+   * report it.
+   *
+   * Use this for a model whose pivot is at its own centre. For a model rendered with
+   * `scaleMode: "fit"`, use {@link groundedPosition} instead -- the safe renderer grounds
+   * a fitted model's *lowest point* on its node position, so placing the body centre
+   * there lifts the whole vehicle by its ride height. That mismatch is visible as a car
+   * hovering above the road, which is the same class of defect as the sinking it
+   * replaced, in the opposite direction.
+   */
   readonly position: VehicleVec3;
+  /**
+   * Contact-plane position: the height the lowest tyre contact patch sits at.
+   *
+   * This is what a `scaleMode: "fit"` model's node position should be set to.
+   */
+  readonly groundedPosition: VehicleVec3;
   /** Euler rotation: pitch on X, yaw on Y, roll on Z. */
   readonly rotation: VehicleVec3;
   readonly wheels: readonly VehicleWheelPose[];
@@ -384,8 +400,11 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     const averageCompression = spunWheels.reduce((sum, wheel) => sum + wheel.compression, 0) / spunWheels.length;
     const maxContactGap = Math.max(...spunWheels.map((wheel) => wheel.contactGap));
 
+    // Lowest contact patch across the four wheels: where a grounded model sits.
+    const contactPlaneY = Math.min(...resolvedWheels.map((wheel) => wheel.position[1] - resolved.wheelRadius));
     currentPose = {
       position: [state.x, bodyY, state.z],
+      groundedPosition: [state.x, contactPlaneY, state.z],
       rotation: [pitch, state.heading, roll],
       wheels: spunWheels,
       contactGap: Math.min(...spunWheels.map((wheel) => wheel.contactGap)),
