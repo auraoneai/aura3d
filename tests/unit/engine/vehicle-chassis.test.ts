@@ -1,0 +1,212 @@
+import { describe, expect, it } from "vitest";
+import {
+  createVehicleChassis,
+  flatVehicleSurface,
+  vehicleChassisSpecFromBounds,
+  type VehiclePlanarState,
+  type VehicleSurface
+} from "../../../packages/engine/src/agent-api/VehicleChassis";
+
+/**
+ * Regression cases for the reported vehicle defects: the car sinking into the
+ * tarmac at speed, contact not matching the visible tyres, and no suspension.
+ *
+ * The route previously pinned the car's rendered Y to a single literal
+ * (`TRACK_SURFACE_Y`), so it could not respond to the surface it was over and the
+ * chassis never pitched or rolled. These tests hold the reusable chassis to the
+ * properties that make grounding a fact rather than a claim about a screenshot.
+ */
+
+const SPEC = {
+  wheelbase: 1.2,
+  trackWidth: 0.8,
+  wheelRadius: 0.16,
+  rideHeight: 0.3,
+  suspensionTravel: 0.07
+} as const;
+
+function driving(overrides: Partial<VehiclePlanarState> = {}): VehiclePlanarState {
+  return { x: 0, z: 0, heading: 0, speed: 20, steer: 0, throttle: 1, brake: 0, slip: 0, ...overrides };
+}
+
+/** Sloped surface, to prove the chassis follows terrain rather than a constant. */
+function rampSurface(slope: number): VehicleSurface {
+  return { sample: (x) => ({ height: x * slope, normal: [0, 1, 0], grip: 1 }) };
+}
+
+describe("vehicle grounding", () => {
+  it("keeps every wheel on a flat surface at speed", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    // Drive for two seconds at 111 km/h, the speed at which the car was reported
+    // to sink.
+    for (let step = 0; step < 120; step += 1) {
+      chassis.step(1 / 60, driving({ x: step * 0.5, speed: 30.8 }));
+    }
+    const pose = chassis.pose();
+    expect(pose.grounded).toBe(true);
+    expect(chassis.telemetry().groundedWheels).toBe(4);
+    expect(chassis.telemetry().maxContactGap).toBeLessThan(SPEC.suspensionTravel * 0.5);
+  });
+
+  it("never places the chassis below the road surface", () => {
+    const surfaceHeight = 0.35;
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(surfaceHeight));
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    for (let step = 0; step < 240; step += 1) {
+      const pose = chassis.step(1 / 60, driving({
+        x: step * 0.4,
+        speed: 28,
+        throttle: step % 40 < 20 ? 1 : 0,
+        brake: step % 40 < 20 ? 0 : 1,
+        steer: Math.sin(step / 12),
+        slip: 0.4
+      }));
+      // The lowest wheel contact patch must stay at or above the road, and the
+      // body must stay above it. This is the sinking defect stated as arithmetic.
+      for (const wheel of pose.wheels) {
+        expect(wheel.position[1] - SPEC.wheelRadius).toBeGreaterThanOrEqual(surfaceHeight - 1e-6);
+      }
+      expect(pose.position[1]).toBeGreaterThan(surfaceHeight);
+    }
+  });
+
+  it("follows a sloped surface instead of a frozen plane", () => {
+    const chassis = createVehicleChassis(SPEC, rampSurface(0.1));
+    const low = chassis.reset(driving({ x: 0, speed: 0, throttle: 0 }));
+    const high = chassis.reset(driving({ x: 20, speed: 0, throttle: 0 }));
+    // 20 units along a 0.1 slope raises the surface by 2 units; the chassis must
+    // rise with it.
+    expect(high.position[1] - low.position[1]).toBeCloseTo(2, 1);
+  });
+
+  it("reports a wheel off the ground over a drop", () => {
+    // A surface with a hole under the front-left wheel's contact point.
+    const surface: VehicleSurface = {
+      sample: (x, z) => ({ height: x > 0.3 && z < -0.1 ? -3 : 0, normal: [0, 1, 0], grip: 1 })
+    };
+    const chassis = createVehicleChassis(SPEC, surface);
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    for (let step = 0; step < 30; step += 1) chassis.step(1 / 60, driving({ speed: 5 }));
+    const pose = chassis.pose();
+    expect(pose.grounded).toBe(false);
+    expect(pose.wheels.filter((wheel) => !wheel.grounded).length).toBeGreaterThan(0);
+  });
+});
+
+describe("suspension and attitude", () => {
+  it("pitches nose-down under braking and nose-up under throttle", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    chassis.reset(driving({ speed: 20, throttle: 0 }));
+    for (let step = 0; step < 60; step += 1) chassis.step(1 / 60, driving({ speed: 20, throttle: 0, brake: 1 }));
+    const braking = chassis.telemetry().pitch;
+    chassis.reset(driving({ speed: 20, throttle: 0 }));
+    for (let step = 0; step < 60; step += 1) chassis.step(1 / 60, driving({ speed: 20, throttle: 1, brake: 0 }));
+    const accelerating = chassis.telemetry().pitch;
+    expect(braking).toBeGreaterThan(0);
+    expect(accelerating).toBeLessThan(0);
+    expect(braking).not.toBeCloseTo(accelerating, 3);
+  });
+
+  it("rolls into a corner and reverses roll the other way", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    chassis.reset(driving({ speed: 25, throttle: 0 }));
+    for (let step = 0; step < 90; step += 1) chassis.step(1 / 60, driving({ speed: 25, steer: 1, slip: 0.5 }));
+    const rightRoll = chassis.telemetry().roll;
+    chassis.reset(driving({ speed: 25, throttle: 0 }));
+    for (let step = 0; step < 90; step += 1) chassis.step(1 / 60, driving({ speed: 25, steer: -1, slip: 0.5 }));
+    const leftRoll = chassis.telemetry().roll;
+    expect(Math.sign(rightRoll)).toBe(-Math.sign(leftRoll));
+    expect(Math.abs(rightRoll)).toBeGreaterThan(0.01);
+  });
+
+  it("does not roll when travelling straight", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    chassis.reset(driving({ speed: 25, throttle: 0 }));
+    for (let step = 0; step < 90; step += 1) chassis.step(1 / 60, driving({ speed: 25, steer: 0 }));
+    expect(Math.abs(chassis.telemetry().roll)).toBeLessThan(0.001);
+  });
+
+  it("moves suspension over an uneven surface", () => {
+    // A uniform slope legitimately produces constant compression -- all four wheels
+    // see the same relative height -- so the surface must actually be uneven for
+    // this to test the spring rather than the ramp.
+    const bumpy: VehicleSurface = { sample: (x) => ({ height: Math.sin(x * 2.4) * 0.05, normal: [0, 1, 0], grip: 1 }) };
+    const chassis = createVehicleChassis(SPEC, bumpy);
+    chassis.reset(driving({ x: 0, speed: 0, throttle: 0 }));
+    const compressions = new Set<number>();
+    for (let step = 0; step < 60; step += 1) {
+      const pose = chassis.step(1 / 60, driving({ x: step * 0.3, speed: 18 }));
+      compressions.add(Number(pose.averageCompression.toFixed(4)));
+    }
+    // A frozen plane would produce one constant value; a spring produces many.
+    expect(compressions.size).toBeGreaterThan(3);
+  });
+});
+
+describe("wheel visuals", () => {
+  it("spins wheels in proportion to speed and not at all when stopped", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    const stationary = chassis.step(1 / 60, driving({ speed: 0, throttle: 0 })).wheels[0].spin;
+    const after = chassis.step(1 / 60, driving({ speed: 0, throttle: 0 })).wheels[0].spin;
+    expect(after).toBeCloseTo(stationary, 10);
+    expect(chassis.telemetry().wheelSpinRate).toBe(0);
+
+    chassis.reset(driving({ speed: 0, throttle: 0 }));
+    chassis.step(1 / 60, driving({ speed: 30 }));
+    expect(chassis.telemetry().wheelSpinRate).toBeCloseTo(30 / SPEC.wheelRadius, 6);
+  });
+
+  it("steers only the front wheels", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    const pose = chassis.reset(driving({ steer: 1 }));
+    const front = pose.wheels.filter((wheel) => wheel.id.startsWith("front"));
+    const rear = pose.wheels.filter((wheel) => wheel.id.startsWith("rear"));
+    for (const wheel of front) expect(wheel.steerAngle).toBeGreaterThan(0);
+    for (const wheel of rear) expect(wheel.steerAngle).toBe(0);
+  });
+
+  it("places wheels at the corners of the wheelbase and track", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    const pose = chassis.reset(driving({ x: 0, z: 0, heading: 0, speed: 0, steer: 0 }));
+    const byId = new Map(pose.wheels.map((wheel) => [wheel.id, wheel.position]));
+    // Heading 0 faces +X, so front wheels sit at +x and the track spans z.
+    expect(byId.get("front-left")![0]).toBeCloseTo(SPEC.wheelbase * 0.5, 6);
+    expect(byId.get("rear-left")![0]).toBeCloseTo(-SPEC.wheelbase * 0.5, 6);
+    expect(Math.abs(byId.get("front-left")![2] - byId.get("front-right")![2])).toBeCloseTo(SPEC.trackWidth, 6);
+  });
+
+  it("rotates the wheel layout with heading", () => {
+    const chassis = createVehicleChassis(SPEC, flatVehicleSurface(0));
+    const pose = chassis.reset(driving({ heading: Math.PI / 2, speed: 0 }));
+    const front = pose.wheels.find((wheel) => wheel.id === "front-left")!;
+    // Facing +Z now, so the front axle is displaced along z, not x.
+    expect(front.position[2]).toBeCloseTo(SPEC.wheelbase * 0.5, 6);
+  });
+});
+
+describe("vehicleChassisSpecFromBounds", () => {
+  it("derives proportional geometry from a rendered asset size", () => {
+    const spec = vehicleChassisSpecFromBounds([4.2, 1.2, 1.8]);
+    expect(spec.wheelbase).toBeCloseTo(4.2 * 0.6, 6);
+    expect(spec.trackWidth).toBeCloseTo(1.8 * 0.82, 6);
+    expect(spec.wheelRadius).toBeCloseTo(1.2 * 0.42 / 2, 6);
+    // Ride height must lift the body clear of the contact patch.
+    expect(spec.rideHeight).toBeGreaterThan(spec.wheelRadius);
+  });
+
+  it("produces different geometry for a different vehicle, unlike a frozen constant", () => {
+    const hatchback = vehicleChassisSpecFromBounds([3.6, 1.5, 1.7]);
+    const supercar = vehicleChassisSpecFromBounds([4.6, 1.1, 2.0]);
+    expect(supercar.wheelbase).toBeGreaterThan(hatchback.wheelbase);
+    expect(supercar.rideHeight).toBeLessThan(hatchback.rideHeight);
+  });
+
+  it("treats the longest horizontal axis as body length regardless of orientation", () => {
+    const alongX = vehicleChassisSpecFromBounds([4.2, 1.2, 1.8]);
+    const alongZ = vehicleChassisSpecFromBounds([1.8, 1.2, 4.2]);
+    expect(alongZ.wheelbase).toBeCloseTo(alongX.wheelbase, 6);
+    expect(alongZ.trackWidth).toBeCloseTo(alongX.trackWidth, 6);
+  });
+});

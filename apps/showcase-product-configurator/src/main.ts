@@ -1,22 +1,27 @@
 import {
   camera,
+  checkSpatialInvariants,
   collectAuraSceneEvidence,
   createAuraApp,
   createAuraRouteHealthSnapshot,
+  focusSemanticRegion,
   group,
   interactions,
-  labels,
   lights,
   material,
   model,
+  placedBoundsFromAsset,
   primitives,
   product,
+  resolveBoundsAnchor,
   scene,
   timeline,
   type AuraApp,
   type AuraMaterialSpec,
   type AuraSceneNode,
-  type AuraSceneSnapshot
+  type AuraSceneSnapshot,
+  type FocusResult,
+  type SemanticRegion
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 
@@ -85,6 +90,14 @@ interface ConfiguratorEvidence {
   readonly productDiagnostics: unknown;
   readonly productVisualQA: unknown;
   readonly auraSceneEvidence: unknown;
+  /**
+   * Interaction-quality evidence for the focus control, and the label placement
+   * the renderer actually produced. Both exist because the previous defects --
+   * a flattened focus indicator and a callout that never rendered -- were
+   * invisible to node counts and pixel metrics.
+   */
+  readonly focusEvidence: unknown;
+  readonly renderedLabels?: unknown;
   readonly routeHealth?: unknown;
   readonly diagnostics?: {
     readonly backend: string;
@@ -101,6 +114,12 @@ const assetMetadata = productAsset.metadata;
 const assetProvenance = assetMetadata.provenance;
 const materialMetadata = assetMetadata.materialMetadata;
 const productScale = normalizedModelScale(0.4841);
+/**
+ * Where the product stands. This is a genuine level-design value -- a studio
+ * staging decision -- and every asset-relative element is derived from it rather
+ * than repeating its components.
+ */
+const PRODUCT_POSITION: readonly [number, number, number] = [0, 0.46, -0.22];
 
 const variants: Record<VariantId, { readonly label: string; readonly color: string; readonly accent: string }> = {
   graphite: { label: "Graphite Studio", color: "#252627", accent: "#cdbd99" },
@@ -189,7 +208,7 @@ function buildConfiguratorScene(nextState: ConfiguratorState) {
     castShadow: true,
     receiveShadow: true
   })
-    .position(0, 0.46, -0.22)
+    .position(...PRODUCT_POSITION)
     .rotate(0, focusYaw(nextState.focus), 0)
     .scale(productScale)
     .runtime({ id: "configured-headphones", tags: ["typed-asset", "showcaseHeadphones", "configurable-product"] });
@@ -269,27 +288,56 @@ function configuratorSceneAccents(nextState: ConfiguratorState): readonly AuraSc
   return nodes;
 }
 
+/**
+ * Selectable parts of the product, expressed as normalized regions of the
+ * asset's own bounds.
+ *
+ * `u`/`v`/`w` run 0..1 across the product's X/Y/Z extents, so these definitions
+ * survive an asset swap or a scale change. The previous version stored world
+ * positions and an indicator scale per part, which is how the earcup focus came
+ * to carry `scale: [1.22, 0.08, 0.78]` -- a nonuniform scale applied to a torus
+ * in its own ring plane, then rotated flat. That produced the reported yellow/
+ * white bar instead of a ring. See `FocusSelection.ts` for the axis analysis.
+ */
+const partRegions: Record<Exclude<FocusId, "overview">, SemanticRegion> = {
+  earcups: { id: "earcups", label: "Earcup acoustic housings", u: 0.5, v: 0.52, w: 0.46, extent: [0.86, 0.5, 0.7] },
+  headband: { id: "headband", label: "Headband structure", u: 0.5, v: 0.88, w: 0.4, extent: [0.74, 0.2, 0.28] },
+  cushions: { id: "cushions", label: "Soft cushion contact area", u: 0.5, v: 0.34, w: 0.5, extent: [0.7, 0.24, 0.6] }
+};
+
+/** Product bounds as the route actually renders them, derived from the typed asset. */
+function productPlacedBounds() {
+  return placedBoundsFromAsset(productAsset, {
+    // `model(asset).scale(productScale)` renders the asset at
+    // `AURA_NORMALIZED_MODEL_MAX_DIMENSION * productScale` on its longest axis.
+    targetMaxDimension: 1.55 * productScale,
+    position: PRODUCT_POSITION,
+    floorY: PRODUCT_POSITION[1]
+  });
+}
+
+/**
+ * Focus feedback for the selected part, built by the reusable focus system.
+ *
+ * The route states which region it wants focused. It does not build, rotate or
+ * scale indicator geometry, and it does not know the torus axis convention.
+ */
+function resolveFocus(focus: FocusId, color: string): FocusResult | undefined {
+  if (focus === "overview") return undefined;
+  return focusSemanticRegion(productPlacedBounds(), partRegions[focus], {
+    color,
+    indicators: ["ring", "halo"],
+    callout: true,
+    leaderLine: true,
+    // The route drives its own camera presets, so focus reports framing intent
+    // without taking over the camera.
+    cameraFocus: false,
+    namePrefix: `${focus} focus`
+  });
+}
+
 function focusNodes(focus: FocusId, color: string): readonly AuraSceneNode[] {
-  const focusMap: Record<Exclude<FocusId, "overview">, { readonly label: string; readonly position: readonly [number, number, number]; readonly scale: readonly [number, number, number] }> = {
-    earcups: { label: "Earcup acoustic housings", position: [0, 0.55, -0.05], scale: [1.22, 0.08, 0.78] },
-    headband: { label: "Headband structure", position: [0, 1.12, -0.62], scale: [1.06, 0.06, 0.22] },
-    cushions: { label: "Soft cushion contact area", position: [0, 0.36, -0.18], scale: [0.96, 0.06, 0.62] }
-  };
-  if (focus === "overview") return [];
-  const active = focusMap[focus];
-  return [
-    primitives.torus({
-      name: `${focus} focus halo`,
-      material: material.emissive({ color, emissive: color, emissiveIntensity: 0.6, opacity: 0.58 })
-    }).position(...active.position).rotate(1.5708, 0, 0).scale(active.scale).toJSON(),
-    labels.callout(active.label, "configured typed headphones product", {
-      name: `${focus} focus part callout`,
-      position: [active.position[0] + 0.72, active.position[1] + 0.34, active.position[2] + 0.18],
-      size: 0.16,
-      collisionAvoidance: true,
-      occlusionAware: true
-    }).toJSON()
-  ];
+  return resolveFocus(focus, color)?.nodes ?? [];
 }
 
 function explodedProxyNodes(nextState: ConfiguratorState): readonly AuraSceneNode[] {
@@ -304,17 +352,91 @@ function explodedProxyNodes(nextState: ConfiguratorState): readonly AuraSceneNod
   });
   const cushion = material.blackRubber({ color: "#0d0c0b", roughness: 0.96 });
   const driver = material.brushedMetal({ color: "#c7c3b8", roughness: 0.24, anisotropy: 0.64 });
+
+  /*
+   * Exploded proxies are placed relative to the product's own bounds.
+   *
+   * Previously every proxy carried a literal world position tuned against one
+   * asset. Anchoring them means an asset swap, a scale change or a different
+   * staging position moves the whole exploded view together instead of leaving
+   * proxies stranded beside the product.
+   */
+  const bounds = productPlacedBounds();
+  const left = resolveBoundsAnchor(bounds, "left", { offset: bounds.size[0] * 0.55 }).position;
+  const right = resolveBoundsAnchor(bounds, "right", { offset: bounds.size[0] * 0.55 }).position;
+  const top = resolveBoundsAnchor(bounds, "top", { offset: bounds.size[1] * 0.45 }).position;
+  const midY = bounds.center[1];
+  // Proxy sizes are fractions of the product, so proportions hold at any scale.
+  const shellSize: readonly [number, number, number] = [bounds.size[0] * 0.2, bounds.size[1] * 0.5, bounds.size[2] * 0.2];
+  const cushionRadius = bounds.size[0] * 0.22;
+  const driverRadius = bounds.size[0] * 0.15;
+
   return [
-    primitives.box({ name: "procedural exploded left earcup shell proxy", material: shell }).position(-1.05, 0.62, -0.56).rotate(0, 0.18, 0).scale([0.26, 0.48, 0.12]).toJSON(),
-    primitives.box({ name: "procedural exploded right earcup shell proxy", material: shell }).position(1.05, 0.62, -0.56).rotate(0, -0.18, 0).scale([0.26, 0.48, 0.12]).toJSON(),
-    primitives.torus({ name: "procedural exploded left cushion proxy", material: cushion }).position(-0.64, 0.5, -0.2).rotate(1.5708, 0, 0).scale([0.36, 0.52, 0.08]).toJSON(),
-    primitives.torus({ name: "procedural exploded right cushion proxy", material: cushion }).position(0.64, 0.5, -0.2).rotate(1.5708, 0, 0).scale([0.36, 0.52, 0.08]).toJSON(),
-    primitives.cylinder({ name: "procedural exploded left driver disc proxy", material: driver }).position(-0.42, 0.53, -0.04).rotate(1.5708, 0, 0).scale([0.22, 0.035, 0.22]).toJSON(),
-    primitives.cylinder({ name: "procedural exploded right driver disc proxy", material: driver }).position(0.42, 0.53, -0.04).rotate(1.5708, 0, 0).scale([0.22, 0.035, 0.22]).toJSON(),
-    primitives.box({ name: "procedural exploded headband strap proxy", material: shell }).position(0, 1.28, -0.5).scale([1.1, 0.08, 0.14]).toJSON(),
-    primitives.box({ name: "exploded assembly offset guide left", material: material.emissive({ color: "#f3c46f", emissive: "#f3c46f", opacity: 0.62 }) }).position(-0.8, 0.64, -0.42).rotate(0, -0.4, 0).scale([0.52, 0.018, 0.018]).toJSON(),
-    primitives.box({ name: "exploded assembly offset guide right", material: material.emissive({ color: "#f3c46f", emissive: "#f3c46f", opacity: 0.62 }) }).position(0.8, 0.64, -0.42).rotate(0, 0.4, 0).scale([0.52, 0.018, 0.018]).toJSON()
+    primitives.box({ name: "procedural exploded left earcup shell proxy", material: shell })
+      .position(left[0], midY, bounds.center[2] - bounds.size[2] * 0.2).rotate(0, 0.18, 0).scale([...shellSize]).toJSON(),
+    primitives.box({ name: "procedural exploded right earcup shell proxy", material: shell })
+      .position(right[0], midY, bounds.center[2] - bounds.size[2] * 0.2).rotate(0, -0.18, 0).scale([...shellSize]).toJSON(),
+    // Cushion rings are thinned on Z, the torus tube axis, so they read as rings.
+    primitives.torus({ name: "procedural exploded left cushion proxy", material: cushion })
+      .position(left[0] * 0.62, midY, bounds.center[2]).rotate(1.5708, 0, 0).scale([cushionRadius, cushionRadius, cushionRadius * 0.16]).toJSON(),
+    primitives.torus({ name: "procedural exploded right cushion proxy", material: cushion })
+      .position(right[0] * 0.62, midY, bounds.center[2]).rotate(1.5708, 0, 0).scale([cushionRadius, cushionRadius, cushionRadius * 0.16]).toJSON(),
+    primitives.cylinder({ name: "procedural exploded left driver disc proxy", material: driver })
+      .position(left[0] * 0.4, midY, bounds.center[2] + bounds.size[2] * 0.12).rotate(1.5708, 0, 0).scale([driverRadius, driverRadius * 0.22, driverRadius]).toJSON(),
+    primitives.cylinder({ name: "procedural exploded right driver disc proxy", material: driver })
+      .position(right[0] * 0.4, midY, bounds.center[2] + bounds.size[2] * 0.12).rotate(1.5708, 0, 0).scale([driverRadius, driverRadius * 0.22, driverRadius]).toJSON(),
+    primitives.box({ name: "procedural exploded headband strap proxy", material: shell })
+      .position(bounds.center[0], top[1], bounds.center[2] - bounds.size[2] * 0.14).scale([bounds.size[0] * 0.86, bounds.size[1] * 0.08, bounds.size[2] * 0.2]).toJSON(),
+    primitives.box({ name: "exploded assembly offset guide left", material: material.emissive({ color: "#f3c46f", emissive: "#f3c46f", opacity: 0.62 }) })
+      .position(left[0] * 0.78, midY, bounds.center[2] - bounds.size[2] * 0.14).rotate(0, -0.4, 0).scale([bounds.size[0] * 0.4, bounds.size[1] * 0.02, bounds.size[2] * 0.03]).toJSON(),
+    primitives.box({ name: "exploded assembly offset guide right", material: material.emissive({ color: "#f3c46f", emissive: "#f3c46f", opacity: 0.62 }) })
+      .position(right[0] * 0.78, midY, bounds.center[2] - bounds.size[2] * 0.14).rotate(0, 0.4, 0).scale([bounds.size[0] * 0.4, bounds.size[1] * 0.02, bounds.size[2] * 0.03]).toJSON()
   ];
+}
+
+/**
+ * Interaction-quality evidence for the focus control.
+ *
+ * Published so a browser test can assert that focusing a part produced a correct
+ * indicator -- circular, surrounding the part, with a callout outside it -- rather
+ * than inferring correctness from a screenshot. The bar defect passed every pixel
+ * check that existed.
+ */
+function focusEvidence(nextState: ConfiguratorState) {
+  const focus = resolveFocus(nextState.focus, variants[nextState.variant].accent);
+  const bounds = productPlacedBounds();
+  const spatial = checkSpatialInvariants(
+    bounds,
+    explodedProxyClaims(nextState, bounds)
+  );
+  return {
+    focus: nextState.focus,
+    system: "engine.focusSemanticRegion",
+    routeBuildsIndicatorGeometry: false,
+    indicatorNodes: focus?.nodes.length ?? 0,
+    calloutText: focus?.nodes.find((node) => node.kind === "label")?.text,
+    invariants: focus?.invariants ?? { schema: "aura3d-focus-invariants/1.0", checks: [], passes: true },
+    accessibilityLabel: focus?.accessibilityLabel ?? "no selection",
+    spatialInvariants: spatial
+  };
+}
+
+function explodedProxyClaims(nextState: ConfiguratorState, bounds: ReturnType<typeof productPlacedBounds>) {
+  if (!nextState.exploded) return [];
+  return explodedProxyNodes(nextState)
+    .filter((node): node is Extract<AuraSceneNode, { position?: unknown }> => "position" in node)
+    .map((node) => {
+      const position = (node as { position?: readonly [number, number, number] }).position ?? [0, 0, 0];
+      const name = (node as { name?: string }).name ?? "exploded proxy";
+      return {
+        id: name,
+        position,
+        // Exploded proxies deliberately sit beside the product; they must stay
+        // within reach of it, which is what the previous literals stopped doing.
+        relation: "outside" as const,
+        maxDistance: Math.max(...bounds.size) * 2.5
+      };
+    });
 }
 
 function productMaterialFor(nextState: ConfiguratorState): AuraMaterialSpec {
@@ -513,7 +635,9 @@ function publishEvidence(status: ConfiguratorEvidence["status"], snapshot: AuraS
       "typed product model(assets.showcaseHeadphones)",
       "product-stage scene kit",
       "variant and finish controls",
-      "part focus and exploded preview",
+      "reusable focus/selection system (engine.focusSemanticRegion)",
+      "world-anchored callout labels (engine world-label layer)",
+      "asset-relative exploded staging (engine.resolveBoundsAnchor)",
       "turntable timeline",
       "product diagnostics and visual QA",
       "route-health evidence global"
@@ -521,7 +645,8 @@ function publishEvidence(status: ConfiguratorEvidence["status"], snapshot: AuraS
     claimBoundary: "Typed GLB product configurator showcase using Aura3D public APIs and procedural staging. It does not claim production commerce integration or launch acceptance before route-health, screenshot, asset validation, visual review, and deploy checks.",
     proceduralStatus: [
       "Primary product is model(assets.showcaseHeadphones).",
-      "Exploded pieces, focus halos, labels, and metric plinths are procedural staging geometry.",
+      "Exploded pieces and metric plinths are procedural staging geometry anchored to the product's placed bounds.",
+      "Focus indicators and callout labels come from the reusable engine focus/label systems, not route-local geometry.",
       "No raw GLB URLs or string asset ids are used by the route."
     ],
     scene: {
@@ -535,6 +660,8 @@ function publishEvidence(status: ConfiguratorEvidence["status"], snapshot: AuraS
     productDiagnostics,
     productVisualQA,
     auraSceneEvidence,
+    focusEvidence: focusEvidence(state),
+    ...(diagnostics?.labels ? { renderedLabels: diagnostics.labels } : {}),
     ...(routeHealth ? { routeHealth } : {}),
     ...(diagnostics ? {
       diagnostics: {

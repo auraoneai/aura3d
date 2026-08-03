@@ -208,6 +208,13 @@ describe("public showcase gameplay regressions", () => {
     let snapshot = {
       progress: 0.12,
       speed: 0,
+      // Heading, position and off-track state are part of the snapshot because the
+      // reusable driver needs them: it aims at a look-ahead point on the racing line,
+      // which requires knowing where the car is and which way it faces. A controller
+      // that only sees lateral offset cannot turn into a corner before reaching it.
+      heading: 0,
+      position: { x: 0, y: 0.08 },
+      offTrack: false,
       trackOffset: 0.08,
       // Signed, because an unsigned magnitude cannot tell the controller which way to
       // correct. The opponent used to read `trackOffset` and could not return to the line.
@@ -224,12 +231,14 @@ describe("public showcase gameplay regressions", () => {
         inputs.push(input);
         const speed = Math.max(0, snapshot.speed + (input.throttle ? 2.4 * dt : 0) - (input.brake ? 3 * dt : 0));
         const signedTrackOffset = snapshot.signedTrackOffset + input.steer * dt;
+        const progress = (snapshot.progress + speed * dt * 0.08) % 1;
         snapshot = {
           ...snapshot,
           speed,
           signedTrackOffset,
           trackOffset: Math.abs(signedTrackOffset),
-          progress: (snapshot.progress + speed * dt * 0.08) % 1,
+          progress,
+          position: { x: progress * 100, y: signedTrackOffset },
           frame: snapshot.frame + 1
         };
         return snapshot;

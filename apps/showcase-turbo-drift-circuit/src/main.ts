@@ -1,6 +1,8 @@
 import {
   bindGameTouchControls,
   createAuraApp,
+  createVehicleChassis,
+  createVehicleDriverAi,
   effects,
   game,
   lights,
@@ -9,7 +11,11 @@ import {
   primitives,
   resolveChaseFraming,
   scene,
-  type AuraRuntimeNodeHandle
+  vehicleChassisSpecFromBounds,
+  type AuraRuntimeNodeHandle,
+  type DriverRoute,
+  type VehicleChassis,
+  type VehicleSurface
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { createShowcaseCannonPhysicsProof } from "../../showcase-cannon-physics-proof";
@@ -240,17 +246,181 @@ const opponentState = game.racing({
   drag: 0.28,
   steerRate: certifiedSteerRate
 });
+/**
+ * Route adapter for the reusable AI driver.
+ *
+ * The driver samples the racing line *ahead* of the car and reads the road width at
+ * the car's own progress, so it steers into a corner before reaching it and scales
+ * its lateral correction to the circuit. The route-local controller this replaces
+ * only nulled present lateral offset, which is why the opponent read as moving
+ * sideways and leaving the track: a proportional term on present error drives
+ * straight at a corner until it has already left the road.
+ */
+/**
+ * Length of the racing line, measured from the polyline.
+ *
+ * `routeGeometry` carries `points` and `width` but no length, so it must be measured
+ * rather than read. Reading a nonexistent field produced a NaN look-ahead progress
+ * and a crash inside the driver, which the driving test caught immediately -- the
+ * kind of defect a screenshot check cannot see at all.
+ */
+const routeLineLength = (() => {
+  const points = routeGeometry.points;
+  let total = 0;
+  for (let index = 0; index < points.length; index += 1) {
+    const a = points[index]!;
+    const b = points[(index + 1) % points.length]!;
+    total += Math.hypot(b.x - a.x, b.y - a.y);
+  }
+  return total > 0 ? total : 1;
+})();
+
+const driverRoute: DriverRoute = {
+  length: routeLineLength,
+  halfWidth: () => routeGeometry.width / 2,
+  sample: (progress) => {
+    const point = sampleRouteLine(progress);
+    return { x: point.x, y: point.y, heading: routeHeadingAt(progress) };
+  }
+};
+const opponentDriver = createVehicleDriverAi(driverRoute, {
+  maxSpeed: gameplayMaxSpeed,
+  paceFraction: 0.86,
+  // Look-ahead is the whole point: at pace the driver plans roughly a car-length-
+  // scaled distance up the road rather than reacting to where it already is.
+  lookAheadSeconds: 1.15,
+  minLookAhead: Math.max(0.05, routeLineLength * 0.01),
+  // Cornering acceleration is derived from the circuit's tightest corner and the
+  // certified pace, so the driver's corner speeds suit this track rather than
+  // carrying a number tuned on another one.
+  corneringAcceleration: Number(((gameplayMaxSpeed * gameplayMaxSpeed) / Math.max(1e-6, tightestCornerRadius) * 0.55).toFixed(4)),
+  aggression: "balanced",
+  reactionSeconds: 0.12,
+  seed: 20260802
+});
 const opponentAi = createTurboOpponentAi(opponentState, {
   startProgress: opponentStartProgress,
   maxSpeed: gameplayMaxSpeed,
   cruiseRatio: 0.79,
   catchUpStrength: 0.22,
-  steeringGain: STEER_CORRECTION_GAIN
+  steeringGain: STEER_CORRECTION_GAIN,
+  // The route-local controller is retained only as the state container; every
+  // decision now comes from the reusable driver.
+  driver: opponentDriver
 });
+
+/**
+ * Chassis geometry for the hero car, derived from its rendered bounds.
+ *
+ * Resolved before the surface because the surface's verge depth is expressed in terms
+ * of the suspension travel this spec provides.
+ */
+const carChassisSpec = vehicleChassisSpecFromBounds([
+  heroFraming.subject.size[0],
+  heroFraming.subject.size[1],
+  heroFraming.subject.size[2]
+]);
+
+/**
+ * Depth the verge sits below the tarmac.
+ *
+ * Derived from the car's own suspension travel, not from its height. A grass verge is
+ * a surface a car can drive on: its tyres stay in contact and the suspension absorbs
+ * the step. Sizing the drop from body height instead produced a 0.021-unit step
+ * against 0.031 units of total travel, so a car running wide had its outer wheels
+ * hanging in air -- the mirror image of the sinking defect. Sizing it from travel
+ * keeps the verge reachable at any car scale.
+ */
+const VERGE_DROP = Number(((carChassisSpec.suspensionTravel ?? 0.03) * 0.3).toFixed(5));
+/**
+ * Width of the graded shoulder outside the tarmac, in game-plane units.
+ *
+ * A step at the road edge is not how circuits are built, and it is not how they
+ * should be modelled: a car running the racing line has its outer wheels within a
+ * few centimetres of the edge, so a step drops a wheel into free air every corner.
+ * Grading the shoulder over a car-width means a car running wide rides the surface
+ * down instead of losing contact, and only a car genuinely off the circuit sits on
+ * the verge. Derived from the road width so it scales with the track.
+ */
+const SHOULDER_WIDTH = Number((routeGeometry.width * 0.6).toFixed(4));
+
+/**
+ * Vehicle surface for the circuit.
+ *
+ * The chassis asks for a height under each wheel rather than being handed one
+ * number. Off the racing line the grip drops and the surface falls to the verge, so
+ * a car that leaves the road settles onto it instead of hovering at tarmac height.
+ * There is no frozen plane here to be wrong about after an asset swap.
+ */
+const circuitSurface: VehicleSurface = {
+  sample: (x, z) => {
+    const contact = racingState.surfaceQuery.query(racingScene.toGamePoint(x, z));
+    // Distance past the road edge, in game-plane units. Zero on the tarmac.
+    const beyondEdge = Math.max(0, contact.trackOffset - contact.roadHalfWidth);
+    // Graded shoulder: the surface falls away smoothly over `SHOULDER_WIDTH` rather
+    // than stepping down at the edge.
+    const shoulderFraction = Math.min(1, beyondEdge / Math.max(1e-6, SHOULDER_WIDTH));
+    return {
+      height: TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction,
+      normal: [0, 1, 0],
+      // Grip falls off with the same profile: the shoulder is slower than tarmac and
+      // the verge slower still.
+      grip: 1 - 0.45 * shoulderFraction
+    };
+  }
+};
+
+/**
+ * Chassis geometry derived from the hero car's rendered bounds.
+ *
+ * This replaces pinning the car's rendered Y to `TRACK_SURFACE_Y`. A frozen plane
+ * cannot respond to the surface the car is over, cannot pitch under braking and
+ * cannot roll in a corner -- which is why the car read as sinking into the tarmac
+ * and as a sprite sliding on a plane at 111 km/h.
+ */
+function createCarChassis(): VehicleChassis {
+  return createVehicleChassis(carChassisSpec, circuitSurface);
+}
+const playerChassis = createCarChassis();
+const opponentChassis = createCarChassis();
+
+/** Racing-line point at a normalized progress, in game-plane coordinates. */
+function sampleRouteLine(progress: number): { readonly x: number; readonly y: number } {
+  const points = routeGeometry.points;
+  if (points.length === 0) return { x: 0, y: 0 };
+  const wrapped = ((progress % 1) + 1) % 1;
+  const scaled = wrapped * points.length;
+  const index = Math.floor(scaled) % points.length;
+  const next = (index + 1) % points.length;
+  const t = scaled - Math.floor(scaled);
+  const a = points[index]!;
+  const b = points[next]!;
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+/** Heading of the racing line at a progress, from the polyline tangent. */
+function routeHeadingAt(progress: number): number {
+  const here = sampleRouteLine(progress);
+  const ahead = sampleRouteLine(progress + 1 / Math.max(2, routeGeometry.points.length));
+  return Math.atan2(ahead.y - here.y, ahead.x - here.x);
+}
 const physicsProof = createShowcaseCannonPhysicsProof("turbo-drift-circuit");
 
 let raceSnapshot = racingState.snapshot();
 let opponentRaceStarted = false;
+/**
+ * Grounding facts observed across the whole session, not just the current frame.
+ *
+ * A single frame cannot prove the car never sinks; a session-wide maximum can.
+ */
+const observedVehicleGrounding = {
+  everUngrounded: false,
+  maxContactGap: 0,
+  pitchObserved: false,
+  rollObserved: false,
+  wheelSpinObserved: false,
+  suspensionMoved: false
+};
 const initialPlayerPose = racingScene.toScenePose(raceSnapshot);
 const initialOpponentPose = racingScene.toScenePose(opponentAi.snapshot(), 0.25);
 const racingCamera = game.racingCameraRig({
@@ -583,7 +753,18 @@ const mountedEvidence = {
   appId: "showcase-turbo-drift-circuit",
   status: "ready",
   controls: { keyboard: ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "KeyW", "KeyA", "KeyS", "KeyD", "KeyR"] },
-  systems: { input: "game.input", simulation: "game.racing", physics: "game.collisionWorld:cannon-es", geometry: "certified-racing-topology", camera: "game.racingCameraRig" },
+  systems: {
+    input: "game.input",
+    simulation: "game.racing",
+    physics: "game.collisionWorld:cannon-es",
+    geometry: "certified-racing-topology",
+    camera: "game.racingCameraRig",
+    // The two systems that replace route-local vehicle behaviour.
+    chassis: "engine.createVehicleChassis",
+    opponentDriver: "engine.createVehicleDriverAi"
+  },
+  /** Populated per frame; see `observedVehicleGrounding`. */
+  vehicleChassis: undefined as unknown,
   claimBoundary: "Bounded asset-topology racing presentation with route-selected cannon-es collision fidelity proof and a route-local deterministic opponent controller; no advanced vehicle dynamics, reusable racing AI, or automatic GLB-to-game claim.",
   frameCount: 0,
   speed: raceSnapshot.speed,
@@ -749,10 +930,18 @@ app.onFrame(({ dt }) => {
     mountedEvidence.diagnostics = app.diagnostics();
     const resetPose = racingScene.toScenePose(raceSnapshot);
     const resetOpponentPose = racingScene.toScenePose(resetOpponent, 0.25);
-    playerCar.setPosition(...resetPose.position);
-    playerCar.setRotation(...resetPose.rotation);
-    opponentCar.setPosition(...resetOpponentPose.position);
-    opponentCar.setRotation(...resetOpponentPose.rotation);
+    // Settle both chassis at rest so a reset car is grounded on its first frame
+    // rather than dropping onto the road.
+    const playerRest = playerChassis.reset({
+      x: resetPose.position[0], z: resetPose.position[2], heading: resetPose.rotation[1], speed: 0, steer: 0
+    });
+    const opponentRest = opponentChassis.reset({
+      x: resetOpponentPose.position[0], z: resetOpponentPose.position[2], heading: resetOpponentPose.rotation[1], speed: 0, steer: 0
+    });
+    playerCar.setPosition(playerRest.position[0], playerRest.position[1], playerRest.position[2]);
+    playerCar.setRotation(playerRest.rotation[0], playerRest.rotation[1], playerRest.rotation[2]);
+    opponentCar.setPosition(opponentRest.position[0], opponentRest.position[1], opponentRest.position[2]);
+    opponentCar.setRotation(opponentRest.rotation[0], opponentRest.rotation[1], opponentRest.rotation[2]);
     mountedEvidence.opponent = opponentAi.evidence(raceSnapshot.progress);
     updateRacingHud();
     return;
@@ -768,8 +957,26 @@ app.onFrame(({ dt }) => {
     steer: input.axis("steer")
   });
   const playerPose = racingScene.toScenePose(raceSnapshot);
-  playerCar.setPosition(...playerPose.position);
-  playerCar.setRotation(...playerPose.rotation);
+  /*
+   * The chassis resolves the car's height and attitude from the surface under each
+   * wheel. Previously the car's Y came straight from `TRACK_SURFACE_Y`, a literal that
+   * could not respond to the road and produced no pitch or roll -- the sinking, and
+   * the "sprite sliding on a plane" read at speed.
+   */
+  const playerChassisPose = playerChassis.step(step, {
+    x: playerPose.position[0],
+    z: playerPose.position[2],
+    // `toScenePose` yaws the model to face along the racing line; the chassis works in
+    // the same scene frame, so it takes that yaw directly.
+    heading: playerPose.rotation[1],
+    speed: raceSnapshot.speed,
+    steer: input.axis("steer"),
+    throttle: input.held("throttle") ? 1 : 0,
+    brake: input.held("brake") ? 1 : 0,
+    slip: Math.min(1, Math.abs(raceSnapshot.drift))
+  });
+  playerCar.setPosition(playerChassisPose.position[0], playerChassisPose.position[1], playerChassisPose.position[2]);
+  playerCar.setRotation(playerChassisPose.rotation[0], playerChassisPose.rotation[1], playerChassisPose.rotation[2]);
   // Drift feedback is driven by the kit's actual slip value plus real speed, not
   // by raw steering input: a stationary car turning its wheels must not smoke.
   const driftAmount = Math.min(1, Math.abs(raceSnapshot.drift));
@@ -799,8 +1006,19 @@ app.onFrame(({ dt }) => {
     ? opponentAi.step(step, raceSnapshot.progress)
     : previousOpponent;
   const opponentPose = racingScene.toScenePose(opponent, 0.25);
-  opponentCar.setPosition(...opponentPose.position);
-  opponentCar.setRotation(...opponentPose.rotation);
+  const opponentDriverInput = opponentAi.evidence(raceSnapshot.progress).input;
+  const opponentChassisPose = opponentChassis.step(step, {
+    x: opponentPose.position[0],
+    z: opponentPose.position[2],
+    heading: opponentPose.rotation[1],
+    speed: opponent.speed,
+    steer: opponentDriverInput.steer,
+    throttle: opponentDriverInput.throttle ? 1 : 0,
+    brake: opponentDriverInput.brake ? 1 : 0,
+    slip: Math.min(1, Math.abs(opponent.drift))
+  });
+  opponentCar.setPosition(opponentChassisPose.position[0], opponentChassisPose.position[1], opponentChassisPose.position[2]);
+  opponentCar.setRotation(opponentChassisPose.rotation[0], opponentChassisPose.rotation[1], opponentChassisPose.rotation[2]);
   mountedEvidence.status = raceSnapshot.status;
   mountedEvidence.frameCount = raceSnapshot.frame;
   mountedEvidence.speed = raceSnapshot.speed;
@@ -821,6 +1039,43 @@ app.onFrame(({ dt }) => {
   observedRenderedFeedback.highSpeedRendered ||= speedFraction > 0.6;
   observedRenderedFeedback.offTrackRendered ||= raceSnapshot.offTrack === true;
   mountedEvidence.observedRenderedFeedback = { ...observedRenderedFeedback };
+  /*
+   * Vehicle grounding evidence.
+   *
+   * Published so "the car is on the road" is a measured fact per frame rather than an
+   * opinion about a first-frame screenshot. `groundedWheels` and `maxContactGap` are
+   * exactly what a pixel metric cannot see: a car clipping through the tarmac has the
+   * same colour histogram as one sitting on it.
+   */
+  const chassisTelemetry = playerChassis.telemetry();
+  observedVehicleGrounding.everUngrounded ||= !playerChassisPose.grounded;
+  observedVehicleGrounding.maxContactGap = Math.max(observedVehicleGrounding.maxContactGap, chassisTelemetry.maxContactGap);
+  observedVehicleGrounding.pitchObserved ||= Math.abs(chassisTelemetry.pitch) > 0.004;
+  observedVehicleGrounding.rollObserved ||= Math.abs(chassisTelemetry.roll) > 0.004;
+  observedVehicleGrounding.wheelSpinObserved ||= chassisTelemetry.wheelSpinRate > 0.5;
+  observedVehicleGrounding.suspensionMoved ||=
+    Math.abs(chassisTelemetry.averageCompression - 0.5) > 0.01;
+  mountedEvidence.vehicleChassis = {
+    system: "engine.createVehicleChassis",
+    routePinsCarHeightToLiteral: false,
+    grounded: playerChassisPose.grounded,
+    groundedWheels: chassisTelemetry.groundedWheels,
+    maxContactGap: round(chassisTelemetry.maxContactGap),
+    pitch: round(chassisTelemetry.pitch),
+    roll: round(chassisTelemetry.roll),
+    wheelSpinRate: round(chassisTelemetry.wheelSpinRate),
+    steerAngle: round(chassisTelemetry.steerAngle),
+    averageCompression: round(chassisTelemetry.averageCompression),
+    surfaceGrip: round(chassisTelemetry.surfaceGrip),
+    wheels: playerChassisPose.wheels.map((wheel) => ({
+      id: wheel.id,
+      grounded: wheel.grounded,
+      contactGap: round(wheel.contactGap),
+      compression: round(wheel.compression),
+      steerAngle: round(wheel.steerAngle)
+    })),
+    observed: { ...observedVehicleGrounding }
+  };
   mountedEvidence.raceDesign.carAlignedToVisibleRoad = mountedEvidence.raceState.roadAlignment.onRoad;
   mountedEvidence.gameplay.carAlignedToVisibleRoad = mountedEvidence.raceState.roadAlignment.onRoad;
   mountedEvidence.gameplay.throttleChangesSpeed ||= Math.abs(raceSnapshot.speed) > Math.abs(previous.speed) + 0.001;

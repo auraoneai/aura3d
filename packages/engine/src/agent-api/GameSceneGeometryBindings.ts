@@ -139,6 +139,16 @@ export interface GameRacingSceneBinding {
   };
   toScenePoint(point: GameKitVec2, y?: number): Vec3;
   toScenePose(snapshot: Pick<GameRacingSnapshot, "position" | "heading">, y?: number): GameRacingScenePose;
+  /**
+   * Inverse of {@link toScenePoint}: scene XZ back to the game plane.
+   *
+   * Needed by anything that samples the track under a world-space point -- a vehicle
+   * chassis asking for the surface height under each wheel, for example. Without it a
+   * route has to reconstruct the transform itself from `transform` plus an offset the
+   * binding does not expose, which is how a route ends up with its own slightly
+   * different copy of the engine's coordinate mapping.
+   */
+  toGamePoint(x: number, z: number): GameKitVec2;
 }
 
 export interface GameRacingPresentationCameraOptions {
@@ -350,6 +360,13 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
       notes: topology.evidence.notes
     },
     toScenePoint,
+    toGamePoint(x, z) {
+      const scale = transform.scale === 0 ? 1 : transform.scale;
+      return {
+        x: (x - transform.offsetX - trackModelSceneOffset.x) / scale,
+        y: (z - transform.offsetZ - trackModelSceneOffset.z) / scale
+      };
+    },
     toScenePose(snapshot, y = carY) {
       return {
         position: toScenePoint(snapshot.position, y),

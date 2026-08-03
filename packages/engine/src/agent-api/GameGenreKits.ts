@@ -1,3 +1,8 @@
+
+import {
+  validatePlatformerMotion,
+  type PlatformerMotionReport
+} from "./PlatformerMotion.js";
 export interface GameKitVec2 {
   readonly x: number;
   readonly y: number;
@@ -528,6 +533,15 @@ export interface GameAssetBoundPlatformerLevelBinding {
   readonly traversalSeconds: number;
   readonly surfaceCount: number;
   readonly checkpointCount: number;
+  /**
+   * Consistency of the level's motion tuning with its own platform geometry.
+   *
+   * Published so a floaty or unclearable jump is visible in evidence rather than only
+   * discoverable by playing. A level can be perfectly solvable and still feel wrong: an
+   * over-powered jump clears every obstacle, so solvability passes while the character
+   * visibly floats above the course.
+   */
+  readonly motionReport: PlatformerMotionReport;
 }
 
 export interface GameAssetBoundPlatformerLevel extends GamePlatformerLevel {
@@ -544,6 +558,16 @@ export interface GameAssetBoundPlatformerLevelOptions {
   readonly minPlayableSeconds?: number;
   readonly minCheckpoints?: number;
   readonly minSurfaceCount?: number;
+  /**
+   * Whether inconsistent motion tuning throws or is only reported.
+   *
+   * `"enforced"` (the default) refuses to build a public level whose jump overshoots or
+   * cannot clear its own geometry. `"reported"` keeps the report without throwing, for a
+   * route deliberately mid-migration.
+   */
+  readonly motionTuning?: "enforced" | "reported";
+  /** Overrides for the motion-vs-geometry limits. */
+  readonly motionLimits?: Parameters<typeof validatePlatformerMotion>[2];
 }
 
 export interface GameRacingInput {
@@ -973,6 +997,39 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
   const worldAssetHashes = Object.fromEntries(options.worldAssetBindings
     .filter((binding) => typeof binding.worldAssetHash === "string")
     .map((binding) => [binding.worldAsset, binding.worldAssetHash as string]));
+
+  /*
+   * Motion must be consistent with the geometry the level ships.
+   *
+   * Nothing previously related jump tuning to platform spacing, so a level could ship a
+   * jump that overshoots its own course by several times and every gate still passed:
+   * the level is solvable (an over-powered jump clears everything), the screenshots look
+   * correct, and no check compared apex height to step height. Skyline shipped
+   * `jumpVelocity: 7.4` with the default `gravity: -22` -- a 1.245-unit apex over
+   * 0.216-unit steps -- which is the reported floating, the unreliable landings, and the
+   * platforms reading as disconnected strips.
+   *
+   * Public asset-bound levels are therefore validated here. `motionTuning: "reported"`
+   * keeps the report without throwing, for a route that is deliberately mid-migration.
+   */
+  const motionReport = validatePlatformerMotion(
+    platforms,
+    {
+      gravity: level.gravity ?? DEFAULT_PLATFORMER_LEVEL.gravity,
+      jumpVelocity: level.jumpVelocity ?? DEFAULT_PLATFORMER_LEVEL.jumpVelocity,
+      moveSpeed
+    },
+    options.motionLimits ?? {}
+  );
+  if (!motionReport.passes && (options.motionTuning ?? "enforced") === "enforced") {
+    const failures = motionReport.checks.filter((check) => !check.passes);
+    throw new Error(
+      `game.assetBoundPlatformerLevel motion tuning is inconsistent with the level geometry: ${
+        failures.map((check) => `${check.id} (${check.detail})`).join("; ")
+      }. Suggested fix: derive gravity, jumpVelocity and moveSpeed with solvePlatformerMotion(level.platforms, { targetSessionSeconds }).`
+    );
+  }
+
   return {
     ...level,
     assetBinding: {
@@ -985,7 +1042,9 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
       authoredPlayableSeconds,
       traversalSeconds,
       surfaceCount: platforms.length,
-      checkpointCount: checkpoints.length
+      checkpointCount: checkpoints.length,
+      /** Motion-vs-geometry consistency, so a floaty jump is visible in evidence. */
+      motionReport
     }
   };
 }

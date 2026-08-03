@@ -306,9 +306,26 @@ h1 {
   position: fixed;
   inset: auto 16px 24px;
   display: none;
+  /*
+   * Wraps so the session cluster (pause/reset/replay) sits on its own row on narrow
+   * screens instead of squeezing the movement clusters. All three clusters must stay
+   * reachable: hiding session controls on mobile left the game unpausable.
+   */
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 12px;
   pointer-events: none;
+}
+
+.touch-cluster--session {
+  /* Full-width row beneath the movement clusters. */
+  flex: 1 0 100%;
+  justify-content: center;
+  order: 2;
+}
+
+.touch-cluster--session button {
+  min-width: 84px;
 }
 
 .touch-cluster {

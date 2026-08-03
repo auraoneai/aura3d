@@ -62,6 +62,19 @@ import {
   boundsMaxDimension,
   boundsSize
 } from "./SceneGroundingUtils.js";
+import {
+  createWorldLabelLayer,
+  type ProjectedLabel,
+  type WorldLabel,
+  type WorldLabelLayer
+} from "./WorldLabelRenderer.js";
+
+export * from "./SpatialAnchoring.js";
+export * from "./FocusSelection.js";
+export * from "./WorldLabelRenderer.js";
+export * from "./VehicleChassis.js";
+export * from "./VehicleDriverAi.js";
+export * from "./PlatformerMotion.js";
 
 export * from "./FrameEncoder.js";
 export * from "./BrowserFrameCaptureAdapter.js";
@@ -1265,6 +1278,17 @@ export interface AuraLabelNode extends AuraTransformSpec {
   readonly name?: string;
   readonly text: string;
   readonly target?: string;
+  /**
+   * World point the label is attached to.
+   *
+   * `position` is where the label box sits; `anchorWorldPosition` is what a
+   * leader line points at. When omitted the label anchors to its own position.
+   * Both are projected every frame by the world-label layer, so a label tracks
+   * its subject as the camera moves.
+   */
+  readonly anchorWorldPosition?: AuraVec3;
+  /** Behaviour when the anchor projects outside the viewport. Defaults to "clamp". */
+  readonly offscreenPolicy?: "hide" | "clamp" | "draw";
   readonly color?: AuraColor;
   readonly background?: AuraColor;
   readonly size?: number;
@@ -9057,6 +9081,15 @@ export interface AuraDiagnostics {
   readonly renderer?: AuraRendererDiagnosticReport;
   readonly warnings: readonly string[];
   readonly errors: readonly string[];
+  /**
+   * Labels the world-label layer actually placed on screen this frame, with their
+   * projected pixel positions and visibility.
+   *
+   * This distinguishes "a label node exists in the scene" from "a label is drawn
+   * where the user can read it". Every production callout was silently dropped
+   * while evidence counted the nodes, so the counted-node signal is not enough.
+   */
+  readonly labels?: readonly ProjectedLabel[];
 }
 
 export interface AuraAssetProvenance {
@@ -10089,6 +10122,69 @@ function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | Aur
   return isRenderableModelNode(node) || node.kind === "primitive";
 }
 
+/**
+ * Translate scene label nodes into world-anchored labels for the label layer.
+ *
+ * `labels.callout(...)` and friends previously reached the scene snapshot and were
+ * counted by evidence but drawn only by the canvas2d fallback. Every route with a
+ * typed GLB takes the production WebGL2 path, so every production callout was
+ * silently dropped. This is the bridge that makes the public label API real in the
+ * path public routes actually use.
+ */
+function worldLabelsFromSnapshot(snapshot: AuraSceneSnapshot, runtimeNodes?: AuraRuntimeNodeRegistry): readonly WorldLabel[] {
+  const labelNodes = groups.flatten(snapshot.nodes).filter((node): node is AuraLabelNode => node.kind === "label");
+  return labelNodes.map((node, index) => {
+    const runtimeId = node.runtime?.id;
+    const runtimeSnapshot = runtimeId ? runtimeNodes?.get(runtimeId)?.snapshot() : undefined;
+    if (runtimeSnapshot?.visible === false) {
+      return {
+        id: node.name ?? `${node.label}-${index + 1}`,
+        text: node.text,
+        anchor: [0, 0, 0] as const,
+        offscreenPolicy: "hide" as const
+      };
+    }
+    const position = (runtimeSnapshot?.position ?? node.position ?? labelDefaultPosition(node)) as AuraVec3;
+    const anchor = node.anchorWorldPosition ?? position;
+    // Screen offset is derived from the gap between the label box and its anchor,
+    // projected as a vertical nudge. A label that requests no separate anchor sits
+    // directly on its own position.
+    const separated = node.anchorWorldPosition !== undefined;
+    return {
+      id: node.name ?? `${node.label}-${index + 1}`,
+      text: node.text,
+      anchor: [position[0], position[1], position[2]] as const,
+      leaderAnchor: [anchor[0], anchor[1], anchor[2]] as const,
+      screenOffset: separated ? ([0, 0] as const) : ([0, -26] as const),
+      color: typeof node.color === "string" ? node.color : undefined,
+      background: typeof node.background === "string" ? node.background : undefined,
+      // `size` is authored in world units for scene labels; map it onto a legible
+      // pixel range rather than using it directly as a font size.
+      fontSize: Math.max(11, Math.min(26, Math.round((node.size ?? 0.34) * 46))),
+      leader: node.leader === true,
+      offscreenPolicy: node.offscreenPolicy ?? (node.label === "hud" ? "draw" : "clamp"),
+      ...(node.label === "hud" && node.screenAnchor ? { screenAnchor: node.screenAnchor } : {}),
+      ...(node.label === "hud" && !node.screenAnchor ? { screenAnchor: "top-left" as const } : {})
+    } satisfies WorldLabel & { readonly leaderAnchor?: readonly [number, number, number] };
+  });
+}
+
+/**
+ * Mount the world-label layer for a canvas, if the scene has any label nodes.
+ *
+ * Returns `undefined` in headless or label-free scenes so nothing is created that
+ * would then need disposing.
+ */
+function createSceneLabelLayer(
+  canvas: HTMLCanvasElement | undefined,
+  snapshot: AuraSceneSnapshot
+): WorldLabelLayer | undefined {
+  if (!canvas || typeof document === "undefined") return undefined;
+  const hasLabels = groups.flatten(snapshot.nodes).some((node) => node.kind === "label");
+  if (!hasLabels) return undefined;
+  return createWorldLabelLayer({ container: canvas.parentElement ?? document.body, canvas });
+}
+
 async function startProductionRender(
   canvas: HTMLCanvasElement,
   snapshot: AuraSceneSnapshot,
@@ -10110,6 +10206,7 @@ async function startProductionRender(
   const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes);
   diagnosticsState.renderer = renderer.diagnostics;
   const continuousRender = shouldContinuouslyRender(snapshot);
+  const labelLayer = createSceneLabelLayer(canvas, snapshot);
 
   let disposed = false;
   let animationHandle = 0;
@@ -10126,6 +10223,13 @@ async function startProductionRender(
     diagnosticsState.renderSize = [canvas.width, canvas.height];
     diagnosticsState.evidence = collectAuraSceneEvidence(snapshot);
     diagnosticsState.renderer = renderer.diagnostics;
+    if (labelLayer) {
+      // Reproject every frame against the renderer's own camera so labels track
+      // their anchors while the camera moves.
+      labelLayer.setLabels(worldLabelsFromSnapshot(snapshot, runtimeNodes));
+      labelLayer.update(renderer.viewProjection(time));
+      diagnosticsState.labels = labelLayer.snapshot();
+    }
     overlay?.update();
     if (continuousRender && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
       animationHandle = requestAnimationFrame(renderFrame);
@@ -10141,6 +10245,7 @@ async function startProductionRender(
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      labelLayer?.dispose();
       renderer.dispose();
     }
   };
@@ -10856,6 +10961,9 @@ async function createProductionRuntimeSceneRenderer(
       latestFeatures = result.features;
       return latestDeviceDiagnostics.drawCalls;
     },
+    viewProjection(time) {
+      return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
+    },
     dispose() {
       productionRenderer.dispose();
       for (const { actor } of actorEntries) actor.pipeline.dispose();
@@ -11504,6 +11612,14 @@ interface WebGLSceneRenderer {
   readonly backend: AuraBackend;
   readonly diagnostics: AuraRendererDiagnosticReport;
   render(time: number): number;
+  /**
+   * View-projection matrix for a frame.
+   *
+   * Exposed so the world-label layer projects labels with the *same* camera the
+   * renderer drew with. Recomputing it independently is how a label layer drifts
+   * away from the geometry it annotates.
+   */
+  viewProjection(time: number): Float32Array;
   dispose(): void;
 }
 
@@ -11836,6 +11952,9 @@ async function createWebGLSceneRenderer(
         }
       }
       return drawCalls;
+    },
+    viewProjection(time) {
+      return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
     },
     dispose() {
       for (const modelEntry of models) {
@@ -13630,6 +13749,14 @@ interface MutableDiagnostics {
   renderer: AuraRendererDiagnosticReport;
   warnings: string[];
   errors: string[];
+  /**
+   * Last projected label set.
+   *
+   * Reported as diagnostics so a test can assert a callout was *placed on screen*
+   * rather than merely present in the scene graph. Counting label nodes is what
+   * let every production callout go missing while reports stayed green.
+   */
+  labels?: readonly ProjectedLabel[];
 }
 
 function createInitialDiagnostics(snapshot: AuraSceneSnapshot, rendererOptions?: AuraCreateAppRendererOptions): MutableDiagnostics {
@@ -13656,7 +13783,8 @@ function snapshotDiagnostics(value: MutableDiagnostics): AuraDiagnostics {
     evidence: value.evidence,
     renderer: value.renderer,
     warnings: [...value.warnings],
-    errors: [...value.errors]
+    errors: [...value.errors],
+    ...(value.labels ? { labels: value.labels } : {})
   };
 }
 

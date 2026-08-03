@@ -161,6 +161,17 @@ ui.html(
       <button type="button" data-touch-action="hold">Hold</button>
       <button type="button" data-touch-action="drop">Drop</button>
     </div>
+    <!--
+      Session controls belong in the touch layout too. The mobile stylesheet hides
+      the desktop action grid, which left pause, reset and replay unreachable on a
+      phone: the game could be started but never paused or restarted. Touch and
+      desktop must expose equivalent interactions.
+    -->
+    <div class="touch-cluster touch-cluster--session" aria-label="Session controls">
+      <button type="button" data-touch-action="pause">Pause</button>
+      <button type="button" data-touch-action="reset">Reset</button>
+      <button type="button" data-touch-action="replay">Replay</button>
+    </div>
   `
 );
 
@@ -1172,10 +1183,27 @@ function installDomControls(): void {
     drop: { type: "hardDrop" }
   };
 
+  // Session actions share the desktop handlers so touch and desktop cannot drift.
+  const touchSessionActions: Record<string, () => void> = {
+    pause: () => queueManualAction({ type: "pause" }),
+    reset: () => {
+      replayPlayback = { active: false, frame: 0 };
+      queuedActions = [{ type: "reset", seed: DEFAULT_SEED }];
+      focusGame();
+    },
+    replay: () => startReplayPlayback()
+  };
+
   document.querySelectorAll<HTMLButtonElement>("[data-touch-action]").forEach((button) => {
     button.addEventListener("pointerdown", (event) => {
       event.preventDefault();
-      const action = touchActionMap[button.dataset.touchAction ?? ""];
+      const key = button.dataset.touchAction ?? "";
+      const session = touchSessionActions[key];
+      if (session) {
+        session();
+        return;
+      }
+      const action = touchActionMap[key];
       if (action) queueManualAction(action);
     });
   });

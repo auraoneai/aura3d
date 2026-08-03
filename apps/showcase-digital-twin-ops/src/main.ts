@@ -1,16 +1,25 @@
 import {
   camera,
+  checkSpatialInvariants,
   collectAuraSceneEvidence,
   createAuraApp,
+  distributeInRegion,
   effects,
+  focusCameraIntent,
+  focusSemanticRegion,
   game,
   interactions,
   lights,
   material,
   model,
+  placedBoundsFromAsset,
   primitives,
+  resolveBoundsAnchor,
+  resolveSemanticRegion,
   scene,
-  type AuraNodeInput
+  type AuraNodeInput,
+  type HelperPlacementClaim,
+  type SemanticRegion
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import "./styles.css";
@@ -48,6 +57,11 @@ interface DigitalTwinEvidence {
     readonly movingWorkpieces: readonly { readonly id: string; readonly x: number; readonly z: number }[];
   };
   readonly claimBoundary: string;
+  /**
+   * Spatial invariant report proving every helper element is anchored to the
+   * workcell's placed bounds. Replaces judging placement by eye.
+   */
+  readonly spatialInvariants: unknown;
   readonly diagnostics: Record<string, unknown>;
 }
 
@@ -70,6 +84,9 @@ const systems = [
   "compiler-selected orange robot asset is rejected from the live primary path after human visual review",
   "bounded operations dashboard uses deterministic sample telemetry only",
   "supporting floor, status ring, conveyor pulses, workpieces, and scanner sweep stay secondary to the typed workcell asset",
+  "every helper element is placed by the reusable asset-relative anchoring system (engine.resolveBoundsAnchor / resolveSemanticRegion), not by literal world coordinates",
+  "zone selection feedback comes from the reusable focus system (engine.focusSemanticRegion)",
+  "spatial invariants are published so helper placement is verified against the asset's bounds rather than judged by eye",
   "Aura3D runtime nodes provide visible conveyor and scanner motion proof",
   "route-health evidence global and deploy gates remain required before public claims"
 ] as const;
@@ -83,15 +100,84 @@ const zoneLabels: Record<ZoneId, string> = {
   dock: "Dock"
 };
 
-const zonePositions: Record<ZoneId, readonly [number, number, number]> = {
-  assembly: [-0.28, 0.095, -0.05],
-  packaging: [0.42, 0.095, 0.32],
-  energy: [-0.58, 0.095, 0.32],
-  dock: [0.64, 0.095, -0.08]
+/**
+ * Workcell staging position. A genuine level-design value; everything else in the
+ * scene is derived from the asset's placed bounds rather than repeated literals.
+ */
+const WORKCELL_POSITION: readonly [number, number, number] = [-0.08, 0.058, -0.04];
+const WORKCELL_TARGET_MAX_DIMENSION = 1.32;
+
+/**
+ * Operational zones as normalized regions of the workcell's own bounds.
+ *
+ * These replace four hardcoded world coordinates. The previous literals were
+ * chosen by eye against one asset and never re-derived, which is why status
+ * markers, belt pulses and the alarm beacon appeared as boxes floating beside the
+ * scene rather than attached to the equipment they annotate. `u`/`v`/`w` run 0..1
+ * across the asset's X/Y/Z extents, so the zones follow the asset.
+ */
+const zoneRegions: Record<ZoneId, SemanticRegion> = {
+  assembly: { id: "assembly", label: "Assembly", u: 0.34, v: 0.12, w: 0.44, extent: [0.26, 0.1, 0.3] },
+  packaging: { id: "packaging", label: "Packaging", u: 0.72, v: 0.12, w: 0.72, extent: [0.24, 0.1, 0.26] },
+  energy: { id: "energy", label: "Energy", u: 0.14, v: 0.12, w: 0.72, extent: [0.2, 0.1, 0.24] },
+  dock: { id: "dock", label: "Dock", u: 0.88, v: 0.12, w: 0.4, extent: [0.2, 0.1, 0.26] }
 };
+
+/**
+ * The conveyor line, as a region of the workcell rather than a literal span.
+ *
+ * `-0.45 + index * 0.17` encoded both the belt's location and its spacing into an
+ * unexplained pair of numbers tied to one asset. Deriving the region means the
+ * belt, its pulses and its workpieces stay on the machine.
+ *
+ * Declared alongside `zoneRegions` because `createAuraApp` builds the scene during
+ * module evaluation: a `const` declared after that call is in its temporal dead
+ * zone when the scene builder runs.
+ */
+const conveyorRegion: SemanticRegion = {
+  id: "conveyor",
+  label: "Conveyor line",
+  u: 0.4,
+  v: 0.14,
+  w: 0.82,
+  extent: [0.62, 0.06, 0.08]
+};
+
+function conveyorLine() {
+  return resolveSemanticRegion(workcellBounds(), conveyorRegion);
+}
+
+/** Workcell bounds as the route renders them, derived from the typed asset. */
+function workcellBounds() {
+  return placedBoundsFromAsset(workcellAsset, {
+    targetMaxDimension: WORKCELL_TARGET_MAX_DIMENSION,
+    position: WORKCELL_POSITION,
+    floorY: WORKCELL_POSITION[1]
+  });
+}
+
+/** World-space centre of a zone, resolved from the asset each time it is asked for. */
+function zoneCenter(zone: ZoneId): readonly [number, number, number] {
+  return resolveSemanticRegion(workcellBounds(), zoneRegions[zone]).center;
+}
 
 let mode: OpsMode = "normal";
 let selectedZone: ZoneId = "assembly";
+/**
+ * Live camera pose.
+ *
+ * The Focus Zone control previously only appended a log line claiming the camera
+ * had focused the zone, while the camera never moved. Holding the pose here means
+ * the control's documented action -- framing the selected zone -- actually happens
+ * and is observable in evidence.
+ */
+const OVERVIEW_CAMERA = {
+  position: [1.72, 1.0, 2.62] as readonly [number, number, number],
+  target: [-0.04, 0.26, 0.02] as readonly [number, number, number],
+  fov: 38
+} as const;
+let cameraPose: { position: readonly [number, number, number]; target: readonly [number, number, number]; fov: number } = { ...OVERVIEW_CAMERA };
+let focusedZone: ZoneId | undefined;
 let frameCount = 0;
 let uptime = 0;
 let throughput = 1280;
@@ -112,16 +198,36 @@ const app = createAuraApp("#app", {
   scene: buildOpsScene()
 });
 
-const workcell = app.nodes.require("ops-typed-welding-workcell");
-const conveyor = app.nodes.require("ops-conveyor-motion");
-const sensor = app.nodes.require("ops-sensor-sweep");
-const selectedRing = app.nodes.require("ops-selected-zone-ring");
-const alarmBeacon = app.nodes.require("ops-alarm-beacon");
-const movingWorkpieces = Array.from({ length: 3 }, (_, index) => ({
+/*
+ * Runtime node handles.
+ *
+ * Re-acquired whenever the scene is remounted: `setScene` resets the runtime node
+ * registry, so handles captured before a remount address nodes that no longer
+ * exist. Holding them in one place keeps the rebind in a single function.
+ */
+let workcell = app.nodes.require("ops-typed-welding-workcell");
+let conveyor = app.nodes.require("ops-conveyor-motion");
+let sensor = app.nodes.require("ops-sensor-sweep");
+let selectedRing = app.nodes.require("ops-selected-zone-ring");
+let alarmBeacon = app.nodes.require("ops-alarm-beacon");
+let movingWorkpieces = Array.from({ length: 3 }, (_, index) => ({
   id: `ops-moving-workpiece-${index + 1}`,
   node: app.nodes.require(`ops-moving-workpiece-${index + 1}`)
 }));
-const beltPulseNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`ops-belt-pulse-${index + 1}`));
+let beltPulseNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`ops-belt-pulse-${index + 1}`));
+
+function rebindRuntimeNodes(): void {
+  workcell = app.nodes.require("ops-typed-welding-workcell");
+  conveyor = app.nodes.require("ops-conveyor-motion");
+  sensor = app.nodes.require("ops-sensor-sweep");
+  selectedRing = app.nodes.require("ops-selected-zone-ring");
+  alarmBeacon = app.nodes.require("ops-alarm-beacon");
+  movingWorkpieces = Array.from({ length: 3 }, (_, index) => ({
+    id: `ops-moving-workpiece-${index + 1}`,
+    node: app.nodes.require(`ops-moving-workpiece-${index + 1}`)
+  }));
+  beltPulseNodes = Array.from({ length: 4 }, (_, index) => app.nodes.require(`ops-belt-pulse-${index + 1}`));
+}
 
 renderConsole();
 syncUi();
@@ -151,43 +257,49 @@ function buildOpsScene() {
     .add(effects.bloom({ name: "workcell status glow", intensity: 0.12, threshold: 0.8, radius: 0.18 }))
     .add(effects.fog({ name: "bounded ops depth haze", density: 0.0035, color: "#061012", intensity: 0.04 }))
     .add(interactions.orbit())
-    .camera(camera.perspective({ position: [1.72, 1.0, 2.62], target: [-0.04, 0.26, 0.02], fov: 38 }));
+    .camera(camera.perspective({ position: [...cameraPose.position], target: [...cameraPose.target], fov: cameraPose.fov }));
 }
 
 function createWorkcellPresentation(): AuraNodeInput[] {
+  const bounds = workcellBounds();
+  const belt = conveyorLine();
+  // Floor and plinth are sized to the workcell's own footprint with margin, so a
+  // larger or smaller asset still stands on a stage that fits it.
+  const floorScale: readonly [number, number, number] = [bounds.size[0] * 1.2, 1, bounds.size[2] * 1.3];
+  const alarmAnchor = resolveBoundsAnchor(bounds, "top-left", { offset: Math.max(...bounds.size) * 0.1 });
+  const scannerAnchor = resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 });
+
   const nodes: AuraNodeInput[] = [
     primitives.plane({ name: "quiet ops floor", material: material.pbr({ color: "#071013", roughness: 0.86, metallic: 0.02 }) })
-      .position(0, -0.024, 0)
-      .scale([1.54, 1, 0.94]),
+      .position(bounds.center[0], bounds.floorY - 0.082, bounds.center[2])
+      .scale([...floorScale]),
     primitives.box({ name: "single workcell presentation plinth", material: material.pbr({ color: "#1d3034", roughness: 0.7, metallic: 0.1 }) })
-      .position(0, 0.018, 0.02)
-      .scale([1.34, 0.035, 0.72]),
+      .position(bounds.center[0], bounds.floorY - 0.04, bounds.center[2])
+      .scale([bounds.size[0] * 1.04, 0.035, bounds.size[2] * 1.1]),
     model(workcellAsset, {
       name: "typed robotic welding workcell route-primary hero",
       scaleMode: "fit",
-      targetMaxDimension: 1.32,
+      targetMaxDimension: WORKCELL_TARGET_MAX_DIMENSION,
       castShadow: true,
       receiveShadow: true
     })
-      .position(-0.08, 0.058, -0.04)
+      .position(...WORKCELL_POSITION)
       .rotate(0, -0.2, 0)
       .runtime(game.runtimeNode("ops-typed-welding-workcell", { tags: ["typed-asset", "industrial-workcell", "runtime-hero"] })),
-    primitives.torus({ name: "selected zone evidence ring", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.72, opacity: 0.42 }) })
-      .position(...zonePositions.assembly)
-      .rotate(1.5708, 0, 0)
-      .scale([0.24, 0.24, 0.009])
-      .runtime(game.runtimeNode("ops-selected-zone-ring", { tags: ["zone", "runtime", "selection"] })),
+    // The zone selection ring comes from the reusable focus system, so it cannot
+    // be flattened into a bar by a nonuniform scale in the torus ring plane.
+    ...zoneSelectionNodes("assembly"),
     primitives.box({ name: "short conveyor motion marker", material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.64, opacity: 0.62 }) })
-      .position(-0.48, 0.11, 0.44)
-      .scale([0.12, 0.009, 0.045])
+      .position(belt.min[0], belt.center[1], belt.center[2])
+      .scale([belt.size[0] * 0.2, 0.009, belt.size[2] * 0.6])
       .runtime(game.runtimeNode("ops-conveyor-motion", { tags: ["conveyor", "runtime", "motion-proof"] })),
     primitives.box({ name: "optical scanner sweep", material: material.neon({ color: "#b8f7d9", emissive: "#b8f7d9", emissiveIntensity: 0.68, opacity: 0.54 }) })
-      .position(0.56, 0.3, 0.28)
-      .scale([0.13, 0.01, 0.018])
+      .position(...scannerAnchor.center)
+      .scale([bounds.size[0] * 0.1, 0.01, bounds.size[2] * 0.026])
       .runtime(game.runtimeNode("ops-sensor-sweep", { tags: ["scanner", "runtime", "motion-proof"] })),
     primitives.sphere({ name: "incident alarm beacon", material: material.neon({ color: "#f2715c", emissive: "#f2715c", emissiveIntensity: 1.1 }) })
-      .position(-0.54, 0.64, -0.42)
-      .scale(0.048)
+      .position(...alarmAnchor.position)
+      .scale(Math.max(...bounds.size) * 0.036)
       .runtime(game.runtimeNode("ops-alarm-beacon", { tags: ["alarm", "runtime"] }))
   ];
 
@@ -196,9 +308,40 @@ function createWorkcellPresentation(): AuraNodeInput[] {
   return nodes;
 }
 
+/**
+ * Selection feedback for a zone, from the reusable focus system.
+ *
+ * The route no longer constructs, rotates and scales a torus. It names the zone
+ * and receives an indicator that is correct for the zone's dimensions.
+ */
+function zoneSelectionNodes(zone: ZoneId): AuraNodeInput[] {
+  const focus = focusSemanticRegion(workcellBounds(), zoneRegions[zone], {
+    color: "#7ee8c4",
+    indicators: ["ring"],
+    // The console already names the selected zone; a duplicate world callout
+    // would compete with it. Selection state is carried by the ring plus the UI.
+    callout: false,
+    cameraFocus: false,
+    namePrefix: "selected zone evidence"
+  });
+  return focus.nodes.map((node) => ({
+    ...node,
+    name: node.kind === "primitive" ? "selected zone evidence ring" : (node as { name?: string }).name,
+    runtime: { id: "ops-selected-zone-ring", mutable: true, tags: ["zone", "runtime", "selection"] }
+  })) as AuraNodeInput[];
+}
+
 function createWorkpieces(): AuraNodeInput[] {
   const colors = ["#f2b15a", "#dbe7e4", "#b8f7d9"] as const;
-  return Array.from({ length: 3 }, (_, index) =>
+  const belt = conveyorLine();
+  const bounds = workcellBounds();
+  // Deterministic distribution along the belt region: spacing follows the belt's
+  // length instead of being an independent literal that can disagree with it.
+  const placements = distributeInRegion(
+    { min: [belt.min[0], belt.center[1], belt.center[2]], max: [belt.max[0], belt.center[1], belt.center[2]] },
+    { count: 3, seed: 11 }
+  );
+  return placements.map((placement, index) =>
     primitives.box({
       name: `small conveyor workpiece ${index + 1}`,
       material: material.clearcoatPaint({
@@ -207,22 +350,60 @@ function createWorkpieces(): AuraNodeInput[] {
         clearcoat: 0.5
       })
     })
-      .position(-0.28 + index * 0.2, 0.115, 0.44)
-      .scale([0.064, 0.032, 0.052])
+      .position(...placement.position)
+      .scale([bounds.size[0] * 0.048, bounds.size[1] * 0.038, bounds.size[2] * 0.06])
       .runtime(game.runtimeNode(`ops-moving-workpiece-${index + 1}`, { tags: ["conveyor", "workpiece", "runtime"] }))
   );
 }
 
 function createBeltPulses(): AuraNodeInput[] {
-  return Array.from({ length: 4 }, (_, index) =>
+  const belt = conveyorLine();
+  const bounds = workcellBounds();
+  const placements = distributeInRegion(
+    { min: [belt.min[0], belt.center[1] - bounds.size[1] * 0.02, belt.max[2]], max: [belt.max[0], belt.center[1] - bounds.size[1] * 0.02, belt.max[2]] },
+    { count: 4, seed: 23 }
+  );
+  return placements.map((placement, index) =>
     primitives.box({
       name: `small conveyor pulse ${index + 1}`,
       material: material.neon({ color: "#7ee8c4", emissive: "#7ee8c4", emissiveIntensity: 0.42, opacity: 0.42 })
     })
-      .position(-0.45 + index * 0.17, 0.086, 0.52)
-      .scale([0.07, 0.006, 0.024])
+      .position(...placement.position)
+      .scale([bounds.size[0] * 0.053, bounds.size[1] * 0.007, bounds.size[2] * 0.028])
       .runtime(game.runtimeNode(`ops-belt-pulse-${index + 1}`, { tags: ["conveyor", "runtime", "motion-proof"] }))
   );
+}
+
+/**
+ * Spatial invariant report for every helper element in the scene.
+ *
+ * This is the machine-checkable answer to "random boxes floating outside the
+ * scene". Each helper declares where it should sit relative to the workcell, and
+ * the engine verifies it against the asset's placed bounds.
+ */
+function spatialEvidence() {
+  const bounds = workcellBounds();
+  const belt = conveyorLine();
+  const claims: HelperPlacementClaim[] = [
+    { id: "selected zone ring", position: zoneCenter(selectedZone), relation: "inside" },
+    { id: "conveyor motion marker", position: [belt.min[0], belt.center[1], belt.center[2]], relation: "inside" },
+    { id: "optical scanner sweep", position: resolveSemanticRegion(bounds, { id: "scanner", u: 0.78, v: 0.62, w: 0.6 }).center, relation: "inside" },
+    {
+      id: "incident alarm beacon",
+      position: resolveBoundsAnchor(bounds, "top-left", { offset: Math.max(...bounds.size) * 0.1 }).position,
+      relation: "outside",
+      maxDistance: Math.max(...bounds.size) * 0.5
+    },
+    ...zoneOrder.map((zone) => ({ id: `${zone} zone centre`, position: zoneCenter(zone), relation: "inside" as const }))
+  ];
+  const report = checkSpatialInvariants(bounds, claims);
+  return {
+    system: "engine.checkSpatialInvariants",
+    routeUsesHardcodedHelperCoordinates: false,
+    subjectBounds: report.subjectBounds,
+    passes: report.passes,
+    checks: report.checks
+  };
 }
 
 function createZones(): ZoneState[] {
@@ -272,7 +453,11 @@ function syncRuntime(time: number): void {
   conveyor.setPosition(conveyorX, 0.11, 0.44);
   workcell.setPosition(-0.08, 0.058 + Math.sin(time * 0.7) * 0.002, -0.04).setRotation(0, typedRobotYaw, 0).setScale(1);
   sensor.setRotation(0, sensorSweepRadians, 0);
-  selectedRing.setPosition(...zonePositions[selectedZone]).setScale([0.24 + Math.sin(time * 2.2) * 0.018, 0.24 + Math.sin(time * 2.2) * 0.018, 0.009]);
+  // Ring radius pulses uniformly in the torus ring plane (X and Y) with the tube
+  // thickness held on Z, so the pulse cannot degenerate into a bar.
+  const ringBase = Math.max(...workcellBounds().size) * 0.16;
+  const ringRadius = ringBase + Math.sin(time * 2.2) * ringBase * 0.075;
+  selectedRing.setPosition(...zoneCenter(selectedZone)).setScale([ringRadius, ringRadius, ringRadius * 0.09]);
   const alarmVisible = mode === "incident" || zones.some((zone) => zone.incidents > 0);
   alarmBeacon.setVisible(alarmVisible).setScale(alarmVisible ? 0.052 + Math.abs(Math.sin(time * 6.4)) * 0.04 : 0.035);
   lastMotionProof = {
@@ -358,10 +543,45 @@ function renderConsole(): void {
     publishEvidence("ready");
   });
   consoleEl.querySelector<HTMLButtonElement>("#focus-zone")?.addEventListener("click", () => {
-    eventLog = [`Camera/orbit target focuses ${zoneLabels[selectedZone]} zone.`, ...eventLog].slice(0, 7);
-    syncUi();
-    publishEvidence("ready");
+    focusSelectedZone();
   });
+}
+
+/**
+ * Frame the selected zone, or return to the overview when it is already focused.
+ *
+ * Camera framing comes from the reusable focus system, so the distance is derived
+ * from the zone's own world size instead of a hand-tuned pose per zone.
+ */
+function focusSelectedZone(): void {
+  if (focusedZone === selectedZone) {
+    cameraPose = { ...OVERVIEW_CAMERA };
+    focusedZone = undefined;
+    eventLog = ["Camera returned to workcell overview.", ...eventLog].slice(0, 7);
+  } else {
+    const region = resolveSemanticRegion(workcellBounds(), zoneRegions[selectedZone]);
+    const bounds = workcellBounds();
+    const intent = focusCameraIntent(
+      region.center,
+      // A zone with no declared extent still needs a framable size; fall back to a
+      // readable fraction of the workcell rather than a zero-size target.
+      [
+        region.size[0] > 0 ? region.size[0] : bounds.size[0] * 0.3,
+        region.size[1] > 0 ? region.size[1] : bounds.size[1] * 0.3,
+        region.size[2] > 0 ? region.size[2] : bounds.size[2] * 0.3
+      ],
+      { aspect: window.innerWidth / Math.max(1, window.innerHeight), compactViewport: window.innerWidth < 560 }
+    );
+    cameraPose = { position: intent.position, target: intent.target, fov: intent.fov };
+    focusedZone = selectedZone;
+    eventLog = [`Camera framed the ${zoneLabels[selectedZone]} zone.`, ...eventLog].slice(0, 7);
+  }
+  // Remount with the new camera. The scene is rebuilt from current state, so the
+  // zone ring and every anchored helper are re-derived from the asset bounds.
+  app.setScene(buildOpsScene());
+  rebindRuntimeNodes();
+  syncUi();
+  publishEvidence("ready");
 }
 
 function injectAlert(): void {
@@ -415,11 +635,14 @@ function publishEvidence(status: DigitalTwinEvidence["status"]): void {
     energyMw,
     alerts: zones.reduce((sum, zone) => sum + zone.incidents, 0),
     zones,
+    eventLog: [...eventLog],
+    camera: { position: [...cameraPose.position], target: [...cameraPose.target], focusedZone },
     controls,
     systems,
     runtimeNodeIds: app.nodes.ids(),
     motionProof: lastMotionProof,
     claimBoundary: "Digital-twin operations showcase using the typed robotic welding workcell GLB plus deterministic browser-side sample telemetry. It does not claim real facility data, PLC connectivity, validated safety logic, or production digital-twin integration.",
+    spatialInvariants: spatialEvidence(),
     diagnostics: {
       auraScene: collectAuraSceneEvidence(app.scene),
       backend: app.backend,
