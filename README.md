@@ -87,55 +87,86 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.5.0
+## Current Release: Aura3D 1.5.1
 
-Aura3D 1.5.0 is the current source release across all 26 public packages. This is
-an **architectural release**: scene composition, subject framing, on-screen
-controls and role-aware asset admission moved out of per-route authoring and into
-reusable engine APIs.
+Aura3D 1.5.1 is the current source release across all 26 public packages. This is a
+**product-remediation release**: three reported interaction defects and four reported
+game-runtime defects were root-caused at the library level and fixed with reusable
+systems, each backed by unit tests and a runtime probe rather than by a screenshot.
 
-### What shipped in 1.5.0
+### What shipped in 1.5.1
 
-- **Layered scene composition:** `planLayeredSceneComposition` and
-  `platformerCompositionSpec` plan deterministic foreground / midground /
-  far-background prop distribution from declarative intent — span, gameplay
-  depth, prop vocabulary, protected zones, density scale. Seeded, so retained
-  screenshots reproduce frame-for-frame.
-- **Graded sky backdrops:** `planSkyBackdrop`, `blendSkyBandColor` and
-  `skyBandCountForRamp` replace hand-authored sky planes, grade both sides of the
-  horizon, and derive band count from the colour ramp so a gradient cannot read
-  as a visible stair.
-- **Typed subject placement:** `resolveSubjectPlacementFacts` derives ground
-  contact, visual centre, framing bounds and a wheel/foot contact region from
-  typed manifest bounds, so route code no longer restates asset dimensions.
-- **Reusable touch controls:** `bindGameTouchControls` replaces
-  pointer-to-keyboard wiring that had been duplicated between routes; idempotent
-  per element, releases held keys on teardown, reports missing element ids.
-- **Role-aware asset admission:** 21 distinct recorded checks against a requested
-  role rather than one global pass/fail, including normalization requirement,
-  orientation evidence, origin/pivot sanity and material completeness.
-  Orientation is never inferred — absent evidence is reported, not guessed.
-- **Deterministic candidate selection:** `assets resolve --index <n>` and
-  `--candidate-id <provider:id>`, with loud failure on out-of-range or unknown
-  ids and no silent fallback to the top search result.
-- **Per-primitive submission diagnostics:** `auditPrimitiveSubmission` records 18
-  fields per primitive — index component type, alpha mode / cutoff / effective
-  opacity, texture readiness, frustum verdict, optional glTF provenance — so a
-  missing part is attributable rather than inferred.
-- **Freshness-bound evidence:** `pnpm explain:staleness` retains its own audit
-  artifact, declared in the producer registry, with a machine-readable reason
-  required for every stale verdict.
+- **Focus and selection (`focusObject`, `focusSemanticRegion`).** A focus indicator
+  rendered as a flat bar because Aura3D's torus is a ring in local **XY** with its tube
+  on **Z**, and a route scaled its ring-plane radius instead of its tube. The axis
+  convention is now published as `AURA_PRIMITIVE_AXES`, and indicator correctness is
+  asserted per result — circular in its own plane, thinned on the tube axis, enclosing
+  its target, callout outside it.
+- **World-anchored labels.** `labels.callout(...)` produced a valid node that nothing
+  drew: label rendering lived only in the canvas2d fallback, while every route with a
+  typed GLB takes the production WebGL2 path. Evidence counted label *nodes*, so reports
+  stayed green while the screen showed none. There is now a real screen-space label layer
+  in the production path, and `AuraDiagnostics.labels` reports what was actually placed.
+- **Asset-relative layout (`SpatialAnchoring`).** `placedBoundsFromAsset`, 19 bounds
+  anchors, normalized semantic regions, deterministic distribution and
+  `checkSpatialInvariants` replace literal helper coordinates that stopped matching their
+  asset.
+- **Vehicle chassis and AI driving.** A car pinned to a literal height cannot respond to
+  the road; `createVehicleChassis` resolves contact, suspension and attitude from four
+  contact points, deriving geometry from the asset's own bounds.
+  `createVehicleDriverAi` steers toward a look-ahead point on the racing line with
+  curvature-based corner speeds, so it turns into a corner rather than after it.
+- **Platformer motion solving.** `solvePlatformerMotion` derives gravity, jump velocity
+  and move speed from a level's own platform geometry; `validatePlatformerMotion` refuses
+  tuning inconsistent with it. A shipped level had a 5.76x jump overshoot that passed
+  every gate because the level was *solvable*.
+- **Frame-based combat.** `solveCombatFrameData` and `validateCombatFrameData` validate
+  frame data *as* frame data. A shipped move table had 12–32 active frames against 4–5
+  recovery, inverted from any real fighting game, so every move was safe on block.
+- **Application kits.** Five reusable kits — product configurator, digital twin,
+  architecture, smart city, cinematic. Each publishes a `capabilities` report naming what
+  it deliberately does **not** own.
+- **Scene queries.** Raycasts, sphere casts and ground probes reachable from the public
+  API; previously implemented in `@aura3d/physics` and unreachable from a route.
 
-Measured: reusable visual-layer ratio **9.33x → 6.08x** (2.16x excluding the
-Aura Clash outlier); repeated cross-route code clusters **6 → 0**;
-route-specific exceptions in engine code **0**.
+### Measured
+
+- **87 of 87** public controls and **47 of 47** keyboard bindings verified *by operation*
+  across 13 routes, with zero console errors.
+- **21 of 21** combined quality gates pass with **zero unproven**. Missing evidence is
+  reported as `unproven`, never as a pass.
+- **2903 of 2904** unit and integration tests, identical across two serial runs.
+- Clean-room projects against the public surface only: **137 / 142 / 122 / 99** authored
+  lines against budgets of 200 / 200 / 300 / 300; one package imported each; **zero**
+  private imports.
+- Route-local magic-geometry findings in published routes: **47 → 7**.
+
+### What is still not resolved
+
+Stated because a release note that omits this is not useful:
+
+- `showcase-blockfall-reactor`, `showcase-skyline-runner` and
+  `showcase-turbo-drift-circuit` remain **prototype-blocked**. Their physics and frame
+  data are correct; whether they are good games is a judgement their visual review has
+  not yet made.
+- `aura-clash-showcase` is **not in the route-gate registry**, so showcase-wide gates do
+  not cover it. It carries its own 23-spec suite.
+- `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51
+  exported symbol names have more than one owning package.
+- Five physics capabilities remain unreachable from the public API: penetration
+  resolution, friction, restitution, constraints, continuous collision detection.
+- Practical Three.js ecosystem parity is **6 exceed / 37 parity / 10 unproven / 3 gap**
+  across 56 capabilities. Aura3D is behind on ecosystem breadth, shader authoring
+  through the safe API, 3D text, and LOD/instancing exposure.
+
+Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd.md`.
 
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.5.0
+npm install @aura3d/engine@1.5.1
 # or scaffold an app
-npx create-aura3d@1.5.0 my-product --template product-viewer
+npx create-aura3d@1.5.1 my-product --template product-viewer
 ```
 
 Detailed release notes are in
@@ -164,7 +195,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.0 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.1 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -624,7 +655,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.5.0 baseline,
+Expected current state — The scoped package gates pass for the 1.5.1 baseline,
 but the current route-library gate is deliberately non-passing until independent
 review is current. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
 prototype-blocked during visual reconstruction; their typed assets, mounted

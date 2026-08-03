@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 1.5.0
+Version: 1.5.1
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.0` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.1` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-07-27): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -12,6 +12,96 @@ independent review are pending. Their prior release receipts remain history,
 not approval of the current worktree.
 Performance/parity wording is also blocked while six comparative-report inputs
 are missing.
+
+## 1.5.1 (2026-08-02)
+
+Product-remediation release. Three reported interaction defects and four reported game-runtime
+defects were root-caused at the library level and fixed with reusable systems, each backed by unit
+tests and a runtime probe rather than by a screenshot.
+
+### Interaction defects fixed
+
+- **Focus indicator rendered as a flat bar.** Aura3D's torus is a ring in local **XY** with its
+  tube on **Z**. A route scaled `[1.22, 0.08, 0.78]`, squashing the ring's own Y radius, then
+  rotated the sliver flat. Primitive local axes were undocumented and no reusable focus system
+  existed, so every route invented its own indicator geometry.
+  Added `focusObject`, `focusSemanticRegion`, `focusCameraIntent`, `clearFocus` and the published
+  `AURA_PRIMITIVE_AXES` convention. Indicator correctness is asserted per result.
+- **`labels.callout(...)` never rendered in any public route.** Labels were drawn only by the
+  canvas2d fallback; every route with a typed GLB takes the production WebGL2 path, which ignored
+  `kind: "label"`. Scene evidence counted label *nodes*, so reports stayed green while the screen
+  showed none. Added a world-anchored screen-space label layer wired into the production renderer,
+  plus `AuraLabelNode.anchorWorldPosition`, `offscreenPolicy`, and `AuraDiagnostics.labels`
+  reporting the labels actually placed on screen.
+- **Procedural geometry floating beside a scene.** Helper elements sat at literal world
+  coordinates never re-derived after an asset changed. Added `placedBoundsFromAsset`, 19 bounds
+  anchors, `resolveSemanticRegion`, deterministic distribution and `checkSpatialInvariants`.
+
+### Game-runtime defects fixed
+
+- **Vehicle sinking into the road, with no suspension.** Height was pinned to a literal that
+  cannot respond to the surface beneath it. Added `createVehicleChassis`: four contact points,
+  spring-damper suspension, attitude derived from spring state, a hard ground-contact constraint,
+  and `groundedPosition` for `scaleMode: "fit"` models. Geometry derives from the asset's own
+  rendered bounds via `vehicleChassisSpecFromBounds`.
+- **Opponent driving sideways off the circuit.** The controller steered only on present lateral
+  offset, which cannot turn into a corner before reaching it. Added `createVehicleDriverAi` with a
+  look-ahead racing line, curvature-based corner speeds, reaction delay and recovery.
+- **Floaty jumping and arbitrary session length.** A level shipped a 1.245-unit apex over
+  0.216-unit platform steps — a 5.76x overshoot — and passed every gate because the level was
+  *solvable*. Added `solvePlatformerMotion` and `validatePlatformerMotion`, enforced by
+  `game.assetBoundPlatformerLevel`. Measured after: apex-to-step ratio 1.9x, airtime 0.52s.
+- **Unrealistic combat.** Frame data was inverted: 12–32 active frames against 4–5 recovery, where
+  real frame data is 2–5 active against 10–30 recovery. Every move was safe on block, so there was
+  no spacing game and nothing to punish. Added `solveCombatFrameData`,
+  `validateCombatFrameData`, `combatFrameAdvantage` and `createCombatAi`.
+
+### Added
+
+- `ApplicationKits.ts`: five reusable kits — product configurator, digital twin, architecture,
+  smart city, cinematic. Each publishes a `capabilities` report naming what it deliberately does
+  **not** own, rather than returning empty geometry for it.
+- `SceneQueries.ts`: raycasts, sphere casts and ground probes reachable from the public API.
+  Previously implemented in `@aura3d/physics` and unreachable from a route.
+- `GamePlatformerInput.reset`, for consistency with `GameRacingInput`.
+- `GameRacingSceneBinding.toGamePoint`, the inverse of `toScenePoint`.
+
+### Verification
+
+- 2903 of 2904 unit and integration tests pass, identical across two serial runs. The single
+  failure is a pre-existing artifact-binding gate, verified present at the 1.5.0 baseline with a
+  byte-identical checker (which fails nine classifications against this tree's four).
+- 87 of 87 public controls and 47 of 47 keyboard bindings verified **by operation** across 13
+  routes, with zero console errors.
+- 21 of 21 combined quality gates pass with zero unproven. Missing evidence is reported as
+  `unproven`, never as a pass.
+- Four clean-room projects built against the public surface only: 137, 142, 122 and 99 authored
+  lines against budgets of 200, 200, 300 and 300; one package imported each; zero private imports.
+
+### Migration
+
+- A route passing a chassis pose to a `scaleMode: "fit"` model must use
+  `VehiclePose.groundedPosition`, not `position`. Passing the body centre lifts the model by its
+  full ride height.
+- `game.assetBoundPlatformerLevel` now **rejects** motion tuning inconsistent with the level's own
+  geometry. A level whose jump overshoots or cannot clear its own gaps will throw at construction
+  with the suggested fix in the message.
+
+### Still not resolved
+
+- `showcase-blockfall-reactor`, `showcase-skyline-runner` and `showcase-turbo-drift-circuit`
+  remain **prototype-blocked**. Physics and frame data are correct; whether they are good games is
+  a judgement their visual review has not yet made.
+- `aura-clash-showcase` is **not in the route-gate registry**, so the showcase-wide gates do not
+  cover it. It carries its own 23-spec suite.
+- `@aura3d/engine-runtime` still declares 322 exports duplicating other packages; 51 exported
+  symbol names have more than one owning package.
+- Five physics capabilities remain unreachable from the public API: penetration resolution,
+  friction, restitution, constraints, continuous collision detection.
+- Frame-time and memory budgets are not independently measured. Draw calls are (776 max against a
+  2000 budget).
+
+Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd.md`.
 
 ## 1.5.0 (2026-08-01)
 

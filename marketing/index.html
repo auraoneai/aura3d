@@ -31,7 +31,7 @@
   "url": "https://aura3d.auraone.ai",
   "downloadUrl": "https://www.npmjs.com/package/@aura3d/engine",
   "codeRepository": "https://github.com/auraoneai/aura3d",
-  "softwareVersion": "1.5.0",
+  "softwareVersion": "1.5.1",
   "programmingLanguage": "TypeScript",
   "description": "AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deployment checks."
 }
@@ -71,7 +71,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v1.5.0</span>
+      <span class="nav-version">v1.5.1</span>
       <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
       <a class="btn btn-primary nav-start" href="#templates">Get&nbsp;started <span class="arr"></span></a>
     </div>
@@ -118,7 +118,7 @@
           <span class="k">agent-resolved catalog</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>v1.5.0</b></span>
+          <span class="v"><b>v1.5.1</b></span>
           <span class="k">latest engine</span>
         </div>
         <div class="hero-meta-item">
@@ -168,58 +168,60 @@
   </div>
 </section>
 
-<!-- ─── NEW IN 1.5.0 ───────────────────────────────────────── -->
-<section class="section-tight" id="release-150" data-search-index="release 1.5.0 scene composition sky backdrop layered depth asset admission role aware candidate selection primitive diagnostics evidence freshness replicability create-aura3d">
+<!-- ─── NEW IN 1.5.1 ───────────────────────────────────────── -->
+<section class="section-tight" id="release-151" data-search-index="release 1.5.1 focus selection world anchored labels asset relative layout vehicle chassis suspension ai driving platformer motion combat frame data application kits scene queries interaction audit quality gates clean room">
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">New in 1.5.0</span>
-        <h2 class="h2">Scene composition moved into the engine, <em style="font-family:var(--serif);font-style:italic">not into your route.</em></h2>
-        <p class="lede">1.5.0 is an architectural release. Depth composition, graded sky backdrops, subject framing, touch controls and role-aware asset admission are now reusable engine APIs instead of per-route art direction — cutting the route-local-to-reusable visual ratio from 9.33x to 6.08x and eliminating every duplicated cross-route code cluster. Renderer submission diagnostics record 18 fields per primitive, and the evidence-freshness verdict is now itself a retained, hash-bound artifact.</p>
+        <span class="eyebrow">New in 1.5.1</span>
+        <h2 class="h2">Seven reported defects, fixed <em style="font-family:var(--serif);font-style:italic">in the library, not the screenshot.</em></h2>
+        <p class="lede">1.5.1 is a product-remediation release. A focus control that drew a flat bar, callouts that never rendered, helper geometry floating beside a scene, a car sinking through the road, an opponent driving sideways, a floaty jump and inverted combat frame data were each root-caused to a library defect and fixed with a reusable system. Every fix is backed by unit tests and a runtime probe: 87 of 87 public controls and 47 of 47 keyboard bindings are now verified <em>by operation</em>, not by a first-frame screenshot.</p>
       </div>
     </div>
 
     <div class="diag">
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">showcase promotion status</span>
-          <span class="pass">● promotion held</span>
+          <span class="title">interaction verified by operation</span>
+          <span class="pass">● 87 / 87</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">configured</span> <span class="v ok">7 / 7 pass the route-library sub-gate</span></div>
-          <div class="diag-row"><span class="k">overall</span> <span class="v ok">configured route and retained visual-QA gates pass</span></div>
-          <div class="diag-row"><span class="k">labs</span> <span class="v ok">2 diagnostics retained honestly</span></div>
-          <div class="diag-row"><span class="k">visual</span> <span class="v ok">public status requires accepted screenshots</span></div>
-          <div class="diag-row"><span class="k">index</span> <span class="v ok">catalog route handled separately</span></div>
-          <div class="diag-row"><span class="k">scope</span> <span class="v">claims match retained evidence</span></div>
+          <div class="diag-row"><span class="k">controls</span> <span class="v ok">87 / 87 produce observable state change</span></div>
+          <div class="diag-row"><span class="k">keyboard</span> <span class="v ok">47 / 47 declared bindings respond</span></div>
+          <div class="diag-row"><span class="k">console</span> <span class="v ok">0 runtime errors across 13 routes</span></div>
+          <div class="diag-row"><span class="k">mobile</span> <span class="v ok">touch parity with desktop enforced</span></div>
+          <div class="diag-row"><span class="k">restart</span> <span class="v ok">every route remounts after reload</span></div>
+          <div class="diag-row"><span class="k">method</span> <span class="v">controls discovered at runtime, then operated</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">asset and route evidence</span>
-          <span class="pass">● gated</span>
+          <span class="title">reusable systems added</span>
+          <span class="pass">● 192 unit tests</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">assets</span> <span class="v ok">role-aware release validation</span></div>
-          <div class="diag-row"><span class="k">probes</span> <span class="v ok">stale / fake rendered proof rejected</span></div>
-          <div class="diag-row"><span class="k">source</span> <span class="v ok">typed assets + AST validation</span></div>
-          <div class="diag-row"><span class="k">routes</span> <span class="v ok">route-primary screenshots retained</span></div>
-          <div class="diag-row"><span class="k">review</span> <span class="v">visual quality required for public status</span></div>
+          <div class="diag-row"><span class="k">focus</span> <span class="v ok">focusObject + published primitive axes</span></div>
+          <div class="diag-row"><span class="k">labels</span> <span class="v ok">world-anchored layer in the production path</span></div>
+          <div class="diag-row"><span class="k">layout</span> <span class="v ok">asset-relative anchors and semantic regions</span></div>
+          <div class="diag-row"><span class="k">vehicles</span> <span class="v ok">chassis contact, suspension, look-ahead AI</span></div>
+          <div class="diag-row"><span class="k">platformer</span> <span class="v ok">motion solved from level geometry</span></div>
+          <div class="diag-row"><span class="k">combat</span> <span class="v ok">frame data validated as frame data</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">generator guardrails</span>
-          <span class="pass">● honest output</span>
+          <span class="title">still not resolved</span>
+          <span class="warn">● stated plainly</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">compiler</span> <span class="v ok">bounded artifact generation</span></div>
-          <div class="diag-row"><span class="k">resolver</span> <span class="v ok">ranked replacement decisions retained</span></div>
-          <div class="diag-row"><span class="k">status</span> <span class="v ok">release / labs / prototype separated</span></div>
-          <div class="diag-row"><span class="k">webgpu</span> <span class="v">no native claim without backend proof</span></div>
-          <div class="diag-row"><span class="k">games</span> <span class="v ok">certified geometry + pair QA required</span></div>
+          <div class="diag-row"><span class="k">games</span> <span class="v">3 routes remain prototype-blocked</span></div>
+          <div class="diag-row"><span class="k">aura clash</span> <span class="v">outside the route-gate registry</span></div>
+          <div class="diag-row"><span class="k">packages</span> <span class="v">51 duplicated export owners remain</span></div>
+          <div class="diag-row"><span class="k">physics</span> <span class="v">5 capabilities unreachable from the public API</span></div>
+          <div class="diag-row"><span class="k">parity</span> <span class="v">6 exceed / 37 parity / 10 unproven / 3 gap</span></div>
+          <div class="diag-row"><span class="k">perf</span> <span class="v">frame-time and memory budgets unmeasured</span></div>
         </div>
       </div>
     </div>
@@ -266,7 +268,7 @@
           <span>foot IK + foot-lock</span>
           <span>spring body-sway</span>
           <span>authored event tracks</span>
-          <span>1.5.0 package proof</span>
+          <span>1.5.1 package proof</span>
         </div>
         <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
           <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
@@ -762,7 +764,7 @@
         <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">@aura3d/engine@1.5.0</span>
+        <span class="eyebrow-num">@aura3d/engine@1.5.1</span>
         <span class="mute-2 mono" style="font-size:11px">latest root runtime</span>
       </div>
     </div>
@@ -774,7 +776,7 @@
           <span class="pass">● latest</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.5.0</span></div>
+          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.5.1</span></div>
           <div class="diag-row"><span class="k">renderer proof</span> <span class="v ok">WebGL2 route evidence + bounded diagnostics</span></div>
           <div class="diag-row"><span class="k">animation</span> <span class="v ok">believable-motion packages</span></div>
         </div>
@@ -1121,7 +1123,7 @@ scene()
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D · @aura3d/engine v1.5.0 · MIT licensed</span>
+      <span>© 2026 Aura3D · @aura3d/engine v1.5.1 · MIT licensed</span>
       <span>Prompt-to-3D · typed assets · production browser scenes</span>
     </div>
   </div>
