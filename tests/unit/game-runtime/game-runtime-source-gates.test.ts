@@ -300,7 +300,8 @@ describe("game runtime source gates", () => {
         id: "asset-bound-platformer",
         start: { x: 0, y: 0.35 },
         finish: { x: 36, y: 0.35 },
-        moveSpeed: 1,
+        // Motion comes from fixtureMotion below, derived from these platforms. A literal
+        // here was silently overridden by the spread and is removed rather than kept.
         ...fixtureMotion([
           { id: "start", x: 0, y: 0, width: 8, height: 0.35 },
           { id: "bridge", x: 8, y: 0.2, width: 8, height: 0.35 },
@@ -403,7 +404,8 @@ describe("game runtime source gates", () => {
         id: "asset-bound-platformer-offset",
         start: { x: 0, y: 0.35 },
         finish: { x: 34, y: 0.35 },
-        moveSpeed: 1,
+        // Motion comes from fixtureMotion below, derived from these platforms. A literal
+        // here was silently overridden by the spread and is removed rather than kept.
         ...fixtureMotion([
           { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
           { id: "bridge", x: 7, y: 0.2, width: 6, height: 0.35 },
@@ -536,7 +538,8 @@ describe("game runtime source gates", () => {
         id: "asset-bound-platformer-multi-anchor",
         start: { x: 0, y: 0.35 },
         finish: { x: 34, y: 0.35 },
-        moveSpeed: 1,
+        // Motion comes from fixtureMotion below, derived from these platforms. A literal
+        // here was silently overridden by the spread and is removed rather than kept.
         ...fixtureMotion([
           { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
           { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
@@ -637,7 +640,8 @@ describe("game runtime source gates", () => {
           id: "asset-bound-platformer-synthetic-markers",
           start: { x: 0, y: 0.35 },
           finish: { x: 34, y: 0.35 },
-          moveSpeed: 1,
+          // Motion comes from fixtureMotion below, derived from these platforms. A literal
+          // here was silently overridden by the spread and is removed rather than kept.
           ...fixtureMotion([
             { id: "start", x: 0, y: 0, width: 6, height: 0.35 },
             { id: "bridge", x: 8, y: 0.2, width: 6, height: 0.35 },
