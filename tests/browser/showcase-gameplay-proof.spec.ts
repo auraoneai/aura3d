@@ -284,7 +284,25 @@ test.describe("showcase gameplay proof", () => {
     check(after.raceDesign?.carAlignedToVisibleRoad === true, blockers, "racing car is not proven aligned to the visible road surface");
     check(after.raceState?.roadAlignment?.onRoad === true, blockers, "racing car is not proven on retained road topology after input");
     check((after.raceState?.roadAlignment?.normalizedOffset ?? Number.POSITIVE_INFINITY) <= 1, blockers, "racing car drifted outside the retained road width");
-    check(after.opponent?.controller === "route-local-deterministic-opponent-ai", blockers, "opponent controller evidence is missing");
+    /*
+     * The opponent must be driven by a *named, evidenced* controller.
+     *
+     * This previously pinned the exact string `route-local-deterministic-opponent-ai`, and had been
+     * failing since 1.5.0 — commit 94fe85fb moved the route onto the reusable
+     * `aura-vehicle-driver-ai` and this assertion was never updated. So the gate was red for a
+     * reason that was an *improvement*: the route stopped hand-rolling its opponent and adopted the
+     * shared driver, which is exactly the direction WS-3 wants.
+     *
+     * Accepting either value keeps the invariant that matters (the opponent reports a known
+     * controller, not nothing) without pinning the route to the less reusable of the two. Both are
+     * declared in `opponent-ai.ts`; an unknown or absent value still fails.
+     */
+    check(
+      after.opponent?.controller === "aura-vehicle-driver-ai"
+        || after.opponent?.controller === "route-local-deterministic-opponent-ai",
+      blockers,
+      `opponent controller evidence is missing (got ${String(after.opponent?.controller)})`
+    );
     check(after.opponent?.independentFromPlayerPlacement === true, blockers, "opponent is still derived from player placement");
     check((after.opponent?.decisionCount ?? 0) > 0, blockers, "opponent did not make autonomous pacing decisions");
     check((after.opponent?.progress ?? 0) !== ((after.raceState?.progress ?? 0) + 0.22) % 1, blockers, "opponent retained the old player-progress offset behavior");

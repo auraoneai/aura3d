@@ -1,8 +1,8 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
 **Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
-WS-5 complete. WS-3.8 attempted and reverted with the finding recorded (see below); WS-7 open.
-30 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+WS-5 and WS-7 complete. WS-3.8 attempted and reverted with the finding recorded (see below).
+36 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -369,12 +369,12 @@ The whole point. If this workstream cannot be completed, the layering is still w
 | 7.5 | `tests/browser/showcase-gameplay-proof.spec.ts` | Operate each game through a full scripted objective and assert observable state change, not first-frame screenshots. | Both games complete an objective under automation |
 | 7.6 | `package.json` | `pnpm check:game-runtime` runs 7.1–7.5; wire into `check:release`. | Present in `check:release` and passing |
 
-- [ ] 7.1 Penetration gate fails on 1.5.2
-- [ ] 7.2 Motion-feel gate fails on current Skyline
-- [ ] 7.3 Telemetry gate fails on current turbo drift
-- [ ] 7.4 Opaque-asset gate fails on current arch
-- [ ] 7.5 Scripted objective completion for both games
-- [ ] 7.6 `check:game-runtime` in `check:release`
+- [x] 7.1 Penetration gate — **observed failing on `v1.5.2`**, naming all five route-local constants (`TRACK_SURFACE_Y`, `CAR_GROUND_Y`, `CAR_TYRE_CONTACT_Y`, `VERGE_DROP`, `SHOULDER_WIDTH`) plus `route-does-not-consume-mesh-vehicle-surface` and `geometry-contract-has-no-drivable-mesh`. Passes now. Run it yourself: `pnpm check:game-runtime:gates-on-release`.
+- [x] 7.2 Motion-feel gate — **observed failing on `v1.5.2`** with `apex-not-derived-from-declared-intent`, `apex-not-scaled-to-character-height`, and the exact authored tuning that produced the 0.684 apex: `gravity=-22`, `jumpVelocity=7.4`. Passes now.
+- [x] 7.3 Telemetry-coherence gate — **observed failing on `v1.5.2`** with `hud-labels-idle-car-as-running` and `hud-has-no-ready-versus-racing-distinction`. Also asserts displayed speed derives from the stepped snapshot, so a future second cached display value is caught. Passes now.
+- [x] 7.4 Opaque-asset gate — **observed failing on `v1.5.2`** with `opaque-asset-invariant-untested`. Reads the committed GLB's own material block and fails if a material declared opaque would resolve to a blended render state, or if the asset introduces real transparency after a swap. Passes now.
+- [x] 7.5 Scripted objective completion for both games — `pnpm exec playwright test tests/browser/showcase-gameplay-proof.spec.ts` → **3 passed** (turbo drift, skyline runner, blockfall reactor), each driven through a full scripted objective with observable state change rather than a first-frame screenshot. Fixing this surfaced a gate that had been red since 1.5.0: it pinned the opponent controller to the exact string `route-local-deterministic-opponent-ai`, but commit `94fe85fb` moved the route onto the reusable `aura-vehicle-driver-ai` and the assertion was never updated — so the gate was failing because the route had *improved*. Now accepts either named controller while still failing on an absent or unknown one.
+- [x] 7.6 `check:game-runtime` in `check:release` — added to `package.json` and wired into `check:release` between `check:clean-install` and `check:docs-codeblocks`. Runs the four gates plus 68 tests across 8 files (mesh contact, motion intent, telemetry coherence, arch opacity, public runtime, joints, tyre load rating). Measured: **4 gates + 68 tests pass**.
 
 ---
 
