@@ -391,43 +391,73 @@ WS-6 (generality proof) — last, and it is the real acceptance test ───�
 WS-1 before WS-3 is non-negotiable: refactoring kits onto a runtime that is not yet
 public just moves the problem.
 
-## 3.1 Release blocker: the visual review was already stale before this branch
+## 3.1 Release blocker: the visual-review gate is **unsatisfiable by construction**
 
-`tests/unit/tools/showcase-route-gates.test.ts` is the one unit test still failing. **I previously
-reported that my evidence regeneration caused it. That was wrong, and the correction matters.**
+`tests/unit/tools/showcase-route-gates.test.ts` is the only remaining unit-test failure. It is not a
+code defect, and it is not something a re-signature fixes. I reported it wrongly twice; here is the
+measured truth.
 
-What I claimed: regenerating stale probes moved route source hashes, invalidating the owner's
-approval, and "the screenshots themselves still match their recorded hashes (verified per route)".
+### Correction 1 — I claimed my evidence regeneration broke it. It did not.
 
-What is actually true, measured:
+The review document `docs/project/showcase-visual-review.json` is **byte-identical to the one at
+`v1.5.2`** (same `reviewedAt` of `2026-08-04T06:48:55.387Z`). This branch never modified it. I also
+claimed "the screenshots still match their recorded hashes, verified per route" — I had checked
+**one** route (`showcase-product-configurator`, which does match) and generalised. In fact 13 of the
+recorded hashes disagreed with disk, and **10 of those predate this session**, with mtimes at
+06:56–06:58 on 2026-08-04: minutes after the review, hours before this session began.
 
-- The review document `docs/project/showcase-visual-review.json` is **byte-identical to the one at
-  `v1.5.2`** — same `reviewedAt` of `2026-08-04T06:48:55.387Z`. This branch never touched it.
-- **13 of its recorded screenshot hashes do not match the files on disk.** My earlier
-  "verified per route" check sampled exactly one route (`showcase-product-configurator`, whose three
-  screenshots do match) and I generalised from it. That was the error.
-- **10 of those 13 predate this session entirely.** Their mtimes cluster at 06:56–06:58 on
-  2026-08-04 — minutes *after* the 06:48 review, and hours before this session began (~19:30 UTC).
-  A prior run regenerated them and the review was never re-signed.
-- The 3 my session did touch are `showcase-gameplay/*-after-input.png` for blockfall, skyline and
-  turbo drift, rewritten by `showcase-gameplay-proof.spec.ts` at 21:31–21:32 UTC. Two of those three
-  routes carry `verdict: "needs-work"` and are `prototype-blocked` anyway.
-- The screenshots are **gitignored local artifacts** (`.gitignore:43 tests/reports/`), so they were
-  never tracked. Zero are committed at `v1.5.2`.
+### Correction 2 — the root cause is non-determinism, not staleness
 
-So the gate has been failing on unchanged code since before 1.5.2, and 1.5.2 shipped anyway. That is
-the same pattern as the other three gates in §3.2: red for a real reason, not noticed, released past.
+Re-running `tests/browser/showcase-library.spec.ts` with **no code change whatsoever** produces
+different bytes. Measured over two consecutive runs: **3 of the 4 approved routes' desktop
+screenshots differed**, and across all 29 screenshots **14 differed**.
 
-The gate is also stricter than hash equality — `route-visual-review-stale-screenshot` compares
-**mtime** against the review timestamp, so merely re-running a screenshot spec invalidates approval
-even when the bytes are identical. That is defensible for an approval gate, but it means any
-regeneration requires a re-signature.
+The reason is structural. Most showcase routes run a continuous frame loop with live telemetry in the
+HUD — a frame counter, animating districts, particle systems. The screenshot step does
+`waitForTimeout(300)` and captures whatever frame the loop happens to be on. The routes do not expose
+their app handle, so a test cannot pause them.
 
-**Action required before 1.5.3 ships:** a fresh visual review over the four public release
-candidates against their current screenshots, re-recorded with current source and screenshot hashes.
-I have not touched that file and will not — re-signing another person's visual review to turn a gate
-green is the one thing in this PRD an agent must not do. But the honest framing is that this is a
-**pre-existing debt this branch inherited**, not damage it caused.
+The visual-review gate binds approval to `sha256` of those exact bytes, **and** fails on
+`mtime > reviewedAt`. Against a non-deterministic producer, that means:
+
+- any re-run of the screenshot spec invalidates a signature that is still visually correct;
+- so the only way to keep the gate green is to never regenerate screenshots;
+- so the gate went red at some point before 1.5.2 and stayed red, and 1.5.2 shipped anyway.
+
+**A re-signature would be invalidated by the next screenshot run.** That is why this is not "the
+owner needs to sign"; it is a gate that cannot hold.
+
+### What I tried, and why I reverted it
+
+I added a `captureStableFrame` helper that screenshots repeatedly until two consecutive captures are
+byte-identical, then writes those settled bytes. It did reduce instability, and it correctly reported
+that `showcase-skyline-runner` never settles at all (it is a running platformer). But it **did not
+fix the problem**: 14 of 29 screenshots still differed across runs, because two identical consecutive
+frames within one run says nothing about which frame the *next* run lands on. Reverted rather than
+kept as a partial measure that looks like a fix.
+
+### The real fix, which is not GameEngine-PRD scope
+
+One of:
+
+1. **Make the producer deterministic** — pause the app before capture (routes would need to expose
+   their handle, or `createAuraApp` would need a documented "settle and hold" mode), and freeze any
+   frame counter in the HUD. This is the correct fix and it is a real change to the public surface.
+2. **Make the gate bind to perceptual identity rather than bytes** — approve against a
+   downsampled/quantised signature, or a bounded pixel-difference tolerance, so an equivalent frame
+   keeps its approval. `readPngVisualCompositionMetrics` already computes such metrics.
+
+Either is a deliberate design decision about how visual approval works. Neither should be smuggled in
+under a physics PRD, and neither should be faked by re-signing a document that the next test run will
+invalidate.
+
+### Consequence for 1.5.3
+
+This gate cannot be made green honestly in this branch. It was red for 1.5.2 for the same reason.
+Shipping 1.5.3 means shipping with it red **and saying so**, which is materially better than 1.5.2 —
+where it was red and unexplained. `visualReview.fileOk` can be brought to `true` by
+`refresh-visual-review-baseline.mjs`, but that tool deliberately resets approval to `pending`, so it
+trades one failure for another. I left the owner's existing signature in place rather than erase it.
 
 ## 3.2 Pre-existing release gates that were red before this branch
 
