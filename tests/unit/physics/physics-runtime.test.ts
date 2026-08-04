@@ -169,16 +169,16 @@ describe("collision layers", () => {
 });
 
 describe("shape capability honesty", () => {
-  it("refuses a dynamic trimesh instead of silently misbehaving", () => {
+  it("refuses a dynamic mesh instead of silently misbehaving", () => {
     // A concave triangle soup has no well-defined inertia tensor. Allowing it produces
     // a body that falls through thin geometry, which reads as an engine bug.
-    expect(() => assertShapeSupported("trimesh", "dynamic")).toThrow(/cannot be dynamic/);
+    expect(() => assertShapeSupported("mesh", "dynamic")).toThrow(/cannot be dynamic/);
     expect(() => assertShapeSupported("heightfield", "dynamic")).toThrow(/cannot be dynamic/);
     expect(() => assertShapeSupported("plane", "dynamic")).toThrow(/cannot be dynamic/);
   });
 
-  it("allows static trimesh and dynamic convex shapes", () => {
-    expect(() => assertShapeSupported("trimesh", "static")).not.toThrow();
+  it("allows static mesh and dynamic convex shapes", () => {
+    expect(() => assertShapeSupported("mesh", "static")).not.toThrow();
     for (const shape of AURA_DYNAMIC_CAPABLE_SHAPES) {
       expect(() => assertShapeSupported(shape, "dynamic")).not.toThrow();
     }

@@ -71,6 +71,7 @@ import {
 
 export * from "./SpatialAnchoring.js";
 export * from "./PhysicsRuntime.js";
+import { createPhysicsRuntime, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
 export * from "./VehicleChassis.js";
@@ -9406,6 +9407,18 @@ export interface AuraApp {
   readonly backend: AuraBackend;
   readonly nodes: AuraRuntimeNodeRegistry;
   readonly runtime: AuraRuntimeState;
+  /**
+   * The live physics simulation for this app.
+   *
+   * This is the seam that makes `@aura3d/engine` a game engine rather than a scene
+   * declaration format. Before it existed, `.physics({ type: "dynamic" })` let a developer
+   * watch a box fall and nothing else: no force, no collision callback, no raycast, no
+   * joint. Every genre outside the four bundled kits had no path at all.
+   *
+   * Bodies declared on scene nodes are registered here under their node name, so
+   * `app.physics.bodies.require("crate").applyImpulse([4, 0, 0])` works with no extra setup.
+   */
+  readonly physics: AuraPhysicsRuntime;
   setScene(scene: AuraSceneBuilder | AuraSceneSnapshot): void;
   onFrame(callback: AuraFrameCallback): () => void;
   offFrame(callback: AuraFrameCallback): void;
@@ -9762,6 +9775,41 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   let mountRevision = 0;
   let canvasRuntimePhysics: ReturnType<typeof createRuntimeScenePhysics> | undefined;
   const runtimeNodes = createAuraRuntimeNodeRegistry(renderSnapshot);
+  // One world owned by the app, so `app.physics` is live whether or not the scene declared
+  // any bodies. A route that spawns everything at runtime (a shooter, a stacking puzzle) is
+  // then no harder to write than one that declares bodies up front.
+  const appPhysicsWorld = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 60, enableSleeping: true });
+  const appPhysicsNodeNames = new Map<number, string>();
+  const appPhysics = createPhysicsRuntime(appPhysicsWorld, {
+    nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
+  });
+  /**
+   * Register scene-declared bodies into the app-owned world.
+   *
+   * Runs on construction and on every `setScene`, so a declared node name resolves through
+   * `app.physics.bodies.require(name)` without the route restating the body.
+   */
+  const registerDeclaredBodies = (target: AuraSceneSnapshot) => {
+    for (const node of target.nodes) {
+      if ((node.kind !== "model" && node.kind !== "primitive") || !node.physics) continue;
+      const spec = node.physics;
+      const body = appPhysicsWorld.createRigidBody({
+        type: spec.type ?? "dynamic",
+        position: node.position ?? [0, 0, 0],
+        rotation: eulerToQuat(node.rotation ?? [0, 0, 0]),
+        ...(spec.mass === undefined ? {} : { mass: spec.mass }),
+        ...(spec.friction === undefined ? {} : { friction: spec.friction }),
+        ...(spec.restitution === undefined ? {} : { restitution: spec.restitution })
+      });
+      appPhysicsWorld.createCollider(body, {
+        shape: resolveNodePhysicsShape(node as AuraModelNode | AuraPrimitiveNode, spec),
+        ...(spec.sensor === undefined ? {} : { sensor: spec.sensor }),
+        material: { friction: spec.friction ?? 0.5, restitution: spec.restitution ?? 0 }
+      });
+      if (node.name) appPhysicsNodeNames.set(body.id, node.name);
+    }
+  };
+  registerDeclaredBodies(renderSnapshot);
   const frameCallbacks = new Set<AuraFrameCallback>();
   let runtimePaused = options.autoStart === false;
   let runtimeFrame = 0;
@@ -9868,9 +9916,15 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       snapshot = normalizeSceneSnapshot(nextScene);
       renderSnapshot = flattenSceneSnapshot(snapshot);
       runtimeNodes.reset(renderSnapshot);
+      // Drop bodies from the previous scene before registering the new ones, so swapping
+      // scenes does not leave orphaned bodies colliding with the new level.
+      for (const id of [...appPhysicsNodeNames.keys()]) appPhysicsWorld.removeRigidBody(id);
+      appPhysicsNodeNames.clear();
+      registerDeclaredBodies(renderSnapshot);
       mountCurrentScene();
     },
     nodes: runtimeNodes,
+    physics: appPhysics,
     get runtime() {
       return {
         paused: runtimePaused,

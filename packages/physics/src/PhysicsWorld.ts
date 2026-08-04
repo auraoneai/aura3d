@@ -14,7 +14,7 @@ import { Constraint, type ConstraintDescriptor } from "./Constraint.js";
 import { buildNativeNarrowPhaseContact } from "./NarrowPhase.js";
 import { raycastCollider, sphereCastCollider, type RaycastHit, type RaycastOptions, type SphereCastHit } from "./Raycast.js";
 import { RigidBody, type RigidBodyDescriptor, type RigidBodySnapshot } from "./RigidBody.js";
-import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
+import { cloneVec3, dotVec3, lengthVec3, normalizeVec3, scaleVec3, subVec3, validateFiniteVec3, type Bounds, type PhysicsShape, type Vec3 } from "./Shape.js";
 import { timeOfImpact } from "./TimeOfImpact.js";
 
 export type PhysicsContinuousCollisionDescriptor = {
@@ -202,6 +202,21 @@ export class PhysicsWorld {
     const constraint = new Constraint(descriptor);
     this.constraintsList.push(constraint);
     return constraint;
+  }
+
+  /**
+   * Change world gravity after construction.
+   *
+   * Needed for anything that flips or scales gravity at runtime — a low-gravity level, a
+   * zero-g section, a game that inverts it as a mechanic. Without a setter the only way to
+   * change it was to rebuild the world and lose every body.
+   */
+  setGravity(gravity: Vec3): void {
+    validateFiniteVec3(gravity, "world gravity");
+    this.gravity[0] = gravity[0];
+    this.gravity[1] = gravity[1];
+    this.gravity[2] = gravity[2];
+    if (this.cannonWorld) this.cannonWorld.gravity.copy(toCannonVec3(this.gravity));
   }
 
   getBody(id: number): RigidBody | undefined {
@@ -660,6 +675,27 @@ export class PhysicsWorld {
     const subDelta = dt / subSteps;
     for (let index = 0; index < subSteps; index += 1) {
       this.cannonWorld.step(subDelta);
+      // Solve constraints inside the substep loop, and mirror the result back into the
+      // cannon bodies before the next substep.
+      //
+      // Defect class: engine. Before this, `stepCannon` never called `constraint.solve()`,
+      // so on the default `cannon-es` backend every joint was a silent no-op — a body on a
+      // `fixed` joint free-fell to y=-18.8 over two seconds instead of hanging. The
+      // aura-js branch always solved them, which is why the joint unit tests passed while
+      // the shipped default backend ignored joints entirely.
+      if (this.constraintsList.length > 0) {
+        for (const body of this.bodyValues()) {
+          const cannonBody = this.cannonBodiesByAuraId.get(body.id);
+          if (cannonBody) syncAuraFromCannon(cannonBody, body);
+        }
+        for (let iteration = 0; iteration < this.solverIterations; iteration += 1) {
+          for (const constraint of this.constraintsList) constraint.solve();
+        }
+        for (const body of this.bodyValues()) {
+          const cannonBody = this.cannonBodiesByAuraId.get(body.id);
+          if (cannonBody) syncCannonFromAura(body, cannonBody);
+        }
+      }
     }
     for (const body of this.bodyValues()) {
       const cannonBody = this.cannonBodiesByAuraId.get(body.id);
