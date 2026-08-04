@@ -137,6 +137,32 @@ describe.each(BACKENDS)("joints on the %s backend", (backend) => {
     expect(separation).toBeLessThan(1.5);
   });
 
+  it("a slider is prismatic: rotation does not leak into off-axis translation", () => {
+    /*
+     * Regression for a defect the resting-body tests could not see.
+     *
+     * The anchor is carried on each body's local frame, so an unconstrained spin swings the
+     * anchor, the positional solve reads the swing as off-axis error, and it translates the
+     * body to cancel it. Measured before the fix, on a block given one along-axis impulse:
+     * 0.478 off-axis in z and 0.780 in y — it left the rail entirely. At rest it held fine.
+     */
+    const physics = runtimeFor(backend);
+    physics.createBody({ name: "rail", type: "static", shape: "box", position: [1.2, 0.42, -1.1], halfExtents: [0.07, 0.07, 0.07] });
+    const block = physics.createBody({ name: "block", shape: "box", mass: 1.6, position: [2.2, 0.42, -1.1], halfExtents: [0.15, 0.15, 0.15], linearDamping: 0.5 });
+    physics.createJoint({ kind: "slider", bodyA: "rail", bodyB: "block", anchor: [1.2, 0.42, -1.1], axis: [1, 0, 0] });
+
+    for (let step = 0; step < 60; step += 1) physics.step(1 / 60);
+    block.applyImpulse([-2.2, 0, 0]);
+    for (let step = 0; step < 180; step += 1) physics.step(1 / 60);
+
+    const at = block.position();
+    // It must travel along its axis...
+    expect(Math.abs(at[0] - 2.2)).toBeGreaterThan(0.1);
+    // ...and stay on it. Both were violated by an order of magnitude before the fix.
+    expect(Math.abs(at[2] + 1.1)).toBeLessThan(0.06);
+    expect(Math.abs(at[1] - 0.42)).toBeLessThan(0.06);
+  });
+
   it("setEnabled(false) releases the joint", () => {
     const physics = runtimeFor(backend);
     physics.createBody({ name: "anchor", type: "static", shape: "box", position: [0, 2, 0], halfExtents: [0.1, 0.1, 0.1] });

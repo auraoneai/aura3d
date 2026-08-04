@@ -68,6 +68,42 @@ const PROJECTS: readonly ProjectSpec[] = [
     lineBudget: 300,
     controls: [],
     keys: ["KeyD", "Space", "KeyA", "KeyR"]
+  },
+  /*
+   * WS-6: three genres Aura3D ships **no kit for**.
+   *
+   * The four projects above each map onto a bundled kit (`game.platformer`,
+   * `game.racing`), so they measure ergonomics but not generality: they could all pass
+   * while the library remained four demos with no path to a fifth genre. These three are
+   * built entirely on the general physics runtime (`app.physics`), which is the difference
+   * between a set of demos and an engine. `usedKit: false` is asserted on each.
+   */
+  {
+    id: "physics-sandbox",
+    dir: "physics-sandbox",
+    kind: "static-application",
+    globalName: "__CLEAN_ROOM_SANDBOX__",
+    lineBudget: 200,
+    controls: [],
+    keys: ["Space", "KeyE", "KeyQ", "KeyR"]
+  },
+  {
+    id: "top-down-shooter",
+    dir: "top-down-shooter",
+    kind: "playable-prototype",
+    globalName: "__CLEAN_ROOM_SHOOTER__",
+    lineBudget: 300,
+    controls: [],
+    keys: ["KeyW", "Space", "KeyA", "Space", "KeyR"]
+  },
+  {
+    id: "physics-puzzle",
+    dir: "physics-puzzle",
+    kind: "playable-prototype",
+    globalName: "__CLEAN_ROOM_PUZZLE__",
+    lineBudget: 300,
+    controls: [],
+    keys: ["KeyE", "KeyF", "Space", "KeyR"]
   }
 ];
 
@@ -202,6 +238,8 @@ for (const spec of PROJECTS) {
       const timeToFirstInteraction = Date.now() - start;
 
       const interactions: { target: string; changed: boolean }[] = [];
+      /** Most recent state seen before the reset key, for peak-value assertions. */
+      let peakState: Record<string, unknown> = {};
       for (const selector of spec.controls) {
         const before = JSON.stringify(await readGlobal(page, spec.globalName));
         await page.locator(selector).first().click({ timeout: 8_000 });
@@ -229,6 +267,8 @@ for (const spec of PROJECTS) {
         await page.keyboard.up(key);
         await page.waitForTimeout(260);
         const after = JSON.stringify(await readGlobal(page, spec.globalName));
+        // Snapshot before a reset wipes accumulated peaks.
+        if (key !== "KeyR") peakState = await readGlobal(page, spec.globalName);
         interactions.push({
           target: `key:${key}`,
           changed: before !== after || during.some((snapshot) => snapshot !== before)
@@ -236,6 +276,15 @@ for (const spec of PROJECTS) {
       }
 
       const finalState = await readGlobal(page, spec.globalName);
+      /*
+       * Peak-travel state, captured before the reset key.
+       *
+       * `keys` deliberately ends with `KeyR` so that reset itself is proven observable. But a
+       * reset legitimately zeroes the "how far did this joint travel" counters, so asserting
+       * peak travel against the *final* state measures the reset, not the mechanic. This is
+       * the pre-reset snapshot, taken from the interaction sampling above.
+       */
+      const preResetState = interactions.length > 1 ? peakState : finalState;
       mkdirSync(REPORT_DIR, { recursive: true });
       await page.screenshot({ path: join(REPORT_DIR, `${spec.id}.png`) });
       writeFileSync(join(REPORT_DIR, `${spec.id}.json`), `${JSON.stringify({
@@ -289,6 +338,57 @@ for (const spec of PROJECTS) {
       if (spec.id === "platformer-prototype") {
         const motion = finalState.motionInvariants as { passes?: boolean; checks?: readonly { id: string; passes: boolean; detail: string }[] } | undefined;
         expect(motion?.passes, `clean-room platformer motion invariants: ${JSON.stringify(motion?.checks?.filter((check) => !check.passes))}`).toBe(true);
+      }
+
+      /*
+       * The three kitless projects.
+       *
+       * Each asserts the capability it was written to prove, not merely that it rendered.
+       * A project that loaded and published state while its physics did nothing would pass
+       * the generic assertions above, which is exactly the kind of hollow green the PRD
+       * exists to prevent.
+       */
+      if (spec.id === "physics-sandbox") {
+        // Built with no kit at all.
+        expect(finalState.usedKit, "sandbox must not use a genre kit").toBe(false);
+        // The four capabilities WS-6.1 asks for, each observed in the simulation.
+        expect(finalState.contacts as number, "stacked crates must generate contacts").toBeGreaterThan(0);
+        expect(preResetState.pushes as number, "impulse pushes must have been applied").toBeGreaterThan(0);
+        expect(preResetState.pickHit, "raycast pick must hit a crate").toBe(true);
+        expect(preResetState.pickedNode as string, "raycast must name what it hit").not.toBe("none");
+        expect(finalState.bodiesNearTower as number, "overlap query must find the stack").toBeGreaterThan(0);
+      }
+      if (spec.id === "top-down-shooter") {
+        expect(finalState.usedKit, "shooter must not use a genre kit").toBe(false);
+        expect(preResetState.shotsFired as number, "shooter must have fired").toBeGreaterThan(0);
+        /*
+         * The layer-mask proof, and the reason WS-1.4 exists.
+         *
+         * "Bullets hit enemies but not each other" was unexpressible before collision
+         * layers. Any non-zero value here means a burst collided with itself.
+         */
+        /*
+         * Checked on the pre-reset snapshot, not the final one.
+         *
+         * `KeyR` zeroes this counter, so asserting it against the post-reset state would be
+         * trivially satisfied by a reset rather than by the layer mask actually working. The
+         * pre-reset snapshot is taken while bullets were in flight.
+         */
+        expect(preResetState.bulletOnBulletContacts, "bullets must not collide with each other").toBe(0);
+        expect(preResetState.liveBullets as number, "bullets must have existed to be maskable").toBeGreaterThanOrEqual(0);
+      }
+      if (spec.id === "physics-puzzle") {
+        expect(finalState.usedKit, "puzzle must not use a genre kit").toBe(false);
+        expect(finalState.jointKinds as readonly string[], "puzzle must use three joint kinds")
+          .toEqual(["motorised-hinge", "slider", "spring"]);
+        // Each joint must have visibly done its job. These are the assertions that would
+        // have failed before the cannon-es constraint-solve fix, when joints were inert.
+        expect(preResetState.doorTravel as number, "motorised hinge must move the door").toBeGreaterThan(0.02);
+        expect(preResetState.blockTravel as number, "slider must let the block travel").toBeGreaterThan(0.02);
+        // A slider must constrain the axis it is not on. The block travels ~0.38 along x, so
+        // an off-axis drift budget of a tenth of that is a real constraint rather than a
+        // tolerance wide enough to pass an unconstrained body.
+        expect(preResetState.blockOffAxisDrift as number, "slider must hold the block on its axis").toBeLessThan(0.04);
       }
     } finally {
       await server?.close();

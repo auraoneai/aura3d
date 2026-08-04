@@ -116,6 +116,10 @@ export class Constraint {
       return;
     }
     if (this.type === "fixed") {
+      // A fixed joint removes all six degrees of freedom, so relative rotation is locked for
+      // the same reason as the slider: an unconstrained spin swings the anchor and leaks into
+      // the positional solve.
+      this.lockRelativeRotation();
       const currentOffset = subVec3(this.anchorBWorld(), this.anchorAWorld());
       this.applyError(subVec3(currentOffset, this.restOffset));
       this.applyVelocityError(subVec3(this.bodyB.velocity, this.bodyA.velocity));
@@ -123,6 +127,22 @@ export class Constraint {
       this.applyError(subVec3(this.anchorBWorld(), this.anchorAWorld()));
       this.applyVelocityError(subVec3(this.bodyB.velocity, this.bodyA.velocity));
     } else if (this.type === "slider") {
+      /*
+       * A slider is a *prismatic* joint: one translational degree of freedom, and **zero
+       * rotational** ones. Locking rotation is not a refinement, it is what makes the
+       * translation constraint work at all.
+       *
+       * The anchor is carried on each body's local frame, so `anchorBWorld` is
+       * `position + rotate(localAnchor, rotation)`. If the body is free to spin, that anchor
+       * swings, the positional solve reads the swing as off-axis error, and it *translates*
+       * the body to cancel it. Rotation therefore leaks into position.
+       *
+       * Measured before this fix, in the clean-room physics puzzle: a block on a slider
+       * given a single along-axis impulse ended up 0.478 off its axis in z and 0.780 higher
+       * in y — it flew off the rail. It held fine at rest, which is why an isolated
+       * resting-body test passed while the interactive case failed.
+       */
+      this.lockRelativeRotation();
       const currentOffset = subVec3(this.anchorBWorld(), this.anchorAWorld());
       const projected = scaleVec3(this.axis, dotVec3(currentOffset, this.axis));
       this.applyError(subVec3(currentOffset, projected));
@@ -166,6 +186,29 @@ export class Constraint {
     }
     if (this.bodyA.inverseMass > 0) {
       this.bodyA.setAngularVelocity(subVec3(this.bodyA.angularVelocity, scaleVec3(axis, bounded)));
+    }
+  }
+
+  /**
+   * Remove relative angular velocity between the two bodies.
+   *
+   * Used by the joint types that allow no relative rotation. Applied as equal-and-opposite
+   * changes weighted by inverse mass so a joint to a static anchor stops the dynamic side
+   * outright, and a joint between two dynamic bodies conserves angular momentum.
+   */
+  private lockRelativeRotation(): void {
+    const relative = subVec3(this.bodyB.angularVelocity, this.bodyA.angularVelocity);
+    if (Math.abs(relative[0]) + Math.abs(relative[1]) + Math.abs(relative[2]) <= 1e-9) return;
+    const inverseMassSum = this.bodyA.inverseMass + this.bodyB.inverseMass;
+    if (inverseMassSum <= 0) return;
+    const correction = scaleVec3(relative, this.stiffness);
+    if (this.bodyB.inverseMass > 0) {
+      const share = this.bodyA.inverseMass > 0 ? this.bodyB.inverseMass / inverseMassSum : 1;
+      this.bodyB.setAngularVelocity(subVec3(this.bodyB.angularVelocity, scaleVec3(correction, share)));
+    }
+    if (this.bodyA.inverseMass > 0) {
+      const share = this.bodyB.inverseMass > 0 ? this.bodyA.inverseMass / inverseMassSum : 1;
+      this.bodyA.setAngularVelocity(addVec3(this.bodyA.angularVelocity, scaleVec3(correction, share)));
     }
   }
 

@@ -90,7 +90,7 @@ export {
   type MeshSurfaceQueryOptions,
   type SurfaceSample
 } from "@aura3d/physics";
-import { createPhysicsRuntime, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
+import { createPhysicsRuntime, type AuraCollisionLayers, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
 export * from "./VehicleChassis.js";
@@ -9453,6 +9453,21 @@ export interface AuraApp {
 
 export interface AuraCreateAppOptions {
   readonly scene: AuraSceneBuilder | AuraSceneSnapshot;
+  /**
+   * Configuration for {@link AuraApp.physics}.
+   *
+   * `layers` has to be supplied here rather than per body, because a collision mask is only
+   * meaningful relative to the complete set of layers: building the bitmask for "bullet"
+   * requires knowing every layer that exists. Without this option a developer could call
+   * `createCollisionLayers` and then have nowhere to put the result — which is exactly the
+   * hole the clean-room top-down shooter hit, since "bullets hit enemies but not each other"
+   * is the first thing any shooter needs.
+   */
+  readonly physics?: {
+    readonly layers?: AuraCollisionLayers | undefined;
+    /** World gravity. Defaults to `[0, -9.81, 0]`; top-down games usually want zero. */
+    readonly gravity?: readonly [number, number, number] | undefined;
+  };
   readonly diagnostics?: boolean | AuraDiagnosticsOptions;
   readonly renderer?: AuraCreateAppRendererOptions;
   readonly pixelRatio?: number;
@@ -9797,9 +9812,14 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   // One world owned by the app, so `app.physics` is live whether or not the scene declared
   // any bodies. A route that spawns everything at runtime (a shooter, a stacking puzzle) is
   // then no harder to write than one that declares bodies up front.
-  const appPhysicsWorld = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 60, enableSleeping: true });
+  const appPhysicsWorld = new PhysicsWorld({
+    gravity: options.physics?.gravity ? [...options.physics.gravity] : [0, -9.81, 0],
+    fixedDelta: 1 / 60,
+    enableSleeping: true
+  });
   const appPhysicsNodeNames = new Map<number, string>();
   const appPhysics = createPhysicsRuntime(appPhysicsWorld, {
+    ...(options.physics?.layers ? { layers: options.physics.layers } : {}),
     nodeNameFor: (bodyId) => appPhysicsNodeNames.get(bodyId)
   });
   /**
@@ -9901,7 +9921,19 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     overlay?.update();
     const revision = ++mountRevision;
     if (shouldUseProductionRenderer && canvas) {
-      void startProductionRender(canvas, renderSnapshot, diagnosticsState, options, overlay, runRuntimeFrame, () => runtimePaused, runtimeNodes)
+      void startProductionRender(
+        canvas,
+        renderSnapshot,
+        diagnosticsState,
+        options,
+        overlay,
+        runRuntimeFrame,
+        () => runtimePaused,
+        runtimeNodes,
+        // A route that registered a frame callback, or that has bodies to simulate, needs
+        // frames regardless of what the scene declares.
+        () => frameCallbacks.size > 0 || appPhysicsWorld.bodies().length > 0
+      )
         .then((controller) => {
           if (disposed || revision !== mountRevision) {
             controller.dispose();
@@ -10324,7 +10356,14 @@ async function startProductionRender(
   overlay?: { update(): void },
   beforeRender?: (dt: number, source: AuraFrameInfo["source"]) => void,
   isPaused: () => boolean = () => false,
-  runtimeNodes?: AuraRuntimeNodeRegistry
+  runtimeNodes?: AuraRuntimeNodeRegistry,
+  /**
+   * Extra reason to keep rendering, beyond what the scene declares.
+   *
+   * See {@link shouldContinuouslyRender}: scene-declared motion cannot know about a
+   * simulation or a frame callback the route drives itself.
+   */
+  requiresFrames: () => boolean = () => false
 ): Promise<WebGLRenderController> {
   const renderableNode = snapshot.nodes.find(isWebGLRenderableNode);
   if (!renderableNode) {
@@ -10336,7 +10375,7 @@ async function startProductionRender(
 
   const renderer = await createProductionSceneRenderer(canvas, snapshot, options.renderer, runtimeNodes);
   diagnosticsState.renderer = renderer.diagnostics;
-  const continuousRender = shouldContinuouslyRender(snapshot);
+  const sceneWantsFrames = shouldContinuouslyRender(snapshot);
   const labelLayer = createSceneLabelLayer(canvas, snapshot);
 
   let disposed = false;
@@ -10362,7 +10401,7 @@ async function startProductionRender(
       diagnosticsState.labels = labelLayer.snapshot();
     }
     overlay?.update();
-    if (continuousRender && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+    if ((sceneWantsFrames || requiresFrames()) && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
       animationHandle = requestAnimationFrame(renderFrame);
     }
   };
@@ -10382,6 +10421,20 @@ async function startProductionRender(
   };
 }
 
+/**
+ * Whether the *scene* declares something that changes over time.
+ *
+ * Deliberately conservative: a fully static scene should render once and stop rather than
+ * burn a core redrawing an identical frame.
+ *
+ * It is not sufficient on its own, and that was a real defect. This predicate can only see
+ * what the scene *declares* — a looping timeline, a moving camera, an animated or mutable
+ * node. It cannot see a physics simulation or a frame callback the route drives itself. So
+ * an app whose only motion came from `app.physics.step()` inside `app.onFrame()` rendered
+ * exactly **one** frame and froze: measured `frames: 1` with no console error, in a
+ * clean-room project where every crate should have been falling. Callers therefore combine
+ * this with their own `requiresFrames()`.
+ */
 function shouldContinuouslyRender(snapshot: AuraSceneSnapshot): boolean {
   if (snapshot.timeline?.mode === "loop") return true;
   if (snapshot.camera.mode === "dolly" || snapshot.camera.mode === "follow" || snapshot.camera.mode === "path" || snapshot.camera.mode === "flythrough") return true;
