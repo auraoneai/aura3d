@@ -187,18 +187,25 @@ an actionable message rather than silently substituting a box.
 `mesh` and `heightfield` are static-only: a concave triangle soup has no well-defined inertia
 tensor, and treating one as dynamic produces a body that falls through thin geometry.
 
-## Boundary and limits
+## Boundary
 
 The public boundary is `app.physics` on `@aura3d/engine`; the solver boundary is
 `@aura3d/physics`. Claims about collision, solver or character-controller behaviour must cite the
 specific API and the test or route evidence behind them.
 
+- Physics debug rendering is available as `app.physics.debugLines()` and is consumed by
+  `tests/clean-room/physics-sandbox`, which reports per-category line counts.
+## Current Limits
+
 - Genre kits (`game.racing`, `game.platformer`, `game.fallingBlocks`, `game.locomotion`) do
-  **not** yet consume this runtime. They remain separate implementations, so a fix in a kit does
-  not reach the general layer or vice versa. See `GameEngine-PRD.md` WS-3.8.
-- Cloth, softbody and large-scale simulation are not implemented.
-- Physics debug rendering exists in `packages/physics/src/PhysicsDebugDraw.ts` but has no route
-  consumer, so it is unproven.
-- Vehicle dynamics and vehicle AI driving are `parity-unproven` in the Three.js parity report.
-  A racing route's motion is a kit-local kinematic model, not the force-based tyre model in
+  **not** yet consume `app.physics`. They remain separate implementations, so a fix in a kit does
+  not reach the general layer or vice versa. See `GameEngine-PRD.md` WS-3.8, which records an
+  attempt at this and why it was reverted.
+- Vehicle dynamics and vehicle AI driving are `parity-unproven` in the Three.js parity report. A
+  racing route's motion is a kit-local kinematic model, not the force-based tyre model in
   `packages/physics/src/VehicleMotion.ts`.
+- Cloth, softbody and large-scale simulation are not implemented.
+- Rendering visual parity against Three.js is a separate, still-unproven claim; the strict
+  product-render gate fails at 0.331 against a 0.15 threshold and is untouched by this layer.
+- `mesh` and `heightfield` colliders are static-only. A concave triangle soup has no well-defined
+  inertia tensor, and treating one as dynamic produces a body that falls through thin geometry.
