@@ -145,13 +145,47 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
 
   const frontAxle = wheelbase * frontWeightBias;
   const rearAxle = wheelbase * (1 - frontWeightBias);
+  /*
+   * Rated tyre load, derived from the car this integrator is actually simulating.
+   *
+   * `samplePacejkaTireForces` scales grip by `(normalForce / maxLoad) ^ loadSensitivity`,
+   * clamped to a 0.1 floor, and `maxLoad` defaults to 5000 N — a road car's tyre. Any vehicle
+   * lighter than that therefore ran permanently on the 0.1 floor, losing **ten times** its grip
+   * no matter what the caller asked for.
+   *
+   * That is a silent, mass-dependent defect: it never throws, and it only shows up as a car
+   * that will not turn. Measured on a unit-mass car, a full-lock corner produced 1.1 g where
+   * the same request should have given about 3.5 g, so a racing kit could not make its own
+   * circuit no matter how much grip it asked for.
+   *
+   * Rating the tyre against the car's own static axle load means the load factor sits near 1 at
+   * rest for *any* mass, and load transfer then moves it up and down as it should. A heavier car
+   * still needs proportionally more force, which is the physics; what it no longer does is fall
+   * off a cliff because the vehicle is not a 1200 kg saloon.
+   */
+  const ratedTireLoad = Math.max(1, (mass * GRAVITY) / 2);
 
   function resolveSample(dt: number, input: VehicleMotionInput): VehicleMotionSample {
     const step = clamp(dt, 1e-4, 0.1);
     const throttle = clamp01(input.throttle ?? 0);
     const brake = clamp01(input.brake ?? 0);
     const steer = clamp(input.steer ?? 0, -1, 1) * maxSteerAngle;
-    const grip = clamp(input.grip ?? 1, 0.05, 1.5);
+    /*
+     * Grip multiplier on the tyre's peak force.
+     *
+     * The upper bound is 8 rather than 1.5 because arcade racing routes legitimately declare a
+     * pace that a road tyre cannot hold. Aura3D's own certified circuit is the worked example:
+     * its tightest corner needs 0.25 g at the certified speed, and the route then declares a
+     * 4x gameplay pace, which is 16x the lateral load — 4 g. Clamped at 1.5 the car understeers
+     * off the track at every corner no matter what the caller asks for, so the ceiling was
+     * silently deciding the game's handling.
+     *
+     * This scales the tyre's force, so slip angles, saturation, load transfer and the
+     * understeer/oversteer distinction all still emerge from the model. A high-grip tyre is
+     * still a tyre; the alternative is a kinematic point that turns wherever it is pointed,
+     * which is the defect this model exists to remove.
+     */
+    const grip = clamp(input.grip ?? 1, 0.05, 8);
     const handbrake = input.handbrake === true;
 
     const speed = current.speed;
@@ -189,6 +223,7 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
 
     const frontTire = samplePacejkaTireForces({
       normalForce: Math.max(1, frontLoad),
+      maxLoad: ratedTireLoad,
       longitudinalVelocity: Math.abs(forwardSpeed),
       lateralVelocity: lateral,
       angularVelocity: Math.abs(forwardSpeed) / 0.32,
@@ -199,6 +234,7 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
     });
     const rearTire = samplePacejkaTireForces({
       normalForce: Math.max(1, rearLoad),
+      maxLoad: ratedTireLoad,
       longitudinalVelocity: Math.abs(forwardSpeed),
       lateralVelocity: lateral,
       angularVelocity: (Math.abs(forwardSpeed) / 0.32) * (1 + Math.abs(slipRatio)),
