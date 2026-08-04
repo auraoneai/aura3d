@@ -269,15 +269,45 @@ Do not imply the prototype-blocked games are finished. Run
 `pnpm check:marketing-truth` and make it pass without weakening it.
 
 ### F3. Build and deploy
+
+**Corrected 2026-08-04 — the earlier instruction in this file was wrong and broke
+production. Read this carefully.**
+
+`aura3d.auraone.ai` is served by the **`marketing` Vercel project**
+(`prj_UobkWy6IxsUtMrmkddY2XTX2aDQi`), linked from `marketing/.vercel/project.json`.
+It is **not** served by the root `aura3d` project (`prj_5YTxFIgwQtNLwik68yFPUbovJpyA`).
+
+Deploying from the repo root publishes the root `index.html`, which is an "Aura3D
+Examples" listing, and `.vercelignore` line 16 excludes `marketing/` from that
+upload entirely — so a root deploy replaces the marketing site with the examples
+index. That is exactly what happened, and it took the live site from 1.5.1 to an
+examples page, then to a stale 1.4.4 while rolling back.
+
+Correct sequence:
 ```bash
-pnpm --dir marketing build
+pnpm --dir marketing build          # writes marketing/dist at the new version
+cd marketing
+# refresh the Build Output API tree that this project deploys
+rm -rf .vercel/output/static && cp -R dist .vercel/output/static
+vercel deploy --prod --prebuilt --yes
 ```
-Deploy to `aura3d.auraone.ai` via Vercel. Root is already linked: project
-`aura3d`, `prj_5YTxFIgwQtNLwik68yFPUbovJpyA`, org
-`team_peHZvhHKYn5UsgYkLDOeaDm0`. Root `vercel.json` uses `outputDirectory: "."`
-with rewrites for `/showcase/aura-clash`, `/playable` and fonts — **deploy from
-the repo root** so those apply. Do not rewrite routing config to force a deploy.
-Do not change DNS, aliases or project settings.
+Then verify the *new deployment URL* serves the right version **before** aliasing:
+```bash
+curl -s https://<new-deployment>.vercel.app/ | grep -oE 'nav-version">v[0-9.]+'
+vercel alias set https://<new-deployment>.vercel.app aura3d.auraone.ai
+```
+
+Do **not** run a plain `vercel deploy` from `marketing/` — the remote build runs
+`npm install`, which fails in this pnpm monorepo. Use `--prebuilt`.
+
+Do **not** pass a directory argument (`vercel deploy dist`) — it creates a new
+project named after the directory. If that happens, remove it with
+`vercel project rm <name>` and delete the stray `dist/.vercel`.
+
+Known-good rollback targets for the `marketing` project, if a deploy goes wrong:
+`marketing-e94b5xhbk` = 1.5.1, `marketing-jq1boimg1` = 1.5.0.
+
+Do not change DNS or project settings.
 
 Verify live: the domain serves 1.5.2, and `/showcase/aura-clash` and `/playable`
 resolve rather than 404. If the domain is not already attached, stop and report
