@@ -21,6 +21,18 @@
 //   NPM_CONFIG_USERCONFIG=/path/outside/repo/.npmrc node tools/release/publish-all.mjs [--dry-run]
 //
 // The npm token must live in an .npmrc OUTSIDE the repo (the repo .npmrc is tracked).
+//
+//  5. two-factor publishing     — an account with 2FA enforced on publish returns
+//     `EOTP` and the whole run halts on the first package. Pass a one-time password
+//     through the environment:
+//
+//       NPM_OTP=123456 node tools/release/publish-all.mjs
+//
+//     A single OTP is accepted for a short window, which is normally long enough for
+//     all 26 packages; if it expires mid-run, re-run with a fresh code and the
+//     "already published" branch below skips whatever already landed. The OTP is read
+//     from the environment and never logged: `--otp` is appended to the argv of the
+//     child process only.
 
 import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync } from "node:fs";
@@ -28,6 +40,9 @@ import { join, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "..", "..");
 const DRY_RUN = process.argv.includes("--dry-run");
+// Never hardcode or log this. It is a short-lived one-time password, not a token.
+const NPM_OTP = process.env.NPM_OTP?.trim() ?? "";
+const OTP_ARG = NPM_OTP ? ` --otp ${JSON.stringify(NPM_OTP)}` : "";
 const PACK_DIR = join(ROOT, "tests", "reports", "release-tarballs");
 const EXPECTED_PUBLIC_COUNT = 26;
 
@@ -90,7 +105,7 @@ try {
       if (DRY_RUN) {
         console.log(`[dry-run] packed ${label} -> ${tarball}`);
       } else {
-        sh(`npm publish ${JSON.stringify(tarball)} --access public`, { cwd: dir });
+        sh(`npm publish ${JSON.stringify(tarball)} --access public${OTP_ARG}`, { cwd: dir });
         console.log(`published ${label}`);
       }
     } catch (error) {
@@ -99,6 +114,12 @@ try {
       // packages that already made it — that is success, not failure.
       if (/cannot publish over|previously published/i.test(message)) {
         console.log(`already published ${label} (skipping)`);
+      } else if (/EOTP|one-time password/i.test(message)) {
+        failures.push({ label, error: "EOTP: publishing requires a 2FA one-time password" });
+        console.error(`FAILED ${label}: this account enforces 2FA on publish.`);
+        console.error("Re-run with a fresh code from your authenticator:");
+        console.error("  NPM_OTP=<6-digit-code> node tools/release/publish-all.mjs");
+        break;
       } else {
         failures.push({ label, error: message });
         console.error(`FAILED ${label}: ${message}`);
