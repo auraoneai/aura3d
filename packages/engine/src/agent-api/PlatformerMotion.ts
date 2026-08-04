@@ -110,6 +110,43 @@ export interface PlatformerMotionRequest {
   /** Minimum apex, so a level with no rises still has a usable jump. */
   readonly minApex?: number | undefined;
   /**
+   * Jump height in world units, declared by the developer.
+   *
+   * **Prefer this over relying on the geometry-derived apex.** When present it is
+   * authoritative: apex comes from intent and the level is then *validated* against it,
+   * rather than the jump being sized by whatever the level happens to contain.
+   *
+   * The defect this fixes: apex was `max(minApex, maxRise * apexHeadroom)`, and `maxRise`
+   * is the step-up between *consecutive* platforms. On a near-level course maxRise
+   * collapses, so apex fell to `minApex` and the character barely left the ground. The
+   * solver was optimising for "can technically reach the next platform" rather than "is a
+   * usable jump", and it had no notion of clearing anything that was not the immediate
+   * next platform.
+   */
+  readonly jumpHeight?: number | undefined;
+  /**
+   * Named feel, an alternative to stating a height and rise time separately.
+   *
+   * `snappy` is a fast, low, tightly controlled jump. `floaty` hangs. `responsive` is the
+   * middle ground most platformers use.
+   */
+  readonly feel?: PlatformerFeel | undefined;
+  /**
+   * Throw instead of silently shrinking the jump when intent cannot clear the level.
+   *
+   * Default true. Silent degradation is how the barely-there jump shipped: the solver
+   * quietly produced a number that satisfied its own constraint and no gate compared it
+   * to anything a player would notice.
+   */
+  readonly strict?: boolean | undefined;
+  /**
+   * Character height in world units, used to scale a `feel` preset.
+   *
+   * A jump is read relative to the character: clearing twice your own height feels the
+   * same whether the character is 0.5 or 5 units tall, and a fixed apex does not.
+   */
+  readonly characterHeight?: number | undefined;
+  /**
    * Target session length in seconds, used to derive move speed from course length.
    *
    * A course is only as long as the time it takes to cross; deriving speed from an
@@ -145,6 +182,28 @@ export interface PlatformerMotionSolution {
   readonly jumpBufferMs: number;
   /** Terminal fall speed, so a long drop does not accelerate without limit. */
   readonly terminalVelocity: number;
+  /**
+   * Gravity multiplier applied while descending.
+   *
+   * Above 1 the fall is faster than the rise. A symmetric parabola is physically pure and
+   * feels floaty, because the player spends as long falling — with no control authority
+   * left — as rising. Asymmetric gravity is the single largest contributor to a jump
+   * feeling responsive.
+   */
+  readonly fallGravityMultiplier: number;
+  /** Gravity multiplier near the apex, below 1, which produces hang time. */
+  readonly apexGravityMultiplier: number;
+  /** Vertical speed below which the apex-hang reduction applies. */
+  readonly apexHangThreshold: number;
+  /**
+   * Minimum apex when the jump button is released immediately.
+   *
+   * Variable jump height is what separates a hop from a full jump. Without it every jump
+   * is the same height and the player has no fine control.
+   */
+  readonly shortHopApex: number;
+  /** Upward velocity retained when the button is released early. */
+  readonly releaseVelocityScale: number;
   /** Geometry the solution was derived from. */
   readonly geometry: PlatformerGeometryFacts;
   /** Estimated time to traverse the course at `moveSpeed`. */
@@ -161,18 +220,98 @@ export interface PlatformerMotionSolution {
  * chosen rise time, and jump velocity from gravity and rise time. Move speed is sized
  * so the jump clears the widest gap and the course takes a chosen amount of time.
  */
+/** Named jump feels, as (riseSeconds, apexScale, fallMultiplier) triples. */
+export type PlatformerFeel = "snappy" | "responsive" | "floaty";
+
+interface FeelProfile {
+  readonly riseSeconds: number;
+  /** Apex as a multiple of character height, when no explicit jumpHeight is given. */
+  readonly apexPerHeight: number;
+  /**
+   * Gravity multiplier applied on the way down.
+   *
+   * Above 1 the fall is faster than the rise. Every platformer that feels good does this:
+   * a symmetric parabola reads as floating because the player spends as long descending
+   * (when they have no control authority left) as ascending. 1.0 is the physically pure
+   * but least pleasant choice.
+   */
+  readonly fallMultiplier: number;
+  /** Fraction of rise time near the apex where gravity is reduced, giving hang time. */
+  readonly apexHangFraction: number;
+}
+
+const FEEL_PROFILES: Readonly<Record<PlatformerFeel, FeelProfile>> = {
+  snappy: { riseSeconds: 0.24, apexPerHeight: 1.6, fallMultiplier: 1.9, apexHangFraction: 0.08 },
+  responsive: { riseSeconds: 0.32, apexPerHeight: 2.0, fallMultiplier: 1.6, apexHangFraction: 0.14 },
+  floaty: { riseSeconds: 0.46, apexPerHeight: 2.4, fallMultiplier: 1.15, apexHangFraction: 0.22 }
+};
+
+export function platformerFeelProfile(feel: PlatformerFeel): FeelProfile {
+  const profile = FEEL_PROFILES[feel];
+  if (!profile) throw new Error(`Unknown platformer feel "${feel}". Use snappy, responsive or floaty.`);
+  return profile;
+}
+
 export function solvePlatformerMotion(
   platforms: readonly PlatformerPlatformLike[],
   request: PlatformerMotionRequest = {}
 ): PlatformerMotionSolution {
   const geometry = measurePlatformerGeometry(platforms);
-  const riseSeconds = clampPositive(request.riseSeconds ?? 0.3, 0.08, 1);
+  const feel = request.feel ? platformerFeelProfile(request.feel) : undefined;
+  const riseSeconds = clampPositive(request.riseSeconds ?? feel?.riseSeconds ?? 0.3, 0.08, 1);
   const apexHeadroom = clampPositive(request.apexHeadroom ?? 1.6, 1, 6);
   const gapMargin = clampPositive(request.gapMargin ?? 1.45, 1, 4);
   const minApex = Math.max(0.05, request.minApex ?? 0.4);
+  const strict = request.strict ?? true;
 
-  // Apex is the tallest step plus headroom, floored so a flat level still jumps.
-  const apex = Math.max(minApex, geometry.maxRise * apexHeadroom);
+  /*
+   * Apex comes from intent when intent was expressed, and is validated against the level.
+   *
+   * The old rule was `max(minApex, maxRise * apexHeadroom)` — geometry-derived, with the
+   * level dictating the jump. `maxRise` is the step-up between consecutive platforms, so a
+   * near-level course collapsed it and the apex fell to `minApex`: the reported
+   * barely-there jump. It also could not express "I want to be able to jump over that",
+   * because nothing but the immediate next platform entered the calculation.
+   *
+   * Order of precedence: an explicit `jumpHeight`, then a `feel` preset scaled by
+   * character height, then the geometry-derived value as a backwards-compatible fallback.
+   * In every case the result must still clear the tallest step in the level, which is the
+   * validation the previous model got for free by construction and now has to assert.
+   */
+  const geometryApex = Math.max(minApex, geometry.maxRise * apexHeadroom);
+  const intentApex = request.jumpHeight !== undefined
+    ? Math.max(0.01, request.jumpHeight)
+    : feel
+      ? Math.max(minApex, feel.apexPerHeight * Math.max(0.1, request.characterHeight ?? 0.5))
+      : undefined;
+  const requestedApex = intentApex ?? geometryApex;
+
+  /*
+   * Validation: can the declared jump actually clear the level?
+   *
+   * A jump must out-reach the tallest step, with a little margin, or there is a platform
+   * the player cannot get onto. Reported by name rather than silently corrected, because a
+   * level the character cannot traverse is a level-design bug and the developer is the only
+   * one who can decide whether to lower the platform or raise the jump.
+   */
+  const unclearableRises: string[] = [];
+  const requiredRiseClearance = geometry.maxRise * 1.05;
+  if (geometry.maxRise > 0 && requestedApex < requiredRiseClearance) {
+    unclearableRises.push(
+      `tallest step is ${round(geometry.maxRise)} units but the declared jump apex is ` +
+      `${round(requestedApex)}; needs at least ${round(requiredRiseClearance)}`
+    );
+  }
+  if (strict && unclearableRises.length > 0) {
+    throw new Error(
+      "solvePlatformerMotion: the declared jump cannot clear this level.\n" +
+      unclearableRises.map((line) => `  - ${line}`).join("\n") +
+      "\nRaise jumpHeight, lower the platform, or pass { strict: false } to accept a " +
+      "level with unreachable geometry."
+    );
+  }
+  // Non-strict callers get a jump that at least clears the level rather than a broken one.
+  const apex = strict ? requestedApex : Math.max(requestedApex, requiredRiseClearance);
   // Projectile motion: apex = v^2 / 2g and riseSeconds = v / g, so g = 2 * apex / t^2.
   const gravityMagnitude = (2 * apex) / (riseSeconds * riseSeconds);
   const jumpVelocity = gravityMagnitude * riseSeconds;
@@ -211,6 +350,15 @@ export function solvePlatformerMotion(
     // Terminal velocity caps a long fall at roughly twice takeoff speed, which keeps a
     // drop readable instead of becoming an instant teleport downward.
     terminalVelocity: -round(jumpVelocity * 2),
+    fallGravityMultiplier: round(feel?.fallMultiplier ?? 1.6),
+    // Reduced gravity in a window either side of the apex. 0.55 is enough to read as
+    // hang time without making the arc feel weightless.
+    apexGravityMultiplier: 0.55,
+    apexHangThreshold: round(jumpVelocity * (feel?.apexHangFraction ?? 0.14)),
+    // A short hop reaches ~40% of full apex, which is a usable distinction without making
+    // the tap-jump useless for clearing anything.
+    shortHopApex: round(apex * 0.4),
+    releaseVelocityScale: 0.45,
     geometry,
     traversalSeconds: round(traversalSeconds),
     estimatedSessionSeconds: round(traversalSeconds / traversalFraction)

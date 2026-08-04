@@ -31,7 +31,7 @@ pnpm verify:api-docs
 | `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.5.2` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.5.2` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 30 |
+| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 32 |
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.5.2` | `packages/react/src/index.ts` | 14 |
 | `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 273 |
@@ -821,6 +821,8 @@ export * from "./CollisionVolumes.js";
 export * from "./KinematicBody.js";
 export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
+export * from "./MeshBVH.js";
+export * from "./SurfaceQuery.js";
 ```
 
 ## @aura3d/product-studio
