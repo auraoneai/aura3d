@@ -424,6 +424,35 @@ work — 1.5.2 shipped with `check:release` red.
 | `non-starter-templates-not-packaged` | Banned every `templates/production-` path, contradicting the gate above. | Ban narrowed to `external-parity-` and `three-compat-`, and paired with two **new** gates so no hole opens: `packaged-production-templates-are-declared` and `declared-production-templates-exist`. Proven load-bearing. |
 | `root-registry-only-starter-examples` | Compared 4 registered routes in `index.html` against a 3-element `examples` list. `instancing-performance` is registered and classified as a starter example, but sits in the gate's diagnostic list and has no starter route-health spec. | Registry expectation made explicit. **`instancing-performance` was deliberately not promoted** into `examples` — that would claim starter-grade route-health and screenshot coverage it does not have. |
 
+### `check:bundle-size` — the gate could not even build, and now reports a real overrun
+
+Same story, one layer deeper. `check:bundle-size` was not failing on a budget; it was **crashing**,
+because esbuild resolves `await import(...)` at build time and `FfmpegFrameEncoder` dynamically
+imports `node:child_process`, `node:fs/promises`, `node:os` and `node:path` inside a runtime
+capability probe. Any browser-platform bundle that transitively reaches `@aura3d/engine` failed with
+unresolved builtins. Pre-existing: bundling `v1.5.2`'s agent-api entry in a clean worktree fails the
+same way.
+
+Fixed by treating Node builtins as external for every browser target, which is what a real browser
+bundler does. That makes the gate *measure* instead of crash — and the measurement is bad:
+
+| target | gzip | budget | over by |
+|---|---|---|---|
+| `core-agent-api` | 578,017 B | 80,000 B | **7.2x** |
+| `template-product-viewer` | 354,440 B | 250,000 B | 1.42x |
+| `template-cinematic-scene` | 354,426 B | 250,000 B | 1.42x |
+| `template-mini-game` | 372,092 B | 250,000 B | 1.49x |
+
+**Do not "fix" this by raising the budgets.** A 578 KB gzip for the agent API against an 80 KB
+budget is a real product problem — it is what a browser consumer downloads — and the budget is the
+only thing recording that. The likely cause is that `agent-api/index.ts` is a single ~47k-line module
+re-exporting everything including Node-only encoders, video pipelines and animation tooling, so
+nothing tree-shakes. Splitting that surface is substantial work with its own PRD, and it is
+**not** in scope for GameEngine-PRD.
+
+Recorded here because it is now visible for the first time, and because it is a genuine blocker for
+claiming a good developer experience: "install our library" currently costs 578 KB gzip.
+
 ### Open decision, deliberately not made here
 
 `/apps/instancing-performance/` has three sources of truth disagreeing about what it is: the root

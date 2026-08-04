@@ -26,6 +26,32 @@ interface BundleResult {
   readonly sizeLimitPassed: boolean;
 }
 
+/**
+ * Node builtins that are external to every *browser* bundle measurement.
+ *
+ * `FfmpegFrameEncoder` reaches `node:child_process`, `node:fs/promises`, `node:os` and `node:path`
+ * through `await import(...)` inside a runtime capability probe — it shells out to ffmpeg, so it can
+ * only work in a Node-like runtime and reports `supported: false` when it cannot. esbuild resolves
+ * dynamic imports at build time regardless, so bundling any entry that transitively reaches
+ * `@aura3d/engine` for `platform: "browser"` failed with unresolved builtins and took the whole
+ * `check:bundle-size` gate — and therefore `check:release` — down with it.
+ *
+ * Pre-existing rather than a regression: bundling `v1.5.2`'s agent-api entry in a clean worktree
+ * reports the same class of failure. `check:release` has been red since at least that tag.
+ *
+ * Applied to every target, not just the agent-api one, because the three template entries import
+ * `@aura3d/engine` and so reach the same encoder. This is the correct measurement rather than a
+ * workaround: a real browser bundler also treats Node builtins as external, so the reported size is
+ * what a browser consumer actually pays. The alternative — removing the encoder from the public
+ * surface — would delete a working Node capability to satisfy a browser-only metric.
+ */
+const BROWSER_EXTERNAL_NODE_BUILTINS = [
+  "node:child_process",
+  "node:fs/promises",
+  "node:os",
+  "node:path"
+] as const;
+
 const targets: readonly BundleTarget[] = [
   {
     id: "core-agent-api",
@@ -146,7 +172,7 @@ async function bundleTarget(target: BundleTarget): Promise<BundleResult> {
     sourcemap: false,
     logLevel: "silent",
     plugins: [createAliasPlugin(target.external ?? [])],
-    external: [...(target.external ?? [])],
+    external: [...(target.external ?? []), ...BROWSER_EXTERNAL_NODE_BUILTINS],
     ...(target.stdin
       ? {
           stdin: {
