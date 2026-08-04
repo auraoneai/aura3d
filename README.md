@@ -89,11 +89,27 @@ an app, add typed assets, run it, test it, deploy it.
 
 ## Current Release: Aura3D 1.5.2
 
-Aura3D 1.5.2 is the current source release across all 26 public packages. This is an
+Aura3D 1.5.2 is the current source release across all 26 public packages. It adds
+**camera and sizing capability to the public API** and carries an
 **evidence-correctness patch** on top of 1.5.1.
 
 ### What shipped in 1.5.2
 
+- **Orthographic and isometric cameras on the public surface.** `camera.orthographic()`
+  and `camera.isometric()` join the safe agent API with an `orthographicSize` field, and
+  `@aura3d/rendering` gains `computeOrthographicCameraFrame` (bounds-derived) and
+  `computeOrthographicCameraView` (explicit frustum), selectable through
+  `RenderSource.cameraProjection`. Before this, renderer auto-framing could only build a
+  perspective frustum, so a scene that needed a parallel projection silently received a
+  perspective one — CAD and technical views, isometric games, floor plans, sprite bakes and
+  product turntables were all affected. `camera.isometric()` uses the true `atan(1/√2)`
+  elevation at which the three world axes project to equal screen lengths. Perspective
+  remains the default, so this is not a breaking change.
+- **`fitSizeToRegion()` for bounds-derived asset sizing.** Returns a `targetMaxDimension`
+  that sizes an asset to a chosen fraction of the region it occupies. Placement was already
+  bounds-derived through `resolveSemanticRegion`; sizing was not, so routes had no correct
+  alternative to inventing a scale multiplier that broke whenever the asset or scene
+  changed size.
 - **Per-row background estimation in foreground analysis.** Every showcase screenshot gate
   measures silhouette extent, foreground ratio and subject centroid against a background
   estimate. That estimate was a single average of the frame's four corners, which is wrong
