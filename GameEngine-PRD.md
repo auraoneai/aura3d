@@ -1,8 +1,8 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
-**Status:** in progress — WS-0, WS-1 (except 1.7), WS-2, WS-4, WS-6 complete with evidence.
+**Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
 WS-3.8 attempted and reverted with the finding recorded (see below). WS-5 and WS-7 open.
-26 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+27 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -175,7 +175,7 @@ that engine *reachable and safe*.
 - [x] 1.4 Collision layers and masks — `createCollisionLayers` + `createAuraApp({ physics: { layers } })`. Proven behaviourally, not just structurally: the clean-room shooter asserts `bulletOnBulletContacts === 0` on a pre-reset snapshot while bullets are in flight, and a control case confirms cross-layer pairs *do* collide.
 - [x] 1.5 Full shape and body-property coverage, audited against the backend — audit found the declared list advertised `cylinder`, which `Shape.ts` does not provide; it would have thrown for any caller. Removed rather than faked with a box, `trimesh` renamed to `mesh` to match the factory, capability table documented, and unsupported shapes throw an actionable error.
 - [x] 1.6 Six joint types with stability tests — `fixed`, `hinge`, `slider`, `ball-socket`, `spring`, `motorised-hinge`, each tested on **both** backends (`public-joints.test.ts` 19/19). Uncovered and fixed two engine defects: joints never solved on the default cannon-es backend (a `fixed` joint free-fell to y = -18.78), and `slider` left rotation unconstrained so spin leaked into 0.478 of off-axis translation.
-- [ ] 1.7 Debug draw with a real consumer
+- [x] 1.7 Debug draw with a real consumer — `buildLines` drew colliders only; four of the six things WS-1.7 asks for did not exist. Added contacts (tinted by penetration), normals, joint segments, dimmed sleeping bodies and caller-supplied raycasts, each categorised. Exposed as `app.physics.debugLines()`. Consumed by `tests/clean-room/physics-sandbox`, measured in a live browser run: **72 collider, 10 contact, 5 normal, 1 raycast** lines; the gate asserts contacts and normals specifically, since a bare line count would pass on the old collider-only draw.
 - [x] 1.8 Everything reachable from the public API, no deep imports — every new physics test imports `@aura3d/engine` only. The three new clean-room projects report `packagesImported: ["@aura3d/engine"]` with zero private imports, measured by the harness rather than asserted.
 - [x] 1.9 Physics concepts doc with runnable snippets — `docs/concepts/physics.md` rewritten (was a stale file listing pinned at "Version: 1.4.5" with no code in it). Six snippets: push a crate, detect a pickup, raycast for line of sight, bullets that miss each other, a motorised hinged door, ground to a mesh. `check:docs-codeblocks` now **compiles** them against the real public API rather than only checking import specifiers; proven load-bearing by renaming `applyImpulse` to a nonexistent method and observing the gate fail.
 
