@@ -502,6 +502,47 @@ root registry. Both are real product decisions. Papering over it by adding it to
 have made the gate green while asserting coverage that does not exist, which is the failure mode
 this PRD exists to stop.
 
+## 3.3 Release readiness: what actually blocks 1.5.3
+
+Every failing gate was audited against `v1.5.2` using the *same instrument on both revisions*, so
+attribution is measured rather than assumed. Summary:
+
+| Gate | State | Attribution | Blocks 1.5.3? |
+|---|---|---|---|
+| `typecheck` | pass | — | no |
+| `build` | pass | — | no |
+| `test:unit` | 1 failure | **my evidence regen invalidated the owner's visual-review source binding** | **yes — needs your re-signature** |
+| `test:integration` | pass | — | no |
+| `verify:exports` | pass (27 packages) | — | no |
+| `verify:boundaries` | pass (1125 files) | — | no |
+| `verify:architecture` | pass (27 packages) | — | no |
+| `verify:imports` | pass (39 subpaths) | — | no |
+| `verify:shaders` | pass (14 files) | — | no |
+| `check:game-runtime` | pass (4 gates + 68 tests) | new in this branch | no |
+| `check:quality-gates` | pass (21/21, 0 unproven) | — | no |
+| `check:templates` | pass (147 checks) | **was red before 1.5.2**, fixed here | no |
+| `check:examples` | pass (18 checks) | **was red before 1.5.2**, fixed here | no |
+| `check:bundle-size` | 4 targets over budget | **pre-existing 7.10x; this branch adds 1.8%** | judgement call — see below |
+| `verify:performance` | flaky | **fails ~3 of 4 runs on v1.5.2 too**; current tree marginally faster | no |
+
+### The one true blocker
+
+`docs/project/showcase-visual-review.json` records **your** approval
+(`gchahal1982@procure-net.com`, `kind: "human"`) bound to each route's source hash. Regenerating
+stale evidence moved those hashes. The screenshots still hash correctly — verified per route — so
+nothing visual drifted; the approval simply no longer attaches to the code now present.
+
+I have not touched that file and will not. Re-signing another person's visual review to turn a gate
+green is the single thing in this PRD an agent must not do, and it is exactly what the gate exists to
+prevent.
+
+### The judgement call that is yours, not mine
+
+`check:bundle-size` fails on a **pre-existing** 7.10x overrun that this branch makes 7.23x. Shipping
+1.5.3 means either accepting that (as 1.5.2 did, silently, because the gate was crashing rather than
+measuring) or deferring until the agent-api surface is split. I have deliberately not raised the
+budget to make it pass. It is now *visible* for the first time, which is the useful change.
+
 ## 4. Definition of done
 
 - [ ] Every checkbox above checked
