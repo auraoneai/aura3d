@@ -1,247 +1,326 @@
-# Aura3D Game Engine PRD — make the runtime real, not the screenshots
+# Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
 **Status:** proposed, not started
 **Owner:** engine
-**Scope:** `packages/physics`, `packages/engine/src/agent-api`, `packages/rendering`
+**Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
+**Secondary scope:** `packages/rendering`, `tools/showcase-library`, `tests/`
 **Explicitly out of scope:** editing any file under `apps/` to make a symptom disappear
 
 ---
 
-## 0. Read this before writing code
+## 0. What is actually wrong — corrected by investigation
 
-This PRD exists because Aura3D 1.5.2 shipped with cameras, sizing and repaired
-test harnesses while the two game routes still visibly fail: the car's tyres sink
-into the road on turns, the DUNLOP arch renders translucent, speed reads `0` while
-status reads `running`, and the Skyline character barely leaves the ground.
+An earlier draft of this document claimed Aura3D "has no general dynamic rigid-body
+simulation." **That was wrong**, and the correction reframes the whole plan.
 
-The previous three releases each fixed a *symptom* and each left the *mechanism*
-intact. This document targets mechanisms. Four rules make that enforceable:
+`packages/physics/src/PhysicsWorld.ts` is a real physics engine wrapper. It has:
+- `createRigidBody`, `createCollider`, `createConstraint`, `removeRigidBody`
+- `step(dt)` returning `readonly CollisionEvent[]`
+- `raycast` / `raycastAll`
+- configurable `solverIterations`, sleeping, adaptive substeps
+- **two backends**: `cannon-es@0.20.0` (a mature, battle-tested engine) and an
+  `aura-js` fallback
 
-1. **No route-local numbers.** If a fix adds or edits a constant inside
-   `apps/**`, it is the wrong fix. Every value a game needs must be derived by a
-   library function from geometry, asset bounds, or declared intent.
-2. **No new "certified" language until the gate that would catch the defect
-   exists and passes.** The current failures were all invisible to green gates.
-3. **A defect is closed when a unit test fails without the fix.** Screenshots are
-   corroboration, never proof.
-4. **`prototype-blocked` stays until the runtime is right.** No status promotion
-   is part of any task here.
+So the engine exists and works. `apps/advanced-examples-gallery` uses it and its
+`[gameplay]` quality gates pass.
 
-### The single root cause behind both games
+**The real defect is a reachability and layering failure, in three parts:**
 
-Both failures are the same bug wearing different clothes: **the runtime never
-queries real geometry at runtime.** It queries an *approximation baked once at
-authoring time.*
+### Part 1 — the public API exposes physics as *declaration only*, never as *simulation*
 
-- **Vehicle:** `packages/engine/src/agent-api/VehicleChassis.ts:404` computes
+A developer can declare a body on a node:
+
+```ts
+primitives.box({ name: "crate" })
+  .physics({ type: "dynamic", shape: "box", halfExtents: [.12,.12,.12], mass: 1, restitution: .18 })
+```
+
+That is the whole public physics surface. There is **no runtime handle**. In
+`packages/engine/src/agent-api/index.ts`, across ~47k lines:
+- `applyForce` — **0 occurrences**
+- `onCollision` — **0 occurrences**
+- `rigidBody` as a public runtime type — **0 occurrences**
+- `applyImpulse` — **1 occurrence**, buried inside the canned `miniGolf` helper at
+  line 5363, unreachable to any other route
+
+So a developer can *place* a physics object and watch it fall. They cannot push it,
+cannot know when it hits something, and cannot read its velocity. **Declaring a
+simulation you cannot interact with is not a physics API.**
+
+### Part 2 — genre kits are parallel implementations, not consumers of the engine
+
+There are exactly four: `racing`, `platformer`, `falling-blocks`, `locomotion`. Each
+is a self-contained implementation. `VehicleChassis` does not use `PhysicsWorld`; it
+takes a `VehicleSurface` callback and integrates its own kinematics.
+`PlatformerMotion` solves closed-form trajectories.
+
+Two consequences:
+- Anything outside those four genres has no path. Physics puzzle, tower defense,
+  top-down shooter, stacking game, ragdoll, boat, spaceship: nothing.
+- Fixing the racing kit helps nobody building anything else, because the fix lands
+  in a sibling, not a shared foundation. **This is the structural reason we keep
+  going in circles.**
+
+### Part 3 — the two visible game defects are both "approximation baked at authoring time"
+
+- **Car sinks through the road.** `VehicleChassis.ts:404` computes
   `contactPlaneY = min(wheel.position[1] - wheelRadius)` from a
-  `VehicleSurface.sample(x, z)` callback. The chassis design is correct and takes a
-  real surface query. But `apps/showcase-turbo-drift-circuit/src/main.ts:363`
-  implements that callback as
-  `height: TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction` — a **flat plane minus
-  an analytic shoulder ramp**. `TRACK_SURFACE_Y` is one frozen scalar. So on a
-  banked or crowned corner the returned height is wrong, the suspension solves
-  against a lie, and the tyres pass through the visible mesh. The 30-line comment
-  block above `CAR_GROUND_Y` explaining why the plane is finally correct is itself
-  the tell: a correct system needs no essay defending a constant.
-- **Platformer:** `packages/engine/src/agent-api/PlatformerMotion.ts:175` sets
+  `VehicleSurface.sample(x, z)` callback. The chassis is correctly designed. But
+  `apps/showcase-turbo-drift-circuit/src/main.ts:363` implements that callback as
+  `height: TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction` — **a flat plane plus an
+  analytic ramp**. On a banked or crowned corner the height is wrong, the suspension
+  solves against a lie, and the tyres pass through the visible mesh. The 30-line
+  comment block defending `CAR_GROUND_Y` is itself the tell.
+- **Jump barely lifts.** `PlatformerMotion.ts:175` sets
   `apex = max(minApex, geometry.maxRise * apexHeadroom)`. `maxRise` is the largest
-  *step-up between consecutive platforms*. Skyline's platforms are nearly
-  level, so `maxRise` is tiny, so the apex collapses to `minApex`, so the character
-  barely hops. The solver is optimising for "can technically reach the next
-  platform" instead of "feels like a jump." It also has no notion of jumping *onto*
-  or *over* anything that is not the immediate next platform.
+  step-up between *consecutive* platforms. Skyline's platforms are near-level, so
+  `maxRise` collapses and the apex falls to `minApex`. The solver optimises for
+  "can technically reach the next platform," not "feels like a jump."
 
-Fix the mechanism in both cases: **replace analytic surface approximations with
-real mesh raycasts**, and **replace step-derived motion with intent-derived
-motion validated against geometry.**
+### The honest scorecard this must move
+
+| Capability | Now | Consumers |
+|---|---|---|
+| rigid bodies | parity | 1 (gallery only) |
+| colliders | parity | 2 |
+| raycasting | **unproven** | **0** |
+| character controller | **unproven** | **0** |
+| joints / constraints | **unproven** | **0** |
+| continuous collision detection | **unproven** | **0** |
+| physics debug rendering | **unproven** | **0** |
+| vehicle dynamics | claims **exceed** | 1 — *while the car sinks* |
+| platformer motion tuning | claims **exceed** | cites a route **deleted in 1.5.2** |
 
 ---
 
-## 1. Workstreams
+## 1. Four rules that make this not-a-patch-job, enforceable by grep
 
-### WS-1 — Real mesh raycasting (foundation; everything else depends on it)
+1. **No route-local physics numbers.** Any constant under `apps/**` that encodes a
+   surface height, gravity, jump velocity or contact plane is a defect.
+   Enforced: `grep -rE "TRACK_SURFACE_Y|CAR_GROUND_Y|CAR_TYRE_CONTACT_Y|VERGE_DROP|jumpVelocity:|gravity:" apps/` → empty.
+2. **Kits must consume the general layer.** No kit may integrate its own bodies or
+   contacts. Enforced by an architecture test asserting every kit imports the shared
+   physics runtime.
+3. **Gates are written first and observed failing on the 1.5.2 build**, then the fix
+   makes them pass. Every defect the user reported was invisible to a green pipeline.
+4. **A defect is closed only when a unit test fails without the fix.** Screenshots
+   corroborate; they never prove.
 
-`raycasting` is `parity-unproven` with **zero production consumers**.
-`packages/physics/src/Raycast.ts` exists but nothing ships against it. Until a
-game can ask "what is the surface under this point, on this mesh, right now," every
-grounding system is guessing.
+---
+
+## 2. Workstreams
+
+### WS-0 — Truth first: correct the false claims before building on them
+
+Do this first so no later work inherits a lie.
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 1.1 | `packages/physics/src/Raycast.ts` | Audit existing API. Record what it supports (shapes? triangle meshes? BVH?) and what it does not. Do not assume it works. | A written capability table in the PR body, with a test per claim |
-| 1.2 | `packages/physics/src/MeshBVH.ts` **(new)** | Build a BVH over indexed triangle geometry. Deterministic construction; no reliance on iteration order. | Unit test: 10k-triangle mesh, 1k random rays, results match brute force exactly |
-| 1.3 | `packages/physics/src/Raycast.ts` | Add `raycastMesh(origin, direction, mesh, options)` returning hit point, triangle index, barycentric coords, interpolated normal, and distance. | Unit tests: front/back face, glancing angle, parallel miss, ray origin inside geometry, degenerate triangle |
-| 1.4 | `packages/physics/src/SurfaceQuery.ts` **(new)** | `createMeshSurfaceQuery(geometry, worldMatrix)` → `{ sampleHeight(x, z), sampleNormal(x, z), sampleGrip(x, z) }`. Downward ray per sample, cached per frame by integer cell. | Unit test: a crowned/banked track mesh returns different heights across its width, and a real normal, not `[0,1,0]` |
-| 1.5 | `packages/physics/src/index.ts`, `packages/engine/src/agent-api/index.ts` | Export the surface-query surface from the **public** API. | `tests/unit/public-api-contracts.test.ts` asserts the exports; consumer count for `raycasting` rises above 0 |
-| 1.6 | `packages/physics/src/PhysicsDebugDraw.ts` | Make debug rendering actually consumable: visualise rays, hits, normals, BVH nodes, contact points. Currently `parity-unproven`, 0 consumers. | A route renders it; a browser test screenshots visible ray/contact overlays |
+| 0.1 | `tools/product-remediation/build-threejs-parity.mjs` | Downgrade `vehicle dynamics` and `vehicle AI driving` from `exceed` to `parity-unproven`. A car that sinks through the road does not exceed Three.js. | Regenerated report shows the downgrade with a recorded reason |
+| 0.2 | same | `platformer motion tuning` cites `showcase-platformer-game-layer-proof`, **deleted in 1.5.2**. Remove the dead consumer; re-derive status from live routes only. | No parity row cites a nonexistent route; add a test asserting this |
+| 0.3 | `tests/unit/tools/parity-consumers.test.ts` **(new)** | Every consumer named in the parity report must resolve to a live route or package. | Test fails if a future deletion orphans a claim |
+| 0.4 | `tests/reports/clean-room-projects/racing-prototype.json` | The clean-room racing prototype ends its scripted run with `speed: 0` and `x: 0` — the same telemetry defect as the live site, sitting inside the headline "developers can build on this" evidence. Treat as a real defect (see WS-5.3), not a reporting quirk. | Scripted run ends with non-zero speed after throttle input |
 
-**Checklist**
-- [ ] 1.1 Raycast.ts capability table written and test-backed
-- [ ] 1.2 MeshBVH matches brute force on 1k rays
-- [ ] 1.3 raycastMesh handles all six edge cases
-- [ ] 1.4 createMeshSurfaceQuery returns per-point height **and** normal from real geometry
-- [ ] 1.5 Exported from the public API; raycasting consumer count > 0
-- [ ] 1.6 PhysicsDebugDraw has a real consumer and a visual test
+- [ ] 0.1 Vehicle rows downgraded
+- [ ] 0.2 Dead consumer removed from platformer row
+- [ ] 0.3 Consumer-liveness test in place
+- [ ] 0.4 Clean-room racing telemetry defect acknowledged and tracked
 
 ---
 
-### WS-2 — Vehicle contact against the real track mesh
+### WS-1 — A real public physics runtime (the spine; everything depends on it)
 
-The chassis is sound. Its *input* is fake. This workstream deletes the fake input.
+This is the workstream that turns four canned genres into a general engine. It does
+**not** write a physics engine — `PhysicsWorld` + `cannon-es` already is one. It makes
+that engine *reachable and safe*.
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 2.1 | `packages/engine/src/agent-api/VehicleChassis.ts` | Add `createMeshVehicleSurface(trackGeometry, worldMatrix, { gripByMaterial })` built on WS-1.4. Per-wheel independent sampling. | Unit test: four wheels over a banked corner get four different heights |
-| 2.2 | `packages/engine/src/agent-api/VehicleChassis.ts` | Use the sampled **normal** to orient the chassis. Pitch/roll must follow the surface, not only load transfer. | Unit test: on a 10° bank the body roll matches the surface normal within 0.5° |
-| 2.3 | `packages/physics/src/VehicleDynamics.ts` | Replace the kinematic 2D point with force-based longitudinal/lateral tyre model (slip ratio, slip angle, load-sensitive friction, combined-slip circle). | Unit tests: understeer at high slip angle, wheelspin under excess torque, weight transfer under braking |
-| 2.4 | `packages/physics/src/VehicleDynamics.ts` | Continuous collision for wheels so a tyre cannot tunnel through the mesh between frames at speed. Depends on `continuous collision detection` (currently unproven). | Unit test: at 200 km/h with a 16 ms step, no wheel penetrates the surface |
-| 2.5 | `apps/showcase-turbo-drift-circuit/src/main.ts` | **Delete** `TRACK_SURFACE_Y`, `CAR_GROUND_Y`, `CAR_TYRE_CONTACT_Y`, `VERGE_DROP`, `SHOULDER_WIDTH`, and the analytic `circuitSurface.sample`. Replace with `createMeshVehicleSurface(...)`. Net constants removed, not added. | `grep -c "TRACK_SURFACE_Y" apps/showcase-turbo-drift-circuit/src/main.ts` → 0 |
-| 2.6 | `tests/unit/physics/vehicle-mesh-contact.test.ts` **(new)** | Drive a scripted lap over the **real** circuit mesh. Assert max penetration below 1 mm at every step and all four wheels grounded on tarmac. | Test fails if 2.5 is reverted |
-| 2.7 | `tools/showcase-library/game-visual-qa.mjs` | Add a gate that measures tyre-vs-road penetration from the rendered frame, so a sinking wheel is caught by CI, not by the user. | Gate fails on the current 1.5.2 build and passes after the fix |
+| 1.1 | `packages/engine/src/agent-api/PhysicsRuntime.ts` **(new)** | `AuraBodyHandle`, returned by `app.bodies.get(id)` / `.require(id)`, mirroring the existing `app.nodes` pattern. Methods: `applyForce`, `applyImpulse`, `applyTorque`, `setVelocity`, `getVelocity`, `setPosition`, `teleport`, `wake`, `sleep`, `setEnabled`. | Unit tests per method against a stepped world |
+| 1.2 | same | Collision events on the public surface: `app.onCollision(handler)`, `app.onCollisionWith(nodeName, handler)`, `app.onTriggerEnter/Exit`. Payload carries both nodes, contact point, normal, impulse magnitude, relative velocity. | Unit test: two dynamic bodies collide and the handler receives correct contact data |
+| 1.3 | same | Queries: `app.physics.raycast(origin, dir, opts)`, `raycastAll`, `sphereCast`, `overlapSphere`, `overlapBox`. Wraps `PhysicsWorld.raycast`, which exists but has **zero consumers**. | Raycasting consumer count > 0; unit tests for hit/miss/filter-by-layer |
+| 1.4 | same | Collision layers and masks so a developer can express "bullets hit enemies but not each other." | Unit test: masked pairs generate no contacts |
+| 1.5 | `packages/physics/src/PhysicsWorld.ts` | Extend `.physics({...})` declaration to cover what the engine already supports: `capsule`, `cylinder`, `sphere`, `convexHull`, `trimesh`, `heightfield`; plus `linearDamping`, `angularDamping`, `sensor`, `layer`, `lockRotation`, `centerOfMass`. Audit which the backend truly supports; do not expose what it cannot do. | A capability table per shape, test-backed; unsupported shapes throw an actionable error |
+| 1.6 | `packages/engine/src/agent-api/PhysicsRuntime.ts` | Joints as a real public feature: hinge, slider, fixed, ball-socket, spring, motorised hinge. `joints / constraints` is unproven with 0 consumers. | Unit tests: stability under load, motor drives a hinge, spring returns to rest |
+| 1.7 | `packages/physics/src/PhysicsDebugDraw.ts` | Make debug draw consumable: colliders, contacts, normals, joints, sleeping state, raycasts. Currently unproven, 0 consumers. | A route renders it; browser test screenshots visible overlays |
+| 1.8 | `packages/engine/src/agent-api/index.ts` | Export the whole runtime from the **public** API. Nothing above may require a deep import. | `tests/unit/public-api-contracts.test.ts` asserts every new export; ESLint deep-import ban still passes |
+| 1.9 | `docs/api/public-api.md`, `docs/concepts/physics.md` **(new)** | Document the runtime with runnable snippets: push a crate, detect a pickup, raycast for line-of-sight, build a hinged door. | `pnpm check:docs-codeblocks` passes on every snippet |
 
-**Checklist**
-- [ ] 2.1 Mesh-backed vehicle surface with per-wheel sampling
-- [ ] 2.2 Chassis attitude follows the surface normal
-- [ ] 2.3 Force-based tyre model replaces the kinematic point
-- [ ] 2.4 No tunnelling at 200 km/h
-- [ ] 2.5 All route-local surface constants deleted
-- [ ] 2.6 Scripted-lap penetration test in place and load-bearing
-- [ ] 2.7 Rendered-frame penetration gate fails on 1.5.2
+- [ ] 1.1 `AuraBodyHandle` with forces, impulses, torque, velocity
+- [ ] 1.2 Collision + trigger events with full contact payload
+- [ ] 1.3 Raycast / spherecast / overlap queries; raycasting consumers > 0
+- [ ] 1.4 Collision layers and masks
+- [ ] 1.5 Full shape and body-property coverage, audited against the backend
+- [ ] 1.6 Six joint types with stability tests
+- [ ] 1.7 Debug draw with a real consumer
+- [ ] 1.8 Everything reachable from the public API, no deep imports
+- [ ] 1.9 Physics concepts doc with runnable snippets
 
 ---
 
-### WS-3 — Character controller and a jump that feels like a jump
-
-`character controller` is `parity-unproven` with **zero consumers**.
-`packages/physics/src/CharacterController.ts` exists and no game uses it.
+### WS-2 — Mesh surface queries (kills the "baked plane" defect class at its root)
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 3.1 | `packages/physics/src/CharacterController.ts` | Audit and make real: capsule vs mesh, swept movement, step-up/step-down, slope limit, ceiling handling, wall slide. | Unit tests per behaviour, all against mesh geometry |
-| 3.2 | `packages/engine/src/agent-api/PlatformerMotion.ts` | **Change the objective function.** Apex must come from declared intent (`jumpHeight` in world units, or a named feel preset), then be *validated* against geometry — not derived from `maxRise`. Fail loudly when intent cannot clear the level, instead of silently shrinking the jump. | Unit test: a level with `maxRise = 0.05` still yields a usable apex; a level whose gaps are unclearable throws with an actionable message |
-| 3.3 | `packages/engine/src/agent-api/PlatformerMotion.ts` | Add asymmetric gravity (fast fall), coyote time, jump buffering, variable jump height on button release, and apex hang. These are what "natural" means. | Unit tests: rise time vs fall time ratio, short-hop vs full-hop apex differ, coyote window honoured |
-| 3.4 | `apps/showcase-skyline-runner/src/main.ts` | Route declares intent (`jumpHeight`, `feel: "responsive"`). It must not compute gravity, velocity or apex. | `grep -cE "gravity:|jumpVelocity:" apps/showcase-skyline-runner/src/main.ts` → 0 |
-| 3.5 | `tests/unit/physics/character-mesh-contact.test.ts` **(new)** | Scripted run over the real level mesh: no penetration, no missed landings, apex ≥ declared height. | Fails if 3.4 is reverted |
-| 3.6 | `packages/engine/src/agent-api/PlatformerMotion.ts` | Level-design feedback: report which gaps/rises are unclearable at the declared feel, so a bad level is a level bug with a name. | Report consumed by a route-health gate |
+| 2.1 | `packages/physics/src/MeshBVH.ts` **(new)** | Deterministic BVH over indexed triangle geometry. | 10k-tri mesh, 1k random rays match brute force exactly |
+| 2.2 | `packages/physics/src/Raycast.ts` | `raycastMesh` returning point, triangle index, barycentric coords, interpolated normal, distance. | Tests: front/back face, glancing, parallel miss, origin inside, degenerate triangle |
+| 2.3 | `packages/physics/src/SurfaceQuery.ts` **(new)** | `createMeshSurfaceQuery(geometry, worldMatrix)` → `sampleHeight/sampleNormal/sampleGrip`, per-frame cached by integer cell. | A crowned/banked track returns different heights across its width and a real normal, not `[0,1,0]` |
+| 2.4 | `packages/engine/src/agent-api/index.ts` | Expose surface queries publicly, so grounding anything to a mesh is a one-liner for any genre. | Public-API test; used by WS-3 and WS-4 |
 
-**Checklist**
-- [ ] 3.1 CharacterController works against mesh, all six behaviours tested
-- [ ] 3.2 Apex from intent, validated against geometry, loud on failure
-- [ ] 3.3 Coyote time, jump buffer, variable height, asymmetric gravity
-- [ ] 3.4 Route declares intent only; zero motion constants
-- [ ] 3.5 Scripted-run mesh contact test in place
-- [ ] 3.6 Unclearable geometry reported by name
+- [ ] 2.1 BVH matches brute force
+- [ ] 2.2 `raycastMesh` handles all five edge cases
+- [ ] 2.3 Mesh surface query returns real per-point height and normal
+- [ ] 2.4 Publicly reachable
 
 ---
 
-### WS-4 — Rendering defects visible in the screenshots
+### WS-3 — Refactor the four kits onto the general layer (stops the sibling-fix problem)
+
+This is the structural change. Without it, every future genre repeats this PRD.
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 4.1 | `packages/rendering/src/PBRMaterial.ts`, `Renderer.ts` | Diagnose the translucent DUNLOP arch. Likely alpha-mode misread from glTF (`OPAQUE` treated as `BLEND`) or unsorted transparency. Classify before fixing. | Unit test on the glTF alpha-mode path; the arch renders opaque |
-| 4.2 | `packages/rendering/src/Renderer.ts` | Correct transparent-geometry sort order and depth-write policy. | Test: overlapping transparent quads composite in the right order |
-| 4.3 | `apps/showcase-turbo-drift-circuit/src/main.ts` + telemetry source | Fix `SPEED 0` while `STATUS running`. Telemetry must read from the same state the renderer draws. | Test: after N stepped frames at throttle, reported speed > 0 |
-| 4.4 | `tools/showcase-library/game-visual-qa.mjs` | Gate: any asset declared opaque that renders with alpha < 1 is a failure. | Gate fails on the current arch |
+| 3.1 | `packages/engine/src/agent-api/VehicleChassis.ts` | Add `createMeshVehicleSurface(trackGeometry, worldMatrix, { gripByMaterial })` on WS-2.3. Per-wheel independent sampling. | Four wheels over a banked corner get four different heights |
+| 3.2 | same | Chassis attitude follows the sampled surface **normal**, not only load transfer. | On a 10° bank, body roll matches the normal within 0.5° |
+| 3.3 | `packages/physics/src/VehicleDynamics.ts` | Replace the kinematic 2D point with a force-based tyre model: slip ratio, slip angle, load-sensitive friction, combined-slip circle. Driven through `PhysicsWorld`, not a private integrator. | Tests: understeer at high slip angle, wheelspin under excess torque, weight transfer under braking |
+| 3.4 | same | Continuous collision so a tyre cannot tunnel between frames. Proves `continuous collision detection`. | At 200 km/h with a 16 ms step, no wheel penetrates |
+| 3.5 | `packages/physics/src/CharacterController.ts` | Make real against mesh: capsule sweep, step up/down, slope limit, ceiling, wall slide. Proves `character controller` (0 consumers today). | A test per behaviour, all against mesh geometry |
+| 3.6 | `packages/engine/src/agent-api/PlatformerMotion.ts` | **Change the objective function.** Apex comes from declared intent (`jumpHeight` in world units, or a feel preset), then is *validated* against geometry. Never silently shrink the jump; fail loudly with the unclearable gap named. | A level with `maxRise = 0.05` still yields a usable apex; an unclearable level throws with an actionable message |
+| 3.7 | same | Add the mechanics that make a jump feel right: asymmetric gravity (fast fall), coyote time, jump buffering, variable height on release, apex hang. | Tests: rise/fall ratio, short-hop vs full-hop apex differ, coyote window honoured |
+| 3.8 | `packages/engine/src/agent-api/GameGenreKits.ts` | All four kits consume `PhysicsRuntime` + `SurfaceQuery`. No kit integrates its own bodies or contacts. | Architecture test: each kit imports the shared runtime; none defines a private integrator |
+| 3.9 | `packages/engine/src/agent-api/GameGenreKits.ts` | Kits become *compositions* over the general layer, so a fifth genre needs no new kit. Document the composition path. | A new genre (see WS-6.3) is built with **no** new kit code |
 
-**Checklist**
-- [ ] 4.1 Arch opacity root-caused and classified
-- [ ] 4.2 Transparency sorting correct
-- [ ] 4.3 Speed telemetry matches simulation
-- [ ] 4.4 Opaque-asset gate catches the regression
-
----
-
-### WS-5 — Close the physics capability gaps honestly
-
-Five capabilities are `parity-unproven` with zero consumers. Each needs a real
-consumer or an honest downgrade — no third option.
-
-| # | Capability | File | Done when |
-|---|---|---|---|
-| 5.1 | joints / constraints | `packages/physics/src/Constraint.ts`, `Constraints.ts` | A route uses a hinge/slider/fixed joint; solver stability test under load |
-| 5.2 | continuous collision detection | `packages/physics/src/TimeOfImpact.ts` | Consumed by WS-2.4; fast-mover tunnelling test |
-| 5.3 | physics debug rendering | `packages/physics/src/PhysicsDebugDraw.ts` | WS-1.6 |
-| 5.4 | raycasting | `packages/physics/src/Raycast.ts` | WS-1 |
-| 5.5 | character controller | `packages/physics/src/CharacterController.ts` | WS-3 |
-
-**Checklist**
-- [ ] 5.1 Joints proven by a consumer
-- [ ] 5.2 CCD proven by the fast-mover test
-- [ ] 5.3 Debug draw proven by a route
-- [ ] 5.4 Raycasting proven by the surface query
-- [ ] 5.5 Character controller proven by Skyline
+- [ ] 3.1 Mesh-backed vehicle surface, per-wheel
+- [ ] 3.2 Attitude from surface normal
+- [ ] 3.3 Force-based tyre model on the shared engine
+- [ ] 3.4 No tunnelling at 200 km/h
+- [ ] 3.5 Character controller real against mesh
+- [ ] 3.6 Apex from intent, validated, loud on failure
+- [ ] 3.7 Coyote/buffer/variable-height/asymmetric gravity
+- [ ] 3.8 All four kits on the shared runtime
+- [ ] 3.9 Kits are compositions, path documented
 
 ---
 
-### WS-6 — Correct the parity claims that are currently false
+### WS-4 — Delete the route-local lies
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 6.1 | `tools/product-remediation/build-threejs-parity.mjs` | `vehicle dynamics` and `vehicle AI driving` claim **exceed** while the car sinks through the road. Downgrade to `parity-unproven` until WS-2 lands. | Regenerated report shows the honest status |
-| 6.2 | same | `platformer motion tuning` claims **exceed** citing `showcase-platformer-game-layer-proof`, a route **deleted in 1.5.2**. The claim cites a consumer that no longer exists. | Consumer list contains only live routes |
-| 6.3 | `marketing/index.html` | Remove any game-capability implication not backed by a passing gate. | `check:marketing-truth` passes with the corrected claims |
+| 4.1 | `apps/showcase-turbo-drift-circuit/src/main.ts` | **Delete** `TRACK_SURFACE_Y`, `CAR_GROUND_Y`, `CAR_TYRE_CONTACT_Y`, `VERGE_DROP`, `SHOULDER_WIDTH` and the analytic `circuitSurface.sample`. Use `createMeshVehicleSurface`. Net constants removed. | Rule-1 grep returns empty for this file |
+| 4.2 | `apps/showcase-skyline-runner/src/main.ts` | Route declares `jumpHeight` / `feel` only. It must not compute gravity, velocity or apex. | `grep -cE "gravity:|jumpVelocity:"` → 0 |
+| 4.3 | `tests/unit/physics/vehicle-mesh-contact.test.ts` **(new)** | Scripted lap over the **real** circuit mesh: max penetration < 1 mm every step, four wheels grounded on tarmac. | Fails if 4.1 is reverted |
+| 4.4 | `tests/unit/physics/character-mesh-contact.test.ts` **(new)** | Scripted run over the real level mesh: no penetration, no missed landings, apex ≥ declared height. | Fails if 4.2 is reverted |
 
-**Checklist**
-- [ ] 6.1 Vehicle rows downgraded pending WS-2
-- [ ] 6.2 Deleted-route consumer removed from the platformer row
-- [ ] 6.3 Marketing claims match gate reality
+- [ ] 4.1 Turbo drift surface constants deleted
+- [ ] 4.2 Skyline motion constants deleted
+- [ ] 4.3 Vehicle mesh-contact test load-bearing
+- [ ] 4.4 Character mesh-contact test load-bearing
 
 ---
 
-### WS-7 — Gates that would have caught all of this
-
-Every defect the user reported was invisible to a green pipeline. That is the
-deepest failure here.
+### WS-5 — Rendering and telemetry defects visible in the screenshots
 
 | # | File | Task | Done when |
 |---|---|---|---|
-| 7.1 | `tools/showcase-library/game-visual-qa.mjs` | Penetration gate: no rendered geometry may intersect a surface it should rest on. | Fails on 1.5.2 |
-| 7.2 | same | Motion-feel gate: apex, rise/fall ratio and airtime within declared bounds. | Fails on Skyline's current hop |
-| 7.3 | same | Telemetry-coherence gate: displayed values match simulation state. | Fails on `SPEED 0 / running` |
-| 7.4 | `tests/browser/showcase-gameplay-proof.spec.ts` | Operate each game through a scripted play session and assert observable state changes, not first-frame screenshots. | Both games exercised through a full objective |
-| 7.5 | `package.json` | `pnpm check:game-runtime` runs 7.1–7.4 as one gate. | Wired into `check:release` |
+| 5.1 | `packages/rendering/src/PBRMaterial.ts`, `Renderer.ts` | Diagnose the translucent DUNLOP arch. Likely glTF alpha-mode misread (`OPAQUE` treated as `BLEND`) or unsorted transparency. Classify before fixing. | Unit test on the alpha-mode path; the arch renders opaque |
+| 5.2 | `packages/rendering/src/Renderer.ts` | Correct transparent sort order and depth-write policy. | Overlapping transparent quads composite correctly |
+| 5.3 | `packages/engine/src/agent-api/*`, turbo drift telemetry | Fix `SPEED 0` while `STATUS running` — present both on the live site **and** in the clean-room racing prototype (WS-0.4). Telemetry must read the state the renderer draws. | After N stepped frames at throttle, reported speed > 0 in both |
 
-**Checklist**
+- [ ] 5.1 Arch opacity root-caused
+- [ ] 5.2 Transparency sorting correct
+- [ ] 5.3 Speed telemetry matches simulation, live and clean-room
+
+---
+
+### WS-6 — Prove generality: the test that this is an engine, not four demos
+
+The whole point. If this workstream cannot be completed, the layering is still wrong.
+
+| # | File | Task | Done when |
+|---|---|---|---|
+| 6.1 | `tests/clean-room/physics-sandbox/` **(new)** | Clean-room project: stack crates, push them with an impulse, detect collisions, raycast to pick. Public API only, under 200 authored lines, zero private imports. | Passes the existing clean-room gate |
+| 6.2 | `tests/clean-room/top-down-shooter/` **(new)** | A genre with **no kit**: projectiles, collision layers so bullets miss each other, trigger pickups, enemy hit events. Under 300 lines. | Builds with no new kit code — proves 3.9 |
+| 6.3 | `tests/clean-room/physics-puzzle/` **(new)** | Hinged door, sliding block, spring platform — joints only, no kit. Under 300 lines. | Proves joints are usable, not just present |
+| 6.4 | `tests/browser/clean-room-projects.spec.ts` | Add all three to the clean-room suite with the same budgets and zero-private-import rule. | 7/7 clean-room projects pass |
+
+- [ ] 6.1 Physics sandbox under 200 lines
+- [ ] 6.2 Top-down shooter with no kit code
+- [ ] 6.3 Physics puzzle using joints
+- [ ] 6.4 All seven clean-room projects in the suite
+
+---
+
+### WS-7 — Gates that would have caught every one of these
+
+| # | File | Task | Done when |
+|---|---|---|---|
+| 7.1 | `tools/showcase-library/game-visual-qa.mjs` | Penetration gate: no rendered geometry may intersect a surface it should rest on, measured from the frame. | **Observed failing on 1.5.2** |
+| 7.2 | same | Motion-feel gate: apex, rise/fall ratio, airtime within declared bounds. | **Observed failing on current Skyline** |
+| 7.3 | same | Telemetry-coherence gate: displayed values match simulation state. | **Observed failing on current turbo drift** |
+| 7.4 | same | Opaque-asset gate: an asset declared opaque may not render with alpha < 1. | **Observed failing on the current arch** |
+| 7.5 | `tests/browser/showcase-gameplay-proof.spec.ts` | Operate each game through a full scripted objective and assert observable state change, not first-frame screenshots. | Both games complete an objective under automation |
+| 7.6 | `package.json` | `pnpm check:game-runtime` runs 7.1–7.5; wire into `check:release`. | Present in `check:release` and passing |
+
 - [ ] 7.1 Penetration gate fails on 1.5.2
 - [ ] 7.2 Motion-feel gate fails on current Skyline
 - [ ] 7.3 Telemetry gate fails on current turbo drift
-- [ ] 7.4 Scripted play sessions for both games
-- [ ] 7.5 `check:game-runtime` in `check:release`
+- [ ] 7.4 Opaque-asset gate fails on current arch
+- [ ] 7.5 Scripted objective completion for both games
+- [ ] 7.6 `check:game-runtime` in `check:release`
 
 ---
 
-## 2. Sequencing
-
-WS-1 first — everything grounded depends on real raycasting. Then WS-2 and WS-3 in
-parallel. WS-4 is independent and can run alongside. WS-7 gates should be written
-**before** their corresponding fixes, so each is observed failing on 1.5.2 first.
-WS-6 lands with WS-2/WS-3. WS-5 is a consequence of 1–3, not separate work.
+## 3. Sequencing
 
 ```
-WS-1 ──┬──> WS-2 ──┐
-       └──> WS-3 ──┼──> WS-5 (falls out) ──> WS-6
-WS-4 ──────────────┘
-WS-7 (write gates first, throughout)
+WS-0 (truth)  ──> WS-1 (public physics runtime)  ──┬──> WS-3 (kits refactored) ──> WS-4 (delete lies)
+                  WS-2 (mesh surface queries) ─────┘                                      │
+WS-5 (rendering/telemetry) — independent, any time                                        │
+WS-7 (gates) — write each BEFORE its fix, observe failing on 1.5.2                        │
+WS-6 (generality proof) — last, and it is the real acceptance test ────────────────────────┘
 ```
 
-## 3. Definition of done for this PRD
+WS-1 before WS-3 is non-negotiable: refactoring kits onto a runtime that is not yet
+public just moves the problem.
 
-- [ ] Every checkbox above is checked
-- [ ] `grep -rE "TRACK_SURFACE_Y|CAR_GROUND_Y|jumpVelocity:|gravity:" apps/` returns nothing
-- [ ] `pnpm check:game-runtime` passes, and each of its gates was **observed
-      failing** on the 1.5.2 build first
-- [ ] Physics capability rows: 0 `parity-unproven` with 0 consumers
-- [ ] A developer can build a grounded vehicle game and a platformer on the public
-      API with no route-local physics constants, proven by two new clean-room
-      projects under the existing line budgets
-- [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` **only** after
-      all of the above, with independent human visual review
+## 4. Definition of done
 
-## 4. Explicit non-goals
+- [ ] Every checkbox above checked
+- [ ] `grep -rE "TRACK_SURFACE_Y|CAR_GROUND_Y|CAR_TYRE_CONTACT_Y|VERGE_DROP|jumpVelocity:|gravity:" apps/` → empty
+- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers
+- [ ] No parity row claims `exceed` without a passing gate and a live consumer
+- [ ] `pnpm check:game-runtime` passes, and every gate in it was observed failing on 1.5.2 first
+- [ ] **7 clean-room projects pass**, including three genres with no kit support —
+      this is the proof that a developer can build a game that is not one of our four demos
+- [ ] A developer can, using only `@aura3d/engine`: create a dynamic body, push it,
+      hear about collisions, raycast the world, join two bodies, and ground anything
+      to a mesh — each in a handful of lines, documented with a runnable snippet
+- [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` **only** after all
+      of the above, with independent human visual review
 
-- Do not adjust a screenshot, poster, threshold or gate tolerance to make anything pass.
-- Do not add a route-local constant to correct a symptom.
-- Do not promote route status as part of any task here.
-- Do not claim Three.js parity on any capability without a passing gate and a
-  named consumer.
+## 5. What this deliberately does not do
+
+- Does **not** write a new physics engine. `PhysicsWorld` + `cannon-es@0.20.0` is a
+  real, mature engine. Replacing it would discard working code and restart the cycle.
+  The work is reachability, layering and contact correctness.
+- Does **not** claim Three.js parity on any capability without a passing gate and a
+  named live consumer.
+- Does **not** adjust a screenshot, poster, threshold or gate tolerance to make
+  anything pass.
+- Does **not** add a route-local constant to correct a symptom.
+- Does **not** promote route status as part of any task.
+
+## 6. Honest expectation setting
+
+After WS-1 and WS-2, a developer can build **arbitrary physics games** on the public
+API — that is the change from "four demos" to "an engine."
+
+After WS-3 and WS-4, the racing and platformer games are correct at the mechanism
+level, and any future genre inherits that correctness instead of re-deriving it.
+
+What this still will **not** deliver, and should not be claimed: authored content
+quality. A correct engine does not make a good-looking track or a well-designed
+level. Those are asset and level-design problems, and they are the honest reason the
+current games look rough beyond the physics defects. Rendering visual parity against
+Three.js also remains a separate, still-unproven claim — the strict product-render
+gate fails at 0.331 against a 0.15 threshold and is untouched by this PRD.
