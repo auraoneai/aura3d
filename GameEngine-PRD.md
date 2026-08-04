@@ -411,6 +411,31 @@ be discharged by an agent.
 candidates against their current screenshots, re-recorded with current source hashes. Until then
 `launch evidence ok` is `false`, and that is the honest state rather than a bug to route around.
 
+## 3.2 Pre-existing release gates that were red before this branch
+
+Running `pnpm check:release` end to end (rather than the looser `pnpm typecheck`) surfaced three
+gates that have been failing since **before 1.5.2**. Each was verified against the `v1.5.2` tag by
+reconstructing the check from that revision's own files, so none of these is a regression from this
+work — 1.5.2 shipped with `check:release` red.
+
+| Gate | Why it was red | Resolution |
+|---|---|---|
+| `root-package-template-scope` | Demanded exactly 3 root templates while `package.json` ships 7. The 4 extra `production-*` templates were added deliberately by the 1.5.0 release (`ddde00be`, 2026-08-02); the gate's allowlist predates it (`7236ebc0`, 2026-05-28). | Allowlist updated to what the project intentionally publishes. All four templates are real and complete. |
+| `non-starter-templates-not-packaged` | Banned every `templates/production-` path, contradicting the gate above. | Ban narrowed to `external-parity-` and `three-compat-`, and paired with two **new** gates so no hole opens: `packaged-production-templates-are-declared` and `declared-production-templates-exist`. Proven load-bearing. |
+| `root-registry-only-starter-examples` | Compared 4 registered routes in `index.html` against a 3-element `examples` list. `instancing-performance` is registered and classified as a starter example, but sits in the gate's diagnostic list and has no starter route-health spec. | Registry expectation made explicit. **`instancing-performance` was deliberately not promoted** into `examples` — that would claim starter-grade route-health and screenshot coverage it does not have. |
+
+### Open decision, deliberately not made here
+
+`/apps/instancing-performance/` has three sources of truth disagreeing about what it is: the root
+registry advertises it, `apps-classification.md` calls it a starter example, and
+`tools/agent-examples/index.ts` lists it under diagnostic evidence. It also has no entry in
+`tests/browser/examples-route-health.spec.ts`, so it has never had starter-grade proof.
+
+Either give it a route-health and screenshot spec and promote it properly, or remove it from the
+root registry. Both are real product decisions. Papering over it by adding it to `examples` would
+have made the gate green while asserting coverage that does not exist, which is the failure mode
+this PRD exists to stop.
+
 ## 4. Definition of done
 
 - [ ] Every checkbox above checked
