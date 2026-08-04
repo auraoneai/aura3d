@@ -436,12 +436,23 @@ same way.
 Fixed by treating Node builtins as external for every browser target, which is what a real browser
 bundler does. That makes the gate *measure* instead of crash — and the measurement is bad:
 
-| target | gzip | budget | over by |
-|---|---|---|---|
-| `core-agent-api` | 578,017 B | 80,000 B | **7.2x** |
-| `template-product-viewer` | 354,440 B | 250,000 B | 1.42x |
-| `template-cinematic-scene` | 354,426 B | 250,000 B | 1.42x |
-| `template-mini-game` | 372,092 B | 250,000 B | 1.49x |
+Measured with the *same instrument* on both revisions — v1.5.2 checked out in a clean worktree with
+only the node-builtin externalisation applied to its own copy of the tool, so the comparison is
+like-for-like:
+
+| target | v1.5.2 gzip | current gzip | my delta | budget | over by |
+|---|---|---|---|---|---|
+| `core-agent-api` | 567,890 B | 578,017 B | **+10,127 B (+1.8%)** | 80,000 B | **7.23x** (was 7.10x) |
+| `template-product-viewer` | 349,950 B | 354,440 B | +4,490 B | 250,000 B | 1.42x |
+| `template-cinematic-scene` | 349,932 B | 354,426 B | +4,494 B | 250,000 B | 1.42x |
+| `template-mini-game` | 365,463 B | 372,092 B | +6,629 B | 250,000 B | 1.49x |
+
+So the overrun is **overwhelmingly pre-existing**: 1.5.2 was already 7.10x over its own budget, and
+this branch adds 1.8% on top. That 1.8% is the honest cost of the new physics runtime, mesh BVH,
+surface queries and joints — real capability, and it is not what breaks the budget.
+
+It is still worth stating that this branch made a bad number slightly worse, and that no amount of
+new capability makes a 578 KB gzip acceptable for "install our library".
 
 **Do not "fix" this by raising the budgets.** A 578 KB gzip for the agent API against an 80 KB
 budget is a real product problem — it is what a browser consumer downloads — and the budget is the
