@@ -357,6 +357,18 @@ for (const spec of PROJECTS) {
         expect(preResetState.pickHit, "raycast pick must hit a crate").toBe(true);
         expect(preResetState.pickedNode as string, "raycast must name what it hit").not.toBe("none");
         expect(finalState.bodiesNearTower as number, "overlap query must find the stack").toBeGreaterThan(0);
+        /*
+         * WS-1.7: physics debug draw must have a real consumer that renders real categories.
+         *
+         * A line count alone could be satisfied by colliders only, which is what already existed.
+         * Requiring contact and normal categories proves the extended draw is actually producing
+         * the things WS-1.7 asks for, from a live simulation.
+         */
+        const categories = finalState.debugCategories as Record<string, number> | undefined;
+        expect(finalState.debugLineCount as number, "debug draw produced no lines").toBeGreaterThan(0);
+        expect(Object.keys(categories ?? {}), "debug draw must categorise its output").not.toEqual([]);
+        expect(categories?.contact ?? 0, "debug draw must show contacts from the resting stack").toBeGreaterThan(0);
+        expect(categories?.normal ?? 0, "debug draw must show contact normals").toBeGreaterThan(0);
       }
       if (spec.id === "top-down-shooter") {
         expect(finalState.usedKit, "shooter must not use a genre kit").toBe(false);

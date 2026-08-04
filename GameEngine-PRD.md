@@ -1,8 +1,8 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
-**Status:** in progress — WS-0, WS-1 (except 1.7/1.9), WS-2, WS-4, WS-6 complete with evidence.
+**Status:** in progress — WS-0, WS-1 (except 1.7), WS-2, WS-4, WS-6 complete with evidence.
 WS-3.8 attempted and reverted with the finding recorded (see below). WS-5 and WS-7 open.
-25 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+26 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -177,7 +177,7 @@ that engine *reachable and safe*.
 - [x] 1.6 Six joint types with stability tests — `fixed`, `hinge`, `slider`, `ball-socket`, `spring`, `motorised-hinge`, each tested on **both** backends (`public-joints.test.ts` 19/19). Uncovered and fixed two engine defects: joints never solved on the default cannon-es backend (a `fixed` joint free-fell to y = -18.78), and `slider` left rotation unconstrained so spin leaked into 0.478 of off-axis translation.
 - [ ] 1.7 Debug draw with a real consumer
 - [x] 1.8 Everything reachable from the public API, no deep imports — every new physics test imports `@aura3d/engine` only. The three new clean-room projects report `packagesImported: ["@aura3d/engine"]` with zero private imports, measured by the harness rather than asserted.
-- [ ] 1.9 Physics concepts doc with runnable snippets
+- [x] 1.9 Physics concepts doc with runnable snippets — `docs/concepts/physics.md` rewritten (was a stale file listing pinned at "Version: 1.4.5" with no code in it). Six snippets: push a crate, detect a pickup, raycast for line of sight, bullets that miss each other, a motorised hinged door, ground to a mesh. `check:docs-codeblocks` now **compiles** them against the real public API rather than only checking import specifiers; proven load-bearing by renaming `applyImpulse` to a nonexistent method and observing the gate fail.
 
 ---
 

@@ -27,7 +27,7 @@
  * than silently doing nothing.
  */
 
-import { Shape, type PhysicsShape } from "@aura3d/physics";
+import { PhysicsDebugDraw, Shape, type PhysicsShape } from "@aura3d/physics";
 import type {
   CollisionEvent,
   Contact,
@@ -137,6 +137,30 @@ export interface AuraPhysicsQueries {
   sphereCast(origin: PhysicsVec3, radius: number, direction: PhysicsVec3, options?: AuraRaycastOptions): AuraRaycastResult | undefined;
 }
 
+/** A debug line segment, in world space. */
+export interface AuraDebugLine {
+  readonly from: PhysicsVec3;
+  readonly to: PhysicsVec3;
+  /** Linear RGB, 0..1. */
+  readonly color: PhysicsVec3;
+  /** What the segment represents, for filtering or a legend. */
+  readonly category?: string | undefined;
+}
+
+export interface AuraPhysicsDebugOptions {
+  readonly contacts?: boolean | undefined;
+  readonly joints?: boolean | undefined;
+  readonly sleeping?: boolean | undefined;
+  readonly normalLength?: number | undefined;
+  /** Rays to draw. The world cannot know about a query you ran, so pass it here. */
+  readonly raycasts?: readonly {
+    readonly origin: PhysicsVec3;
+    readonly direction: PhysicsVec3;
+    readonly distance: number;
+    readonly hit?: boolean | undefined;
+  }[] | undefined;
+}
+
 export type AuraCollisionHandler = (event: AuraCollisionEvent) => void;
 
 /** Unsubscribe function returned by every listener registration. */
@@ -183,6 +207,15 @@ export interface AuraPhysicsRuntime {
   contacts(): readonly AuraCollisionEvent[];
   /** Declared collision layers, if any were supplied. */
   readonly layers: AuraCollisionLayers | undefined;
+  /**
+   * Debug geometry for the current state: colliders, contacts, normals, joints, sleeping bodies
+   * and any rays you pass in.
+   *
+   * WS-1.7. `PhysicsDebugDraw` existed but had no public consumer, so the capability was listed
+   * as unproven — you could not get at it from `@aura3d/engine` without a deep import. Returns
+   * plain line segments so a route can render them with whatever it already uses.
+   */
+  debugLines(options?: AuraPhysicsDebugOptions): readonly AuraDebugLine[];
   /** Every collision, including resting contacts. */
   onCollision(handler: AuraCollisionHandler): AuraUnsubscribe;
   /** Collisions involving one named node, which is what gameplay code usually wants. */
@@ -492,6 +525,7 @@ export function createPhysicsRuntime(
   options: AuraPhysicsRuntimeOptions = {}
 ): AuraPhysicsRuntime {
   const layers = options.layers;
+  const debugDraw = new PhysicsDebugDraw();
   const handles = new Map<number, AuraBodyHandle>();
   const namesById = new Map<number, string>();
   const idsByName = new Map<string, number>();
@@ -806,6 +840,30 @@ export function createPhysicsRuntime(
     onTriggerExit(handler) {
       triggerExitHandlers.add(handler);
       return () => triggerExitHandlers.delete(handler);
+    },
+    debugLines(debugOptions) {
+      const lines = debugDraw.buildLines(world, {
+        ...(debugOptions?.contacts === undefined ? {} : { contacts: debugOptions.contacts }),
+        ...(debugOptions?.joints === undefined ? {} : { joints: debugOptions.joints }),
+        ...(debugOptions?.sleeping === undefined ? {} : { sleeping: debugOptions.sleeping }),
+        ...(debugOptions?.normalLength === undefined ? {} : { normalLength: debugOptions.normalLength }),
+        ...(debugOptions?.raycasts === undefined
+          ? {}
+          : {
+            raycasts: debugOptions.raycasts.map((ray) => ({
+              origin: [...ray.origin] as [number, number, number],
+              direction: [...ray.direction] as [number, number, number],
+              distance: ray.distance,
+              ...(ray.hit === undefined ? {} : { hit: ray.hit })
+            }))
+          })
+      });
+      return lines.map((line) => ({
+        from: [...line.from] as unknown as PhysicsVec3,
+        to: [...line.to] as unknown as PhysicsVec3,
+        color: [...line.color] as unknown as PhysicsVec3,
+        category: line.category
+      }));
     },
     gravity() {
       return [...world.gravity] as unknown as PhysicsVec3;

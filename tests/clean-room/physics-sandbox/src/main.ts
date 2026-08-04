@@ -50,6 +50,8 @@ for (const crate of CRATES) {
 }
 
 const state = { contacts: 0, hardestImpact: 0, pushes: 0, picked: "none", pickDistance: 0, lastPickHit: false };
+/** Most recent raycast, kept so the debug overlay can draw the query itself. */
+let lastRay: { origin: readonly [number, number, number]; direction: readonly [number, number, number]; distance: number; hit: boolean } | undefined;
 
 physics.onCollision((event) => {
   state.contacts += 1;
@@ -74,6 +76,7 @@ app.onFrame(({ dt }) => {
   if (snapshot.actions.pick?.pressed === true) {
     // Raycast to pick: fire along the camera's view direction and report what was hit.
     const hit = physics.queries.raycast([2.6, 1.9, 3.2], [-0.62, -0.36, -0.7], { maxDistance: 12 });
+    lastRay = { origin: [2.6, 1.9, 3.2], direction: [-0.62, -0.36, -0.7], distance: hit?.distance ?? 12, hit: hit !== undefined };
     state.lastPickHit = hit !== undefined;
     state.picked = hit?.nodeName ?? "none";
     state.pickDistance = hit ? Number(hit.distance.toFixed(4)) : 0;
@@ -105,6 +108,26 @@ app.onFrame(({ dt }) => {
   // Bodies within a metre of the tower base, via an overlap query rather than a manual loop.
   const nearTower = physics.queries.overlapSphere([0, 0.5, 0], 1).length;
 
+  /*
+   * WS-1.7: the debug overlay, consumed rather than merely available.
+   *
+   * `PhysicsDebugDraw` existed for a long time with zero consumers, which is why the capability
+   * was listed as unproven. Asking for it here is what makes the claim real, and it is also
+   * genuinely the fastest way to see whether a stack is resting or slowly interpenetrating.
+   */
+  const debug = physics.debugLines({
+    contacts: true,
+    joints: true,
+    sleeping: true,
+    normalLength: 0.12,
+    raycasts: lastRay ? [lastRay] : []
+  });
+  const debugByCategory: Record<string, number> = {};
+  for (const line of debug) {
+    const key = line.category ?? "uncategorised";
+    debugByCategory[key] = (debugByCategory[key] ?? 0) + 1;
+  }
+
   if (hud) hud.textContent = `contacts ${state.contacts} · stacked ${stacked} · pushes ${state.pushes} · picked ${state.picked}`;
   (window as unknown as Record<string, unknown>).__CLEAN_ROOM_SANDBOX__ = {
     appId: "clean-room-physics-sandbox",
@@ -113,6 +136,9 @@ app.onFrame(({ dt }) => {
     pushes: state.pushes, stackedCrates: stacked, bodiesNearTower: nearTower,
     pickedNode: state.picked, pickDistance: state.pickDistance, pickHit: state.lastPickHit,
     crateOneX: Number(physics.bodies.require("crate-c1").position()[0].toFixed(4)),
+    // Debug-draw evidence: line counts per category, so "the overlay has a consumer" is measured.
+    debugLineCount: debug.length,
+    debugCategories: debugByCategory,
     usedKit: false
   };
 });
