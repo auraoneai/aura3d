@@ -68,14 +68,14 @@
         ],
         "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
         "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.json",
-        "screenshotSha256": "sha256-f326def9873ac98e9847f17ba6ac777580ac96be3f174eb7a2fb62520febed3e",
+        "screenshotSha256": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f",
         "geometryEvidence": {
           "category": "racing",
           "kind": "racing-track-topology",
           "source": "asset-mesh-extracted",
           "report": "tests/reports/showcase-spec-compiler/turbo-drift-circuit/game-template/showcase-turbo-drift-circuit-racing-track-topology.json",
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
-          "routePrimaryScreenshotSha256": "sha256-f326def9873ac98e9847f17ba6ac777580ac96be3f174eb7a2fb62520febed3e",
+          "routePrimaryScreenshotSha256": "sha256-e6331b0fa21b69d27d317b38136c819e89aab9090be8f451454023f82d92d95f",
           "assets": [
             {
               "id": "showcaseTexturedSportsCar",

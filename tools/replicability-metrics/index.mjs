@@ -152,7 +152,17 @@ export const CONSTANT_CATEGORIES = Object.freeze({
     "KO_FREEZE_TIME", "CLIP_BLEND_DURATION", "INPUT_BUFFER_LIFETIME_MS",
     "FOOT_IK_WEIGHT", "SPRING_LEAN_SCALE",
     "authoredLapSeconds", "gameplayPaceMultiplier", "opponentStartProgress",
-    "TRACK_SURFACE_Y", "CAR_TARGET_MAX_DIMENSION", "cabinetTargetSize", "SCENE_SIZE",
+    /*
+     * `TRACK_REFERENCE_Y` replaced `TRACK_SURFACE_Y` in WS-4.
+     *
+     * The old name claimed to *be* the track surface, and the route sampled wheel contact from it
+     * — a frozen plane that could not represent camber, so tyres passed through the visible road.
+     * The new constant is only the reference elevation the scene binding seats the track asset
+     * against; per-wheel contact now comes from `racingScene.vehicleSurface()` sampling the road
+     * mesh. That makes it a genuine scene-composition choice rather than a baked physical
+     * approximation, which is why it stays classified here while the thing it replaced was a defect.
+     */
+    "TRACK_REFERENCE_Y", "CAR_TARGET_MAX_DIMENSION", "cabinetTargetSize", "SCENE_SIZE",
     // The *input* depth of the world plane. Consumers read the resolved value back from the binding.
     "WORLD_PLANE_DEPTH"
   ],
