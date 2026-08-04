@@ -57,6 +57,37 @@ export function flatVehicleSurface(height = 0, grip = 1): VehicleSurface {
   return { sample: () => ({ height, normal: [0, 1, 0], grip }) };
 }
 
+/**
+ * Vehicle surface backed by the real track mesh.
+ *
+ * This is the replacement for the analytic surface every racing route had to invent.
+ * Turbo Drift's was `TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction`: one frozen scalar
+ * plus a hand-graded shoulder. That model cannot represent banking, crowning, kerbs or
+ * elevation change, so the car's tyres passed through the visible road on corners, and
+ * it silently became wrong whenever the track asset changed.
+ *
+ * Grip comes from the surface query's per-triangle map, so "the tarmac grips and the
+ * grass does not" is a property of the mesh rather than a distance-from-centreline
+ * formula that has to be re-derived per circuit.
+ */
+export function meshVehicleSurface(query: {
+  sample(x: number, z: number): { readonly height: number; readonly normal: readonly [number, number, number]; readonly grip: number; readonly hit: boolean };
+}, options: { readonly offRoadGrip?: number | undefined } = {}): VehicleSurface {
+  const offRoadGrip = options.offRoadGrip ?? 0.45;
+  return {
+    sample: (x, z) => {
+      const sample = query.sample(x, z);
+      return {
+        height: sample.height,
+        normal: sample.normal as VehicleVec3,
+        // A point with no triangle under it is off the drivable mesh entirely, which
+        // should be slippery rather than silently full-grip.
+        grip: sample.hit ? sample.grip : offRoadGrip
+      };
+    }
+  };
+}
+
 export interface VehicleChassisSpec {
   /** Distance between front and rear axles, world units. */
   readonly wheelbase: number;
@@ -345,13 +376,41 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
      */
     const bodyY = cornerHeights.reduce((sum, value) => sum + value, 0) / cornerHeights.length;
     const maxReach = resolved.rideHeight + resolved.suspensionTravel * 0.5;
+
+    /*
+     * Which wheels can the body actually rest on?
+     *
+     * Two wrong models, both of which shipped at some point:
+     *
+     * 1. Compare each wheel's surface to `bodyY`, the flat average of four corners. On
+     *    level ground that is right. On undulating ground a legitimately low corner reads
+     *    as unreachable, so `grounded` went false while `contactGap` stayed 0.00000 — an
+     *    incoherent pair. A scripted lap over gentle terrain reported 233 of 360 steps
+     *    ungrounded with zero measured gap.
+     * 2. Compare each wheel to *its own* corner. That is self-referential, because the
+     *    corner is derived from the same sample: the difference is always ride height, so
+     *    a car could hang a wheel over a cliff and still call itself grounded. The
+     *    original code comment warned about exactly this, and a naive fix walked straight
+     *    into it.
+     *
+     * The physical model is a rigid body resting on the wheels it can reach. The support
+     * height is the *median* of the corner heights rather than the mean: a median ignores
+     * one corner that has fallen into a hole, where a mean is dragged down by it. With
+     * four corners the median is the average of the middle two, which also keeps the value
+     * stable as the car rocks.
+     */
+    const sortedCorners = [...cornerHeights].sort((left, right) => left - right);
+    const supportY = sortedCorners.length === 4
+      ? (sortedCorners[1]! + sortedCorners[2]!) / 2
+      : bodyY;
+
     const resolvedWheels: VehicleWheelPose[] = wheels.map((wheel, index) => {
       const sample = samples[index]!.sample;
-      const requiredDrop = bodyY - sample.height;
+      const requiredDrop = supportY - sample.height;
       if (requiredDrop <= maxReach) return wheel;
-      // Out of travel: the wheel stays at its fullest extension below the body and
+      // Out of travel: the wheel hangs at full extension below the supported body and
       // reports the gap to the surface it cannot reach.
-      const hangingCentreY = bodyY - maxReach + resolved.wheelRadius;
+      const hangingCentreY = supportY - maxReach + resolved.wheelRadius;
       return {
         ...wheel,
         position: [wheel.position[0], hangingCentreY, wheel.position[2]] as VehicleVec3,
@@ -376,20 +435,42 @@ export function createVehicleChassis(spec: VehicleChassisSpec, surface: VehicleS
     const rearHeight = (cornerBy("rear-left") + cornerBy("rear-right")) / 2;
     const leftHeight = (cornerBy("front-left") + cornerBy("rear-left")) / 2;
     const rightHeight = (cornerBy("front-right") + cornerBy("rear-right")) / 2;
+
+    /*
+     * Surface attitude: the slope of the ground itself, under the contact patches.
+     *
+     * This is separated from the spring-induced attitude below because the two are
+     * bounded by different things, and conflating them was a real defect. `maxPitch` and
+     * `maxRoll` are correctly capped by suspension travel — a spring cannot tilt the body
+     * further than it can compress. But a car driving across a *banked* road is tilted by
+     * the road, and that rotation costs no suspension travel at all: all four springs sit
+     * at rest and the whole chassis simply lies on a slope.
+     *
+     * Capping the total attitude by travel therefore clamped surface following to a few
+     * degrees. On a 10-degree bank the chassis reported 4.59 degrees of roll, so the body
+     * stayed nearly level while its wheels sat on a visibly sloped surface — which reads
+     * as the car floating through the banking. Measured, not assumed: a 0.12-unit travel
+     * over a 1.5-unit track caps roll at 2.29 degrees, and 2 x 2.29 = 4.59.
+     */
+    const surfaceHeightAt = (id: VehicleWheelId) => {
+      const index = WHEEL_LAYOUT.findIndex((wheel) => wheel.id === id);
+      return samples[index]?.sample.height ?? 0;
+    };
+    const surfaceFront = (surfaceHeightAt("front-left") + surfaceHeightAt("front-right")) / 2;
+    const surfaceRear = (surfaceHeightAt("rear-left") + surfaceHeightAt("rear-right")) / 2;
+    const surfaceLeft = (surfaceHeightAt("front-left") + surfaceHeightAt("rear-left")) / 2;
+    const surfaceRight = (surfaceHeightAt("front-right") + surfaceHeightAt("rear-right")) / 2;
+    const surfacePitch = Math.asin(clamp((surfaceRear - surfaceFront) / Math.max(1e-6, resolved.wheelbase), -1, 1));
+    const surfaceRoll = Math.asin(clamp((surfaceLeft - surfaceRight) / Math.max(1e-6, resolved.trackWidth), -1, 1));
     // A lower nose is a positive pitch, matching the convention that braking pitches
     // the car nose-down with a positive angle.
-    pitch = clamp(
-      Math.asin(clamp((rearHeight - frontHeight) / Math.max(1e-6, resolved.wheelbase), -1, 1)),
-      -resolved.maxPitch,
-      resolved.maxPitch
-    );
+    // Total attitude, then split: the surface part is free, the spring part is capped.
+    const totalPitch = Math.asin(clamp((rearHeight - frontHeight) / Math.max(1e-6, resolved.wheelbase), -1, 1));
+    pitch = surfacePitch + clamp(totalPitch - surfacePitch, -resolved.maxPitch, resolved.maxPitch);
     // A lower left side is a negative roll, so steering right (which loads the left)
     // produces a negative roll and steering left a positive one.
-    roll = clamp(
-      Math.asin(clamp((leftHeight - rightHeight) / Math.max(1e-6, resolved.trackWidth), -1, 1)),
-      -resolved.maxRoll,
-      resolved.maxRoll
-    );
+    const totalRoll = Math.asin(clamp((leftHeight - rightHeight) / Math.max(1e-6, resolved.trackWidth), -1, 1));
+    roll = surfaceRoll + clamp(totalRoll - surfaceRoll, -resolved.maxRoll, resolved.maxRoll);
 
     // Rolling rotation from distance travelled. A stationary car's wheels must not
     // spin, and a fast car's must, which is what makes motion legible.
