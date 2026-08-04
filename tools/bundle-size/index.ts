@@ -252,6 +252,30 @@ function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
     "",
     "The authoritative machine-readable report is",
     "`tests/reports/bundle-size.json`.",
+    "",
+    /*
+     * This standing note is emitted by the generator, not hand-maintained in the file.
+     *
+     * `BUNDLE_SIZES.md` is fully overwritten on every run, so the note previously lived only in the
+     * committed markdown and was silently deleted the first time anyone regenerated the report —
+     * which is exactly what happened here. A policy that disappears when a tool runs is not a
+     * policy. Emitting it keeps it true for every future regeneration.
+     */
+    "## Production Renderer Bridge Watch",
+    "",
+    "Any PR that routes the public safe API through production rendering, skinned animation, PBR",
+    "material parity, shadows, postprocess, or WebGPU paths must regenerate this report and call out",
+    "the bundle delta explicitly. Do not hide renderer-capability work inside showcase patches",
+    "without a bundle-size review.",
+    "",
+    "## Known Overrun",
+    "",
+    "The `core-agent-api` target is far over budget and has been since before 1.5.2 (measured:",
+    "567,890 B gzip at `v1.5.2` against an 80,000 B budget, 7.10x). The likely cause is that",
+    "`packages/engine/src/agent-api/index.ts` re-exports the entire surface — including Node-only",
+    "encoders and video tooling — from one module, so nothing tree-shakes. Splitting that surface is",
+    "its own workstream. Do not resolve this by raising the budget: the budget is the only artifact",
+    "recording what a browser consumer actually downloads.",
     ""
   ];
   writeFileSync("BUNDLE_SIZES.md", lines.join("\n"));

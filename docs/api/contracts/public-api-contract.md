@@ -1,11 +1,11 @@
-# Aura3D Public API Contract
+# Public API Contract
 
-Generated: 2026-07-28T10:12:37.712Z
+Generated: 2026-08-04T22:11:30.518Z
 
 ## Summary
 
 - Checks passing: 7/7
-- Engine exports: 424
+- Engine exports: 504
 - React exports: 8
 - Docs named imports checked: 47
 
