@@ -77,8 +77,6 @@ const tightestCornerRadius = measureTightestCornerRadius(routeGeometry.points);
  */
 const STEER_CORRECTION_GAIN = Number((2 / Math.max(0.05, routeGeometry.width / 2)).toFixed(3));
 
-/** Scene-space Y of the track surface the car drives on. */
-const TRACK_SURFACE_Y = -0.12;
 /**
  * Scene size chosen so the certified road width reproduces the car-length-to-road-width
  * ratio (~1.1) that reads correctly, rather than a size picked to fit the model bounds.
@@ -141,34 +139,22 @@ const heroFraming = resolveChaseFraming(assets.turboRaceCar, {
 });
 const CAR_SCENE_HEIGHT = heroFraming.subject.height;
 /**
- * Y that seats the tyres on the asphalt.
+ * Scene elevation the binding places the track model and car reference against.
  *
- * A `scaleMode: "fit"` model is grounded on its own node origin, not centred on it. The
- * renderer's `createModelMatrix` composes the fit scale with `translation(-centerX,
- * -bounds.min[1], -centerZ)`, so the model's lowest vertex is translated onto the node
- * position. `carY` is therefore already the contact plane and needs no underhang term.
- *
- * The track mesh lands on the same plane. `fitRacingModelToTopology` positions the circuit so its
- * road anchor sits exactly on `trackY`: node Y -0.9668 plus the anchor's local offset 0.8468 =
- * -0.1200 = `TRACK_SURFACE_Y`.
- *
- * This only became true once the geometry extractor started sampling the *drivable surface* under
- * each anchor instead of using `roadBounds.min[1]`. That bounding-box floor is the lowest vertex
- * anywhere in the road/kerb/asphalt family -- 0.05 model units below the tarmac at the anchor points
- * on this circuit -- which the 2.5505 track fit scale magnified into a 0.1275-unit error. The circuit
- * was therefore placed with its bbox floor, not its tarmac, on the car's contact plane, sinking the
- * car 0.1275 units below the visible road. That is 77% of the hero car's 0.1659-unit wheel diameter,
- * which is why the car appeared to have no wheels: they were under the asphalt.
- *
- * Both surfaces now live at `TRACK_SURFACE_Y` and no lift is needed. No route-local correction was
- * added -- the fix is in the reusable extractor, so every track asset grounds correctly.
+ * The binding needs one reference plane to seat the track asset; that is a placement
+ * concern, not a contact concern. Per-wheel contact comes from `circuitSurface` below,
+ * which samples the road mesh. This number therefore no longer decides where any tyre
+ * sits — which is why the thirty-line comment that used to defend it is gone.
  */
-const CAR_GROUND_Y = TRACK_SURFACE_Y;
+const TRACK_REFERENCE_Y = -0.12;
 /**
- * Scene Y of the tyre contact patch. Identical to `CAR_GROUND_Y` because the fit model is
- * grounded on its origin, so the probe's contact reference is the surface the car stands on.
+ * Scene Y used to place the car node and its telemetry reference.
+ *
+ * A `scaleMode: "fit"` model is grounded on its own node origin, so this is the reference
+ * contact elevation with no underhang term. The chassis moves the rendered car away from it
+ * every frame according to the sampled surface.
  */
-const CAR_TYRE_CONTACT_Y = CAR_GROUND_Y;
+const CAR_REFERENCE_Y = TRACK_REFERENCE_Y;
 const certifiedSteerRate = Number(
   Math.max(2.7, (gameplayMaxSpeed / (tightestCornerRadius * 1.28)) * 0.75).toFixed(3)
 );
@@ -201,12 +187,12 @@ const racingScene = game.racingSceneBinding({
   // reads correctly, rather than a size picked to fit the model bounds.
   targetSceneSize: SCENE_SIZE,
   trackModelTargetMaxDimension: 90.413,
-  trackY: TRACK_SURFACE_Y,
+  trackY: TRACK_REFERENCE_Y,
   // `carY` is the contact plane: the renderer grounds a `scaleMode: "fit"` model on its
-  // node origin (see `CAR_GROUND_Y`), so this is the track surface itself with no
+  // node origin (see `CAR_REFERENCE_Y`), so this is the track surface itself with no
   // underhang or lift correction.
-  carY: CAR_GROUND_Y,
-  ghostY: CAR_GROUND_Y - 0.02
+  carY: CAR_REFERENCE_Y,
+  ghostY: CAR_REFERENCE_Y - 0.02
 });
 
 const input = game.input({
@@ -322,58 +308,44 @@ const carChassisSpec = vehicleChassisSpecFromBounds([
 ]);
 
 /**
- * Depth the verge sits below the tarmac.
+ * Vehicle surface: the circuit's own road triangles, sampled per wheel.
  *
- * Derived from the car's own suspension travel, not from its height. A grass verge is
- * a surface a car can drive on: its tyres stay in contact and the suspension absorbs
- * the step. Sizing the drop from body height instead produced a 0.021-unit step
- * against 0.031 units of total travel, so a car running wide had its outer wheels
- * hanging in air -- the mirror image of the sinking defect. Sizing it from travel
- * keeps the verge reachable at any car scale.
- */
-const VERGE_DROP = Number(((carChassisSpec.suspensionTravel ?? 0.03) * 0.3).toFixed(5));
-/**
- * Width of the graded shoulder outside the tarmac, in game-plane units.
+ * Everything this route used to compute here is gone. There was, in order of appearance:
+ * `TRACK_SURFACE_Y` (a frozen scene-space scalar), `VERGE_DROP` and `SHOULDER_WIDTH` (an
+ * analytic ramp standing in for the road edge), and a route-local nearest-neighbour blend
+ * over the centreline's `surfaceY` values. Each was closer to the truth than the last, and
+ * every one shared the same defect: a curve or a plane cannot represent a surface that
+ * varies across the road's width, so all four wheels received the same height and the
+ * suspension solved against a surface that was not there. That is what put the tyres
+ * through the visible road on corners.
  *
- * A step at the road edge is not how circuits are built, and it is not how they
- * should be modelled: a car running the racing line has its outer wheels within a
- * few centimetres of the edge, so a step drops a wheel into free air every corner.
- * Grading the shoulder over a car-width means a car running wide rides the surface
- * down instead of losing contact, and only a car genuinely off the circuit sits on
- * the verge. Derived from the road width so it scales with the track.
- */
-const SHOULDER_WIDTH = Number((routeGeometry.width * 0.6).toFixed(4));
-
-/**
- * Vehicle surface for the circuit.
+ * `racingScene.vehicleSurface()` asks the binding, which owns the model-to-scene transform,
+ * for a real mesh query over the drivable triangles the geometry extractor emitted. Height,
+ * normal and grip all come from the mesh under each individual wheel. There is no surface
+ * constant left in this file to be wrong about after an asset swap.
  *
- * The chassis asks for a height under each wheel rather than being handed one
- * number. Off the racing line the grip drops and the surface falls to the verge, so
- * a car that leaves the road settles onto it instead of hovering at tarmac height.
- * There is no frozen plane here to be wrong about after an asset swap.
+ * Defect class: **application-authoring**, enabled by a **missing capability**. The route was
+ * approximating because the engine gave it nothing better; the fix is the capability
+ * (`GameRacingSceneBinding.vehicleSurface`), and this route simply consumes it.
  */
-const circuitSurface: VehicleSurface = {
-  sample: (x, z) => {
-    const contact = racingState.surfaceQuery.query(racingScene.toGamePoint(x, z));
-    // Distance past the road edge, in game-plane units. Zero on the tarmac.
-    const beyondEdge = Math.max(0, contact.trackOffset - contact.roadHalfWidth);
-    // Graded shoulder: the surface falls away smoothly over `SHOULDER_WIDTH` rather
-    // than stepping down at the edge.
-    const shoulderFraction = Math.min(1, beyondEdge / Math.max(1e-6, SHOULDER_WIDTH));
-    return {
-      height: TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction,
-      normal: [0, 1, 0],
-      // Grip falls off with the same profile: the shoulder is slower than tarmac and
-      // the verge slower still.
-      grip: 1 - 0.45 * shoulderFraction
-    };
+const circuitSurface: VehicleSurface = (() => {
+  const surface = racingScene.vehicleSurface({ offRoadGrip: 0.55 });
+  if (!surface) {
+    // Loud rather than silently flat: a missing mesh means the contract was regenerated
+    // without drivable triangles, and a flat fallback here would reintroduce exactly the
+    // defect this replaced while looking like it worked.
+    throw new Error(
+      "Turbo Drift requires drivable track triangles. The geometry contract has no topology.drivableMesh; " +
+      "regenerate it with tools/showcase-library/regenerate-game-geometry-contracts.ts."
+    );
   }
-};
+  return surface;
+})();
 
 /**
  * Chassis geometry derived from the hero car's rendered bounds.
  *
- * This replaces pinning the car's rendered Y to `TRACK_SURFACE_Y`. A frozen plane
+ * This replaces pinning the car's rendered Y to a frozen scene constant. A frozen plane
  * cannot respond to the surface the car is over, cannot pitch under braking and
  * cannot roll in a corner -- which is why the car read as sinking into the tarmac
  * and as a sprite sliding on a plane at 111 km/h.
@@ -488,7 +460,7 @@ const app = createAuraApp("#app", {
       name: "circuit ground plane",
       material: material.pbr({ name: "circuit outfield ground", color: "#5c7a52", roughness: 0.9, metallic: 0.02 }),
       receiveShadow: true
-    }).position(0, TRACK_SURFACE_Y - 0.35, 0).scale([SCENE_SIZE * 9, 0.2, SCENE_SIZE * 9]))
+    }).position(0, TRACK_REFERENCE_Y - 0.35, 0).scale([SCENE_SIZE * 9, 0.2, SCENE_SIZE * 9]))
     .add(model(assets.showcaseTsukubaCircuit, {
       name: "racing-bound-track-asset",
       role: "primaryTrack",
@@ -627,14 +599,14 @@ Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
       const pose = racingScene.toScenePose(raceSnapshot);
       return { position: pose.position, rotation: pose.rotation, targetSize: CAR_SCENE_HEIGHT };
     },
-    playSpacePoints: route.points.map((point) => racingScene.toScenePoint(point, TRACK_SURFACE_Y)),
+    playSpacePoints: route.points.map((point) => racingScene.toScenePoint(point, TRACK_REFERENCE_Y)),
     // Derived from the car's own pose, not from `route.points[0]`. The subject the probe
     // measures is the car where it actually stands; sampling the route's first point put
     // the reference at a different place on the circuit, so a correct car-on-road frame
     // still measured a large contact offset.
     get contactPoint() {
       const pose = racingScene.toScenePose(raceSnapshot);
-      return [pose.position[0], CAR_TYRE_CONTACT_Y, pose.position[2]] as const;
+      return [pose.position[0], CAR_REFERENCE_Y, pose.position[2]] as const;
     },
     setSubjectSuppressed: (suppressed: boolean) => {
       app.pause();
@@ -959,7 +931,7 @@ app.onFrame(({ dt }) => {
   const playerPose = racingScene.toScenePose(raceSnapshot);
   /*
    * The chassis resolves the car's height and attitude from the surface under each
-   * wheel. Previously the car's Y came straight from `TRACK_SURFACE_Y`, a literal that
+   * wheel. Previously the car's Y came straight from a scene-space literal that
    * could not respond to the road and produced no pitch or roll -- the sinking, and
    * the "sprite sliding on a plane" read at speed.
    */

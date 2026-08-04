@@ -429,8 +429,22 @@ export interface GameRacingTrackTopology {
   readonly assetId: string;
   readonly assetHash: string;
   readonly source: GameAssetGeometrySource;
-  readonly roadCenterline: readonly { readonly x: number; readonly z: number; readonly width?: number }[];
+  readonly roadCenterline: readonly { readonly x: number; readonly z: number; readonly width?: number; readonly surfaceY?: number }[];
   readonly checkpoints: readonly { readonly progress: number; readonly width: number }[];
+  /**
+   * The drivable road as indexed triangles in model space, when the asset provided them.
+   *
+   * A centreline is a curve, so it carries one height per point *along* the track and cannot
+   * express camber, crowning or banking, which vary across the road's **width**. Four wheels
+   * sit at different lateral offsets, so grounding them on a curve gives them all the same
+   * height — the flat-plane defect restated. Triangles are what make per-wheel contact real.
+   */
+  readonly drivableMesh?: {
+    readonly positions: readonly number[];
+    readonly indices: readonly number[];
+    readonly triangleCount: number;
+    readonly sourceTriangleCount?: number;
+  };
   readonly lapLengthMeters?: number;
   readonly estimatedLapSeconds: number;
   readonly confidence: number;
@@ -1043,6 +1057,14 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
    * Public asset-bound levels are therefore validated here. `motionTuning: "reported"`
    * keeps the report without throwing, for a route that is deliberately mid-migration.
    */
+  /*
+   * The character's height comes from the level itself, so a route does not have to
+   * restate it for the check to be character-aware. Without this the floaty ceiling is
+   * measured against the tallest step alone, and a mesh-extracted course whose steps are
+   * shorter than the character (Skyline: 0.36 steps, 0.52 hero) rejects every jump that
+   * is actually visible next to the player.
+   */
+  const characterHeight = (level.playerSize ?? DEFAULT_PLATFORMER_LEVEL.playerSize)?.[1];
   const motionReport = validatePlatformerMotion(
     platforms,
     {
@@ -1050,7 +1072,10 @@ export function createGameAssetBoundPlatformerLevel(options: GameAssetBoundPlatf
       jumpVelocity: level.jumpVelocity ?? DEFAULT_PLATFORMER_LEVEL.jumpVelocity,
       moveSpeed
     },
-    options.motionLimits ?? {}
+    {
+      ...(characterHeight === undefined ? {} : { characterHeight }),
+      ...(options.motionLimits ?? {})
+    }
   );
   if (!motionReport.passes && (options.motionTuning ?? "enforced") === "enforced") {
     const failures = motionReport.checks.filter((check) => !check.passes);

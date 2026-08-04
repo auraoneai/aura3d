@@ -32,7 +32,11 @@ describe("Turbo car is seated on the visible road", () => {
   const source = readFileSync("apps/showcase-turbo-drift-circuit/src/main.ts", "utf8");
 
   it("grounds the car on the track surface with no lift or underhang correction", () => {
-    expect(source).toContain("const CAR_GROUND_Y = TRACK_SURFACE_Y;");
+    // Renamed in WS-4.1: `TRACK_SURFACE_Y`/`CAR_GROUND_Y` implied the constant *was* the
+    // contact surface. It is now only the reference elevation the binding seats the track
+    // asset against; contact comes from the sampled road mesh. The invariant this test
+    // protects is unchanged: no lift and no underhang correction.
+    expect(source).toContain("const CAR_REFERENCE_Y = TRACK_REFERENCE_Y;");
     // The retracted defect-43 form added a lift constant.
     expect(source).not.toContain("VISIBLE_ROAD_LIFT");
     // The retracted defect-33c form added an underhang the renderer already removes.
@@ -40,17 +44,29 @@ describe("Turbo car is seated on the visible road", () => {
   });
 
   it("keeps the probe contact reference on the surface the car stands on", () => {
-    expect(source).toContain("const CAR_TYRE_CONTACT_Y = CAR_GROUND_Y;");
+    // One reference elevation, used for both the car node and the telemetry probe.
+    expect(source).toContain("const CAR_REFERENCE_Y = TRACK_REFERENCE_Y;");
+  });
+
+  it("takes per-wheel contact from the road mesh, not from the reference elevation", () => {
+    // WS-4.1. This is the assertion the old constants could not make: the route must get its
+    // surface from the general layer. A route that reverted to an analytic surface would keep
+    // every test above passing, which is how the sinking defect survived.
+    expect(source).toContain("racingScene.vehicleSurface(");
+    // And it must not reintroduce any of the deleted approximations.
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    for (const banned of ["TRACK_SURFACE_Y", "CAR_GROUND_Y", "CAR_TYRE_CONTACT_Y", "VERGE_DROP", "SHOULDER_WIDTH"]) {
+      expect(code, `${banned} must stay deleted`).not.toContain(banned);
+    }
   });
 
   it("passes the same surface to the racing binding as trackY and carY", () => {
-    expect(source).toContain("trackY: TRACK_SURFACE_Y,");
-    expect(source).toContain("carY: CAR_GROUND_Y,");
+    expect(source).toContain("trackY: TRACK_REFERENCE_Y,");
+    expect(source).toContain("carY: CAR_REFERENCE_Y,");
   });
 
   it("documents grounding as renderer behaviour rather than a tuned offset", () => {
     expect(source).toMatch(/grounded on its (own )?node origin/);
-    expect(source).toContain("translation(-centerX,");
   });
 
   /**
@@ -88,7 +104,7 @@ describe("Turbo car is seated on the visible road", () => {
       readonly modelBounds: { readonly min: readonly number[]; readonly max: readonly number[] };
     };
     const targetMaxDimension = Number(source.match(/trackModelTargetMaxDimension: ([\d.]+)/)?.[1]);
-    const trackSurfaceY = Number(source.match(/const TRACK_SURFACE_Y = (-?[\d.]+);/)?.[1]);
+    const trackSurfaceY = Number(source.match(/const TRACK_REFERENCE_Y = (-?[\d.]+);/)?.[1]);
     expect(Number.isFinite(targetMaxDimension)).toBe(true);
     expect(Number.isFinite(trackSurfaceY)).toBe(true);
 

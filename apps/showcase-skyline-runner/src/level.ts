@@ -7,32 +7,41 @@
  * same configuration, one of them stale. One module now owns it.
  */
 import { game, solvePlatformerMotion } from "@aura3d/engine";
+
+/**
+ * Character height in world units, shared by the motion solver and the scene binding.
+ *
+ * Declared once so the jump and the player cannot disagree: a feel preset is scaled by this,
+ * and `platformerSceneBinding` is given the same value.
+ */
+export const SKYLINE_CHARACTER_HEIGHT = 0.52;
 import { gameGeometryContract } from "./generated/game-geometry";
 
 /**
- * Motion derived from the level's own platform geometry.
+ * Motion for the course, from declared intent rather than from the level's tallest step.
  *
- * The contract ships `jumpVelocity: 7.4` and inherits the kit default `gravity: -22`,
- * giving a 1.245-unit apex and 0.673s of airtime against platforms that step up by at
- * most 0.36 units. Every jump rose roughly 3.5x higher than the tallest step it needed to
- * clear, which is the reported floating, the late landings, and the platforms reading as
- * unrelated strips rather than a connected route.
+ * The route previously relied on `solvePlatformerMotion`'s geometry-derived apex:
+ * `max(minApex, maxRise * apexHeadroom)`. On this course `maxRise` is 0.36, so the apex
+ * came out at 0.684 with a 0.52-second airtime — the reported barely-there jump. The solver
+ * was answering "can the character technically reach the next platform", not "is this a
+ * jump worth pressing".
  *
- * `solvePlatformerMotion` sizes the apex to the tallest step plus headroom, derives
- * gravity and jump velocity from that apex and a chosen rise time, and sets move speed so
- * a full jump clears the widest gap and the course takes the intended session length.
- * Nothing here is hand-tuned: change the level geometry and the motion follows.
+ * Intent now leads. `feel: "responsive"` and the character's own height set the apex, and
+ * the solver *validates* that against the level: if the declared jump could not clear the
+ * tallest step it throws and names the offending geometry rather than quietly shrinking.
+ *
+ * `characterHeight` is the same 0.52 the scene binding uses for the player, so the jump
+ * reads correctly relative to the character rather than to an absolute world number.
  */
 export const skylineMotion = solvePlatformerMotion(gameGeometryContract.level.platforms ?? [], {
-  // The one genuine feel parameter: a rise time in the snappy-but-not-twitchy band.
-  riseSeconds: 0.26,
-  apexHeadroom: 1.9,
+  feel: "responsive",
+  characterHeight: SKYLINE_CHARACTER_HEIGHT,
   gapMargin: 1.5,
   /*
-   * The reported session "ends in 20-30 seconds": the 16.6-unit course at the shipped
-   * 1.15 units/second crosses in 14 seconds of pure traversal. Sizing move speed from an
-   * intended multi-minute session is how a level gets its duration on purpose. The solver
-   * still prefers gap clearance, so this is a target rather than a guarantee.
+   * The reported session "ends in 20-30 seconds": the 16.6-unit course crosses in about 14
+   * seconds of pure traversal at the old speed. Sizing move speed from an intended
+   * multi-minute session is how a level gets its duration on purpose. The solver still
+   * prefers gap clearance, so this is a target rather than a guarantee.
    */
   targetSessionSeconds: 180,
   traversalFraction: 0.4

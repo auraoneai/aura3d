@@ -59,11 +59,55 @@ export interface ShowcaseRacingTrackTopologyPoint {
   readonly x: number;
   readonly z: number;
   readonly width?: number;
+  /**
+   * Measured model-space Y of the drivable surface at this point.
+   *
+   * Emitted so a route can ground a vehicle on the *real* road profile instead of a single
+   * frozen scalar. Turbo Drift previously declared `TRACK_SURFACE_Y = -0.12` and sampled
+   * `TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction`, which is a flat plane plus an
+   * analytic ramp: correct only where the circuit happens to be level, and wrong wherever
+   * it is banked, crowned or kerbed. That is why the car's tyres passed through the visible
+   * road on corners.
+   *
+   * Optional because a route may predate the surface-sampling extractor; absent means fall
+   * back to the model alignment anchor rather than silently reporting zero.
+   */
+  readonly surfaceY?: number;
 }
 
 export interface ShowcaseRacingTrackTopologyCheckpoint {
   readonly progress: number;
   readonly width: number;
+}
+
+/**
+ * The drivable road surface as real indexed triangles, in model space.
+ *
+ * ## Why a centreline profile was not enough
+ *
+ * `ShowcaseRacingTrackTopologyPoint.surfaceY` gives the elevation *on the racing line*. A
+ * centreline is a curve, so it can only ever describe one height per point along the
+ * track — it cannot represent camber, crowning or banking, all of which vary **across** the
+ * road's width. A vehicle has four wheels at different lateral offsets; grounding them
+ * against a curve necessarily gives all of them the same height, which is the flat-plane
+ * defect in a different costume.
+ *
+ * Emitting the mesh lets a route build a real `createMeshSurfaceQuery` and ask for the
+ * height under each wheel independently. The route then holds no surface constant at all.
+ *
+ * Positions are flat triples (x, y, z) and `indices` are triangle corners into them, which
+ * is the exact shape `createMeshSurfaceQuery` accepts, so no route-side conversion is
+ * needed.
+ */
+export interface ShowcaseRacingDrivableMesh {
+  /** Flat (x, y, z) triples in model space. */
+  readonly positions: readonly number[];
+  /** Triangle corner indices into `positions`. */
+  readonly indices: readonly number[];
+  /** Triangles before decimation, so a consumer can see how much was dropped. */
+  readonly sourceTriangleCount: number;
+  /** Triangles actually emitted. */
+  readonly triangleCount: number;
 }
 
 export interface ShowcaseGeometryEvidenceRef {
@@ -166,6 +210,13 @@ export interface ShowcaseRacingTrackTopology {
   readonly source: ShowcaseGeometryEvidenceSource;
   readonly roadCenterline: readonly ShowcaseRacingTrackTopologyPoint[];
   readonly checkpoints: readonly ShowcaseRacingTrackTopologyCheckpoint[];
+  /**
+   * Drivable road triangles, when the asset had readable indexed geometry.
+   *
+   * Optional so a route compiled before this existed still validates; absent means a route
+   * must fall back to the centreline profile and cannot claim per-wheel surface accuracy.
+   */
+  readonly drivableMesh?: ShowcaseRacingDrivableMesh;
   readonly lapLengthMeters?: number;
   readonly estimatedLapSeconds: number;
   readonly confidence: number;

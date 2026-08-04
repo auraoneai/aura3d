@@ -13,8 +13,8 @@ const SPEC = {
   centreOfMassHeight: 0.5,
   driveForce: 6000,
   brakeForce: 11000,
-  tirePreset: "sport"
-} as const;
+  tirePreset: "sport" as const
+};
 
 function drive(steps: number, input: Parameters<ReturnType<typeof createVehicleMotion>["step"]>[1], spec = SPEC) {
   const car = createVehicleMotion(spec);

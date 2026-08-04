@@ -71,6 +71,25 @@ import {
 
 export * from "./SpatialAnchoring.js";
 export * from "./PhysicsRuntime.js";
+/**
+ * WS-2.4: mesh surface queries on the public surface.
+ *
+ * Re-exported from `@aura3d/physics` so grounding anything to a mesh is a one-liner for any
+ * genre, from `@aura3d/engine` alone. Without this a route wanting real per-point ground
+ * height had to either deep-import `@aura3d/physics/src` (banned by the lint rule) or
+ * hand-roll an analytic approximation — which is exactly what every racing route did, and
+ * why wheels sank through visible road.
+ */
+export {
+  buildMeshBVH,
+  createMeshSurfaceQuery,
+  raycastMesh,
+  type MeshBVH,
+  type MeshRayHit,
+  type MeshSurfaceQuery,
+  type MeshSurfaceQueryOptions,
+  type SurfaceSample
+} from "@aura3d/physics";
 import { createPhysicsRuntime, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";

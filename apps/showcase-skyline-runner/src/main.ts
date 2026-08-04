@@ -16,7 +16,7 @@ import {
 } from "@aura3d/engine";
 import { assets } from "../../../src/aura-assets";
 import { gameGeometryContract } from "./generated/game-geometry";
-import { createSkylineLevel, skylineMotion } from "./level";
+import { SKYLINE_CHARACTER_HEIGHT, createSkylineLevel, skylineMotion } from "./level";
 import { createRunnerChallenge } from "./runner-challenge";
 
 const input = game.input({
@@ -52,7 +52,7 @@ const platformerScene = game.platformerSceneBinding({
   worldY: -0.72,
   worldZ: WORLD_PLANE_DEPTH,
   playerZ: 0.42,
-  playerTargetHeight: 0.52,
+  playerTargetHeight: SKYLINE_CHARACTER_HEIGHT,
   playerYOffset: 0
 });
 const platforms = level.platforms ?? [];
@@ -899,10 +899,18 @@ const mountedEvidence = {
       reason: "course length and gap spacing bound traversal time; extending the session needs more level, not different motion"
     },
     /*
-     * The tuning this replaces, kept as a comparison so the change is legible in
-     * evidence rather than only in a commit message.
+     * How the apex is chosen, stated as data so evidence records the mechanism.
+     *
+     * The comparison against the tuning this replaced used to live here as a literal
+     * `previousTuning: { gravity: -22, jumpVelocity: 7.4, ... }` object. Naming those
+     * numbers in the route is exactly what rule 1 forbids, and a stale copy of a superseded
+     * tuning is the kind of thing that silently becomes wrong. The comparison now lives in
+     * `tests/unit/physics/skyline-real-level-motion.test.ts`, which re-derives the previous
+     * apex from the solver rather than remembering it.
      */
-    previousTuning: { gravity: -22, jumpVelocity: 7.4, moveSpeed: 1.15, apex: 1.2445, airtime: 0.6727 }
+    apexSource: "declared-intent",
+    apexReference: "character-height",
+    characterHeight: SKYLINE_CHARACTER_HEIGHT
   },
   claimBoundary: "Bounded certified-surface platformer presentation; no physics-engine, automatic GLB-to-game, or unsupported skinned-animation claim.",
   platformerStateStatus: state.status,

@@ -22,6 +22,8 @@ import {
   sampleRoutePoint,
   transformFromBounds
 } from "./GameSceneGeometryMath";
+import { createMeshSurfaceQuery, type MeshSurfaceQuery } from "@aura3d/physics";
+import { meshVehicleSurface, type VehicleSurface } from "./VehicleChassis";
 
 type Vec3 = readonly [number, number, number];
 type Euler3 = readonly [number, number, number];
@@ -149,6 +151,25 @@ export interface GameRacingSceneBinding {
    * different copy of the engine's coordinate mapping.
    */
   toGamePoint(x: number, z: number): GameKitVec2;
+  /**
+   * The drivable surface as a scene-space mesh query, or `undefined` when the topology
+   * carried no triangles.
+   *
+   * This belongs to the binding rather than the route because the binding already owns the
+   * model-space-to-scene transform. Every racing route that tried to ground a car had to
+   * reconstruct that transform itself and then invent a height model on top of it — which is
+   * how Turbo Drift ended up with `TRACK_SURFACE_Y - VERGE_DROP * shoulderFraction`, a flat
+   * plane plus an analytic ramp, and why its tyres passed through the visible road on
+   * corners. Exposing it here means no route needs a surface constant at all.
+   */
+  surfaceQuery(): MeshSurfaceQuery | undefined;
+  /**
+   * A {@link VehicleSurface} over {@link surfaceQuery}, ready to hand to a chassis.
+   *
+   * Returns `undefined` when the topology has no mesh, so a caller must decide what to do
+   * rather than silently receiving a flat plane that looks like it works.
+   */
+  vehicleSurface(options?: { readonly offRoadGrip?: number }): VehicleSurface | undefined;
 }
 
 export interface GameRacingPresentationCameraOptions {
@@ -317,6 +338,48 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
     maxErrorRatio: 0.28
   });
   const trackModelPosition = addVec3(trackModelFit.position, offsetToVec3(trackModelPresentationOffset));
+
+  /**
+   * Build the scene-space surface query from the topology's model-space triangles.
+   *
+   * Lazy and memoised: building a BVH over a few thousand triangles is not free, and a route
+   * that never grounds anything should not pay for it. Memoised rather than rebuilt per call
+   * because the transform is fixed for the binding's lifetime.
+   *
+   * The triangles arrive in model space, so they are mapped through the *same*
+   * `toScenePoint` the rest of the binding uses. Deriving the mapping separately here is the
+   * bug this method exists to prevent: two copies of a transform drift apart, and the
+   * symptom is a car floating or sinking by a fixed offset.
+   */
+  let surfaceQueryCache: MeshSurfaceQuery | undefined;
+  let surfaceQueryBuilt = false;
+  const resolveSurfaceQuery = (): MeshSurfaceQuery | undefined => {
+    if (surfaceQueryBuilt) return surfaceQueryCache;
+    surfaceQueryBuilt = true;
+    const mesh = topology.drivableMesh;
+    if (!mesh || mesh.indices.length < 3) return undefined;
+    const positions = new Float32Array(mesh.positions.length);
+    for (let index = 0; index + 2 < mesh.positions.length; index += 3) {
+      const scenePoint = toScenePoint(
+        { x: mesh.positions[index]!, y: mesh.positions[index + 2]! },
+        // Model Y is scaled by the same factor as the plan dimensions and lifted onto the
+        // track's scene elevation, so a 2 cm kerb stays a 2 cm kerb after scaling.
+        trackY + mesh.positions[index + 1]! * transform.scale
+      );
+      positions[index] = scenePoint[0];
+      positions[index + 1] = scenePoint[1];
+      positions[index + 2] = scenePoint[2];
+    }
+    surfaceQueryCache = createMeshSurfaceQuery(
+      { positions, indices: new Uint32Array(mesh.indices) },
+      undefined,
+      // Cache cell sized well under a wheel's contact patch, so two wheels on the same axle
+      // cannot share a cached sample and collapse to one height.
+      { cacheCellSize: Math.max(1e-3, transform.scale * 0.02) }
+    );
+    return surfaceQueryCache;
+  };
+
   return {
     kind: "aura-game-racing-scene-binding",
     sceneContractVersion: "1.0",
@@ -373,6 +436,16 @@ export function createGameRacingSceneBinding(options: GameRacingSceneBindingOpti
         rotation: [0, roundScene(-snapshot.heading + Math.PI / 2), 0],
         heading: roundScene(snapshot.heading)
       };
+    },
+    surfaceQuery() {
+      return resolveSurfaceQuery();
+    },
+    vehicleSurface(surfaceOptions) {
+      const query = resolveSurfaceQuery();
+      if (!query) return undefined;
+      return meshVehicleSurface(query, {
+        ...(surfaceOptions?.offRoadGrip === undefined ? {} : { offRoadGrip: surfaceOptions.offRoadGrip })
+      });
     }
   };
 }

@@ -5,6 +5,7 @@ import type {
   ShowcaseGeometryModelBounds,
   ShowcasePlatformerPlayableSurface,
   ShowcasePlatformerPlayableSurfaceMap,
+  ShowcaseRacingDrivableMesh,
   ShowcaseRacingTrackTopology
 } from "./showcase-spec-types.js";
 
@@ -305,15 +306,35 @@ function computeRacingTrackTopology(
     );
   }
   const checkpointCount = 6;
+  const drivableMesh = createDrivableMesh(roadPrimitives);
   const topology: ShowcaseRacingTrackTopology = {
     assetId,
     assetHash: requireAssetHash(geometry.value.asset),
     source: "asset-mesh-extracted",
-    roadCenterline: centerline,
+    /*
+     * Centreline points carry the measured surface elevation under each point.
+     *
+     * Sampling the drivable surface here is what lets a route drop its frozen
+     * `TRACK_SURFACE_Y` constant: the vertical road profile becomes data extracted from the
+     * asset rather than a number a route author had to guess and then defend in a comment.
+     */
+    roadCenterline: centerline.map((point) => {
+      const surfaceY = roadSurface.elevationAt(point.x, point.z);
+      return surfaceY === undefined ? point : { ...point, surfaceY: round3(surfaceY) };
+    }),
     checkpoints: Array.from({ length: checkpointCount }, (_unused, index) => ({
       progress: round3((index + 1) / checkpointCount),
       width: centerline[index % centerline.length]?.width ?? averageRoadWidth(roadSize)
     })),
+    /*
+     * The drivable surface itself, so a route can ground each wheel independently.
+     *
+     * The centreline profile above still describes the racing line, but a curve cannot
+     * express camber or banking across the road's width. Emitting triangles is what lets
+     * the racing route delete its surface constants outright instead of trading one
+     * approximation for a slightly better one.
+     */
+    ...(drivableMesh ? { drivableMesh } : {}),
     lapLengthMeters: round3(lapLength),
     estimatedLapSeconds: Math.min(RACING_MAX_AUTHORED_LAP_SECONDS, Math.max(30, Math.ceil(lapLength / RACING_CERTIFIED_GAME_UNITS_PER_SECOND))),
     confidence: 0.76,
@@ -353,7 +374,8 @@ function computeRacingTrackTopology(
       `estimatedLapSeconds:${topology.estimatedLapSeconds}`,
       `centerlineMethod:${centerlineMethod}`,
       `centerlineOffRoadRatio:${offRoadRatio.toFixed(4)}`,
-      `roadTriangles:${roadSurface.triangleCount}`
+      `roadTriangles:${roadSurface.triangleCount}`,
+      `drivableMeshTriangles:${drivableMesh?.triangleCount ?? 0}`
     ]
   };
 }
@@ -949,6 +971,70 @@ interface RoadSurface {
    */
   readonly medianElevation: number;
   readonly triangleCount: number;
+}
+
+/**
+ * Build an indexed triangle mesh from the road primitives' triangles.
+ *
+ * Vertices are welded on a quantised key so shared corners collapse, which typically cuts
+ * the position array by about a third and, more importantly, makes the mesh watertight
+ * enough that a downward ray cannot slip through a seam between two adjacent road quads.
+ *
+ * `maxTriangles` bounds the committed artifact. Decimation keeps an evenly spaced subset
+ * rather than a contiguous prefix, because dropping a contiguous run would delete a whole
+ * corner of the circuit and leave a hole a wheel could fall through.
+ */
+function createDrivableMesh(
+  primitives: readonly PrimitiveGeometry[],
+  maxTriangles = 4000
+): ShowcaseRacingDrivableMesh | undefined {
+  const triangles = primitives.flatMap((primitive) => primitive.triangles);
+  if (triangles.length === 0) return undefined;
+
+  const stride = triangles.length > maxTriangles ? Math.ceil(triangles.length / maxTriangles) : 1;
+  const kept: RoadTriangle[] = [];
+  for (let index = 0; index < triangles.length; index += stride) {
+    const triangle = triangles[index];
+    if (triangle) kept.push(triangle);
+  }
+
+  const positions: number[] = [];
+  const indices: number[] = [];
+  const indexByKey = new Map<string, number>();
+  const pushVertex = (vertex: readonly [number, number, number]): number => {
+    // Quantise to millimetre-ish precision in model units so float noise does not defeat
+    // welding, while staying far finer than any wheel radius.
+    const key = `${vertex[0].toFixed(4)}:${vertex[1].toFixed(4)}:${vertex[2].toFixed(4)}`;
+    const existing = indexByKey.get(key);
+    if (existing !== undefined) return existing;
+    const next = positions.length / 3;
+    positions.push(round4(vertex[0]), round4(vertex[1]), round4(vertex[2]));
+    indexByKey.set(key, next);
+    return next;
+  };
+
+  for (const triangle of kept) {
+    const a = pushVertex(triangle.a);
+    const b = pushVertex(triangle.b);
+    const c = pushVertex(triangle.c);
+    // Skip triangles that collapsed to a line or point during welding: they carry no
+    // surface and would make a raycast return a degenerate normal.
+    if (a === b || b === c || a === c) continue;
+    indices.push(a, b, c);
+  }
+  if (indices.length === 0) return undefined;
+
+  return {
+    positions,
+    indices,
+    sourceTriangleCount: triangles.length,
+    triangleCount: indices.length / 3
+  };
+}
+
+/** Round to 4dp. Model-space road coordinates need finer precision than `round3` gives. */
+function round4(value: number): number {
+  return Math.round(value * 1e4) / 1e4;
 }
 
 function createRoadSurface(primitives: readonly PrimitiveGeometry[]): RoadSurface {

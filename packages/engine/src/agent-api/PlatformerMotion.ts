@@ -132,6 +132,26 @@ export interface PlatformerMotionRequest {
    */
   readonly feel?: PlatformerFeel | undefined;
   /**
+   * Run speed in character heights per second.
+   *
+   * ## The coupling defect this fixes
+   *
+   * Move speed used to be derived solely from `max(gapClearance, sessionPace)`, and gap
+   * clearance is `maxGap * gapMargin / airtime`. Airtime grows with the apex, so **raising
+   * the jump made the character run slower.** Measured on Skyline: taking the apex from
+   * 0.684 to 1.04 to fix the barely-there jump dropped move speed from 1.15 to 0.703, and
+   * 60 seconds of play covered 5.27 units of a 16.6-unit course instead of 8+.
+   *
+   * Those are two independent design intentions — "how high do I jump" and "how fast do I
+   * run" — and one should not silently trade against the other. Gap clearance remains a
+   * *floor* on speed, because a run too slow to clear the widest gap is unplayable. This is
+   * the desired pace above that floor.
+   *
+   * Expressed per character height so it transfers across scales: a 0.5-unit hero and a
+   * 2-unit hero at 3 heights per second look equally quick.
+   */
+  readonly runSpeedPerHeight?: number | undefined;
+  /**
    * Throw instead of silently shrinking the jump when intent cannot clear the level.
    *
    * Default true. Silent degradation is how the barely-there jump shipped: the solver
@@ -238,12 +258,24 @@ interface FeelProfile {
   readonly fallMultiplier: number;
   /** Fraction of rise time near the apex where gravity is reduced, giving hang time. */
   readonly apexHangFraction: number;
+  /** Run speed in character heights per second, independent of the jump arc. */
+  readonly runSpeedPerHeight: number;
 }
 
 const FEEL_PROFILES: Readonly<Record<PlatformerFeel, FeelProfile>> = {
-  snappy: { riseSeconds: 0.24, apexPerHeight: 1.6, fallMultiplier: 1.9, apexHangFraction: 0.08 },
-  responsive: { riseSeconds: 0.32, apexPerHeight: 2.0, fallMultiplier: 1.6, apexHangFraction: 0.14 },
-  floaty: { riseSeconds: 0.46, apexPerHeight: 2.4, fallMultiplier: 1.15, apexHangFraction: 0.22 }
+  /*
+   * `runSpeedPerHeight` is bounded by the reach-to-gap invariant, not chosen freely.
+   *
+   * Reach is `moveSpeed * airtime`, and `jump-reach-proportionate` caps reach at 3.2x the
+   * widest gap so a jump does not wildly overshoot what it is clearing. A snappier feel has
+   * less airtime, so it can carry more speed within the same reach budget — which is also
+   * how these games actually play. These defaults sit inside that budget for a course whose
+   * widest gap is a reasonable fraction of the character's height; a route wanting more pace
+   * states `runSpeedPerHeight` and gets a loud invariant failure if it overshoots.
+   */
+  snappy: { riseSeconds: 0.24, apexPerHeight: 1.6, fallMultiplier: 1.9, apexHangFraction: 0.08, runSpeedPerHeight: 3.2 },
+  responsive: { riseSeconds: 0.32, apexPerHeight: 2.0, fallMultiplier: 1.6, apexHangFraction: 0.14, runSpeedPerHeight: 2.5 },
+  floaty: { riseSeconds: 0.46, apexPerHeight: 2.4, fallMultiplier: 1.15, apexHangFraction: 0.22, runSpeedPerHeight: 1.9 }
 };
 
 export function platformerFeelProfile(feel: PlatformerFeel): FeelProfile {
@@ -330,7 +362,17 @@ export function solvePlatformerMotion(
   const speedForSession = targetSessionSeconds > 1 && geometry.courseLength > 0
     ? geometry.courseLength / (targetSessionSeconds * traversalFraction)
     : 0;
-  const moveSpeed = Math.max(0.5, speedForGap, speedForSession);
+  /*
+   * Intended run pace, independent of the jump arc.
+   *
+   * Without this term, move speed was `max(gapClearance, sessionPace)`, and gap clearance is
+   * inversely proportional to airtime — so a higher jump produced a slower character. Run
+   * speed is a separate design decision and now has its own input, with gap clearance kept
+   * as a floor so a level stays traversable.
+   */
+  const speedForRunIntent = (request.runSpeedPerHeight ?? feel?.runSpeedPerHeight ?? 0)
+    * Math.max(0, request.characterHeight ?? 0);
+  const moveSpeed = Math.max(0.5, speedForGap, speedForSession, speedForRunIntent);
 
   const traversalSeconds = moveSpeed > 0 ? geometry.courseLength / moveSpeed : 0;
 
@@ -380,6 +422,17 @@ export interface PlatformerMotionReport {
     readonly airtime: number;
     readonly jumpReach: number;
     readonly apexToRiseRatio: number;
+    /**
+     * Apex over the taller of the tallest step and the character.
+     *
+     * This is the ratio the floaty ceiling is judged on. It is published alongside
+     * `apexToRiseRatio` so evidence shows what the check measured rather than only the
+     * geometry-only number, which reads as a failure on courses whose steps are shorter
+     * than the character.
+     */
+    readonly apexToClearanceRatio: number;
+    /** The height the jump had to clear: the tallest step, or the character if taller. */
+    readonly clearanceReference: number;
     readonly reachToGapRatio: number;
   };
   readonly checks: readonly PlatformerMotionCheck[];
@@ -407,6 +460,18 @@ export function validatePlatformerMotion(
     readonly minReachToGapRatio?: number | undefined;
     /** Maximum airtime in seconds before a jump reads as floaty regardless of ratios. */
     readonly maxAirtimeSeconds?: number | undefined;
+    /**
+     * Height of the character the jump belongs to, in world units.
+     *
+     * A jump is judged against what it actually has to clear, and that is never smaller
+     * than the character performing it. Mesh-extracted courses routinely contain steps
+     * shorter than the character's own knees: Skyline's tallest step is 0.36 against a
+     * 0.52-unit hero. Measuring the apex against 0.36 alone declares every
+     * character-scaled jump "floaty" and pushes routes toward a jump the player cannot
+     * see. When supplied, the floaty ceiling is measured against the larger of the
+     * tallest step and the character's height.
+     */
+    readonly characterHeight?: number | undefined;
   } = {}
 ): PlatformerMotionReport {
   const geometry = measurePlatformerGeometry(platforms);
@@ -415,6 +480,14 @@ export function validatePlatformerMotion(
   const airtime = gravityMagnitude > 0 ? (2 * motion.jumpVelocity) / gravityMagnitude : 0;
   const jumpReach = motion.moveSpeed * airtime;
   const apexToRiseRatio = geometry.maxRise > 0 ? apex / geometry.maxRise : Number.POSITIVE_INFINITY;
+  /*
+   * What the jump has to clear, which is the tallest step or the character, whichever is
+   * larger. The lower bound stays tied to geometry alone -- a jump must clear the actual
+   * step -- while the upper bound uses this reference so a course built from small steps
+   * cannot force a jump that is invisible next to the character.
+   */
+  const clearanceReference = Math.max(geometry.maxRise, Math.max(0, limits.characterHeight ?? 0));
+  const apexToClearanceRatio = clearanceReference > 0 ? apex / clearanceReference : Number.POSITIVE_INFINITY;
   const reachToGapRatio = geometry.maxGap > 0 ? jumpReach / geometry.maxGap : Number.POSITIVE_INFINITY;
 
   const maxApexRatio = limits.maxApexToRiseRatio ?? 2.6;
@@ -432,10 +505,12 @@ export function validatePlatformerMotion(
     },
     {
       id: "jump-not-floaty",
-      description: `jump apex must not exceed the tallest step by more than ${maxApexRatio}x`,
-      // An infinite ratio means the level has no rises at all, where any apex is fine.
-      passes: !Number.isFinite(apexToRiseRatio) || apexToRiseRatio <= maxApexRatio,
-      detail: `apex ${round(apex)} vs tallest step ${geometry.maxRise} (ratio ${roundRatio(apexToRiseRatio)})`
+      description: `jump apex must not exceed the taller of the tallest step and the character by more than ${maxApexRatio}x`,
+      // An infinite ratio means there is nothing to clear at all, where any apex is fine.
+      passes: !Number.isFinite(apexToClearanceRatio) || apexToClearanceRatio <= maxApexRatio,
+      detail: `apex ${round(apex)} vs clearance reference ${round(clearanceReference)} (tallest step ${geometry.maxRise}${
+        limits.characterHeight === undefined ? "" : `, character ${round(limits.characterHeight)}`
+      }) (ratio ${roundRatio(apexToClearanceRatio)})`
     },
     {
       id: "jump-clears-widest-gap",
@@ -473,6 +548,8 @@ export function validatePlatformerMotion(
       airtime: round(airtime),
       jumpReach: round(jumpReach),
       apexToRiseRatio: roundRatio(apexToRiseRatio),
+      apexToClearanceRatio: roundRatio(apexToClearanceRatio),
+      clearanceReference: round(clearanceReference),
       reachToGapRatio: roundRatio(reachToGapRatio)
     },
     checks,
