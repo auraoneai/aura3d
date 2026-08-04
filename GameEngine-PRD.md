@@ -1,10 +1,33 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
-**Status:** in progress — WS-0 complete
+**Status:** in progress — WS-0, WS-1 (except 1.7/1.9), WS-2, WS-4, WS-6 complete with evidence.
+WS-3.8 attempted and reverted with the finding recorded (see below). WS-5 and WS-7 open.
+25 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
 **Secondary scope:** `packages/rendering`, `tools/showcase-library`, `tests/`
 **Explicitly out of scope:** editing any file under `apps/` to make a symptom disappear
+
+---
+
+## 0.1 Library-level defects found and fixed while executing this PRD
+
+Every one is in `packages/`, not in a route. Each has a test that fails without the fix.
+
+| # | Class | Defect | Evidence |
+|---|---|---|---|
+| 1 | API-design | `AuraPhysicsRuntime`/`AuraBodyRegistry` were declared as interfaces with **no implementation**. `grep -rn AuraPhysicsRuntime` matched only their own file, so no developer could obtain one. The tests that "proved WS-1" exercised pure helpers through a deep `packages/physics/src` import. | `createPhysicsRuntime` + `app.physics`; 13 tests importing `@aura3d/engine` only |
+| 2 | engine | Joints were a **silent no-op on the default backend**. `PhysicsWorld.stepCannon` never called `constraint.solve()`; only the `aura-js` fallback did. A body on a `fixed` joint free-fell to y = -18.78 instead of hanging at y = 1. This is why `joints/constraints` sat at "unproven, 0 consumers". | reverting the hunk fails 6 of 6 cannon-es joint tests |
+| 3 | engine | `slider` left relative rotation unconstrained. A prismatic joint has zero rotational DOF; anchors ride each body's local frame, so spin swung the anchor and the positional solve *translated* the body to cancel it. A single along-axis impulse ended 0.478 off-axis in z and 0.780 in y — off the rail. Held fine at rest, which is why an isolated resting test passed. | off-axis 0.478 -> 0.034; regression test on both backends |
+| 4 | engine | An app whose only motion was physics **rendered one frame and froze**, with no error. `shouldContinuouslyRender` can only see scene-declared motion, not a simulation or an `onFrame` callback. | measured `frames: 1` with five crates that should have been falling; now driven by a `requiresFrames()` predicate |
+| 5 | API-design | `createCollisionLayers` existed with **nowhere to put the result**. A mask is only meaningful against the full layer set, so it cannot be passed per body. | `createAuraApp({ physics: { layers, gravity } })` |
+| 6 | engine | `createVehicleMotion` never passed `maxLoad` to the tyre model, which defaults to 5000 N. Every vehicle lighter than a road car ran on the load-factor floor and lost **~10x its grip** — 1.1 g where 3.5 g was requested. Symptom was a car that would not turn, which reads as a tuning problem. | `tyre-load-rating.test.ts`; removing `maxLoad` fails it |
+| 7 | API-design | Platformer move speed was derived from jump airtime, so **raising the jump made the character slower**: fixing the apex dropped speed 1.15 -> 0.703 and 60s traversal to 5.27 of a 16.6-unit course. Two independent design intentions were silently trading against each other. | `runSpeedPerHeight` as its own input; traversal 5.27 -> 15.15 |
+| 8 | engine | Platformer apex came from `maxRise * apexHeadroom`, where `maxRise` is the step between consecutive platforms. A near-level course collapsed it, so the jump barely left the ground. | apex 0.684 -> 1.04 (2x character height) from declared intent |
+| 9 | missing-capability | A racing route had no way to ground a car on the real road, so every one approximated. The geometry extractor emitted only a centreline — a curve, which cannot express camber or banking across the road's width, so all four wheels got the same height. | `drivableMesh` (2,902 triangles, 529 distinct elevations vs 13) + `GameRacingSceneBinding.vehicleSurface()` |
+
+Not fixed, and not claimed: WS-3.8 (see its row), WS-5, WS-7, WS-1.7, WS-1.9.
 
 ---
 
@@ -146,14 +169,14 @@ that engine *reachable and safe*.
 | 1.8 | `packages/engine/src/agent-api/index.ts` | Export the whole runtime from the **public** API. Nothing above may require a deep import. | `tests/unit/public-api-contracts.test.ts` asserts every new export; ESLint deep-import ban still passes |
 | 1.9 | `docs/api/public-api.md`, `docs/concepts/physics.md` **(new)** | Document the runtime with runnable snippets: push a crate, detect a pickup, raycast for line-of-sight, build a hinged door. | `pnpm check:docs-codeblocks` passes on every snippet |
 
-- [ ] 1.1 `AuraBodyHandle` with forces, impulses, torque, velocity
-- [ ] 1.2 Collision + trigger events with full contact payload
-- [ ] 1.3 Raycast / spherecast / overlap queries; raycasting consumers > 0
-- [ ] 1.4 Collision layers and masks
-- [ ] 1.5 Full shape and body-property coverage, audited against the backend
-- [ ] 1.6 Six joint types with stability tests
+- [x] 1.1 `AuraBodyHandle` with forces, impulses, torque, velocity — `createPhysicsRuntime` implemented and attached as `app.physics`; `public-physics-runtime.test.ts` 13/13 via `@aura3d/engine` only. Earlier commit declared the interface with **no implementation** (`grep -rn AuraPhysicsRuntime` matched only its own file); that is now a real value.
+- [x] 1.2 Collision + trigger events with full contact payload — `onCollision`/`onCollisionWith`/`onTriggerEnter`/`onTriggerExit` dispatch from `physics.step()`; tests assert contact normal, `relativeSpeed`, and that a sensor fires enter exactly once (not per frame).
+- [x] 1.3 Raycast / spherecast / overlap queries; raycasting consumers > 0 — `app.physics.queries.*` with layer filtering and an ignore list. Consumers now > 0: `tests/clean-room/physics-sandbox` raycasts to pick a crate, asserted in the browser suite.
+- [x] 1.4 Collision layers and masks — `createCollisionLayers` + `createAuraApp({ physics: { layers } })`. Proven behaviourally, not just structurally: the clean-room shooter asserts `bulletOnBulletContacts === 0` on a pre-reset snapshot while bullets are in flight, and a control case confirms cross-layer pairs *do* collide.
+- [x] 1.5 Full shape and body-property coverage, audited against the backend — audit found the declared list advertised `cylinder`, which `Shape.ts` does not provide; it would have thrown for any caller. Removed rather than faked with a box, `trimesh` renamed to `mesh` to match the factory, capability table documented, and unsupported shapes throw an actionable error.
+- [x] 1.6 Six joint types with stability tests — `fixed`, `hinge`, `slider`, `ball-socket`, `spring`, `motorised-hinge`, each tested on **both** backends (`public-joints.test.ts` 19/19). Uncovered and fixed two engine defects: joints never solved on the default cannon-es backend (a `fixed` joint free-fell to y = -18.78), and `slider` left rotation unconstrained so spin leaked into 0.478 of off-axis translation.
 - [ ] 1.7 Debug draw with a real consumer
-- [ ] 1.8 Everything reachable from the public API, no deep imports
+- [x] 1.8 Everything reachable from the public API, no deep imports — every new physics test imports `@aura3d/engine` only. The three new clean-room projects report `packagesImported: ["@aura3d/engine"]` with zero private imports, measured by the harness rather than asserted.
 - [ ] 1.9 Physics concepts doc with runnable snippets
 
 ---
@@ -167,10 +190,10 @@ that engine *reachable and safe*.
 | 2.3 | `packages/physics/src/SurfaceQuery.ts` **(new)** | `createMeshSurfaceQuery(geometry, worldMatrix)` → `sampleHeight/sampleNormal/sampleGrip`, per-frame cached by integer cell. | A crowned/banked track returns different heights across its width and a real normal, not `[0,1,0]` |
 | 2.4 | `packages/engine/src/agent-api/index.ts` | Expose surface queries publicly, so grounding anything to a mesh is a one-liner for any genre. | Public-API test; used by WS-3 and WS-4 |
 
-- [ ] 2.1 BVH matches brute force
-- [ ] 2.2 `raycastMesh` handles all five edge cases
-- [ ] 2.3 Mesh surface query returns real per-point height and normal
-- [ ] 2.4 Publicly reachable
+- [x] 2.1 BVH matches brute force — `mesh-surface-query.test.ts`: 1,000 random rays over a 10k-triangle mesh match brute force exactly.
+- [x] 2.2 `raycastMesh` handles all five edge cases — front/back face, glancing, parallel miss, origin inside, degenerate triangle, all covered in `mesh-surface-query.test.ts`.
+- [x] 2.3 Mesh surface query returns real per-point height and normal — proven on the **real** circuit, not a synthetic grid: the committed contract's road mesh carries 529 distinct elevations against the centreline's 13, and four wheels across the road width receive independent heights.
+- [x] 2.4 Publicly reachable — `createMeshSurfaceQuery`, `buildMeshBVH` and `raycastMesh` re-exported from `@aura3d/engine`, consumed by `GameRacingSceneBinding.vehicleSurface()`.
 
 ---
 
@@ -195,9 +218,41 @@ This is the structural change. Without it, every future genre repeats this PRD.
 - [ ] 3.3 Force-based tyre model on the shared engine
 - [ ] 3.4 No tunnelling at 200 km/h
 - [ ] 3.5 Character controller real against mesh
-- [ ] 3.6 Apex from intent, validated, loud on failure
-- [ ] 3.7 Coyote/buffer/variable-height/asymmetric gravity
-- [ ] 3.8 All four kits on the shared runtime
+- [x] 3.6 Apex from intent, validated, loud on failure — apex comes from `jumpHeight` or a `feel` preset scaled by character height, then is validated against geometry; an unclearable level throws naming the offending step instead of silently shrinking. `platformer-jump-intent.test.ts` 13/13.
+- [x] 3.7 Coyote/buffer/variable-height/asymmetric gravity — coyote and buffer windows scale with airtime rather than being fixed milliseconds, plus asymmetric fall gravity, apex hang and short-hop apex. Asserted on the real level in `skyline-real-level-motion.test.ts`.
+- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED AND REVERTED 2026-08-04, finding recorded below**
+
+  I wired `createGameRacingKit` onto `createVehicleMotion` (the WS-3.3 force model), replacing
+  its kinematic `heading += steer * steerRate * dt`. The swap typechecked and the whole physics
+  suite stayed green, but it regressed 5 route tests: the car could not complete a lap of its
+  own certified circuit (`turbo-sixty-second-race` 1 checkpoint of 20 needed, 2,776 of 3,600
+  frames off-track). I reverted it rather than ship a kit that cannot drive its own route, and
+  rather than weaken those gates.
+
+  **What the attempt established, which is the useful part:**
+
+  1. **A real engine defect, now fixed and committed separately.** `createVehicleMotion` never
+     passed `maxLoad` to `samplePacejkaTireForces`, which defaults to 5000 N. Every vehicle
+     lighter than a road car ran on the load-factor floor and lost ~10x its grip — measured 1.1 g
+     where 3.5 g was requested. Fixed in `ae71897a`, with a load-bearing regression test.
+  2. **The blocker is not the model, it is a unit-frame mismatch.** A certified route is
+     normalised: this circuit's road is 0.439 units wide, its tightest corner 0.48 units. The
+     force model is dimensional. Converting between them requires *choosing* a scale, and every
+     choice I derived broke something else in sequence — a road car's 62 m/s made the tightest
+     corner need 56.8 g; solving for 3 g gave a 0.19 m wheelbase under a 0.46 m centre of mass,
+     producing 86 rad/s of yaw; fixing that left drag balancing at 9.5 m/s against a declared 3.3.
+     Running the model directly in game units removes the scale but still leaves the route's
+     declared 4x arcade pace demanding ~4 g through a fixed radius.
+  3. **The honest conclusion.** The racing kit's tuning (`maxSpeed`, `acceleration`, `steerRate`,
+     and the routes certified against them) encodes a *kinematic* contract. Moving to a force
+     model is not a drop-in substitution; it changes what those numbers mean, so the routes and
+     their certified lap times have to be re-derived with it. That is real work with a real
+     scope, not a wiring change, and claiming 3.8 without it would be exactly the kind of
+     unproven claim WS-0 existed to correct.
+
+  Remaining scope for 3.8: re-derive the racing route's speed/steer contract against the force
+  model, then re-certify `turbo-drift-circuit`'s lap time. The kit-swap diff is recorded in this
+  session's history and the defect it uncovered is already fixed and shipped.
 - [ ] 3.9 Kits are compositions, path documented
 
 ---
@@ -211,10 +266,10 @@ This is the structural change. Without it, every future genre repeats this PRD.
 | 4.3 | `tests/unit/physics/vehicle-mesh-contact.test.ts` **(new)** | Scripted lap over the **real** circuit mesh: max penetration < 1 mm every step, four wheels grounded on tarmac. | Fails if 4.1 is reverted |
 | 4.4 | `tests/unit/physics/character-mesh-contact.test.ts` **(new)** | Scripted run over the real level mesh: no penetration, no missed landings, apex ≥ declared height. | Fails if 4.2 is reverted |
 
-- [ ] 4.1 Turbo drift surface constants deleted
-- [ ] 4.2 Skyline motion constants deleted
-- [ ] 4.3 Vehicle mesh-contact test load-bearing
-- [ ] 4.4 Character mesh-contact test load-bearing
+- [x] 4.1 Turbo drift surface constants deleted — `TRACK_SURFACE_Y`, `CAR_GROUND_Y`, `CAR_TYRE_CONTACT_Y`, `VERGE_DROP`, `SHOULDER_WIDTH` and the analytic `circuitSurface.sample` are gone; all five counts are 0 in code. The route now calls `racingScene.vehicleSurface()` and throws at startup if the contract carries no drivable triangles rather than silently flattening.
+- [x] 4.2 Skyline motion constants deleted — apex now comes from declared intent (`feel: "responsive"` scaled by character height): **0.684 -> 1.04**, exactly 2x character height. The stale `previousTuning: { gravity: -22, jumpVelocity: 7.4 }` literal is gone. `grep -cE "gravity:|jumpVelocity:"` reports 3, and all three are *reads* of solver output for evidence publication, not route-chosen values; `skyline-real-level-motion.test.ts` enforces that distinction by parsing assignments rather than counting occurrences.
+- [x] 4.3 Vehicle mesh-contact test load-bearing — `turbo-drift-real-circuit-contact.test.ts` (9 tests) reads the **committed** contract the shipped route imports. Reverting the mesh surface to the old flat plane fails exactly 3 of the 9 (per-wheel heights, real normals, surface grip); restoring passes them.
+- [x] 4.4 Character mesh-contact test load-bearing — `skyline-real-level-motion.test.ts` (8 tests) against the committed level. It re-derives the previous apex from the solver rather than remembering a number, and asserts all six motion invariants. Uncovered a real coupling defect: move speed was derived from jump airtime, so **raising the jump made the character slower** (1.15 -> 0.703, 60s traversal 5.27 of 16.6 units). Now independent: apex 1.04, speed 1.30, traversal 15.15, checkpoints 2 -> 6.
 
 ---
 
@@ -243,10 +298,10 @@ The whole point. If this workstream cannot be completed, the layering is still w
 | 6.3 | `tests/clean-room/physics-puzzle/` **(new)** | Hinged door, sliding block, spring platform — joints only, no kit. Under 300 lines. | Proves joints are usable, not just present |
 | 6.4 | `tests/browser/clean-room-projects.spec.ts` | Add all three to the clean-room suite with the same budgets and zero-private-import rule. | 7/7 clean-room projects pass |
 
-- [ ] 6.1 Physics sandbox under 200 lines
-- [ ] 6.2 Top-down shooter with no kit code
-- [ ] 6.3 Physics puzzle using joints
-- [ ] 6.4 All seven clean-room projects in the suite
+- [x] 6.1 Physics sandbox under 200 lines — 97/200 authored lines, `@aura3d/engine` only, zero private imports. Asserts contacts generated, impulses applied, raycast pick hits and names a crate, and an overlap query finds the stack.
+- [x] 6.2 Top-down shooter with no kit code — 176/300 lines. **No kit exists for this genre and none was added**; `usedKit: false` is asserted. This is the generality proof the PRD was written to obtain.
+- [x] 6.3 Physics puzzle using joints — 105/300 lines. Motorised hinge, slider and spring, each asserted to have visibly done its job. None of it was buildable before the cannon-es constraint-solve fix, when joints were inert.
+- [x] 6.4 All seven clean-room projects in the suite — `pnpm exec playwright test tests/browser/clean-room-projects.spec.ts` → **7 passed**. The `manual-physics-integration` forbidden pattern bans `new PhysicsWorld`, so the three new projects cannot pass by hand-wiring physics.
 
 ---
 
