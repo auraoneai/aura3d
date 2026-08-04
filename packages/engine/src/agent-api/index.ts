@@ -70,6 +70,7 @@ import {
 } from "./WorldLabelRenderer.js";
 
 export * from "./SpatialAnchoring.js";
+export * from "./PhysicsRuntime.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
 export * from "./VehicleChassis.js";

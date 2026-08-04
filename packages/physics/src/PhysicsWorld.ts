@@ -872,6 +872,35 @@ function syncCannonFromAura(body: RigidBody, cannonBody: CannonBody): void {
   cannonBody.velocity.set(body.velocity[0], body.velocity[1], body.velocity[2]);
   cannonBody.quaternion.set(body.rotation[0], body.rotation[1], body.rotation[2], body.rotation[3]);
   cannonBody.angularVelocity.set(body.angularVelocity[0], body.angularVelocity[1], body.angularVelocity[2]);
+  /*
+   * Forward accumulated force and torque to the backend.
+   *
+   * `RigidBody.applyForce`/`applyTorque` accumulate into private accumulators that only
+   * `RigidBody.integrate()` reads — and `integrate()` is the `aura-js` fallback path. On
+   * the default `cannon-es` backend this sync copied position, velocity and rotation but
+   * dropped the accumulators, so **`applyForce` was silently a no-op**: a developer could
+   * call it every frame and the body would never accelerate. Impulses worked, because
+   * those mutate velocity directly, which made the gap look like a physics quirk rather
+   * than a missing bridge.
+   *
+   * Cleared on the Aura side after forwarding, so a force applied once is applied once —
+   * matching the accumulate-then-clear contract `integrate()` already implements.
+   */
+  const force = body.pendingForce();
+  if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0) {
+    cannonBody.applyForce(toCannonVec3(force));
+  }
+  const torque = body.pendingTorque();
+  if (torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
+    cannonBody.torque.set(
+      cannonBody.torque.x + torque[0],
+      cannonBody.torque.y + torque[1],
+      cannonBody.torque.z + torque[2]
+    );
+  }
+  if (force[0] !== 0 || force[1] !== 0 || force[2] !== 0 || torque[0] !== 0 || torque[1] !== 0 || torque[2] !== 0) {
+    body.clearForces();
+  }
   if (body.sleeping) cannonBody.sleep();
   else cannonBody.wakeUp();
 }
