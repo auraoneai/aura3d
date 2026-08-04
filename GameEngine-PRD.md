@@ -464,6 +464,32 @@ nothing tree-shakes. Splitting that surface is substantial work with its own PRD
 Recorded here because it is now visible for the first time, and because it is a genuine blocker for
 claiming a good developer experience: "install our library" currently costs 578 KB gzip.
 
+### `verify:performance` — a flaky budget, not a regression
+
+`pnpm verify:release:quick` reported `performance` failing on
+`physics-500-bodies-120-steps`: 7,288 ms against a 6,000 ms budget. That looked like my constraint
+work, since I changed `PhysicsWorld.step`. It is not.
+
+First, the benchmark builds 500 boxes and a ground plane and creates **no constraints**, and my
+added block is guarded by `if (this.constraintsList.length > 0)`, so it never executes here.
+
+Second, and decisively, I ran the benchmark four times on each revision on this machine:
+
+| revision | run medians (ms) | over 6,000 ms budget |
+|---|---|---|
+| `v1.5.2` | 5,850 / 6,253 / 6,337 / 6,389 | **3 of 4** |
+| current | 5,547 / 6,072 / 6,111 / 6,916 | **3 of 4** |
+
+Median-of-medians: v1.5.2 **6,295 ms**, current **6,092 ms** — the current tree is marginally
+*faster*, and both distributions straddle the budget. The 7,288 ms figure came from a run executing
+concurrently with the rest of `verify:release`, which is load the benchmark is sensitive to.
+
+**Classification: flaky gate.** The budget sits inside the noise band on this hardware, so it fails
+roughly three runs in four regardless of revision. That is worth fixing — a gate that fails 75% of
+the time on unchanged code trains people to ignore it — but the fix is to make the budget robust
+(more attempts, or a documented machine baseline), not to raise the number until it passes. Not
+GameEngine-PRD scope, and **not** a reason to hold 1.5.3.
+
 ### Open decision, deliberately not made here
 
 `/apps/instancing-performance/` has three sources of truth disagreeing about what it is: the root
