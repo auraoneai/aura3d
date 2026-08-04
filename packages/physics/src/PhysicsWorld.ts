@@ -337,6 +337,9 @@ export class PhysicsWorld {
       if (!body) {
         continue;
       }
+      if (options.ignoreColliders?.includes(collider.id) || options.ignoreBodies?.includes(collider.bodyId)) {
+        continue;
+      }
       const hit = raycastCollider(origin, normalized, collider, body, options);
       if (hit) {
         hits.push(hit);
@@ -356,6 +359,9 @@ export class PhysicsWorld {
     for (const collider of this.colliderValues()) {
       const body = this.bodiesById.get(collider.bodyId);
       if (!body) {
+        continue;
+      }
+      if (options.ignoreColliders?.includes(collider.id) || options.ignoreBodies?.includes(collider.bodyId)) {
         continue;
       }
       const hit = sphereCastCollider(origin, radius, normalized, collider, body, options);

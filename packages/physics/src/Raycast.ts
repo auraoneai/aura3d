@@ -7,6 +7,17 @@ export type RaycastOptions = {
   readonly mask?: number;
   readonly includeSensors?: boolean;
   readonly includeBackfaces?: boolean;
+  /**
+   * Collider ids to skip.
+   *
+   * Without this, a query started inside a body hits that body first at distance 0. Every
+   * character controller and every shooter needs it: a controller probing ahead detected
+   * its own capsule and concluded it was against a wall, so it never moved, and a
+   * projectile raycast from inside the shooter hits the shooter.
+   */
+  readonly ignoreColliders?: readonly number[] | undefined;
+  /** Body ids to skip. Preferred over `ignoreColliders` for multi-collider bodies. */
+  readonly ignoreBodies?: readonly number[] | undefined;
 };
 
 export type RaycastHit = {
