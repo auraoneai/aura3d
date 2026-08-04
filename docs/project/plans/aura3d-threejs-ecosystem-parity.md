@@ -52,23 +52,26 @@ Two honest caveats about the method itself:
 | --- | --- | --- | --- | --- | --- |
 | core rendering | 1 | 14 | 2 | 2 | 19 |
 | ecosystem helpers | 1 | 8 | 1 | 1 | 11 |
-| physics | 2 | 3 | 5 | 0 | 10 |
-| game systems | 1 | 6 | 0 | 0 | 7 |
+| physics | 0 | 3 | 7 | 0 | 10 |
+| game systems | 0 | 6 | 1 | 0 | 7 |
 | application workflows | 0 | 4 | 2 | 0 | 6 |
 | developer tooling | 1 | 2 | 0 | 0 | 3 |
 
 ## Where Aura3D genuinely exceeds
 
-Six rows survive all three rules. Each has an integrated API, a production consumer, and
-retained runtime evidence:
+3 rows survive all three rules. Each has an integrated API, a production consumer, and
+retained runtime evidence.
+
+Three rows were **removed from this list on 2026-08-04**: `vehicle dynamics`, `vehicle AI
+driving` and `platformer motion tuning`. They claimed `exceed` while the defects they
+were supposed to have fixed were live — the car's tyres pass through the road because the
+chassis samples an analytic plane rather than the track mesh, and the Skyline jump
+collapses because apex is derived from `geometry.maxRise`. See GameEngine-PRD.md WS-0.
 
 | Capability | Why it exceeds | Evidence |
 | --- | --- | --- |
 | scene graph | Declarative typed scene builder; no manual `add`/`remove` bookkeeping or renderer lifecycle in user code. 77 consumers. | `tests/reports/showcase-interaction-audit` |
 | selection outlines / focus feedback | `focusObject` / `focusSemanticRegion` with per-result geometric invariants. In the Three.js stack this is `OutlinePass` plus hand-built indicator geometry, which is exactly what produced the flattened-bar defect here. | `tests/reports/showcase-interaction-audit` |
-| vehicle dynamics | `createVehicleChassis` derives wheelbase, track, wheel radius and ride height from the asset's rendered bounds and resolves contact, suspension and attitude, with grounding asserted per frame. Rapier gives you a vehicle controller; it does not give you asset-derived geometry or a grounding invariant. | `tests/reports/turbo-vehicle-grounding` |
-| vehicle AI driving | `createVehicleDriverAi` with look-ahead racing line, curvature-based corner speeds, stuck and off-track recovery, deterministic per seed. The Three.js ecosystem has no standard solution; every project writes this. | `tests/reports/turbo-vehicle-grounding` |
-| platformer motion tuning | `solvePlatformerMotion` derives gravity, jump velocity and move speed from level geometry; `validatePlatformerMotion` refuses tuning inconsistent with it. Nothing in any ecosystem does this. | `tests/reports/skyline-platformer-motion` |
 | interaction testing | Route-health snapshots plus a harness that discovers controls at runtime, operates them, and retains an interaction trace. | `tests/reports/showcase-interaction-audit` |
 
 Note the shape of that list: the strongest results are in **simulation and correctness
@@ -148,8 +151,8 @@ Stated plainly, because the parity table is capability-shaped and does not captu
 | colliders | Rapier colliders | `Collider`, `createGameBoxCollider` | yes | 2 | parity |  |
 | raycasting | THREE.Raycaster / Rapier ray | `RaycastHit`, `groundHeightRaycaster`, `SphereCastHit` | yes | 0 | parity-unproven |  |
 | character controller | Rapier KinematicCharacterController | `CharacterController`, `createGameKinematicBody` | yes | 0 | parity-unproven |  |
-| vehicle dynamics | Rapier vehicle controller, hand-tuned | `createVehicleChassis`, `vehicleChassisSpecFromBounds` | yes | 1 | **exceed** | Chassis derives geometry from the asset's rendered bounds and resolves contact, suspension and attitude; grounding is asserted per frame rather than inferred. |
-| vehicle AI driving | no standard solution; hand-written per project | `createVehicleDriverAi` | yes | 1 | **exceed** | Look-ahead racing line, curvature-based corner speeds, stuck and off-track recovery, deterministic per seed. |
+| vehicle dynamics | Rapier vehicle controller, hand-tuned | `createVehicleChassis`, `vehicleChassisSpecFromBounds` | yes | 1 | parity-unproven | DOWNGRADED from exceed 2026-08-04. The chassis resolves contact/suspension/attitude correctly, but its VehicleSurface input is an analytic flat plane (TRACK_SURFACE_Y minus a shoulder ramp), not a query against the real track mesh. On a banked or crowned corner the sampled height is wrong and the tyres pass through the visible road. Per-frame grounding assertions are therefore measured against an approximation, not the rendered surface. Restore an exceed claim only after GameEngine-PRD WS-3 lands mesh-backed surface sampling and the WS-7.1 penetration gate passes. |
+| vehicle AI driving | no standard solution; hand-written per project | `createVehicleDriverAi` | yes | 1 | parity-unproven | DOWNGRADED from exceed 2026-08-04. The driver AI is sound in isolation (look-ahead line, curvature corner speeds, recovery, deterministic per seed) but it drives a vehicle whose contact model is an analytic plane, so its output cannot be claimed to exceed a real vehicle controller. Tied to the same GameEngine-PRD WS-3 fix as vehicle dynamics. |
 | joints / constraints | Rapier joints | `Constraint` | yes | 0 | parity-unproven |  |
 | continuous collision detection | Rapier CCD flag | `timeOfImpact`, `TimeOfImpactHit` | yes | 0 | parity-unproven |  |
 | deterministic stepping | fixed-step loop by hand | `PhysicsStepper`, `createFrameLoop` | yes | 1 | parity |  |
@@ -161,7 +164,7 @@ Stated plainly, because the parity table is capability-shaped and does not captu
 | --- | --- | --- | --- | --- | --- | --- |
 | input mapping | hand-written keydown handling | `createGameInput` | yes | 7 | parity | Action and axis bindings with buffering and replay export. |
 | camera rigs | hand-written chase/follow cameras | `createGameRacingCameraRig`, `createGamePlatformerCameraRig`, `createGameCameraDirector` | yes | 2 | parity |  |
-| platformer motion tuning | hand-tuned gravity and jump velocity | `solvePlatformerMotion`, `validatePlatformerMotion` | yes | 1 | **exceed** | Derives motion from level geometry and rejects tuning inconsistent with it. Skyline shipped a 5.76x apex overshoot that every prior gate passed. |
+| platformer motion tuning | hand-tuned gravity and jump velocity | `solvePlatformerMotion`, `validatePlatformerMotion` | yes | 1 | parity-unproven | DOWNGRADED from exceed 2026-08-04. solvePlatformerMotion sets apex = max(minApex, geometry.maxRise * apexHeadroom). maxRise is the step-up between consecutive platforms, so on a near-level course it collapses and the apex falls to minApex - the reported barely-there jump. The solver optimises for 'can technically reach the next platform', not for a usable jump, and has no notion of clearing anything that is not the immediate next platform. Restore an exceed claim only after GameEngine-PRD WS-3.6/3.7 make apex intent-derived and the WS-7.2 motion-feel gate passes. |
 | frame-based combat | hand-written state machine and frame data | `solveCombatFrameData`, `validateCombatFrameData`, `createCombatAi` | yes | 1 | parity | Frame data validated as frame data. Aura Clash shipped 12-32 active frames against 4-5 recovery frames, inverted from any real fighting game. |
 | session lifecycle / objectives | hand-written per project | `createGameRacingKit`, `createGamePlatformerKit`, `createGameFallingBlocksKit` | yes | 5 | parity |  |
 | touch controls | hand-written pointer handlers | `bindGameTouchControls`, `createGameTouchControlLayout` | yes | 3 | parity |  |

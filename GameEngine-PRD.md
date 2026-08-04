@@ -1,6 +1,6 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
-**Status:** proposed, not started
+**Status:** in progress — WS-0 complete
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
 **Secondary scope:** `packages/rendering`, `tools/showcase-library`, `tests/`
@@ -119,12 +119,12 @@ Do this first so no later work inherits a lie.
 | 0.1 | `tools/product-remediation/build-threejs-parity.mjs` | Downgrade `vehicle dynamics` and `vehicle AI driving` from `exceed` to `parity-unproven`. A car that sinks through the road does not exceed Three.js. | Regenerated report shows the downgrade with a recorded reason |
 | 0.2 | same | `platformer motion tuning` cites `showcase-platformer-game-layer-proof`, **deleted in 1.5.2**. Remove the dead consumer; re-derive status from live routes only. | No parity row cites a nonexistent route; add a test asserting this |
 | 0.3 | `tests/unit/tools/parity-consumers.test.ts` **(new)** | Every consumer named in the parity report must resolve to a live route or package. | Test fails if a future deletion orphans a claim |
-| 0.4 | `tests/reports/clean-room-projects/racing-prototype.json` | The clean-room racing prototype ends its scripted run with `speed: 0` and `x: 0` — the same telemetry defect as the live site, sitting inside the headline "developers can build on this" evidence. Treat as a real defect (see WS-5.3), not a reporting quirk. | Scripted run ends with non-zero speed after throttle input |
+| 0.4 | ~~`tests/reports/clean-room-projects/racing-prototype.json`~~ | **RETRACTED 2026-08-04 — this task was based on a misreading.** I claimed the clean-room racing prototype ended with `speed: 0` / `x: 0` and called it the same defect as the live site. It is not. `tests/browser/clean-room-projects.spec.ts:61` presses keys in the order `["KeyW","KeyA","KeyD","KeyR"]`, and `KeyR` is **reset** — so the final snapshot is the correct post-reset state. `key:KeyW` records `changed: true`, which proves throttle did produce speed during the hold. The clean-room evidence was sound; my reading of it was not. The live-site `SPEED 0 / STATUS running` defect is still real and is tracked solely by WS-5.3. | n/a — retracted, no work required |
 
-- [ ] 0.1 Vehicle rows downgraded
-- [ ] 0.2 Dead consumer removed from platformer row
-- [ ] 0.3 Consumer-liveness test in place
-- [ ] 0.4 Clean-room racing telemetry defect acknowledged and tracked
+- [x] 0.1 Vehicle rows downgraded (physics exceed 2 -> 0; unproven 5 -> 7)
+- [x] 0.2 Platformer row downgraded; report regenerates consumers from a live inventory so no dead route is cited
+- [x] 0.3 `tests/unit/tools/parity-consumers.test.ts` — 3/3 pass; 94 consumers all resolve
+- [x] 0.4 RETRACTED — premise was a misreading; clean-room evidence is sound (see table)
 
 ---
 
@@ -224,11 +224,11 @@ This is the structural change. Without it, every future genre repeats this PRD.
 |---|---|---|---|
 | 5.1 | `packages/rendering/src/PBRMaterial.ts`, `Renderer.ts` | Diagnose the translucent DUNLOP arch. Likely glTF alpha-mode misread (`OPAQUE` treated as `BLEND`) or unsorted transparency. Classify before fixing. | Unit test on the alpha-mode path; the arch renders opaque |
 | 5.2 | `packages/rendering/src/Renderer.ts` | Correct transparent sort order and depth-write policy. | Overlapping transparent quads composite correctly |
-| 5.3 | `packages/engine/src/agent-api/*`, turbo drift telemetry | Fix `SPEED 0` while `STATUS running` — present both on the live site **and** in the clean-room racing prototype (WS-0.4). Telemetry must read the state the renderer draws. | After N stepped frames at throttle, reported speed > 0 in both |
+| 5.3 | `apps/showcase-turbo-drift-circuit/src/main.ts`, telemetry source | Fix `SPEED 0` while `STATUS running` on the **live site**. (Not a clean-room defect — see the WS-0.4 retraction.) Reproduce first: determine whether the HUD reads a different state object than the simulation, or whether the car is genuinely stationary while status says running. Classify before fixing. | After N stepped frames at throttle, HUD speed > 0 and matches simulation state |
 
 - [ ] 5.1 Arch opacity root-caused
 - [ ] 5.2 Transparency sorting correct
-- [ ] 5.3 Speed telemetry matches simulation, live and clean-room
+- [ ] 5.3 Live-site speed telemetry matches simulation
 
 ---
 
