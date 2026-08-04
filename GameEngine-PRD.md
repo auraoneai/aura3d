@@ -391,6 +391,26 @@ WS-6 (generality proof) — last, and it is the real acceptance test ───�
 WS-1 before WS-3 is non-negotiable: refactoring kits onto a runtime that is not yet
 public just moves the problem.
 
+## 3.1 Release blocker: visual review needs re-signing
+
+`tests/unit/tools/showcase-route-gates.test.ts` is the one unit test still failing, and it is not a
+code defect — it is a **human gate that has correctly gone stale**.
+
+`docs/project/showcase-visual-review.json` records the project owner's approval
+(`gchahal1982@procure-net.com`, `kind: "human"`) bound to each route's `sourceHash`,
+`routeHealthHash` and three screenshot hashes. This branch changed route source, so the source
+binding no longer matches. The screenshots themselves still hash correctly — verified per route —
+so nothing visual has drifted; the *approval* simply no longer attaches to the code that is now
+there.
+
+I have deliberately not touched that file. Re-signing another person's visual review to turn a gate
+green is precisely what the gate exists to prevent, and it is the one thing in this PRD that cannot
+be discharged by an agent.
+
+**Action required before 1.5.3 ships:** a fresh visual review pass over the four public release
+candidates against their current screenshots, re-recorded with current source hashes. Until then
+`launch evidence ok` is `false`, and that is the honest state rather than a bug to route around.
+
 ## 4. Definition of done
 
 - [ ] Every checkbox above checked
