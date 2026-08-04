@@ -281,7 +281,29 @@ This is the structural change. Without it, every future genre repeats this PRD.
 | 5.2 | `packages/rendering/src/Renderer.ts` | Correct transparent sort order and depth-write policy. | Overlapping transparent quads composite correctly |
 | 5.3 | `apps/showcase-turbo-drift-circuit/src/main.ts`, telemetry source | Fix `SPEED 0` while `STATUS running` on the **live site**. (Not a clean-room defect — see the WS-0.4 retraction.) Reproduce first: determine whether the HUD reads a different state object than the simulation, or whether the car is genuinely stationary while status says running. Classify before fixing. | After N stepped frames at throttle, HUD speed > 0 and matches simulation state |
 
-- [ ] 5.1 Arch opacity root-caused — **INVESTIGATED 2026-08-04, no engine defect found; needs an asset check before any code change.** Traced the whole alpha path: `adaptGLTFMaterial` (`GLTFMaterialAdapter.ts:5`) reads `material.alphaMode ?? "OPAQUE"` correctly and does not coerce `OPAQUE` to `BLEND`. `validateRenderState` (`Material.ts:166`) *throws* if a blended material leaves `depthWrite` on, so the misconfiguration WS-5.1 hypothesised cannot exist silently. The only place blend is forced on is `ArchitecturalMaterialCatalog.ts:97`, which is `category === "glass"` and not on this path. **Classification: asset, most likely** — the arch is part of the Tsukuba track GLB, so if its material declares `alphaMode: "BLEND"` the renderer is honouring the asset faithfully. Remaining work is to read the GLB's material block and, if it is `BLEND` with alpha 1, decide whether the engine should treat that as opaque. Left unticked rather than closed, because I did not verify the asset itself.
+- [ ] 5.1 Arch opacity root-caused — **ASSET RULED OUT 2026-08-04 by reading the GLB; the defect is engine-side and narrowed, but not yet fixed.**
+
+  I first suspected the asset and said so. That was wrong, and reading it settled the question.
+  Parsing `public/aura-assets/showcaseTsukubaCircuit.8c139a57.glb` directly: **21 materials, zero
+  `BLEND`**, four `MASK` (`fence`, `Mountains`, `Forest`, `Foilage`), the rest absent-so-`OPAQUE`,
+  and **no `baseColorFactor` alpha below 1 anywhere**. The arch is authored fully opaque, so the
+  renderer is not faithfully honouring the asset — it is producing translucency the asset never
+  declared. That makes this an **engine** defect.
+
+  Narrowed further: `alphaMode` is parsed correctly by `packages/assets/src/GLTFLoader.ts` (line
+  1777, validated at 1846) and is present on the loaded material type. But `grep -rn alphaMode`
+  across `packages/engine/src` returns **no match at all** — neither `TypedGLBActor.ts` nor
+  `agent-api/index.ts` ever reads it. So the loaded alpha mode is parsed and then dropped on the
+  way to render state, and the four `MASK` materials in this asset are the ones most likely to be
+  mishandled, since `MASK` requires alpha-test-not-blend.
+
+  Remaining work: find where GLB materials become `RenderMaterial` in the production runtime and
+  carry `alphaMode` through — `MASK` to an alpha-cutoff test with `depthWrite` on, `OPAQUE` to no
+  blending. Left unticked because the fix is not written and I have not confirmed which stage
+  drops it.
+
+  *(Superseded note, kept for honesty: my earlier entry classified this as "asset, most likely"
+  and that classification was disproven by the material dump above.)*
 - [ ] 5.2 Transparency sorting correct — **INVESTIGATED 2026-08-04, existing behaviour verified correct; no change made.** `sortExternalParityAlphaItems` groups opaque -> mask -> blend, sorts opaque and mask front-to-back (correct for early-Z) and blend back-to-front (correct for compositing). I suspected the `a.alphaMode === "blend" || b.alphaMode === "blend"` condition was wrong for mixed pairs, and measured it: mixed pairs return earlier on the group comparison, so the condition is only reached within a single group and the behaviour is right. Depth-write policy is enforced by a hard throw in `validateRenderState`. Left unticked because "correct" here means "I found no defect", which is weaker than the passing overlapping-quad test the row asks for.
 - [ ] 5.3 Live-site speed telemetry matches simulation — **INVESTIGATED 2026-08-04; HUD/simulation coherence verified, so the reported symptom is not a telemetry bug.** `updateRacingHud` reads `raceSnapshot.speed`, and `raceSnapshot` is the exact value returned by `racingState.step(...)` on the same frame — one object, no second state to disagree with. So `SPEED 0` while `STATUS running` means the car genuinely was not moving, which is the correct reading of an idle car: `status` is `"running"` from the first frame because the race has started, and speed is 0 until throttle is held. **Classification: application-authoring / presentation**, not engine. The honest fix is a `Ready`-versus-`Racing` distinction so an untouched car does not read as a broken one, plus the WS-7.3 gate to hold it. Left unticked because that change is not made.
 
