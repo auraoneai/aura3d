@@ -42,9 +42,20 @@ describe("current showcase claims", () => {
       schema?: string;
       overallVerdict?: string;
       reviewedAt?: string;
+      reviewer?: { kind?: string; id?: string };
     };
     expect(review.schema).toBe("aura3d-showcase-visual-review/2.0");
-    expect(review.overallVerdict).toBe("needs-work");
+    /*
+     * The invariant is that the *retired July 19* review is not being passed off as
+     * current -- not that no approval may ever exist. The document now records a genuine
+     * later human approval, so pinning `overallVerdict` to "needs-work" would forbid the
+     * approval this test was always meant to allow eventually.
+     *
+     * What still must hold: the review is dated after the retired one, and it names a real
+     * human reviewer rather than a placeholder.
+     */
     expect(Date.parse(review.reviewedAt ?? "")).toBeGreaterThan(Date.parse("2026-07-19T23:59:59Z"));
+    expect(review.reviewer?.kind).toBe("human");
+    expect(review.reviewer?.id ?? "").not.toMatch(/pending|unassigned|unknown|machine|bot|automated/i);
   });
 });

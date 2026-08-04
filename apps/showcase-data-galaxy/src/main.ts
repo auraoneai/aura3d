@@ -136,6 +136,19 @@ const controls: DataGalaxyControls = {
 
 const dataCoreAsset = assets.showcaseParticleCore;
 
+/*
+ * Route-primary subject, declared once.
+ *
+ * The declared hero is the diagnostic anchor copy of the particle core, authored
+ * at `targetMaxDimension: 2.05` with no additional node scale. The composition
+ * probe measures this node so route-primary evidence describes the declared hero
+ * rather than whichever small blob a whole-frame analysis happens to score
+ * highest in a dense scene.
+ */
+const DATA_CORE_NODE_ID = "data-galaxy-diagnostic-anchor";
+const DATA_CORE_TARGET_MAX_DIMENSION = 2.05;
+const DATA_CORE_POSITION = [0, 0.3, -0.22] as const;
+
 let lastChanged = "initial-load";
 let activeBuild = buildDataGalaxyScene();
 let app: ReturnType<typeof createAuraApp> | undefined;
@@ -150,6 +163,35 @@ app = createAuraApp("#aura-stage", {
 bindControls();
 updateControlState();
 publishEvidence("ready");
+
+/*
+ * Route-primary evidence for a dense full-frame data scene.
+ *
+ * Without subject isolation the fallback analyzer finds 34 separate components
+ * here: the one that is actually the scene spans the full crop height and is
+ * rejected as clipped, so the highest-scoring survivor was a 51x13 fragment
+ * carrying 620 pixels. That measured a label, not the hero. Suppressing the
+ * declared hero and diffing the frames measures the hero itself.
+ *
+ * Category is `application`: a typed hero asset, but no play space and no ground
+ * contact to prove.
+ */
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "application",
+    subject: {
+      position: DATA_CORE_POSITION,
+      rotation: [0.02, 0.34, 0] as const,
+      targetSize: DATA_CORE_TARGET_MAX_DIMENSION
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app?.pause();
+      app?.nodes.get(DATA_CORE_NODE_ID)?.setScale(suppressed ? 0.0001 : 1);
+      app?.step(0);
+    }
+  },
+  configurable: true
+});
 
 app.onFrame(({ frame, time }) => {
   const speed = controls.speed;
@@ -193,14 +235,14 @@ function buildDataGalaxyScene(): SceneBuild {
     .add(model(dataCoreAsset, {
       name: "typed diagnostic particle core route-primary hero",
       scaleMode: "fit",
-      targetMaxDimension: 2.05,
+      targetMaxDimension: DATA_CORE_TARGET_MAX_DIMENSION,
       material: material.neon({ color: "#64f4cf", emissive: "#64f4cf", emissiveIntensity: 0.72 }),
       castShadow: false,
       receiveShadow: true
     })
-      .position(0, 0.3, -0.22)
+      .position(...DATA_CORE_POSITION)
       .rotate(0.02, 0.34, 0)
-      .runtime(game.runtimeNode("data-galaxy-diagnostic-anchor", { tags: ["typed-asset", "diagnostic-anchor", "particle-core"] })))
+      .runtime(game.runtimeNode(DATA_CORE_NODE_ID, { tags: ["typed-asset", "diagnostic-anchor", "particle-core"] })))
     .add(model(dataCoreAsset, {
       name: "typed data reactor particle core central observatory",
       scaleMode: "fit",
@@ -502,7 +544,18 @@ function dataGalaxyCamera(mode: DataGalaxyCameraMode): AuraCameraSpec {
       fov: 34
     });
   }
-  return camera.perspective({ position: [0.08, 1.22, 4.65], target: [0, 0.5, -0.2], fov: 32 });
+  // Overview frames the declared hero from the asset's own bounds, so the core
+  // cannot run off the top of the frame when its target size changes. The previous
+  // hardcoded eye position cropped the hero vertically, which the route-primary
+  // probe correctly reports once it measures the hero rather than the scene.
+  return camera.frameAsset(dataCoreAsset, {
+    targetMaxDimension: DATA_CORE_TARGET_MAX_DIMENSION,
+    position: DATA_CORE_POSITION,
+    padding: 1.62,
+    fov: 32,
+    azimuth: 0.06,
+    elevation: 0.2
+  });
 }
 
 function createDataset(formation: DataGalaxyFormation): number[][] {

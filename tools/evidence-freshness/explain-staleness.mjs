@@ -76,7 +76,8 @@ function routeIds() {
      * Skip routes whose retained evidence is deliberately frozen.
      *
      * `retainedEvidenceFrozen: true` means producers must *not* regenerate the artifact -- it is a preserved record of
-     * a superseded route (the two game-layer-proof routes are frozen at 2026-07-30). Reporting frozen evidence as
+     * a superseded route. (The two game-layer-proof routes were the original frozen pair; they have since been
+     * deleted as discontinued examples.) Reporting frozen evidence as
      * stale is not a finding: it is unfalsifiable by construction, because the only remedy the report implies
      * (regenerate) is the one thing the freeze forbids. Two such entries were the last "not provably current"
      * artifacts, and treating them as defects would have made a clean report permanently unreachable.

@@ -85,7 +85,12 @@ import { ShadowPass } from "./ShadowPass";
 import { Sampler } from "./Sampler";
 import { type TextureFormat } from "./Texture";
 import { TextureBinding } from "./TextureBinding";
-import { computePerspectiveCameraFrame, type PerspectiveCameraFrameOptions } from "./CameraFraming";
+import {
+  computeOrthographicCameraFrame,
+  computePerspectiveCameraFrame,
+  type OrthographicCameraFrameOptions,
+  type PerspectiveCameraFrameOptions
+} from "./CameraFraming";
 import {
   assertRendererFeatures,
   createRendererFeatureReport,
@@ -246,7 +251,17 @@ export interface RenderSource {
     readonly min: readonly [number, number, number];
     readonly max: readonly [number, number, number];
   };
-  readonly cameraFrameOptions?: PerspectiveCameraFrameOptions;
+  readonly cameraFrameOptions?: RendererCameraFrameOptions;
+  /**
+   * Projection used when the renderer frames the scene itself.
+   *
+   * Defaults to `"perspective"`, which is what auto-framing has always
+   * produced. Set `"orthographic"` for views defined by the absence of
+   * foreshortening — CAD and technical drawings, isometric gameplay, floor
+   * plans, sprite bakes, product turntables — where a perspective frustum
+   * renders a visibly different image from the one the scene describes.
+   */
+  readonly cameraProjection?: RendererCameraProjection;
   readonly collectedLights?: Iterable<CollectedLight>;
   readonly environmentBackground?: EnvironmentBackgroundOptions | false;
   readonly environmentLighting?: EnvironmentLightingOptions | false;
@@ -279,6 +294,20 @@ export interface RendererInput {
 }
 
 export type RendererCameraPolicy = "identity" | "auto-frame" | "require";
+
+export type RendererCameraProjection = "perspective" | "orthographic";
+
+/**
+ * Framing options accepted by auto-frame, spanning both projections.
+ *
+ * The two projections share every placement option (padding, yaw, pitch,
+ * near/far padding) and differ only in how they establish scale: perspective
+ * through `fovYRadians`, orthographic through `fitMode`. Keeping them in one
+ * type means switching `cameraProjection` does not force the caller to
+ * restructure the options object, and the projection-specific key is simply
+ * ignored by the projection that has no use for it.
+ */
+export interface RendererCameraFrameOptions extends PerspectiveCameraFrameOptions, OrthographicCameraFrameOptions {}
 
 export const DEFAULT_RENDERER_AUTO_FRAME_OPTIONS: PerspectiveCameraFrameOptions = {
   paddingRatio: 0.14,
@@ -2742,10 +2771,13 @@ function createAutoFrameCamera(
   if (!bounds || bounds.isEmpty()) {
     return undefined;
   }
-  const frame = computePerspectiveCameraFrame(bounds, { width, height }, {
+  const frameOptions = {
     ...DEFAULT_RENDERER_AUTO_FRAME_OPTIONS,
     ...collectCameraFrameOptions(source)
-  });
+  };
+  const frame = collectCameraProjection(source) === "orthographic"
+    ? computeOrthographicCameraFrame(bounds, { width, height }, frameOptions)
+    : computePerspectiveCameraFrame(bounds, { width, height }, frameOptions);
   return {
     viewProjectionMatrix: frame.viewProjectionMatrix,
     cameraPosition: frame.cameraPosition
@@ -2781,9 +2813,14 @@ function collectItemBounds(items: readonly RenderItem[], respectAutoFrameExclusi
   return bounds;
 }
 
-function collectCameraFrameOptions(source: RenderSource | Iterable<RenderItem> | Scene): PerspectiveCameraFrameOptions {
+function collectCameraFrameOptions(source: RenderSource | Iterable<RenderItem> | Scene): RendererCameraFrameOptions {
   if (source instanceof Scene || isIterable(source) || !source.cameraFrameOptions) return {};
   return source.cameraFrameOptions;
+}
+
+function collectCameraProjection(source: RenderSource | Iterable<RenderItem> | Scene): RendererCameraProjection {
+  if (source instanceof Scene || isIterable(source)) return "perspective";
+  return source.cameraProjection ?? "perspective";
 }
 
 function collectCameraFrameBounds(source: RenderSource | Iterable<RenderItem> | Scene): SceneBounds3 | undefined {

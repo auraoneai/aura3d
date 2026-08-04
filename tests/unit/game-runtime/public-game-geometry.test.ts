@@ -412,12 +412,12 @@ function createRacingPresentationFixture() {
         { id: "start", modelPoint: [-3, 0, 0], gamePoint: { x: -3, z: 0 } },
         { id: "far", modelPoint: [2.3, 0, 0.2], gamePoint: { x: 2.3, z: 0.2 } }
       ],
-      evidence: { routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png", notes: "Fixture topology." }
+      evidence: { routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png", notes: "Fixture topology." }
     },
     evidence: {
       sourceAsset: "assets.showcaseRacingProofTrack",
       renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseRacingProofTrack.png",
-      routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
+      routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
       notes: "Fixture topology."
     }
   } as const;
@@ -483,12 +483,12 @@ function createPlatformerPresentationFixture() {
         { id: "public-start", modelPoint: [1.8, 0, 0], gamePoint: { x: 1.8, y: 0 } },
         { id: "public-finish", modelPoint: [20, 0.86, 0], gamePoint: { x: 20, y: 0.86 } }
       ],
-      evidence: { routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png", notes: "Fixture platformer surface map." }
+      evidence: { routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png", notes: "Fixture platformer surface map." }
     },
     evidence: {
       sourceAsset: "assets.showcaseSideScrollerWorld",
       renderedProbe: "tests/reports/showcase-release-asset-probes/showcaseSideScrollerWorld.png",
-      routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-platformer-game-layer-proof.png",
+      routeOverlay: "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
       notes: "Fixture surface map."
     }
   } as const;
@@ -596,9 +596,9 @@ function createPlatformerContract() {
 
 function retainedProof() {
   return {
-    routePrimaryScreenshot: "tests/reports/showcase-route-primary-probes/showcase-game-layer-proof.png",
+    routePrimaryScreenshot: "tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png",
     routePrimaryScreenshotSha256: "sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    geometryReport: "tests/reports/showcase-spec-compiler/showcase-game-layer-proof/game-template/geometry.json",
+    geometryReport: "tests/reports/showcase-spec-compiler/showcase-turbo-drift-circuit/game-template/geometry.json",
     manifestHash: "sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
     visualReview: "pass",
     assetPairPass: true,

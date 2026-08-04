@@ -22417,7 +22417,7 @@
         "attribution": "Yewon Kim",
         "sha256": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
         "retrievedAt": "2026-06-17T21:19:42.916Z",
-        "checkedAt": "2026-07-31T08:55:19.659Z"
+        "checkedAt": "2026-06-17T21:19:42.916Z"
       },
       "textures": [
         "image-0",
@@ -22441,9 +22441,9 @@
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
         "renderedProbe": {
           "url": "tests/reports/showcase-release-asset-probes/showcaseParticleCore.png",
-          "sha256": "sha256-2eef4c0be715a9f13c3d7b83f6a8e9ec4bd3fad9c909cb92feffbcd927b4aca9",
+          "sha256": "sha256-66b5258982668cbf7a9bd16e732b46b06abe4df6c80bce331e6e963e980ce3eb",
           "assetHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
-          "checkedAt": "2026-07-31T08:44:26.067Z",
+          "checkedAt": "2026-08-03T23:21:01.160Z",
           "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore"
         }
       },
@@ -22464,18 +22464,18 @@
         "kind": "browser-screenshot",
         "renderer": "createAuraApp @aura3d/engine showcase release asset probe",
         "route": "tests/browser/showcase-release-asset-probe-harness?asset=showcaseParticleCore",
-        "sha256": "sha256-2eef4c0be715a9f13c3d7b83f6a8e9ec4bd3fad9c909cb92feffbcd927b4aca9",
+        "sha256": "sha256-66b5258982668cbf7a9bd16e732b46b06abe4df6c80bce331e6e963e980ce3eb",
         "assetHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
         "width": 752,
         "height": 600,
         "nonBlankPixels": 451200,
-        "colorBuckets": 63,
-        "checkedAt": "2026-07-31T08:44:26.067Z",
+        "colorBuckets": 72,
+        "checkedAt": "2026-08-03T23:21:01.160Z",
         "foregroundBounds": {
-          "x": 266,
-          "y": 207,
-          "width": 211,
-          "height": 317
+          "x": 231,
+          "y": 177,
+          "width": 276,
+          "height": 421
         }
       },
       "warnings": [

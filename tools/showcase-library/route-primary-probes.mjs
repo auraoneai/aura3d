@@ -63,11 +63,12 @@ export function routePrimaryProbeSummaryPath(runScope, root = defaultRepoRoot) {
 /**
  * Routes a full producer sweep is expected to (re)generate.
  *
- * Excludes `retainedEvidenceFrozen` routes. Those are superseded historical certification
- * records -- `showcase-public-{racing,platformer}-presentation-proof` and the two
- * `*-game-layer-proof` diagnostics -- which stay `published` so their build, deploy, and
- * classification gates keep running, but whose retained probes must not be rewritten by a
- * sweep. Regenerating them churns gitignored artifacts and, worse, rebinds shared asset
+ * Excludes `retainedEvidenceFrozen` routes: superseded historical certification records
+ * that stay `published` so their build, deploy, and classification gates keep running, but
+ * whose retained probes must not be rewritten by a sweep. The
+ * `showcase-public-{racing,platformer}-presentation-proof` and `*-game-layer-proof` routes
+ * were the original cases; both have since been deleted, so the filter is currently a
+ * no-op guard kept for any future frozen route. Regenerating them churns gitignored artifacts and, worse, rebinds shared asset
  * evidence to screenshots that no promoted route reviews (defect 44/46).
  */
 export function routePrimaryProbeExpectedRouteIds(routes) {

@@ -1,8 +1,8 @@
 # Changelog
 
-Version: 1.5.1
+Version: 1.5.2
 
-All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.1` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
+All notable changes for Aura3D are tracked here. Public release claims must stay scoped to the evidence recorded in the matching release-gate documents. The current release is `1.5.2` across all 26 public packages (`@aura3d/*` + `create-aura3d`). Package, showcase, and hosted-site claims remain independently evidence-gated.
 
 Current evidence note (2026-07-27): release entries below record what shipped
 and the evidence accepted for that release. They are not a current-worktree
@@ -12,6 +12,148 @@ independent review are pending. Their prior release receipts remain history,
 not approval of the current worktree.
 Performance/parity wording is also blocked while six comparative-report inputs
 are missing.
+
+## 1.5.2 (2026-08-04)
+
+Library release. Adds orthographic and isometric cameras plus bounds-derived asset
+sizing to the public surface, fixes three instances of a hardcoded-geometry defect
+class, and unblocks two visual-parity suites that previously could not produce a
+measurement at all.
+
+The four `release-ready candidate` showcase routes carry independent human visual
+approval recorded in `docs/project/showcase-visual-review.json`. The three
+prototype-blocked game routes (Blockfall Reactor, Skyline Runner, Turbo Drift
+Circuit) were **not** approved and remain blocked with their retained blocking
+issues.
+
+### Added
+
+- **Orthographic camera framing in `@aura3d/rendering`.** `computeOrthographicCameraFrame`
+  derives a parallel-projection frustum from scene bounds, and `computeOrthographicCameraView`
+  builds an explicit frustum for callers reproducing a reference render or a fixed
+  drawing scale. `RenderSource.cameraProjection` selects `"perspective"` (default,
+  unchanged) or `"orthographic"` for renderer auto-framing.
+
+  Previously `createAutoFrameCamera` could only call `computePerspectiveCameraFrame`,
+  so a scene that needed a parallel projection silently received a perspective one.
+  This affected CAD and technical views, isometric games, floor plans, sprite bakes,
+  and product turntables. `OrthographicCameraFrameFitMode` (`contain`, `fit-vertical`,
+  `fit-horizontal`, `stretch`) makes the aspect-reconciliation choice explicit, since
+  an orthographic frustum has no field of view to absorb a mismatch.
+
+- **`camera.orthographic()` and `camera.isometric()` on the public agent API**, with an
+  `orthographicSize` field on `AuraCameraSpec`. `AuraCameraMode` previously offered only
+  perspective modes and `createViewProjection` hardcoded a perspective matrix, so a
+  developer could not request a parallel projection through the safe surface at all.
+  `camera.isometric()` uses the true `atan(1/√2)` elevation, at which the three world
+  axes project to equal screen lengths.
+
+- **`fitSizeToRegion()` in the public agent API** (`SpatialAnchoring`). Returns a
+  `targetMaxDimension` sizing an asset to a chosen fraction of a region it occupies.
+  Placement was already bounds-derived via `resolveSemanticRegion`, but sizing was not,
+  so a route had no correct alternative to inventing a scale multiplier. A target
+  dimension is an absolute world-space statement the renderer resolves against the
+  asset's real bounds, unlike a scale factor which is only meaningful relative to
+  unknown raw dimensions.
+
+### Fixed
+
+- **`showcase-smart-city-control` hero vehicle occluded the city.** `.scale(1.58)`
+  rendered the vehicle at 2.45 units in a 3.8-unit city — 64% of the entire footprint.
+  Now sized through `fitSizeToRegion` at 25%. Classified as an **API design defect**:
+  the library could not express bounds-derived sizing.
+- **Hardcoded cameras in `showcase-smart-city-control` and `showcase-data-galaxy`.**
+  Both used fixed eye positions unrelated to scene or asset bounds; the smart-city
+  "command" view sat inside the city, and data-galaxy cropped its hero off the top of
+  the frame. Now use the existing `camera.autoFrame` and `camera.frameAsset` helpers.
+- **Route-primary evidence could not isolate a hero in a full-bleed scene.** Added an
+  `application` composition-probe category, so a non-game route can measure its declared
+  hero by subject-difference without supplying gameplay play-space or ground-contact
+  geometry. Previously such routes fell back to whole-canvas foreground analysis, which
+  for a full-frame scene reports subject bounds equal to the crop and therefore always
+  `clipped`. Route-primary probes: **12/12 pass** (was 9/12). Data-galaxy's measured
+  hero readability went 34 → 91 once the probe measured the hero rather than a 51×13
+  label fragment.
+- **Stale `showcaseParticleCore` release asset probe** (pre-existing): manifest
+  `renderedProbe` sha256 and colour-bucket count did not match the artifact on disk.
+  Re-generated and synchronized.
+
+### Notes
+
+- Product visual-parity diff against Three.js improved from **0.914 to 0.331**
+  changed-pixel ratio (MAE 36.2 → 17.4) and against Babylon from **0.913 to 0.272**
+  (MAE 36.4 → 13.6), purely from honouring the shared scene descriptor's declared
+  orthographic camera. **No threshold was changed**; the strict 0.15 / MAE 8 gate still
+  fails, so same-asset product render parity remains an unproven claim.
+- No analyzer logic was modified, so producer/verifier pixel parity
+  (`png-foreground-parity.test.ts`) is intact.
+
+### Also in this release
+
+- **Discontinued example routes removed.** `showcase-racing-game-layer-proof` and
+  `showcase-platformer-game-layer-proof` are deleted, along with their retained
+  evidence, fixtures, compiler reports, six doc reports, and two writer tools that
+  had no other consumers. Their release-gate coverage was repointed onto the real
+  game routes (Turbo Drift Circuit and Blockfall Reactor) rather than dropped.
+- **`showcase-data-galaxy` reclassified** from `internal-diagnostic` to
+  `removed-from-public-showcase`. Its only diagnostic reason was
+  `internal-diagnostic-route-primary-anchor-too-small`; the anchor is now readable
+  (581x639 hero, readability 92), so no honest blocker remained. It is deliberately
+  not promoted to a release candidate.
+- **glTF-loader visual parity: 170/170 diffs pass** (`ok: true`), previously
+  unrunnable. Fixed a browser-bundle resolution failure (14 Node built-ins pulled in
+  via the assets package root instead of `browser-index.ts`), a `data:`-base URL
+  failure on relative buffer URIs, reference cameras that framed only
+  `external-url` assets, and an orthographic branch that moved the camera without
+  sizing the frustum.
+- **WebGPU visual parity passes**, previously unmeasured. Route health went 4/6 to
+  6/6 after pointing fixture fetches at the local dev server, and the producer now
+  writes captures to the path the auditor reads. Evidence is real GPU work on an
+  `apple metal-3` adapter. This checks route render and evidence presence, not a
+  WebGPU-vs-WebGL2 pixel comparison.
+- **Product visual parity references now honour the shared descriptor's material
+  model.** Three.js uses `MeshPhysicalMaterial` and Babylon
+  `PBRMetallicRoughnessMaterial` with studio lighting matched to
+  `externalParityEnvironmentDescriptor("studio")`, instead of forcing every material
+  unlit. Babylon diff improved from 0.272 to 0.228 (MAE 13.6 to 12.7); Three.js
+  holds at 0.331. The strict 0.15 / MAE 8 gate still fails, so same-asset product
+  render parity remains **unproven** and no threshold was changed.
+
+### Known limitations
+
+- Same-asset product render parity against Three.js and Babylon is unproven.
+- Hard capability gaps: morph targets, context loss recovery, text rendering.
+- Unproven capabilities: tone mapping / colour management, LOD, contact shadows,
+  raycasting, character controller, joints / constraints, continuous collision
+  detection, physics debug rendering, cinematic sequencing, project scaffolding.
+- Blockfall Reactor, Skyline Runner and Turbo Drift Circuit remain
+  prototype-blocked.
+
+### Evidence-correctness work carried in this release
+
+Evidence-correctness patch. The pixel analysis behind every showcase screenshot gate estimated
+background colour from a single four-corner average. On a gradient sky that estimate is wrong for
+most of the frame: rows near the horizon were compared against a colour sampled from the top of the
+frame, so sky pixels were admitted as subject and every derived measurement — silhouette extent,
+foreground ratio, subject centroid — was computed against an inflated mask.
+
+### Fixed
+
+- **`analyzeForegroundPng` misclassified gradient backgrounds as foreground.** Background is now
+  estimated per row from the median of that row's left and right margins, so the estimate tracks a
+  vertical gradient and stays robust to a prop or HUD edge intruding into one margin.
+  `tools/showcase-library/png-foreground.mjs` re-derives the same metrics from the written PNG and
+  compares for exact equality, so the two implementations must agree pixel-for-pixel; that parity
+  is now pinned by `tests/unit/tools/png-foreground-parity.test.ts` across gradient,
+  flat-background, off-centre-subject and HUD-crop cases.
+- **Aura Clash evidence route cited superseded artifacts.** `evidenceModel.ts` now points at the
+  current arena proof files and schema pin, and its contract test asserts every required signal
+  resolves to a field of the current schema.
+
+### Verification
+
+- 2914 unit and integration tests pass across 393 files.
+- Producer/verifier parity asserted by equality, not by tolerance, in four independent cases.
 
 ## 1.5.1 (2026-08-02)
 

@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
@@ -187,16 +187,70 @@ const sourceFiles = [
   "tools/external-parity-gltf-loader-visual-parity/index.ts",
   ...localGltfVisualAssets.map((asset) => asset.path),
   khronosManifestPath,
+  "packages/assets/src/browser-index.ts",
   "packages/assets/src/GLTFLoader.ts",
   "packages/assets/src/GLTFRenderResources.ts",
   "packages/rendering/src/Renderer.ts",
 ] as const;
 
+/**
+ * Reads a glTF document and inlines any sibling-relative buffer or image as a
+ * data URI.
+ *
+ * The browser harness has no HTTP origin: it calls `page.setContent` and hands the
+ * loader a `data:model/gltf+json` URL. A relative `uri` such as
+ * `smart-city-district.bin` therefore cannot be resolved — `new URL(uri, base)`
+ * throws `Invalid URL` against a `data:` base, which is what stopped this suite
+ * from producing any measurement.
+ *
+ * Inlining changes only how the bytes reach the loader, not the bytes themselves,
+ * so the comparison still runs on the real fixture geometry. glTF treats a
+ * data-URI buffer and an external buffer as equivalent sources, and both the
+ * Three.js and Babylon reference paths receive the identical inlined document.
+ */
+function readGltfWithInlinedResources(root: string, relativePath: string): string {
+  const documentPath = join(root, relativePath);
+  const raw = readFileSync(documentPath, "utf8");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch {
+    // A .glb or otherwise non-JSON payload needs no URI rewriting here.
+    return raw;
+  }
+  if (typeof parsed !== "object" || parsed === null) return raw;
+  const document = parsed as {
+    buffers?: { uri?: string }[];
+    images?: { uri?: string; mimeType?: string }[];
+  };
+  const assetDir = dirname(documentPath);
+  let rewrote = false;
+
+  const inline = (uri: string | undefined, mimeType: string): string | undefined => {
+    if (typeof uri !== "string" || uri.length === 0) return undefined;
+    if (uri.startsWith("data:") || /^[a-z][a-z0-9+.-]*:/i.test(uri)) return undefined;
+    const resourcePath = join(assetDir, decodeURIComponent(uri));
+    if (!existsSync(resourcePath)) return undefined;
+    rewrote = true;
+    return `data:${mimeType};base64,${readFileSync(resourcePath).toString("base64")}`;
+  };
+
+  for (const buffer of document.buffers ?? []) {
+    const inlined = inline(buffer.uri, "application/octet-stream");
+    if (inlined) buffer.uri = inlined;
+  }
+  for (const image of document.images ?? []) {
+    const inlined = inline(image.uri, image.mimeType ?? "image/png");
+    if (inlined) image.uri = inlined;
+  }
+  return rewrote ? JSON.stringify(document) : raw;
+}
+
 export async function createExternalParityGltfLoaderVisualParityReport(root = process.cwd()): Promise<ExternalParityGltfLoaderVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const externalAssets = readExternalKhronosVisualAssets(root);
   const gltfVisualAssets = filterAssets([...localGltfVisualAssets, ...externalAssets]);
-  const gltfTexts = Object.fromEntries(localGltfVisualAssets.map((asset) => [asset.id, readFileSync(join(root, asset.path), "utf8")]));
+  const gltfTexts = Object.fromEntries(localGltfVisualAssets.map((asset) => [asset.id, readGltfWithInlinedResources(root, asset.path)]));
   const browser = await chromium.launch({ headless: true });
   try {
     const bundles = await buildEngineBundles(gltfTexts);
@@ -580,9 +634,18 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
+/*
+ * Imports the assets package's *browser* entrypoint, not its package root.
+ *
+ * `packages/assets/src/index.ts` re-exports AdvancedAssetCorpus and
+ * ProductionAssetCorpus, which pull in node:crypto, node:fs and node:path.
+ * Bundling that root for a browser target fails to resolve 14 Node built-ins, so
+ * this entire visual-parity suite could not run at all. `browser-index.ts` is the
+ * supported browser surface and exports all four symbols used below.
+ */
 function aura3dBundleSource(gltfLiteral: string): string {
   return `
-    import { GLTFLoader, LoadContext, createGLTFRenderResources, createMeshoptDecoder } from "./packages/assets/src/index.ts";
+    import { GLTFLoader, LoadContext, createGLTFRenderResources, createMeshoptDecoder } from "./packages/assets/src/browser-index.ts";
     import { Geometry, Renderer, computeMorphTargetEnvelopeBounds, computeSkinnedGeometryBounds, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     import { MeshoptDecoder } from "meshoptimizer";
     const gltfTextById = ${gltfLiteral};
@@ -816,7 +879,17 @@ function threeBundleSource(gltfLiteral: string): string {
         });
       }
       scene.add(gltf.scene);
-      if (visualAsset.sourceKind === "external-url") frameThreeScene(camera, gltf.scene);
+      /*
+       * Frame every asset, not only external-url ones.
+       *
+       * Aura3D renders local fixtures with no camera argument, so the renderer auto-frames
+       * the bounds of the model. Three.js kept a fixed camera for local fixtures, which for
+       * a large model such as external-parity-game-outpost put the camera inside the
+       * geometry: Aura3D showed the whole city, Three.js showed a wall. That is a camera
+       * mismatch in the harness, not a loader or rendering difference, and it produced
+       * diffs as high as 0.9786.
+       */
+      frameThreeScene(camera, gltf.scene, canvas);
       renderer.render(scene, camera);
       await nextFrame();
       const stats = pixelStats(canvas);
@@ -832,16 +905,29 @@ function threeBundleSource(gltfLiteral: string): string {
       });
       return { width: canvas.width, height: canvas.height, ...stats, drawCalls: meshCount, meshCount, materialCount, vertexCount };
     }
-    function frameThreeScene(camera, sceneRoot) {
+    function frameThreeScene(camera, sceneRoot, canvas) {
       const bounds = new THREE.Box3().setFromObject(sceneRoot);
       if (bounds.isEmpty()) return;
       const center = bounds.getCenter(new THREE.Vector3());
       const size = bounds.getSize(new THREE.Vector3());
       const radius = Math.max(0.35, size.length() * 0.5);
+      camera.position.set(center.x, center.y, center.z + radius * 3.2);
       if (camera.isOrthographicCamera) {
-        camera.position.set(center.x, center.y, center.z + radius * 3.2);
-      } else {
-        camera.position.set(center.x, center.y, center.z + radius * 3.2);
+        /*
+         * An orthographic camera also needs its frustum sized.
+         *
+         * Moving an ortho camera does not change how much of the scene it sees -- extent
+         * does. This branch previously only set position, so the frustum stayed at the
+         * constructed +/-1.5 x +/-1.8 while the model was far larger, and the reference
+         * rendered a few blown-up building faces against the clear colour.
+         */
+        const aspect = canvas.width / canvas.height;
+        const halfHeight = Math.max(size.y, size.x / aspect, 0.35) * 0.62;
+        const halfWidth = halfHeight * aspect;
+        camera.left = -halfWidth;
+        camera.right = halfWidth;
+        camera.top = halfHeight;
+        camera.bottom = -halfHeight;
       }
       camera.near = Math.max(0.001, radius / 200);
       camera.far = Math.max(radius * 10, radius + 8);
@@ -885,9 +971,9 @@ function babylonBundleSource(gltfLiteral: string): string {
       const sourceParts = babylonSourceParts(source, visualAsset);
       const result = await BABYLON.SceneLoader.ImportMeshAsync(null, sourceParts.rootUrl, sourceParts.sceneFilename, scene, undefined, sourceParts.extension);
       const visibleMeshes = result.meshes.filter((mesh) => mesh.getTotalVertices && mesh.getTotalVertices() > 0);
-      if (visualAsset.id !== "external-gallery-corner") {
-        frameBabylonMeshes(camera, visibleMeshes);
-      }
+      // Frame every asset for the same reason Three.js now does: Aura3D auto-frames local
+      // fixtures, so a fixed reference camera compares different views of the same model.
+      frameBabylonMeshes(camera, visibleMeshes, canvas);
       if (babylonNormalizedFixtureAssets.has(visualAsset.id)) {
         const material = new BABYLON.StandardMaterial("normalized-loader-visibility-unlit", scene);
         const color = babylonNormalizedFixtureColor(visualAsset.id);
@@ -940,7 +1026,7 @@ function babylonBundleSource(gltfLiteral: string): string {
     function usesSceneAuthoredLights(visualAsset) {
       return visualAsset.id === "point-light-intensity-test";
     }
-    function frameBabylonMeshes(camera, meshes) {
+    function frameBabylonMeshes(camera, meshes, canvas) {
       if (meshes.length === 0) return;
       let min = new BABYLON.Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
       let max = new BABYLON.Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
@@ -955,6 +1041,16 @@ function babylonBundleSource(gltfLiteral: string): string {
       const radius = Math.max(0.8, extent.length() * 0.55);
       camera.position = new BABYLON.Vector3(center.x, center.y, center.z + radius * 3.2);
       camera.setTarget(center);
+      if (camera.mode === BABYLON.Camera.ORTHOGRAPHIC_CAMERA) {
+        // Same reason as the Three.js path: an ortho frustum must be sized, not just moved.
+        const aspect = canvas.width / canvas.height;
+        const halfHeight = Math.max(extent.y, extent.x / aspect, 0.35) * 0.62;
+        const halfWidth = halfHeight * aspect;
+        camera.orthoLeft = -halfWidth;
+        camera.orthoRight = halfWidth;
+        camera.orthoTop = halfHeight;
+        camera.orthoBottom = -halfHeight;
+      }
     }
     function babylonSourceParts(source, visualAsset) {
       const extension = visualAsset.format === "glb" ? ".glb" : ".gltf";

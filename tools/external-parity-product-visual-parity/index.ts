@@ -939,7 +939,7 @@ function sharedBrowserHelpers(): string {
 
 function aura3dBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, computeOrthographicCameraView, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     const descriptor = ${productSceneLiteral()};
     ${sharedBrowserHelpers()}
     export async function renderProductVisualParity(canvas) {
@@ -974,7 +974,15 @@ function aura3dBundleSource(): string {
         if (!geometry || !material) throw new Error("Product descriptor references an unknown geometry or material: " + part.id);
         return { geometry, material, modelMatrix: modelMatrix(part), label: "aura3d-" + part.id };
       });
-      const diagnostics = renderer.render({ renderItems: items, environmentLighting: lighting });
+      if (descriptor.camera !== "orthographic-front") {
+        throw new Error("Unexpected product parity camera: " + descriptor.camera);
+      }
+      // The descriptor asks for an orthographic front view, and every engine in
+      // this comparison must honour it. Aura3D previously passed no camera, so
+      // the renderer auto-framed a perspective frustum and compared a
+      // perspective render against two orthographic references.
+      const cameraFrame = computeOrthographicCameraView({ left: -1, right: 1, bottom: -1, top: 1, near: 0.1, far: 10, eye: [0, 0, 4], target: [0, 0, 0] });
+      const diagnostics = renderer.render({ renderItems: items, environmentLighting: lighting, cameraPolicy: "require" }, cameraFrame);
       await nextFrame();
       const stats = pixelStats(canvas);
       renderer.dispose();
@@ -1008,11 +1016,59 @@ function threeBundleSource(): string {
         ["backdrop-b", 0x667a8a],
         ["backdrop-c", 0xaaada4],
       ]);
-      const materials = new Map(descriptor.materials.map((material) => [material.id, new THREE.MeshBasicMaterial({
-        color: calibratedColors.get(material.id) || new THREE.Color(...material.color.slice(0, 3)),
-        transparent: Boolean(material.alpha && material.alpha < 1),
-        opacity: material.alpha || 1,
-      })]));
+      /*
+       * Honour the descriptor's material model instead of flattening it to unlit.
+       *
+       * The shared descriptor marks 4 of 13 materials kind:"pbr" (body, accent, glass,
+       * dark), used by 96 of 477 parts. Aura3D honours that and lights the scene; this
+       * reference previously used MeshBasicMaterial with hardcoded calibratedColors and
+       * Babylon set disableLighting, so metallic/roughness/clearcoat affected only Aura3D's
+       * image. That made the suite a lit-vs-unlit comparison, which cannot demonstrate
+       * shading parity: forcing Aura3D unlit measured 0.210 against 0.331 lit, i.e. the
+       * shading model alone accounted for ~0.12 of the diff.
+       *
+       * Unlit descriptor materials stay unlit (MeshBasicMaterial) because that is what the
+       * descriptor asks for. PBR materials become MeshPhysicalMaterial with the
+       * descriptor's own metallic/roughness/clearcoat/transmission values.
+       */
+      const materials = new Map(descriptor.materials.map((material) => {
+        const color = calibratedColors.get(material.id) || new THREE.Color(...material.color.slice(0, 3));
+        const transparent = Boolean(material.alpha && material.alpha < 1);
+        if (material.kind === "unlit") {
+          return [material.id, new THREE.MeshBasicMaterial({
+            color,
+            transparent,
+            opacity: material.alpha || 1,
+            toneMapped: false,
+          })];
+        }
+        return [material.id, new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(...material.color.slice(0, 3)),
+          metalness: material.metallic || 0,
+          roughness: material.roughness === undefined ? 0.5 : material.roughness,
+          clearcoat: material.clearcoat || 0,
+          clearcoatRoughness: material.clearcoat ? 0.18 : 0,
+          transmission: material.transmission || 0,
+          transparent,
+          opacity: material.alpha || 1,
+        })];
+      }));
+      /*
+       * Studio lighting matched to createExternalParityEnvironmentLighting("studio").
+       * Values come from externalParityEnvironmentDescriptor: ambient [0.44,0.48,0.54] at
+       * 0.18, sky [0.54,0.66,0.86], ground [0.12,0.14,0.16], specular [1,0.92,0.78].
+       */
+      scene.add(new THREE.AmbientLight(new THREE.Color(0.44, 0.48, 0.54), 0.18));
+      scene.add(new THREE.HemisphereLight(
+        new THREE.Color(0.54, 0.66, 0.86),
+        new THREE.Color(0.12, 0.14, 0.16),
+        0.5
+      ));
+      const studioKey = new THREE.DirectionalLight(new THREE.Color(1, 0.92, 0.78), 0.86);
+      studioKey.position.set(-0.5, 0.7, 1);
+      scene.add(studioKey);
+      renderer.toneMapping = THREE.ReinhardToneMapping;
+      renderer.toneMappingExposure = 0.86;
       const geometries = new Map([
         ["cube", new THREE.BoxGeometry(1, 1, 1)],
         ["sphere", new THREE.SphereGeometry(0.5, 32, 16)],
@@ -1072,14 +1128,23 @@ function babylonBundleSource(): string {
         ["backdrop-b", [0.4, 0.478, 0.541]],
         ["backdrop-c", [0.667, 0.678, 0.643]],
       ]);
+      // Same reasoning as the Three.js path: honour the descriptor's material model rather
+      // than forcing every material unlit via disableLighting.
       const material = (descriptorMaterial) => {
-        const color = calibratedColors.get(descriptorMaterial.id) || descriptorMaterial.color.slice(0, 3);
-        const mat = new BABYLON.StandardMaterial("parity-" + descriptorMaterial.id, scene);
-        mat.diffuseColor = BABYLON.Color3.FromArray(color);
-        mat.emissiveColor = BABYLON.Color3.FromArray(color);
-        mat.specularColor = BABYLON.Color3.Black();
-        mat.disableLighting = true;
-        mat.roughness = descriptorMaterial.roughness || 0.5;
+        if (descriptorMaterial.kind === "unlit") {
+          const color = calibratedColors.get(descriptorMaterial.id) || descriptorMaterial.color.slice(0, 3);
+          const mat = new BABYLON.StandardMaterial("parity-" + descriptorMaterial.id, scene);
+          mat.diffuseColor = BABYLON.Color3.FromArray(color);
+          mat.emissiveColor = BABYLON.Color3.FromArray(color);
+          mat.specularColor = BABYLON.Color3.Black();
+          mat.disableLighting = true;
+          mat.alpha = descriptorMaterial.alpha || 1;
+          return mat;
+        }
+        const mat = new BABYLON.PBRMetallicRoughnessMaterial("parity-" + descriptorMaterial.id, scene);
+        mat.baseColor = BABYLON.Color3.FromArray(descriptorMaterial.color.slice(0, 3));
+        mat.metallic = descriptorMaterial.metallic || 0;
+        mat.roughness = descriptorMaterial.roughness === undefined ? 0.5 : descriptorMaterial.roughness;
         mat.alpha = descriptorMaterial.alpha || 1;
         return mat;
       };

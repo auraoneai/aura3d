@@ -8,6 +8,7 @@ import {
   effects,
   game,
   interactions,
+  fitSizeToRegion,
   labels,
   lights,
   material,
@@ -87,6 +88,31 @@ const smartCityKit = createSmartCityKit({
   ],
   temporalStates: ["day", "night"]
 });
+
+/*
+ * The hero vehicle's station, and the size derived from it.
+ *
+ * Declared once so the scene builder and the route-primary composition probe
+ * cannot drift: the probe measures the subject it declares here, and the scene
+ * renders the asset at the size derived from the same region. A second literal
+ * in either place is how a probe ends up describing a subject that is not what
+ * the route actually draws.
+ */
+const VEHICLE_STATION_REGION: SemanticRegion = { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58 };
+const VEHICLE_STATION_FOOTPRINT_REGION: SemanticRegion = {
+  id: "vehicle-station-footprint",
+  u: 0.47,
+  v: 0.54,
+  w: 0.58,
+  extent: [0.3, 0.12, 0.3]
+};
+
+/** Bounds-derived world size for the hero vehicle. Never a hardcoded multiplier. */
+function vehicleTargetMaxDimension(): number {
+  return fitSizeToRegion(resolveSemanticRegion(cityBounds(), VEHICLE_STATION_FOOTPRINT_REGION), {
+    occupancy: 0.82
+  }).targetMaxDimension;
+}
 
 function districtRegion(district: SmartCityDistrict) {
   return resolveSemanticRegion(cityBounds(), districtRegions[district]);
@@ -174,6 +200,44 @@ app = createAuraApp("#aura-stage", {
 bindControls();
 updateControlState();
 publishEvidence("ready");
+
+/*
+ * Route-primary evidence for an application route.
+ *
+ * The probe screenshots the route twice -- once with the hero vehicle present,
+ * once with it suppressed -- and treats the difference as the subject. Without
+ * this, the spec falls back to a whole-canvas foreground analysis, which for a
+ * full-bleed city necessarily reports subject bounds equal to the entire crop
+ * and therefore flags `primary-foreground-clipped`. That is the measurement
+ * describing the city rather than the hero.
+ *
+ * Category is `application`: this route has a hero asset worth measuring but no
+ * play space and no ground contact to prove, unlike the racing and platformer
+ * routes that share this mechanism.
+ */
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "application",
+    get camera() {
+      return smartCityCamera(controls.cameraMode, controls.timeOfDay);
+    },
+    get subject() {
+      const bounds = cityBounds();
+      const station = resolveSemanticRegion(bounds, VEHICLE_STATION_REGION);
+      return {
+        position: station.center,
+        rotation: [-0.04, 1.5708, 0] as const,
+        targetSize: vehicleTargetMaxDimension()
+      };
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      app?.pause();
+      app?.nodes.get("city-vehicle-primary")?.setScale(suppressed ? 0.0001 : 1);
+      app?.step(0);
+    }
+  },
+  configurable: true
+});
 
 app.onFrame(({ frame, time }) => {
   const trafficSpeed = controls.traffic ? 1 : 0.18;
@@ -300,7 +364,7 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
   const eastCorridor = resolveSemanticRegion(bounds, { id: "east-corridor", u: 0.5, v: 0.08, w: 0.4, extent: [0.12, 0.02, 0.03] });
   const northCorridor = resolveSemanticRegion(bounds, { id: "north-corridor", u: 0.41, v: 0.09, w: 0.5, extent: [0.11, 0.02, 0.03] });
   const coreSpire = resolveSemanticRegion(bounds, { id: "core-spire", u: 0.5, v: 0.75, w: 0.5 });
-  const vehicleStation = resolveSemanticRegion(bounds, { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58 });
+  const vehicleStation = resolveSemanticRegion(bounds, VEHICLE_STATION_REGION);
   const dronePatrol = resolveSemanticRegion(bounds, { id: "drone-patrol", u: 0.89, v: 0.85, w: 0.82 });
   const nodes: AuraNodeInput[] = [
     primitives.box({
@@ -314,10 +378,17 @@ function createSmartCityOverlayNodes(): AuraNodeInput[] {
     }).position(...eastCorridor.center)
       .scale([eastCorridor.size[0], 0.038, eastCorridor.size[2]])
       .runtime(game.runtimeNode("city-traffic-east")),
-    model(assets.showcaseCityVehicle, { name: "typed command vehicle route-primary hero" })
+    // Size comes from the vehicle's own station region rather than a hardcoded
+    // multiplier, so the hero stays proportionate to the city when CITY_EXTENT
+    // changes or the asset is swapped. The previous `.scale(1.58)` rendered the
+    // vehicle at ~2.45 units inside a 3.8-unit city -- 64% of the whole
+    // footprint -- which is why it occluded the districts it was meant to sit in.
+    model(assets.showcaseCityVehicle, {
+      name: "typed command vehicle route-primary hero",
+      targetMaxDimension: vehicleTargetMaxDimension()
+    })
       .position(...vehicleStation.center)
       .rotate(-0.04, 1.5708, 0)
-      .scale(1.58)
       .runtime(game.runtimeNode("city-vehicle-primary", { tags: ["traffic", "primary", "typed-asset"] })),
     primitives.box({
       name: "city traffic north pulse",
@@ -453,7 +524,17 @@ function smartCityCamera(mode: SmartCityCameraMode, timeOfDay: SmartCityTimeOfDa
       fov: 47
     });
   }
-  return camera.perspective({ position: [-2.85, 1.92, 3.55], target: [-0.1, 1.02, 0.3], fov: 30 });
+  // The command view frames the whole city from its bounds instead of a hardcoded
+  // eye position. The previous fixed position with fov 30 sat inside the city and
+  // zoomed until the scene overflowed every frame edge, which is what the
+  // route-primary probe reports as `primary-foreground-clipped`.
+  const bounds = cityBounds();
+  return camera.autoFrame({
+    bounds: { min: bounds.min, max: bounds.max },
+    target: [bounds.center[0], bounds.min[1] + bounds.size[1] * 0.42, bounds.center[2]],
+    padding: 1.15,
+    fov: 38
+  });
 }
 
 function districtColor(district: SmartCityDistrict): string {

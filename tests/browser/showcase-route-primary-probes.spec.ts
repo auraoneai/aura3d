@@ -170,7 +170,7 @@ interface MountedEvidenceSummary {
 }
 
 interface CompositionProbeMeasurement {
-  readonly category: "racing" | "platformer";
+  readonly category: "racing" | "platformer" | "falling-blocks" | "application";
   readonly subjectBounds: PngCrop;
   readonly subjectPixels: number;
   readonly subjectColorBuckets: number;
@@ -178,9 +178,16 @@ interface CompositionProbeMeasurement {
   readonly subjectReadabilityScore: number;
   readonly subjectSuppressedScreenshotPath: string;
   readonly subjectSuppressedScreenshotSha256: string;
-  readonly projectedPlaySpaceBounds: PngCrop;
-  readonly projectedContactPoint: { readonly x: number; readonly y: number };
-  readonly projectedSubjectHeight: number;
+  /**
+   * Play-space and contact geometry are gameplay concepts: they answer "is the
+   * car on the road" or "is the character standing on the platform". An
+   * application route such as a smart-city dashboard has a hero subject worth
+   * measuring but no play space and nothing to stand on, so these are optional
+   * rather than forced into a meaningless value.
+   */
+  readonly projectedPlaySpaceBounds?: PngCrop;
+  readonly projectedContactPoint?: { readonly x: number; readonly y: number };
+  readonly projectedSubjectHeight?: number;
   readonly subjectTargetSize: number;
   readonly cameraMode: string;
 }
@@ -528,14 +535,57 @@ async function measureCompositionProbe(
     };
   });
   if (!raw) return undefined;
-  if (raw.category !== "racing" && raw.category !== "platformer" && raw.category !== "falling-blocks") {
+  if (raw.category !== "racing" && raw.category !== "platformer" && raw.category !== "falling-blocks" && raw.category !== "application") {
     throw new Error("invalid-category");
   }
-  const camera = readCompositionCamera(raw.camera);
+  /*
+   * A route-primary probe answers "is the hero asset legible in frame". Doing
+   * that honestly requires isolating the hero from its surroundings, which is
+   * what subject suppression achieves: screenshot with the subject, screenshot
+   * without it, and the difference is the subject.
+   *
+   * Without a probe the spec falls back to `analyzeForegroundPng`, which treats
+   * every non-background pixel as foreground. For a full-bleed scene -- a city,
+   * a particle field -- that necessarily returns bounds equal to the whole crop
+   * and therefore reports `clipped`, because the bounds touch all four edges.
+   * That is an artefact of the measurement, not a defect in the route, and it
+   * cannot be fixed by changing the scene without making the scene worse.
+   *
+   * Application routes are admitted here so a non-game route can supply the same
+   * subject isolation. They are not required to describe play space or a ground
+   * contact point, because those are gameplay properties that do not exist for a
+   * dashboard or configurator.
+   */
+  const isApplicationSubject = raw.category === "application";
   const subject = readCompositionSubject(raw.subject);
-  const playSpacePoints = readVec3Array(raw.playSpacePoints, "play-space-points");
-  const contactPoint = readVec3(raw.contactPoint, "contact-point");
-  if (playSpacePoints.length < 2) throw new Error("insufficient-play-space-points");
+  /*
+   * Camera projection is optional for an application subject.
+   *
+   * Projection exists to check gameplay geometry -- that the car sits on the road,
+   * that the character's feet meet the platform -- and it needs a single static eye
+   * position to do that. An application route may legitimately use an animated
+   * camera (`camera.dolly` interpolates `from`/`to` and exposes no fixed
+   * `position`), so demanding one would either exclude such routes or force the
+   * route to restate the renderer's camera-animation maths in its probe, where it
+   * would silently drift from the real camera.
+   *
+   * The value this probe adds for an application route is subject *isolation*:
+   * suppress the hero, diff the frames, measure the hero alone. That needs no
+   * camera. So when no static camera is available here, the probe reports the
+   * subject measurements and simply omits the projected quantities rather than
+   * inventing a camera it cannot verify.
+   */
+  const cameraRecord = isEvidenceRecord(raw.camera) ? raw.camera : undefined;
+  const camera = isApplicationSubject && (!cameraRecord || !cameraRecord.position)
+    ? undefined
+    : readCompositionCamera(raw.camera);
+  const playSpacePoints = isApplicationSubject && raw.playSpacePoints === undefined
+    ? []
+    : readVec3Array(raw.playSpacePoints, "play-space-points");
+  const contactPoint = isApplicationSubject && raw.contactPoint === undefined
+    ? undefined
+    : readVec3(raw.contactPoint, "contact-point");
+  if (!isApplicationSubject && playSpacePoints.length < 2) throw new Error("insufficient-play-space-points");
 
   await page.evaluate(() => {
     const probe = (window as unknown as { __AURA3D_COMPOSITION_PROBE__?: { setSubjectSuppressed?: (suppressed: boolean) => unknown } }).__AURA3D_COMPOSITION_PROBE__;
@@ -549,26 +599,32 @@ async function measureCompositionProbe(
 
   const difference = analyzePngDifferenceBounds(visibleScreenshot, hiddenScreenshot, analysisCrop);
   if (!difference.bounds || difference.changedPixels < 20) throw new Error(`subject-difference-too-small:${difference.changedPixels}`);
-  const resolvedCamera = resolveCompositionCamera(camera, subject);
-  const projectedPoints = playSpacePoints
-    .map((point) => projectScenePoint(point, resolvedCamera, canvasCrop))
-    .filter((point): point is { x: number; y: number } => Boolean(point));
-  const projectedContactPoint = projectScenePoint(contactPoint, resolvedCamera, canvasCrop);
-  const projectedSubjectTop = projectScenePoint(
-    addVec3(subject.position, [0, subject.targetSize / 2, 0]),
-    resolvedCamera,
-    canvasCrop
-  );
-  const projectedSubjectBottom = projectScenePoint(
-    addVec3(subject.position, [0, -subject.targetSize / 2, 0]),
-    resolvedCamera,
-    canvasCrop
-  );
-  if (projectedPoints.length < 2 || !projectedContactPoint || !projectedSubjectTop || !projectedSubjectBottom) {
+  const resolvedCamera = camera ? resolveCompositionCamera(camera, subject) : undefined;
+  const projectedPoints = resolvedCamera
+    ? playSpacePoints
+      .map((point) => projectScenePoint(point, resolvedCamera, canvasCrop))
+      .filter((point): point is { x: number; y: number } => Boolean(point))
+    : [];
+  const projectedContactPoint = resolvedCamera && contactPoint ? projectScenePoint(contactPoint, resolvedCamera, canvasCrop) : undefined;
+  const projectedSubjectTop = resolvedCamera
+    ? projectScenePoint(addVec3(subject.position, [0, subject.targetSize / 2, 0]), resolvedCamera, canvasCrop)
+    : undefined;
+  const projectedSubjectBottom = resolvedCamera
+    ? projectScenePoint(addVec3(subject.position, [0, -subject.targetSize / 2, 0]), resolvedCamera, canvasCrop)
+    : undefined;
+  // Where a camera is available the subject's own projection must resolve: that is
+  // what ties the measured silhouette to the declared subject. Play-space and
+  // contact projections are only required where they are meaningful.
+  if (resolvedCamera && (!projectedSubjectTop || !projectedSubjectBottom)) {
     throw new Error("camera-projection-failed");
   }
-  const projectedSubjectHeight = Number(Math.abs(projectedSubjectBottom.y - projectedSubjectTop.y).toFixed(3));
-  if (projectedSubjectHeight <= 0) throw new Error("subject-scale-projection-failed");
+  if (!isApplicationSubject && (projectedPoints.length < 2 || !projectedContactPoint)) {
+    throw new Error("camera-projection-failed");
+  }
+  const projectedSubjectHeight = projectedSubjectTop && projectedSubjectBottom
+    ? Number(Math.abs(projectedSubjectBottom.y - projectedSubjectTop.y).toFixed(3))
+    : undefined;
+  if (projectedSubjectHeight !== undefined && projectedSubjectHeight <= 0) throw new Error("subject-scale-projection-failed");
   return {
     category: raw.category,
     subjectBounds: difference.bounds,
@@ -578,11 +634,11 @@ async function measureCompositionProbe(
     subjectReadabilityScore: difference.readabilityScore,
     subjectSuppressedScreenshotPath: relativeSuppressedScreenshotPath,
     subjectSuppressedScreenshotSha256: `sha256-${createHash("sha256").update(hiddenScreenshot).digest("hex")}`,
-    projectedPlaySpaceBounds: boundsForProjectedPoints(projectedPoints, canvasCrop),
-    projectedContactPoint,
-    projectedSubjectHeight,
+    ...(projectedPoints.length >= 2 ? { projectedPlaySpaceBounds: boundsForProjectedPoints(projectedPoints, canvasCrop) } : {}),
+    ...(projectedContactPoint ? { projectedContactPoint } : {}),
+    ...(projectedSubjectHeight !== undefined ? { projectedSubjectHeight } : {}),
     subjectTargetSize: subject.targetSize,
-    cameraMode: camera.mode
+    cameraMode: camera?.mode ?? "unprojected"
   };
 }
 

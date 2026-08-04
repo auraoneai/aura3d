@@ -1,6 +1,6 @@
 # Migration From low-level renderer code
 
-Version: 1.5.1
+Version: 1.5.2
 
 ## Current Migration Surface
 
@@ -36,6 +36,30 @@ dependency graph. Three.js parity, migration, and compatibility tooling remain
 available outside the default engine install path. Public Aura3D agent APIs,
 typed assets, templates, diagnostics, screenshots, runtime helpers, and catalog
 workflows continue to use Aura3D-owned runtime code.
+
+## Camera Projection Behaviour (Unreleased)
+
+Renderer auto-framing gained an explicit projection choice. Existing behaviour is
+unchanged by default, but consumers who relied on side effects should be aware:
+
+- `RenderSource.cameraProjection` defaults to `"perspective"`. Every scene that
+  did not set it renders exactly as before, so this is not a breaking change.
+- Scenes that *wanted* a parallel projection previously received a perspective one
+  silently, because `createAutoFrameCamera` could only build a perspective
+  frustum. Such a scene should now set `cameraProjection: "orthographic"` and will
+  render differently — correctly — than it did in 1.5.1.
+- `cameraFrameOptions` is now typed as `RendererCameraFrameOptions`, which is
+  `PerspectiveCameraFrameOptions & OrthographicCameraFrameOptions`. It is a
+  widening, so existing option objects still typecheck.
+
+Routes that hardcoded a scale multiplier to size an asset inside a region can move
+to `fitSizeToRegion(region, { occupancy })`, which returns a `targetMaxDimension`
+for `model(asset, { targetMaxDimension })`. A hardcoded multiplier keeps working;
+it just does not follow the asset or scene when either changes size.
+
+Claim boundary: these are `createAuraApp` root safe-API and `rendering` internal
+surfaces. They add camera and sizing capability. They are not a rendering-quality
+claim, and same-asset product render parity against Three.js remains unproven.
 
 ## Useful Commands
 

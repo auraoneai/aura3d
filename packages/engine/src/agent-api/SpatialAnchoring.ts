@@ -150,6 +150,85 @@ export function placedBoundsFromAsset(asset: SceneAssetLike, options: {
   });
 }
 
+export interface RegionFittedSizeOptions {
+  /**
+   * Fraction of the region the subject should occupy along its widest
+   * horizontal axis, 0..1.
+   */
+  readonly occupancy: number;
+  /**
+   * Which region axes constrain the fit. Defaults to the horizontal axes, which
+   * is what "a vehicle inside a city block" means; include `"y"` when vertical
+   * headroom is also a real constraint, such as a crate inside a warehouse bay.
+   */
+  readonly axes?: readonly ("x" | "y" | "z")[] | undefined;
+  /** Never size the subject below this world-unit maximum dimension. */
+  readonly minSize?: number | undefined;
+  /** Never size the subject above this world-unit maximum dimension. */
+  readonly maxSize?: number | undefined;
+}
+
+export interface RegionFittedSize {
+  /**
+   * Pass straight to `model(asset, { targetMaxDimension })` so the renderer
+   * derives the scale from the asset's own bounds.
+   */
+  readonly targetMaxDimension: number;
+  /** Fraction of the region actually occupied after clamping. */
+  readonly occupancy: number;
+  /** Region extents the fit was computed against. */
+  readonly regionSize: Vec3;
+  /** True when `minSize` or `maxSize` overrode the requested occupancy. */
+  readonly clamped: boolean;
+}
+
+/**
+ * Size an asset so it occupies a chosen fraction of a region it sits inside.
+ *
+ * Placement was already bounds-derived through {@link resolveSemanticRegion},
+ * but *sizing* was not: a route that knew where a vehicle belonged still had to
+ * invent a multiplier such as `.scale(1.58)` to decide how big it should be.
+ * That number carries no relationship to either the asset or its surroundings,
+ * so it silently becomes wrong the moment the asset is swapped or the scene
+ * resized — which is precisely the "hero fills the frame and occludes the scene"
+ * defect class.
+ *
+ * This returns a `targetMaxDimension` rather than a raw scale factor on purpose.
+ * A scale factor is only meaningful relative to an asset's unknown raw
+ * dimensions, whereas a target dimension is an absolute statement about world
+ * size that the renderer resolves against the asset's real bounds.
+ */
+export function fitSizeToRegion(region: ResolvedSemanticRegion | PlacedBounds, options: RegionFittedSizeOptions): RegionFittedSize {
+  const regionSize: Vec3 = [
+    Math.max(0, region.size[0]),
+    Math.max(0, region.size[1]),
+    Math.max(0, region.size[2])
+  ];
+  const requested = Number.isFinite(options.occupancy) ? Math.min(1, Math.max(0, options.occupancy)) : 0;
+  const axes = options.axes ?? ["x", "z"];
+  const axisIndex = { x: 0, y: 1, z: 2 } as const;
+  const candidates = axes
+    .map((axis) => regionSize[axisIndex[axis]])
+    .filter((value): value is number => typeof value === "number" && value > 0);
+  if (candidates.length === 0) {
+    throw new RangeError("fitSizeToRegion requires a region with positive extent on at least one constraining axis.");
+  }
+  // The smallest constraining extent governs: fitting to the largest would let
+  // the subject overflow the tighter axis, which is the same visual failure as
+  // hardcoding the scale too high.
+  const governing = Math.min(...candidates);
+  const ideal = governing * requested;
+  const lowerBound = options.minSize !== undefined && Number.isFinite(options.minSize) ? Math.max(0, options.minSize) : 0;
+  const upperBound = options.maxSize !== undefined && Number.isFinite(options.maxSize) ? Math.max(0, options.maxSize) : Number.POSITIVE_INFINITY;
+  const targetMaxDimension = Math.min(upperBound, Math.max(lowerBound, ideal));
+  return {
+    targetMaxDimension,
+    occupancy: governing > 0 ? targetMaxDimension / governing : 0,
+    regionSize,
+    clamped: targetMaxDimension !== ideal
+  };
+}
+
 /** Placed bounds for a raw {@link SceneBounds} already expressed in world units. */
 export function placedBoundsFromWorldBounds(bounds: SceneBounds): PlacedBounds {
   const size = boundsSize(bounds);

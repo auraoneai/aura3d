@@ -31,6 +31,7 @@ import {
   VertexBuffer,
   VertexFormat,
   WebGPUDevice,
+  computeOrthographicCameraFrame,
   computePerspectiveCameraFrame,
   createDepthTextureBinding,
   createDefaultShaderLibrary,
@@ -1767,6 +1768,69 @@ describe("Renderer", () => {
     expect(command?.label).toBe("primary-product");
     expect(Array.from(cameraPosition).map(round3)).toEqual(expectedFrame.cameraPosition.map(round3));
     expect(Math.abs(cameraPosition[0])).toBeLessThan(5);
+
+    renderer.dispose();
+    geometry.dispose();
+  });
+
+  it("auto-frames an orthographic camera when the render source asks for a parallel projection", async () => {
+    // Before orthographic framing existed the renderer had only a perspective
+    // path, so a source that wanted a parallel projection silently received a
+    // perspective one and rendered a visibly different image.
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 9 });
+    const geometry = Geometry.litCube(1);
+    const material = new PBRMaterial();
+
+    renderer.render({
+      cameraPolicy: "auto-frame",
+      cameraProjection: "orthographic",
+      cameraFrameBounds: { min: [-1, -0.5, -0.4], max: [1, 0.9, 0.4] },
+      renderItems: [{ geometry, material, label: "orthographic-plan-subject" }]
+    });
+
+    const command = (renderer.device as MockRenderDevice).drawCommands[0];
+    const cameraPosition = command?.uniforms?.get("u_cameraPosition") as readonly number[];
+    const expectedFrame = computeOrthographicCameraFrame(
+      { min: [-1, -0.5, -0.4], max: [1, 0.9, 0.4] },
+      { width: 16, height: 9 },
+      DEFAULT_RENDERER_AUTO_FRAME_OPTIONS
+    );
+    const perspectiveFrame = computePerspectiveCameraFrame(
+      { min: [-1, -0.5, -0.4], max: [1, 0.9, 0.4] },
+      { width: 16, height: 9 },
+      DEFAULT_RENDERER_AUTO_FRAME_OPTIONS
+    );
+
+    expect(command?.label).toBe("orthographic-plan-subject");
+    expect(Array.from(cameraPosition).map(round3)).toEqual(expectedFrame.cameraPosition.map(round3));
+    // The two projections must actually place the camera differently, otherwise
+    // this test would pass even if the orthographic request were ignored.
+    expect(Array.from(cameraPosition).map(round3)).not.toEqual(perspectiveFrame.cameraPosition.map(round3));
+
+    renderer.dispose();
+    geometry.dispose();
+  });
+
+  it("keeps perspective auto-framing as the default projection", async () => {
+    const renderer = await Renderer.create({ backend: "mock", width: 16, height: 9 });
+    const geometry = Geometry.litCube(1);
+    const material = new PBRMaterial();
+
+    renderer.render({
+      cameraPolicy: "auto-frame",
+      cameraFrameBounds: { min: [-1, -0.5, -0.4], max: [1, 0.9, 0.4] },
+      renderItems: [{ geometry, material, label: "default-projection-subject" }]
+    });
+
+    const command = (renderer.device as MockRenderDevice).drawCommands[0];
+    const cameraPosition = command?.uniforms?.get("u_cameraPosition") as readonly number[];
+    const expectedFrame = computePerspectiveCameraFrame(
+      { min: [-1, -0.5, -0.4], max: [1, 0.9, 0.4] },
+      { width: 16, height: 9 },
+      DEFAULT_RENDERER_AUTO_FRAME_OPTIONS
+    );
+
+    expect(Array.from(cameraPosition).map(round3)).toEqual(expectedFrame.cameraPosition.map(round3));
 
     renderer.dispose();
     geometry.dispose();

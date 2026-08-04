@@ -5,6 +5,7 @@ import {
   distanceOutsideBounds,
   distributeAroundBounds,
   distributeInRegion,
+  fitSizeToRegion,
   placedBounds,
   placedBoundsFromAsset,
   resolveBoundsAnchor,
@@ -207,5 +208,75 @@ describe("distanceOutsideBounds", () => {
     const bounds = placedBounds({ position: [0, 0, 0], size: [2, 2, 2], floorY: 0 });
     expect(distanceOutsideBounds(bounds, [0, 1, 0])).toBe(0);
     expect(distanceOutsideBounds(bounds, [3, 1, 0])).toBeCloseTo(2, 6);
+  });
+});
+
+describe("fitSizeToRegion", () => {
+  const city = placedBounds({ position: [0, 0, 0], size: [3.8, 1.6, 3.8], floorY: 0 });
+
+  it("derives a world-unit target dimension from the region rather than a bare multiplier", () => {
+    const station = resolveSemanticRegion(city, { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58, extent: [0.3, 0.12, 0.3] });
+    const fit = fitSizeToRegion(station, { occupancy: 0.82 });
+
+    // Governing horizontal extent is 3.8 * 0.3 = 1.14, so 82% of it is 0.9348.
+    expect(fit.targetMaxDimension).toBeCloseTo(0.9348, 6);
+    expect(fit.occupancy).toBeCloseTo(0.82, 6);
+    expect(fit.clamped).toBe(false);
+  });
+
+  it("keeps a hero subject far smaller than the scene that contains it", () => {
+    // This is the regression that mattered: a hardcoded scale rendered the
+    // smart-city hero at ~2.45 units inside a 3.8-unit city, 64% of the whole
+    // footprint, so it occluded the districts it was supposed to sit within.
+    const station = resolveSemanticRegion(city, { id: "vehicle-station", u: 0.47, v: 0.54, w: 0.58, extent: [0.3, 0.12, 0.3] });
+    const fit = fitSizeToRegion(station, { occupancy: 0.82 });
+
+    expect(fit.targetMaxDimension / 3.8).toBeLessThan(0.3);
+    expect(fit.targetMaxDimension).toBeLessThan(2.449);
+  });
+
+  it("follows the region when the scene is resized, which a hardcoded scale cannot", () => {
+    const small = placedBounds({ position: [0, 0, 0], size: [4, 2, 4], floorY: 0 });
+    const large = placedBounds({ position: [0, 0, 0], size: [40, 2, 40], floorY: 0 });
+    const region = { id: "bay", u: 0.5, v: 0.5, w: 0.5, extent: [0.25, 0.5, 0.25] } as const;
+
+    const smallFit = fitSizeToRegion(resolveSemanticRegion(small, region), { occupancy: 0.8 });
+    const largeFit = fitSizeToRegion(resolveSemanticRegion(large, region), { occupancy: 0.8 });
+
+    expect(largeFit.targetMaxDimension).toBeCloseTo(smallFit.targetMaxDimension * 10, 6);
+    // Relative occupancy is invariant; that is the property a magic number loses.
+    expect(largeFit.occupancy).toBeCloseTo(smallFit.occupancy, 6);
+  });
+
+  it("fits the tightest constraining axis so the subject cannot overflow", () => {
+    const bay = placedBounds({ position: [0, 0, 0], size: [10, 4, 2], floorY: 0 });
+    const fit = fitSizeToRegion(bay, { occupancy: 1 });
+
+    // Fitting the widest axis would overflow the 2-unit depth.
+    expect(fit.targetMaxDimension).toBeCloseTo(2, 6);
+  });
+
+  it("honours the vertical axis when headroom is a real constraint", () => {
+    const bay = placedBounds({ position: [0, 0, 0], size: [10, 1, 10], floorY: 0 });
+
+    expect(fitSizeToRegion(bay, { occupancy: 1 }).targetMaxDimension).toBeCloseTo(10, 6);
+    expect(fitSizeToRegion(bay, { occupancy: 1, axes: ["x", "y", "z"] }).targetMaxDimension).toBeCloseTo(1, 6);
+  });
+
+  it("reports clamping instead of silently ignoring min and max bounds", () => {
+    const bay = placedBounds({ position: [0, 0, 0], size: [10, 4, 10], floorY: 0 });
+
+    const capped = fitSizeToRegion(bay, { occupancy: 1, maxSize: 3 });
+    expect(capped.targetMaxDimension).toBeCloseTo(3, 6);
+    expect(capped.clamped).toBe(true);
+
+    const raised = fitSizeToRegion(bay, { occupancy: 0.01, minSize: 2 });
+    expect(raised.targetMaxDimension).toBeCloseTo(2, 6);
+    expect(raised.clamped).toBe(true);
+  });
+
+  it("rejects a degenerate region rather than returning a zero-sized subject", () => {
+    const flat = placedBounds({ position: [0, 0, 0], size: [0, 4, 0], floorY: 0 });
+    expect(() => fitSizeToRegion(flat, { occupancy: 0.8 })).toThrow(/positive extent/);
   });
 });

@@ -1173,6 +1173,50 @@ describe("agent API", () => {
   });
 });
 
+describe("orthographic and isometric cameras on the public surface", () => {
+  test("exposes a parallel-projection camera a developer can request directly", () => {
+    const orthographic = camera.orthographic({ target: [0, 1, 0], orthographicSize: 3 });
+
+    expect(orthographic.mode).toBe("orthographic");
+    expect(orthographic.orthographicSize).toBe(3);
+    expect(orthographic.target).toEqual([0, 1, 0]);
+  });
+
+  test("places an isometric camera on the true isometric elevation", () => {
+    // atan(1 / sqrt(2)) is the angle at which the three world axes project to
+    // equal screen lengths. A rounded 30 or 45 degrees produces the subtly wrong
+    // grid that isometric tile art reveals immediately, so the preset must be exact.
+    const isometric = camera.isometric({ distance: 12 });
+    const position = isometric.position!;
+    const elevation = Math.asin(position[1] / 12);
+
+    expect(isometric.mode).toBe("isometric");
+    expect(elevation).toBeCloseTo(Math.atan(1 / Math.SQRT2), 6);
+    // Equal horizontal components put the camera on the 45-degree azimuth.
+    expect(position[0]).toBeCloseTo(position[2], 6);
+  });
+
+  test("renders orthographic and perspective scenes through different projections", () => {
+    // Snapshot equality would not prove the projection is honoured, so compare
+    // the projected result: a parallel projection maps equal world lengths to
+    // equal screen lengths at any depth, and a perspective one does not.
+    const orthographicSnapshot = scene()
+      .add(primitives.box({ name: "orthographic probe cube" }))
+      .camera(camera.orthographic({ target: [0, 0, 0], position: [0, 0, 4], orthographicSize: 2 }))
+      .toJSON();
+    const perspectiveSnapshot = scene()
+      .add(primitives.box({ name: "perspective probe cube" }))
+      .camera(camera.perspective({ target: [0, 0, 0], position: [0, 0, 4] }))
+      .toJSON();
+
+    expect(orthographicSnapshot.camera.mode).toBe("orthographic");
+    expect(perspectiveSnapshot.camera.mode).toBe("perspective");
+    expect(orthographicSnapshot.camera.orthographicSize).toBe(2);
+    expect(perspectiveSnapshot.camera.orthographicSize).toBeUndefined();
+  });
+});
+
+
 if (false) {
   // @ts-expect-error The safe API requires typed AuraAssetRef values.
   model("robot");

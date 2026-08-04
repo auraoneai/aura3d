@@ -105,7 +105,7 @@ Stated plainly, because the parity table is capability-shaped and does not captu
 | Capability | Three.js ecosystem | Aura3D | Integrated | Consumers | Status | Notes |
 | --- | --- | --- | --- | --- | --- | --- |
 | scene graph | THREE.Scene + Object3D | `scene`, `group` | yes | 77 | **exceed** | Declarative scene builder with typed nodes; no manual add/remove bookkeeping. |
-| cameras | PerspectiveCamera / OrthographicCamera | `camera` | yes | 58 | parity |  |
+| cameras | PerspectiveCamera / OrthographicCamera | `camera` | yes | 58 | parity | Orthographic is now genuinely covered: camera.orthographic()/camera.isometric() on the root API, computeOrthographicCameraFrame/computeOrthographicCameraView in rendering, and RenderSource.cameraProjection for auto-framing. Before this the row claimed OrthographicCamera while the root API exposed perspective modes only and auto-framing could build a perspective frustum only. |
 | renderer configuration | WebGLRenderer options | `createAuraApp` | yes | 19 | parity | Renderer selection, pixel ratio and resize handled by the app; no renderer lifecycle code in routes. |
 | geometry primitives | BoxGeometry, SphereGeometry, TorusGeometry, ... | `primitives` | yes | 26 | parity | Local axis conventions now documented via AURA_PRIMITIVE_AXES after the flattened-torus defect. |
 | materials | MeshStandardMaterial / MeshPhysicalMaterial | `material` | yes | 73 | parity | Named material presets (clearcoatPaint, brushedMetal, clearGlass) rather than raw parameter sets. |

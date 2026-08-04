@@ -3,6 +3,7 @@ import {
   collectAuraSceneEvidence,
   createAuraApp,
   effects,
+  game,
   interactions,
   lights,
   material,
@@ -67,6 +68,20 @@ declare global {
 const APP_ID = "showcase-webgpu-particle-lab" as const;
 const particleCoreAsset = assets.showcaseParticleCore;
 
+/*
+ * Route-primary subject, declared once.
+ *
+ * The scene applies `targetMaxDimension: 1.68` and then `.scale(0.54)`, so the
+ * hero's rendered size is the product of the two. The composition probe must
+ * report that same rendered size, not the authored target, or it would describe
+ * a subject three times larger than the one on screen.
+ */
+const PARTICLE_CORE_NODE_ID = "webgpu-particle-lab-route-primary-core";
+const PARTICLE_CORE_TARGET_MAX_DIMENSION = 1.68;
+const PARTICLE_CORE_NODE_SCALE = 0.54;
+const PARTICLE_CORE_POSITION = [0, 0.38, -0.72] as const;
+const PARTICLE_CORE_RENDERED_SIZE = PARTICLE_CORE_TARGET_MAX_DIMENSION * PARTICLE_CORE_NODE_SCALE;
+
 let controls: LabControls = {
   mode: "vortex",
   density: 600
@@ -81,6 +96,35 @@ const labApp = createAuraApp("#lab-set", {
 bindControls();
 updateControlUi();
 publishEvidence();
+
+/*
+ * Route-primary evidence for a full-bleed particle scene.
+ *
+ * Without subject isolation the fallback analyzer treats the whole reactor set as
+ * one component, finds it spans the crop, marks it clipped, and then reports the
+ * highest-scoring *small* leftover blob as the "subject". Suppressing the hero
+ * and diffing the two frames measures the declared hero instead of guessing.
+ *
+ * Category is `application`: this route has a typed hero asset but no play space
+ * and no ground contact to prove.
+ */
+Object.defineProperty(window, "__AURA3D_COMPOSITION_PROBE__", {
+  value: {
+    category: "application",
+    camera: camera.dolly({ from: [0.08, 0.86, 4.18], to: [0, 0.82, 3.62], target: [0, 0.34, -0.72], seconds: 9, fov: 31, captureTime: 0.5 }),
+    subject: {
+      position: PARTICLE_CORE_POSITION,
+      rotation: [0.04, 0.62, 0] as const,
+      targetSize: PARTICLE_CORE_RENDERED_SIZE
+    },
+    setSubjectSuppressed: (suppressed: boolean) => {
+      labApp.pause();
+      labApp.nodes.get(PARTICLE_CORE_NODE_ID)?.setScale(suppressed ? 0.0001 : PARTICLE_CORE_NODE_SCALE);
+      labApp.step(0);
+    }
+  },
+  configurable: true
+});
 
 let evidenceTick = 0;
 labApp.onFrame(() => {
@@ -145,7 +189,8 @@ function buildLabSetScene(nextControls: LabControls): ReturnType<typeof scene> {
       .position(0, 0.38, -0.72)
       .rotate(0.04, 0.62, 0)
       .scale(0.54)
-      .animate({ clip: "turntable", speed: 0.1, captureTime: 0.46 }))
+      .animate({ clip: "turntable", speed: 0.1, captureTime: 0.46 })
+      .runtime(game.runtimeNode(PARTICLE_CORE_NODE_ID, { tags: ["typed-asset", "route-primary", "particle-core"] })))
     .add(primitives.torus({ name: "reactor containment ring outer", material: material.neon({ color, emissive: color, emissiveIntensity: 0.92, opacity: 0.56 }) })
       .position(0, 0.42, -0.72)
       .rotate(1.5708, 0, 0)

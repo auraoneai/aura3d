@@ -281,12 +281,6 @@ function assertBuiltRoutes() {
     }
   }
 
-  for (const route of ["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]) {
-    const diagnosticHtml = path.join(distDir, "apps", route, "index.html");
-    if (existsSync(diagnosticHtml)) {
-      throw new Error(`game-layer diagnostic route must not be published by marketing build: ${diagnosticHtml}`);
-    }
-  }
 }
 
 function main() {

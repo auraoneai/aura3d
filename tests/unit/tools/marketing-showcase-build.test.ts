@@ -74,7 +74,16 @@ describe("marketing showcase route build", () => {
       expect(buildScript).toContain(`"${deleted}"`);
     }
     expect(buildScript).toContain("release-ready game route must be published by marketing build");
-    expect(buildScript).toContain("game-layer diagnostic route must not be published by marketing build");
+    /*
+     * The game-layer diagnostic publish guard was removed with its routes.
+     *
+     * showcase-racing-game-layer-proof and showcase-platformer-game-layer-proof were
+     * deleted as discontinued examples, so a guard asserting they are not published had
+     * nothing left to guard. The release-ready assertion above still proves the build
+     * publishes the routes it must.
+     */
+    expect(buildScript).not.toContain("showcase-racing-game-layer-proof");
+    expect(buildScript).not.toContain("showcase-platformer-game-layer-proof");
   });
 
 });

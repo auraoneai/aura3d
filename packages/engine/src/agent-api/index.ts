@@ -2439,7 +2439,7 @@ export const lights = {
     })
 } as const;
 
-export type AuraCameraMode = "perspective" | "orbit" | "dolly" | "follow" | "path" | "flythrough";
+export type AuraCameraMode = "perspective" | "orbit" | "dolly" | "follow" | "path" | "flythrough" | "orthographic" | "isometric";
 
 export interface AuraCameraSpec {
   readonly mode: AuraCameraMode;
@@ -2458,6 +2458,16 @@ export interface AuraCameraSpec {
   readonly captureTime?: number;
   readonly smoothing?: number;
   readonly subjectEmphasis?: number;
+  /**
+   * Half-height of the orthographic frustum, in world units.
+   *
+   * Orthographic projection has no field of view, so this is what sets image
+   * scale: the camera sees `orthographicSize` units above and below its target
+   * regardless of how far away it sits. Horizontal extent follows from the
+   * viewport aspect, which keeps the image square-on rather than stretched.
+   * Ignored by every perspective mode.
+   */
+  readonly orthographicSize?: number;
 }
 
 export interface AuraBoundsSpec {
@@ -2543,6 +2553,50 @@ export const camera = {
     easing: options.easing ?? "easeInOut",
     captureTime: options.captureTime
   }),
+  /**
+   * A parallel-projection camera: no foreshortening, so equal world lengths
+   * occupy equal screen lengths wherever they sit in depth.
+   *
+   * Reach for this when the projection is part of the meaning rather than a
+   * stylistic choice — CAD and engineering views, floor plans, technical
+   * diagrams, sprite and texture bakes, chart axes, and product shots that must
+   * read as measurable. A long-lens perspective camera approximates it but
+   * still converges, which is visible on long straight edges.
+   */
+  orthographic: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => ({
+    mode: "orthographic",
+    position: options.position ?? [0, 1.4, 4],
+    target: options.target ?? [0, 0.8, 0],
+    orthographicSize: options.orthographicSize ?? 1.4
+  }),
+  /**
+   * The conventional isometric view: an orthographic camera on a 45-degree
+   * azimuth and a ~35.264-degree elevation.
+   *
+   * That elevation is `atan(1 / sqrt(2))`, the angle at which the three world
+   * axes project to equal screen lengths and 120 degrees apart. Authoring it as
+   * a preset matters because the value is not memorable and an approximation
+   * such as 30 or 45 degrees produces the subtly-wrong grid alignment that
+   * isometric tile art immediately reveals.
+   */
+  isometric: (options: Omit<AuraCameraSpec, "mode"> = {}): AuraCameraSpec => {
+    const target = options.target ?? [0, 0, 0];
+    const distance = options.distance ?? 12;
+    const elevation = Math.atan(1 / Math.SQRT2);
+    const azimuth = Math.PI / 4;
+    const horizontal = Math.cos(elevation) * distance;
+    return {
+      mode: "isometric",
+      target,
+      distance,
+      orthographicSize: options.orthographicSize ?? 6,
+      position: options.position ?? [
+        target[0] + Math.sin(azimuth) * horizontal,
+        target[1] + Math.sin(elevation) * distance,
+        target[2] + Math.cos(azimuth) * horizontal
+      ]
+    };
+  },
   autoFrame: (options: { readonly bounds?: AuraBoundsSpec; readonly target?: AuraVec3; readonly padding?: number; readonly fov?: number } = {}): AuraCameraSpec => {
     const bounds = options.bounds ?? { min: [-1, 0, -1], max: [1, 1.6, 1] } as const;
     const center: AuraVec3 = options.target ?? [
@@ -13310,7 +13364,9 @@ function createViewProjection(snapshot: AuraSceneSnapshot, aspect: number, time:
   const target = resolveCameraTarget(snapshot, cameraSpec, runtimeNodes);
   const eye = resolveCameraEye(snapshot, cameraSpec, time, runtimeNodes);
   const view = lookAt(eye, target, [0, 1, 0]);
-  const projection = perspective(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
+  const projection = isOrthographicCameraMode(cameraSpec.mode)
+    ? orthographic(cameraSpec.orthographicSize ?? 1.4, aspect, 0.05, 100)
+    : perspective(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
   return multiply4(projection, view);
 }
 
@@ -13398,6 +13454,22 @@ function isModelTransformAnimationClip(clip: string | undefined): boolean {
 function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
   if (typeof node.size === "number") return [node.size, node.size, node.size];
   return node.size ?? [1, 1, 1];
+}
+
+export function isOrthographicCameraMode(mode: AuraCameraMode): boolean {
+  return mode === "orthographic" || mode === "isometric";
+}
+
+function orthographic(halfHeight: number, aspect: number, near: number, far: number): Float32Array {
+  const safeHalfHeight = Math.max(1e-4, halfHeight);
+  const halfWidth = Math.max(1e-4, safeHalfHeight * aspect);
+  const nf = 1 / (near - far);
+  return new Float32Array([
+    1 / halfWidth, 0, 0, 0,
+    0, 1 / safeHalfHeight, 0, 0,
+    0, 0, 2 * nf, 0,
+    0, 0, (far + near) * nf, 1
+  ]);
 }
 
 function perspective(fovRadians: number, aspect: number, near: number, far: number): Float32Array {

@@ -29,7 +29,7 @@ interface GameReleaseGateModule {
 describe("showcase game release gate", () => {
   it("accepts compiler-authored overlay-validated racing geometry with retained proof files", async () => {
     const root = mkdtempSync(join(tmpdir(), "aura3d-game-release-gate-"));
-    const routeId = "showcase-racing-game-layer-proof";
+    const routeId = "showcase-turbo-drift-circuit";
     const screenshotPath = `tests/reports/showcase-route-primary-probes/${routeId}.png`;
     const reportPath = `tests/reports/showcase-spec-compiler/${routeId}/game-template/${routeId}-racing-track-topology.json`;
     const compositionReportPath = `tests/reports/showcase-spec-compiler/${routeId}/game-template/${routeId}-asset-pair-composition.json`;
@@ -41,8 +41,9 @@ describe("showcase game release gate", () => {
      *
      * These were borrowed from `showcase-public-racing-presentation-proof`, which was deleted in 1.5.0
      * as superseded. The suite only needs genuine rendered racing frames, so they now come from the
-     * route under test (`showcase-racing-game-layer-proof`) and Turbo Drift Circuit, which keeps the
-     * fixtures aligned with routes that still exist.
+     * route under test (Turbo Drift Circuit), which keeps the fixtures aligned with
+     * routes that still exist. The former game-layer-proof routes were deleted as
+     * discontinued examples, so this gate is now exercised against the real game routes.
      */
     /*
      * Inert image fixtures for the image-derived checks.
@@ -341,7 +342,7 @@ describe("showcase game release gate", () => {
     const module: GameReleaseGateModule = await import(
       pathToFileURL(join(process.cwd(), "tools/showcase-library/showcase-game-release-gates.mjs")).href
     );
-    const routeId = "showcase-platformer-game-layer-proof";
+    const routeId = "showcase-blockfall-reactor";
     const blockers = [
       "visual:platformer-proof-reads-as-diagnostic-harness",
       "visual:character-not-visibly-grounded-on-platform",

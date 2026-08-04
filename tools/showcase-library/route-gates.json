@@ -54,7 +54,7 @@
       "path": "/apps/showcase-data-galaxy/",
       "globalName": "__AURA3D_SHOWCASE_DATA_GALAXY__",
       "published": true,
-      "releaseClass": "internal-diagnostic",
+      "releaseClass": "removed-from-public-showcase",
       "primaryAssets": [
         "showcaseParticleCore"
       ],
@@ -160,88 +160,6 @@
       "requiresTypedPrimaryAssets": true,
       "requiresRoutePrimaryProbe": true,
       "requiresKeyboardDelta": true
-    },
-    {
-      "id": "showcase-racing-game-layer-proof",
-      "label": "Racing Game Layer Proof",
-      "path": "/apps/showcase-racing-game-layer-proof/",
-      "globalName": "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__",
-      "published": true,
-      "releaseClass": "game-layer-diagnostic",
-      "retainedEvidenceFrozen": true,
-      "primaryAssets": [
-        "showcaseTexturedSportsCar",
-        "showcaseTsukubaCircuit"
-      ],
-      "primaryAssetRoles": {
-        "showcaseTexturedSportsCar": "vehicle",
-        "showcaseTsukubaCircuit": "track"
-      },
-      "routePrimaryHeroAsset": "showcaseTexturedSportsCar",
-      "secondaryPrimaryAssets": [
-        "showcaseTsukubaCircuit"
-      ],
-      "primitiveBudget": 10,
-      "requiresTypedPrimaryAssets": true,
-      "requiresKeyboardDelta": true,
-      "gameTemplateStatus": {
-        "category": "racing",
-        "publicTemplateReady": false,
-        "blocker": "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-        "requiredBeforePublic": [
-          "Replace the diagnostic harness composition with a public-quality racing scene.",
-          "Reframe the typed car and typed circuit so track scale and camera read as a playable racing route.",
-          "Remove visible debug gates and proof markers from the public presentation path.",
-          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after the rebuild."
-        ],
-        "evidence": [
-          "packages/engine/src/agent-api/PublicGameGeometry.ts exports the reusable public racing geometry contract and validator.",
-          "tests/reports/showcase-spec-compiler/racing-game-layer-proof/game-template/showcase-racing-game-layer-proof-racing-track-topology.json retains diagnostic topology proof.",
-          "tests/reports/showcase-gameplay/showcase-racing-game-layer-proof.json proves keyboard throttle, steering, reset, and checkpoint/lap progression.",
-          "docs/project/showcase-visual-review.json records the current public visual blockers for this diagnostic route."
-        ]
-      }
-    },
-    {
-      "id": "showcase-platformer-game-layer-proof",
-      "label": "Platformer Game Layer Proof",
-      "path": "/apps/showcase-platformer-game-layer-proof/",
-      "globalName": "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__",
-      "published": true,
-      "releaseClass": "game-layer-diagnostic",
-      "retainedEvidenceFrozen": true,
-      "primaryAssets": [
-        "showcaseWalkAnimatedGirl",
-        "showcaseSideScrollerWorld"
-      ],
-      "primaryAssetRoles": {
-        "showcaseWalkAnimatedGirl": "character",
-        "showcaseSideScrollerWorld": "world"
-      },
-      "routePrimaryHeroAsset": "showcaseWalkAnimatedGirl",
-      "secondaryPrimaryAssets": [
-        "showcaseSideScrollerWorld"
-      ],
-      "primitiveBudget": 18,
-      "requiresTypedPrimaryAssets": true,
-      "requiresKeyboardDelta": true,
-      "gameTemplateStatus": {
-        "category": "platformer",
-        "publicTemplateReady": false,
-        "blocker": "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-        "requiredBeforePublic": [
-          "Replace the diagnostic harness composition with a public-quality platformer scene.",
-          "Rebuild character placement so foot contact is visibly grounded on authored platform surfaces.",
-          "Remove visible debug surface guides from the public presentation path.",
-          "Retain fresh route-primary, gameplay, visual-review, route-health, and launch evidence after the rebuild."
-        ],
-        "evidence": [
-          "packages/engine/src/agent-api/PublicGameGeometry.ts exports the reusable public platformer geometry contract and validator.",
-          "tests/reports/showcase-spec-compiler/platformer-game-layer-proof/game-template/showcase-platformer-game-layer-proof-platformer-playable-surfaces.json retains diagnostic playable-surface proof.",
-          "tests/reports/showcase-gameplay/showcase-platformer-game-layer-proof.json proves keyboard movement, jump, reset, hazards, checkpoints, and finish progression.",
-          "docs/project/showcase-visual-review.json records the current public visual blockers for this diagnostic route."
-        ]
-      }
     },
     {
       "id": "showcase-skyline-runner",

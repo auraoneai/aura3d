@@ -320,14 +320,6 @@ test.describe("showcase gameplay proof", () => {
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
   });
 
-  test("proves racing game layer proof gameplay when keyboard input is applied", async ({ page }) => {
-    await proveRacingRoute(page, server.origin, {
-      appId: "showcase-racing-game-layer-proof",
-      path: "/apps/showcase-racing-game-layer-proof/",
-      globalName: "__AURA3D_SHOWCASE_RACING_GAME_LAYER_PROOF__"
-    });
-  });
-
   test("proves skyline runner gameplay when keyboard input is applied", async ({ page }) => {
     const blockers: string[] = [];
     const errors = collectPageErrors(page);
@@ -494,14 +486,6 @@ test.describe("showcase gameplay proof", () => {
       namedCaptures: skylineCaptures
     });
     expect([...blockers, ...errors], blockers.join("\n")).toEqual([]);
-  });
-
-  test("proves platformer game layer proof gameplay when keyboard input is applied", async ({ page }) => {
-    await provePlatformerRoute(page, server.origin, {
-      appId: "showcase-platformer-game-layer-proof",
-      path: "/apps/showcase-platformer-game-layer-proof/",
-      globalName: "__AURA3D_SHOWCASE_PLATFORMER_GAME_LAYER_PROOF__"
-    });
   });
 
   test("proves blockfall reactor gameplay when keyboard input is applied", async ({ page }) => {
@@ -839,7 +823,7 @@ function writeRouteReport(appId: string, blockers: readonly string[], errors: re
 
 function createCategoryProof(appId: string, evidence: object): object | undefined {
   const visualReview = readVisualReview(appId);
-  if ((appId === "showcase-turbo-drift-circuit" || appId === "showcase-racing-game-layer-proof") && isTurboReport(evidence)) {
+  if (appId === "showcase-turbo-drift-circuit" && isTurboReport(evidence)) {
     return {
       racing: {
         inputChangesSpeed: evidence.after.speed > evidence.before.speed + 0.04,
@@ -858,7 +842,7 @@ function createCategoryProof(appId: string, evidence: object): object | undefine
       }
     };
   }
-  if ((appId === "showcase-skyline-runner" || appId === "showcase-platformer-game-layer-proof") && isSkylineReport(evidence)) {
+  if (appId === "showcase-skyline-runner" && isSkylineReport(evidence)) {
     return {
       platformer: {
         movementChangesPosition: (evidence.after.diagnostics?.snapshot?.x ?? 0) > (evidence.before.diagnostics?.snapshot?.x ?? 0) + 0.35,

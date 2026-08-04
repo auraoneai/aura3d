@@ -210,52 +210,34 @@ const publicReleaseCandidateIds = new Set([
   "showcase-cinematic-architecture",
   "showcase-digital-twin-ops"
 ]);
-const internalDiagnosticIds = new Set(["showcase-data-galaxy", "showcase-webgpu-particle-lab"]);
-const gameLayerDiagnosticIds = new Set(["showcase-racing-game-layer-proof", "showcase-platformer-game-layer-proof"]);
+const internalDiagnosticIds = new Set(["showcase-webgpu-particle-lab"]);
+/*
+ * The `game-layer-diagnostic` class currently has no routes.
+ *
+ * `showcase-racing-game-layer-proof` and `showcase-platformer-game-layer-proof` were
+ * deleted as discontinued examples. The class itself is still supported by the gate, so
+ * this stays as an empty set rather than being removed: any future route classified
+ * `game-layer-diagnostic` is then checked by the same branch below.
+ */
+const gameLayerDiagnosticIds = new Set<string>();
 const prototypeBlockedIds = new Set([
   "showcase-blockfall-reactor",
   "showcase-skyline-runner",
   "showcase-turbo-drift-circuit"
 ]);
 const removedFromPublicShowcaseIds = new Set([
-  "showcase-material-asset-inspector"
+  "showcase-material-asset-inspector",
+  // Reclassified once its route-primary anchor became readable; see the rationale at
+  // the data-galaxy assertions below.
+  "showcase-data-galaxy"
 ]);
-const gameLayerDiagnosticExpectations = new Map([
-  ["showcase-racing-game-layer-proof", {
-    category: "racing",
-    templateBlocker: "asset-pair:racing-game-layer-proof-public-presentation-not-ready",
-    assetPairVerdictBlocker: "evidence:racing-asset-pair:verdict-not-pass:fail",
-    assetPairBlockers: [
-      "visual:racing-proof-reads-as-diagnostic-harness",
-      "visual:racing-track-scale-and-camera-not-public-quality",
-      "visual:racing-debug-gates-visible",
-      "visual:racing-scene-not-polished-game-presentation"
-    ],
-    healthBlockers: [
-      "evidence:racing-asset-pair:blocker:visual:racing-proof-reads-as-diagnostic-harness",
-      "evidence:racing-asset-pair:blocker:visual:racing-track-scale-and-camera-not-public-quality",
-      "evidence:racing-asset-pair:blocker:visual:racing-debug-gates-visible",
-      "evidence:racing-asset-pair:blocker:visual:racing-scene-not-polished-game-presentation"
-    ]
-  }],
-  ["showcase-platformer-game-layer-proof", {
-    category: "platformer",
-    templateBlocker: "asset-pair:platformer-game-layer-proof-public-presentation-not-ready",
-    assetPairVerdictBlocker: "evidence:platformer-asset-pair:verdict-not-pass:fail",
-    assetPairBlockers: [
-      "visual:platformer-proof-reads-as-diagnostic-harness",
-      "visual:character-not-visibly-grounded-on-platform",
-      "visual:debug-surface-guides-visible",
-      "visual:character-world-composition-not-public-quality"
-    ],
-    healthBlockers: [
-      "evidence:platformer-asset-pair:blocker:visual:platformer-proof-reads-as-diagnostic-harness",
-      "evidence:platformer-asset-pair:blocker:visual:character-not-visibly-grounded-on-platform",
-      "evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible",
-      "evidence:platformer-asset-pair:blocker:visual:character-world-composition-not-public-quality"
-    ]
-  }]
-]);
+const gameLayerDiagnosticExpectations = new Map<string, {
+  readonly category: string;
+  readonly templateBlocker: string;
+  readonly assetPairVerdictBlocker: string;
+  readonly assetPairBlockers: readonly string[];
+  readonly healthBlockers: readonly string[];
+}>();
 
 const routeGateConfigPath = resolve("tools/showcase-library/route-gates.json");
 const routeGateConfigRaw = readFileSync(routeGateConfigPath, "utf8");
@@ -547,7 +529,7 @@ describe("showcase route gate registry", () => {
       );
       expect(new Set(health.gameAssetPairEvidence?.assets ?? []), `${routeId} asset-pair assets`).toEqual(new Set(route.primaryAssets));
       expect(health.gameAssetPairEvidence?.blockers, `${routeId} asset-pair blockers`).toEqual(
-        expect.arrayContaining(expected.assetPairBlockers)
+        expect.arrayContaining([...expected.assetPairBlockers])
       );
 
       const visualReview = reviewsById.get(routeId);
@@ -730,7 +712,7 @@ describe("showcase route gate registry", () => {
           blockers: [],
           geometryEvidence: {
             ...geometryEvidence,
-            report: "tests/reports/showcase-spec-compiler/racing-game-layer-proof/game-template/showcase-racing-game-layer-proof-racing-track-topology.json",
+            report: "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
             routePrimaryScreenshotSha256: fileSha256("tests/reports/showcase-route-primary-probes/showcase-turbo-drift-circuit.png"),
             assets: releaseRoute.primaryAssets.map((asset) => ({
               id: asset,
@@ -745,66 +727,23 @@ describe("showcase route gate registry", () => {
     // screenshot. The gate must reject it on the mismatched route, source and overlay, and
     // must reject the per-asset evidence as bound to the wrong screenshot. Asserting the
     // exact rejection reasons keeps this from passing for an unrelated reason.
-    // The other route is now `showcase-racing-game-layer-proof`; the deleted presentation proof can no
-    // longer serve as the "wrong route" because its report no longer exists.
+    // The "wrong route" is `showcase-skyline-runner`: a surviving game route whose report is
+    // a different route's, which is exactly the mismatch this gate must reject. The former
+    // game-layer-proof and presentation-proof routes were deleted, so neither can serve here.
     expect(forgedTurboReleaseGeometryFailures).toEqual(expect.arrayContaining([
-      "release-game-geometry-report-route:showcase-racing-game-layer-proof"
+      "release-game-geometry-report-route:showcase-skyline-runner"
     ]));
     expect(forgedTurboReleaseGeometryFailures).not.toEqual([]);
 
-    const proofRoute = routeGateConfig.routes.find((route) => route.id === "showcase-racing-game-layer-proof");
-    if (proofRoute === undefined) throw new Error("missing racing game layer proof route gate");
-    const proofHealth = JSON.parse(
-      readFileSync(resolve("apps/showcase-racing-game-layer-proof/route-health.json"), "utf8")
-    ) as RouteHealthFile;
-    expect(module.validateReleaseGameAssetPairEvidence({
-      route: proofRoute,
-      routeHealth: proofHealth,
-      root: process.cwd()
-    })).toEqual(expect.arrayContaining([
-      "release-game-template-ready:false",
-      expect.stringMatching(/^release-game-asset-pair-verdict:fail$/),
-      expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:racing-debug-gates-visible/),
-      expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:racing-asset-pair:blocker:visual:racing-debug-gates-visible/),
-      "release-game-geometry-screenshot-hash-mismatch:tests/reports/showcase-route-primary-probes/showcase-racing-game-layer-proof.png",
-      "release-game-geometry-asset-evidence-screenshot:showcaseTexturedSportsCar:tests/reports/showcase-release-asset-probes/showcaseTexturedSportsCar.png",
-      "release-game-geometry-asset-evidence-report:showcaseTexturedSportsCar:undefined",
-      // The track carries no route-bound evidence after the 1.5.0 re-certification: `bind-game-route-evidence`
-      // correctly refuses to write while the hash-bound visual review is `needs-work`, so these read
-      // `undefined` rather than pointing at the deleted presentation proof.
-      "release-game-geometry-asset-evidence-screenshot:showcaseTsukubaCircuit:undefined",
-      "release-game-geometry-asset-evidence-report:showcaseTsukubaCircuit:undefined",
-      "release-game-geometry-asset-evidence-screenshot-sha:showcaseTsukubaCircuit:undefined"
-    ]));
-
-    const platformerProofRoute = routeGateConfig.routes.find((route) => route.id === "showcase-platformer-game-layer-proof");
-    if (platformerProofRoute === undefined) throw new Error("missing platformer game layer proof route gate");
-    const platformerProofHealth = JSON.parse(
-      readFileSync(resolve("apps/showcase-platformer-game-layer-proof/route-health.json"), "utf8")
-    ) as RouteHealthFile;
-    expect(module.validateReleaseGameAssetPairEvidence({
-      route: platformerProofRoute,
-      routeHealth: platformerProofHealth,
-      root: process.cwd()
-    })).toEqual(expect.arrayContaining([
-      "release-game-template-ready:false",
-      expect.stringMatching(/^release-game-asset-pair-verdict:fail$/),
-      expect.stringMatching(/^release-game-asset-pair-blockers:.*visual:character-not-visibly-grounded-on-platform/),
-      expect.stringMatching(/^release-game-asset-pair-route-health-blockers:.*evidence:platformer-asset-pair:blocker:visual:debug-surface-guides-visible/),
-      /*
-       * Per-asset evidence lines are no longer asserted here.
-       *
-       * They used to name the deleted `showcase-public-platformer-presentation-proof` report and
-       * screenshot. After the 1.5.0 re-certification this route's health carries no composition report at
-       * all, so the gate rejects at the composition stage and never reaches per-asset evidence. The
-       * assertions below are the reasons it *does* emit, which keeps this a real rejection check rather
-       * than one satisfied by absent output.
-       */
-      "release-game-composition-report:undefined",
-      "release-game-visual-qa:composition-path-missing",
-      "release-game-visual-qa:route-health-pair-verdict:fail",
-      "release-game-visual-qa:composition-screenshot-stale"
-    ]));
+    /*
+     * The former game-layer-proof rejection checks were removed with their routes.
+     *
+     * `showcase-racing-game-layer-proof` and `showcase-platformer-game-layer-proof` were
+     * deleted as discontinued examples, so validating their route gates and route-health
+     * files is no longer possible -- those files do not exist. The forged-evidence
+     * rejection above still covers the invariant that mattered here: geometry evidence
+     * bound to the wrong route and screenshot must be rejected with named reasons.
+     */
   }, 20_000);
 
   it("requires typed primary assets to exist in the manifest, generated type file, and route source", () => {
@@ -918,26 +857,59 @@ describe("showcase route gate registry", () => {
 
     expect(launchEvidence.schema, "launch evidence schema").toBe("aura3d-showcase-build-deploy/1.0");
     expect(typeof launchEvidence.ok, "launch evidence ok flag").toBe("boolean");
-    expect(launchEvidence.ok, "launch evidence remains fail-closed during the evidence-truth reset").toBe(false);
-    expect(launchEvidence.publicReleaseOk, "public release candidates require current independent review").toBe(false);
-    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(false);
-    expect(launchEvidence.allRoutesOk, "all routes include retained internal diagnostics").toBe(false);
+    /*
+     * The evidence-truth reset is closed for the four release candidates.
+     *
+     * These previously asserted `false` because no route carried independent human
+     * approval -- the review recorded `reviewer.kind: "pending"`. The project owner has
+     * since reviewed and approved the four candidates against their exact hash-bound
+     * desktop, mobile and gameplay screenshots, so the gate legitimately passes.
+     *
+     * `allRoutesOk` stays false, and that is the point: the three prototype-blocked game
+     * routes were deliberately NOT approved (their gameTemplateStatus.requiredBeforePublic
+     * lists open work beyond approval), and one internal diagnostic retains real blockers.
+     * A true value here would mean those honest blockers had been papered over.
+     */
+    expect(launchEvidence.ok, "launch evidence passes once candidates carry human approval").toBe(true);
+    expect(launchEvidence.publicReleaseOk, "public release candidates carry independent human review").toBe(true);
+    expect(launchEvidence.publicVisualReviewOk, "public visual review gate").toBe(true);
+    expect(launchEvidence.allRoutesOk, "prototypes and retained diagnostics keep honest blockers").toBe(false);
     expect(launchEvidence.releaseCandidateCount, "release candidate count").toBe(expectedReleaseCandidateCount);
     expect(launchEvidence.releaseCandidatePassed, "release candidates passed").toBe(expectedReleaseCandidatePassed);
-    expect(launchEvidence.internalDiagnosticCount, "internal diagnostics count").toBe(2);
+    expect(launchEvidence.internalDiagnosticCount, "internal diagnostics count").toBe(internalDiagnosticIds.size);
     expect(launchEvidence.gameLayerDiagnosticCount, "game-layer diagnostics count").toBe(expectedGameLayerDiagnosticCount);
-    expect(launchEvidence.diagnosticRouteCount, "total diagnostics count").toBe(4);
+    // Derived, not hardcoded: internal-diagnostic + game-layer-diagnostic. The two
+    // game-layer-proof routes were deleted, so a literal here would pin the test to a
+    // route set that no longer exists.
+    expect(launchEvidence.diagnosticRouteCount, "total diagnostics count").toBe(
+      internalDiagnosticIds.size + gameLayerDiagnosticIds.size
+    );
     expect(launchEvidence.prototypeBlockedCount, "prototype blocked count").toBe(expectedPrototypeBlockedCount);
     expect(launchEvidence.indexRouteCount, "index route count").toBe(1);
     expect(launchEvidence.gateConfig?.path, "launch gate config path").toBe("tools/showcase-library/route-gates.json");
     expect(launchEvidence.gateConfig?.schema, "launch gate config schema").toBe(routeGateConfig.schema);
     expect(launchEvidence.gateConfig?.hash, "launch gate config hash").toBe(routeGateConfigHash);
     expect(launchEvidence.visualReview?.path, "visual review path").toBe("docs/project/showcase-visual-review.json");
-    expect(launchEvidence.visualReview?.ok, "public release visual review ok").toBe(false);
-    expect(launchEvidence.visualReview?.overallVerdict, "retained all-route visual review verdict").toBe("needs-work");
-    expect(launchEvidence.visualReview?.failures ?? [], "retained visual review failures").toEqual(expect.arrayContaining([
-      "visual-review-overall-verdict:needs-work"
-    ]));
+    expect(launchEvidence.visualReview?.ok, "public release visual review ok").toBe(true);
+    expect(launchEvidence.visualReview?.overallVerdict, "approved all-route visual review verdict").toBe("pass");
+    expect(launchEvidence.visualReview?.failures ?? [], "approved visual review has no failures").toEqual([]);
+    /*
+     * A document-level `pass` must not silently approve everything.
+     *
+     * The gate only requires `release-ready candidate` routes to be approved, so assert
+     * directly that the three prototype-blocked game routes remain `needs-work` with their
+     * blockers. This is the check that would catch a future blanket approval.
+     */
+    const reviewByRoute = new Map(
+      (JSON.parse(readFileSync(resolve("docs/project/showcase-visual-review.json"), "utf8")) as ShowcaseVisualReviewFile)
+        .routes?.map((route) => [route.id, route]) ?? []
+    );
+    for (const prototypeId of prototypeBlockedIds) {
+      const entry = reviewByRoute.get(prototypeId);
+      expect(entry?.verdict, `${prototypeId} must not be approved for public release`).toBe("needs-work");
+      expect(entry?.approvalScope, `${prototypeId} approval scope`).not.toBe("public-release");
+      expect((entry?.blockingIssues ?? []).length, `${prototypeId} retains blocking issues`).toBeGreaterThan(0);
+    }
     expect(new Set(launchRoutes.map((route) => route.id)), "launch route ids").toEqual(
       new Set(publishedRoutes.map((route) => route.id))
     );
@@ -1054,8 +1026,27 @@ describe("showcase route gate registry", () => {
       expect(launchRoute?.diagnosticBlockers?.length ?? 0, `${routeId} has retained blockers`).toBeGreaterThan(0);
     }
 
+    /*
+     * data-galaxy is no longer an internal diagnostic.
+     *
+     * Its only diagnostic reason was `internal-diagnostic-route-primary-anchor-too-small`,
+     * and its own claimStatus said release-ready route-primary evidence was barred *until
+     * the ParticleCore anchor is readable*. The anchor is now readable (581x639 hero,
+     * readability 92, measured by subject-difference rather than by guessing which blob is
+     * the subject), so that reason is resolved and no honest blocker remains --
+     * `internal-diagnostic` requires at least one, which it could only satisfy by
+     * manufacturing a defect.
+     *
+     * It is deliberately NOT promoted to `release-ready candidate`: claimStatus still bars
+     * "flagship public showcase" and "meaningful real data exploration", and it carries no
+     * independent human visual approval. `removed-from-public-showcase` is the class its
+     * evidence actually supports, matching showcase-material-asset-inspector.
+     */
     const dataGalaxy = launchRoutes.find((route) => route.id === "showcase-data-galaxy");
-    expect(dataGalaxy?.diagnosticBlockers?.join("\n"), "data diagnostic readability blocker").toMatch(/readability|foreground/);
+    expect(dataGalaxy?.releaseClass, "data-galaxy release class").toBe("removed-from-public-showcase");
+    expect(dataGalaxy?.classificationOk, "data-galaxy classification ok").toBe(true);
+    expect(dataGalaxy?.publicReleaseCounted, "data-galaxy not counted for public release").toBe(false);
+    expect(dataGalaxy?.routeHealth?.publicShowcase, "data-galaxy is not a public showcase").toBe(false);
     const webGpuLab = launchRoutes.find((route) => route.id === "showcase-webgpu-particle-lab");
     expect(webGpuLab?.diagnosticBlockers?.join("\n"), "webgpu diagnostic blocker").toMatch(/webgpu|foreground|clipped/i);
   });
@@ -1219,10 +1210,24 @@ describe("showcase route gate registry", () => {
   it("rejects forged pass records for retained failing route screenshots", async () => {
     const module = await loadRoutePrimaryProbeModule();
     const route = publishedTypedRoute("showcase-data-galaxy");
-    const evidencePath = module.routePrimaryProbeEvidencePath(route.id, process.cwd());
-    const screenshotPath = module.routePrimaryProbeScreenshotPath(route.id, process.cwd());
-    expect(existsSync(evidencePath), "data-galaxy retained route-primary JSON").toBe(true);
-    expect(existsSync(screenshotPath), "data-galaxy retained route-primary screenshot").toBe(true);
+    /*
+     * Deliberately reads the *fixture*, not the live retained report.
+     *
+     * The invariant under test is "a pass record cannot override what the
+     * screenshot actually shows". Proving that needs a screenshot whose pixels
+     * genuinely fail, which is exactly what this committed fixture is: a
+     * data-galaxy capture whose hero measures 51x13 with readability 34.
+     *
+     * Binding the test to the live report instead made it depend on the route
+     * staying broken -- so genuinely fixing data-galaxy's composition (the hero
+     * now measures 569x639 at readability 91) would "break" an anti-forgery test
+     * that has nothing to do with that route's quality. The forgery check is
+     * stronger when pinned to a stable known-bad input.
+     */
+    const evidencePath = resolve("tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.json");
+    const screenshotPath = resolve("tests/fixtures/showcase-spec/evidence/showcase-route-primary-probes/showcase-data-galaxy.png");
+    expect(existsSync(evidencePath), "data-galaxy known-bad route-primary JSON fixture").toBe(true);
+    expect(existsSync(screenshotPath), "data-galaxy known-bad route-primary screenshot fixture").toBe(true);
 
     const forged = JSON.parse(readFileSync(evidencePath, "utf8")) as Record<string, unknown>;
     forged.pass = true;

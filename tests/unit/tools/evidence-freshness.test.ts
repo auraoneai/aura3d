@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 
@@ -701,8 +701,22 @@ describe("the repository's retained evidence is provably current", () => {
      * silently would be worse: a reader could not tell an intentional freeze from a missing audit.
      */
     const report = explainStaleness();
-    expect(report.frozenRoutes).toContain("showcase-racing-game-layer-proof");
-    expect(report.frozenRoutes).toContain("showcase-platformer-game-layer-proof");
+    /*
+     * Asserted against the registry rather than against hardcoded ids.
+     *
+     * The two `*-game-layer-proof` routes were the only frozen routes and have been
+     * deleted as discontinued examples, so naming them here would pin the test to
+     * routes that no longer exist. The invariant under test is the *relationship* --
+     * whatever the registry marks frozen must be reported as frozen and must not also
+     * be audited as a live artifact -- which stays meaningful at zero frozen routes and
+     * starts working again the moment one is added.
+     */
+    const registryFrozen = (JSON.parse(
+      readFileSync(resolve("tools/showcase-library/route-gates.json"), "utf8")
+    ) as { routes: { id: string; retainedEvidenceFrozen?: boolean }[] }).routes
+      .filter((route) => route.retainedEvidenceFrozen === true)
+      .map((route) => route.id);
+    expect([...(report.frozenRoutes ?? [])].sort()).toEqual([...registryFrozen].sort());
     // Frozen routes must not also appear as audited artifacts.
     for (const frozen of report.frozenRoutes) {
       expect(report.artifacts.some((artifact) => artifact.artifact.includes(frozen))).toBe(false);
@@ -864,8 +878,22 @@ describe("the freshness verdict is itself retained evidence", () => {
      * intentional freeze from a missing audit.
      */
     const report = audit();
-    expect(report.frozenRoutes).toContain("showcase-racing-game-layer-proof");
-    expect(report.frozenRoutes).toContain("showcase-platformer-game-layer-proof");
+    /*
+     * Asserted against the registry rather than against hardcoded ids.
+     *
+     * The two `*-game-layer-proof` routes were the only frozen routes and have been
+     * deleted as discontinued examples, so naming them here would pin the test to
+     * routes that no longer exist. The invariant under test is the *relationship* --
+     * whatever the registry marks frozen must be reported as frozen and must not also
+     * be audited as a live artifact -- which stays meaningful at zero frozen routes and
+     * starts working again the moment one is added.
+     */
+    const registryFrozen = (JSON.parse(
+      readFileSync(resolve("tools/showcase-library/route-gates.json"), "utf8")
+    ) as { routes: { id: string; retainedEvidenceFrozen?: boolean }[] }).routes
+      .filter((route) => route.retainedEvidenceFrozen === true)
+      .map((route) => route.id);
+    expect([...(report.frozenRoutes ?? [])].sort()).toEqual([...registryFrozen].sort());
     for (const artifact of report.artifacts ?? []) {
       for (const frozen of report.frozenRoutes ?? []) {
         expect(artifact.artifact, `frozen route ${frozen} must not be audited`).not.toContain(frozen);

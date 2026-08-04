@@ -87,14 +87,32 @@ repo. The claim-boundary and release evidence docs live under `docs/` for teams
 that need strict publication review, but the developer path starts here: create
 an app, add typed assets, run it, test it, deploy it.
 
-## Current Release: Aura3D 1.5.1
+## Current Release: Aura3D 1.5.2
 
-Aura3D 1.5.1 is the current source release across all 26 public packages. This is a
-**product-remediation release**: three reported interaction defects and four reported
-game-runtime defects were root-caused at the library level and fixed with reusable
-systems, each backed by unit tests and a runtime probe rather than by a screenshot.
+Aura3D 1.5.2 is the current source release across all 26 public packages. This is an
+**evidence-correctness patch** on top of 1.5.1.
+
+### What shipped in 1.5.2
+
+- **Per-row background estimation in foreground analysis.** Every showcase screenshot gate
+  measures silhouette extent, foreground ratio and subject centroid against a background
+  estimate. That estimate was a single average of the frame's four corners, which is wrong
+  for most of a frame that has a gradient sky: rows near the horizon were compared against
+  a colour sampled from the top of the frame, so sky pixels were admitted as subject and
+  every derived measurement was computed against an inflated mask. Background is now
+  estimated per row from the median of that row's left and right margins, which tracks a
+  vertical gradient and tolerates a prop or HUD edge intruding into one margin.
+- **Producer/verifier parity is pinned by equality.** `tools/showcase-library/png-foreground.mjs`
+  re-derives the same metrics from the written PNG; the two implementations must now agree
+  pixel-for-pixel across gradient, flat-background, off-centre-subject and HUD-crop cases.
+- **Aura Clash evidence route cites current artifacts.** Its evidence model pointed at
+  superseded proof files; every required signal now resolves to a field of the current schema.
 
 ### What shipped in 1.5.1
+
+1.5.1 was a **product-remediation release**: three reported interaction defects and four
+reported game-runtime defects were root-caused at the library level and fixed with reusable
+systems, each backed by unit tests and a runtime probe rather than by a screenshot.
 
 - **Focus and selection (`focusObject`, `focusSemanticRegion`).** A focus indicator
   rendered as a flat bar because Aura3D's torus is a ring in local **XY** with its tube
@@ -164,9 +182,9 @@ Full ledger and final report: `docs/project/plans/aura3d-product-remediation-prd
 Install after the npm publication completes:
 
 ```bash
-npm install @aura3d/engine@1.5.1
+npm install @aura3d/engine@1.5.2
 # or scaffold an app
-npx create-aura3d@1.5.1 my-product --template product-viewer
+npx create-aura3d@1.5.2 my-product --template product-viewer
 ```
 
 Detailed release notes are in
@@ -195,7 +213,7 @@ npx @aura3d/cli@latest assets validate-game --profile fighting-character --asset
 `--profile fighting-character` requires animated GLB candidates from verified CC0/CC-BY sources, applies a browser-sized triangle budget, and writes source URL, license, author/attribution, and source family into `aura.assets.json` during `assets resolve`.
 ## Aura3D 1.1.0 runtime launch track
 
-Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.1 is
+Aura3D 1.1.0 introduced the runtime and animation evidence foundation; 1.5.2 is
 the current package release that carries it forward:
 
 - `game runtime`: mutable runtime nodes, app-owned frame loops, input, kinematic bodies, hitboxes, combat events, camera direction, effects, and evidence for browser-native game prototypes.
@@ -655,7 +673,7 @@ Aura3D 1.1.0 game-engine/showcase readiness is stricter:
 pnpm aura3d110:readiness
 ```
 
-Expected current state — The scoped package gates pass for the 1.5.1 baseline,
+Expected current state — The scoped package gates pass for the 1.5.2 baseline,
 but the current route-library gate is deliberately non-passing until independent
 review is current. Blockfall Reactor, Turbo Drift Circuit, and Skyline Runner are
 prototype-blocked during visual reconstruction; their typed assets, mounted

@@ -3,9 +3,9 @@
   "generatedAt": "2026-06-18",
   "appId": "showcase-data-galaxy",
   "route": "/apps/showcase-data-galaxy/",
-  "classification": "internal-diagnostic",
+  "classification": "removed-from-public-showcase",
   "publicShowcase": false,
-  "promotionStatus": "internal-diagnostic-route-primary-anchor-too-small",
+  "promotionStatus": "removed-from-public-showcase-abstract-diagnostic-prototype",
   "renderer": {
     "path": "createAuraApp root safe API",
     "mode": "safe-basic",
@@ -35,8 +35,7 @@
     "notAllowed": [
       "native GPU compute particles",
       "meaningful real data exploration",
-      "flagship public showcase",
-      "release-ready route-primary evidence until the ParticleCore anchor is readable"
+      "flagship public showcase"
     ]
   },
   "evidence": {

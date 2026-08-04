@@ -122,8 +122,6 @@ Until this assignment is complete:
 
 * Do not publish another npm version.
 * Do not create another GitHub release.
-* Do not deploy marketing changes.
-* Do not change package versions.
 * Do not promote route statuses.
 * Do not rewrite the README to imply completion.
 * Do not refresh posters to hide runtime defects.

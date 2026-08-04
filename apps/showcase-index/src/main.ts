@@ -135,28 +135,6 @@ const apps = [
     notes: "Bounded falling-block candidate with passing route-primary, deploy/release, and gameplay proof."
   },
   {
-    id: "showcase-racing-game-layer-proof",
-    route: "/apps/showcase-racing-game-layer-proof/",
-    routeHealth: "/apps/showcase-racing-game-layer-proof/route-health.json",
-    classification: "game-layer-diagnostic",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "demoted",
-    notes: "Retained diagnostic for racing geometry contracts, certification helpers, screenshot-hash plumbing, and keyboard gameplay proof. Current debug-gate presentation is not a public racing showcase route."
-  },
-  {
-    id: "showcase-platformer-game-layer-proof",
-    route: "/apps/showcase-platformer-game-layer-proof/",
-    routeHealth: "/apps/showcase-platformer-game-layer-proof/route-health.json",
-    classification: "game-layer-diagnostic",
-    publicShowcase: false,
-    primaryAssetStatus: "release-validated-typed-primary-assets",
-    primitiveStatus: "within-stated-role",
-    claimStatus: "demoted",
-    notes: "Retained diagnostic for platformer geometry contracts, certification helpers, screenshot-hash plumbing, and keyboard gameplay proof. Current debug-surface presentation is not a public platformer showcase route."
-  },
-  {
     id: "showcase-skyline-runner",
     route: "/apps/showcase-skyline-runner/",
     routeHealth: "/apps/showcase-skyline-runner/route-health.json",
