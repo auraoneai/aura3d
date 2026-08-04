@@ -391,25 +391,43 @@ WS-6 (generality proof) — last, and it is the real acceptance test ───�
 WS-1 before WS-3 is non-negotiable: refactoring kits onto a runtime that is not yet
 public just moves the problem.
 
-## 3.1 Release blocker: visual review needs re-signing
+## 3.1 Release blocker: the visual review was already stale before this branch
 
-`tests/unit/tools/showcase-route-gates.test.ts` is the one unit test still failing, and it is not a
-code defect — it is a **human gate that has correctly gone stale**.
+`tests/unit/tools/showcase-route-gates.test.ts` is the one unit test still failing. **I previously
+reported that my evidence regeneration caused it. That was wrong, and the correction matters.**
 
-`docs/project/showcase-visual-review.json` records the project owner's approval
-(`gchahal1982@procure-net.com`, `kind: "human"`) bound to each route's `sourceHash`,
-`routeHealthHash` and three screenshot hashes. This branch changed route source, so the source
-binding no longer matches. The screenshots themselves still hash correctly — verified per route —
-so nothing visual has drifted; the *approval* simply no longer attaches to the code that is now
-there.
+What I claimed: regenerating stale probes moved route source hashes, invalidating the owner's
+approval, and "the screenshots themselves still match their recorded hashes (verified per route)".
 
-I have deliberately not touched that file. Re-signing another person's visual review to turn a gate
-green is precisely what the gate exists to prevent, and it is the one thing in this PRD that cannot
-be discharged by an agent.
+What is actually true, measured:
 
-**Action required before 1.5.3 ships:** a fresh visual review pass over the four public release
-candidates against their current screenshots, re-recorded with current source hashes. Until then
-`launch evidence ok` is `false`, and that is the honest state rather than a bug to route around.
+- The review document `docs/project/showcase-visual-review.json` is **byte-identical to the one at
+  `v1.5.2`** — same `reviewedAt` of `2026-08-04T06:48:55.387Z`. This branch never touched it.
+- **13 of its recorded screenshot hashes do not match the files on disk.** My earlier
+  "verified per route" check sampled exactly one route (`showcase-product-configurator`, whose three
+  screenshots do match) and I generalised from it. That was the error.
+- **10 of those 13 predate this session entirely.** Their mtimes cluster at 06:56–06:58 on
+  2026-08-04 — minutes *after* the 06:48 review, and hours before this session began (~19:30 UTC).
+  A prior run regenerated them and the review was never re-signed.
+- The 3 my session did touch are `showcase-gameplay/*-after-input.png` for blockfall, skyline and
+  turbo drift, rewritten by `showcase-gameplay-proof.spec.ts` at 21:31–21:32 UTC. Two of those three
+  routes carry `verdict: "needs-work"` and are `prototype-blocked` anyway.
+- The screenshots are **gitignored local artifacts** (`.gitignore:43 tests/reports/`), so they were
+  never tracked. Zero are committed at `v1.5.2`.
+
+So the gate has been failing on unchanged code since before 1.5.2, and 1.5.2 shipped anyway. That is
+the same pattern as the other three gates in §3.2: red for a real reason, not noticed, released past.
+
+The gate is also stricter than hash equality — `route-visual-review-stale-screenshot` compares
+**mtime** against the review timestamp, so merely re-running a screenshot spec invalidates approval
+even when the bytes are identical. That is defensible for an approval gate, but it means any
+regeneration requires a re-signature.
+
+**Action required before 1.5.3 ships:** a fresh visual review over the four public release
+candidates against their current screenshots, re-recorded with current source and screenshot hashes.
+I have not touched that file and will not — re-signing another person's visual review to turn a gate
+green is the one thing in this PRD an agent must not do. But the honest framing is that this is a
+**pre-existing debt this branch inherited**, not damage it caused.
 
 ## 3.2 Pre-existing release gates that were red before this branch
 
