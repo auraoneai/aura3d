@@ -31,7 +31,7 @@
   "url": "https://aura3d.auraone.ai",
   "downloadUrl": "https://www.npmjs.com/package/@aura3d/engine",
   "codeRepository": "https://github.com/auraoneai/aura3d",
-  "softwareVersion": "1.5.1",
+  "softwareVersion": "1.5.2",
   "programmingLanguage": "TypeScript",
   "description": "AI-native TypeScript 3D SDK for browser 3D apps, prompt-to-code scenes, typed GLB/glTF assets, Vite templates, diagnostics, screenshots, and static deployment checks."
 }
@@ -71,7 +71,7 @@
           <span>npm</span>
         </a>
       </div>
-      <span class="nav-version">v1.5.1</span>
+      <span class="nav-version">v1.5.2</span>
       <a class="btn btn-ghost" href="/docs/index.html">Docs</a>
       <a class="btn btn-primary nav-start" href="#templates">Get&nbsp;started <span class="arr"></span></a>
     </div>
@@ -118,7 +118,7 @@
           <span class="k">agent-resolved catalog</span>
         </div>
         <div class="hero-meta-item">
-          <span class="v"><b>v1.5.1</b></span>
+          <span class="v"><b>v1.5.2</b></span>
           <span class="k">latest engine</span>
         </div>
         <div class="hero-meta-item">
@@ -168,60 +168,60 @@
   </div>
 </section>
 
-<!-- ─── NEW IN 1.5.1 ───────────────────────────────────────── -->
-<section class="section-tight" id="release-151" data-search-index="release 1.5.1 focus selection world anchored labels asset relative layout vehicle chassis suspension ai driving platformer motion combat frame data application kits scene queries interaction audit quality gates clean room">
+<!-- ─── NEW IN 1.5.2 ───────────────────────────────────────── -->
+<section class="section-tight" id="release-152" data-search-index="release 1.5.2 orthographic camera isometric camera parallel projection fitSizeToRegion bounds derived sizing cad technical drawing floor plan sprite bake product turntable clean room developer proof gltf loader visual parity webgpu route health">
   <div class="wrap">
     <div class="sec-head" style="border-top:0; padding-top:0; margin-bottom:32px">
       <div class="sec-head-left">
-        <span class="eyebrow">New in 1.5.1</span>
-        <h2 class="h2">Seven reported defects, fixed <em style="font-family:var(--serif);font-style:italic">in the library, not the screenshot.</em></h2>
-        <p class="lede">1.5.1 is a product-remediation release. A focus control that drew a flat bar, callouts that never rendered, helper geometry floating beside a scene, a car sinking through the road, an opponent driving sideways, a floaty jump and inverted combat frame data were each root-caused to a library defect and fixed with a reusable system. Every fix is backed by unit tests and a runtime probe: 87 of 87 public controls and 47 of 47 keyboard bindings are now verified <em>by operation</em>, not by a first-frame screenshot.</p>
+        <span class="eyebrow">New in 1.5.2</span>
+        <h2 class="h2">Cameras and sizing you no longer <em style="font-family:var(--serif);font-style:italic">have to solve yourself.</em></h2>
+        <p class="lede">1.5.2 adds orthographic and isometric cameras to the public API, and bounds-derived asset sizing through <code>fitSizeToRegion</code>. Before this release you could not request a parallel projection at all: auto-framing could only build a perspective frustum, so CAD views, isometric games, floor plans, sprite bakes and product turntables silently rendered with foreshortening. Sizing had the same gap &mdash; placement was bounds-derived, sizing was not, so routes invented scale multipliers that broke the moment an asset changed. Both are now library capabilities with tests and shipped type definitions.</p>
       </div>
     </div>
 
     <div class="diag">
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">interaction verified by operation</span>
-          <span class="pass">● 87 / 87</span>
+          <span class="title">clean-room developer proof</span>
+          <span class="pass">● 4 / 4</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">controls</span> <span class="v ok">87 / 87 produce observable state change</span></div>
-          <div class="diag-row"><span class="k">keyboard</span> <span class="v ok">47 / 47 declared bindings respond</span></div>
-          <div class="diag-row"><span class="k">console</span> <span class="v ok">0 runtime errors across 13 routes</span></div>
-          <div class="diag-row"><span class="k">mobile</span> <span class="v ok">touch parity with desktop enforced</span></div>
-          <div class="diag-row"><span class="k">restart</span> <span class="v ok">every route remounts after reload</span></div>
-          <div class="diag-row"><span class="k">method</span> <span class="v">controls discovered at runtime, then operated</span></div>
+          <div class="diag-row"><span class="k">static app</span> <span class="v ok">137 authored lines (200 budget)</span></div>
+          <div class="diag-row"><span class="k">playable</span> <span class="v ok">99 authored lines (300 budget)</span></div>
+          <div class="diag-row"><span class="k">imports</span> <span class="v ok">@aura3d/engine only, 0 private imports</span></div>
+          <div class="diag-row"><span class="k">console</span> <span class="v ok">0 errors across all four projects</span></div>
+          <div class="diag-row"><span class="k">setup</span> <span class="v">npm create aura3d@latest</span></div>
+          <div class="diag-row"><span class="k">method</span> <span class="v">built only on the public surface</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">reusable systems added</span>
-          <span class="pass">● 192 unit tests</span>
+          <span class="title">new library capability</span>
+          <span class="pass">● tests + dist types</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">focus</span> <span class="v ok">focusObject + published primitive axes</span></div>
-          <div class="diag-row"><span class="k">labels</span> <span class="v ok">world-anchored layer in the production path</span></div>
-          <div class="diag-row"><span class="k">layout</span> <span class="v ok">asset-relative anchors and semantic regions</span></div>
-          <div class="diag-row"><span class="k">vehicles</span> <span class="v ok">chassis contact, suspension, look-ahead AI</span></div>
-          <div class="diag-row"><span class="k">platformer</span> <span class="v ok">motion solved from level geometry</span></div>
-          <div class="diag-row"><span class="k">combat</span> <span class="v ok">frame data validated as frame data</span></div>
+          <div class="diag-row"><span class="k">cameras</span> <span class="v ok">camera.orthographic(), camera.isometric()</span></div>
+          <div class="diag-row"><span class="k">framing</span> <span class="v ok">computeOrthographicCameraFrame / View</span></div>
+          <div class="diag-row"><span class="k">sizing</span> <span class="v ok">fitSizeToRegion() from region bounds</span></div>
+          <div class="diag-row"><span class="k">renderer</span> <span class="v ok">RenderSource.cameraProjection</span></div>
+          <div class="diag-row"><span class="k">isometric</span> <span class="v">true atan(1/&radic;2) elevation</span></div>
+          <div class="diag-row"><span class="k">default</span> <span class="v">perspective unchanged, not a breaking change</span></div>
         </div>
       </div>
 
       <div class="diag-card">
         <div class="diag-head">
-          <span class="title">still not resolved</span>
-          <span class="warn">● stated plainly</span>
+          <span class="title">measured, with thresholds disclosed</span>
+          <span class="warn">● not full parity</span>
         </div>
         <div class="diag-body">
+          <div class="diag-row"><span class="k">product render</span> <span class="v">0.331 changed px vs strict 0.15 gate &mdash; fails</span></div>
+          <div class="diag-row"><span class="k">pbr / hdr / shadow</span> <span class="v">pass only under loose 0.82 / 0.55 / 0.86 gates</span></div>
+          <div class="diag-row"><span class="k">gltf loader</span> <span class="v ok">170 / 170 same-source diffs</span></div>
+          <div class="diag-row"><span class="k">capability</span> <span class="v">6 exceed / 37 parity / 10 unproven / 3 gap</span></div>
+          <div class="diag-row"><span class="k">hard gaps</span> <span class="v">morph targets, context loss, text rendering</span></div>
           <div class="diag-row"><span class="k">games</span> <span class="v">3 routes remain prototype-blocked</span></div>
-          <div class="diag-row"><span class="k">aura clash</span> <span class="v">outside the route-gate registry</span></div>
-          <div class="diag-row"><span class="k">packages</span> <span class="v">51 duplicated export owners remain</span></div>
-          <div class="diag-row"><span class="k">physics</span> <span class="v">5 capabilities unreachable from the public API</span></div>
-          <div class="diag-row"><span class="k">parity</span> <span class="v">6 exceed / 37 parity / 10 unproven / 3 gap</span></div>
-          <div class="diag-row"><span class="k">perf</span> <span class="v">frame-time and memory budgets unmeasured</span></div>
         </div>
       </div>
     </div>
@@ -268,7 +268,7 @@
           <span>foot IK + foot-lock</span>
           <span>spring body-sway</span>
           <span>authored event tracks</span>
-          <span>1.5.1 package proof</span>
+          <span>1.5.2 package proof</span>
         </div>
         <div class="wwx-source-row" aria-label="Aura3D source and package visibility">
           <a href="https://github.com/auraoneai/aura3d" target="_blank" rel="noopener">GitHub repository</a>
@@ -764,7 +764,7 @@
         <p class="lede">Aura3D brings the current production pieces together: engine API, prompt workflow, GLB/glTF asset CLI, React adapter, scene kits, diagnostics, static deploy checks, and lower-level packages for teams that want full control.</p>
       </div>
       <div class="sec-head-right">
-        <span class="eyebrow-num">@aura3d/engine@1.5.1</span>
+        <span class="eyebrow-num">@aura3d/engine@1.5.2</span>
         <span class="mute-2 mono" style="font-size:11px">latest root runtime</span>
       </div>
     </div>
@@ -776,7 +776,7 @@
           <span class="pass">● latest</span>
         </div>
         <div class="diag-body">
-          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.5.1</span></div>
+          <div class="diag-row"><span class="k">package</span> <span class="v ok">@aura3d/engine@1.5.2</span></div>
           <div class="diag-row"><span class="k">renderer proof</span> <span class="v ok">WebGL2 route evidence + bounded diagnostics</span></div>
           <div class="diag-row"><span class="k">animation</span> <span class="v ok">believable-motion packages</span></div>
         </div>
@@ -1123,7 +1123,7 @@ scene()
       </div>
     </div>
     <div class="foot-bottom">
-      <span>© 2026 Aura3D · @aura3d/engine v1.5.1 · MIT licensed</span>
+      <span>© 2026 Aura3D · @aura3d/engine v1.5.2 · MIT licensed</span>
       <span>Prompt-to-3D · typed assets · production browser scenes</span>
     </div>
   </div>
