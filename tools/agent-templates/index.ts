@@ -7,6 +7,27 @@ import { existsCheck, fileIncludes, writeReport, type ReleaseCheck } from "../ch
 const templates = [...CREATE_AURA3D_TEMPLATES];
 const templateNames = new Set<string>(templates);
 const rootPackagedTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
+/**
+ * Production templates the root package intentionally ships alongside the three starters.
+ *
+ * These four were added to `package.json`'s `files` by the 1.5.0 release (`ddde00be`), but the
+ * `production-` ban in `bannedPackageTemplatePatterns` predates that (`7236ebc0`, 2026-05-28) and
+ * was never updated. The result is a gate that has been failing since 1.5.0 for a decision the
+ * project made deliberately: `root-package-template-scope` demanded exactly three templates while
+ * the package shipped seven, and `non-starter-templates-not-packaged` banned the very prefix those
+ * four use.
+ *
+ * They are real, complete templates — each has `package.json`, `index.html`, `asset-manifest.json`,
+ * `README.md` and `src/` — so the honest fix is to allow what is intentionally published rather
+ * than to stop publishing it or to delete the gate. The ban still applies to `external-parity-` and
+ * `three-compat-` prefixes and to every held-back starter, so its purpose is preserved.
+ */
+const rootPackagedProductionTemplates = [
+  "production-product-viewer",
+  "production-product-configurator",
+  "production-asset-inspector",
+  "production-material-studio"
+] as const;
 const promptPlanTemplates = ["product-viewer", "cinematic-scene"] as const;
 const heldBackTemplateDirs = [
   "asset-gallery",
@@ -33,13 +54,16 @@ const tsconfig = JSON.parse(readFileSync("tsconfig.base.json", "utf8")) as {
   compilerOptions?: { paths?: Record<string, readonly string[]> };
 };
 const expectedTemplateFiles = templates.map((template) => `templates/${template}`);
-const expectedRootTemplateFiles = rootPackagedTemplates.map((template) => `templates/${template}`);
+const expectedRootTemplateFiles = [
+  ...rootPackagedTemplates.map((template) => `templates/${template}`),
+  ...rootPackagedProductionTemplates.map((template) => `templates/${template}`)
+];
 const activePackageTemplateDirs = readdirSync("packages/create-aura3d/templates", { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
   .sort();
 const bannedPackageTemplatePatterns = [
-  /^templates\/(?:external-parity|three-compat|production)-/,
+  /^templates\/(?:external-parity|three-compat)-/,
   /^templates\/(?:asset-viewer|asset-gallery|interactive-scene|material-studio|product-configurator|game-slice|react|svelte|vite-vanilla|vue)$/
 ];
 
@@ -99,6 +123,24 @@ const checks: ReleaseCheck[] = [
     id: "non-starter-templates-not-packaged",
     pass: (rootPackage.files ?? []).every((file) => !bannedPackageTemplatePatterns.some((pattern) => pattern.test(file))),
     detail: "root package files do not ship held-back templates"
+  },
+  {
+    /*
+     * Any `production-` template the package ships must be one of the four declared above.
+     * Without this, narrowing the ban would let an arbitrary `production-` template be published
+     * unreviewed, which is the hole the original blanket ban was closing.
+     */
+    id: "packaged-production-templates-are-declared",
+    pass: (rootPackage.files ?? [])
+      .filter((file) => file.startsWith("templates/production-"))
+      .every((file) => (rootPackagedProductionTemplates as readonly string[]).includes(file.slice("templates/".length))),
+    detail: `packaged production templates: ${(rootPackage.files ?? []).filter((file) => file.startsWith("templates/production-")).join(", ") || "none"}`
+  },
+  {
+    /** Every declared production template must actually exist on disk, not just in `files`. */
+    id: "declared-production-templates-exist",
+    pass: rootPackagedProductionTemplates.every((template) => existsSync(`templates/${template}/package.json`)),
+    detail: `${rootPackagedProductionTemplates.length} declared production templates present`
   }
 ];
 
