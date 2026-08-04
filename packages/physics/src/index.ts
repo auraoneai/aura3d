@@ -30,3 +30,4 @@ export * from "./KinematicWorld.js";
 export * from "./HitboxWorld.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
+export * from "./VehicleMotion.js";

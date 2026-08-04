@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMeshSurfaceQuery } from "../../../packages/physics/src";
+import { PhysicsWorld, Shape, createMeshSurfaceQuery } from "../../../packages/physics/src";
 import {
   createVehicleChassis,
   flatVehicleSurface,
@@ -163,5 +163,57 @@ describe("vehicle contact against a real mesh", () => {
     const pose = chassis.reset({ x: 0, z: 0, heading: 0, speed: 0, steer: 0, slip: 0 });
     expect(pose.grounded).toBe(true);
     for (const wheel of pose.wheels) expect(wheel.position[1]).toBeCloseTo(SPEC.wheelRadius, 6);
+  });
+});
+
+describe("continuous collision: no tunnelling at speed (WS-3.4)", () => {
+  it("keeps a wheel out of the mesh at 200 km/h with a 16 ms step", () => {
+    /*
+     * Tunnelling is the failure a discrete contact model cannot avoid: at 200 km/h a car
+     * travels 0.93 units per 16 ms frame, so a tyre can start above a surface and end below
+     * it without any intermediate state ever being tested.
+     *
+     * The chassis resolves contact by *sampling the surface under each wheel* rather than
+     * by sweeping a volume, so its position is derived from the surface every step and
+     * penetration is structurally impossible regardless of speed. This test pins that
+     * property, so a future change to swept-volume contact cannot silently regress it.
+     */
+    const track = grid(200, 100, (x) => Math.sin(x * 0.05) * 0.05);
+    const query = createMeshSurfaceQuery(track);
+    const chassis = createVehicleChassis(SPEC, meshVehicleSurface(query));
+
+    const speedMetresPerSecond = 200 / 3.6;
+    const stepSeconds = 0.016;
+    let worstPenetration = 0;
+    let x = -90;
+    for (let step = 0; step < 600 && x < 90; step += 1) {
+      x += speedMetresPerSecond * stepSeconds;
+      const pose = chassis.step(stepSeconds, { x, z: 0, heading: 0, speed: speedMetresPerSecond, steer: 0, slip: 0 });
+      for (const wheel of pose.wheels) {
+        const contactY = wheel.position[1] - SPEC.wheelRadius;
+        const surfaceY = query.sampleHeight(wheel.position[0], wheel.position[2]);
+        worstPenetration = Math.max(worstPenetration, surfaceY - contactY);
+      }
+    }
+    // Sub-millimetre at 55 m/s with a 16 ms step.
+    expect(worstPenetration).toBeLessThan(0.001);
+  });
+
+  it("reports the continuous-collision plan the world will use for a fast mover", () => {
+    /*
+     * PhysicsWorld plans adaptive substeps from the fastest body's motion per step. A body
+     * moving further than its own radius in one step needs more than one substep, or it can
+     * pass through thin geometry between frames.
+     */
+    const w = new PhysicsWorld({ gravity: [0, 0, 0], continuousCollision: { mode: "adaptive-substeps" } });
+    const fast = w.createRigidBody({ type: "dynamic", mass: 1, position: [0, 0, 0] });
+    w.createCollider(fast, { shape: Shape.sphere(0.1) });
+    fast.setVelocity([120, 0, 0]);
+    w.step(1 / 60);
+    const ccd = w.snapshot().backend.continuousCollision;
+    expect(ccd.mode).toBe("adaptive-substeps");
+    // A 0.1-radius body moving 2 units per frame must be substepped, not stepped once.
+    expect(ccd.lastSubSteps).toBeGreaterThan(1);
+    expect(ccd.lastMaxMotion).toBeGreaterThan(0.1);
   });
 });
