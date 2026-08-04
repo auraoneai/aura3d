@@ -1089,11 +1089,31 @@ function setupRacingPanel(): void {
     pulse: [{ elementId: "reset-control", code: "KeyR" }]
   });
 }
+/**
+ * Displayed race status.
+ *
+ * WS-5.3: the reported live-site defect was `SPEED 0` alongside `STATUS running`, which reads as a
+ * broken simulation. It is not one — the HUD and the simulation share a single snapshot object, so
+ * they cannot disagree. `game.racing`'s status is a two-state enum (`running` | `finished`) that
+ * describes whether the *race* is over, and it is `running` from the first frame. A car nobody has
+ * touched therefore correctly reports 0 km/h while correctly reporting `running`.
+ *
+ * The defect is that "running" is the wrong word for "nobody has pressed anything yet". Distinguish
+ * the two here, in presentation, rather than adding a third state to the kit: whether a race has
+ * received input is a property of this route's session, not of the racing model.
+ */
+function racingStatusLabel(): string {
+  if (raceSnapshot.status === "finished") return "Finished";
+  // `opponentRaceStarted` is already the route's "has the player touched the controls" latch.
+  if (!opponentRaceStarted && Math.abs(raceSnapshot.speed) < 0.01) return "Ready";
+  return "Racing";
+}
+
 function updateRacingHud(): void {
   hud.speed.textContent = String(Math.round(Math.abs(raceSnapshot.speed) * 36));
   hud.lap.textContent = String(raceSnapshot.lap);
   hud.checkpoint.textContent = String(raceSnapshot.checkpoint);
-  hud.status.textContent = raceSnapshot.status;
+  hud.status.textContent = racingStatusLabel();
   hud.alignment.textContent = mountedEvidence.raceState.roadAlignment.onRoad ? "Road locked" : "Recovering";
 }
 function requireElement(id: string): HTMLElement {

@@ -1,8 +1,8 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
 **Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
-WS-3.8 attempted and reverted with the finding recorded (see below). WS-5 and WS-7 open.
-29 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+WS-5 complete. WS-3.8 attempted and reverted with the finding recorded (see below); WS-7 open.
+30 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -314,7 +314,29 @@ This is the structural change. Without it, every future genre repeats this PRD.
 
 - [x] 5.2 Transparency sorting correct — verified correct; no change needed, and the row is ticked on measurement rather than on a fix. `sortExternalParityAlphaItems` groups opaque -> mask -> blend, then sorts opaque and mask front-to-back (correct for early-Z) and blend back-to-front (correct for compositing). I suspected the `a.alphaMode === "blend" || b.alphaMode === "blend"` condition mishandled mixed pairs and measured it: mixed pairs return earlier on the group comparison, so that branch is only reachable within one group, where its behaviour is right. Depth-write policy is enforced by a hard throw in `validateRenderState` (`Material.ts:166`) — a blended material that leaves `depthWrite` on cannot be constructed at all, which is stronger than a sort-order convention. The overlapping-transparent-quad requirement is covered by `tsukuba-arch-opacity.test.ts` asserting `blend=false, depthWrite=true` across every material in a real asset.
 
-- [ ] 5.3 Live-site speed telemetry matches simulation — **INVESTIGATED 2026-08-04; HUD/simulation coherence verified, so the reported symptom is not a telemetry bug.** `updateRacingHud` reads `raceSnapshot.speed`, and `raceSnapshot` is the exact value returned by `racingState.step(...)` on the same frame — one object, no second state to disagree with. So `SPEED 0` while `STATUS running` means the car genuinely was not moving, which is the correct reading of an idle car: `status` is `"running"` from the first frame because the race has started, and speed is 0 until throttle is held. **Classification: application-authoring / presentation**, not engine. The honest fix is a `Ready`-versus-`Racing` distinction so an untouched car does not read as a broken one, plus the WS-7.3 gate to hold it. Left unticked because that change is not made.
+- [x] 5.3 Live-site speed telemetry matches simulation — **reproduced first, as the row requires, then classified and fixed in the right layer.**
+
+  Reproduced exactly: a freshly built racing kit reports `speed === 0` and `status === "running"`.
+  That is the reported condition, and it is **correct kit behaviour**, not a stalled simulation.
+  `updateRacingHud` reads `raceSnapshot`, and `raceSnapshot` is precisely what
+  `racingState.step()` returned on the same frame — there is one state object, so the HUD and the
+  simulation cannot disagree. Confirmed the simulation was never stuck: 60 frames of throttle
+  produces speed > 0.1.
+
+  The real defect is vocabulary. `game.racing`'s status is `running | finished` and describes
+  whether the *race* is over, so it reads `running` from frame zero. A car nobody has touched is
+  therefore accurately 0 km/h and accurately `running` — and looks broken.
+
+  **Classification: application-authoring / presentation.** Fixed in the route with a
+  `Ready` / `Racing` / `Finished` label, deliberately *not* by adding a third state to the kit:
+  "has the player pressed anything" is a property of a session, not of the racing model, and
+  changing the kit's enum would alter the contract every racing consumer is certified against.
+
+  Evidence: `tests/unit/apps/turbo-telemetry-coherence.test.ts`, 4 tests. Proven load-bearing:
+  restoring `hud.status.textContent = raceSnapshot.status` fails
+  `the HUD does not label an untouched car as racing`; the fix passes. The suite also asserts
+  structurally that displayed speed is derived from the stepped snapshot, so a future change that
+  introduces a second cached speed for display is caught — that is the WS-7.3 defect class.
 
 ---
 
