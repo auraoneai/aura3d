@@ -31,3 +31,5 @@ export * from "./HitboxWorld.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
 export * from "./VehicleMotion.js";
+export * from "./RacingLineProfile.js";
+export * from "./PathFollowDriver.js";
