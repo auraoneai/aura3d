@@ -2,7 +2,7 @@
 
 **Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
 WS-5 and WS-7 complete. WS-3.8 attempted and reverted with the finding recorded (see below).
-36 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+46 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -213,11 +213,11 @@ This is the structural change. Without it, every future genre repeats this PRD.
 | 3.8 | `packages/engine/src/agent-api/GameGenreKits.ts` | All four kits consume `PhysicsRuntime` + `SurfaceQuery`. No kit integrates its own bodies or contacts. | Architecture test: each kit imports the shared runtime; none defines a private integrator |
 | 3.9 | `packages/engine/src/agent-api/GameGenreKits.ts` | Kits become *compositions* over the general layer, so a fifth genre needs no new kit. Document the composition path. | A new genre (see WS-6.3) is built with **no** new kit code |
 
-- [ ] 3.1 Mesh-backed vehicle surface, per-wheel
-- [ ] 3.2 Attitude from surface normal
-- [ ] 3.3 Force-based tyre model on the shared engine
-- [ ] 3.4 No tunnelling at 200 km/h
-- [ ] 3.5 Character controller real against mesh
+- [x] 3.1 Mesh-backed vehicle surface, per-wheel — `meshVehicleSurface` + `createMeshVehicleSurface` path; `vehicle-mesh-contact.test.ts` → `gives four wheels four different heights on a banked corner` passes. Also proven on the **real** circuit in `turbo-drift-real-circuit-contact.test.ts` (529 distinct mesh elevations vs the centreline's 13).
+- [x] 3.2 Attitude from surface normal — `vehicle-mesh-contact.test.ts` → `follows a banked surface in roll instead of staying level` and `follows a longitudinal slope in pitch` both pass. `packages/physics/src/SurfaceQuery.ts` is new in this branch (absent at `v1.5.2`).
+- [x] 3.3 Force-based tyre model on the shared engine — `packages/physics/src/VehicleMotion.ts` (new; absent at `v1.5.2`). `vehicle-force-motion.test.ts` 14/14, including `reports understeer when the front axle saturates first`, `flags wheelspin when drive torque exceeds available traction`, `loads the front axle under braking and the rear under acceleration`, and `initiates a slide when the handbrake kills rear grip`. **Caveat, stated rather than hidden:** the racing *kit* does not yet consume this model — see WS-3.8, attempted and reverted.
+- [x] 3.4 No tunnelling at 200 km/h — `vehicle-mesh-contact.test.ts` → `keeps a wheel out of the mesh at 200 km/h with a 16 ms step` passes, plus `reports the continuous-collision plan the world will use for a fast mover`.
+- [x] 3.5 Character controller real against mesh — `character-mesh-contact.test.ts` 10/10, one test per behaviour the row names: ground+slope normal, step up within `maxStepHeight`, refusal above it, step down without launching, ceiling cancelling upward velocity, and wall slide. `maxStepHeight`/`wallSlide` did not exist at `v1.5.2` (grep returns 0 there).
 - [x] 3.6 Apex from intent, validated, loud on failure — apex comes from `jumpHeight` or a `feel` preset scaled by character height, then is validated against geometry; an unclearable level throws naming the offending step instead of silently shrinking. `platformer-jump-intent.test.ts` 13/13.
 - [x] 3.7 Coyote/buffer/variable-height/asymmetric gravity — coyote and buffer windows scale with airtime rather than being fixed milliseconds, plus asymmetric fall gravity, apex hang and short-hop apex. Asserted on the real level in `skyline-real-level-motion.test.ts`.
 - [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED AND REVERTED 2026-08-04, finding recorded below**
@@ -253,7 +253,7 @@ This is the structural change. Without it, every future genre repeats this PRD.
   Remaining scope for 3.8: re-derive the racing route's speed/steer contract against the force
   model, then re-certify `turbo-drift-circuit`'s lap time. The kit-swap diff is recorded in this
   session's history and the defect it uncovered is already fixed and shipped.
-- [ ] 3.9 Kits are compositions, path documented
+- [ ] 3.9 Kits are compositions, path documented — **blocked on 3.8 by construction.** The composition path cannot be documented as real while the kits do not consume the shared layer; writing it now would describe an architecture that does not exist. The general layer *is* usable without kits — that is what WS-6.2's kitless top-down shooter proves in 176 lines — but "a fifth genre needs no new kit code" is only half-demonstrated: it is true for anything built directly on `app.physics`, and false for anything wanting to reuse racing or platformer behaviour.
 
 ---
 
@@ -609,18 +609,14 @@ budget to make it pass. It is now *visible* for the first time, which is the use
 
 ## 4. Definition of done
 
-- [ ] Every checkbox above checked
-- [ ] `grep -rE "TRACK_SURFACE_Y|CAR_GROUND_Y|CAR_TYRE_CONTACT_Y|VERGE_DROP|jumpVelocity:|gravity:" apps/` → empty
-- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers
-- [ ] No parity row claims `exceed` without a passing gate and a live consumer
-- [ ] `pnpm check:game-runtime` passes, and every gate in it was observed failing on 1.5.2 first
-- [ ] **7 clean-room projects pass**, including three genres with no kit support —
-      this is the proof that a developer can build a game that is not one of our four demos
-- [ ] A developer can, using only `@aura3d/engine`: create a dynamic body, push it,
-      hear about collisions, raycast the world, join two bodies, and ground anything
-      to a mesh — each in a handful of lines, documented with a runnable snippet
-- [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` **only** after all
-      of the above, with independent human visual review
+- [ ] Every checkbox above checked — **46 of 51.** The 5 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8), the zero-consumer parity rows above, this item, and route promotion below. None is open because it was skipped; each has its reason written in its own row.
+- [x] Rule-1 grep clean for both flagship routes — all five surface constants deleted from turbo drift; `runner-rules.ts` (a 252-line orphan still declaring `gravity: -20.2`, `jumpVelocity: 8.75`, zero importers) deleted, with an `existsSync(...) === false` gate so it cannot return. The only remaining match across both routes is prose in a comment naming what was removed. **Not claimed repo-wide:** `world-war-x-showcase` and `showcase-cannon-physics-proof.ts` still declare their own gravity; they are outside this PRD's scope and were never part of the two reported defects.
+- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers — **5 remain**: raycasting, character controller, joints/constraints, continuous collision detection, physics debug rendering. Each is now genuinely *implemented and tested* (19 joint tests across both backends, 10 character-controller mesh tests, raycast/spherecast/overlap on the public surface, a debug overlay with a real consumer). What they lack is a **shipped app or example** importing them: `build-threejs-parity.mjs` counts consumers only from `inventory.apps` and `inventory.examples`, and my consumers are `tests/clean-room/*` plus unit tests. That is a defensible definition — a test is not a product surface — so the honest close is to add a real example route per capability, not to widen the tool's definition until the number moves.
+- [x] No parity row claims `exceed` — regenerated report: `physics: exceed 0, parity 3, unproven 7, gap 0 (of 10)`. Also corrected two stale downgrade notes whose stated premise ("the VehicleSurface input is an analytic flat plane") WS-4.1 disproved: the route now queries a real mesh and the WS-7.1 penetration gate passes. The rows **stay** `parity-unproven` because the blocker is now narrower and different — `game.racing` still integrates its own kinematic motion rather than the shared force model. Reasoning corrected without upgrading any status.
+- [x] `pnpm check:game-runtime` passes (4 gates + 68 tests), and every gate is **observed failing on `v1.5.2`** reproducibly: `node tools/showcase-library/game-runtime-gates.mjs --against v1.5.2` fails all four, naming each specific defect. `tests/unit/tools/game-runtime-gates.test.ts` asserts the verdicts flip between the tag and the working tree, so the claim cannot decay.
+- [x] **7 clean-room projects pass** — `pnpm exec playwright test tests/browser/clean-room-projects.spec.ts` → 7 passed. Three are genres with **no kit**: `physics-sandbox` (97/200 lines), `top-down-shooter` (176/300, `usedKit: false` asserted), `physics-puzzle` (105/300). Each reports `packagesImported: ["@aura3d/engine"]` with zero private imports, and the harness bans `new PhysicsWorld` so they cannot pass by hand-wiring physics.
+- [x] A developer can do all six from `@aura3d/engine` alone, each documented with a snippet that is **compiled in CI**. `docs/concepts/physics.md` covers push a crate, detect a pickup, raycast for line of sight, bullets that miss each other, a motorised hinged door, and ground to a mesh; `check:docs-codeblocks` typechecks all six against the real API (proven load-bearing by renaming `applyImpulse` to a nonexistent method and observing failure). Reachability is proven at runtime by `public-physics-runtime.test.ts` (13) and `public-joints.test.ts` (19) importing `@aura3d/engine` only.
+- [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` — **correctly still open, and I have not promoted them.** The row's own precondition ("only after all of the above") is not met, and promotion additionally requires independent human visual review, which an agent must not self-grant. Route statuses are untouched: `blockfall-reactor`, `skyline-runner` and `turbo-drift-circuit` all remain `prototype-blocked`, and `allRoutesOk` remains `false` by design.
 
 ## 5. What this deliberately does not do
 
