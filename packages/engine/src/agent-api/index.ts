@@ -9955,7 +9955,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     markRouteReady(snapshot, diagnosticsState);
   };
   mountCurrentScene();
-  return {
+  const app: AuraApp & { resetRuntimeClock(): void } = {
     canvas,
     get scene() {
       return snapshot;
@@ -10002,6 +10002,25 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     pause() {
       runtimePaused = true;
     },
+    resetRuntimeClock() {
+      /*
+       * Rewind the frame counter and elapsed time to zero.
+       *
+       * Needed for reproducible capture. Routes animate from accumulated `time` — Data Galaxy sets
+       * `setRotation(time * 0.16, ...)` — so a scene paused after 180 frames of real-time loading
+       * looks different from the same scene paused after 240, even though both were then advanced by
+       * an identical number of fixed steps. Zeroing the clock first makes "settle to N steps" name
+       * exactly one state.
+       *
+       * Not part of `AuraApp`: this is a capture/testing seam, reached through `auraAppRegistry`
+       * rather than offered as gameplay API, because rewinding a live game's clock mid-session is
+       * not something a route should be encouraged to do.
+       */
+      runtimeFrame = 0;
+      runtimeTime = 0;
+      runtimeAlpha = 0;
+      lastTime = 0;
+    },
     resume() {
       runtimePaused = false;
       if (!animationHandle && !productionController && options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
@@ -10014,10 +10033,34 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       canvasRuntimePhysics?.step(seconds);
       const previousPaused = runtimePaused;
       runtimePaused = true;
+      /*
+       * Render at the *simulated* time, not wall-clock time.
+       *
+       * `step(dt)` is the deterministic entry point — a caller advances a fixed amount and expects a
+       * reproducible frame. Passing `performanceNow()` to the renderer defeated that: any
+       * time-driven shader or effect sampled real elapsed milliseconds, so the same `step` sequence
+       * produced a different image on every run.
+       *
+       * Measured while making screenshot approval satisfiable: after zeroing the runtime clock and
+       * stepping identically, 6 of 29 screenshots still drifted perceptually — all of them routes
+       * with time-animated rendering (particle lab, material inspector). Feeding `runtimeTime`
+       * instead makes `step` mean one thing.
+       *
+       * The live `render()` loop still uses wall-clock time, which is correct for real playback.
+       */
+      const simulatedMs = runtimeTime * 1000;
       if (productionController) {
-        productionController.render(performanceNow());
+        productionController.render(simulatedMs);
       } else {
-        render(performanceNow());
+        /*
+         * `render` records `lastTime` to derive its own delta. Feeding it simulated time would leave
+         * `lastTime` in a different clock from `performanceNow()`, so the first frame after a
+         * `resume()` would compute a wildly wrong delta — a visible jump. Restore it afterwards so
+         * `step` stays side-effect-free with respect to live playback.
+         */
+        const previousLastTime = lastTime;
+        render(simulatedMs);
+        lastTime = previousLastTime;
       }
       runtimePaused = previousPaused;
     },
@@ -10049,9 +10092,103 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       ownedInputControllers.clear();
       productionController?.dispose();
       overlay?.dispose();
+      unregisterAuraApp(app);
     }
   };
+  registerAuraApp(app);
+  return app;
 }
+
+/**
+ * Live apps on this page, so tooling can act on a scene it did not create.
+ *
+ * ## Why this exists
+ *
+ * Visual-approval and screenshot gates need to *freeze* a scene before capturing it. Without a way
+ * to reach the running app, they cannot: a route creates its app in module scope and typically never
+ * exposes the handle, so an automated capture can only `waitForTimeout` and photograph whatever frame
+ * the loop happened to reach.
+ *
+ * Measured consequence, before this existed: re-running the showcase screenshot spec with **no code
+ * change** produced different bytes for 14 of 29 screenshots, because most routes animate and print
+ * live telemetry. Any gate binding approval to a screenshot hash was therefore unsatisfiable — every
+ * regeneration invalidated a still-correct signature.
+ *
+ * Deliberately a `Set` of handles rather than a global "the app", because a page may legitimately
+ * mount several. Entries are removed on `dispose()` so a long-lived page does not leak.
+ */
+const liveAuraApps = new Set<AuraApp>();
+
+function registerAuraApp(app: AuraApp): void {
+  liveAuraApps.add(app);
+  if (typeof globalThis !== "undefined") {
+    (globalThis as { __AURA3D_LIVE_APPS__?: unknown }).__AURA3D_LIVE_APPS__ = auraAppRegistry;
+  }
+}
+
+function unregisterAuraApp(app: AuraApp): void {
+  liveAuraApps.delete(app);
+}
+
+/**
+ * Control surface for every app mounted on this page.
+ *
+ * Exposed on `globalThis.__AURA3D_LIVE_APPS__` as well as being exported, so a Playwright
+ * `page.evaluate` can reach it without the route having to opt in.
+ */
+export interface AuraAppRegistry {
+  readonly kind: "aura3d-live-app-registry";
+  /** Number of apps currently mounted. */
+  count(): number;
+  /** Pause every app's frame loop. Returns how many were paused. */
+  pauseAll(): number;
+  /** Resume every app's frame loop. */
+  resumeAll(): number;
+  /**
+   * Pause every app and advance each by a fixed number of fixed-size steps.
+   *
+   * This is what makes a capture reproducible: rather than photographing an arbitrary moment of a
+   * live loop, a caller settles every scene to a *named* frame — the same `steps` and `dt` always
+   * produce the same state, so a screenshot hash becomes a stable thing to approve.
+   */
+  settle(steps?: number, dt?: number): number;
+  all(): readonly AuraApp[];
+}
+
+export const auraAppRegistry: AuraAppRegistry = {
+  kind: "aura3d-live-app-registry",
+  count() {
+    return liveAuraApps.size;
+  },
+  pauseAll() {
+    for (const app of liveAuraApps) app.pause();
+    return liveAuraApps.size;
+  },
+  resumeAll() {
+    for (const app of liveAuraApps) app.resume();
+    return liveAuraApps.size;
+  },
+  settle(steps = 30, dt = 1 / 60) {
+    for (const app of liveAuraApps) {
+      app.pause();
+      /*
+       * Rewind before stepping.
+       *
+       * Without this, `settle(30)` means "30 steps after however long the page took to load", which
+       * differs run to run — and routes that animate from accumulated `time` then render a different
+       * frame. Measured before this: 8 of 29 screenshots still drifted perceptually even with every
+       * app paused and stepped identically.
+       */
+      const resettable = app as AuraApp & { resetRuntimeClock?: () => void };
+      resettable.resetRuntimeClock?.();
+      for (let index = 0; index < Math.max(0, steps); index += 1) app.step(dt);
+    }
+    return liveAuraApps.size;
+  },
+  all() {
+    return [...liveAuraApps];
+  }
+};
 
 export function createGameApp(target: AuraAppTarget, options: AuraCreateGameAppOptions): GameAppRuntime<AuraApp> {
   const { input, loop, runtimeEvidence, ...appOptions } = options;

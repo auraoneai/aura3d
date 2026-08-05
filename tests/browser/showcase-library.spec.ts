@@ -586,6 +586,26 @@ function primaryAssetProvenanceIssues(asset: ManifestAssetRecord | undefined): r
   return issues;
 }
 
+/**
+ * Pause and settle every Aura3D app on the page to a deterministic frame.
+ *
+ * Returns the number of apps settled. Zero means the route mounted no app through `createAuraApp`
+ * (or predates the registry), in which case the capture falls back to whatever the page shows and the
+ * caller is told, rather than silently recording an unstable frame.
+ */
+async function settleMountedApps(page: Page, steps = 30, dt = 1 / 60): Promise<number> {
+  const count = await page.evaluate(([settleSteps, settleDt]) => {
+    const registry = (globalThis as {
+      __AURA3D_LIVE_APPS__?: { settle(steps?: number, dt?: number): number };
+    }).__AURA3D_LIVE_APPS__;
+    if (!registry || typeof registry.settle !== "function") return 0;
+    return registry.settle(settleSteps, settleDt);
+  }, [steps, dt] as const);
+  // Let the paused state paint before the screenshot is taken.
+  await page.waitForTimeout(120);
+  return count;
+}
+
 test.describe("showcase library", () => {
   test.setTimeout(240_000);
 
@@ -723,6 +743,22 @@ test.describe("showcase library", () => {
         await waitForAcceptedEvidence(page, route.globalName);
         await page.evaluate(() => window.scrollTo(0, 0));
         await page.waitForTimeout(300);
+        /*
+         * Settle every mounted app to a *named* frame before capturing.
+         *
+         * These screenshots are what the human visual-review gate binds approval to by sha256. But
+         * most showcase routes run a continuous frame loop with live telemetry in the HUD, and the
+         * capture used to be `waitForTimeout` plus `page.screenshot` — so it photographed whatever
+         * frame the loop happened to reach. Measured: re-running this spec with **no code change**
+         * produced different bytes for 14 of 29 screenshots, which made the approval gate
+         * unsatisfiable rather than strict. Every regeneration invalidated a still-correct signature,
+         * so the only way to keep it green was never to re-run, and it went red before 1.5.2.
+         *
+         * `auraAppRegistry.settle(steps, dt)` pauses each app and advances it by a fixed number of
+         * fixed-size steps, so the same route always lands on the same state. Requires no per-route
+         * opt-in: apps self-register on creation.
+         */
+        const settled = await settleMountedApps(page);
         const uiLayoutIssues = await expectNoMajorUiOverlapOrClipping(page, `${route.appId} ${viewport.label}`);
         const canvasCrop = await largestCanvasCrop(page);
         const screenshotPath = resolve(screenshotDir, `${route.appId}-${viewport.label}.png`);

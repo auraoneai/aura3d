@@ -582,3 +582,86 @@ function medianChannel(samples, channel) {
 function ratio(count, total) {
   return total > 0 ? Number((count / total).toFixed(4)) : 0;
 }
+
+/**
+ * Perceptual signature of a rendered frame, stable across GPU rounding noise.
+ *
+ * ## Why byte hashing is the wrong binding for visual approval
+ *
+ * The human visual-review gate binds approval to `sha256` of a screenshot. That is only sound if the
+ * producer is deterministic, and it is not: re-rendering the *same settled frame* on the same machine
+ * produces slightly different pixels, because WebGL rasterisation, filtering and float precision are
+ * not bit-reproducible across contexts.
+ *
+ * Measured on `showcase-smart-city-control` at 1440x900, with every app paused and advanced by an
+ * identical 30 fixed steps: **55 of 3,888,000 colour channels differed (0.0014%)**, max channel delta
+ * 27/255, mean 5/255 — roughly 18 pixels of a 1.3-megapixel frame. Visually identical, byte-different.
+ *
+ * The consequence was a gate nobody could satisfy: every regeneration invalidated a still-correct
+ * signature, so the only way to keep it green was never to re-run the screenshot spec. It went red
+ * before 1.5.2 and stayed there.
+ *
+ * ## What this computes instead
+ *
+ * A coarse grid of quantised average colours. Two frames that a reviewer would call identical produce
+ * the same signature; a frame where something actually moved, changed colour, or disappeared produces
+ * a different one. Deliberately *coarse* — this is an approval binding, not a regression differ. The
+ * strict pixel gates (`readPngDifferenceMetrics`, the visual-composition checks) remain the place for
+ * fine-grained comparison.
+ *
+ * Defaults: an 8x8 grid with 5-bit-per-channel quantisation. At 1440x900 each cell averages ~20k
+ * pixels, so isolated rounding noise cannot move a cell across a quantisation boundary, while a
+ * genuinely changed region shifts several cells.
+ */
+export function readPngPerceptualSignature(path, options = {}) {
+  const buffer = readFileSync(path);
+  const grid = Math.max(2, Math.min(64, Math.trunc(options.grid ?? 8)));
+  const bits = Math.max(2, Math.min(8, Math.trunc(options.bits ?? 5)));
+  return memoizeAnalysis(
+    `perceptual:${grid}:${bits}`,
+    buffer,
+    options.crop,
+    () => computePngPerceptualSignature(buffer, options.crop, grid, bits)
+  );
+}
+
+function computePngPerceptualSignature(bytes, cropInput, grid, bits) {
+  const image = decodePng(bytes);
+  const crop = resolveCrop(image, cropInput);
+  const shift = 8 - bits;
+  const cells = [];
+  for (let row = 0; row < grid; row += 1) {
+    for (let column = 0; column < grid; column += 1) {
+      const x0 = crop.x + Math.floor((column * crop.width) / grid);
+      const x1 = crop.x + Math.floor(((column + 1) * crop.width) / grid);
+      const y0 = crop.y + Math.floor((row * crop.height) / grid);
+      const y1 = crop.y + Math.floor(((row + 1) * crop.height) / grid);
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      let count = 0;
+      for (let y = y0; y < y1; y += 1) {
+        for (let x = x0; x < x1; x += 1) {
+          const pixel = pixelAt(image, x, y);
+          r += pixel.r;
+          g += pixel.g;
+          b += pixel.b;
+          count += 1;
+        }
+      }
+      if (count === 0) {
+        cells.push("0.0.0");
+        continue;
+      }
+      // Average first, then quantise: averaging over ~20k pixels already suppresses isolated noise,
+      // and quantising the average keeps a real shift in region brightness or hue visible.
+      cells.push([
+        Math.round(r / count) >> shift,
+        Math.round(g / count) >> shift,
+        Math.round(b / count) >> shift
+      ].join("."));
+    }
+  }
+  const signature = `perceptual-${grid}x${grid}-${bits}bit-${createHash("sha256").update(cells.join("|")).digest("hex")}`;
+  return { signature, grid, bits, width: crop.width, height: crop.height, cells: cells.length };
+}
