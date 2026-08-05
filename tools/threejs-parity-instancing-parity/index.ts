@@ -16,7 +16,24 @@ const checks = [
   check("descriptor-instances", instancingScene.workload.instances === 4096, `shared benchmark descriptor uses ${instancingScene.workload.instances ?? 0} instances`),
   check("descriptor-has-no-instancing-unsupported-features", (instancingScene.unsupportedFeatures ?? []).length === 0, `unsupportedFeatures: ${(instancingScene.unsupportedFeatures ?? []).join(", ") || "none"}`),
   check("comparison-scene-equivalent", Boolean(threeOutcome?.equivalent), "comparison report marks the instancing scene descriptor equivalent"),
-  check("comparison-frame-time", isWinOrTie(threeOutcome?.frameTimeMedian?.result) && isWinOrTie(threeOutcome?.frameTimeP95?.result), `median=${threeOutcome?.frameTimeMedian?.result}, p95=${threeOutcome?.frameTimeP95?.result}`),
+  /*
+   * WS-1.2 — `comparison-frame-time` is gone, and this is the check that most needed removing.
+   *
+   * It read `frameTimeMedian` / `frameTimeP95` from tools/compare-engines, which produced those
+   * numbers by drawing a 3-vertex triangle through a raw WebGL2 context that imports no engine. The
+   * check therefore passed for structural reasons — the same triangle compared against itself always
+   * ties — while claiming Three.js frame-time parity for instancing.
+   *
+   * Replaced by an assertion that the comparison report *admits* it does not measure engine timing,
+   * plus the real route-level instancing evidence below (one draw call for >= 4096 instances), which
+   * does execute the public renderer. Frame-time parity for the engine as a whole is
+   * tests/reports/production-path-benchmark.json's job.
+   */
+  check(
+    "comparison-timing-not-claimed",
+    threeOutcome?.timingVerdict?.result === "not-measured-by-this-report",
+    `timingVerdict=${threeOutcome?.timingVerdict?.result ?? "missing"} (a frame-time claim from this report would be the raw-WebGL2 triangle compared against itself)`
+  ),
   check("comparison-draw-calls", isWinOrTie(threeOutcome?.drawCalls?.result), `drawCalls=${threeOutcome?.drawCalls?.result}`),
   check("comparison-bundle-measured", typeof threeOutcome?.bundleBytes?.aura3d === "number" && typeof threeOutcome?.bundleBytes?.competitor === "number", `bundle=${threeOutcome?.bundleBytes?.result}, aura3d=${threeOutcome?.bundleBytes?.aura3d}, threejs=${threeOutcome?.bundleBytes?.competitor}`),
   check("comparison-screenshot-diff", threeOutcome?.screenshotDiff?.pass === true, `screenshotDiff.pass=${threeOutcome?.screenshotDiff?.pass}`),
@@ -36,7 +53,7 @@ const report = {
     benchmarkDescriptor: "benchmarks/shared/scenes/instancing.ts",
     route: "/apps/instancing-performance/"
   },
-  claim: "webgl_instancing_performance and webgl_instancing_dynamic have public Scene.createInstancedMesh, dynamic per-instance matrix updates, per-instance color attributes, one-draw browser evidence, and Three.js benchmark frame-time/draw-call/screenshot parity evidence for this scoped workload. Bundle bytes are measured and reported as evidence, not used as a win claim.",
+  claim: "webgl_instancing_performance and webgl_instancing_dynamic have public Scene.createInstancedMesh, dynamic per-instance matrix updates, per-instance color attributes, one-draw browser evidence, and Three.js benchmark draw-call/screenshot parity evidence for this scoped workload. Bundle bytes are measured and reported as evidence, not used as a win claim. NO FRAME-TIME CLAIM is made from this report (WS-1.2): its timing came from a raw WebGL2 triangle importing no engine. Engine frame time is measured in tests/reports/production-path-benchmark.json.",
   checks
 };
 

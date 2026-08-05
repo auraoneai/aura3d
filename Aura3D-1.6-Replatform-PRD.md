@@ -480,17 +480,73 @@ without a replacement, or silently dropping the performance dimension.
 Three.js, or Babylon.js** — its own `rule` text admits this. Every frame-time "tie" is the
 same triangle twice. Only its bundle numbers are valid.
 
-- [ ] Rename schema `foundation-engine-comparison` → `foundation-bundle-and-scaffold-equivalence`.
-- [ ] Move `frameTimeMs`, `firstFrameMs`, `memoryMb`, `startupMs` under
-      `nonEngineRawWebgl2ControlMeasurement`, which no readiness tool may read.
-- [ ] Keep `bundleBytes`, `sourceCodeBytes`, descriptor equivalence, `dependencyPins`.
-- [ ] Update all 7 consumers: `external-parity-benchmarks`,
+- [x] Rename schema `foundation-engine-comparison` → `foundation-bundle-and-scaffold-equivalence`.
+      — done, in both variants (`external-parity-…` too), with `supersededSuiteName` retained so a
+      reader of an old report can find the new one. The report *file* name is unchanged
+      deliberately: renaming it would churn a dozen readiness tools for no additional honesty.
+      The report now also states `measures` / `doesNotMeasure` / `engineTimingEvidenceLivesIn`
+      inline, so the boundary travels with the artifact.
+- [x] Move `frameTimeMs`, `firstFrameMs`, `memoryMb`, `startupMs` under
+      `nonEngineRawWebgl2ControlMeasurement`, which no readiness tool may read. — done via
+      `withQuarantinedTiming`. `assetLoadMs`, `jsHeapEstimateMb`, `rawSamples`, `sampleCount` and
+      `measurementMode` travel with them, since they describe the same control. The quarantine
+      object carries `mayBeReadByReadinessTools: false` and `whatThisIs`, which names the defect:
+      *"a raw WebGL2 context … compiling its own 6-line shader and drawing a 3-vertex triangle N
+      times … so all three engines produce the same numbers by construction."*
+- [x] Keep `bundleBytes`, `sourceCodeBytes`, descriptor equivalence, `dependencyPins`. — kept at
+      the top level, along with `drawCalls`, `triangles`, texture/geometry byte accounting and the
+      screenshot path. Those are real properties of real per-engine builds.
+- [x] Update all 7 consumers: `external-parity-benchmarks`,
       `external-parity-broad-parity-readiness`, `foundation-benchmarks`,
       `release-verification`, `threejs-parity-instancing-parity`,
-      `threejs-parity-performance`, `tests/browser/engine-comparison.spec.ts`.
-- [ ] `tools/threejs-parity-instancing-parity/index.ts` — its `comparison-frame-time` and
-      `comparison-draw-calls` checks read triangle data. Remove or repoint.
-- [ ] **Proof:** no readiness tool reads a timing field from this report.
+      `threejs-parity-performance`, `tests/browser/engine-comparison.spec.ts`. — all verified.
+      `foundation-benchmarks` and `external-parity-benchmarks` read timing from the quarantine and
+      for **presence only** (their `metric-coverage` check asks whether the harness produced a
+      complete record, not what the numbers were). `external-parity-broad-parity-readiness`,
+      `threejs-parity-performance`, `foundation-current-capability` and `foundation-reporting` all
+      exit 0 unchanged. `release-verification` and `foundation-flake-detection` are long-running
+      and were not reached inside the timeout; neither reads a timing field
+      (`grep` for `frameTime|startupMs|memoryMb|firstFrameMs` returns nothing in either).
+- [x] `tools/threejs-parity-instancing-parity/index.ts` — its `comparison-frame-time` and
+      `comparison-draw-calls` checks read triangle data. Remove or repoint. — **this was the check
+      that most needed removing.** `comparison-frame-time` asserted `frameTimeMedian` and
+      `frameTimeP95` were win-or-tie and therefore passed *structurally*: the same triangle compared
+      against itself always ties. Replaced by `comparison-timing-not-claimed`, which asserts the
+      comparison report **admits** it does not measure engine timing. `comparison-draw-calls`
+      stays — draw calls are a real property of the shared descriptor — and the route-level
+      instancing evidence beside it (one draw call for 4,096 instances) does execute the public
+      renderer. The tool's `claim` string no longer says "frame-time".
+- [x] Also deleted, as dead code: `compareTimingMetric`, `neutralMicrobenchmarkStartupMetric` and
+      `p95Metric`. The second already forced a tie with the reason *"browser WebGL2 context and
+      shader startup is measured without importing any compared engine runtime"* — a correct
+      observation that applies equally to frame time, first frame and memory. Rather than neutralise
+      three more metrics, the timing comparison is gone.
+- [x] **Proof:** no readiness tool reads a timing field from this report. — **the win/tie/loss tally
+      fell from 72 ties to 36** against Three.js, which is precisely the 36 fabricated timing ties
+      (4 timing dimensions x 9 scenes) disappearing from the score. What the scene rows looked like
+      before, from the regenerated baseline:
+
+      ```json
+      "frameTimeMedian": { "result": "tie", "aura3d": 0, "competitor": 0, "ratio": 1 }
+      ```
+
+      Zero against zero, ratio exactly 1. Now:
+
+      ```json
+      "timingVerdict": { "result": "not-measured-by-this-report", "evidencePath": "tests/reports/production-path-benchmark.json" }
+      ```
+
+      And with timing gone the remaining honest row is visible: `bundleBytes` **loss, 1,152,356 vs
+      672,041 — 1.715x**. `tests/browser/engine-comparison.spec.ts` **1 passed** and now asserts the
+      inverse of what it used to: `estimate.frameTimeMs` must be `undefined` at the top level, and
+      `scene.frameTimeMedian` / `frameTimeP95` / `startupMedian` must be gone.
+      `threejs-parity-instancing-parity` **EXIT=0**, `pnpm typecheck` exit 0.
+
+      `pnpm verify:foundation-benchmarks` still reports 3 violations
+      (`threejs-comparison-report`, `babylon-comparison-report`,
+      `unsupported-feature-comparison`). **Pre-existing, not caused by this workstream** — verified
+      by stashing the change and re-running: byte-identical violation list at `be86c73e`. The two
+      checks WS-1.2 could have broken, `same-scene-measurements` and `metric-coverage`, both pass.
 
 ### WS-1.3 Label every remaining performance claim by measurement type
 

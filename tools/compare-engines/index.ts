@@ -504,7 +504,26 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
       ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --external-parity --write-reports"
       : "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --write-reports",
     sourceInputs: sourceInputPaths(),
-    suite: isExternalParityRun ? "external-parity-engine-comparison" : "foundation-engine-comparison",
+    /*
+     * WS-1.2 — renamed from `*-engine-comparison` to `*-bundle-and-scaffold-equivalence`.
+     *
+     * The old name promised something this tool does not do. Its browser measurement
+     * (`window.__measureBenchmarkScene`) creates a raw WebGL2 context, compiles its own 6-line
+     * shader, and calls `gl.drawArrays(gl.TRIANGLES, 0, 3)` in a loop. It imports **none** of
+     * Aura3D, Three.js or Babylon.js, so every "engine" ran the identical triangle and every
+     * frame-time "tie" was the same triangle compared against itself.
+     *
+     * What it measures honestly, and still does: bundle bytes, source-code bytes, descriptor
+     * equivalence and dependency pins. Those are real artifacts of real per-engine builds.
+     * Frame time, first frame, memory and startup are moved under
+     * `nonEngineRawWebgl2ControlMeasurement`, which no readiness tool may read; the real
+     * dual-engine timing lives in `tests/reports/production-path-benchmark.json` (WS-1.4).
+     */
+    suite: isExternalParityRun ? "external-parity-bundle-and-scaffold-equivalence" : "foundation-bundle-and-scaffold-equivalence",
+    supersededSuiteName: isExternalParityRun ? "external-parity-engine-comparison" : "foundation-engine-comparison",
+    measures: ["bundleBytes", "sourceCodeBytes", "descriptorEquivalence", "dependencyPins"],
+    doesNotMeasure: ["engine frame time", "engine startup", "engine memory", "engine first frame"],
+    engineTimingEvidenceLivesIn: "tests/reports/production-path-benchmark.json",
     ok,
     claimUsable: false,
     claimCaveat: "This report validates equivalent benchmark scaffolds, browser WebGL2 microbenchmark measurements, and bundle artifacts. Broad competitive claims remain unsupported; only exact supportedNicheClaims may be used.",
@@ -816,6 +835,76 @@ function filterReport(report: Record<string, unknown>, competitor: "threejs" | "
   };
 }
 
+/**
+ * WS-1.2 — separate what the raw-WebGL2 control measured from what it only appeared to measure.
+ *
+ * `frameTimeMs`, `firstFrameMs`, `memoryMb` and `startupMs` come from a loop of
+ * `gl.drawArrays(gl.TRIANGLES, 0, 3)` against a hand-written 6-line shader, in a context this tool
+ * created itself. No engine code executes. They are therefore moved into
+ * `nonEngineRawWebgl2ControlMeasurement` and are **not** left at the top level where a readiness tool
+ * could read them as engine performance — which is exactly what
+ * `threejs-parity-instancing-parity`'s `comparison-frame-time` check was doing.
+ *
+ * `bundleBytes`, `sourceCodeBytes`, `drawCalls`, `triangles`, texture/geometry byte accounting and
+ * the screenshot path stay at the top level: those are real properties of the real per-engine
+ * bundle and of the shared descriptor.
+ */
+function withQuarantinedTiming(
+  existing: Record<string, unknown> | undefined,
+  measurement: BenchmarkMeasurement
+): Record<string, unknown> {
+  const {
+    startupMs,
+    firstFrameMs,
+    frameTimeMs,
+    memoryMb,
+    jsHeapEstimateMb,
+    assetLoadMs,
+    rawSamples,
+    sampleCount,
+    warmupFrames,
+    measuredFrames,
+    measurementMode,
+    ...artifactFields
+  } = measurement;
+  const {
+    startupMs: _estimateStartupMs,
+    firstFrameMs: _estimateFirstFrameMs,
+    frameTimeMs: _estimateFrameTimeMs,
+    memoryMb: _estimateMemoryMb,
+    jsHeapEstimateMb: _estimateHeapMb,
+    assetLoadMs: _estimateAssetLoadMs,
+    rawSamples: _estimateRawSamples,
+    ...estimateArtifactFields
+  } = (existing ?? {}) as Record<string, unknown>;
+  return {
+    ...estimateArtifactFields,
+    ...artifactFields,
+    measurementCaveat:
+      "Bundle bytes, source bytes and descriptor equivalence are measured per engine. Timing and memory are NOT: they come from a raw WebGL2 control that imports no engine, and are quarantined under nonEngineRawWebgl2ControlMeasurement. Engine timing lives in tests/reports/production-path-benchmark.json.",
+    nonEngineRawWebgl2ControlMeasurement: {
+      whatThisIs:
+        "A raw WebGL2 context created by tools/compare-engines, compiling its own 6-line shader and drawing a 3-vertex triangle N times. It imports neither Aura3D, Three.js nor Babylon.js, so all three engines produce the same numbers by construction.",
+      whyItIsRetained:
+        "It is a useful control: it shows the harness and the browser behaved consistently across runs. It is not evidence about any engine.",
+      mayBeReadByReadinessTools: false,
+      engineTimingEvidenceLivesIn: "tests/reports/production-path-benchmark.json",
+      measurementMode,
+      sampleCount,
+      warmupFrames,
+      measuredFrames,
+      startupMs,
+      firstFrameMs,
+      assetLoadMs,
+      frameTimeMs,
+      memoryMb,
+      jsHeapEstimateMb,
+      rawSamples
+    },
+    deterministicScaffoldEstimate: existing
+  };
+}
+
 function withBenchmarkMeasurements(report: Record<string, unknown>, evidence: BenchmarkMeasurementEvidence): Record<string, unknown> {
   const byKey = new Map(evidence.measurements.map((measurement) => [`${measurement.engine}:${measurement.sceneId}`, measurement]));
   const scenesWithMeasurements = (report.scenes as SceneComparison[]).map((scene) => {
@@ -823,15 +912,7 @@ function withBenchmarkMeasurements(report: Record<string, unknown>, evidence: Be
     for (const engine of ["aura3d", "threejs", "babylon"] as const) {
       const existing = scene.estimates[engine];
       const measurement = byKey.get(`${engine}:${scene.id}`);
-      estimates[engine] = measurement
-        ? {
-            ...existing,
-            deterministicEstimate: existing,
-            ...measurement,
-            measurementCaveat:
-              "Browser WebGL2 microbenchmark using the equivalent workload metadata with recorded frame and draw-call caps; this is timing and bundle evidence, not rendered product parity.",
-          }
-        : existing;
+      estimates[engine] = measurement ? withQuarantinedTiming(existing, measurement) : existing;
     }
     return { ...scene, estimates };
   });
@@ -885,10 +966,24 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
       return {
         id: scene.id,
         equivalent: scene.equivalent,
-        frameTimeMedian: compareTimingMetric(lowerIsBetter(aura3d?.frameTimeMs), lowerIsBetter(other?.frameTimeMs)),
-        frameTimeP95: compareTimingMetric(p95Metric(aura3d?.frameTimeMs), p95Metric(other?.frameTimeMs)),
-        startupMedian: neutralMicrobenchmarkStartupMetric(lowerIsBetter(aura3d?.startupMs), lowerIsBetter(other?.startupMs)),
-        assetLoadMedian: compareTimingMetric(lowerIsBetter(aura3d?.assetLoadMs), lowerIsBetter(other?.assetLoadMs)),
+        /*
+         * WS-1.2 — no timing verdict is emitted from this report any more.
+         *
+         * `frameTimeMedian`, `frameTimeP95`, `startupMedian` and `assetLoadMedian` used to be
+         * computed here and consumed as parity evidence. Every one of them compared the same raw
+         * WebGL2 triangle against itself, which is why they reported 72 ties: a tie was structurally
+         * guaranteed. `startupMedian` was already special-cased to "neutral" with a comment
+         * admitting the startup path "does not import or execute Aura3D, Three.js, or Babylon.js
+         * runtime code" — that admission applies to every one of the four, not just startup.
+         *
+         * Engine timing verdicts belong to tests/reports/production-path-benchmark.json, which
+         * bundles each engine from its public entry point.
+         */
+        timingVerdict: {
+          result: "not-measured-by-this-report",
+          reason: "This report's timing came from a raw WebGL2 control that imports no engine. See tests/reports/production-path-benchmark.json.",
+          evidencePath: "tests/reports/production-path-benchmark.json"
+        },
         bundleBytes: compareMetric(numeric(aura3d?.bundleBytes), numeric(other?.bundleBytes)),
         drawCalls: compareMetric(numeric(aura3d?.drawCalls), numeric(other?.drawCalls)),
         shaderCount: compareMetric(numeric(aura3d?.shaderCount), numeric(other?.shaderCount)),
@@ -901,11 +996,8 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
         ])),
       };
     });
+    // Timing is deliberately absent from the win/tie/loss tally: see `timingVerdict` above.
     const flat = sceneOutcomes.flatMap((scene) => [
-      scene.frameTimeMedian.result,
-      scene.frameTimeP95.result,
-      scene.startupMedian.result,
-      scene.assetLoadMedian.result,
       scene.bundleBytes.result,
       scene.drawCalls.result,
       scene.shaderCount.result,
@@ -938,7 +1030,7 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
       : report.claimCaveat,
     comparisonOutcomes: {
       status: "computed-from-report-measurements",
-      rule: "For lower-is-better non-timing metrics, Aura3D wins when at least 5% lower, loses when at least 5% higher, and ties inside +/-5%. Timing metrics additionally tie inside a 2 ms absolute tolerance. startupMedian is neutral for this WebGL2 microbenchmark because the startup path creates a raw browser WebGL2 context and shader directly; it does not import or execute Aura3D, Three.js, or Babylon.js runtime code.",
+      rule: "For lower-is-better metrics, Aura3D wins when at least 5% lower, loses when at least 5% higher, and ties inside +/-5%. NO TIMING METRIC IS SCORED HERE (WS-1.2): this report's browser measurement creates a raw WebGL2 context and draws its own 3-vertex triangle, importing no engine, so any timing comparison would be the same triangle against itself. Engine timing is scored in tests/reports/production-path-benchmark.json.",
       byCompetitor,
     },
   };
@@ -1176,10 +1268,6 @@ function medianMetric(value: unknown): number | undefined {
   return undefined;
 }
 
-function p95Metric(value: unknown): number | undefined {
-  if (typeof value === "object" && value !== null && "p95" in value && typeof value.p95 === "number") return value.p95;
-  return undefined;
-}
 
 function compareMetric(aura3d: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; aura3d?: number; competitor?: number; ratio?: number } {
   if (aura3d === undefined || competitor === undefined) return { result: "unavailable", ...(aura3d !== undefined ? { aura3d } : {}), ...(competitor !== undefined ? { competitor } : {}) };
@@ -1190,42 +1278,18 @@ function compareMetric(aura3d: number | undefined, competitor: number | undefine
   return { result, aura3d, competitor, ratio: Number(ratio.toFixed(3)) };
 }
 
-function compareTimingMetric(aura3d: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; aura3d?: number; competitor?: number; ratio?: number; toleranceMs?: number } {
-  const toleranceMs = 2;
-  if (aura3d === undefined || competitor === undefined) return { result: "unavailable", ...(aura3d !== undefined ? { aura3d } : {}), ...(competitor !== undefined ? { competitor } : {}), toleranceMs };
-  if (Math.abs(aura3d - competitor) <= toleranceMs) {
-    return { result: "tie", aura3d, competitor, ratio: competitor === 0 ? (aura3d === 0 ? 1 : undefined) : Number((aura3d / competitor).toFixed(3)), toleranceMs };
-  }
-  return { ...compareMetric(aura3d, competitor), toleranceMs };
-}
-
-function neutralMicrobenchmarkStartupMetric(aura3d: number | undefined, competitor: number | undefined): {
-  readonly result: "tie" | "unavailable";
-  readonly aura3d?: number;
-  readonly competitor?: number;
-  readonly ratio?: number;
-  readonly neutralized: boolean;
-  readonly reason: string;
-} {
-  const reason = "browser WebGL2 context and shader startup is measured without importing any compared engine runtime";
-  if (aura3d === undefined || competitor === undefined) {
-    return {
-      result: "unavailable",
-      ...(aura3d !== undefined ? { aura3d } : {}),
-      ...(competitor !== undefined ? { competitor } : {}),
-      neutralized: true,
-      reason
-    };
-  }
-  return {
-    result: "tie",
-    aura3d,
-    competitor,
-    ratio: competitor === 0 ? (aura3d === 0 ? 1 : undefined) : Number((aura3d / competitor).toFixed(3)),
-    neutralized: true,
-    reason
-  };
-}
+/*
+ * WS-1.2 — `compareTimingMetric` and `neutralMicrobenchmarkStartupMetric` were deleted here.
+ *
+ * Both existed only to score the raw-WebGL2 control's timing as though it said something about an
+ * engine. `neutralMicrobenchmarkStartupMetric` already forced a tie with the reason "browser WebGL2
+ * context and shader startup is measured without importing any compared engine runtime" — a correct
+ * observation that applies equally to frame time, first frame and memory. Rather than neutralise
+ * three more metrics, the timing comparison is gone: see `timingVerdict` in `withComparisonOutcomes`
+ * and `tests/reports/production-path-benchmark.json`.
+ *
+ * `p95Metric` is also unused now and removed with them.
+ */
 
 function unsupportedFromEstimate(estimate: Record<string, unknown> | undefined): string[] {
   const value = estimate?.unsupportedFeatures;

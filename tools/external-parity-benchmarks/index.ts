@@ -136,7 +136,7 @@ export function createExternalParityBenchmarkReport() {
   const report = {
     ...(comparisonReport ?? {}),
     ...base,
-    suite: "external-parity-engine-comparison",
+    suite: "external-parity-bundle-and-scaffold-equivalence",
     subsystem: "same-scene-engine-comparison",
     expectedScenes,
     checks,
@@ -160,7 +160,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
   const expected = new Set(expectedScenes);
   const sameSceneMeasurements =
     report?.ok === true &&
-    report.suite === "external-parity-engine-comparison" &&
+    report.suite === "external-parity-bundle-and-scaffold-equivalence" &&
     scenes.length === expected.size &&
     sceneIds.every((id) => typeof id === "string" && expected.has(id as typeof expectedScenes[number])) &&
     scenes.every((scene) => isRecord(scene) && scene.equivalent === true && ["aura3d", "threejs", "babylon"].every((engine) => isRecord(estimateFor(scene, engine))));
@@ -269,13 +269,16 @@ function estimateFor(scene: Record<string, unknown>, engine: string): unknown {
   return isRecord(scene.estimates) ? scene.estimates[engine] : null;
 }
 
+/** WS-1.2 — see the note in tools/foundation-benchmarks: timing lives in the quarantine now. */
 function hasMetrics(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  const control = isRecord(value.nonEngineRawWebgl2ControlMeasurement) ? value.nonEngineRawWebgl2ControlMeasurement : value;
   return isRecord(value) &&
-    isRecord(value.startupMs) &&
-    isRecord(value.assetLoadMs) &&
-    isRecord(value.firstFrameMs) &&
-    isRecord(value.frameTimeMs) &&
-    isRecord(value.memoryMb) &&
+    isRecord(control.startupMs) &&
+    isRecord(control.assetLoadMs) &&
+    isRecord(control.firstFrameMs) &&
+    isRecord(control.frameTimeMs) &&
+    isRecord(control.memoryMb) &&
     typeof value.drawCalls === "number" &&
     typeof value.triangles === "number" &&
     typeof value.shaderCount === "number" &&

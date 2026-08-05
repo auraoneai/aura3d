@@ -115,7 +115,7 @@ const base = baseReport(root, {
 const report = {
   ...comparisonReport,
   ...base,
-  suite: comparisonReport?.suite ?? "foundation-engine-comparison",
+  suite: comparisonReport?.suite ?? "foundation-bundle-and-scaffold-equivalence",
   subsystem: "same-scene-engine-comparison",
   checks,
   comparisonReportPreserved: true,
@@ -199,14 +199,24 @@ function inspectComparisonReport(report: Record<string, unknown> | null): {
   return { sameSceneMeasurements, metricCoverage, unsupportedFeatureComparison, honestOutcomeCaveats, editorAuthoredStartupWorkflow };
 }
 
+/**
+ * WS-1.2 — timing metrics are read from the quarantine, and are checked for *presence* only.
+ *
+ * `tools/compare-engines` moved `startupMs` / `frameTimeMs` / `firstFrameMs` / `memoryMb` under
+ * `nonEngineRawWebgl2ControlMeasurement`, because they come from a raw WebGL2 triangle that imports
+ * no engine. This coverage check still wants to know the harness produced a complete record, so it
+ * looks there. What it must never do is treat their *values* as engine performance — that is
+ * `tests/reports/production-path-benchmark.json`.
+ */
 function hasRequiredMetrics(value: unknown): boolean {
   if (!isRecord(value)) return false;
+  const control = isRecord(value.nonEngineRawWebgl2ControlMeasurement) ? value.nonEngineRawWebgl2ControlMeasurement : value;
   return (
-    isRecord(value.startupMs) &&
-    isRecord(value.assetLoadMs) &&
-    isRecord(value.firstFrameMs) &&
-    isRecord(value.frameTimeMs) &&
-    isRecord(value.memoryMb) &&
+    isRecord(control.startupMs) &&
+    isRecord(control.assetLoadMs) &&
+    isRecord(control.firstFrameMs) &&
+    isRecord(control.frameTimeMs) &&
+    isRecord(control.memoryMb) &&
     typeof value.drawCalls === "number" &&
     typeof value.shaderCount === "number" &&
     typeof value.textureCount === "number" &&
