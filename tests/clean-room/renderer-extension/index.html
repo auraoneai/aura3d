@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>WS-2.8 renderer extension</title></head>
+  <body style="margin:0;background:#000">
+    <canvas id="view" width="256" height="192"></canvas>
+    <script type="module">
+      import { runRendererExtension } from "./src/main.ts";
+      const canvas = document.querySelector("#view");
+      runRendererExtension(canvas)
+        .then((state) => { window.__CLEAN_ROOM_RENDERER_EXTENSION__ = state; })
+        .catch((error) => { window.__CLEAN_ROOM_RENDERER_EXTENSION_ERROR__ = String(error && error.stack || error); });
+    </script>
+  </body>
+</html>

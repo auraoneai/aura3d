@@ -1501,11 +1501,43 @@ fails at typecheck, which is worth knowing before the next subpath is added.
 
 ### WS-2.8 Preserve low-level escape hatches
 
-- [ ] Keep `WebGL2Device`, `WebGPUDevice`, `createRenderDevice`, `Renderer`, `Geometry`,
-      `Material` exported (already at `packages/rendering/src/index.ts:21-62`).
-- [ ] Document custom shader, custom pass, and custom scene-node extension paths.
-- [ ] **Proof:** a clean-room project adds a custom postprocess pass using public exports
-      only, no `@aura3d/*/src/*` deep import.
+- [x] Keep `WebGL2Device`, `WebGPUDevice`, `createRenderDevice`, `Renderer`, `Geometry`,
+      `Material` exported (already at `packages/rendering/src/index.ts:21-62`). — **all still exported,
+      and verified rather than assumed.** `WebGL2Device`, `createRenderDevice`, `Renderer`, `Geometry`,
+      `Material`, `ShaderModule` and `ShaderLibrary` remain on `@aura3d/engine/rendering`.
+      **`WebGPUDevice` moved to `@aura3d/engine/rendering/webgpu`** in WS-2.2 and is documented there —
+      a value re-export from the barrel is a static graph edge, so keeping it forced every consumer to
+      download a ~74 KB device they never constructed. Nothing left the public surface; one import
+      specifier changed. Same for `@aura3d/engine/physics/{world,solverless}` and
+      `@aura3d/engine/media-node`.
+- [x] Document custom shader, custom pass, and custom scene-node extension paths. —
+      **`docs/architecture/extension-points.md`**, with a table of every hatch and the entry point it
+      lives on. It also records what is deliberately **not** a hatch: the Canvas 2D preview (internal,
+      WS-2.5) and `agent-api` internals.
+
+      The custom-scene-node answer is the one worth stating plainly, because there are two levels and no
+      middle: stay inside `createAuraApp` with `onFrame` + `nodes.require`, or own the loop with
+      `Renderer`. There is **no supported path that injects a foreign node type into the scene graph** —
+      the snapshot is a typed serialisable format, and accepting arbitrary nodes would leave
+      `diagnostics()` and the evidence harnesses unable to describe what they rendered.
+- [x] **Proof:** a clean-room project adds a custom postprocess pass using public exports
+      only, no `@aura3d/*/src/*` deep import. — `tests/clean-room/renderer-extension/` +
+      `tests/browser/renderer-extension-escape-hatch.spec.ts`, **1 passed.**
+
+      It constructs a device with `createRenderDevice`, a `Renderer`, geometry with `Geometry`, and a
+      custom tint pass with `ShaderModule` — then asserts the pass **visibly changes the framebuffer**
+      (`tintedPixels > litPixels`). Compiling would only prove the API is reachable; changing pixels
+      proves the hatch works.
+
+      The negative assertion is the one that matters: **every import specifier is checked against
+      `@aura3d/*/src/*`, `packages/*/src/*` and a raw `three` import.** An escape hatch that requires
+      reaching into a package's `src/` is not a hatch, it is a leak.
+
+      **Deliberately a separate spec from `clean-room-projects.spec.ts`.** That harness forbids
+      `requestAnimationFrame` and direct device construction — correctly, because an *application*
+      developer should never need them. This row's claim is the opposite direction: that an *engine*
+      developer can reach beneath the safe API. Adding this project to that harness would have required
+      weakening its prohibitions, which would have damaged a working gate to accommodate a new one.
 
 ---
 
