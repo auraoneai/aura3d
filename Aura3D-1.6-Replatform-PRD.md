@@ -1665,13 +1665,72 @@ still indexing dead code, and ambiguity about support status.
 misleading: `SceneRenderer.ts:19-33` returns hardcoded
 `{ meshes: 72, instances: 12000, skinnedMeshes: 4, transparentObjects: 18 }`.
 
-- [ ] Run R8 on all 11 files, then `git rm`: `InstancingSystem.ts`, `LightingSystem.ts`,
-      `MaterialSystem.ts`, `RenderTargetSystem.ts`, `RendererDiagnostics.ts`,
-      `SceneRenderer.ts`, `ShadowSystem.ts`, `TextureSystem.ts`, `ThreeCompatRenderer.ts`,
-      `TransparencySystem.ts`, `index.ts` (+ `performance/`, `postprocess/`, `shaders/`,
-      `vfx/` subdirs).
-- [ ] **Keep `packages/three-compat/` — different thing, real, and the migration on-ramp.**
-- [ ] Remove the re-export from `packages/rendering/src/index.ts`.
+**Two PRD figures are wrong, and the second changes the shape of the work.** Measured 2026-08-05:
+
+- **49 files / 1,033 lines, not 11 / 354.** The row names the ten top-level modules and misses the
+  `performance/` (9), `postprocess/` (15), `shaders/` (7) and `vfx/` (7) subdirectories, which the barrel
+  re-exports wholesale (`rendering/src/index.ts:385-387`).
+- **Not "0 consumers".** `createThreeCompatRenderer` is imported by **10 apps** and referenced by
+  `packages/three-compat/src/migration/{ThreeToA3DAdapter,CompatibilityWarnings}.ts`, plus 4 unit suites
+  and ~8 browser specs.
+
+**And the fabrication is deeper than the row records.** `SceneRenderer.ts:19-33`'s hardcoded
+`{ meshes: 72, instances: 12000, ... }` is one of three:
+
+```ts
+// ThreeCompatRenderer.ts:44 — a "screenshot" that is a string
+captureScreenshot(): string {
+  return `a3d-three-compat-capture://${this.backend}/${w}x${h}`;
+}
+
+// :48 — device-loss "recovery" that sets the flag and immediately clears it
+handleDeviceLost(reason: string) {
+  this.lost = true;
+  this.lost = false;
+  return { recovered: !this.lost, reason };   // always true
+}
+```
+
+**`ThreeCompatRenderer` touches no GPU at all.** No device, no context, no draw call — a tree of
+bookkeeping objects reporting success. Its unit test asserts
+`summary.canClaimRendererBreadth === true` and `plan.sceneComplexity.instances >= 10000` against those
+constants. That is precisely the defect class P1 deleted, one layer deeper, and it is the reason this
+row exists rather than being cosmetic cleanup.
+
+The 10 consuming apps are **4-line stubs** — import, construct, set a `dataset` attribute, log the fake
+capture URI. They are not routes a developer would recognise; they exist to give the fabricated renderer
+a consumer, which is how it passed the "parity requires a consumer" rule.
+
+- [x] Run R8 on all 11 files — **run on all 49**, report committed at
+      `tests/reports/deletion-safety.json`. Result: **49 of 49 BLOCKED**, which is the correct answer and
+      is why this is staged rather than deleted in one step. 141 blocking references are internal to the
+      directory (expected — the modules import each other), and the rest reach the barrel, the 10 stub
+      apps, `packages/three-compat`'s migration adapter, and the test suites above.
+
+      **A tool calibration note, recorded because it would otherwise mislead the next reader:** part of
+      the external count is basename over-matching. `BloomPass.ts`, `SSAOPass.ts`, `RenderPass.ts` and
+      `ParticleSystem.ts` each exist in three or four directories (`rendering/postprocess/`,
+      `rendering/production-runtime/postprocess/`, `rendering/cinematic/` and the compat tree), so a
+      reference to the *real* one is attributed to the compat one. That inflates the report and does not
+      change the conclusion — the genuine consumers listed above are enough to block on their own.
+- [ ] `git rm` the directory — **not yet.** Blocked on the consumers below, in this order.
+- [ ] Delete the 10 stub apps: `three-compat-{scene-studio-pro,asset-studio-pro,controls-lab,animation-studio-pro,large-scene-lab,postprocess-studio-pro,material-studio-pro,product-studio-pro,shader-lab-pro,threejs-migration-lab}`.
+      These are Tier 4 under P5's classification — 4 lines each, no interaction, no evidence beyond a
+      fabricated string.
+- [ ] Delete the tests that assert on the fabricated values:
+      `tests/unit/rendering/three-compat-{renderer-three-compat,postprocess,shaders,vfx}.test.ts` and the
+      matching browser specs. **These are not tests being weakened to pass (R2)** — they assert that a
+      hardcoded constant equals itself, so they cannot fail and prove nothing. Deleting them removes a
+      false green, which is the opposite of weakening a gate.
+- [ ] Repoint `packages/three-compat`'s migration adapter, which rewrites `new THREE.WebGLRenderer` to
+      `createThreeCompatRenderer` — i.e. it currently advises migrating developers onto the fake. It must
+      point at a real renderer.
+- [x] **Keep `packages/three-compat/` — different thing, real, and the migration on-ramp.** — confirmed
+      and worth stating: `packages/animation/src/threejs-compatibility/` is **also** a different thing and
+      also real (`AnimationMixerThreeCompat`, `SkeletonThreeCompat`, `MorphTargetMixerThreeCompat` — the
+      symbols WS-1.6 found the parity generator was failing to grep). Only
+      `packages/rendering/src/threejs-compatibility/` is the fabrication.
+- [ ] Remove the re-export from `packages/rendering/src/index.ts` — 5 lines (`:368`, `:384-387`).
 - [ ] **Proof:** `git grep -n "ThreeCompatRenderer" -- packages apps examples` empty.
 
 ### WS-3.5 Fixture files — dependency proof per file, no bulk deletion
