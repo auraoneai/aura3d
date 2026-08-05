@@ -66,6 +66,25 @@ Every item on that list exists in this repository today as a hand-written implem
 That is the drift this document exists to reverse. If a future workstream proposes building
 any of them, it is wrong by default and must clear R11 first.
 
+**Two qualifications, both forced by evidence rather than preference.** This list states what
+Aura3D should not *build*; it does not authorise deleting what Aura3D has already *published*:
+
+1. **"Not a" means "does not build speculative subsystems," not "must delete on sight."**
+   Three items here survived their deletion workstreams because R8 and R1 refused: the audio
+   DSP (WS-3.2), `packages/ecs`, and `packages/scripting` (WS-3.3). ECS and behaviour authoring
+   ship as **public `./ecs` and `./scripting` subpaths**, are re-exported on the public engine
+   barrel, have a live `apps/editor` consumer, and carry eight production-path browser
+   assertions. Removing them would break documented API and invalidate satisfied R1 claims.
+   They are retained as **game-kit-layer authoring above the renderer**, which is a different
+   thing from competing with Rapier or Yuka at the solver layer.
+2. **The prohibition binds new work, enforced by R11.** The cost of the original drift is not
+   avoided by deleting proven code; it is paid as permanent maintenance of subsystems no ADR
+   ever justified. That is the argument for R11, and the reason retention here is not a licence
+   to add more.
+
+Where this list and shipped public API disagree, the disagreement is recorded in an ADR under
+`docs/architecture/adr/` — not resolved by a deletion that R8 forbids.
+
 ### What "Three.js parity" means here
 
 Parity is **production parity, not API parity.** Chasing API-surface equivalence produced
@@ -342,8 +361,12 @@ first answering, in writing:
 **If any answer is unclear, stop implementation and write an ADR in
 `docs/architecture/adr/`.** No speculative engine subsystems. This rule exists because the
 repository already contains a hand-written solver, AI framework, ECS, audio DSP and video
-pipeline that were each introduced without answering these four questions — and every one is
-now being removed, replaced, or archived at a cost far exceeding what the ADR would have cost.
+pipeline that were each introduced without answering these four questions. The cost is being
+paid now either way: the solver is replaced (P4), the video pipeline is split by runtime
+(WS-2.3), and the audio DSP and the ECS/AI packages turned out to be **load-bearing public API
+that cannot be removed at all** (WS-3.2, WS-3.3) — so the repository is permanently committed
+to maintaining subsystems no ADR ever justified. That is the more expensive outcome, not the
+cheaper one.
 
 A new subsystem is anything that would appear on the §A "what Aura3D is NOT" list, or any
 package that introduces a new runtime capability rather than composing existing ones.
@@ -1827,30 +1850,84 @@ different levels, plus one route-local violation. R12's exit condition is met fo
 by making `GameAudio` delegate to `packages/audio`; the route-local raw context is tracked as
 a P5 obligation. **R12 violations 4 → 3.**
 
-### WS-3.3 Remove dead packages from the active tree — no in-tree graveyard
+### WS-3.3 `packages/ecs` and `packages/scripting` — **R8 REFUSED DELETION. Both are retained.**
 
-Git history and tags are the archive. An `archive/1.5/` code directory risks stale
-imports, duplicate manifests, workspace confusion, TS project-reference breakage, tooling
-still indexing dead code, and ambiguity about support status.
+> **This workstream inverted.** It was written to delete both packages on the premise that they
+> had "0 consumers." R8 was run before any `git rm`, exactly as the rule requires, and it
+> **refused the deletion**: `tests/reports/deletion-safety-ws33-final.json` reports **61 of 68
+> files blocked across 300 references**, spanning three of the six R8 dependency points —
+> `runtime-consumer`, `public-package-export-dependency`, and
+> `documentation-generator-dependency`. This is R8 doing its job on the exact case that
+> motivated it. Per **R6**, 7,317 lines are an observation, not a mandate to delete.
 
-- [ ] `packages/ecs` — 1,480 lines, **0 consumers** in apps/examples/templates; only
-      `packages/engine/src/ecs/ECSRenderSource.ts` (233) imports it. Run R8, then **remove
-      from the workspace and delete from the active tree.** Decide `ECSRenderSource.ts`
-      with it.
-- [ ] `packages/scripting` — 5,837 lines (GOAP, HTN, BehaviorTree, UtilityAI,
-      DecisionTree, Perception, WeaponSystem, VisualGraph), **0 `engine` references**.
-      Run R8, then remove and delete.
-- [ ] Remove from `pnpm-workspace.yaml`, root `package.json` `exports` (`./ecs`,
-      `./scripting`), and the publish list.
-- [ ] **Create** `docs/architecture/removed-in-1.6.md` — for each removed package: final
-      commit SHA, the tag containing it, line count, why removed, and how to retrieve it
-      from history.
-- [ ] Use an in-tree `archive/` **only** if R8 finds a live dependency that cannot be cut
-      in this release.
-- [ ] **Proof:** `pnpm build && pnpm typecheck` pass; both absent from
-      `pnpm -r list --depth -1`; retrieval instructions verified by an actual
-      `git show <sha>:<path>`.
+**The premise was wrong on four independent counts. Measured 2026-08-05:**
 
+1. **Both are PUBLIC published subpaths.** Root `package.json` maps `./ecs` →
+   `./dist/ecs/index.js` and `./scripting` → `./dist/scripting/index.js`. Deleting them is a
+   breaking removal of two documented entry points, not an internal cleanup.
+2. **`packages/engine` re-exports ECS from its own public barrel.** `engine/src/index.ts:61`
+   is `export * from "./ecs/ECSRenderSource.js"`. The claim "only `ECSRenderSource.ts` imports
+   it" was true and *inverted the conclusion*: that file is the bridge putting ECS on the
+   public engine API.
+3. **`packages/scripting` has a live app consumer.** `apps/editor/src/panels/VisualScriptPanel.ts:1`
+   imports `createVisualNode`, `listVisualNodeDefinitions`, and `VisualGraphExecutor`, and
+   `apps/editor/src/EditorShell.ts:12,116,157` constructs the panel as a permanent shell
+   fixture. The editor's visual-scripting panel stops compiling the moment the package leaves
+   the tree. "0 `engine` references" was literally true and strategically irrelevant —
+   nothing said the consumer had to be `engine`.
+4. **`scripting` is proven by a real production-path browser harness — it is not dead code.**
+   `tests/browser/runtime-external-parity.spec.ts` drives a live WebGL2 route and asserts
+   `oldBranchBehaviorTreePort`, `oldBranchGoapPlannerPort`, `oldBranchHtnPlannerPort`,
+   `oldBranchUtilityAiPort`, `oldBranchDecisionTreePort`, `oldBranchStateMachinePort`,
+   `oldBranchPerceptionPort` and `oldBranchWeaponSystemPort` against `window.__AURA3D_GAME_DEMO__`.
+   Nine parity rows cite `packages/scripting/src/*` as evidence. Under **R1** this is
+   the strongest evidence class in the repository — a public-entry browser test on the real
+   renderer. **Deleting it would have deleted satisfied R1 claims and forced nine parity rows
+   to `unproven`.** `tests/browser/fixtures/workspace-vite-imports/main.ts:6,13` additionally
+   imports both packages through a real Vite bundle, proving they survive production bundling.
+
+**The four apparently-cleared files are an artifact of whole-set evaluation, not a green light.**
+R8 cleared `packages/ecs/src/systems/{ActiveSystem,HierarchySystem,TransformSystem,index}.ts`
+only because every *other* member of the set was being deleted in the same batch.
+`packages/ecs/src/index.ts:25` is `export * from "./systems/index.js"`, and that barrel is
+retained — so all four are reachable from a kept public entry point. **True deletable count in
+this workstream is 0 source files** (`packages/scripting/README.md` and `tsconfig.json` are
+cleared but must stay, since the package stays).
+
+- [x] **R8 run before deletion; deletion refused.** Report:
+      `tests/reports/deletion-safety-ws33-final.json` — 61/68 blocked, 300 references.
+- [x] **`packages/ecs` (1,480) — RETAINED.** Public `./ecs` subpath; re-exported through
+      `engine/src/index.ts:61`; 43 references block `src/index.ts` alone.
+- [x] **`packages/scripting` (5,837) — RETAINED.** Public `./scripting` subpath; live
+      `apps/editor` consumer; 8 production-path browser assertions; 94 references block
+      `src/index.ts` alone.
+- [x] **No `pnpm-workspace.yaml` / root `exports` / publish-list change.** Both `./ecs` and
+      `./scripting` remain published. No breaking API removal in 1.6 from this workstream.
+- [x] **No `archive/1.5/` graveyard created** — the escape hatch the original row reserved for
+      "if R8 finds a live dependency" is moot, because nothing is leaving the tree.
+- [x] **`docs/architecture/removed-in-1.6.md` not created by this workstream** — it has
+      nothing to record. WS-3.4 owns the one genuine removal in P3.
+- [x] **Proof of retention:** `pnpm build` and `pnpm typecheck` pass with both packages
+      present; `pnpm -r list --depth -1` lists both; the nine `scripting` parity rows keep
+      their R1 evidence.
+
+**Two real defects survive this reversal and are re-homed rather than dropped.** Retaining a
+package is not the same as endorsing everything in it:
+
+- [x] **§A "what Aura3D is NOT" is now partly contradicted by shipped public API.** *(resolved:
+      §A amended with two evidence-forced qualifications; `docs/architecture/adr/0001-retain-ecs-and-scripting.md` landed, status accepted)* The list
+      names "an ECS research framework" and "a behaviour-tree / GOAP / HTN AI framework" as
+      things Aura3D is not, yet both ship as documented entry points with live consumers.
+      Resolve the contradiction **in the philosophy, not by deleting proven code**: these are
+      *game-kit-layer* capabilities above the renderer, not engine subsystems competing with
+      Rapier or Yuka. Amend §A to say Aura3D does not build *speculative* simulation
+      subsystems, and that ECS/behaviour authoring is retained where a public consumer and
+      production-path evidence exist. **R11's four questions get answered retroactively in an
+      ADR** (`docs/architecture/adr/`) rather than by a deletion that R8 forbids.
+- [x] **The 8 `scripting` fixture files (2,079 lines) no longer "travel with WS-3.3."** *(resolved:
+      §9 bucket renamed to "returned to extraction queue", reassigned to WS-3.5, no delete commitment)* With
+      the package retained, they return to the WS-3.5 extraction queue and the §9
+      "undecided — pending R8" bucket. Each needs its own report. **No commitment to delete.**
 ### WS-3.4 Delete stub compatibility implementations
 
 `packages/rendering/src/threejs-compatibility/` — 354 lines, 0 consumers, actively
@@ -2389,7 +2466,7 @@ row is *triage*; the per-file R8 report decides, not this table.
 | Bucket | Files | Lines | Meaning |
 |---|---:|---:|---|
 | **Needs extraction first** | 7 | 2,548 | Verified internal importers (WS-3.5). Extract real generation code, then delete the descriptor. |
-| **Travels with WS-3.3** | 8 | 2,079 | `packages/scripting` fixtures; go with the package. |
+| **Returned to extraction queue** | 8 | 2,079 | `packages/scripting` fixtures. WS-3.3 reversed — the package is retained, so these no longer travel with it. Each needs its own R8 report (WS-3.5). |
 | **Undecided — pending R8 report** | 23 | 6,093 | May be deletable, may be retained. **No commitment.** |
 | **Confirmed deletable** | 0 | 0 | Nothing is confirmed until its report is clean. |
 
@@ -2400,8 +2477,8 @@ Total in scope: 38 files / 10,720 lines. **Action: triage; delete only cleared f
 | Category | Lines | Action | Gated by |
 |---|---:|---|---|
 | Video / episode / publishing | 10,389 | **classify by runtime, then separate** (WS-2.3) | runtime table |
-| `packages/scripting` | 5,837 | remove from tree, keep in history | R8 |
-| `packages/ecs` | 1,480 | remove from tree, keep in history | R8 |
+| `packages/scripting` | 5,837 | **RETAINED — R8 refused deletion** (94 refs block `src/index.ts`; live `apps/editor` consumer; 8 production-path browser assertions) | R8 report |
+| `packages/ecs` | 1,480 | **RETAINED — R8 refused deletion** (43 refs; public `./ecs` subpath; re-exported at `engine/src/index.ts:61`) | R8 report |
 | `rendering/threejs-compatibility/` | 354 | delete | R8 |
 | Audio DSP (`Reverb`, `Filter`) | 69 | **retain — inspection showed real behaviour** (WS-3.2) | inspected |
 | Fabricated perf gate | ~60 | delete, per WS-1.1 atomic order | — |
@@ -2487,10 +2564,16 @@ Not technical completion gates. **Do not perform any of these because §10 is gr
 
 ## 12. Resolved decisions (previously open)
 
-1. **ECS and scripting** — remove from the active tree; preserve through Git history and
-    tags. **No `archive/1.5/` code graveyard** unless R8 finds a live dependency that
-    cannot be cut. `docs/architecture/removed-in-1.6.md` records final SHA, tag, and
-    retrieval command. (WS-3.3)
+1. **ECS and scripting** — **RETAINED. This decision was reversed by evidence.** R8 was run
+    before deletion and refused it: 61 of 68 files blocked across 300 references
+    (`tests/reports/deletion-safety-ws33-final.json`). Both are **public published subpaths**
+    (`./ecs`, `./scripting`); `engine/src/index.ts:61` re-exports ECS on the public engine
+    barrel; `apps/editor/src/panels/VisualScriptPanel.ts:1` is a live `scripting` consumer; and
+    eight assertions in `tests/browser/runtime-external-parity.spec.ts` prove `scripting`
+    through a real WebGL2 production path, which is the strongest evidence class R1 recognises.
+    No workspace, `exports`, or publish-list change. No `archive/1.5/`. No
+    `docs/architecture/removed-in-1.6.md` from this workstream. The residual §A contradiction is
+    resolved in the philosophy via an R11 ADR, not by deleting proven code. (WS-3.3)
 2. **cannon-es** — **not decided now.** WS-4.2 determines whether it survives as a
     compatibility package. Do not commit to multi-backend support before measuring its
     value. (P4)
@@ -2521,9 +2604,16 @@ median 6.73/255 mean-absolute-error, on both a real WebGL2 device and a real Web
 with native pipelines. The asset intelligence, CLI, typed authoring and evidence harnesses
 earn their place because Three.js has no answer to them.
 
-The hand-written solver, the unused AI framework, the unused ECS, the 69 lines of audio DSP,
-the descriptor files shaped like simulations, and the fabricated performance gate did not
-earn their place. They made the repository larger, less trustworthy, and harder to use.
+The hand-written solver, the descriptor files shaped like simulations, the stub compatibility
+layer that returns invented numbers, and the fabricated performance gate did not earn their
+place. They made the repository larger, less trustworthy, and harder to use.
+
+Three subsystems this document originally planned to delete are **retained on evidence**: the
+audio DSP (WS-3.2 — real validation and disposal behaviour), and `packages/ecs` and
+`packages/scripting` (WS-3.3 — public subpaths, a live editor consumer, and eight
+production-path browser assertions). R8 and R1 refused those deletions. That is the process
+working: **1.6 removes what cannot be defended, and keeps what the evidence defends — including
+when that contradicts this document's own first draft.**
 
 1.6 keeps the first list and ends the second. **1.7 stays honest by applying R11 before
 writing code, not after shipping it.**

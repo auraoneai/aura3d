@@ -9,6 +9,25 @@ Nothing here is derived from `logs.txt` (a stale 2026-08-03 transcript), from
 
 **Status: decision document. No code was changed, nothing was published, nothing was deleted.**
 
+> **Amendment 2026-08-05 — three conclusions in this document have been superseded during
+> execution, and the superseding evidence is stronger than the evidence here.** This audit
+> scanned consumers in `apps/`, `examples/`, `templates/` and `packages/engine`, which turned out
+> to be the wrong denominator: it omitted `apps/editor`, public `exports` subpaths in the root
+> `package.json`, re-exports on the `engine` barrel, and `tests/browser`. The affected rows are
+> marked **SUPERSEDED** inline.
+>
+> | Original conclusion | Actual outcome | Authority |
+> |---|---|---|
+> | `packages/ecs` — archive (0 consumers) | **Retained** — public `./ecs` subpath, re-exported at `engine/src/index.ts:61` | [ADR 0001](docs/architecture/adr/0001-retain-ecs-and-scripting.md) |
+> | `packages/scripting` — archive (0 `engine` refs) | **Retained** — public subpath, live `apps/editor` consumer, 8 production-path browser assertions backing 9 parity rows | [ADR 0001](docs/architecture/adr/0001-retain-ecs-and-scripting.md) |
+> | Audio DSP (69 lines) — delete as trivial Web Audio aliases | **Retained** — adds real validation and disposal behaviour | PRD WS-3.2 |
+>
+> The pattern is one mistake made three times: **absence of a consumer in the directories I
+> searched was treated as absence of a consumer.** R8's six-point dependency report exists
+> precisely because that inference is unsafe, and it blocked all three deletions before any
+> `git rm` ran. The renderer findings, the three fabricated-gate findings, the anisotropy root
+> cause, and the physics findings were each verified by direct command output and are unaffected.
+
 ---
 
 ## 0. The short version
@@ -301,10 +320,10 @@ This is a **1.6 re-platform, not a 1.5.3 patch.** It deletes more than it adds.
 
 | Question | Answer from the code |
 |---|---|
-| Is the ECS used? | **No.** `packages/ecs` has 0 consumers in `apps/`, `examples/`, `templates/`. One 233-line file in `engine` imports it. → **Archive.** Zustand is not the reason; disuse is. |
+| Is the ECS used? | **SUPERSEDED — see ADR 0001.** This row read "0 consumers in `apps/`/`examples/`/`templates/`, one 233-line file in `engine` imports it → archive." Both facts held; the conclusion did not. That file is `engine/src/ecs/ECSRenderSource.ts`, re-exported at `engine/src/index.ts:61`, and `./ecs` is a **public published subpath**. The consumer scan omitted `apps/editor`, `packages/engine`'s barrel, and `tests/browser`. R8 blocked the deletion (43 refs). → **Retained.** |
 | Is there one input system? | **No, two.** `packages/input` (2,463 lines, 6 consumers) and a second one inside `engine/src/agent-api/GameRuntime.ts` — `createGameInput` at :1618 with its own `addEventListener("keydown")` at :1855. Every shipped game route uses the engine one. → **Consolidate on one; the input package's gamepad/gesture/XR/replay work is good and should be the survivor.** |
 | Did we write an audio engine? | **Overstated.** 2,205 lines, but the custom DSP is 69 lines total (`Reverb.ts` 30, `Filter.ts` 39) and everything sits on real Web Audio `createGain`/`createBiquadFilter`/`createConvolver`. The problem is again duplication: `engine/src/game/GameAudio.ts` is a second, separate audio layer. 1 consumer for the package. → **Keep the scene-integration API, delete the 69 lines of custom DSP, consolidate the two layers.** |
-| Is the AI layer used? | **No.** `packages/scripting` — GOAP, HTN, BehaviorTree, UtilityAI, DecisionTree, Perception, WeaponSystem, VisualGraph — 5,837 lines, 13–33 test files each, and **0 files in `engine` reference any of it.** → **Archive.** |
+| Is the AI layer used? | **SUPERSEDED — see ADR 0001.** The measurement ("0 files in `engine` reference any of it") was correct and the inference was wrong: nothing required the consumer to be `engine`. `apps/editor/src/panels/VisualScriptPanel.ts:1` imports `VisualGraph`, and `tests/browser/runtime-external-parity.spec.ts` proves GOAP/HTN/BT/UtilityAI/DecisionTree/StateMachine/Perception/WeaponSystem through a live WebGL2 route — **8 assertions, R1's strongest evidence class, backing 9 parity rows.** `./scripting` is a public subpath. R8 blocked deletion (94 refs). → **Retained.** |
 | Navigation and steering? | Different story — `Navigation` appears in 8 app files, `Crowd` in 5, `Steering` in 2, and engine references them. → **Keep**, re-evaluate against Rapier's queries after the backend swap. |
 
 ---
@@ -329,7 +348,7 @@ This is a **1.6 re-platform, not a 1.5.3 patch.** It deletes more than it adds.
 | Vehicle dynamics | No | Internals no, layer yes | Poor→Fair | Replace solver, keep racing line/driver | We never imported the `RaycastVehicle` we already ship |
 | Character controller | No | Internals no | Fair | Replace internals | Rapier's is better-tested than ours will ever be |
 | Collision / BVH | No | Maybe | Fair | Re-evaluate vs Rapier queries | `MeshBVH` 326 lines, works, may be redundant |
-| ECS | No | **No** | Competent, unused | **Archive** | 0 consumers |
+| ECS | No | **Yes — public API** | Competent, publicly exported | **Retain (ADR 0001)** | Public `./ecs` subpath; re-exported at `engine/src/index.ts:61`; R8 blocked 43 refs |
 | Scripting / AI | No | **No** | Tested, unused | **Archive** | 0 engine references |
 | Input | Partly | Yes, one of them | Good | Consolidate | Two systems, shipped routes use the other |
 | Audio | No | API yes, DSP no | Thin | Consolidate, drop 69 lines of DSP | Real Web Audio underneath; duplicate layer |
@@ -342,8 +361,8 @@ This is a **1.6 re-platform, not a 1.5.3 patch.** It deletes more than it adds.
 | Evidence / diagnostics | No | Yes, after a purge | **Mixed** | Keep harnesses, delete fabricated gates | §3.4 |
 | three-compat | Migration on-ramp | **Yes** | Fair | Keep + strengthen | Only place `three` is a dep; this is how users arrive |
 | `rendering/threejs-compatibility` | No | **No** | Stub | **Delete** | `SceneRenderer` returns `{meshes:72, instances:12000}` |
-| All 38 `*Fixtures.ts` | No | **No** | Descriptors | **Delete** | 10,720 lines, near-zero consumers |
-| Video / episode / publishing surface | No | Not in core | Fair | **Move to own package** | 10,389 lines, 0 consumers, blocks tree-shaking |
+| All 38 `*Fixtures.ts` | No | **No** | Descriptors | **Triage per-file under R8; delete only cleared files** | 10,720 lines. "All 38" was never safe as a blanket action — 7 have internal importers and 8 belong to the now-retained `packages/scripting` |
+| Video / episode / publishing surface | No | Not in core | Fair | **Split by runtime, not moved wholesale** (WS-2.3) | 10,389 lines; blocks tree-shaking. Correction: only `FfmpegFrameEncoder` is Node-only; `MediaRecorderFrameEncoder` is **browser-only** (17 browser APIs, 0 `node:`) |
 
 ---
 
@@ -449,9 +468,9 @@ generation → evaluate **recast** after the Rapier swap.
 | Target | Lines | Basis |
 |---|---:|---|
 | 38 `*Fixtures.ts` across 8 packages | 10,720 | Descriptor objects, not simulations; ~0 app consumers |
-| `packages/scripting` (GOAP/HTN/BT/UtilityAI/VisualGraph) | 5,837 | 0 `engine` references — **archive** |
+| `packages/scripting` (GOAP/HTN/BT/UtilityAI/VisualGraph) | 5,837 | **SUPERSEDED (ADR 0001) — retained.** Public `./scripting` subpath; live `apps/editor` consumer; 8 production-path browser assertions |
 | Video / episode / publishing surface in `engine` | 10,389 | 0 consumers; Node encoders in a browser package — **archive to own package** |
-| `packages/ecs` | 1,480 | 0 consumers in apps/examples/templates — **archive** |
+| `packages/ecs` | 1,480 | **SUPERSEDED (ADR 0001) — retained.** Public `./ecs` subpath, re-exported on the engine barrel; R8 blocked deletion |
 | `rendering/threejs-compatibility/` stub systems | 354 | `SceneRenderer` returns hardcoded scene stats |
 | Custom audio DSP (`Reverb.ts`, `Filter.ts`) | 69 | Web Audio already provides both |
 | `external-parity-large-scene.spec.ts` hardcoded gate | ~60 | §3.4 |

@@ -14,9 +14,12 @@ A "new subsystem" is anything that would appear on the PRD §A *what Aura3D is N
 package that introduces a new runtime capability rather than composing existing ones.
 
 This directory exists because the repository already contains a hand-written rigid-body solver, an
-unused GOAP/HTN/behaviour-tree AI framework, an unused ECS, hand-written audio DSP and a video
-publishing pipeline — each introduced without answering those four questions, and each now being
-removed, replaced or archived at a cost far exceeding what the ADR would have cost.
+GOAP/HTN/behaviour-tree AI framework, an ECS, hand-written audio DSP and a video publishing
+pipeline — each introduced without answering those four questions, and each now being removed,
+replaced, or (where R8 and R1 refuse removal) **permanently maintained** at a cost far exceeding
+what the ADR would have cost. ADR 0001 is the worked example: two packages that would probably
+have been rejected as greenfield proposals cannot now be deleted, because they ship as public
+subpaths with a live consumer and satisfied production-path claims.
 
 ## Naming
 
@@ -50,9 +53,10 @@ without command output is not evidence.
 
 ## Index
 
-Maintained as ADRs land. Empty is a legitimate state — it means no new subsystem has been
-introduced, which is the intended default for 1.6.
+Maintained as ADRs land. An empty index is a legitimate state — it means no new subsystem has
+been introduced, which is the intended default for 1.6. ADR 0001 is not a new subsystem; it
+records why an existing one could not be removed.
 
 | ADR | Title | Status |
 |---|---|---|
-| — | none yet | — |
+| [0001](0001-retain-ecs-and-scripting.md) | Retain `packages/ecs` and `packages/scripting` as public game-kit-layer API | accepted |
