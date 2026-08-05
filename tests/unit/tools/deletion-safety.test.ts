@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 /**
@@ -11,6 +11,7 @@ import { afterAll, describe, expect, it } from "vitest";
  * 1.6 PRD listed it for bulk deletion, and `EnvironmentPlatform.ts` imports it.
  */
 const scratch = mkdtempSync(join(tmpdir(), "deletion-safety-"));
+const repoRoot = resolve(import.meta.dirname, "..", "..", "..");
 
 afterAll(() => {
   rmSync(scratch, { recursive: true, force: true });
@@ -69,9 +70,23 @@ describe("deletion-safety (R8)", () => {
   }, 180_000);
 
   it("treats an empty deletion queue as a pass", () => {
-    const { status, report } = run([]);
-    expect(status).toBe(0);
-    expect(report.pass).toBe(true);
+    /*
+     * Against an explicitly empty manifest, not the repository's live queue. Reading the live
+     * `candidates.json` made this test assert that no deletion is currently being proven — so it
+     * passed only while no workstream was mid-flight and failed the moment WS-3.3 populated the
+     * queue with 68 files. That is a test coupled to transient working state rather than to the
+     * behaviour it names, and R2 forbids relaxing the assertion to accommodate it.
+     */
+    const manifestPath = "tests/reports/deletion-safety-empty-manifest.json";
+    writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates: [] }, null, 2));
+    try {
+      const { status, report } = run(["--manifest", manifestPath]);
+      expect(status).toBe(0);
+      expect(report.pass).toBe(true);
+      expect((report.checks as readonly { readonly id: string }[]).some((check) => check.id === "r8:queue")).toBe(true);
+    } finally {
+      rmSync(join(repoRoot, manifestPath), { force: true });
+    }
   }, 180_000);
 
   it("reports a prose mention without blocking on it", () => {
@@ -125,6 +140,45 @@ describe("deletion-safety (R8)", () => {
     // The gate must still catch the real thing, or this fix would have blunted it.
     const barrel = files.find((entry) => entry.path === "packages/ecs/src/index.ts");
     expect(barrel?.blocking["runtime-consumer"]?.length ?? 0).toBeGreaterThan(0);
+  }, 180_000);
+
+  it("does not report the deletion queue itself as a consumer of its candidates", () => {
+    /*
+     * Regression pin for the fifth — and most self-defeating — false-positive class. The manifest
+     * lists each candidate by its repo-relative path, which is precisely the shape
+     * `referencesSpecifier` matches, so every candidate came back blocked by
+     * `runtime-consumer @ tools/deletion-safety/candidates.json:<n>`: the queue entry that asked
+     * for the proof.
+     *
+     * WS-3.3's first run hit this on all 68 files, and for the 12 that were otherwise clear the
+     * queue entry was the *only* blocker — so a file with no dependency anywhere in the repository
+     * still could not be cleared. A gate that blocks because it was asked to run can never pass,
+     * and an unpassable gate is one someone eventually deletes or overrides. Same class as the two
+     * calibration bugs above: the tool manufacturing its own blocking evidence.
+     */
+    const manifestPath = "tests/reports/deletion-safety-selfref-manifest.json";
+    const candidates = ["packages/rendering/src/OceanFixtures.ts", "packages/ecs/src/Bitset.ts"];
+    writeFileSync(join(repoRoot, manifestPath), JSON.stringify({ candidates }, null, 2));
+    try {
+      const { report } = run(["--manifest", manifestPath]);
+      const files = report.files as readonly {
+        readonly path: string;
+        readonly blocking: Record<string, readonly { readonly at: string }[]>;
+      }[];
+      expect(files.map((file) => file.path)).toEqual(candidates);
+      for (const file of files) {
+        const fromManifest = Object.values(file.blocking)
+          .flat()
+          .filter((evidence) => evidence.at.startsWith(manifestPath));
+        expect(fromManifest, `${file.path} must not be blocked by the queue that requested its proof`).toEqual([]);
+      }
+
+      // Still catches the real dependency, or the exclusion would have blunted the gate.
+      const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
+      expect((ocean?.blocking["runtime-consumer"] ?? []).some((evidence) => evidence.at.startsWith("packages/rendering/src/index.ts:"))).toBe(true);
+    } finally {
+      rmSync(join(repoRoot, manifestPath), { force: true });
+    }
   }, 180_000);
 
   it("fails when asked to prove a deletion of a file that does not exist", () => {

@@ -138,7 +138,21 @@ function trackedFiles(): ReadonlySet<string> {
 const TRACKED = trackedFiles();
 const gitAvailable = TRACKED.size > 0;
 
-function scanRepository(): readonly ScannedFile[] {
+/**
+ * The deletion queue is not a consumer of the files it queues.
+ *
+ * `candidates.json` names a candidate by path, which is exactly the shape `referencesSpecifier`
+ * looks for, so every candidate was reported blocked by `runtime-consumer @
+ * tools/deletion-safety/candidates.json:<n>` — the queue entry that asked for the proof. WS-3.3's
+ * first run produced this for all 68 files, and every one of the 12 files that were otherwise
+ * clear was reported blocked by nothing but its own queue entry. A gate that blocks on being
+ * asked to run cannot ever pass, which is the third instance of this same defect class here
+ * (see the calibration notes in WS-0.2): the tool manufacturing its own blocking evidence.
+ *
+ * The manifest in use is therefore excluded from the scan, not classified — classifying it as
+ * prose would still print 68 misleading rows.
+ */
+function scanRepository(excluded: ReadonlySet<string> = new Set()): readonly ScannedFile[] {
   const out: ScannedFile[] = [];
   const walk = (absolute: string): void => {
     let entries: readonly string[];
@@ -169,7 +183,9 @@ function scanRepository(): readonly ScannedFile[] {
       } catch {
         continue;
       }
-      out.push({ path: relative(repoRoot, child), text, lines: text.split("\n") });
+      const relativePath = relative(repoRoot, child);
+      if (excluded.has(relativePath)) continue;
+      out.push({ path: relativePath, text, lines: text.split("\n") });
     }
   };
   for (const root of SCAN_ROOTS) {
@@ -179,6 +195,7 @@ function scanRepository(): readonly ScannedFile[] {
   for (const rootFile of ["package.json", "pnpm-workspace.yaml", "tsconfig.base.json", "llms.txt", "vitest.config.ts", "playwright.config.ts"]) {
     const absolute = join(repoRoot, rootFile);
     if (!existsSync(absolute)) continue;
+    if (excluded.has(rootFile)) continue;
     const text = readFileSync(absolute, "utf8");
     out.push({ path: rootFile, text, lines: text.split("\n") });
   }
@@ -548,6 +565,8 @@ function expandCandidate(candidate: string): readonly string[] {
 interface Args {
   readonly paths: readonly string[];
   readonly reportPath: string;
+  /** The manifest whose candidates were read, if any. Excluded from the scan; see `scanRepository`. */
+  readonly manifestPath: string | undefined;
 }
 
 const DEFAULT_MANIFEST = "tools/deletion-safety/candidates.json";
@@ -571,14 +590,16 @@ function parseArgs(argv: readonly string[]): Args {
     }
     paths.push(arg);
   }
+  let manifestRead: string | undefined;
   if (paths.length === 0) {
     const manifestPath = manifest ?? DEFAULT_MANIFEST;
     if (existsSync(join(repoRoot, manifestPath))) {
       const parsed = JSON.parse(readFileSync(join(repoRoot, manifestPath), "utf8")) as { readonly candidates?: readonly string[] };
       paths.push(...(parsed.candidates ?? []));
+      manifestRead = manifestPath;
     }
   }
-  return { paths, reportPath };
+  return { paths, reportPath, manifestPath: manifestRead };
 }
 
 function gitTrackedAt(path: string): string | null {
@@ -590,8 +611,8 @@ function gitTrackedAt(path: string): string | null {
 }
 
 function main(): void {
-  const { paths, reportPath } = parseArgs(process.argv.slice(2));
-  const repo = scanRepository();
+  const { paths, reportPath, manifestPath } = parseArgs(process.argv.slice(2));
+  const repo = scanRepository(new Set(manifestPath === undefined ? [] : [manifestPath]));
   const expanded = [...new Set(paths.flatMap((path) => expandCandidate(path)))];
   const deletionSet = new Set(expanded);
   const ambiguous = ambiguousBasenames(repo);
