@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-showcase-build-deploy/1.0",
-  "generatedAt": "2026-08-04T23:26:32.795Z",
+  "generatedAt": "2026-08-05T00:33:26.631Z",
   "gateConfig": {
     "path": "tools/showcase-library/route-gates.json",
     "schema": "aura3d-showcase-route-gates/1.0",
@@ -23,44 +23,17 @@
       "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
       "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
       "route-visual-review-stale-source:showcase-smart-city-control",
-      "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-      "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-      "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
       "route-visual-review-stale-source:showcase-cinematic-architecture",
-      "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
       "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
       "route-visual-review-stale-source:showcase-digital-twin-ops",
-      "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-      "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-      "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
       "route-visual-review-stale-source:showcase-blockfall-reactor",
-      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
       "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-      "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-      "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
       "route-visual-review-source-hash:showcase-skyline-runner",
       "route-visual-review-route-health-hash:showcase-skyline-runner",
       "route-visual-review-stale-source:showcase-skyline-runner",
-      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-      "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
-      "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
       "route-visual-review-source-hash:showcase-turbo-drift-circuit",
       "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
-      "route-visual-review-stale-source:showcase-turbo-drift-circuit",
-      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-      "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-      "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png"
+      "route-visual-review-stale-source:showcase-turbo-drift-circuit"
     ]
   },
   "ok": false,
@@ -229,44 +202,17 @@
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
           "route-visual-review-stale-source:showcase-smart-city-control",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
           "route-visual-review-stale-source:showcase-cinematic-architecture",
-          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
           "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
           "route-visual-review-stale-source:showcase-digital-twin-ops",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
           "route-visual-review-stale-source:showcase-blockfall-reactor",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
           "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
           "route-visual-review-source-hash:showcase-skyline-runner",
           "route-visual-review-route-health-hash:showcase-skyline-runner",
           "route-visual-review-stale-source:showcase-skyline-runner",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
           "route-visual-review-source-hash:showcase-turbo-drift-circuit",
           "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
           "route-visual-review-stale-source:showcase-turbo-drift-circuit",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
           "route-visual-review-stale-source:showcase-product-configurator",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png"
@@ -342,7 +288,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:34:46.972Z",
+            "generatedAt": "2026-08-05T00:28:00.498Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -357,7 +303,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -381,7 +327,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:34:46.972Z",
+          "generatedAt": "2026-08-05T00:28:00.498Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -499,7 +445,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684456156,
+        "totalBytes": 684464345,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -621,7 +567,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:34:49.964Z",
+            "generatedAt": "2026-08-05T00:28:06.100Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -636,7 +582,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -660,7 +606,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:34:49.964Z",
+          "generatedAt": "2026-08-05T00:28:06.100Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -706,7 +652,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-            "sha256": "sha256-db568bc967f13edf47bef0987300e38273a2e6455f26d90886a8399d3e610d99",
+            "sha256": "sha256-05eca61c70bee8143e2f7ad5c04a5712fffd0809fcf85cf04fce2ae074eb1b6b",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -715,13 +661,13 @@
               "width": 1052,
               "height": 543
             },
-            "nonBlankPixels": 40452,
+            "nonBlankPixels": 33448,
             "colorBuckets": 30,
             "foregroundBounds": {
-              "x": 576,
+              "x": 572,
               "y": 114,
-              "width": 311,
-              "height": 324
+              "width": 314,
+              "height": 322
             },
             "visible": true,
             "clipped": false,
@@ -740,7 +686,7 @@
               "manifestHash": "sha256-40b1fdf7e0afdf0e5f950040f42608d3655561e61f32b9ad59690476abb15833",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-material-asset-inspector.png",
-                "sha256": "sha256-db568bc967f13edf47bef0987300e38273a2e6455f26d90886a8399d3e610d99",
+                "sha256": "sha256-05eca61c70bee8143e2f7ad5c04a5712fffd0809fcf85cf04fce2ae074eb1b6b",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -749,13 +695,13 @@
                   "width": 1052,
                   "height": 543
                 },
-                "nonBlankPixels": 40452,
+                "nonBlankPixels": 33448,
                 "colorBuckets": 30,
                 "foregroundBounds": {
-                  "x": 576,
+                  "x": 572,
                   "y": 114,
-                  "width": 311,
-                  "height": 324
+                  "width": 314,
+                  "height": 322
                 },
                 "visible": true,
                 "clipped": false,
@@ -776,7 +722,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684335807,
+        "totalBytes": 684343996,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -898,7 +844,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:34:53.086Z",
+            "generatedAt": "2026-08-05T00:28:12.878Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -913,7 +859,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -937,7 +883,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:34:53.086Z",
+          "generatedAt": "2026-08-05T00:28:12.878Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -975,7 +921,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-            "sha256": "sha256-28eb157f3439f194ad4254b806a0d061ef587101c5db813f4b8a68a5d903c43b",
+            "sha256": "sha256-4f0c4118c00b51066c0a67052f94f8e931f2d6414c6178c01481c7a09ab94b98",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -985,13 +931,13 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 48462,
-            "colorBuckets": 163,
+            "nonBlankPixels": 48369,
+            "colorBuckets": 157,
             "foregroundBounds": {
               "x": 574,
               "y": 141,
-              "width": 569,
-              "height": 639
+              "width": 463,
+              "height": 503
             },
             "visible": true,
             "clipped": false,
@@ -999,7 +945,7 @@
             "controlsInViewport": true,
             "readabilityScore": 91,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-55d5e0a8014ef1366fc5e0f9d40caab40e0326bdecd9bd4dd6e05753a04569bb",
+            "subjectSuppressedScreenshotSha256": "sha256-002f9c79d158bcd8f7f5e7303a0730abff96da594566e18451d527ddeb92dfab",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -1008,15 +954,15 @@
             "subjectBounds": {
               "x": 574,
               "y": 141,
-              "width": 569,
-              "height": 639
+              "width": 463,
+              "height": 503
             },
-            "subjectPixels": 48462,
-            "subjectColorBuckets": 163,
+            "subjectPixels": 48369,
+            "subjectColorBuckets": 157,
             "subjectClipped": false,
             "subjectReadabilityScore": 91,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-55d5e0a8014ef1366fc5e0f9d40caab40e0326bdecd9bd4dd6e05753a04569bb",
+            "subjectSuppressedScreenshotSha256": "sha256-002f9c79d158bcd8f7f5e7303a0730abff96da594566e18451d527ddeb92dfab",
             "subjectTargetSize": 2.05,
             "cameraMode": "unprojected"
           },
@@ -1030,7 +976,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy.png",
-                "sha256": "sha256-28eb157f3439f194ad4254b806a0d061ef587101c5db813f4b8a68a5d903c43b",
+                "sha256": "sha256-4f0c4118c00b51066c0a67052f94f8e931f2d6414c6178c01481c7a09ab94b98",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1040,13 +986,13 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 48462,
-                "colorBuckets": 163,
+                "nonBlankPixels": 48369,
+                "colorBuckets": 157,
                 "foregroundBounds": {
                   "x": 574,
                   "y": 141,
-                  "width": 569,
-                  "height": 639
+                  "width": 463,
+                  "height": 503
                 },
                 "visible": true,
                 "clipped": false,
@@ -1054,7 +1000,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 91,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-data-galaxy-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-55d5e0a8014ef1366fc5e0f9d40caab40e0326bdecd9bd4dd6e05753a04569bb",
+                "subjectSuppressedScreenshotSha256": "sha256-002f9c79d158bcd8f7f5e7303a0730abff96da594566e18451d527ddeb92dfab",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -1070,7 +1016,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684912940,
+        "totalBytes": 684921145,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1129,49 +1075,18 @@
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
           "route-visual-review-stale-source:showcase-smart-city-control",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
           "route-visual-review-stale-source:showcase-cinematic-architecture",
-          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
           "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
           "route-visual-review-stale-source:showcase-digital-twin-ops",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
           "route-visual-review-stale-source:showcase-blockfall-reactor",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
           "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
           "route-visual-review-source-hash:showcase-skyline-runner",
           "route-visual-review-route-health-hash:showcase-skyline-runner",
           "route-visual-review-stale-source:showcase-skyline-runner",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
           "route-visual-review-source-hash:showcase-turbo-drift-circuit",
           "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
           "route-visual-review-stale-source:showcase-turbo-drift-circuit",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-source:showcase-smart-city-control",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png"
+          "route-visual-review-stale-source:showcase-smart-city-control"
         ]
       },
       "gameVisualQa": {
@@ -1244,7 +1159,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:34:56.186Z",
+            "generatedAt": "2026-08-05T00:28:20.273Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1259,7 +1174,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -1283,7 +1198,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:34:56.186Z",
+          "generatedAt": "2026-08-05T00:28:20.273Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1320,7 +1235,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-            "sha256": "sha256-8a16026189d628e0e987d5a7abbfe22198f4c7fe45c357d37909bc87f3101dae",
+            "sha256": "sha256-40512d0e9aaec6ac34a62a4a33e4adec9dc1d99cc56c8fd5e1eeb361c8cad766",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -1330,13 +1245,13 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 24057,
-            "colorBuckets": 143,
+            "nonBlankPixels": 23985,
+            "colorBuckets": 142,
             "foregroundBounds": {
-              "x": 475,
+              "x": 494,
               "y": 266,
-              "width": 638,
-              "height": 444
+              "width": 619,
+              "height": 514
             },
             "visible": true,
             "clipped": false,
@@ -1344,24 +1259,24 @@
             "controlsInViewport": true,
             "readabilityScore": 78,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1b249e26960da36e6295418a85c63ae7b67adb7458ce0c48d3008ec848f31a59",
+            "subjectSuppressedScreenshotSha256": "sha256-c7ee45d01751ad73565c98274f8df8b82d5267853a39223ef5cb2e0ec966e782",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "application",
             "subjectBounds": {
-              "x": 475,
+              "x": 494,
               "y": 266,
-              "width": 638,
-              "height": 444
+              "width": 619,
+              "height": 514
             },
-            "subjectPixels": 24057,
-            "subjectColorBuckets": 143,
+            "subjectPixels": 23985,
+            "subjectColorBuckets": 142,
             "subjectClipped": false,
             "subjectReadabilityScore": 78,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-1b249e26960da36e6295418a85c63ae7b67adb7458ce0c48d3008ec848f31a59",
+            "subjectSuppressedScreenshotSha256": "sha256-c7ee45d01751ad73565c98274f8df8b82d5267853a39223ef5cb2e0ec966e782",
             "projectedSubjectHeight": 254.977,
             "subjectTargetSize": 0.9347999999999999,
             "cameraMode": "orbit"
@@ -1376,7 +1291,7 @@
               "manifestHash": "sha256-15552b57377570b1c9d9fe8fa9476856a6ee357e4c7d8be1c6dd191e1ef7d27e",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control.png",
-                "sha256": "sha256-8a16026189d628e0e987d5a7abbfe22198f4c7fe45c357d37909bc87f3101dae",
+                "sha256": "sha256-40512d0e9aaec6ac34a62a4a33e4adec9dc1d99cc56c8fd5e1eeb361c8cad766",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -1386,13 +1301,13 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 24057,
-                "colorBuckets": 143,
+                "nonBlankPixels": 23985,
+                "colorBuckets": 142,
                 "foregroundBounds": {
-                  "x": 475,
+                  "x": 494,
                   "y": 266,
-                  "width": 638,
-                  "height": 444
+                  "width": 619,
+                  "height": 514
                 },
                 "visible": true,
                 "clipped": false,
@@ -1400,7 +1315,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 78,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-smart-city-control-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-1b249e26960da36e6295418a85c63ae7b67adb7458ce0c48d3008ec848f31a59",
+                "subjectSuppressedScreenshotSha256": "sha256-c7ee45d01751ad73565c98274f8df8b82d5267853a39223ef5cb2e0ec966e782",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -1416,7 +1331,7 @@
       "dist": {
         "exists": true,
         "fileCount": 208,
-        "totalBytes": 685766527,
+        "totalBytes": 685774753,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1475,47 +1390,18 @@
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
           "route-visual-review-stale-source:showcase-smart-city-control",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
           "route-visual-review-stale-source:showcase-cinematic-architecture",
-          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
           "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
           "route-visual-review-stale-source:showcase-digital-twin-ops",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
           "route-visual-review-stale-source:showcase-blockfall-reactor",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
           "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
           "route-visual-review-source-hash:showcase-skyline-runner",
           "route-visual-review-route-health-hash:showcase-skyline-runner",
           "route-visual-review-stale-source:showcase-skyline-runner",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
           "route-visual-review-source-hash:showcase-turbo-drift-circuit",
           "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
           "route-visual-review-stale-source:showcase-turbo-drift-circuit",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
           "route-visual-review-stale-source:showcase-cinematic-architecture",
-          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
           "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png"
         ]
       },
@@ -1589,7 +1475,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:34:59.317Z",
+            "generatedAt": "2026-08-05T00:28:27.570Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1604,7 +1490,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -1628,7 +1514,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:34:59.317Z",
+          "generatedAt": "2026-08-05T00:28:27.570Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1738,7 +1624,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684258280,
+        "totalBytes": 684266470,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -1797,49 +1683,18 @@
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-desktop.png",
           "route-visual-review-stale-screenshot:showcase-product-configurator:tests/reports/showcase-library-screenshots/showcase-product-configurator-mobile.png",
           "route-visual-review-stale-source:showcase-smart-city-control",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-smart-city-control:tests/reports/showcase-library-screenshots/showcase-smart-city-control-mobile.png",
           "route-visual-review-stale-source:showcase-cinematic-architecture",
-          "route-visual-review-screenshot-hash:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-desktop.png",
           "route-visual-review-stale-screenshot:showcase-cinematic-architecture:tests/reports/showcase-library-screenshots/showcase-cinematic-architecture-mobile.png",
           "route-visual-review-stale-source:showcase-digital-twin-ops",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
           "route-visual-review-stale-source:showcase-blockfall-reactor",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
           "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-library-screenshots/showcase-blockfall-reactor-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-blockfall-reactor:tests/reports/showcase-gameplay/showcase-blockfall-reactor-after-input.png",
           "route-visual-review-source-hash:showcase-skyline-runner",
           "route-visual-review-route-health-hash:showcase-skyline-runner",
           "route-visual-review-stale-source:showcase-skyline-runner",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-library-screenshots/showcase-skyline-runner-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-skyline-runner:tests/reports/showcase-gameplay/showcase-skyline-runner-after-input.png",
           "route-visual-review-source-hash:showcase-turbo-drift-circuit",
           "route-visual-review-route-health-hash:showcase-turbo-drift-circuit",
           "route-visual-review-stale-source:showcase-turbo-drift-circuit",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-library-screenshots/showcase-turbo-drift-circuit-mobile.png",
-          "route-visual-review-screenshot-hash:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-screenshot:showcase-turbo-drift-circuit:tests/reports/showcase-gameplay/showcase-turbo-drift-circuit-after-input.png",
-          "route-visual-review-stale-source:showcase-digital-twin-ops",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-desktop.png",
-          "route-visual-review-screenshot-hash:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png",
-          "route-visual-review-stale-screenshot:showcase-digital-twin-ops:tests/reports/showcase-library-screenshots/showcase-digital-twin-ops-mobile.png"
+          "route-visual-review-stale-source:showcase-digital-twin-ops"
         ]
       },
       "gameVisualQa": {
@@ -1912,7 +1767,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:35:02.273Z",
+            "generatedAt": "2026-08-05T00:28:33.248Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -1927,7 +1782,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -1951,7 +1806,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:35:02.273Z",
+          "generatedAt": "2026-08-05T00:28:33.248Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -1959,7 +1814,7 @@
           },
           "mountedEvidence": {
             "present": true,
-            "status": "ready",
+            "status": "running",
             "evidenceKeys": [
               "alerts",
               "appId",
@@ -1997,7 +1852,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-            "sha256": "sha256-cbd869aef1790b528dbe276fa87b3e7938ae2fe92b54e8ba12391ac8c777b0ee",
+            "sha256": "sha256-ae4d36887a72927c2ab73f58b040626acaa58682a9fa8ebf44ca76533f359123",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2006,13 +1861,13 @@
               "width": 1084,
               "height": 785
             },
-            "nonBlankPixels": 179694,
-            "colorBuckets": 264,
+            "nonBlankPixels": 179732,
+            "colorBuckets": 258,
             "foregroundBounds": {
               "x": 165,
-              "y": 291,
+              "y": 299,
               "width": 766,
-              "height": 411
+              "height": 403
             },
             "visible": true,
             "clipped": false,
@@ -2031,7 +1886,7 @@
               "manifestHash": "sha256-cb604e0cce4f624672f88fc81d9f35374e43847e37b436e2048699416b1f6387",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-digital-twin-ops.png",
-                "sha256": "sha256-cbd869aef1790b528dbe276fa87b3e7938ae2fe92b54e8ba12391ac8c777b0ee",
+                "sha256": "sha256-ae4d36887a72927c2ab73f58b040626acaa58682a9fa8ebf44ca76533f359123",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2040,13 +1895,13 @@
                   "width": 1084,
                   "height": 785
                 },
-                "nonBlankPixels": 179694,
-                "colorBuckets": 264,
+                "nonBlankPixels": 179732,
+                "colorBuckets": 258,
                 "foregroundBounds": {
                   "x": 165,
-                  "y": 291,
+                  "y": 299,
                   "width": 766,
-                  "height": 411
+                  "height": 403
                 },
                 "visible": true,
                 "clipped": false,
@@ -2067,7 +1922,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684849628,
+        "totalBytes": 684857839,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2194,7 +2049,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:35:05.225Z",
+            "generatedAt": "2026-08-05T00:28:39.339Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -2209,7 +2064,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -2233,7 +2088,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:35:05.225Z",
+          "generatedAt": "2026-08-05T00:28:39.339Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2269,7 +2124,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-            "sha256": "sha256-d35cb80aff05997f511541b6fcdc22d9167378c6ac120a19fe87e7f457b72ad7",
+            "sha256": "sha256-c2b2d9583338ae041c71b2542f20532a65290b54d378874a49dd5c8cd250e02e",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2279,38 +2134,38 @@
               "height": 900,
               "area": 959048.4375
             },
-            "nonBlankPixels": 33371,
-            "colorBuckets": 113,
+            "nonBlankPixels": 35199,
+            "colorBuckets": 115,
             "foregroundBounds": {
-              "x": 260,
-              "y": 102,
-              "width": 545,
-              "height": 563
+              "x": 256,
+              "y": 96,
+              "width": 554,
+              "height": 572
             },
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
             "controlsInViewport": true,
-            "readabilityScore": 89,
+            "readabilityScore": 91,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-339d63c4c189c7a60150b65180e931c385db790d54f9328dc2b4254f647608aa",
+            "subjectSuppressedScreenshotSha256": "sha256-28a25d23d9acc62da724ad5da5ffb25e13179a53332fc27a9d7bb804b0721246",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "application",
             "subjectBounds": {
-              "x": 260,
-              "y": 102,
-              "width": 545,
-              "height": 563
+              "x": 256,
+              "y": 96,
+              "width": 554,
+              "height": 572
             },
-            "subjectPixels": 33371,
-            "subjectColorBuckets": 113,
+            "subjectPixels": 35199,
+            "subjectColorBuckets": 115,
             "subjectClipped": false,
-            "subjectReadabilityScore": 89,
+            "subjectReadabilityScore": 91,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-339d63c4c189c7a60150b65180e931c385db790d54f9328dc2b4254f647608aa",
+            "subjectSuppressedScreenshotSha256": "sha256-28a25d23d9acc62da724ad5da5ffb25e13179a53332fc27a9d7bb804b0721246",
             "subjectTargetSize": 0.9072,
             "cameraMode": "unprojected"
           },
@@ -2324,7 +2179,7 @@
               "manifestHash": "sha256-5443d9a9453b3c29d9a93325bf6faeb413374d8c52e8feb2b11496ed05fa357b",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab.png",
-                "sha256": "sha256-d35cb80aff05997f511541b6fcdc22d9167378c6ac120a19fe87e7f457b72ad7",
+                "sha256": "sha256-c2b2d9583338ae041c71b2542f20532a65290b54d378874a49dd5c8cd250e02e",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2334,21 +2189,21 @@
                   "height": 900,
                   "area": 959048.4375
                 },
-                "nonBlankPixels": 33371,
-                "colorBuckets": 113,
+                "nonBlankPixels": 35199,
+                "colorBuckets": 115,
                 "foregroundBounds": {
-                  "x": 260,
-                  "y": 102,
-                  "width": 545,
-                  "height": 563
+                  "x": 256,
+                  "y": 96,
+                  "width": 554,
+                  "height": 572
                 },
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
                 "controlsInViewport": true,
-                "readabilityScore": 89,
+                "readabilityScore": 91,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-webgpu-particle-lab-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-339d63c4c189c7a60150b65180e931c385db790d54f9328dc2b4254f647608aa",
+                "subjectSuppressedScreenshotSha256": "sha256-28a25d23d9acc62da724ad5da5ffb25e13179a53332fc27a9d7bb804b0721246",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2364,7 +2219,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684695046,
+        "totalBytes": 684703257,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2498,7 +2353,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:35:08.344Z",
+            "generatedAt": "2026-08-05T00:28:44.211Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -2513,7 +2368,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -2537,7 +2392,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:35:08.344Z",
+          "generatedAt": "2026-08-05T00:28:44.211Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -2589,7 +2444,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-            "sha256": "sha256-3a421558073d063195dd05fec244c77b373cf6b375fe33de108d5291426d9019",
+            "sha256": "sha256-0042bdb49eecfc0a7cc24e9f44b45f65ea569d8c52cbb45be4e26b44ed77e48d",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -2599,8 +2454,8 @@
               "height": 900,
               "area": 1296000
             },
-            "nonBlankPixels": 3754,
-            "colorBuckets": 84,
+            "nonBlankPixels": 3807,
+            "colorBuckets": 83,
             "foregroundBounds": {
               "x": 96,
               "y": 31,
@@ -2613,7 +2468,7 @@
             "controlsInViewport": true,
             "readabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+            "subjectSuppressedScreenshotSha256": "sha256-5d77aa3f46b46cd16c196be8b761a517e0f8cb719a57e1303408caaedff7ed0f",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
@@ -2625,12 +2480,12 @@
               "width": 801,
               "height": 820
             },
-            "subjectPixels": 3754,
-            "subjectColorBuckets": 84,
+            "subjectPixels": 3807,
+            "subjectColorBuckets": 83,
             "subjectClipped": false,
             "subjectReadabilityScore": 67,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+            "subjectSuppressedScreenshotSha256": "sha256-5d77aa3f46b46cd16c196be8b761a517e0f8cb719a57e1303408caaedff7ed0f",
             "projectedPlaySpaceBounds": {
               "x": 572,
               "y": 72,
@@ -2655,7 +2510,7 @@
               "manifestHash": "sha256-679d52fe0c7bf99373fc873f3c3892548f6c5758ae9c81be91f09acae6a35a36",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor.png",
-                "sha256": "sha256-3a421558073d063195dd05fec244c77b373cf6b375fe33de108d5291426d9019",
+                "sha256": "sha256-0042bdb49eecfc0a7cc24e9f44b45f65ea569d8c52cbb45be4e26b44ed77e48d",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -2665,8 +2520,8 @@
                   "height": 900,
                   "area": 1296000
                 },
-                "nonBlankPixels": 3754,
-                "colorBuckets": 84,
+                "nonBlankPixels": 3807,
+                "colorBuckets": 83,
                 "foregroundBounds": {
                   "x": 96,
                   "y": 31,
@@ -2679,7 +2534,7 @@
                 "controlsInViewport": true,
                 "readabilityScore": 67,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-blockfall-reactor-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-27c27698add709b902df201c8bc017ebeba56047254211a882c9d503c4c24ad6",
+                "subjectSuppressedScreenshotSha256": "sha256-5d77aa3f46b46cd16c196be8b761a517e0f8cb719a57e1303408caaedff7ed0f",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -2695,7 +2550,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684901265,
+        "totalBytes": 684909476,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -2866,14 +2721,14 @@
           ],
           "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
           "routePrimaryProbe": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.json",
-          "screenshotSha256": "sha256-9cc69c5d93d32a293a524156cac4174453123e6eb59b8c15c03b1648f1b2573b",
+          "screenshotSha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
           "geometryEvidence": {
             "category": "platformer",
             "kind": "platformer-playable-surface-map",
             "source": "asset-mesh-extracted",
             "report": "tests/reports/showcase-spec-compiler/skyline-runner/game-template/showcase-skyline-runner-platformer-playable-surfaces.json",
             "screenshotEvidence": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "routePrimaryScreenshotSha256": "sha256-9cc69c5d93d32a293a524156cac4174453123e6eb59b8c15c03b1648f1b2573b",
+            "routePrimaryScreenshotSha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
             "assets": [
               {
                 "id": "showcaseKenneyOobiPlatformerHero",
@@ -2939,7 +2794,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:35:12.111Z",
+            "generatedAt": "2026-08-05T00:28:51.319Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -2959,7 +2814,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -2983,7 +2838,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:35:12.111Z",
+          "generatedAt": "2026-08-05T00:28:51.320Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3035,7 +2890,7 @@
           },
           "renderedProbe": {
             "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-            "sha256": "sha256-9cc69c5d93d32a293a524156cac4174453123e6eb59b8c15c03b1648f1b2573b",
+            "sha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
             "width": 1440,
             "height": 900,
             "analysisCrop": {
@@ -3045,38 +2900,38 @@
               "height": 900,
               "area": 997200
             },
-            "nonBlankPixels": 11185,
-            "colorBuckets": 156,
+            "nonBlankPixels": 11138,
+            "colorBuckets": 159,
             "foregroundBounds": {
-              "x": 215,
-              "y": 395,
-              "width": 105,
-              "height": 147
+              "x": 218,
+              "y": 396,
+              "width": 104,
+              "height": 146
             },
             "visible": true,
             "clipped": false,
             "occludedByUi": false,
             "controlsInViewport": true,
-            "readabilityScore": 56,
+            "readabilityScore": 55,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-b09c9a0bdfce2a0fd26bb9a9379e19b188f1ea41384c83263eff1b7cad98e951",
+            "subjectSuppressedScreenshotSha256": "sha256-3cb885da084eacbd64207b2cfc1937f35ea9db26836421b74c35d9aae05e9656",
             "evidenceMethod": "runtime-bound-subject-pixel-difference",
             "failures": []
           },
           "compositionProbe": {
             "category": "platformer",
             "subjectBounds": {
-              "x": 215,
-              "y": 395,
-              "width": 105,
-              "height": 147
+              "x": 218,
+              "y": 396,
+              "width": 104,
+              "height": 146
             },
-            "subjectPixels": 11185,
-            "subjectColorBuckets": 156,
+            "subjectPixels": 11138,
+            "subjectColorBuckets": 159,
             "subjectClipped": false,
-            "subjectReadabilityScore": 56,
+            "subjectReadabilityScore": 55,
             "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-            "subjectSuppressedScreenshotSha256": "sha256-b09c9a0bdfce2a0fd26bb9a9379e19b188f1ea41384c83263eff1b7cad98e951",
+            "subjectSuppressedScreenshotSha256": "sha256-3cb885da084eacbd64207b2cfc1937f35ea9db26836421b74c35d9aae05e9656",
             "projectedPlaySpaceBounds": {
               "x": 191,
               "y": 474,
@@ -3101,7 +2956,7 @@
               "manifestHash": "sha256-3f82114135cdf4b627d463901308eb0dcf4bbbb10f1958f044eaa42160ad5df5",
               "renderedProbe": {
                 "screenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner.png",
-                "sha256": "sha256-9cc69c5d93d32a293a524156cac4174453123e6eb59b8c15c03b1648f1b2573b",
+                "sha256": "sha256-11aa3f662f637ef3ad7ff8cc3b71d6671c49bef865027db7c777d14a663b1e61",
                 "width": 1440,
                 "height": 900,
                 "analysisCrop": {
@@ -3111,21 +2966,21 @@
                   "height": 900,
                   "area": 997200
                 },
-                "nonBlankPixels": 11185,
-                "colorBuckets": 156,
+                "nonBlankPixels": 11138,
+                "colorBuckets": 159,
                 "foregroundBounds": {
-                  "x": 215,
-                  "y": 395,
-                  "width": 105,
-                  "height": 147
+                  "x": 218,
+                  "y": 396,
+                  "width": 104,
+                  "height": 146
                 },
                 "visible": true,
                 "clipped": false,
                 "occludedByUi": false,
                 "controlsInViewport": true,
-                "readabilityScore": 56,
+                "readabilityScore": 55,
                 "subjectSuppressedScreenshotPath": "tests/reports/showcase-route-primary-probes/showcase-skyline-runner-subject-suppressed.png",
-                "subjectSuppressedScreenshotSha256": "sha256-b09c9a0bdfce2a0fd26bb9a9379e19b188f1ea41384c83263eff1b7cad98e951",
+                "subjectSuppressedScreenshotSha256": "sha256-3cb885da084eacbd64207b2cfc1937f35ea9db26836421b74c35d9aae05e9656",
                 "evidenceMethod": "runtime-bound-subject-pixel-difference",
                 "failures": []
               }
@@ -3149,7 +3004,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 684866180,
+        "totalBytes": 684874391,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
@@ -3390,7 +3245,7 @@
               "version": "1.1",
               "fingerprint": "sha256-59149907685e57776024b3f15c1ab65d210f3af089258cff7beaf6ea9b39f7e6"
             },
-            "generatedAt": "2026-08-04T21:35:15.492Z",
+            "generatedAt": "2026-08-05T00:28:58.913Z",
             "dependencies": [
               {
                 "kind": "primary-asset",
@@ -3410,7 +3265,7 @@
               {
                 "kind": "renderer-fingerprint",
                 "id": "agent-api+assets",
-                "hash": "sha256-316fe63810f31e2dbda195cca2d120f2da568b945f7e0ce10befcc2d940534c7"
+                "hash": "sha256-317d97d68c1fe554aa3a636f35d3fde621403e18a4f81747d8151153dd8a20c9"
               },
               {
                 "kind": "route-gate-config",
@@ -3434,7 +3289,7 @@
               }
             ]
           },
-          "generatedAt": "2026-08-04T21:35:15.492Z",
+          "generatedAt": "2026-08-05T00:28:58.913Z",
           "viewport": {
             "width": 1440,
             "height": 900,
@@ -3602,7 +3457,7 @@
       "dist": {
         "exists": true,
         "fileCount": 206,
-        "totalBytes": 685225906,
+        "totalBytes": 685234118,
         "hasIndexHtml": true,
         "hasAuraAssets": true
       },
