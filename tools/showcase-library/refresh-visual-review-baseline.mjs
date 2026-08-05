@@ -16,6 +16,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readPngPerceptualSignature } from "./png-foreground.mjs";
 import { readShowcaseRouteGateConfig } from "./route-gates.mjs";
 import { createRouteSourceHash } from "./route-primary-probes.mjs";
 
@@ -73,7 +74,25 @@ for (const route of reviewedRoutes) {
     const absolute = resolve(repoRoot, candidate.path);
     if (!existsSync(absolute)) continue;
     newestArtifactMs = Math.max(newestArtifactMs, statSync(absolute).mtimeMs);
-    screenshots.push({ ...candidate, sha256: hashFile(absolute) });
+    /*
+     * Record a perceptual signature alongside the exact hash.
+     *
+     * The gate accepts an exact hash first and falls back to this. Without it, approval could not
+     * survive a re-render of the same frame: GPU rasterisation is not bit-reproducible, so an
+     * identically settled frame still changes ~0.0014% of channels. See
+     * `readPngPerceptualSignature` for the measurement.
+     */
+    let perceptualSignature;
+    try {
+      perceptualSignature = readPngPerceptualSignature(absolute).signature;
+    } catch {
+      perceptualSignature = undefined;
+    }
+    screenshots.push({
+      ...candidate,
+      sha256: hashFile(absolute),
+      ...(perceptualSignature ? { perceptualSignature } : {})
+    });
   }
 
   const blockingIssues = Array.isArray(previous.blockingIssues)

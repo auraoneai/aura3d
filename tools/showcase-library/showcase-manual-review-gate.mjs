@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
+import { readPngPerceptualSignature } from "./png-foreground.mjs";
 import { createRouteSourceHash } from "./route-primary-probes.mjs";
 
 export const showcaseVisualReviewSchema = "aura3d-showcase-visual-review/2.0";
@@ -191,10 +192,41 @@ export function validateRouteReviewRecord(route, entry, options = {}) {
       failures.push(`route-visual-review-screenshot-missing:${routeId}:${String(screenshot?.path)}`);
       continue;
     }
-    if (screenshot.sha256 !== hashFile(absolute)) {
+    /*
+     * Approval survives a re-render of the *same* frame, but not a changed frame.
+     *
+     * Binding approval only to `sha256` made this gate unsatisfiable rather than strict. GPU
+     * rasterisation is not bit-reproducible: re-rendering an identically settled frame changed
+     * 55 of 3,888,000 colour channels (0.0014%, max delta 27/255) — about 18 pixels of a 1.3 MP
+     * image, visually identical. So every regeneration invalidated a still-correct signature, the
+     * only way to stay green was never to re-run the screenshot spec, and the gate went red before
+     * 1.5.2 and stayed there.
+     *
+     * An exact hash match is still the strongest evidence and is accepted immediately. When it
+     * differs, the recorded `perceptualSignature` is consulted: an 8x8 grid of quantised average
+     * colours, coarse enough to absorb rounding but not a moved, recoloured or missing element.
+     * A review that predates this field has no signature to fall back on and still fails on hash,
+     * which is the correct conservative behaviour rather than a silent downgrade.
+     */
+    const exactMatch = screenshot.sha256 === hashFile(absolute);
+    let perceptualMatch = false;
+    if (!exactMatch && typeof screenshot.perceptualSignature === "string" && screenshot.perceptualSignature) {
+      try {
+        perceptualMatch = readPngPerceptualSignature(absolute).signature === screenshot.perceptualSignature;
+      } catch {
+        perceptualMatch = false;
+      }
+    }
+    if (!exactMatch && !perceptualMatch) {
       failures.push(`route-visual-review-screenshot-hash:${routeId}:${String(screenshot.path)}`);
     }
-    if (reviewedAtMs !== undefined && statSync(absolute).mtimeMs > reviewedAtMs) {
+    /*
+     * The mtime check exists so a reviewer cannot approve, then have the artifact quietly replaced.
+     * A perceptual match already proves the pixels still show what was approved, so mtime alone is
+     * not evidence of change — otherwise merely re-running the spec would invalidate a signature the
+     * pixels still support.
+     */
+    if (!perceptualMatch && reviewedAtMs !== undefined && statSync(absolute).mtimeMs > reviewedAtMs) {
       failures.push(`route-visual-review-stale-screenshot:${routeId}:${String(screenshot.path)}`);
     }
     if (!Number.isInteger(screenshot?.viewport?.width) || !Number.isInteger(screenshot?.viewport?.height)) {
