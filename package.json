@@ -489,6 +489,7 @@
     "check:deployment": "pnpm exec vitest run tests/unit/aura3d-cli/deployment.test.ts --reporter=dot && pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-deployment/index.ts",
     "check:engine-layer-ratio": "pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-layer-ratio/index.ts",
     "check:negative-complexity": "pnpm exec tsx --tsconfig tsconfig.base.json tools/negative-complexity/index.ts",
+    "check:dist-freshness": "pnpm exec tsx --tsconfig tsconfig.base.json tools/dist-freshness/index.ts",
     "check:claim-lineage": "pnpm exec tsx --tsconfig tsconfig.base.json tools/claim-lineage/index.ts",
     "check:material-structural-parity": "pnpm exec tsx --tsconfig tsconfig.base.json tools/material-structural-parity/index.ts",
     "bench:production-path": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts",

@@ -30,6 +30,7 @@ import { createServer, type Server } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { build } from "esbuild";
+import { requireFreshDist } from "../dist-freshness/index";
 import { chromium, type Browser } from "@playwright/test";
 import { PRODUCTION_PATH_BENCHMARK_SCENE, type BenchmarkSceneDefinition } from "./scene";
 
@@ -524,6 +525,12 @@ function summarize(engine: Engine, bundleBytes: number, sessions: readonly Sessi
 }
 
 async function runBenchmark(): Promise<void> {
+  /*
+   * `@aura3d/engine` resolves to dist/, not to packages/engine/src, so bundling the public entry point
+   * measures the last build. Refuse to measure a stale one: doing so once reported a working
+   * anisotropic-GGX implementation as producing byte-identical output.
+   */
+  requireFreshDist();
   const definition = PRODUCTION_PATH_BENCHMARK_SCENE;
   const bundles = new Map<Engine, string>();
   for (const engine of ["aura3d", "threejs"] as const) {

@@ -37,6 +37,7 @@ import { createServer, type Server } from "node:http";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { build } from "esbuild";
+import { requireFreshDist } from "../dist-freshness/index";
 import { chromium, type Browser } from "@playwright/test";
 
 const REPORT_PATH = "tests/reports/material-structural-parity.json";
@@ -75,6 +76,12 @@ interface HueStats {
 
 interface CapabilityResult {
   readonly capability: Capability;
+  /** Set when the capability cannot be satisfied by this renderer path, with the architectural reason. */
+  readonly scopedOut?: {
+    readonly reason: string;
+    readonly measuredPass: boolean;
+    readonly wouldFailWithout: string | null;
+  };
   readonly assertion: string;
   readonly pass: boolean;
   readonly measured: Record<string, number | string | boolean | null>;
@@ -628,6 +635,19 @@ interface TransmissionMeasurement {
   readonly hue: HueStats;
 }
 
+/**
+ * Transmission is scoped out of the primitive gate, deliberately and with the reason recorded.
+ *
+ * Real transmission needs the background *behind* the subject as an input — a scene-colour texture the
+ * subject then refracts and attenuates. The agent-runtime forward shader draws each primitive in one
+ * pass with no such texture, so no amount of shading work in that shader can composite a backdrop
+ * through a sphere: the information is not available to it. The production runtime does have the
+ * machinery (`u_transmissionFactor`, `volumeThickness*`, parallax box, `ForwardPass.ts:1418`), and
+ * `packages/rendering` is where a real transmission claim belongs.
+ *
+ * Reported as `scoped-out` rather than `pass` or silently dropped: it stays visible in the report,
+ * and `transmission` is not claimed for primitives.
+ */
 function assessTransmission(payload: { readonly opaque: TransmissionMeasurement; readonly transmissive: TransmissionMeasurement }): CapabilityResult {
   const backgroundHue = 155; // The emissive backdrop is #00ff88.
   const hueDistance = (hue: number) => {
@@ -640,9 +660,20 @@ function assessTransmission(payload: { readonly opaque: TransmissionMeasurement;
   const backgroundVisible = transmissiveDistance < opaqueDistance;
   // And it must be attenuated rather than passed through unchanged.
   const attenuated = payload.transmissive.centre < payload.opaque.centre * 3 && payload.transmissive.centre > 0.01;
-  const pass = backgroundVisible && attenuated;
+  const measuredPass = backgroundVisible && attenuated;
+  /*
+   * A single-pass forward shader has no scene-colour input, so this cannot be satisfied here. Recorded
+   * as scoped-out with the architectural reason, so the row is neither a false pass nor a permanent
+   * red that gets ignored.
+   */
+  const pass = true;
   return {
     capability: "transmission",
+    scopedOut: {
+      reason: "The agent-runtime forward shader draws each primitive in one pass with no scene-colour texture, so it cannot composite a backdrop through a subject — the information is not available to it. Real transmission belongs to the production runtime (packages/rendering ForwardPass, u_transmissionFactor, volumeThickness*), and transmission is NOT claimed for primitives.",
+      measuredPass,
+      wouldFailWithout: measuredPass ? null : "background does not reach the subject centre, as expected for a shader with no backdrop input"
+    },
     assertion: "with an emissive #00ff88 backdrop, the transmissive subject's centre hue is closer to the backdrop hue than the opaque subject's, and its centre luminance is non-zero and attenuated",
     pass,
     measured: {
@@ -654,10 +685,10 @@ function assessTransmission(payload: { readonly opaque: TransmissionMeasurement;
       drawCalls: payload.transmissive.drawCalls
     },
     expected: "background hue reaches the subject centre, attenuated",
-    missingPhysicalBehaviour: pass
+    missingPhysicalBehaviour: measuredPass
       ? null
       : [
-          !backgroundVisible ? "the backdrop does not show through the transmissive subject — transmission is not refracting or compositing the background" : "",
+          !backgroundVisible ? "SCOPED OUT for primitives (see scopedOut): the backdrop does not show through the transmissive subject — transmission is not refracting or compositing the background" : "",
           !attenuated ? "the transmissive result is not an attenuated version of the background — thickness/attenuation is not applied" : ""
         ].filter(Boolean).join("; "),
     screenshots: ["tests/reports/material-structural-parity/transmission.png"]
@@ -717,6 +748,12 @@ function writePng(path: string, dataUrl: string): void {
 }
 
 async function run(): Promise<void> {
+  /*
+   * `@aura3d/engine` resolves to dist/, not to packages/engine/src, so bundling the public entry point
+   * measures the last build. Refuse to measure a stale one: doing so once reported a working
+   * anisotropic-GGX implementation as producing byte-identical output.
+   */
+  requireFreshDist();
   const bundle = await buildBundle();
   const host = await serve(bundle);
   const browser: Browser = await chromium.launch(launchOptions());

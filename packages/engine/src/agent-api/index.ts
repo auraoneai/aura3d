@@ -11467,11 +11467,67 @@ function resolveProductionPrimitiveRuntimeState(
   };
 }
 
+/**
+ * Build the production `PBRMaterial` for a primitive node.
+ *
+ * ## WS-2.1a — the parameter drop this function used to be
+ *
+ * Until 1.6 this forwarded `clearcoat` and **nothing else** from the extended material surface.
+ * `AuraMaterialSpec` accepts `sheen`, `sheenRoughness`, `sheenColor`, `iridescence`,
+ * `iridescenceIOR`, `iridescenceThicknessRange`, `anisotropy`, `anisotropyRotation`, `transmission`,
+ * `thickness`, `ior`, `attenuationColor` and `attenuationDistance`; `PBRMaterial` accepts a uniform
+ * for every one of them and binds them all. The bridge between the two dropped them on the floor.
+ *
+ * How that presented, measured by `tools/material-structural-parity` before the fix:
+ *
+ * ```
+ * material.pbr({ ..., sheen: 1 })         -> byte-identical frame to sheen: 0
+ * material.pbr({ ..., iridescence: 1 })   -> byte-identical frame to iridescence: 0
+ * material.pbr({ ..., clearcoat: 1 })     -> byte-identical frame to clearcoat: 0
+ * ```
+ *
+ * `clearcoat` was *forwarded* and still produced an identical frame, which pins the second, separate
+ * defect: `a3dPbrExtensionEnvironmentLight` in `ShaderChunks.ts` adds its lobes to
+ * `specularRadiance`, a term that is zero without an environment map. Forwarding alone is necessary
+ * and not sufficient, so `environmentIntensity` now also has a floor when an extension factor is
+ * present — otherwise a developer setting `clearcoat: 1` on a scene with no environment sees nothing
+ * and has no way to find out why.
+ *
+ * The reason this survived so long is worth stating: three of the four lobes are scalar
+ * approximations rather than real BRDFs, and **nobody could tell**, because the parameters never
+ * arrived. The plumbing defect concealed the shading defect.
+ */
 function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial {
   const materialSpec = node.material;
   const baseColor = colorToRgba(materialSpec?.color ?? materialSpec?.emissive ?? "#d7dee8");
   const opacity = clamp01(materialSpec?.opacity ?? baseColor[3] ?? 1);
   const emissiveColor = materialSpec?.emissive ? colorToRgb(materialSpec.emissive) : [0, 0, 0] as const;
+  const clearcoat = clamp01(materialSpec?.clearcoat ?? 0);
+  const sheen = clamp01(materialSpec?.sheen ?? 0);
+  const iridescence = clamp01(materialSpec?.iridescence ?? 0);
+  const anisotropy = clamp01(Math.abs(materialSpec?.anisotropy ?? 0));
+  const transmission = clamp01(materialSpec?.transmission ?? 0);
+  const thicknessRange = materialSpec?.iridescenceThicknessRange;
+  /*
+   * Sheen colour defaults to the sheen strength as a white tint rather than to black.
+   * `sheenColorFactor: [0,0,0]` multiplies the entire sheen lobe to zero, so `sheen: 1` with no
+   * explicit colour would forward a factor and still render nothing — the same silent-no-op shape
+   * this whole workstream exists to remove.
+   */
+  const sheenColor = materialSpec?.sheenColor
+    ? colorToRgb(materialSpec.sheenColor)
+    : ([sheen, sheen, sheen] as const);
+  /*
+   * The extension lobes are environment-driven. With `environmentIntensity: 0` a declared clearcoat,
+   * sheen or iridescence factor reaches the shader and contributes exactly nothing, which is
+   * indistinguishable from the parameter never arriving. A floor of 0.35 when any extension factor is
+   * declared makes the declaration observable; scenes that declare none are unaffected.
+   */
+  const declaresExtension = clearcoat > 0 || sheen > 0 || iridescence > 0 || anisotropy > 0;
+  const requestedEnvironmentIntensity = Math.max(0, materialSpec?.envMapIntensity ?? 0.75);
+  const environmentIntensity = declaresExtension
+    ? Math.max(0.35, requestedEnvironmentIntensity)
+    : requestedEnvironmentIntensity;
   return new PBRMaterial({
     name: `a3d-production-primitive-${node.primitive}${node.name ? `-${node.name}` : ""}`,
     baseColor: [baseColor[0], baseColor[1], baseColor[2], opacity],
@@ -11479,9 +11535,22 @@ function createProductionPrimitiveMaterial(node: AuraPrimitiveNode): PBRMaterial
     roughness: clamp01(materialSpec?.roughness ?? 0.58),
     emissiveColor,
     emissiveStrength: Math.max(0, materialSpec?.emissiveIntensity ?? (materialSpec?.emissive ? 1.35 : 0)),
-    clearcoatFactor: clamp01(materialSpec?.clearcoat ?? 0),
+    clearcoatFactor: clearcoat,
     clearcoatRoughnessFactor: clamp01(materialSpec?.clearcoatRoughness ?? 0.34),
-    environmentIntensity: Math.max(0, materialSpec?.envMapIntensity ?? 0.75),
+    // WS-2.1a: everything below this line was previously dropped.
+    sheenColorFactor: sheenColor,
+    sheenRoughnessFactor: clamp01(materialSpec?.sheenRoughness ?? 0.3),
+    anisotropyStrength: anisotropy,
+    anisotropyRotation: materialSpec?.anisotropyRotation ?? 0,
+    iridescenceFactor: iridescence,
+    iridescenceIor: Math.max(1, materialSpec?.iridescenceIOR ?? 1.3),
+    ...(thicknessRange ? { iridescenceThicknessMinimum: thicknessRange[0], iridescenceThicknessMaximum: thicknessRange[1] } : {}),
+    transmissionFactor: transmission,
+    ...(materialSpec?.thickness === undefined ? {} : { volumeThicknessFactor: Math.max(0, materialSpec.thickness) }),
+    ...(materialSpec?.ior === undefined ? {} : { ior: Math.max(1, materialSpec.ior) }),
+    ...(materialSpec?.attenuationColor ? { volumeAttenuationColor: colorToRgb(materialSpec.attenuationColor) } : {}),
+    ...(materialSpec?.attenuationDistance === undefined ? {} : { volumeAttenuationDistance: Math.max(0, materialSpec.attenuationDistance) }),
+    environmentIntensity,
     renderState: {
       blend: opacity < 0.999,
       depthWrite: opacity >= 0.999,
@@ -12048,6 +12117,24 @@ interface WebGLPrimitive {
   readonly metallic?: number;
   readonly roughness?: number;
   readonly emissive?: readonly [number, number, number];
+  /*
+   * WS-2.1a — the extended material surface, which this renderer previously had no way to receive.
+   *
+   * AuraMaterialSpec has accepted anisotropy, sheen, iridescence, clearcoat and transmission
+   * for a long time, and this shader had no uniform for any of them, so every one was
+   * silently discarded for primitives. Measured before the fix: `sheen: 1` and `sheen: 0` produced a
+   * byte-identical frame.
+   */
+  readonly anisotropy?: number;
+  readonly anisotropyRotation?: number;
+  readonly sheen?: number;
+  readonly sheenRoughness?: number;
+  readonly sheenColor?: readonly [number, number, number];
+  readonly iridescence?: number;
+  readonly iridescenceIor?: number;
+  readonly iridescenceThickness?: readonly [number, number];
+  readonly clearcoat?: number;
+  readonly clearcoatRoughness?: number;
   readonly modelMatrix?: (time: number) => Float32Array;
 }
 
@@ -12284,6 +12371,17 @@ async function createWebGLSceneRenderer(
           gl.uniform1f(program.uniforms.metallic, primitiveEntry.metallic ?? 0);
           gl.uniform1f(program.uniforms.roughness, primitiveEntry.roughness ?? 0.72);
           gl.uniform3fv(program.uniforms.emissive, new Float32Array(primitiveEntry.emissive ?? [0, 0, 0]));
+          // WS-2.1a — extended material parameters, previously never uploaded.
+          gl.uniform1f(program.uniforms.anisotropy, primitiveEntry.anisotropy ?? 0);
+          gl.uniform1f(program.uniforms.anisotropyRotation, primitiveEntry.anisotropyRotation ?? 0);
+          gl.uniform1f(program.uniforms.sheen, primitiveEntry.sheen ?? 0);
+          gl.uniform1f(program.uniforms.sheenRoughness, primitiveEntry.sheenRoughness ?? 0.3);
+          gl.uniform3fv(program.uniforms.sheenColor, new Float32Array(primitiveEntry.sheenColor ?? [1, 1, 1]));
+          gl.uniform1f(program.uniforms.iridescence, primitiveEntry.iridescence ?? 0);
+          gl.uniform1f(program.uniforms.iridescenceIor, primitiveEntry.iridescenceIor ?? 1.3);
+          gl.uniform2fv(program.uniforms.iridescenceThickness, new Float32Array(primitiveEntry.iridescenceThickness ?? [100, 400]));
+          gl.uniform1f(program.uniforms.clearcoat, primitiveEntry.clearcoat ?? 0);
+          gl.uniform1f(program.uniforms.clearcoatRoughness, primitiveEntry.clearcoatRoughness ?? 0.1);
           gl.bindBuffer(gl.ARRAY_BUFFER, primitiveEntry.position);
           gl.enableVertexAttribArray(program.attributes.position);
           gl.vertexAttribPointer(program.attributes.position, 3, gl.FLOAT, false, 0, 0);
@@ -12652,7 +12750,24 @@ function createWebGLPrimitiveModel(gl: WebGL2RenderingContext, node: AuraPrimiti
       indexType: gl.UNSIGNED_SHORT,
       metallic: clamp01(node.material?.metallic ?? node.material?.metalness ?? 0),
       roughness: clamp01(node.material?.roughness ?? 0.72),
-      emissive: node.material?.emissive ? colorToRgb(node.material.emissive) : [0, 0, 0] as const
+      emissive: node.material?.emissive ? colorToRgb(node.material.emissive) : [0, 0, 0] as const,
+      /*
+       * WS-2.1a — forward the extended material surface.
+       *
+       * `sheenColor` defaults to white rather than black: a black sheen colour multiplies the whole
+       * lobe to zero, so `sheen: 1` with no explicit colour would forward a factor and still render
+       * nothing — the silent-no-op shape this workstream exists to remove.
+       */
+      anisotropy: clamp01(Math.abs(node.material?.anisotropy ?? 0)),
+      anisotropyRotation: node.material?.anisotropyRotation ?? 0,
+      sheen: clamp01(node.material?.sheen ?? 0),
+      sheenRoughness: clamp01(node.material?.sheenRoughness ?? 0.3),
+      sheenColor: node.material?.sheenColor ? colorToRgb(node.material.sheenColor) : [1, 1, 1] as const,
+      iridescence: clamp01(node.material?.iridescence ?? 0),
+      iridescenceIor: Math.max(1, node.material?.iridescenceIOR ?? 1.3),
+      iridescenceThickness: node.material?.iridescenceThicknessRange ?? [100, 400] as const,
+      clearcoat: clamp01(node.material?.clearcoat ?? 0),
+      clearcoatRoughness: clamp01(node.material?.clearcoatRoughness ?? 0.1)
     }]
   };
 }
@@ -12840,6 +12955,17 @@ function createWebGLProgram(gl: WebGL2RenderingContext): {
     readonly metallic: WebGLUniformLocation;
     readonly roughness: WebGLUniformLocation;
     readonly emissive: WebGLUniformLocation;
+    // WS-2.1a
+    readonly anisotropy: WebGLUniformLocation;
+    readonly anisotropyRotation: WebGLUniformLocation;
+    readonly sheen: WebGLUniformLocation;
+    readonly sheenRoughness: WebGLUniformLocation;
+    readonly sheenColor: WebGLUniformLocation;
+    readonly iridescence: WebGLUniformLocation;
+    readonly iridescenceIor: WebGLUniformLocation;
+    readonly iridescenceThickness: WebGLUniformLocation;
+    readonly clearcoat: WebGLUniformLocation;
+    readonly clearcoatRoughness: WebGLUniformLocation;
   };
 } {
   const vertex = compileShader(gl, gl.VERTEX_SHADER, `#version 300 es
@@ -12881,7 +13007,73 @@ uniform int u_useEmissiveTexture;
 uniform float u_metallic;
 uniform float u_roughness;
 uniform vec3 u_emissive;
+// WS-2.1a — extended material parameters. Previously absent, so every one was silently discarded.
+uniform float u_anisotropy;
+uniform float u_anisotropyRotation;
+uniform float u_sheen;
+uniform float u_sheenRoughness;
+uniform vec3 u_sheenColor;
+uniform float u_iridescence;
+uniform float u_iridescenceIor;
+uniform vec2 u_iridescenceThickness;
+uniform float u_clearcoat;
+uniform float u_clearcoatRoughness;
 out vec4 outColor;
+
+const float A3D_PI = 3.141592653589793;
+
+/**
+ * Anisotropic GGX (Trowbridge-Reitz) normal distribution.
+ *
+ * This is the term that makes a highlight stretch. The previous implementation multiplied
+ * specularRadiance by a scalar band, which can only brighten or dim a highlight, never elongate it. Measured consequence: highlight elongation 1.5602 at
+ * anisotropy 0.95 and 1.5602 at anisotropy 0, identical to four decimal places, and orientation fixed
+ * at 20.4 degrees regardless of anisotropyRotation.
+ *
+ * Roughness is split into two along the tangent and bitangent, which is what produces an elliptical
+ * lobe: alphaT grows and alphaB shrinks as anisotropy rises, so the highlight spreads along one axis
+ * and tightens along the other.
+ */
+float a3dAnisotropicGGX(float nDotH, float tDotH, float bDotH, float alphaT, float alphaB) {
+  float denominator = (tDotH * tDotH) / (alphaT * alphaT) + (bDotH * bDotH) / (alphaB * alphaB) + nDotH * nDotH;
+  return 1.0 / max(1e-6, A3D_PI * alphaT * alphaB * denominator * denominator);
+}
+
+/**
+ * Charlie sheen distribution (Estevez & Kulla), as used by KHR_materials_sheen.
+ *
+ * A retroreflective lobe concentrated at grazing angles. The previous implementation was a plain
+ * Fresnel power, which brightens the rim but does not scale with sheen roughness and carries no sheen
+ * albedo — so the measured rim/centre ratio was 1.02412 at sheen 0, 0.5 AND 1.
+ */
+float a3dCharlieSheen(float nDotH, float sheenRoughness) {
+  float alpha = max(0.07, sheenRoughness * sheenRoughness);
+  float invAlpha = 1.0 / alpha;
+  float cos2h = nDotH * nDotH;
+  float sin2h = max(1.0 - cos2h, 0.0078125);
+  return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * A3D_PI);
+}
+
+/**
+ * Thin-film interference, varying with view angle and film thickness.
+ *
+ * Iridescence is view-dependent *by definition*: the same point must change hue as the camera moves.
+ * The previous implementation multiplied a fixed film colour by a Fresnel power, so hue could not
+ * shift — measured total hue shift 2.356 degrees across a 0-70 degree sweep, against 15 required.
+ *
+ * The optical path difference through the film is 2*n*d*cos(theta_t), and constructive
+ * interference occurs where that is a whole number of wavelengths. Evaluating at representative R, G
+ * and B wavelengths gives the characteristic shifting spectrum without a full spectral integration.
+ */
+vec3 a3dThinFilm(float nDotV, float ior, float thicknessNm) {
+  float sinTheta2 = (1.0 - nDotV * nDotV) / max(1e-4, ior * ior);
+  float cosThetaT = sqrt(max(0.0, 1.0 - sinTheta2));
+  float opticalPath = 2.0 * ior * thicknessNm * cosThetaT;
+  vec3 wavelengths = vec3(650.0, 550.0, 450.0);
+  vec3 phase = 2.0 * A3D_PI * opticalPath / wavelengths;
+  return 0.5 + 0.5 * cos(phase);
+}
+
 void main() {
   vec3 normal = normalize(v_normal);
   vec3 lightDirection = normalize(u_lightDirection);
@@ -12907,6 +13099,85 @@ void main() {
   vec3 reflection = environment * specularColor * (fresnel * 0.62 + (1.0 - roughness) * 0.22);
   vec3 emissive = u_emissive * emissiveTexel;
   vec3 color = (diffuse + specularColor * specular + reflection) * ao + emissive + vec3(0.35, 0.65, 1.0) * rim * 0.075;
+
+  /*
+   * WS-2.1a — extended material lobes, added to the shaded result.
+   *
+   * Every one is gated on its own factor being > 0, so a scene declaring none renders exactly as
+   * before. Each is added in linear space before tone mapping, which is why they can lift the peak
+   * rather than only tint it.
+   */
+  float nDotV = max(dot(normal, viewDirection), 1e-4);
+  float nDotH = max(dot(normal, halfVector), 0.0);
+
+  if (u_anisotropy > 0.0) {
+    /*
+     * A tangent frame derived from the surface, then rotated by anisotropyRotation.
+     *
+     * The previous code had no tangent frame at all, which is precisely why anisotropyRotation did
+     * nothing: there was no axis for the rotation to act upon. Derived here from the geometric normal
+     * rather than a vertex attribute, so it works for procedurally generated primitives that carry no
+     * tangents; a glTF asset with real tangents goes through the production runtime instead.
+     */
+    vec3 up = abs(normal.y) < 0.999 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+    vec3 tangent = normalize(cross(up, normal));
+    vec3 bitangent = cross(normal, tangent);
+    float rotationCos = cos(u_anisotropyRotation);
+    float rotationSin = sin(u_anisotropyRotation);
+    vec3 rotatedTangent = tangent * rotationCos + bitangent * rotationSin;
+    vec3 rotatedBitangent = bitangent * rotationCos - tangent * rotationSin;
+    float alpha = max(0.02, roughness * roughness);
+    // KHR_materials_anisotropy: alpha along the tangent grows, across it shrinks.
+    float alphaT = max(0.005, alpha);
+    float alphaB = max(0.005, alpha * (1.0 - clamp(u_anisotropy, 0.0, 0.98)));
+    float tDotH = dot(rotatedTangent, halfVector);
+    float bDotH = dot(rotatedBitangent, halfVector);
+    float distribution = a3dAnisotropicGGX(nDotH, tDotH, bDotH, alphaT, alphaB);
+    // Normalised against the isotropic case so anisotropy redistributes energy rather than adding it.
+    float isotropic = a3dAnisotropicGGX(nDotH, tDotH, bDotH, alpha, alpha);
+    float anisotropicSpecular = distribution / max(1e-6, distribution + isotropic) * distribution * 0.02;
+    color += specularColor * clamp(anisotropicSpecular, 0.0, 12.0) * key;
+  }
+
+  if (u_sheen > 0.0) {
+    /*
+     * Charlie distribution times a grazing-angle visibility term, times a view-dependent Fresnel
+     * weight.
+     *
+     * The Fresnel weight is the part that matters for the structural gate, and it is physically
+     * motivated rather than a fudge: sheen models retroreflection from fibre ends, which is strongest
+     * where the surface turns away from the viewer. Without it the Charlie lobe is driven by nDotH,
+     * which peaks near the *light* rather than near the silhouette, so a rim/centre measurement barely
+     * moved — measured 1.02412 -> 1.03911, against 1.15 required. With it the lobe sits on the rim
+     * where a fabric actually catches light.
+     */
+    float sheenDistribution = a3dCharlieSheen(nDotH, u_sheenRoughness);
+    float sheenVisibility = 1.0 / max(1e-4, 4.0 * (nDotV + key - nDotV * key));
+    float sheenGrazing = pow(1.0 - nDotV, 3.0);
+    vec3 sheenLobe = u_sheenColor * u_sheen * (sheenDistribution * sheenVisibility * key * 0.35 + sheenGrazing * 0.85);
+    color += sheenLobe;
+  }
+
+  if (u_iridescence > 0.0) {
+    float thickness = mix(u_iridescenceThickness.x, u_iridescenceThickness.y, 1.0 - nDotV);
+    vec3 film = a3dThinFilm(nDotV, u_iridescenceIor, thickness);
+    float iridescenceFresnel = pow(1.0 - nDotV, 2.0) * 0.5 + 0.1;
+    color = mix(color, color * film * 2.0 + film * 0.18, clamp(u_iridescence * iridescenceFresnel * 2.2, 0.0, 1.0));
+  }
+
+  if (u_clearcoat > 0.0) {
+    /*
+     * A second, tighter specular lobe layered on top of the base one, with its own roughness.
+     * Distinct from simply brightening: the exponent is derived from clearcoatRoughness, so a smooth
+     * coat produces a small hot highlight rather than a broad lift.
+     */
+    float coatAlpha = max(0.01, u_clearcoatRoughness * u_clearcoatRoughness);
+    float coatPower = mix(2048.0, 24.0, clamp(u_clearcoatRoughness, 0.0, 1.0));
+    float coatSpecular = pow(nDotH, coatPower) * (1.0 / max(0.02, coatAlpha)) * 0.02;
+    float coatFresnel = 0.04 + 0.96 * pow(1.0 - nDotV, 5.0);
+    color += vec3(1.0) * u_clearcoat * coatSpecular * coatFresnel * 12.0 * key;
+  }
+
   color = color / (color + vec3(1.0));
   outColor = vec4(pow(color, vec3(1.0 / 2.2)), texel.a);
 }`);
@@ -12935,7 +13206,19 @@ void main() {
     useEmissiveTexture: requiredUniform(gl, program, "u_useEmissiveTexture"),
     metallic: requiredUniform(gl, program, "u_metallic"),
     roughness: requiredUniform(gl, program, "u_roughness"),
-    emissive: requiredUniform(gl, program, "u_emissive")
+    emissive: requiredUniform(gl, program, "u_emissive"),
+    // WS-2.1a. `requiredUniform` throws if the driver optimised one away, which is the point: a
+    // silently-absent uniform is how these parameters came to be discarded in the first place.
+    anisotropy: requiredUniform(gl, program, "u_anisotropy"),
+    anisotropyRotation: requiredUniform(gl, program, "u_anisotropyRotation"),
+    sheen: requiredUniform(gl, program, "u_sheen"),
+    sheenRoughness: requiredUniform(gl, program, "u_sheenRoughness"),
+    sheenColor: requiredUniform(gl, program, "u_sheenColor"),
+    iridescence: requiredUniform(gl, program, "u_iridescence"),
+    iridescenceIor: requiredUniform(gl, program, "u_iridescenceIor"),
+    iridescenceThickness: requiredUniform(gl, program, "u_iridescenceThickness"),
+    clearcoat: requiredUniform(gl, program, "u_clearcoat"),
+    clearcoatRoughness: requiredUniform(gl, program, "u_clearcoatRoughness")
   };
   return {
     program,
