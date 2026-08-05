@@ -782,21 +782,83 @@ sphere's own specular shape, identical with anisotropy off.
 
 ### WS-1.6 Claim-lineage enforcement
 
-- [ ] **Create** `tools/claim-lineage/index.ts`. Per R1 it resolves **reachability, not
+- [x] **Create** `tools/claim-lineage/index.ts`. Per R1 it resolves **reachability, not
       literal imports**, and must understand all four evidence shapes: direct test import ·
       test → harness that imports the public entry · generated clean-room entry point ·
       bundle built from the public package entry. It must also *reject* evidence that
-      reaches internals via `@aura3d/*/src/*`.
-- [ ] Every row names qualifying evidence, or is forced to `unproven`.
-- [ ] Add `productionPathTest: "<path>"` to all 56 rows.
-- [ ] Fix two generator faults found in the audit:
+      reaches internals via `@aura3d/*/src/*`. — done. All four shapes resolve; the committed map
+      exercises `direct-test-import` and `harness-import`, and WS-1.4's benchmark is the
+      `bundle-from-public-entry` case. A browser spec that reaches the engine by **navigating** to a
+      served harness page also resolves, since the dev server maps bare specifiers onto
+      `/packages/<pkg>/src/index.ts` — that barrel *is* the public entry.
+- [x] Every row names qualifying evidence, or is forced to `unproven`. — a capability absent from the
+      map fails the gate and is reported with `statusUnderR1: "unproven"`. The tool **reports** that
+      rather than writing it back into the parity table, so it never silently edits a claim.
+- [x] Add `productionPathTest: "<path>"` to all 56 rows. — every non-`gap` row now carries one, read
+      by the generator from `tools/claim-lineage/production-path-tests.json`, the same file the gate
+      reads, so the table and the gate cannot drift into two different opinions about what proves
+      what. **`gap` rows carry `null` and are exempt**: a gap is the honest absence of a capability,
+      and a test proving a thing does not exist would be incoherent.
+- [x] Fix two generator faults found in the audit:
       - **morph targets** is a false `gap` — the generator greps `MorphTargetMixer` and
         misses `packages/animation/src/threejs-compatibility/MorphTargetMixer.ts` and
-        `packages/rendering/src/MorphTarget.ts`. Repoint the symbols.
+        `packages/rendering/src/MorphTarget.ts`. Repoint the symbols. — **fixed.** Neither
+        `MorphTargetMixer` nor `MorphTargetWeight` exists; the real symbols are
+        `MorphTargetMixerThreeCompat` and `applyMorphTargets`. There is also a full public browser
+        contract test (`createAuraApp-morph-targets.spec.ts` → a harness importing `@aura3d/engine`).
+        So Aura3D had morph targets, a public API, and a passing browser test, while the table
+        published `gap` — **the mirror image of P1's fabrication defects, and worth naming: a
+        generator can understate as easily as overstate.** Corrected symbols move the row
+        `gap` → `parity-unproven`, which is honest and a different reason: it still has no *route*
+        consumer.
       - **context loss recovery** is half-real — `WebGL2Device.ts:349-350` listens for
-        the events; nothing surfaces through the root API. Keep `gap`, correct the note.
-- [ ] Add `check:claim-lineage` to `check:release`.
-- [ ] **Proof:** `pnpm check:claim-lineage` fails on any row lacking a production-path test.
+        the events; nothing surfaces through the root API. Keep `gap`, correct the note. — done;
+        the note now states precisely that the device layer is not the gap and the root API is,
+        because the vaguer wording invited closing the row by pointing at the listeners. **Also
+        found:** `tests/browser/production-runtime-webgl2-context-loss.spec.ts` is a **one-line
+        re-export shell containing no test** — `export { test, expect } from '@playwright/test';` —
+        exactly the kind of file that makes a capability look covered. Recorded in the row.
+- [x] Add `check:claim-lineage` to `check:release`. — added between `check:bundle-size` and
+      `check:production-path-benchmark`.
+- [x] **Proof:** `pnpm check:claim-lineage` fails on any row lacking a production-path test. —
+      **54/54 non-gap rows resolve, EXIT=0.** Sabotage-verified in
+      `tests/unit/tools/claim-lineage.test.ts` (**8 passed**): removing an entry fails with
+      `statusUnderR1: "unproven"`; naming a deep-import-only test fails; naming a test that imports
+      no Aura3D fails.
+
+### Two real findings while populating the map
+
+1. **`touch controls` was credited to `tests/browser/webgl-input-audio.spec.ts`, which imports no
+   Aura3D at all.** It calls `canvas.getContext("webgl2")`, clears a colour, reads a pixel, and
+   dispatches pointer events — it verifies that *Chromium* implements WebGL2 and pointer events.
+   A reasonable thing to check, and not evidence about Aura3D's touch controls. Repointed to
+   `runtime-external-parity.spec.ts`, which drives the asset-viewer and editor routes through the dev
+   server and asserts `touchControls: true` on their live camera-control state.
+2. **`deterministic replay` was credited to `apps/aura-clash-showcase/tests/deterministic-replay.spec.ts`**,
+   which reaches the engine only by navigating to `/playable/` through its own app harness — a route
+   URL, not a documented public entry, so the lineage is unresolvable from source. Repointed to
+   `fighting-game-runtime.spec.ts`, which imports the public entry directly.
+
+### The sabotage that mattered most
+
+Pointing `materials` at `tests/unit/physics/path-follow-driver.test.ts` — which deep-imports
+`packages/physics/src/PathFollowDriver` and nothing public — **initially RESOLVED**. The walk stepped
+into `PathFollowDriver.ts`, kept traversing its neighbours, and eventually found an internal file
+mentioning a public specifier. **Every deep import would have resolved that way**, since all internals
+are transitively connected — the tool would have been a no-op that reported 54/54 forever.
+
+The walk now stops at the package barrel, and the barrel/file distinction is explicit:
+
+```
+@aura3d/physics/src/PathFollowDriver            deep — no
+../../../packages/physics/src/PathFollowDriver  deep — no, same thing spelled relatively
+../../../packages/physics/src                   THE PUBLIC BARREL — yes
+```
+
+Both directions are locked by tests, because being too strict is also a failure: rejecting the
+relative barrel spelling would fail honest unit tests and push people toward decorative imports.
+
+Documented in **`docs/architecture/claim-lineage.md`** (§8's P1 deliverable).
 
 ---
 

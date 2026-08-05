@@ -186,11 +186,38 @@ const ROWS = [
   { category: "core-rendering", capability: "tone mapping / colour management", expected: "renderer.toneMapping + outputColorSpace", symbols: ["applyExternalParityToneMappingPreset", "createExternalParityToneMappingPolicy"], integrated: true, claim: "parity", notes: "Tone mapping is applied by the production renderer; the root API exposes it as renderer configuration rather than as a user-managed pass." },
   { category: "core-rendering", capability: "instancing", expected: "InstancedMesh", symbols: ["InstancedMesh"], integrated: false, claim: "parity", notes: "Rendering-internal; not surfaced through the root safe API." },
   { category: "core-rendering", capability: "skinned animation", expected: "SkinnedMesh + AnimationMixer", symbols: ["AnimationMixer", "AnimationController"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-runtime"] },
-  { category: "core-rendering", capability: "morph targets", expected: "morphTargetInfluences", symbols: ["MorphTargetMixer", "MorphTargetWeight"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-morph-target-readiness"] },
+  /*
+   * WS-1.6 — symbols corrected. This row reported `gap` for a generator fault, not a product one:
+   * it grepped `MorphTargetMixer` and `MorphTargetWeight`, and NEITHER SYMBOL EXISTS. The real ones
+   * are `MorphTargetMixerThreeCompat` (packages/animation/src/threejs-compatibility/MorphTargetMixer.ts,
+   * exported from both the barrel and browser-index) and the `applyMorphTargets` /
+   * `computeMorphTargetEnvelopeBounds` / `computeMorphTargetWeightedBounds` family in
+   * packages/rendering/src/MorphTarget.ts. There is also a full public browser contract test:
+   * tests/browser/createAuraApp-morph-targets.spec.ts, driving a harness that imports @aura3d/engine.
+   *
+   * So Aura3D had morph targets, a public API for them, and a browser test proving it, while the
+   * parity table published "gap" — the mirror image of the fabrication defects elsewhere in P1, and
+   * a reminder that a generator can understate as easily as overstate.
+   */
+  { category: "core-rendering", capability: "morph targets", expected: "morphTargetInfluences", symbols: ["MorphTargetMixerThreeCompat", "applyMorphTargets"], integrated: true, claim: "parity", evidence: ["tests/reports/animation-morph-target-readiness"] },
   { category: "core-rendering", capability: "particles", expected: "Points + custom shaders, or third-party VFX", symbols: ["ParticleSystem"], integrated: true, claim: "parity" },
   { category: "core-rendering", capability: "LOD", expected: "THREE.LOD", symbols: ["LodSelection", "LodLevel"], integrated: false, claim: "parity", notes: "LOD selection exists in @aura3d/rendering but is not surfaced through the root safe API, so a route cannot declare LOD levels." },
   { category: "core-rendering", capability: "WebGPU", expected: "WebGPURenderer (experimental)", symbols: ["WebGPUDevice"], integrated: true, claim: "parity", evidence: ["tests/reports/webgpu-feature-matrix"] },
-  { category: "core-rendering", capability: "context loss recovery", expected: "webglcontextlost handling by hand", symbols: ["contextLoss"], integrated: false, claim: "gap", notes: "No documented public context-loss policy; a WebGL context loss is not surfaced or recovered through the root API." },
+  /*
+   * WS-1.6 — status unchanged (`gap` is correct), reason corrected.
+   *
+   * The old note said context loss "is not surfaced or recovered", which reads as though nothing
+   * handles it. `packages/rendering/src/WebGL2Device.ts:349-350` does listen for `webglcontextlost`
+   * and `webglcontextrestored`. What is missing is the second half: nothing reaches the root API, so
+   * a developer using `createAuraApp` cannot observe or respond to a lost context. Stating that
+   * precisely matters, because the vaguer note invites someone to close this row by pointing at the
+   * listeners — which would be a false parity claim built on a true observation.
+   *
+   * `tests/browser/production-runtime-webgl2-context-loss.spec.ts` exists but is a **one-line
+   * re-export shell** containing no test: `export { test, expect } from '@playwright/test';`. It is
+   * not evidence, and it is exactly the kind of file that makes a capability look covered.
+   */
+  { category: "core-rendering", capability: "context loss recovery", expected: "webglcontextlost handling by hand", symbols: ["contextLoss"], integrated: false, claim: "gap", notes: "WebGL2Device.ts:349-350 DOES listen for webglcontextlost/webglcontextrestored, so the device layer is not the gap. The gap is that nothing surfaces through the root API: createAuraApp exposes no onDeviceLost/onDeviceRestored and performs no resource recreation, so a developer cannot observe or recover from a lost context. Note also that tests/browser/production-runtime-webgl2-context-loss.spec.ts is a one-line re-export shell with no test in it. WS-2.6 closes this." },
   { category: "core-rendering", capability: "resource disposal", expected: "manual geometry/material/texture dispose()", symbols: ["dispose"], integrated: true, claim: "exceed", notes: "App owns the lifecycle; routes call app.dispose() rather than tracking GPU objects." },
 
   // --- Ecosystem helpers ---
@@ -241,6 +268,18 @@ const ROWS = [
   { category: "developer-tooling", capability: "runtime invariant reporting", expected: "no standard solution", symbols: ["checkSpatialInvariants", "validatePlatformerMotion", "validateCombatFrameData"], integrated: true, claim: "exceed", notes: "Geometric and gameplay correctness published as machine-checkable reports." }
 ];
 
+/**
+ * WS-1.6 — the R1 lineage map, read from the single source of truth rather than duplicated here.
+ *
+ * `tools/claim-lineage/production-path-tests.json` is also what `check:claim-lineage` reads, so the
+ * table and the gate cannot drift apart into two different opinions about what proves what.
+ */
+const PRODUCTION_PATH_TESTS = (() => {
+  const path = join(root, "tools/claim-lineage/production-path-tests.json");
+  if (!existsSync(path)) return {};
+  return JSON.parse(readFileSync(path, "utf8")).productionPathTests ?? {};
+})();
+
 const rows = ROROWS();
 
 function ROROWS() {
@@ -285,6 +324,14 @@ function ROROWS() {
       claimedStatus: row.claim,
       parityStatus: status,
       exceeds: status === "exceed",
+      /*
+       * WS-1.6 — R1 lineage. The named test must execute the public production path for this
+       * capability; `tools/claim-lineage/index.ts` resolves reachability and fails the build for any
+       * row whose named test cannot reach a documented public entry point. `gap` rows carry null:
+       * a gap is the honest absence of a capability, so a test proving it does not exist would be
+       * incoherent.
+       */
+      productionPathTest: status === "gap" ? null : (PRODUCTION_PATH_TESTS[row.capability] ?? null),
       downgradeReasons: downgrades
     };
   });
@@ -313,7 +360,8 @@ const report = {
     "Each row's implementation must resolve to a real exported symbol or agent-API source.",
     "Parity requires at least one app or example that actually imports the capability.",
     "An exceed claim additionally requires retained runtime evidence that exists on disk.",
-    "The generator downgrades rows whose evidence is missing and records why, so this table cannot overstate the product."
+    "The generator downgrades rows whose evidence is missing and records why, so this table cannot overstate the product.",
+    "WS-1.6/R1: every non-gap row names a productionPathTest that must execute the public production path. tools/claim-lineage/index.ts resolves that reachability and fails the build otherwise. A consumer proves someone imports a symbol and an artifact proves a file exists; neither proves a test observed the claimed behaviour through the public API, which is why this fourth rule exists."
   ],
   totals: {
     rows: rows.length,
