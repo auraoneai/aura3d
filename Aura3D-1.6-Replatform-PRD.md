@@ -1591,26 +1591,98 @@ export and `setAction`. **The engine one is the richer implementation.**
 `VirtualTouchControls.ts` (169), `InputReplay.ts` (275) with a parseable recording format,
 `GestureRecognizer`, `GamepadDevice`.
 
-- [ ] **Step 1 — characterization tests, before any change.** Capture the current
+- [x] **Step 1 — characterization tests, before any change.** Capture the current
       `createGameInput` contract (`GameInputOptions` :382, `GameInputController` :436) and
       the `packages/input` contract, comparing: event timing · held vs pressed vs released ·
       repeat behaviour · touch normalization · action mapping · simulation-frame sampling ·
-      replay format · focus loss · pointer lock · gamepad dead zones.
-- [ ] **Step 2 — pick the survivor from that table**, then port the other's unique
-      capabilities into it. Do not assume the answer.
-- [ ] **Step 3 — thin adapter** for the losing surface, only if behaviour matches the
-      characterization tests exactly.
+      replay format · focus loss · pointer lock · gamepad dead zones. —
+      **`tests/unit/input/input-characterization.test.ts`, 13 tests, written before any change.**
+
+      **Four of my own assertions failed first and each correction is a finding**, which is what a
+      characterization test is for. The headline one:
+
+      **The repository holds THREE different frame-boundary conventions for the same concept.**
+
+      | System | Convention |
+      |---|---|
+      | `packages/input` · `InputSnapshot` | caller supplies the previous key set **explicitly** |
+      | `packages/input` · `InputSystem` | `update()` samples, a **separate `endFrame()`** advances |
+      | engine · `createGameInput` | `update(dt)` samples **and** advances together |
+
+      Consequences measured, not inferred: `createGameInput`'s `press()` records a *pending* binding and the
+      edge appears only after `update()`, so a caller that presses and reads without stepping sees nothing;
+      `combo()` needs each press on its **own** frame because press history is appended where the edge is
+      computed; and `InputSystem.endFrame()` called *after* a keyup **erases the release edge** before
+      anything can observe it. A consolidation that picks a survivor silently adopts one convention and
+      breaks callers of the other two in a way no type signature catches — `pressed()` keeps compiling and
+      starts lying.
+- [x] **Step 2 — pick the survivor from that table**, then port the other's unique
+      capabilities into it. Do not assume the answer. — **the answer is that there is no contest to
+      settle: both survive, because they are not duplicates.**
+
+      Measured across `packages/`, `apps/` and `examples/`: **no file imports both.** The consumer sets are
+      disjoint and the roles differ in kind, not in quality:
+
+      | Service | Consumers | Role |
+      |---|---|---|
+      | engine `createGameInput` | `showcase-turbo-drift-circuit`, `showcase-skyline-runner`, `showcase-orbital-defense`, `aura-clash-showcase`, `TouchControlBinding` | game **action mapping** — buffering, combos, axes, replay |
+      | `packages/input` | `packages/controls` (Orbit/Map/Drag/FirstPerson/Fly/PointerLock), `apps/controls-orbit`, `apps/interactive-picking` | `InputSnapshot` as a **data type** for camera controls |
+
+      Revision 1 said make `packages/input` the survivor; the PRD already corrected that to "the engine one
+      is richer". Both are true statements about *capability* and neither settles the question, because
+      deleting either would break its own consumers to satisfy a count. R12's words are "every capability
+      has exactly one owner" — two services with **no shared consumer** are not competing for a capability.
+- [x] **Step 3 — thin adapter** for the losing surface, only if behaviour matches the
+      characterization tests exactly. — **not needed, and building one would have been the mistake.** With
+      no shared consumer there is no surface to adapt; an adapter would have forced one convention onto
+      callers of the other, which the three-convention finding above shows is exactly how `pressed()` starts
+      lying while still compiling.
+
+### What WS-3.1 did find and delete: a real R12 violation the package-level view could not see
+
+Enforcing the stated invariant surfaced a `keydown` attachment in `agent-api/index.ts` that was not
+`GameRuntime`'s. It was **`createGameInputController` — 175 lines, ZERO consumers**
+(`grep -rn` across packages, apps, examples, tests and tools returns only its own definition), holding its
+own `activeBindings`/`previousHeld`/`pressedEdges` state, its own `window` listeners, and a **weaker
+`update()` with no press history**, therefore no `combo()`, and no pointer or gamepad handling.
+
+Anything that had reached it would have got quietly worse input semantics than `game.input()` provides.
+Deleted; `pnpm typecheck` confirms nothing referenced it. **Engine source is now 200,869 lines — 60 below
+the §B.3 baseline.**
+
+That is the duplicate-ownership class in its least visible form: not two packages, but **two functions in
+one file, one of them dead.** A package-level check cannot see it, which is why the R12 detector for input
+is now rewritten to detect the real violation shape — *a file that wires both* — rather than the mere
+co-existence of two modules. **R12 violations 5 → 4**, corrected by measurement rather than by relaxing the
+rule.
 **The invariant is service ownership, not a grep count.** Multiple low-level listeners are
 legitimate when they belong to an editor iframe, the application shell, a WebXR session, a
 standalone-package compatibility adapter, or a test harness. Requiring exactly one
 repo-wide match would force awkward architecture.
 
-- [ ] **Stated invariant:** *a single runtime input service owns keyboard state for a
+- [x] **Stated invariant:** *a single runtime input service owns keyboard state for a
       mounted Aura3D application, and adapters do not independently interpret the same
-      event stream.*
-- [ ] **Proof:** characterization tests pass identically before and after; an architecture
+      event stream.* — enforced by `tests/unit/input/input-service-ownership.test.ts`.
+- [x] **Proof:** characterization tests pass identically before and after; an architecture
       test asserts one input service per mounted app and no adapter double-interpreting
-      events. Legitimate independent listeners are enumerated with their justification.
+      events. Legitimate independent listeners are enumerated with their justification. —
+      **13 characterization + 3 ownership tests pass; 226 tests across input, agent-api and controls pass.**
+
+      Six legitimate owners are enumerated **each with its reason**, per the PRD's insistence that this is
+      service ownership rather than a grep count: the runtime service · `packages/input`'s device layer ·
+      `StaticExportRuntime` and `TimelineUI` (editor chrome, which must *not* share an action map or a
+      spacebar would both scrub the timeline and jump the character) · two scaffold templates (shipped for a
+      developer to own).
+
+      The test has an **inverse check** that fails if an enumerated owner stops attaching. Without it,
+      entries survive after code moves and the allowlist becomes a record of what used to be true — how a
+      governance artifact turns into decoration.
+
+      **A detection bug in my own first version, worth recording:** the pattern matched only
+      `addEventListener("keydown"` as a literal, and `packages/input`'s `InputSystem` attaches from a
+      **table** of `[type, listener]` pairs — so the test reported the one file whose whole purpose is
+      owning the keyboard stream as *not attaching*, and would have let a new table-driven service in
+      silently. The pattern now matches the declared `"keydown"` string in either spelling.
 
 ### WS-3.2 Audio — same standard
 

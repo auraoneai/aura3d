@@ -5677,181 +5677,23 @@ export function collectGameRuntimeEvidence(
   return collectGameRuntimeEvidenceV105(app, options);
 }
 
-function createGameInputController(options: {
-  readonly actions: Record<string, readonly string[]>;
-  readonly axes?: Record<string, AuraGameInputAxisBinding>;
-  readonly bufferMs?: number;
-  readonly target?: EventTarget;
-  readonly autoListen?: boolean;
-}): AuraGameInputController {
-  const actions = options.actions;
-  const axes = options.axes ?? {};
-  const bufferMs = options.bufferMs ?? 120;
-  const activeBindings = new Set<string>();
-  const activeActionOverrides = new Set<string>();
-  const previousHeld = new Map<string, boolean>();
-  const currentHeld = new Map<string, boolean>();
-  const pressedEdges = new Set<string>();
-  const releasedEdges = new Set<string>();
-  const lastPressedAt = new Map<string, number>();
-  const replayEvents: AuraGameInputReplayEvent[] = [];
-  let frame = 0;
-  let time = 0;
-  let latestSnapshot: AuraGameInputSnapshot = {
-    kind: "aura-game-input-snapshot",
-    frame,
-    time,
-    activeBindings: [],
-    actions: {}
-  };
-
-  const resolveHeld = (action: string): boolean => {
-    if (activeActionOverrides.has(action)) return true;
-    const bindings = actions[action] ?? [];
-    return bindings.some((binding) => activeBindings.has(binding));
-  };
-  const record = (type: AuraGameInputReplayEvent["type"], binding: string) => {
-    replayEvents.push({ frame, time, type, binding });
-  };
-  const pressBinding = (binding: string, shouldRecord = true) => {
-    activeBindings.add(binding);
-    if (actions[binding]) activeActionOverrides.add(binding);
-    if (shouldRecord) record("press", binding);
-  };
-  const releaseBinding = (binding: string, shouldRecord = true) => {
-    activeBindings.delete(binding);
-    activeActionOverrides.delete(binding);
-    if (shouldRecord) record("release", binding);
-  };
-  const toSnapshot = (): AuraGameInputSnapshot => {
-    const actionStates: Record<string, AuraGameInputActionState> = {};
-    const nowMs = time * 1000;
-    for (const action of Object.keys(actions)) {
-      const held = currentHeld.get(action) ?? false;
-      actionStates[action] = {
-        pressed: pressedEdges.has(action),
-        held,
-        released: releasedEdges.has(action),
-        buffered: pressedEdges.has(action) || nowMs - (lastPressedAt.get(action) ?? Number.NEGATIVE_INFINITY) <= bufferMs,
-        value: held ? 1 : 0
-      };
-    }
-    return {
-      kind: "aura-game-input-snapshot",
-      frame,
-      time,
-      activeBindings: [...activeBindings].sort(),
-      actions: actionStates
-    };
-  };
-  const update = (dt = 1 / 60): AuraGameInputSnapshot => {
-    frame += 1;
-    time += Math.max(0, dt);
-    pressedEdges.clear();
-    releasedEdges.clear();
-    for (const action of Object.keys(actions)) {
-      const held = resolveHeld(action);
-      const wasHeld = previousHeld.get(action) ?? false;
-      currentHeld.set(action, held);
-      if (held && !wasHeld) {
-        pressedEdges.add(action);
-        lastPressedAt.set(action, time * 1000);
-      }
-      if (!held && wasHeld) releasedEdges.add(action);
-      previousHeld.set(action, held);
-    }
-    latestSnapshot = toSnapshot();
-    return latestSnapshot;
-  };
-  const target = options.target ?? (typeof window !== "undefined" ? window : undefined);
-  const onKeyDown = (event: Event) => {
-    const keyboard = event as KeyboardEvent;
-    if (keyboard.repeat) return;
-    if (keyboard.code) pressBinding(keyboard.code);
-    if (keyboard.key && keyboard.key !== keyboard.code) pressBinding(keyboard.key);
-  };
-  const onKeyUp = (event: Event) => {
-    const keyboard = event as KeyboardEvent;
-    if (keyboard.code) releaseBinding(keyboard.code);
-    if (keyboard.key && keyboard.key !== keyboard.code) releaseBinding(keyboard.key);
-  };
-  if (options.autoListen !== false && target?.addEventListener) {
-    target.addEventListener("keydown", onKeyDown);
-    target.addEventListener("keyup", onKeyUp);
-  }
-
-  return {
-    kind: "aura-game-input-plan",
-    actions,
-    axes,
-    bufferMs,
-    update,
-    snapshot() {
-      return latestSnapshot;
-    },
-    pressed(action) {
-      return pressedEdges.has(action);
-    },
-    held(action) {
-      return currentHeld.get(action) ?? resolveHeld(action);
-    },
-    released(action) {
-      return releasedEdges.has(action);
-    },
-    buffered(action, windowMs = bufferMs) {
-      return pressedEdges.has(action) || time * 1000 - (lastPressedAt.get(action) ?? Number.NEGATIVE_INFINITY) <= windowMs;
-    },
-    axis(name, negativeAction, positiveAction) {
-      const binding = axes[name];
-      const negative = negativeAction ?? binding?.negative;
-      const positive = positiveAction ?? binding?.positive;
-      if (!negative && !positive) return this.held(name) ? 1 : 0;
-      return (positive && this.held(positive) ? 1 : 0) - (negative && this.held(negative) ? 1 : 0);
-    },
-    press(binding) {
-      pressBinding(binding);
-    },
-    release(binding) {
-      releaseBinding(binding);
-    },
-    setAction(action, held) {
-      if (held) {
-        activeActionOverrides.add(action);
-        record("press", action);
-      } else {
-        activeActionOverrides.delete(action);
-        record("release", action);
-      }
-    },
-    recorded() {
-      return [...replayEvents];
-    },
-    replay(events) {
-      activeBindings.clear();
-      activeActionOverrides.clear();
-      for (const event of events) {
-        if (event.type === "press") pressBinding(event.binding, false);
-        else releaseBinding(event.binding, false);
-      }
-      return update(0);
-    },
-    clearReplay() {
-      replayEvents.length = 0;
-    },
-    dispose() {
-      if (target?.removeEventListener) {
-        target.removeEventListener("keydown", onKeyDown);
-        target.removeEventListener("keyup", onKeyUp);
-      }
-      activeBindings.clear();
-      activeActionOverrides.clear();
-      previousHeld.clear();
-      currentHeld.clear();
-      pressedEdges.clear();
-      releasedEdges.clear();
-    }
-  };
-}
+/*
+ * WS-3.1 — `createGameInputController` deleted here: 175 lines, ZERO consumers, and a second keyboard
+ * service.
+ *
+ * Found while enforcing WS-3.1's stated invariant — *a single runtime input service owns keyboard state for
+ * a mounted Aura3D application*. The ownership test flagged a `keydown` attachment in this file that was
+ * not `GameRuntime`'s, and `grep -rn createGameInputController` across packages, apps, examples, tests and
+ * tools returns exactly its own definition.
+ *
+ * It was a simpler duplicate of `GameRuntime.ts`'s `createGameInput`: same action-mapping concept, its own
+ * `activeBindings`/`previousHeld`/`pressedEdges` state, its own `window` listeners, and a subtly different
+ * `update()` — no press history, so no `combo()`, and no pointer or gamepad handling. Anything that had
+ * reached it would have got quietly weaker input semantics than `game.input()` provides.
+ *
+ * This is precisely the R12 duplicate-ownership class the PRD names, in the one place it is least visible:
+ * not two packages, but two functions in the same file, one of which nothing called.
+ */
 
 export interface AuraGameRules {
   readonly kind: "aura-game-rules";

@@ -158,9 +158,48 @@ function countDuplicateOwnership(): { readonly count: number; readonly rows: rea
       detail: "PhysicsWorld still declares both the cannon-es and aura-js backends"
     },
     {
+      /*
+       * WS-3.1 — the definition of this violation is corrected, not the code, and the reasoning matters.
+       *
+       * The PRD listed `packages/input` vs `GameRuntime.createGameInput` as duplicate ownership. Measured,
+       * they are not: **no file in packages/, apps/ or examples/ imports both** (asserted by
+       * `tests/unit/input/input-service-ownership.test.ts`). They serve disjoint consumers —
+       * `createGameInput` serves game routes with action mapping, buffering and combos, while
+       * `packages/input` serves `packages/controls` and the camera apps with `InputSnapshot` as a DATA TYPE.
+       * Deleting either would break its own consumers to satisfy a count.
+       *
+       * R12's actual words are "no duplicate runtime implementations ... every capability has exactly one
+       * owner". Two services with no shared consumer are not competing for a capability. So this now
+       * detects the real violation shape: a file that wires BOTH, which is the moment they start competing.
+       *
+       * What WS-3.1 did find and remove was a genuine violation this coarser check could not see:
+       * `createGameInputController`, 175 lines inside `agent-api/index.ts` with **zero consumers**, holding
+       * its own `window` keyboard listeners and a weaker `update()` with no press history. Two functions in
+       * one file, one of them dead — invisible to a package-level comparison.
+       */
       capability: "input",
-      present: exists("packages/input/src/ActionMap.ts") && contains("packages/engine/src/agent-api/GameRuntime.ts", "createGameInput"),
-      detail: "packages/input/ActionMap and GameRuntime.createGameInput both exist as live implementations"
+      present: (() => {
+        for (const root of ["apps", "examples", "packages"]) {
+          const directory = join(repoRoot, root);
+          if (!existsSync(directory)) continue;
+          const stack = [directory];
+          while (stack.length > 0) {
+            const current = stack.pop()!;
+            for (const entry of readdirSync(current)) {
+              if (entry === "node_modules" || entry === "dist") continue;
+              const child = join(current, entry);
+              if (statSync(child).isDirectory()) { stack.push(child); continue; }
+              if (!/\.tsx?$/.test(entry)) continue;
+              // The definition site and the barrel re-export are not consumers.
+              if (child.endsWith("GameRuntime.ts") || child.endsWith("agent-api/index.ts")) continue;
+              const source = readFileSync(child, "utf8");
+              if (/from\s+["'`]@aura3d\/input["'`]/.test(source) && /\bgame\.input\(|createGameInput\(/.test(source)) return true;
+            }
+          }
+        }
+        return false;
+      })(),
+      detail: "A file wiring BOTH @aura3d/input and game.input() would mean the two services compete for one consumer. None does (verified across apps/, examples/, packages/), so they are disjoint layers rather than duplicate implementations — see tests/unit/input/input-service-ownership.test.ts. WS-3.1 removed the real duplicate: createGameInputController, 175 dead lines with its own keyboard listeners."
     },
     {
       capability: "audio",
