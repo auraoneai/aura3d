@@ -9499,6 +9499,28 @@ export interface AuraApp {
   input(options: GameInputOptions): ReturnType<typeof createGameInput>;
   pause(): void;
   resume(): void;
+  /**
+   * Resolves once the renderer has finished mounting and a frame can be drawn.
+   *
+   * WS-2.9. The production WebGL renderer mounts asynchronously, so immediately after
+   * `createAuraApp` returns there is a window in which nothing can be drawn yet. `step(dt)` used to
+   * fall through to a Canvas-2D path in that window and render nothing, with no warning — a blank
+   * image for anyone writing a headless capture or a deterministic test.
+   *
+   * Awaiting this is the fix, and it exists because a warning that says "wait for the mount" is
+   * useless without a way to wait:
+   *
+   * ```ts
+   * const app = createAuraApp(canvas, { scene, autoStart: false });
+   * await app.ready();
+   * app.step(1 / 60);           // now renders
+   * ```
+   *
+   * Resolves immediately for a scene with no async mount, and resolves — rather than rejecting — if
+   * the mount fails, because the failure is already reported through `diagnostics().errors` and a
+   * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
+   */
+  ready(): Promise<void>;
   step(dt?: number): void;
   diagnostics(): AuraDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
@@ -9860,6 +9882,17 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   let disposed = false;
   let animationHandle = 0;
   let productionController: WebGLRenderController | undefined;
+  /** WS-2.9: true from the moment a WebGL mount starts until the controller arrives or fails. */
+  let productionMountPending = false;
+  /**
+   * Settles when the in-flight WebGL mount finishes, successfully or not. Backs `app.ready()`.
+   *
+   * Resolved rather than pending when no mount is in flight, so `await app.ready()` is safe to call at
+   * any time and on any scene.
+   */
+  let productionMountSettled: Promise<void> = Promise.resolve();
+  /** Lets `dispose()` settle an in-flight mount; see the note there. */
+  let settleMountForDispose: () => void = () => undefined;
   let lastTime = 0;
   let mountRevision = 0;
   let canvasRuntimePhysics: ReturnType<typeof createRuntimeScenePhysics> | undefined;
@@ -10006,6 +10039,21 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     canvasRuntimePhysics = shouldUseProductionRenderer ? undefined : createRuntimeScenePhysics(renderSnapshot);
     overlay?.update();
     const revision = ++mountRevision;
+    /*
+     * WS-2.9 — record that a WebGL mount is in flight.
+     *
+     * `startProductionRender` is async, so between `createAuraApp` returning and the controller
+     * arriving there is a window in which `step()` used to fall through to the Canvas-2D `render()`
+     * path and draw nothing for a WebGL scene — silently, with `drawCalls: 0`, `warnings: []` and
+     * `errors: []`. `step(dt)` is the documented deterministic entry point, so a developer writing a
+     * headless capture got a blank image and no explanation.
+     */
+    productionMountPending = shouldUseProductionRenderer && Boolean(canvas);
+    let settleMount: () => void = () => undefined;
+    productionMountSettled = productionMountPending
+      ? new Promise<void>((resolveSettled) => { settleMount = resolveSettled; })
+      : Promise.resolve();
+    settleMountForDispose = settleMount;
     if (shouldUseProductionRenderer && canvas) {
       void startProductionRender(
         canvas,
@@ -10030,14 +10078,20 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       )
         .then((controller) => {
           if (disposed || revision !== mountRevision) {
+            productionMountPending = false;
+            settleMount();
             controller.dispose();
             return;
           }
           productionController = controller;
+          productionMountPending = false;
+          settleMount();
           markRouteReady(snapshot, diagnosticsState);
         })
         .catch((error: unknown) => {
           if (disposed || revision !== mountRevision) return;
+          productionMountPending = false;
+          settleMount();
           diagnosticsState.backend = "webgl2";
           diagnosticsState.errors.push(productionRenderErrorMessage(error));
           overlay?.update();
@@ -10129,6 +10183,10 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         animationHandle = requestAnimationFrame(render);
       }
     },
+    async ready() {
+      // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
+      await productionMountSettled;
+    },
     step(dt = 1 / 60) {
       const seconds = Math.max(0, dt);
       runRuntimeFrame(seconds, "manual");
@@ -10153,6 +10211,26 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       const simulatedMs = runtimeTime * 1000;
       if (productionController) {
         productionController.render(simulatedMs);
+      } else if (productionMountPending) {
+        /*
+         * WS-2.9 — a WebGL mount is in flight, so there is nothing correct to draw yet.
+         *
+         * Falling through to the Canvas-2D `render()` branch below would draw a gradient for a scene
+         * that has a WebGL renderer coming, which is worse than drawing nothing: it produces a frame
+         * that looks like a real render and is not one. Measured before this fix: eight synchronous
+         * `step(1/60)` calls after construction gave `drawCalls: 0`, a fully blank canvas,
+         * `backend: "webgl2"` and — the actual defect — **empty `warnings` and `errors`**. One
+         * `await requestAnimationFrame` first gave 58,480 lit pixels.
+         *
+         * So this reports rather than renders. The warning is actionable and names both the cause and
+         * the fix, because a developer writing a headless capture has no way to guess that a
+         * documented deterministic entry point depends on an animation frame having elapsed.
+         */
+        const pendingWarning =
+          "Aura3D step() was called before the WebGL renderer finished mounting, so this frame rendered nothing. The production renderer mounts asynchronously. Suggested fix: await one animation frame — `await new Promise(requestAnimationFrame)` — or await `app.ready()` before stepping, then call step() as normal.";
+        if (!diagnosticsState.warnings.includes(pendingWarning)) diagnosticsState.warnings.push(pendingWarning);
+        diagnosticsState.drawCalls = 0;
+        overlay?.update();
       } else {
         /*
          * `render` records `lastTime` to derive its own delta. Feeding it simulated time would leave
@@ -10189,6 +10267,12 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
     },
     dispose() {
       disposed = true;
+      /*
+       * Settle any in-flight mount so `await app.ready()` cannot hang on a disposed app. A promise
+       * that never resolves is a worse failure than the one WS-2.9 fixed: it has no diagnostic at all.
+       */
+      productionMountPending = false;
+      settleMountForDispose();
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       for (const controller of ownedInputControllers) controller.dispose();
       ownedInputControllers.clear();

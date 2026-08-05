@@ -293,8 +293,6 @@ function bundleSource(): string {
      * therefore runs while the app is still mounted, and every gate additionally asserts non-trivial
      * luminance so a blank frame can never be reported as a physical finding.
      */
-    const nextFrame = () => new Promise((done) => requestAnimationFrame(() => done()));
-
     async function renderAndMeasure(canvas, spec, cameraSpec, measure) {
       const built = scene()
         .background("#000000")
@@ -312,19 +310,17 @@ function bundleSource(): string {
        */
       const app = createAuraApp(canvas, { scene: built, autoStart: false, pixelRatio: 1, resize: false, renderer: { qualityProfile: "production" } });
       /*
-       * Yield to requestAnimationFrame before stepping. This is not defensive padding — it is working
-       * around a real library defect this gate discovered, recorded in the PRD:
+       * WS-2.9 — awaiting app.ready() replaces the animation-frame workaround this gate needed.
        *
-       *   createAuraApp(...); app.step(1/60) x8;  ->  diagnostics.drawCalls === 0, canvas fully blank,
-       *                                              backend "webgl2", warnings [], errors []
-       *   createAuraApp(...); await rAF; app.step(1/60);  ->  58,480 lit pixels
+       * The workaround existed because a synchronous step() before the WebGL mount completed rendered
+       * nothing AND reported nothing: drawCalls 0, blank canvas, empty warnings and errors. That was a
+       * library defect rather than a harness quirk, and it is fixed — step() now raises an actionable
+       * diagnostic in that window, and app.ready() is the documented way to wait for the mount.
        *
-       * The WebGL production controller mounts asynchronously, so a synchronous step() before the
-       * first animation frame silently renders nothing and reports no error. step(dt) is documented as
-       * the deterministic entry point, so that is a defect in its own right — it belongs to P2 and has
-       * a named row there rather than being hidden behind this workaround.
+       * Using the public API here also means this harness exercises the same path a developer writing a
+       * headless capture would, instead of an animation-frame trick they would have to discover.
        */
-      await nextFrame();
+      await app.ready();
       for (let frame = 0; frame < 8; frame += 1) app.step(1 / 60);
       const diagnostics = app.diagnostics();
       // Public capture path, taken while mounted: dispose() destroys the drawing buffer.
@@ -441,8 +437,8 @@ function bundleSource(): string {
           }).position(0, 0, -1.4).scale([3, 3, 1]));
           built.add(primitives.sphere({ name: "subject", material: spec }).position(0, 0, 0));
           const app = createAuraApp(canvas, { scene: built, autoStart: false, pixelRatio: 1, resize: false, renderer: { qualityProfile: "production" } });
-          // See the note on renderAndMeasure: a synchronous step before the first rAF renders nothing.
-          await nextFrame();
+          // WS-2.9: the public wait-for-mount API, replacing an animation-frame workaround.
+          await app.ready();
           for (let frame = 0; frame < 8; frame += 1) app.step(1 / 60);
           const diagnostics = app.diagnostics();
           // Measured while mounted; see the note on renderAndMeasure.

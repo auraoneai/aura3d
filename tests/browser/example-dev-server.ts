@@ -26,6 +26,15 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine/engine", "/packages/engine/src/index.ts"],
   ["@aura3d/product-studio", "/packages/product-studio/src/index.ts"],
   ["@aura3d/physics", "/packages/physics/src/index.ts"],
+  /*
+   * WS-2.2/2.3 subpaths. Without these, any harness importing the public entry fails at runtime with
+   * "Failed to resolve module specifier" — the browser has no bare-specifier resolution, so every
+   * package entry has to be mapped here explicitly.
+   */
+  ["@aura3d/physics/solverless", "/packages/physics/src/solverless.ts"],
+  ["@aura3d/physics/world", "/packages/physics/src/world.ts"],
+  ["@aura3d/engine/rendering/webgpu", "/packages/rendering/src/webgpu.ts"],
+  ["@aura3d/engine/media-node", "/packages/engine/src/agent-api/media-node.ts"],
   ["@aura3d/animation", "/packages/animation/src/browser-index.ts"],
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/assets/browser", "/packages/assets/src/browser-index.ts"],

@@ -1303,13 +1303,54 @@ documented deterministic entry point, so a developer writing a headless capture 
 test gets a blank image with no explanation. This is the same failure shape as WS-2.5's silent
 Canvas-2D fallback: a path that produces a wrong result quietly.
 
-- [ ] Either make `step()` mount the controller synchronously on first call, or have it report a
-      diagnosable state rather than drawing nothing.
-- [ ] **Never** silently render zero draw calls with empty `warnings` and `errors`.
-- [ ] Remove the `await nextFrame()` workaround in `tools/material-structural-parity/index.ts` once
-      fixed — that workaround is the reproduction case.
-- [ ] **Proof:** a test that calls `createAuraApp` then `step()` with no `rAF` yield, and asserts
-      either lit pixels or a raised diagnostic. It must fail against the current code.
+- [x] Either make `step()` mount the controller synchronously on first call, or have it report a
+      diagnosable state rather than drawing nothing. — **reports.** Synchronous mounting was rejected:
+      `startProductionRender` awaits device creation, shader compilation and asset resolution, and
+      forcing that into a synchronous `createAuraApp` would either block the main thread on first
+      construction or require rewriting the device layer. Reporting is the honest fix, and it turns an
+      invisible failure into a named one.
+
+      `step()` now takes a third branch when `productionMountPending` is true: it pushes an actionable
+      warning and leaves `drawCalls: 0` rather than falling through to the Canvas-2D `render()` path.
+      Falling through was the specific defect — it draws a **gradient for a scene that has a WebGL
+      renderer coming**, which is worse than drawing nothing because it looks like a real render.
+- [x] **Never** silently render zero draw calls with empty `warnings` and `errors`. — enforced by the
+      test below, which asserts on `warnings.length + errors.length > 0` rather than on pixels, because
+      *the empty diagnostics were the defect, not the blank frame*. A renderer that has not finished
+      mounting is a legitimate state; reporting it as a successful zero-draw-call frame is not.
+- [x] **Added, because a warning that says "wait" is useless without a way to wait: `app.ready()`.**
+      The warning text names it, so it had to exist. It resolves when the in-flight mount settles,
+      immediately when there is none, and — deliberately — **resolves rather than rejects on mount
+      failure**, since that failure is already reported through `diagnostics().errors` and a rejection
+      would make the common `await app.ready()` line throw for a diagnosable condition. `dispose()`
+      settles it too, so `await app.ready()` cannot hang on a disposed app: a promise that never
+      resolves would be a worse failure than the one this row fixes, because it has no diagnostic at all.
+- [x] Remove the `await nextFrame()` workaround in `tools/material-structural-parity/index.ts` once
+      fixed — that workaround is the reproduction case. — removed from both call sites and the helper
+      deleted. The gate now uses `await app.ready()`, which also means it exercises **the same path a
+      developer writing a headless capture would**, rather than an animation-frame trick they would have
+      to discover. All five material gates still pass: `EXIT=0`.
+- [x] **Proof:** a test that calls `createAuraApp` then `step()` with no `rAF` yield, and asserts
+      either lit pixels or a raised diagnostic. It must fail against the current code. —
+      `tests/browser/step-renders-or-reports.spec.ts` + harness, **1 passed**.
+
+      **Sabotage-verified against the pre-fix behaviour:** replacing the new branch condition with
+      `false` restores the silent fall-through, and the test fails on exactly the intended assertion —
+      *"a step() that rendered nothing must report why: empty warnings AND empty errors is the defect"*.
+      Restoring it passes again.
+
+      The test also asserts the warning **names a fix** (`app.ready()`) rather than only describing the
+      state, and that awaiting it makes the same `step()` call render (> 1,000 lit pixels, > 0 draw
+      calls).
+
+### One more resolver gap found here, worth recording
+
+The harness failed at runtime with *"Failed to resolve module specifier `@aura3d/physics/solverless`"*.
+`tests/browser/example-dev-server.ts` maps every bare package specifier to a served source path — the
+browser has no bare-specifier resolution — and the WS-2.2/2.3 subpaths were missing from it. That makes
+**four** resolvers a new public subpath must be taught: esbuild in the bundle tools, Vitest, the
+`packages/*/package.json` exports, and the browser dev server. Each fails differently and none of them
+fails at typecheck, which is worth knowing before the next subpath is added.
 
 ### WS-2.8 Preserve low-level escape hatches
 
