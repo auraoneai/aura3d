@@ -38,8 +38,34 @@ describe("deletion-safety (R8)", () => {
     const files = report.files as readonly { readonly path: string; readonly clear: boolean; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
     const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
     expect(ocean?.clear).toBe(false);
+    /*
+     * The blocking evidence is the package's own public re-export. `packages/rendering/src/index.ts`
+     * has `export { sampleOceanFixture } from "./OceanFixtures"`, so deleting the file breaks the
+     * published `@aura3d/rendering` surface. That is a real `export`-map dependency and it is what
+     * the R8 gate exists to catch.
+     */
     const runtime = ocean?.blocking["runtime-consumer"] ?? [];
-    expect(runtime.some((evidence) => evidence.at.includes("EnvironmentPlatform.ts"))).toBe(true);
+    expect(runtime.some((evidence) => evidence.at.startsWith("packages/rendering/src/index.ts:"))).toBe(true);
+  }, 180_000);
+
+  it("does not block on a specifier named inside a plain string", () => {
+    /*
+     * Regression pin. `EnvironmentPlatform.ts:304` contains the capability-description string
+     * "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry." — English prose
+     * in a quoted claim, not an import. An earlier version of this tool reported it as a
+     * `runtime-consumer`, and this test asserted that false positive as its proof of correctness.
+     *
+     * That is the failure mode R8 is most vulnerable to: fabricated blocking evidence blocks a
+     * legitimate deletion on a dependency that does not exist, and it does so while looking
+     * rigorous. A gate that invents blockers gets routed around, exactly like the fabricated
+     * performance gates this re-platform removed.
+     */
+    const { report } = run(["packages/rendering/src/OceanFixtures.ts"]);
+    const files = report.files as readonly { readonly path: string; readonly blocking: Record<string, readonly { readonly at: string }[]> }[];
+    const ocean = files.find((file) => file.path.endsWith("OceanFixtures.ts"));
+    const everyBlocker = Object.values(ocean?.blocking ?? {}).flat();
+    expect(everyBlocker.length).toBeGreaterThan(0);
+    expect(everyBlocker.some((evidence) => evidence.at.includes("EnvironmentPlatform.ts"))).toBe(false);
   }, 180_000);
 
   it("treats an empty deletion queue as a pass", () => {

@@ -64,6 +64,15 @@ interface FileReport {
   readonly moduleSpecifiers: readonly string[];
   readonly clear: boolean;
   readonly points: Record<R8Point, readonly Evidence[]>;
+  /**
+   * References from files that are themselves in the same deletion set.
+   *
+   * WS-3.3 deletes whole packages, and a package's own modules import each other constantly. Those
+   * references are not evidence that the deletion is unsafe — both ends disappear in the same
+   * commit — so they are recorded separately rather than counted as blocking. Counting them would
+   * make any multi-file deletion permanently unclearable, which is how a gate gets routed around.
+   */
+  readonly intraCandidate: readonly Evidence[];
 }
 
 /* ------------------------------------------------------------------------------------------- */
@@ -105,6 +114,29 @@ const SKIP_DIRECTORIES = new Set([
   "playwright-report",
   "release-artifacts"
 ]);
+
+/**
+ * Files git actually tracks. Decides whether a generated artefact counts as a dependency.
+ *
+ * `tests/reports/` is gitignored: 2 of the ~200 files in it are tracked. A stale *untracked*
+ * report that mentions a file is not a dependency on it — it is yesterday's output, it is not in
+ * the repository, and the next run overwrites it. Treating those as blocking made this gate
+ * self-poisoning: its own prior reports showed up as "blocking references" for the very files they
+ * were reporting on, so every run made the next deletion harder to clear. A *tracked* report does
+ * block, because it is committed and deleting its subject leaves it stating something false.
+ */
+function trackedFiles(): ReadonlySet<string> {
+  try {
+    const out = execFileSync("git", ["ls-files", "-z"], { cwd: repoRoot, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    return new Set(out.split("\u0000").filter((value) => value.length > 0));
+  } catch {
+    // No git available: fall back to the stricter reading and treat everything as tracked.
+    return new Set<string>();
+  }
+}
+
+const TRACKED = trackedFiles();
+const gitAvailable = TRACKED.size > 0;
 
 function scanRepository(): readonly ScannedFile[] {
   const out: ScannedFile[] = [];
@@ -249,7 +281,9 @@ function classify(referencingPath: string, line: string): R8Point {
    * be wrong and would send someone editing an artifact as if it were source.
    */
   if (lower.startsWith("tests/reports/") || lower.startsWith("release-artifacts/") || lower.includes("schema")) {
-    return "retained-schema-or-report-dependency";
+    // Only a committed artefact is a retained dependency. See `trackedFiles`.
+    if (!gitAvailable || TRACKED.has(referencingPath)) return "retained-schema-or-report-dependency";
+    return INFORMATIONAL_POINT;
   }
   if (GENERATED_DOC_PREFIXES.some((prefix) => lower.startsWith(prefix)) || DOC_GENERATOR_HINTS.some((hint) => lower.includes(hint))) {
     return "documentation-generator-dependency";
@@ -267,17 +301,89 @@ function classify(referencingPath: string, line: string): R8Point {
   return "runtime-consumer";
 }
 
+/** Contents of every quoted span on a line: the only place a module specifier can legally live. */
+function quotedSpans(line: string): readonly string[] {
+  const out: string[] = [];
+  const pattern = /"([^"]*)"|'([^']*)'|`([^`]*)`/g;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(line)) !== null) out.push(match[1] ?? match[2] ?? match[3] ?? "");
+  return out;
+}
+
+/** A line with every quoted span blanked out, so prose inside a string cannot match an identifier. */
+function withoutQuotedSpans(line: string): string {
+  return line.replace(/"[^"]*"|'[^']*'|`[^`]*`/g, '""');
+}
+
+/** The last path segment of a specifier, without a module extension. */
+function finalSegment(value: string): string {
+  const segment = value.split("/").pop() ?? value;
+  return segment.replace(/\.(m|c)?[jt]sx?$/, "");
+}
+
 /**
- * A static or dynamic import, an export-from, a `require`, or a bare string mention of the
- * specifier. String mentions matter: dynamic `import()` built from a variable, a glob, or a
- * registry table entry all read as a plain string.
+ * Whether a quoted string actually resolves to this specifier.
+ *
+ * Substring containment is not enough, and getting this wrong is not cosmetic: it fabricates
+ * blocking evidence, which under R8 blocks a legitimate deletion on a dependency that does not
+ * exist. Two real false positives from the first version, both of which stopped WS-3.3:
+ *
+ *   - specifier `StateMachine` "matched" `./AnimationStateMachine.js` — a different module in a
+ *     different package — making `packages/animation` look like a consumer of `packages/scripting`.
+ *   - specifier `Behavior` "matched" the display string `"Spin Behavior"` in an editor node title,
+ *     making a UI label look like a runtime import.
+ *
+ * So: a path-shaped specifier must match on segment boundaries, and a bare stem must be the
+ * entire final segment of the quoted value.
+ */
+function quotedResolvesTo(quoted: string, specifier: string): boolean {
+  if (specifier.includes("/")) {
+    let index = quoted.indexOf(specifier);
+    while (index !== -1) {
+      const before = index === 0 ? "" : quoted[index - 1];
+      const afterIndex = index + specifier.length;
+      const after = afterIndex >= quoted.length ? "" : quoted[afterIndex];
+      if ((before === "" || before === "/") && (after === "" || after === "/" || after === ".")) return true;
+      index = quoted.indexOf(specifier, index + 1);
+    }
+    return false;
+  }
+  if (quoted === specifier) return true;
+  const looksLikeModule = quoted.startsWith(".") || quoted.startsWith("/") || quoted.startsWith("@") || quoted.includes("/");
+  return looksLikeModule && finalSegment(quoted) === specifier;
+}
+
+/**
+ * A static or dynamic import, an export-from, a `require`, or a string mention of the specifier.
+ * String mentions matter: a dynamic `import()` built from a variable, a glob, and a registry table
+ * entry all read as plain strings.
  */
 function referencesSpecifier(line: string, specifier: string): boolean {
   if (!line.includes(specifier)) return false;
-  const quoted = new RegExp(`["'\`][^"'\`]*${escapeRegExp(specifier)}[^"'\`]*["'\`]`);
-  if (quoted.test(line)) return true;
-  // Unquoted mentions in yaml/markdown lists still count as a reference to inspect.
-  return /\b(import|export|require|from|glob|pattern|entry|include|path)\b/i.test(line);
+  for (const quoted of quotedSpans(line)) {
+    if (quotedResolvesTo(quoted, specifier)) return true;
+  }
+  /*
+   * Unquoted: yaml globs, workspace member lists and tsconfig `references` are all path-shaped.
+   * An unquoted bare stem is prose, and matching prose is what once produced 27,230 "references"
+   * for a single file.
+   */
+  if (!specifier.includes("/")) return false;
+  if (!/\b(import|export|require|from|glob|pattern|entry|include|path|reference|packages)\b/i.test(line)) return false;
+  return new RegExp(`(^|[^A-Za-z0-9_$/.-])${escapeRegExp(specifier)}([^A-Za-z0-9_$-]|$)`).test(line);
+}
+
+/**
+ * Whether an import/export-from line names a module specifier that is not one of the candidate's.
+ *
+ * If so, every identifier on the line is bound from that other module, and a matching exported
+ * name in the candidate is a collision rather than a consumer.
+ */
+function bindsFromOtherModule(line: string, candidateSpecifiers: readonly string[]): boolean {
+  if (!/\b(import|export)\b/.test(line) && !/\brequire\s*\(/.test(line)) return false;
+  const sources = [...line.matchAll(/(?:from|require\s*\(|import\s*\()\s*["'`]([^"'`]+)["'`]/g)].map((match) => match[1] ?? "");
+  if (sources.length === 0) return false;
+  return sources.every((source) => !candidateSpecifiers.some((specifier) => quotedResolvesTo(source, specifier)));
 }
 
 function escapeRegExp(value: string): string {
@@ -300,7 +406,7 @@ function emptyPoints(): Record<R8Point, Evidence[]> {
   };
 }
 
-function analyze(candidate: string, repo: readonly ScannedFile[]): FileReport {
+function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: ReadonlySet<string>): FileReport {
   const path = relative(repoRoot, resolve(repoRoot, candidate));
   const absolute = join(repoRoot, path);
   const exists = existsSync(absolute);
@@ -308,6 +414,7 @@ function analyze(candidate: string, repo: readonly ScannedFile[]): FileReport {
   const specifiers = moduleSpecifiersFor(path);
   const symbols = exportedSymbols(text);
   const points = emptyPoints();
+  const intraCandidate: Evidence[] = [];
   const seen = new Set<string>();
 
   for (const file of repo) {
@@ -323,18 +430,41 @@ function analyze(candidate: string, repo: readonly ScannedFile[]): FileReport {
         }
       }
       if (matched === undefined) {
-        // A registry can name an exported symbol without naming the file.
-        const symbolHit = symbols.find((symbol) => symbol.length > 4 && new RegExp(`\\b${escapeRegExp(symbol)}\\b`).test(line));
-        if (symbolHit === undefined) continue;
-        // `export interface PixelBuffer` in an unrelated file is a name collision, not a consumer.
+        /*
+         * A registry can name an exported symbol without naming the file — but the symbol must
+         * appear as an *identifier* on an import/export/registration line, not as text inside a
+         * string. `{ title: "Spin Behavior" }` is a UI label, not a consumer of `Behavior.ts`.
+         */
         if (!/\b(import|from|require|registry|register)\b/.test(line)) continue;
-        matched = symbolHit;
+        /*
+         * And if the line binds its identifiers from an explicit module specifier that is *not*
+         * the candidate, the symbol came from somewhere else and this is a name collision.
+         *
+         * Real case: `packages/animation/src/library/performanceStateGraph.ts:1` imports
+         * `StateTransition` from `../AnimationStateMachine.js`. `packages/scripting/src/StateMachine.ts`
+         * also exports a type called `StateTransition`. Two packages independently naming a type
+         * the same thing is not a dependency — `packages/animation` does not even list
+         * `@aura3d/scripting` in its dependencies. Reporting it made a package deletion look
+         * blocked by a cross-package import that does not exist.
+         */
+        if (!bindsFromOtherModule(line, specifiers)) {
+          const code = withoutQuotedSpans(line);
+          const symbolHit = symbols.find((symbol) => symbol.length > 4 && new RegExp(`\\b${escapeRegExp(symbol)}\\b`).test(code));
+          if (symbolHit === undefined) continue;
+          matched = symbolHit;
+        }
+        if (matched === undefined) continue;
       }
       const point = classify(file.path, line);
       const key = `${point}|${file.path}:${index + 1}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      points[point].push({ point, at: `${file.path}:${index + 1}`, detail: line.trim().slice(0, 240) });
+      const evidence: Evidence = { point, at: `${file.path}:${index + 1}`, detail: line.trim().slice(0, 240) };
+      if (deletionSet.has(file.path)) {
+        intraCandidate.push(evidence);
+        continue;
+      }
+      points[point].push(evidence);
     }
   }
 
@@ -345,8 +475,42 @@ function analyze(candidate: string, repo: readonly ScannedFile[]): FileReport {
     lines: exists ? text.split("\n").length : 0,
     moduleSpecifiers: specifiers,
     clear,
-    points
+    points,
+    intraCandidate
   };
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* Candidate expansion — a directory is a legitimate deletion candidate                          */
+/* ------------------------------------------------------------------------------------------- */
+
+/**
+ * WS-3.3 removes `packages/ecs` and `packages/scripting` whole. Earlier the tool called
+ * `readFileSync` on whatever it was handed and crashed with `EISDIR`, which meant a package-level
+ * deletion could not be proven at all — and an unprovable deletion under R8 is an unperformable
+ * one. A directory now expands to every scannable file inside it, and the directory's own
+ * `package.json` is included, because that is where the public `exports` map lives.
+ */
+function expandCandidate(candidate: string): readonly string[] {
+  const absolute = join(repoRoot, candidate);
+  if (!existsSync(absolute)) return [candidate];
+  if (!statSync(absolute).isDirectory()) return [candidate];
+  const out: string[] = [];
+  const walk = (directory: string): void => {
+    for (const entry of readdirSync(directory)) {
+      if (SKIP_DIRECTORIES.has(entry)) continue;
+      const child = join(directory, entry);
+      const stats = statSync(child);
+      if (stats.isDirectory()) {
+        walk(child);
+        continue;
+      }
+      if (!SCAN_EXTENSIONS.has(extname(entry))) continue;
+      out.push(relative(repoRoot, child));
+    }
+  };
+  walk(absolute);
+  return out.sort();
 }
 
 /* ------------------------------------------------------------------------------------------- */
@@ -400,7 +564,9 @@ function gitTrackedAt(path: string): string | null {
 function main(): void {
   const { paths, reportPath } = parseArgs(process.argv.slice(2));
   const repo = scanRepository();
-  const reports = paths.map((path) => analyze(path, repo));
+  const expanded = [...new Set(paths.flatMap((path) => expandCandidate(path)))];
+  const deletionSet = new Set(expanded);
+  const reports = expanded.map((path) => analyze(path, repo, deletionSet));
   const checks: ReleaseCheck[] = reports.map((report) => {
     const blocking = R8_POINTS.flatMap((point) => report.points[point].map((evidence) => `${point} @ ${evidence.at}`));
     return {
@@ -427,6 +593,8 @@ function main(): void {
   }
 
   writeReport(reportPath, "deletion-safety-r8", checks, {
+    requestedCandidates: paths,
+    expandedFileCount: expanded.length,
     rule: "R8 — no `git rm` until all six points are empty. Absence of direct app imports is not proof.",
     scannedFiles: repo.length,
     points: R8_POINTS,
@@ -438,6 +606,7 @@ function main(): void {
       lastCommit: gitTrackedAt(report.path),
       moduleSpecifiers: report.moduleSpecifiers,
       clear: report.clear,
+      intraCandidateReferences: report.intraCandidate.length,
       blocking: R8_POINTS.reduce<Record<string, readonly Evidence[]>>((accumulator, point) => {
         if (report.points[point].length > 0) accumulator[point] = report.points[point];
         return accumulator;
