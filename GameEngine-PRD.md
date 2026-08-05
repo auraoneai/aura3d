@@ -554,6 +554,45 @@ the time on unchanged code trains people to ignore it — but the fix is to make
 (more attempts, or a documented machine baseline), not to raise the number until it passes. Not
 GameEngine-PRD scope, and **not** a reason to hold 1.5.3.
 
+### Bundle overrun: root-caused, and it is not fixable by tuning
+
+I profiled it rather than leaving it as a number. `esbuild --metafile` on the agent-api entry, browser
+platform, Node builtins external:
+
+| group | minified bytes | share |
+|---|---|---|
+| `packages/rendering` | 824,247 | 36.6% |
+| `engine/agent-api` | 709,680 | 31.5% |
+| `packages/assets` | 250,850 | 11.1% |
+| `packages/physics` | 169,244 | 7.5% |
+| `@loaders.gl` | 95,911 | 4.3% |
+| `cannon-es` | 84,772 | 3.8% |
+
+The decisive measurement is not the total but the **floor**: a scene containing one `primitives.box`
+and nothing else bundles to **350 KB gzip**. It retains WebGPUDevice (75 KB), PostProcessPass (34 KB),
+ShaderLibrary (183 KB), cannon-es (85 KB) and GLTFLoader + loaders.gl (164 KB) — none of which a static
+box can reach.
+
+**Cause:** `packages/engine/src/agent-api/index.ts` is a single **14,583-line module with 361 exports**.
+Bundlers tree-shake at module granularity, so importing *any one* of those 361 exports retains the whole
+file and, transitively, every value import it makes. Confirmed by the complement: importing
+`Geometry`, `PBRMaterial` and `ProductionRuntimeRenderer` *directly* from `@aura3d/rendering`
+tree-shakes to **0 bytes**. The packages shake correctly; the barrel does not. `sideEffects: false` is
+already set on every package, so that is not the missing piece.
+
+**What this rules out.** Raising the budget hides a real 350 KB floor that every consumer pays. Marking
+more packages external changes the number without changing what a browser downloads. Neither is a fix.
+
+**What would work,** and why it is not in this PRD: split `agent-api/index.ts` so the renderer, asset
+loading and physics paths are separately importable modules, then let the barrel re-export from them.
+That is a mechanical but large refactor of a 14.5k-line public surface with 361 exports, and it needs
+its own workstream with `verify:exports` and `check:public-api` as the safety net.
+
+**One prerequisite is done.** `createAuraApp` no longer constructs a `PhysicsWorld` eagerly. That is
+correct on its own — an app with no physics should not instantiate a solver — but measured honestly it
+did **not** move the bundle (350,049 vs 349,999 gzip), because four other `new PhysicsWorld` sites in
+the same module keep `cannon-es` reachable. Recorded as a prerequisite, not as progress on the number.
+
 ### Open decision, deliberately not made here
 
 `/apps/instancing-performance/` has three sources of truth disagreeing about what it is: the root
