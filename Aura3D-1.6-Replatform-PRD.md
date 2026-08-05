@@ -135,30 +135,80 @@ not done this document's job.
 | Duplicate-ownership violations (R12) | 5 |
 | `apps/` + `examples/` routes | 149 |
 
-- [ ] Each phase reports: lines deleted · packages removed · dependencies removed ·
-      duplicate APIs removed · entry points removed
+- [x] Each phase reports: lines deleted · packages removed · dependencies removed ·
+      duplicate APIs removed · entry points removed — `tools/negative-complexity/index.ts` reports
+      every baseline row with its delta on each run.
 - [ ] **Release condition: total `packages/*/src` lines are lower at 1.6 than at
       `be86c73e`**, net of additions. Note that adding Rapier *adds* a dependency while
       removing far more code — that trade is explicitly acceptable and must be stated, not
-      hidden
-- [ ] **Release condition: R12 violations = 0**
-- [ ] **Proof:** committed `tests/reports/negative-complexity.json` comparing every baseline
-      row to its 1.6 value
+      hidden — **currently delta 0.** Correct: P1 is measurement integrity, so it adds tooling under
+      `tools/` and deletes no package source. The trade is stated in the report's
+      `acceptableTrade` field, and dependency **names** are listed rather than only counted, so a
+      swap cannot hide inside an unchanged count.
+- [ ] **Release condition: R12 violations = 0** — **currently 5 of 5**, each detected structurally
+      rather than asserted: `PhysicsWorld` still declares both backends; `packages/input/ActionMap`
+      and `GameRuntime.createGameInput` both live; `packages/audio` and `engine/src/game/GameAudio`
+      both live; `VehicleMotion` and `game.racing`'s kinematic integration both live; `GameRuntime`
+      plus per-kit integrators. P3 and P4 resolve these.
+- [x] **Proof:** committed `tests/reports/negative-complexity.json` comparing every baseline
+      row to its 1.6 value — done, `pnpm check:negative-complexity`.
+
+**The baseline had to be corrected to be usable, and the correction is the point.**
+
+§B.3's stated 212,810 `packages/*/src` lines is **not reproducible by any consistent definition.**
+Re-measured from tracked files at `be86c73e`:
+
+| Definition | Lines |
+|---|---:|
+| `packages/<pkg>/src/**/*.{ts,tsx}` | **200,929** |
+| ...plus `packages/create-aura3d/templates/**/src` scaffolds | 215,099 |
+
+212,810 sits between the two, so it came from a third glob nobody recorded. Since §B.3 makes this a
+release condition, a baseline nobody can re-derive silently grants or denies a release. The tool now
+carries the number **with its definition attached**, retains `packageSourceLinesAsWrittenInPrd` so the
+substitution is visible rather than silent, and counts the 14,170 scaffold lines separately — template
+code is shipped for developers to copy, and counting it as engine source would make a template edit
+register as engine growth.
+
+**Two counting bugs found and fixed while getting delta to a trustworthy 0**, both of which produced
+*flattering* numbers:
+
+1. **An on-disk walk reported a 9,000-line reduction that had not happened.** It found 942 files where
+   git tracks 1,031; the difference is gitignored and generated content that varies by machine. Now
+   `git ls-files`, because a metric that moves when a build artifact appears cannot be a release
+   condition.
+2. **`split("\n").length` counted one phantom line per file** — a 942-line "growth" against a
+   `wc -l` baseline, exactly the kind of delta that gets explained away rather than fixed. Now counts
+   newlines, matching `wc -l`.
+3. A third, smaller one in the other direction: the scaffold pattern missed
+   `templates/animation-studio/studio/src/**`, under-reporting scaffolds by 3,222 lines.
+
+Both engine and scaffold totals now reproduce `be86c73e` exactly, which is what makes a delta of 0
+meaningful rather than a coincidence.
 
 ### B.4 Engine-layer fix ratio — enforce R3 mechanically
 
 R3 says fix at the lowest correct layer. Without a measurement, the pull toward patching
 examples is irresistible — it is what produced the current situation.
 
-- [ ] **Create** `tools/engine-layer-ratio/index.ts`. Over `git diff v1.5.2..HEAD`, compute
-      changed source lines under `packages/` versus under `apps/` + `examples/`
-- [ ] **Release condition: ≥ 90% of changed source lines live under `packages/`**
-- [ ] Exclude from the denominator, with justification recorded: route deletions (Tier 4),
-      tier reclassification, and generated asset maps
+- [x] **Create** `tools/engine-layer-ratio/index.ts`. Over `git diff v1.5.2..HEAD`, compute
+      changed source lines under `packages/` versus under `apps/` + `examples/` — done.
+- [x] **Release condition: ≥ 90% of changed source lines live under `packages/`** — enforced;
+      the tool exits non-zero below it.
+- [x] Exclude from the denominator, with justification recorded: route deletions (Tier 4),
+      tier reclassification, and generated asset maps — done, and the reason is written into the
+      report per excluded file rather than assumed.
 - [ ] A route-only fix for a defect reproducible in two routes is an automatic failure of
-      this gate regardless of the ratio
-- [ ] **Proof:** `pnpm check:engine-layer-ratio` reports the ratio and exits non-zero below
-      the threshold
+      this gate regardless of the ratio — **deliberately not automated.** Whether two routes share
+      one defect is a judgement no diff can make; the tool instead publishes
+      `largestRouteChanges` so a reviewer can see every route-side edit ranked by size. Recording
+      this as a human gate rather than pretending it is mechanical.
+- [x] **Proof:** `pnpm check:engine-layer-ratio` reports the ratio and exits non-zero below
+      the threshold — **currently 87.41% (4,402 package vs 634 route), EXIT=1.** Below threshold and
+      correctly so: the ratio is measured from `v1.5.2..HEAD`, which includes pre-1.6 route work
+      inherited from the 66 commits before this effort. P1 itself changed no route file. The gate is a
+      **release** condition, and it will be met by P2-P5 doing engine-layer work, not by adjusting the
+      denominator.
 
 ---
 
