@@ -1,0 +1,4 @@
+{
+  "$comment": "R8 deletion queue. A file appears here only while its deletion is being proven. `check:deletion-safety` runs this list; an empty list is a pass. Populated per workstream (WS-3.3, WS-3.4, WS-3.5, §7) and emptied once the deletion lands.",
+  "candidates": []
+}

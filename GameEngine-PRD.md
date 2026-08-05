@@ -1,7 +1,19 @@
 # Aura3D Game Engine PRD — make the physics layer general, then make the games correct
 
-**Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
-WS-5 and WS-7 complete. WS-3.8 attempted and reverted with the finding recorded (see below).
+> **SUPERSEDED (2026-08-05) by [`Aura3D-1.6-Replatform-PRD.md`](./Aura3D-1.6-Replatform-PRD.md).**
+> That document governs all prioritisation from 1.6 onward. This file is retained, not
+> archived and not deleted, because six live tooling references read it:
+> `tools/product-remediation/build-threejs-parity.mjs:214,215,224`,
+> `tools/showcase-library/game-runtime-gates.mjs:2`,
+> `tools/showcase-library/regenerate-game-geometry-contracts.ts:12`,
+> `tests/unit/tools/parity-consumers.test.ts:74`, `tools/agent-examples/index.ts:159`,
+> `tests/clean-room/top-down-shooter/src/main.ts:4`.
+> Its open rows are re-scoped in the 1.6 PRD: WS-3.8/3.9 become **WS-4.7** (kits consume the
+> shared runtime), and route promotion becomes **WS-5.4** (stays blocked, human review only).
+
+**Status:** superseded — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
+WS-5 and WS-7 complete. WS-3.8 attempted and reverted; **its recorded blocker was itself
+wrong and is corrected in its row below.**
 47 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
@@ -220,7 +232,29 @@ This is the structural change. Without it, every future genre repeats this PRD.
 - [x] 3.5 Character controller real against mesh — `character-mesh-contact.test.ts` 10/10, one test per behaviour the row names: ground+slope normal, step up within `maxStepHeight`, refusal above it, step down without launching, ceiling cancelling upward velocity, and wall slide. `maxStepHeight`/`wallSlide` did not exist at `v1.5.2` (grep returns 0 there).
 - [x] 3.6 Apex from intent, validated, loud on failure — apex comes from `jumpHeight` or a `feel` preset scaled by character height, then is validated against geometry; an unclearable level throws naming the offending step instead of silently shrinking. `platformer-jump-intent.test.ts` 13/13.
 - [x] 3.7 Coyote/buffer/variable-height/asymmetric gravity — coyote and buffer windows scale with airtime rather than being fixed milliseconds, plus asymmetric fall gravity, apex hang and short-hop apex. Asserted on the real level in `skyline-real-level-motion.test.ts`.
-- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED TWICE AND REVERTED TWICE. Both attempts found real engine defects, now fixed and shipped; the remaining gap is route re-certification, not kit wiring.**
+- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED TWICE AND REVERTED TWICE. The blocker recorded here was route re-certification. That diagnosis was disproved by `be86c73e` and is corrected below. Re-scoped as 1.6 WS-4.7, where the count is also corrected: there are five kit factories, not four.**
+
+  ### Correction (2026-08-05) — the recorded blocker was wrong
+
+  This row previously claimed the remaining gap was "route re-certification, not kit wiring":
+  that a force model traces a different line than a kinematic one, so the circuit's certified
+  lap time no longer held, and therefore the content had to be re-derived.
+
+  `be86c73e` disproved that. Nothing in the library converted a route into a **driveable plan**.
+  A kinematic kit needs none: heading *is* the input, so any steer trace is valid by
+  construction. A force model has slip, so a route is only driveable if something decides what
+  speed each corner can hold and what steering angle rejoins the line. Neither existed, so both
+  attempts were hand-driving an open-loop car and concluding the tyre model could not lap. The
+  blocker was a **missing library capability**, and this row blamed the content for it.
+
+  `createRacingLineProfile` (`packages/physics/src/RacingLineProfile.ts`, 254) and
+  `createPathFollowDriver` (`PathFollowDriver.ts`, 279) supply it — 21 tests, sabotage-checked.
+  They do not by themselves close this row, because no kit consumes them yet. That consumption
+  is 1.6 **WS-4.7**, and it names all five factories: `createGameRacingKit`,
+  `createGamePlatformerKit`, `createGameFallingBlocksKit`, `createGameLocomotionKit`
+  (`GameGenreKits.ts`) and `createFightingGameKit` (`game-kits/fighting.ts`).
+
+  The original attempt narrative is retained verbatim below as the record of what was tried.
 
   ### Attempt 2, after fixing what attempt 1 blamed
 
