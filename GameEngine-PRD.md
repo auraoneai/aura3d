@@ -430,13 +430,42 @@ so rounding noise collapses while a genuine change in any region shifts cells.
 Release-candidate screenshots perceptually stable across **three independent runs: 7 of 8**, up from
 **1 of 8**. Overall 22 of 29.
 
+### The root cause I initially missed: `pause()` did not hold the render clock
+
+Three earlier fixes reduced drift but never eliminated it, which was the signal that I was treating
+symptoms. The sharper question was: *is the frame actually held while paused?* It was not.
+
+`isPaused()` gated `beforeRender` — the simulation callback — but `renderFrame` still called
+`renderer.render(time)` with the raw requestAnimationFrame timestamp. So `pause()` stopped gameplay
+while every time-driven visual carried on: particle emitters (`update(time)` ->
+`writeParticleVertices(seconds)`), animated materials, anything keyed to elapsed time.
+
+Measured on the particle lab, app paused **and** settled to a fixed frame: two screenshots taken
+500 ms apart **in the same page load** differed across **20.6%** of the vortex region. No capture of a
+frame that is still moving can be reproducible, so every earlier fix was necessarily incomplete.
+
+Paused frames now render at the app's own simulated clock (`runtimeTime`). `app.step()` still advances
+that clock and renders explicitly, so stepping produces new frames; what stops is time passing on its
+own.
+
+| measure | before | after |
+|---|---|---|
+| particle region, same page load | 20.6% differing | **byte-identical** |
+| particle region, across loads | 20.6% differing | **0 differing** |
+| whole screenshot set, byte-identical across runs | 15 of 30 | **27 of 30** |
+
+Byte-identical, not merely perceptually equal — for 27 of 30 the perceptual fallback is not even
+needed. It remains as the correct binding for the residue and for GPU rounding generally.
+
 ### What remains, stated plainly
 
-`webgpu-particle-lab`, `material-asset-inspector` and `skyline-runner` still drift — and **not** by
-rounding: **7.8%, 3.8% and 1.4% of pixels**, max deltas up to 236/255. They animate outside the app
-clock (renderer-side particle systems; a running platformer), so they need deterministic seeding of
-their own. I could have made the gate pass by coarsening quantisation until the drift disappeared. I
-tried it, saw that it weakens the gate for every route, and rejected it.
+Three screenshots still differ between runs: `blockfall-reactor` desktop, `skyline-runner` desktop and
+`digital-twin-ops` desktop. The first two are running games whose live input state is part of the
+frame; both are `prototype-blocked`. These are now covered by the perceptual binding rather than
+requiring byte equality, so they no longer make approval unsatisfiable.
+
+I did not coarsen the perceptual signature to force them to match. That would weaken the gate for every
+route, and I rejected it explicitly when I tried it earlier.
 
 ### Consequence for 1.5.3
 
