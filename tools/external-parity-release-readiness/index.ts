@@ -14,7 +14,6 @@ const requiredReports = [
   "tests/reports/external-parity-shadow-readiness.json",
   "tests/reports/external-parity-postprocess-readiness.json",
   "tests/reports/external-parity-performance-readiness.json",
-  "tests/reports/external-parity-large-scene-browser.json",
   "tests/reports/external-parity-gltf-corpus-readiness.json",
   "tests/reports/external-parity-gltf-corpus-alias.json",
   "tests/reports/external-parity-product-readiness.json",
@@ -38,6 +37,17 @@ const requiredReports = [
   "tests/reports/external-parity-claim-registry.json"
 ] as const;
 
+/*
+ * WS-1.1 — `external-gallery/performance/large-scene-performance.png` is gone from this list.
+ *
+ * It was the screenshot of a Canvas 2D `fillRect` grid produced by a deleted spec that reported its
+ * own frame time as a source constant. A screenshot of a 2D canvas is not evidence about a WebGL2
+ * renderer, and requiring it here made a fabricated measurement load-bearing for release readiness.
+ *
+ * `external-parity-threejs-visual-parity/large-scene-performance-{threejs,diff}.png` stay: those are
+ * produced by `tests/browser/external-parity-threejs-visual-parity.spec.ts` against a real Three.js
+ * build and a real Aura3D build, which is a genuine same-scene comparison.
+ */
 const requiredScreenshots = [
   "tests/reports/external-gallery/product/external-product-configurator.png",
   "tests/reports/external-gallery/materials/external-material-studio.png",
@@ -51,7 +61,6 @@ const requiredScreenshots = [
   "tests/reports/external-gallery/templates/external-parity-material-studio.png",
   "tests/reports/external-gallery/templates/external-parity-asset-gallery.png",
   "tests/reports/external-gallery/templates/external-parity-interactive-scene.png",
-  "tests/reports/external-gallery/performance/large-scene-performance.png",
   "tests/reports/external-gallery/threejs-comparison/product-configurator-threejs.png",
   "tests/reports/external-gallery/debug-views/product-debug-reference.png",
   "tests/reports/external-gallery/postprocess/postprocess-gallery-reference.png",

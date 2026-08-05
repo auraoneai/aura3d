@@ -419,14 +419,35 @@ draws 640 rectangles with `fillRect`, and returns `drawCalls: 146`, `cpuFrameMs:
 as **literal constants in its own source**, then asserts `cpuFrameMs < 16.7`. Two release
 tools consume it as a performance check.
 
-- [ ] `git rm tests/browser/external-parity-large-scene.spec.ts`
-- [ ] `rm -f tests/reports/external-parity-large-scene-browser.json` — **not** `git rm`;
+- [x] `git rm tests/browser/external-parity-large-scene.spec.ts` — done.
+- [x] `rm -f tests/reports/external-parity-large-scene-browser.json` — **not** `git rm`;
       `tests/reports/` is gitignored (`.gitignore:43`) and the spec regenerates it. Remove
-      from disk so a stale copy cannot satisfy the readiness tools.
-- [ ] `tools/external-parity-performance-readiness/index.ts` — drop the path (~:16), the
+      from disk so a stale copy cannot satisfy the readiness tools. — verified **already absent**
+      from disk (`ls` → no such file), along with `tests/reports/external-gallery/performance/`.
+      Nothing stale can satisfy the tools.
+- [x] `tools/external-parity-performance-readiness/index.ts` — drop the path (~:16), the
       `browser` binding (~:26) and the `browser-large-scene` check (~:28); repoint to WS-1.4.
-- [ ] `tools/external-parity-release-readiness/index.ts` — drop the same path (~:17).
-- [ ] `package.json` (~:269) — remove the deleted spec from `external-parity:performance`.
+      — done. The `browser-large-scene` check is replaced by `production-path-benchmark`, reading
+      `tests/reports/production-path-benchmark.json` and requiring a measured
+      `steadyStateFrameMs` for **both** Aura3D and Three.js.
+- [x] `tools/external-parity-release-readiness/index.ts` — drop the same path (~:17). — done,
+      and also the `external-gallery/performance/large-scene-performance.png` screenshot
+      requirement, which was the screenshot *of the 2D canvas*. The
+      `external-parity-threejs-visual-parity/large-scene-performance-{threejs,diff}.png` entries
+      stay: those come from a real dual-engine same-scene capture.
+- [x] `package.json` (~:269) — remove the deleted spec from `external-parity:performance`. — done.
+
+**Two further consumers found during execution, not listed in this workstream:**
+
+- [x] `tools/external-parity-screenshot-gallery/index.ts:19` required the deleted PNG. Repointed
+      to `external-parity-threejs-visual-parity/large-scene-performance-a3d.png`, the real WebGL2
+      capture — it scores **100** on the visual-quality rubric (720x450, 44,351 B) where the 2D
+      canvas shot had been passing the same rubric.
+- [x] The same tool hardcoded `drawCalls: 420` and `assetCount: 640` for the performance entry
+      (18 and 1 for every other category). It inspects PNG bytes and never opens a renderer, so it
+      cannot know a draw-call count — the same defect class as the deleted gate, one layer down.
+      Both now report `null` with `countsMeasured: false` and a note naming where the real numbers
+      come from.
 **Atomic order — R10 says one workstream per commit, so define the intermediate state.**
 This workstream deliberately leaves a release command unable to pass until WS-1.4 lands.
 That is acceptable and must be committed in this order:
@@ -442,8 +463,15 @@ message names the unproven capability and the workstream that will resolve it, a
 unrelated release command is expected to pass. **Not permitted:** deleting the gate
 without a replacement, or silently dropping the performance dimension.
 
-- [ ] **Proof:** at step 2, the command exits non-zero with the unproven message — not
-      passing on a constant, and not silently absent.
+- [x] **Proof:** at step 2, the command exits non-zero with the unproven message — not
+      passing on a constant, and not silently absent. — `pnpm external-parity:performance` →
+      **EXIT=1**, check id `production-path-benchmark`, detail:
+
+      > large-scene performance is UNPROVEN pending the production-path benchmark (WS-1.4). The
+      > previous evidence was a Canvas 2D test returning literal constants; it has been deleted
+      > rather than trusted. Run `pnpm bench:production-path`.
+
+      `pnpm typecheck` exit 0 after the change.
 
 ### WS-1.2 Strip engine-comparison claims from the raw-triangle benchmark
 

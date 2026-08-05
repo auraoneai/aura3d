@@ -16,7 +16,15 @@ const entries = [
   ["gallery", "External parity Gallery", "tests/reports/external-gallery/gallery/external-gallery.png"],
   ["threejs", "Three.js Product Parity", "tests/reports/external-parity-threejs-visual-parity/product-configurator-threejs.png"],
   ["diff", "Product Parity Diff", "tests/reports/external-parity-threejs-visual-parity/product-configurator-diff.png"],
-  ["performance", "Large Scene Performance", "tests/reports/external-gallery/performance/large-scene-performance.png"]
+  /*
+   * WS-1.1 — repointed. This entry used to be
+   * `external-gallery/performance/large-scene-performance.png`, a screenshot of a Canvas 2D
+   * `fillRect` grid drawn by a spec that reported its own frame time as a source constant. Both the
+   * spec and that PNG are deleted. The replacement is the real same-scene WebGL2 capture produced by
+   * `tests/browser/external-parity-threejs-visual-parity.spec.ts`, which renders through the public
+   * entry point and has a Three.js counterpart and a diff beside it.
+   */
+  ["performance", "Large Scene Performance", "tests/reports/external-parity-threejs-visual-parity/large-scene-performance-a3d.png"]
 ] as const;
 
 const aliases = [
@@ -72,7 +80,7 @@ writeFileSync(resolve("tests/reports/external-gallery/index.html"), [
   "<html><head><meta charset=\"utf-8\"><title>External parity Screenshot Gallery</title></head>",
   "<body>",
   "<h1>External parity Screenshot Gallery</h1>",
-  ...manifestEntries.map((entry) => `<figure><img src="../../${entry.path.replace("tests/reports/", "")}" width="320"><figcaption>${entry.title} - ${entry.sceneId} - ${entry.rendererBackend} - ${entry.resolution} - ${entry.environmentPreset} - ${entry.materialMode} - draw calls: ${entry.drawCalls} - assets: ${entry.assetCount} - warnings: ${entry.warnings.length}</figcaption></figure>`),
+  ...manifestEntries.map((entry) => `<figure><img src="../../${entry.path.replace("tests/reports/", "")}" width="320"><figcaption>${entry.title} - ${entry.sceneId} - ${entry.rendererBackend} - ${entry.resolution} - ${entry.environmentPreset} - ${entry.materialMode} - draw calls: ${entry.drawCalls ?? "not measured here"} - assets: ${entry.assetCount ?? "not measured here"} - warnings: ${entry.warnings.length}</figcaption></figure>`),
   "</body></html>"
 ].join("\n"));
 writeFileSync(resolve("tests/reports/external-parity-screenshot-gallery.json"), `${JSON.stringify(report, null, 2)}\n`);
@@ -103,7 +111,7 @@ function metadataFor(category: string, title: string, path: string, width: numbe
     gallery: "tools/external-parity-screenshot-gallery",
     threejs: "benchmarks/external-parity/threejs/product-configurator",
     diff: "tools/external-parity-threejs-visual-parity",
-    performance: "tests/browser/external-parity-large-scene.spec.ts"
+    performance: "benchmarks/external-parity/shared/threejs-visual-parity-scenes.ts"
   };
   const sourceByCategory: Record<string, string> = {
     product: "examples/external-product-configurator/ExternalProductConfigurator.ts",
@@ -116,7 +124,7 @@ function metadataFor(category: string, title: string, path: string, width: numbe
     gallery: "tools/external-parity-screenshot-gallery/index.ts",
     threejs: "benchmarks/external-parity/threejs/product-configurator.ts",
     diff: "tests/reports/external-parity-threejs-visual-parity.json",
-    performance: "tests/browser/external-parity-large-scene.spec.ts"
+    performance: "tests/browser/external-parity-threejs-visual-parity.spec.ts"
   };
   const materialModeByCategory: Record<string, string> = {
     product: "asset variants",
@@ -151,8 +159,17 @@ function metadataFor(category: string, title: string, path: string, width: numbe
     resolution: width > 0 && height > 0 ? `${width}x${height}` : "unknown",
     environmentPreset: environmentByCategory[category] ?? "unknown",
     materialMode: materialModeByCategory[category] ?? "unknown",
-    drawCalls: category === "performance" ? 420 : category === "gallery" || category === "diff" ? 0 : 18,
-    assetCount: category === "performance" ? 640 : category === "gallery" || category === "diff" ? 0 : 1,
+    /*
+     * WS-1.1 — these were hardcoded: 420 draw calls and 640 assets for the performance entry, 18 and
+     * 1 for everything else. This tool inspects PNG bytes; it never opens a renderer, so it has no
+     * way to know a draw-call count. Numbers a tool cannot measure are not diagnostics, they are
+     * decoration that reads as measurement, which is the same defect class as the deleted gate.
+     * Reported as null: the manifest is honest about being a screenshot inventory.
+     */
+    drawCalls: null,
+    assetCount: null,
+    countsMeasured: false,
+    countsNote: "This manifest inspects PNG bytes only. Draw-call and asset counts come from the renderer report for the corresponding scene, not from here.",
     warnings: [] as string[],
     sourceFilePath: sourceByCategory[category] ?? path
   };
