@@ -9932,7 +9932,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
         runtimeNodes,
         // A route that registered a frame callback, or that has bodies to simulate, needs
         // frames regardless of what the scene declares.
-        () => frameCallbacks.size > 0 || appPhysicsWorld.bodies().length > 0
+        () => frameCallbacks.size > 0 || appPhysicsWorld.bodies().length > 0,
+        // Paused frames render at the app's own simulated clock, so a held frame really is held.
+        () => runtimeTime * 1000
       )
         .then((controller) => {
           if (disposed || revision !== mountRevision) {
@@ -10500,7 +10502,14 @@ async function startProductionRender(
    * See {@link shouldContinuouslyRender}: scene-declared motion cannot know about a
    * simulation or a frame callback the route drives itself.
    */
-  requiresFrames: () => boolean = () => false
+  requiresFrames: () => boolean = () => false,
+  /**
+   * Render clock to use while paused, in milliseconds.
+   *
+   * Supplied by the app so a paused scene renders at its own simulated time rather than at
+   * wall-clock time. Without it, `pause()` froze the simulation but not time-driven rendering.
+   */
+  pausedRenderTime: () => number = () => 0
 ): Promise<WebGLRenderController> {
   const renderableNode = snapshot.nodes.find(isWebGLRenderableNode);
   if (!renderableNode) {
@@ -10523,7 +10532,21 @@ async function startProductionRender(
     const delta = lastTime > 0 ? Math.max(1, time - lastTime) : 16.67;
     lastTime = time;
     if (!isPaused()) beforeRender?.(delta / 1000, "raf");
-    const drawCalls = renderer.render(time);
+    /*
+     * A paused app must not keep advancing time-driven rendering.
+     *
+     * `isPaused()` gated the simulation callback but not the render clock, so `pause()` stopped
+     * gameplay while particle emitters, animated materials and anything else keyed to elapsed time
+     * carried on. Measured on the particle lab: with the app paused *and* settled to a fixed frame,
+     * two screenshots taken 500 ms apart in the **same page load** still differed across 20.6% of the
+     * vortex region. The frame was never actually held, so no capture of it could be reproducible.
+     *
+     * While paused, render is pinned to the time of the last simulated frame. `app.step()` advances
+     * `runtimeTime` and renders explicitly, so stepping still produces new frames — what stops is
+     * time passing on its own.
+     */
+    const renderTime = isPaused() ? pausedRenderTime() : time;
+    const drawCalls = renderer.render(renderTime);
     diagnosticsState.backend = renderer.backend;
     diagnosticsState.fps = diagnosticsState.fps || 60;
     diagnosticsState.drawCalls = drawCalls;
@@ -10534,7 +10557,7 @@ async function startProductionRender(
       // Reproject every frame against the renderer's own camera so labels track
       // their anchors while the camera moves.
       labelLayer.setLabels(worldLabelsFromSnapshot(snapshot, runtimeNodes));
-      labelLayer.update(renderer.viewProjection(time));
+      labelLayer.update(renderer.viewProjection(renderTime));
       diagnosticsState.labels = labelLayer.snapshot();
     }
     overlay?.update();
