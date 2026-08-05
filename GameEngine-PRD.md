@@ -611,11 +611,33 @@ budget to make it pass. It is now *visible* for the first time, which is the use
 
 - [ ] Every checkbox above checked — **46 of 51.** The 5 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8), the zero-consumer parity rows above, this item, and route promotion below. None is open because it was skipped; each has its reason written in its own row.
 - [x] Rule-1 grep clean for both flagship routes — all five surface constants deleted from turbo drift; `runner-rules.ts` (a 252-line orphan still declaring `gravity: -20.2`, `jumpVelocity: 8.75`, zero importers) deleted, with an `existsSync(...) === false` gate so it cannot return. The only remaining match across both routes is prose in a comment naming what was removed. **Not claimed repo-wide:** `world-war-x-showcase` and `showcase-cannon-physics-proof.ts` still declare their own gravity; they are outside this PRD's scope and were never part of the two reported defects.
-- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers — **5 remain**: raycasting, character controller, joints/constraints, continuous collision detection, physics debug rendering. Each is now genuinely *implemented and tested* (19 joint tests across both backends, 10 character-controller mesh tests, raycast/spherecast/overlap on the public surface, a debug overlay with a real consumer). What they lack is a **shipped app or example** importing them: `build-threejs-parity.mjs` counts consumers only from `inventory.apps` and `inventory.examples`, and my consumers are `tests/clean-room/*` plus unit tests. That is a defensible definition — a test is not a product surface — so the honest close is to add a real example route per capability, not to widen the tool's definition until the number moves.
-- [x] No parity row claims `exceed` — regenerated report: `physics: exceed 0, parity 3, unproven 7, gap 0 (of 10)`. Also corrected two stale downgrade notes whose stated premise ("the VehicleSurface input is an analytic flat plane") WS-4.1 disproved: the route now queries a real mesh and the WS-7.1 penetration gate passes. The rows **stay** `parity-unproven` because the blocker is now narrower and different — `game.racing` still integrates its own kinematic motion rather than the shared force model. Reasoning corrected without upgrading any status.
-- [x] `pnpm check:game-runtime` passes (4 gates + 68 tests), and every gate is **observed failing on `v1.5.2`** reproducibly: `node tools/showcase-library/game-runtime-gates.mjs --against v1.5.2` fails all four, naming each specific defect. `tests/unit/tools/game-runtime-gates.test.ts` asserts the verdicts flip between the tag and the working tree, so the claim cannot decay.
-- [x] **7 clean-room projects pass** — `pnpm exec playwright test tests/browser/clean-room-projects.spec.ts` → 7 passed. Three are genres with **no kit**: `physics-sandbox` (97/200 lines), `top-down-shooter` (176/300, `usedKit: false` asserted), `physics-puzzle` (105/300). Each reports `packagesImported: ["@aura3d/engine"]` with zero private imports, and the harness bans `new PhysicsWorld` so they cannot pass by hand-wiring physics.
-- [x] A developer can do all six from `@aura3d/engine` alone, each documented with a snippet that is **compiled in CI**. `docs/concepts/physics.md` covers push a crate, detect a pickup, raycast for line of sight, bullets that miss each other, a motorised hinged door, and ground to a mesh; `check:docs-codeblocks` typechecks all six against the real API (proven load-bearing by renaming `applyImpulse` to a nonexistent method and observing failure). Reachability is proven at runtime by `public-physics-runtime.test.ts` (13) and `public-joints.test.ts` (19) importing `@aura3d/engine` only.
+- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers — **7 unproven -> 4, and 3 of the remaining were a tool defect, not missing capability.**
+
+  Auditing this row found that `build-product-inventory.mjs` emitted `sourceFiles` for all **111 apps**
+  and for **none of the 36 examples**, even though the file list was already computed two lines above.
+  `build-threejs-parity.mjs` resolves consumers by reading `entry.sourceFiles ?? []`, so every example
+  iterated an empty array and could never be credited.
+
+  The visible consequence: `examples/physics-sandbox` imports `PhysicsDebugDraw` and constructs it
+  (`new PhysicsDebugDraw()`), and uses `Constraint` in 6 places; `examples/game-slice` imports and
+  constructs `CharacterController`. All three capabilities were nonetheless reported as "no production
+  consumer imports this capability". Five physics rows were downgraded on evidence the tool was
+  structurally unable to see. `check-quality-gates.mjs` reads the same field, so the omission narrowed
+  that gate's reach too.
+
+  After the one-line fix, verified by reading the actual import lines rather than trusting the count:
+
+      before: physics exceed 0, parity 3, unproven 7
+      after : physics exceed 0, parity 6, unproven 4
+
+  `character controller`, `joints / constraints` and `physics debug rendering` now carry real example
+  consumers. **No status was upgraded by hand** — the tool simply stopped discarding evidence.
+
+  Still unproven, honestly: `raycasting` and `continuous collision detection` (implemented and tested,
+  but no shipped app or example imports them — my consumers are clean-room and unit tests, which are
+  not a product surface), plus `vehicle dynamics` and `vehicle AI driving`, which stay down pending
+  WS-3.8. Closing the first two means writing a real example route, not widening the tool further.
+
 - [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` — **correctly still open, and I have not promoted them.** The row's own precondition ("only after all of the above") is not met, and promotion additionally requires independent human visual review, which an agent must not self-grant. Route statuses are untouched: `blockfall-reactor`, `skyline-runner` and `turbo-drift-circuit` all remain `prototype-blocked`, and `allRoutesOk` remains `false` by design.
 
 ## 5. What this deliberately does not do

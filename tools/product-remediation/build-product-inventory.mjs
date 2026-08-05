@@ -430,6 +430,23 @@ for (const name of listDirs(join(root, "examples"))) {
     public: exists(join(dir, "index.html")),
     packagesConsumed: packages.filter((spec) => spec.startsWith("@aura3d/")),
     privateImports,
+    /*
+     * Examples were the only inventory entries missing `sourceFiles`.
+     *
+     * All 111 apps carried it; all 36 examples did not, even though `files` was already computed
+     * two lines above. `build-threejs-parity.mjs` resolves consumers by reading
+     * `entry.sourceFiles ?? []` and grepping for capability symbols, so every example was
+     * iterating an empty list and could never be credited.
+     *
+     * The visible consequence: `examples/physics-sandbox` uses `Constraint` (6 references) and
+     * `PhysicsDebugDraw` (2), yet the parity report listed `joints / constraints` and
+     * `physics debug rendering` as "no production consumer imports this capability". Five physics
+     * rows were downgraded on evidence the tool was structurally unable to see.
+     *
+     * `check-quality-gates.mjs` reads the same field for apps, so this omission also silently
+     * narrowed that gate's reach.
+     */
+    sourceFiles: files.map((file) => relative(root, file)),
     routeLocalLines: files.reduce((total, file) => total + countLines(file), 0),
     controls: collectControls(dir, files),
     runtimeSystems: detectRuntimeSystems(files),
