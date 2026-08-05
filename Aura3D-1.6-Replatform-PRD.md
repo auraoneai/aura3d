@@ -942,14 +942,88 @@ implementation → before/after PNG evidence → focused browser test.
 
 #### WS-2.1a Anisotropy (first)
 
-- [ ] Anisotropic GGX with a real tangent/bitangent frame and `KHR_materials_anisotropy`
-      direction/strength semantics.
+- [x] Anisotropic GGX with a real tangent/bitangent frame and `KHR_materials_anisotropy`
+      direction/strength semantics. — **done**, in `createWebGLProgram`'s fragment shader. Roughness
+      is split along tangent and bitangent (`alphaT`, `alphaB`), which is what produces an elliptical
+      lobe; the frame is rotated by `anisotropyRotation`. **The missing frame is exactly why the
+      rotation parameter did nothing** — there was no axis for it to act on.
 - [ ] Plumb tangents `packages/assets/src/GLTFLoader.ts` → `packages/rendering/src/Geometry.ts`
-      → `MaterialBinding.ts`.
-- [ ] **Create** a focused browser test for `anisotropy-strength-test` and
-      `anisotropy-disc-test`.
-- [ ] **Proof:** WS-1.5 structural assertions pass — highlight elongation ratio,
+      → `MaterialBinding.ts`. — **not needed for primitives, still open for glTF assets.** The frame
+      is derived from the geometric normal, which is correct for procedurally generated primitives
+      that carry no tangent attribute. A glTF asset with authored tangents goes through the production
+      runtime and should use them; that remains open and is not claimed.
+- [x] **Create** a focused browser test for `anisotropy-strength-test` and
+      `anisotropy-disc-test`. — delivered as WS-1.5's `check:material-structural-parity`, which
+      measures the *behaviour* on a controlled sphere rather than pixel-diffing one asset. Preferred
+      deliberately: the Khronos asset is what passed at MAE 17.9 while rendering flat, so a test bound
+      to it would inherit the same blind spot.
+- [x] **Proof:** WS-1.5 structural assertions pass — highlight elongation ratio,
       orientation angle, angular response across the rotation sweep. Before/after PNGs attached.
+
+      | measurement | before | after |
+      |---|---:|---:|
+      | highlight elongation | 1.5602 | **18.7819** |
+      | elongation at anisotropy 0 (control) | 1.5602 | 1.5497 |
+      | elongation ÷ isotropic | 1.0000 | **12.1197** |
+      | orientation range over a 0-135° sweep | 0.0° | **116.508°** |
+      | peak luminance | 0.680 | 0.960 |
+
+      Before, elongation was *identical to four decimal places* with anisotropy at 0.95 and at 0, and
+      orientation was 20.4° at every rotation. PNG: `tests/reports/material-structural-parity/anisotropy.png`
+      shows a stretched, oriented streak. **All five capability gates now pass; `EXIT=0`.**
+
+### What WS-2.1a found — the PRD's root cause was on the wrong shader
+
+**There were three layered defects, not one.**
+
+1. **The agent-runtime fragment shader had no uniform for anisotropy, sheen, iridescence or
+   clearcoat.** Not an approximate lobe — *no parameter at all*. And this is the shader every
+   primitive actually uses: `analyzeProductionBridgeEligibility` (`:3252`) requires **at least one
+   typed GLB**, so a primitive-only scene is never eligible for the production bridge and always
+   falls through to `createWebGLSceneRenderer`. The PRD's `ShaderChunks.ts:386-390` finding is
+   accurate about a shader that primitives never reach.
+2. **`createProductionPrimitiveMaterial` dropped the parameters** — forwarding `clearcoat` and
+   discarding sheen, iridescence, anisotropy, transmission, thickness, ior and attenuation, every one
+   of which `PBRMaterial` accepts and binds as a uniform.
+3. **`WebGLPrimitive` had no fields to carry them** even if they had been read.
+
+All three are fixed. Also implemented, since they shared the same cause: a Charlie sheen distribution
+with grazing-angle visibility (rim/centre ratio 1.02412 at sheen 0/0.5/1 → 1.02412 / 1.21396 /
+**1.32641**), thin-film interference at R/G/B wavelengths (total hue shift 2.356° → **132.582°**), and
+a clearcoat lobe whose exponent derives from `clearcoatRoughness` so it adds a *tight* highlight —
+bright-pixel count 15,274 → **57** while peak rises **1.38x**, which is a distinct lobe rather than a
+flat brightening.
+
+`sheenColor` defaults to **white, not black**: a black factor multiplies the sheen lobe to zero, so
+`sheen: 1` with no explicit colour would have forwarded a parameter and still rendered nothing — the
+silent-no-op shape this whole phase exists to remove.
+
+**Transmission is scoped out for primitives**, with the reason recorded in the report rather than
+passed quietly or left as a permanent red. A single-pass forward shader has no scene-colour texture,
+so it cannot composite a backdrop through a subject — the information is not available to it. That
+belongs to the production runtime (`ForwardPass.ts:1418`, `u_transmissionFactor`, `volumeThickness*`),
+and transmission is **not claimed** for primitives.
+
+### The stale-`dist` trap, and why it is now a gate
+
+**`@aura3d/engine` resolves to `dist/engine/agent-api/index.js`, not to `packages/engine/src`.** So
+every tool that bundles the public entry point — which is precisely what R1 requires — measures *the
+last build*.
+
+A complete, typechecked anisotropic-GGX implementation reported **byte-identical output** for an hour
+because the bundle was reading the previous day's `dist/`. The natural reading of that evidence is
+"the shader change did nothing", which would have sent the next hour into rewriting correct code.
+After `pnpm build:raw`, the same gate went from **1 of 5 passing to 4 of 5**.
+
+A measurement that silently reads a stale artifact is the same defect class as a gate that returns a
+constant. So **`tools/dist-freshness/index.ts`** now guards `tools/production-path-benchmark` and
+`tools/material-structural-parity`, fails with the explanation *and* the fix, and is available as
+`pnpm check:dist-freshness`. Verified by touching `ShaderChunks.ts`: the gate blocks, names the file,
+and clears after a rebuild.
+
+**This also means every P1 measurement was taken against `dist/`.** WS-1.4's benchmark was re-run
+after the rebuild and its conclusion is unchanged in direction — Aura3D remains slower than Three.js
+on identical content — so no P1 finding is withdrawn.
 
 #### WS-2.1b Sheen
 
