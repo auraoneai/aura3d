@@ -550,13 +550,50 @@ same triangle twice. Only its bundle numbers are valid.
 
 ### WS-1.3 Label every remaining performance claim by measurement type
 
-- [ ] `tests/performance/rendering-frame-budgets.ts` (`backend: "mock"` at :109, :165)
-- [ ] `tests/performance/system-baselines.ts` (:79, :97)
-- [ ] `tests/performance/production-runtime-performance-baselines.ts` (:108)
-- [ ] Rename emitted `frameMs` → `cpuTraversalMs`; add
-      `"measures": "cpu-scene-traversal-on-mock-device"`.
-- [ ] Regenerate the affected reports.
-- [ ] **Proof:** `grep -rn "frameMs" tests/reports/production-runtime-performance-baselines.json` empty.
+- [x] `tests/performance/rendering-frame-budgets.ts` (`backend: "mock"` at :109, :165) — done.
+      Suite renamed `rendering-frame-budgets` → **`rendering-cpu-traversal-budgets`**, with
+      `supersededSuiteName` retained. Both budget names renamed too:
+      `rendering-large-scene-frame` → `rendering-large-scene-cpu-traversal`,
+      `rendering-material-matrix-frame` → `rendering-material-matrix-cpu-traversal`. A budget called
+      `…-frame` was half the problem.
+- [x] `tests/performance/system-baselines.ts` (:79, :97) — done. These two were already the most
+      honest of the three: their names said `renderer-1000-mock-cubes` and
+      `renderer-10000-mock-instances`. What was missing was a *machine-readable* label, so a
+      downstream reader of `tests/reports/performance.json` could not mistake `elapsedMs` for frame
+      time. Both now carry `measures` and `backend: "mock"`. The ECS, physics, animation, asset and
+      particle baselines in the same file are left alone: they measure their own real subsystems on
+      the CPU, which is what they claim.
+- [x] `tests/performance/production-runtime-performance-baselines.ts` (:108) — done. The name
+      mattered most here: *"production runtime"* next to *`frameMs`* reads as a shipped frame time,
+      and was cited that way. Baseline renamed
+      `production-runtime-large-scene-resource-budget-cpu-traversal`.
+- [x] Rename emitted `frameMs` → `cpuTraversalMs`; add
+      `"measures": "cpu-scene-traversal-on-mock-device"`. — done in all three, on the field **and**
+      at report level, alongside `doesNotMeasure: "rendered frame time on a real GPU device"`,
+      `backend: "mock"`, and `renderedFrameTimeEvidenceLivesIn` pointing at the real evidence. The
+      label travels with the number into any consuming report rather than living only in a comment.
+- [x] Regenerate the affected reports. — all three regenerated, exit 0.
+- [x] **Proof:** `grep -rn "frameMs" tests/reports/production-runtime-performance-baselines.json`
+      empty. — **confirmed: `grep -c` returns 0.**
+
+**One consumer defect found while doing this, worth its own note.**
+`tools/production-runtime-performance-readiness/index.ts` had a single `frame-timing` check that
+`&&`-ed the mock-device number together with the real browser number:
+
+```ts
+{ id: "frame-timing", pass: Number(baselineEntry.frameMs ?? 0) >= 0 && … && Number(browserReport.frameMs ?? 0) >= 0 }
+```
+
+That is how a mock traversal cost came to stand beside GPU evidence as though they were the same
+kind of measurement. Split into `cpu-traversal-timing-mock-device` (which now also *asserts* the
+`measures` label is present) and `real-webgl2-frame-timing` (which asserts `realWebGL2 === true`).
+Both pass: `pnpm production-runtime:performance` → **EXIT=0**, 11 checks green,
+`cpuTraversalMs=29.15` on the mock device against `frameMs=33.4` on the real one — two different
+numbers that were previously indistinguishable in the report.
+
+`pnpm verify:performance` still fails one budget: `physics-500-bodies-120-steps` at 7,499 ms against
+a 6,000 ms budget. **Pre-existing** — stashing the change and re-running gives 7,301 ms, the same
+failure. Not touched here, and per R2 the budget is not being raised to hide it.
 
 ### WS-1.4 Real production-path benchmark with honest timing taxonomy
 

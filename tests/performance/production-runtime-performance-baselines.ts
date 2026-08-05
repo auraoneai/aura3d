@@ -13,9 +13,23 @@ import {
   type RenderItem
 } from "@aura3d/rendering";
 
+/**
+ * WS-1.3 — `frameMs` is renamed `cpuTraversalMs`. See the note in
+ * `tests/performance/rendering-frame-budgets.ts`: this baseline also runs on
+ * `Renderer.create({ backend: "mock" })`, so its elapsed time is scene-traversal cost in this
+ * process, not a rendered frame. The name mattered here more than most, because this file is called
+ * `production-runtime-performance-baselines` — "production runtime" plus "frameMs" reads as a
+ * shipped frame time and was cited as one.
+ *
+ * The real production-runtime frame evidence is
+ * `tests/browser/production-runtime-large-scene-performance.spec.ts`, which asserts `realWebGL2` on
+ * a served page, and `tests/reports/production-path-benchmark.json` for the Three.js comparison.
+ */
 interface ProductionRuntimePerformanceBaseline {
   readonly name: string;
-  readonly frameMs: number;
+  /** CPU time to traverse render items on a mock device. Not a rendered frame. */
+  readonly cpuTraversalMs: number;
+  readonly measures: "cpu-scene-traversal-on-mock-device";
   readonly budgetMs: number;
   readonly withinBudget: boolean;
   readonly attempts: number;
@@ -43,6 +57,13 @@ async function main(): Promise<void> {
   const baseline = await retryBaseline(createLargeSceneBaseline);
   const report = {
     schema: "a3d-production-runtime-performance-baselines",
+    measures: "cpu-scene-traversal-on-mock-device",
+    doesNotMeasure: "rendered frame time on a real GPU device",
+    backend: "mock",
+    renderedFrameTimeEvidenceLivesIn: [
+      "tests/reports/production-runtime-large-scene-performance.json",
+      "tests/reports/production-path-benchmark.json"
+    ],
     generatedAt: new Date().toISOString(),
     pass: baseline.withinBudget &&
       baseline.drawCalls > 0 &&
@@ -108,7 +129,7 @@ async function createLargeSceneBaseline(): Promise<ProductionRuntimePerformanceB
   const renderer = await Renderer.create({ backend: "mock", width: 960, height: 540 });
   const start = performance.now();
   const diagnostics = renderer.render(renderItems);
-  const frameMs = Number((performance.now() - start).toFixed(3));
+  const cpuTraversalMs = Number((performance.now() - start).toFixed(3));
   const estimatedTextureBytes = textures.reduce((total, texture) => total + texture.byteLength, 0);
   const textureBytes = (diagnostics.textureBytes ?? 0) > 0 ? diagnostics.textureBytes ?? 0 : estimatedTextureBytes;
   renderer.dispose();
@@ -118,15 +139,16 @@ async function createLargeSceneBaseline(): Promise<ProductionRuntimePerformanceB
   for (const texture of textures) texture.dispose();
 
   return {
-    name: "production-runtime-large-scene-resource-budget",
-    frameMs,
+    name: "production-runtime-large-scene-resource-budget-cpu-traversal",
+    cpuTraversalMs,
+    measures: "cpu-scene-traversal-on-mock-device",
     budgetMs: 600,
-    withinBudget: frameMs <= 600,
+    withinBudget: cpuTraversalMs <= 600,
     attempts: 1,
-    samplesMs: [frameMs],
-    minMs: frameMs,
-    medianMs: frameMs,
-    maxMs: frameMs,
+    samplesMs: [cpuTraversalMs],
+    minMs: cpuTraversalMs,
+    medianMs: cpuTraversalMs,
+    maxMs: cpuTraversalMs,
     drawCalls: diagnostics.drawCalls,
     textureBytes,
     staticMeshes,
@@ -147,18 +169,18 @@ async function createLargeSceneBaseline(): Promise<ProductionRuntimePerformanceB
 async function retryBaseline(create: () => Promise<ProductionRuntimePerformanceBaseline>, attempts = 3): Promise<ProductionRuntimePerformanceBaseline> {
   const samples: ProductionRuntimePerformanceBaseline[] = [];
   for (let attempt = 0; attempt < attempts; attempt += 1) samples.push(await create());
-  const sorted = samples.map((sample) => sample.frameMs).sort((left, right) => left - right);
-  const medianMs = sorted[Math.floor(sorted.length / 2)] ?? samples[0]?.frameMs ?? 0;
+  const sorted = samples.map((sample) => sample.cpuTraversalMs).sort((left, right) => left - right);
+  const medianMs = sorted[Math.floor(sorted.length / 2)] ?? samples[0]?.cpuTraversalMs ?? 0;
   const median = samples.reduce((current, candidate) => (
-    Math.abs(candidate.frameMs - medianMs) < Math.abs(current.frameMs - medianMs) ? candidate : current
+    Math.abs(candidate.cpuTraversalMs - medianMs) < Math.abs(current.cpuTraversalMs - medianMs) ? candidate : current
   ));
   return {
     ...median,
     attempts,
-    samplesMs: samples.map((sample) => sample.frameMs),
-    minMs: Number((sorted[0] ?? median.frameMs).toFixed(3)),
+    samplesMs: samples.map((sample) => sample.cpuTraversalMs),
+    minMs: Number((sorted[0] ?? median.cpuTraversalMs).toFixed(3)),
     medianMs: Number(medianMs.toFixed(3)),
-    maxMs: Number((sorted.at(-1) ?? median.frameMs).toFixed(3))
+    maxMs: Number((sorted.at(-1) ?? median.cpuTraversalMs).toFixed(3))
   };
 }
 

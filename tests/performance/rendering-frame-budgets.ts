@@ -15,9 +15,25 @@ import {
   type RenderItem
 } from "@aura3d/rendering";
 
+/**
+ * WS-1.3 — `frameMs` is renamed `cpuTraversalMs`, because that is what it is.
+ *
+ * Both budgets in this file call `Renderer.create({ backend: "mock" })`. A mock device issues no GL
+ * commands, allocates nothing on a GPU and waits for nothing, so the elapsed time measures how long
+ * it took **this process** to walk the render-item list and build draw descriptions. That is a real
+ * and useful regression signal — a traversal that suddenly costs 10x has a genuine defect behind it —
+ * but a field called `frameMs` sitting in a file called `rendering-frame-budgets` reads as a rendered
+ * frame, and was cited that way.
+ *
+ * Real rendered frame time, on a real device, against Three.js, is
+ * `tests/reports/production-path-benchmark.json` (WS-1.4).
+ */
 interface RenderingBudget {
   readonly name: string;
-  readonly frameMs: number;
+  /** CPU time to traverse render items on a mock device. Not a rendered frame. */
+  readonly cpuTraversalMs: number;
+  /** Constant string; makes the measurement type travel with the number into any report. */
+  readonly measures: "cpu-scene-traversal-on-mock-device";
   readonly budgetMs: number;
   readonly withinBudget: boolean;
   readonly attempts: number;
@@ -42,7 +58,12 @@ async function main(): Promise<void> {
   ];
   const report = {
     generatedAt: new Date().toISOString(),
-    suite: "rendering-frame-budgets",
+    suite: "rendering-cpu-traversal-budgets",
+    supersededSuiteName: "rendering-frame-budgets",
+    measures: "cpu-scene-traversal-on-mock-device",
+    doesNotMeasure: "rendered frame time on a real GPU device",
+    renderedFrameTimeEvidenceLivesIn: "tests/reports/production-path-benchmark.json",
+    backend: "mock",
     environment: {
       node: process.version,
       platform: platform(),
@@ -109,7 +130,7 @@ async function largeSceneBudget(): Promise<RenderingBudget> {
   const renderer = await Renderer.create({ backend: "mock", width: 640, height: 360 });
   const start = performance.now();
   const diagnostics = renderer.render(renderItems);
-  const frameMs = performance.now() - start;
+  const cpuTraversalMs = performance.now() - start;
   renderer.dispose();
   geometry.dispose();
   litGeometry.dispose();
@@ -117,8 +138,9 @@ async function largeSceneBudget(): Promise<RenderingBudget> {
   for (const texture of textures) texture.dispose();
 
   return withBudget({
-    name: "rendering-large-scene-frame",
-    frameMs: Number(frameMs.toFixed(3)),
+    name: "rendering-large-scene-cpu-traversal",
+    cpuTraversalMs: Number(cpuTraversalMs.toFixed(3)),
+    measures: "cpu-scene-traversal-on-mock-device",
     drawCalls: diagnostics.drawCalls,
     buffers: diagnostics.buffers,
     shaders: diagnostics.shaders,
@@ -165,7 +187,7 @@ async function materialMatrixBudget(): Promise<RenderingBudget> {
   const renderer = await Renderer.create({ backend: "mock", width: 960, height: 540 });
   const start = performance.now();
   const diagnostics = renderer.render(renderItems);
-  const frameMs = performance.now() - start;
+  const cpuTraversalMs = performance.now() - start;
   renderer.dispose();
   triangle.dispose();
   litTriangle.dispose();
@@ -173,8 +195,9 @@ async function materialMatrixBudget(): Promise<RenderingBudget> {
   for (const texture of textures) texture.dispose();
 
   return withBudget({
-    name: "rendering-material-matrix-frame",
-    frameMs: Number(frameMs.toFixed(3)),
+    name: "rendering-material-matrix-cpu-traversal",
+    cpuTraversalMs: Number(cpuTraversalMs.toFixed(3)),
+    measures: "cpu-scene-traversal-on-mock-device",
     drawCalls: diagnostics.drawCalls,
     buffers: diagnostics.buffers,
     shaders: diagnostics.shaders,
@@ -188,13 +211,13 @@ async function retryRenderingBudget(createBudget: () => Promise<RenderingBudget>
   for (let attempt = 0; attempt < attempts; attempt += 1) {
     samples.push(await createBudget());
   }
-  const sorted = samples.map((sample) => sample.frameMs).sort((left, right) => left - right);
-  const medianMs = sorted[Math.floor(sorted.length / 2)] ?? samples[0]?.frameMs ?? 0;
+  const sorted = samples.map((sample) => sample.cpuTraversalMs).sort((left, right) => left - right);
+  const medianMs = sorted[Math.floor(sorted.length / 2)] ?? samples[0]?.cpuTraversalMs ?? 0;
   const median = samples.reduce((current, candidate) => (
-    Math.abs(candidate.frameMs - medianMs) < Math.abs(current.frameMs - medianMs) ? candidate : current
+    Math.abs(candidate.cpuTraversalMs - medianMs) < Math.abs(current.cpuTraversalMs - medianMs) ? candidate : current
   ));
-  const minMs = sorted[0] ?? median.frameMs;
-  const maxMs = sorted.at(-1) ?? median.frameMs;
+  const minMs = sorted[0] ?? median.cpuTraversalMs;
+  const maxMs = sorted.at(-1) ?? median.cpuTraversalMs;
 
   return {
     ...median,
@@ -202,7 +225,7 @@ async function retryRenderingBudget(createBudget: () => Promise<RenderingBudget>
     minMs: Number(minMs.toFixed(3)),
     medianMs: Number(medianMs.toFixed(3)),
     maxMs: Number(maxMs.toFixed(3)),
-    samplesMs: samples.map((sample) => sample.frameMs)
+    samplesMs: samples.map((sample) => sample.cpuTraversalMs)
   };
 }
 
@@ -213,12 +236,12 @@ function withBudget(
   return {
     ...budget,
     budgetMs,
-    withinBudget: budget.frameMs <= budgetMs,
+    withinBudget: budget.cpuTraversalMs <= budgetMs,
     attempts: 1,
-    minMs: budget.frameMs,
-    medianMs: budget.frameMs,
-    maxMs: budget.frameMs,
-    samplesMs: [budget.frameMs]
+    minMs: budget.cpuTraversalMs,
+    medianMs: budget.cpuTraversalMs,
+    maxMs: budget.cpuTraversalMs,
+    samplesMs: [budget.cpuTraversalMs]
   };
 }
 

@@ -10,7 +10,21 @@ const baselineEntry = obj((Array.isArray(baseline.baselines) ? baseline.baseline
 const screenshot = "tests/reports/production-runtime-performance/large-scene-performance.png";
 const checks = [
   { id: "baseline-pass", pass: baseline.pass === true, detail: JSON.stringify(baselineEntry) },
-  { id: "frame-timing", pass: Number(baselineEntry.frameMs ?? 0) >= 0 && Number(baselineEntry.medianMs ?? 0) >= 0 && Number(browserReport.frameMs ?? 0) >= 0, detail: `baseline=${String(baselineEntry.frameMs)} browser=${String(browserReport.frameMs)}` },
+  /*
+   * WS-1.3 — one `frame-timing` check used to `&&` together a mock-device number and a real browser
+   * number, which is how a mock traversal cost ended up standing beside GPU evidence as though they
+   * were the same kind of measurement. Split, and each named after what it actually measures.
+   */
+  {
+    id: "cpu-traversal-timing-mock-device",
+    pass: Number(baselineEntry.cpuTraversalMs ?? 0) >= 0 && Number(baselineEntry.medianMs ?? 0) >= 0 && baselineEntry.measures === "cpu-scene-traversal-on-mock-device",
+    detail: `cpuTraversalMs=${String(baselineEntry.cpuTraversalMs)} median=${String(baselineEntry.medianMs)} measures=${String(baselineEntry.measures)} (mock device: no GL commands, no GPU work — scene-traversal cost only)`
+  },
+  {
+    id: "real-webgl2-frame-timing",
+    pass: Number(browserReport.frameMs ?? -1) >= 0 && browserReport.realWebGL2 === true,
+    detail: `browser frameMs=${String(browserReport.frameMs)} realWebGL2=${String(browserReport.realWebGL2)} (this one is a served page on a real device)`
+  },
   { id: "draw-calls", pass: Number(baselineEntry.drawCalls ?? 0) > 0 && Number(browserReport.drawCalls ?? 0) > 0, detail: `baseline=${String(baselineEntry.drawCalls)} browser=${String(browserReport.drawCalls)}` },
   { id: "texture-memory", pass: Number(baselineEntry.textureBytes ?? 0) > 0 && Number(browserReport.textureBytes ?? 0) > 0, detail: `baseline=${String(baselineEntry.textureBytes)} browser=${String(browserReport.textureBytes)}` },
   { id: "instancing", pass: Number(baselineEntry.renderedInstances ?? 0) >= 4096 && Number(browserReport.renderedInstances ?? 0) >= 2048 && Number(browserReport.instancedBatches ?? 0) > 0, detail: `baseline=${String(baselineEntry.renderedInstances)} browser=${String(browserReport.renderedInstances)}` },

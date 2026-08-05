@@ -74,6 +74,17 @@ function ecsBaseline(): Baseline {
   return { ...baseline, entities: value.entities, checksum: value.sum };
 }
 
+/**
+ * WS-1.3 — this baseline and `rendererInstancingBaseline` run on `backend: "mock"`.
+ *
+ * Their names already said `mock` — `renderer-1000-mock-cubes` — which is more honest than the other
+ * two files in this directory were. What was missing is a machine-readable label, so a downstream
+ * report or a reader of `tests/reports/performance.json` cannot mistake `elapsedMs` for rendered
+ * frame time. `measures` now travels with the number.
+ *
+ * The value is a genuine regression signal for scene-traversal cost. It is not evidence about GPU
+ * rendering; that is `tests/reports/production-path-benchmark.json`.
+ */
 async function rendererBaseline(): Promise<Baseline> {
   const { value, baseline } = await elapsedAsync("renderer-1000-mock-cubes", async () => {
     const renderer = await Renderer.create({ backend: "mock", width: 640, height: 360 });
@@ -88,7 +99,7 @@ async function rendererBaseline(): Promise<Baseline> {
     return diagnostics;
   });
 
-  return withBudget({ ...baseline, drawCalls: value.drawCalls, buffers: value.buffers, shaders: value.shaders }, 250);
+  return withBudget({ ...baseline, measures: "cpu-scene-traversal-on-mock-device", backend: "mock", drawCalls: value.drawCalls, buffers: value.buffers, shaders: value.shaders }, 250);
 }
 
 async function rendererInstancingBaseline(): Promise<Baseline> {
@@ -115,6 +126,8 @@ async function rendererInstancingBaseline(): Promise<Baseline> {
 
   return withBudget({
     ...baseline,
+    measures: "cpu-scene-traversal-on-mock-device",
+    backend: "mock",
     instances: totalInstances,
     batches: value.batches,
     drawCalls: value.diagnostics.drawCalls,
@@ -267,6 +280,13 @@ async function main(): Promise<void> {
     generatedAt: new Date().toISOString(),
     releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-performance-run",
     suite: "workstream-6-system-performance",
+    /*
+     * WS-1.3 — the renderer baselines in this suite run on a mock device and are labelled per
+     * baseline with `measures: "cpu-scene-traversal-on-mock-device"`. The ECS, physics, animation,
+     * asset and particle baselines measure their own real subsystems on the CPU, which is what they
+     * claim to do. No baseline here measures GPU rendering.
+     */
+    renderedFrameTimeEvidenceLivesIn: "tests/reports/production-path-benchmark.json",
     environment: {
       node: process.version,
       platform: platform(),
