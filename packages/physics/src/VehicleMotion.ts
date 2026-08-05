@@ -266,7 +266,27 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
     // Braking must not reverse the car.
     if (brake > 0 && Math.sign(nextSpeed) !== Math.sign(speed) && speed !== 0) nextSpeed = 0;
     const nextLateral = (lateral + lateralAccel * step) * 0.96;
-    const nextYaw = (current.yawRate + yawAccel * step) * 0.985;
+    /*
+     * Yaw is bounded by what the steered geometry can actually produce.
+     *
+     * `yawAccel` comes from the tyre moment, and with no ceiling it integrates without limit: a
+     * high-grip tyre generates a large moment, which produces more yaw, which increases slip angle,
+     * which generates more moment. Measured on a racing route asking for ~4 g of grip, the car reached
+     * **-55 rad/z of yaw at 24.5 g lateral** — spinning on the spot rather than cornering, which made
+     * the vehicle undrivable and looked like a wiring error in the consumer.
+     *
+     * The bicycle model gives the kinematic bound: a car travelling at `v` with roadwheel angle `delta`
+     * and wheelbase `L` turns at `v * tan(delta) / L`. Real cars exceed it slightly in a slide, so the
+     * cap allows 1.6x before clamping, which leaves oversteer expressible while keeping the result a
+     * cornering vehicle rather than a spinning point.
+     *
+     * This is a bound, not a substitute: yaw still *comes from* tyre forces, so understeer, oversteer
+     * and load transfer are unaffected below the limit.
+     */
+    const kinematicYaw = Math.abs(nextSpeed) * Math.abs(Math.tan(steer)) / Math.max(1e-6, wheelbase);
+    const yawCeiling = Math.max(0.05, kinematicYaw * 1.6);
+    const unboundedYaw = (current.yawRate + yawAccel * step) * 0.985;
+    const nextYaw = clamp(unboundedYaw, -yawCeiling, yawCeiling);
 
     const heading = current.heading + nextYaw * step;
     const cos = Math.cos(heading);
