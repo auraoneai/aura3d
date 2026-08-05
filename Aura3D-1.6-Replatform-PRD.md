@@ -512,28 +512,74 @@ We already have the right primitive: `packages/rendering/src/RendererTiming.ts:1
 `GPU_DISJOINT_EXT`, and falls back to CPU with an explicit `unavailableReason`. Use it;
 do not invent timing.
 
-- [ ] **Create** `tests/browser/production-path-benchmark.spec.ts` — imports the public
+- [x] **Create** ~~`tests/browser/production-path-benchmark.spec.ts`~~ — imports the public
       `@aura3d/engine` entry and real `three`, builds the same scene in each, runs on a
-      real WebGL2 device.
-- [ ] Report these as **separate, separately-named** fields:
-      - `cpuFrameSubmissionMs`
-      - `rafIntervalMs`
-      - `gpuTimerQueryMs` (only when `supported === true`; otherwise `null` + reason)
-      - `firstFrameCompileMs`
-      - `steadyStateFrameMs`
-      - `wallClockFrameMs`
-      - `browserReportedMemoryMb` (when available)
-- [ ] Methodology, all mandatory: warm up shaders; identical canvas resolution; pixel
+      real WebGL2 device. — **done, as a tool rather than a Playwright spec.** Deviation
+      recorded: the measurement needs to launch **installed Chrome** to reach the real GPU
+      (Playwright's bundled Chromium falls back to SwiftShader), needs to bundle each engine
+      from its public entry with esbuild, and needs to serve that bundle from an origin. A
+      `.spec.ts` under the shared `playwright.config.ts` cannot control its own browser binary
+      per test. `tools/production-path-benchmark/index.ts` owns the Playwright launch directly
+      and satisfies the R1 *bundle-built-from-a-public-entry* evidence shape.
+- [x] Report these as **separate, separately-named** fields: `cpuFrameSubmissionMs` ·
+      `rafIntervalMs` · `gpuTimerQueryMs` (only when `supported === true`; otherwise `null` +
+      reason) · `firstFrameCompileMs` · `steadyStateFrameMs` · `wallClockFrameMs` ·
+      `browserReportedMemoryMb` — all seven present, each with a one-line definition in the
+      report's own `measurementTaxonomy` block so a reader cannot mistake one for another.
+- [x] Methodology, all mandatory: warm up shaders; identical canvas resolution; pixel
       ratio pinned to 1; identical camera and content; ≥ 3 separate sessions; report
       variance (min/median/p95/max + stddev); retain browser version, GPU/adapter, OS,
-      device, and headless flag.
-- [ ] **Create** `tools/production-path-benchmark/index.ts` as the readiness gate.
-- [ ] Model the harness on `tools/external-parity-gltf-loader-visual-parity/index.ts`,
-      which already imports real engines correctly under esbuild + Playwright.
-- [ ] Add script `bench:production-path`.
-- [ ] **Proof:** report shows both engines executing their own renderers, per-field
+      device, and headless flag. — all present. 60 warmup frames excluded, 180 measured,
+      3 sessions, 960x600 canvas, `pixelRatio: 1`, one shared scene definition
+      (`tools/production-path-benchmark/scene.ts`) that **both** engines read, so content
+      cannot diverge. Environment recorded:
+      `ANGLE (Apple, ANGLE Metal Renderer: Apple M4 Max)`, Chrome 147.0.7727.15, darwin arm64.
+- [x] **Create** `tools/production-path-benchmark/index.ts` as the readiness gate. — done;
+      `--gate-only` mode is wired into `check:release` as `check:production-path-benchmark`.
+- [x] Model the harness on `tools/external-parity-gltf-loader-visual-parity/index.ts`,
+      which already imports real engines correctly under esbuild + Playwright. — done, with
+      one required change: that harness injects an **IIFE** bundle into `about:blank`, which
+      cannot work for the root entry. `agent-api/index.ts:1655` resolves its bundled humanoid
+      fixture with `new URL("./assets/humanoid-fixture.glb", import.meta.url)` at module scope;
+      `import.meta` is empty under `iife`, so the module threw
+      `Failed to construct 'URL': Invalid URL` before a single export was reachable. The bundle
+      is ESM and is served from a throwaway localhost origin — which is also closer to how a
+      developer actually ships it.
+- [x] Add script `bench:production-path`. — added, plus `check:production-path-benchmark`.
+- [x] **Proof:** report shows both engines executing their own renderers, per-field
       measurement provenance, and variance across sessions. A `null` `gpuTimerQueryMs`
-      with a reason is an acceptable and honest result.
+      with a reason is an acceptable and honest result. — **`pnpm bench:production-path`**:
+
+      | | Aura3D | Three.js |
+      |---|---:|---:|
+      | `steadyStateFrameMs` (median of 3 sessions) | **1.6** | **1.0** |
+      | per-session medians | 1.5 / 1.6 / 2.1 | 0.7 / 1.0 / 1.0 |
+      | `gpuTimerQueryMs` median (real timer query) | 0.2347 | 0.1707 |
+      | `firstFrameCompileMs` | 2.2 | 39.9 |
+      | draw calls | 513 | 512 |
+      | bundle bytes (esbuild, minified) | 1,339,110 | 473,997 |
+
+      Both `realWebGL2: true`, both non-blank (168,984 and 110,023 lit pixels), 512 objects
+      each. **Aura3D is 1.6x slower per frame and 2.83x larger on this scene** — the first
+      honest performance number this repository has had, and it is unflattering. `check:release`
+      now depends on it.
+
+      The gate also earns its keep on the *first* run: launching Playwright's bundled Chromium
+      produced `SwiftShader`, a software rasterizer. That is now detected and reported as
+      `environment.softwareRasterizer` with an `interpretationCaveat`, because a
+      software-rasterized frame time is a valid CPU-submission comparison and says nothing about
+      GPU-bound behaviour. A report that did not distinguish them would be the same class of
+      defect as the gate WS-1.1 deleted.
+
+- [x] **Regression-locked:** `tests/unit/tools/production-path-benchmark.test.ts` — **7 passed**.
+      It asserts the properties that make the evidence admissible rather than that a report
+      exists: public-entry imports only and no `@aura3d/*/src/*` deep import; `getContext("2d")`
+      appears exactly once and only in the pixel-readback helper; no hardcoded `cpuFrameMs` /
+      `drawCalls` / `steadyStateFrameMs` / `gpuTimerQueryMs` literal on any executable line; no
+      CPU value assigned to a GPU-labelled field; the scene declared once; ≥ 3 sessions.
+
+**WS-1.1 step 4 is now closed:** `pnpm external-parity:performance` → **EXIT=0**, passing on the
+`production-path-benchmark` check reading real dual-engine evidence rather than on a constant.
 
 ### WS-1.5 Material-specific visual correctness gates
 
