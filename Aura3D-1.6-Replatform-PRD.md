@@ -1062,12 +1062,47 @@ Measured: **579,953 B gzip vs an 80,000 B budget (7.25x)**; **1,145,689 vs Three
       | `chunk-WABF5Y2X` | 22,143 | `TexturedPBRMaterial`, `ProductTurntableFixtures`, `SkinnedLitMaterial` |
       | `chunk-WMZORKGI` | 18,689 | **`WebGPUDevice.ts` 74,438 raw** |
 
-      Two of those are the clearest remaining wins and both are *static-import* problems rather than
-      construction problems: `PhysicsWorld` is already **lazily constructed** (`:9832`, with a comment
-      recording that eager construction cost 85 KB of `cannon-es`) yet still **statically imported** at
-      module scope, and `WebGPUDevice` arrives through
-      `rendering/src/index.ts → advanced-runtime → Renderer → RenderBackend`. Deferring either needs the
-      value import removed from the barrel, which is exactly the entry-point split this row describes.
+      Two of those were the clearest remaining wins and both were *static-import* problems rather than
+      construction problems. **Both are now fixed** — see the entry-point rows below.
+
+### Where WS-2.2 stands, and what the remaining gap actually is
+
+**Measured progression of scenario 1's initial download:**
+
+| Change | gzip | ratio |
+|---|---:|---:|
+| baseline | 335,877 | 2.815x |
+| defer `TypedGLBActor` (glTF loader off a cube's path) | 303,149 | 2.541x |
+| `WebGPUDevice` off the rendering barrel | 284,506 | 2.385x |
+| `@aura3d/physics/{solverless,world}` (cannon-es off a cube's path) | **251,680** | **2.110x** |
+| target | ≤ 149,120 | ≤ 1.25x |
+
+**The single largest remaining item is `ShaderLibrary.ts`, and it is not a plumbing defect.** Measured:
+**191,159 bytes of source, of which 178,947 — 94% — is GLSL template-literal text**, registering
+**15 shader variants** in one eager function. `createDefaultShaderLibrary()` registers all fifteen
+unconditionally, and `ForwardPass`, `DepthPass`, `EnvironmentBackgroundPass` and `Renderer` each call it
+as their default.
+
+A cube needs **two** of those fifteen — unlit and PBR. It pays for instanced, textured, skinned
+(4-influence and 8-influence, lit and unlit), morph, normal-mapped, environment-background,
+screen-space-line and depth variants it will never compile.
+
+**Why this is not a one-line fix, stated rather than attempted badly.** Making the other thirteen
+droppable requires the *consumer* to ask for only what it needs, and shader acquisition in
+`ForwardPass` is **synchronous**. The options are:
+
+1. Split registration into per-family modules and `await import()` the families a scene declares. The
+   mount is already async and `app.ready()` (WS-2.9) already exists to wait for it, so this fits — but it
+   makes shader acquisition async through `ForwardPass`, `DepthPass` and `Renderer`.
+2. Have `createAuraApp` declare its required families at mount time and pre-load them.
+
+Either is a real architectural change to the render path, and attempting it hastily risks breaking all
+rendering — the opposite of the WS-2.1a lesson, where a correct change looked inert for an hour. It is
+recorded here with its measurement so the next pass starts from evidence rather than guesswork.
+
+**P3's planned deletions also reduce this number**, and are sequenced first because they are discrete and
+independently verifiable: `rendering/threejs-compatibility/` (WS-3.4, 354 lines, 0 consumers) contributes
+ten `postprocess/*` modules that a cube currently reaches through the barrel.
 - [ ] **State the root's bundle behaviour explicitly — WS-2.2 and WS-2.4 conflict otherwise.**
       If `@aura3d/engine`'s root keeps re-exporting everything, existing users keep working
       but the root bundle stays enormous and the WS-2.4 budget is unreachable. Choose one
