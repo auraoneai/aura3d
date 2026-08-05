@@ -1212,7 +1212,7 @@ export function createGameRacingSurfaceQuery(route: GameRacingRoute): GameRacing
       y: segment.from.y + (segment.to.y - segment.from.y) * t,
       progress: normalized,
       heading: segment.heading,
-      curvature: segmentCurvature(segments, index, closed)
+      curvature: arcCurvature(segments, length, distance, closed)
     };
   }
   return {
@@ -1808,23 +1808,92 @@ function signedAngleDelta(from: number, to: number): number {
 }
 
 /**
- * Signed curvature at a segment boundary, as 1/radius in route units.
+ * Signed curvature of the racing line, as 1/radius in route units, measured over an arc window.
  *
- * A polyline has no curvature within a segment and an undefined spike at each vertex, so curvature
- * is attributed as the heading change into the next segment spread over the mean of the two segment
- * lengths. That is the discrete osculating-circle estimate, and it is what makes corner entry speed
- * computable from the route the game already declares instead of hand-tuned per track.
+ * A polyline has no curvature within a segment and an undefined spike at each vertex. Attributing
+ * the whole heading change at a vertex to that vertex — the obvious approach, and the one this
+ * previously used — makes curvature a function of where the author happened to place vertices
+ * rather than of the shape of the road. On a 33-point circuit that produced an impulse train:
+ * curvature read 0 along a segment then spiked, so the radius reported for one continuous corner
+ * swung 0.69 -> 3.01 -> 6.03 -> 16.17 -> 7.24 within 60 frames. Adjacent samples 0.094 units apart
+ * differed by 2.068 in curvature — larger than the p99 curvature of the whole track, so the signal
+ * was mostly discretisation artefact.
+ *
+ * Both consumers of curvature are harmed by that, and neither can defend itself:
+ *
+ * - A speed profile solves corner entry speed as `sqrt(lateralLimit * radius)`. Fed a spike, it
+ *   demands a near-stop at an arbitrary vertex and full speed one sample later.
+ * - A steering feedforward sets `atan(wheelbase * curvature)`. Fed a spike, it commands full lock
+ *   for a few frames and zero for the rest, so the car saws through corners and runs wide — the
+ *   "car will not turn / slides off on turns" symptom, from the geometry layer rather than the tyre
+ *   model that usually gets blamed for it.
+ *
+ * The fix is to measure curvature the way it is defined — over an arc, not at a point. Three points
+ * spaced `window` along the line give the Menger curvature, which is the signed reciprocal radius
+ * of the circle through them. The window is `CURVATURE_WINDOW_SEGMENTS` times the mean segment
+ * length, so it adapts to how finely the route is authored instead of assuming a vertex density.
+ *
+ * Widening the window trades resolution for smoothness, and the trade has a floor and a ceiling:
+ * too narrow and the artefact survives, too wide and a real hairpin is averaged away into a corner
+ * the car takes far too fast. On the certified circuit, 2x cuts the adjacent-sample jump 21x
+ * (2.068 -> 0.098) while *preserving* corner magnitude (p90 |k| 0.736 -> 0.808); 3x smooths further
+ * but understates the tightest corner by 19% (max |k| 0.808 -> 0.565, i.e. minimum radius 1.00 ->
+ * 1.51), which would have the profile carry ~23% too much speed into the hairpin. Hence 2x.
  */
-function segmentCurvature(segments: readonly RaceSegment[], index: number, closed: boolean): number {
-  if (segments.length < 2) return 0;
-  const current = segments[index];
-  const nextIndex = index + 1;
-  const next = nextIndex < segments.length ? segments[nextIndex] : closed ? segments[0] : undefined;
-  if (!next) return 0;
-  const turn = signedAngleDelta(current.heading, next.heading);
-  const span = (current.length + next.length) * 0.5;
-  if (span <= 1e-9) return 0;
-  return turn / span;
+const CURVATURE_WINDOW_SEGMENTS = 2;
+
+function positionAtDistance(
+  segments: readonly RaceSegment[],
+  totalLength: number,
+  distance: number,
+  closed: boolean
+): { readonly x: number; readonly y: number } {
+  const along = closed
+    ? ((distance % totalLength) + totalLength) % totalLength
+    : clampNumber(distance, 0, totalLength);
+  let index = segments.findIndex((candidate) => along >= candidate.start && along <= candidate.start + candidate.length);
+  if (index < 0) index = segments.length - 1;
+  const segment = segments[index];
+  const t = clampNumber((along - segment.start) / segment.length, 0, 1);
+  return {
+    x: segment.from.x + (segment.to.x - segment.from.x) * t,
+    y: segment.from.y + (segment.to.y - segment.from.y) * t
+  };
+}
+
+function arcCurvature(
+  segments: readonly RaceSegment[],
+  totalLength: number,
+  distance: number,
+  closed: boolean
+): number {
+  if (segments.length < 2 || totalLength <= 1e-9) return 0;
+  const meanSegment = totalLength / segments.length;
+  /*
+   * On an open path the window has to shrink near the ends rather than clamp: clamping would
+   * collapse two of the three samples onto the same point and report 0 curvature exactly where a
+   * track often turns most.
+   */
+  const room = closed ? totalLength / 3 : Math.min(distance, totalLength - distance);
+  const window = Math.min(meanSegment * CURVATURE_WINDOW_SEGMENTS, Math.max(1e-6, room));
+  if (window <= 1e-6) return 0;
+  const a = positionAtDistance(segments, totalLength, distance - window, closed);
+  const b = positionAtDistance(segments, totalLength, distance, closed);
+  const c = positionAtDistance(segments, totalLength, distance + window, closed);
+  const abx = b.x - a.x;
+  const aby = b.y - a.y;
+  const bcx = c.x - b.x;
+  const bcy = c.y - b.y;
+  const acx = c.x - a.x;
+  const acy = c.y - a.y;
+  /*
+   * Menger curvature: 4 * area / (|ab| |bc| |ca|), signed by the cross product so a left-hand
+   * corner is positive. The cross product is twice the triangle area, hence the factor 2 here.
+   */
+  const cross = abx * bcy - aby * bcx;
+  const denominator = Math.hypot(abx, aby) * Math.hypot(bcx, bcy) * Math.hypot(acx, acy);
+  if (denominator <= 1e-12) return 0;
+  return (2 * cross) / denominator;
 }
 
 function createRaceSegments(route: GameRacingRoute): readonly RaceSegment[] {
