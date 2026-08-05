@@ -49,7 +49,15 @@ export interface TurboOpponentDriver {
     readonly position: { readonly x: number; readonly y: number };
     readonly offTrack: boolean;
   }): { readonly throttle: number; readonly brake: number; readonly steer: number; readonly drift: boolean };
-  telemetry(): Record<string, unknown>;
+  /**
+   * Whatever the driver reports about its own decision. Only `targetSpeed` is read here;
+   * the rest is passed through to evidence untouched.
+   *
+   * Typed as an interface-compatible object rather than `Record<string, unknown>`: the
+   * engine's `DriverTelemetry` has no index signature, so a `Record` parameter type
+   * rejected the very driver this interface exists to accept.
+   */
+  telemetry(): { readonly targetSpeed?: number };
   reset(): void;
 }
 
@@ -154,7 +162,7 @@ export function createTurboOpponentAi<TSnapshot extends TurboOpponentSnapshot>(
       position: snapshot.position,
       offTrack: snapshot.offTrack
     });
-    lastTargetSpeed = Number((driver.telemetry().targetSpeed as number | undefined) ?? lastTargetSpeed);
+    lastTargetSpeed = Number(driver.telemetry().targetSpeed ?? lastTargetSpeed);
     return {
       // The racing kit takes boolean throttle/brake; a proportional decision is
       // applied above a deadband so light corrections do not chatter the pedals.

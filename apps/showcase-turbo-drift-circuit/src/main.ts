@@ -243,30 +243,30 @@ const opponentState = game.racing({
  * straight at a corner until it has already left the road.
  */
 /**
- * Length of the racing line, measured from the polyline.
+ * The racing line's own geometry, from the engine rather than from this route.
  *
- * `routeGeometry` carries `points` and `width` but no length, so it must be measured
- * rather than read. Reading a nonexistent field produced a NaN look-ahead progress
- * and a crash inside the driver, which the driving test caught immediately -- the
- * kind of defect a screenshot check cannot see at all.
+ * This file used to carry three functions to describe the line it was driving on: a
+ * length measured by walking the polyline, a `sampleRouteLine` lerp, and a
+ * `routeHeadingAt` that took a finite difference over an index-derived step. All three
+ * were re-derivations of the centreline the engine already owns, and each had its own
+ * bug: the length was originally read from a field that does not exist, producing a NaN
+ * look-ahead and a crash inside the driver; the heading step was a fraction of the point
+ * *count* rather than a distance, so its accuracy varied with vertex spacing.
+ *
+ * `game.racingSurfaceQuery` exposes `length`, `sampleAt(progress)` and, at the nearest
+ * point, `tangentHeading` and signed `curvature`. Defect class: **API-design** — the
+ * capability was missing from the kit, so every racing route had to rebuild it and own
+ * the same class of error privately.
  */
-const routeLineLength = (() => {
-  const points = routeGeometry.points;
-  let total = 0;
-  for (let index = 0; index < points.length; index += 1) {
-    const a = points[index]!;
-    const b = points[(index + 1) % points.length]!;
-    total += Math.hypot(b.x - a.x, b.y - a.y);
-  }
-  return total > 0 ? total : 1;
-})();
+const racingLine = game.racingSurfaceQuery(routeGeometry);
+const routeLineLength = racingLine.length;
 
 const driverRoute: DriverRoute = {
   length: routeLineLength,
   halfWidth: () => routeGeometry.width / 2,
   sample: (progress) => {
-    const point = sampleRouteLine(progress);
-    return { x: point.x, y: point.y, heading: routeHeadingAt(progress) };
+    const sample = racingLine.sampleAt(progress);
+    return { x: sample.x, y: sample.y, heading: sample.heading };
   }
 };
 const opponentDriver = createVehicleDriverAi(driverRoute, {
@@ -356,26 +356,6 @@ function createCarChassis(): VehicleChassis {
 const playerChassis = createCarChassis();
 const opponentChassis = createCarChassis();
 
-/** Racing-line point at a normalized progress, in game-plane coordinates. */
-function sampleRouteLine(progress: number): { readonly x: number; readonly y: number } {
-  const points = routeGeometry.points;
-  if (points.length === 0) return { x: 0, y: 0 };
-  const wrapped = ((progress % 1) + 1) % 1;
-  const scaled = wrapped * points.length;
-  const index = Math.floor(scaled) % points.length;
-  const next = (index + 1) % points.length;
-  const t = scaled - Math.floor(scaled);
-  const a = points[index]!;
-  const b = points[next]!;
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-}
-
-/** Heading of the racing line at a progress, from the polyline tangent. */
-function routeHeadingAt(progress: number): number {
-  const here = sampleRouteLine(progress);
-  const ahead = sampleRouteLine(progress + 1 / Math.max(2, routeGeometry.points.length));
-  return Math.atan2(ahead.y - here.y, ahead.x - here.x);
-}
 const physicsProof = createShowcaseCannonPhysicsProof("turbo-drift-circuit");
 
 let raceSnapshot = racingState.snapshot();

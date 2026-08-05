@@ -662,12 +662,53 @@ export interface GameRacingSurfaceContact {
    */
   readonly signedTrackOffset: number;
   readonly roadHalfWidth: number;
+  /**
+   * Heading of the racing line itself at the nearest point, radians, in the same convention as
+   * the car's own `heading`.
+   *
+   * Without this a controller can only see *how far* it is from the line, never which way the line
+   * is going. That is survivable for a kinematic model, whose heading snaps to the steering input,
+   * and not survivable for a force model: the car's heading and its direction of travel diverge
+   * under slip, so a pure offset controller has no heading error term and oscillates instead of
+   * tracking. `tangentHeading - heading` is the term it needs.
+   */
+  readonly tangentHeading: number;
+  /**
+   * Signed curvature of the racing line at the nearest point, 1/radius in route units, positive
+   * for a left-hand corner.
+   *
+   * A force-based car has to slow down *before* a corner, because grip is finite and load transfer
+   * takes time. Curvature is what makes the required entry speed computable — `sqrt(gripG * g / |k|)`
+   * — rather than guessed. A controller that cannot see curvature can only react after it is already
+   * understeering, which is exactly the failure the kinematic model hid.
+   */
+  readonly curvature: number;
 }
 
 export interface GameRacingSurfaceQuery {
   readonly kind: "aura-game-racing-surface-query";
   readonly certified: boolean;
+  /** Total centreline length in route units. Needed to convert a lookahead distance to progress. */
+  readonly length: number;
+  readonly roadHalfWidth: number;
   query(position: GameKitVec2): GameRacingSurfaceContact;
+  /**
+   * Sample the racing line at a progress value, independent of where any car is.
+   *
+   * This is the lookahead primitive. Corner entry speed depends on the curvature the car is about
+   * to reach, not the curvature under it, so anticipation requires sampling the line ahead of the
+   * current position.
+   */
+  sampleAt(progress: number): GameRacingLineSample;
+}
+
+export interface GameRacingLineSample {
+  readonly x: number;
+  readonly y: number;
+  readonly progress: number;
+  readonly heading: number;
+  /** Signed curvature, 1/radius, positive for a left-hand corner. */
+  readonly curvature: number;
 }
 
 export interface GameRacingKit {
@@ -1158,20 +1199,42 @@ export function createGameRacingSurfaceQuery(route: GameRacingRoute): GameRacing
   const roadHalfWidth = (isAssetBoundRacingRoute(route)
     ? Math.max(0.002, route.width ?? 1.2)
     : Math.max(0.25, route.width ?? 1.2)) * 0.5;
+  const closed = route.closed !== false;
+  function sampleAt(progress: number): GameRacingLineSample {
+    const normalized = normalizeProgress(progress);
+    const distance = normalized * length;
+    let index = segments.findIndex((candidate) => distance >= candidate.start && distance <= candidate.start + candidate.length);
+    if (index < 0) index = segments.length - 1;
+    const segment = segments[index];
+    const t = clampNumber((distance - segment.start) / segment.length, 0, 1);
+    return {
+      x: segment.from.x + (segment.to.x - segment.from.x) * t,
+      y: segment.from.y + (segment.to.y - segment.from.y) * t,
+      progress: normalized,
+      heading: segment.heading,
+      curvature: segmentCurvature(segments, index, closed)
+    };
+  }
   return {
     kind: "aura-game-racing-surface-query",
     certified: isAssetBoundRacingRoute(route),
+    length,
+    roadHalfWidth,
     query(position) {
       const nearest = nearestRacePoint(segments, length, position);
+      const line = sampleAt(nearest.progress);
       return {
         onTrack: nearest.offset <= roadHalfWidth,
         progress: nearest.progress,
         distance: nearest.distance,
         trackOffset: nearest.offset,
         signedTrackOffset: nearest.signedOffset,
-        roadHalfWidth
+        roadHalfWidth,
+        tangentHeading: line.heading,
+        curvature: line.curvature
       };
-    }
+    },
+    sampleAt
   };
 }
 
@@ -1729,6 +1792,39 @@ function platformerPlayerRect(player: { readonly x: number; readonly y: number }
 
 function rectsOverlap(a: GameKitRect, b: GameKitRect): boolean {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+}
+
+/**
+ * Shortest signed angle from `from` to `to`, radians, in (-pi, pi].
+ *
+ * Steering toward a heading requires the *shortest* way round. Subtracting raw headings makes a car
+ * whose target is just across the +/-pi wrap take the long way and spin.
+ */
+function signedAngleDelta(from: number, to: number): number {
+  let delta = (to - from) % (Math.PI * 2);
+  if (delta > Math.PI) delta -= Math.PI * 2;
+  if (delta <= -Math.PI) delta += Math.PI * 2;
+  return delta;
+}
+
+/**
+ * Signed curvature at a segment boundary, as 1/radius in route units.
+ *
+ * A polyline has no curvature within a segment and an undefined spike at each vertex, so curvature
+ * is attributed as the heading change into the next segment spread over the mean of the two segment
+ * lengths. That is the discrete osculating-circle estimate, and it is what makes corner entry speed
+ * computable from the route the game already declares instead of hand-tuned per track.
+ */
+function segmentCurvature(segments: readonly RaceSegment[], index: number, closed: boolean): number {
+  if (segments.length < 2) return 0;
+  const current = segments[index];
+  const nextIndex = index + 1;
+  const next = nextIndex < segments.length ? segments[nextIndex] : closed ? segments[0] : undefined;
+  if (!next) return 0;
+  const turn = signedAngleDelta(current.heading, next.heading);
+  const span = (current.length + next.length) * 0.5;
+  if (span <= 1e-9) return 0;
+  return turn / span;
 }
 
 function createRaceSegments(route: GameRacingRoute): readonly RaceSegment[] {
