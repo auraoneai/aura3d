@@ -10547,7 +10547,18 @@ async function startProductionRender(
 
   return {
     render(time = performanceNow()) {
+      /*
+       * Preserve `lastTime` across an explicit render.
+       *
+       * `renderFrame` records `lastTime` to derive its own delta and to drive `beforeRender`. When
+       * `app.step()` renders at *simulated* time for reproducibility, leaving `lastTime` on the
+       * simulated clock means the first live frame after `resume()` computes its delta against a
+       * different clock — a visible jump. Same defect the canvas2d path had; fixed identically so
+       * the two render paths cannot disagree about what `step` does.
+       */
+      const previousLastTime = lastTime;
       renderFrame(time);
+      lastTime = previousLastTime;
     },
     dispose() {
       disposed = true;
