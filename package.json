@@ -496,6 +496,7 @@
     "check:production-path-benchmark": "pnpm exec tsx --tsconfig tsconfig.base.json tools/production-path-benchmark/index.ts --gate-only",
     "check:deletion-safety": "pnpm exec tsx --tsconfig tsconfig.base.json tools/deletion-safety/index.ts",
     "check:docs-site": "pnpm exec playwright test tests/browser/docs-site.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-site/index.ts",
+    "check:bundle-scenarios": "pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-scenarios/index.ts",
     "check:bundle-size": "pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-size/index.ts",
     "check:marketing-truth": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-truth/index.ts",
     "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",

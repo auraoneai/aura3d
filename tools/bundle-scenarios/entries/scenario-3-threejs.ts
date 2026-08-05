@@ -1,0 +1,42 @@
+/** Scenario 3 — game runtime, Three.js: three + cannon-es + hand-written input and loop. */
+import * as THREE from "three";
+import * as CANNON from "cannon-es";
+
+const canvas = document.querySelector("canvas") as HTMLCanvasElement;
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const sceneGraph = new THREE.Scene();
+const cameraObject = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+cameraObject.position.set(0, 6, 10);
+cameraObject.lookAt(0, 1, 0);
+sceneGraph.add(new THREE.DirectionalLight(0xffffff, 2.2));
+const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.81, 0) });
+const ground = new CANNON.Body({ type: CANNON.Body.STATIC, shape: new CANNON.Plane() });
+ground.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+world.addBody(ground);
+const playerBody = new CANNON.Body({ mass: 1, shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)), position: new CANNON.Vec3(0, 2, 0) });
+world.addBody(playerBody);
+const groundMesh = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.MeshStandardMaterial({ color: "#1d2530" }));
+groundMesh.rotation.x = -Math.PI / 2;
+sceneGraph.add(groundMesh);
+const playerMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: "#4fd1c5" }));
+sceneGraph.add(playerMesh);
+const keys = new Set<string>();
+const pressed = new Set<string>();
+window.addEventListener("keydown", (event) => { if (!keys.has(event.code)) pressed.add(event.code); keys.add(event.code); });
+window.addEventListener("keyup", (event) => keys.delete(event.code));
+let last = 0;
+const loop = (time: number) => {
+  const delta = last > 0 ? Math.min(0.05, (time - last) / 1000) : 1 / 60;
+  last = time;
+  if (pressed.has("Space")) playerBody.applyImpulse(new CANNON.Vec3(0, 5, 0));
+  if (keys.has("ArrowLeft")) playerBody.applyForce(new CANNON.Vec3(-8, 0, 0));
+  if (keys.has("ArrowRight")) playerBody.applyForce(new CANNON.Vec3(8, 0, 0));
+  pressed.clear();
+  world.step(1 / 60, delta, 3);
+  playerMesh.position.set(playerBody.position.x, playerBody.position.y, playerBody.position.z);
+  playerMesh.quaternion.set(playerBody.quaternion.x, playerBody.quaternion.y, playerBody.quaternion.z, playerBody.quaternion.w);
+  renderer.render(sceneGraph, cameraObject);
+  requestAnimationFrame(loop);
+};
+requestAnimationFrame(loop);
+(globalThis as { __app?: unknown }).__app = renderer;
