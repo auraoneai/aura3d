@@ -12,6 +12,14 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./solverless": {
+      "types": "./dist/solverless.d.ts",
+      "import": "./dist/solverless.js"
+    },
+    "./world": {
+      "types": "./dist/world.d.ts",
+      "import": "./dist/world.js"
     }
   },
   "description": "Deterministic rigid-body simulation, collision shapes, contacts, constraints, raycasts, fixed stepping, scene/ECS bridges, and debug draw extraction.",

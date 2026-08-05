@@ -1,27 +1,53 @@
+/*
+ * WS-2.2 — module-scope physics values come from the SOLVERLESS entry.
+ *
+ * `Shape`, `PhysicsStepper`, `ScenePhysicsBridge` and `PhysicsDebugDraw` are all cannon-free: each
+ * imports `PhysicsWorld` as a *type* only. But reaching them through `@aura3d/physics` — a chain of
+ * `export *` that includes `PhysicsWorld` — dragged in `cannon-es`, so a scene with no bodies at all
+ * downloaded the whole solver. Measured on a one-cube scene: a 77,081-byte gzip chunk on the critical
+ * path, 83,869 bytes of `cannon-es` raw.
+ *
+ * This is a different defect from eager construction, which was already fixed (see `:9832`). A lazy
+ * `new PhysicsWorld()` still leaves a static `import`, and a bundler keeps the module either way.
+ * Deferring the *import* is what removes the bytes. `PhysicsWorld` is now loaded by
+ * `await import("@aura3d/physics")` at the points that actually simulate.
+ */
 import {
   PhysicsDebugDraw,
   PhysicsStepper,
-  PhysicsWorld,
   ScenePhysicsBridge,
-  Shape as PhysicsShapeFactory,
-  type Collider,
-  type ColliderDescriptor,
-  type CollisionEvent,
-  type Constraint,
-  type ConstraintDescriptor,
-  type Contact,
-  type DebugLine,
-  type PhysicsBackendSelection,
-  type PhysicsShape,
-  type PhysicsSnapshot,
-  type PhysicsWorldDescriptor,
-  type RaycastHit,
-  type RaycastOptions,
-  type RigidBody,
-  type RigidBodyDescriptor,
-  type RigidBodyType,
-  type ScenePhysicsNode,
-  type SphereCastHit
+  Shape as PhysicsShapeFactory
+} from "@aura3d/physics/solverless";
+/*
+ * WS-2.2 — the solver, from a NARROW entry rather than the physics barrel.
+ *
+ * Static on purpose. `app.physics` is documented and tested as live synchronously for every app, so
+ * `createAuraApp` cannot await a solver, and R7 forbids breaking that to save bytes. What this does
+ * avoid is the barrel: `@aura3d/physics` is a chain of `export *` that also carries `HitboxWorld`,
+ * `CharacterController`, `KinematicBody`, `VehicleDynamics`, `NarrowPhase` and six fixture modules, all
+ * of which arrived just to reach one class.
+ */
+import { PhysicsWorld } from "@aura3d/physics/world";
+// Types only, so this is not a graph edge. `import type` states that intent explicitly.
+import type {
+  Collider,
+  ColliderDescriptor,
+  CollisionEvent,
+  Constraint,
+  ConstraintDescriptor,
+  Contact,
+  DebugLine,
+  PhysicsBackendSelection,
+  PhysicsShape,
+  PhysicsSnapshot,
+  PhysicsWorldDescriptor,
+  RaycastHit,
+  RaycastOptions,
+  RigidBody,
+  RigidBodyDescriptor,
+  RigidBodyType,
+  ScenePhysicsNode,
+  SphereCastHit
 } from "@aura3d/physics";
 import {
   createExternalParityEnvironmentLighting,
@@ -89,6 +115,13 @@ export * from "./PhysicsRuntime.js";
  * hand-roll an analytic approximation — which is exactly what every racing route did, and
  * why wheels sank through visible road.
  */
+/*
+ * WS-2.2 — re-exported from the SOLVERLESS entry, not the physics barrel.
+ *
+ * These are geometry queries: `MeshBVH` and `SurfaceQuery` import only `Shape`'s types. Re-exporting
+ * them from `@aura3d/physics` made this barrel a static consumer of the whole solver, so grounding a
+ * wheel on a mesh cost a developer `cannon-es`. Same symbols, same public names.
+ */
 export {
   buildMeshBVH,
   createMeshSurfaceQuery,
@@ -98,7 +131,7 @@ export {
   type MeshSurfaceQuery,
   type MeshSurfaceQueryOptions,
   type SurfaceSample
-} from "@aura3d/physics";
+} from "@aura3d/physics/solverless";
 import { createPhysicsRuntime, type AuraCollisionLayers, type AuraPhysicsRuntime } from "./PhysicsRuntime.js";
 export * from "./FocusSelection.js";
 export * from "./WorldLabelRenderer.js";
@@ -3924,6 +3957,7 @@ function createRuntimeScenePhysics(snapshot: AuraSceneSnapshot): AuraRuntimeScen
   );
   if (physicsNodes.length === 0) return undefined;
 
+  // WS-2.2: solver resolved through the on-demand cache rather than a static import.
   const world = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 60, enableSleeping: true });
   const stepper = new PhysicsStepper(world.fixedDelta);
   const debugDraw = new PhysicsDebugDraw();

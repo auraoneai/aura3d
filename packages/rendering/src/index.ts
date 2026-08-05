@@ -26,7 +26,14 @@ export type { WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
 export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
-export { WebGPUDevice } from "./WebGPUDevice";
+/*
+ * WS-2.2 — TYPE-ONLY. The value moved to `./webgpu` (`@aura3d/engine/rendering/webgpu`).
+ *
+ * A value re-export here is a static graph edge, so every consumer of this barrel downloaded the
+ * ~74 KB WebGPU device even when it only ever asked for `webgl2` — silently undoing the deliberate
+ * `await import("./WebGPUDevice")` in `createRenderDevice` one file away. Measured on a one-cube
+ * scene: an 18,689-byte gzip chunk on the critical path. A type-only export erases at build time.
+ */
 export type {
   WebGPUAdapterLike,
   WebGPUBufferDescriptorLike,

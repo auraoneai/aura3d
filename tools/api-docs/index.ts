@@ -64,15 +64,54 @@ export function collectPublicPackageApis(root = process.cwd()): readonly PublicP
       if (!existsSync(entrypointPath)) {
         throw new Error(`${relativeEntrypointPath} is missing`);
       }
-      return {
-        packageName: packageJson.name,
-        version: packageJson.version,
-        packagePath: relativePackagePath,
-        entrypointPath: relativeEntrypointPath,
-        exportStatements: collectExportStatements(readFileSync(entrypointPath, "utf8"))
-      };
+      return [
+        {
+          packageName: packageJson.name,
+          version: packageJson.version,
+          packagePath: relativePackagePath,
+          entrypointPath: relativeEntrypointPath,
+          exportStatements: collectExportStatements(readFileSync(entrypointPath, "utf8"))
+        },
+        ...additionalExportSubpaths(root, packageDir, packageJson)
+      ];
     })
+    .flat()
   ].sort((a, b) => apiDocsPackageSortKey(a.packageName).localeCompare(apiDocsPackageSortKey(b.packageName)));
+}
+
+/**
+ * Public `exports` subpaths beyond `.`, documented as their own sections.
+ *
+ * WS-2.2 introduced `@aura3d/physics/solverless`, `@aura3d/physics/world` and
+ * `@aura3d/engine/rendering/webgpu` so that a lean import does not drag a rigid-body solver or a
+ * WebGPU device onto the critical path. Each is a **public entry point**, and this generator only read
+ * `src/index.ts` — so those surfaces would have shipped undocumented, which is precisely the kind of
+ * gap that lets a public API drift away from what is written down.
+ */
+function additionalExportSubpaths(
+  root: string,
+  packageDir: string,
+  packageJson: { readonly name?: string; readonly version?: string }
+): PublicPackageApi[] {
+  const exportsField = (JSON.parse(readFileSync(join(packageDir, "package.json"), "utf8")) as {
+    readonly exports?: Record<string, unknown>;
+  }).exports;
+  if (!exportsField) return [];
+  const results: PublicPackageApi[] = [];
+  for (const subpath of Object.keys(exportsField)) {
+    if (subpath === ".") continue;
+    const name = subpath.replace(/^\.\//, "");
+    const sourcePath = join(packageDir, "src", `${name}.ts`);
+    if (!existsSync(sourcePath)) continue;
+    results.push({
+      packageName: `${packageJson.name}/${name}`,
+      version: packageJson.version ?? "0.0.0",
+      packagePath: normalizePath(relative(root, packageDir)),
+      entrypointPath: normalizePath(relative(root, sourcePath)),
+      exportStatements: collectExportStatements(readFileSync(sourcePath, "utf8"))
+    });
+  }
+  return results;
 }
 
 function apiDocsPackageSortKey(packageName: string): string {

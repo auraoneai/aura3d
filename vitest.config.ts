@@ -37,6 +37,14 @@ export default defineConfig({
       "@aura3d/create-aura3d": new URL("./packages/create-aura3d/src/index.ts", import.meta.url).pathname,
       "create-aura3d": new URL("./packages/create-aura3d/src/index.ts", import.meta.url).pathname,
       "@aura3d/product-studio": new URL("./packages/product-studio/src/index.ts", import.meta.url).pathname,
+      /*
+       * WS-2.2 subpaths. Order matters here: Vitest matches string aliases by prefix, so the more
+       * specific "@aura3d/physics/solverless" must be listed BEFORE "@aura3d/physics" or it resolves to
+       * "packages/physics/src/index.ts/solverless" and every importing test fails to load.
+       */
+      "@aura3d/physics/world": new URL("./packages/physics/src/world.ts", import.meta.url).pathname,
+      "@aura3d/physics/solverless": new URL("./packages/physics/src/solverless.ts", import.meta.url).pathname,
+      "@aura3d/engine/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
       "@aura3d/assets/browser": new URL("./packages/assets/src/browser-index.ts", import.meta.url).pathname,

@@ -181,6 +181,13 @@ function auraSourceAlias(): Plugin {
     ["@aura3d/core", "packages/core/src/index.ts"],
     ["@aura3d/math", "packages/math/src/index.ts"],
     ["@aura3d/physics", "packages/physics/src/index.ts"],
+      /*
+       * WS-2.2 subpaths. These exist so a lean import does not drag a solver or a WebGPU device onto
+       * the critical path; a resolver that does not know them measures a build that no longer exists.
+       */
+      ["@aura3d/physics/solverless", "packages/physics/src/solverless.ts"],
+      ["@aura3d/physics/world", "packages/physics/src/world.ts"],
+      ["@aura3d/engine/rendering/webgpu", "packages/rendering/src/webgpu.ts"],
     ["@aura3d/product-studio", "packages/product-studio/src/index.ts"],
     ["@aura3d/apps", "packages/apps/src/index.ts"],
     ["@aura3d/animation", "packages/animation/src/browser-index.ts"],

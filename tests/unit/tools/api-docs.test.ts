@@ -27,9 +27,18 @@ describe("public API docs", () => {
       "@aura3d/materials",
       "@aura3d/math",
       "@aura3d/physics",
+      /*
+       * WS-2.2 subpaths. These are public entry points introduced so a lean import does not drag a
+       * rigid-body solver or a WebGPU device onto the critical path, and they belong in this list for
+       * the same reason the packages do: an undocumented public surface drifts from what is written
+       * down. Sorted here as the generator sorts them, by full specifier.
+       */
+      "@aura3d/physics/solverless",
+      "@aura3d/physics/world",
       "@aura3d/product-studio",
       "@aura3d/react",
       "@aura3d/rendering",
+      "@aura3d/rendering/webgpu",
       "@aura3d/scene",
       "@aura3d/scripting",
       "@aura3d/three-compat",
@@ -56,7 +65,21 @@ describe("public API docs", () => {
     // constant without statically importing the ~139 KB `WebGPUDevice`, which was defeating the
     // dynamic-import split in `createRenderDevice`. Both symbols remain public.
     expect(docs).toContain("export { MAX_WEBGPU_SKINNING_JOINTS } from \"./WebGPUSkinningLimits\";");
+    /*
+     * WS-2.2 — `WebGPUDevice` moved OFF the rendering barrel to `@aura3d/engine/rendering/webgpu`.
+     *
+     * The earlier fix above moved a *constant* out so the barrel would not statically import the
+     * device, but the barrel still re-exported the device itself as a value — which is a static graph
+     * edge, so the deferral in `createRenderDevice` was still being undone. Measured cost on a one-cube
+     * scene: an 18,689-byte gzip chunk on the critical path.
+     *
+     * Still public, still documented: the barrel keeps the types, and the value has its own entry so a
+     * developer writing a custom WebGPU path can construct one (WS-2.8's escape-hatch requirement).
+     */
+    expect(docs).toContain("## @aura3d/rendering/webgpu");
     expect(docs).toContain("export { WebGPUDevice } from \"./WebGPUDevice\";");
+    expect(docs).toContain("## @aura3d/physics/solverless");
+    expect(docs).toContain("## @aura3d/physics/world");
     expect(docs).toContain("## @aura3d/assets");
     expect(docs).toContain("export { GLTFLoader, normalizeSkinWeights } from \"./GLTFLoader\";");
     expect(docs).toContain("createGLTFRenderResources");

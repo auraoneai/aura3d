@@ -22,7 +22,8 @@ import {
   sampleRoutePoint,
   transformFromBounds
 } from "./GameSceneGeometryMath";
-import { createMeshSurfaceQuery, type MeshSurfaceQuery } from "@aura3d/physics";
+// WS-2.2: mesh surface queries are geometry, not simulation — no solver needed.
+import { createMeshSurfaceQuery, type MeshSurfaceQuery } from "@aura3d/physics/solverless";
 import { meshVehicleSurface, type VehicleSurface } from "./VehicleChassis";
 
 type Vec3 = readonly [number, number, number];

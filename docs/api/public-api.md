@@ -31,10 +31,13 @@ pnpm verify:api-docs
 | `@aura3d/input` | `1.5.2` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.5.2` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.5.2` | `packages/math/src/index.ts` | 18 |
-| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 33 |
+| `@aura3d/physics` | `1.5.2` | `packages/physics/src/index.ts` | 35 |
+| `@aura3d/physics/solverless` | `1.5.2` | `packages/physics/src/solverless.ts` | 13 |
+| `@aura3d/physics/world` | `1.5.2` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.5.2` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 273 |
+| `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 272 |
+| `@aura3d/rendering/webgpu` | `1.5.2` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.5.2` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `1.5.2` | `packages/scripting/src/index.ts` | 53 |
 | `@aura3d/three-compat` | `1.5.2` | `packages/three-compat/src/index.ts` | 31 |
@@ -824,6 +827,45 @@ export * from "./HitboxWorld.js";
 export * from "./MeshBVH.js";
 export * from "./SurfaceQuery.js";
 export * from "./VehicleMotion.js";
+export * from "./RacingLineProfile.js";
+export * from "./PathFollowDriver.js";
+```
+
+## @aura3d/physics/solverless
+
+- Version: `1.5.2`
+- Package manifest: `packages/physics/package.json`
+- Public entrypoint: `packages/physics/src/solverless.ts`
+
+### Export Declarations
+
+```ts
+export { Shape } from "./Shape.js";
+export type { BoxShape, Bounds, CapsuleShape, ConvexHullShape, HeightfieldShape, MeshShape, PhysicsShape, PlaneShape, SphereShape, Vec3 } from "./Shape.js";
+export { EPSILON, vec3 } from "./Shape.js";
+export { PhysicsStepper } from "./PhysicsStepper.js";
+export type { PhysicsStepperResult } from "./PhysicsStepper.js";
+export { ScenePhysicsBridge } from "./ScenePhysicsBridge.js";
+export type { ScenePhysicsBinding, ScenePhysicsNode } from "./ScenePhysicsBridge.js";
+export { PhysicsDebugDraw } from "./PhysicsDebugDraw.js";
+export type { DebugLine } from "./PhysicsDebugDraw.js";
+export { buildMeshBVH, raycastMesh, raycastMeshBruteForce } from "./MeshBVH.js";
+export type { MeshBVH, MeshBVHBuildOptions, MeshRayHit, RaycastMeshOptions } from "./MeshBVH.js";
+export { createMeshSurfaceQuery } from "./SurfaceQuery.js";
+export type { MeshSurfaceQuery, MeshSurfaceQueryOptions, SurfaceSample } from "./SurfaceQuery.js";
+```
+
+## @aura3d/physics/world
+
+- Version: `1.5.2`
+- Package manifest: `packages/physics/package.json`
+- Public entrypoint: `packages/physics/src/world.ts`
+
+### Export Declarations
+
+```ts
+export { PhysicsWorld } from "./PhysicsWorld.js";
+export type { PhysicsBackend, PhysicsBackendPreference, PhysicsBackendSelection, PhysicsContinuousCollisionDescriptor, PhysicsContinuousCollisionSelection, PhysicsSnapshot, PhysicsStepStats, PhysicsWorldDescriptor } from "./PhysicsWorld.js";
 ```
 
 ## @aura3d/product-studio
@@ -892,7 +934,6 @@ export type { WebGL2DeviceOptions } from "./WebGL2Device";
 export { WebGL2StateCache } from "./WebGL2StateCache";
 export type { WebGL2StateCacheDescriptor, WebGL2StateCacheSnapshot, WebGL2StateCacheStats } from "./WebGL2StateCache";
 export { MAX_WEBGPU_SKINNING_JOINTS } from "./WebGPUSkinningLimits";
-export { WebGPUDevice } from "./WebGPUDevice";
 export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, WebGPUDeviceLike, WebGPUDeviceOptions, WebGPULike, WebGPUQueueLike, WebGPUSamplerDescriptorLike } from "./WebGPUDevice";
 export { isWebGPURenderTarget, runWebGPURenderToTextureProof } from "./WebGPURenderToTextureProof";
 export type { WebGPURenderToTextureProof, WebGPURenderToTextureProofOptions } from "./WebGPURenderToTextureProof";
@@ -1156,6 +1197,19 @@ export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
 export * from "./animation/index.js";
+```
+
+## @aura3d/rendering/webgpu
+
+- Version: `1.5.2`
+- Package manifest: `packages/rendering/package.json`
+- Public entrypoint: `packages/rendering/src/webgpu.ts`
+
+### Export Declarations
+
+```ts
+export { WebGPUDevice } from "./WebGPUDevice";
+export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, WebGPUDeviceLike, WebGPUDeviceOptions, WebGPULike, WebGPUQueueLike, WebGPUSamplerDescriptorLike } from "./WebGPUDevice";
 ```
 
 ## @aura3d/scene

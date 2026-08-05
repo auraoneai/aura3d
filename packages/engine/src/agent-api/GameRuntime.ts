@@ -1,18 +1,26 @@
-import {
-  PhysicsWorld,
-  Shape as PhysicsShapeFactory,
-  type Collider,
-  type ColliderDescriptor,
-  type CollisionEvent,
-  type Contact,
-  type PhysicsShape,
-  type PhysicsSnapshot,
-  type PhysicsWorldDescriptor,
-  type RaycastOptions,
-  type RigidBody,
-  type RigidBodyDescriptor,
-  type RigidBodyType,
-  type SphereCastHit
+/*
+ * WS-2.2 — cannon-free values from the solverless entry; the solver itself arrives on demand.
+ *
+ * `Shape` is pure data, so it comes statically. `PhysicsWorld` is loaded by
+ * `loadGameCollisionSolver()` below, because importing it here made every consumer of the game
+ * runtime — including a scene with no bodies — download `cannon-es`.
+ */
+import { Shape as PhysicsShapeFactory } from "@aura3d/physics/solverless";
+// Static, from the narrow entry: createGameCollisionWorld is synchronous public API. See world.ts.
+import { PhysicsWorld } from "@aura3d/physics/world";
+import type {
+  Collider,
+  ColliderDescriptor,
+  CollisionEvent,
+  Contact,
+  PhysicsShape,
+  PhysicsSnapshot,
+  PhysicsWorldDescriptor,
+  RaycastOptions,
+  RigidBody,
+  RigidBodyDescriptor,
+  RigidBodyType,
+  SphereCastHit
 } from "@aura3d/physics";
 
 export type GameVec3 = readonly [number, number, number];

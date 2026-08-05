@@ -30,7 +30,6 @@ import {
   UnlitMaterial,
   VertexBuffer,
   VertexFormat,
-  WebGPUDevice,
   computeOrthographicCameraFrame,
   computePerspectiveCameraFrame,
   createDepthTextureBinding,
@@ -46,6 +45,14 @@ import {
   type WebGPUSamplerDescriptorLike,
   type UniformValue
 } from "../../../packages/rendering/src";
+/*
+ * WS-2.2 — `WebGPUDevice` now comes from its own entry point rather than the barrel.
+ *
+ * A value re-export from the barrel is a static graph edge, so every consumer downloaded the ~74 KB
+ * device even when it only asked for `webgl2`. Importing it here directly is the same thing a developer
+ * does via `@aura3d/engine/rendering/webgpu`.
+ */
+import { WebGPUDevice } from "../../../packages/rendering/src/webgpu";
 import {
   bloomPixels,
   colorGradePixels,

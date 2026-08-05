@@ -80,7 +80,16 @@
       "@aura3d/engine/rendering/production-runtime": [
         "packages/rendering/src/production-runtime/index.ts"
       ],
-      "@aura3d/engine/rendering/advanced-runtime": [
+      "@aura3d/physics/world": [
+      "packages/physics/src/world.ts"
+    ],
+    "@aura3d/physics/solverless": [
+      "packages/physics/src/solverless.ts"
+    ],
+    "@aura3d/engine/rendering/webgpu": [
+      "packages/rendering/src/webgpu.ts"
+    ],
+    "@aura3d/engine/rendering/advanced-runtime": [
         "packages/rendering/src/advanced-runtime/index.ts"
       ],
       "@aura3d/engine/workflows/production": [

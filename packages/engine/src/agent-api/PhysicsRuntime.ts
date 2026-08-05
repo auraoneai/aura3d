@@ -27,7 +27,9 @@
  * than silently doing nothing.
  */
 
-import { PhysicsDebugDraw, Shape, type PhysicsShape } from "@aura3d/physics";
+// WS-2.2: cannon-free values only. `PhysicsWorld` stays a type below, so this file is not a
+// static consumer of the solver — the world is handed to it, never constructed here.
+import { PhysicsDebugDraw, Shape, type PhysicsShape } from "@aura3d/physics/solverless";
 import type {
   CollisionEvent,
   Contact,
