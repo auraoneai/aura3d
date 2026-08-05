@@ -50,6 +50,23 @@ export interface VehicleMotionSpec {
   readonly rollingResistance?: number | undefined;
   /** Yaw inertia. Defaults to a plausible value derived from mass and wheelbase. */
   readonly yawInertia?: number | undefined;
+  /**
+   * Gravitational acceleration expressed in the same length unit as `wheelbase` and the
+   * positions this integrator reports, per second squared. Defaults to `9.81`.
+   *
+   * This exists because gravity is the only place a force model silently assumes a length
+   * unit. Every corner speed this model can hold is bounded by `sqrt(mu * gravity * radius)`,
+   * so hardcoding 9.81 does not mean "SI" — it means "one world unit is one metre", and it
+   * makes the integrator unusable for any route authored at another scale. A circuit authored
+   * in game units where one unit is 0.352 scene units has an effective gravity of
+   * `9.81 / 0.352`, and with 9.81 assumed instead the same geometry demands roughly 2.8x the
+   * lateral grip that physically exists. The car then understeers off the outside of every
+   * corner, which reads as "the physics is broken" when the real fault is that the caller was
+   * never given a way to state its units.
+   *
+   * Pass `sceneGravity / sceneUnitsPerWorldUnit` to run in authored units.
+   */
+  readonly gravity?: number | undefined;
 }
 
 export interface VehicleMotionInput {
@@ -99,7 +116,7 @@ export interface VehicleMotionSample extends VehicleMotionState {
   readonly lateralG: number;
 }
 
-const GRAVITY = 9.81;
+const DEFAULT_GRAVITY = 9.81;
 /*
  * Yaw velocity damping, in reciprocal seconds.
  *
@@ -151,10 +168,12 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
   // A uniform box of length `wheelbase` has I = m * L^2 / 12; cars run higher because
   // mass sits away from the centre, so 1.8x is the usual lumped approximation.
   const yawInertia = positive(spec.yawInertia, (mass * wheelbase * wheelbase) / 12 * 1.8);
+  const GRAVITY = positive(spec.gravity, DEFAULT_GRAVITY);
 
   const resolved = {
     mass, wheelbase, frontWeightBias, centreOfMassHeight, maxSteerAngle,
-    driveForce, brakeForce, tirePreset, dragCoefficient, rollingResistance, yawInertia
+    driveForce, brakeForce, tirePreset, dragCoefficient, rollingResistance, yawInertia,
+    gravity: GRAVITY
   };
 
   let current: VehicleMotionState = { x: 0, z: 0, heading: 0, speed: 0, lateralSpeed: 0, yawRate: 0 };
