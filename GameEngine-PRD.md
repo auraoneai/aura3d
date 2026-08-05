@@ -2,7 +2,7 @@
 
 **Status:** in progress — WS-0, WS-1, WS-2, WS-4, WS-6 complete with evidence.
 WS-5 and WS-7 complete. WS-3.8 attempted and reverted with the finding recorded (see below).
-46 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
+47 of 51 boxes ticked, each with command output cited in its row. Nine library-level defects
 found and fixed in the process, listed in section 0.1.
 **Owner:** engine
 **Primary scope:** `packages/physics`, `packages/engine/src/agent-api`
@@ -609,7 +609,7 @@ budget to make it pass. It is now *visible* for the first time, which is the use
 
 ## 4. Definition of done
 
-- [ ] Every checkbox above checked — **46 of 51.** The 5 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8), the zero-consumer parity rows above, this item, and route promotion below. None is open because it was skipped; each has its reason written in its own row.
+- [ ] Every checkbox above checked — **47 of 51.** The 5 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8), the zero-consumer parity rows above, this item, and route promotion below. None is open because it was skipped; each has its reason written in its own row.
 - [x] Rule-1 grep clean for both flagship routes — all five surface constants deleted from turbo drift; `runner-rules.ts` (a 252-line orphan still declaring `gravity: -20.2`, `jumpVelocity: 8.75`, zero importers) deleted, with an `existsSync(...) === false` gate so it cannot return. The only remaining match across both routes is prose in a comment naming what was removed. **Not claimed repo-wide:** `world-war-x-showcase` and `showcase-cannon-physics-proof.ts` still declare their own gravity; they are outside this PRD's scope and were never part of the two reported defects.
 - [x] Physics capability rows: **zero** `parity-unproven` with zero consumers — **achieved.** `physics: exceed 0, parity 8, unproven 2, gap 0 (of 10)`, and both remaining unproven rows (`vehicle dynamics`, `vehicle AI driving`) *do* have a consumer (`showcase-turbo-drift-circuit`); they stay down pending WS-3.8, which is the correct reason.
 
