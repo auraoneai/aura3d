@@ -360,32 +360,28 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export {
-  ThreeCompatRenderer,
-  createThreeCompatRenderer,
-  summarizeThreeCompatRendererDiagnostics,
-  THREE_COMPAT_REQUIRED_RENDERER_FEATURES
-} from "./threejs-compatibility";
-export type {
-  ThreeCompatInstancingSystemStatus,
-  ThreeCompatLightDescriptor,
-  ThreeCompatLightKind,
-  ThreeCompatMaterialMode,
-  ThreeCompatRenderTargetDescriptor,
-  ThreeCompatRendererBackend,
-  ThreeCompatRendererDiagnostics,
-  ThreeCompatRendererFeatureStatus,
-  ThreeCompatRendererOptions,
-  ThreeCompatRendererSupportState,
-  ThreeCompatSceneRenderPlan,
-  ThreeCompatShadowSystemStatus,
-  ThreeCompatTextureCapability,
-  ThreeCompatTransparencySystemStatus
-} from "./threejs-compatibility";
-export * from "./threejs-compatibility/postprocess";
-export * from "./threejs-compatibility/shaders";
-export * from "./threejs-compatibility/vfx";
-export * from "./threejs-compatibility/performance";
+/*
+ * WS-3.4 — `./threejs-compatibility` is deleted, not re-exported from somewhere else.
+ *
+ * 49 files / 1,033 lines of bookkeeping objects that reported success without touching a GPU. It had no
+ * device, no context and no draw call, and three of its outputs were fabricated:
+ *
+ *   SceneRenderer.ts:19-33   returned a hardcoded { meshes: 72, instances: 12000, skinnedMeshes: 4 }
+ *   ThreeCompatRenderer:44   captureScreenshot() returned a URI string — there was never an image
+ *   ThreeCompatRenderer:48   handleDeviceLost() set lost = true then immediately false, so it ALWAYS
+ *                            reported { recovered: true }
+ *
+ * Its unit test asserted `canClaimRendererBreadth === true` and `instances >= 10000` against those
+ * constants: a test that could not fail. Ten 4-line stub apps existed to give it a consumer, which is how
+ * it satisfied the "parity requires a consumer" rule.
+ *
+ * `packages/three-compat/` is a DIFFERENT thing and is real — it is the migration on-ramp and stays.
+ * `packages/animation/src/threejs-compatibility/` is also different and also real: it holds
+ * `AnimationMixerThreeCompat`, `SkeletonThreeCompat` and `MorphTargetMixerThreeCompat`, the symbols WS-1.6
+ * found the parity generator was failing to grep. Only the rendering one was fabricated.
+ *
+ * Retrievable from git history; recorded in `docs/architecture/removed-in-1.6.md`.
+ */
 export {
   ProductionWebGL2Renderer,
   ProductionRuntimeRenderer,

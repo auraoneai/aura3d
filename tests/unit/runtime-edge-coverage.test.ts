@@ -281,7 +281,19 @@ describe("runtime edge-case coverage audit", () => {
       "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:*    There is NO pure-JS fallback. If ffmpeg is unavailable, probeFfmpeg()",
       "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:if (!probed.supported) throw new Error(probed.reason ?? \"ffmpeg is unavailable; cannot encode video.\");",
       "packages/engine/src/agent-api/FfmpegFrameEncoder.ts:return { ...base, supported: false, reason: \"node:child_process is unavailable; ffmpeg can only run in a Node-like runtime.\" };",
-      "packages/engine/src/agent-api/MediaRecorderFrameEncoder.ts:return { kind: \"media-recorder-frame-encoder-capability\", supported: false, mimeType, codec, reason: \"MediaRecorder is unavailable in this runtime.\" };"
+      "packages/engine/src/agent-api/MediaRecorderFrameEncoder.ts:return { kind: \"media-recorder-frame-encoder-capability\", supported: false, mimeType, codec, reason: \"MediaRecorder is unavailable in this runtime.\" };",
+      /*
+       * WS-2.7 — both lines describe the occlusion test being ABSENT, which is a real runtime state and
+       * the opposite of a placeholder: when no test is supplied, labels are drawn normally rather than
+       * hidden, because absence of an occlusion signal is not evidence of occlusion.
+       *
+       * Allowlisted rather than reworded. Renaming the parameter to dodge a grep would make the code
+       * describe its own behaviour less accurately to satisfy a lint, which is backwards — the audit
+       * exists to catch capabilities that quietly do nothing, and this one documents exactly when it
+       * does nothing and why that is correct.
+       */
+      "packages/engine/src/agent-api/WorldLabelRenderer.ts:/** WS-2.7 — occlusion test for a world anchor. Omit when unavailable; labels are then never occluded. */",
+      "packages/engine/src/agent-api/WorldLabelRenderer.ts:* occlusion, and guessing pessimistically would hide labels whenever the test was unavailable — the same"
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

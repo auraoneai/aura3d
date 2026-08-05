@@ -36,11 +36,11 @@ pnpm verify:api-docs
 | `@aura3d/physics/world` | `1.5.2` | `packages/physics/src/world.ts` | 2 |
 | `@aura3d/product-studio` | `1.5.2` | `packages/product-studio/src/index.ts` | 12 |
 | `@aura3d/react` | `1.5.2` | `packages/react/src/index.ts` | 14 |
-| `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 272 |
+| `@aura3d/rendering` | `1.5.2` | `packages/rendering/src/index.ts` | 266 |
 | `@aura3d/rendering/webgpu` | `1.5.2` | `packages/rendering/src/webgpu.ts` | 2 |
 | `@aura3d/scene` | `1.5.2` | `packages/scene/src/index.ts` | 21 |
 | `@aura3d/scripting` | `1.5.2` | `packages/scripting/src/index.ts` | 53 |
-| `@aura3d/three-compat` | `1.5.2` | `packages/three-compat/src/index.ts` | 31 |
+| `@aura3d/three-compat` | `1.5.2` | `packages/three-compat/src/index.ts` | 29 |
 | `@aura3d/workflows` | `1.5.2` | `packages/workflows/src/index.ts` | 12 |
 
 ## @aura3d/animation
@@ -1019,12 +1019,6 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { ThreeCompatRenderer, createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "./threejs-compatibility";
-export type { ThreeCompatInstancingSystemStatus, ThreeCompatLightDescriptor, ThreeCompatLightKind, ThreeCompatMaterialMode, ThreeCompatRenderTargetDescriptor, ThreeCompatRendererBackend, ThreeCompatRendererDiagnostics, ThreeCompatRendererFeatureStatus, ThreeCompatRendererOptions, ThreeCompatRendererSupportState, ThreeCompatSceneRenderPlan, ThreeCompatShadowSystemStatus, ThreeCompatTextureCapability, ThreeCompatTransparencySystemStatus } from "./threejs-compatibility";
-export * from "./threejs-compatibility/postprocess";
-export * from "./threejs-compatibility/shaders";
-export * from "./threejs-compatibility/vfx";
-export * from "./threejs-compatibility/performance";
 export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, bindTransmissionBackdropCapture, createSceneColorMipLevels, createTransmissionBackdropSource, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironmentFile, loadProductionHdrEnvironment, normalizeTransmissionBackdropCapture, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
 export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionHdrEnvironmentFileLoaderOptions, ProductionHdrEnvironmentFileSource, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions, RuntimeParityTransmissionBackdropCaptureOptions, RuntimeParityTransmissionBackdropCaptureProof, TransmissionBackdropSource } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
@@ -1336,8 +1330,6 @@ export { CubeTextureLoaderCompat, EXRLoaderCompat, GLTFLoaderCompat, HDRLoaderCo
 export { DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
 export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
 export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "./animation";
-export { ColorGradingPassCompat, DepthOfFieldPassCompat, EffectComposerCompat, FXAAPassCompat, OutlinePassCompat, RenderPassCompat, ShaderPassCompat, SMAAPassCompat, SSAOPassCompat, TAAPassCompat, UnrealBloomPassCompat, VignettePassCompat } from "./postprocessing";
-export { NodeMaterialCompat, RawShaderMaterialCompat, CustomShaderMaterialCompat, UniformsCompat, SHADER_CHUNKS_THREE_COMPAT, diagnoseThreeCompatShader } from "./shaders";
 export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";

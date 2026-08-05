@@ -6,7 +6,7 @@
     "renderer configuration": "tests/browser/production-runtime-webgl2-real-renderer.spec.ts",
     "geometry primitives": "tests/browser/multipart-primitive-draw.spec.ts",
     "materials": "tests/browser/createAuraApp-material-pbr-contract.spec.ts",
-    "custom shaders": "tests/browser/three-compat-shader-lab.spec.ts",
+    "custom shaders": "tests/browser/renderer-extension-escape-hatch.spec.ts",
     "lights": "tests/browser/rect-area-light.spec.ts",
     "shadows": "tests/browser/createAuraApp-shadow-contract.spec.ts",
     "environment maps / IBL": "tests/browser/external-parity-ibl-evidence.spec.ts",
@@ -63,6 +63,7 @@
     "deterministic replay: previously credited to apps/aura-clash-showcase/tests/deterministic-replay.spec.ts, which reaches the engine only by navigating to /playable/ through its own app harness \u2014 a route URL, not a documented public package entry, so the lineage is unresolvable from source. Repointed to fighting-game-runtime.spec.ts, which imports the public entry directly.",
     "morph targets: was published as `gap` because the generator grepped MorphTargetMixer and MorphTargetWeight, NEITHER OF WHICH EXISTS. The real symbols are MorphTargetMixerThreeCompat and the applyMorphTargets family, and there is a full public browser contract test (createAuraApp-morph-targets.spec.ts -> a harness importing @aura3d/engine). Corrected symbols move it gap -> parity-unproven: it still has no *route* consumer, which is an honest and different reason. A generator can understate as easily as overstate.",
     "context loss recovery: closed by WS-2.6 and moved gap -> parity with a lineage test. The row had been a gap for a reason WS-1.6 sharpened: WebGL2Device had listened for webglcontextlost for a long time, so the device layer was never the gap \u2014 nothing surfaced it. Now app.onDeviceLost/onDeviceRestored/deviceLost on both render paths, proven by a harness that provokes a real loss with WEBGL_lose_context through the public entry point.",
-    "occlusion-aware annotations: new row from WS-2.7. `text rendering` stays a gap on purpose \u2014 1.6 ships no text renderer \u2014 because relabelling that row would let a reader conclude 3D text exists. The occlusion capability is tracked separately with its own test, since it is the thing that actually changed: occlusionAware had defaulted to true on every label factory and was never read."
+    "occlusion-aware annotations: new row from WS-2.7. `text rendering` stays a gap on purpose \u2014 1.6 ships no text renderer \u2014 because relabelling that row would let a reader conclude 3D text exists. The occlusion capability is tracked separately with its own test, since it is the thing that actually changed: occlusionAware had defaulted to true on every label factory and was never read.",
+    "custom shaders: repointed by WS-3.4. It had been proven by tests/browser/three-compat-shader-lab.spec.ts, which constructed a ShaderMaterialThreeCompat from the fabricated compat tree and then drew a Canvas-2D GRADIENT to a canvas \u2014 no shader was ever compiled. Deleting that tree left the row with no evidence, which the lineage gate caught immediately. Repointed to WS-2.8's renderer-extension spec, which compiles a real custom shader through the public ShaderModule and asserts it changes the framebuffer."
   ]
 }

@@ -1713,25 +1713,76 @@ a consumer, which is how it passed the "parity requires a consumer" rule.
       `rendering/production-runtime/postprocess/`, `rendering/cinematic/` and the compat tree), so a
       reference to the *real* one is attributed to the compat one. That inflates the report and does not
       change the conclusion — the genuine consumers listed above are enough to block on their own.
-- [ ] `git rm` the directory — **not yet.** Blocked on the consumers below, in this order.
-- [ ] Delete the 10 stub apps: `three-compat-{scene-studio-pro,asset-studio-pro,controls-lab,animation-studio-pro,large-scene-lab,postprocess-studio-pro,material-studio-pro,product-studio-pro,shader-lab-pro,threejs-migration-lab}`.
+- [x] `git rm` the directory — **done, after the consumers.** 97 files / 1,929 lines removed in total.
+- [x] Delete the 10 stub apps: `three-compat-{scene-studio-pro,asset-studio-pro,controls-lab,animation-studio-pro,large-scene-lab,postprocess-studio-pro,material-studio-pro,product-studio-pro,shader-lab-pro,threejs-migration-lab}`.
       These are Tier 4 under P5's classification — 4 lines each, no interaction, no evidence beyond a
-      fabricated string.
-- [ ] Delete the tests that assert on the fabricated values:
+      fabricated string. — **done. Routes 149 → 139.**
+- [x] Delete the tests that assert on the fabricated values:
       `tests/unit/rendering/three-compat-{renderer-three-compat,postprocess,shaders,vfx}.test.ts` and the
       matching browser specs. **These are not tests being weakened to pass (R2)** — they assert that a
       hardcoded constant equals itself, so they cannot fail and prove nothing. Deleting them removes a
-      false green, which is the opposite of weakening a gate.
-- [ ] Repoint `packages/three-compat`'s migration adapter, which rewrites `new THREE.WebGLRenderer` to
+      false green, which is the opposite of weakening a gate. — **done: 4 unit suites and 16 browser
+      specs.** Two of the specs are worth naming because they are the same defect one level out:
+      `three-compat-large-scene.spec.ts` fed `runThreeCompatFrustumCulling(12000)` and
+      `new InstancingThreeCompat(50000)` — synthetic counts — into a Canvas-2D drawing, and
+      `three-compat-raycast-bvh.spec.ts` asserted `speedup > 100` on a number returned by a function
+      literally named `estimateThreeCompatAcceleratedRaycast`.
+- [x] Also deleted, found by following the type errors: **five readiness gates and a performance
+      baseline** that existed only to measure the stubs —
+      `tools/three-compat-{renderer,shader,vfx,postprocess,performance}-readiness/` and
+      `tests/performance/three-compat-performance-baselines.ts`, the latter reporting `cpuFrameMs: 11.4`
+      as a literal beside synthetic object counts. Their `package.json` scripts and their entries in the
+      `three-compat:release` aggregate are removed too, so the release chain no longer runs gates that
+      cannot fail.
+- [x] Repoint `packages/three-compat`'s migration adapter, which rewrites `new THREE.WebGLRenderer` to
       `createThreeCompatRenderer` — i.e. it currently advises migrating developers onto the fake. It must
-      point at a real renderer.
+      point at a real renderer. — **the aliasing re-exports are removed** (`./postprocessing`,
+      `./shaders`), which is the part that mattered: this package is the migration on-ramp, and it was
+      **offering a migrating Three.js developer a path onto a fabrication.** A migration target that does
+      not render is worse than none — it converts working Three.js code into non-working Aura3D code and
+      reports success. Everything real in the package stays: the API inventory, import map, animation,
+      controls, loader, material and geometry adapters, and `migrateThreeToA3D`.
+
+      Re-aliasing the **real** passes from `production-runtime/postprocess/` is left as its own decision
+      rather than done reflexively here: three of the ten aliases (`DepthOfFieldPass`, `EffectComposer`,
+      `TAAPass`) have no real equivalent yet, so a blanket re-alias would recreate the same problem with
+      a different import path.
 - [x] **Keep `packages/three-compat/` — different thing, real, and the migration on-ramp.** — confirmed
       and worth stating: `packages/animation/src/threejs-compatibility/` is **also** a different thing and
       also real (`AnimationMixerThreeCompat`, `SkeletonThreeCompat`, `MorphTargetMixerThreeCompat` — the
       symbols WS-1.6 found the parity generator was failing to grep). Only
       `packages/rendering/src/threejs-compatibility/` is the fabrication.
-- [ ] Remove the re-export from `packages/rendering/src/index.ts` — 5 lines (`:368`, `:384-387`).
-- [ ] **Proof:** `git grep -n "ThreeCompatRenderer" -- packages apps examples` empty.
+- [x] Remove the re-export from `packages/rendering/src/index.ts` — 5 lines (`:368`, `:384-387`). —
+      done, replaced by a comment recording the three fabrications so the next reader does not restore it.
+- [x] **Proof:** `git grep -n "ThreeCompatRenderer" -- packages apps examples` empty. — confirmed.
+      `pnpm typecheck` exit 0; **3,159 unit tests pass** (the 7 remaining failures are the pre-existing
+      stale-evidence set, verified unchanged); `check:claim-lineage` EXIT=0; routes 149 → 139.
+
+### Four consequences worth recording
+
+1. **The lineage gate caught a claim that had been proven by a fabrication.** `custom shaders` named
+   `three-compat-shader-lab.spec.ts` as its production-path test — a spec that constructed a
+   `ShaderMaterialThreeCompat` and then drew a **Canvas-2D gradient**. No shader was ever compiled.
+   Deleting the tree left the row with no evidence, and `check:claim-lineage` failed immediately with
+   *"named evidence does not exist"*. Repointed to WS-2.8's renderer-extension spec, which compiles a real
+   shader through the public `ShaderModule` and asserts it changes the framebuffer. **This is R1 working
+   as intended:** removing a fake broke a claim that depended on it, loudly.
+2. **A Vitest alias-ordering bug, the same one as WS-2.2.** `@aura3d/engine/media-node` was declared
+   *after* the bare `@aura3d/engine`, and Vitest matches string aliases by prefix in declaration order —
+   so it resolved to `packages/engine/src/index.ts/media-node` and
+   `render-quality-phase-m.test.ts` could not load at all. Subpaths now sit above the bare specifier, with
+   a comment. **Second occurrence of this trap; it does not fail at typecheck.**
+3. **Two honest uses of the word "unavailable" tripped a placeholder audit.**
+   `runtime-edge-coverage.test.ts` greps runtime source for `unavailable|placeholder|stub|deferred` against
+   an allowlist, and WS-2.7's occlusion comments legitimately describe the test being absent. Allowlisted
+   with justification rather than reworded: renaming a parameter to dodge a grep would make the code
+   describe its own behaviour *less* accurately to satisfy a lint.
+4. **The bundle did not shrink, and that is the correct outcome.** Scenario 1 measured **2.110x before and
+   2.124x after** — a 1,929-line deletion moved it by ~0.6%, in the wrong direction. The compat tree
+   **never appears in the bundle report's per-package attribution**, because esbuild was already
+   tree-shaking it: nothing a cube reaches actually constructed those classes. So this deletion buys
+   trustworthiness and maintenance, not bytes. Reporting it as a bundle win would have been the same kind
+   of claim this workstream exists to remove.
 
 ### WS-3.5 Fixture files — dependency proof per file, no bulk deletion
 

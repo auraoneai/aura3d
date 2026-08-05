@@ -27,6 +27,16 @@ export default defineConfig({
       "@aura3d/engine/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/workflows/production": new URL("./packages/workflows/src/production-runtime/index.ts", import.meta.url).pathname,
       "@aura3d/engine-runtime": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
+      /*
+       * These `@aura3d/engine/*` subpaths MUST sit above the bare "@aura3d/engine" below.
+       *
+       * Vitest matches string aliases by prefix in declaration order, so with the bare specifier first,
+       * `@aura3d/engine/media-node` resolves to `packages/engine/src/index.ts/media-node` and every
+       * importing module fails with "Cannot find module". Caught by WS-3.4: the animation-studio render
+       * scripts import the media-node entry, and render-quality-phase-m.test.ts could not load at all.
+       */
+      "@aura3d/engine/media-node": new URL("./packages/engine/src/agent-api/media-node.ts", import.meta.url).pathname,
+      "@aura3d/engine/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,
       "@aura3d/engine": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
       "@aura3d/cli": new URL("./packages/aura3d-cli/src/index.ts", import.meta.url).pathname,
       "@aura3d/react": new URL("./packages/react/src/index.ts", import.meta.url).pathname,
@@ -42,10 +52,8 @@ export default defineConfig({
        * specific "@aura3d/physics/solverless" must be listed BEFORE "@aura3d/physics" or it resolves to
        * "packages/physics/src/index.ts/solverless" and every importing test fails to load.
        */
-      "@aura3d/engine/media-node": new URL("./packages/engine/src/agent-api/media-node.ts", import.meta.url).pathname,
       "@aura3d/physics/world": new URL("./packages/physics/src/world.ts", import.meta.url).pathname,
       "@aura3d/physics/solverless": new URL("./packages/physics/src/solverless.ts", import.meta.url).pathname,
-      "@aura3d/engine/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,
       "@aura3d/assets/browser": new URL("./packages/assets/src/browser-index.ts", import.meta.url).pathname,

@@ -76,28 +76,24 @@ export {
   SkeletonCompat,
   SkinnedMeshCompat
 } from "./animation";
-export {
-  ColorGradingPassCompat,
-  DepthOfFieldPassCompat,
-  EffectComposerCompat,
-  FXAAPassCompat,
-  OutlinePassCompat,
-  RenderPassCompat,
-  ShaderPassCompat,
-  SMAAPassCompat,
-  SSAOPassCompat,
-  TAAPassCompat,
-  UnrealBloomPassCompat,
-  VignettePassCompat
-} from "./postprocessing";
-export {
-  NodeMaterialCompat,
-  RawShaderMaterialCompat,
-  CustomShaderMaterialCompat,
-  UniformsCompat,
-  SHADER_CHUNKS_THREE_COMPAT,
-  diagnoseThreeCompatShader
-} from "./shaders";
+/*
+ * WS-3.4 — the postprocess and shader compat re-exports are removed with the tree they aliased.
+ *
+ * `./postprocessing` and `./shaders` re-exported `packages/rendering/src/threejs-compatibility/*` under
+ * friendlier names — `UnrealBloomPassCompat`, `CustomShaderMaterialCompat` and so on. That tree touched no
+ * GPU: its renderer had no device and no draw call, its `captureScreenshot()` returned a URI string, and
+ * its `handleDeviceLost()` set the flag and immediately cleared it so it always reported recovery.
+ *
+ * So this package — the migration on-ramp, which the PRD correctly says to keep — was **offering a
+ * migrating Three.js developer a path onto a fabrication.** A migration target that does not render is
+ * worse than no migration target: it turns working Three.js code into non-working Aura3D code and reports
+ * success.
+ *
+ * Everything else here is unaffected and stays: the API inventory, the import map, the animation, controls,
+ * loader, material and geometry adapters, the migration warnings, and `migrateThreeToA3D`. Real postprocess
+ * passes live in `packages/rendering/src/production-runtime/postprocess/`; re-aliasing them here is a
+ * separate decision with a real implementation behind it, not a rename of a stub.
+ */
 export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
 export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";

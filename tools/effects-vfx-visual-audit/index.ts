@@ -28,20 +28,6 @@ import {
   SSAOPass,
   createProductionDemoPostProcessInput
 } from "../../packages/rendering/src/production-runtime";
-import {
-  BloomPassThreeCompat,
-  ColorGradingPassThreeCompat,
-  DepthOfFieldPassThreeCompat,
-  EffectComposerThreeCompat,
-  FXAAPassThreeCompat,
-  MotionBlurPassThreeCompat,
-  OutlinePassThreeCompat,
-  RenderPassThreeCompat,
-  SSAOPassThreeCompat,
-  TAAPassThreeCompat,
-  VignettePassThreeCompat,
-  createThreeCompatDemoFrame
-} from "../../packages/rendering/src/threejs-compatibility/postprocess";
 
 type AuditStatus = "pass" | "partial" | "fail";
 type AuditSeverity = "info" | "warning" | "blocker";
@@ -318,44 +304,16 @@ function auditCompatibilityAndStubSurfaces(visualProof: VisualProofReport): void
     requiredAction: "Keep these adapters under pixel-delta unit tests and browser screenshot checks before using them in polished production-runtime demos."
   });
 
-  const threeCompatPostprocess = [
-    "packages/rendering/src/threejs-compatibility/postprocess/BloomPass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/DepthOfFieldPass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/MotionBlurPass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/OutlinePass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/SSAOPass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/TAAPass.ts",
-    "packages/rendering/src/threejs-compatibility/postprocess/VignettePass.ts"
-  ];
-  const metricOnly = threeCompatPostprocess.filter((path) => {
-    const source = read(path);
-    return !source.includes("Uint8Array") && !source.includes("pixels") && /return\s+\{\s*\.\.\.frame/.test(source.replace(/\n/g, " "));
-  });
-  const threeCompatOutput = new EffectComposerThreeCompat()
-    .addPass(new RenderPassThreeCompat())
-    .addPass(new BloomPassThreeCompat())
-    .addPass(new SSAOPassThreeCompat())
-    .addPass(new TAAPassThreeCompat())
-    .addPass(new FXAAPassThreeCompat())
-    .addPass(new DepthOfFieldPassThreeCompat())
-    .addPass(new MotionBlurPassThreeCompat())
-    .addPass(new ColorGradingPassThreeCompat())
-    .addPass(new VignettePassThreeCompat())
-    .addPass(new OutlinePassThreeCompat())
-    .render(createThreeCompatDemoFrame("effects-audit-three-compat"));
-  addFinding({
-    id: "three-compat-postprocess-metric-only",
-    surface: "Three compatibility postprocess",
-    status: metricOnly.length === 0 && (threeCompatOutput.visualChangedPixels ?? 0) > 1000 && (threeCompatOutput.visualPasses?.length ?? 0) >= 8 ? "pass" : "fail",
-    severity: "blocker",
-    summary: "Three-compat postprocess classes now preserve compatibility metrics and run real pixel kernels when a frame provides pixels.",
-    evidence: [
-      ...(metricOnly.length > 0 ? metricOnly : ["no metric-only postprocess files detected"]),
-      `visualChangedPixels=${threeCompatOutput.visualChangedPixels ?? 0}`,
-      `visualPasses=${threeCompatOutput.visualPasses?.join(",") ?? ""}`
-    ],
-    requiredAction: "Keep the Three-compat visual claim scoped to pixel-buffer compatibility until browser before/after screenshots prove the full route quality."
-  });
+  /*
+   * WS-3.4 — the `three-compat-postprocess-metric-only` finding is removed with the tree it audited.
+   *
+   * It asserted that `packages/rendering/src/threejs-compatibility/postprocess/*` "run real pixel kernels",
+   * by composing ten stub passes over a synthetic demo frame. Those passes lived in a tree whose renderer
+   * had no device and no draw call, so the finding was auditing bookkeeping objects for pixel behaviour.
+   *
+   * The rest of this audit is real and unchanged: it drives `PostProcessPass`'s actual kernels
+   * (`bloomPixels`, `ssaoPixels`, `taaPixels`, ...) over real buffers and compares before/after pixels.
+   */
 
   const vfxMetrics = [
     "packages/rendering/src/threejs-compatibility/vfx/ParticleSystem.ts",
