@@ -611,32 +611,30 @@ budget to make it pass. It is now *visible* for the first time, which is the use
 
 - [ ] Every checkbox above checked — **46 of 51.** The 5 open are WS-3.8 (attempted, reverted, finding recorded), WS-3.9 (blocked on 3.8), the zero-consumer parity rows above, this item, and route promotion below. None is open because it was skipped; each has its reason written in its own row.
 - [x] Rule-1 grep clean for both flagship routes — all five surface constants deleted from turbo drift; `runner-rules.ts` (a 252-line orphan still declaring `gravity: -20.2`, `jumpVelocity: 8.75`, zero importers) deleted, with an `existsSync(...) === false` gate so it cannot return. The only remaining match across both routes is prose in a comment naming what was removed. **Not claimed repo-wide:** `world-war-x-showcase` and `showcase-cannon-physics-proof.ts` still declare their own gravity; they are outside this PRD's scope and were never part of the two reported defects.
-- [ ] Physics capability rows: **zero** `parity-unproven` with zero consumers — **7 unproven -> 4, and 3 of the remaining were a tool defect, not missing capability.**
+- [x] Physics capability rows: **zero** `parity-unproven` with zero consumers — **achieved.** `physics: exceed 0, parity 8, unproven 2, gap 0 (of 10)`, and both remaining unproven rows (`vehicle dynamics`, `vehicle AI driving`) *do* have a consumer (`showcase-turbo-drift-circuit`); they stay down pending WS-3.8, which is the correct reason.
 
-  Auditing this row found that `build-product-inventory.mjs` emitted `sourceFiles` for all **111 apps**
-  and for **none of the 36 examples**, even though the file list was already computed two lines above.
-  `build-threejs-parity.mjs` resolves consumers by reading `entry.sourceFiles ?? []`, so every example
-  iterated an empty array and could never be credited.
+  Closed in two steps, neither of which upgraded a status by hand:
 
-  The visible consequence: `examples/physics-sandbox` imports `PhysicsDebugDraw` and constructs it
-  (`new PhysicsDebugDraw()`), and uses `Constraint` in 6 places; `examples/game-slice` imports and
-  constructs `CharacterController`. All three capabilities were nonetheless reported as "no production
-  consumer imports this capability". Five physics rows were downgraded on evidence the tool was
-  structurally unable to see. `check-quality-gates.mjs` reads the same field, so the omission narrowed
-  that gate's reach too.
+  1. **A tool defect.** `build-product-inventory.mjs` emitted `sourceFiles` for all 111 apps and none of
+     the 36 examples, so `build-threejs-parity.mjs` — which resolves consumers via
+     `entry.sourceFiles ?? []` — iterated an empty array for every example. `examples/physics-sandbox`
+     already constructed `PhysicsDebugDraw` and used `Constraint`; `examples/game-slice` already
+     constructed `CharacterController`. Three rows were downgraded on evidence the tool could not see.
+     One line to fix: parity 3 -> 6.
+  2. **A real missing consumer.** `raycasting` and `continuous collision detection` genuinely had none.
+     Wrote `examples/raycast-ccd-lab`: a corridor demonstrating the self-hit defect and the
+     `ignoreBodies` fix, a gap that a ray threads and a sweep does not, and a 200 m/s bullet whose
+     crossing a single 1/60 s step steps over. parity 6 -> 8.
 
-  After the one-line fix, verified by reading the actual import lines rather than trusting the count:
+  Writing it caught **two errors in my own example**, both found because
+  `tests/unit/apps/raycast-ccd-lab.test.ts` reproduces the scenarios rather than trusting the prose:
 
-      before: physics exceed 0, parity 3, unproven 7
-      after : physics exceed 0, parity 6, unproven 4
-
-  `character controller`, `joints / constraints` and `physics debug rendering` now carry real example
-  consumers. **No status was upgraded by hand** — the tool simply stopped discarding evidence.
-
-  Still unproven, honestly: `raycasting` and `continuous collision detection` (implemented and tested,
-  but no shipped app or example imports them — my consumers are clean-room and unit tests, which are
-  not a product surface), plus `vehicle dynamics` and `vehicle AI driving`, which stay down pending
-  WS-3.8. Closing the first two means writing a real example route, not widening the tool further.
+  - I asserted the corridor raycast would report the far wall. It reports **the shooter at distance 0** —
+    the self-hit defect is real here, so `ignoreBodies` is load-bearing, not decorative. The example now
+    teaches that.
+  - I used `maxDistance: 1.6` for the gap test, but the posts' near face is 1.8 units away, so *both*
+    queries missed. That looked like the sphere fitting through a gap it cannot fit through. Corrected,
+    and the test now asserts the hit distance is below 1.8 so a short cast cannot masquerade as a miss.
 
 - [ ] Turbo Drift and Skyline promoted out of `prototype-blocked` — **correctly still open, and I have not promoted them.** The row's own precondition ("only after all of the above") is not met, and promotion additionally requires independent human visual review, which an agent must not self-grant. Route statuses are untouched: `blockfall-reactor`, `skyline-runner` and `turbo-drift-circuit` all remain `prototype-blocked`, and `allRoutesOk` remains `false` by design.
 
