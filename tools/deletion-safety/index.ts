@@ -203,11 +203,39 @@ function scanRepository(): readonly ScannedFile[] {
  */
 const GENERIC_STEMS = new Set(["index", "browser-index", "main", "types", "type", "utils", "util", "src", "test", "tests", "config", "helpers", "constants"]);
 
-function moduleSpecifiersFor(path: string): readonly string[] {
+/**
+ * Basenames that more than one scanned file shares. A bare name is only a usable identity for a
+ * file when it names exactly one file in the repository.
+ *
+ * `GENERIC_STEMS` above was a hand-maintained list of names known to be ambiguous, and it could
+ * only ever block the ambiguities someone had already been bitten by. It did not contain
+ * `package.json`, `tsconfig.json`, or `README.md`, so proving `packages/ecs` deletable reported
+ * 306 blocking references for `packages/ecs/package.json` — every `"package.json"` string in every
+ * showcase evidence manifest in the repository, none of which had anything to do with
+ * `packages/ecs`. Three of the four highest reference counts in that run were this one bug.
+ *
+ * Uniqueness is the general form of the rule the list was approximating: derive ambiguity from the
+ * repository instead of enumerating it. Ambiguous files are still matched on their repo-relative
+ * path and package subpath, which are unique by construction.
+ */
+function ambiguousBasenames(repo: readonly ScannedFile[]): ReadonlySet<string> {
+  const counts = new Map<string, number>();
+  for (const file of repo) {
+    const base = basename(file.path);
+    counts.set(base, (counts.get(base) ?? 0) + 1);
+  }
+  const out = new Set<string>();
+  for (const [base, count] of counts) {
+    if (count > 1) out.add(base);
+  }
+  return out;
+}
+
+function moduleSpecifiersFor(path: string, ambiguous: ReadonlySet<string>): readonly string[] {
   const base = basename(path);
   const stem = base.replace(/\.(m|c)?tsx?$/, "").replace(/\.(m|c)?jsx?$/, "");
   const specifiers = new Set<string>([path]);
-  if (!GENERIC_STEMS.has(stem)) {
+  if (!GENERIC_STEMS.has(stem) && !ambiguous.has(base)) {
     specifiers.add(base);
     specifiers.add(stem);
   }
@@ -406,12 +434,12 @@ function emptyPoints(): Record<R8Point, Evidence[]> {
   };
 }
 
-function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: ReadonlySet<string>): FileReport {
+function analyze(candidate: string, repo: readonly ScannedFile[], deletionSet: ReadonlySet<string>, ambiguous: ReadonlySet<string>): FileReport {
   const path = relative(repoRoot, resolve(repoRoot, candidate));
   const absolute = join(repoRoot, path);
   const exists = existsSync(absolute);
   const text = exists ? readFileSync(absolute, "utf8") : "";
-  const specifiers = moduleSpecifiersFor(path);
+  const specifiers = moduleSpecifiersFor(path, ambiguous);
   const symbols = exportedSymbols(text);
   const points = emptyPoints();
   const intraCandidate: Evidence[] = [];
@@ -566,7 +594,8 @@ function main(): void {
   const repo = scanRepository();
   const expanded = [...new Set(paths.flatMap((path) => expandCandidate(path)))];
   const deletionSet = new Set(expanded);
-  const reports = expanded.map((path) => analyze(path, repo, deletionSet));
+  const ambiguous = ambiguousBasenames(repo);
+  const reports = expanded.map((path) => analyze(path, repo, deletionSet, ambiguous));
   const checks: ReleaseCheck[] = reports.map((report) => {
     const blocking = R8_POINTS.flatMap((point) => report.points[point].map((evidence) => `${point} @ ${evidence.at}`));
     return {

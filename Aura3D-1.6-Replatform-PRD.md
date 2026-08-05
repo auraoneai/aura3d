@@ -441,16 +441,29 @@ bookkeeping and blocks nothing.
 - [x] Add script `check:deletion-safety`. — `package.json:490`, reading
       `tools/deletion-safety/candidates.json` (the deletion queue; empty is a pass, an
       unproven deletion is not).
-- [x] **Proof:** run against `packages/rendering/src/OceanFixtures.ts` — must report the
-      known `EnvironmentPlatform.ts` importer. A tool that clears a known-unsafe file is broken.
-      — **blocked with 23 references**, first being
-      `runtime-consumer @ packages/rendering/src/EnvironmentPlatform.ts:304`, plus the
-      `rendering/src/index.ts:839,848` barrel re-exports, `docs/api/public-api.md:1101` and
-      `tests/reports/api-docs.json:998`. Encoded as a regression test:
-      `tests/unit/tools/deletion-safety.test.ts` → **4 passed**, one of which asserts the
-      `EnvironmentPlatform.ts` importer specifically.
+- [x] **Proof:** run against `packages/rendering/src/OceanFixtures.ts` — a tool that clears a
+      known-unsafe file is worse than no tool, because it converts a missing check into a false
+      assurance. — **blocked, `EXIT=1`, 9 blocking references.** The load-bearing evidence is
+      `runtime-consumer @ packages/rendering/src/index.ts:842,851` — the package's own
+      `export { sampleOceanFixture } from "./OceanFixtures"`, so deleting the file breaks the
+      published `@aura3d/rendering` surface. Encoded as a regression test:
+      `tests/unit/tools/deletion-safety.test.ts` → **6 passed**.
 
-**Two calibration corrections made while proving it, both worth recording** — a gate that cannot
+**Correction to this proof, recorded because the original form of it was wrong.** This workstream
+first claimed 23 references led by
+`runtime-consumer @ packages/rendering/src/EnvironmentPlatform.ts:304`, and the regression test
+asserted that line as its proof of correctness. That line is English prose inside a quoted
+capability string — `"OceanFixtures and waterSystems provide Gerstner/procedural water
+telemetry."` — not an import. The gate was manufacturing its own blocking evidence, and the test
+was pinning the fabrication in place. This is R1 turned inward: a check whose output does not
+correspond to the thing it claims to measure. It is the same failure as the fabricated performance
+gates this re-platform exists to remove, and it is more dangerous in a deletion gate, because a
+gate that invents blockers cannot be cleared and therefore gets routed around. Corrected: the
+barrel re-export is the real blocker, and
+`tests/unit/tools/deletion-safety.test.ts` now asserts `EnvironmentPlatform.ts` is **absent** from
+the blocker list.
+
+**Three calibration corrections made while proving it, all worth recording** — a gate that cannot
 be cleared gets routed around rather than satisfied:
 
 1. Generic stems are excluded from specifier matching. An early version emitted `index` for
@@ -461,6 +474,24 @@ be cleared gets routed around rather than satisfied:
    `test-utils/src/index.ts`, so it blocked on itself. Generated documentation
    (`docs/api/`, `docs/site/`, `llms.txt`) still blocks, because a reference there means a
    generator must be re-run.
+3. **Basename matching is gated on uniqueness, not on a hand-written exclusion list.** Correction 1
+   suppressed bare-name matching for an enumerated set of names known to be ambiguous (`index`,
+   `main`, `utils`, ...). Enumeration only ever covers the ambiguities someone has already been
+   bitten by, and `package.json` was not among them: the first attempt to prove `packages/ecs`
+   deletable reported **306** blocking references for `packages/ecs/package.json` — every
+   `"package.json"` string in every showcase launch-evidence manifest in the repository, none of
+   them related to `packages/ecs`. `tsconfig.json` reported 19 and `README.md` reported 114 the
+   same way. Three of the four largest counts in that run were this one bug, and together they made
+   a package that is genuinely clearable look immovably blocked. A bare name is now emitted as an
+   identity only when it names **exactly one** file in the scanned repository; ambiguous files are
+   matched on repo-relative path and package subpath, which are unique by construction. Measured
+   after the fix: `packages/ecs/package.json` 306 → **1** (the workspace manifest that lists the
+   package), `tsconfig.json` 19 → **clear**, `README.md` 114 → **clear**, while
+   `packages/ecs/src/index.ts` still blocks on **40** real references and the `OceanFixtures.ts`
+   control still blocks. Pinned by
+   `tests/unit/tools/deletion-safety.test.ts` → "does not block a non-unique basename on every
+   other file that shares it", which asserts every remaining blocker names the candidate by
+   **path** rather than by a shared bare name.
 
 Also created this workstream: **`docs/architecture/adr/`** with the R11 four-question template
 and index, so the architecture lock has a home before anyone needs it (§8 lists it as P0).

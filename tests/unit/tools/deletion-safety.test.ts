@@ -85,6 +85,48 @@ describe("deletion-safety (R8)", () => {
     expect(Array.isArray(files[0]?.proseMentions)).toBe(true);
   }, 180_000);
 
+  it("does not block a non-unique basename on every other file that shares it", () => {
+    /*
+     * Regression pin for the fourth false-positive class. `moduleSpecifiersFor` emitted a file's
+     * bare basename as an identity it could be referenced by, suppressing only a hand-written list
+     * of names known to be ambiguous (`index`, `main`, `utils`, ...). `package.json` was not on that
+     * list, so proving `packages/ecs` deletable reported 306 blocking references for
+     * `packages/ecs/package.json` — every `"package.json"` string in every showcase evidence
+     * manifest in the repository. `tsconfig.json` (19) and `README.md` (114) failed the same way.
+     * Three of the four largest counts in that run were this single bug, and together they made a
+     * cleared package look immovably blocked.
+     *
+     * The rule is now uniqueness rather than enumeration: a bare name identifies a file only when it
+     * names exactly one file in the repository. This asserts the ambiguous-name blockers are gone
+     * while the **path**-shaped evidence that actually matters still lands — `packages/ecs/src/index.ts`
+     * is genuinely blocked by `tools/bundle-scenarios` and the `@aura3d/ecs` export map.
+     */
+    const { report } = run(["packages/ecs/package.json", "packages/ecs/tsconfig.json", "packages/ecs/README.md", "packages/ecs/src/index.ts"]);
+    const files = report.files as readonly {
+      readonly path: string;
+      readonly blocking: Record<string, readonly { readonly at: string; readonly detail: string }[]>;
+    }[];
+
+    /*
+     * The invariant is not "zero blockers" — this test file itself names all four paths in the line
+     * above, and a line quoting the full repo-relative path *is* a real reference. The invariant is
+     * that every blocker names the candidate by its **path**, never by a bare name it happens to
+     * share with 300 unrelated files.
+     */
+    for (const name of ["packages/ecs/package.json", "packages/ecs/tsconfig.json", "packages/ecs/README.md"]) {
+      const file = files.find((entry) => entry.path === name);
+      const strays = Object.values(file?.blocking ?? {})
+        .flat()
+        .filter((evidence) => !evidence.detail.includes("packages/ecs") && !evidence.detail.includes("@aura3d/ecs"))
+        .map((evidence) => `${evidence.at} :: ${evidence.detail}`);
+      expect(strays, `${name} must not block on files that merely share its basename`).toEqual([]);
+    }
+
+    // The gate must still catch the real thing, or this fix would have blunted it.
+    const barrel = files.find((entry) => entry.path === "packages/ecs/src/index.ts");
+    expect(barrel?.blocking["runtime-consumer"]?.length ?? 0).toBeGreaterThan(0);
+  }, 180_000);
+
   it("fails when asked to prove a deletion of a file that does not exist", () => {
     const { status, report } = run(["packages/rendering/src/DefinitelyNotAFile.ts"]);
     expect(status).not.toBe(0);
