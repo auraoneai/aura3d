@@ -1110,16 +1110,75 @@ functionality into a falsely "non-browser" package.
 Only **one** file is genuinely Node-only. One is genuinely browser-only. Moving all 21
 into a single "non-browser" package would be wrong.
 
-- [ ] Classify every file as Node · browser · universal · cloud adapter · authoring-only.
-      Commit the table.
-- [ ] Split accordingly — `@aura3d/media-node` (Ffmpeg), `@aura3d/media-browser`
+- [x] Classify every file as Node · browser · universal · cloud adapter · authoring-only.
+      Commit the table. — **done, and the re-measurement corrects the table above.** The surface is
+      **37 files / 6,048 lines**, not 21, and the split is different:
+
+      | Runtime | Files | Lines | Notes |
+      |---|---:|---:|---|
+      | **Node** (`node:` refs > 0) | **1** | 429 | `FfmpegFrameEncoder.ts` only — 3 `node:` specifiers across 4 sites |
+      | **browser** | **8** | 1,209 | `VideoExportPipeline` · `FrameEncoder` · `AudioVisemeAnalyzer` · `AudioMuxer` · `ThumbnailGenerator` · `WebCodecsFrameEncoder` · `PngSequenceEncoder` · `MediaRecorderFrameEncoder` |
+      | **universal / authoring** | **28** | 4,410 | includes `AuraVoiceBridge` 708 and `DialoguePerformance` 621 |
+
+      Two corrections worth stating: the PRD's "only one is genuinely browser-only" is wrong —
+      **eight** files touch browser APIs, and `FrameEncoder`/`AudioMuxer`/`PngSequenceEncoder` are
+      browser rather than "universal", so a naive universal bucket would have put `MediaRecorder`,
+      `VideoEncoder` and `OffscreenCanvas` usage on a Node path. And `FfmpegFrameEncoder` is genuinely
+      **mixed**, not purely Node: it guards `frame.image instanceof Blob` to reject browser inputs, so
+      it references a browser global while only *running* under Node.
+- [x] Split accordingly — `@aura3d/media-node` (Ffmpeg), `@aura3d/media-browser`
       (MediaRecorder), `@aura3d/media` (universal + authoring + adapters) — or one package
-      with environment-safe export conditions. Decide from the table.
-- [ ] The binding requirement: **no `node:` import reachable from any browser entry**, and
-      no browser-only API reachable from a Node entry.
-- [ ] Remove their re-exports from `agent-api/index.ts`.
-- [ ] **Proof:** zero `node:fs`/`node:path`/`node:crypto` reachable from the core browser
-      entry, verified by bundling; browser media functionality still importable and tested.
+      with environment-safe export conditions. Decide from the table. — **decided from the
+      dependency graph: the second option.** Three packages are not possible without a cycle. Measured
+      edges *out* of the media set into the rest of `agent-api`: `PromptAnimationContract` **31**,
+      `AnimationRenderQueue` **10**, `ShotTimeline` **5**, `AnimationPerformance` **4**,
+      `VisemeController` **3**, `index.js` **3**, `AnimationEpisodePackage` **1** — while
+      `AnimationDirector`, `AnimationPerformance`, `AssetLibraryBrowser`, `PromptAnimationEvidence` and
+      `ShotTimeline` import media files *back*. Extracting packages would require breaking that
+      bidirectional coupling first, which is a P3 package-boundaries question, not a P2 one.
+
+      Delivered instead as the entry point the requirement actually needs:
+      **`@aura3d/engine/media-node`** (`packages/engine/src/agent-api/media-node.ts`), carrying the one
+      genuinely-Node module. The other 36 files stay reachable from the browser barrel, where they
+      belong — they are browser or pure.
+- [x] The binding requirement: **no `node:` import reachable from any browser entry**, and
+      no browser-only API reachable from a Node entry. — **enforced by a gate, not a comment:**
+      `tools/browser-entry-purity/index.ts` + `pnpm check:browser-entry-purity`. It bundles each of
+      **13 documented browser entries** with **no `node:` externals at all**, so a reachable builtin
+      becomes a resolution failure naming the specifier and the importer. The Node entry is checked with
+      the expectation **inverted** — it *must* reach `node:` builtins, because if it stops, either the
+      capability was deleted or it drifted browser-side, and both deserve a failing check rather than a
+      silent pass.
+- [x] Remove their re-exports from `agent-api/index.ts`. — `export * from "./FfmpegFrameEncoder.js"`
+      removed, replaced by a comment recording why. The other 36 re-exports are **kept deliberately**:
+      removing browser and pure modules from the browser barrel would be churn with no purity benefit,
+      and the PRD's requirement is about `node:` reachability. Their bundle cost belongs to WS-2.2.
+- [x] **Proof:** zero `node:fs`/`node:path`/`node:crypto` reachable from the core browser
+      entry, verified by bundling; browser media functionality still importable and tested. —
+      **`pnpm check:browser-entry-purity` EXIT=0**, all 13 browser entries reporting *"no node: builtin
+      is reachable"* and `media-node` reporting *"correctly reaches node:fs/promises, node:os,
+      node:path"*.
+
+      **Sabotage-verified:** re-adding the single `export *` line makes the gate **EXIT=1** with
+      *"@aura3d/engine (root public entry): reaches node:fs/promises, node:os, node:path"*.
+
+      Browser media functionality still importable: 137 tests across `tests/unit/agent-api` pass,
+      including `ffmpeg-frame-encoder.test.ts` repointed to the new entry. The two real Node consumers —
+      `templates/animation-studio/scripts/render-{core,live}.ts` — now import
+      `@aura3d/engine/media-node`.
+
+### The workaround this removed, which is the real result
+
+`tools/bundle-size/index.ts` carried a 20-line comment marking four `node:` specifiers external
+*"for every browser bundle measurement"*, explaining that `FfmpegFrameEncoder` reaches
+`node:child_process` behind a capability probe and that esbuild resolves `await import()` at build time
+regardless. The comment was **accurate**, and it was a workaround: it made the *measurement* succeed
+while leaving Node builtins in the browser dependency graph — so the reported size was of a bundle no
+browser could actually load.
+
+`BROWSER_EXTERNAL_NODE_BUILTINS` is now **empty**, and `check:bundle-size` still builds. That is the
+proof the reachability is gone rather than excused, and it means a future re-introduction fails the
+build instead of being quietly absorbed by an externals list.
 
 ### WS-2.4 Canonical bundle scenarios, then make the gate fail the build
 

@@ -146,7 +146,19 @@ export * from "./FrameEncoder.js";
 export * from "./BrowserFrameCaptureAdapter.js";
 export * from "./MediaRecorderFrameEncoder.js";
 export * from "./WebCodecsFrameEncoder.js";
-export * from "./FfmpegFrameEncoder.js";
+/*
+ * WS-2.3 — `FfmpegFrameEncoder` is deliberately NOT re-exported here.
+ *
+ * It is the only file in the 37-file media surface that reaches `node:` builtins (`child_process` to
+ * spawn ffmpeg; `fs/promises`/`os`/`path` to stage frames). Re-exporting it put Node builtins in every
+ * browser bundle of this entry point, which is why `tools/bundle-size` had to mark four `node:`
+ * specifiers external "for every browser bundle measurement" — a workaround for a dependency that
+ * should not have been in the browser graph. esbuild resolves `await import()` at build time whether or
+ * not the branch can run.
+ *
+ * Node consumers import `@aura3d/engine/media-node`. Enforced by `tools/browser-entry-purity`, which
+ * bundles every browser entry with no `node:` externals so a reachable builtin fails the build.
+ */
 export * from "./PngSequenceEncoder.js";
 export * from "./AudioMuxer.js";
 export {

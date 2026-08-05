@@ -27,30 +27,20 @@ interface BundleResult {
 }
 
 /**
- * Node builtins that are external to every *browser* bundle measurement.
+ * WS-2.3 — this list is now EMPTY, and that is the point.
  *
- * `FfmpegFrameEncoder` reaches `node:child_process`, `node:fs/promises`, `node:os` and `node:path`
- * through `await import(...)` inside a runtime capability probe — it shells out to ffmpeg, so it can
- * only work in a Node-like runtime and reports `supported: false` when it cannot. esbuild resolves
- * dynamic imports at build time regardless, so bundling any entry that transitively reaches
- * `@aura3d/engine` for `platform: "browser"` failed with unresolved builtins and took the whole
- * `check:bundle-size` gate — and therefore `check:release` — down with it.
+ * It used to mark `node:child_process`, `node:fs/promises`, `node:os` and `node:path` external for every
+ * browser bundle measurement, with a comment explaining that `FfmpegFrameEncoder` reaches them behind a
+ * capability probe and that esbuild resolves `await import()` at build time regardless. That comment was
+ * accurate and it was a workaround: it made the *measurement* succeed while leaving Node builtins in the
+ * browser dependency graph, so the reported size was of a bundle no browser could actually load.
  *
- * Pre-existing rather than a regression: bundling `v1.5.2`'s agent-api entry in a clean worktree
- * reports the same class of failure. `check:release` has been red since at least that tag.
- *
- * Applied to every target, not just the agent-api one, because the three template entries import
- * `@aura3d/engine` and so reach the same encoder. This is the correct measurement rather than a
- * workaround: a real browser bundler also treats Node builtins as external, so the reported size is
- * what a browser consumer actually pays. The alternative — removing the encoder from the public
- * surface — would delete a working Node capability to satisfy a browser-only metric.
+ * `FfmpegFrameEncoder` now lives behind `@aura3d/engine/media-node` and is no longer re-exported from
+ * the browser barrel, so nothing reachable from a browser entry imports a Node builtin. Keeping the
+ * externals would hide a regression: with the list empty, a future re-introduction fails this build
+ * instead of being quietly excused. `tools/browser-entry-purity` asserts the same property directly.
  */
-const BROWSER_EXTERNAL_NODE_BUILTINS = [
-  "node:child_process",
-  "node:fs/promises",
-  "node:os",
-  "node:path"
-] as const;
+const BROWSER_EXTERNAL_NODE_BUILTINS = [] as const;
 
 const targets: readonly BundleTarget[] = [
   {

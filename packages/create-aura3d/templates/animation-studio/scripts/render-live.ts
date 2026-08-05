@@ -35,7 +35,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "@playwright/test";
 import { createServer, type ViteDevServer } from "vite";
-import { createFfmpegFrameEncoderAdapter } from "@aura3d/engine";
+// WS-2.3: the ffmpeg encoder is a Node-only entry point. These render scripts run under Node, so this
+// is the correct import; the browser barrel no longer carries `node:` builtins.
+import { createFfmpegFrameEncoderAdapter } from "@aura3d/engine/media-node";
 import { emptyDocument, EMPTY_DOCUMENT_NOTICE } from "../src/empty-document.js";
 import type { EpisodeDocument } from "../src/episode-document.js";
 // PHASE 5.3: the CPU toon post-pass lives ONCE in render-core.ts (the canonical home).

@@ -80,7 +80,10 @@
       "@aura3d/engine/rendering/production-runtime": [
         "packages/rendering/src/production-runtime/index.ts"
       ],
-      "@aura3d/physics/world": [
+      "@aura3d/engine/media-node": [
+      "packages/engine/src/agent-api/media-node.ts"
+    ],
+    "@aura3d/physics/world": [
       "packages/physics/src/world.ts"
     ],
     "@aura3d/physics/solverless": [

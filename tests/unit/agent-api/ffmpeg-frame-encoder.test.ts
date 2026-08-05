@@ -1,14 +1,19 @@
 import { spawnSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
+/*
+ * WS-2.3 — the ffmpeg encoder now has its own Node entry point rather than living on the browser
+ * barrel, because it is the only media file that reaches `node:` builtins. `FrameEncoderFrame` stays on
+ * the barrel: it is a pure type shared by every encoder, browser ones included.
+ */
 import {
   buildFfmpegArgs,
   createFfmpegFrameEncoderAdapter,
   probeFfmpeg,
   type FfmpegFileSystem,
   type FfmpegRunResult,
-  type FrameEncoderFrame,
   type RunFfmpeg
-} from "../../../packages/engine/src";
+} from "../../../packages/engine/src/agent-api/media-node";
+import type { FrameEncoderFrame } from "../../../packages/engine/src";
 
 const VIEWPORT = { width: 16, height: 16 };
 

@@ -42,6 +42,7 @@ export default defineConfig({
        * specific "@aura3d/physics/solverless" must be listed BEFORE "@aura3d/physics" or it resolves to
        * "packages/physics/src/index.ts/solverless" and every importing test fails to load.
        */
+      "@aura3d/engine/media-node": new URL("./packages/engine/src/agent-api/media-node.ts", import.meta.url).pathname,
       "@aura3d/physics/world": new URL("./packages/physics/src/world.ts", import.meta.url).pathname,
       "@aura3d/physics/solverless": new URL("./packages/physics/src/solverless.ts", import.meta.url).pathname,
       "@aura3d/engine/rendering/webgpu": new URL("./packages/rendering/src/webgpu.ts", import.meta.url).pathname,

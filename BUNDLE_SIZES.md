@@ -7,13 +7,13 @@ against the gzip artifact.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,196,279 | 584,911 | 80,000 | fail |
+| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,190,228 | 583,132 | 80,000 | fail |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 948 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,614 | 13,582 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 1,439,918 | 359,497 | 250,000 | fail |
-| `cinematic-scene starter app before user assets` | 1,439,785 | 359,478 | 250,000 | fail |
-| `mini-game starter app before user assets` | 1,480,328 | 377,496 | 250,000 | fail |
+| `product-viewer starter app before user assets` | 1,439,492 | 359,304 | 250,000 | fail |
+| `cinematic-scene starter app before user assets` | 1,439,359 | 359,294 | 250,000 | fail |
+| `mini-game starter app before user assets` | 1,479,934 | 377,342 | 250,000 | fail |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
