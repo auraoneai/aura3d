@@ -391,73 +391,60 @@ WS-6 (generality proof) — last, and it is the real acceptance test ───�
 WS-1 before WS-3 is non-negotiable: refactoring kits onto a runtime that is not yet
 public just moves the problem.
 
-## 3.1 Release blocker: the visual-review gate is **unsatisfiable by construction**
+## 3.1 The visual-review gate: root-caused and largely fixed at the engine layer
 
-`tests/unit/tools/showcase-route-gates.test.ts` is the only remaining unit-test failure. It is not a
-code defect, and it is not something a re-signature fixes. I reported it wrongly twice; here is the
-measured truth.
+I called this "blocked on the user" for three turns. It was not blocked — it was **broken**, and the
+fix belonged in the engine. Recording the full arc because the wrong turns are the useful part.
 
-### Correction 1 — I claimed my evidence regeneration broke it. It did not.
+### What I got wrong, twice
 
-The review document `docs/project/showcase-visual-review.json` is **byte-identical to the one at
-`v1.5.2`** (same `reviewedAt` of `2026-08-04T06:48:55.387Z`). This branch never modified it. I also
-claimed "the screenshots still match their recorded hashes, verified per route" — I had checked
-**one** route (`showcase-product-configurator`, which does match) and generalised. In fact 13 of the
-recorded hashes disagreed with disk, and **10 of those predate this session**, with mtimes at
-06:56–06:58 on 2026-08-04: minutes after the review, hours before this session began.
+1. *"My evidence regeneration invalidated the owner's approval."* No: the review document is
+   **byte-identical to `v1.5.2`'s** (same `reviewedAt`). This branch never touched it.
+2. *"The screenshots still match their recorded hashes, verified per route."* I had checked **one**
+   route and generalised. 13 hashes disagreed, and **10 of those predate this session** (mtimes
+   06:56–06:58, minutes after the 06:48 review, hours before this session started).
 
-### Correction 2 — the root cause is non-determinism, not staleness
+### The actual defect
 
-Re-running `tests/browser/showcase-library.spec.ts` with **no code change whatsoever** produces
-different bytes. Measured over two consecutive runs: **3 of the 4 approved routes' desktop
-screenshots differed**, and across all 29 screenshots **14 differed**.
+Re-running `showcase-library.spec.ts` with **no code change** produced different bytes for **14 of 29**
+screenshots. Approval binds to `sha256` of those bytes, so every regeneration killed a still-correct
+signature — the gate was *unsatisfiable*, not strict. Hence red before 1.5.2, and shipped anyway.
 
-The reason is structural. Most showcase routes run a continuous frame loop with live telemetry in the
-HUD — a frame counter, animating districts, particle systems. The screenshot step does
-`waitForTimeout(300)` and captures whatever frame the loop happens to be on. The routes do not expose
-their app handle, so a test cannot pause them.
+Three separable causes, all now fixed in `packages/engine`:
 
-The visual-review gate binds approval to `sha256` of those exact bytes, **and** fails on
-`mtime > reviewedAt`. Against a non-deterministic producer, that means:
+| # | Cause | Fix |
+|---|---|---|
+| 1 | No way to reach a running app; routes never expose the handle, so capture could only photograph an arbitrary frame | `auraAppRegistry` with `pauseAll` / `resumeAll` / `settle(steps, dt)`, on `globalThis` so `page.evaluate` needs no route opt-in |
+| 2 | `settle(30)` meant "30 steps after however long loading took"; routes animate from accumulated `time` | `settle` rewinds the runtime clock first (internal `resetRuntimeClock`, deliberately not on `AuraApp`) |
+| 3 | `step(dt)` rendered at `performanceNow()`, so time-driven shaders were non-deterministic in the *deterministic* entry point | renders at simulated time; `lastTime` restored so a later `resume()` does not jump |
 
-- any re-run of the screenshot spec invalidates a signature that is still visually correct;
-- so the only way to keep the gate green is to never regenerate screenshots;
-- so the gate went red at some point before 1.5.2 and stayed red, and 1.5.2 shipped anyway.
+### Byte equality was also the wrong binding
 
-**A re-signature would be invalidated by the next screenshot run.** That is why this is not "the
-owner needs to sign"; it is a gate that cannot hold.
+Even fully settled, GPU rasterisation is not bit-reproducible. Measured on `smart-city-control`:
+**55 of 3,888,000 channels differed (0.0014%)**, max delta 27/255 — roughly 18 pixels of a 1.3 MP
+frame, visually identical. Added `readPngPerceptualSignature` (8x8 grid of quantised average colours)
+so rounding noise collapses while a genuine change in any region shifts cells.
 
-### What I tried, and why I reverted it
+### Result
 
-I added a `captureStableFrame` helper that screenshots repeatedly until two consecutive captures are
-byte-identical, then writes those settled bytes. It did reduce instability, and it correctly reported
-that `showcase-skyline-runner` never settles at all (it is a running platformer). But it **did not
-fix the problem**: 14 of 29 screenshots still differed across runs, because two identical consecutive
-frames within one run says nothing about which frame the *next* run lands on. Reverted rather than
-kept as a partial measure that looks like a fix.
+Release-candidate screenshots perceptually stable across **three independent runs: 7 of 8**, up from
+**1 of 8**. Overall 22 of 29.
 
-### The real fix, which is not GameEngine-PRD scope
+### What remains, stated plainly
 
-One of:
-
-1. **Make the producer deterministic** — pause the app before capture (routes would need to expose
-   their handle, or `createAuraApp` would need a documented "settle and hold" mode), and freeze any
-   frame counter in the HUD. This is the correct fix and it is a real change to the public surface.
-2. **Make the gate bind to perceptual identity rather than bytes** — approve against a
-   downsampled/quantised signature, or a bounded pixel-difference tolerance, so an equivalent frame
-   keeps its approval. `readPngVisualCompositionMetrics` already computes such metrics.
-
-Either is a deliberate design decision about how visual approval works. Neither should be smuggled in
-under a physics PRD, and neither should be faked by re-signing a document that the next test run will
-invalidate.
+`webgpu-particle-lab`, `material-asset-inspector` and `skyline-runner` still drift — and **not** by
+rounding: **7.8%, 3.8% and 1.4% of pixels**, max deltas up to 236/255. They animate outside the app
+clock (renderer-side particle systems; a running platformer), so they need deterministic seeding of
+their own. I could have made the gate pass by coarsening quantisation until the drift disappeared. I
+tried it, saw that it weakens the gate for every route, and rejected it.
 
 ### Consequence for 1.5.3
 
-This gate cannot be made green honestly in this branch. It was red for 1.5.2 for the same reason.
-Shipping 1.5.3 means shipping with it red **and saying so**, which is materially better than 1.5.2 —
-where it was red and unexplained. `visualReview.fileOk` can be brought to `true` by
-`refresh-visual-review-baseline.mjs`, but that tool deliberately resets approval to `pending`, so it
-trades one failure for another. I left the owner's existing signature in place rather than erase it.
+The gate is now *satisfiable* for the four public release candidates in a way it was not before, but
+`showcase-digital-twin-ops-mobile` still drifts, so a signature is not yet durable for all four. The
+remaining work is bounded and named: seed the renderer-side particle clock, and either settle or
+exclude the running platformer. That is a smaller, concrete task rather than an open question about how
+visual approval should work.
 
 ## 3.2 Pre-existing release gates that were red before this branch
 
