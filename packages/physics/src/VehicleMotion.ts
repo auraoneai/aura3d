@@ -1,5 +1,6 @@
 import {
   samplePacejkaTireForces,
+  tirePeakCorneringStiffness,
   type PacejkaTirePreset
 } from "./VehicleDynamics.js";
 
@@ -99,6 +100,14 @@ export interface VehicleMotionSample extends VehicleMotionState {
 }
 
 const GRAVITY = 9.81;
+/*
+ * Yaw velocity damping, in reciprocal seconds.
+ *
+ * Chosen to reproduce the previous behaviour's intent at its implicit 60 Hz timestep
+ * (0.985 per 1/60 s => -ln(0.985) * 60), now expressed so the decay is a property of
+ * elapsed simulated time rather than of call frequency.
+ */
+const YAW_DAMPING_RATE = -Math.log(0.985) * 60;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Number.isFinite(value) ? value : min));
@@ -116,7 +125,15 @@ export interface VehicleMotionIntegrator {
   readonly kind: "aura-vehicle-motion";
   readonly spec: Required<Omit<VehicleMotionSpec, never>>;
   step(dt: number, input: VehicleMotionInput): VehicleMotionSample;
-  state(): VehicleMotionState;
+  /**
+   * The current state, including the derived tyre and load diagnostics from the last step.
+   *
+   * This returns the full sample rather than the bare pose: a caller reading `state()` before
+   * its first `step()` still needs `lateralG`, `frontLoad` and the slip angles to drive a HUD
+   * or a camera, and narrowing the return type forced route code to either cast or duplicate
+   * the derived maths locally.
+   */
+  state(): VehicleMotionSample;
   reset(state?: Partial<VehicleMotionState>): VehicleMotionSample;
 }
 
@@ -165,8 +182,63 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
    */
   const ratedTireLoad = Math.max(1, (mass * GRAVITY) / 2);
 
+  /*
+   * Previous substep's longitudinal acceleration, used to resolve the implicit
+   * load-transfer relationship above. Reset with the rest of the state.
+   */
+  let lastForwardAccel = 0;
+
+  /*
+   * Substepping, because a tyre is a stiff spring and explicit Euler is only conditionally
+   * stable against one.
+   *
+   * A cornering tyre's lateral force responds steeply to slip angle. The stiffer that
+   * response and the lighter the car, the shorter the timestep the integrator needs before
+   * the yaw/slip feedback loop stops converging. At a 1/60 s frame this model demonstrably
+   * crossed that threshold: holding a constant steering input, yaw came out at **-4.279
+   * rad/s**, the opposite direction to the steer, while the same second of simulated time at
+   * dt/2 or finer converged to **+0.5 rad/s**. See `vehicle-timestep-convergence.test.ts`.
+   *
+   * That is the mechanism behind the yaw-rate chatter in the traces, and it is why the model
+   * previously needed a kinematic ceiling and a lateral decay factor to look plausible — both
+   * of which were suppressing a numerical artefact rather than modelling a car.
+   *
+   * The cap is chosen from the physics rather than picked: the lateral relaxation time is
+   * roughly `mass / (2 * corneringStiffness)`, and the yaw time constant scales with
+   * `sqrt(yawInertia / (stiffness * wheelbase^2))`. Taking a fraction of the smaller keeps
+   * the integration inside its stable region for any mass, wheelbase and tyre the caller
+   * configures, instead of assuming a 1200 kg saloon at 60 Hz.
+   */
+  const peakLateralStiffness = tirePeakCorneringStiffness(tirePreset) * Math.max(1, mass * GRAVITY);
+  const lateralTimeConstant = mass / Math.max(1e-6, 2 * peakLateralStiffness);
+  const yawTimeConstant = Math.sqrt(yawInertia / Math.max(1e-6, peakLateralStiffness * wheelbase * wheelbase));
+  /*
+   * The factor on the smaller time constant is 1.0, measured rather than guessed. Sweeping it
+   * against the convergence suite, results are identical to four decimals from 0.25 up to 4.0;
+   * the first divergence appears at 8.0 (grip 8 yaw collapses 3.66 -> 1.11 rad/s) and grip 4
+   * follows at 16.0. Sitting at 1.0 keeps a 4-8x margin below the observed stability boundary.
+   *
+   * That margin is not free, and the cost is why the number matters: an over-conservative 0.25
+   * spent 252us per simulated frame on a single car, enough to blow a 16ms frame budget on its
+   * own and enough to time out the suite. At 1.0 the same frame costs 67us for identical output.
+   */
+  const maxStableStep = clamp(Math.min(lateralTimeConstant, yawTimeConstant), 1e-4, 1 / 60);
+
   function resolveSample(dt: number, input: VehicleMotionInput): VehicleMotionSample {
-    const step = clamp(dt, 1e-4, 0.1);
+    const frame = clamp(dt, 1e-4, 0.1);
+    /*
+     * Grip raises the tyre's peak force, so it shortens the stable step too. A route asking
+     * for 4 g needs proportionally finer integration than one asking for 1 g.
+     */
+    const gripDemand = Math.sqrt(clamp(input.grip ?? 1, 0.05, 8));
+    const substepCount = Math.max(1, Math.min(64, Math.ceil((frame / maxStableStep) * gripDemand)));
+    for (let index = 0; index < substepCount; index += 1) {
+      integrate(frame / substepCount, input);
+    }
+    return last;
+  }
+
+  function integrate(step: number, input: VehicleMotionInput): VehicleMotionSample {
     const throttle = clamp01(input.throttle ?? 0);
     const brake = clamp01(input.brake ?? 0);
     const steer = clamp(input.steer ?? 0, -1, 1) * maxSteerAngle;
@@ -198,8 +270,29 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
      * loses rear grip under heavy braking and can spin. A kinematic model has no
      * mechanism for this at all.
      */
-    const longitudinalDemand = (throttle * driveForce - brake * brakeForce) / mass;
-    const transfer = (centreOfMassHeight / wheelbase) * mass * longitudinalDemand;
+    /*
+     * Load transfer follows the acceleration the car is *actually* undergoing.
+     *
+     * This used throttle and brake demand: `(throttle * driveForce - brake * brakeForce) / mass`.
+     * That is not what pitches a car. A car at its top speed with the throttle pinned is not
+     * accelerating at all — drag and rolling resistance cancel the drive force — so it sits
+     * level, yet the demand-based formula claimed full-throttle weight transfer forever.
+     *
+     * The consequence was severe and permanent. On the test car, holding full throttle at
+     * terminal velocity reported a front axle load of **1.66 N against a rear load of 8.15 N**,
+     * a 17.7 m/s^2 transfer that no longer existed. With almost no vertical load the front
+     * tyre could not generate lateral force, so it ran at **0.62 rad (35 degrees) of slip** —
+     * far past the peak of the Magic Formula curve — and the car understeered straight on at
+     * any speed. That is the "car will not turn" symptom, and it got worse the faster you went,
+     * because faster meant more throttle held for longer.
+     *
+     * Longitudinal force depends on the traction limit, which depends on rear load, which
+     * depends on this transfer, so the relationship is implicit. Resolving it with the previous
+     * substep's measured acceleration is both stable and physically honest: real load transfer
+     * lags the tyre forces through the suspension anyway, and at substep resolution that lag is
+     * well under a millisecond.
+     */
+    const transfer = (centreOfMassHeight / wheelbase) * mass * lastForwardAccel;
     const staticFront = mass * GRAVITY * (1 - frontWeightBias);
     const staticRear = mass * GRAVITY * frontWeightBias;
     const frontLoad = Math.max(0, staticFront - transfer);
@@ -212,8 +305,17 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
      * angle, and that force saturates. Understeer is the front pair saturating first.
      */
     const forwardSpeed = Math.max(Math.abs(speed), 0.6) * Math.sign(speed || 1);
-    const frontSlipAngle = Math.atan2(lateral + current.yawRate * frontAxle, Math.abs(forwardSpeed)) - steer * Math.sign(forwardSpeed);
-    const rearSlipAngle = Math.atan2(lateral - current.yawRate * rearAxle, Math.abs(forwardSpeed));
+    /*
+     * Lateral velocity *at each axle*, which is what sets that axle's slip angle. A yawing
+     * car sweeps its front axle one way and its rear the other, which is why the two axles
+     * slip differently and why understeer and oversteer are distinguishable at all.
+     *
+     * These are handed to the tyre model as velocities, not as angles. The model derives
+     * slip itself; passing it a precomputed slip angle in its `steeringAngle` parameter
+     * counted slip twice (proven in `vehicle-lateral-stability.test.ts`).
+     */
+    const frontAxleLateral = lateral + current.yawRate * frontAxle;
+    const rearAxleLateral = lateral - current.yawRate * rearAxle;
 
     // Drive slip: how much the driven wheels are over-spinning relative to the road.
     const tractionLimit = rearLoad * grip * 1.1;
@@ -225,10 +327,11 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
       normalForce: Math.max(1, frontLoad),
       maxLoad: ratedTireLoad,
       longitudinalVelocity: Math.abs(forwardSpeed),
-      lateralVelocity: lateral,
+      lateralVelocity: frontAxleLateral,
       angularVelocity: Math.abs(forwardSpeed) / 0.32,
       radius: 0.32,
-      steeringAngle: -frontSlipAngle,
+      // The steered roadwheel angle. Only the front axle is steered.
+      steeringAngle: steer * Math.sign(forwardSpeed),
       lateral: tirePreset,
       longitudinal: tirePreset
     });
@@ -236,36 +339,73 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
       normalForce: Math.max(1, rearLoad),
       maxLoad: ratedTireLoad,
       longitudinalVelocity: Math.abs(forwardSpeed),
-      lateralVelocity: lateral,
+      lateralVelocity: rearAxleLateral,
       angularVelocity: (Math.abs(forwardSpeed) / 0.32) * (1 + Math.abs(slipRatio)),
       radius: 0.32,
-      steeringAngle: -rearSlipAngle,
+      steeringAngle: 0,
       lateral: tirePreset,
       longitudinal: tirePreset
     });
+    const frontSlipAngle = frontTire.slipAngle;
+    const rearSlipAngle = rearTire.slipAngle;
 
     // Handbrake destroys rear lateral grip, which is what makes a drift initiate.
     const rearGripScale = handbrake ? 0.25 : 1;
-    const frontLateral = frontTire.lateralForce * grip;
-    const rearLateral = rearTire.lateralForce * grip * rearGripScale;
+    /*
+     * A tyre resists its own slip. `samplePacejkaTireForces` reports force with the sign of
+     * the slip that produced it, so the force acting on the body is the negation. Adding it
+     * unnegated — which is what this integrator used to do — made the tyre drive the car
+     * deeper into its slide, and lateral velocity then grew without bound.
+     */
+    const frontLateral = -frontTire.lateralForce * grip;
+    const rearLateral = -rearTire.lateralForce * grip * rearGripScale;
 
     // Longitudinal: drive limited by traction, minus brake, drag and rolling resistance.
     const drive = Math.min(requestedDrive, tractionLimit);
     const braking = brake * brakeForce * Math.sign(speed || 1);
     const drag = dragCoefficient * speed * Math.abs(speed);
     const rolling = rollingResistance * mass * GRAVITY * Math.sign(speed || 0);
-    const longitudinalForce = drive - braking - drag - rolling;
-
-    const forwardAccel = longitudinalForce / mass;
+    /*
+     * Braking, drag and rolling resistance are dissipative: they oppose motion, so they can
+     * remove the car's momentum but must never become a source of it. Integrating them
+     * unconditionally lets the resisting force overshoot through zero and accelerate the car
+     * backwards. Under full brake on flat ground the car did not settle: it oscillated between
+     * 0 and -0.15 m/s every other frame, creeping -0.26 m along x while visibly stopped. The
+     * pre-existing `never reverses the car under braking` test missed this because it sampled
+     * after an even number of frames, landing on the 0 half of the oscillation; the regression
+     * test `stays at rest under continuous braking instead of jittering backwards` asserts
+     * every frame and fails without this clamp.
+     *
+     * Clamping the resisting impulse to the momentum actually available this step fixes it at
+     * the source, for any resisting force and any timestep, rather than special-casing brake.
+     * `drive` is excluded because engine force is a genuine source and may legitimately pull
+     * the car through zero into reverse.
+     */
+    const resisting = braking + drag + rolling;
+    const maxResisting = Math.abs(speed) * mass / step;
+    const clampedResisting = Math.sign(resisting) * Math.min(Math.abs(resisting), maxResisting + Math.abs(drive));
+    const forwardAccel = (drive - clampedResisting) / mass;
+    lastForwardAccel = forwardAccel;
     // Lateral acceleration includes the centripetal term from yaw.
     const lateralAccel = (frontLateral + rearLateral) / mass - current.yawRate * speed;
     const yawMoment = frontLateral * frontAxle - rearLateral * rearAxle;
     const yawAccel = yawMoment / yawInertia;
 
     let nextSpeed = speed + forwardAccel * step;
-    // Braking must not reverse the car.
-    if (brake > 0 && Math.sign(nextSpeed) !== Math.sign(speed) && speed !== 0) nextSpeed = 0;
-    const nextLateral = (lateral + lateralAccel * step) * 0.96;
+    /*
+     * The resisting-impulse clamp above keeps dissipative forces from reversing the car, so the
+     * previous `Math.sign(nextSpeed) !== Math.sign(speed)` guard is gone: it silently skipped
+     * `speed === 0` (Math.sign(0) is 0, never unequal to itself under the old ordering) which is
+     * exactly the state the car settles into under braking, and it also clobbered legitimate
+     * throttle-into-reverse transitions.
+     */
+    /*
+     * No artificial decay factor here. The previous 0.96-per-step bleed existed to hide the
+     * sign defect above: the tyre pushed the slide outward and a blanket multiplier dragged
+     * it back, and the two balanced at a permanent, physically meaningless sideways drift.
+     * With the tyre restoring correctly, lateral damping is the tyre's job.
+     */
+    const nextLateral = lateral + lateralAccel * step;
     /*
      * Yaw is bounded by what the steered geometry can actually produce.
      *
@@ -285,7 +425,17 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
      */
     const kinematicYaw = Math.abs(nextSpeed) * Math.abs(Math.tan(steer)) / Math.max(1e-6, wheelbase);
     const yawCeiling = Math.max(0.05, kinematicYaw * 1.6);
-    const unboundedYaw = (current.yawRate + yawAccel * step) * 0.985;
+    /*
+     * Yaw damping as a rate, not a per-call multiplier.
+     *
+     * This was `* 0.985` applied once per `step()`. A fixed per-call factor makes the
+     * physics depend on how often it is called: under substepping it compounds
+     * (0.985^64 = 0.38, so a frame would shed 62% of its yaw), and even without
+     * substepping a 30 fps client and a 120 fps client got different handling from
+     * identical input. Expressed as a time constant, the decay over a given span of
+     * simulated time is the same at any timestep.
+     */
+    const unboundedYaw = (current.yawRate + yawAccel * step) * Math.exp(-YAW_DAMPING_RATE * step);
     const nextYaw = clamp(unboundedYaw, -yawCeiling, yawCeiling);
 
     const heading = current.heading + nextYaw * step;
@@ -320,7 +470,20 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
       oversteering,
       frontLoad,
       rearLoad,
-      lateralG: Math.abs(lateralAccel) / GRAVITY
+      /*
+       * Lateral g is the acceleration the car actually undergoes, which is the tyre
+       * force divided by mass.
+       *
+       * This previously reported `lateralAccel`, the rate of change of *body-frame
+       * lateral velocity*. Those differ by the centripetal term, and in a steady
+       * corner — exactly when a caller asks "how many g is it pulling?" — the
+       * body-frame derivative is approximately **zero** by definition, because the
+       * tyre force and the centripetal term are in balance. So a car holding a
+       * perfectly good 1 g corner reported 0.004 g, and any consumer using this to
+       * drive tyre squeal, camera shake or a grip readout saw nothing at the moment
+       * there was most to show.
+       */
+      lateralG: Math.abs(frontLateral + rearLateral) / mass / GRAVITY
     };
     return last;
   }
@@ -329,7 +492,7 @@ export function createVehicleMotion(spec: VehicleMotionSpec): VehicleMotionInteg
     kind: "aura-vehicle-motion",
     spec: resolved,
     step: resolveSample,
-    state: () => ({ ...current }),
+    state: () => ({ ...last, ...current }),
     reset: (state = {}) => {
       current = {
         x: state.x ?? 0,

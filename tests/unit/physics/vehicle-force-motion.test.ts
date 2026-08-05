@@ -166,6 +166,27 @@ describe("determinism and validation", () => {
     expect(Math.abs(sample.speed)).toBeLessThan(200);
   });
 
+  it("stays at rest under continuous braking instead of jittering backwards", () => {
+    /*
+     * Regression: the rest guard only cancelled a sign flip when `speed !== 0`, so once the car
+     * reached exactly 0 the guard stopped applying. The next substep re-applied full brake force
+     * from standstill, producing -0.15 m/s, which the guard then zeroed again. The car oscillated
+     * 0 / -0.15 forever and crept -0.26 m along x while visibly stopped and fully braked.
+     */
+    const car = createVehicleMotion(SPEC);
+    car.reset({ speed: 3 });
+    let sample = car.state();
+    for (let frame = 0; frame < 600; frame += 1) {
+      sample = car.step(1 / 60, { brake: 1 });
+    }
+    expect(sample.speed).toBe(0);
+
+    // And it must still be 0 on the following frames, not alternating with a reverse tick.
+    for (let frame = 0; frame < 10; frame += 1) {
+      expect(car.step(1 / 60, { brake: 1 }).speed).toBe(0);
+    }
+  });
+
   it("falls back to sane defaults for a sparse spec", () => {
     const car = createVehicleMotion({ mass: 900, wheelbase: 2.2 });
     expect(car.spec.driveForce).toBeGreaterThan(0);

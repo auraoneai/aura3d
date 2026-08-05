@@ -65,20 +65,59 @@ describe("yaw rate is bounded by steered geometry", () => {
     expect(Math.abs(sample.yawRate)).toBeLessThanOrEqual(kinematic * 1.6 + 1e-6);
   });
 
-  it("still lets yaw scale with speed rather than pinning it flat", () => {
-    // The bound must not become the behaviour: a faster car through the same steer turns faster.
+  /*
+   * This assertion previously used full lock (`steer: 1`) and required the faster car to yaw
+   * faster. That premise is wrong, and it was masking a defect rather than catching one.
+   *
+   * Yaw rate in a steady turn is `lateralAcceleration / speed`. Below the grip limit lateral
+   * acceleration rises with speed (roughly with v^2) so yaw does too — that is the property
+   * worth protecting, and it is asserted below. At full lock a high-speed car is *grip*
+   * limited: lateral acceleration is pinned at whatever the tyres can produce, so yaw rate
+   * necessarily *falls* as speed rises. That is not the bound "becoming the behaviour", it is
+   * the definition of understeer, and demanding the opposite would require a model that
+   * generates cornering force the tyres do not have.
+   *
+   * So the regime is now explicit: scaling is asserted where scaling is real, and the
+   * grip-limited case is asserted for the property it actually has.
+   */
+  it("lets yaw scale with speed below the grip limit", () => {
+    const modestSteer = 0.1;
     const slow = highGripCar();
     let slowSample = slow.step(1 / 60, { throttle: 0.15, grip: 2 });
     for (let step = 0; step < 60; step += 1) slowSample = slow.step(1 / 60, { throttle: 0.15, grip: 2 });
-    for (let step = 0; step < 60; step += 1) slowSample = slow.step(1 / 60, { throttle: 0.15, steer: 1, grip: 2 });
+    for (let step = 0; step < 300; step += 1) {
+      slowSample = slow.step(1 / 60, { throttle: 0.15, steer: modestSteer, grip: 2 });
+    }
 
     const fast = highGripCar();
     let fastSample = fast.step(1 / 60, { throttle: 1, grip: 2 });
-    for (let step = 0; step < 180; step += 1) fastSample = fast.step(1 / 60, { throttle: 1, grip: 2 });
-    for (let step = 0; step < 60; step += 1) fastSample = fast.step(1 / 60, { throttle: 1, steer: 1, grip: 2 });
+    for (let step = 0; step < 300; step += 1) fastSample = fast.step(1 / 60, { throttle: 1, grip: 2 });
+    for (let step = 0; step < 300; step += 1) {
+      fastSample = fast.step(1 / 60, { throttle: 1, steer: modestSteer, grip: 2 });
+    }
 
     expect(Math.abs(fastSample.speed)).toBeGreaterThan(Math.abs(slowSample.speed));
     expect(Math.abs(fastSample.yawRate)).toBeGreaterThan(Math.abs(slowSample.yawRate));
+
+    // And it tracks the bicycle-model prediction, rather than merely being non-zero.
+    for (const { sample } of [{ sample: slowSample }, { sample: fastSample }]) {
+      const kinematic = (Math.abs(sample.speed) * Math.abs(Math.tan(0.64 * modestSteer))) / 0.16;
+      expect(Math.abs(sample.yawRate)).toBeGreaterThan(kinematic * 0.5);
+      expect(Math.abs(sample.yawRate)).toBeLessThan(kinematic * 2);
+    }
+  });
+
+  it("is grip limited at full lock, so lateral g saturates instead of yaw growing", () => {
+    const fast = highGripCar();
+    let sample = fast.step(1 / 60, { throttle: 1, grip: 2 });
+    for (let step = 0; step < 300; step += 1) sample = fast.step(1 / 60, { throttle: 1, grip: 2 });
+    for (let step = 0; step < 300; step += 1) sample = fast.step(1 / 60, { throttle: 1, steer: 1, grip: 2 });
+
+    // The front axle is past the peak of its force curve: that is what understeer is.
+    expect(Math.abs(sample.frontSlipAngle)).toBeGreaterThan(Math.abs(sample.rearSlipAngle));
+    expect(sample.understeering).toBe(true);
+    // Cornering force is real and reported, not a kinematic fiction.
+    expect(sample.lateralG).toBeGreaterThan(0.5);
   });
 
   it("keeps understeer and oversteer expressible below the ceiling", () => {

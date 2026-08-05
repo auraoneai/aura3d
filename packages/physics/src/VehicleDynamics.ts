@@ -331,6 +331,20 @@ export function sampleRacingAiDriver(input: RacingAiDriverInput): RacingAiDriver
   };
 }
 
+/**
+ * Peak lateral cornering stiffness of a tyre preset, per newton of vertical load.
+ *
+ * This is the initial slope of the Magic Formula lateral curve, `d * c * b`, in units of
+ * force per radian of slip per newton of load. An integrator needs it to size a stable
+ * timestep: the tyre is the stiffest spring in a vehicle model, so it sets the step, and
+ * assuming a fixed 1/60 s regardless of tyre, mass and wheelbase is what let the vehicle
+ * integrator go unstable and produce yaw opposing its own steering input.
+ */
+export function tirePeakCorneringStiffness(tire: PacejkaTireCoefficients | PacejkaTirePreset): number {
+  const { value } = coefficients(tire);
+  return value.d * value.c * value.b;
+}
+
 export function samplePacejkaTireForces(input: PacejkaTireForceInput): PacejkaTireForceSample {
   const normalForce = finiteNonNegative(input.normalForce, "normalForce");
   const longitudinalVelocity = finite(input.longitudinalVelocity, "longitudinalVelocity");
@@ -365,14 +379,28 @@ export function samplePacejkaTireForces(input: PacejkaTireForceInput): PacejkaTi
   const camberGrip = clamp(1 - Math.abs(camberAngle) * 0.1, 0.75, 1.08);
   const longitudinalPure = pacejka(slipRatio, longitudinal.value) * normalForce * loadFactor * camberGrip
     - Math.sign(longitudinalVelocity) * normalForce * rollingResistance;
-  const lateralPure = pacejka(slipAngle * 180 / Math.PI, lateral.value) * normalForce * loadFactor * clamp(1 + camberAngle * 0.1, 0.75, 1.15);
+  /*
+   * Slip angle stays in radians.
+   *
+   * The lateral presets use stiffness factors around b=10..14, which is the radian
+   * convention for the Magic Formula. (The degree convention runs b=0.2..0.3.) Feeding
+   * degrees into radian coefficients moved the grip peak from ~6.9 degrees of slip to
+   * ~0.08 degrees, so every physically real cornering slip angle landed far down the
+   * falloff: at 19 degrees of slip the model returned mu=0.20 instead of mu=1.21.
+   *
+   * A tyre that loses 85% of its grip the instant it is asked to corner cannot hold a
+   * line, and it makes tiny near-zero slip angles produce enormous force swings, which
+   * showed up as yaw-rate chatter. Verified in `tyre-slip-curve.test.ts`.
+   */
+  const lateralPure = pacejka(slipAngle, lateral.value) * normalForce * loadFactor * clamp(1 + camberAngle * 0.1, 0.75, 1.15);
   const slipMagnitude = Math.hypot(Math.abs(slipRatio), Math.abs(slipAngle));
   const longitudinalScale = slipMagnitude < 0.001 ? 1 : Math.sqrt(Math.max(0, 1 - Math.pow((Math.abs(slipAngle) / slipMagnitude) * 0.9, 2)));
   const lateralScale = slipMagnitude < 0.001 ? 1 : Math.sqrt(Math.max(0, 1 - Math.pow((Math.abs(slipRatio) / slipMagnitude) * 0.9, 2)));
   const longitudinalForce = longitudinalPure * longitudinalScale;
   const lateralForce = lateralPure * lateralScale;
   const pneumaticTrail = width * 0.5;
-  const torqueCoeff = -pneumaticTrail * clamp(1 - Math.abs(slipAngle * 180 / Math.PI) / 20, 0, 1);
+  // Pneumatic trail collapses as the tyre saturates; 20 degrees expressed in radians.
+  const torqueCoeff = -pneumaticTrail * clamp(1 - Math.abs(slipAngle) / (20 * Math.PI / 180), 0, 1);
   const aligningTorque = clamp(lateralForce * torqueCoeff, -normalForce * width, normalForce * width);
   return {
     longitudinalForce: Number(longitudinalForce.toFixed(3)),
@@ -516,7 +544,8 @@ function optimalSlipRatio(coeff: PacejkaTireCoefficients): number {
 }
 
 function optimalSlipAngle(coeff: PacejkaTireCoefficients): number {
-  return Math.min((Math.tan(Math.PI / (2 * coeff.c)) / coeff.b) * Math.PI / 180, 0.3);
+  // Radians, matching the units the lateral curve is now evaluated in.
+  return Math.min(Math.tan(Math.PI / (2 * coeff.c)) / coeff.b, 0.3);
 }
 
 function clamp(value: number, min: number, max: number): number {
