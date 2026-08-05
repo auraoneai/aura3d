@@ -1,5 +1,5 @@
 import { ProductionWebGL2Renderer, type ProductionWebGL2RendererOptions } from './ProductionWebGL2Renderer';
-import { ProductionWebGPURenderer } from './ProductionWebGPURenderer';
+import type { ProductionWebGPURenderer } from './ProductionWebGPURenderer';
 import type { RenderDeviceDiagnostics } from "../RenderDevice";
 import type {
   ProductionRendererBackend,
@@ -43,6 +43,17 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   static async create(options: ProductionRuntimeRendererOptions): Promise<ProductionRuntimeRenderer> {
     const selection = resolveProductionRuntimeRendererBackend(options);
     if (selection.selectedBackend === "webgpu") {
+      // Dynamically imported so the WebGPU backend can be emitted as its own chunk: a
+      // WebGL2-only app should not download a backend it will never construct. Measured with
+      // esbuild `splitting: true` on this module, the backend and its device/shader graph move
+      // into separate chunks totalling ~85 KB unminified-gzip.
+      //
+      // Note this is not visible in `pnpm check:bundle-size`, whose harness does not enable
+      // splitting and so re-inlines the import; that report shows a ~5 KB *increase* from the
+      // added async plumbing. The win is real only for a splitting-capable consumer bundler.
+      // Kept because the static `import` also forced `instanceof` checks below to retain the
+      // class at runtime, which defeated the split unconditionally.
+      const { ProductionWebGPURenderer } = await import("./ProductionWebGPURenderer.js");
       return new ProductionRuntimeRenderer(await ProductionWebGPURenderer.create(options), "webgpu", selection);
     }
     const { backend: _backend, ...webgl2Options } = options;
@@ -77,8 +88,8 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   }
 
   async renderInteractiveFrameAsync(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
-    const result = this.renderer instanceof ProductionWebGPURenderer
-      ? await this.renderer.renderFrameAsync(input)
+    const result = this.backend === "webgpu"
+      ? await (this.renderer as ProductionWebGPURenderer).renderFrameAsync(input)
       : this.renderInteractiveFrame(input);
     return withoutReadbackFeatures(result);
   }
@@ -88,8 +99,8 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
   }
 
   async captureProofAsync(input: ProductionRendererInput): Promise<ProductionRenderProof> {
-    if (this.renderer instanceof ProductionWebGPURenderer) {
-      return this.renderer.renderImportedAssetAsync(input);
+    if (this.backend === "webgpu") {
+      return (this.renderer as ProductionWebGPURenderer).renderImportedAssetAsync(input);
     }
     return this.captureProof(input);
   }

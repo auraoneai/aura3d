@@ -1,19 +1,19 @@
 # Aura3D Bundle Sizes
 
-Generated from `tests/reports/bundle-size.json` on 2026-08-04.
+Generated from `tests/reports/bundle-size.json` on 2026-08-05.
 
 Measurement method: esbuild bundle, minify, gzip artifact, and `size-limit`
 against the gzip artifact.
 
 | Target | JavaScript Bytes | Gzip Bytes | Budget | Result |
 |---|---:|---:|---:|---:|
-| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,177,012 | 578,017 | 80,000 | fail |
+| `@aura3d/engine agent API excluding lazy Three.js renderer chunk` | 2,182,937 | 579,953 | 80,000 | fail |
 | `@aura3d/react adapter excluding React and core` | 2,097 | 948 | 15,000 | pass |
 | `opt-in devtools exports` | 1,297 | 710 | 20,000 | pass |
 | `cinematic presets/effects helpers` | 49,614 | 13,582 | 45,000 | pass |
-| `product-viewer starter app before user assets` | 1,425,243 | 354,440 | 250,000 | fail |
-| `cinematic-scene starter app before user assets` | 1,425,110 | 354,426 | 250,000 | fail |
-| `mini-game starter app before user assets` | 1,464,689 | 372,092 | 250,000 | fail |
+| `product-viewer starter app before user assets` | 1,429,992 | 356,079 | 250,000 | fail |
+| `cinematic-scene starter app before user assets` | 1,429,859 | 356,061 | 250,000 | fail |
+| `mini-game starter app before user assets` | 1,470,102 | 373,905 | 250,000 | fail |
 
 The authoritative machine-readable report is
 `tests/reports/bundle-size.json`.
