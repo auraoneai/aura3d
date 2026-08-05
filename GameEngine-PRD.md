@@ -220,7 +220,42 @@ This is the structural change. Without it, every future genre repeats this PRD.
 - [x] 3.5 Character controller real against mesh — `character-mesh-contact.test.ts` 10/10, one test per behaviour the row names: ground+slope normal, step up within `maxStepHeight`, refusal above it, step down without launching, ceiling cancelling upward velocity, and wall slide. `maxStepHeight`/`wallSlide` did not exist at `v1.5.2` (grep returns 0 there).
 - [x] 3.6 Apex from intent, validated, loud on failure — apex comes from `jumpHeight` or a `feel` preset scaled by character height, then is validated against geometry; an unclearable level throws naming the offending step instead of silently shrinking. `platformer-jump-intent.test.ts` 13/13.
 - [x] 3.7 Coyote/buffer/variable-height/asymmetric gravity — coyote and buffer windows scale with airtime rather than being fixed milliseconds, plus asymmetric fall gravity, apex hang and short-hop apex. Asserted on the real level in `skyline-real-level-motion.test.ts`.
-- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED AND REVERTED 2026-08-04, finding recorded below**
+- [ ] 3.8 All four kits on the shared runtime — **ATTEMPTED TWICE AND REVERTED TWICE. Both attempts found real engine defects, now fixed and shipped; the remaining gap is route re-certification, not kit wiring.**
+
+  ### Attempt 2, after fixing what attempt 1 blamed
+
+  Attempt 1 was reverted because the car could not lap its own circuit. The diagnosis then was that
+  `createVehicleMotion` never passed `maxLoad` to the tyre model, so any vehicle lighter than a road car
+  ran on the load-factor floor and lost ~10x its grip. That was fixed and shipped separately
+  (`ae71897a`), which made a retry genuinely worthwhile rather than a repeat.
+
+  It helped, measurably: yaw at full lock went from **2.46 rad/s against 8.98 needed** to
+  **9.55 rad/s against 6.38 needed** — the car can now hold the circuit's tightest corner.
+
+  The retry then surfaced a **second** engine defect: yaw had no kinematic ceiling, so tyre moment
+  integrated through a feedback loop to **-55 rad/s at 24.5 g** — spinning on the spot. Bounding it to
+  `v·tan(δ)/L` with 1.6x headroom is shipped separately (`0e031904`, 4 tests, proven load-bearing) and
+  improved lap progress from 1 checkpoint to 3.
+
+  ### Why it is still reverted
+
+  With both defects fixed, no configuration completes a lap. I swept steering gain (1, 2, 4, 8) and both
+  sign conventions: best result 5 checkpoints of the 20+ a passing run needs, and 1,300–1,540 of 1,800
+  frames off-track.
+
+  That is not a wiring bug. The route's certification assumes a **kinematic contract**: heading is the
+  steering input, integrated directly, so a given steer trace produces a known line and a certified lap
+  time. A force model introduces slip, so the *same* input traces a different line and the certification
+  no longer holds. Making the games pass would mean re-deriving the route polyline, the certified speed
+  and the authored lap time against the force model — and re-running the drivability and 60-second race
+  proofs against the new numbers.
+
+  ### Scope to close it
+
+  Route + certification work, not kit rewiring: re-derive `certifiedSpeed` and `authoredLapSeconds`
+  against `createVehicleMotion`, re-certify `turbo-drift-circuit`, then re-run
+  `turbo-route-drivability` and `turbo-sixty-second-race`. Bounded and nameable, but it is a racing-route
+  workstream rather than a physics-layer one, and I will not weaken those gates to make a swap land.
 
   I wired `createGameRacingKit` onto `createVehicleMotion` (the WS-3.3 force model), replacing
   its kinematic `heading += steer * steerRate * dt`. The swap typechecked and the whole physics
