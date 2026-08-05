@@ -54,11 +54,13 @@
     "asset pipeline / provenance": "tests/browser/createAuraApp-asset-probe.spec.ts",
     "interaction testing": "tests/browser/current-routes-route-health.spec.ts",
     "runtime invariant reporting": "tests/browser/runtime-systems.spec.ts",
-    "morph targets": "tests/browser/createAuraApp-morph-targets.spec.ts"
+    "morph targets": "tests/browser/createAuraApp-morph-targets.spec.ts",
+    "context loss recovery": "tests/browser/context-loss-recovery.spec.ts"
   },
   "$findings": [
     "touch controls: previously credited to tests/browser/webgl-input-audio.spec.ts, which imports NO Aura3D \u2014 it calls canvas.getContext('webgl2'), clears a colour, reads a pixel and dispatches pointer events. It tests that Chromium implements WebGL2 and pointer events. That is a real thing to verify and it is not evidence about Aura3D's touch controls. Repointed to runtime-external-parity.spec.ts, which drives the asset-viewer and editor routes through the dev server and asserts touchControls: true on their live camera-control state.",
     "deterministic replay: previously credited to apps/aura-clash-showcase/tests/deterministic-replay.spec.ts, which reaches the engine only by navigating to /playable/ through its own app harness \u2014 a route URL, not a documented public package entry, so the lineage is unresolvable from source. Repointed to fighting-game-runtime.spec.ts, which imports the public entry directly.",
-    "morph targets: was published as `gap` because the generator grepped MorphTargetMixer and MorphTargetWeight, NEITHER OF WHICH EXISTS. The real symbols are MorphTargetMixerThreeCompat and the applyMorphTargets family, and there is a full public browser contract test (createAuraApp-morph-targets.spec.ts -> a harness importing @aura3d/engine). Corrected symbols move it gap -> parity-unproven: it still has no *route* consumer, which is an honest and different reason. A generator can understate as easily as overstate."
+    "morph targets: was published as `gap` because the generator grepped MorphTargetMixer and MorphTargetWeight, NEITHER OF WHICH EXISTS. The real symbols are MorphTargetMixerThreeCompat and the applyMorphTargets family, and there is a full public browser contract test (createAuraApp-morph-targets.spec.ts -> a harness importing @aura3d/engine). Corrected symbols move it gap -> parity-unproven: it still has no *route* consumer, which is an honest and different reason. A generator can understate as easily as overstate.",
+    "context loss recovery: closed by WS-2.6 and moved gap -> parity with a lineage test. The row had been a gap for a reason WS-1.6 sharpened: WebGL2Device had listened for webglcontextlost for a long time, so the device layer was never the gap \u2014 nothing surfaced it. Now app.onDeviceLost/onDeviceRestored/deviceLost on both render paths, proven by a harness that provokes a real loss with WEBGL_lose_context through the public entry point."
   ]
 }

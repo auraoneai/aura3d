@@ -274,6 +274,16 @@ export class WebGL2Device implements RenderDevice {
   private readonly maxVertexAttributes: number;
   private readonly anisotropicFilteringExtension: TextureFilterAnisotropicExtension | null;
   private readonly maxTextureAnisotropy: number;
+  /**
+   * WS-2.6 — subscribers for context loss and restoration.
+   *
+   * The device has tracked `contextLost` since before 1.6 and acted on it internally, but nothing
+   * could *observe* it: there was no callback, so a consumer could only poll `diagnostics()`. That is
+   * why the parity table listed context-loss recovery as a gap while the listeners existed — the
+   * device layer was never the gap, the absence of a public signal was.
+   */
+  private readonly deviceLostListeners = new Set<() => void>();
+  private readonly deviceRestoredListeners = new Set<() => void>();
   private readonly contextLostListener?: EventListener;
   private readonly contextRestoredListener?: EventListener;
   private readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
@@ -341,14 +351,53 @@ export class WebGL2Device implements RenderDevice {
         this.contextLost = true;
         this.lastError = "CONTEXT_LOST";
         this.frameActive = false;
+        // WS-2.6: notify subscribers. Errors in a listener must not prevent the others from running,
+        // nor leave the device in a half-notified state during an already-degraded condition.
+        for (const listener of [...this.deviceLostListeners]) {
+          try {
+            listener();
+          } catch {
+            // A listener that throws is the listener's problem; the device stays consistent.
+          }
+        }
       }) as EventListener;
       this.contextRestoredListener = (() => {
         this.contextLost = false;
         this.lastError = null;
+        for (const listener of [...this.deviceRestoredListeners]) {
+          try {
+            listener();
+          } catch {
+            // As above.
+          }
+        }
       }) as EventListener;
       canvas.addEventListener("webglcontextlost", this.contextLostListener);
       canvas.addEventListener("webglcontextrestored", this.contextRestoredListener);
     }
+  }
+
+  /**
+   * Subscribe to WebGL context loss. Returns an unsubscribe function.
+   *
+   * A lost context is not an error a caller can prevent — the browser reclaims GPU resources under
+   * memory pressure, on driver reset, or when a tab is backgrounded too long. What a caller can do is
+   * be told, so it can recreate resources rather than render nothing.
+   */
+  onDeviceLost(listener: () => void): () => void {
+    this.deviceLostListeners.add(listener);
+    return () => this.deviceLostListeners.delete(listener);
+  }
+
+  /** Subscribe to context restoration. Returns an unsubscribe function. */
+  onDeviceRestored(listener: () => void): () => void {
+    this.deviceRestoredListeners.add(listener);
+    return () => this.deviceRestoredListeners.delete(listener);
+  }
+
+  /** True while the WebGL context is lost. Polling alternative to {@link onDeviceLost}. */
+  isDeviceLost(): boolean {
+    return this.contextLost;
   }
 
   createBuffer(usage: BufferUsage, byteLength: number, initialData?: ArrayBufferView): RenderBuffer {
@@ -1245,6 +1294,8 @@ export class WebGL2Device implements RenderDevice {
 
   dispose(): void {
     if (this.canvas && "removeEventListener" in this.canvas) {
+      this.deviceLostListeners.clear();
+      this.deviceRestoredListeners.clear();
       if (this.contextLostListener) this.canvas.removeEventListener("webglcontextlost", this.contextLostListener);
       if (this.contextRestoredListener) this.canvas.removeEventListener("webglcontextrestored", this.contextRestoredListener);
     }

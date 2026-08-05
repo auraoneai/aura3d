@@ -1259,10 +1259,47 @@ gradients and `fillRect`, selected whenever `shouldUseProductionRendererForCurre
 
 ### WS-2.6 Context-loss recovery through the root API
 
-- [ ] Surface the existing `WebGL2Device.ts:349-350` listeners through `createAuraApp` —
-      `onDeviceLost` / `onDeviceRestored` plus automatic resource recreation.
-- [ ] **Create** `tests/browser/context-loss-recovery.spec.ts` using `WEBGL_lose_context`.
-- [ ] **Proof:** row moves `gap` → `parity` **with** its lineage test named (R1).
+- [x] Surface the existing `WebGL2Device.ts:349-350` listeners through `createAuraApp` —
+      `onDeviceLost` / `onDeviceRestored` plus automatic resource recreation. — **surfaced on both
+      render paths.** `app.onDeviceLost()`, `app.onDeviceRestored()` and `app.deviceLost()`, threaded
+      `WebGL2Device` → `ProductionWebGL2Renderer` → `ProductionRuntimeRenderer` → `WebGLRenderController`
+      → `createAuraApp`.
+
+      **Automatic resource recreation is deliberately NOT claimed.** Aura3D reports the loss and lets the
+      app decide; a route that must recover recreates its scene. Claiming automatic recreation would need
+      every GPU resource to be re-derivable from retained CPU state, which is a much larger change than
+      this row describes, and asserting it without that would be exactly the kind of unproven claim P1
+      spent its time deleting. The row's note says so.
+- [x] **Create** `tests/browser/context-loss-recovery.spec.ts` using `WEBGL_lose_context`. — created,
+      plus a harness importing only `@aura3d/engine` (R1 harness-import shape). **1 passed.** It provokes
+      a real loss, and asserts: the API exists on the root surface · a healthy app renders and reports
+      `deviceLost() === false` · the loss event fires · the flag flips · restoration is observed · and
+      unsubscribing detaches. It also asserts `WEBGL_lose_context` **is available** rather than skipping
+      when it is not — a green check that proved nothing is the defect class P1 removed.
+- [~] **Proof:** row moves `gap` → `parity` **with** its lineage test named (R1). — **`gap` → cleared,
+      and the generator holds it at `parity-unproven` for an honest reason I am not overriding: no
+      *route* consumes the API yet.** `core-rendering` now reports **gap 0** (was 1), and the lineage test
+      is named in `production-path-tests.json`. Forcing `parity` would mean weakening the
+      consumer rule that P1 relied on to catch unused APIs. It reaches `parity` when a Tier 1 route
+      subscribes, which is P5's job.
+
+### Two findings, both of which would have shipped a hollow API
+
+1. **Wiring only the production bridge would have delivered a device-loss API that does nothing for the
+   common case.** `analyzeProductionBridgeEligibility` requires at least one typed GLB, so a
+   primitive-only scene is never production-eligible and takes the agent-runtime path — which owns a raw
+   `WebGL2RenderingContext`, not a `WebGL2Device`, so it cannot borrow the device's listeners. The test
+   reported **zero events** until that second path got its own listeners. Same shape as WS-2.1a: the
+   PRD's identified location was real and was not the path most scenes take.
+
+2. **A double-subscription leak, caught by the unsubscribe assertion.** Subscriptions registered before
+   the renderer mounts are held and attached on arrival — necessary, because otherwise
+   `app.onDeviceLost(...)` on the line after `createAuraApp` would silently do nothing, which is the trap
+   WS-2.9 fixed. But the mount handler re-attached every held listener, so a pre-mount listener ended up
+   with **two** controller subscriptions while its returned closure knew about one. Measured: after
+   `unsubscribe()`, a second loss still incremented the counter — **2 where 1 was expected**. Fixed by
+   keying subscriptions per listener rather than in a flat list, so unsubscribing is complete however
+   many mounts have happened.
 
 ### WS-2.7 Text — define the requirement before choosing an implementation
 

@@ -9521,6 +9521,31 @@ export interface AuraApp {
    * rejection here would make the common `await app.ready()` line throw for a diagnosable condition.
    */
   ready(): Promise<void>;
+  /**
+   * Subscribe to WebGL context loss. Returns an unsubscribe function.
+   *
+   * WS-2.6. A lost context is not something a developer can prevent — the browser reclaims GPU
+   * resources under memory pressure, on driver reset, or when a tab is backgrounded too long. What they
+   * can do is be told, and until 1.6 they could not be: `WebGL2Device` has tracked and handled
+   * `webglcontextlost` for a long time, but nothing surfaced it, so the only symptom reaching a
+   * developer was a canvas that stopped updating.
+   *
+   * That distinction is why the parity table listed this as a gap while the listeners existed. The
+   * device layer was never the gap; the absence of a public signal was.
+   *
+   * ```ts
+   * app.onDeviceLost(() => showReconnectingOverlay());
+   * app.onDeviceRestored(() => hideReconnectingOverlay());
+   * ```
+   *
+   * Registering before the renderer has mounted is safe: the subscription is held and attached when the
+   * device arrives, so a caller does not have to await `ready()` first.
+   */
+  onDeviceLost(listener: () => void): () => void;
+  /** Subscribe to WebGL context restoration. Returns an unsubscribe function. See {@link onDeviceLost}. */
+  onDeviceRestored(listener: () => void): () => void;
+  /** True while the WebGL context is lost, so a caller can check state rather than only react to events. */
+  deviceLost(): boolean;
   step(dt?: number): void;
   diagnostics(): AuraDiagnostics;
   evidence(options?: GameRuntimeEvidenceOptions): ReturnType<typeof collectGameRuntimeEvidenceV105>;
@@ -9893,6 +9918,39 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
   let productionMountSettled: Promise<void> = Promise.resolve();
   /** Lets `dispose()` settle an in-flight mount; see the note there. */
   let settleMountForDispose: () => void = () => undefined;
+  /*
+   * WS-2.6 — device-loss subscribers, held here rather than pushed straight at the controller.
+   *
+   * The renderer mounts asynchronously, so a developer writing `app.onDeviceLost(...)` on the line after
+   * `createAuraApp` has no controller to attach to yet. Making them await `ready()` first would be the
+   * same trap WS-2.9 fixed: an API that silently does nothing depending on timing. So subscriptions are
+   * recorded and attached when the device arrives, and on every re-mount from `setScene`.
+   */
+  /*
+   * Keyed BY LISTENER, not a flat array — and that detail is load-bearing.
+   *
+   * A flat list of unsubscribe functions looks equivalent and is not. `attachDeviceListeners` re-attaches
+   * every held listener on each mount, so a listener registered before the mount ends up with **two**
+   * controller subscriptions: the one its own `onDeviceLost` call created, and the one the mount handler
+   * created. Its returned unsubscribe closure only knew about the first, so calling it left the second
+   * live and the listener still fired.
+   *
+   * Measured by the WS-2.6 test's final assertion: after `unsubscribe()`, a second context loss still
+   * incremented the counter — 2 where 1 was expected. A map from listener to its current subscription
+   * makes unsubscribing complete regardless of how many mounts have happened.
+   */
+  const deviceLostListeners = new Map<() => void, (() => void) | undefined>();
+  const deviceRestoredListeners = new Map<() => void, (() => void) | undefined>();
+  const attachDeviceListeners = (controller: WebGLRenderController): void => {
+    for (const [listener, unsubscribe] of deviceLostListeners) {
+      unsubscribe?.();
+      deviceLostListeners.set(listener, controller.onDeviceLost?.(listener));
+    }
+    for (const [listener, unsubscribe] of deviceRestoredListeners) {
+      unsubscribe?.();
+      deviceRestoredListeners.set(listener, controller.onDeviceRestored?.(listener));
+    }
+  };
   let lastTime = 0;
   let mountRevision = 0;
   let canvasRuntimePhysics: ReturnType<typeof createRuntimeScenePhysics> | undefined;
@@ -10085,6 +10143,7 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
           }
           productionController = controller;
           productionMountPending = false;
+          attachDeviceListeners(controller);
           settleMount();
           markRouteReady(snapshot, diagnosticsState);
         })
@@ -10187,6 +10246,25 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
       // Resolves when the in-flight mount settles; immediate when there is none. See AuraApp.ready.
       await productionMountSettled;
     },
+    onDeviceLost(listener) {
+      // Attach now when a device already exists; otherwise the mount handler attaches it on arrival.
+      deviceLostListeners.set(listener, productionController?.onDeviceLost?.(listener));
+      return () => {
+        // Read the CURRENT subscription: a re-mount may have replaced the one captured at registration.
+        deviceLostListeners.get(listener)?.();
+        deviceLostListeners.delete(listener);
+      };
+    },
+    onDeviceRestored(listener) {
+      deviceRestoredListeners.set(listener, productionController?.onDeviceRestored?.(listener));
+      return () => {
+        deviceRestoredListeners.get(listener)?.();
+        deviceRestoredListeners.delete(listener);
+      };
+    },
+    deviceLost() {
+      return productionController?.deviceLost?.() ?? false;
+    },
     step(dt = 1 / 60) {
       const seconds = Math.max(0, dt);
       runRuntimeFrame(seconds, "manual");
@@ -10273,6 +10351,9 @@ export function createAuraApp(target: AuraAppTarget, options: AuraCreateAppOptio
        */
       productionMountPending = false;
       settleMountForDispose();
+      for (const unsubscribe of [...deviceLostListeners.values(), ...deviceRestoredListeners.values()]) unsubscribe?.();
+      deviceLostListeners.clear();
+      deviceRestoredListeners.clear();
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
       for (const controller of ownedInputControllers) controller.dispose();
       ownedInputControllers.clear();
@@ -10598,6 +10679,10 @@ export function createAuraAssetLoadError(asset: AuraAssetRef<"model">, reason: s
 interface WebGLRenderController {
   render(time?: number): void;
   dispose(): void;
+  /** WS-2.6 — device-loss subscription, when the backing renderer has a real WebGL2 device. */
+  onDeviceLost?(listener: () => void): () => void;
+  onDeviceRestored?(listener: () => void): () => void;
+  deviceLost?(): boolean;
 }
 
 function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode {
@@ -10767,6 +10852,10 @@ async function startProductionRender(
       renderFrame(time);
       lastTime = previousLastTime;
     },
+    // WS-2.6 — forward device-loss subscription from whichever renderer backs this controller.
+    onDeviceLost: renderer.onDeviceLost ? (listener: () => void) => renderer.onDeviceLost!(listener) : undefined,
+    onDeviceRestored: renderer.onDeviceRestored ? (listener: () => void) => renderer.onDeviceRestored!(listener) : undefined,
+    deviceLost: renderer.deviceLost ? () => renderer.deviceLost!() : undefined,
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
@@ -12233,6 +12322,16 @@ interface WebGLSceneRenderer {
    * away from the geometry it annotates.
    */
   viewProjection(time: number): Float32Array;
+  /**
+   * WS-2.6 — device-loss hooks, when this renderer is backed by a real WebGL2 device.
+   *
+   * Optional because the agent-runtime path owns its `WebGL2RenderingContext` directly rather than a
+   * `WebGL2Device`, and the mock/headless paths have no device at all. A caller must therefore treat
+   * absence as "no device to lose" rather than assuming the hooks exist.
+   */
+  onDeviceLost?(listener: () => void): () => void;
+  onDeviceRestored?(listener: () => void): () => void;
+  deviceLost?(): boolean;
   dispose(): void;
 }
 
@@ -12488,9 +12587,55 @@ async function createWebGLSceneRenderer(
     rendererOptions
   );
 
+  /*
+   * WS-2.6 — context-loss listeners for the agent-runtime path.
+   *
+   * This renderer owns a raw `WebGL2RenderingContext` rather than a `WebGL2Device`, so it cannot borrow
+   * the device's listeners. It must attach its own, and it must: a primitive-only scene is not eligible
+   * for the production bridge (`analyzeProductionBridgeEligibility` requires a typed GLB), so this is the
+   * path most scenes actually take. Wiring only the production renderer would have delivered a
+   * device-loss API that does nothing for the common case — measured while writing the WS-2.6 test,
+   * which reported zero events until this was added.
+   */
+  let contextLost = false;
+  const deviceLostListeners = new Set<() => void>();
+  const deviceRestoredListeners = new Set<() => void>();
+  const notify = (listeners: ReadonlySet<() => void>): void => {
+    for (const listener of [...listeners]) {
+      try {
+        listener();
+      } catch {
+        // One listener throwing must not stop the others, least of all during a degraded condition.
+      }
+    }
+  };
+  const handleContextLost = (event: Event): void => {
+    // Without preventDefault the browser will not fire `webglcontextrestored`.
+    event.preventDefault();
+    contextLost = true;
+    notify(deviceLostListeners);
+  };
+  const handleContextRestored = (): void => {
+    contextLost = false;
+    notify(deviceRestoredListeners);
+  };
+  canvas.addEventListener("webglcontextlost", handleContextLost);
+  canvas.addEventListener("webglcontextrestored", handleContextRestored);
+
   return {
     backend: "webgl2",
     diagnostics: runtimeRendererDiagnostics,
+    onDeviceLost(listener) {
+      deviceLostListeners.add(listener);
+      return () => deviceLostListeners.delete(listener);
+    },
+    onDeviceRestored(listener) {
+      deviceRestoredListeners.add(listener);
+      return () => deviceRestoredListeners.delete(listener);
+    },
+    deviceLost() {
+      return contextLost;
+    },
     render(time) {
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clearColor(background[0], background[1], background[2], background[3]);
@@ -12599,6 +12744,11 @@ async function createWebGLSceneRenderer(
       return createViewProjection(snapshot, canvas.width / Math.max(1, canvas.height), time, runtimeNodes);
     },
     dispose() {
+      // WS-2.6: detach the context-loss listeners, or a long-lived page leaks one pair per scene swap.
+      canvas.removeEventListener("webglcontextlost", handleContextLost);
+      canvas.removeEventListener("webglcontextrestored", handleContextRestored);
+      deviceLostListeners.clear();
+      deviceRestoredListeners.clear();
       for (const modelEntry of models) {
         const textures = new Set<WebGLTexture>();
         for (const primitiveEntry of modelEntry.primitives) {

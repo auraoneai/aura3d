@@ -36,11 +36,19 @@ describe("claim lineage (R1)", () => {
   }, 180_000);
 
   it("exempts gap rows rather than demanding a test that proves absence", () => {
+    /*
+     * Asserted as a general rule rather than against a named capability.
+     *
+     * This test used to pin "context loss recovery" as the example gap. WS-2.6 closed that row, so the
+     * assertion started failing for a *good* reason — the capability now exists. A test that has to be
+     * edited every time a gap is closed is measuring the wrong thing: what matters is that whatever is
+     * currently a gap is exempt, and that every non-gap row still needs lineage.
+     */
     const { report } = run();
-    expect(report.totals.gapRowsExemptCount).toBeGreaterThan(0);
     expect(report.gapRowsExempt).toContain("incoherent");
-    const capabilities = (report.rows as { readonly capability: string }[]).map((row) => row.capability);
-    expect(capabilities).not.toContain("context loss recovery");
+    const rows = report.rows as { readonly capability: string; readonly parityStatus: string }[];
+    expect(rows.every((row) => row.parityStatus !== "gap"), "no gap row may appear in the lineage-required set").toBe(true);
+    expect(report.totals.requiringLineage + report.totals.gapRowsExemptCount).toBe(report.totals.rows);
   }, 180_000);
 
   it("rejects a capability with no named production-path test", () => {

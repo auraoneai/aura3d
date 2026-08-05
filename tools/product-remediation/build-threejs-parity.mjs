@@ -204,20 +204,25 @@ const ROWS = [
   { category: "core-rendering", capability: "LOD", expected: "THREE.LOD", symbols: ["LodSelection", "LodLevel"], integrated: false, claim: "parity", notes: "LOD selection exists in @aura3d/rendering but is not surfaced through the root safe API, so a route cannot declare LOD levels." },
   { category: "core-rendering", capability: "WebGPU", expected: "WebGPURenderer (experimental)", symbols: ["WebGPUDevice"], integrated: true, claim: "parity", evidence: ["tests/reports/webgpu-feature-matrix"] },
   /*
-   * WS-1.6 — status unchanged (`gap` is correct), reason corrected.
+   * WS-2.6 — CLOSED. Status moves `gap` -> `parity`, and the history is worth keeping.
    *
-   * The old note said context loss "is not surfaced or recovered", which reads as though nothing
-   * handles it. `packages/rendering/src/WebGL2Device.ts:349-350` does listen for `webglcontextlost`
-   * and `webglcontextrestored`. What is missing is the second half: nothing reaches the root API, so
-   * a developer using `createAuraApp` cannot observe or respond to a lost context. Stating that
-   * precisely matters, because the vaguer note invites someone to close this row by pointing at the
-   * listeners — which would be a false parity claim built on a true observation.
+   * The row was correctly a gap, for a reason WS-1.6 had to sharpen first: `WebGL2Device.ts:349-350` had
+   * listened for `webglcontextlost`/`webglcontextrestored` and acted on them for a long time. The device
+   * layer was never the gap — nothing *surfaced* it, so the only symptom reaching a developer was a canvas
+   * that quietly stopped updating. The vaguer original note ("context loss is not handled") would have
+   * invited closing this row by pointing at those listeners.
    *
-   * `tests/browser/production-runtime-webgl2-context-loss.spec.ts` exists but is a **one-line
-   * re-export shell** containing no test: `export { test, expect } from '@playwright/test';`. It is
-   * not evidence, and it is exactly the kind of file that makes a capability look covered.
+   * Now surfaced through the root API as `app.onDeviceLost()`, `app.onDeviceRestored()` and
+   * `app.deviceLost()`, on BOTH render paths — the production bridge and the agent-runtime path. Wiring
+   * only the production one would have shipped an API that does nothing for the common case, since a
+   * primitive-only scene is not production-eligible; the test reported zero events until the second path
+   * was wired.
+   *
+   * Evidence: `tests/browser/context-loss-recovery.spec.ts` provokes a real loss with
+   * `WEBGL_lose_context` through a harness that imports only `@aura3d/engine`, and asserts the event
+   * fires, the flag flips, restoration is observed, and unsubscribing detaches.
    */
-  { category: "core-rendering", capability: "context loss recovery", expected: "webglcontextlost handling by hand", symbols: ["contextLoss"], integrated: false, claim: "gap", notes: "WebGL2Device.ts:349-350 DOES listen for webglcontextlost/webglcontextrestored, so the device layer is not the gap. The gap is that nothing surfaces through the root API: createAuraApp exposes no onDeviceLost/onDeviceRestored and performs no resource recreation, so a developer cannot observe or recover from a lost context. Note also that tests/browser/production-runtime-webgl2-context-loss.spec.ts is a one-line re-export shell with no test in it. WS-2.6 closes this." },
+{ category: "core-rendering", capability: "context loss recovery", expected: "webglcontextlost handling by hand", symbols: ["onDeviceLost", "onDeviceRestored"], integrated: true, claim: "parity", notes: "Closed by WS-2.6. app.onDeviceLost(), app.onDeviceRestored() and app.deviceLost() surface WebGL context loss through the root API, on both the production bridge and the agent-runtime path — the latter matters because a primitive-only scene is not production-eligible, so wiring only the bridge would have delivered an API that does nothing for the common case. Subscriptions registered before the renderer mounts are held and attached on arrival, so a developer does not have to await ready() first. Unsubscribe is keyed per listener rather than a flat list, which fixed a double-subscription leak: a listener registered pre-mount got two controller subscriptions and kept firing after unsubscribe. Not claimed: automatic resource recreation. Aura3D reports the loss and lets the app decide; a route that must recover recreates its scene.", evidence: ["tests/reports/browser.json"] },
   { category: "core-rendering", capability: "resource disposal", expected: "manual geometry/material/texture dispose()", symbols: ["dispose"], integrated: true, claim: "exceed", notes: "App owns the lifecycle; routes call app.dispose() rather than tracking GPU objects." },
 
   // --- Ecosystem helpers ---

@@ -44,6 +44,28 @@ export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer
     return new ProductionWebGL2Renderer(renderer, options.width, options.height);
   }
 
+  /**
+   * WS-2.6 — forward context-loss events from the underlying `WebGL2Device`.
+   *
+   * The device has tracked and handled `webglcontextlost` for a long time; what was missing was any way
+   * for a consumer to observe it, which is why the parity table listed context-loss recovery as a gap
+   * while the listeners already existed. The device layer was never the gap.
+   */
+  onDeviceLost(listener: () => void): () => void {
+    const device = this.renderer.device as { onDeviceLost?: (listener: () => void) => () => void };
+    return device.onDeviceLost?.(listener) ?? (() => undefined);
+  }
+
+  onDeviceRestored(listener: () => void): () => void {
+    const device = this.renderer.device as { onDeviceRestored?: (listener: () => void) => () => void };
+    return device.onDeviceRestored?.(listener) ?? (() => undefined);
+  }
+
+  deviceLost(): boolean {
+    const device = this.renderer.device as { isDeviceLost?: () => boolean };
+    return device.isDeviceLost?.() ?? false;
+  }
+
   renderInteractiveFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     this.validateImportedAsset(input);
     const timing = createCurrentRoutesTimingAccumulator();

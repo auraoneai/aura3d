@@ -98,6 +98,15 @@ export interface ProductionProductionRenderer {
   renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof;
   getFeatures(): readonly ProductionRendererFeature[];
   getDiagnostics(): RenderDeviceDiagnostics;
+  /**
+   * WS-2.6 — device-loss subscription, when this renderer is backed by a device that can lose context.
+   *
+   * Optional rather than required: a WebGPU backend reports device loss differently, and a mock device
+   * cannot lose one at all. A caller must treat absence as "no device to lose" instead of assuming.
+   */
+  onDeviceLost?(listener: () => void): () => void;
+  onDeviceRestored?(listener: () => void): () => void;
+  deviceLost?(): boolean;
   dispose(): void;
 }
 

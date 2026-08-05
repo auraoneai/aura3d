@@ -40,6 +40,19 @@ export class ProductionRuntimeRenderer implements CurrentRoutesProductionRendere
     this.backendSelection = backendSelection;
   }
 
+  /** WS-2.6 — delegate device-loss subscription to whichever backend was selected. */
+  onDeviceLost(listener: () => void): () => void {
+    return this.renderer.onDeviceLost?.(listener) ?? (() => undefined);
+  }
+
+  onDeviceRestored(listener: () => void): () => void {
+    return this.renderer.onDeviceRestored?.(listener) ?? (() => undefined);
+  }
+
+  deviceLost(): boolean {
+    return this.renderer.deviceLost?.() ?? false;
+  }
+
   static async create(options: ProductionRuntimeRendererOptions): Promise<ProductionRuntimeRenderer> {
     const selection = resolveProductionRuntimeRendererBackend(options);
     if (selection.selectedBackend === "webgpu") {
